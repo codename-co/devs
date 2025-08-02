@@ -28,7 +28,9 @@ const pages = langs.reduce((acc, lang) => {
       entry: `/src/pages/${page}Page.tsx`,
       data: {
         lang: lang ?? defaultLang,
-        title: page,
+        title: isIndex
+          ? PRODUCT.displayName
+          : `${PRODUCT.displayName} · ${meta[lang]?.[page]?.title}`,
         description: meta[lang]?.[page]?.description,
       },
     })
