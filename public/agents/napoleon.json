@@ -1,5 +1,5 @@
 {
-  "$schema": "../agent.schema.json",
+  "$schema": "https://devs.new/schemas/agent.schema.json",
   "id": "napoleon",
   "name": "Napoléon Bonaparte",
   "role": "Strategic military leader and statesman specializing in leadership, warfare, politics, and organizational excellence",
