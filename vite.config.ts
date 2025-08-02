@@ -6,36 +6,30 @@ import { defineConfig } from 'vite'
 import { createMpaPlugin, type Page } from 'vite-plugin-virtual-mpa'
 
 import { PRODUCT } from './src/config/product'
-import { defaultLang, langs, useTranslations } from './src/i18n'
+import { defaultLang, langs, meta } from './src/i18n'
 
 // Dynamically list all pages
 const pagesList = readdirSync(resolve(__dirname, './src/pages'))
   .filter((file) => file.endsWith('.tsx'))
-  .map((file) => file.replace('Page.tsx', '').toLowerCase())
-
-const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
+  .map((file) => file.replace('Page.tsx', ''))
 
 // Generate localized pages
 const pages = langs.reduce((acc, lang) => {
-  const t = useTranslations(lang)
-
   pagesList.forEach((page) => {
-    const isMainPage = page === 'home' || page === 'index'
-    const pageName = isMainPage ? 'index' : page
+    const isIndex = page === 'Index'
+    const is404 = page === 'CustomError'
     acc.push({
-      name: `${lang}__${pageName}`,
-      filename: isMainPage
+      name: `${lang}__${page}`,
+      filename: isIndex
         ? `${lang ? `${lang}/` : ''}index.html`
-        : `${lang ? `${lang}/` : ''}${pageName}/index.html`,
-      entry: `/src/pages/${capitalize(page)}Page.tsx`,
+        : is404
+          ? `404.html`
+          : `${lang ? `${lang}/` : ''}${page.toLowerCase()}/index.html`,
+      entry: `/src/pages/${page}Page.tsx`,
       data: {
         lang: lang ?? defaultLang,
-        title: isMainPage
-          ? PRODUCT.displayName
-          : `${PRODUCT.displayName} · ${page}`,
-        description: t(
-          `Delegate to adaptive AI teams that form, collaborate, and deliver automatically. Browser-native AI orchestration platform.`,
-        ),
+        title: page,
+        description: meta[lang]?.[page]?.description,
       },
     })
   })

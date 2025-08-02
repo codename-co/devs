@@ -96,7 +96,6 @@ import {
   DeepSeekProvider,
   GrokProvider,
   HuggingFaceProvider,
-  LiteLLMProvider,
   CustomProvider,
 } from './providers'
 
@@ -111,5 +110,4 @@ LLMService.registerProvider('openrouter', new OpenRouterProvider())
 LLMService.registerProvider('deepseek', new DeepSeekProvider())
 LLMService.registerProvider('grok', new GrokProvider())
 LLMService.registerProvider('huggingface', new HuggingFaceProvider())
-LLMService.registerProvider('litellm', new LiteLLMProvider())
 LLMService.registerProvider('custom', new CustomProvider())

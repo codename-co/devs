@@ -13,3 +13,10 @@ export const locales = localesIndex as Record<
   keyof typeof languages,
   I18n | Partial<I18n>
 >
+
+export const meta = Object.fromEntries(
+  Object.keys(languages).map((lang) => [
+    lang,
+    (localesIndex as any)[`${lang}_meta`],
+  ]),
+) as Record<keyof typeof languages, any>

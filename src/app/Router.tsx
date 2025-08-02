@@ -1,10 +1,13 @@
 import { Outlet, Route, Routes, useParams } from 'react-router-dom'
 
-import { HomePage, SettingsPage } from '@/pages'
 import { I18nProvider } from '@/i18n'
+import { IndexPage } from '@/pages/IndexPage'
+import { SettingsPage } from '@/pages/SettingsPage'
+import { CustomErrorPage } from '@/pages/CustomErrorPage'
 
 const routes = {
-  index: HomePage,
+  404: CustomErrorPage,
+  index: IndexPage,
   settings: SettingsPage,
   '*': 'NOT FOUND',
 }

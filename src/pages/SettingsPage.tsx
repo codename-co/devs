@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import {
-  addToast,
   Button,
   Card,
   CardBody,
@@ -8,8 +7,6 @@ import {
   Input,
   Select,
   SelectItem,
-  Tab,
-  Tabs,
   Chip,
   Modal,
   ModalContent,
@@ -25,7 +22,8 @@ import { LLMProvider, Credential } from '@/types'
 import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
 import { LLMService } from '@/lib/llm'
-import { Icon } from '@/components'
+import { Icon, Section } from '@/components'
+import { errorToast, successToast } from '@/lib/toast'
 
 interface ProviderConfig {
   provider: LLMProvider
@@ -135,16 +133,6 @@ const PROVIDERS: ProviderConfig[] = [
     color: 'warning',
   },
   {
-    provider: 'litellm',
-    name: 'LiteLLM Gateway',
-    models: ['gpt-3.5-turbo', 'claude-2', 'command-nightly'],
-    icon: 'Server',
-    color: 'success',
-    noApiKey: true,
-    apiKeyPlaceholder: 'http://localhost:4000 (optional API key)',
-    requiresBaseUrl: false,
-  },
-  {
     provider: 'custom',
     name: 'Custom/Local',
     models: [],
@@ -205,11 +193,7 @@ export const SettingsPage = () => {
       !model ||
       (selectedProvider === 'custom' && !baseUrl)
     ) {
-      addToast({
-        title: 'Error',
-        description: 'Please fill in all required fields',
-        severity: 'danger',
-      })
+      errorToast('Please fill in all required fields')
       return
     }
 
@@ -218,11 +202,7 @@ export const SettingsPage = () => {
       // Validate API key
       const isValid = await LLMService.validateApiKey(selectedProvider, apiKey)
       if (!isValid) {
-        addToast({
-          title: 'Error',
-          description: 'Invalid API key',
-          severity: 'danger',
-        })
+        errorToast('Invalid API key')
         setIsValidating(false)
         return
       }
@@ -262,17 +242,9 @@ export const SettingsPage = () => {
       setBaseUrl('')
       onOpenChange()
 
-      addToast({
-        title: 'Success',
-        description: 'Credential added successfully',
-        severity: 'success',
-      })
+      successToast('Credential added successfully')
     } catch (error) {
-      addToast({
-        title: 'Error',
-        description: 'Failed to add credential',
-        severity: 'danger',
-      })
+      errorToast('Failed to add credential')
       console.error(error)
     } finally {
       setIsValidating(false)
@@ -285,17 +257,9 @@ export const SettingsPage = () => {
       localStorage.removeItem(`${id}-iv`)
       localStorage.removeItem(`${id}-salt`)
       await loadCredentials()
-      addToast({
-        title: 'Success',
-        description: 'Credential deleted',
-        severity: 'success',
-      })
+      successToast('Credential deleted')
     } catch (error) {
-      addToast({
-        title: 'Error',
-        description: 'Failed to delete credential',
-        severity: 'danger',
-      })
+      errorToast('Failed to delete credential')
     }
   }
 
@@ -306,17 +270,9 @@ export const SettingsPage = () => {
     try {
       SecureStorage.unlock(masterPassword)
       setMasterPassword('')
-      addToast({
-        title: 'Success',
-        description: 'Storage unlocked',
-        severity: 'success',
-      })
+      successToast('Storage unlocked')
     } catch (error) {
-      addToast({
-        title: 'Error',
-        description: 'Invalid password',
-        severity: 'danger',
-      })
+      errorToast('Invalid password')
     } finally {
       setIsUnlocking(false)
     }
@@ -326,7 +282,7 @@ export const SettingsPage = () => {
 
   return (
     <DefaultLayout title={t('Settings')} header={header}>
-      <div className="space-y-6">
+      <Section>
         {SecureStorage.isLocked() && (
           <Card>
             <CardBody className="flex flex-row items-center gap-4">
@@ -425,34 +381,31 @@ export const SettingsPage = () => {
           </CardBody>
         </Card>
 
-        <Modal isOpen={isOpen} onOpenChange={onOpenChange} placement="center">
+        <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
           <ModalContent>
             {(onClose) => (
               <>
                 <ModalHeader>Add LLM Provider</ModalHeader>
                 <ModalBody>
                   <div className="space-y-4">
-                    <Tabs
-                      selectedKey={selectedProvider}
-                      onSelectionChange={(key) =>
-                        setSelectedProvider(key as LLMProvider)
+                    <Select
+                      label="Select Provider"
+                      defaultSelectedKeys={PROVIDERS[0].provider}
+                      onChange={(e) =>
+                        setSelectedProvider(e.target.value as LLMProvider)
                       }
+                      isRequired
                     >
                       {PROVIDERS.map((provider) => (
-                        <Tab
+                        <SelectItem
                           key={provider.provider}
-                          title={
-                            <div className="flex items-center gap-2">
-                              <Icon
-                                name={provider.icon as any}
-                                className="h-4 w-4"
-                              />
-                              {provider.name}
-                            </div>
-                          }
-                        />
+                          textValue={provider.name}
+                          startContent={<Icon name={provider.icon} />}
+                        >
+                          {provider.name}
+                        </SelectItem>
                       ))}
-                    </Tabs>
+                    </Select>
 
                     <div>
                       <Input
@@ -531,7 +484,7 @@ export const SettingsPage = () => {
             )}
           </ModalContent>
         </Modal>
-      </div>
+      </Section>
     </DefaultLayout>
   )
 }

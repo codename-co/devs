@@ -55,7 +55,6 @@ export type LLMProvider =
   | 'deepseek'
   | 'grok'
   | 'huggingface'
-  | 'litellm'
   | 'custom'
 
 export interface LLMConfig {
