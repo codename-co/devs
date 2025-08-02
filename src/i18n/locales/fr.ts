@@ -11,6 +11,9 @@ export const fr: I18n = {
   'Drop files here…': 'Déposez des fichiers ici…',
   'Use microphone': 'Utiliser le microphone',
 
+  // Page: /404
+  'Page not found': 'Page non trouvée',
+
   // Page: /
   'Let AI agents take it from here': 'Vos agents IA prennent le relais',
   'Delegate to adaptive AI teams that form, collaborate, and deliver automatically':
@@ -21,4 +24,8 @@ export const fr: I18n = {
   'Platform Settings': 'Paramètres de la plateforme',
   'Configure LLM providers, models and platform defaults for your organization':
     'Configurez les fournisseurs de LLM, les modèles et les paramètres par défaut de la plateforme pour votre organisation',
+
+  // LLM Integration
+  'No LLM provider configured. Please configure one in Settings.':
+    'Aucun fournisseur LLM configuré. Veuillez en configurer un dans les Paramètres.',
 } as const

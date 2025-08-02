@@ -42,6 +42,8 @@ const PROVIDERS: ProviderConfig[] = [
     provider: 'ollama',
     name: 'Ollama',
     models: [
+      'deepseek-r1:8b',
+      'gemma3:4b',
       'qwen3:8b',
       'llama2',
       'mistral',

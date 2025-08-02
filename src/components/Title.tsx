@@ -79,7 +79,7 @@ export const Title = ({
     weightClasses[weight],
     'text-foreground',
     subtitle && 'mb-2',
-    className
+    className,
   )
 
   if (subtitle) {

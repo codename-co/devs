@@ -9,6 +9,9 @@ export const en = [
   'Drop files here…',
   'Use microphone',
 
+  // Page: /404
+  'Page not found',
+
   // Page: /
   'Let AI agents take it from here',
   'Delegate to adaptive AI teams that form, collaborate, and deliver automatically',
@@ -17,4 +20,7 @@ export const en = [
   'Settings',
   'Platform Settings',
   'Configure LLM providers, models and platform defaults for your organization',
+
+  // LLM Integration
+  'No LLM provider configured. Please configure one in Settings.',
 ] as const

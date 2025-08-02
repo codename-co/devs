@@ -97,7 +97,7 @@ const ABCRenderer = ({ code }: { code: string }) => {
       } catch (err) {
         console.error('Error rendering ABC notation:', err)
         setError(
-          err instanceof Error ? err.message : 'Failed to render ABC notation'
+          err instanceof Error ? err.message : 'Failed to render ABC notation',
         )
       } finally {
         setLoading(false)
@@ -205,7 +205,7 @@ const MermaidRenderer = ({ code }: { code: string }) => {
         setError(
           err instanceof Error
             ? err.message
-            : 'Failed to render Mermaid diagram'
+            : 'Failed to render Mermaid diagram',
         )
       } finally {
         setLoading(false)
@@ -354,7 +354,7 @@ export const Widget = ({
             aria-label="View mode"
             size="sm"
             selectedKey={viewMode === 'render' ? 'render' : 'source'}
-            onSelectionChange={key => setViewMode(key as 'render' | 'source')}
+            onSelectionChange={(key) => setViewMode(key as 'render' | 'source')}
           >
             <Tab key="render" title="Render"></Tab>
             <Tab key="source" title="Code"></Tab>
@@ -369,7 +369,7 @@ export const Widget = ({
 // Auto-detection helper function
 export const detectSpecializedCodeType = (
   code: string,
-  language?: string
+  language?: string,
 ): CodeBlockType | null => {
   const trimmedCode = code.trim()
 

@@ -17,7 +17,7 @@ const pagesList = readdirSync(resolve(__dirname, './src/pages'))
 const pages = langs.reduce((acc, lang) => {
   pagesList.forEach((page) => {
     const isIndex = page === 'Index'
-    const is404 = page === 'CustomError'
+    const is404 = page === 'NotFound'
     acc.push({
       name: `${lang}__${page}`,
       filename: isIndex

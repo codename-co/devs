@@ -51,9 +51,11 @@ const SimpleIconToComponent = (icon: any) => {
 export const Icons = {
   // Iconoir icons
   Attachment: IconoirIcons.Attachment,
+  ChatLines: IconoirIcons.ChatLines,
   Lock: IconoirIcons.Lock,
   Microphone: IconoirIcons.Microphone,
   MoreHoriz: IconoirIcons.MoreHoriz,
+  PageSearch: IconoirIcons.PageSearch,
   Plus: IconoirIcons.Plus,
   Server: IconoirIcons.Server,
   Settings: IconoirIcons.Settings,

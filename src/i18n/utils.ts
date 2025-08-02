@@ -5,7 +5,7 @@ import { defaultLang, languages, locales } from './locales'
 export type Lang = keyof typeof languages
 
 export const langs = Object.keys(languages).map(
-  lang => (lang === defaultLang ? '' : lang) as Lang
+  (lang) => (lang === defaultLang ? '' : lang) as Lang,
 )
 
 export const getLangFromUrl = (url: URL) => {
@@ -21,7 +21,7 @@ export const getLangFromUrl = (url: URL) => {
 export const useTranslations = (lang: Lang = defaultLang) => {
   return function t(
     key: keyof (typeof locales)[typeof defaultLang],
-    vars?: Record<string, any>
+    vars?: Record<string, any>,
   ) {
     let tmpl = locales[lang]?.[key] ?? locales[defaultLang][key] ?? key
 

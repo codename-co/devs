@@ -1,15 +1,14 @@
 import { Outlet, Route, Routes, useParams } from 'react-router-dom'
 
-import { I18nProvider } from '@/i18n'
+import { defaultLang, I18nProvider, Lang, langs } from '@/i18n'
 import { IndexPage } from '@/pages/IndexPage'
+import { NotFoundPage } from '@/pages/NotFoundPage'
 import { SettingsPage } from '@/pages/SettingsPage'
-import { CustomErrorPage } from '@/pages/CustomErrorPage'
 
 const routes = {
   index: IndexPage,
   settings: SettingsPage,
-  404: CustomErrorPage,
-  '*': CustomErrorPage,
+  '*': NotFoundPage,
 }
 
 function Router() {
@@ -26,7 +25,6 @@ function Router() {
               </I18nProvider>
             }
             index={path === 'index'}
-            errorElement="Page not found"
           />
         ))}
         <Route path=":lang" element={<LanguagePath />}>
@@ -36,7 +34,6 @@ function Router() {
               path={path === 'index' ? undefined : path}
               element={<Component />}
               index={path === 'index'}
-              errorElement="Page not found"
             />
           ))}
         </Route>
@@ -48,21 +45,13 @@ function Router() {
 export default Router
 
 const LanguagePath = () => {
-  const { lang } = useParams()
-  // const navigate = useNavigate()
-  // const curPath = location.pathname
-  // useEffect(() => {
-  //   if (lang) {
-  //     navigate('/' + lang + curPath, { replace: true })
-  //   }
-  // }, [lang])
+  const params = useParams()
+  const lang = (params.lang as Lang) || defaultLang
 
-  const l = !lang ? 'en' : lang.length === 2 ? lang : 'en'
-
-  // Provide the language from URL to I18nProvider
   return (
-    <I18nProvider lang={l as any}>
-      <Outlet />
+    <I18nProvider lang={lang}>
+      {!langs.includes(lang) ? <NotFoundPage /> : <Outlet />}
     </I18nProvider>
   )
 }
+export { LanguagePath }
