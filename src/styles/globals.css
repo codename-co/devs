@@ -1,0 +1,459 @@
+@import 'tailwindcss';
+@config "../../tailwind.config.js";
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+
+  button,
+  [role='button'] {
+    cursor: pointer;
+  }
+
+  abbr {
+    text-decoration: none;
+  }
+
+  /* * {
+    @apply select-none;
+  }
+  .selectable,
+  input,
+  textarea,
+  select {
+    @apply select-all;
+  } */
+}
+
+/* View Transitions */
+@layer utilities {
+  /* Default transition duration and easing */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Subtle fade for the main content */
+  ::view-transition-old(main),
+  ::view-transition-new(main) {
+    animation-duration: 0.25s;
+    animation-timing-function: ease-out;
+  }
+
+  /* Smooth slide for page transitions */
+  ::view-transition-old(root) {
+    animation-name: slide-out-to-left;
+  }
+
+  ::view-transition-new(root) {
+    animation-name: slide-in-from-right;
+  }
+
+  /* Custom animations */
+  @keyframes slide-out-to-left {
+    to {
+      transform: translateX(-10px);
+      opacity: 0;
+    }
+  }
+
+  @keyframes slide-in-from-right {
+    from {
+      transform: translateX(10px);
+      opacity: 0;
+    }
+  }
+
+  /* Fade transition for content areas */
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  /* Subtle scale effect for cards and components */
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.2s;
+    animation-timing-function: ease-in-out;
+  }
+
+  /* Disable transitions for reduced motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+      animation: none !important;
+    }
+  }
+}
+
+/* Smooth transitions for interactive elements */
+@layer components {
+  .view-transition-smooth {
+    view-transition-name: smooth-transition;
+  }
+
+  .view-transition-slide {
+    view-transition-name: slide-transition;
+  }
+
+  .view-transition-fade {
+    view-transition-name: fade-transition;
+  }
+}
+
+/* Markdown Content Styles */
+@layer components {
+  .markdown-content {
+    @apply text-sm leading-relaxed;
+  }
+
+  .markdown-content h1 {
+    @apply text-xl font-bold mb-3 mt-4 first:mt-0;
+  }
+
+  .markdown-content h2 {
+    @apply text-lg font-semibold mb-2 mt-3 first:mt-0;
+  }
+
+  .markdown-content h3 {
+    @apply text-base font-medium mb-2 mt-3 first:mt-0;
+  }
+
+  .markdown-content h4,
+  .markdown-content h5,
+  .markdown-content h6 {
+    @apply font-medium mb-1 mt-2 first:mt-0;
+  }
+
+  .markdown-content p {
+    @apply mb-3 last:mb-0;
+  }
+
+  .markdown-content ul,
+  .markdown-content ol {
+    @apply mb-3 pl-4;
+  }
+
+  .markdown-content ul {
+    @apply list-disc;
+  }
+
+  .markdown-content ol {
+    @apply list-decimal;
+  }
+
+  .markdown-content li {
+    @apply mb-1;
+  }
+
+  .markdown-content blockquote {
+    @apply border-l-4 border-default-300 pl-4 py-2 my-3 italic bg-default-50;
+  }
+
+  .markdown-content code {
+    @apply bg-default-100 text-default-900 px-1 py-0.5 rounded text-xs font-mono;
+  }
+
+  .markdown-content pre {
+    @apply bg-default-100 p-3 rounded-lg overflow-x-auto my-3;
+  }
+
+  .markdown-content pre code {
+    @apply bg-transparent p-0 text-sm;
+  }
+
+  .markdown-content table {
+    @apply w-full border-collapse border border-default-300 my-3;
+  }
+
+  .markdown-content th,
+  .markdown-content td {
+    @apply border border-default-300 px-3 py-2 text-left;
+  }
+
+  .markdown-content th {
+    @apply bg-default-100 font-semibold;
+  }
+
+  .markdown-content a {
+    @apply text-primary hover:text-primary-600 underline;
+  }
+
+  .markdown-content hr {
+    @apply border-default-300 my-4;
+  }
+
+  .markdown-content strong {
+    @apply font-semibold;
+  }
+
+  .markdown-content em {
+    @apply italic;
+  }
+}
+
+html {
+  font-size: 1rem; /* Base font size */
+  overflow-y: hidden;
+  height: 100%; /* Ensure full height for body */
+}
+
+body {
+  overflow-y: auto; /* Enable vertical scroll */
+}
+
+/* Subtle SVG Background Patterns */
+@layer utilities {
+  /* Geometric pattern for blue sections */
+  .bg-pattern-blue {
+    background-image:
+      radial-gradient(
+        circle at 25% 25%,
+        rgba(59, 130, 246, 0.1) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 75% 75%,
+        rgba(147, 197, 253, 0.08) 0%,
+        transparent 50%
+      ),
+      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233b82f6' fill-opacity='0.03'%3E%3Cpath d='M30 30c0-11.046-8.954-20-20-20s-20 8.954-20 20 8.954 20 20 20 20-8.954 20-20zm15-15c0-5.523-4.477-10-10-10s-10 4.477-10 10 4.477 10 10 10 10-4.477 10-10z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* Organic pattern for green sections */
+  .bg-pattern-green {
+    background-image:
+      radial-gradient(
+        circle at 30% 70%,
+        rgba(34, 197, 94, 0.12) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 70% 30%,
+        rgba(134, 239, 172, 0.08) 0%,
+        transparent 50%
+      ),
+      url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2322c55e' fill-opacity='0.04'%3E%3Cpath d='M40 40c8.837 0 16-7.163 16-16S48.837 8 40 8s-16 7.163-16 16 7.163 16 16 16zm-20 20c5.523 0 10-4.477 10-10s-4.477-10-10-10-10 4.477-10 10 4.477 10 10 10z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* Crystal pattern for purple sections */
+  .bg-pattern-purple {
+    background-image:
+      radial-gradient(
+        circle at 20% 80%,
+        rgba(147, 51, 234, 0.1) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 80% 20%,
+        rgba(196, 181, 253, 0.08) 0%,
+        transparent 50%
+      ),
+      url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239333ea' fill-opacity='0.05'%3E%3Cpolygon points='20 0 40 20 20 40 0 20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* Wave pattern for orange sections */
+  .bg-pattern-orange {
+    background-image:
+      radial-gradient(
+        circle at 60% 40%,
+        rgba(249, 115, 22, 0.1) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 40% 60%,
+        rgba(254, 215, 170, 0.08) 0%,
+        transparent 50%
+      ),
+      url("data:image/svg+xml,%3Csvg width='100' height='20' viewBox='0 0 100 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M21.184 20c.357-.13.72-.264 1.088-.402l1.768-.661C33.64 15.347 39.647 14 50 14c10.271 0 15.362 1.222 24.629 4.928.955.383 1.869.74 2.75 1.072h6.225c-2.51-.73-5.139-1.691-8.233-2.928C65.888 13.278 60.562 12 50 12c-10.626 0-16.855 1.397-26.66 5.063l-1.767.662c-2.475.923-4.66 1.674-6.724 2.275h6.335zm0-20C13.258 2.892 8.077 4 0 4V2c5.744 0 9.951-.574 14.85-2h6.334zM77.38 0C85.239 2.966 90.502 4 100 4V2c-6.842 0-11.386-.542-16.396-2h-6.225zM0 14c8.44 0 13.718-1.21 22.272-4.402l1.768-.661C33.64 5.347 39.647 4 50 4c10.271 0 15.362 1.222 24.629 4.928C84.112 12.722 89.438 14 100 14v-2c-10.271 0-15.362-1.222-24.629-4.928C65.888 3.278 60.562 2 50 2 39.374 2 33.145 3.397 23.34 7.063l-1.767.662C13.223 10.84 8.163 12 0 12v2z' fill='%23f97316' fill-opacity='0.04' fill-rule='evenodd'/%3E%3C/svg%3E");
+  }
+
+  /* Hex pattern for red sections */
+  .bg-pattern-red {
+    background-image:
+      radial-gradient(
+        circle at 45% 55%,
+        rgba(239, 68, 68, 0.1) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 55% 45%,
+        rgba(252, 165, 165, 0.08) 0%,
+        transparent 50%
+      ),
+      url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ef4444' fill-opacity='0.04'%3E%3Cpath d='M20 20l10-17.32L40 20 30 37.32 10 37.32z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* Grid pattern for yellow sections */
+  .bg-pattern-yellow {
+    background-image:
+      radial-gradient(
+        circle at 35% 65%,
+        rgba(234, 179, 8, 0.1) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 65% 35%,
+        rgba(254, 240, 138, 0.08) 0%,
+        transparent 50%
+      ),
+      url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23eab308' fill-opacity='0.03'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* Circuit pattern for indigo sections */
+  .bg-pattern-indigo {
+    background-image:
+      radial-gradient(
+        circle at 25% 75%,
+        rgba(99, 102, 241, 0.1) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 75% 25%,
+        rgba(165, 180, 252, 0.08) 0%,
+        transparent 50%
+      ),
+      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%236366f1' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* Subtle gradient overlay for dark sections */
+  .bg-pattern-dark {
+    background-image:
+      radial-gradient(
+        circle at 30% 30%,
+        rgba(99, 102, 241, 0.15) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        circle at 70% 70%,
+        rgba(147, 51, 234, 0.12) 0%,
+        transparent 60%
+      ),
+      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M30 0l30 30-30 30L0 30 30 0zm0 10L10 30l20 20 20-20L30 10z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* Flowing pattern for gradient sections */
+  .bg-pattern-gradient {
+    background-image:
+      radial-gradient(
+        circle at 20% 20%,
+        rgba(59, 130, 246, 0.08) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 60% 60%,
+        rgba(99, 102, 241, 0.06) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 80% 40%,
+        rgba(147, 51, 234, 0.04) 0%,
+        transparent 50%
+      ),
+      url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M9 0h2v20H9V0zm25.485.379l.37 1.962-19.626 3.7-.371-1.963L34.485.38zM2.322 25.671l19.626-3.7.37 1.963-19.625 3.7-.37-1.963zM.673 40.362l20 0 0 2-20 0 0-2zm5.327 23.67l19.626 3.7-.37 1.963-19.626-3.7.37-1.963zM29.297 35.671l.37 1.963-19.626 3.7-.37-1.963 19.626-3.7zm1.651 43.329h2V60h-2v19zM12.017 81.671l-.37-1.963 19.626-3.7.37 1.963-19.626 3.7z' fill='%233b82f6' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+  }
+
+  /* Animated gradient border utilities */
+  .bg-size-200 {
+    background-size: 200% 200%;
+  }
+
+  .animate-gradient-x {
+    animation: gradient-x 3s ease infinite;
+  }
+
+  @keyframes gradient-x {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  @keyframes gradient-shift {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .animate-gradient-border {
+    background: linear-gradient(
+      45deg,
+      #3b82f6,
+      #8b5cf6,
+      #ec4899,
+      #f97316,
+      #3b82f6,
+      #10b981,
+      #3b82f6
+    );
+    background-size: 400% 400%;
+    animation: gradient-shift 3s ease infinite;
+    padding: 3px;
+    border-radius: 12px;
+  }
+
+  .animate-gradient-border > * {
+    background: hsl(var(--background));
+    border-radius: 9px;
+  }
+}
