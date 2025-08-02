@@ -14,6 +14,18 @@ export interface LLMResponse {
   }
 }
 
+/**
+ * Interface for LLM provider implementations.
+ * Defines methods for chat and streaming chat functionality.
+ *
+ * Example usage:
+ *
+ * ```typescript
+ * const provider = new MyLLMProvider();
+ * const response = await provider.chat([{ role: 'user', content: 'Hello' }], { apiKey });
+ * console.log(response.content);
+ * ```
+ */
 export interface LLMProviderInterface {
   chat(
     messages: LLMMessage[],
