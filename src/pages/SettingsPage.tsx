@@ -25,7 +25,7 @@ import { LLMProvider, Credential } from '@/types'
 import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
 import { LLMService } from '@/lib/llm'
-import { Icon } from '@/components/Icon'
+import { Icon } from '@/components'
 
 interface ProviderConfig {
   provider: LLMProvider

@@ -29,17 +29,6 @@ export type IconName =
   | keyof typeof IconoirIcons
   | keyof typeof CustomIcons
 
-export const Icons = {
-  ...Object.fromEntries(
-    Object.entries(SimpleIcons).map(([name, icon]) => [
-      name,
-      SimpleIconToComponent(icon),
-    ]),
-  ),
-  ...IconoirIcons,
-  ...CustomIcons,
-}
-
 const SimpleIconToComponent = (icon: any) => {
   return (props: any) => (
     <svg
@@ -49,6 +38,17 @@ const SimpleIconToComponent = (icon: any) => {
       dangerouslySetInnerHTML={{ __html: icon.svg }}
     />
   )
+}
+
+export const Icons = {
+  ...Object.fromEntries(
+    Object.entries(SimpleIcons).map(([name, icon]) => [
+      name,
+      SimpleIconToComponent(icon),
+    ]),
+  ),
+  ...IconoirIcons,
+  ...CustomIcons,
 }
 
 type IconProps = ComponentProps<'svg'> & {
