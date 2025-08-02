@@ -4,6 +4,29 @@ export const fr: I18n = {
   // AgentPicker
   'Available Agents': 'Agents disponibles',
 
+  // AppDrawer
+  'Expand sidebar': 'Agrandir la barre latérale',
+  'Collapse sidebar': 'Réduire la barre latérale',
+  'New Mission': 'Nouvelle mission',
+  'New Team': 'Nouvelle équipe',
+  Missions: 'Missions',
+  Teams: 'Équipes',
+  Settings: 'Paramètres',
+  Agents: 'Agents',
+  'Conversations history': 'Historique des conversations',
+  Knowledge: 'Connaissances',
+  Connectors: 'Connecteurs',
+  'New Chat': 'Nouveau chat',
+  'Chat with AI': 'Discuter avec l’IA',
+  AGENTS: 'AGENTS',
+  CONVERSATIONS: 'CONVERSATIONS',
+  'View all agents': 'Voir tous les agents',
+  'View all history': 'Voir tout l’historique',
+  Chat: 'Chat',
+  'Main navigation': 'Navigation principale',
+  'New Agent': 'Nouvel agent',
+  'Upgrade to Pro': 'Passer à la version Pro',
+
   // PromptArea
   'Need something done?': 'Besoin de quelque chose ?',
   'More actions': 'Plus d’actions',
@@ -20,7 +43,6 @@ export const fr: I18n = {
     'Déléguez à des équipes d’IA adaptatives qui se forment, collaborent et livrent automatiquement',
 
   // Page: /settings
-  Settings: 'Paramètres',
   'Platform Settings': 'Paramètres de la plateforme',
   'Configure LLM providers, models and platform defaults for your organization':
     'Configurez les fournisseurs de LLM, les modèles et les paramètres par défaut de la plateforme pour votre organisation',

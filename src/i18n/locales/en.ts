@@ -2,6 +2,29 @@ export const en = [
   // AgentPicker
   'Available Agents',
 
+  // AppDrawer
+  'Expand sidebar',
+  'Collapse sidebar',
+  'New Mission',
+  'New Team',
+  'Missions',
+  'Teams',
+  'Settings',
+  'Agents',
+  'Conversations history',
+  'Knowledge',
+  'Connectors',
+  'New Chat',
+  'Chat with AI',
+  'AGENTS',
+  'CONVERSATIONS',
+  'View all agents',
+  'View all history',
+  'Chat',
+  'Main navigation',
+  'New Agent',
+  'Upgrade to Pro',
+
   // PromptArea
   'Need something done?',
   'More actions',
@@ -17,7 +40,6 @@ export const en = [
   'Delegate to adaptive AI teams that form, collaborate, and deliver automatically',
 
   // Page: /settings
-  'Settings',
   'Platform Settings',
   'Configure LLM providers, models and platform defaults for your organization',
 

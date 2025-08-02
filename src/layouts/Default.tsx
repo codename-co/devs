@@ -1,4 +1,5 @@
 import { Icon, Section, Title } from '@/components'
+import { AppDrawer } from '@/components/AppDrawer'
 import type { HeaderProps } from '@/lib/types'
 import { Button, Link } from '@heroui/react'
 import clsx from 'clsx'
@@ -19,7 +20,7 @@ export default function DefaultLayout({
   return (
     <main role="main" className="flex-grow w-full">
       <div className="flex min-h-screen">
-        {/* <AppDrawer /> */}
+        <AppDrawer />
         <div className="flex-1 flex flex-col h-screen overflow-y-auto">
           <div className="flex-1">
             <div className="h-full space-y space-y-8 view-transition-smooth">
