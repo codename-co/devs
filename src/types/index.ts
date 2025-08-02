@@ -21,11 +21,19 @@ export interface Workflow {
   checkpoints: Checkpoint[]
 }
 
+export interface Message {
+  id: string
+  role: 'user' | 'assistant' | 'system'
+  content: string
+  timestamp: Date
+}
+
 export interface Conversation {
   id: string
   agentId: string
   workflowId: string
   timestamp: Date
+  messages: Message[]
 }
 
 export interface Knowledge {

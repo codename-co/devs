@@ -16,6 +16,12 @@ interface CodeBlock {
   specializedType?: CodeBlockType
 }
 
+interface ThinkBlock {
+  id: string
+  content: string
+  lastTwoLines: string[]
+}
+
 export const MarkdownRenderer = ({
   content,
   className = '',
@@ -23,13 +29,39 @@ export const MarkdownRenderer = ({
   const [processedContent, setProcessedContent] = useState<{
     html: string
     codeBlocks: CodeBlock[]
-  }>({ html: '', codeBlocks: [] })
+    thinkBlocks: ThinkBlock[]
+  }>({ html: '', codeBlocks: [], thinkBlocks: [] })
 
   useEffect(() => {
     const renderMarkdown = async () => {
       try {
         const codeBlocks: CodeBlock[] = []
+        const thinkBlocks: ThinkBlock[] = []
         let processedMarkdown = content
+
+        // Process <think> tags first
+        const thinkTagRegex = /<think>([\s\S]*?)<\/think>/g
+        let thinkMatch
+        let thinkIndex = 0
+
+        while ((thinkMatch = thinkTagRegex.exec(content)) !== null) {
+          const [fullMatch, thinkContent] = thinkMatch
+          const blockId = `think-block-${thinkIndex++}`
+
+          // Get the last two lines of the think content
+          const lines = thinkContent.trim().split('\n')
+          const lastTwoLines = lines.slice(-2)
+
+          // Replace with a placeholder
+          const placeholder = `<div data-think-block-id="${blockId}"></div>`
+          processedMarkdown = processedMarkdown.replace(fullMatch, placeholder)
+
+          thinkBlocks.push({
+            id: blockId,
+            content: thinkContent.trim(),
+            lastTwoLines,
+          })
+        }
 
         // Check for incomplete code blocks during streaming
         const codeBlockMatches = content.match(/```/g)
@@ -107,6 +139,7 @@ export const MarkdownRenderer = ({
           setProcessedContent({
             html: beforeHtml + incompleteHtml,
             codeBlocks,
+            thinkBlocks,
           })
           return
         }
@@ -115,10 +148,6 @@ export const MarkdownRenderer = ({
         const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g
         let match
         let blockIndex = 0
-
-        console.log(
-          `[MarkdownRenderer] Processing ${codeBlockCount / 2} complete code blocks`,
-        )
 
         while ((match = codeBlockRegex.exec(content)) !== null) {
           const [fullMatch, language, code] = match
@@ -161,13 +190,14 @@ export const MarkdownRenderer = ({
 
         const html = await marked.parse(processedMarkdown)
 
-        setProcessedContent({ html, codeBlocks })
+        setProcessedContent({ html, codeBlocks, thinkBlocks })
       } catch (error) {
         console.error('Error rendering markdown:', error)
         // Fallback to plain text if markdown parsing fails
         setProcessedContent({
           html: content.replace(/\n/g, '<br>'),
           codeBlocks: [],
+          thinkBlocks: [],
         })
       }
     }
@@ -186,13 +216,14 @@ export const MarkdownRenderer = ({
   } as React.CSSProperties
 
   const renderedContent = useMemo(() => {
-    const { html, codeBlocks } = processedContent
+    const { html, codeBlocks, thinkBlocks } = processedContent
 
     if (
-      codeBlocks.length === 0 ||
-      !codeBlocks.some((block) => block.type === 'specialized')
+      (codeBlocks.length === 0 ||
+        !codeBlocks.some((block) => block.type === 'specialized')) &&
+      thinkBlocks.length === 0
     ) {
-      // No specialized code blocks, render normally
+      // No specialized code blocks or think blocks, render normally
       return (
         <div
           className={`markdown-content ${className}`}
@@ -216,6 +247,37 @@ export const MarkdownRenderer = ({
 
       if (node.nodeType === Node.ELEMENT_NODE) {
         const element = node as Element
+
+        // Check if this is a think block placeholder
+        const thinkBlockId = element.getAttribute('data-think-block-id')
+        if (thinkBlockId) {
+          const thinkBlock = thinkBlocks.find(
+            (block) => block.id === thinkBlockId,
+          )
+          if (thinkBlock) {
+            return (
+              <details
+                key={`${thinkBlockId}-${elementIndex++}`}
+                className="my-4"
+              >
+                <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-800">
+                  Thinking process ({thinkBlock.content.split('\n').length}{' '}
+                  lines)
+                  {thinkBlock.lastTwoLines.length > 0 && (
+                    <div className="ml-4 mt-1 text-xs opacity-70">
+                      {thinkBlock.lastTwoLines.map((line, i) => (
+                        <div key={i}>{line || '...'}</div>
+                      ))}
+                    </div>
+                  )}
+                </summary>
+                <pre className="mt-2 p-3 bg-gray-50 rounded text-xs overflow-x-auto">
+                  {thinkBlock.content}
+                </pre>
+              </details>
+            )
+          }
+        }
 
         // Check if this is a code block placeholder
         const codeBlockId = element.getAttribute('data-code-block-id')

@@ -1,4 +1,5 @@
 import { PRODUCT } from '@/config/product'
+import { errorToast } from '@/lib/toast'
 import { type Agent } from '@/types'
 
 type AgentJSON = Omit<Agent, 'createdAt' | 'updatedAt' | 'version' | 'tools'>
@@ -26,7 +27,7 @@ async function loadAgent(agentId: string): Promise<Agent | null> {
   try {
     const response = await fetch(`/agents/${agentId}.json`)
     if (!response.ok) {
-      console.error(`Failed to load agent ${agentId}: ${response.status}`)
+      errorToast('Failed to load agent', `${agentId}: ${response.status}`)
       return null
     }
 

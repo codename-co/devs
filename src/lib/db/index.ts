@@ -8,7 +8,7 @@ import {
 } from '@/types'
 
 const DB_NAME = 'devs-ai-platform'
-const DB_VERSION = 1
+const DB_VERSION = 2
 
 export interface DBStores {
   agents: Agent
@@ -21,14 +21,21 @@ export interface DBStores {
 
 class Database {
   private db: IDBDatabase | null = null
+  private initialized = false
+
+  isInitialized(): boolean {
+    return this.initialized
+  }
 
   async init(): Promise<void> {
+    if (this.initialized) return
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION)
 
       request.onerror = () => reject(request.error)
       request.onsuccess = () => {
         this.db = request.result
+        this.initialized = true
         resolve()
       }
 
@@ -67,6 +74,9 @@ class Database {
           conversationStore.createIndex('timestamp', 'timestamp', {
             unique: false,
           })
+        } else if (event.oldVersion < 2) {
+          // Migration for existing databases - messages are stored inline in the conversation object
+          // No changes needed to the object store structure
         }
 
         // Create knowledge store

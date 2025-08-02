@@ -10,11 +10,13 @@ import {
 
 import { useI18n } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
+import { useConversationStore } from '@/stores/conversationStore'
 
 import { Icon } from './Icon'
 import { Title } from './Title'
 import { PRODUCT } from '@/config/product'
 import clsx from 'clsx'
+import { useEffect } from 'react'
 
 const AgentList = () => {
   const { t, url } = useI18n()
@@ -53,32 +55,39 @@ const AgentList = () => {
 
 const ConversationList = () => {
   const { t, url } = useI18n()
+  const { conversations, loadConversations, getConversationTitle } = useConversationStore()
 
-  // TODO: Fetch conversations from store or API
-  const conversations: any[] = []
+  useEffect(() => {
+    // Load conversations from the database when component mounts
+    loadConversations()
+  }, [loadConversations])
 
   if (conversations.length === 0) {
     return null
   }
-  console.debug(conversations)
+
+  // Sort conversations by timestamp, most recent first
+  const sortedConversations = [...conversations].sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  )
+
   return (
     <Listbox aria-label={t('Conversations history')}>
       <ListboxSection title={t('CONVERSATIONS')}>
         {[
-          ...conversations
-            .reverse()
-            .slice(0, 5)
-            .map((conversation) => (
-              <ListboxItem
-                key={conversation.id}
-                href={`/agents/run#${conversation.agent_id}/${conversation.id}`}
-              >
-                <div className="flex items-center gap-2">
-                  <Icon name="ChatLines" />
-                  <span className="truncate">{conversation.title}</span>
-                </div>
-              </ListboxItem>
-            )),
+          ...sortedConversations.slice(0, 5).map((conversation) => (
+            <ListboxItem
+              key={conversation.id}
+              href={`/agents/run#${conversation.agentId}/${conversation.id}`}
+            >
+              <div className="flex items-center gap-2">
+                <Icon name="ChatLines" />
+                <span className="truncate">
+                  {getConversationTitle(conversation)}
+                </span>
+              </div>
+            </ListboxItem>
+          )),
           conversations.length > 0 && (
             <ListboxItem key="view-all" href={url('/conversations')}>
               {t('View all history')}
@@ -133,7 +142,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
     <div
       className={`group w-18 p-4 h-screen z-50 pointer-events-none flex flex-col transition-all duration-200 border-r border-transparent hover:bg-gray-50 hover:dark:bg-content1 hover:border-default-200 ${className} hover:pointer-events-auto`}
     >
-      <div className="flex flex-col items-center overflow-y-auto">
+      <div className="flex flex-col items-center overflow-y-auto overflow-x-hidden">
         <Tooltip content={t('Expand sidebar')} placement="right">
           <Button
             isIconOnly
@@ -330,14 +339,14 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                 endContent={
                   <Tooltip content={t('New Agent')} placement="right">
                     <Button
-                      // as={Link}
-                      as="span"
-                      href={url('/agents/new')}
                       isIconOnly
                       size="sm"
                       variant="flat"
                       color="warning"
                       aria-label={t('New Agent')}
+                      onPress={() => {
+                        window.location.href = url('/agents/new')
+                      }}
                     >
                       <Icon name="Plus" />
                     </Button>
@@ -355,13 +364,15 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                   endContent={
                     <Tooltip content={t('New Mission')} placement="right">
                       <Button
-                        as={Link}
-                        href={url('/missions/new')}
                         isIconOnly
                         size="sm"
                         variant="flat"
                         color="secondary"
                         aria-label={t('New Mission')}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          window.location.href = url('/missions/new')
+                        }}
                       >
                         <Icon name="Plus" />
                       </Button>
@@ -377,13 +388,15 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                   endContent={
                     <Tooltip content={t('New Team')} placement="right">
                       <Button
-                        as={Link}
-                        href={url('/teams/new')}
                         isIconOnly
                         size="sm"
                         variant="flat"
                         color="success"
                         aria-label={t('New Team')}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          window.location.href = url('/teams/new')
+                        }}
                       >
                         <Icon name="Plus" />
                       </Button>

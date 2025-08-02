@@ -1,9 +1,13 @@
 import { addToast } from '@heroui/react'
 
-export const errorToast = (title: string, description?: string) => {
+export const errorToast = (
+  title: string,
+  description?: string | Error | unknown,
+) => {
   addToast({
     title,
-    description,
+    description:
+      description instanceof Error ? description.message : String(description),
     color: 'danger',
     severity: 'danger',
   })

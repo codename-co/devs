@@ -38,6 +38,7 @@ export const en = [
   // Page: /
   'Let AI agents take it from here',
   'Delegate to adaptive AI teams that form, collaborate, and deliver automatically',
+  'Failed to get response from LLM. Please try again later.',
 
   // Page: /settings
   'Platform Settings',

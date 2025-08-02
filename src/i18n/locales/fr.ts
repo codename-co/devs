@@ -41,6 +41,8 @@ export const fr: I18n = {
   'Let AI agents take it from here': 'Vos agents IA prennent le relais',
   'Delegate to adaptive AI teams that form, collaborate, and deliver automatically':
     'Déléguez à des équipes d’IA adaptatives qui se forment, collaborent et livrent automatiquement',
+  'Failed to get response from LLM. Please try again later.':
+    'Échec de la réponse du LLM. Veuillez réessayer plus tard.',
 
   // Page: /settings
   'Platform Settings': 'Paramètres de la plateforme',

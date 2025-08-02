@@ -18,7 +18,7 @@ export interface UserSettings {
 const defaultSettings: UserSettings = {
   theme: 'auto',
   language: 'en',
-  isDrawerCollapsed: false,
+  isDrawerCollapsed: true,
 }
 interface UserSettingsStore extends UserSettings {
   setTheme: (theme: ThemeMode) => void
