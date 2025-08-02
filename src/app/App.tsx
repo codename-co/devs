@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 
 import { Providers } from '@/app/Providers'
-import '@/styles/globals.css'
 
 const root = globalThis.document.getElementById('root')
 
