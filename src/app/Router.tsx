@@ -6,10 +6,10 @@ import { SettingsPage } from '@/pages/SettingsPage'
 import { CustomErrorPage } from '@/pages/CustomErrorPage'
 
 const routes = {
-  404: CustomErrorPage,
   index: IndexPage,
   settings: SettingsPage,
-  '*': 'NOT FOUND',
+  404: CustomErrorPage,
+  '*': CustomErrorPage,
 }
 
 function Router() {
