@@ -1,3 +1,4 @@
+import { PRODUCT } from '@/config/product'
 import { type Agent } from '@/types'
 
 type AgentJSON = Omit<Agent, 'createdAt' | 'updatedAt' | 'version' | 'tools'>
@@ -7,8 +8,9 @@ let agentsList: string[] | null = null
 
 const defaultDevsTeam: Agent = {
   id: 'devs',
-  name: 'devs',
-  role: 'Development Team Orchestrator',
+  name: PRODUCT.displayName,
+  role: 'Generalist agent, able to coordinate other agents',
+  icon: 'SparkSolid',
   instructions:
     'Coordinates a full-stack development team including Product Manager, Architect, Developers, QA, and DevOps agents to deliver complete software solutions.',
   createdAt: new Date(),

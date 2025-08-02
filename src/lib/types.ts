@@ -1,6 +1,6 @@
-import { Icons } from '@/components'
+import { IconName as _IconName } from '@/components'
 
-export type IconName = keyof typeof Icons
+export type IconName = _IconName
 
 export interface HeaderProps {
   color?: string

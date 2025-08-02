@@ -1,23 +1,8 @@
-import { IconName } from '@/lib/types'
 import * as IconoirIcons from 'iconoir-react'
-import { type ComponentProps } from 'react'
+import { JSX, type ComponentProps } from 'react'
 import * as SimpleIcons from 'simple-icons'
 
-export const Icons = {
-  ...Object.fromEntries(
-    Object.entries(SimpleIcons).map(([name, icon]) => [
-      name,
-      (props: any) => (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          {...props}
-          dangerouslySetInnerHTML={{ __html: icon.svg }}
-        />
-      ),
-    ]),
-  ),
-  ...IconoirIcons,
+const CustomIcons: Record<string, (props: any) => JSX.Element> = {
   OpenRouter: (props: any) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -39,6 +24,33 @@ export const Icons = {
   ),
 }
 
+export type IconName =
+  | keyof typeof SimpleIcons
+  | keyof typeof IconoirIcons
+  | keyof typeof CustomIcons
+
+export const Icons = {
+  ...Object.fromEntries(
+    Object.entries(SimpleIcons).map(([name, icon]) => [
+      name,
+      SimpleIconToComponent(icon),
+    ]),
+  ),
+  ...IconoirIcons,
+  ...CustomIcons,
+}
+
+const SimpleIconToComponent = (icon: any) => {
+  return (props: any) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      {...props}
+      dangerouslySetInnerHTML={{ __html: icon.svg }}
+    />
+  )
+}
+
 type IconProps = ComponentProps<'svg'> & {
   name: IconName
   size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl'
@@ -55,7 +67,9 @@ const sizeMap = {
 }
 
 export function Icon({ name, size = 'md', ...props }: IconProps) {
-  const IconComponent = Icons[name] as any
+  const IconComponent = Icons[
+    name as keyof typeof Icons
+  ] as React.ComponentType<any>
 
   if (!IconComponent) {
     console.warn(`Icon "${name}" not found`)

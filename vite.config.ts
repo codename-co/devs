@@ -21,6 +21,7 @@ export default defineConfig({
           vendor: ['react', 'react-dom'],
           ui: ['@heroui/react'],
           i18n: ['@/i18n'],
+          icons: ['@/components/icon'],
         },
       },
     },

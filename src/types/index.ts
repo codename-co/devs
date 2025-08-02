@@ -14,34 +14,48 @@ export interface Agent {
   version?: string
 }
 
-// interface Workflow {
-//   id: string
-//   strategy: string
-//   status: 'pending' | 'running' | 'completed'
-//   checkpoints: Checkpoint[]
-// }
+export interface Workflow {
+  id: string
+  strategy: string
+  status: 'pending' | 'running' | 'completed'
+  checkpoints: Checkpoint[]
+}
 
-// interface Conversation {
-//   id: string
-//   agentId: string
-//   workflowId: string
-//   timestamp: Date
-// }
+export interface Conversation {
+  id: string
+  agentId: string
+  workflowId: string
+  timestamp: Date
+}
 
-// interface Knowledge {
-//   id: string
-//   domain: string
-//   agentId: string
-//   confidence: number
-// }
+export interface Knowledge {
+  id: string
+  domain: string
+  agentId: string
+  confidence: number
+}
 
-// interface Credential {
-//   provider: string
-//   encryptedToken: string
-//   timestamp: Date
-// }
+export interface Credential {
+  id: string
+  provider: LLMProvider
+  encryptedApiKey: string
+  model?: string
+  baseUrl?: string
+  timestamp: Date
+}
 
-interface Tool {
+export type LLMProvider = 'openai' | 'anthropic' | 'google' | 'vertex-ai' | 'mistral' | 'ollama' | 'openrouter' | 'deepseek' | 'grok' | 'huggingface' | 'litellm' | 'custom'
+
+export interface LLMConfig {
+  provider: LLMProvider
+  model: string
+  apiKey?: string
+  baseUrl?: string
+  temperature?: number
+  maxTokens?: number
+}
+
+export interface Tool {
   id: string
   name: string
   description: string
@@ -49,17 +63,17 @@ interface Tool {
   config: Record<string, any>
 }
 
-// interface Checkpoint {
-//   id: string
-//   name: string
-//   status: 'pending' | 'completed'
-//   timestamp: Date
-// }
+export interface Checkpoint {
+  id: string
+  name: string
+  status: 'pending' | 'completed'
+  timestamp: Date
+}
 
-// interface Artifact {
-//   id: string
-//   description: string
-//   content: string // Base64 encoded or file reference
-//   dueDate: Date
-//   status: 'pending' | 'completed'
-// }
+export interface Artifact {
+  id: string
+  description: string
+  content: string // Base64 encoded or file reference
+  dueDate: Date
+  status: 'pending' | 'completed'
+}
