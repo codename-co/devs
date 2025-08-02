@@ -1,10 +1,10 @@
 import { Outlet, Route, Routes, useParams } from 'react-router-dom'
 
-import { LandingPage, SettingsPage } from '@/pages'
+import { HomePage, SettingsPage } from '@/pages'
 import { I18nProvider } from '@/i18n'
 
 const routes = {
-  index: LandingPage,
+  index: HomePage,
   settings: SettingsPage,
   '*': 'NOT FOUND',
 }

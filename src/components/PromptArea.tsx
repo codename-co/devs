@@ -292,11 +292,13 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
           <div className="absolute z-10 bottom-0 inset-x-px p-2 rounded-b-lg">
             <div className="flex flex-wrap justify-between items-end gap-2">
               <div className="flex items-center gap-2">
+                {/*
                 <Tooltip content={t('More actions')} placement="bottom">
                   <Button disabled isIconOnly radius="full" variant="light">
                     <Icon name="MoreHoriz" />
                   </Button>
                 </Tooltip>
+                */}
 
                 <Tooltip
                   content={t('Attach a file or image')}

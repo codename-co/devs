@@ -2,7 +2,7 @@ import DefaultLayout from '@/layouts/Default'
 import { Icon, PromptArea, Section, Title } from '@/components'
 import { useI18n } from '@/i18n'
 
-export const LandingPage = () => {
+export const HomePage = () => {
   const { t, lang } = useI18n()
 
   return (

@@ -1,6 +1,10 @@
 import type { I18n } from '@/i18n/locales'
 
 export const fr: I18n = {
+  // Meta
+  'Delegate to adaptive AI teams that form, collaborate, and deliver automatically. Browser-native AI orchestration platform.':
+    'Déléguez à des équipes d’IA adaptatives qui se forment, collaborent et livrent automatiquement. Plateforme d’orchestration IA native du navigateur.',
+
   // AgentPicker
   'Available Agents': 'Agents disponibles',
 

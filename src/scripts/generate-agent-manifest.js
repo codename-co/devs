@@ -4,7 +4,7 @@ import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const agentsDir = join(__dirname, '../public/agents')
+const agentsDir = join(__dirname, '../../public/agents')
 const manifestPath = join(agentsDir, 'manifest.json')
 
 async function generateManifest() {

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="<%= lang %>">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/devs.svg" />
@@ -7,14 +7,11 @@
       name="viewport"
       content="viewport-fit=cover, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
     />
-    <title>𝐃𝐄𝐕𝐒</title>
-    <meta
-      name="description"
-      content="Delegate to adaptive AI teams that form, collaborate, and deliver automatically. Browser-native AI orchestration platform."
-    />
+    <title><%= title %></title>
+    <meta name="description" content="<%= description %>" />
   </head>
   <body class="bg-background dark:bg-content1 text-foreground rtl:*">
-    <div id="root">…</div>
+    <div id="root"></div>
     <script type="module" src="/src/app/App.tsx"></script>
   </body>
 </html>

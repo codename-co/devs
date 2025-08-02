@@ -44,7 +44,19 @@ export interface Credential {
   timestamp: Date
 }
 
-export type LLMProvider = 'openai' | 'anthropic' | 'google' | 'vertex-ai' | 'mistral' | 'ollama' | 'openrouter' | 'deepseek' | 'grok' | 'huggingface' | 'litellm' | 'custom'
+export type LLMProvider =
+  | 'ollama'
+  | 'openai'
+  | 'anthropic'
+  | 'google'
+  | 'vertex-ai'
+  | 'mistral'
+  | 'openrouter'
+  | 'deepseek'
+  | 'grok'
+  | 'huggingface'
+  | 'litellm'
+  | 'custom'
 
 export interface LLMConfig {
   provider: LLMProvider
