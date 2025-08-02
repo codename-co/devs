@@ -45,7 +45,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       onKeyDown,
       ...props
     },
-    ref
+    ref,
   ) {
     const [prompt, setPrompt] = useState('')
     const [isRecording, setIsRecording] = useState(false)
@@ -173,7 +173,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
     }
 
     const handleFileInputChange = (
-      event: React.ChangeEvent<HTMLInputElement>
+      event: React.ChangeEvent<HTMLInputElement>,
     ) => {
       handleFileSelection(event.target.files)
       event.target.value = ''
@@ -222,7 +222,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
           'w-full max-w-4xl mx-auto relative p-[3px]',
           isDragOver && 'ring-2 ring-primary ring-offset-2 rounded-lg',
           isFocused && 'animate-gradient-border',
-          className
+          className,
         )}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
@@ -315,7 +315,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                 <Dropdown>
                   <DropdownTrigger>
                     <Button radius="full" variant="light">
-                      <Icon name="Group" size="sm" />
+                      <Icon name={currentAgent.icon ?? 'User'} size="md" />
                       {currentAgent.name}
                     </Button>
                   </DropdownTrigger>
@@ -347,5 +347,5 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         </div>
       </div>
     )
-  }
+  },
 )

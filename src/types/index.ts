@@ -14,7 +14,34 @@ export interface Agent {
   version?: string
 }
 
-export interface Tool {
+// interface Workflow {
+//   id: string
+//   strategy: string
+//   status: 'pending' | 'running' | 'completed'
+//   checkpoints: Checkpoint[]
+// }
+
+// interface Conversation {
+//   id: string
+//   agentId: string
+//   workflowId: string
+//   timestamp: Date
+// }
+
+// interface Knowledge {
+//   id: string
+//   domain: string
+//   agentId: string
+//   confidence: number
+// }
+
+// interface Credential {
+//   provider: string
+//   encryptedToken: string
+//   timestamp: Date
+// }
+
+interface Tool {
   id: string
   name: string
   description: string
@@ -22,18 +49,17 @@ export interface Tool {
   config: Record<string, any>
 }
 
-export interface Workflow {
-  id: string
-  strategy: string
-  status: 'pending' | 'running' | 'completed'
-  checkpoints: Checkpoint[]
-}
+// interface Checkpoint {
+//   id: string
+//   name: string
+//   status: 'pending' | 'completed'
+//   timestamp: Date
+// }
 
-export interface Checkpoint {
-  id: string
-  name: string
-  status: 'pending' | 'completed'
-  timestamp: Date
-}
-
-export type Lang = 'en' | 'fr' | 'es' | 'de'
+// interface Artifact {
+//   id: string
+//   description: string
+//   content: string // Base64 encoded or file reference
+//   dueDate: Date
+//   status: 'pending' | 'completed'
+// }

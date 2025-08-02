@@ -37,16 +37,16 @@ export function AgentPicker({
       selectionMode="single"
       selectedKeys={selectedAgent ? new Set([selectedAgent.id]) : new Set()}
       onSelectionChange={handleSelectionChange}
+      className="max-w-128"
       {...props}
     >
-      <DropdownSection title={t('Available Agents')} showDivider>
+      <DropdownSection title={t('Available Agents')}>
         {availableAgents.map((agent) => (
           <DropdownItem
             key={agent.id}
-            description={agent.instructions}
-            startContent={
-              <Icon name={agent.id === 'devs' ? 'Group' : 'User'} size="sm" />
-            }
+            description={agent.role}
+            startContent={<Icon name={agent.icon ?? 'User'} size="lg" />}
+            className="truncate"
           >
             {agent.name}
           </DropdownItem>
