@@ -5,16 +5,15 @@ import {
   type DropdownMenuProps,
 } from '@heroui/react'
 import { type Agent } from '@/types'
-import { loadAllAgents } from '@/stores/agentStore'
+import { loadAllAgents, getAgentsByCategory } from '@/stores/agentStore'
 import { Icon } from './Icon'
 import { useI18n } from '@/i18n'
+import { useState, useEffect } from 'react'
 
 interface AgentPickerProps extends Omit<DropdownMenuProps, 'children'> {
   selectedAgent?: Agent | null
   onAgentChange?: (agent: Agent | null) => void
 }
-
-const availableAgents: Agent[] = await loadAllAgents()
 
 export function AgentPicker({
   selectedAgent,
@@ -22,6 +21,21 @@ export function AgentPicker({
   ...props
 }: AgentPickerProps) {
   const { t, lang } = useI18n()
+  const [availableAgents, setAvailableAgents] = useState<Agent[]>([])
+  const [agentsByCategory, setAgentsByCategory] = useState<Record<string, Agent[]>>({})
+  const [orderedCategories, setOrderedCategories] = useState<string[]>([])
+
+  useEffect(() => {
+    const loadAgents = async () => {
+      const agents = await loadAllAgents()
+      setAvailableAgents(agents)
+      
+      const { agentsByCategory: categorized, orderedCategories: ordered } = await getAgentsByCategory(lang)
+      setAgentsByCategory(categorized)
+      setOrderedCategories(ordered)
+    }
+    loadAgents()
+  }, [lang])
 
   const handleSelectionChange = (keys: 'all' | Set<React.Key>) => {
     if (keys === 'all') return
@@ -41,43 +55,6 @@ export function AgentPicker({
     writer: t('Writers'),
     other: t('Other Agents'),
   }
-  // Group agents by their first tag
-  const agentsByCategory = availableAgents.reduce(
-    (acc, agent) => {
-      if (agent.id === 'devs') {
-        // Always put devs in its own "default" category
-        acc['default'] = acc['default'] || []
-        acc['default'].push(agent)
-      } else {
-        // Use the first tag as category, but only if it matches a categoryName
-        const firstTag = agent.tags?.[0]
-        const category =
-          firstTag && categoryNames[firstTag] ? firstTag : 'other'
-        acc[category] = acc[category] || []
-        acc[category].push(agent)
-      }
-      return acc
-    },
-    {} as Record<string, Agent[]>,
-  )
-
-  // Sort agents within each category by name
-  Object.values(agentsByCategory).forEach((agents) => {
-    agents.sort((a, b) => {
-      return (a.i18n?.[lang]?.name || a.name).localeCompare(
-        b.i18n?.[lang]?.name || b.name,
-      )
-    })
-  })
-
-  // Order categories (default first, then alphabetically)
-  const orderedCategories = Object.keys(agentsByCategory).sort((a, b) => {
-    if (a === 'default') return -1
-    if (b === 'default') return 1
-    if (a === 'other') return 1
-    if (b === 'other') return -1
-    return a.localeCompare(b)
-  })
 
   return (
     <DropdownMenu

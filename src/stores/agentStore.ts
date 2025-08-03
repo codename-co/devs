@@ -91,3 +91,53 @@ export async function getAgentById(id: string): Promise<Agent | null> {
 export function getDefaultAgent(): Agent {
   return defaultDevsTeam
 }
+
+export type AgentCategory = 'default' | 'scientist' | 'advisor' | 'artist' | 'philosopher' | 'musician' | 'writer' | 'other'
+
+export interface AgentsByCategory {
+  [category: string]: Agent[]
+}
+
+export async function getAgentsByCategory(lang: string = 'en'): Promise<{
+  agentsByCategory: AgentsByCategory
+  orderedCategories: string[]
+}> {
+  const agents = await loadAllAgents()
+  
+  // Group agents by their first tag
+  const agentsByCategory = agents.reduce((acc, agent) => {
+    if (agent.id === 'devs') {
+      // Always put devs in its own "default" category
+      acc['default'] = acc['default'] || []
+      acc['default'].push(agent)
+    } else {
+      // Use the first tag as category
+      const firstTag = agent.tags?.[0]
+      const validCategories = ['scientist', 'advisor', 'artist', 'philosopher', 'musician', 'writer']
+      const category = firstTag && validCategories.includes(firstTag) ? firstTag : 'other'
+      acc[category] = acc[category] || []
+      acc[category].push(agent)
+    }
+    return acc
+  }, {} as AgentsByCategory)
+
+  // Sort agents within each category by name
+  Object.values(agentsByCategory).forEach((categoryAgents) => {
+    categoryAgents.sort((a, b) => {
+      return (a.i18n?.[lang]?.name || a.name).localeCompare(
+        b.i18n?.[lang]?.name || b.name,
+      )
+    })
+  })
+
+  // Order categories (default first, then alphabetically, other last)
+  const orderedCategories = Object.keys(agentsByCategory).sort((a, b) => {
+    if (a === 'default') return -1
+    if (b === 'default') return 1
+    if (a === 'other') return 1
+    if (b === 'other') return -1
+    return a.localeCompare(b)
+  })
+
+  return { agentsByCategory, orderedCategories }
+}

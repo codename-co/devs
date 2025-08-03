@@ -308,15 +308,16 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                     isIconOnly
                     radius="full"
                     variant="light"
+                    size="sm"
                     onPress={handlePaperclipClick}
                   >
-                    <Icon name="Attachment" />
+                    <Icon name="Attachment" size="sm" />
                   </Button>
                 </Tooltip>
 
                 <Dropdown>
                   <DropdownTrigger>
-                    <Button radius="full" variant="light">
+                    <Button radius="full" variant="light" size="sm">
                       <Icon name={currentAgent.icon ?? 'User'} size="md" />
                       {currentAgent.i18n?.[lang]?.name ?? currentAgent.name}
                     </Button>
@@ -328,22 +329,44 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                 </Dropdown>
               </div>
 
-              <Tooltip content={t('Use microphone')} placement="bottom">
-                <Button
-                  isIconOnly
-                  color={isRecording ? 'primary' : 'default'}
-                  isDisabled={!isSpeechRecognitionSupported}
-                  radius="full"
-                  variant={isRecording ? 'solid' : 'light'}
-                  onPress={handleMicClick}
-                >
-                  {isRecording ? (
-                    <Icon name="Microphone" />
-                  ) : (
-                    <Icon name="Microphone" />
-                  )}
-                </Button>
-              </Tooltip>
+              <div className="flex items-center gap-2">
+                {(!prompt.trim() || isRecording) && (
+                  <Tooltip content={t('Use microphone')} placement="bottom">
+                    <Button
+                      isIconOnly
+                      color={isRecording ? 'primary' : 'default'}
+                      isDisabled={!isSpeechRecognitionSupported}
+                      radius="full"
+                      variant={isRecording ? 'solid' : 'light'}
+                      size="sm"
+                      onPress={handleMicClick}
+                    >
+                      {isRecording ? (
+                        <Icon name="MicrophoneSpeaking" size="sm" />
+                      ) : (
+                        <Icon name="Microphone" size="sm" />
+                      )}
+                    </Button>
+                  </Tooltip>
+                )}
+
+                {prompt.trim() && (
+                  <Tooltip content={t('Send prompt')} placement="bottom">
+                    <Button
+                      isIconOnly
+                      disabled={props.isSending}
+                      color={!prompt.trim() ? 'default' : 'primary'}
+                      radius="full"
+                      variant="solid"
+                      size="sm"
+                      isLoading={props.isSending}
+                      onPress={onSend}
+                    >
+                      <Icon name="ArrowRight" size="sm" />
+                    </Button>
+                  </Tooltip>
+                )}
+              </div>
             </div>
           </div>
         </div>

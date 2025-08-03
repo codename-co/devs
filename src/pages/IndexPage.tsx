@@ -99,7 +99,7 @@ export const IndexPage = () => {
           <Icon
             size="4xl"
             name="SparksSolid"
-            className="mb-6 text-primary-200 dark:text-primary-700"
+            className="mb-4 sm:my-6 text-primary-200 dark:text-primary-700"
           />
           <Title
             subtitle={t(
@@ -113,7 +113,7 @@ export const IndexPage = () => {
         <PromptArea
           lang={lang}
           autoFocus
-          className="my-16"
+          className="my-8 sm:my-16"
           value={prompt}
           onValueChange={setPrompt}
           onSend={onSubmit}
