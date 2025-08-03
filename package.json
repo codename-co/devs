@@ -5,13 +5,15 @@
   "type": "module",
   "sideEffects": false,
   "scripts": {
+    "predev": "npm run scripts",
     "dev": "vite",
-    "prebuild": "./src/scripts/generate-agent-manifest.js",
+    "prebuild": "npm run scripts",
     "build": "tsc && vite build",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "scripts": "./src/scripts/generate-agent-manifest.js"
   },
   "dependencies": {
     "@heroui/react": "^2.8.2",
