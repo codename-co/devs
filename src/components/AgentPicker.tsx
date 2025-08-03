@@ -21,7 +21,7 @@ export function AgentPicker({
   onAgentChange,
   ...props
 }: AgentPickerProps) {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
 
   const handleSelectionChange = (keys: 'all' | Set<React.Key>) => {
     if (keys === 'all') return
@@ -35,22 +35,33 @@ export function AgentPicker({
     <DropdownMenu
       aria-label="Agent selection"
       selectionMode="single"
-      selectedKeys={selectedAgent ? new Set([selectedAgent.id]) : new Set()}
+      selectedKeys={selectedAgent ? [selectedAgent.id] : undefined}
       onSelectionChange={handleSelectionChange}
-      className="max-w-128"
+      className="max-w-96 max-h-96 overflow-y-auto"
       {...props}
     >
       <DropdownSection title={t('Available Agents')}>
-        {availableAgents.map((agent) => (
-          <DropdownItem
-            key={agent.id}
-            description={agent.role}
-            startContent={<Icon name={agent.icon ?? 'User'} size="lg" />}
-            className="truncate"
-          >
-            {agent.name}
-          </DropdownItem>
-        ))}
+        {availableAgents
+          .sort((a, b) => {
+            // Put "devs" agent first
+            if (a.id === 'devs') return -1
+            if (b.id === 'devs') return 1
+
+            // Sort others alphabetically by name
+            return (a.i18n?.[lang]?.name || a.name).localeCompare(
+              b.i18n?.[lang]?.name || b.name,
+            )
+          })
+          .map((agent) => (
+            <DropdownItem
+              key={agent.id}
+              description={agent.i18n?.[lang]?.desc ?? agent.desc ?? agent.role}
+              startContent={agent.icon && <Icon name={agent.icon} size="lg" />}
+              className="truncate"
+            >
+              {agent.i18n?.[lang]?.name ?? agent.name}
+            </DropdownItem>
+          ))}
       </DropdownSection>
     </DropdownMenu>
   )

@@ -46,4 +46,8 @@ export const en = [
 
   // LLM Integration
   'No LLM provider configured. Please configure one in Settings.',
+
+  // MarkdownRenderer
+  'Thinking…',
+  'Thoughts',
 ] as const

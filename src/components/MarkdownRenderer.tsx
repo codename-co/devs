@@ -2,6 +2,7 @@ import { marked } from 'marked'
 import React, { JSX, useEffect, useMemo, useState } from 'react'
 
 import { type CodeBlockType, detectSpecializedCodeType, Widget } from './Widget'
+import { useI18n } from '@/i18n'
 
 interface MarkdownRendererProps {
   content: string
@@ -19,7 +20,7 @@ interface CodeBlock {
 interface ThinkBlock {
   id: string
   content: string
-  lastTwoLines: string[]
+  processing: boolean
 }
 
 export const MarkdownRenderer = ({
@@ -32,6 +33,8 @@ export const MarkdownRenderer = ({
     thinkBlocks: ThinkBlock[]
   }>({ html: '', codeBlocks: [], thinkBlocks: [] })
 
+  const { t } = useI18n()
+
   useEffect(() => {
     const renderMarkdown = async () => {
       try {
@@ -41,16 +44,14 @@ export const MarkdownRenderer = ({
 
         // Process <think> tags first
         const thinkTagRegex = /<think>([\s\S]*?)<\/think>/g
+        const incompleteThinkRegex = /<think>([\s\S]*)$/
         let thinkMatch
         let thinkIndex = 0
 
+        // First, process complete think tags
         while ((thinkMatch = thinkTagRegex.exec(content)) !== null) {
           const [fullMatch, thinkContent] = thinkMatch
           const blockId = `think-block-${thinkIndex++}`
-
-          // Get the last two lines of the think content
-          const lines = thinkContent.trim().split('\n')
-          const lastTwoLines = lines.slice(-2)
 
           // Replace with a placeholder
           const placeholder = `<div data-think-block-id="${blockId}"></div>`
@@ -59,7 +60,24 @@ export const MarkdownRenderer = ({
           thinkBlocks.push({
             id: blockId,
             content: thinkContent.trim(),
-            lastTwoLines,
+            processing: false, // Complete blocks are not processing
+          })
+        }
+
+        // Check for incomplete think tag at the end
+        const incompleteThinkMatch = incompleteThinkRegex.exec(content)
+        if (incompleteThinkMatch) {
+          const [fullMatch, thinkContent] = incompleteThinkMatch
+          const blockId = `think-block-${thinkIndex++}`
+
+          // Replace with a placeholder
+          const placeholder = `<div data-think-block-id="${blockId}"></div>`
+          processedMarkdown = processedMarkdown.replace(fullMatch, placeholder)
+
+          thinkBlocks.push({
+            id: blockId,
+            content: thinkContent.trim(),
+            processing: true, // Incomplete blocks are still processing
           })
         }
 
@@ -260,20 +278,12 @@ export const MarkdownRenderer = ({
                 key={`${thinkBlockId}-${elementIndex++}`}
                 className="my-4"
               >
-                <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-800">
-                  Thinking process ({thinkBlock.content.split('\n').length}{' '}
-                  lines)
-                  {thinkBlock.lastTwoLines.length > 0 && (
-                    <div className="ml-4 mt-1 text-xs opacity-70">
-                      {thinkBlock.lastTwoLines.map((line, i) => (
-                        <div key={i}>{line || '...'}</div>
-                      ))}
-                    </div>
-                  )}
+                <summary className="cursor-pointer">
+                  {thinkBlock.processing ? t('Thinking…') : t('Thoughts')}
                 </summary>
-                <pre className="mt-2 p-3 bg-gray-50 rounded text-xs overflow-x-auto">
+                <div className="ml-4 text-sm text-gray-600 hover:text-gray-800 whitespace-pre-wrap">
                   {thinkBlock.content}
-                </pre>
+                </div>
               </details>
             )
           }

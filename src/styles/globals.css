@@ -71,6 +71,9 @@
 }
 
 /* View Transitions */
+@view-transition {
+  navigation: auto;
+}
 @layer utilities {
   /* Default transition duration and easing */
   ::view-transition-old(root),

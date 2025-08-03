@@ -4,6 +4,7 @@ export interface Agent {
   id: string
   name: string
   icon?: IconName
+  desc?: string
   role: string
   instructions: string
   temperature?: number
@@ -12,6 +13,12 @@ export interface Agent {
   createdAt: Date
   updatedAt?: Date
   version?: string
+  i18n?: {
+    [lang: string]: {
+      name?: string
+      desc?: string
+    }
+  }
 }
 
 export interface Workflow {

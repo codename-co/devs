@@ -10,8 +10,8 @@ let agentsList: string[] | null = null
 const defaultDevsTeam: Agent = {
   id: 'devs',
   name: PRODUCT.displayName,
-  role: 'Generalist agent, able to coordinate other agents',
-  icon: 'SparkSolid',
+  role: 'General orchestrator, delegates to other agents',
+  icon: 'Devs',
   instructions:
     'Coordinates a full-stack development team including Product Manager, Architect, Developers, QA, and DevOps agents to deliver complete software solutions.',
   createdAt: new Date(),

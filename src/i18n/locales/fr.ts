@@ -52,4 +52,8 @@ export const fr: I18n = {
   // LLM Integration
   'No LLM provider configured. Please configure one in Settings.':
     'Aucun fournisseur LLM configuré. Veuillez en configurer un dans les Paramètres.',
+
+  // MarkdownRenderer
+  'Thinking…': 'Réflexion en cours…',
+  'Thoughts': 'Réflexions',
 } as const

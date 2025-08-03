@@ -13,11 +13,16 @@
     },
     "icon": {
       "type": "string",
-      "description": "Optional icon name for the agent, used for UI representation. Must be a valid icon name from the Iconoir icon set."
+      "description": "Optional icon name for the agent, used for UI representation. Must be a valid icon name from the Devs icon set."
     },
     "name": {
       "type": "string",
       "description": "Display name of the agent",
+      "minLength": 1
+    },
+    "desc": {
+      "type": "string",
+      "description": "Brief description of the agent's purpose and capabilities",
       "minLength": 1
     },
     "role": {
@@ -44,6 +49,30 @@
         "minLength": 1
       },
       "uniqueItems": true
+    },
+    "i18n": {
+      "type": "object",
+      "description": "Internationalization translations for the agent's name and role",
+      "patternProperties": {
+        "^[a-z]{2}(-[A-Z]{2})?$": {
+          "type": "object",
+          "description": "Translations for a specific locale",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Translated name for this locale",
+              "minLength": 1
+            },
+            "desc": {
+              "type": "string",
+              "description": "Translated description for this locale",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     }
   },
   "required": ["id", "name", "role", "instructions"],

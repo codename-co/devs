@@ -1,2 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="4 4 24 24">
+  <rect x="4" y="4" width="24" height="24" fill="#000" />
+  <circle cx="16" cy="16" r="2" opacity=".75" />
+  <circle cx="16" cy="16" r="3" opacity=".15" />
+  <g opacity="0.6">
+    <circle cx="16" cy="10" r="1.5" />
+    <circle cx="21" cy="13" r="1.5" />
+    <circle cx="21" cy="19" r="1.5" />
+    <circle cx="16" cy="22" r="1.5" />
+    <circle cx="11" cy="19" r="1.5" />
+    <circle cx="11" cy="13" r="1.5" />
+  </g>
+  <text x="16" y="16" text-anchor="middle" dominant-baseline="central" font-size="18" fill="#fff">𝐕</text>
 </svg>

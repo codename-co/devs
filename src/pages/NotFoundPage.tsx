@@ -18,7 +18,7 @@ export const NotFoundPage = () => {
       } else {
         window.location.href = '/'
       }
-    }, 1000)
+    }, 700)
   }, [])
 
   return (

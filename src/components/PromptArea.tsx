@@ -318,7 +318,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                   <DropdownTrigger>
                     <Button radius="full" variant="light">
                       <Icon name={currentAgent.icon ?? 'User'} size="md" />
-                      {currentAgent.name}
+                      {currentAgent.i18n?.[lang]?.name ?? currentAgent.name}
                     </Button>
                   </DropdownTrigger>
                   <AgentPicker

@@ -4,6 +4,28 @@ import { type ComponentProps } from 'react'
 import * as SimpleIcons from 'simple-icons'
 
 const CustomIcons = {
+  Devs: (props: any) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      viewBox="4 4 24 24"
+      {...props}
+      fill="currentColor"
+    >
+      {/* Central core with subtle glow */}
+      <circle cx="16" cy="16" r="2" opacity="0.75" />
+      <circle cx="16" cy="16" r="3" opacity="0.15" />
+
+      {/* Inner ring - 6 points */}
+      <circle cx="16" cy="10" r="1.5" opacity="0.6" />
+      <circle cx="21" cy="13" r="1.5" opacity="0.6" />
+      <circle cx="21" cy="19" r="1.5" opacity="0.6" />
+      <circle cx="16" cy="22" r="1.5" opacity="0.6" />
+      <circle cx="11" cy="19" r="1.5" opacity="0.6" />
+      <circle cx="11" cy="13" r="1.5" opacity="0.6" />
+    </svg>
+  ),
+
   DeepSeek: (props: any) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -51,14 +73,20 @@ const SimpleIconToComponent = (icon: any) => {
 export const Icons = {
   // Iconoir icons
   Attachment: IconoirIcons.Attachment,
+  Brain: IconoirIcons.Brain,
   ChatBubble: IconoirIcons.ChatBubble,
   ChatLines: IconoirIcons.ChatLines,
   ChatPlusIn: IconoirIcons.ChatPlusIn,
+  CheckCircle: IconoirIcons.CheckCircle,
+  Crown: IconoirIcons.Crown,
   Lock: IconoirIcons.Lock,
   Microphone: IconoirIcons.Microphone,
   MoreHoriz: IconoirIcons.MoreHoriz,
+  MusicNoteSolid: IconoirIcons.MusicNoteSolid,
   PageSearch: IconoirIcons.PageSearch,
+  PiggyBank: IconoirIcons.PiggyBank,
   Plus: IconoirIcons.Plus,
+  ProfileCircle: IconoirIcons.ProfileCircle,
   Server: IconoirIcons.Server,
   Settings: IconoirIcons.Settings,
   SidebarCollapse: IconoirIcons.SidebarCollapse,
@@ -69,6 +97,7 @@ export const Icons = {
   Star: IconoirIcons.Star,
   Trash: IconoirIcons.Trash,
   User: IconoirIcons.User,
+  UserPlus: IconoirIcons.UserPlus,
   X: IconoirIcons.X,
 
   // Simple icons
