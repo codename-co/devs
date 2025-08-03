@@ -38,6 +38,7 @@ export const en = [
   'Attach a file or image',
   'Drop files here…',
   'Use microphone',
+  'Send prompt',
 
   // Page: /404
   'Page not found',

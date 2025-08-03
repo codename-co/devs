@@ -40,6 +40,7 @@ export const fr: I18n = {
   'Attach a file or image': 'Joindre un fichier ou une image',
   'Drop files here…': 'Déposez des fichiers ici…',
   'Use microphone': 'Utiliser le microphone',
+  'Send prompt': 'Envoyer le prompt',
 
   // Page: /404
   'Page not found': 'Page non trouvée',
