@@ -1,6 +1,13 @@
 export const en = [
   // AgentPicker
   'Available Agents',
+  'Scientists',
+  'Advisors',
+  'Artists',
+  'Philosophers',
+  'Musicians',
+  'Writers',
+  'Other Agents',
 
   // AppDrawer
   'Expand sidebar',

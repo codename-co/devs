@@ -73,13 +73,16 @@ const SimpleIconToComponent = (icon: any) => {
 export const Icons = {
   // Iconoir icons
   Attachment: IconoirIcons.Attachment,
+  Book: IconoirIcons.Book,
   Brain: IconoirIcons.Brain,
   ChatBubble: IconoirIcons.ChatBubble,
   ChatLines: IconoirIcons.ChatLines,
   ChatPlusIn: IconoirIcons.ChatPlusIn,
   CheckCircle: IconoirIcons.CheckCircle,
   Crown: IconoirIcons.Crown,
+  LightBulbOn: IconoirIcons.LightBulbOn,
   Lock: IconoirIcons.Lock,
+  MathBook: IconoirIcons.MathBook,
   Microphone: IconoirIcons.Microphone,
   MoreHoriz: IconoirIcons.MoreHoriz,
   MusicNoteSolid: IconoirIcons.MusicNoteSolid,

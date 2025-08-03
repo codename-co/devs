@@ -3,6 +3,13 @@ import type { I18n } from '@/i18n/locales'
 export const fr: I18n = {
   // AgentPicker
   'Available Agents': 'Agents disponibles',
+  Scientists: 'Scientifiques',
+  Advisors: 'Conseillers',
+  Artists: 'Artistes',
+  Philosophers: 'Philosophes',
+  Musicians: 'Musiciens',
+  Writers: 'Écrivains',
+  'Other Agents': 'Autres agents',
 
   // AppDrawer
   'Expand sidebar': 'Agrandir la barre latérale',
@@ -55,5 +62,5 @@ export const fr: I18n = {
 
   // MarkdownRenderer
   'Thinking…': 'Réflexion en cours…',
-  'Thoughts': 'Réflexions',
+  Thoughts: 'Réflexions',
 } as const

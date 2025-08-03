@@ -10,11 +10,17 @@ let agentsList: string[] | null = null
 const defaultDevsTeam: Agent = {
   id: 'devs',
   name: PRODUCT.displayName,
-  role: 'General orchestrator, delegates to other agents',
   icon: 'Devs',
-  instructions:
-    'Coordinates a full-stack development team including Product Manager, Architect, Developers, QA, and DevOps agents to deliver complete software solutions.',
+  desc: 'General orchestrator, delegates to other agents',
+  role: 'Coordinate other agents to deliver complete solutions.',
+  instructions: `You are the orchestrator of the ${PRODUCT.displayName} team. Your role is to coordinate other agents to deliver complete solutions. You can delegate tasks to specialized agents based on their expertise.`,
+  tags: ['orchestrator'],
   createdAt: new Date(),
+  i18n: {
+    fr: {
+      desc: "Orchestrateur d'équipe",
+    },
+  },
 }
 
 agentCache.set('devs', defaultDevsTeam)
