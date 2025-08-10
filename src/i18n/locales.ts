@@ -3,6 +3,7 @@ import * as localesIndex from './locales/index'
 export const languages = {
   en: 'English',
   fr: 'Français',
+  ko: '한국어',
 } as const
 
 export const defaultLang = 'en'
