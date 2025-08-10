@@ -273,7 +273,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
             className="pb-20 bg-content2 rounded-lg"
             classNames={{
               input: 'p-1',
-              inputWrapper: 'shadow-none -mb-20 pb-12',
+              inputWrapper: 'shadow-none -mb-20 pb-12 bg-default-200',
             }}
             maxRows={7}
             minRows={3}
@@ -315,7 +315,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                   </Button>
                 </Tooltip>
 
-                <Dropdown>
+                <Dropdown className="bg-white dark:bg-default-50 dark:text-white">
                   <DropdownTrigger>
                     <Button radius="full" variant="light" size="sm">
                       <Icon name={currentAgent.icon ?? 'User'} size="md" />

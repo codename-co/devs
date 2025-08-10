@@ -42,10 +42,9 @@ export const AgentRunPage = () => {
   } = useConversationStore()
 
   const header: HeaderProps = {
-    color: 'bg-primary-50',
     icon: {
       name: (selectedAgent?.icon as any) || 'Sparks',
-      color: 'text-primary-500',
+      color: 'text-primary-300 dark:text-primary-600',
     },
     title: selectedAgent?.name,
     // subtitle: selectedAgent?.desc || t('AI Assistant'),
@@ -87,7 +86,9 @@ export const AgentRunPage = () => {
               setConversationMessages(currentConversation.messages)
             }
           } catch (error) {
-            console.warn(`Conversation ${conversationId} not found, will create new one when user sends first message`)
+            console.warn(
+              `Conversation ${conversationId} not found, will create new one when user sends first message`,
+            )
             setConversationMessages([])
           }
         } else {
@@ -105,13 +106,7 @@ export const AgentRunPage = () => {
     }
 
     loadData()
-  }, [
-    agentId,
-    conversationId,
-    loadConversation,
-    createConversation,
-    navigate,
-  ])
+  }, [agentId, conversationId, loadConversation, createConversation, navigate])
 
   // Update conversation messages when currentConversation changes
   useEffect(() => {

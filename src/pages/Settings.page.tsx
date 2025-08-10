@@ -16,7 +16,10 @@ import {
   Tooltip,
   ButtonGroup,
 } from '@heroui/react'
-import { useI18n } from '@/i18n'
+import { useNavigate } from 'react-router-dom'
+import { useI18n, languages } from '@/i18n'
+import type { Lang } from '@/i18n/utils'
+import { useUrl } from '@/i18n/utils'
 import DefaultLayout from '@/layouts/Default'
 import type { HeaderProps, IconName } from '@/lib/types'
 import { LLMProvider, Credential } from '@/types'
@@ -25,6 +28,7 @@ import { SecureStorage } from '@/lib/crypto'
 import { LLMService } from '@/lib/llm'
 import { Container, Icon, Section } from '@/components'
 import { errorToast, successToast } from '@/lib/toast'
+import { userSettings } from '@/stores/userStore'
 
 interface ProviderConfig {
   provider: LLMProvider
@@ -148,7 +152,8 @@ const PROVIDERS: ProviderConfig[] = [
 ]
 
 export const SettingsPage = () => {
-  const { t } = useI18n()
+  const { lang, t } = useI18n()
+  const navigate = useNavigate()
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
   const [credentials, setCredentials] = useState<Credential[]>([])
   const [selectedProvider, setSelectedProvider] =
@@ -161,9 +166,24 @@ export const SettingsPage = () => {
   const [isUnlocking, setIsUnlocking] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
+  const [masterKey, setMasterKey] = useState<string | null>(null)
+  const [isRegeneratingKey, setIsRegeneratingKey] = useState(false)
+
+  const setLanguage = userSettings((state) => state.setLanguage)
+
+  const handleLanguageChange = (newLanguage: Lang) => {
+    // Update the language setting in the store
+    setLanguage(newLanguage)
+
+    // Generate the URL for the new language using useUrl from that language context
+    const newUrl = useUrl(newLanguage)
+    const settingsPath = newUrl('/settings')
+
+    // Navigate to the new URL
+    navigate(settingsPath)
+  }
 
   const header: HeaderProps = {
-    color: 'bg-default-50',
     icon: {
       name: 'Settings',
       color: 'text-default-300',
@@ -177,10 +197,50 @@ export const SettingsPage = () => {
   useEffect(() => {
     loadCredentials()
     initializeSecurity()
+    loadMasterKey()
   }, [])
 
   const initializeSecurity = async () => {
     await SecureStorage.init()
+  }
+
+  const loadMasterKey = () => {
+    const key = SecureStorage.getMasterKey()
+    setMasterKey(key)
+  }
+
+  const handleCopyMasterKey = async () => {
+    if (!masterKey) return
+
+    try {
+      await navigator.clipboard.writeText(masterKey)
+      successToast(t('Master key copied to clipboard'))
+    } catch (error) {
+      errorToast(t('Failed to copy master key'))
+    }
+  }
+
+  const handleRegenerateMasterKey = async () => {
+    if (
+      !confirm(
+        t(
+          'Are you sure you want to regenerate the master key? This will invalidate all existing encrypted data.',
+        ),
+      )
+    ) {
+      return
+    }
+
+    setIsRegeneratingKey(true)
+    try {
+      const newKey = await SecureStorage.regenerateMasterKey()
+      setMasterKey(newKey)
+      successToast(t('Master key regenerated successfully'))
+    } catch (error) {
+      errorToast(t('Failed to regenerate master key'))
+    } finally {
+      setIsRegeneratingKey(false)
+    }
   }
 
   const loadCredentials = async () => {
@@ -200,7 +260,7 @@ export const SettingsPage = () => {
       !model ||
       (selectedProvider === 'custom' && !baseUrl)
     ) {
-      errorToast('Please fill in all required fields')
+      errorToast(t('Please fill in all required fields'))
       return
     }
 
@@ -209,7 +269,7 @@ export const SettingsPage = () => {
       // Validate API key
       const isValid = await LLMService.validateApiKey(selectedProvider, apiKey)
       if (!isValid) {
-        errorToast('Invalid API key')
+        errorToast(t('Invalid API key'))
         setIsValidating(false)
         return
       }
@@ -249,9 +309,9 @@ export const SettingsPage = () => {
       setBaseUrl('')
       onOpenChange()
 
-      successToast('Credential added successfully')
+      successToast(t('Credential added successfully'))
     } catch (error) {
-      errorToast('Failed to add credential')
+      errorToast(t('Failed to add credential'))
       console.error(error)
     } finally {
       setIsValidating(false)
@@ -264,9 +324,9 @@ export const SettingsPage = () => {
       localStorage.removeItem(`${id}-iv`)
       localStorage.removeItem(`${id}-salt`)
       await loadCredentials()
-      successToast('Credential deleted')
+      successToast(t('Credential deleted'))
     } catch (error) {
-      errorToast('Failed to delete credential')
+      errorToast(t('Failed to delete credential'))
     }
   }
 
@@ -277,9 +337,9 @@ export const SettingsPage = () => {
     try {
       SecureStorage.unlock(masterPassword)
       setMasterPassword('')
-      successToast('Storage unlocked')
+      successToast(t('Storage unlocked'))
     } catch (error) {
-      errorToast('Invalid password')
+      errorToast(t('Invalid password'))
     } finally {
       setIsUnlocking(false)
     }
@@ -322,9 +382,9 @@ export const SettingsPage = () => {
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
 
-      successToast('Database exported successfully')
+      successToast(t('Database exported successfully'))
     } catch (error) {
-      errorToast('Failed to export database')
+      errorToast(t('Failed to export database'))
       console.error('Export error:', error)
     } finally {
       setIsExporting(false)
@@ -368,9 +428,13 @@ export const SettingsPage = () => {
       }
 
       await loadCredentials()
-      successToast(`Database imported successfully (${importedCount} items)`)
+      successToast(
+        t('Database imported successfully ({count} items)', {
+          count: importedCount,
+        }),
+      )
     } catch (error) {
-      errorToast('Failed to import database - invalid file format')
+      errorToast(t('Failed to import database - invalid file format'))
       console.error('Import error:', error)
     } finally {
       setIsImporting(false)
@@ -381,7 +445,9 @@ export const SettingsPage = () => {
   const handleClearDatabase = async () => {
     if (
       !confirm(
-        'Are you sure you want to clear all data? This action cannot be undone.',
+        t(
+          'Are you sure you want to clear all data? This action cannot be undone.',
+        ),
       )
     ) {
       return
@@ -411,9 +477,9 @@ export const SettingsPage = () => {
       }
 
       await loadCredentials()
-      successToast('Database cleared successfully')
+      successToast(t('Database cleared successfully'))
     } catch (error) {
-      errorToast('Failed to clear database')
+      errorToast(t('Failed to clear database'))
       console.error('Clear error:', error)
     }
   }
@@ -430,15 +496,15 @@ export const SettingsPage = () => {
                 <Icon name="Lock" className="h-5 w-5 text-warning" />
                 <div className="flex-1">
                   <p className="text-sm font-medium">
-                    Secure storage is locked
+                    {t('Secure storage is locked')}
                   </p>
                   <p className="text-xs text-default-500">
-                    Enter your master password to unlock
+                    {t('Enter your master password to unlock')}
                   </p>
                 </div>
                 <Input
                   type="password"
-                  placeholder="Master password"
+                  placeholder={t('Master password')}
                   value={masterPassword}
                   onChange={(e) => setMasterPassword(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
@@ -450,7 +516,7 @@ export const SettingsPage = () => {
                   onPress={handleUnlock}
                   isLoading={isUnlocking}
                 >
-                  Unlock
+                  {t('Unlock')}
                 </Button>
               </CardBody>
             </Card>
@@ -458,13 +524,48 @@ export const SettingsPage = () => {
         )}
 
         <Container>
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-semibold">
+                🌐 {t('Language Settings')}
+              </h3>
+              <p className="text-sm text-default-500">
+                {t('Choose your preferred language')}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <Select
+              label={t('Interface Language')}
+              selectedKeys={[lang]}
+              onSelectionChange={(keys) => {
+                const selectedLang = Array.from(keys)[0] as Lang
+                if (selectedLang && selectedLang !== lang) {
+                  handleLanguageChange(selectedLang)
+                }
+              }}
+              className="max-w-xs"
+            >
+              {Object.entries(languages).map(([key, name]) => (
+                <SelectItem key={key} textValue={name}>
+                  {name}
+                </SelectItem>
+              ))}
+            </Select>
+          </div>
+        </Container>
+      </Section>
+
+      <Section>
+        <Container>
           {/* <Card>
           <CardHeader className="flex justify-between items-center"> */}
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="text-lg font-semibold">LLM Providers</h3>
+              <h3 className="text-lg font-semibold">{t('LLM Providers')}</h3>
               <p className="text-sm text-default-500">
-                Manage your API credentials
+                {t('Manage your API credentials')}
               </p>
             </div>
             <Button
@@ -474,7 +575,7 @@ export const SettingsPage = () => {
               onPress={onOpen}
               isDisabled={SecureStorage.isLocked()}
             >
-              Add Provider
+              {t('Add Provider')}
             </Button>
           </div>
           {/* </CardHeader>
@@ -482,7 +583,7 @@ export const SettingsPage = () => {
           <div className="space-y-3">
             {credentials.length === 0 ? (
               <p className="text-center text-default-500 py-8">
-                No providers configured. Add one to get started.
+                {t('No providers configured. Add one to get started.')}
               </p>
             ) : (
               credentials.map((cred) => {
@@ -497,7 +598,7 @@ export const SettingsPage = () => {
                     <div className="flex items-center gap-3">
                       <Icon
                         name={provider?.icon as any}
-                        className={`h-5 w-5 text-${provider?.color}`}
+                        className={`h-5 w-5 text-${provider?.color} dark:fill-white`}
                       />
                       <div>
                         <p className="font-medium">{provider?.name}</p>
@@ -526,13 +627,82 @@ export const SettingsPage = () => {
           {/* </CardBody>
         </Card> */}
         </Container>
+      </Section>
 
+      <Section>
         <Container>
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="text-lg font-semibold">Database Management</h3>
+              <h3 className="text-lg font-semibold">{t('Secure Storage')}</h3>
               <p className="text-sm text-default-500">
-                Export, import, or clear your local database
+                {t('Manage your encryption keys and secure storage')}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-default-500 mb-3">
+                {t(
+                  'Your master key is used to encrypt all sensitive data stored locally. Keep it safe and secure.',
+                )}
+              </p>
+
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <Input
+                    label={t('Master Key')}
+                    value={masterKey || ''}
+                    readOnly
+                    type="password"
+                    className="flex-1"
+                    endContent={
+                      <div className="flex gap-1">
+                        <Tooltip content={t('Copy Master Key')}>
+                          <Button
+                            isIconOnly
+                            size="sm"
+                            variant="light"
+                            onPress={handleCopyMasterKey}
+                            isDisabled={!masterKey}
+                          >
+                            <Icon name="Copy" className="h-4 w-4" />
+                          </Button>
+                        </Tooltip>
+                      </div>
+                    }
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="flat"
+                    color="warning"
+                    onPress={handleRegenerateMasterKey}
+                    isLoading={isRegeneratingKey}
+                    isDisabled={!masterKey}
+                    startContent={
+                      <Icon name="RefreshDouble" className="h-4 w-4" />
+                    }
+                  >
+                    {t('Regenerate Master Key')}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Container>
+      </Section>
+
+      <Section>
+        <Container>
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-semibold">
+                {t('Database Management')}
+              </h3>
+              <p className="text-sm text-default-500">
+                {t('Export, import, or clear your local database')}
               </p>
             </div>
           </div>
@@ -546,7 +716,7 @@ export const SettingsPage = () => {
           />
 
           <ButtonGroup>
-            <Tooltip content="Dump your entire database to a JSON file">
+            <Tooltip content={t('Dump your entire database to a JSON file')}>
               <Button
                 variant="flat"
                 onPress={handleExportDatabase}
@@ -555,10 +725,10 @@ export const SettingsPage = () => {
                   <Icon name="ArrowRight" className="h-4 w-4 rotate-90" />
                 }
               >
-                Backup database
+                {t('Backup database')}
               </Button>
             </Tooltip>
-            <Tooltip content="Restore your database from a JSON file">
+            <Tooltip content={t('Restore your database from a JSON file')}>
               <Button
                 variant="flat"
                 onPress={() =>
@@ -569,17 +739,17 @@ export const SettingsPage = () => {
                   <Icon name="ArrowRight" className="h-4 w-4 -rotate-90" />
                 }
               >
-                Restore database
+                {t('Restore database')}
               </Button>
             </Tooltip>
-            <Tooltip content="Clear all data from the database">
+            <Tooltip content={t('Clear all data from the database')}>
               <Button
                 variant="flat"
                 color="danger"
                 onPress={handleClearDatabase}
                 startContent={<Icon name="Trash" className="h-4 w-4" />}
               >
-                Clear database
+                {t('Clear database')}
               </Button>
             </Tooltip>
           </ButtonGroup>
@@ -589,11 +759,11 @@ export const SettingsPage = () => {
           <ModalContent>
             {(onClose) => (
               <>
-                <ModalHeader>Add LLM Provider</ModalHeader>
+                <ModalHeader>{t('Add LLM Provider')}</ModalHeader>
                 <ModalBody>
                   <div className="space-y-4">
                     <Select
-                      label="Select Provider"
+                      label={t('Select Provider')}
                       defaultSelectedKeys={PROVIDERS[0].provider}
                       onChange={(e) =>
                         setSelectedProvider(e.target.value as LLMProvider)
@@ -604,7 +774,12 @@ export const SettingsPage = () => {
                         <SelectItem
                           key={provider.provider}
                           textValue={provider.name}
-                          startContent={<Icon name={provider.icon} />}
+                          startContent={
+                            <Icon
+                              name={provider.icon}
+                              className="dark:fill-white"
+                            />
+                          }
                         >
                           {provider.name}
                         </SelectItem>
@@ -615,12 +790,12 @@ export const SettingsPage = () => {
                       <Input
                         label={
                           providerConfig?.noApiKey
-                            ? 'Server URL (Optional)'
-                            : 'API Key'
+                            ? t('Server URL (Optional)')
+                            : t('API Key')
                         }
                         placeholder={
                           providerConfig?.apiKeyPlaceholder ||
-                          'Enter your API key'
+                          t('Enter your API key')
                         }
                         type={providerConfig?.noApiKey ? 'text' : 'password'}
                         value={apiKey}
@@ -629,15 +804,15 @@ export const SettingsPage = () => {
                       />
                       {providerConfig?.apiKeyFormat && (
                         <p className="text-xs text-default-500 mt-1">
-                          Format: {providerConfig.apiKeyFormat}
+                          {t('Format:')} {providerConfig.apiKeyFormat}
                         </p>
                       )}
                     </div>
 
                     {providerConfig?.requiresBaseUrl && (
                       <Input
-                        label="Base URL"
-                        placeholder="https://api.example.com/v1"
+                        label={t('Base URL')}
+                        placeholder={t('https://api.example.com/v1')}
                         value={baseUrl}
                         onChange={(e) => setBaseUrl(e.target.value)}
                         isRequired
@@ -645,8 +820,8 @@ export const SettingsPage = () => {
                     )}
 
                     <Select
-                      label="Model"
-                      placeholder="Select a model"
+                      label={t('Model')}
+                      placeholder={t('Select a model')}
                       value={model}
                       onChange={(e) => setModel(e.target.value)}
                       isRequired
@@ -661,8 +836,8 @@ export const SettingsPage = () => {
 
                     {providerConfig?.provider === 'custom' && (
                       <Input
-                        label="Custom Model Name"
-                        placeholder="Enter model name"
+                        label={t('Custom Model Name')}
+                        placeholder={t('Enter model name')}
                         value={model}
                         onChange={(e) => setModel(e.target.value)}
                       />
@@ -671,7 +846,7 @@ export const SettingsPage = () => {
                 </ModalBody>
                 <ModalFooter>
                   <Button color="danger" variant="light" onPress={onClose}>
-                    Cancel
+                    {t('Cancel')}
                   </Button>
                   <Button
                     color="primary"
@@ -683,7 +858,7 @@ export const SettingsPage = () => {
                       (providerConfig?.requiresBaseUrl && !baseUrl)
                     }
                   >
-                    Validate & Add
+                    {t('Validate & Add')}
                   </Button>
                 </ModalFooter>
               </>

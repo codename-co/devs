@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { db } from '@/lib/db'
 import type { Conversation, Message } from '@/types'
 import { errorToast } from '@/lib/toast'
+import { getAgentById } from '@/stores/agentStore'
 
 interface ConversationStore {
   conversations: Conversation[]
@@ -73,12 +74,33 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       if (!db.isInitialized()) {
         await db.init()
       }
+
+      // Get agent information to create system prompt
+      const agent = await getAgentById(agentId)
+      if (!agent) {
+        throw new Error(`Agent with id ${agentId} not found`)
+      }
+
+      // Create system message with agent's name, role, and instructions
+      const systemMessage: Message = {
+        id: crypto.randomUUID(),
+        role: 'system',
+        content: `You are ${agent.name}.
+
+### Role:
+${agent.role}
+
+### Instructions:
+${agent.instructions}`,
+        timestamp: new Date(),
+      }
+
       const conversation: Conversation = {
         id: crypto.randomUUID(),
         agentId,
         workflowId,
         timestamp: new Date(),
-        messages: [],
+        messages: [systemMessage],
       }
 
       await db.add('conversations', conversation)
@@ -92,7 +114,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
 
       return conversation
     } catch (error) {
-      errorToast('Failed to load conversations', error)
+      errorToast('Failed to create conversation', error)
       set({ isLoading: false })
       throw error
     }

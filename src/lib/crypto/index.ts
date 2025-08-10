@@ -152,4 +152,15 @@ export class SecureStorage {
   static isLocked(): boolean {
     return this.masterKey === null
   }
+
+  static getMasterKey(): string | null {
+    return localStorage.getItem(this.MASTER_KEY_KEY)
+  }
+
+  static async regenerateMasterKey(): Promise<string> {
+    const newMasterKey = await CryptoService.generateMasterKey()
+    localStorage.setItem(this.MASTER_KEY_KEY, newMasterKey)
+    this.masterKey = newMasterKey
+    return newMasterKey
+  }
 }

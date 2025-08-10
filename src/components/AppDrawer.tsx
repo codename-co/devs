@@ -38,6 +38,7 @@ const AgentList = () => {
             .map((agent) => (
               <ListboxItem
                 key={agent.id}
+                className="dark:text-gray-200 dark:hover:text-grey-500"
                 href={`/agents/run#${agent.id}`}
                 textValue={agent.name}
               >
@@ -47,7 +48,11 @@ const AgentList = () => {
               </ListboxItem>
             )) ?? []),
           agents.length > 0 && (
-            <ListboxItem key="view-all" href={url('/agents')}>
+            <ListboxItem
+              key="view-all"
+              className="dark:text-gray-200 dark:hover:text-grey-500"
+              href={url('/agents')}
+            >
               {t('View all agents')}
             </ListboxItem>
           ),
@@ -83,6 +88,7 @@ const ConversationList = () => {
           ...sortedConversations.slice(0, 5).map((conversation) => (
             <ListboxItem
               key={conversation.id}
+              className="dark:text-gray-200 dark:hover:text-grey-500"
               href={url(
                 `/agents/run#${conversation.agentId}/${conversation.id}`,
               )}
@@ -97,7 +103,11 @@ const ConversationList = () => {
             </ListboxItem>
           )),
           conversations.length > 0 && (
-            <ListboxItem key="view-all" href={url('/conversations')}>
+            <ListboxItem
+              key="view-all"
+              className="dark:text-gray-200 dark:hover:text-grey-500"
+              href={url('/conversations')}
+            >
               {t('View all history')}
             </ListboxItem>
           ),
@@ -148,7 +158,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
 
   return (
     <div
-      className={`group w-18 p-4 h-screen z-50 pointer-events-none flex flex-col transition-all duration-200 border-r border-transparent hover:bg-gray-50 hover:dark:bg-content1 hover:border-default-200 ${className} hover:pointer-events-auto`}
+      className={`group w-18 p-4 h-screen z-50 pointer-events-none flex flex-col transition-all duration-200 border-r border-transparent hover:bg-gray-50 hover:dark:bg-content1 hover:border-default-200 dark:hover:bg-content1 ${className} hover:pointer-events-auto`}
     >
       <div className="flex flex-col items-center overflow-y-auto overflow-x-hidden">
         <Tooltip content={t('Expand sidebar')} placement="right">
@@ -159,7 +169,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
             className="mb-4 pointer-events-auto"
             aria-label={t('Expand sidebar')}
           >
-            <Icon name="SidebarExpand" className="opacity-40" />
+            <Icon name="SidebarExpand" className="opacity-40 dark:opacity-60" />
           </Button>
         </Tooltip>
 
@@ -290,7 +300,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
         <Title
           as="div"
           size="sm"
-          className="text-center text-default-400"
+          className="text-center text-default-400 dark:text-default-500"
           aria-label={PRODUCT.name}
         >
           {PRODUCT.displayName}
@@ -305,7 +315,7 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
 
   return (
     <div
-      className={`w-64 bg-gray-50 dark:bg-content1 p-4 border-r border-default-200 h-screen pointer-events-none flex flex-col ${className}`}
+      className={`w-64 bg-gray-50 dark:bg-content1 p-4 border-r border-default-200 dark:border-default-300 h-screen pointer-events-none flex flex-col ${className}`}
     >
       <ScrollShadow
         hideScrollBar
@@ -322,7 +332,10 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
               onPress={() => userSettings.getState().toggleDrawer()}
               aria-label={t('Collapse sidebar')}
             >
-              <Icon name="SidebarCollapse" className="opacity-40" />
+              <Icon
+                name="SidebarCollapse"
+                className="opacity-40 dark:opacity-60"
+              />
             </Button>
           </Tooltip>
         </div>
@@ -334,6 +347,7 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
               <ListboxItem
                 href={url('/')}
                 color="primary"
+                className="dark:text-gray-200 dark:hover:text-primary-500"
                 startContent={<Icon name="ChatPlusIn" />}
                 textValue={t('Chat with AI')}
               >
@@ -344,6 +358,7 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
               <ListboxItem
                 href={url('/agents')}
                 color="warning"
+                className="dark:text-gray-200 dark:hover:text-warning-500"
                 startContent={<Icon name="Sparks" color="warning" />}
                 endContent={
                   <Tooltip content={t('New Agent')} placement="right">
@@ -429,6 +444,7 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                 {t('Connectors')}
               </ListboxItem> */}
             <ListboxItem
+              className="dark:text-gray-200 dark:hover:text-grey-500"
               href={url('/settings')}
               startContent={<Icon name="Settings" />}
               textValue={t('Settings')}
@@ -457,7 +473,7 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
         <Title
           as="div"
           size="lg"
-          className="text-center text-default-400"
+          className="text-center text-default-400 dark:text-default-500"
           aria-label={PRODUCT.name}
         >
           {PRODUCT.displayName}

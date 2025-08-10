@@ -1,4 +1,4 @@
-import { HeroUIProvider, ToastProvider } from '@heroui/react'
+import { HeroUIProvider } from '@heroui/react'
 import { useHref, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { ServiceWorkerManager } from '@/lib/service-worker'
@@ -32,7 +32,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <HeroUIProvider navigate={navigate} useHref={useHref}>
-      <ToastProvider />
       {children}
     </HeroUIProvider>
   )

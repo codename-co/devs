@@ -16,6 +16,7 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { useI18n } from '@/i18n'
 import DefaultLayout from '@/layouts/Default'
 import { HeaderProps } from '@/lib/types'
 import { LLMProvider, Message } from '@/types'
@@ -39,6 +40,7 @@ interface AgentConfig {
 
 export function AgentsNewPage() {
   const navigate = useNavigate()
+  const { t } = useI18n()
 
   const header: HeaderProps = {
     color: 'bg-warning-50',
@@ -46,8 +48,8 @@ export function AgentsNewPage() {
       name: 'SparkSolid',
       color: 'text-warning-300',
     },
-    title: 'Agent Builder',
-    subtitle: 'Design and configure your custom specialized AI agent',
+    title: t('Agent Builder'),
+    subtitle: t('Design and configure your custom specialized AI agent'),
   }
 
   // Form state
@@ -193,9 +195,9 @@ export function AgentsNewPage() {
               className="space-y-6"
             >
               <div>
-                <Title level={3}>Agent Profile</Title>
+                <Title level={3}>{t('Agent Profile')}</Title>
                 <p className="text-small text-default-500 mt-2">
-                  Define your agent's personality and capabilities
+                  {t('Define your agent\'s personality and capabilities')}
                 </p>
               </div>
 
@@ -203,49 +205,49 @@ export function AgentsNewPage() {
 
               {success && (
                 <Alert color="success">
-                  Agent created successfully! Redirecting to agents list...
+                  {t('Agent created successfully! Redirecting to agents list...')}
                 </Alert>
               )}
 
               <Input
-                label="Name"
+                label={t('Name')}
                 value={name}
                 onValueChange={setName}
                 isRequired
                 isDisabled={isSubmitting}
-                placeholder="e.g., Mike the Magician"
-                description="A friendly name for your agent"
+                placeholder={t('e.g., Mike the Magician')}
+                description={t('A friendly name for your agent')}
               />
 
               <Input
-                label="Role"
+                label={t('Role')}
                 value={role}
                 onValueChange={setRole}
                 isRequired
                 isDisabled={isSubmitting}
-                placeholder="e.g., Performs magic tricks and illusions"
-                description="What does your agent do?"
+                placeholder={t('e.g., Performs magic tricks and illusions')}
+                description={t('What does your agent do?')}
               />
 
               <Textarea
-                label="Instructions"
+                label={t('Instructions')}
                 value={instructions}
                 onValueChange={setInstructions}
                 isDisabled={isSubmitting}
-                placeholder="Detailed instructions for the agent's personality, skills, constraints, and goals…"
+                placeholder={t('Detailed instructions for the agent\'s personality, skills, constraints, and goals…')}
                 minRows={5}
-                description="Detailed instructions for the agent's behavior"
+                description={t('Detailed instructions for the agent\'s behavior')}
               />
 
               <Accordion>
-                <AccordionItem title="Advanced Configuration">
+                <AccordionItem title={t('Advanced Configuration')}>
                   <div className="space-y-4 p-4 border rounded-md">
                     <p className="text-xs text-default-500">
-                      Configure advanced settings for your agent
+                      {t('Configure advanced settings for your agent')}
                     </p>
 
                     <Select
-                      label="Provider"
+                      label={t('Provider')}
                       selectedKeys={[selectedProvider]}
                       onSelectionChange={(keys) =>
                         setSelectedProvider(Array.from(keys)[0] as LLMProvider)
@@ -259,7 +261,7 @@ export function AgentsNewPage() {
                     </Select>
 
                     <Select
-                      label="Model"
+                      label={t('Model')}
                       selectedKeys={selectedModel ? [selectedModel] : []}
                       onSelectionChange={(keys) =>
                         setSelectedModel(Array.from(keys)[0] as string)
@@ -276,7 +278,7 @@ export function AgentsNewPage() {
                     </Select>
 
                     <Slider
-                      label="Temperature"
+                      label={t('Temperature')}
                       className="max-w-md"
                       maxValue={2}
                       minValue={0}
@@ -290,7 +292,7 @@ export function AgentsNewPage() {
                       isDisabled={isSubmitting}
                     />
                     <p className="text-xs text-default-500">
-                      Lower values = more focused, Higher values = more creative
+                      {t('Lower values = more focused, Higher values = more creative')}
                     </p>
                   </div>
                 </AccordionItem>
@@ -303,7 +305,7 @@ export function AgentsNewPage() {
                   isDisabled={isSubmitting || !isFormValid}
                   isLoading={isSubmitting}
                 >
-                  {isSubmitting ? 'Creating...' : 'Create Agent'}
+                  {isSubmitting ? t('Creating...') : t('Create Agent')}
                 </Button>
 
                 <Button
@@ -312,7 +314,7 @@ export function AgentsNewPage() {
                   onPress={resetForm}
                   isDisabled={isSubmitting}
                 >
-                  Reset Form
+                  {t('Reset Form')}
                 </Button>
               </div>
             </form>
@@ -322,14 +324,14 @@ export function AgentsNewPage() {
               <Card className="h-full">
                 <CardHeader>
                   <div className="flex justify-between items-center w-full">
-                    <Title level={3}>Live Preview</Title>
+                    <Title level={3}>{t('Live Preview')}</Title>
                     <Button
                       onPress={clearChat}
                       isDisabled={isLoading}
                       variant="flat"
                       size="sm"
                     >
-                      Clear
+                      {t('Clear')}
                     </Button>
                   </div>
                 </CardHeader>
@@ -338,9 +340,9 @@ export function AgentsNewPage() {
                   <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[400px]">
                     {messages.length === 0 && (
                       <div className="text-center text-default-500 py-8">
-                        <p>Start a conversation to test your agent</p>
+                        <p>{t('Start a conversation to test your agent')}</p>
                         <p className="text-sm mt-2">
-                          The chat will use your current form configuration
+                          {t('The chat will use your current form configuration')}
                         </p>
                       </div>
                     )}
@@ -391,7 +393,7 @@ export function AgentsNewPage() {
                       <Input
                         value={input}
                         onValueChange={setInput}
-                        placeholder={`Ask ${currentAgentConfig.name} something…`}
+                        placeholder={t('Ask {agentName} something…', { agentName: currentAgentConfig.name })}
                         isDisabled={isLoading || !isPreviewEnabled}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
@@ -405,7 +407,7 @@ export function AgentsNewPage() {
                         isDisabled={isLoading || !input.trim() || !isPreviewEnabled}
                         color="primary"
                       >
-                        Send
+                        {t('Send')}
                       </Button>
                     </div>
                   </div>

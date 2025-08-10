@@ -96,6 +96,8 @@ export const Icons = {
   Settings: IconoirIcons.Settings,
   SidebarCollapse: IconoirIcons.SidebarCollapse,
   SidebarExpand: IconoirIcons.SidebarExpand,
+  Copy: IconoirIcons.Copy,
+  RefreshDouble: IconoirIcons.RefreshDouble,
   Sparks: IconoirIcons.Sparks,
   SparkSolid: IconoirIcons.SparkSolid,
   SparksSolid: IconoirIcons.SparksSolid,

@@ -36,7 +36,6 @@ export function ConversationPage() {
   const itemsPerPage = 50
 
   const header: HeaderProps = {
-    color: 'bg-default-50',
     icon: {
       name: 'ChatBubble',
       color: 'text-default-300',

@@ -2,9 +2,11 @@ import { Container, Icon, Section, Title } from '@/components'
 import { AppDrawer } from '@/components/AppDrawer'
 import { useI18n } from '@/i18n'
 import type { HeaderProps } from '@/lib/types'
-import { Button, Link, Tooltip } from '@heroui/react'
+import { userSettings } from '@/stores/userStore'
+import { Button, Link, ToastProvider, Tooltip } from '@heroui/react'
 import clsx from 'clsx'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 
 export default function DefaultLayout({
   // title,
@@ -25,6 +27,31 @@ export default function DefaultLayout({
   const navigate = useNavigate()
   const location = useLocation()
 
+  const { theme } = userSettings()
+  const [systemPrefersDark, setSystemPrefersDark] = useState(false)
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    setSystemPrefersDark(mediaQuery.matches)
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setSystemPrefersDark(e.matches)
+    }
+
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
+
+  const isDark = theme === 'dark' || (theme === 'auto' && systemPrefersDark)
+
+  useEffect(() => {
+    if (isDark) {
+      document.body.classList.add('dark')
+    } else {
+      document.body.classList.remove('dark')
+    }
+  }, [isDark])
+
   const handleBack = () => {
     const currentPath = location.pathname
     const pathSegments = currentPath.split('/').filter(Boolean)
@@ -41,13 +68,19 @@ export default function DefaultLayout({
     <main role="main" className="flex-grow w-full">
       <div className="flex min-h-screen">
         <AppDrawer />
-        <div className="flex-1 flex flex-col h-screen overflow-y-auto">
-          <div className="h-full space-y space-y-8 view-transition-smooth relative">
+
+        <div className="flex-1 flex flex-col h-screen overflow-y-auto dark:bg-default-50">
+          <div className="h-full space-y space-y-8 view-transition-smooth relative bg-transparent">
             {(header || showBackButton) && (
-              <div className={clsx('pb-2 mb-0', header?.color)}>
+              <div
+                className={clsx(
+                  'pb-2 mb-0 bg-default-50 dark:bg-default-100',
+                  header?.color,
+                )}
+              >
                 <Section>
                   {showBackButton && (
-                    <Tooltip content={t('Back')} placement="right">
+                    <Tooltip content={t('Back')}>
                       <Button
                         variant="light"
                         onPress={handleBack}
@@ -58,7 +91,7 @@ export default function DefaultLayout({
                             className="rotate-180"
                           />
                         }
-                        className="absolute hidden xl:inline-flex"
+                        className="absolute hidden xl:inline-flex dark:hover:bg-default-300"
                       />
                     </Tooltip>
                   )}
@@ -75,7 +108,7 @@ export default function DefaultLayout({
                     )}
                     {header?.cta && (
                       <Button
-                        variant="ghost"
+                        variant="light"
                         as={Link}
                         href={header.cta?.href ?? ''}
                         startContent={
@@ -87,7 +120,7 @@ export default function DefaultLayout({
                             />
                           )
                         }
-                        className="absolute right-0 shrink-0"
+                        className="absolute right-0 shrink-0 dark:hover:bg-default-300"
                       >
                         {header.cta?.label}
                       </Button>
@@ -105,6 +138,8 @@ export default function DefaultLayout({
                 </Section>
               </div>
             )}
+            <ToastProvider />
+
             {children}
           </div>
         </div>

@@ -14,6 +14,7 @@ import { useConversationStore } from '@/stores/conversationStore'
 import { getDefaultAgent } from '@/stores/agentStore'
 import { Agent } from '@/types'
 import { errorToast } from '@/lib/toast'
+import { PRODUCT } from '@/config/product'
 
 export const IndexPage = () => {
   const { t, lang } = useI18n()
@@ -47,10 +48,10 @@ export const IndexPage = () => {
         return
       }
 
-      // Create or continue conversation for the selected agent
-      const agent = selectedAgent || getDefaultAgent()
+      // Create or continue conversation
       let conversation = currentConversation
-      if (!conversation || conversation.agentId !== agent.id) {
+      if (!conversation) {
+        const agent = selectedAgent || getDefaultAgent()
         conversation = await createConversation(agent.id, 'default')
       }
 
@@ -109,12 +110,10 @@ export const IndexPage = () => {
             name="SparksSolid"
             className="mb-4 sm:my-6 text-primary-200 dark:text-primary-700"
           />
-          <Title
-            subtitle={t(
-              'Delegate to adaptive AI teams that form, collaborate, and deliver automatically',
-            )}
-          >
-            {t('Let AI agents take it from here')}
+          <Title subtitle={t('Delegate complex tasks to your own AI teams')}>
+            {t('Let {productName} take it from here', {
+              productName: PRODUCT.displayName,
+            })}
           </Title>
         </div>
 

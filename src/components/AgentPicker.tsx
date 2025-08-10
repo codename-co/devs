@@ -22,15 +22,18 @@ export function AgentPicker({
 }: AgentPickerProps) {
   const { t, lang } = useI18n()
   const [availableAgents, setAvailableAgents] = useState<Agent[]>([])
-  const [agentsByCategory, setAgentsByCategory] = useState<Record<string, Agent[]>>({})
+  const [agentsByCategory, setAgentsByCategory] = useState<
+    Record<string, Agent[]>
+  >({})
   const [orderedCategories, setOrderedCategories] = useState<string[]>([])
 
   useEffect(() => {
     const loadAgents = async () => {
       const agents = await loadAllAgents()
       setAvailableAgents(agents)
-      
-      const { agentsByCategory: categorized, orderedCategories: ordered } = await getAgentsByCategory(lang)
+
+      const { agentsByCategory: categorized, orderedCategories: ordered } =
+        await getAgentsByCategory(lang)
       setAgentsByCategory(categorized)
       setOrderedCategories(ordered)
     }
