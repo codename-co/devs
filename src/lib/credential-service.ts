@@ -1,6 +1,7 @@
 import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
 import { LLMConfig, Credential } from '@/types'
+import { errorToast } from './toast'
 
 export class CredentialService {
   static async getDecryptedConfig(
@@ -15,6 +16,9 @@ export class CredentialService {
 
       if (!iv || !salt) {
         console.error('Missing encryption metadata for credential')
+        errorToast(
+          'Missing encryption metadata for credential. Please reconfigure your LLM provider.',
+        )
         return null
       }
 

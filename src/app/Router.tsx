@@ -1,13 +1,23 @@
 import { Outlet, Route, Routes, useParams } from 'react-router-dom'
 
 import { defaultLang, I18nProvider, Lang, langs } from '@/i18n'
-import { IndexPage } from '@/pages/IndexPage'
-import { NotFoundPage } from '@/pages/NotFoundPage'
-import { SettingsPage } from '@/pages/SettingsPage'
+import { IndexPage } from '@/pages/Index.page'
+import { NotFoundPage } from '@/pages/NotFound.page'
+import { SettingsPage } from '@/pages/Settings.page'
+import { ConversationPage } from '@/pages/Conversation.page'
+import { AgentsNewPage } from '@/pages/AgentsNew.page'
+import { AgentRunPage } from '@/pages/AgentRun.page'
+import { AgentsPage } from '@/pages/Agents.page'
+import DemoPage from '@/pages/Demo.page.mdx'
 
 const routes = {
   index: IndexPage,
+  agents: AgentsPage,
   settings: SettingsPage,
+  conversations: ConversationPage,
+  'agents/run': AgentRunPage,
+  'agents/new': AgentsNewPage,
+  demo: DemoPage,
   '*': NotFoundPage,
 }
 

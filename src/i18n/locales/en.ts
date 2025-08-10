@@ -53,9 +53,23 @@ export const en = [
   'Configure LLM providers, models and platform defaults for your organization',
 
   // LLM Integration
-  'No LLM provider configured. Please configure one in Settings.',
+  'No LLM provider configured. Please [configure one in Settings]({path}).',
 
   // MarkdownRenderer
   'Thinking…',
   'Thoughts',
+
+  // AgentsPage
+  'My Agents ({count})',
+  'Built-in Agents ({count})',
+
+  // AgentRunPage
+  'View and manage your past conversations',
+  'Loading agent and conversation…',
+  'Back',
+  'Conversation ID:',
+  'You',
+  'Continue the conversation…',
+  'Start chatting with {agentName}…',
+  'this agent',
 ] as const

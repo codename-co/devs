@@ -19,12 +19,15 @@ const ABCRenderer = ({ code }: { code: string }) => {
   const [loading, setLoading] = useState<boolean | undefined>()
   const wrapperRef = useRef<HTMLDivElement>(null)
   const abcContainerRef = useRef<HTMLDivElement | null>(null)
+  const isRenderingRef = useRef<boolean>(false)
 
   useEffect(() => {
     const wrapper = wrapperRef.current
-    if (!wrapper) {
+    if (!wrapper || isRenderingRef.current) {
       return
     }
+
+    isRenderingRef.current = true
 
     const renderABC = async () => {
       try {
@@ -35,10 +38,9 @@ const ABCRenderer = ({ code }: { code: string }) => {
           throw new Error('ABC.js requires a browser environment')
         }
 
-        // Create a completely isolated container that React won't manage
-        if (abcContainerRef.current) {
-          wrapper.removeChild(abcContainerRef.current)
-        }
+        // Clear all previous content
+        wrapper.innerHTML = ''
+        abcContainerRef.current = null
 
         // Dynamically import abcjs from ESM CDN
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -101,20 +103,17 @@ const ABCRenderer = ({ code }: { code: string }) => {
         )
       } finally {
         setLoading(false)
+        // isRenderingRef.current = false
       }
     }
 
     renderABC()
 
-    // Cleanup function - manually remove the isolated container
+    // Cleanup function - clear all content and reset rendering flag
     return () => {
-      if (
-        abcContainerRef.current &&
-        wrapper.contains(abcContainerRef.current)
-      ) {
-        wrapper.removeChild(abcContainerRef.current)
-        abcContainerRef.current = null
-      }
+      wrapper.innerHTML = ''
+      abcContainerRef.current = null
+      // isRenderingRef.current = false
     }
   }, [code])
 
@@ -193,7 +192,7 @@ const MermaidRenderer = ({ code }: { code: string }) => {
         })
 
         // Generate unique ID for this diagram
-        const diagramId = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+        const diagramId = `mermaid-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
 
         // Render the mermaid diagram
         const { svg } = await mermaid.default.render(diagramId, code)

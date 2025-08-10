@@ -1,32 +1,46 @@
 import { addToast } from '@heroui/react'
+import { JSX } from 'react'
 
-export const errorToast = (
-  title: string,
+const toast = (
+  title: string | JSX.Element,
   description?: string | Error | unknown,
+  severity?:
+    | 'success'
+    | 'warning'
+    | 'danger'
+    | 'default'
+    | 'primary'
+    | 'secondary',
 ) => {
   addToast({
     title,
-    description:
-      description instanceof Error ? description.message : String(description),
-    color: 'danger',
-    severity: 'danger',
+    description: !description
+      ? undefined
+      : description instanceof Error
+        ? description.message
+        : String(description),
+    color: severity,
+    severity,
   })
 }
 
-export const warningToast = (title: string, description?: string) => {
-  addToast({
-    title,
-    description,
-    color: 'warning',
-    severity: 'warning',
-  })
+export const errorToast = (
+  title: string | JSX.Element,
+  description?: string | Error | unknown,
+) => {
+  toast(title, description, 'danger')
 }
 
-export const successToast = (title: string, description?: string) => {
-  addToast({
-    title,
-    description,
-    color: 'success',
-    severity: 'success',
-  })
+export const warningToast = (
+  title: string | JSX.Element,
+  description?: string | Error | unknown,
+) => {
+  toast(title, description, 'warning')
+}
+
+export const successToast = (
+  title: string | JSX.Element,
+  description?: string | Error | unknown,
+) => {
+  toast(title, description, 'success')
 }

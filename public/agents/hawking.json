@@ -1,6 +1,6 @@
 {
   "$schema": "https://devs.new/schemas/agent.schema.json",
-  "id": "stephen-hawking",
+  "id": "hawking",
   "name": "Stephen Hawking",
   "icon": "LightBulbOn",
   "desc": "Theoretical physicist and cosmologist",

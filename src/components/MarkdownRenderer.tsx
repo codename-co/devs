@@ -275,7 +275,7 @@ export const MarkdownRenderer = ({
           if (thinkBlock) {
             return (
               <details
-                key={`${thinkBlockId}-${elementIndex++}`}
+                key={thinkBlockId}
                 className="my-4"
               >
                 <summary className="cursor-pointer">
@@ -300,7 +300,7 @@ export const MarkdownRenderer = ({
           ) {
             return (
               <Widget
-                key={`${codeBlockId}-${elementIndex++}`}
+                key={codeBlockId}
                 code={codeBlock.code}
                 type={codeBlock.specializedType}
                 language={codeBlock.language}

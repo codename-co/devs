@@ -58,10 +58,26 @@ export const fr: I18n = {
     'Configurez les fournisseurs de LLM, les modèles et les paramètres par défaut de la plateforme pour votre organisation',
 
   // LLM Integration
-  'No LLM provider configured. Please configure one in Settings.':
-    'Aucun fournisseur LLM configuré. Veuillez en configurer un dans les Paramètres.',
+  'No LLM provider configured. Please [configure one in Settings]({path}).':
+    'Aucun fournisseur LLM configuré. Veuillez [en configurer un dans les Paramètres]({path}).',
 
   // MarkdownRenderer
   'Thinking…': 'Réflexion en cours…',
   Thoughts: 'Réflexions',
+
+  // AgentsPage
+  'My Agents ({count})': 'Mes agents ({count})',
+  'Built-in Agents ({count})': 'Agents intégrés ({count})',
+
+  // AgentRunPage
+  'View and manage your past conversations':
+    'Voir et gérer vos conversations passées',
+  'Loading agent and conversation…':
+    'Chargement de l’agent et de la conversation…',
+  Back: 'Retour',
+  'Conversation ID:': 'ID de conversation :',
+  You: 'Vous',
+  'Continue the conversation…': 'Continuer la conversation…',
+  'Start chatting with {agentName}…': 'Commencer à discuter avec {agentName}…',
+  'this agent': 'cet agent',
 } as const

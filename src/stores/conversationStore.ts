@@ -19,6 +19,7 @@ interface ConversationStore {
     message: Omit<Message, 'id' | 'timestamp'>,
   ) => Promise<void>
   deleteConversation: (id: string) => Promise<void>
+  clearCurrentConversation: () => void
   getConversationTitle: (conversation: Conversation) => string
 }
 
@@ -163,6 +164,10 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       errorToast('Failed to delete conversations', error)
       set({ isLoading: false })
     }
+  },
+
+  clearCurrentConversation: () => {
+    set({ currentConversation: null })
   },
 
   getConversationTitle: (conversation: Conversation) => {

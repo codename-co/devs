@@ -1,5 +1,6 @@
 import { PRODUCT } from '@/config/product'
-import { errorToast } from '@/lib/toast'
+import { errorToast, successToast } from '@/lib/toast'
+import { db } from '@/lib/db'
 import { type Agent } from '@/types'
 
 type AgentJSON = Omit<Agent, 'createdAt' | 'updatedAt' | 'version' | 'tools'>
@@ -72,27 +73,70 @@ export async function getAvailableAgents(): Promise<string[]> {
 }
 
 export async function loadAllAgents(): Promise<Agent[]> {
+  // Load built-in agents from JSON files
   const agentIds = await getAvailableAgents()
-  const agents = await Promise.all(
+  const builtInAgents = await Promise.all(
     agentIds.map((id) =>
       id === 'devs' ? Promise.resolve(defaultDevsTeam) : loadAgent(id),
     ),
   )
-  return agents.filter((agent): agent is Agent => agent !== null)
+  const validBuiltInAgents = builtInAgents.filter(
+    (agent): agent is Agent => agent !== null,
+  )
+
+  // Load custom agents from IndexedDB
+  const customAgents = await loadCustomAgents()
+
+  // Combine all agents
+  return [...validBuiltInAgents, ...customAgents]
 }
 
 export async function getAgentById(id: string): Promise<Agent | null> {
   if (id === 'devs') {
     return defaultDevsTeam
   }
-  return loadAgent(id)
+
+  // Check cache first
+  if (agentCache.has(id)) {
+    return agentCache.get(id)!
+  }
+
+  // Try loading from JSON files first
+  const jsonAgent = await loadAgent(id)
+  if (jsonAgent) {
+    return jsonAgent
+  }
+
+  // Try loading from IndexedDB for custom agents
+  try {
+    if (!db.isInitialized()) {
+      await db.init()
+    }
+    const customAgent = await db.get('agents', id)
+    if (customAgent) {
+      agentCache.set(id, customAgent)
+      return customAgent
+    }
+  } catch (error) {
+    console.error(`Error loading custom agent ${id}:`, error)
+  }
+
+  return null
 }
 
 export function getDefaultAgent(): Agent {
   return defaultDevsTeam
 }
 
-export type AgentCategory = 'default' | 'scientist' | 'advisor' | 'artist' | 'philosopher' | 'musician' | 'writer' | 'other'
+export type AgentCategory =
+  | 'default'
+  | 'scientist'
+  | 'advisor'
+  | 'artist'
+  | 'philosopher'
+  | 'musician'
+  | 'writer'
+  | 'other'
 
 export interface AgentsByCategory {
   [category: string]: Agent[]
@@ -103,7 +147,7 @@ export async function getAgentsByCategory(lang: string = 'en'): Promise<{
   orderedCategories: string[]
 }> {
   const agents = await loadAllAgents()
-  
+
   // Group agents by their first tag
   const agentsByCategory = agents.reduce((acc, agent) => {
     if (agent.id === 'devs') {
@@ -113,8 +157,16 @@ export async function getAgentsByCategory(lang: string = 'en'): Promise<{
     } else {
       // Use the first tag as category
       const firstTag = agent.tags?.[0]
-      const validCategories = ['scientist', 'advisor', 'artist', 'philosopher', 'musician', 'writer']
-      const category = firstTag && validCategories.includes(firstTag) ? firstTag : 'other'
+      const validCategories = [
+        'scientist',
+        'advisor',
+        'artist',
+        'philosopher',
+        'musician',
+        'writer',
+      ]
+      const category =
+        firstTag && validCategories.includes(firstTag) ? firstTag : 'other'
       acc[category] = acc[category] || []
       acc[category].push(agent)
     }
@@ -140,4 +192,175 @@ export async function getAgentsByCategory(lang: string = 'en'): Promise<{
   })
 
   return { agentsByCategory, orderedCategories }
+}
+
+export async function createAgent(agentData: {
+  name: string
+  role: string
+  instructions?: string
+  temperature?: number
+  tags?: string[]
+}): Promise<Agent> {
+  try {
+    // Ensure database is initialized
+    if (!db.isInitialized()) {
+      await db.init()
+    }
+
+    // Create the agent object with required fields
+    const agent: Agent = {
+      id: `custom-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name: agentData.name,
+      role: agentData.role,
+      instructions: agentData.instructions || '',
+      temperature: agentData.temperature,
+      tags: agentData.tags,
+      tools: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+
+    // Save to IndexedDB
+    await db.add('agents', agent)
+
+    // Add to cache
+    agentCache.set(agent.id, agent)
+
+    // Invalidate the agents list cache so it will be refreshed next time
+    agentsList = null
+
+    successToast('Agent created successfully!')
+
+    return agent
+  } catch (error) {
+    console.error('Error creating agent:', error)
+    errorToast(
+      'Failed to create agent',
+      error instanceof Error ? error.message : 'Unknown error',
+    )
+    throw error
+  }
+}
+
+export async function updateAgent(
+  agentId: string,
+  updates: Partial<Agent>,
+): Promise<Agent> {
+  try {
+    // Ensure database is initialized
+    if (!db.isInitialized()) {
+      await db.init()
+    }
+
+    // Get current agent
+    const currentAgent = await getAgentById(agentId)
+    if (!currentAgent) {
+      throw new Error(`Agent with id ${agentId} not found`)
+    }
+
+    // Create updated agent
+    const updatedAgent: Agent = {
+      ...currentAgent,
+      ...updates,
+      id: agentId, // Ensure ID doesn't change
+      updatedAt: new Date(),
+    }
+
+    // Save to IndexedDB
+    await db.update('agents', updatedAgent)
+
+    // Update cache
+    agentCache.set(agentId, updatedAgent)
+
+    successToast('Agent updated successfully!')
+
+    return updatedAgent
+  } catch (error) {
+    console.error('Error updating agent:', error)
+    errorToast(
+      'Failed to update agent',
+      error instanceof Error ? error.message : 'Unknown error',
+    )
+    throw error
+  }
+}
+
+export async function deleteAgent(agentId: string): Promise<void> {
+  try {
+    // Prevent deletion of default agent
+    if (agentId === 'devs') {
+      throw new Error('Cannot delete the default agent')
+    }
+
+    // Ensure database is initialized
+    if (!db.isInitialized()) {
+      await db.init()
+    }
+
+    // Delete from IndexedDB
+    await db.delete('agents', agentId)
+
+    // Remove from cache
+    agentCache.delete(agentId)
+
+    // Invalidate the agents list cache
+    agentsList = null
+
+    successToast('Agent deleted successfully!')
+  } catch (error) {
+    console.error('Error deleting agent:', error)
+    errorToast(
+      'Failed to delete agent',
+      error instanceof Error ? error.message : 'Unknown error',
+    )
+    throw error
+  }
+}
+
+export async function loadCustomAgents(): Promise<Agent[]> {
+  try {
+    // Ensure database is initialized
+    if (!db.isInitialized()) {
+      await db.init()
+    }
+
+    // Get all agents from IndexedDB
+    const customAgents = await db.getAll('agents')
+
+    // Add to cache
+    customAgents.forEach((agent) => {
+      agentCache.set(agent.id, agent)
+    })
+
+    return customAgents
+  } catch (error) {
+    console.error('Error loading custom agents:', error)
+    return []
+  }
+}
+
+export async function loadBuiltInAgents(): Promise<Agent[]> {
+  // Load built-in agents from JSON files
+  const agentIds = await getAvailableAgents()
+  const builtInAgents = await Promise.all(
+    agentIds.map((id) =>
+      id === 'devs' ? Promise.resolve(defaultDevsTeam) : loadAgent(id),
+    ),
+  )
+  return builtInAgents.filter((agent): agent is Agent => agent !== null)
+}
+
+export async function getAgentsSeparated(): Promise<{
+  customAgents: Agent[]
+  builtInAgents: Agent[]
+}> {
+  const [customAgents, builtInAgents] = await Promise.all([
+    loadCustomAgents(),
+    loadBuiltInAgents(),
+  ])
+
+  return {
+    customAgents,
+    builtInAgents,
+  }
 }

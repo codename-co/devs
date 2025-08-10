@@ -36,7 +36,11 @@ const AgentList = () => {
             .reverse?.()
             .slice(0, 5)
             .map((agent) => (
-              <ListboxItem key={agent.id} href={`/agents/run#${agent.id}`}>
+              <ListboxItem
+                key={agent.id}
+                href={`/agents/run#${agent.id}`}
+                textValue={agent.name}
+              >
                 <div className="flex items-center gap-2">
                   <span className="truncate">{agent.name}</span>
                 </div>
@@ -55,7 +59,8 @@ const AgentList = () => {
 
 const ConversationList = () => {
   const { t, url } = useI18n()
-  const { conversations, loadConversations, getConversationTitle } = useConversationStore()
+  const { conversations, loadConversations, getConversationTitle } =
+    useConversationStore()
 
   useEffect(() => {
     // Load conversations from the database when component mounts
@@ -68,7 +73,7 @@ const ConversationList = () => {
 
   // Sort conversations by timestamp, most recent first
   const sortedConversations = [...conversations].sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
   )
 
   return (
@@ -78,7 +83,10 @@ const ConversationList = () => {
           ...sortedConversations.slice(0, 5).map((conversation) => (
             <ListboxItem
               key={conversation.id}
-              href={`/agents/run#${conversation.agentId}/${conversation.id}`}
+              href={url(
+                `/agents/run#${conversation.agentId}/${conversation.id}`,
+              )}
+              textValue={getConversationTitle(conversation)}
             >
               <div className="flex items-center gap-2">
                 <Icon name="ChatLines" />
@@ -327,6 +335,7 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                 href={url('/')}
                 color="primary"
                 startContent={<Icon name="ChatPlusIn" />}
+                textValue={t('Chat with AI')}
               >
                 {t('Chat with AI')}
               </ListboxItem>
@@ -352,6 +361,7 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                     </Button>
                   </Tooltip>
                 }
+                textValue={t('Agents')}
               >
                 {t('Agents')}
               </ListboxItem>
@@ -421,14 +431,15 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
             <ListboxItem
               href={url('/settings')}
               startContent={<Icon name="Settings" />}
+              textValue={t('Settings')}
             >
               {t('Settings')}
             </ListboxItem>
           </Listbox>
-        </nav>
 
-        <AgentList />
-        <ConversationList />
+          <AgentList />
+          <ConversationList />
+        </nav>
 
         {/* Upgrade Action - Desktop */}
         {/* <Button

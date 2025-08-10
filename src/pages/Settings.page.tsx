@@ -3,7 +3,6 @@ import {
   Button,
   Card,
   CardBody,
-  CardHeader,
   Input,
   Select,
   SelectItem,
@@ -14,6 +13,8 @@ import {
   ModalBody,
   ModalFooter,
   useDisclosure,
+  Tooltip,
+  ButtonGroup,
 } from '@heroui/react'
 import { useI18n } from '@/i18n'
 import DefaultLayout from '@/layouts/Default'
@@ -22,7 +23,7 @@ import { LLMProvider, Credential } from '@/types'
 import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
 import { LLMService } from '@/lib/llm'
-import { Icon, Section } from '@/components'
+import { Container, Icon, Section } from '@/components'
 import { errorToast, successToast } from '@/lib/toast'
 
 interface ProviderConfig {
@@ -42,6 +43,8 @@ const PROVIDERS: ProviderConfig[] = [
     provider: 'ollama',
     name: 'Ollama',
     models: [
+      'gpt-oss:20b',
+      'gpt-oss:120b',
       'deepseek-r1:8b',
       'gemma3:4b',
       'qwen3:8b',
@@ -156,6 +159,8 @@ export const SettingsPage = () => {
   const [isValidating, setIsValidating] = useState(false)
   const [masterPassword, setMasterPassword] = useState('')
   const [isUnlocking, setIsUnlocking] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
 
   const header: HeaderProps = {
     color: 'bg-default-50',
@@ -280,43 +285,182 @@ export const SettingsPage = () => {
     }
   }
 
+  const handleExportDatabase = async () => {
+    setIsExporting(true)
+    try {
+      await db.init()
+
+      const dbData: Record<string, any> = {}
+      const stores = [
+        'agents',
+        'workflows',
+        'conversations',
+        'knowledge',
+        'credentials',
+        'artifacts',
+      ]
+
+      for (const store of stores) {
+        try {
+          dbData[store] = await db.getAll(store as any)
+        } catch (error) {
+          console.warn(`Failed to export store ${store}:`, error)
+          dbData[store] = []
+        }
+      }
+
+      const dataBlob = new Blob([JSON.stringify(dbData, null, 2)], {
+        type: 'application/json',
+      })
+
+      const url = URL.createObjectURL(dataBlob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `devs-database-export-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+
+      successToast('Database exported successfully')
+    } catch (error) {
+      errorToast('Failed to export database')
+      console.error('Export error:', error)
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  const handleImportDatabase = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setIsImporting(true)
+    try {
+      const text = await file.text()
+      const dbData = JSON.parse(text)
+
+      await db.init()
+
+      const stores = [
+        'agents',
+        'workflows',
+        'conversations',
+        'knowledge',
+        'credentials',
+        'artifacts',
+      ]
+      let importedCount = 0
+
+      for (const store of stores) {
+        if (dbData[store] && Array.isArray(dbData[store])) {
+          for (const item of dbData[store]) {
+            try {
+              await db.add(store as any, item)
+              importedCount++
+            } catch (error) {
+              console.warn(`Failed to import item in ${store}:`, error)
+            }
+          }
+        }
+      }
+
+      await loadCredentials()
+      successToast(`Database imported successfully (${importedCount} items)`)
+    } catch (error) {
+      errorToast('Failed to import database - invalid file format')
+      console.error('Import error:', error)
+    } finally {
+      setIsImporting(false)
+      event.target.value = ''
+    }
+  }
+
+  const handleClearDatabase = async () => {
+    if (
+      !confirm(
+        'Are you sure you want to clear all data? This action cannot be undone.',
+      )
+    ) {
+      return
+    }
+
+    try {
+      await db.init()
+
+      const stores = [
+        'agents',
+        'workflows',
+        'conversations',
+        'knowledge',
+        'credentials',
+        'artifacts',
+      ]
+
+      for (const store of stores) {
+        try {
+          const items = await db.getAll(store as any)
+          for (const item of items) {
+            await db.delete(store as any, (item as any).id)
+          }
+        } catch (error) {
+          console.warn(`Failed to clear store ${store}:`, error)
+        }
+      }
+
+      await loadCredentials()
+      successToast('Database cleared successfully')
+    } catch (error) {
+      errorToast('Failed to clear database')
+      console.error('Clear error:', error)
+    }
+  }
+
   const providerConfig = PROVIDERS.find((p) => p.provider === selectedProvider)
 
   return (
     <DefaultLayout title={t('Settings')} header={header}>
       <Section>
         {SecureStorage.isLocked() && (
-          <Card>
-            <CardBody className="flex flex-row items-center gap-4">
-              <Icon name="Lock" className="h-5 w-5 text-warning" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">Secure storage is locked</p>
-                <p className="text-xs text-default-500">
-                  Enter your master password to unlock
-                </p>
-              </div>
-              <Input
-                type="password"
-                placeholder="Master password"
-                value={masterPassword}
-                onChange={(e) => setMasterPassword(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
-                className="w-48"
-              />
-              <Button
-                color="primary"
-                size="sm"
-                onPress={handleUnlock}
-                isLoading={isUnlocking}
-              >
-                Unlock
-              </Button>
-            </CardBody>
-          </Card>
+          <Container>
+            <Card>
+              <CardBody className="flex flex-row items-center gap-4">
+                <Icon name="Lock" className="h-5 w-5 text-warning" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">
+                    Secure storage is locked
+                  </p>
+                  <p className="text-xs text-default-500">
+                    Enter your master password to unlock
+                  </p>
+                </div>
+                <Input
+                  type="password"
+                  placeholder="Master password"
+                  value={masterPassword}
+                  onChange={(e) => setMasterPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
+                  className="w-48"
+                />
+                <Button
+                  color="primary"
+                  size="sm"
+                  onPress={handleUnlock}
+                  isLoading={isUnlocking}
+                >
+                  Unlock
+                </Button>
+              </CardBody>
+            </Card>
+          </Container>
         )}
 
-        <Card>
-          <CardHeader className="flex justify-between items-center">
+        <Container>
+          {/* <Card>
+          <CardHeader className="flex justify-between items-center"> */}
+          <div className="flex justify-between items-center">
             <div>
               <h3 className="text-lg font-semibold">LLM Providers</h3>
               <p className="text-sm text-default-500">
@@ -332,56 +476,114 @@ export const SettingsPage = () => {
             >
               Add Provider
             </Button>
-          </CardHeader>
-          <CardBody>
-            <div className="space-y-3">
-              {credentials.length === 0 ? (
-                <p className="text-center text-default-500 py-8">
-                  No providers configured. Add one to get started.
-                </p>
-              ) : (
-                credentials.map((cred) => {
-                  const provider = PROVIDERS.find(
-                    (p) => p.provider === cred.provider,
-                  )
-                  return (
-                    <div
-                      key={cred.id}
-                      className="flex items-center justify-between p-4 bg-default-50 rounded-lg"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Icon
-                          name={provider?.icon as any}
-                          className={`h-5 w-5 text-${provider?.color}`}
-                        />
-                        <div>
-                          <p className="font-medium">{provider?.name}</p>
-                          <p className="text-sm text-default-500">
-                            {cred.model}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Chip size="sm" color={provider?.color as any}>
-                          {cred.provider}
-                        </Chip>
-                        <Button
-                          isIconOnly
-                          size="sm"
-                          variant="light"
-                          color="danger"
-                          onPress={() => handleDeleteCredential(cred.id)}
-                        >
-                          <Icon name="Trash" className="h-4 w-4" />
-                        </Button>
+          </div>
+          {/* </CardHeader>
+          <CardBody> */}
+          <div className="space-y-3">
+            {credentials.length === 0 ? (
+              <p className="text-center text-default-500 py-8">
+                No providers configured. Add one to get started.
+              </p>
+            ) : (
+              credentials.map((cred) => {
+                const provider = PROVIDERS.find(
+                  (p) => p.provider === cred.provider,
+                )
+                return (
+                  <div
+                    key={cred.id}
+                    className="flex items-center justify-between p-4 bg-default-50 rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon
+                        name={provider?.icon as any}
+                        className={`h-5 w-5 text-${provider?.color}`}
+                      />
+                      <div>
+                        <p className="font-medium">{provider?.name}</p>
+                        <p className="text-sm text-default-500">{cred.model}</p>
                       </div>
                     </div>
-                  )
-                })
-              )}
+                    <div className="flex items-center gap-2">
+                      <Chip size="sm" color={provider?.color as any}>
+                        {cred.provider}
+                      </Chip>
+                      <Button
+                        isIconOnly
+                        size="sm"
+                        variant="light"
+                        color="danger"
+                        onPress={() => handleDeleteCredential(cred.id)}
+                      >
+                        <Icon name="Trash" className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
+          {/* </CardBody>
+        </Card> */}
+        </Container>
+
+        <Container>
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-semibold">Database Management</h3>
+              <p className="text-sm text-default-500">
+                Export, import, or clear your local database
+              </p>
             </div>
-          </CardBody>
-        </Card>
+          </div>
+
+          <input
+            type="file"
+            accept=".json"
+            onChange={handleImportDatabase}
+            style={{ display: 'none' }}
+            id="import-file-input"
+          />
+
+          <ButtonGroup>
+            <Tooltip content="Dump your entire database to a JSON file">
+              <Button
+                variant="flat"
+                onPress={handleExportDatabase}
+                isLoading={isExporting}
+                startContent={
+                  <Icon name="ArrowRight" className="h-4 w-4 rotate-90" />
+                }
+              >
+                Backup database
+              </Button>
+            </Tooltip>
+            <Tooltip content="Restore your database from a JSON file">
+              <Button
+                variant="flat"
+                onPress={() =>
+                  document.getElementById('import-file-input')?.click()
+                }
+                isLoading={isImporting}
+                startContent={
+                  <Icon name="ArrowRight" className="h-4 w-4 -rotate-90" />
+                }
+              >
+                Restore database
+              </Button>
+            </Tooltip>
+            <Tooltip content="Clear all data from the database">
+              <Button
+                variant="flat"
+                color="danger"
+                onPress={handleClearDatabase}
+                startContent={<Icon name="Trash" className="h-4 w-4" />}
+              >
+                Clear database
+              </Button>
+            </Tooltip>
+          </ButtonGroup>
+        </Container>
 
         <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
           <ModalContent>
@@ -451,7 +653,9 @@ export const SettingsPage = () => {
                       isDisabled={providerConfig?.models.length === 0}
                     >
                       {providerConfig?.models.map((m) => (
-                        <SelectItem key={m}>{m}</SelectItem>
+                        <SelectItem key={m} textValue={m}>
+                          {m}
+                        </SelectItem>
                       )) || []}
                     </Select>
 

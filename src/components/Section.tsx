@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils'
 
-export interface SectionProps {
-  children: React.ReactNode
+interface SectionProps {
+  children?: React.ReactNode
   className?: string
   mainClassName?: string
   style?: React.CSSProperties

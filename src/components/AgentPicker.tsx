@@ -73,6 +73,7 @@ export function AgentPicker({
               description={agent.i18n?.[lang]?.desc ?? agent.desc ?? agent.role}
               startContent={<Icon name={agent.icon ?? 'User'} size="lg" />}
               className="truncate"
+              textValue={agent.i18n?.[lang]?.name ?? agent.name}
             >
               {agent.i18n?.[lang]?.name ?? agent.name}
             </DropdownItem>

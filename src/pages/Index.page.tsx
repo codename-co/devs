@@ -11,6 +11,7 @@ import { useState } from 'react'
 import { LLMService, LLMMessage } from '@/lib/llm'
 import { CredentialService } from '@/lib/credential-service'
 import { useConversationStore } from '@/stores/conversationStore'
+import { getDefaultAgent } from '@/stores/agentStore'
 import { Agent } from '@/types'
 import { errorToast } from '@/lib/toast'
 
@@ -35,16 +36,22 @@ export const IndexPage = () => {
       const config = await CredentialService.getActiveConfig()
       if (!config) {
         errorToast(
-          t('No LLM provider configured. Please configure one in Settings.'),
+          t(
+            'No LLM provider configured. Please [configure one in Settings]({path}).',
+            {
+              path: '/settings',
+            },
+            { allowJSX: true },
+          ),
         )
         return
       }
 
-      // Create or continue conversation
+      // Create or continue conversation for the selected agent
+      const agent = selectedAgent || getDefaultAgent()
       let conversation = currentConversation
-      if (!conversation) {
-        const agentId = selectedAgent?.id || 'default'
-        conversation = await createConversation(agentId, 'default')
+      if (!conversation || conversation.agentId !== agent.id) {
+        conversation = await createConversation(agent.id, 'default')
       }
 
       // Save user message to conversation
@@ -55,7 +62,8 @@ export const IndexPage = () => {
         {
           role: 'system',
           content:
-            selectedAgent?.instructions || 'You are a helpful assistant.',
+            (selectedAgent || getDefaultAgent()).instructions ||
+            'You are a helpful assistant.',
         },
         {
           role: 'user',
@@ -93,7 +101,7 @@ export const IndexPage = () => {
   }
 
   return (
-    <DefaultLayout>
+    <DefaultLayout showBackButton={false}>
       <Section mainClassName="text-center">
         <div className="flex flex-col items-center">
           <Icon

@@ -1,3 +1,4 @@
+import mdx from '@mdx-js/rollup'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { readdirSync } from 'node:fs'
@@ -11,7 +12,7 @@ import { defaultLang, langs, meta } from './src/i18n'
 // Dynamically list all pages
 const pagesList = readdirSync(resolve(__dirname, './src/pages'))
   .filter((file) => file.endsWith('.tsx'))
-  .map((file) => file.replace('Page.tsx', ''))
+  .map((file) => file.replace('.page.tsx', ''))
 
 // Generate localized pages
 const pages = langs.reduce((acc, lang) => {
@@ -25,7 +26,7 @@ const pages = langs.reduce((acc, lang) => {
         : is404
           ? `404.html`
           : `${lang ? `${lang}/` : ''}${page.toLowerCase()}/index.html`,
-      entry: `/src/pages/${page}Page.tsx`,
+      entry: `/src/pages/${page}.page.tsx`,
       data: {
         lang: lang ?? defaultLang,
         title: isIndex
@@ -43,6 +44,7 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    mdx(),
     createMpaPlugin({
       htmlMinify: true,
       pages,
