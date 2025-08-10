@@ -125,6 +125,7 @@ export const AgentRunPage = () => {
       conversationMessages,
       includeHistory: true,
       clearResponseAfterSubmit: true,
+      lang,
       t,
       onResponseUpdate: setResponse,
       onPromptClear: () => setPrompt(''),

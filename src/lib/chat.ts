@@ -4,6 +4,7 @@ import { useConversationStore } from '@/stores/conversationStore'
 import { getDefaultAgent } from '@/stores/agentStore'
 import { Agent, Message } from '@/types'
 import { errorToast } from '@/lib/toast'
+import { Lang, languages } from '@/i18n'
 
 export interface ChatSubmitOptions {
   prompt: string
@@ -11,6 +12,7 @@ export interface ChatSubmitOptions {
   conversationMessages?: Message[]
   includeHistory?: boolean
   clearResponseAfterSubmit?: boolean
+  lang: Lang
   t: any
   onResponseUpdate: (response: string) => void
   onPromptClear: () => void
@@ -31,6 +33,7 @@ export const submitChat = async (
     conversationMessages = [],
     includeHistory = false,
     clearResponseAfterSubmit = false,
+    lang,
     t,
     onResponseUpdate,
     onPromptClear,
@@ -79,11 +82,16 @@ export const submitChat = async (
     // Save user message to conversation
     await addMessage(conversation.id, { role: 'user', content: prompt })
 
+    const instructions = [
+      agent.instructions || 'You are a helpful assistant.',
+      `ALWAYS respond in ${languages[lang]} as this is the user's language.`,
+    ].join('\n\n')
+
     // Prepare messages for the LLM
     const messages: LLMMessage[] = [
       {
         role: 'system',
-        content: agent.instructions || 'You are a helpful assistant.',
+        content: instructions,
       },
     ]
 
@@ -91,7 +99,7 @@ export const submitChat = async (
     if (includeHistory && conversationMessages.length > 0) {
       messages.push(
         ...conversationMessages.map((msg) => ({
-          role: msg.role as 'user' | 'assistant' | 'system',
+          role: msg.role,
           content: msg.content,
         })),
       )

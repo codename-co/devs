@@ -30,6 +30,7 @@ export const IndexPage = () => {
       agent: selectedAgent,
       includeHistory: false,
       clearResponseAfterSubmit: false,
+      lang,
       t,
       onResponseUpdate: setResponse,
       onPromptClear: () => setPrompt(''),
