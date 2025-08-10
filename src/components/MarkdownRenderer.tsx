@@ -131,11 +131,48 @@ export const MarkdownRenderer = ({
             }
           }
 
-          // For the incomplete part, just use line breaks
+          // Handle the incomplete code block - check if it's an ABC block
           const incompletePartStart = content.lastIndexOf('```')
           const beforeIncomplete = content.substring(0, incompletePartStart)
           const incompletePart = content.substring(incompletePartStart)
+          
+          // Extract language and partial code from incomplete block
+          const incompleteMatch = incompletePart.match(/```(\w+)?\n?([\s\S]*)$/)
+          if (incompleteMatch) {
+            const [, incompleteLanguage, incompleteCode] = incompleteMatch
+            const partialSpecializedType = detectSpecializedCodeType(incompleteCode, incompleteLanguage)
+            
+            // If it's a specialized block (like ABC), render it immediately as incomplete
+            if (partialSpecializedType) {
+              const incompleteBlockId = `code-block-${blockIndex++}`
+              const placeholder = `<div data-code-block-id="${incompleteBlockId}"></div>`
+              
+              codeBlocks.push({
+                id: incompleteBlockId,
+                code: incompleteCode.trim(),
+                language: incompleteLanguage,
+                type: 'specialized',
+                specializedType: partialSpecializedType,
+              })
+              
+              // Configure marked for better formatting
+              marked.setOptions({
+                gfm: true, // GitHub Flavored Markdown
+                breaks: true, // Line breaks
+              })
 
+              const beforeHtml = await marked.parse(beforeIncomplete)
+              
+              setProcessedContent({
+                html: beforeHtml + placeholder,
+                codeBlocks,
+                thinkBlocks,
+              })
+              return
+            }
+          }
+
+          // Fallback for non-specialized incomplete blocks
           // Configure marked for better formatting
           marked.setOptions({
             gfm: true, // GitHub Flavored Markdown

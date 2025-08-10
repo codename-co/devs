@@ -62,6 +62,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
 
     // Set default agent if none selected
     const currentAgent = selectedAgent || getDefaultAgent()
+    onAgentChange?.(currentAgent)
 
     useEffect(() => {
       if (typeof window === 'undefined') return

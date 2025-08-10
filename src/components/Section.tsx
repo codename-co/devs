@@ -14,10 +14,7 @@ export const Section = ({
   style,
 }: SectionProps) => {
   return (
-    <section
-      className={cn('w-full py-6 px-4 lg:px-8', mainClassName)}
-      {...{ style }}
-    >
+    <section className={cn('w-full p-6 lg:px-8', mainClassName)} {...{ style }}>
       <div className={cn('max-w-6xl mx-auto my-6 space-y-6 gap-6', className)}>
         {children}
       </div>

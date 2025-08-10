@@ -15,6 +15,7 @@ import {
   useDisclosure,
   Tooltip,
   ButtonGroup,
+  Link,
 } from '@heroui/react'
 import { useNavigate } from 'react-router-dom'
 import { useI18n, languages } from '@/i18n'
@@ -39,6 +40,7 @@ interface ProviderConfig {
   requiresBaseUrl?: boolean
   apiKeyFormat?: string
   apiKeyPlaceholder?: string
+  apiKeyPage?: string
   noApiKey?: boolean
 }
 
@@ -66,9 +68,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     provider: 'openai',
     name: 'OpenAI',
-    models: ['gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo'],
+    models: ['gpt-5-2025-08-07', 'gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo'],
     icon: 'OpenAI',
     color: 'success',
+    apiKeyPage: 'https://platform.openai.com/api-keys',
   },
   {
     provider: 'anthropic',
@@ -80,6 +83,7 @@ const PROVIDERS: ProviderConfig[] = [
     ],
     icon: 'Anthropic',
     color: 'primary',
+    apiKeyPage: 'https://console.anthropic.com/settings/keys',
   },
   {
     provider: 'google',
@@ -156,8 +160,7 @@ export const SettingsPage = () => {
   const navigate = useNavigate()
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
   const [credentials, setCredentials] = useState<Credential[]>([])
-  const [selectedProvider, setSelectedProvider] =
-    useState<LLMProvider>('openai')
+  const [selectedProvider, setSelectedProvider] = useState<LLMProvider>()
   const [apiKey, setApiKey] = useState('')
   const [model, setModel] = useState('')
   const [baseUrl, setBaseUrl] = useState('')
@@ -250,6 +253,10 @@ export const SettingsPage = () => {
   }
 
   const handleAddCredential = async () => {
+    if (!selectedProvider) {
+      return
+    }
+
     const providerConfig = PROVIDERS.find(
       (p) => p.provider === selectedProvider,
     )
@@ -486,6 +493,9 @@ export const SettingsPage = () => {
 
   const providerConfig = PROVIDERS.find((p) => p.provider === selectedProvider)
 
+  const findProvider = (provider: LLMProvider) =>
+    PROVIDERS.find((p) => p.provider === provider)
+
   return (
     <DefaultLayout title={t('Settings')} header={header}>
       <Section>
@@ -527,7 +537,7 @@ export const SettingsPage = () => {
           <div className="flex justify-between items-center">
             <div>
               <h3 className="text-lg font-semibold">
-                🌐 {t('Language Settings')}
+                {t('Language Settings')}
               </h3>
               <p className="text-sm text-default-500">
                 {t('Choose your preferred language')}
@@ -587,15 +597,14 @@ export const SettingsPage = () => {
               </p>
             ) : (
               credentials.map((cred) => {
-                const provider = PROVIDERS.find(
-                  (p) => p.provider === cred.provider,
-                )
+                const provider = findProvider(cred.provider)
+
                 return (
-                  <div
+                  <Card
                     key={cred.id}
-                    className="flex items-center justify-between p-4 bg-default-50 rounded-lg"
+                    className="flex flex-row justify-between p-4"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-8 px-4">
                       <Icon
                         name={provider?.icon as any}
                         className={`h-5 w-5 text-${provider?.color} dark:fill-white`}
@@ -619,7 +628,7 @@ export const SettingsPage = () => {
                         <Icon name="Trash" className="h-4 w-4" />
                       </Button>
                     </div>
-                  </div>
+                  </Card>
                 )
               })
             )}
@@ -768,6 +777,15 @@ export const SettingsPage = () => {
                       onChange={(e) =>
                         setSelectedProvider(e.target.value as LLMProvider)
                       }
+                      startContent={
+                        selectedProvider && (
+                          <Icon
+                            name={findProvider(selectedProvider)?.icon as any}
+                            className="dark:fill-white"
+                          />
+                        )
+                      }
+                      className="w-full"
                       isRequired
                     >
                       {PROVIDERS.map((provider) => (
@@ -801,6 +819,14 @@ export const SettingsPage = () => {
                         value={apiKey}
                         onChange={(e) => setApiKey(e.target.value)}
                         isRequired={!providerConfig?.noApiKey}
+                        description={
+                          <Link
+                            href={providerConfig?.apiKeyPage}
+                            target="_blank"
+                          >
+                            {providerConfig?.apiKeyPage}
+                          </Link>
+                        }
                       />
                       {providerConfig?.apiKeyFormat && (
                         <p className="text-xs text-default-500 mt-1">

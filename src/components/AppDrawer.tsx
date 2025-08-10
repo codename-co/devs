@@ -17,6 +17,7 @@ import { Title } from './Title'
 import { PRODUCT } from '@/config/product'
 import clsx from 'clsx'
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const AgentList = () => {
   const { t, url } = useI18n()
@@ -121,10 +122,14 @@ export const AppDrawer = () => {
   const isCollapsed = userSettings((state) => state.isDrawerCollapsed)
 
   return (
-    <aside className={clsx('flex-0 h-screen z-10', isCollapsed && 'fixed')}>
+    <aside
+      className={clsx(
+        'flex-0 h-screen z-10 fixed md:relative dark:bg-default-50',
+      )}
+    >
       <div
         id="app-drawer"
-        className="h-full"
+        className={clsx('h-full', isCollapsed && 'fixed')}
         data-state={isCollapsed ? 'collapsed' : 'expanded'}
       >
         <CollapsedDrawer className="drawer-collapsed" />
@@ -158,7 +163,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
 
   return (
     <div
-      className={`group w-18 p-4 h-screen z-50 pointer-events-none flex flex-col transition-all duration-200 border-r border-transparent hover:bg-gray-50 hover:dark:bg-content1 hover:border-default-200 dark:hover:bg-content1 ${className} hover:pointer-events-auto`}
+      className={`group w-18 p-2 lg:p-4 h-screen z-50 pointer-events-none flex flex-col transition-all duration-200 border-r border-transparent hover:bg-gray-50 hover:dark:bg-content1 hover:border-default-200 dark:hover:bg-content1 ${className} hover:pointer-events-auto`}
     >
       <div className="flex flex-col items-center overflow-y-auto overflow-x-hidden">
         <Tooltip content={t('Expand sidebar')} placement="right">
@@ -312,6 +317,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
 
 const ExpandedDrawer = ({ className }: { className?: string }) => {
   const { t, url } = useI18n()
+  const navigate = useNavigate()
 
   return (
     <div
@@ -362,18 +368,26 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                 startContent={<Icon name="Sparks" color="warning" />}
                 endContent={
                   <Tooltip content={t('New Agent')} placement="right">
-                    <Button
-                      isIconOnly
-                      size="sm"
-                      variant="flat"
-                      color="warning"
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      className="inline-flex items-center justify-center w-6 h-6 rounded-small bg-warning/20 text-warning hover:bg-warning/30 cursor-pointer transition-colors"
                       aria-label={t('New Agent')}
-                      onPress={() => {
-                        window.location.href = url('/agents/new')
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        navigate(url('/agents/new'))
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          navigate(url('/agents/new'))
+                        }
                       }}
                     >
                       <Icon name="Plus" />
-                    </Button>
+                    </span>
                   </Tooltip>
                 }
                 textValue={t('Agents')}
@@ -396,7 +410,8 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                         aria-label={t('New Mission')}
                         onClick={(e) => {
                           e.preventDefault()
-                          window.location.href = url('/missions/new')
+                          e.stopPropagation()
+                          navigate(url('/missions/new'))
                         }}
                       >
                         <Icon name="Plus" />
@@ -420,7 +435,8 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                         aria-label={t('New Team')}
                         onClick={(e) => {
                           e.preventDefault()
-                          window.location.href = url('/teams/new')
+                          e.stopPropagation()
+                          navigate(url('/teams/new'))
                         }}
                       >
                         <Icon name="Plus" />

@@ -131,6 +131,8 @@ export const en = [
   'Continue the conversation…',
   'Start chatting with {agentName}…',
   'this agent',
+  'System Prompt',
+  'No system prompt defined.',
 
   // AgentsNewPage
   'Agent Builder',

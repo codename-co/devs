@@ -12,12 +12,11 @@ import {
 } from '@/components'
 import DefaultLayout from '@/layouts/Default'
 import type { HeaderProps } from '@/lib/types'
-import { LLMService, LLMMessage } from '@/lib/llm'
-import { CredentialService } from '@/lib/credential-service'
-import { useConversationStore } from '@/stores/conversationStore'
 import { getAgentById } from '@/stores/agentStore'
 import { Agent, Message } from '@/types'
 import { errorToast } from '@/lib/toast'
+import { submitChat } from '@/lib/chat'
+import { useConversationStore } from '@/stores/conversationStore'
 
 export const AgentRunPage = () => {
   const { t, lang } = useI18n()
@@ -36,7 +35,6 @@ export const AgentRunPage = () => {
   const {
     currentConversation,
     createConversation,
-    addMessage,
     loadConversation,
     clearCurrentConversation,
   } = useConversationStore()
@@ -121,94 +119,19 @@ export const AgentRunPage = () => {
     setIsSending(true)
     setResponse('')
 
-    try {
-      // Get the active LLM configuration
-      const config = await CredentialService.getActiveConfig()
-      if (!config) {
-        errorToast(
-          t(
-            'No LLM provider configured. Please [configure one in Settings]({path}).',
-            {
-              path: '/settings',
-            },
-            { allowJSX: true },
-          ),
-        )
-        return
-      }
+    await submitChat({
+      prompt,
+      agent: selectedAgent,
+      conversationMessages,
+      includeHistory: true,
+      clearResponseAfterSubmit: true,
+      t,
+      onResponseUpdate: setResponse,
+      onPromptClear: () => setPrompt(''),
+      onResponseClear: () => setResponse(''),
+    })
 
-      // Use current conversation or create a new one if this is the first message or agent doesn't match
-      let conversation = currentConversation
-      if (!conversation || conversation.agentId !== selectedAgent.id) {
-        conversation = await createConversation(selectedAgent.id, 'default')
-      }
-
-      // Save user message to conversation
-      await addMessage(conversation.id, { role: 'user', content: prompt })
-
-      // Prepare messages for the LLM (include conversation history)
-      const messages: LLMMessage[] = [
-        {
-          role: 'system',
-          content: selectedAgent.instructions || 'You are a helpful assistant.',
-        },
-        // Include previous conversation messages
-        ...conversationMessages.map((msg) => ({
-          role: msg.role as 'user' | 'assistant' | 'system',
-          content: msg.content,
-        })),
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ]
-
-      // Call the LLM service with streaming
-      let fullResponse = ''
-
-      for await (const chunk of LLMService.streamChat(messages, config)) {
-        fullResponse += chunk
-        setResponse(fullResponse)
-      }
-
-      // Save assistant response to conversation
-      await addMessage(conversation.id, {
-        role: 'assistant',
-        content: fullResponse,
-      })
-
-      // Update local messages state
-      const newUserMessage: Message = {
-        id: crypto.randomUUID(),
-        role: 'user',
-        content: prompt,
-        timestamp: new Date(),
-      }
-      const newAssistantMessage: Message = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: fullResponse,
-        timestamp: new Date(),
-      }
-
-      setConversationMessages((prev) => [
-        ...prev,
-        newUserMessage,
-        newAssistantMessage,
-      ])
-
-      // Clear the prompt and response after successful submission
-      setPrompt('')
-      setResponse('')
-    } catch (err) {
-      console.error('Error calling LLM:', err)
-      errorToast(
-        t('Failed to get response from LLM. Please try again later.'),
-        err,
-      )
-    } finally {
-      setIsSending(false)
-    }
+    setIsSending(false)
   }
 
   if (isLoading) {
@@ -230,56 +153,69 @@ export const AgentRunPage = () => {
     <DefaultLayout title={selectedAgent?.name} header={header}>
       <Section>
         <Container>
+          <details className="my-4 ml-7">
+            <summary className="cursor-pointer">{t('System Prompt')}</summary>
+            <div className="ml-5">
+              <MarkdownRenderer
+                content={
+                  selectedAgent?.instructions || t('No system prompt defined.')
+                }
+                className="prose dark:prose-invert prose-sm"
+              />
+            </div>
+          </details>
           {/* Display conversation history */}
           {conversationMessages.length > 0 && (
             <div className="duration-600 relative flex flex-col gap-6">
-              {conversationMessages.map((message) => (
-                <div
-                  key={message.id}
-                  aria-hidden="false"
-                  tabIndex={0}
-                  className="flex w-full gap-3"
-                >
-                  <div className="relative flex-none pt-0.5">
-                    <div className="relative inline-flex shrink-0">
-                      {message.role === 'user' ? (
-                        <Avatar
-                          size="sm"
-                          showFallback
-                          name="U"
-                          classNames={{
-                            base: 'bg-default text-default-foreground',
-                            fallback: 'text-tiny',
-                          }}
-                        />
-                      ) : (
-                        <div className="border-1 border-primary-300 dark:border-default-200 flex h-8 w-8 items-center justify-center rounded-full">
-                          <Icon
-                            name={(selectedAgent?.icon as any) || 'Sparks'}
-                            className="w-4 h-4 text-primary-600"
+              {conversationMessages
+                .filter((msg) => msg.role !== 'system')
+                .map((message) => (
+                  <div
+                    key={message.id}
+                    aria-hidden="false"
+                    tabIndex={0}
+                    className="flex w-full gap-3"
+                  >
+                    <div className="relative flex-none pt-0.5">
+                      <div className="relative inline-flex shrink-0">
+                        {message.role === 'user' ? (
+                          <Avatar
+                            size="sm"
+                            showFallback
+                            name="U"
+                            classNames={{
+                              base: 'bg-default text-default-foreground',
+                              fallback: 'text-tiny',
+                            }}
+                          />
+                        ) : (
+                          <div className="border-1 border-primary-300 dark:border-default-200 flex h-8 w-8 items-center justify-center rounded-full">
+                            <Icon
+                              name={(selectedAgent?.icon as any) || 'Sparks'}
+                              className="w-4 h-4 text-primary-600"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div
+                      className={`rounded-medium text-foreground group relative w-full overflow-hidden font-medium ${
+                        message.role === 'user'
+                          ? 'bg-default-100 px-4 py-3'
+                          : 'bg-transparent px-1 py-0'
+                      }`}
+                    >
+                      <div className="text-small text-left">
+                        <div className="prose prose-neutral text-medium break-words">
+                          <MarkdownRenderer
+                            content={message.content}
+                            className="prose dark:prose-invert prose-sm"
                           />
                         </div>
-                      )}
-                    </div>
-                  </div>
-                  <div
-                    className={`rounded-medium text-foreground group relative w-full overflow-hidden font-medium ${
-                      message.role === 'user'
-                        ? 'bg-default-100 px-4 py-3'
-                        : 'bg-transparent px-1 py-0'
-                    }`}
-                  >
-                    <div className="text-small text-left">
-                      <div className="prose prose-neutral text-medium break-words">
-                        <MarkdownRenderer
-                          content={message.content}
-                          className="prose dark:prose-invert prose-sm"
-                        />
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
               <span
                 aria-hidden="true"
                 className="w-px h-px block"

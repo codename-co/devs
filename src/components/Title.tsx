@@ -33,7 +33,29 @@ const defaultSizeForLevel = {
   6: 'sm',
 } as const
 
+const mobileSizeForLevel = {
+  1: 'xl',
+  2: 'lg',
+  3: 'base',
+  4: 'sm',
+  5: 'xs',
+  6: 'xs',
+} as const
+
 const sizeClasses = {
+  xs: 'sm:text-xs',
+  sm: 'sm:text-sm',
+  base: 'sm:text-base',
+  lg: 'sm:text-lg',
+  xl: 'sm:text-xl',
+  '2xl': 'sm:text-2xl',
+  '3xl': 'sm:text-3xl',
+  '4xl': 'sm:text-4xl',
+  '5xl': 'sm:text-5xl',
+  '6xl': 'sm:text-6xl',
+} as const
+
+const mobileClasses = {
   xs: 'text-xs',
   sm: 'text-sm',
   base: 'text-base',
@@ -71,11 +93,13 @@ export const Title = ({
     (`h${level}` as keyof JSX.IntrinsicElements)) as React.ElementType
 
   // Determine the size - use explicit size prop or default based on level
-  const finalSize = size || defaultSizeForLevel[level]
+  const sizeClass = sizeClasses[size || defaultSizeForLevel[level]]
+  const mobileClass = mobileClasses[mobileSizeForLevel[level]]
 
   // Build the className
   const titleClassName = cn(
-    sizeClasses[finalSize],
+    mobileClass,
+    sizeClass,
     weightClasses[weight],
     'text-foreground',
     subtitle && 'mb-2',

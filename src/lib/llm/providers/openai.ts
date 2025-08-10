@@ -17,7 +17,7 @@ export class OpenAIProvider implements LLMProviderInterface {
           Authorization: `Bearer ${config?.apiKey}`,
         },
         body: JSON.stringify({
-          model: config?.model || 'gpt-4',
+          model: config?.model || 'gpt-5-2025-08-07',
           messages,
           temperature: config?.temperature || 0.7,
           max_tokens: config?.maxTokens,
@@ -56,7 +56,7 @@ export class OpenAIProvider implements LLMProviderInterface {
           Authorization: `Bearer ${config?.apiKey}`,
         },
         body: JSON.stringify({
-          model: config?.model || 'gpt-4',
+          model: config?.model || 'gpt-5-2025-08-07',
           messages,
           temperature: config?.temperature || 0.7,
           max_tokens: config?.maxTokens,

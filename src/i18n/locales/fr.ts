@@ -155,6 +155,8 @@ export const fr: I18n = {
   'Continue the conversation…': 'Continuer la conversation…',
   'Start chatting with {agentName}…': 'Commencer à discuter avec {agentName}…',
   'this agent': 'cet agent',
+  'System Prompt': 'Prompt système',
+  'No system prompt defined.': 'Aucune invite système définie.',
 
   // AgentsNewPage
   'Agent Builder': 'Constructeur d’agent',

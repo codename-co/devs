@@ -50,7 +50,7 @@ export const AgentCard = ({ id, className, onPress }: AgentCardProps) => {
 
   return (
     <Card
-      className={`${className} cursor-pointer hover:scale-105 transition-transform`}
+      className={`${className} cursor-pointer hover:scale-105 transition-transform dark:border-1 dark:border-default-400`}
       isPressable
       onPress={() => onPress?.(agent.id)}
     >

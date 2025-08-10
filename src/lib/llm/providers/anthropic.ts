@@ -21,6 +21,7 @@ export class AnthropicProvider implements LLMProviderInterface {
           'Content-Type': 'application/json',
           'x-api-key': config?.apiKey || '',
           'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
         },
         body: JSON.stringify({
           model: config?.model || 'claude-sonnet-4-20250514',
@@ -66,6 +67,7 @@ export class AnthropicProvider implements LLMProviderInterface {
           'Content-Type': 'application/json',
           'x-api-key': config?.apiKey || '',
           'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
         },
         body: JSON.stringify({
           model: config?.model || 'claude-sonnet-4-20250514',
@@ -121,6 +123,7 @@ export class AnthropicProvider implements LLMProviderInterface {
           'Content-Type': 'application/json',
           'x-api-key': apiKey,
           'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
         },
         body: JSON.stringify({
           model: 'claude-3-haiku-20240307',

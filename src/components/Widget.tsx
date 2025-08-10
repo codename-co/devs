@@ -38,62 +38,96 @@ const ABCRenderer = ({ code }: { code: string }) => {
           throw new Error('ABC.js requires a browser environment')
         }
 
+        // Check if ABC content appears incomplete (missing required elements)
+        const trimmedCode = code.trim()
+        const hasKeySignature = /K:\s*\w+/i.test(trimmedCode)
+        const hasMeter = /M:\s*[\d\/]+/i.test(trimmedCode)
+        const hasIndex = /X:\s*\d+/i.test(trimmedCode)
+        
+        // Consider it incomplete if it's missing essential ABC elements
+        const codeIncomplete = !hasKeySignature && !hasMeter && !hasIndex
+
         // Clear all previous content
         wrapper.innerHTML = ''
         abcContainerRef.current = null
+
+        // For very incomplete content, show a preview message
+        if (codeIncomplete && trimmedCode.length < 10) {
+          const previewContainer = document.createElement('div')
+          previewContainer.className = 'abc-preview-container p-4 bg-default-50 border border-default-200 rounded-md'
+          previewContainer.innerHTML = '<p class="text-sm text-default-600">ABC notation streaming...</p>'
+          wrapper.appendChild(previewContainer)
+          setError(null)
+          setLoading(false)
+          return
+        }
 
         // Dynamically import abcjs from ESM CDN
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const abcjs = await import('https://esm.sh/abcjs@6.5' as any)
 
-        // notation
+        // Try to render even incomplete ABC - abcjs is quite forgiving
         const abcContainer = document.createElement('div')
         abcContainer.className = 'widget abc-notation-isolated'
-        const visualObj = abcjs.renderAbc(abcContainer, code, {
-          responsive: 'resize',
-        })[0]
+        
+        try {
+          const visualObj = abcjs.renderAbc(abcContainer, code, {
+            responsive: 'resize',
+            visualTranspose: 0,
+            oneSvgPerLine: false
+          })[0]
 
-        abcContainerRef.current = abcContainer
-        wrapper.appendChild(abcContainer)
+          abcContainerRef.current = abcContainer
+          wrapper.appendChild(abcContainer)
 
-        const synth = new abcjs.synth.CreateSynth()
-        const myContext = new AudioContext()
-        const audioParams = {
-          // soundFontUrl:
-          //   // 'https://raw.githubusercontent.com/educandu/abcjs-soundfonts/refs/heads/gh-pages/FluidR3_Salamander_GM',
-          //   'https://gleitz.github.io/midi-js-soundfonts/MusyngKite/',
-          // soundFontUrl: '/assets/soundfonts/MusyngKite',
-          options: { program: 1 }, // Piano
-          // options: {
-          //   program: 1, // Piano
-          //   volume: 0.8,
-          //   pan: [-0.3, 0.3], // Stereo panning
-          //   // soundFontUrl can be overridden here if needed
-          //   // but we will use the default one for now
-          // },
+          // Only add audio controls if we have a complete-enough tune
+          if (!codeIncomplete && visualObj) {
+            const synth = new abcjs.synth.CreateSynth()
+            const myContext = new AudioContext()
+            const audioParams = {
+              options: { program: 1 }, // Piano
+            }
+            
+            synth
+              .init({
+                audioContext: myContext,
+                visualObj: visualObj[0],
+                millisecondsPerMeasure: 500,
+                options: audioParams,
+              })
+              .then(function (_results: SpeechSynthesisEventInit) {
+                // Ready to play. The results are details about what was loaded.
+              })
+              .catch(function (reason: Error | string) {
+                console.log('Audio init failed:', reason)
+              })
+
+            // audio player
+            const audioPlayer = document.createElement('div')
+            audioPlayer.className = 'abc-notation-audio-player'
+            const synthControl = new abcjs.synth.SynthController()
+            synthControl.load(audioPlayer)
+            synthControl.setTune(visualObj, false, audioParams.options)
+
+            wrapper.appendChild(audioPlayer)
+          } else if (codeIncomplete) {
+            // Add a note that this is streaming content
+            const streamingNote = document.createElement('div')
+            streamingNote.className = 'mt-2 text-xs text-default-500'
+            streamingNote.textContent = 'ABC notation is still streaming...'
+            wrapper.appendChild(streamingNote)
+          }
+        } catch (renderError) {
+          // If rendering fails, show the partial content in a preview
+          console.log('ABC rendering failed, showing preview:', renderError)
+          const previewContainer = document.createElement('div')
+          previewContainer.className = 'abc-preview-container p-4 bg-warning-50 border border-warning-200 rounded-md'
+          previewContainer.innerHTML = `
+            <p class="text-sm text-warning-700 mb-2">ABC notation preview (streaming...)</p>
+            <pre class="text-xs font-mono bg-default-100 p-2 rounded overflow-x-auto">${trimmedCode}</pre>
+          `
+          wrapper.appendChild(previewContainer)
         }
-        synth
-          .init({
-            audioContext: myContext,
-            visualObj: visualObj[0],
-            millisecondsPerMeasure: 500,
-            options: audioParams,
-          })
-          .then(function (_results: SpeechSynthesisEventInit) {
-            // Ready to play. The results are details about what was loaded.
-          })
-          .catch(function (reason: Error | string) {
-            console.log(reason)
-          })
-
-        // audio player
-        const audioPlayer = document.createElement('div')
-        audioPlayer.className = 'abc-notation-audio-player'
-        const synthControl = new abcjs.synth.SynthController()
-        synthControl.load(audioPlayer)
-        synthControl.setTune(visualObj, false, audioParams.options)
-
-        wrapper.appendChild(audioPlayer)
 
         setError(null)
       } catch (err) {
@@ -372,11 +406,20 @@ export const detectSpecializedCodeType = (
 ): CodeBlockType | null => {
   const trimmedCode = code.trim()
 
-  // ABC Music Notation detection
+  // ABC Music Notation detection - enhanced for streaming
+  if (language === 'abc') {
+    return 'abc'
+  }
+  
+  // Check for ABC notation patterns - common ABC headers that might appear early in streaming
   if (
-    language === 'abc' ||
-    trimmedCode.includes('X:') ||
-    (trimmedCode.includes('M:') && trimmedCode.includes('K:'))
+    trimmedCode.includes('X:') || // Index number (usually first line)
+    trimmedCode.includes('T:') || // Title
+    trimmedCode.includes('M:') || // Meter
+    trimmedCode.includes('L:') || // Default note length
+    trimmedCode.includes('K:') || // Key signature
+    trimmedCode.includes('Q:') || // Tempo
+    (trimmedCode.includes('M:') && trimmedCode.includes('K:')) // Traditional check
   ) {
     return 'abc'
   }

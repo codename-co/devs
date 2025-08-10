@@ -8,6 +8,7 @@ import { Container, Section } from '@/components'
 import { AgentCard } from '@/components/AgentCard'
 import DefaultLayout from '@/layouts/Default'
 import { HeaderProps } from '@/lib/types'
+import { useNavigate } from 'react-router-dom'
 
 export const AgentsPage = () => {
   const [userAgents, setUserAgents] = useState<Agent[]>([])
@@ -16,6 +17,7 @@ export const AgentsPage = () => {
   const [activeTab, setActiveTab] = useState('my-agents')
 
   const { t, url } = useI18n()
+  const navigate = useNavigate()
 
   const fetchAgents = async () => {
     setLoading(true)
@@ -46,7 +48,7 @@ export const AgentsPage = () => {
   }, [])
 
   const handleAgentClick = (agentId: string) => {
-    window.location.href = url(`/agents/run#${agentId}`)
+    navigate(url(`/agents/run#${agentId}`))
   }
 
   const renderAgentGrid = (agents: Agent[], isGlobal = false) => {
@@ -130,7 +132,7 @@ export const AgentsPage = () => {
                 count: globalAgents.length,
               })}
             >
-              <Alert className="mb-6">
+              <Alert color="default" variant="faded" className="mb-6">
                 Built-in agents are pre-configured agents that come with the
                 platform. They showcase various capabilities and can serve as
                 inspiration for your own custom agents.

@@ -66,10 +66,10 @@ export default function DefaultLayout({
   }
   return (
     <main role="main" className="flex-grow w-full">
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen relative">
         <AppDrawer />
 
-        <div className="flex-1 flex flex-col h-screen overflow-y-auto dark:bg-default-50">
+        <div className="flex-1 flex flex-col h-screen overflow-y-auto dark:bg-default-50 w-full">
           <div className="h-full space-y space-y-8 view-transition-smooth relative bg-transparent">
             {(header || showBackButton) && (
               <div

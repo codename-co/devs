@@ -56,7 +56,8 @@ export function AgentsNewPage() {
   const [name, setName] = useState('')
   const [role, setRole] = useState('')
   const [instructions, setInstructions] = useState('')
-  const [selectedProvider, setSelectedProvider] = useState<LLMProvider>('openai')
+  const [selectedProvider, setSelectedProvider] =
+    useState<LLMProvider>('openai')
   const [selectedModel, setSelectedModel] = useState('')
   const [temperature, setTemperature] = useState(0.7)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -95,6 +96,7 @@ export function AgentsNewPage() {
   const fetchAvailableModels = async () => {
     // Mock available models for now
     const mockModels: LLMModel[] = [
+      { id: 'gpt-5-2025-08-07', name: 'GPT-5', provider: 'openai' },
       { id: 'gpt-4', name: 'GPT-4', provider: 'openai' },
       { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo', provider: 'openai' },
       { id: 'claude-3-sonnet', name: 'Claude 3 Sonnet', provider: 'anthropic' },
@@ -129,7 +131,9 @@ export function AgentsNewPage() {
       }, 2000)
     } catch (error) {
       console.error(error)
-      setError(error instanceof Error ? error.message : 'Failed to create agent')
+      setError(
+        error instanceof Error ? error.message : 'Failed to create agent',
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -145,7 +149,7 @@ export function AgentsNewPage() {
       timestamp: new Date(),
     }
 
-    setMessages(prev => [...prev, userMessage])
+    setMessages((prev) => [...prev, userMessage])
     setInput('')
     setIsLoading(true)
 
@@ -157,7 +161,7 @@ export function AgentsNewPage() {
         content: `Hello! I'm ${currentAgentConfig.name}, your ${currentAgentConfig.role}. ${currentAgentConfig.instructions || 'How can I help you today?'}`,
         timestamp: new Date(),
       }
-      setMessages(prev => [...prev, assistantMessage])
+      setMessages((prev) => [...prev, assistantMessage])
       setIsLoading(false)
     }, 1000)
   }
@@ -197,7 +201,7 @@ export function AgentsNewPage() {
               <div>
                 <Title level={3}>{t('Agent Profile')}</Title>
                 <p className="text-small text-default-500 mt-2">
-                  {t('Define your agent\'s personality and capabilities')}
+                  {t("Define your agent's personality and capabilities")}
                 </p>
               </div>
 
@@ -205,7 +209,9 @@ export function AgentsNewPage() {
 
               {success && (
                 <Alert color="success">
-                  {t('Agent created successfully! Redirecting to agents list...')}
+                  {t(
+                    'Agent created successfully! Redirecting to agents list...',
+                  )}
                 </Alert>
               )}
 
@@ -234,9 +240,13 @@ export function AgentsNewPage() {
                 value={instructions}
                 onValueChange={setInstructions}
                 isDisabled={isSubmitting}
-                placeholder={t('Detailed instructions for the agent\'s personality, skills, constraints, and goals…')}
+                placeholder={t(
+                  "Detailed instructions for the agent's personality, skills, constraints, and goals…",
+                )}
                 minRows={5}
-                description={t('Detailed instructions for the agent\'s behavior')}
+                description={t(
+                  "Detailed instructions for the agent's behavior",
+                )}
               />
 
               <Accordion>
@@ -269,11 +279,9 @@ export function AgentsNewPage() {
                       isDisabled={isSubmitting}
                     >
                       {availableModels
-                        .filter(model => model.provider === selectedProvider)
+                        .filter((model) => model.provider === selectedProvider)
                         .map((model) => (
-                          <SelectItem key={model.id}>
-                            {model.name}
-                          </SelectItem>
+                          <SelectItem key={model.id}>{model.name}</SelectItem>
                         ))}
                     </Select>
 
@@ -292,7 +300,9 @@ export function AgentsNewPage() {
                       isDisabled={isSubmitting}
                     />
                     <p className="text-xs text-default-500">
-                      {t('Lower values = more focused, Higher values = more creative')}
+                      {t(
+                        'Lower values = more focused, Higher values = more creative',
+                      )}
                     </p>
                   </div>
                 </AccordionItem>
@@ -342,7 +352,9 @@ export function AgentsNewPage() {
                       <div className="text-center text-default-500 py-8">
                         <p>{t('Start a conversation to test your agent')}</p>
                         <p className="text-sm mt-2">
-                          {t('The chat will use your current form configuration')}
+                          {t(
+                            'The chat will use your current form configuration',
+                          )}
                         </p>
                       </div>
                     )}
@@ -351,7 +363,9 @@ export function AgentsNewPage() {
                       <div
                         key={message.id}
                         className={`flex ${
-                          message.role === 'user' ? 'justify-end' : 'justify-start'
+                          message.role === 'user'
+                            ? 'justify-end'
+                            : 'justify-start'
                         }`}
                       >
                         <div
@@ -393,7 +407,9 @@ export function AgentsNewPage() {
                       <Input
                         value={input}
                         onValueChange={setInput}
-                        placeholder={t('Ask {agentName} something…', { agentName: currentAgentConfig.name })}
+                        placeholder={t('Ask {agentName} something…', {
+                          agentName: currentAgentConfig.name,
+                        })}
                         isDisabled={isLoading || !isPreviewEnabled}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
@@ -404,7 +420,9 @@ export function AgentsNewPage() {
                       />
                       <Button
                         onPress={sendMessage}
-                        isDisabled={isLoading || !input.trim() || !isPreviewEnabled}
+                        isDisabled={
+                          isLoading || !input.trim() || !isPreviewEnabled
+                        }
                         color="primary"
                       >
                         {t('Send')}
