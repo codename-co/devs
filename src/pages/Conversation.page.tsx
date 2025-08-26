@@ -19,7 +19,7 @@ import { HeaderProps } from '@/lib/types'
 import { Container, Section } from '@/components'
 
 export function ConversationPage() {
-  const { t } = useI18n()
+  const { t, url } = useI18n()
   const navigate = useNavigate()
   const {
     conversations,
@@ -59,7 +59,7 @@ export function ConversationPage() {
       }
 
       // Navigate to the agent run page with the conversation
-      navigate(`/agents/run#${conversation.agentId}/${conversationId}`)
+      navigate(url(`/agents/run#${conversation.agentId}/${conversationId}`))
     } catch (error) {
       console.error('Failed to load conversation:', error)
       setSelectedConversation(null)

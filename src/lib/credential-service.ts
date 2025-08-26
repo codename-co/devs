@@ -49,12 +49,14 @@ export class CredentialService {
       return credentials.find((c) => c.provider === provider) || null
     }
 
-    // Return the most recent credential
+    // Return the first credential by order (lowest order number = highest priority)
     return (
-      credentials.sort(
-        (a, b) =>
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
-      )[0] || null
+      credentials.sort((a, b) => {
+        if (a.order === undefined && b.order === undefined) return 0
+        if (a.order === undefined) return 1
+        if (b.order === undefined) return -1
+        return a.order - b.order
+      })[0] || null
     )
   }
 

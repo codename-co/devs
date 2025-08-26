@@ -1,3 +1,5 @@
+import { LangfuseService } from './langfuse-service'
+
 export class ServiceWorkerManager {
   private static registration: ServiceWorkerRegistration | null = null
 
@@ -10,9 +12,13 @@ export class ServiceWorkerManager {
     try {
       this.registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/',
+        updateViaCache: 'none', // Force check for updates
       })
 
       console.log('Service Worker registered successfully')
+
+      // Initialize Langfuse service for handling service worker requests
+      await LangfuseService.initialize()
 
       // Listen for updates
       this.registration.addEventListener('updatefound', () => {
@@ -21,10 +27,19 @@ export class ServiceWorkerManager {
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'activated') {
               console.log('Service Worker updated')
+              // Force page reload in development to use new service worker
+              if (process.env.NODE_ENV === 'development') {
+                window.location.reload()
+              }
             }
           })
         }
       })
+
+      // In development, check for updates immediately
+      if (process.env.NODE_ENV === 'development') {
+        this.registration.update()
+      }
     } catch (error) {
       console.error('Service Worker registration failed:', error)
     }

@@ -4,9 +4,13 @@ import { useEffect } from 'react'
 import { ServiceWorkerManager } from '@/lib/service-worker'
 import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
+import { userSettings } from '@/stores/userStore'
+import { useArtifactStore } from '@/stores/artifactStore'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate()
+  const theme = userSettings((state) => state.theme)
+  const loadArtifacts = useArtifactStore((state) => state.loadArtifacts)
 
   useEffect(() => {
     // Initialize platform services
@@ -21,6 +25,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         // Register service worker
         await ServiceWorkerManager.register()
 
+        // Load artifacts into store
+        await loadArtifacts()
+
         console.log('Platform initialized successfully')
       } catch (error) {
         console.error('Failed to initialize platform:', error)
@@ -30,9 +37,39 @@ export function Providers({ children }: { children: React.ReactNode }) {
     initializePlatform()
   }, [])
 
+  // Apply theme to document
+  useEffect(() => {
+    const root = document.documentElement
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    
+    const applyTheme = () => {
+      if (theme === 'auto') {
+        // Use system preference
+        const isDarkMode = mediaQuery.matches
+        root.classList.toggle('dark', isDarkMode)
+        root.classList.toggle('light', !isDarkMode)
+      } else {
+        // Use explicit theme
+        root.classList.toggle('dark', theme === 'dark')
+        root.classList.toggle('light', theme === 'light')
+      }
+    }
+    
+    // Apply initial theme
+    applyTheme()
+    
+    // Listen for system theme changes when in auto mode
+    if (theme === 'auto') {
+      mediaQuery.addEventListener('change', applyTheme)
+      return () => mediaQuery.removeEventListener('change', applyTheme)
+    }
+  }, [theme])
+
   return (
     <HeroUIProvider navigate={navigate} useHref={useHref}>
-      {children}
+      <main className="text-foreground bg-background min-h-screen">
+        {children}
+      </main>
     </HeroUIProvider>
   )
 }

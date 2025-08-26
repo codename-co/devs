@@ -2,6 +2,7 @@
   "name": "devs",
   "private": true,
   "version": "0.1.0",
+  "license": "MIT",
   "type": "module",
   "sideEffects": false,
   "scripts": {
@@ -11,6 +12,9 @@
     "build": "tsc && vite build",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:watch": "vitest --watch",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write .",
     "scripts": "./src/scripts/generate-agent-manifest.js"
@@ -18,8 +22,10 @@
   "dependencies": {
     "@heroui/react": "^2.8.2",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "framer-motion": "^12.23.12",
     "iconoir-react": "^7.11.0",
+    "langfuse": "^3.38.4",
     "marked": "^16.1.1",
     "nanoid": "^5.1.5",
     "react": "^19.1.1",
@@ -33,6 +39,8 @@
     "@mdx-js/rollup": "^3.1.0",
     "@tailwindcss/postcss": "^4.1.11",
     "@tailwindcss/vite": "^4.1.11",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
     "@types/dom-speech-recognition": "^0.0.6",
     "@types/marked": "^5.0.2",
     "@types/node": "^24.1.0",
@@ -45,10 +53,12 @@
     "eslint": "^9.32.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
+    "jsdom": "^26.1.0",
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
     "typescript": "^5.8.0",
     "vite": "^7.0.6",
-    "vite-plugin-virtual-mpa": "^1.12.1"
+    "vite-plugin-virtual-mpa": "^1.12.1",
+    "vitest": "^3.2.4"
   }
 }

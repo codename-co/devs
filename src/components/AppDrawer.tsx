@@ -10,13 +10,14 @@ import {
 
 import { useI18n } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
-import { useConversationStore } from '@/stores/conversationStore'
 
 import { Icon } from './Icon'
 import { Title } from './Title'
+import { ProgressIndicator } from './ProgressIndicator'
+import { AboutModal } from './AboutModal'
 import { PRODUCT } from '@/config/product'
 import clsx from 'clsx'
-import { useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const AgentList = () => {
@@ -63,60 +64,155 @@ const AgentList = () => {
   )
 }
 
-const ConversationList = () => {
-  const { t, url } = useI18n()
-  const { conversations, loadConversations, getConversationTitle } =
-    useConversationStore()
+// const ConversationList = () => {
+//   const { t, url } = useI18n()
+//   const { conversations, loadConversations, getConversationTitle } =
+//     useConversationStore()
 
-  useEffect(() => {
-    // Load conversations from the database when component mounts
-    loadConversations()
-  }, [loadConversations])
+//   useEffect(() => {
+//     // Load conversations from the database when component mounts
+//     loadConversations()
+//   }, [loadConversations])
 
-  if (conversations.length === 0) {
-    return null
-  }
+//   if (conversations.length === 0) {
+//     return null
+//   }
 
-  // Sort conversations by timestamp, most recent first
-  const sortedConversations = [...conversations].sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
-  )
+//   // Sort conversations by timestamp, most recent first
+//   const sortedConversations = [...conversations].sort(
+//     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+//   )
 
-  return (
-    <Listbox aria-label={t('Conversations history')}>
-      <ListboxSection title={t('CONVERSATIONS')}>
-        {[
-          ...sortedConversations.slice(0, 5).map((conversation) => (
-            <ListboxItem
-              key={conversation.id}
-              className="dark:text-gray-200 dark:hover:text-grey-500"
-              href={url(
-                `/agents/run#${conversation.agentId}/${conversation.id}`,
-              )}
-              textValue={getConversationTitle(conversation)}
-            >
-              <div className="flex items-center gap-2">
-                <Icon name="ChatLines" />
-                <span className="truncate">
-                  {getConversationTitle(conversation)}
-                </span>
-              </div>
-            </ListboxItem>
-          )),
-          conversations.length > 0 && (
-            <ListboxItem
-              key="view-all"
-              className="dark:text-gray-200 dark:hover:text-grey-500"
-              href={url('/conversations')}
-            >
-              {t('View all history')}
-            </ListboxItem>
-          ),
-        ].filter((item) => !!item)}
-      </ListboxSection>
-    </Listbox>
-  )
-}
+//   return (
+//     <Listbox aria-label={t('Conversations history')}>
+//       <ListboxSection title={t('CONVERSATIONS')}>
+//         {[
+//           ...sortedConversations.slice(0, 5).map((conversation) => (
+//             <ListboxItem
+//               key={conversation.id}
+//               className="dark:text-gray-200 dark:hover:text-grey-500"
+//               href={url(
+//                 `/agents/run#${conversation.agentId}/${conversation.id}`,
+//               )}
+//               textValue={getConversationTitle(conversation)}
+//             >
+//               <div className="flex items-center gap-2">
+//                 <Icon name="ChatLines" />
+//                 <span className="truncate">
+//                   {getConversationTitle(conversation)}
+//                 </span>
+//               </div>
+//             </ListboxItem>
+//           )),
+//           conversations.length > 0 && (
+//             <ListboxItem
+//               key="view-all"
+//               className="dark:text-gray-200 dark:hover:text-grey-500"
+//               href={url('/conversations')}
+//             >
+//               {t('View all history')}
+//             </ListboxItem>
+//           ),
+//         ].filter((item) => !!item)}
+//       </ListboxSection>
+//     </Listbox>
+//   )
+// }
+
+// const TaskList = () => {
+//   const { t, url } = useI18n()
+//   const { tasks, loadTasks } = useTaskStore()
+
+//   useEffect(() => {
+//     // Load tasks from the database when component mounts
+//     loadTasks()
+//   }, [loadTasks])
+
+//   if (tasks.length === 0) {
+//     return null
+//   }
+
+//   // Sort tasks by updatedAt timestamp, most recent first
+//   const sortedTasks = [...tasks].sort(
+//     (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+//   )
+
+//   // Helper function to get task status color
+//   const getTaskStatusColor = (status: string) => {
+//     switch (status) {
+//       case 'completed':
+//         return 'text-success'
+//       case 'in_progress':
+//         return 'text-primary'
+//       case 'failed':
+//         return 'text-danger'
+//       default:
+//         return 'text-default-500'
+//     }
+//   }
+
+//   // Helper function to get task status icon
+//   const getTaskStatusIcon = (status: string) => {
+//     switch (status) {
+//       case 'completed':
+//         return 'CheckCircle'
+//       case 'in_progress':
+//         return 'Circle'
+//       case 'failed':
+//         return 'Circle'
+//       default:
+//         return 'Circle'
+//     }
+//   }
+
+//   return (
+//     <Listbox aria-label={t('Recent tasks')}>
+//       <ListboxSection title={t('TASKS')}>
+//         {[
+//           ...sortedTasks.slice(0, 5).map((task) => (
+//             <ListboxItem
+//               key={task.id}
+//               className="dark:text-gray-200 dark:hover:text-grey-500"
+//               href={url(`/tasks/${task.id}`)}
+//               textValue={task.title}
+//             >
+//               <div className="flex items-center gap-2">
+//                 <Icon
+//                   name={getTaskStatusIcon(task.status) as any}
+//                   className={`w-4 h-4 ${getTaskStatusColor(task.status)}`}
+//                 />
+//                 <div className="flex-1 min-w-0">
+//                   <span className="truncate text-small font-medium">
+//                     {task.title}
+//                   </span>
+//                   <div className="flex items-center gap-1 mt-0.5">
+//                     <span
+//                       className={`text-tiny ${getTaskStatusColor(task.status)}`}
+//                     >
+//                       {task.status.replace('_', ' ')}
+//                     </span>
+//                     {task.complexity === 'complex' && (
+//                       <span className="text-tiny text-warning">• complex</span>
+//                     )}
+//                   </div>
+//                 </div>
+//               </div>
+//             </ListboxItem>
+//           )),
+//           tasks.length > 0 && (
+//             <ListboxItem
+//               key="view-all"
+//               className="dark:text-gray-200 dark:hover:text-grey-500"
+//               href={url('/tasks')}
+//             >
+//               {t('View all tasks')}
+//             </ListboxItem>
+//           ),
+//         ].filter((item) => !!item)}
+//       </ListboxSection>
+//     </Listbox>
+//   )
+// }
 
 export const AppDrawer = () => {
   const isCollapsed = userSettings((state) => state.isDrawerCollapsed)
@@ -160,10 +256,11 @@ export const AppDrawer = () => {
 
 const CollapsedDrawer = ({ className }: { className?: string }) => {
   const { t, url } = useI18n()
+  const [showAboutModal, setShowAboutModal] = useState(false)
 
   return (
     <div
-      className={`group w-18 p-2 lg:p-4 h-screen z-50 pointer-events-none flex flex-col transition-all duration-200 border-r border-transparent hover:bg-gray-50 hover:dark:bg-content1 hover:border-default-200 dark:hover:bg-content1 ${className} hover:pointer-events-auto`}
+      className={`group w-18 p-2 lg:p-4 h-screen z-50 pointer-events-none flex flex-col transition-all duration-200 border-r border-transparent hover:bg-gray-50 dark:hover:bg-content1 hover:border-default-200 ${className} hover:pointer-events-auto`}
     >
       <div className="flex flex-col items-center overflow-y-auto overflow-x-hidden">
         <Tooltip content={t('Expand sidebar')} placement="right">
@@ -207,19 +304,19 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
                 <Icon name="Sparks" />
               </Button>
             </Tooltip>
-            {/* <Tooltip content={t('Missions')} placement="right">
-                <Button
-                  as={Link}
-                  href={url('/missions')}
-                  isIconOnly
-                  color="secondary"
-                  variant="light"
-                  className="w-full"
-                  aria-label={t('Missions')}
-                >
-                  <Icon name="TriangleFlagTwoStripes" />
-                </Button>
-              </Tooltip> */}
+            <Tooltip content={t('Tasks')} placement="right">
+              <Button
+                as={Link}
+                href={url('/tasks')}
+                isIconOnly
+                color="secondary"
+                variant="light"
+                className="w-full"
+                aria-label={t('Tasks')}
+              >
+                <Icon name="TriangleFlagTwoStripes" />
+              </Button>
+            </Tooltip>
             {/* <Tooltip content={t('Teams')} placement="right">
                 <Button
                   as={Link}
@@ -300,16 +397,27 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
         </div>
       </div>
 
-      {/* Product name at bottom */}
-      <div className="mt-auto pt-4 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-        <Title
-          as="div"
-          size="sm"
-          className="text-center text-default-400 dark:text-default-500"
+      {/* Progress indicator and Product name at bottom */}
+      <div className="mt-auto pt-4">
+        <ProgressIndicator />
+        <AboutModal
+          isOpen={showAboutModal}
+          onClose={() => setShowAboutModal(false)}
+        />
+        <button
+          className="pointer-events-auto w-full text-center text-default-400 dark:text-default-500 hover:text-primary-500 cursor-pointer transition-colors border-0 bg-transparent p-0"
           aria-label={PRODUCT.name}
+          onClick={() => setShowAboutModal(true)}
         >
-          {PRODUCT.displayName}
-        </Title>
+          <Title
+            as="div"
+            size="sm"
+            className="text-center text-default-400 dark:text-default-500"
+            aria-label={PRODUCT.name}
+          >
+            {PRODUCT.displayName}
+          </Title>
+        </button>
       </div>
     </div>
   )
@@ -318,6 +426,8 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
 const ExpandedDrawer = ({ className }: { className?: string }) => {
   const { t, url } = useI18n()
   const navigate = useNavigate()
+  const customPlatformName = userSettings((state) => state.platformName)
+  const [showAboutModal, setShowAboutModal] = useState(false)
 
   return (
     <div
@@ -328,8 +438,13 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
         className="pointer-events-auto flex flex-col overflow-y-auto flex-1"
       >
         <div className="mb-2 flex items-center justify-between ml-2">
-          <Title level={3} as="div" size="lg" aria-label={PRODUCT.name}>
-            {PRODUCT.displayName}
+          <Title
+            level={3}
+            as="div"
+            size="lg"
+            aria-label={customPlatformName || PRODUCT.name}
+          >
+            {customPlatformName || PRODUCT.displayName}
           </Title>
           <Tooltip content={t('Collapse sidebar')} placement="right">
             <Button
@@ -351,7 +466,7 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
           <Listbox aria-label={t('Main navigation')} variant="flat">
             <ListboxSection showDivider>
               <ListboxItem
-                href={url('/')}
+                href={url('')}
                 color="primary"
                 className="dark:text-gray-200 dark:hover:text-primary-500"
                 startContent={<Icon name="ChatPlusIn" />}
@@ -394,33 +509,39 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
               >
                 {t('Agents')}
               </ListboxItem>
-              {/* <ListboxItem
-                  href={url('/missions')}
-                  color="secondary"
-                  startContent={
-                    <Icon name="TriangleFlagTwoStripes" color="secondary" />
-                  }
-                  endContent={
-                    <Tooltip content={t('New Mission')} placement="right">
-                      <Button
-                        isIconOnly
-                        size="sm"
-                        variant="flat"
-                        color="secondary"
-                        aria-label={t('New Mission')}
-                        onClick={(e) => {
+              <ListboxItem
+                href={url('/tasks')}
+                color="secondary"
+                startContent={
+                  <Icon name="TriangleFlagTwoStripes" color="secondary" />
+                }
+                endContent={
+                  <Tooltip content={t('New Task')} placement="right">
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      className="inline-flex items-center justify-center w-6 h-6 rounded-small bg-secondary/20 text-secondary hover:bg-secondary/30 cursor-pointer transition-colors"
+                      aria-label={t('New Task')}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        navigate(url('/tasks/new'))
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault()
                           e.stopPropagation()
-                          navigate(url('/missions/new'))
-                        }}
-                      >
-                        <Icon name="Plus" />
-                      </Button>
-                    </Tooltip>
-                  }
-                >
-                  {t('Missions')}
-                </ListboxItem> */}
+                          navigate(url('/tasks/new'))
+                        }
+                      }}
+                    >
+                      <Icon name="Plus" />
+                    </span>
+                  </Tooltip>
+                }
+              >
+                {t('Tasks')}
+              </ListboxItem>
               {/* <ListboxItem
                   href={url('/teams')}
                   color="success"
@@ -470,7 +591,8 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
           </Listbox>
 
           <AgentList />
-          <ConversationList />
+          {/* <TaskList /> */}
+          {/* <ConversationList /> */}
         </nav>
 
         {/* Upgrade Action - Desktop */}
@@ -484,16 +606,27 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
           {t('Upgrade to Pro')}
         </Button> */}
       </ScrollShadow>
-      {/* Organization/Product name at bottom */}
+      {/* Progress indicator and Organization/Product name at bottom */}
       <div className="mt-auto pt-2">
-        <Title
-          as="div"
-          size="lg"
-          className="text-center text-default-400 dark:text-default-500"
+        <ProgressIndicator />
+        <AboutModal
+          isOpen={showAboutModal}
+          onClose={() => setShowAboutModal(false)}
+        />
+        <button
+          className="pointer-events-auto w-full text-center text-default-400 dark:text-default-500 hover:text-primary-500 cursor-pointer transition-colors border-0 bg-transparent p-0"
           aria-label={PRODUCT.name}
+          onClick={() => setShowAboutModal(true)}
         >
-          {PRODUCT.displayName}
-        </Title>
+          <Title
+            as="div"
+            size="lg"
+            className="text-center text-default-400 dark:text-default-500"
+            aria-label={PRODUCT.name}
+          >
+            {PRODUCT.displayName}
+          </Title>
+        </button>
       </div>
     </div>
   )

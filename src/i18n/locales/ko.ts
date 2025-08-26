@@ -14,9 +14,9 @@ export const ko: I18n = {
   // AppDrawer
   'Expand sidebar': '사이드바 확장',
   'Collapse sidebar': '사이드바 축소',
-  'New Mission': '새로운 미션',
+  'New Task': '새로운 작업',
   'New Team': '새로운 팀',
-  Missions: '미션',
+  Tasks: '작업',
   Teams: '팀',
   Settings: '설정',
   Agents: '에이전트',
@@ -46,7 +46,7 @@ export const ko: I18n = {
   'Page not found': '페이지를 찾을 수 없습니다',
 
   // Page: /
-  'Let {productName} take it from here': '{productName}에게 맡기세요',
+  'Let your agents take it from here': '당신의 에이전트에게 맡기세요',
   'Delegate complex tasks to your own AI teams':
     '복잡한 작업을 자신의 AI 팀에 위임하세요',
   'Failed to get response from LLM. Please try again later.':
@@ -56,9 +56,14 @@ export const ko: I18n = {
   'Platform Settings': '플랫폼 설정',
   'Configure LLM providers, models and platform defaults for your organization':
     '조직을 위한 LLM 공급자, 모델 및 플랫폼의 기본 설정을 구성합니다.',
-  'Language Settings': '언어 설정',
+  'General Settings': '일반 설정',
   'Choose your preferred language': '선호하는 언어를 선택하세요',
   'Interface Language': '인터페이스 언어',
+  'Platform Name': '플랫폼 이름',
+  'Theme Mode': '테마 모드',
+  Auto: '자동',
+  Light: '밝은 테마',
+  Dark: '어두운 테마',
   'Secure Storage': '안전한 저장소',
   'Manage your encryption keys and secure storage':
     '암호화 키 및 안전한 저장소를 관리하세요',
@@ -79,6 +84,7 @@ export const ko: I18n = {
   'Add Provider': '공급자 추가',
   'No providers configured. Add one to get started.':
     '구성된 공급자가 없습니다. 시작하려면 하나 추가하세요.',
+  'Set as Default': '기본값으로 설정',
   'Secure storage is locked': '안전한 저장소가 잠겨 있습니다',
   'Enter your master password to unlock':
     '잠금을 해제하려면 마스터 비밀번호를 입력하세요',
@@ -113,6 +119,28 @@ export const ko: I18n = {
     '모든 데이터를 지우시겠습니까? 이 작업은 취소할 수 없습니다.',
   'Database cleared successfully': '데이터베이스가 성공적으로 지워졌습니다',
   'Failed to clear database': '데이터베이스 지우기에 실패했습니다',
+  'Database repaired successfully': '데이터베이스가 성공적으로 복구되었습니다',
+  'Failed to repair database': '데이터베이스 복구에 실패했습니다',
+  'Expand artifacts panel': '아티팩트 패널 확장',
+  'Minimize artifacts panel': '아티팩트 패널 축소',
+  'Previous artifact': '이전 아티팩트',
+  'Next artifact': '다음 아티팩트',
+  Dependencies: '종속성',
+  'Validates Requirements': '요구사항 검증',
+  'No artifact selected': '선택된 아티팩트가 없습니다',
+  All: '전체',
+  Running: '실행 중',
+  Completed: '완료',
+  Pending: '대기 중',
+  Failed: '실패',
+  'No tasks found': '작업을 찾을 수 없습니다',
+  'No {status} tasks found': '{status} 작업을 찾을 수 없습니다',
+  Due: '마감일',
+  simple: '단순함',
+  complex: '복잡함',
+  requirements: '요구사항',
+  Created: '생성됨',
+  Updated: '업데이트됨',
   'Add LLM Provider': 'LLM 공급자 추가',
   'Select Provider': '공급자 선택',
   'Server URL (Optional)': '서버 URL (선택 사항)',
@@ -127,6 +155,17 @@ export const ko: I18n = {
   'Enter model name': '모델 이름을 입력하세요',
   Cancel: '취소',
   'Validate & Add': '유효성 검사 및 추가',
+  'Fetch Available Models': '사용 가능한 모델 가져오기',
+  'Use Fetched Models': '가져온 모델 사용',
+  'Manual Input': '수동 입력',
+  'Model Name': '모델 이름',
+  'Enter model name (e.g., llama2, mistral)':
+    '모델 이름을 입력하세요 (예: llama2, mistral)',
+  'Enter the exact name of the model you want to use':
+    '사용하려는 모델의 정확한 이름을 입력하세요',
+  'Available Models': '사용 가능한 모델',
+  'Default Provider': '기본 공급자',
+  'Provider set as default': '공급자가 기본값으로 설정되었습니다',
 
   // LLM Integration
   'No LLM provider configured. Please [configure one in Settings]({path}).':
@@ -190,4 +229,131 @@ export const ko: I18n = {
     '채팅은 현재 양식 구성을 사용합니다',
   'Ask {agentName} something…': '{agentName}에게 무언가 물어보세요…',
   Send: '전송',
+
+  // Artifacts side panel
+  Artifacts: '아티팩트',
+  'No artifacts created yet': '아직 생성된 아티팩트가 없습니다',
+
+  // Task
+  Requirements: '요구 사항',
+  'Task Timeline': '작업 일정',
+
+  // Background Image
+  'Please select an image file': '이미지 파일을 선택해주세요',
+  'Image file is too large. Please select a file smaller than {size}MB.':
+    '{size}MB보다 작은 파일을 선택해주세요. 이미지 파일이 너무 큽니다.',
+  'Background image updated': '배경 이미지가 업데이트되었습니다',
+  'Failed to process image file': '이미지 파일 처리에 실패했습니다',
+  'Please drop an image file': '이미지 파일을 드래그 해주세요',
+  'Drop your image here': '여기에 이미지를 드롭하세요',
+  'Release to set as background': '배경으로 설정하려면 놓아주세요',
+  'Background Image': '배경 이미지',
+  'Set a custom background image for the home page':
+    '홈페이지의 사용자 정의 배경 이미지 설정',
+  'Change Background': '배경 변경',
+  'Upload Background': '배경 업로드',
+  'Background image removed': '배경 이미지가 제거되었습니다',
+  Remove: '제거',
+  'Configure your platform preferences': '플랫폼 설정을 구성하세요',
+  Undo: '실행 취소',
+  'The URL does not point to a valid image':
+    'URL이 유효한 이미지를 가리키지 않습니다',
+  'Failed to load image from URL. Please check the URL and try again.':
+    'URL에서 이미지를 로드하지 못했습니다. URL을 확인하고 다시 시도해주세요.',
+  'Please drop an image file or drag an image from a website':
+    '이미지 파일을 드롭하거나 웹사이트에서 이미지를 드래그해주세요',
+
+  // About Page
+  'AI Teams': 'AI 팀',
+  'Multiple AI agents working together on complex tasks.':
+    '복잡한 작업에서 협력하는 여러 AI 에이전트.',
+  'LLM Independent': 'LLM 독립적',
+  'Works with OpenAI, Anthropic, Google AI, and more':
+    'OpenAI, Anthropic, Google AI 등과 함께 작동합니다',
+  'Privacy First': '개인정보 우선',
+  'All data stays on your device. No servers, no tracking.':
+    '모든 데이터는 당신의 기기에 머무릅니다. 서버도 추적도 없습니다.',
+  'Browser Native': '브라우저 네이티브',
+  'Works entirely in your browser. No installation required.':
+    '브라우저에서 완전히 작동합니다. 설치가 필요하지 않습니다.',
+  'Offline Ready': '오프라인 지원',
+  'Works without internet after initial load.':
+    '초기 로드 후 인터넷 없이도 작동합니다.',
+  'Open Source': '오픈 소스',
+  'MIT licensed. Built by the community, for the community.':
+    'MIT 라이선스. 커뮤니티에 의해, 커뮤니티를 위해 구축됨.',
+  'Configure your LLM provider': 'LLM 공급자 구성',
+  'Describe your task': '작업 설명',
+  'Be as detailed as possible to get the best results':
+    '최상의 결과를 얻으려면 가능한 한 상세하게 설명하세요',
+  'Watch AI agents collaborate': 'AI 에이전트 협업 관찰',
+  'See how different agents work together to complete your task':
+    '다양한 에이전트가 어떻게 함께 작업을 완료하는지 확인하세요',
+  'Guide when needed': '필요할 때 안내',
+  'Provide feedback and guidance to the agents as they work':
+    '에이전트가 작업할 때 피드백과 안내를 제공하세요',
+  'Our Vision': '우리의 비전',
+  "Democratize AI agent delegation with a universally accessible, privacy-conscious, open-source solution that runs entirely in the browser. AI augmentation isn't a luxury for the few, but a fundamental tool available to all.":
+    '브라우저에서 완전히 실행되는 보편적으로 접근 가능하고 개인정보를 중시하는 오픈 소스 솔루션으로 AI 에이전트 위임을 민주화합니다. AI 증강은 소수를 위한 사치품이 아니라 모든 사람이 사용할 수 있는 기본 도구입니다.',
+  'Key Features': '주요 기능',
+  'Key Benefits': '주요 장점',
+  'How It Works': '작동 방식',
+  FAQ: 'FAQ',
+  'Is my data private?': '내 데이터는 안전한가요?',
+  'Yes! All data processing happens locally in your browser. We do not collect or store any of your data.':
+    '네! 모든 데이터 처리는 브라우저에서 로컬로 발생합니다. 우리는 귀하의 데이터를 수집하거나 저장하지 않습니다.',
+  'Which LLM providers are supported?': '어떤 LLM 공급자가 지원되나요?',
+  'We support {llmList}, and any provider compatible with the OpenAI API spec.':
+    '{llmList} 및 OpenAI API 규격과 호환되는 모든 공급자를 지원합니다.',
+  'Do I need to install anything?': '설치해야 할 것이 있나요?',
+  'No installation is required. The app runs entirely in your web browser.':
+    '설치가 필요하지 않습니다. 앱은 웹 브라우저에서 완전히 실행됩니다.',
+  'Is this open source?': '이것은 오픈 소스인가요?',
+  'Yes! The project is open source and available on GitHub under the {license} license.':
+    '네! 이 프로젝트는 오픈 소스이며 {license} 라이선스 하에 GitHub에서 사용할 수 있습니다.',
+  'View on GitHub': 'GitHub에서 보기',
+
+  // Tasks Page
+  'Manage and monitor tasks for your organization':
+    '조직의 작업을 관리하고 모니터링하세요',
+  'Loading tasks…': '작업 로딩 중…',
+  tasks: '작업',
+  'In Progress': '진행 중',
+
+  // Task Page
+  'Task Details': '작업 세부사항',
+  'Task Created': '작업 생성됨',
+  'Agent Assigned': '에이전트 할당됨',
+  'Artifact Created': '아티팩트 생성됨',
+  'User Message': '사용자 메시지',
+  'Agent Response': '에이전트 응답',
+  'Requirement Satisfied': '요구사항 충족됨',
+  'Task Completed': '작업 완료됨',
+  'Task Branched': '작업 분기됨',
+  'Sub-task Created': '하위 작업 생성됨',
+  'Sub-task Completed': '하위 작업 완료됨',
+  'Requirement Detected': '요구사항 감지됨',
+  'Requirement Validated': '요구사항 검증됨',
+  'Task Started': '작업 시작됨',
+  'All requirements satisfied': '모든 요구사항 충족됨',
+  'No task ID provided': '작업 ID가 제공되지 않음',
+  'Task not found': '작업을 찾을 수 없음',
+  'Failed to load task data': '작업 데이터 로드 실패',
+  'View Content': '내용 보기',
+  'Loading task details…': '작업 세부사항 로딩 중…',
+  'Task Not Found': '작업을 찾을 수 없음',
+  'The requested task could not be found.': '요청한 작업을 찾을 수 없습니다.',
+  'Task Steps': '작업 단계',
+  'Validation Criteria': '검증 기준',
+
+  // SubTaskTree Component
+  'Task Hierarchy': '작업 계층 구조',
+  'Expand All': '모두 확장',
+  'Collapse All': '모두 축소',
+  'Parent Task': '상위 작업',
+  'Sibling Tasks': '형제 작업',
+  'Current Task & Sub-tasks': '현재 작업 및 하위 작업',
+  'Main Task & Sub-tasks': '주요 작업 및 하위 작업',
+  'Task Dependencies': '작업 종속성',
+  'Total Sub-tasks': '총 하위 작업',
 } as const

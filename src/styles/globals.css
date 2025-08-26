@@ -460,3 +460,8 @@ body {
     border-radius: 9px;
   }
 }
+
+/* TODO: Hack to hide the toaster region. */
+[role='region'][data-react-aria-top-layer='true'] {
+  display: inline;
+}

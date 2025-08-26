@@ -1,4 +1,4 @@
-import { addToast } from '@heroui/react'
+import { addToast, ToastProps } from '@heroui/react'
 import { JSX } from 'react'
 
 const toast = (
@@ -11,6 +11,7 @@ const toast = (
     | 'default'
     | 'primary'
     | 'secondary',
+  config?: ToastProps,
 ) => {
   addToast({
     title,
@@ -21,26 +22,30 @@ const toast = (
         : String(description),
     color: severity,
     severity,
+    ...config,
   })
 }
 
 export const errorToast = (
   title: string | JSX.Element,
   description?: string | Error | unknown,
+  config?: ToastProps,
 ) => {
-  toast(title, description, 'danger')
+  toast(title, description, 'danger', config)
 }
 
 export const warningToast = (
   title: string | JSX.Element,
   description?: string | Error | unknown,
+  config?: ToastProps,
 ) => {
-  toast(title, description, 'warning')
+  toast(title, description, 'warning', config)
 }
 
 export const successToast = (
   title: string | JSX.Element,
   description?: string | Error | unknown,
+  config?: ToastProps,
 ) => {
-  toast(title, description, 'success')
+  toast(title, description, 'success', config)
 }

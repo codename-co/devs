@@ -24,6 +24,7 @@ interface PromptAreaProps
   isSending?: boolean
   onFilesChange?: (files: File[]) => void
   onAgentChange?: (agent: Agent | null) => void
+  disabledAgentPicker?: boolean
   selectedAgent?: Agent | null
   onFocus?: React.FocusEventHandler<HTMLTextAreaElement>
   onBlur?: React.FocusEventHandler<HTMLTextAreaElement>
@@ -39,6 +40,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       onValueChange,
       onFilesChange,
       onAgentChange,
+      disabledAgentPicker,
       selectedAgent,
       onFocus,
       onBlur,
@@ -62,7 +64,13 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
 
     // Set default agent if none selected
     const currentAgent = selectedAgent || getDefaultAgent()
-    onAgentChange?.(currentAgent)
+
+    // Set default agent in useEffect to avoid setState during render
+    useEffect(() => {
+      if (!selectedAgent && onAgentChange) {
+        onAgentChange(getDefaultAgent())
+      }
+    }, [selectedAgent, onAgentChange])
 
     useEffect(() => {
       if (typeof window === 'undefined') return
@@ -191,18 +199,26 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       onFilesChange?.(newFiles)
     }
 
+    const handleDragEnter = (event: React.DragEvent) => {
+      event.preventDefault()
+      event.stopPropagation() // Prevent background drag handlers from interfering
+      setIsDragOver(true)
+    }
+
     const handleDragOver = (event: React.DragEvent) => {
       event.preventDefault()
-      setIsDragOver(true)
+      event.stopPropagation() // Prevent background drag handlers from interfering
     }
 
     const handleDragLeave = (event: React.DragEvent) => {
       event.preventDefault()
+      event.stopPropagation() // Prevent background drag handlers from interfering
       setIsDragOver(false)
     }
 
     const handleDrop = (event: React.DragEvent) => {
       event.preventDefault()
+      event.stopPropagation() // Prevent background drag handlers from interfering
       setIsDragOver(false)
       handleFileSelection(event.dataTransfer.files)
     }
@@ -220,11 +236,12 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
     return (
       <div
         className={cn(
-          'w-full max-w-4xl mx-auto relative p-[3px]',
+          'w-full max-w-4xl mx-auto relative p-[3px] prompt-area',
           isDragOver && 'ring-2 ring-primary ring-offset-2 rounded-lg',
           isFocused && 'animate-gradient-border',
           className,
         )}
+        onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
@@ -316,7 +333,10 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                   </Button>
                 </Tooltip>
 
-                <Dropdown className="bg-white dark:bg-default-50 dark:text-white">
+                <Dropdown
+                  className="bg-white dark:bg-default-50 dark:text-white"
+                  isDisabled={disabledAgentPicker}
+                >
                   <DropdownTrigger>
                     <Button radius="full" variant="light" size="sm">
                       <Icon name={currentAgent.icon ?? 'User'} size="md" />
@@ -324,6 +344,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                     </Button>
                   </DropdownTrigger>
                   <AgentPicker
+                    disabled={disabledAgentPicker}
                     selectedAgent={currentAgent}
                     onAgentChange={onAgentChange}
                   />

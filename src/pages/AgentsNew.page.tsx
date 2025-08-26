@@ -7,8 +7,6 @@ import {
   CardBody,
   CardHeader,
   Input,
-  Select,
-  SelectItem,
   Slider,
   Spinner,
   Textarea,
@@ -19,28 +17,23 @@ import { useNavigate } from 'react-router-dom'
 import { useI18n } from '@/i18n'
 import DefaultLayout from '@/layouts/Default'
 import { HeaderProps } from '@/lib/types'
-import { LLMProvider, Message } from '@/types'
+import { Message } from '@/types'
 import { Container, Section, Title, MarkdownRenderer } from '@/components'
 import { createAgent } from '@/stores/agentStore'
-
-interface LLMModel {
-  id: string
-  name: string
-  provider: LLMProvider
-}
+import { LLMService, LLMMessage } from '@/lib/llm'
+import { CredentialService } from '@/lib/credential-service'
+import { languages } from '@/i18n'
 
 interface AgentConfig {
   name: string
   role: string
   instructions?: string
   temperature?: number
-  provider?: LLMProvider
-  model?: string
 }
 
 export function AgentsNewPage() {
   const navigate = useNavigate()
-  const { t } = useI18n()
+  const { lang, t } = useI18n()
 
   const header: HeaderProps = {
     color: 'bg-warning-50',
@@ -56,14 +49,10 @@ export function AgentsNewPage() {
   const [name, setName] = useState('')
   const [role, setRole] = useState('')
   const [instructions, setInstructions] = useState('')
-  const [selectedProvider, setSelectedProvider] =
-    useState<LLMProvider>('openai')
-  const [selectedModel, setSelectedModel] = useState('')
   const [temperature, setTemperature] = useState(0.7)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
-  const [availableModels, setAvailableModels] = useState<LLMModel[]>([])
 
   // Chat state
   const [messages, setMessages] = useState<Message[]>([])
@@ -77,13 +66,7 @@ export function AgentsNewPage() {
     role: role || 'AI Assistant',
     instructions: instructions || 'You are a helpful AI assistant.',
     temperature: temperature,
-    provider: selectedProvider,
-    model: selectedModel,
   }
-
-  useEffect(() => {
-    fetchAvailableModels()
-  }, [])
 
   useEffect(() => {
     scrollToBottom()
@@ -91,19 +74,6 @@ export function AgentsNewPage() {
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
-  const fetchAvailableModels = async () => {
-    // Mock available models for now
-    const mockModels: LLMModel[] = [
-      { id: 'gpt-5-2025-08-07', name: 'GPT-5', provider: 'openai' },
-      { id: 'gpt-4', name: 'GPT-4', provider: 'openai' },
-      { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo', provider: 'openai' },
-      { id: 'claude-3-sonnet', name: 'Claude 3 Sonnet', provider: 'anthropic' },
-      { id: 'gemini-pro', name: 'Gemini Pro', provider: 'google' },
-    ]
-    setAvailableModels(mockModels)
-    setSelectedModel(mockModels[0]?.id || '')
   }
 
   const handleCreateAgent = async () => {
@@ -150,20 +120,83 @@ export function AgentsNewPage() {
     }
 
     setMessages((prev) => [...prev, userMessage])
+    const userInput = input.trim()
     setInput('')
     setIsLoading(true)
 
-    // Simulate AI response
-    setTimeout(() => {
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: `Hello! I'm ${currentAgentConfig.name}, your ${currentAgentConfig.role}. ${currentAgentConfig.instructions || 'How can I help you today?'}`,
-        timestamp: new Date(),
+    const assistantMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+    }
+
+    // Add assistant message placeholder
+    setMessages((prev) => [...prev, assistantMessage])
+
+    try {
+      // Get the active LLM configuration
+      const config = await CredentialService.getActiveConfig()
+      if (!config) {
+        throw new Error('No LLM provider configured. Please configure one in Settings.')
       }
-      setMessages((prev) => [...prev, assistantMessage])
+
+      const instructions = [
+        currentAgentConfig.instructions || 'You are a helpful AI assistant.',
+        `ALWAYS respond in ${languages[lang]} as this is the user's language.`,
+      ].join('\n\n')
+
+      // Prepare messages for the LLM
+      const llmMessages: LLMMessage[] = [
+        {
+          role: 'system',
+          content: instructions,
+        },
+      ]
+
+      // Include conversation history
+      if (messages.length > 0) {
+        llmMessages.push(
+          ...messages.map((msg) => ({
+            role: msg.role as 'user' | 'assistant',
+            content: msg.content,
+          })),
+        )
+      }
+
+      llmMessages.push({
+        role: 'user',
+        content: userInput,
+      })
+
+      // Stream the response
+      let fullResponse = ''
+      for await (const chunk of LLMService.streamChat(llmMessages, config)) {
+        fullResponse += chunk
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantMessage.id
+              ? { ...msg, content: fullResponse }
+              : msg,
+          ),
+        )
+      }
+    } catch (error) {
+      console.error('Failed to get AI response:', error)
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Sorry, I encountered an error. Please make sure you have configured an LLM provider in Settings.'
+      
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMessage.id
+            ? { ...msg, content: errorMessage }
+            : msg,
+        ),
+      )
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   const clearChat = () => {
@@ -174,8 +207,6 @@ export function AgentsNewPage() {
     setName('')
     setRole('')
     setInstructions('')
-    setSelectedProvider('openai')
-    setSelectedModel(availableModels[0]?.id || '')
     setTemperature(0.7)
     setError('')
     setSuccess(false)
@@ -253,37 +284,10 @@ export function AgentsNewPage() {
                 <AccordionItem title={t('Advanced Configuration')}>
                   <div className="space-y-4 p-4 border rounded-md">
                     <p className="text-xs text-default-500">
-                      {t('Configure advanced settings for your agent')}
+                      Configure advanced settings for your agent. The LLM
+                      provider and model will use your active configuration from
+                      Settings.
                     </p>
-
-                    <Select
-                      label={t('Provider')}
-                      selectedKeys={[selectedProvider]}
-                      onSelectionChange={(keys) =>
-                        setSelectedProvider(Array.from(keys)[0] as LLMProvider)
-                      }
-                      isDisabled={isSubmitting}
-                    >
-                      <SelectItem key="openai">OpenAI</SelectItem>
-                      <SelectItem key="anthropic">Anthropic</SelectItem>
-                      <SelectItem key="google">Google AI</SelectItem>
-                      <SelectItem key="mistral">Mistral</SelectItem>
-                    </Select>
-
-                    <Select
-                      label={t('Model')}
-                      selectedKeys={selectedModel ? [selectedModel] : []}
-                      onSelectionChange={(keys) =>
-                        setSelectedModel(Array.from(keys)[0] as string)
-                      }
-                      isDisabled={isSubmitting}
-                    >
-                      {availableModels
-                        .filter((model) => model.provider === selectedProvider)
-                        .map((model) => (
-                          <SelectItem key={model.id}>{model.name}</SelectItem>
-                        ))}
-                    </Select>
 
                     <Slider
                       label={t('Temperature')}
@@ -352,9 +356,8 @@ export function AgentsNewPage() {
                       <div className="text-center text-default-500 py-8">
                         <p>{t('Start a conversation to test your agent')}</p>
                         <p className="text-sm mt-2">
-                          {t(
-                            'The chat will use your current form configuration',
-                          )}
+                          The chat will use your current form configuration and
+                          active LLM provider from Settings
                         </p>
                       </div>
                     )}

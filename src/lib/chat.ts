@@ -2,6 +2,7 @@ import { LLMService, LLMMessage } from '@/lib/llm'
 import { CredentialService } from '@/lib/credential-service'
 import { useConversationStore } from '@/stores/conversationStore'
 import { getDefaultAgent } from '@/stores/agentStore'
+import { WorkflowOrchestrator } from '@/lib/orchestrator'
 import { Agent, Message } from '@/types'
 import { errorToast } from '@/lib/toast'
 import { Lang, languages } from '@/i18n'
@@ -67,6 +68,92 @@ export const submitChat = async (
       return { success: false, error: 'No agent selected' }
     }
 
+    // Check if this is the DEVS orchestrator agent - trigger autonomous orchestration
+    if (agent.id === 'devs') {
+      try {
+        // First, save the user prompt to conversation before orchestration
+        const { currentConversation, createConversation, addMessage } =
+          useConversationStore.getState()
+
+        let conversation = currentConversation
+        if (
+          !conversation ||
+          (selectedAgent && conversation.agentId !== selectedAgent.id)
+        ) {
+          conversation = await createConversation(agent.id, 'orchestration')
+        }
+
+        // Save user message to conversation
+        await addMessage(conversation.id, { role: 'user', content: prompt })
+
+        onResponseUpdate('🚀 Starting autonomous task orchestration...\n\n')
+
+        const result = await WorkflowOrchestrator.orchestrateTask(prompt)
+
+        let orchestrationReport = `# Task Orchestration Complete\n\n`
+        orchestrationReport += `✅ **Status**: ${result.success ? 'Success' : 'Failed'}\n`
+        orchestrationReport += `🆔 **Workflow ID**: ${result.workflowId}\n`
+        orchestrationReport += `📋 **Main Task**: ${result.mainTaskId}\n`
+
+        if (result.subTaskIds.length > 0) {
+          orchestrationReport += `🔧 **Sub-tasks**: ${result.subTaskIds.length} tasks\n`
+        }
+
+        orchestrationReport += `📄 **Artifacts Generated**: ${result.artifacts.length}\n\n`
+
+        if (result.artifacts.length > 0) {
+          orchestrationReport += `## Generated Artifacts\n\n`
+          for (const artifact of result.artifacts) {
+            orchestrationReport += `### ${artifact.title}\n`
+            orchestrationReport += `**Type**: ${artifact.type} | **Status**: ${artifact.status}\n`
+            orchestrationReport += `**Description**: ${artifact.description}\n\n`
+            orchestrationReport += `\`\`\`${artifact.format}\n${artifact.content}\n\`\`\`\n\n`
+          }
+        }
+
+        if (result.errors && result.errors.length > 0) {
+          orchestrationReport += `## Issues Encountered\n\n`
+          result.errors.forEach((error) => {
+            orchestrationReport += `⚠️ ${error}\n`
+          })
+        }
+
+        onResponseUpdate(orchestrationReport)
+
+        // Save the orchestration report as assistant message
+        await addMessage(conversation.id, {
+          role: 'assistant',
+          content: orchestrationReport,
+          agentId: agent.id,
+        })
+
+        // Clear the prompt after successful orchestration
+        onPromptClear()
+
+        return { success: result.success }
+      } catch (error) {
+        console.error('Orchestration failed:', error)
+        const errorMessage = `❌ **Orchestration Failed**\n\n${error instanceof Error ? error.message : 'Unknown error occurred during task orchestration.'}`
+        onResponseUpdate(errorMessage)
+
+        // Save error message to conversation if conversation exists
+        try {
+          const { currentConversation, addMessage } = useConversationStore.getState()
+          if (currentConversation) {
+            await addMessage(currentConversation.id, {
+              role: 'assistant',
+              content: errorMessage,
+              agentId: agent.id,
+            })
+          }
+        } catch (saveError) {
+          console.warn('Failed to save error message to conversation:', saveError)
+        }
+
+        return { success: false, error: 'Orchestration failed' }
+      }
+    }
+
     const { currentConversation, createConversation, addMessage } =
       useConversationStore.getState()
 
@@ -122,6 +209,7 @@ export const submitChat = async (
     await addMessage(conversation.id, {
       role: 'assistant',
       content: fullResponse,
+      agentId: agent.id,
     })
 
     // Clear the prompt after successful submission

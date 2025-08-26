@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import type { Lang } from '@/i18n/utils'
 
 // type User = {
@@ -13,6 +14,8 @@ export interface UserSettings {
   theme: ThemeMode
   language: Lang
   isDrawerCollapsed: boolean
+  platformName?: string
+  backgroundImage?: string
 }
 
 const defaultSettings: UserSettings = {
@@ -24,12 +27,30 @@ interface UserSettingsStore extends UserSettings {
   setTheme: (theme: ThemeMode) => void
   setLanguage: (language: Lang) => void
   toggleDrawer: () => void
+  setPlatformName: (platformName: string) => void
+  setBackgroundImage: (backgroundImage: string | undefined) => void
 }
 
-export const userSettings = create<UserSettingsStore>((set) => ({
-  ...defaultSettings,
-  setTheme: (theme: ThemeMode) => set({ theme }),
-  setLanguage: (language: Lang) => set({ language }),
-  toggleDrawer: () =>
-    set((state) => ({ isDrawerCollapsed: !state.isDrawerCollapsed })),
-}))
+export const userSettings = create<UserSettingsStore>()(
+  persist(
+    (set) => ({
+      ...defaultSettings,
+      setTheme: (theme: ThemeMode) => set({ theme }),
+      setLanguage: (language: Lang) => set({ language }),
+      toggleDrawer: () =>
+        set((state) => ({ isDrawerCollapsed: !state.isDrawerCollapsed })),
+      setPlatformName: (platformName: string) => set({ platformName }),
+      setBackgroundImage: (backgroundImage: string | undefined) => set({ backgroundImage }),
+    }),
+    {
+      name: 'devs-user-settings',
+      partialize: (state) => ({
+        theme: state.theme,
+        language: state.language,
+        isDrawerCollapsed: state.isDrawerCollapsed,
+        platformName: state.platformName,
+        backgroundImage: state.backgroundImage,
+      }),
+    },
+  ),
+)

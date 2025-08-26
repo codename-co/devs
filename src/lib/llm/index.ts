@@ -36,6 +36,7 @@ export interface LLMProviderInterface {
     config?: Partial<LLMConfig>,
   ): AsyncIterableIterator<string>
   validateApiKey(apiKey: string): Promise<boolean>
+  getAvailableModels?(config?: Partial<LLMConfig>): Promise<string[]>
 }
 
 export class LLMService {
@@ -46,6 +47,10 @@ export class LLMService {
     implementation: LLMProviderInterface,
   ) {
     this.providers.set(provider, implementation)
+  }
+
+  static listProviders(): LLMProvider[] {
+    return Array.from(this.providers.keys())
   }
 
   static getProvider(provider: LLMProvider): LLMProviderInterface {
@@ -78,6 +83,17 @@ export class LLMService {
   ): Promise<boolean> {
     const implementation = this.getProvider(provider)
     return implementation.validateApiKey(apiKey)
+  }
+
+  static async getAvailableModels(
+    provider: LLMProvider,
+    config?: Partial<LLMConfig>,
+  ): Promise<string[]> {
+    const implementation = this.getProvider(provider)
+    if (implementation.getAvailableModels) {
+      return implementation.getAvailableModels(config)
+    }
+    return []
   }
 }
 

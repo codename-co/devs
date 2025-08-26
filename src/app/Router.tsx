@@ -8,6 +8,8 @@ import { ConversationPage } from '@/pages/Conversation.page'
 import { AgentsNewPage } from '@/pages/AgentsNew.page'
 import { AgentRunPage } from '@/pages/AgentRun.page'
 import { AgentsPage } from '@/pages/Agents.page'
+import { TaskPage } from '@/pages/Task.page'
+import { TasksPage } from '@/pages/Tasks.page'
 import DemoPage from '@/pages/Demo.page.mdx'
 
 const routes = {
@@ -17,6 +19,9 @@ const routes = {
   conversations: ConversationPage,
   'agents/run': AgentRunPage,
   'agents/new': AgentsNewPage,
+  tasks: TasksPage,
+  'tasks/:taskId': TaskPage,
+  task: TaskPage,
   demo: DemoPage,
   '*': NotFoundPage,
 }

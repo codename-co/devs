@@ -13,11 +13,13 @@ import { useState, useEffect } from 'react'
 interface AgentPickerProps extends Omit<DropdownMenuProps, 'children'> {
   selectedAgent?: Agent | null
   onAgentChange?: (agent: Agent | null) => void
+  disabled?: boolean
 }
 
 export function AgentPicker({
   selectedAgent,
   onAgentChange,
+  disabled,
   ...props
 }: AgentPickerProps) {
   const { t, lang } = useI18n()

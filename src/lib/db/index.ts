@@ -5,10 +5,13 @@ import {
   Knowledge,
   Credential,
   Artifact,
+  Task,
+  SharedContext,
+  LangfuseConfig,
 } from '@/types'
 
 const DB_NAME = 'devs-ai-platform'
-const DB_VERSION = 2
+const DB_VERSION = 6
 
 export interface DBStores {
   agents: Agent
@@ -17,6 +20,9 @@ export interface DBStores {
   knowledge: Knowledge
   credentials: Credential
   artifacts: Artifact
+  tasks: Task
+  contexts: SharedContext
+  langfuse_config: LangfuseConfig
 }
 
 class Database {
@@ -79,6 +85,98 @@ class Database {
           // No changes needed to the object store structure
         }
 
+        // Migration for version 4: Add title field to conversations
+        if (event.oldVersion < 4) {
+          // No structural changes needed to the object store for adding optional fields
+          // The title field is optional and will be gradually populated
+          console.log(
+            'Database migrated to version 4: Added conversation titles support',
+          )
+        }
+
+        // Migration for version 5: Ensure all indexes are properly created
+        if (event.oldVersion < 5) {
+          console.log(
+            'Database migrated to version 5: Ensuring all indexes are present',
+          )
+
+          // Re-ensure artifacts store has all required indexes
+          if (db.objectStoreNames.contains('artifacts')) {
+            const artifactStore = (
+              event.target as IDBOpenDBRequest
+            )?.transaction?.objectStore('artifacts')
+            const requiredIndexes = [
+              'taskId',
+              'agentId',
+              'status',
+              'type',
+              'createdAt',
+            ]
+
+            if (artifactStore) {
+              requiredIndexes.forEach((indexName) => {
+                if (!artifactStore.indexNames.contains(indexName)) {
+                  console.log(
+                    `Creating missing index: ${indexName} on artifacts store`,
+                  )
+                  artifactStore.createIndex(indexName, indexName, {
+                    unique: false,
+                  })
+                }
+              })
+            }
+          }
+
+          // Re-ensure tasks store has all required indexes
+          if (db.objectStoreNames.contains('tasks')) {
+            const taskStore = (
+              event.target as IDBOpenDBRequest
+            )?.transaction?.objectStore('tasks')
+            const requiredIndexes = [
+              'workflowId',
+              'status',
+              'complexity',
+              'assignedAgentId',
+              'parentTaskId',
+              'createdAt',
+              'dueDate',
+            ]
+
+            if (taskStore) {
+              requiredIndexes.forEach((indexName) => {
+                if (!taskStore.indexNames.contains(indexName)) {
+                  console.log(
+                    `Creating missing index: ${indexName} on tasks store`,
+                  )
+                  taskStore.createIndex(indexName, indexName, { unique: false })
+                }
+              })
+            }
+          }
+        }
+
+        // Migration for version 6: Add Langfuse configuration store
+        if (event.oldVersion < 6) {
+          console.log(
+            'Database migrated to version 6: Added Langfuse configuration store',
+          )
+
+          if (!db.objectStoreNames.contains('langfuse_config')) {
+            const langfuseConfigStore = db.createObjectStore(
+              'langfuse_config',
+              {
+                keyPath: 'id',
+              },
+            )
+            langfuseConfigStore.createIndex('enabled', 'enabled', {
+              unique: false,
+            })
+            langfuseConfigStore.createIndex('timestamp', 'timestamp', {
+              unique: false,
+            })
+          }
+        }
+
         // Create knowledge store
         if (!db.objectStoreNames.contains('knowledge')) {
           const knowledgeStore = db.createObjectStore('knowledge', {
@@ -101,8 +199,62 @@ class Database {
           const artifactStore = db.createObjectStore('artifacts', {
             keyPath: 'id',
           })
+          artifactStore.createIndex('taskId', 'taskId', { unique: false })
+          artifactStore.createIndex('agentId', 'agentId', { unique: false })
           artifactStore.createIndex('status', 'status', { unique: false })
-          artifactStore.createIndex('dueDate', 'dueDate', { unique: false })
+          artifactStore.createIndex('type', 'type', { unique: false })
+          artifactStore.createIndex('createdAt', 'createdAt', { unique: false })
+        }
+
+        // Create tasks store
+        if (!db.objectStoreNames.contains('tasks')) {
+          const taskStore = db.createObjectStore('tasks', {
+            keyPath: 'id',
+          })
+          taskStore.createIndex('workflowId', 'workflowId', { unique: false })
+          taskStore.createIndex('status', 'status', { unique: false })
+          taskStore.createIndex('complexity', 'complexity', { unique: false })
+          taskStore.createIndex('assignedAgentId', 'assignedAgentId', {
+            unique: false,
+          })
+          taskStore.createIndex('parentTaskId', 'parentTaskId', {
+            unique: false,
+          })
+          taskStore.createIndex('createdAt', 'createdAt', { unique: false })
+          taskStore.createIndex('dueDate', 'dueDate', { unique: false })
+        }
+
+        // Create contexts store
+        if (!db.objectStoreNames.contains('contexts')) {
+          const contextStore = db.createObjectStore('contexts', {
+            keyPath: 'id',
+          })
+          contextStore.createIndex('taskId', 'taskId', { unique: false })
+          contextStore.createIndex('agentId', 'agentId', { unique: false })
+          contextStore.createIndex('contextType', 'contextType', {
+            unique: false,
+          })
+          contextStore.createIndex('relevantAgents', 'relevantAgents', {
+            unique: false,
+            multiEntry: true,
+          })
+          contextStore.createIndex('createdAt', 'createdAt', { unique: false })
+          contextStore.createIndex('expiryDate', 'expiryDate', {
+            unique: false,
+          })
+        }
+
+        // Create langfuse_config store
+        if (!db.objectStoreNames.contains('langfuse_config')) {
+          const langfuseConfigStore = db.createObjectStore('langfuse_config', {
+            keyPath: 'id',
+          })
+          langfuseConfigStore.createIndex('enabled', 'enabled', {
+            unique: false,
+          })
+          langfuseConfigStore.createIndex('timestamp', 'timestamp', {
+            unique: false,
+          })
         }
       }
     })
@@ -193,13 +345,63 @@ class Database {
     if (!this.db) throw new Error('Database not initialized')
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction([storeName], 'readonly')
-      const store = transaction.objectStore(storeName)
-      const index = store.index(indexName)
-      const request = index.getAll(value)
+      try {
+        const transaction = this.db!.transaction([storeName], 'readonly')
+        const store = transaction.objectStore(storeName)
 
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => reject(request.error)
+        // Check if index exists before using it
+        if (!store.indexNames.contains(indexName)) {
+          console.warn(
+            `Index '${indexName}' not found in store '${storeName}'. Falling back to full scan.`,
+          )
+          // Fallback to scanning all records if index doesn't exist
+          const request = store.getAll()
+          request.onsuccess = () => {
+            const results = request.result
+            const filtered = results.filter((item: any) => {
+              const itemValue = item[indexName]
+              return (
+                itemValue === value ||
+                (Array.isArray(itemValue) && itemValue.includes(value))
+              )
+            })
+            resolve(filtered)
+          }
+          request.onerror = () => reject(request.error)
+          return
+        }
+
+        const index = store.index(indexName)
+        const request = index.getAll(value)
+
+        request.onsuccess = () => resolve(request.result)
+        request.onerror = () => reject(request.error)
+      } catch (error) {
+        reject(error)
+      }
+    })
+  }
+
+  // Helper method to manually reset/recreate the database
+  async resetDatabase(): Promise<void> {
+    if (this.db) {
+      this.db.close()
+    }
+    this.initialized = false
+
+    return new Promise((resolve, reject) => {
+      const deleteRequest = indexedDB.deleteDatabase(DB_NAME)
+      deleteRequest.onsuccess = () => {
+        console.log('Database deleted successfully')
+        this.init().then(resolve).catch(reject)
+      }
+      deleteRequest.onerror = () => reject(deleteRequest.error)
+      deleteRequest.onblocked = () => {
+        console.warn(
+          'Database deletion blocked. Close all tabs using this database.',
+        )
+        reject(new Error('Database deletion blocked'))
+      }
     })
   }
 }
