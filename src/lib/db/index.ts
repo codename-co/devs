@@ -1,8 +1,9 @@
 import {
   Agent,
-  Workflow,
   Conversation,
   Knowledge,
+  KnowledgeItem,
+  PersistedFolderWatcher,
   Credential,
   Artifact,
   Task,
@@ -10,14 +11,12 @@ import {
   LangfuseConfig,
 } from '@/types'
 
-const DB_NAME = 'devs-ai-platform'
-const DB_VERSION = 6
-
 export interface DBStores {
   agents: Agent
-  workflows: Workflow
   conversations: Conversation
   knowledge: Knowledge
+  knowledgeItems: KnowledgeItem
+  folderWatchers: PersistedFolderWatcher
   credentials: Credential
   artifacts: Artifact
   tasks: Task
@@ -25,22 +24,73 @@ export interface DBStores {
   langfuse_config: LangfuseConfig
 }
 
-class Database {
+export class Database {
   private db: IDBDatabase | null = null
   private initialized = false
+
+  static DB_NAME = 'devs-ai-platform'
+  static DB_VERSION = 8
+  static STORES: (keyof DBStores)[] = [
+    'agents',
+    'conversations',
+    'knowledgeItems',
+    'folderWatchers',
+    'credentials',
+    'artifacts',
+    'tasks',
+    'contexts',
+    'langfuse_config',
+  ]
 
   isInitialized(): boolean {
     return this.initialized
   }
 
+  // Check if a specific store exists
+  hasStore(storeName: string): boolean {
+    return this.db?.objectStoreNames.contains(storeName) ?? false
+  }
+
+  // Force reinitialization - useful when stores are missing
+  async forceInit(): Promise<void> {
+    if (this.db) {
+      this.db.close()
+    }
+    this.initialized = false
+    await this.init()
+  }
+
   async init(): Promise<void> {
     if (this.initialized) return
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open(DB_NAME, DB_VERSION)
+      const request = indexedDB.open(Database.DB_NAME, Database.DB_VERSION)
 
       request.onerror = () => reject(request.error)
       request.onsuccess = () => {
         this.db = request.result
+
+        // Validate that all required stores exist
+        const requiredStores = Database.STORES
+        const missingStores = requiredStores.filter(
+          (store) => !this.db!.objectStoreNames.contains(store),
+        )
+
+        if (missingStores.length > 0) {
+          console.warn(
+            `Missing database stores: ${missingStores.join(', ')}. Triggering database reset...`,
+          )
+          this.db.close()
+          // Reset database by deleting and recreating
+          const deleteRequest = indexedDB.deleteDatabase(Database.DB_NAME)
+          deleteRequest.onsuccess = () => {
+            console.log('Database deleted, reinitializing...')
+            // Reinitialize after deletion
+            setTimeout(() => this.init().then(resolve).catch(reject), 100)
+          }
+          deleteRequest.onerror = () => reject(deleteRequest.error)
+          return
+        }
+
         this.initialized = true
         resolve()
       }
@@ -57,15 +107,6 @@ class Database {
             unique: false,
             multiEntry: true,
           })
-        }
-
-        // Create workflows store
-        if (!db.objectStoreNames.contains('workflows')) {
-          const workflowStore = db.createObjectStore('workflows', {
-            keyPath: 'id',
-          })
-          workflowStore.createIndex('status', 'status', { unique: false })
-          workflowStore.createIndex('strategy', 'strategy', { unique: false })
         }
 
         // Create conversations store
@@ -177,13 +218,55 @@ class Database {
           }
         }
 
-        // Create knowledge store
-        if (!db.objectStoreNames.contains('knowledge')) {
-          const knowledgeStore = db.createObjectStore('knowledge', {
-            keyPath: 'id',
-          })
-          knowledgeStore.createIndex('domain', 'domain', { unique: false })
-          knowledgeStore.createIndex('agentId', 'agentId', { unique: false })
+        // Migration for version 7: Add knowledge items store
+        if (event.oldVersion < 7) {
+          console.log(
+            'Database migrated to version 7: Added knowledge items store',
+          )
+
+          if (!db.objectStoreNames.contains('knowledgeItems')) {
+            const knowledgeItemsStore = db.createObjectStore('knowledgeItems', {
+              keyPath: 'id',
+            })
+            knowledgeItemsStore.createIndex('name', 'name', { unique: false })
+            knowledgeItemsStore.createIndex('type', 'type', { unique: false })
+            knowledgeItemsStore.createIndex('parentId', 'parentId', {
+              unique: false,
+            })
+            knowledgeItemsStore.createIndex('path', 'path', { unique: false })
+            knowledgeItemsStore.createIndex('createdAt', 'createdAt', {
+              unique: false,
+            })
+            knowledgeItemsStore.createIndex('tags', 'tags', {
+              unique: false,
+              multiEntry: true,
+            })
+          }
+        }
+
+        // Migration for version 8: Add folder watchers store
+        if (event.oldVersion < 8) {
+          console.log(
+            'Database migrated to version 8: Added folder watchers store',
+          )
+
+          if (!db.objectStoreNames.contains('folderWatchers')) {
+            const folderWatchersStore = db.createObjectStore('folderWatchers', {
+              keyPath: 'id',
+            })
+            folderWatchersStore.createIndex('basePath', 'basePath', {
+              unique: false,
+            })
+            folderWatchersStore.createIndex('isActive', 'isActive', {
+              unique: false,
+            })
+            folderWatchersStore.createIndex('createdAt', 'createdAt', {
+              unique: false,
+            })
+            folderWatchersStore.createIndex('lastSync', 'lastSync', {
+              unique: false,
+            })
+          }
         }
 
         // Create credentials store
@@ -244,6 +327,45 @@ class Database {
           })
         }
 
+        // Create knowledgeItems store
+        if (!db.objectStoreNames.contains('knowledgeItems')) {
+          const knowledgeItemsStore = db.createObjectStore('knowledgeItems', {
+            keyPath: 'id',
+          })
+          knowledgeItemsStore.createIndex('name', 'name', { unique: false })
+          knowledgeItemsStore.createIndex('type', 'type', { unique: false })
+          knowledgeItemsStore.createIndex('parentId', 'parentId', {
+            unique: false,
+          })
+          knowledgeItemsStore.createIndex('path', 'path', { unique: false })
+          knowledgeItemsStore.createIndex('createdAt', 'createdAt', {
+            unique: false,
+          })
+          knowledgeItemsStore.createIndex('tags', 'tags', {
+            unique: false,
+            multiEntry: true,
+          })
+        }
+
+        // Create folderWatchers store
+        if (!db.objectStoreNames.contains('folderWatchers')) {
+          const folderWatchersStore = db.createObjectStore('folderWatchers', {
+            keyPath: 'id',
+          })
+          folderWatchersStore.createIndex('basePath', 'basePath', {
+            unique: false,
+          })
+          folderWatchersStore.createIndex('isActive', 'isActive', {
+            unique: false,
+          })
+          folderWatchersStore.createIndex('createdAt', 'createdAt', {
+            unique: false,
+          })
+          folderWatchersStore.createIndex('lastSync', 'lastSync', {
+            unique: false,
+          })
+        }
+
         // Create langfuse_config store
         if (!db.objectStoreNames.contains('langfuse_config')) {
           const langfuseConfigStore = db.createObjectStore('langfuse_config', {
@@ -266,13 +388,25 @@ class Database {
   ): Promise<string> {
     if (!this.db) throw new Error('Database not initialized')
 
-    return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction([storeName], 'readwrite')
-      const store = transaction.objectStore(storeName)
-      const request = store.add(data)
+    // Check if the store exists before trying to use it
+    if (!this.db.objectStoreNames.contains(storeName)) {
+      throw new Error(
+        `Object store '${storeName}' not found. Database may need to be reset.`,
+      )
+    }
 
-      request.onsuccess = () => resolve(request.result as string)
-      request.onerror = () => reject(request.error)
+    return new Promise((resolve, reject) => {
+      try {
+        const transaction = this.db!.transaction([storeName], 'readwrite')
+        const store = transaction.objectStore(storeName)
+        const request = store.add(data)
+
+        request.onsuccess = () => resolve(request.result as string)
+        request.onerror = () => reject(request.error)
+        transaction.onerror = () => reject(transaction.error)
+      } catch (error) {
+        reject(error)
+      }
     })
   }
 
@@ -390,7 +524,7 @@ class Database {
     this.initialized = false
 
     return new Promise((resolve, reject) => {
-      const deleteRequest = indexedDB.deleteDatabase(DB_NAME)
+      const deleteRequest = indexedDB.deleteDatabase(Database.DB_NAME)
       deleteRequest.onsuccess = () => {
         console.log('Database deleted successfully')
         this.init().then(resolve).catch(reject)

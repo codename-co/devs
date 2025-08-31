@@ -10,6 +10,7 @@ export interface Agent {
   temperature?: number
   tags?: string[]
   tools?: Tool[]
+  knowledgeItemIds?: string[] // Associated knowledge items for context
   createdAt: Date
   updatedAt?: Date
   version?: string
@@ -19,13 +20,6 @@ export interface Agent {
       desc?: string
     }
   }
-}
-
-export interface Workflow {
-  id: string
-  strategy: string
-  status: 'pending' | 'running' | 'completed'
-  checkpoints: Checkpoint[]
 }
 
 export interface Message {
@@ -44,6 +38,37 @@ export interface Conversation {
   timestamp: Date
   messages: Message[]
   title?: string // Auto-generated title from LLM summarization
+}
+
+export interface KnowledgeItem {
+  id: string
+  name: string
+  type: 'file' | 'folder'
+  fileType?: 'document' | 'image' | 'text' // Type of file based on content/extension
+  content?: string // File content or base64 for binary files
+  contentHash?: string // SHA-256 hash for deduplication
+  mimeType?: string
+  size?: number
+  path: string // Full path for organization
+  parentId?: string // For nested folders
+  lastModified: Date
+  createdAt: Date
+  tags?: string[]
+  description?: string
+  // Sync-related fields
+  syncSource?: 'manual' | 'filesystem_api' // How this item was added
+  fileSystemHandle?: string // Serialized handle for File System API items
+  watchId?: string // ID for file watcher
+  lastSyncCheck?: Date // When we last checked for updates
+}
+
+export interface PersistedFolderWatcher {
+  id: string
+  basePath: string
+  lastSync: Date
+  isActive: boolean
+  createdAt: Date
+  // Note: FileSystemDirectoryHandle cannot be serialized, so we'll need to re-request permission
 }
 
 export interface Knowledge {
@@ -112,11 +137,19 @@ export interface TaskStep {
   order: number
 }
 
+export interface TaskAttachment {
+  name: string
+  type: string
+  size: number
+  data: string // base64 encoded file data
+}
+
 export interface Task {
   id: string
   workflowId: string
   title: string
   description: string
+  attachments?: TaskAttachment[] // File attachments from user
   complexity: 'simple' | 'complex'
   status: 'pending' | 'in_progress' | 'completed' | 'failed'
   assignedAgentId?: string

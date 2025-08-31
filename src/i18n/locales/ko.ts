@@ -20,6 +20,7 @@ export const ko: I18n = {
   Teams: '팀',
   Settings: '설정',
   Agents: '에이전트',
+  Conversations: '대화',
   'Conversations history': '대화 기록',
   Knowledge: '지식',
   Connectors: '커넥터',
@@ -38,6 +39,8 @@ export const ko: I18n = {
   'Need something done?': '무언가 필요하신가요?',
   'More actions': '추가 작업',
   'Attach a file or image': '파일이나 이미지를 첨부하세요',
+  'Upload new file': '새 파일 업로드',
+  'Choose from knowledge base': '지식 베이스에서 선택',
   'Drop files here…': '여기에 파일을 드롭하세요…',
   'Use microphone': '마이크 사용',
   'Send prompt': '프롬프트 전송',
@@ -61,7 +64,7 @@ export const ko: I18n = {
   'Interface Language': '인터페이스 언어',
   'Platform Name': '플랫폼 이름',
   'Theme Mode': '테마 모드',
-  Auto: '자동',
+  System: '시스템',
   Light: '밝은 테마',
   Dark: '어두운 테마',
   'Secure Storage': '안전한 저장소',
@@ -101,13 +104,8 @@ export const ko: I18n = {
   'Database Management': '데이터베이스 관리',
   'Export, import, or clear your local database':
     '로컬 데이터베이스를 내보내거나 가져오거나 지웁니다',
-  'Dump your entire database to a JSON file':
-    '전체 데이터베이스를 JSON 파일로 내보냅니다',
   'Backup database': '데이터베이스 백업',
-  'Restore your database from a JSON file':
-    'JSON 파일에서 데이터베이스를 복원합니다',
   'Restore database': '데이터베이스 복원',
-  'Clear all data from the database': '데이터베이스의 모든 데이터를 지웁니다',
   'Clear database': '데이터베이스 지우기',
   'Database exported successfully': '데이터베이스가 성공적으로 내보내졌습니다',
   'Failed to export database': '데이터베이스 내보내기에 실패했습니다',
@@ -280,8 +278,8 @@ export const ko: I18n = {
   'Works without internet after initial load.':
     '초기 로드 후 인터넷 없이도 작동합니다.',
   'Open Source': '오픈 소스',
-  'MIT licensed. Built by the community, for the community.':
-    'MIT 라이선스. 커뮤니티에 의해, 커뮤니티를 위해 구축됨.',
+  '{license} licensed. Built by the community, for the community.':
+    '{license} 라이선스. 커뮤니티에 의해, 커뮤니티를 위해 구축됨.',
   'Configure your LLM provider': 'LLM 공급자 구성',
   'Describe your task': '작업 설명',
   'Be as detailed as possible to get the best results':
@@ -356,4 +354,47 @@ export const ko: I18n = {
   'Main Task & Sub-tasks': '주요 작업 및 하위 작업',
   'Task Dependencies': '작업 종속성',
   'Total Sub-tasks': '총 하위 작업',
+
+  // Knowledge Page
+  'Knowledge Base': '지식 베이스',
+  'Add Knowledge': '지식 추가',
+
+  // Common actions
+  Retry: '다시 시도',
+  Refresh: '새로고침',
+  Close: '닫기',
+
+  // Database Administration
+  'Loading database information…': '데이터베이스 정보 로딩 중…',
+  'Failed to load database information': '데이터베이스 정보 로드 실패',
+  'Database Administration': '데이터베이스 관리',
+  'Reset Database': '데이터베이스 초기화',
+  '{n} records': '{n} 레코드',
+  Records: '레코드',
+  Indexes: '인덱스',
+  Size: '크기',
+  'Search {store} by {categories}…': '검색 {store}에서 {categories}…',
+  'All Records': '모든 레코드',
+  'Filtered Records': '필터링된 레코드',
+  ID: 'ID',
+  Preview: '미리보기',
+  Actions: '작업',
+  View: '보기',
+  'No data recorded': '기록된 데이터 없음',
+  'Record Details': '레코드 세부 정보',
+
+  // Searchable collections & indexes
+  agents: '에이전트',
+  conversations: '대화',
+  knowledgeItems: '지식 항목',
+  folderWatchers: '폴더 감시자',
+  credentials: '자격 증명',
+  artifacts: '아티팩트',
+  // tasks: '작업',
+  contexts: '컨텍스트',
+  langfuse_config: 'langfuse 구성',
+  name: '이름',
+  description: '설명',
+  role: '역할',
+  tags: '태그',
 } as const

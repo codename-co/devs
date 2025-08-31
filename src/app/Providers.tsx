@@ -41,9 +41,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const root = document.documentElement
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    
+
     const applyTheme = () => {
-      if (theme === 'auto') {
+      if (theme === 'system') {
         // Use system preference
         const isDarkMode = mediaQuery.matches
         root.classList.toggle('dark', isDarkMode)
@@ -54,12 +54,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
         root.classList.toggle('light', theme === 'light')
       }
     }
-    
+
     // Apply initial theme
     applyTheme()
-    
+
     // Listen for system theme changes when in auto mode
-    if (theme === 'auto') {
+    if (theme === 'system') {
       mediaQuery.addEventListener('change', applyTheme)
       return () => mediaQuery.removeEventListener('change', applyTheme)
     }

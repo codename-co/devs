@@ -75,85 +75,72 @@
   navigation: auto;
 }
 @layer utilities {
-  /* Default transition duration and easing */
+  /* Default smooth slide transition */
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation-duration: 0.3s;
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Subtle fade for the main content */
-  ::view-transition-old(main),
-  ::view-transition-new(main) {
-    animation-duration: 0.25s;
-    animation-timing-function: ease-out;
-  }
-
-  /* Smooth slide for page transitions */
+  /* Slide out animation */
   ::view-transition-old(root) {
-    animation-name: slide-out-to-left;
+    animation-name: slide-out;
   }
 
+  /* Slide in animation */
   ::view-transition-new(root) {
-    animation-name: slide-in-from-right;
+    animation-name: slide-in;
   }
 
-  /* Custom animations */
-  @keyframes slide-out-to-left {
+  /* Keyframe animations */
+  @keyframes slide-out {
     to {
-      transform: translateX(-10px);
+      transform: translateX(-30px);
       opacity: 0;
     }
   }
 
-  @keyframes slide-in-from-right {
+  @keyframes slide-in {
     from {
-      transform: translateX(10px);
+      transform: translateX(30px);
       opacity: 0;
     }
   }
 
-  /* Fade transition for content areas */
+  /* Alternative fade animation */
   @keyframes fade-out {
     to {
       opacity: 0;
+      transform: scale(0.98);
     }
   }
 
   @keyframes fade-in {
     from {
       opacity: 0;
+      transform: scale(0.98);
     }
   }
 
-  /* Subtle scale effect for cards and components */
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation-duration: 0.2s;
-    animation-timing-function: ease-in-out;
-  }
-
-  /* Disable transitions for reduced motion preferences */
+  /* Respect user preferences */
   @media (prefers-reduced-motion: reduce) {
+    @view-transition {
+      navigation: none;
+    }
+
     ::view-transition-old(*),
     ::view-transition-new(*) {
       animation: none !important;
     }
   }
-}
 
-/* Smooth transitions for interactive elements */
-@layer components {
-  .view-transition-smooth {
-    view-transition-name: smooth-transition;
+  /* Optional: Smooth transitions for specific page types */
+  .page-fade ::view-transition-old(root) {
+    animation-name: fade-out;
   }
 
-  .view-transition-slide {
-    view-transition-name: slide-transition;
-  }
-
-  .view-transition-fade {
-    view-transition-name: fade-transition;
+  .page-fade ::view-transition-new(root) {
+    animation-name: fade-in;
   }
 }
 

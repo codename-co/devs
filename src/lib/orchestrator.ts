@@ -4,8 +4,12 @@ import { ArtifactManager } from '@/lib/artifact-manager'
 import { useTaskStore } from '@/stores/taskStore'
 import { useConversationStore } from '@/stores/conversationStore'
 import { getAgentById, createAgent, loadAllAgents } from '@/stores/agentStore'
-import { LLMService, LLMMessage } from '@/lib/llm'
+import { LLMService, LLMMessage, LLMMessageAttachment } from '@/lib/llm'
 import { CredentialService } from '@/lib/credential-service'
+import {
+  getKnowledgeAttachments,
+  buildAgentInstructions,
+} from '@/lib/agent-knowledge'
 import type {
   Task,
   Agent,
@@ -13,6 +17,7 @@ import type {
   AgentSpec,
   Artifact,
   SharedContext,
+  TaskAttachment,
 } from '@/types'
 
 export interface OrchestrationResult {
@@ -29,12 +34,29 @@ export class WorkflowOrchestrator {
   private static readonly VALIDATOR_AGENT_ID = 'validator-agent'
   private static runningOrchestrations = new Set<string>()
 
+  // Helper function to convert TaskAttachment to LLMMessageAttachment
+  private static convertTaskAttachments(
+    attachments: TaskAttachment[] = [],
+  ): LLMMessageAttachment[] {
+    return attachments.map((attachment) => ({
+      type: attachment.type.startsWith('image/')
+        ? ('image' as const)
+        : attachment.type === 'text/plain'
+          ? ('text' as const)
+          : ('document' as const),
+      name: attachment.name,
+      data: attachment.data,
+      mimeType: attachment.type,
+    }))
+  }
+
   static async orchestrateTask(
     prompt: string,
     existingTaskId?: string,
   ): Promise<OrchestrationResult> {
     // Use task ID for deduplication if available, otherwise fall back to prompt hash
-    const orchestrationKey = existingTaskId || btoa(encodeURIComponent(prompt)).substring(0, 32)
+    const orchestrationKey =
+      existingTaskId || btoa(encodeURIComponent(prompt)).substring(0, 32)
 
     if (this.runningOrchestrations.has(orchestrationKey)) {
       console.log(
@@ -52,7 +74,8 @@ export class WorkflowOrchestrator {
           `⏭️ Task ${existingTaskId} already processed (status: ${existingTask.status}), skipping orchestration`,
         )
         // Return a success result for already processed tasks
-        const artifacts = await ArtifactManager.getArtifactsByTask(existingTaskId)
+        const artifacts =
+          await ArtifactManager.getArtifactsByTask(existingTaskId)
         return {
           success: true,
           workflowId: existingTask.workflowId,
@@ -134,11 +157,11 @@ export class WorkflowOrchestrator {
         dueDate: new Date(Date.now() + analysis.estimatedDuration * 60 * 1000),
         // Merge requirements from analysis with existing ones, adding detection timestamps
         requirements: [
-          ...existingTask.requirements, 
-          ...analysis.requirements.map(req => ({ 
-            ...req, 
-            detectedAt: req.detectedAt || new Date() 
-          }))
+          ...existingTask.requirements,
+          ...analysis.requirements.map((req) => ({
+            ...req,
+            detectedAt: req.detectedAt || new Date(),
+          })),
         ],
       })
 
@@ -158,9 +181,9 @@ export class WorkflowOrchestrator {
         complexity: 'simple',
         status: 'pending',
         dependencies: [],
-        requirements: analysis.requirements.map(req => ({ 
-          ...req, 
-          detectedAt: req.detectedAt || new Date() 
+        requirements: analysis.requirements.map((req) => ({
+          ...req,
+          detectedAt: req.detectedAt || new Date(),
         })),
         artifacts: [],
         steps: [],
@@ -210,8 +233,11 @@ export class WorkflowOrchestrator {
       }
 
       // Validate and update individual requirements
-      const { validateAndUpdateRequirements, updateTask, markRequirementSatisfied } =
-        useTaskStore.getState()
+      const {
+        validateAndUpdateRequirements,
+        updateTask,
+        markRequirementSatisfied,
+      } = useTaskStore.getState()
       console.log('🔍 Validating individual requirements...')
       const requirementValidation = await validateAndUpdateRequirements(
         mainTask.id,
@@ -223,7 +249,11 @@ export class WorkflowOrchestrator {
       // Mark individual requirements as satisfied if they passed validation
       for (const result of requirementValidation.results) {
         if (result.status === 'satisfied') {
-          await markRequirementSatisfied(mainTask.id, result.requirementId, result.evidence)
+          await markRequirementSatisfied(
+            mainTask.id,
+            result.requirementId,
+            result.evidence,
+          )
         }
       }
 
@@ -294,9 +324,9 @@ export class WorkflowOrchestrator {
           // Merge requirements with detection timestamps
           requirements: [
             ...existingTask.requirements,
-            ...(breakdown.mainTask.requirements || []).map(req => ({ 
-              ...req, 
-              detectedAt: req.detectedAt || new Date() 
+            ...(breakdown.mainTask.requirements || []).map((req) => ({
+              ...req,
+              detectedAt: req.detectedAt || new Date(),
             })),
           ],
         })
@@ -330,10 +360,7 @@ export class WorkflowOrchestrator {
       console.log(
         `🎭 Coordinating ${subTasks.length} subtasks with ${team.length} agents`,
       )
-      const results = await this.coordinateTeamExecution(
-        subTasks,
-        team,
-      )
+      const results = await this.coordinateTeamExecution(subTasks, team)
       console.log(`✅ Team execution completed, ${results.length} results`)
 
       // Step 5: Validate overall completion
@@ -353,7 +380,8 @@ export class WorkflowOrchestrator {
       }
 
       // Step 6: Validate and update requirements for all tasks
-      const { validateAndUpdateRequirements, markRequirementSatisfied } = useTaskStore.getState()
+      const { validateAndUpdateRequirements, markRequirementSatisfied } =
+        useTaskStore.getState()
       console.log('🔍 Validating individual requirements for all tasks...')
 
       // Validate requirements for main task and subtasks
@@ -368,7 +396,11 @@ export class WorkflowOrchestrator {
         // Mark individual requirements as satisfied if they passed validation
         for (const result of requirementValidation.results) {
           if (result.status === 'satisfied') {
-            await markRequirementSatisfied(task.id, result.requirementId, result.evidence)
+            await markRequirementSatisfied(
+              task.id,
+              result.requirementId,
+              result.evidence,
+            )
           }
         }
       }
@@ -596,16 +628,33 @@ export class WorkflowOrchestrator {
         throw new Error('No LLM provider configured')
       }
 
+      // Get knowledge attachments for the agent
+      const knowledgeAttachments = await getKnowledgeAttachments(
+        agent.knowledgeItemIds,
+      )
+
+      // Build enhanced instructions with knowledge context
+      const baseInstructions =
+        agent.instructions || 'You are a helpful AI assistant.'
+      const enhancedInstructions = await buildAgentInstructions(
+        baseInstructions,
+        agent.knowledgeItemIds,
+      )
+
       const messages: LLMMessage[] = [
         {
           role: 'system',
           content:
-            agent.instructions +
+            enhancedInstructions +
             `\n\nYou are working on task: ${task.title}\n\nTask requirements: ${task.requirements.map((r) => r.description).join(', ')}`,
         },
         {
           role: 'user',
           content: enhancedPrompt,
+          attachments: [
+            ...this.convertTaskAttachments(task.attachments),
+            ...knowledgeAttachments,
+          ].filter(Boolean),
         },
       ]
 
@@ -707,6 +756,7 @@ Please validate if all requirements are met by the deliverables.
         {
           role: 'user',
           content: validationPrompt,
+          attachments: this.convertTaskAttachments(task.attachments),
         },
       ]
 
@@ -823,6 +873,15 @@ Please validate if all requirements are met by the deliverables.
       context.forEach((ctx) => {
         enhanced += `- ${ctx.title}: ${ctx.content}\n`
       })
+    }
+
+    if (task.attachments && task.attachments.length > 0) {
+      enhanced += '\n\n## Attached Files:\n'
+      task.attachments.forEach((attachment) => {
+        enhanced += `- ${attachment.name} (${attachment.type}, ${Math.round(attachment.size / 1024)}KB)\n`
+      })
+      enhanced +=
+        '\nPlease analyze and reference these attached files in your response as needed.\n'
     }
 
     enhanced += `\n\n## Task Requirements:\n`

@@ -4,7 +4,6 @@ import {
   AccordionItem,
   Alert,
   Button,
-  ButtonGroup,
   Card,
   CardBody,
   Checkbox,
@@ -31,7 +30,7 @@ import { LLMProvider, Credential, LangfuseConfig } from '@/types'
 import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
 import { LLMService } from '@/lib/llm'
-import { Container, Icon, Section } from '@/components'
+import { Container, Icon, Section, Title } from '@/components'
 import { errorToast, successToast } from '@/lib/toast'
 import { userSettings } from '@/stores/userStore'
 import { PRODUCT } from '@/config/product'
@@ -162,7 +161,7 @@ const PROVIDERS: ProviderConfig[] = [
 ]
 
 export const SettingsPage = () => {
-  const { lang, t } = useI18n()
+  const { lang, t, url } = useI18n()
   const navigate = useNavigate()
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
   const { handleImageFile, setBackgroundImage } = useBackgroundImage()
@@ -174,8 +173,6 @@ export const SettingsPage = () => {
   const [isValidating, setIsValidating] = useState(false)
   const [masterPassword, setMasterPassword] = useState('')
   const [isUnlocking, setIsUnlocking] = useState(false)
-  const [isExporting, setIsExporting] = useState(false)
-  const [isImporting, setIsImporting] = useState(false)
   const [masterKey, setMasterKey] = useState<string | null>(null)
   const [isRegeneratingKey, setIsRegeneratingKey] = useState(false)
   const [availableModels, setAvailableModels] = useState<string[]>([])
@@ -583,164 +580,6 @@ export const SettingsPage = () => {
     }
   }
 
-  const handleExportDatabase = async () => {
-    setIsExporting(true)
-    try {
-      await db.init()
-
-      const dbData: Record<string, any> = {}
-      const stores = [
-        'agents',
-        'workflows',
-        'conversations',
-        'knowledge',
-        'credentials',
-        'artifacts',
-      ]
-
-      for (const store of stores) {
-        try {
-          dbData[store] = await db.getAll(store as any)
-        } catch (error) {
-          console.warn(`Failed to export store ${store}:`, error)
-          dbData[store] = []
-        }
-      }
-
-      const dataBlob = new Blob([JSON.stringify(dbData, null, 2)], {
-        type: 'application/json',
-      })
-
-      const url = URL.createObjectURL(dataBlob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `devs-database-export-${new Date().toISOString().split('T')[0]}.json`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-
-      successToast(t('Database exported successfully'))
-    } catch (error) {
-      errorToast(t('Failed to export database'))
-      console.error('Export error:', error)
-    } finally {
-      setIsExporting(false)
-    }
-  }
-
-  const handleImportDatabase = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    setIsImporting(true)
-    try {
-      const text = await file.text()
-      const dbData = JSON.parse(text)
-
-      await db.init()
-
-      const stores = [
-        'agents',
-        'workflows',
-        'conversations',
-        'knowledge',
-        'credentials',
-        'artifacts',
-      ]
-      let importedCount = 0
-
-      for (const store of stores) {
-        if (dbData[store] && Array.isArray(dbData[store])) {
-          for (const item of dbData[store]) {
-            try {
-              await db.add(store as any, item)
-              importedCount++
-            } catch (error) {
-              console.warn(`Failed to import item in ${store}:`, error)
-            }
-          }
-        }
-      }
-
-      await loadCredentials()
-      successToast(
-        t('Database imported successfully ({count} items)', {
-          count: importedCount,
-        }),
-      )
-    } catch (error) {
-      errorToast(t('Failed to import database - invalid file format'))
-      console.error('Import error:', error)
-    } finally {
-      setIsImporting(false)
-      event.target.value = ''
-    }
-  }
-
-  const handleClearDatabase = async () => {
-    if (
-      !confirm(
-        t(
-          'Are you sure you want to clear all data? This action cannot be undone.',
-        ),
-      )
-    ) {
-      return
-    }
-
-    try {
-      await db.init()
-
-      const stores = [
-        'agents',
-        'workflows',
-        'conversations',
-        'knowledge',
-        'credentials',
-        'artifacts',
-      ]
-
-      for (const store of stores) {
-        try {
-          const items = await db.getAll(store as any)
-          for (const item of items) {
-            await db.delete(store as any, (item as any).id)
-          }
-        } catch (error) {
-          console.warn(`Failed to clear store ${store}:`, error)
-        }
-      }
-
-      await loadCredentials()
-      successToast(t('Database cleared successfully'))
-    } catch (error) {
-      errorToast(t('Failed to clear database'))
-      console.error('Clear error:', error)
-    }
-  }
-
-  const handleRepairDatabase = async () => {
-    if (
-      !confirm(
-        'This will reset and rebuild the database structure. Your data will be preserved but the database will be reinitialized. Continue?',
-      )
-    ) {
-      return
-    }
-
-    try {
-      await (db as any).resetDatabase()
-      await loadCredentials()
-      successToast(t('Database repaired successfully'))
-    } catch (error) {
-      errorToast(t('Failed to repair database'))
-      console.error('Repair error:', error)
-    }
-  }
-
   const fetchAvailableModels = async (
     provider: LLMProvider,
     baseUrl?: string,
@@ -891,6 +730,7 @@ export const SettingsPage = () => {
               title={t('General Settings')}
               subtitle={t('Configure your platform preferences')}
               startContent={<Icon name="Settings" className="h-5 w-5" />}
+              classNames={{ content: 'pl-8 mb-4' }}
             >
               <div className="space-y-6 p-2">
                 <Select
@@ -902,7 +742,7 @@ export const SettingsPage = () => {
                       handleLanguageChange(selectedLang)
                     }
                   }}
-                  className="max-w-xs"
+                  className="max-w-xs mr-3"
                 >
                   {Object.entries(languages).map(([key, name]) => (
                     <SelectItem key={key} textValue={name}>
@@ -918,15 +758,15 @@ export const SettingsPage = () => {
                     const selectedTheme = Array.from(keys)[0] as
                       | 'light'
                       | 'dark'
-                      | 'auto'
+                      | 'system'
                     if (selectedTheme && selectedTheme !== theme) {
                       setTheme(selectedTheme)
                     }
                   }}
-                  className="max-w-xs"
+                  className="max-w-xs mr-3"
                 >
-                  <SelectItem key="auto" textValue={t('Auto')}>
-                    {t('Auto')}
+                  <SelectItem key="system" textValue={t('System')}>
+                    {t('System')}
                   </SelectItem>
                   <SelectItem key="light" textValue={t('Light')}>
                     {t('Light')}
@@ -941,7 +781,7 @@ export const SettingsPage = () => {
                   placeholder={PRODUCT.displayName}
                   value={platformName || ''}
                   onChange={(e) => setPlatformName(e.target.value)}
-                  className="max-w-xs"
+                  className="max-w-xs mr-3"
                 />
 
                 <div>
@@ -1006,6 +846,7 @@ export const SettingsPage = () => {
               title={t('LLM Providers')}
               subtitle={t('Manage your API credentials')}
               startContent={<Icon name="Brain" className="h-5 w-5" />}
+              classNames={{ content: 'pl-8 mb-4' }}
             >
               <div className="space-y-4 p-2">
                 <div className="flex justify-end">
@@ -1042,6 +883,7 @@ export const SettingsPage = () => {
               title="Langfuse Integration"
               subtitle="Configure Langfuse for LLM request tracking and analytics"
               startContent={<Icon name="Langfuse" className="h-5 w-5" />}
+              classNames={{ content: 'pl-8 mb-4' }}
             >
               <div className="space-y-4 p-2">
                 <div className="flex items-center gap-2">
@@ -1149,6 +991,7 @@ export const SettingsPage = () => {
               title={t('Secure Storage')}
               subtitle={t('Manage your encryption keys and secure storage')}
               startContent={<Icon name="Lock" className="h-5 w-5" />}
+              classNames={{ content: 'pl-8 mb-4' }}
             >
               <div className="space-y-4 p-2">
                 <p className="text-sm text-default-500 mb-3">
@@ -1200,89 +1043,20 @@ export const SettingsPage = () => {
                 </div>
               </div>
             </AccordionItem>
+          </Accordion>
 
+          <Title size="xl" className="text-gray-500">
+            Advanced Settings
+          </Title>
+          <Accordion selectionMode="none" variant="bordered">
             <AccordionItem
               key="database"
               title={t('Database Management')}
               subtitle={t('Export, import, or clear your local database')}
               startContent={<Icon name="Database" className="h-5 w-5" />}
-            >
-              <div className="space-y-4 p-2">
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={handleImportDatabase}
-                  style={{ display: 'none' }}
-                  id="import-file-input"
-                />
-
-                <div className="space-y-3">
-                  <ButtonGroup>
-                    <Tooltip
-                      content={t('Dump your entire database to a JSON file')}
-                    >
-                      <Button
-                        variant="flat"
-                        onPress={handleExportDatabase}
-                        isLoading={isExporting}
-                        startContent={
-                          <Icon
-                            name="ArrowRight"
-                            className="h-4 w-4 rotate-90"
-                          />
-                        }
-                      >
-                        {t('Backup database')}
-                      </Button>
-                    </Tooltip>
-                    <Tooltip
-                      content={t('Restore your database from a JSON file')}
-                    >
-                      <Button
-                        variant="flat"
-                        onPress={() =>
-                          document.getElementById('import-file-input')?.click()
-                        }
-                        isLoading={isImporting}
-                        startContent={
-                          <Icon
-                            name="ArrowRight"
-                            className="h-4 w-4 -rotate-90"
-                          />
-                        }
-                      >
-                        {t('Restore database')}
-                      </Button>
-                    </Tooltip>
-                  </ButtonGroup>
-
-                  <ButtonGroup>
-                    <Tooltip content="Fix database structure issues and rebuild indexes">
-                      <Button
-                        variant="flat"
-                        color="warning"
-                        onPress={handleRepairDatabase}
-                        startContent={
-                          <Icon name="RefreshDouble" className="h-4 w-4" />
-                        }
-                      >
-                        Repair database
-                      </Button>
-                    </Tooltip>
-                    <Tooltip content={t('Clear all data from the database')}>
-                      <Button
-                        variant="flat"
-                        color="danger"
-                        onPress={handleClearDatabase}
-                        startContent={<Icon name="Trash" className="h-4 w-4" />}
-                      >
-                        {t('Clear database')}
-                      </Button>
-                    </Tooltip>
-                  </ButtonGroup>
-                </div>
-              </div>
-            </AccordionItem>
+              indicator={<Icon name="ArrowRight" className="h-4 w-4" />}
+              onPress={() => navigate(url('/admin/database'))}
+            />
           </Accordion>
         </Container>
 

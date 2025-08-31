@@ -1,8 +1,16 @@
 import { LLMProvider, LLMConfig } from '@/types'
 
+export interface LLMMessageAttachment {
+  type: 'image' | 'document' | 'text'
+  name: string
+  data: string // base64 encoded for images/docs, plain text for text files
+  mimeType: string
+}
+
 export interface LLMMessage {
   role: 'system' | 'user' | 'assistant'
   content: string
+  attachments?: LLMMessageAttachment[]
 }
 
 export interface LLMResponse {

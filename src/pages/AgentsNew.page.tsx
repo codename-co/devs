@@ -18,10 +18,17 @@ import { useI18n } from '@/i18n'
 import DefaultLayout from '@/layouts/Default'
 import { HeaderProps } from '@/lib/types'
 import { Message } from '@/types'
-import { Container, Section, Title, MarkdownRenderer } from '@/components'
+import {
+  Container,
+  Section,
+  Title,
+  MarkdownRenderer,
+  AgentKnowledgePicker,
+} from '@/components'
 import { createAgent } from '@/stores/agentStore'
 import { LLMService, LLMMessage } from '@/lib/llm'
 import { CredentialService } from '@/lib/credential-service'
+import { buildAgentInstructions } from '@/lib/agent-knowledge'
 import { languages } from '@/i18n'
 
 interface AgentConfig {
@@ -50,6 +57,7 @@ export function AgentsNewPage() {
   const [role, setRole] = useState('')
   const [instructions, setInstructions] = useState('')
   const [temperature, setTemperature] = useState(0.7)
+  const [selectedKnowledgeIds, setSelectedKnowledgeIds] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -91,6 +99,7 @@ export function AgentsNewPage() {
         instructions,
         temperature,
         tags: ['custom'],
+        knowledgeItemIds: selectedKnowledgeIds,
       })
 
       setSuccess(true)
@@ -138,11 +147,21 @@ export function AgentsNewPage() {
       // Get the active LLM configuration
       const config = await CredentialService.getActiveConfig()
       if (!config) {
-        throw new Error('No LLM provider configured. Please configure one in Settings.')
+        throw new Error(
+          'No LLM provider configured. Please configure one in Settings.',
+        )
       }
 
+      // Build enhanced instructions with knowledge context
+      const baseInstructions =
+        currentAgentConfig.instructions || 'You are a helpful AI assistant.'
+      const enhancedInstructions = await buildAgentInstructions(
+        baseInstructions,
+        selectedKnowledgeIds,
+      )
+
       const instructions = [
-        currentAgentConfig.instructions || 'You are a helpful AI assistant.',
+        enhancedInstructions,
         `ALWAYS respond in ${languages[lang]} as this is the user's language.`,
       ].join('\n\n')
 
@@ -183,10 +202,11 @@ export function AgentsNewPage() {
       }
     } catch (error) {
       console.error('Failed to get AI response:', error)
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : 'Sorry, I encountered an error. Please make sure you have configured an LLM provider in Settings.'
-      
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Sorry, I encountered an error. Please make sure you have configured an LLM provider in Settings.'
+
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === assistantMessage.id
@@ -208,6 +228,7 @@ export function AgentsNewPage() {
     setRole('')
     setInstructions('')
     setTemperature(0.7)
+    setSelectedKnowledgeIds([])
     setError('')
     setSuccess(false)
     setMessages([])
@@ -217,7 +238,7 @@ export function AgentsNewPage() {
   const isPreviewEnabled = name.trim()
 
   return (
-    <DefaultLayout title={header.title} header={header}>
+    <DefaultLayout title={String(header.title)} header={header}>
       <Section>
         <Container>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -283,6 +304,11 @@ export function AgentsNewPage() {
               <Accordion>
                 <AccordionItem title={t('Advanced Configuration')}>
                   <div className="space-y-4 p-4 border rounded-md">
+                    <AgentKnowledgePicker
+                      selectedKnowledgeIds={selectedKnowledgeIds}
+                      onSelectionChange={setSelectedKnowledgeIds}
+                    />
+
                     <p className="text-xs text-default-500">
                       Configure advanced settings for your agent. The LLM
                       provider and model will use your active configuration from

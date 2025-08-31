@@ -6,6 +6,34 @@ export class OllamaProvider implements LLMProviderInterface {
     return config?.baseUrl || 'http://localhost:11434'
   }
 
+  private convertMessageToOllamaFormat(message: LLMMessage): any {
+    let content = message.content
+
+    // If there are attachments, append them to the content
+    if (message.attachments && message.attachments.length > 0) {
+      message.attachments.forEach((attachment) => {
+        if (attachment.type === 'image') {
+          // For images, we'll include them as base64 with description
+          // Note: Ollama's support for images depends on the model
+          content += `\n\n--- Image: ${attachment.name} ---\n[Image data: ${attachment.mimeType}]\ndata:${attachment.mimeType};base64,${attachment.data}\n--- End of ${attachment.name} ---\n\n`
+        } else if (attachment.type === 'text') {
+          // For text files, decode and include the content
+          const fileContent = atob(attachment.data) // Decode base64 text files
+          content += `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`
+        } else {
+          // For document files, include them with description
+          const fileContent = `[Document: ${attachment.name} (${attachment.mimeType})]`
+          content += `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`
+        }
+      })
+    }
+
+    return {
+      role: message.role,
+      content: content,
+    }
+  }
+
   async chat(
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
@@ -19,10 +47,7 @@ export class OllamaProvider implements LLMProviderInterface {
       },
       body: JSON.stringify({
         model: config?.model || 'llama2',
-        messages: messages.map((msg) => ({
-          role: msg.role,
-          content: msg.content,
-        })),
+        messages: messages.map((msg) => this.convertMessageToOllamaFormat(msg)),
         stream: false,
         options: {
           temperature: config?.temperature || 0.7,
@@ -64,10 +89,7 @@ export class OllamaProvider implements LLMProviderInterface {
       },
       body: JSON.stringify({
         model: config?.model || 'llama2',
-        messages: messages.map((msg) => ({
-          role: msg.role,
-          content: msg.content,
-        })),
+        messages: messages.map((msg) => this.convertMessageToOllamaFormat(msg)),
         stream: true,
         options: {
           temperature: config?.temperature || 0.7,

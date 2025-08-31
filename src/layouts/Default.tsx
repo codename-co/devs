@@ -1,9 +1,18 @@
 import { Container, Icon, Section, Title } from '@/components'
 import { AppDrawer } from '@/components/AppDrawer'
 import { useI18n } from '@/i18n'
-import type { HeaderProps } from '@/lib/types'
+import type { HeaderProps, IconName } from '@/lib/types'
 import { userSettings } from '@/stores/userStore'
-import { Button, Link, ToastProvider, Tooltip } from '@heroui/react'
+import {
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Link,
+  ToastProvider,
+  Tooltip,
+} from '@heroui/react'
 import clsx from 'clsx'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
@@ -42,7 +51,7 @@ export default function DefaultLayout({
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [])
 
-  const isDark = theme === 'dark' || (theme === 'auto' && systemPrefersDark)
+  const isDark = theme === 'dark' || (theme === 'system' && systemPrefersDark)
 
   useEffect(() => {
     if (isDark) {
@@ -70,7 +79,7 @@ export default function DefaultLayout({
         <AppDrawer />
 
         <div className="flex-1 flex flex-col h-screen overflow-y-auto w-full">
-          <div className="h-full space-y space-y-8 view-transition-smooth relative bg-transparent">
+          <div className="h-full space-y space-y-8 relative bg-transparent">
             {(header || showBackButton) && (
               <div
                 className={clsx(
@@ -124,6 +133,30 @@ export default function DefaultLayout({
                       >
                         {header.cta?.label}
                       </Button>
+                    )}
+                    {header?.moreActions && (
+                      <Dropdown>
+                        <DropdownTrigger>
+                          <Button
+                            variant="light"
+                            className="absolute right-0 shrink-0 dark:hover:bg-default-300"
+                          >
+                            <Icon name="MoreVert" size="sm" />
+                          </Button>
+                        </DropdownTrigger>
+                        <DropdownMenu>
+                          {header.moreActions.map((action) => (
+                            <DropdownItem
+                              key={action.label}
+                              onClick={action.onClick}
+                              startContent={
+                                <Icon name={action.icon as IconName} />
+                              }
+                              title={action.label}
+                            />
+                          ))}
+                        </DropdownMenu>
+                      </Dropdown>
                     )}
                     {header && (
                       <Title

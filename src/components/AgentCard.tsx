@@ -69,11 +69,20 @@ export const AgentCard = ({ id, className, onPress }: AgentCardProps) => {
           </div>
         )}
       </CardHeader>
-      <CardBody className="px-4 py-0">
+      <CardBody className="px-4 pb-4">
         {displayDesc && (
           <p className="text-small text-default-600 line-clamp-2">
             {displayDesc}
           </p>
+        )}
+        {agent.knowledgeItemIds && agent.knowledgeItemIds.length > 0 && (
+          <div className="flex items-center gap-1 mt-2">
+            <Icon name="Brain" size="sm" />
+            <span className="text-xs">
+              {agent.knowledgeItemIds.length} knowledge item
+              {agent.knowledgeItemIds.length !== 1 ? 's' : ''}
+            </span>
+          </div>
         )}
       </CardBody>
     </Card>

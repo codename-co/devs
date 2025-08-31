@@ -15,10 +15,25 @@ export const IndexPage = () => {
   const [prompt, setPrompt] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
 
   const { createTaskWithRequirements } = useTaskStore()
   const { backgroundImage, backgroundLoaded, isDragOver, dragHandlers } =
     useBackgroundImage()
+
+  // Helper function to convert File to base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = () => {
+        const result = reader.result as string
+        // Remove the data URL prefix (data:mime/type;base64,)
+        resolve(result.split(',')[1])
+      }
+      reader.onerror = reject
+    })
+  }
 
   const onSubmit = async () => {
     if (!prompt.trim() || isSending) return
@@ -29,12 +44,23 @@ export const IndexPage = () => {
       // Determine which agent to use (default to 'devs' if none selected)
       const agent = selectedAgent || { id: 'devs' }
 
+      // Convert files to TaskAttachment format
+      const attachments = await Promise.all(
+        selectedFiles.map(async (file) => ({
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          data: await fileToBase64(file),
+        })),
+      )
+
       // Create a task with the user's prompt
       const task = await createTaskWithRequirements(
         {
           workflowId: crypto.randomUUID(), // Create a new workflow for this task
           title: prompt.length > 50 ? prompt.substring(0, 50) + '...' : prompt,
           description: prompt,
+          attachments,
           complexity: 'complex', // Assume complex by default since it goes to orchestrator
           status: 'pending',
           assignedAgentId: agent.id,
@@ -47,17 +73,12 @@ export const IndexPage = () => {
         prompt, // User requirement for extracting specific requirements
       )
 
-      // Clear the prompt
+      // Clear the prompt and files
       setPrompt('')
+      setSelectedFiles([])
 
-      // Navigate to the task page with view transition
-      if (document.startViewTransition) {
-        document.startViewTransition(() => {
-          navigate(url(`/tasks/${task.id}`))
-        })
-      } else {
-        navigate(url(`/tasks/${task.id}`))
-      }
+      // Navigate to the task page
+      navigate(url(`/tasks/${task.id}`))
     } catch (error) {
       console.error('Failed to create task:', error)
       errorToast('Failed to create task', error)
@@ -121,6 +142,7 @@ export const IndexPage = () => {
             isSending={isSending}
             selectedAgent={selectedAgent}
             onAgentChange={setSelectedAgent}
+            onFilesChange={setSelectedFiles}
           />
         </Section>
       </DefaultLayout>

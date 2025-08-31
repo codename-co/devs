@@ -10,6 +10,8 @@ import { AgentRunPage } from '@/pages/AgentRun.page'
 import { AgentsPage } from '@/pages/Agents.page'
 import { TaskPage } from '@/pages/Task.page'
 import { TasksPage } from '@/pages/Tasks.page'
+import { KnowledgePage } from '@/pages/Knowledge.page'
+import DatabasePage from '@/pages/admin/Database.page'
 import DemoPage from '@/pages/Demo.page.mdx'
 
 const routes = {
@@ -17,11 +19,13 @@ const routes = {
   agents: AgentsPage,
   settings: SettingsPage,
   conversations: ConversationPage,
+  knowledge: KnowledgePage,
   'agents/run': AgentRunPage,
   'agents/new': AgentsNewPage,
   tasks: TasksPage,
   'tasks/:taskId': TaskPage,
   task: TaskPage,
+  'admin/database': DatabasePage,
   demo: DemoPage,
   '*': NotFoundPage,
 }

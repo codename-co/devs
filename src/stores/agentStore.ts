@@ -92,6 +92,8 @@ Your success is measured by delivering complete, high-quality solutions that mee
 agentCache.set('devs', defaultDevsTeam)
 
 async function loadAgent(agentId: string): Promise<Agent | null> {
+  if (!agentId) return null
+
   if (agentCache.has(agentId)) {
     return agentCache.get(agentId)!
   }
@@ -265,6 +267,7 @@ export async function createAgent(agentData: {
   instructions?: string
   temperature?: number
   tags?: string[]
+  knowledgeItemIds?: string[]
 }): Promise<Agent> {
   try {
     // Ensure database is initialized
@@ -280,6 +283,7 @@ export async function createAgent(agentData: {
       instructions: agentData.instructions || '',
       temperature: agentData.temperature,
       tags: agentData.tags,
+      knowledgeItemIds: agentData.knowledgeItemIds,
       tools: [],
       createdAt: new Date(),
       updatedAt: new Date(),

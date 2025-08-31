@@ -8,7 +8,7 @@ import type { Lang } from '@/i18n/utils'
 // }
 
 // User settings for theme, language, etc.
-export type ThemeMode = 'light' | 'dark' | 'auto'
+export type ThemeMode = 'light' | 'dark' | 'system'
 
 export interface UserSettings {
   theme: ThemeMode
@@ -19,7 +19,7 @@ export interface UserSettings {
 }
 
 const defaultSettings: UserSettings = {
-  theme: 'auto',
+  theme: 'system',
   language: 'en',
   isDrawerCollapsed: true,
 }
@@ -40,7 +40,8 @@ export const userSettings = create<UserSettingsStore>()(
       toggleDrawer: () =>
         set((state) => ({ isDrawerCollapsed: !state.isDrawerCollapsed })),
       setPlatformName: (platformName: string) => set({ platformName }),
-      setBackgroundImage: (backgroundImage: string | undefined) => set({ backgroundImage }),
+      setBackgroundImage: (backgroundImage: string | undefined) =>
+        set({ backgroundImage }),
     }),
     {
       name: 'devs-user-settings',

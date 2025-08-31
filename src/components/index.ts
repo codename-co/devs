@@ -1,5 +1,6 @@
 export * from './AboutModal'
 export * from './AgentCard'
+export * from './AgentKnowledgePicker'
 export * from './AgentPicker'
 // export * from './AppDrawer'
 export * from './Artefact'

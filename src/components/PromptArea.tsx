@@ -3,9 +3,12 @@ import {
   Chip,
   Dropdown,
   DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
   Textarea,
   type TextAreaProps,
   Tooltip,
+  Image,
 } from '@heroui/react'
 import { forwardRef, useEffect, useRef, useState } from 'react'
 
@@ -14,8 +17,9 @@ import { Icon } from './Icon'
 
 import { type Lang, useTranslations } from '@/i18n'
 import { cn, formatFileSize, getFileIcon } from '@/lib/utils'
-import { type Agent } from '@/types'
+import { type Agent, type KnowledgeItem } from '@/types'
 import { getDefaultAgent } from '@/stores/agentStore'
+import { db } from '@/lib/db'
 
 interface PromptAreaProps
   extends Omit<TextAreaProps, 'onFocus' | 'onBlur' | 'onKeyDown'> {
@@ -56,6 +60,8 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
     const [selectedFiles, setSelectedFiles] = useState<File[]>([])
     const [isDragOver, setIsDragOver] = useState(false)
     const [isFocused, setIsFocused] = useState(false)
+    const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([])
+    const [loadingKnowledge, setLoadingKnowledge] = useState(false)
     const recognitionRef = useRef<SpeechRecognition | null>(null)
     const finalTranscriptRef = useRef('')
     const fileInputRef = useRef<HTMLInputElement>(null)
@@ -71,6 +77,37 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         onAgentChange(getDefaultAgent())
       }
     }, [selectedAgent, onAgentChange])
+
+    // Load knowledge items on demand
+    const loadKnowledgeItems = async () => {
+      setLoadingKnowledge(true)
+      try {
+        if (!db.isInitialized()) {
+          await db.init()
+        }
+
+        if (!db.hasStore('knowledgeItems')) {
+          setKnowledgeItems([])
+          return
+        }
+
+        const items = await db.getAll('knowledgeItems')
+        // Only show files, not folders
+        const fileItems = items.filter((item) => item.type === 'file')
+        // Sort by most recently modified
+        fileItems.sort(
+          (a, b) =>
+            new Date(b.lastModified).getTime() -
+            new Date(a.lastModified).getTime(),
+        )
+        setKnowledgeItems(fileItems.slice(0, 20)) // Limit to 20 items for performance
+      } catch (error) {
+        console.error('Error loading knowledge items:', error)
+        setKnowledgeItems([])
+      } finally {
+        setLoadingKnowledge(false)
+      }
+    }
 
     useEffect(() => {
       if (typeof window === 'undefined') return
@@ -199,6 +236,39 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       onFilesChange?.(newFiles)
     }
 
+    const handleKnowledgeFileSelect = async (item: KnowledgeItem) => {
+      // Convert KnowledgeItem to File for consistency
+      try {
+        let fileData: BlobPart
+        let mimeType = item.mimeType || 'application/octet-stream'
+
+        if (item.content?.startsWith('data:')) {
+          // Handle data URLs (for images and binary files)
+          const response = await fetch(item.content)
+          fileData = await response.blob()
+          // Extract mime type from data URL if available
+          const dataUrlMatch = item.content.match(/^data:([^;]+)/)
+          if (dataUrlMatch) {
+            mimeType = dataUrlMatch[1]
+          }
+        } else {
+          // Handle text content
+          fileData = new Blob([item.content || ''], { type: mimeType })
+        }
+
+        const file = new File([fileData], item.name, {
+          type: mimeType,
+          lastModified: new Date(item.lastModified).getTime(),
+        })
+
+        const newFiles = [...selectedFiles, file]
+        setSelectedFiles(newFiles)
+        onFilesChange?.(newFiles)
+      } catch (error) {
+        console.error('Error converting knowledge item to file:', error)
+      }
+    }
+
     const handleDragEnter = (event: React.DragEvent) => {
       event.preventDefault()
       event.stopPropagation() // Prevent background drag handlers from interfering
@@ -231,6 +301,89 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
     const handleBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
       setIsFocused(false)
       onBlur?.(e)
+    }
+
+    const renderKnowledgePreview = (item: KnowledgeItem) => {
+      if (
+        item.fileType === 'image' &&
+        item.content?.startsWith('data:image/')
+      ) {
+        return (
+          <Image
+            src={item.content}
+            alt={item.name}
+            className="w-6 h-6 rounded object-cover"
+            loading="lazy"
+          />
+        )
+      }
+
+      return <Icon name={getFileIcon(item.mimeType || '') as any} size="sm" />
+    }
+
+    const getDropdownItems = () => {
+      const items = [
+        <DropdownItem
+          key="upload"
+          startContent={<Icon name="Upload" size="sm" />}
+        >
+          {t('Upload new file')}
+        </DropdownItem>,
+        <DropdownItem
+          key="knowledge"
+          startContent={<Icon name="Database" size="sm" />}
+          onPress={loadKnowledgeItems}
+        >
+          {t('Choose from knowledge base')}
+        </DropdownItem>,
+      ]
+
+      if (loadingKnowledge) {
+        items.push(
+          <DropdownItem key="loading" isDisabled>
+            <div className="flex items-center gap-2 pl-4">
+              <Icon name="Settings" className="animate-spin" size="sm" />
+              Loading knowledge base...
+            </div>
+          </DropdownItem>,
+        )
+      } else if (knowledgeItems.length === 0) {
+        items.push(
+          <DropdownItem key="empty" isDisabled>
+            <div className="flex items-center gap-2 text-default-500 pl-4">
+              <Icon name="Folder" size="sm" />
+              No files in knowledge base
+            </div>
+          </DropdownItem>,
+        )
+      } else {
+        knowledgeItems.slice(0, 10).forEach((item) => {
+          items.push(
+            <DropdownItem
+              key={`knowledge-${item.id}`}
+              startContent={
+                <div className="pl-4">{renderKnowledgePreview(item)}</div>
+              }
+              endContent={
+                <Chip size="sm" variant="flat" className="text-xs">
+                  {formatFileSize(item.size || 0)}
+                </Chip>
+              }
+              description={
+                <div className="text-xs text-default-500 truncate max-w-32">
+                  {item.path.replace(/^\//, '')}
+                </div>
+              }
+              textValue={item.name}
+              className="py-1"
+            >
+              <div className="font-medium truncate max-w-32">{item.name}</div>
+            </DropdownItem>,
+          )
+        })
+      }
+
+      return items
     }
 
     return (
@@ -318,20 +471,34 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                 </Tooltip>
                 */}
 
-                <Tooltip
-                  content={t('Attach a file or image')}
-                  placement="bottom"
-                >
-                  <Button
-                    isIconOnly
-                    radius="full"
-                    variant="light"
-                    size="sm"
-                    onPress={handlePaperclipClick}
+                <Dropdown className="bg-white dark:bg-default-50 dark:text-white">
+                  <DropdownTrigger>
+                    <Button isIconOnly radius="full" variant="light" size="sm">
+                      <Icon name="Attachment" size="sm" />
+                    </Button>
+                  </DropdownTrigger>
+                  <DropdownMenu
+                    aria-label="File attachment options"
+                    onAction={(key) => {
+                      if (key === 'upload') {
+                        handlePaperclipClick()
+                      } else if (
+                        typeof key === 'string' &&
+                        key.startsWith('knowledge-')
+                      ) {
+                        const itemId = key.replace('knowledge-', '')
+                        const item = knowledgeItems.find(
+                          (item) => item.id === itemId,
+                        )
+                        if (item) {
+                          handleKnowledgeFileSelect(item)
+                        }
+                      }
+                    }}
                   >
-                    <Icon name="Attachment" size="sm" />
-                  </Button>
-                </Tooltip>
+                    {getDropdownItems()}
+                  </DropdownMenu>
+                </Dropdown>
 
                 <Dropdown
                   className="bg-white dark:bg-default-50 dark:text-white"

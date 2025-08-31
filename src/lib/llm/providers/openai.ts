@@ -4,6 +4,54 @@ import { LLMConfig } from '@/types'
 export class OpenAIProvider implements LLMProviderInterface {
   private baseUrl = 'https://api.openai.com/v1'
 
+  private convertMessageToOpenAIFormat(message: LLMMessage): any {
+    if (!message.attachments || message.attachments.length === 0) {
+      return {
+        role: message.role,
+        content: message.content,
+      }
+    }
+
+    // For messages with attachments, create a content array
+    const content = []
+
+    // Add text content first
+    if (message.content.trim()) {
+      content.push({
+        type: 'text',
+        text: message.content,
+      })
+    }
+
+    // Add attachments
+    message.attachments.forEach((attachment) => {
+      if (attachment.type === 'image') {
+        content.push({
+          type: 'image_url',
+          image_url: {
+            url: `data:${attachment.mimeType};base64,${attachment.data}`,
+          },
+        })
+      } else {
+        // For documents, include them as text with description
+        const fileContent =
+          attachment.type === 'text'
+            ? atob(attachment.data) // Decode base64 text files
+            : `[File: ${attachment.name} (${attachment.mimeType})]`
+
+        content.push({
+          type: 'text',
+          text: `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`,
+        })
+      }
+    })
+
+    return {
+      role: message.role,
+      content: content,
+    }
+  }
+
   async chat(
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
@@ -18,7 +66,9 @@ export class OpenAIProvider implements LLMProviderInterface {
         },
         body: JSON.stringify({
           model: config?.model || 'gpt-5-2025-08-07',
-          messages,
+          messages: messages.map((msg) =>
+            this.convertMessageToOpenAIFormat(msg),
+          ),
           temperature: config?.temperature || 0.7,
           max_tokens: config?.maxTokens,
         }),
@@ -57,7 +107,9 @@ export class OpenAIProvider implements LLMProviderInterface {
         },
         body: JSON.stringify({
           model: config?.model || 'gpt-5-2025-08-07',
-          messages,
+          messages: messages.map((msg) =>
+            this.convertMessageToOpenAIFormat(msg),
+          ),
           temperature: config?.temperature || 0.7,
           max_tokens: config?.maxTokens,
           stream: true,

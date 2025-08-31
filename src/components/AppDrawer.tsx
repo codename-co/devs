@@ -317,6 +317,19 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
                 <Icon name="TriangleFlagTwoStripes" />
               </Button>
             </Tooltip>
+            <Tooltip content={t('Knowledge')} placement="right">
+              <Button
+                as={Link}
+                href={url('/knowledge')}
+                isIconOnly
+                color="danger"
+                variant="light"
+                className="w-full"
+                aria-label={t('Knowledge')}
+              >
+                <Icon name="Brain" />
+              </Button>
+            </Tooltip>
             {/* <Tooltip content={t('Teams')} placement="right">
                 <Button
                   as={Link}
@@ -342,18 +355,6 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
                 <Icon name="ChatBubble" />
               </Button>
             </Tooltip>
-            {/* <Tooltip content={t('Knowledge')} placement="right">
-                <Button
-                  as={Link}
-                  href={url('/knowledge')}
-                  isIconOnly
-                  variant="light"
-                  className="w-full"
-                  aria-label={t('Knowledge')}
-                >
-                  <Icon name="Brain" />
-                </Button>
-              </Tooltip> */}
             {/* <Tooltip content={t('Connectors')} placement="right">
                 <Button
                   as={Link}
@@ -480,7 +481,7 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                 href={url('/agents')}
                 color="warning"
                 className="dark:text-gray-200 dark:hover:text-warning-500"
-                startContent={<Icon name="Sparks" color="warning" />}
+                startContent={<Icon name="Sparks" />}
                 endContent={
                   <Tooltip content={t('New Agent')} placement="right">
                     <span
@@ -512,9 +513,7 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
               <ListboxItem
                 href={url('/tasks')}
                 color="secondary"
-                startContent={
-                  <Icon name="TriangleFlagTwoStripes" color="secondary" />
-                }
+                startContent={<Icon name="TriangleFlagTwoStripes" />}
                 endContent={
                   <Tooltip content={t('New Task')} placement="right">
                     <span
@@ -542,6 +541,14 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
               >
                 {t('Tasks')}
               </ListboxItem>
+              <ListboxItem
+                href={url('/knowledge')}
+                color="danger"
+                startContent={<Icon name="Brain" />}
+              >
+                {t('Knowledge')}
+              </ListboxItem>
+
               {/* <ListboxItem
                   href={url('/teams')}
                   color="success"
@@ -569,17 +576,17 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                 </ListboxItem> */}
             </ListboxSection>
             {/* <ListboxItem
-                href={url('/knowledge')}
-                startContent={<Icon name="Brain" />}
-              >
-                {t('Knowledge')}
-              </ListboxItem> */}
-            {/* <ListboxItem
                 href={url('/connectors')}
                 startContent={<Icon name="Puzzle" />}
               >
                 {t('Connectors')}
               </ListboxItem> */}
+            <ListboxItem
+              href={url('/conversations')}
+              startContent={<Icon name="ChatBubble" />}
+            >
+              {t('Conversations')}
+            </ListboxItem>
             <ListboxItem
               className="dark:text-gray-200 dark:hover:text-grey-500"
               href={url('/settings')}

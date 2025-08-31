@@ -4,6 +4,56 @@ import { LLMConfig } from '@/types'
 export class AnthropicProvider implements LLMProviderInterface {
   private baseUrl = 'https://api.anthropic.com/v1'
 
+  private convertMessageToAnthropicFormat(message: LLMMessage): any {
+    if (!message.attachments || message.attachments.length === 0) {
+      return {
+        role: message.role,
+        content: message.content,
+      }
+    }
+
+    // For messages with attachments, create a content array
+    const content = []
+
+    // Add text content first
+    if (message.content.trim()) {
+      content.push({
+        type: 'text',
+        text: message.content,
+      })
+    }
+
+    // Add attachments
+    message.attachments.forEach((attachment) => {
+      if (attachment.type === 'image') {
+        content.push({
+          type: 'image',
+          source: {
+            type: 'base64',
+            media_type: attachment.mimeType,
+            data: attachment.data,
+          },
+        })
+      } else {
+        // For documents, include them as text with description
+        const fileContent =
+          attachment.type === 'text'
+            ? atob(attachment.data) // Decode base64 text files
+            : `[File: ${attachment.name} (${attachment.mimeType})]`
+
+        content.push({
+          type: 'text',
+          text: `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`,
+        })
+      }
+    })
+
+    return {
+      role: message.role,
+      content: content,
+    }
+  }
+
   async chat(
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
@@ -11,7 +61,9 @@ export class AnthropicProvider implements LLMProviderInterface {
     // Convert messages to Anthropic format
     const systemMessage =
       messages.find((m) => m.role === 'system')?.content || ''
-    const userMessages = messages.filter((m) => m.role !== 'system')
+    const userMessages = messages
+      .filter((m) => m.role !== 'system')
+      .map((msg) => this.convertMessageToAnthropicFormat(msg))
 
     const response = await fetch(
       `${config?.baseUrl || this.baseUrl}/messages`,
@@ -57,7 +109,9 @@ export class AnthropicProvider implements LLMProviderInterface {
   ): AsyncIterableIterator<string> {
     const systemMessage =
       messages.find((m) => m.role === 'system')?.content || ''
-    const userMessages = messages.filter((m) => m.role !== 'system')
+    const userMessages = messages
+      .filter((m) => m.role !== 'system')
+      .map((msg) => this.convertMessageToAnthropicFormat(msg))
 
     const response = await fetch(
       `${config?.baseUrl || this.baseUrl}/messages`,

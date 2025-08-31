@@ -20,6 +20,7 @@ export const fr: I18n = {
   Teams: 'Équipes',
   Settings: 'Paramètres',
   Agents: 'Agents',
+  Conversations: 'Conversations',
   'Conversations history': 'Historique des conversations',
   Knowledge: 'Connaissances',
   Connectors: 'Connecteurs',
@@ -36,8 +37,10 @@ export const fr: I18n = {
 
   // PromptArea
   'Need something done?': 'Besoin de quelque chose ?',
-  'More actions': 'Plus d’actions',
+  'More actions': "Plus d'actions",
   'Attach a file or image': 'Joindre un fichier ou une image',
+  'Upload new file': 'Télécharger un nouveau fichier',
+  'Choose from knowledge base': 'Choisir dans la base de connaissances',
   'Drop files here…': 'Déposez des fichiers ici…',
   'Use microphone': 'Utiliser le microphone',
   'Send prompt': 'Envoyer le prompt',
@@ -61,7 +64,7 @@ export const fr: I18n = {
   'Interface Language': 'Langue de l’interface',
   'Platform Name': 'Nom de la plateforme',
   'Theme Mode': 'Mode de thème',
-  Auto: 'Automatique',
+  System: 'Système',
   Light: 'Clair',
   Dark: 'Sombre',
   'Secure Storage': 'Stockage sécurisé',
@@ -103,14 +106,8 @@ export const fr: I18n = {
   'Database Management': 'Gestion de base de données',
   'Export, import, or clear your local database':
     'Exportez, importez ou effacez votre base de données locale',
-  'Dump your entire database to a JSON file':
-    'Sauvegardez toute votre base de données dans un fichier JSON',
-  'Backup database': 'Sauvegarder la base de données',
-  'Restore your database from a JSON file':
-    'Restaurez votre base de données à partir d’un fichier JSON',
+  'Backup database': 'Exporter la base de données',
   'Restore database': 'Restaurer la base de données',
-  'Clear all data from the database':
-    'Effacer toutes les données de la base de données',
   'Clear database': 'Effacer la base de données',
   'Database exported successfully': 'Base de données exportée avec succès',
   'Failed to export database': 'Échec de l’exportation de la base de données',
@@ -287,8 +284,8 @@ export const fr: I18n = {
   'Works without internet after initial load.':
     'Fonctionne sans internet après le chargement initial.',
   'Open Source': 'Open Source',
-  'MIT licensed. Built by the community, for the community.':
-    'Sous licence MIT. Construit par la communauté, pour la communauté.',
+  '{license} licensed. Built by the community, for the community.':
+    'Sous licence {license}. Construit par la communauté, pour la communauté.',
   'Configure your LLM provider': 'Configurez votre fournisseur LLM',
   'Describe your task': 'Décrivez votre tâche',
   'Be as detailed as possible to get the best results':
@@ -299,12 +296,12 @@ export const fr: I18n = {
   'Guide when needed': 'Guidez si nécessaire',
   'Provide feedback and guidance to the agents as they work':
     'Fournissez des commentaires et des conseils aux agents pendant qu’ils travaillent',
-  'Our Vision': 'Notre Vision',
+  'Our Vision': 'Notre vision',
   "Democratize AI agent delegation with a universally accessible, privacy-conscious, open-source solution that runs entirely in the browser. AI augmentation isn't a luxury for the few, but a fundamental tool available to all.":
     'Démocratiser la délégation d’agents IA avec une solution universellement accessible, soucieuse de la confidentialité et open source qui fonctionne entièrement dans le navigateur. L’augmentation par l’IA n’est pas un luxe pour quelques-uns, mais un outil fondamental disponible pour tous.',
-  'Key Features': 'Fonctionnalités Clés',
-  'Key Benefits': 'Avantages Clés',
-  'How It Works': 'Comment ça Fonctionne',
+  'Key Features': 'Fonctionnalités clés',
+  'Key Benefits': 'Avantages clés',
+  'How It Works': 'Comment ça fonctionne',
   FAQ: 'FAQ',
   'Is my data private?': 'Mes données sont-elles privées ?',
   'Yes! All data processing happens locally in your browser. We do not collect or store any of your data.':
@@ -365,4 +362,67 @@ export const fr: I18n = {
   'Main Task & Sub-tasks': 'Tâche principale et sous-tâches',
   'Task Dependencies': 'Dépendances de la tâche',
   'Total Sub-tasks': 'Total des sous-tâches',
+
+  // Knowledge Page
+  'Knowledge Base': 'Base de connaissances',
+  'Add Knowledge': 'Ajouter des connaissances',
+
+  // Common actions
+  Retry: 'Réessayer',
+  Refresh: 'Actualiser',
+  Close: 'Fermer',
+
+  // Database Administration
+  'Loading database information…':
+    'Chargement des informations de la base de données…',
+  'Failed to load database information':
+    'Échec du chargement des informations de la base de données',
+  'Database Administration': 'Administration de la base de données',
+  'Reset Database': 'Réinitialiser la base de données',
+  '{n} records': '{n} enregistrements',
+  Records: 'Enregistrements',
+  Indexes: 'Index',
+  Size: 'Taille',
+  'Search {store} by {categories}…': 'Rechercher {store} par {categories}…',
+  'All Records': 'Tous les enregistrements',
+  'Filtered Records': 'Enregistrements filtrés',
+  ID: 'ID',
+  Preview: 'Aperçu',
+  Actions: 'Actions',
+  View: 'Voir',
+  'No data recorded': 'Aucune donnée enregistrée',
+  'Record Details': 'Détails de l’enregistrement',
+
+  // Searchable collections & indexes
+  agents: 'agents',
+  conversations: 'conversations',
+  knowledgeItems: 'connaissances',
+  folderWatchers: 'dossiers synchronisés',
+  credentials: 'identifiants',
+  artifacts: 'artefacts',
+  // tasks: 'tâches',
+  contexts: 'contextes',
+  langfuse_config: 'config langfuse',
+  id: 'ID',
+  name: 'nom',
+  description: 'description',
+  role: 'rôle',
+  tags: 'tags',
+  size: 'taille',
+  type: 'type',
+  createdAt: 'date de création',
+  fileType: 'type de fichier',
+  content: 'contenu',
+  contentHash: 'hash du contenu',
+  path: 'chemin',
+  provider: 'fournisseur',
+  model: 'modèle',
+  encryptedApiKey: 'clé API chiffrée',
+  baseUrl: 'URL de base',
+  timestamp: 'horodatage',
+  order: 'ordre',
+  mimeType: 'type MIME',
+  lastModified: 'dernière modification',
+  syncSource: 'source de synchronisation',
+  lastSyncCheck: 'dernière synchronisation',
 } as const

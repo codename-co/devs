@@ -49,3 +49,11 @@ export const successToast = (
 ) => {
   toast(title, description, 'success', config)
 }
+
+export const infoToast = (
+  title: string | JSX.Element,
+  description?: string | Error | unknown,
+  config?: ToastProps,
+) => {
+  toast(title, description, 'default', config)
+}

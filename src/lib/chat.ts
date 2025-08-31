@@ -5,6 +5,10 @@ import { getDefaultAgent } from '@/stores/agentStore'
 import { WorkflowOrchestrator } from '@/lib/orchestrator'
 import { Agent, Message } from '@/types'
 import { errorToast } from '@/lib/toast'
+import {
+  getKnowledgeAttachments,
+  buildAgentInstructions,
+} from '@/lib/agent-knowledge'
 import { Lang, languages } from '@/i18n'
 
 export interface ChatSubmitOptions {
@@ -138,7 +142,8 @@ export const submitChat = async (
 
         // Save error message to conversation if conversation exists
         try {
-          const { currentConversation, addMessage } = useConversationStore.getState()
+          const { currentConversation, addMessage } =
+            useConversationStore.getState()
           if (currentConversation) {
             await addMessage(currentConversation.id, {
               role: 'assistant',
@@ -147,7 +152,10 @@ export const submitChat = async (
             })
           }
         } catch (saveError) {
-          console.warn('Failed to save error message to conversation:', saveError)
+          console.warn(
+            'Failed to save error message to conversation:',
+            saveError,
+          )
         }
 
         return { success: false, error: 'Orchestration failed' }
@@ -169,8 +177,21 @@ export const submitChat = async (
     // Save user message to conversation
     await addMessage(conversation.id, { role: 'user', content: prompt })
 
+    // Get knowledge attachments for the agent
+    const knowledgeAttachments = await getKnowledgeAttachments(
+      agent.knowledgeItemIds,
+    )
+
+    // Build instructions with knowledge context reference
+    const baseInstructions =
+      agent.instructions || 'You are a helpful assistant.'
+    const enhancedInstructions = await buildAgentInstructions(
+      baseInstructions,
+      agent.knowledgeItemIds,
+    )
+
     const instructions = [
-      agent.instructions || 'You are a helpful assistant.',
+      enhancedInstructions,
       `ALWAYS respond in ${languages[lang]} as this is the user's language.`,
     ].join('\n\n')
 
@@ -195,6 +216,8 @@ export const submitChat = async (
     messages.push({
       role: 'user',
       content: prompt,
+      attachments:
+        knowledgeAttachments.length > 0 ? knowledgeAttachments : undefined,
     })
 
     // Call the LLM service with streaming

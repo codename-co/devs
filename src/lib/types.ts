@@ -8,11 +8,16 @@ export interface HeaderProps {
     name: IconName
     color: string
   }
-  title?: string
-  subtitle?: string
+  title?: string | React.ReactNode
+  subtitle?: string | React.ReactNode
   cta?: {
     label: string
     href: string
     icon?: IconName
   }
+  moreActions?: {
+    label: string
+    onClick: () => void | Promise<void>
+    icon?: IconName
+  }[]
 }

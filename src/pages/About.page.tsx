@@ -53,7 +53,10 @@ export const AboutPage = () => {
       icon: 'GitHub',
       title: t('Open Source'),
       description: t(
-        'MIT licensed. Built by the community, for the community.',
+        '{license} licensed. Built by the community, for the community.',
+        {
+          license: pkg.license,
+        },
       ),
     },
   ]

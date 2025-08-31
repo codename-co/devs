@@ -1,10 +1,24 @@
-import { Alert, Card, CardBody, Spinner, Tab, Tabs } from '@heroui/react'
+import {
+  Alert,
+  Card,
+  CardBody,
+  Spinner,
+  Tab,
+  Tabs,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  useDisclosure,
+} from '@heroui/react'
 import { useEffect, useState } from 'react'
 
 import { useI18n } from '@/i18n'
-import { getAgentsSeparated } from '@/stores/agentStore'
+import { getAgentsSeparated, updateAgent } from '@/stores/agentStore'
 import { type Agent } from '@/types'
-import { Container, Section } from '@/components'
+import { Container, Section, AgentKnowledgePicker } from '@/components'
 import { AgentCard } from '@/components/AgentCard'
 import DefaultLayout from '@/layouts/Default'
 import { HeaderProps } from '@/lib/types'
@@ -15,9 +29,13 @@ export const AgentsPage = () => {
   const [globalAgents, setGlobalAgents] = useState<Agent[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('my-agents')
+  const [editingAgent, setEditingAgent] = useState<Agent | null>(null)
+  const [selectedKnowledgeIds, setSelectedKnowledgeIds] = useState<string[]>([])
+  const [saving, setSaving] = useState(false)
 
   const { t, url } = useI18n()
   const navigate = useNavigate()
+  const { isOpen, onOpen, onClose } = useDisclosure()
 
   const fetchAgents = async () => {
     setLoading(true)
@@ -51,6 +69,31 @@ export const AgentsPage = () => {
     navigate(url(`/agents/run#${agentId}`))
   }
 
+  const handleEditKnowledge = (agent: Agent) => {
+    setEditingAgent(agent)
+    setSelectedKnowledgeIds(agent.knowledgeItemIds || [])
+    onOpen()
+  }
+
+  const handleSaveKnowledge = async () => {
+    if (!editingAgent) return
+
+    setSaving(true)
+    try {
+      await updateAgent(editingAgent.id, {
+        knowledgeItemIds: selectedKnowledgeIds,
+      })
+
+      // Refresh agents list
+      await fetchAgents()
+      onClose()
+    } catch (error) {
+      console.error('Error updating agent knowledge:', error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const renderAgentGrid = (agents: Agent[], isGlobal = false) => {
     if (agents.length === 0) {
       return (
@@ -74,12 +117,27 @@ export const AgentsPage = () => {
     return (
       <div className="gap-2 grid grid-cols-12 grid-rows-2">
         {agents.map((agent) => (
-          <AgentCard
-            id={agent.id}
+          <div
             key={agent.id}
-            className="col-span-12 sm:col-span-4"
-            onPress={handleAgentClick}
-          />
+            className="col-span-12 sm:col-span-4 relative group"
+          >
+            <AgentCard
+              id={agent.id}
+              className="w-full"
+              onPress={handleAgentClick}
+            />
+            {!isGlobal && agent.id.startsWith('custom-') && (
+              <Button
+                size="sm"
+                variant="flat"
+                color="primary"
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                onPress={() => handleEditKnowledge(agent)}
+              >
+                Edit Knowledge
+              </Button>
+            )}
+          </div>
         ))}
       </div>
     )
@@ -142,6 +200,40 @@ export const AgentsPage = () => {
           </Tabs>
         </Container>
       </Section>
+
+      {/* Edit Knowledge Modal */}
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        size="3xl"
+        scrollBehavior="inside"
+      >
+        <ModalContent>
+          <ModalHeader>
+            <div className="flex items-center gap-2">
+              Edit Knowledge for {editingAgent?.name}
+            </div>
+          </ModalHeader>
+          <ModalBody>
+            <AgentKnowledgePicker
+              selectedKnowledgeIds={selectedKnowledgeIds}
+              onSelectionChange={setSelectedKnowledgeIds}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="light" onPress={onClose} isDisabled={saving}>
+              Cancel
+            </Button>
+            <Button
+              color="primary"
+              onPress={handleSaveKnowledge}
+              isLoading={saving}
+            >
+              Save Changes
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </DefaultLayout>
   )
 }
