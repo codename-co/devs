@@ -1,5 +1,6 @@
 import { useI18n } from '@/i18n'
 import { Icon, PromptArea, Section, Title } from '@/components'
+import { EasySetupModal } from '@/components/EasySetupModal'
 import DefaultLayout from '@/layouts/Default'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -7,6 +8,7 @@ import { Agent } from '@/types'
 import { useTaskStore } from '@/stores/taskStore'
 import { errorToast } from '@/lib/toast'
 import { useBackgroundImage } from '@/hooks/useBackgroundImage'
+import { useEasySetup } from '@/hooks/useEasySetup'
 import { Alert } from '@heroui/react'
 
 export const IndexPage = () => {
@@ -20,6 +22,7 @@ export const IndexPage = () => {
   const { createTaskWithRequirements } = useTaskStore()
   const { backgroundImage, backgroundLoaded, isDragOver, dragHandlers } =
     useBackgroundImage()
+  const { hasSetupData, setupData, clearSetupData } = useEasySetup()
 
   // Helper function to convert File to base64
   const fileToBase64 = (file: File): Promise<string> => {
@@ -120,7 +123,7 @@ export const IndexPage = () => {
           </div>
         )}
 
-        <Section mainClassName="text-center relative z-10">
+        <Section mainClassName="text-center relative">
           <div className="flex flex-col items-center">
             <Icon
               size="4xl"
@@ -146,6 +149,15 @@ export const IndexPage = () => {
           />
         </Section>
       </DefaultLayout>
+
+      {hasSetupData && setupData && (
+        <EasySetupModal
+          isOpen={true}
+          onClose={clearSetupData}
+          setupData={setupData}
+          onSetupComplete={clearSetupData}
+        />
+      )}
     </div>
   )
 }

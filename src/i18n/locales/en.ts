@@ -65,7 +65,7 @@ export const en = [
   'Secure Storage',
   'Manage your encryption keys and secure storage',
   'Master Key',
-  'Copy Master Key',
+  'Copy to clipboard',
   'Master key copied to clipboard',
   'Failed to copy master key',
   'Regenerate Master Key',
@@ -369,4 +369,18 @@ export const en = [
   'lastModified',
   'syncSource',
   'lastSyncCheck',
+
+  // Sharing
+  'Share the platform',
+  'Export the platform settings to another device or share it with others',
+  'Export your current agents and LLM provider settings and share it via URL or QR code.',
+  'Include my {n} agents',
+  'Now you can share the platform configuration…',
+  'Either with this URL:',
+  'Or this QR Code:',
+  'QR code generation failed. You can still use the URL above.',
+  'Platform Preparation',
+  'Password (optional)',
+  'Continue',
+  'Setting the platform up…',
 ] as const

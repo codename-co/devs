@@ -28,7 +28,10 @@ interface ConversationStore {
   clearCurrentConversation: () => void
   getConversationTitle: (conversation: Conversation) => string
   generateAndUpdateTitle: (conversationId: string) => Promise<void>
-  generateTitleForMessage: (conversationId: string, userMessage: string) => Promise<void>
+  generateTitleForMessage: (
+    conversationId: string,
+    userMessage: string,
+  ) => Promise<void>
 }
 
 export const useConversationStore = create<ConversationStore>((set, get) => ({
@@ -180,12 +183,19 @@ ${agent.instructions}`,
 
       // Generate title if this is the first user message and no title exists
       if (message.role === 'user' && !conversation.title) {
-        const userMessagesCount = conversation.messages.filter(m => m.role === 'user').length
+        const userMessagesCount = conversation.messages.filter(
+          (m) => m.role === 'user',
+        ).length
         if (userMessagesCount === 1) {
           // Generate title asynchronously without blocking the UI
-          get().generateTitleForMessage(conversationId, message.content).catch(error => {
-            console.warn('Title generation failed, but message was saved:', error)
-          })
+          get()
+            .generateTitleForMessage(conversationId, message.content)
+            .catch((error) => {
+              console.warn(
+                'Title generation failed, but message was saved:',
+                error,
+              )
+            })
         }
       }
     } catch (error) {
@@ -228,7 +238,7 @@ ${agent.instructions}`,
       if (!db.isInitialized()) {
         await db.init()
       }
-      
+
       const conversation = await db.get('conversations', conversationId)
       if (!conversation) {
         throw new Error('Conversation not found')
@@ -238,7 +248,7 @@ ${agent.instructions}`,
       if (!conversation.participatingAgents) {
         conversation.participatingAgents = [conversation.agentId]
       }
-      
+
       if (!conversation.participatingAgents.includes(agentId)) {
         conversation.participatingAgents.push(agentId)
         await db.update('conversations', conversation)
@@ -289,18 +299,23 @@ ${agent.instructions}`,
 
   generateAndUpdateTitle: async (conversationId: string) => {
     try {
-      const conversation = get().conversations.find(c => c.id === conversationId)
+      const conversation = get().conversations.find(
+        (c) => c.id === conversationId,
+      )
       if (!conversation) {
-        console.warn('Conversation not found for title generation:', conversationId)
+        console.warn(
+          'Conversation not found for title generation:',
+          conversationId,
+        )
         return
       }
 
       // Generate title using LLM
       const title = await ConversationTitleGenerator.generateTitle(conversation)
-      
+
       // Update conversation with generated title
       const updatedConversation = { ...conversation, title }
-      
+
       // Update in database
       if (!db.isInitialized()) {
         await db.init()
@@ -309,15 +324,16 @@ ${agent.instructions}`,
 
       // Update in store
       const { conversations, currentConversation } = get()
-      const updatedConversations = conversations.map(c => 
-        c.id === conversationId ? updatedConversation : c
+      const updatedConversations = conversations.map((c) =>
+        c.id === conversationId ? updatedConversation : c,
       )
 
       set({
         conversations: updatedConversations,
-        currentConversation: currentConversation?.id === conversationId 
-          ? updatedConversation 
-          : currentConversation
+        currentConversation:
+          currentConversation?.id === conversationId
+            ? updatedConversation
+            : currentConversation,
       })
     } catch (error) {
       console.error('Failed to generate conversation title:', error)
@@ -325,23 +341,32 @@ ${agent.instructions}`,
     }
   },
 
-  generateTitleForMessage: async (conversationId: string, userMessage: string) => {
+  generateTitleForMessage: async (
+    conversationId: string,
+    userMessage: string,
+  ) => {
     try {
       // Generate title immediately from the user message
-      const title = await ConversationTitleGenerator.generateTitleForNewConversation(
-        conversationId, 
-        userMessage
-      )
-      
+      const title =
+        await ConversationTitleGenerator.generateTitleForNewConversation(
+          conversationId,
+          userMessage,
+        )
+
       // Update conversation with generated title
-      const conversation = get().conversations.find(c => c.id === conversationId)
+      const conversation = get().conversations.find(
+        (c) => c.id === conversationId,
+      )
       if (!conversation) {
-        console.warn('Conversation not found for title generation:', conversationId)
+        console.warn(
+          'Conversation not found for title generation:',
+          conversationId,
+        )
         return
       }
 
       const updatedConversation = { ...conversation, title }
-      
+
       // Update in database
       if (!db.isInitialized()) {
         await db.init()
@@ -350,15 +375,16 @@ ${agent.instructions}`,
 
       // Update in store
       const { conversations, currentConversation } = get()
-      const updatedConversations = conversations.map(c => 
-        c.id === conversationId ? updatedConversation : c
+      const updatedConversations = conversations.map((c) =>
+        c.id === conversationId ? updatedConversation : c,
       )
 
       set({
         conversations: updatedConversations,
-        currentConversation: currentConversation?.id === conversationId 
-          ? updatedConversation 
-          : currentConversation
+        currentConversation:
+          currentConversation?.id === conversationId
+            ? updatedConversation
+            : currentConversation,
       })
     } catch (error) {
       console.error('Failed to generate title for new message:', error)

@@ -65,6 +65,9 @@ export default defineConfig({
           vendor: ['react', 'react-dom'],
           ui: ['@heroui/react'],
           i18n: ['@/i18n'],
+          // ...Object.fromEntries(
+          //   langs.map((lang) => [`i18n-${lang}`, [`@/i18n/locales/${lang}`]]),
+          // ),
           icons: ['@/components/Icon'],
         },
       },

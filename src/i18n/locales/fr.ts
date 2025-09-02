@@ -71,7 +71,7 @@ export const fr: I18n = {
   'Manage your encryption keys and secure storage':
     'Gérez vos clés de chiffrement et votre stockage sécurisé',
   'Master Key': 'Clé maîtresse',
-  'Copy Master Key': 'Copier la clé maîtresse',
+  'Copy to clipboard': 'Copier dans le presse-papiers',
   'Master key copied to clipboard':
     'Clé maîtresse copiée dans le presse-papiers',
   'Failed to copy master key': 'Échec de la copie de la clé maîtresse',
@@ -425,4 +425,22 @@ export const fr: I18n = {
   lastModified: 'dernière modification',
   syncSource: 'source de synchronisation',
   lastSyncCheck: 'dernière synchronisation',
+
+  // Sharing
+  'Share the platform': 'Partager la plateforme',
+  'Export the platform settings to another device or share it with others':
+    'Exporter les paramètres de la plateforme vers un autre appareil ou les partager avec d’autres',
+  'Export your current agents and LLM provider settings and share it via URL or QR code.':
+    'Exporter vos agents actuels et les paramètres du fournisseur LLM et les partager via URL ou QR Code.',
+  'Include my {n} agents': 'Inclure mes {n} agents',
+  'Now you can share the platform configuration…':
+    'Vous pouvez maintenant partager la configuration de la plateforme…',
+  'Either with this URL:': 'Avec cette URL :',
+  'Or this QR Code:': 'Ou ce QR Code :',
+  'QR code generation failed. You can still use the URL above.':
+    'Échec de la génération du QR Code. Vous pouvez toujours utiliser l’URL ci-dessus.',
+  'Platform Preparation': 'Préparation de la plateforme',
+  'Password (optional)': 'Mot de passe (facultatif)',
+  Continue: 'Continuer',
+  'Setting the platform up…': 'Configuration de la plateforme en cours…',
 } as const

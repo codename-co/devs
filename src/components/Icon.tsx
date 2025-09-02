@@ -132,6 +132,7 @@ export const Icons = {
   SidebarExpand: IconoirIcons.SidebarExpand,
   RefreshDouble: IconoirIcons.RefreshDouble,
   Search: IconoirIcons.Search,
+  Share: IconoirIcons.ShareIos,
   Sparks: IconoirIcons.Sparks,
   SparkSolid: IconoirIcons.SparkSolid,
   SparksSolid: IconoirIcons.SparksSolid,

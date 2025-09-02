@@ -71,7 +71,7 @@ export const ko: I18n = {
   'Manage your encryption keys and secure storage':
     '암호화 키 및 안전한 저장소를 관리하세요',
   'Master Key': '마스터 키',
-  'Copy Master Key': '마스터 키 복사',
+  'Copy to clipboard': '클립보드에 복사',
   'Master key copied to clipboard': '마스터 키가 클립보드에 복사되었습니다',
   'Failed to copy master key': '마스터 키 복사에 실패했습니다',
   'Regenerate Master Key': '마스터 키 재생성',
@@ -415,4 +415,22 @@ export const ko: I18n = {
   lastModified: '마지막 수정',
   syncSource: '동기화 소스',
   lastSyncCheck: '마지막 동기화 확인',
+
+  // Sharing
+  'Share the platform': '플랫폼 공유',
+  'Export the platform settings to another device or share it with others':
+    '플랫폼 설정을 다른 장치로 내보내거나 다른 사람과 공유합니다.',
+  'Export your current agents and LLM provider settings and share it via URL or QR code.':
+    '현재 에이전트 및 LLM 공급자 설정을 내보내고 URL 또는 QR 코드를 통해 공유합니다.',
+  'Include my {n} agents': '내 {n} 에이전트 포함',
+  'Now you can share the platform configuration…':
+    '이제 플랫폼 구성을 공유할 수 있습니다…',
+  'Either with this URL:': '이 URL로:',
+  'Or this QR Code:': '또는 이 QR 코드로:',
+  'QR code generation failed. You can still use the URL above.':
+    'QR 코드 생성에 실패했습니다. 위의 URL을 계속 사용할 수 있습니다.',
+  'Platform Preparation': '플랫폼 준비',
+  'Password (optional)': '비밀번호 (선택 사항)',
+  Continue: '계속',
+  'Setting the platform up…': '플랫폼 설정 중…',
 } as const

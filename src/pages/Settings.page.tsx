@@ -31,6 +31,7 @@ import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
 import { LLMService } from '@/lib/llm'
 import { Container, Icon, Section, Title } from '@/components'
+import { EasySetupExport } from '@/components/EasySetupExport'
 import { errorToast, successToast } from '@/lib/toast'
 import { userSettings } from '@/stores/userStore'
 import { PRODUCT } from '@/config/product'
@@ -970,18 +971,10 @@ export const SettingsPage = () => {
                 )}
 
                 {!langfuseConfig && !langfuseEnabled && (
-                  <div className="p-4 bg-default-50 dark:bg-default-900/20 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Icon
-                        name="LightBulbOn"
-                        className="h-5 w-5 text-default-500"
-                      />
-                      <p className="text-sm text-default-600 dark:text-default-400">
-                        Enable Langfuse tracking to monitor and analyze your LLM
-                        API usage, costs, and performance.
-                      </p>
-                    </div>
-                  </div>
+                  <Alert icon={<Icon name="LightBulbOn" />} variant="faded">
+                    Enable Langfuse tracking to monitor and analyze your LLM API
+                    usage, costs, and performance.
+                  </Alert>
                 )}
               </div>
             </AccordionItem>
@@ -1010,7 +1003,7 @@ export const SettingsPage = () => {
                       className="flex-1"
                       endContent={
                         <div className="flex gap-1">
-                          <Tooltip content={t('Copy Master Key')}>
+                          <Tooltip content={t('Copy to clipboard')}>
                             <Button
                               isIconOnly
                               size="sm"
@@ -1048,7 +1041,18 @@ export const SettingsPage = () => {
           <Title size="xl" className="text-gray-500">
             Advanced Settings
           </Title>
-          <Accordion selectionMode="none" variant="bordered">
+          <Accordion selectionMode="single" variant="bordered">
+            <AccordionItem
+              key="easysetup"
+              title={t('Share the platform')}
+              subtitle={t(
+                'Export the platform settings to another device or share it with others',
+              )}
+              startContent={<Icon name="Share" className="h-5 w-5" />}
+              classNames={{ content: 'pl-8 mb-4' }}
+            >
+              <EasySetupExport />
+            </AccordionItem>
             <AccordionItem
               key="database"
               title={t('Database Management')}
