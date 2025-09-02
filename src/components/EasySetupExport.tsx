@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { Input, Switch, Alert, Divider, Snippet, Spinner } from '@heroui/react'
 import { Icon } from './Icon'
 import { generateSetupQRData, generateSetupQRCode } from '@/lib/easy-qr'
@@ -13,8 +13,7 @@ export const EasySetupExport = () => {
   const [generatedUrl, setGeneratedUrl] = useState('')
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('')
   const [isGeneratingQR, setIsGeneratingQR] = useState(false)
-  const isInitialMount = useRef(true)
-  const [agentsCount, setAgentsCount] = useState<number>()
+  const [agentsCount, setAgentsCount] = useState<number>(0)
 
   useEffect(() => {
     const fetchAgentsCount = async () => {
@@ -59,13 +58,7 @@ export const EasySetupExport = () => {
     }
   }
 
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false
-    } else {
-      void generate()
-    }
-  }, [password, includeAllAgents])
+  useEffect(() => void generate(), [password, includeAllAgents])
 
   return (
     <div className="space-y-4">
@@ -75,7 +68,7 @@ export const EasySetupExport = () => {
         )}
       </Alert>
 
-      {agentsCount && (
+      {agentsCount > 0 && (
         <Switch
           isSelected={includeAllAgents}
           onValueChange={setIncludeAllAgents}

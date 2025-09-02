@@ -3,6 +3,7 @@ import { Agent, Credential, LLMProvider } from '@/types'
 import { EasySetupData } from './easy-setup'
 import { nanoid } from 'nanoid'
 import { successToast } from '@/lib/toast'
+import { userSettings } from '@/stores/userStore'
 
 /**
  * Initialize easy setup by importing agents and credentials
@@ -11,6 +12,8 @@ export async function initializeEasySetup(
   setupData: EasySetupData,
   decryptedData: { c: Array<{ p: string; k: string; m?: string; b?: string }> },
 ): Promise<void> {
+  const { setPlatformName } = userSettings.getState()
+
   await db.init()
 
   // Keep track of what was imported for success message
@@ -87,6 +90,11 @@ export async function initializeEasySetup(
           importedCounts.agents++
         }
       }
+    }
+
+    // 3. Import platform name
+    if (setupData.p.n) {
+      setPlatformName(setupData.p.n)
     }
 
     // Show success message
