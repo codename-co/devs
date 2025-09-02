@@ -2,7 +2,7 @@ import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
 import { LLMConfig } from '@/types'
 
 export class OpenAIProvider implements LLMProviderInterface {
-  private baseUrl = 'https://api.openai.com/v1'
+  protected baseUrl = 'https://api.openai.com/v1'
 
   private convertMessageToOpenAIFormat(message: LLMMessage): any {
     if (!message.attachments || message.attachments.length === 0) {

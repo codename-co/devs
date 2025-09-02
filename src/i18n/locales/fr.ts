@@ -272,8 +272,8 @@ export const fr: I18n = {
   'Multiple AI agents working together on complex tasks.':
     'Plusieurs agents IA travaillant ensemble sur des tâches complexes.',
   'LLM Independent': 'Indépendant du LLM',
-  'Works with OpenAI, Anthropic, Google AI, and more':
-    'Fonctionne avec OpenAI, Anthropic, Google AI et bien d’autres',
+  'Works with OpenAI, Anthropic, Google Gemini, and more':
+    'Fonctionne avec OpenAI, Anthropic, Google Gemini et bien d’autres',
   'Privacy First': 'Confidentialité d’abord',
   'All data stays on your device. No servers, no tracking.':
     'Toutes les données restent sur votre appareil. Pas de serveurs, pas de suivi.',

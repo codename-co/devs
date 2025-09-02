@@ -266,8 +266,8 @@ export const ko: I18n = {
   'Multiple AI agents working together on complex tasks.':
     '복잡한 작업에서 협력하는 여러 AI 에이전트.',
   'LLM Independent': 'LLM 독립적',
-  'Works with OpenAI, Anthropic, Google AI, and more':
-    'OpenAI, Anthropic, Google AI 등과 함께 작동합니다',
+  'Works with OpenAI, Anthropic, Google Gemini, and more':
+    'OpenAI, Anthropic, Google Gemini 등과 함께 작동합니다',
   'Privacy First': '개인정보 우선',
   'All data stays on your device. No servers, no tracking.':
     '모든 데이터는 당신의 기기에 머무릅니다. 서버도 추적도 없습니다.',

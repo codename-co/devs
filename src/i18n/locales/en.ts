@@ -234,7 +234,7 @@ export const en = [
   'AI Teams',
   'Multiple AI agents working together on complex tasks.',
   'LLM Independent',
-  'Works with OpenAI, Anthropic, Google AI, and more',
+  'Works with OpenAI, Anthropic, Google Gemini, and more',
   'Privacy First',
   'All data stays on your device. No servers, no tracking.',
   'Browser Native',

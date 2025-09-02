@@ -13,7 +13,7 @@ _Bringing enterprise-grade AI delegation capabilities to everyone, everywhere._
 - 📱 **Mobile-first design**: Optimized for touch and small screens.
 - ⚡ **Offline capable**: Works without internet after initial load.
 - 🌍 **Multi-language support**: Accessibility for global users.
-- 🔄 **LLM provider independence**: Supports OpenAI, Anthropic, Google AI, Mistral, and more.
+- 🔄 **LLM provider independence**: Supports OpenAI, Anthropic, Google Gemini, Mistral, and more.
 - 🤖 **AI Studio**: Pre-built agents, custom agent builder.
 - 🧠 **Hyper meta-prompting**: Multi-layered prompt generation for dynamic task handling.
 - 🛠️ **Agentic workflows**: Autonomous agent behavior with self-improving capabilities.

@@ -30,7 +30,7 @@ export const AboutPage = () => {
     {
       icon: 'Brain',
       title: t('LLM Independent'),
-      description: t('Works with OpenAI, Anthropic, Google AI, and more'),
+      description: t('Works with OpenAI, Anthropic, Google Gemini, and more'),
     },
     {
       icon: 'PrivacyPolicy',
@@ -75,7 +75,7 @@ export const AboutPage = () => {
       step: 1,
       name: t('Configure your LLM provider'),
       url: url('/settings'),
-      desc: t('Works with OpenAI, Anthropic, Google AI, and more'),
+      desc: t('Works with OpenAI, Anthropic, Google Gemini, and more'),
     },
     {
       step: 2,

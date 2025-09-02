@@ -93,15 +93,25 @@ const PROVIDERS: ProviderConfig[] = [
   },
   {
     provider: 'google',
-    name: 'Google AI',
-    models: ['gemini-pro', 'gemini-pro-vision'],
+    name: 'Google Gemini',
+    models: [
+      'gemini-2.5-pro',
+      'gemini-2.5-flash',
+      'gemini-2.5-flash-lite',
+      'gemini-2.5-flash-image-preview',
+    ],
     icon: 'Google',
     color: 'secondary',
   },
   {
     provider: 'vertex-ai',
     name: 'Google Vertex AI',
-    models: ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-1.0-pro'],
+    models: [
+      'gemini-2.5-pro',
+      'gemini-2.5-flash',
+      'gemini-2.5-flash-lite',
+      'gemini-2.5-flash-image-preview',
+    ],
     icon: 'GoogleCloud',
     color: 'secondary',
     apiKeyFormat: 'LOCATION:PROJECT_ID:API_KEY',

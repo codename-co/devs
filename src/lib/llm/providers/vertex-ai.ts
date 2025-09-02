@@ -33,7 +33,7 @@ export class VertexAIProvider implements LLMProviderInterface {
   ): Promise<LLMResponse> {
     const endpoint = this.getEndpoint(config)
     const apiKey = this.getApiKey(config)
-    const model = config?.model || 'gemini-1.5-pro'
+    const model = config?.model || 'gemini-2.5-flash'
 
     // Convert messages to Vertex AI format
     const contents = messages.map((msg) => ({
@@ -107,7 +107,7 @@ export class VertexAIProvider implements LLMProviderInterface {
   ): AsyncIterableIterator<string> {
     const endpoint = this.getEndpoint(config)
     const apiKey = this.getApiKey(config)
-    const model = config?.model || 'gemini-1.5-pro'
+    const model = config?.model || 'gemini-2.5-flash'
 
     // Convert messages to Vertex AI format
     const contents = messages.map((msg) => ({

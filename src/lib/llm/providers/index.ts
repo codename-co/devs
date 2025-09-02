@@ -1,4 +1,5 @@
 // Export provider classes without registering them
+export { OpenAIProvider } from './openai'
 export { AnthropicProvider } from './anthropic'
 export { CustomProvider } from './custom'
 export { DeepSeekProvider } from './deepseek'
@@ -7,6 +8,5 @@ export { GrokProvider } from './grok'
 export { HuggingFaceProvider } from './huggingface'
 export { MistralProvider } from './mistral'
 export { OllamaProvider } from './ollama'
-export { OpenAIProvider } from './openai'
 export { OpenRouterProvider } from './openrouter'
 export { VertexAIProvider } from './vertex-ai'
