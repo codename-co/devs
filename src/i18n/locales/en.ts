@@ -381,6 +381,7 @@ export const en = [
   'QR code generation failed. You can still use the URL above.',
   'Platform Preparation',
   'Password (optional)',
+  'Password',
   'Continue',
   'Setting the platform up…',
 ] as const

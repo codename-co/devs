@@ -431,6 +431,7 @@ export const ko: I18n = {
     'QR 코드 생성에 실패했습니다. 위의 URL을 계속 사용할 수 있습니다.',
   'Platform Preparation': '플랫폼 준비',
   'Password (optional)': '비밀번호 (선택 사항)',
+  Password: '비밀번호',
   Continue: '계속',
   'Setting the platform up…': '플랫폼 설정 중…',
 } as const

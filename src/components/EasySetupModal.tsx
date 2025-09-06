@@ -114,49 +114,22 @@ export const EasySetupModal = ({
       <ModalHeader className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <Icon name="DatabaseRestore" />
-          {t('Platform Preparation')}
+          {t('Platform Preparation')} {setupData.p.n}
           {/* <span className="text-sm text-gray-600">1/3</span> */}
         </div>
       </ModalHeader>
       <ModalBody>
         <div className="space-y-4">
-          <div className="text-center">
-            <p className="text-lg font-medium mb-2">
-              {setupData.p.n || 'Team Configuration'}
-            </p>
-          </div>
-
-          <Card>
-            <CardBody>
-              <div className="grid grid-cols-2 gap-4 text-center">
-                <div>
-                  <p className="text-2xl font-bold text-primary">
-                    {setupData.p.a.length}
-                  </p>
-                  <p className="text-sm text-gray-600">{t('Agents')}</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-primary">
-                    {decryptedData?.c?.length || '?'}
-                  </p>
-                  <p className="text-sm text-gray-600">{t('LLM Providers')}</p>
-                </div>
-              </div>
-            </CardBody>
-          </Card>
-
-          <div className="space-y-2">
-            <Input
-              type="password"
-              label={t('Password (optional)')}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleDecrypt()}
-              isInvalid={!!error}
-              errorMessage={error}
-              autoFocus
-            />
-          </div>
+          <Input
+            type="password"
+            label={t('Password')}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleDecrypt()}
+            isInvalid={!!error}
+            errorMessage={error}
+            autoFocus
+          />
         </div>
       </ModalBody>
       <ModalFooter>
@@ -184,7 +157,7 @@ export const EasySetupModal = ({
       <ModalHeader className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <Icon name="DatabaseRestore" />
-          {t('Platform Preparation')}
+          {t('Platform Preparation')} {setupData.p.n}
           {/* <span className="text-sm text-gray-600">2/3</span> */}
         </div>
       </ModalHeader>
@@ -241,7 +214,7 @@ export const EasySetupModal = ({
       <ModalHeader className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <Icon name="DatabaseRestore" />
-          {t('Platform Preparation')}
+          {t('Platform Preparation')} {setupData.p.n}
           {/* <span className="text-sm text-gray-600">3/3</span> */}
         </div>
       </ModalHeader>

@@ -441,6 +441,7 @@ export const fr: I18n = {
     'Échec de la génération du QR Code. Vous pouvez toujours utiliser l’URL ci-dessus.',
   'Platform Preparation': 'Préparation de la plateforme',
   'Password (optional)': 'Mot de passe (facultatif)',
+  Password: 'Mot de passe',
   Continue: 'Continuer',
   'Setting the platform up…': 'Configuration de la plateforme en cours…',
 } as const

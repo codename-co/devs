@@ -5,9 +5,11 @@ import { generateSetupQRData, generateSetupQRCode } from '@/lib/easy-qr'
 import { successToast, errorToast } from '@/lib/toast'
 import { useI18n } from '@/i18n'
 import { loadCustomAgents } from '@/stores/agentStore'
+import { userSettings } from '@/stores/userStore'
 
 export const EasySetupExport = () => {
   const { lang, t } = useI18n()
+  const { language, platformName } = userSettings.getState()
   const [password, setPassword] = useState('')
   const [includeAllAgents, setIncludeAllAgents] = useState(false)
   const [generatedUrl, setGeneratedUrl] = useState('')
@@ -23,6 +25,11 @@ export const EasySetupExport = () => {
 
     fetchAgentsCount()
   }, [])
+
+  useEffect(
+    () => void generate(),
+    [password, includeAllAgents, language, platformName],
+  )
 
   const generate = async () => {
     try {
@@ -57,8 +64,6 @@ export const EasySetupExport = () => {
       )
     }
   }
-
-  useEffect(() => void generate(), [password, includeAllAgents])
 
   return (
     <div className="space-y-4">
