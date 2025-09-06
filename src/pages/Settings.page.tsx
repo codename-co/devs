@@ -743,6 +743,7 @@ export const SettingsPage = () => {
           <Accordion selectionMode="single" variant="bordered">
             <AccordionItem
               key="general"
+              data-testid="general-settings"
               title={t('General Settings')}
               subtitle={t('Configure your platform preferences')}
               startContent={<Icon name="Settings" className="h-5 w-5" />}
@@ -859,6 +860,7 @@ export const SettingsPage = () => {
 
             <AccordionItem
               key="providers"
+              data-testid="llm-providers"
               title={t('LLM Providers')}
               subtitle={t('Manage your API credentials')}
               startContent={<Icon name="Brain" className="h-5 w-5" />}
@@ -896,6 +898,7 @@ export const SettingsPage = () => {
 
             <AccordionItem
               key="langfuse"
+              data-testid="langfuse-integration"
               title="Langfuse Integration"
               subtitle="Configure Langfuse for LLM request tracking and analytics"
               startContent={<Icon name="Langfuse" className="h-5 w-5" />}
@@ -996,6 +999,7 @@ export const SettingsPage = () => {
 
             <AccordionItem
               key="security"
+              data-testid="security-settings"
               title={t('Secure Storage')}
               subtitle={t('Manage your encryption keys and secure storage')}
               startContent={<Icon name="Lock" className="h-5 w-5" />}
@@ -1059,6 +1063,7 @@ export const SettingsPage = () => {
           <Accordion selectionMode="single" variant="bordered">
             <AccordionItem
               key="easysetup"
+              data-testid="easy-setup"
               title={t('Share the platform')}
               subtitle={t(
                 'Export the platform settings to another device or share it with others',
@@ -1070,6 +1075,7 @@ export const SettingsPage = () => {
             </AccordionItem>
             <AccordionItem
               key="database"
+              data-testid="database-management"
               title={t('Database Management')}
               subtitle={t('Export, import, or clear your local database')}
               startContent={<Icon name="Database" className="h-5 w-5" />}

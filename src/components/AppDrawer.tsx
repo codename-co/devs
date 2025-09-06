@@ -225,6 +225,7 @@ export const AppDrawer = () => {
     >
       <div
         id="app-drawer"
+        data-testid="app-drawer"
         className={clsx('h-full', isCollapsed && 'fixed')}
         data-state={isCollapsed ? 'collapsed' : 'expanded'}
       >
@@ -265,6 +266,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
       <div className="flex flex-col items-center overflow-y-auto overflow-x-hidden">
         <Tooltip content={t('Expand sidebar')} placement="right">
           <Button
+            data-testid="menu-button"
             isIconOnly
             variant="light"
             onPress={() => userSettings.getState().toggleDrawer()}
@@ -449,6 +451,7 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
           </Title>
           <Tooltip content={t('Collapse sidebar')} placement="right">
             <Button
+              data-testid="menu-button-collapse"
               isIconOnly
               variant="light"
               onPress={() => userSettings.getState().toggleDrawer()}

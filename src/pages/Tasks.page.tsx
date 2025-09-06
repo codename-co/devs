@@ -172,7 +172,7 @@ export const TasksPage = () => {
 
           {/* Tasks List */}
           {filteredTasks.length === 0 ? (
-            <div className="text-center py-12">
+            <div className="text-center py-12" data-testid="empty-task-state">
               <Icon
                 name="TaskSolid"
                 className="w-12 h-12 text-default-300 mx-auto mb-4"
@@ -186,7 +186,7 @@ export const TasksPage = () => {
               </p>
             </div>
           ) : (
-            <div className="grid gap-4">
+            <div data-testid="task-list" className="grid gap-4">
               {filteredTasks
                 .sort(
                   (a, b) =>
@@ -196,6 +196,7 @@ export const TasksPage = () => {
                 .map((task) => (
                   <Card
                     key={task.id}
+                    data-testid="task-item"
                     isPressable
                     onPress={() => handleTaskClick(task.id)}
                     className="hover:scale-[1.01] transition-transform"

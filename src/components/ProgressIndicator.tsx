@@ -60,8 +60,12 @@ export const ProgressIndicator = () => {
   }
 
   return (
-    <div className="flex items-center justify-center py-2">
+    <div
+      data-testid="task-progress"
+      className="flex items-center justify-center py-2"
+    >
       <Progress
+        data-testid="progress-bar"
         size="sm"
         isIndeterminate={stats.activeRequests > 0}
         value={stats.activeRequests}
@@ -69,6 +73,9 @@ export const ProgressIndicator = () => {
         color="secondary"
         aria-label="LLM progress"
       />
+      <span data-testid="status-text" className="sr-only">
+        {stats.activeRequests > 0 ? 'Processing' : 'Idle'}
+      </span>
     </div>
   )
 }

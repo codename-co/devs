@@ -452,6 +452,7 @@ export const KnowledgePage: React.FC = () => {
             {t('Add Knowledge')}
           </Title>
           <div
+            data-testid="upload-area"
             className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
               dragActive
                 ? 'border-primary bg-primary/10'
@@ -476,6 +477,7 @@ export const KnowledgePage: React.FC = () => {
                   </p>
                   <div className="flex gap-3 justify-center">
                     <Button
+                      data-testid="upload-files-button"
                       color="primary"
                       variant="flat"
                       startContent={<Upload className="w-4 h-4" />}
@@ -484,6 +486,7 @@ export const KnowledgePage: React.FC = () => {
                       Choose Files
                     </Button>
                     <Button
+                      data-testid="upload-folder-button"
                       color="secondary"
                       variant="flat"
                       startContent={<Folder className="w-4 h-4" />}
@@ -602,12 +605,18 @@ export const KnowledgePage: React.FC = () => {
               <Spinner size="lg" />
             </div>
           ) : knowledgeItems.length === 0 ? (
-            <div className="text-center p-8 text-default-500">
+            <div
+              data-testid="empty-state"
+              className="text-center p-8 text-default-500"
+            >
               <Page className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p>No knowledge items yet. Upload some files to get started!</p>
             </div>
           ) : (
-            <div className="divide-y divide-default-100 -mt-4">
+            <div
+              data-testid="knowledge-items"
+              className="divide-y divide-default-100 -mt-4"
+            >
               {knowledgeItems.map((item) => (
                 <div
                   key={item.id}

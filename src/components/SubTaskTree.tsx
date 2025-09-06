@@ -133,15 +133,16 @@ const TaskNode = ({
         
         {/* Progress Bar */}
         {task.steps.length > 0 && (
-          <div className="mb-2">
+          <div className="mb-2" data-testid="task-breakdown">
             <div className="flex items-center gap-2 mb-1">
               <Progress 
+                data-testid="progress-bar"
                 size="sm" 
                 value={completionPercentage} 
                 color={task.status === 'completed' ? 'success' : 'primary'}
                 className="flex-1"
               />
-              <span className="text-xs text-default-500 min-w-[3rem]">
+              <span data-testid="status-text" className="text-xs text-default-500 min-w-[3rem]">
                 {completionPercentage}%
               </span>
             </div>
@@ -232,7 +233,7 @@ export const SubTaskTree = ({ task, children, parent, siblings, allTasks = [], c
   }
 
   return (
-    <div className={`bg-default-100 rounded-lg p-4 ${className}`}>
+    <div data-testid="workflow-view" className={`bg-default-100 rounded-lg p-4 ${className}`}>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">{t('Task Hierarchy')}</h3>
         <div className="flex items-center gap-2">

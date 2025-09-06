@@ -388,6 +388,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
 
     return (
       <div
+        data-testid="prompt-area"
         className={cn(
           'w-full max-w-4xl mx-auto relative p-[3px] prompt-area',
           isDragOver && 'ring-2 ring-primary ring-offset-2 rounded-lg',
@@ -441,6 +442,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
 
           <Textarea
             ref={ref}
+            data-testid="prompt-input"
             className="pb-20 bg-content2 rounded-lg"
             classNames={{
               input: 'p-1',
@@ -505,7 +507,12 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                   isDisabled={disabledAgentPicker}
                 >
                   <DropdownTrigger>
-                    <Button radius="full" variant="light" size="sm">
+                    <Button
+                      data-testid="agent-picker"
+                      radius="full"
+                      variant="light"
+                      size="sm"
+                    >
                       <Icon name={currentAgent.icon ?? 'User'} size="md" />
                       {currentAgent.i18n?.[lang]?.name ?? currentAgent.name}
                     </Button>
@@ -542,6 +549,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                 {prompt.trim() && (
                   <Tooltip content={t('Send prompt')} placement="bottom">
                     <Button
+                      data-testid="submit-button"
                       isIconOnly
                       disabled={props.isSending}
                       color={!prompt.trim() ? 'default' : 'primary'}

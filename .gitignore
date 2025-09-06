@@ -2,4 +2,6 @@
 dist
 node_modules
 
+/playwright-report
 /public/agents/manifest.json
+/test-results*

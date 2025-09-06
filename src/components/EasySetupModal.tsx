@@ -7,8 +7,6 @@ import {
   ModalFooter,
   Button,
   Input,
-  Card,
-  CardBody,
   Chip,
   Progress,
 } from '@heroui/react'

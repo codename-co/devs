@@ -50,19 +50,23 @@ export const AgentCard = ({ id, className, onPress }: AgentCardProps) => {
 
   return (
     <Card
+      data-testid="agent-card"
       className={`${className} cursor-pointer hover:scale-105 transition-transform dark:border-1 dark:border-default-400`}
       isPressable
       onPress={() => onPress?.(agent.id)}
     >
       <CardHeader className="pb-2 pt-2 px-4 flex-col items-start">
-        <div className="flex items-center gap-2 w-full">
+        <div
+          className="flex items-center gap-2 w-full"
+          data-testid="agent-details"
+        >
           {agent.icon && <Icon name={agent.icon} className="w-6 h-6" />}
           <h4 className="font-bold text-large">{displayName}</h4>
         </div>
         {agent.tags && agent.tags.length > 0 && (
-          <div className="flex gap-1 mt-2 flex-wrap">
+          <div data-testid="agent-tags" className="flex gap-1 mt-2 flex-wrap">
             {agent.tags.slice(0, 3).map((tag: string) => (
-              <Chip key={tag} size="sm" variant="flat">
+              <Chip key={tag} size="sm" variant="flat" className="tag">
                 {tag}
               </Chip>
             ))}

@@ -775,21 +775,27 @@ export const TaskPage = () => {
             {/* Main Content */}
             <div
               className={artifacts.length > 0 ? 'lg:col-span-2' : 'col-span-1'}
+              data-testid={task.status === 'completed' ? 'task-completed' : undefined}
             >
               {/* Task Overview */}
-              <div className="mb-8 bg-default-50 rounded-lg p-6">
+              <div className="mb-8 bg-default-50 rounded-lg p-6" data-testid="task-results">
                 <p className="text-default-800 whitespace-pre-wrap">
                   {task.description}
                 </p>
+                {task.assignedAgentId && (
+                  <div className="mt-4" data-testid="active-agents">
+                    <span className="text-sm text-default-500">Assigned to: {task.assignedAgentId}</span>
+                  </div>
+                )}
               </div>
 
               {/* Task Steps Section */}
               {task.steps && task.steps.length > 0 && (
-                <div className="mb-8">
+                <div className="mb-8" data-testid="task-analysis">
                   <h3 className="text-lg font-semibold mb-4">
                     {t('Task Steps')}
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-3" data-testid="task-breakdown">
                     {task.steps
                       .sort((a, b) => a.order - b.order)
                       .map((step, index) => (
@@ -919,11 +925,11 @@ export const TaskPage = () => {
 
               {/* Requirements Section */}
               {task.requirements.length > 0 && (
-                <div className="mb-8">
+                <div className="mb-8" data-testid="requirements-list">
                   <h3 className="text-lg font-semibold mb-4">
                     {t('Requirements')}
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-3" data-testid="requirement-validation">
                     <CheckboxGroup
                       // label={t('Requirements')}
                       value={task.requirements
@@ -1008,19 +1014,19 @@ export const TaskPage = () => {
                 )}
 
               {/* Timeline Section */}
-              <div className="mb-8">
+              <div className="mb-8" data-testid="timeline">
                 <div className="flex items-center gap-3 mb-6">
                   <h3 className="text-lg font-semibold">
                     {t('Task Timeline')}
                   </h3>
                   {isOrchestrating && (
-                    <div className="flex items-center gap-2 text-primary">
+                    <div className="flex items-center gap-2 text-primary" data-testid="workflow-status">
                       <Spinner size="sm" />
                       <span className="text-sm">Live updates active</span>
                     </div>
                   )}
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-4" data-testid="workflow-chart">
                   {timelineEvents.map((event, index) => (
                     <TimelineEventDisplay
                       key={event.id}
@@ -1034,7 +1040,7 @@ export const TaskPage = () => {
 
             {/* Artifact Panel - Right Column */}
             {artifacts.length > 0 && (
-              <div className="lg:col-span-1">
+              <div className="lg:col-span-1" data-testid="artifacts">
                 <Artifact
                   artifacts={artifacts}
                   selectedArtifactId={selectedArtifactId || undefined}
