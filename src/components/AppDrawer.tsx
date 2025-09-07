@@ -17,7 +17,7 @@ import { ProgressIndicator } from './ProgressIndicator'
 import { AboutModal } from './AboutModal'
 import { PRODUCT } from '@/config/product'
 import clsx from 'clsx'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const AgentList = () => {
@@ -214,8 +214,34 @@ const AgentList = () => {
 //   )
 // }
 
+const BackDrop = () => (
+  <div
+    className="fixed inset-0 bg-black opacity-30 -z-1 pointer-events-auto"
+    onClick={userSettings.getState().toggleDrawer}
+  />
+)
+
 export const AppDrawer = () => {
   const isCollapsed = userSettings((state) => state.isDrawerCollapsed)
+
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkViewport = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    checkViewport()
+    window.addEventListener('resize', checkViewport)
+
+    return () => window.removeEventListener('resize', checkViewport)
+  }, [])
+
+  useEffect(() => {
+    if (isMobile && !userSettings.getState().isDrawerCollapsed) {
+      userSettings.getState().toggleDrawer()
+    }
+  }, [isMobile])
 
   return (
     <aside
@@ -231,6 +257,8 @@ export const AppDrawer = () => {
       >
         <CollapsedDrawer className="drawer-collapsed" />
         <ExpandedDrawer className="drawer-expanded" />
+        {!isCollapsed && isMobile && <BackDrop />}
+
         <style>{
           /* CSS */ `
         #app-drawer {
@@ -445,6 +473,7 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
             level={3}
             as="div"
             size="lg"
+            data-testid="platform-name"
             aria-label={customPlatformName || PRODUCT.name}
           >
             {customPlatformName || PRODUCT.displayName}

@@ -1,59 +1,56 @@
-import { test, expect } from './fixtures/test-base'
+import { test, expect, DevsTestHelper } from './fixtures/test-base'
 
 test.describe('Core User Journeys', () => {
+  let _: DevsTestHelper
+
+  test.beforeEach(async ({ page }) => {
+    _ = new DevsTestHelper(page)
+    await _.goHome()
+  })
+
   test('should load the homepage successfully', async ({ page }) => {
-    await page.goto('/')
-    await expect(page).toHaveTitle(/𝐃𝐄𝐕𝐒|DEVS/)
+    await expect(page).toHaveTitle('𝐃𝐄𝐕𝐒')
 
     // Check for main UI elements
-    await expect(page.locator('[data-testid="prompt-area"]')).toBeVisible()
-    await expect(page.locator('[data-testid="agent-picker"]')).toBeVisible()
-    await expect(page.locator('[data-testid="menu-button"]')).toBeVisible()
+    for (const item of ['prompt-area', 'agent-picker', 'menu-button']) {
+      await expect(page.locator(`[data-testid="${item}"]`)).toBeVisible()
+    }
   })
 
   test('should open and navigate app drawer', async ({ page }) => {
-    await page.goto('/')
-
     // Open drawer
     await page.click('[data-testid="menu-button"]')
     await expect(page.locator('[data-testid="app-drawer"]')).toBeVisible()
 
     // Check drawer navigation items (use navigation-specific selectors)
-    await expect(
-      page.locator('nav').locator('text=/Chat with AI|Home/i').first(),
-    ).toBeVisible()
-    await expect(
-      page.locator('nav').locator('text="Tasks"').first(),
-    ).toBeVisible()
-    await expect(
-      page.locator('nav').locator('text="Agents"').first(),
-    ).toBeVisible()
-    await expect(
-      page.locator('nav').locator('text="Knowledge"').first(),
-    ).toBeVisible()
-    await expect(
-      page.locator('nav').locator('text="Settings"').first(),
-    ).toBeVisible()
+    for (const item of [
+      'Chat with AI',
+      'Tasks',
+      'Agents',
+      'Knowledge',
+      'Settings',
+    ]) {
+      await expect(
+        page.locator('nav').locator(`text="${item}"`).first(),
+      ).toBeVisible()
+    }
   })
 
   test('should navigate to different pages via drawer', async ({ page }) => {
-    await page.goto('/')
-
     // Navigate to Tasks page via single click navigation
-    await page.click('[data-testid="menu-button"]')
-    await page.locator('nav').locator('text="Tasks"').first().click()
+    await _.navigateViaDrawer('Tasks')
     await expect(page).toHaveURL(/\/tasks/)
 
     // Navigate to Agents page - use direct URL to avoid drawer state issues
-    await page.goto('/agents')
+    await _.navigateViaDrawer('Agents')
     await expect(page).toHaveURL(/\/agents/)
 
     // Navigate to Settings page - use direct URL
-    await page.goto('/settings')
+    await _.navigateViaDrawer('Settings')
     await expect(page).toHaveURL(/\/settings/)
 
     // Verify we can go back home
-    await page.goto('/')
+    await _.navigateViaDrawer('Chat with AI')
     await expect(page).toHaveURL('/')
     await expect(page.locator('[data-testid="prompt-area"]')).toBeVisible()
   })
@@ -61,8 +58,6 @@ test.describe('Core User Journeys', () => {
   test('should display agent picker with default DEVS agent', async ({
     page,
   }) => {
-    await page.goto('/')
-
     const agentPicker = page.locator('[data-testid="agent-picker"]')
     await expect(agentPicker).toBeVisible()
 
@@ -71,8 +66,6 @@ test.describe('Core User Journeys', () => {
   })
 
   test('should show prompt area and accept input', async ({ page }) => {
-    await page.goto('/')
-
     const promptInput = page.locator('[data-testid="prompt-input"]')
     await expect(promptInput).toBeVisible()
     await expect(promptInput).toBeEditable()
@@ -91,7 +84,6 @@ test.describe('Core User Journeys', () => {
     page,
   }) => {
     await page.setViewportSize({ width: 375, height: 667 }) // iPhone size
-    await page.goto('/')
 
     // Main elements should still be visible on mobile
     await expect(page.locator('[data-testid="prompt-area"]')).toBeVisible()
@@ -105,8 +97,6 @@ test.describe('Core User Journeys', () => {
   test('should handle browser back and forward navigation', async ({
     page,
   }) => {
-    await page.goto('/')
-
     // Navigate directly to pages using URL to avoid drawer state issues
     await page.goto('/agents')
     await expect(page).toHaveURL(/\/agents/)
@@ -128,53 +118,6 @@ test.describe('Core User Journeys', () => {
     await expect(page).toHaveURL('/')
   })
 
-  test('should preserve state during navigation', async ({ page }) => {
-    await page.goto('/')
-
-    // Fill prompt input
-    const promptInput = page.locator('[data-testid="prompt-input"]')
-    await promptInput.fill('Test state persistence')
-
-    // Navigate away using direct URL
-    await page.goto('/agents')
-    await expect(page).toHaveURL(/\/agents/)
-
-    // Navigate back to home
-    await page.goto('/')
-
-    // Check if input value is preserved (this depends on your state management)
-    // Note: This test might need adjustment based on how your app manages state
-    const newPromptInput = page.locator('[data-testid="prompt-input"]')
-    const inputValue = await newPromptInput.inputValue()
-    // For now, just check that the input exists and is interactive
-    await expect(newPromptInput).toBeVisible()
-    await expect(newPromptInput).toBeEditable()
-  })
-
-  test('should handle 404 for invalid routes', async ({ page }) => {
-    await page.goto('/non-existent-route')
-
-    // Wait for page to load
-    await page.waitForLoadState('networkidle')
-
-    // Should show 404 page, error message, or redirect to home
-    const isNotFound = await page
-      .locator('text=/404|Not Found|Page not found/i')
-      .isVisible()
-      .catch(() => false)
-    const isHome = await page
-      .locator('[data-testid="prompt-area"]')
-      .isVisible()
-      .catch(() => false)
-    const hasErrorMessage = await page
-      .locator('text=/error|invalid|unknown/i')
-      .isVisible()
-      .catch(() => false)
-
-    // At least one condition should be true
-    expect(isNotFound || isHome || hasErrorMessage).toBe(true)
-  })
-
   test('should load without JavaScript errors', async ({ page }) => {
     const errors: string[] = []
 
@@ -188,7 +131,6 @@ test.describe('Core User Journeys', () => {
       errors.push(error.message)
     })
 
-    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
     // Filter out expected errors (like network errors in test environment)

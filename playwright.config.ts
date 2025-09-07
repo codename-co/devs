@@ -58,11 +58,17 @@ export default defineConfig({
     },
   ],
 
+  timeout: 20_000,
+
+  expect: {
+    timeout: 2_000,
+  },
+
   /* Run your local dev server before starting the tests */
   webServer: {
     command: 'npm run preview',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
+    timeout: 120_000,
   },
 })

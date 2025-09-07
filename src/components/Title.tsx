@@ -87,6 +87,7 @@ export const Title = ({
   className,
   style,
   as,
+  ...props
 }: TitleProps) => {
   // Determine the HTML element to use
   const Component = (as ||
@@ -106,12 +107,22 @@ export const Title = ({
     className,
   )
 
+  const _Title = ({ children, ...props }: { children: React.ReactNode }) => (
+    <Component
+      role="heading"
+      id={id}
+      className={titleClassName}
+      {...props}
+      {...{ style }}
+    >
+      {children}
+    </Component>
+  )
+
   if (subtitle) {
     return (
       <div>
-        <Component id={id} className={titleClassName} {...{ style }}>
-          {children}
-        </Component>
+        <_Title {...props}>{children}</_Title>
         <p id={subtitleId} className="text-muted-foreground">
           {subtitle}
         </p>
@@ -119,9 +130,5 @@ export const Title = ({
     )
   }
 
-  return (
-    <Component id={id} className={titleClassName} {...{ style }}>
-      {children}
-    </Component>
-  )
+  return <_Title {...props}>{children}</_Title>
 }

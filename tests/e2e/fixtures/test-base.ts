@@ -1,4 +1,10 @@
-import { test as base, expect, Page, BrowserContext } from '@playwright/test'
+import {
+  test as base,
+  expect,
+  Page,
+  BrowserContext,
+  Locator,
+} from '@playwright/test'
 
 interface TestFixtures {
   page: Page
@@ -52,7 +58,7 @@ export class DevsTestHelper {
     await this.page.goto('/')
     await this.page.waitForLoadState('networkidle')
     await this.page.waitForSelector('[data-testid="prompt-area"]', {
-      timeout: 10000,
+      timeout: 10_000,
     })
   }
 
@@ -60,6 +66,12 @@ export class DevsTestHelper {
    * Open the app drawer/sidebar
    */
   async openDrawer() {
+    const isDrawerExpanded = await this.page
+      .locator('[data-testid="menu-button-collapse"]')
+      .isVisible()
+
+    if (isDrawerExpanded) return
+
     await this.page.click('[data-testid="menu-button"]')
     await this.page.waitForSelector('[data-testid="app-drawer"]')
   }
@@ -70,6 +82,7 @@ export class DevsTestHelper {
   async navigateViaDrawer(linkText: string) {
     await this.openDrawer()
     await this.page.click(`text="${linkText}"`)
+    await this.waitForAnimation()
     await this.page.waitForLoadState('networkidle')
   }
 
@@ -80,14 +93,14 @@ export class DevsTestHelper {
     await this.page.fill('[data-testid="prompt-input"]', prompt)
     await this.page.click('[data-testid="submit-button"]')
     await this.page.waitForSelector('[data-testid="task-progress"]', {
-      timeout: 30000,
+      timeout: 30_000,
     })
   }
 
   /**
    * Wait for a task to complete
    */
-  async waitForTaskCompletion(timeout = 60000) {
+  async waitForTaskCompletion(timeout = 60_000) {
     await this.page.waitForSelector('[data-testid="task-completed"]', {
       timeout,
     })
@@ -98,7 +111,7 @@ export class DevsTestHelper {
    */
   async elementExists(selector: string): Promise<boolean> {
     try {
-      await this.page.waitForSelector(selector, { timeout: 1000 })
+      await this.page.waitForSelector(selector, { timeout: 1_000 })
       return true
     } catch {
       return false
@@ -159,5 +172,57 @@ export class DevsTestHelper {
         route.continue()
       }
     })
+  }
+
+  /**
+   * Select an accordion item by name
+   */
+  async selectAccordionItem(itemName: string): Promise<void> {
+    // Try to find the accordion item by data-testid first (most reliable)
+    const testIdSelector = `[data-testid="${itemName.toLowerCase().replace(/\s+/g, '-')}"]`
+
+    // Try multiple strategies to find and click the accordion item
+    const accordionItem = this.page
+      .locator(testIdSelector)
+      .or(this.page.locator(`text="${itemName}"`))
+      .or(this.page.locator(`[aria-label="${itemName}"]`))
+      .first()
+
+    await accordionItem.click()
+
+    // // Wait for accordion animation to complete
+    // const actualSelector = await accordionItem.getAttribute('data-testid')
+    // await this.page.waitForSelector(
+    //   `${actualSelector} [data-slot="content"][data-open="true"]`,
+    //   {
+    //     state: 'visible',
+    //   },
+    // )
+
+    await this.waitForAnimation()
+  }
+
+  async selectDropdown(dropdown: Locator, option?: string) {
+    await dropdown.click()
+    await this.waitForAnimation()
+
+    if (option) {
+      await this.page.getByRole('option', { name: option }).click()
+      await this.waitForAnimation()
+    }
+
+    return dropdown
+  }
+
+  async waitForAnimation() {
+    await this.page.waitForTimeout(500)
+  }
+
+  firstLabel(label: string): Locator {
+    return this.page.getByLabel(label).first()
+  }
+
+  async expectTitle(title: string) {
+    return expect(this.page.locator('h1').first()).toContainText(title)
   }
 }
