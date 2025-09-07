@@ -1,6 +1,6 @@
 import { useI18n } from '@/i18n'
 import { Icon, PromptArea, Section, Title } from '@/components'
-import { EasySetupModal } from '@/components/EasySetupModal'
+import { EasySetupModal } from '@/components/EasySetup/EasySetupModal'
 import DefaultLayout from '@/layouts/Default'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'

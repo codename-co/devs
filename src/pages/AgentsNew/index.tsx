@@ -14,7 +14,7 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { useI18n } from '@/i18n'
+import { languages, useI18n } from '@/i18n'
 import DefaultLayout from '@/layouts/Default'
 import { HeaderProps } from '@/lib/types'
 import { Message } from '@/types'
@@ -29,7 +29,7 @@ import { createAgent } from '@/stores/agentStore'
 import { LLMService, LLMMessage } from '@/lib/llm'
 import { CredentialService } from '@/lib/credential-service'
 import { buildAgentInstructions } from '@/lib/agent-knowledge'
-import { languages } from '@/i18n'
+import localI18n from './i18n'
 
 interface AgentConfig {
   name: string
@@ -40,7 +40,7 @@ interface AgentConfig {
 
 export function AgentsNewPage() {
   const navigate = useNavigate()
-  const { lang, t } = useI18n()
+  const { lang, t } = useI18n(localI18n)
 
   const header: HeaderProps = {
     color: 'bg-warning-50',

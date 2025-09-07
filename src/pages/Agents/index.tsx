@@ -12,6 +12,10 @@ import {
   ModalFooter,
   Button,
   useDisclosure,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
 } from '@heroui/react'
 import { useEffect, useState } from 'react'
 
@@ -23,6 +27,7 @@ import { AgentCard } from '@/components/AgentCard'
 import DefaultLayout from '@/layouts/Default'
 import { HeaderProps } from '@/lib/types'
 import { useNavigate } from 'react-router-dom'
+import { EditPencil, MoreVert } from 'iconoir-react'
 
 export const AgentsPage = () => {
   const [userAgents, setUserAgents] = useState<Agent[]>([])
@@ -125,18 +130,30 @@ export const AgentsPage = () => {
               id={agent.id}
               className="w-full"
               onPress={handleAgentClick}
+              children={
+                !isGlobal &&
+                agent.id.startsWith('custom-') && (
+                  <div className="absolute right-2 top-2">
+                    <Dropdown>
+                      <DropdownTrigger>
+                        <Button isIconOnly variant="light" size="sm">
+                          <MoreVert className="w-4 h-4" />
+                        </Button>
+                      </DropdownTrigger>
+                      <DropdownMenu>
+                        <DropdownItem
+                          key="edit"
+                          startContent={<EditPencil className="w-4 h-4" />}
+                          onPress={() => handleEditKnowledge(agent)}
+                        >
+                          Edit Knowledge
+                        </DropdownItem>
+                      </DropdownMenu>
+                    </Dropdown>
+                  </div>
+                )
+              }
             />
-            {!isGlobal && agent.id.startsWith('custom-') && (
-              <Button
-                size="sm"
-                variant="flat"
-                color="primary"
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                onPress={() => handleEditKnowledge(agent)}
-              >
-                Edit Knowledge
-              </Button>
-            )}
           </div>
         ))}
       </div>

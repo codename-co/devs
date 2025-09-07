@@ -727,7 +727,7 @@ class KnowledgeSyncService {
       const placeholderWatcher: FolderWatcher = {
         id: persistedWatcher.id,
         directoryHandle: null, // No handle until user re-selects
-        basePath: persistedWatcher.basePath + ' (Click to reconnect)',
+        basePath: persistedWatcher.basePath,
         lastSync: persistedWatcher.lastSync,
         isActive: false, // Mark as inactive until reconnected
       }

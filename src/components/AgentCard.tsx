@@ -10,9 +10,15 @@ interface AgentCardProps {
   id: string
   className?: string
   onPress?: (agentId: string) => void
+  children?: React.ReactNode
 }
 
-export const AgentCard = ({ id, className, onPress }: AgentCardProps) => {
+export const AgentCard = ({
+  id,
+  className,
+  onPress,
+  children,
+}: AgentCardProps) => {
   const [agent, setAgent] = useState<Agent | null>(null)
   const [loading, setLoading] = useState(true)
   const { lang } = useI18n()
@@ -55,7 +61,8 @@ export const AgentCard = ({ id, className, onPress }: AgentCardProps) => {
       isPressable
       onPress={() => onPress?.(agent.id)}
     >
-      <CardHeader className="pb-2 pt-2 px-4 flex-col items-start">
+      <CardHeader className="pb-2 pt-2 px-4 flex-col items-start relative">
+        {children}
         <div
           className="flex items-center gap-2 w-full"
           data-testid="agent-details"

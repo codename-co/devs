@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
-import { IndexPage } from '@/pages/Index.page'
+import { IndexPage } from '@/pages/Index'
 
 // Mock the stores and services
 vi.mock('@/stores/taskStore', () => ({

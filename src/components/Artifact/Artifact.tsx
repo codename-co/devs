@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react'
 import {
   Button,
-  Card,
-  CardBody,
-  CardHeader,
   Chip,
   ScrollShadow,
   Badge,
@@ -13,12 +10,13 @@ import {
 import clsx from 'clsx'
 
 import { useI18n } from '@/i18n'
-import { Icon } from './Icon'
-import { MarkdownRenderer } from './MarkdownRenderer'
-import type { Artifact as ArtifactType } from '@/types'
+import { Icon } from '@/components/Icon'
+import { MarkdownRenderer } from '@/components/MarkdownRenderer'
+import type { Artifact as IArtifact } from '@/types'
+import localI18n from './i18n'
 
 interface ArtifactProps {
-  artifacts: ArtifactType[]
+  artifacts: IArtifact[]
   selectedArtifactId?: string
   onArtifactSelect: (artifactId: string | null) => void
   isMinimized: boolean
@@ -36,7 +34,7 @@ export const Artifact = ({
   onExpand,
   className,
 }: ArtifactProps) => {
-  const { t } = useI18n()
+  const { t } = useI18n(localI18n)
   const [currentIndex, setCurrentIndex] = useState(0)
 
   // Update current index when selectedArtifactId changes
@@ -53,7 +51,7 @@ export const Artifact = ({
   const currentArtifact = artifacts[currentIndex]
 
   // Helper function to get artifact type color
-  const getArtifactTypeColor = (type: ArtifactType['type']) => {
+  const getArtifactTypeColor = (type: IArtifact['type']) => {
     switch (type) {
       case 'document':
         return 'primary'
@@ -73,7 +71,7 @@ export const Artifact = ({
   }
 
   // Helper function to get artifact status color
-  const getArtifactStatusColor = (status: ArtifactType['status']) => {
+  const getArtifactStatusColor = (status: IArtifact['status']) => {
     switch (status) {
       case 'final':
         return 'success'
@@ -91,7 +89,7 @@ export const Artifact = ({
   }
 
   // Helper function to get artifact type icon
-  const getArtifactTypeIcon = (type: ArtifactType['type']) => {
+  const getArtifactTypeIcon = (type: IArtifact['type']) => {
     switch (type) {
       case 'document':
         return 'Document'
@@ -137,9 +135,9 @@ export const Artifact = ({
     <aside
       className={clsx(
         'transition-all duration-300 ease-in-out',
-        'border border-default-200 dark:border-default-800 rounded-lg',
-        'bg-background/95 backdrop-blur-md overflow-hidden',
-        isMinimized ? 'w-48' : 'h-fit max-h-screen',
+        'border border-default-200 dark:border-default-300 rounded-lg',
+        'bg-gray-50 dark:bg-content1 backdrop-blur-md overflow-hidden',
+        isMinimized ? 'w-48' : '',
         className,
       )}
     >
@@ -175,7 +173,7 @@ export const Artifact = ({
       {!isMinimized && (
         <div className="flex flex-col max-h-screen">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-default-200 dark:border-default-800 flex-shrink-0">
+          <div className="flex items-center justify-between p-4 border-b border-default-200 dark:border-default-300 flex-shrink-0">
             <div className="flex items-center gap-2">
               <Icon name="Page" className="w-8 h-8 text-primary" />
               <h3 className="text-lg font-semibold">{currentArtifact.title}</h3>
@@ -235,123 +233,86 @@ export const Artifact = ({
           </div>
 
           {/* Content */}
-          <ScrollShadow className="flex-1 p-4 overflow-y-auto max-h-96">
+          <ScrollShadow className="flex-1 p-4 overflow-y-auto">
             {currentArtifact ? (
-              <Card className="w-full">
-                <CardHeader className="pb-2">
-                  <div className="flex flex-col w-full">
-                    <div className="flex items-start justify-between mb-2">
-                      <h4 className="text-large font-semibold">
-                        {currentArtifact.title}
-                      </h4>
-                      <Icon
-                        name={getArtifactTypeIcon(currentArtifact.type) as any}
-                        className="w-5 h-5 text-default-500 flex-shrink-0 ml-2"
-                      />
-                    </div>
-
-                    <p className="text-small text-default-600 mb-3">
-                      {currentArtifact.description}
-                    </p>
-
-                    <div className="flex flex-wrap gap-2">
-                      <Chip
-                        size="sm"
-                        color={getArtifactTypeColor(currentArtifact.type)}
-                        variant="flat"
-                      >
-                        {currentArtifact.type}
-                      </Chip>
-                      <Chip
-                        size="sm"
-                        color={getArtifactStatusColor(currentArtifact.status)}
-                        variant="flat"
-                      >
-                        {currentArtifact.status}
-                      </Chip>
-                      <Chip size="sm" variant="flat">
-                        v{currentArtifact.version}
-                      </Chip>
-                    </div>
+              <>
+                <div className="flex flex-col w-full">
+                  <div className="flex flex-wrap gap-2">
+                    <Chip
+                      size="sm"
+                      color={getArtifactTypeColor(currentArtifact.type)}
+                      variant="flat"
+                    >
+                      {currentArtifact.type}
+                    </Chip>
+                    <Chip
+                      size="sm"
+                      color={getArtifactStatusColor(currentArtifact.status)}
+                      variant="flat"
+                    >
+                      {currentArtifact.status}
+                    </Chip>
+                    <Chip size="sm" variant="flat">
+                      v{currentArtifact.version}
+                    </Chip>
                   </div>
-                </CardHeader>
+                </div>
 
-                <CardBody>
-                  <div className="max-h-96 overflow-y-auto">
-                    {currentArtifact.format === 'markdown' ? (
-                      <MarkdownRenderer
-                        content={currentArtifact.content}
-                        className="prose dark:prose-invert prose-sm max-w-none"
-                      />
-                    ) : currentArtifact.format === 'code' ? (
-                      <pre className="bg-default-100 rounded-lg p-3 text-small overflow-x-auto">
-                        <code>{currentArtifact.content}</code>
-                      </pre>
-                    ) : (
-                      <div className="bg-default-50 rounded-lg p-3 text-small">
-                        {currentArtifact.content}
-                      </div>
-                    )}
-                  </div>
+                <div className="overflow-y-auto">
+                  {currentArtifact.format === 'markdown' ? (
+                    <MarkdownRenderer
+                      content={currentArtifact.content}
+                      className="prose dark:prose-invert prose-sm max-w-none"
+                    />
+                  ) : currentArtifact.format === 'code' ? (
+                    <pre className="bg-default-100 rounded-lg p-3 text-small overflow-x-auto">
+                      <code>{currentArtifact.content}</code>
+                    </pre>
+                  ) : (
+                    <div className="bg-default-50 rounded-lg p-3 text-small">
+                      {currentArtifact.content}
+                    </div>
+                  )}
+                </div>
 
-                  {/* Metadata */}
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-2 text-tiny">
-                      <div>
-                        <span className="font-semibold text-default-600">
-                          {t('Created')}:
-                        </span>
-                        <p className="text-default-800">
-                          {currentArtifact.createdAt.toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div>
-                        <span className="font-semibold text-default-600">
-                          {t('Updated')}:
-                        </span>
-                        <p className="text-default-800">
-                          {currentArtifact.updatedAt.toLocaleDateString()}
-                        </p>
+                {/* Metadata */}
+                <div className="space-y-3">
+                  {currentArtifact.dependencies.length > 0 && (
+                    <div>
+                      <span className="font-semibold text-default-600 text-tiny">
+                        {t('Dependencies')}:
+                      </span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {currentArtifact.dependencies.map((depId) => (
+                          <Chip key={depId} size="sm" variant="bordered">
+                            {depId.slice(-8)}
+                          </Chip>
+                        ))}
                       </div>
                     </div>
+                  )}
 
-                    {currentArtifact.dependencies.length > 0 && (
-                      <div>
-                        <span className="font-semibold text-default-600 text-tiny">
-                          {t('Dependencies')}:
-                        </span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {currentArtifact.dependencies.map((depId) => (
-                            <Chip key={depId} size="sm" variant="bordered">
-                              {depId.slice(-8)}
-                            </Chip>
-                          ))}
-                        </div>
+                  {currentArtifact.validates.length > 0 && (
+                    <div>
+                      <span className="font-semibold text-default-600 text-tiny">
+                        {t('Validates Requirements')}:
+                      </span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {currentArtifact.validates.map((reqId) => (
+                          <Chip
+                            key={reqId}
+                            size="sm"
+                            variant="bordered"
+                            color="success"
+                          >
+                            {reqId.slice(-8)}
+                          </Chip>
+                        ))}
                       </div>
-                    )}
-
-                    {currentArtifact.validates.length > 0 && (
-                      <div>
-                        <span className="font-semibold text-default-600 text-tiny">
-                          {t('Validates Requirements')}:
-                        </span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {currentArtifact.validates.map((reqId) => (
-                            <Chip
-                              key={reqId}
-                              size="sm"
-                              variant="bordered"
-                              color="success"
-                            >
-                              {reqId.slice(-8)}
-                            </Chip>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </CardBody>
-              </Card>
+                    </div>
+                  )}
+                </div>
+              </>
             ) : (
               <div className="flex flex-col items-center justify-center h-32 text-center">
                 <Icon
@@ -365,7 +326,7 @@ export const Artifact = ({
 
           {/* Footer with artifact list when multiple artifacts */}
           {artifacts.length > 1 && (
-            <div className="border-t border-default-200 dark:border-default-800 p-2 flex-shrink-0">
+            <div className="border-t border-default-200 dark:border-default-300 p-2 flex-shrink-0">
               <ScrollShadow orientation="horizontal" className="max-w-full">
                 <div className="flex gap-2 p-2">
                   {artifacts.map((artifact, index) => (

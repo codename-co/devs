@@ -21,9 +21,7 @@ import {
   useDisclosure,
 } from '@heroui/react'
 import { useNavigate } from 'react-router-dom'
-import { useI18n, languages } from '@/i18n'
-import type { Lang } from '@/i18n/utils'
-import { useUrl } from '@/i18n/utils'
+import { useI18n, useUrl, languages, type Lang } from '@/i18n'
 import DefaultLayout from '@/layouts/Default'
 import type { HeaderProps, IconName } from '@/lib/types'
 import { LLMProvider, Credential, LangfuseConfig } from '@/types'
@@ -31,11 +29,12 @@ import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
 import { LLMService } from '@/lib/llm'
 import { Container, Icon, Section, Title } from '@/components'
-import { EasySetupExport } from '@/components/EasySetupExport'
+import { EasySetupExport } from '@/components/EasySetup/EasySetupExport'
 import { errorToast, successToast } from '@/lib/toast'
 import { userSettings } from '@/stores/userStore'
 import { PRODUCT } from '@/config/product'
 import { useBackgroundImage } from '@/hooks/useBackgroundImage'
+import localI18n from './i18n'
 
 interface ProviderConfig {
   provider: LLMProvider
@@ -177,7 +176,7 @@ const PROVIDERS: ProviderConfig[] = [
 ]
 
 export const SettingsPage = () => {
-  const { lang, t, url } = useI18n()
+  const { lang, t, url } = useI18n(localI18n)
   const navigate = useNavigate()
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
   const { handleImageFile, setBackgroundImage } = useBackgroundImage()
@@ -1160,7 +1159,7 @@ export const SettingsPage = () => {
                     {providerConfig?.requiresBaseUrl && (
                       <Input
                         label={t('Base URL')}
-                        placeholder={t('https://api.example.com/v1')}
+                        placeholder="https://api.example.com/v1"
                         value={baseUrl}
                         onChange={(e) => setBaseUrl(e.target.value)}
                         isRequired

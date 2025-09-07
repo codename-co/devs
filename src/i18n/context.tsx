@@ -1,12 +1,25 @@
 import { createContext, type ReactNode, useContext, useMemo } from 'react'
 
 import { type Lang, useTranslations, useUrl } from './utils'
+import { en } from './locales'
 
 import { userSettings } from '@/stores/userStore'
 
 interface I18nContextValue {
   lang: Lang
   t: ReturnType<typeof useTranslations>
+  url: ReturnType<typeof useUrl>
+}
+
+interface EnhancedI18nContextValue<MoreLocales> {
+  lang: Lang
+  t: MoreLocales extends { en: readonly string[] }
+    ? (
+        key: MoreLocales['en'][number] | (typeof en)[number],
+        vars?: Record<string, any>,
+        options?: { allowJSX?: boolean },
+      ) => string
+    : ReturnType<typeof useTranslations<MoreLocales>>
   url: ReturnType<typeof useUrl>
 }
 
@@ -39,16 +52,109 @@ export const I18nProvider = ({ lang, children }: I18nProviderProps) => {
 }
 
 /**
- * Hook to access the current language and translation helper
- * @returns {I18nContextValue} An object containing the current language and translation function
- * @throws {Error} If used outside of I18nProvider
+ * Hook to access the current language and translation helper (basic version)
  */
-export const useI18n = (): I18nContextValue => {
+export function useI18n(): I18nContextValue
+
+/**
+ * Hook to access the current language and translation helper with local i18n support
+ * @param localI18n - Local translations where 'en' can be an array and other languages are Records
+ */
+export function useI18n<
+  T extends {
+    en?: readonly string[]
+    [key: string]: Record<string, string> | readonly string[] | undefined
+  },
+>(localI18n: T): EnhancedI18nContextValue<T>
+
+/**
+ * Implementation of the useI18n hook
+ */
+export function useI18n<
+  T extends {
+    en?: readonly string[]
+    [key: string]: Record<string, string> | readonly string[] | undefined
+  },
+>(localI18n?: T): I18nContextValue | EnhancedI18nContextValue<T> {
   const context = useContext(I18nContext)
 
   if (!context) {
     throw new Error('useI18n must be used within an I18nProvider')
   }
 
-  return context
+  if (!localI18n) {
+    return context
+  }
+
+  const enhancedT = (
+    key: T extends { en: readonly string[] }
+      ? T['en'][number] | (typeof en)[number]
+      : string,
+    vars?: Record<string, any>,
+    options?: { allowJSX?: boolean },
+  ): string => {
+    // Get current language-specific local translations
+    const currentLangLocals = localI18n[context.lang]
+
+    // Handle English array format
+    if (context.lang === 'en' && Array.isArray(currentLangLocals)) {
+      const englishArray = currentLangLocals as readonly string[]
+      if (englishArray.includes(key)) {
+        let result = key // For English arrays, the key is the value
+        // Apply variable interpolation if vars provided
+        if (vars) {
+          for (const v in vars) {
+            result = result.replaceAll(`{${v}}`, vars[v]) as typeof result
+          }
+        }
+        return result
+      }
+    }
+
+    // Handle Record format for other languages
+    if (
+      currentLangLocals &&
+      typeof currentLangLocals === 'object' &&
+      !Array.isArray(currentLangLocals)
+    ) {
+      const recordLocals = currentLangLocals as Record<string, string>
+      if (recordLocals[key]) {
+        let result = recordLocals[key]
+        // Apply variable interpolation if vars provided
+        if (vars) {
+          for (const v in vars) {
+            result = result.replaceAll(`{${v}}`, vars[v]) as typeof result
+          }
+        }
+        return result
+      }
+    }
+
+    // Fall back to English local translations if available and current lang is not English
+    if (context.lang !== 'en' && localI18n.en && Array.isArray(localI18n.en)) {
+      const englishArray = localI18n.en as readonly string[]
+      if (englishArray.includes(key)) {
+        let result = key // For English arrays, the key is the value
+        // Apply variable interpolation if vars provided
+        if (vars) {
+          for (const v in vars) {
+            result = result.replaceAll(`{${v}}`, vars[v]) as typeof result
+          }
+        }
+        return result
+      }
+    }
+
+    // Finally fall back to global translations
+    try {
+      return (context.t as any)(key, vars, options)
+    } catch {
+      return key
+    }
+  }
+
+  return {
+    ...context,
+    t: enhancedT as EnhancedI18nContextValue<T>['t'],
+  }
 }

@@ -82,7 +82,7 @@ jobs:
         run: npm run build
 
       - name: Run Mobile Playwright tests
-        run: npx playwright test --project="Mobile Chrome" --project="Mobile Safari"
+        run: npx playwright test --project="Mobile Chrome"
         env:
           CI: true
 

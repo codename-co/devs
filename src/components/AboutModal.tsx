@@ -1,6 +1,6 @@
 import { Modal, ModalContent, ModalHeader, ModalBody } from '@heroui/react'
 import { PRODUCT } from '@/config/product'
-import { AboutPage } from '@/pages/About.page'
+import { AboutPage } from '@/pages/About'
 // @ts-ignore
 import SvgIcon from '@/../public/devs.svg'
 

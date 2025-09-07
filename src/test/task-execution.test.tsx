@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { WorkflowOrchestrator } from '@/lib/orchestrator'
 import { render, screen, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
-import { TaskPage } from '@/pages/Task.page'
+import { TaskPage } from '@/pages/Task'
 
 // Mock functions
 const mockGetTaskById = vi.fn()
@@ -57,14 +57,22 @@ vi.mock('@/i18n', () => ({
 
 // Mock components and layouts
 vi.mock('@/components', () => ({
-  Container: ({ children }: any) => <div data-testid="container">{children}</div>,
-  Icon: ({ name, ...props }: any) => <div data-testid="icon" data-name={name} {...props} />,
-  MarkdownRenderer: ({ content }: any) => <div data-testid="markdown">{content}</div>,
+  Container: ({ children }: any) => (
+    <div data-testid="container">{children}</div>
+  ),
+  Icon: ({ name, ...props }: any) => (
+    <div data-testid="icon" data-name={name} {...props} />
+  ),
+  MarkdownRenderer: ({ content }: any) => (
+    <div data-testid="markdown">{content}</div>
+  ),
   Section: ({ children }: any) => <div data-testid="section">{children}</div>,
 }))
 
 vi.mock('@/layouts/Default', () => ({
-  default: ({ children }: any) => <div data-testid="default-layout">{children}</div>,
+  default: ({ children }: any) => (
+    <div data-testid="default-layout">{children}</div>
+  ),
 }))
 
 const mockNavigate = vi.fn()
@@ -83,18 +91,26 @@ vi.mock('@heroui/react', () => ({
   Spinner: () => <div data-testid="spinner">Loading...</div>,
   Chip: ({ children }: any) => <span data-testid="chip">{children}</span>,
   Badge: ({ children }: any) => <span data-testid="badge">{children}</span>,
-  Progress: ({ value }: any) => <div data-testid="progress" data-value={value} />,
-  CheckboxGroup: ({ children }: any) => <div data-testid="checkbox-group">{children}</div>,
-  Checkbox: ({ children }: any) => <label data-testid="checkbox">{children}</label>,
+  Progress: ({ value }: any) => (
+    <div data-testid="progress" data-value={value} />
+  ),
+  CheckboxGroup: ({ children }: any) => (
+    <div data-testid="checkbox-group">{children}</div>
+  ),
+  Checkbox: ({ children }: any) => (
+    <label data-testid="checkbox">{children}</label>
+  ),
 }))
 
 describe('Task Execution', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockGetArtifactsByTask.mockResolvedValue([])
-    
+
     // Setup the orchestrator mock
-    vi.mocked(WorkflowOrchestrator.orchestrateTask).mockImplementation(mockOrchestratTask)
+    vi.mocked(WorkflowOrchestrator.orchestrateTask).mockImplementation(
+      mockOrchestratTask,
+    )
   })
 
   it('should trigger orchestration for pending tasks', async () => {
@@ -140,15 +156,18 @@ describe('Task Execution', () => {
     render(
       <BrowserRouter>
         <TaskPage />
-      </BrowserRouter>
+      </BrowserRouter>,
     )
 
     // Assert - Should trigger orchestration for pending task
     await waitFor(() => {
-      expect(mockOrchestratTask).toHaveBeenCalledWith('Create a todo app', 'test-task-id')
+      expect(mockOrchestratTask).toHaveBeenCalledWith(
+        'Create a todo app',
+        'test-task-id',
+      )
     })
 
-    // Assert - Should reload task after orchestration  
+    // Assert - Should reload task after orchestration
     await waitFor(() => {
       expect(mockGetTaskById).toHaveBeenCalledWith('test-task-id')
       expect(mockGetTaskById.mock.calls.length).toBeGreaterThanOrEqual(2) // Initial load + reload after orchestration (may be called more due to effect dependencies)
@@ -182,7 +201,7 @@ describe('Task Execution', () => {
     render(
       <BrowserRouter>
         <TaskPage />
-      </BrowserRouter>
+      </BrowserRouter>,
     )
 
     // Assert - Should not trigger orchestration for completed task
@@ -219,7 +238,7 @@ describe('Task Execution', () => {
     render(
       <BrowserRouter>
         <TaskPage />
-      </BrowserRouter>
+      </BrowserRouter>,
     )
 
     // Assert - Should not trigger orchestration without description
@@ -251,13 +270,15 @@ describe('Task Execution', () => {
     }
 
     mockGetTaskById.mockResolvedValue(pendingTask)
-    mockOrchestratTask.mockRejectedValue(new Error('Orchestration already in progress for this prompt'))
+    mockOrchestratTask.mockRejectedValue(
+      new Error('Orchestration already in progress for this prompt'),
+    )
 
     // Act
     render(
       <BrowserRouter>
         <TaskPage />
-      </BrowserRouter>
+      </BrowserRouter>,
     )
 
     // Assert - Should attempt orchestration but handle the duplicate error gracefully
@@ -304,7 +325,7 @@ describe('Task Execution', () => {
     render(
       <BrowserRouter>
         <TaskPage />
-      </BrowserRouter>
+      </BrowserRouter>,
     )
 
     // Assert - Should handle orchestration failure
@@ -353,7 +374,7 @@ describe('Task Execution', () => {
     const { rerender } = render(
       <BrowserRouter>
         <TaskPage />
-      </BrowserRouter>
+      </BrowserRouter>,
     )
 
     // Wait for initial orchestration
@@ -365,20 +386,23 @@ describe('Task Execution', () => {
     rerender(
       <BrowserRouter>
         <TaskPage />
-      </BrowserRouter>
+      </BrowserRouter>,
     )
 
     rerender(
       <BrowserRouter>
         <TaskPage />
-      </BrowserRouter>
+      </BrowserRouter>,
     )
 
     // Wait a bit more
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     // Assert - Should only have called orchestration once despite multiple renders
     expect(mockOrchestratTask).toHaveBeenCalledTimes(1)
-    expect(mockOrchestratTask).toHaveBeenCalledWith('Create a todo app', 'test-task-id')
+    expect(mockOrchestratTask).toHaveBeenCalledWith(
+      'Create a todo app',
+      'test-task-id',
+    )
   })
 })

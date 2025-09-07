@@ -1,6 +1,5 @@
 import { marked } from 'marked'
 import { createElement, Fragment } from 'react'
-import type * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { defaultLang, languages, locales } from './locales'
@@ -89,25 +88,24 @@ const parseMarkdownLinks = (text: string) => {
   return createElement(Fragment, {}, ...parts)
 }
 
-export const useTranslations = (lang: Lang = defaultLang) => {
+export const useTranslations = <MoreLocales>(
+  lang: Lang = defaultLang,
+  moreLocales?: Record<string, MoreLocales extends string ? string : never>,
+) => {
   function t(
-    key: keyof (typeof locales)[typeof defaultLang],
-    vars: Record<string, any>,
-    options: { allowJSX: true },
-  ): string | React.ReactElement
-
-  function t(
-    key: keyof (typeof locales)[typeof defaultLang],
-    vars?: Record<string, any>,
-    options?: { allowJSX?: false },
-  ): string
-
-  function t(
-    key: keyof (typeof locales)[typeof defaultLang],
+    key:
+      | (typeof moreLocales extends Record<string, any>
+          ? keyof typeof moreLocales
+          : never)
+      | keyof (typeof locales)[typeof defaultLang],
     vars?: Record<string, any>,
     options?: { allowJSX?: boolean },
   ) {
-    let tmpl = locales[lang]?.[key] ?? locales[defaultLang][key] ?? key
+    let tmpl =
+      locales[lang]?.[key] ??
+      moreLocales?.[key] ??
+      locales[defaultLang][key] ??
+      key
 
     for (const v in vars) {
       tmpl = tmpl.replaceAll(`{${v}}`, vars[v])
@@ -115,7 +113,7 @@ export const useTranslations = (lang: Lang = defaultLang) => {
 
     // Check if JSX is allowed and template contains markdown links
     if (options?.allowJSX && tmpl.includes('[') && tmpl.includes('](')) {
-      return parseMarkdownLinks(tmpl)
+      return parseMarkdownLinks(tmpl) as string
     }
 
     // For plain text, strip out markdown link syntax if present

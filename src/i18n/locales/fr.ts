@@ -55,118 +55,6 @@ export const fr: I18n = {
   'Failed to get response from LLM. Please try again later.':
     'Échec de la réponse du LLM. Veuillez réessayer plus tard.',
 
-  // Page: /settings
-  'Platform Settings': 'Paramètres de la plateforme',
-  'Configure LLM providers, models and platform defaults for your organization':
-    'Configurez les fournisseurs de LLM, les modèles et les paramètres par défaut de la plateforme pour votre organisation',
-  'General Settings': 'Paramètres généraux',
-  'Choose your preferred language': 'Choisissez votre langue préférée',
-  'Interface Language': 'Langue de l’interface',
-  'Platform Name': 'Nom de la plateforme',
-  'Theme Mode': 'Mode de thème',
-  System: 'Système',
-  Light: 'Clair',
-  Dark: 'Sombre',
-  'Secure Storage': 'Stockage sécurisé',
-  'Manage your encryption keys and secure storage':
-    'Gérez vos clés de chiffrement et votre stockage sécurisé',
-  'Master Key': 'Clé maîtresse',
-  'Copy to clipboard': 'Copier dans le presse-papiers',
-  'Master key copied to clipboard':
-    'Clé maîtresse copiée dans le presse-papiers',
-  'Failed to copy master key': 'Échec de la copie de la clé maîtresse',
-  'Regenerate Master Key': 'Régénérer la clé maîtresse',
-  'Are you sure you want to regenerate the master key? This will invalidate all existing encrypted data.':
-    'Êtes-vous sûr de vouloir régénérer la clé maîtresse ? Cela invalidera toutes les données chiffrées existantes.',
-  'Master key regenerated successfully': 'Clé maîtresse régénérée avec succès',
-  'Failed to regenerate master key':
-    'Échec de la régénération de la clé maîtresse',
-  'Your master key is used to encrypt all sensitive data stored locally. Keep it safe and secure.':
-    'Votre clé maîtresse est utilisée pour chiffrer toutes les données sensibles stockées localement. Gardez-la en sécurité.',
-  'LLM Providers': 'Fournisseurs LLM',
-  'Manage your API credentials': 'Gérez vos identifiants API',
-  'Add Provider': 'Ajouter un fournisseur',
-  'No providers configured. Add one to get started.':
-    'Aucun fournisseur configuré. Ajoutez-en un pour commencer.',
-  'Set as Default': 'Définir par défaut',
-  'Secure storage is locked': 'Le stockage sécurisé est verrouillé',
-  'Enter your master password to unlock':
-    'Entrez votre mot de passe maître pour déverrouiller',
-  'Master password': 'Mot de passe maître',
-  Unlock: 'Déverrouiller',
-  'Storage unlocked': 'Stockage déverrouillé',
-  'Invalid password': 'Mot de passe invalide',
-  'Please fill in all required fields':
-    'Veuillez remplir tous les champs obligatoires',
-  'Invalid API key': 'Clé API invalide',
-  'Credential added successfully': 'Identifiants ajoutés avec succès',
-  'Failed to add credential': 'Échec de l’ajout des identifiants',
-  'Credential deleted': 'Identifiants supprimés',
-  'Failed to delete credential': 'Échec de la suppression des identifiants',
-  'Database Management': 'Gestion de base de données',
-  'Export, import, or clear your local database':
-    'Exportez, importez ou effacez votre base de données locale',
-  'Backup database': 'Exporter la base de données',
-  'Restore database': 'Restaurer la base de données',
-  'Clear database': 'Effacer la base de données',
-  'Database exported successfully': 'Base de données exportée avec succès',
-  'Failed to export database': 'Échec de l’exportation de la base de données',
-  'Database imported successfully ({count} items)':
-    'Base de données importée avec succès ({count} éléments)',
-  'Failed to import database - invalid file format':
-    'Échec de l’importation de la base de données - format de fichier invalide',
-  'Are you sure you want to clear all data? This action cannot be undone.':
-    'Êtes-vous sûr de vouloir effacer toutes les données ? Cette action ne peut pas être annulée.',
-  'Database cleared successfully': 'Base de données effacée avec succès',
-  'Failed to clear database': 'Échec de l’effacement de la base de données',
-  'Database repaired successfully': 'Base de données réparée avec succès',
-  'Failed to repair database': 'Échec de la réparation de la base de données',
-  'Expand artifacts panel': 'Agrandir le panneau d’artefacts',
-  'Minimize artifacts panel': 'Réduire le panneau d’artefacts',
-  'Previous artifact': 'Artefact précédent',
-  'Next artifact': 'Artefact suivant',
-  Dependencies: 'Dépendances',
-  'Validates Requirements': 'Valide les exigences',
-  'No artifact selected': 'Aucun artefact sélectionné',
-  All: 'Tous',
-  Running: 'En cours',
-  Completed: 'Terminé',
-  Pending: 'En attente',
-  Failed: 'Échoué',
-  'No tasks found': 'Aucune tâche trouvée',
-  'No {status} tasks found': 'Aucune tâche {status} trouvée',
-  Due: 'Échéance',
-  simple: 'simple',
-  complex: 'complexe',
-  requirements: 'exigences',
-  Created: 'Créé',
-  Updated: 'Mis à jour',
-  'Add LLM Provider': 'Ajouter un fournisseur LLM',
-  'Select Provider': 'Sélectionner un fournisseur',
-  'Server URL (Optional)': 'URL du serveur (Optionnel)',
-  'API Key': 'Clé API',
-  'Enter your API key': 'Entrez votre clé API',
-  'Format:': 'Format :',
-  'Base URL': 'URL de base',
-  'https://api.example.com/v1': 'https://api.exemple.com/v1',
-  Model: 'Modèle',
-  'Select a model': 'Sélectionnez un modèle',
-  'Custom Model Name': 'Nom de modèle personnalisé',
-  'Enter model name': 'Entrez le nom du modèle',
-  Cancel: 'Annuler',
-  'Validate & Add': 'Valider et ajouter',
-  'Fetch Available Models': 'Récupérer les modèles disponibles',
-  'Use Fetched Models': 'Utiliser les modèles récupérés',
-  'Manual Input': 'Saisie manuelle',
-  'Model Name': 'Nom du modèle',
-  'Enter model name (e.g., llama2, mistral)':
-    'Entrez le nom du modèle (ex: llama2, mistral)',
-  'Enter the exact name of the model you want to use':
-    'Entrez le nom exact du modèle que vous souhaitez utiliser',
-  'Available Models': 'Modèles disponibles',
-  'Default Provider': 'Fournisseur par défaut',
-  'Provider set as default': 'Fournisseur défini par défaut',
-
   // LLM Integration
   'No LLM provider configured. Please [configure one in Settings]({path}).':
     'Aucun fournisseur LLM configuré. Veuillez [en configurer un dans les Paramètres]({path}).',
@@ -193,46 +81,6 @@ export const fr: I18n = {
   'System Prompt': 'Prompt système',
   'No system prompt defined.': 'Aucune invite système définie.',
 
-  // AgentsNewPage
-  'Agent Builder': 'Constructeur d’agent',
-  'Design and configure your custom specialized AI agent':
-    'Concevez et configurez votre agent IA spécialisé personnalisé',
-  'Agent Profile': 'Profil de l’agent',
-  "Define your agent's personality and capabilities":
-    'Définissez la personnalité et les capacités de votre agent',
-  'Agent created successfully! Redirecting to agents list...':
-    'Agent créé avec succès ! Redirection vers la liste des agents...',
-  Name: 'Nom',
-  'e.g., Mike the Magician': 'ex., Mike le Magicien',
-  'A friendly name for your agent': 'Un nom amical pour votre agent',
-  Role: 'Rôle',
-  'e.g., Performs magic tricks and illusions':
-    'ex., Effectue des tours de magie et des illusions',
-  'What does your agent do?': 'Que fait votre agent ?',
-  Instructions: 'Instructions',
-  "Detailed instructions for the agent's personality, skills, constraints, and goals…":
-    'Instructions détaillées pour la personnalité, les compétences, les contraintes et les objectifs de l’agent…',
-  "Detailed instructions for the agent's behavior":
-    'Instructions détaillées pour le comportement de l’agent',
-  'Advanced Configuration': 'Configuration avancée',
-  'Configure advanced settings for your agent':
-    'Configurez les paramètres avancés de votre agent',
-  Provider: 'Fournisseur',
-  Temperature: 'Température',
-  'Lower values = more focused, Higher values = more creative':
-    'Valeurs plus basses = plus ciblé, Valeurs plus élevées = plus créatif',
-  'Creating...': 'Création en cours...',
-  'Create Agent': 'Créer l’agent',
-  'Reset Form': 'Réinitialiser le formulaire',
-  'Live Preview': 'Aperçu en direct',
-  Clear: 'Effacer',
-  'Start a conversation to test your agent':
-    'Commencez une conversation pour tester votre agent',
-  'The chat will use your current form configuration':
-    'Le chat utilisera votre configuration de formulaire actuelle',
-  'Ask {agentName} something…': 'Demandez quelque chose à {agentName}…',
-  Send: 'Envoyer',
-
   // Artifacts side panel
   Artifacts: 'Artefacts',
   'No artifacts created yet': 'Aucun artefact créé pour le moment',
@@ -256,7 +104,6 @@ export const fr: I18n = {
   'Change Background': 'Changer l’arrière-plan',
   'Upload Background': 'Télécharger l’arrière-plan',
   'Background image removed': 'Image de fond supprimée',
-  Remove: 'Supprimer',
   'Configure your platform preferences':
     'Configurez vos préférences de plateforme',
   Undo: 'Annuler',
@@ -363,14 +210,16 @@ export const fr: I18n = {
   'Task Dependencies': 'Dépendances de la tâche',
   'Total Sub-tasks': 'Total des sous-tâches',
 
-  // Knowledge Page
-  'Knowledge Base': 'Base de connaissances',
-  'Add Knowledge': 'Ajouter des connaissances',
-
   // Common actions
   Retry: 'Réessayer',
   Refresh: 'Actualiser',
   Close: 'Fermer',
+  Edit: 'Modifier',
+  Delete: 'Supprimer',
+  Save: 'Enregistrer',
+  Remove: 'Retirer',
+  Cancel: 'Annuler',
+  'Copy to clipboard': 'Copier dans le presse-papiers',
 
   // Database Administration
   'Loading database information…':

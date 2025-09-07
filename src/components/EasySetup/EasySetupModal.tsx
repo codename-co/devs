@@ -10,9 +10,10 @@ import {
   Chip,
   Progress,
 } from '@heroui/react'
-import { Icon } from './Icon'
+import { Icon } from '@/components'
 import { EasySetupData, EasySetupCrypto } from '@/lib/easy-setup'
 import { useI18n } from '@/i18n'
+import localI18n from './i18n'
 
 interface EasySetupModalProps {
   isOpen: boolean
@@ -35,7 +36,7 @@ export const EasySetupModal = ({
     'password' | 'preview' | 'initializing'
   >('password')
   const [decryptedData, setDecryptedData] = useState<any>(null)
-  const { t } = useI18n()
+  const { t } = useI18n(localI18n)
 
   useEffect(() => {
     ;(async () => {

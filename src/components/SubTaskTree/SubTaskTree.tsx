@@ -4,6 +4,7 @@ import { Button, Chip, Progress, Tooltip } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import type { Task } from '@/types'
+import localI18n from './i18n'
 
 interface SubTaskTreeProps {
   task: Task
@@ -24,16 +25,16 @@ interface TaskNodeProps {
   className?: string
 }
 
-const TaskNode = ({ 
-  task, 
-  level, 
-  isExpanded = false, 
-  onToggle, 
-  hasChildren = false, 
+const TaskNode = ({
+  task,
+  level,
+  isExpanded = false,
+  onToggle,
+  hasChildren = false,
   isSelected = false,
-  className = ""
+  className = '',
 }: TaskNodeProps) => {
-  const { url } = useI18n()
+  const { url } = useI18n(localI18n)
   const navigate = useNavigate()
 
   const getStatusColor = (status: Task['status']) => {
@@ -72,15 +73,26 @@ const TaskNode = ({
   }
 
   // Calculate completion percentage
-  const completionPercentage = task.steps.length > 0 
-    ? Math.round((task.steps.filter(s => s.status === 'completed').length / task.steps.length) * 100)
-    : task.status === 'completed' ? 100 : task.status === 'in_progress' ? 50 : 0
+  const completionPercentage =
+    task.steps.length > 0
+      ? Math.round(
+          (task.steps.filter((s) => s.status === 'completed').length /
+            task.steps.length) *
+            100,
+        )
+      : task.status === 'completed'
+        ? 100
+        : task.status === 'in_progress'
+          ? 50
+          : 0
 
   return (
-    <div className={`flex items-center gap-3 py-2 px-3 rounded-lg border border-default-200 hover:border-primary-300 transition-colors ${isSelected ? 'bg-primary-50 border-primary-300' : 'bg-default-50'} ${className}`}>
+    <div
+      className={`flex items-center gap-3 py-2 px-3 rounded-lg border border-default-200 hover:border-primary-300 transition-colors ${isSelected ? 'bg-primary-50 border-primary-300' : 'bg-default-50'} ${className}`}
+    >
       {/* Indentation */}
       <div style={{ width: `${level * 20}px` }} />
-      
+
       {/* Expand/Collapse Button */}
       <div className="w-6 flex justify-center">
         {hasChildren ? (
@@ -91,8 +103,8 @@ const TaskNode = ({
             onClick={onToggle}
             className="min-w-6 w-6 h-6"
           >
-            <Icon 
-              name={isExpanded ? "ArrowRight" : "ArrowRight"} 
+            <Icon
+              name={isExpanded ? 'ArrowRight' : 'ArrowRight'}
               className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
             />
           </Button>
@@ -103,55 +115,68 @@ const TaskNode = ({
 
       {/* Status Icon */}
       <div className="flex-none">
-        <Icon 
-          name={getStatusIcon(task.status) as any} 
+        <Icon
+          name={getStatusIcon(task.status) as any}
           className={`w-4 h-4 ${
-            task.status === 'completed' ? 'text-success' :
-            task.status === 'in_progress' ? 'text-primary' :
-            task.status === 'failed' ? 'text-danger' :
-            'text-default-400'
-          }`} 
+            task.status === 'completed'
+              ? 'text-success'
+              : task.status === 'in_progress'
+                ? 'text-primary'
+                : task.status === 'failed'
+                  ? 'text-danger'
+                  : 'text-default-400'
+          }`}
         />
       </div>
 
       {/* Task Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <h4 className="font-medium text-foreground truncate cursor-pointer hover:text-primary"
-              onClick={() => navigate(url(`/tasks/${task.id}`))}>
+          <h4
+            className="font-medium text-foreground truncate cursor-pointer hover:text-primary"
+            onClick={() => navigate(url(`/tasks/${task.id}`))}
+          >
             {task.title}
           </h4>
           <div className="flex gap-1 flex-none">
             <Chip size="sm" color={getStatusColor(task.status)} variant="flat">
               {task.status.replace('_', ' ')}
             </Chip>
-            <Chip size="sm" color={getComplexityColor(task.complexity)} variant="flat">
+            <Chip
+              size="sm"
+              color={getComplexityColor(task.complexity)}
+              variant="flat"
+            >
               {task.complexity}
             </Chip>
           </div>
         </div>
-        
+
         {/* Progress Bar */}
         {task.steps.length > 0 && (
           <div className="mb-2" data-testid="task-breakdown">
             <div className="flex items-center gap-2 mb-1">
-              <Progress 
+              <Progress
                 data-testid="progress-bar"
-                size="sm" 
-                value={completionPercentage} 
+                size="sm"
+                value={completionPercentage}
                 color={task.status === 'completed' ? 'success' : 'primary'}
                 className="flex-1"
               />
-              <span data-testid="status-text" className="text-xs text-default-500 min-w-[3rem]">
+              <span
+                data-testid="status-text"
+                className="text-xs text-default-500 min-w-[3rem]"
+              >
                 {completionPercentage}%
               </span>
             </div>
             <div className="text-xs text-default-500">
-              {task.steps.filter(s => s.status === 'completed').length} / {task.steps.length} steps
+              {task.steps.filter((s) => s.status === 'completed').length} /{' '}
+              {task.steps.length} steps
             </div>
           </div>
         )}
-        
+
         {/* Task Description (truncated) */}
         <p className="text-sm text-default-600 line-clamp-2">
           {task.description}
@@ -162,7 +187,8 @@ const TaskNode = ({
           <div className="mt-1 flex items-center gap-1">
             <Icon name="ArrowRight" className="w-3 h-3 text-default-400" />
             <span className="text-xs text-default-500">
-              Depends on {task.dependencies.length} task{task.dependencies.length !== 1 ? 's' : ''}
+              Depends on {task.dependencies.length} task
+              {task.dependencies.length !== 1 ? 's' : ''}
             </span>
           </div>
         )}
@@ -181,13 +207,22 @@ const TaskNode = ({
   )
 }
 
-export const SubTaskTree = ({ task, children, parent, siblings, allTasks = [], className = "" }: SubTaskTreeProps) => {
-  const { t, url } = useI18n()
+export const SubTaskTree = ({
+  task,
+  children,
+  parent,
+  siblings,
+  allTasks = [],
+  className = '',
+}: SubTaskTreeProps) => {
+  const { t, url } = useI18n(localI18n)
   const navigate = useNavigate()
-  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set([task.id]))
+  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(
+    new Set([task.id]),
+  )
 
   const toggleExpanded = (taskId: string) => {
-    setExpandedTasks(prev => {
+    setExpandedTasks((prev) => {
       const newSet = new Set(prev)
       if (newSet.has(taskId)) {
         newSet.delete(taskId)
@@ -199,9 +234,9 @@ export const SubTaskTree = ({ task, children, parent, siblings, allTasks = [], c
   }
 
   const renderTaskHierarchy = (
-    currentTask: Task, 
-    childTasks: Task[], 
-    level: number = 0
+    currentTask: Task,
+    childTasks: Task[],
+    level: number = 0,
   ): React.ReactNode[] => {
     const isExpanded = expandedTasks.has(currentTask.id)
     const hasChildren = childTasks.length > 0
@@ -216,15 +251,17 @@ export const SubTaskTree = ({ task, children, parent, siblings, allTasks = [], c
         onToggle={() => toggleExpanded(currentTask.id)}
         hasChildren={hasChildren}
         isSelected={isSelected}
-      />
+      />,
     ]
 
     // Recursively render children if expanded
     if (isExpanded && hasChildren) {
-      childTasks.forEach(childTask => {
-        const grandChildren = children.filter(t => t.parentTaskId === childTask.id)
+      childTasks.forEach((childTask) => {
+        const grandChildren = children.filter(
+          (t) => t.parentTaskId === childTask.id,
+        )
         elements.push(
-          ...renderTaskHierarchy(childTask, grandChildren, level + 1)
+          ...renderTaskHierarchy(childTask, grandChildren, level + 1),
         )
       })
     }
@@ -233,7 +270,10 @@ export const SubTaskTree = ({ task, children, parent, siblings, allTasks = [], c
   }
 
   return (
-    <div data-testid="workflow-view" className={`bg-default-100 rounded-lg p-4 ${className}`}>
+    <div
+      data-testid="workflow-view"
+      className={`bg-default-100 rounded-lg p-4 ${className}`}
+    >
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">{t('Task Hierarchy')}</h3>
         <div className="flex items-center gap-2">
@@ -243,9 +283,12 @@ export const SubTaskTree = ({ task, children, parent, siblings, allTasks = [], c
               size="sm"
               variant="light"
               onClick={() => {
-                const allTaskIds = new Set([task.id, ...children.map(c => c.id)])
+                const allTaskIds = new Set([
+                  task.id,
+                  ...children.map((c) => c.id),
+                ])
                 if (parent) allTaskIds.add(parent.id)
-                siblings.forEach(s => allTaskIds.add(s.id))
+                siblings.forEach((s) => allTaskIds.add(s.id))
                 setExpandedTasks(allTaskIds)
               }}
             >
@@ -289,7 +332,7 @@ export const SubTaskTree = ({ task, children, parent, siblings, allTasks = [], c
               {t('Sibling Tasks')} ({siblings.length})
             </div>
             <div className="space-y-2">
-              {siblings.map(sibling => (
+              {siblings.map((sibling) => (
                 <TaskNode
                   key={sibling.id}
                   task={sibling}
@@ -306,11 +349,11 @@ export const SubTaskTree = ({ task, children, parent, siblings, allTasks = [], c
         {/* Main task and its children */}
         <div className="mb-4">
           <div className="text-sm text-default-600 mb-2 font-medium">
-            {parent ? t('Current Task & Sub-tasks') : t('Main Task & Sub-tasks')}
+            {parent
+              ? t('Current Task & Sub-tasks')
+              : t('Main Task & Sub-tasks')}
           </div>
-          <div className="space-y-2">
-            {renderTaskHierarchy(task, children)}
-          </div>
+          <div className="space-y-2">{renderTaskHierarchy(task, children)}</div>
         </div>
 
         {/* Dependencies Section */}
@@ -320,41 +363,70 @@ export const SubTaskTree = ({ task, children, parent, siblings, allTasks = [], c
               {t('Task Dependencies')} ({task.dependencies.length})
             </div>
             <div className="space-y-2">
-              {task.dependencies.map(depId => {
-                const depTask = allTasks.find(t => t.id === depId)
+              {task.dependencies.map((depId) => {
+                const depTask = allTasks.find((t) => t.id === depId)
                 if (!depTask) {
                   return (
-                    <div key={depId} className="flex items-center gap-2 p-2 bg-warning-50 border border-warning-200 rounded">
+                    <div
+                      key={depId}
+                      className="flex items-center gap-2 p-2 bg-warning-50 border border-warning-200 rounded"
+                    >
                       <Icon name="X" className="w-4 h-4 text-warning" />
-                      <span className="text-sm text-warning-700">Dependency task not found: {depId.substring(0, 8)}...</span>
+                      <span className="text-sm text-warning-700">
+                        Dependency task not found: {depId.substring(0, 8)}...
+                      </span>
                     </div>
                   )
                 }
                 return (
-                  <div key={depId} className="flex items-center gap-3 p-3 bg-default-50 border border-default-200 rounded-lg">
-                    <Icon 
-                      name={depTask.status === 'completed' ? 'CheckCircle' : 
-                           depTask.status === 'in_progress' ? 'Circle' : 
-                           depTask.status === 'failed' ? 'X' : 'Circle'} 
+                  <div
+                    key={depId}
+                    className="flex items-center gap-3 p-3 bg-default-50 border border-default-200 rounded-lg"
+                  >
+                    <Icon
+                      name={
+                        depTask.status === 'completed'
+                          ? 'CheckCircle'
+                          : depTask.status === 'in_progress'
+                            ? 'Circle'
+                            : depTask.status === 'failed'
+                              ? 'X'
+                              : 'Circle'
+                      }
                       className={`w-4 h-4 ${
-                        depTask.status === 'completed' ? 'text-success' :
-                        depTask.status === 'in_progress' ? 'text-primary' :
-                        depTask.status === 'failed' ? 'text-danger' :
-                        'text-default-400'
-                      }`} 
+                        depTask.status === 'completed'
+                          ? 'text-success'
+                          : depTask.status === 'in_progress'
+                            ? 'text-primary'
+                            : depTask.status === 'failed'
+                              ? 'text-danger'
+                              : 'text-default-400'
+                      }`}
                     />
                     <div className="flex-1">
-                      <h5 className="font-medium text-foreground cursor-pointer hover:text-primary"
-                          onClick={() => navigate(url(`/tasks/${depTask.id}`))}>
+                      <h5
+                        className="font-medium text-foreground cursor-pointer hover:text-primary"
+                        onClick={() => navigate(url(`/tasks/${depTask.id}`))}
+                      >
                         {depTask.title}
                       </h5>
-                      <p className="text-xs text-default-500">{depTask.status.replace('_', ' ')}</p>
+                      <p className="text-xs text-default-500">
+                        {depTask.status.replace('_', ' ')}
+                      </p>
                     </div>
-                    <Chip size="sm" color={
-                      depTask.status === 'completed' ? 'success' :
-                      depTask.status === 'in_progress' ? 'primary' :
-                      depTask.status === 'failed' ? 'danger' : 'default'
-                    } variant="flat">
+                    <Chip
+                      size="sm"
+                      color={
+                        depTask.status === 'completed'
+                          ? 'success'
+                          : depTask.status === 'in_progress'
+                            ? 'primary'
+                            : depTask.status === 'failed'
+                              ? 'danger'
+                              : 'default'
+                      }
+                      variant="flat"
+                    >
                       {depTask.status.replace('_', ' ')}
                     </Chip>
                   </div>
@@ -368,25 +440,27 @@ export const SubTaskTree = ({ task, children, parent, siblings, allTasks = [], c
         <div className="mt-4 p-3 bg-default-50 rounded-lg">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center text-sm">
             <div>
-              <p className="font-medium text-default-600">{t('Total Sub-tasks')}</p>
+              <p className="font-medium text-default-600">
+                {t('Total Sub-tasks')}
+              </p>
               <p className="text-lg font-semibold">{children.length}</p>
             </div>
             <div>
               <p className="font-medium text-default-600">{t('Completed')}</p>
               <p className="text-lg font-semibold text-success">
-                {children.filter(c => c.status === 'completed').length}
+                {children.filter((c) => c.status === 'completed').length}
               </p>
             </div>
             <div>
               <p className="font-medium text-default-600">{t('In Progress')}</p>
               <p className="text-lg font-semibold text-primary">
-                {children.filter(c => c.status === 'in_progress').length}
+                {children.filter((c) => c.status === 'in_progress').length}
               </p>
             </div>
             <div>
               <p className="font-medium text-default-600">{t('Pending')}</p>
               <p className="text-lg font-semibold text-default-600">
-                {children.filter(c => c.status === 'pending').length}
+                {children.filter((c) => c.status === 'pending').length}
               </p>
             </div>
           </div>

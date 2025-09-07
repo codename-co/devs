@@ -16,9 +16,10 @@ import { useTaskStore } from '@/stores/taskStore'
 import { Task, TaskStep } from '@/types'
 import { formatDistanceToNow } from 'date-fns'
 import { HeaderProps } from '@/lib/types'
+import localI18n from './i18n'
 
 export const TasksPage = () => {
-  const { t, url } = useI18n()
+  const { t, url } = useI18n(localI18n)
   const navigate = useNavigate()
   const { tasks, isLoading, loadTasks } = useTaskStore()
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([])

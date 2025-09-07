@@ -5,6 +5,7 @@ export const languages = {
   fr: 'Français',
   ko: '한국어',
 } as const
+export const en = localesIndex.en
 
 export const defaultLang = 'en'
 

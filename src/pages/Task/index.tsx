@@ -775,16 +775,23 @@ export const TaskPage = () => {
             {/* Main Content */}
             <div
               className={artifacts.length > 0 ? 'lg:col-span-2' : 'col-span-1'}
-              data-testid={task.status === 'completed' ? 'task-completed' : undefined}
+              data-testid={
+                task.status === 'completed' ? 'task-completed' : undefined
+              }
             >
               {/* Task Overview */}
-              <div className="mb-8 bg-default-50 rounded-lg p-6" data-testid="task-results">
+              <div
+                className="mb-8 bg-default-50 rounded-lg p-6"
+                data-testid="task-results"
+              >
                 <p className="text-default-800 whitespace-pre-wrap">
                   {task.description}
                 </p>
                 {task.assignedAgentId && (
                   <div className="mt-4" data-testid="active-agents">
-                    <span className="text-sm text-default-500">Assigned to: {task.assignedAgentId}</span>
+                    <span className="text-sm text-default-500">
+                      Assigned to: {task.assignedAgentId}
+                    </span>
                   </div>
                 )}
               </div>
@@ -929,7 +936,10 @@ export const TaskPage = () => {
                   <h3 className="text-lg font-semibold mb-4">
                     {t('Requirements')}
                   </h3>
-                  <div className="space-y-3" data-testid="requirement-validation">
+                  <div
+                    className="space-y-3"
+                    data-testid="requirement-validation"
+                  >
                     <CheckboxGroup
                       // label={t('Requirements')}
                       value={task.requirements
@@ -1020,7 +1030,10 @@ export const TaskPage = () => {
                     {t('Task Timeline')}
                   </h3>
                   {isOrchestrating && (
-                    <div className="flex items-center gap-2 text-primary" data-testid="workflow-status">
+                    <div
+                      className="flex items-center gap-2 text-primary"
+                      data-testid="workflow-status"
+                    >
                       <Spinner size="sm" />
                       <span className="text-sm">Live updates active</span>
                     </div>

@@ -18,6 +18,7 @@ import DefaultLayout from '@/layouts/Default'
 import type { HeaderProps } from '@/lib/types'
 import clsx from 'clsx'
 import { errorToast, successToast } from '@/lib/toast'
+import localI18n from './i18n'
 
 interface DatabaseStats {
   name: string
@@ -36,7 +37,7 @@ interface StoreInfo {
 }
 
 export const DatabasePage: React.FC = () => {
-  const { lang, t } = useI18n()
+  const { lang, t } = useI18n(localI18n)
   const [stats, setStats] = useState<DatabaseStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedRecord, setSelectedRecord] = useState<any>(null)
@@ -713,5 +714,3 @@ export const DatabasePage: React.FC = () => {
     </DefaultLayout>
   )
 }
-
-export default DatabasePage

@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import {
   Button,
-  Card,
-  CardBody,
-  CardHeader,
   Chip,
   Dropdown,
   DropdownTrigger,
@@ -27,6 +24,7 @@ import {
   EditPencil,
   MoreVert,
   MediaImage,
+  SubmitDocument,
 } from 'iconoir-react'
 
 import { db } from '@/lib/db'
@@ -47,6 +45,7 @@ import {
   type SyncEvent,
 } from '@/lib/knowledge-sync'
 import { errorToast, successToast, warningToast } from '@/lib/toast'
+import localI18n from './i18n'
 
 interface FileSystemFileHandle {
   readonly kind: 'file'
@@ -77,7 +76,7 @@ declare global {
 }
 
 export const KnowledgePage: React.FC = () => {
-  const { t } = useI18n()
+  const { t } = useI18n(localI18n)
   const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
@@ -439,8 +438,9 @@ export const KnowledgePage: React.FC = () => {
       color: 'text-danger-300 dark:text-danger-600',
     },
     title: t('Knowledge Base'),
-    subtitle:
-      'Upload files and connect local folders to build your knowledge base',
+    subtitle: t(
+      'Upload files and synchronize local folders to build your knowledge base',
+    ),
   }
 
   return (
@@ -448,9 +448,7 @@ export const KnowledgePage: React.FC = () => {
       <Section>
         <Container>
           {/* Upload Area */}
-          <Title level={2} size="xl">
-            {t('Add Knowledge')}
-          </Title>
+          <Title level={2}>{t('Add knowledge')}</Title>
           <div
             data-testid="upload-area"
             className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
@@ -466,24 +464,24 @@ export const KnowledgePage: React.FC = () => {
             {uploading ? (
               <div className="flex flex-col items-center space-y-4">
                 <Spinner size="lg" />
-                <p>Uploading files…</p>
+                <p>{t('Uploading files…')}</p>
               </div>
             ) : (
               <div className="flex flex-col items-center space-y-4">
                 <Upload className="w-12 h-12 text-default-400" />
                 <div>
                   <p className="text-md mb-2">
-                    Drag & drop files here, or click to select
+                    {t('Drag & drop files here, or click to select')}
                   </p>
                   <div className="flex gap-3 justify-center">
                     <Button
                       data-testid="upload-files-button"
                       color="primary"
                       variant="flat"
-                      startContent={<Upload className="w-4 h-4" />}
+                      startContent={<SubmitDocument className="w-4 h-4" />}
                       onPress={handleFilePicker}
                     >
-                      Choose Files
+                      {t('Pick files')}
                     </Button>
                     <Button
                       data-testid="upload-folder-button"
@@ -492,7 +490,7 @@ export const KnowledgePage: React.FC = () => {
                       startContent={<Folder className="w-4 h-4" />}
                       onPress={handleFolderPicker}
                     >
-                      Select Folder
+                      {t('Sync a folder')}
                     </Button>
                   </div>
                 </div>
@@ -504,102 +502,102 @@ export const KnowledgePage: React.FC = () => {
         <Container>
           {/* Watched Folders Section */}
           {watchedFolders.length > 0 && (
-            <Card className="mb-6">
-              <CardHeader>
-                <Title level={2} size="xl">
-                  Watched Folders ({watchedFolders.length})
-                </Title>
-                {syncStatus !== 'idle' && (
-                  <Chip
-                    color={syncStatus === 'syncing' ? 'primary' : 'danger'}
-                    size="sm"
-                    variant="flat"
+            <>
+              <Title level={2}>
+                {t('Synced folders')}
+                <span className="ml-2 text-lg text-default-500">
+                  ({watchedFolders.length})
+                </span>
+              </Title>
+              {syncStatus !== 'idle' && (
+                <Chip
+                  color={syncStatus === 'syncing' ? 'primary' : 'danger'}
+                  size="sm"
+                  variant="flat"
+                >
+                  {syncStatus === 'syncing' ? 'Syncing…' : 'Sync Error'}
+                </Chip>
+              )}
+              <div className="space-y-2">
+                {watchedFolders.map((watcher) => (
+                  <div
+                    key={watcher.id}
+                    className="flex items-center justify-between p-3 bg-default-50 rounded-lg"
                   >
-                    {syncStatus === 'syncing' ? 'Syncing…' : 'Sync Error'}
-                  </Chip>
-                )}
-              </CardHeader>
-              <CardBody>
-                <div className="space-y-2">
-                  {watchedFolders.map((watcher) => (
-                    <div
-                      key={watcher.id}
-                      className="flex items-center justify-between p-3 bg-default-50 rounded-lg"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="relative">
-                          <Folder
-                            className={`w-5 h-5 ${watcher.isActive ? 'text-warning' : 'text-default-400'}`}
-                          />
-                          <div
-                            className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${
-                              watcher.isActive ? 'bg-success' : 'bg-danger'
-                            }`}
-                          />
-                        </div>
-                        <div>
-                          <p
-                            className={`font-medium ${watcher.isActive ? '' : 'text-default-500'}`}
-                          >
-                            {watcher.basePath}
-                          </p>
-                          <p className="text-sm text-default-500">
-                            {watcher.isActive ? (
-                              <>
-                                Last sync:{' '}
-                                {watcher.lastSync.toLocaleTimeString()}
-                              </>
-                            ) : (
-                              <>Disconnected - Click reconnect to resume sync</>
-                            )}
-                          </p>
-                        </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="relative">
+                        <Folder
+                          className={`w-5 h-5 ${watcher.isActive ? 'text-warning' : 'text-default-400'}`}
+                        />
+                        <div
+                          className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${
+                            watcher.isActive ? 'bg-success' : 'bg-danger'
+                          }`}
+                        />
                       </div>
-                      <div className="flex gap-2">
-                        {watcher.isActive ? (
+                      <div>
+                        <p
+                          className={`font-medium ${watcher.isActive ? '' : 'text-default-500'}`}
+                        >
+                          {watcher.basePath}
+                        </p>
+                        <p className="text-sm text-default-500">
+                          {watcher.isActive ? (
+                            <>
+                              {t('Last sync: {time}', {
+                                time: watcher.lastSync.toLocaleTimeString(),
+                              })}
+                            </>
+                          ) : (
+                            t('Disconnected')
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      {watcher.isActive ? (
+                        <Button
+                          size="sm"
+                          variant="light"
+                          color="danger"
+                          onPress={() => handleUnwatchFolder(watcher.id)}
+                        >
+                          {t('Stop syncing')}
+                        </Button>
+                      ) : (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="light"
+                            color="primary"
+                            onPress={() => handleReconnectFolder(watcher.id)}
+                          >
+                            {t('Reconnect')}
+                          </Button>
                           <Button
                             size="sm"
                             variant="light"
                             color="danger"
                             onPress={() => handleUnwatchFolder(watcher.id)}
                           >
-                            Stop Watching
+                            {t('Remove')}
                           </Button>
-                        ) : (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="light"
-                              color="primary"
-                              onPress={() => handleReconnectFolder(watcher.id)}
-                            >
-                              Reconnect
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="light"
-                              color="danger"
-                              onPress={() => handleUnwatchFolder(watcher.id)}
-                            >
-                              Remove
-                            </Button>
-                          </>
-                        )}
-                      </div>
+                        </>
+                      )}
                     </div>
-                  ))}
-                </div>
-              </CardBody>
-            </Card>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
 
           {/* Knowledge Items List */}
-          <h2 className="text-xl font-semibold">
-            Your Knowledge
+          <Title level={2}>
+            {t('My Knowledge')}
             <span className="ml-2 text-lg text-default-500">
               ({knowledgeItems.length})
             </span>
-          </h2>
+          </Title>
           {loading ? (
             <div className="flex justify-center p-8">
               <Spinner size="lg" />
@@ -610,7 +608,9 @@ export const KnowledgePage: React.FC = () => {
               className="text-center p-8 text-default-500"
             >
               <Page className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>No knowledge items yet. Upload some files to get started!</p>
+              <p>
+                {t('No knowledge items yet. Upload some files to get started!')}
+              </p>
             </div>
           ) : (
             <div
@@ -670,7 +670,7 @@ export const KnowledgePage: React.FC = () => {
                           startContent={<EditPencil className="w-4 h-4" />}
                           onPress={() => openEditModal(item)}
                         >
-                          Edit
+                          {t('Edit')}
                         </DropdownItem>
                         <DropdownItem
                           key="delete"
@@ -679,7 +679,7 @@ export const KnowledgePage: React.FC = () => {
                           color="danger"
                           onPress={() => deleteItem(item.id)}
                         >
-                          Delete
+                          {t('Delete')}
                         </DropdownItem>
                       </DropdownMenu>
                     </Dropdown>
@@ -692,7 +692,7 @@ export const KnowledgePage: React.FC = () => {
           {/* Edit Modal */}
           <Modal isOpen={isEditModalOpen} onClose={onEditModalClose} size="2xl">
             <ModalContent>
-              <ModalHeader>Edit Knowledge Item</ModalHeader>
+              <ModalHeader>{t('Knowledge Item')}</ModalHeader>
               <ModalBody>
                 <div className="space-y-4">
                   <Input
@@ -713,7 +713,6 @@ export const KnowledgePage: React.FC = () => {
                   <Input
                     label={t('tags')}
                     placeholder="tag1, tag2, tag3"
-                    description="Comma-separated tags for organization"
                     value={editForm.tags}
                     onValueChange={(value) =>
                       setEditForm((prev) => ({ ...prev, tags: value }))
@@ -723,10 +722,10 @@ export const KnowledgePage: React.FC = () => {
               </ModalBody>
               <ModalFooter>
                 <Button variant="light" onPress={onEditModalClose}>
-                  Cancel
+                  {t('Cancel')}
                 </Button>
                 <Button color="primary" onPress={saveItemChanges}>
-                  Save Changes
+                  {t('Save')}
                 </Button>
               </ModalFooter>
             </ModalContent>

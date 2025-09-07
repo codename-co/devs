@@ -1,0 +1,17 @@
+export const en = [
+  'Knowledge Base',
+  'Upload files and synchronize local folders to build your knowledge base',
+  'Add knowledge',
+  'Uploading files…',
+  'Drag & drop files here, or click to select',
+  'Pick files',
+  'Sync a folder',
+  'Synced folders',
+  'Last sync: {time}',
+  'Disconnected',
+  'Stop syncing',
+  'Reconnect',
+  'My Knowledge',
+  'No knowledge items yet. Upload some files to get started!',
+  'Knowledge Item',
+] as const

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Input, Switch, Alert, Divider, Snippet, Spinner } from '@heroui/react'
-import { Icon } from './Icon'
+import { Icon } from '@/components'
 import { generateSetupQRData, generateSetupQRCode } from '@/lib/easy-qr'
-import { successToast, errorToast } from '@/lib/toast'
+import { errorToast } from '@/lib/toast'
 import { useI18n } from '@/i18n'
 import { loadCustomAgents } from '@/stores/agentStore'
 import { userSettings } from '@/stores/userStore'
@@ -52,10 +52,10 @@ export const EasySetupExport = () => {
         setIsGeneratingQR(false)
       }
 
-      successToast(
-        'Setup URL Generated',
-        'Share the URL or scan the QR code with your team',
-      )
+      // successToast(
+      //   'Setup URL Generated',
+      //   'Share the URL or scan the QR code with your team',
+      // )
     } catch (error) {
       console.error('Failed to generate setup:', error)
       errorToast(
