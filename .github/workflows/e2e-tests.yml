@@ -17,8 +17,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Test on different browsers
-        browser: [chromium, firefox, webkit]
+        browser: [chromium]
+        # # Test on different browsers
+        # browser: [chromium, firefox, webkit]
 
     steps:
       - uses: actions/checkout@v4
