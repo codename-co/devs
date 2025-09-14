@@ -5,19 +5,28 @@ export class ServiceWorkerManager {
 
   static async register(): Promise<void> {
     if (!('serviceWorker' in navigator)) {
-      console.warn('Service Workers are not supported in this browser')
+      console.warn(
+        '[SW-MANAGER] ❌ Service Workers are not supported in this browser',
+      )
       return
     }
 
     try {
+      console.log('[SW-MANAGER] 🚀 Registering service worker...')
       this.registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/',
         updateViaCache: 'none', // Force check for updates
       })
 
-      console.log('Service Worker registered successfully')
+      console.log('[SW-MANAGER] ✅ Service Worker registered successfully:', {
+        scope: this.registration.scope,
+        state:
+          this.registration.installing?.state ||
+          this.registration.active?.state,
+      })
 
       // Initialize Langfuse service for handling service worker requests
+      console.log('[SW-MANAGER] 🔧 Initializing Langfuse service...')
       await LangfuseService.initialize()
 
       // Listen for updates

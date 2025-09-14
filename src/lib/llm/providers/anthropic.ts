@@ -65,25 +65,37 @@ export class AnthropicProvider implements LLMProviderInterface {
       .filter((m) => m.role !== 'system')
       .map((msg) => this.convertMessageToAnthropicFormat(msg))
 
-    const response = await fetch(
-      `${config?.baseUrl || this.baseUrl}/messages`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': config?.apiKey || '',
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-          model: config?.model || 'claude-sonnet-4-20250514',
-          system: systemMessage,
-          messages: userMessages,
-          temperature: config?.temperature || 0.7,
-          max_tokens: config?.maxTokens || 1024,
-        }),
+    const endpoint = `${config?.baseUrl || this.baseUrl}/messages`
+    console.log('[ANTHROPIC-PROVIDER] 🚀 Making LLM request:', {
+      endpoint,
+      model: config?.model || 'claude-sonnet-4-20250514',
+      messagesCount: userMessages.length,
+      hasSystemMessage: !!systemMessage,
+      temperature: config?.temperature || 0.7,
+    })
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': config?.apiKey || '',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
       },
-    )
+      body: JSON.stringify({
+        model: config?.model || 'claude-sonnet-4-20250514',
+        system: systemMessage,
+        messages: userMessages,
+        temperature: config?.temperature || 0.7,
+        max_tokens: config?.maxTokens || 1024,
+      }),
+    })
+
+    console.log('[ANTHROPIC-PROVIDER] 📡 Response received:', {
+      status: response.status,
+      ok: response.ok,
+      headers: Object.fromEntries(response.headers.entries()),
+    })
 
     if (!response.ok) {
       throw new Error(`Anthropic API error: ${response.statusText}`)

@@ -8,7 +8,7 @@ import { type Agent } from '@/types'
 import { loadAllAgents, getAgentsByCategory } from '@/stores/agentStore'
 import { Icon } from './Icon'
 import { useI18n } from '@/i18n'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 
 interface AgentPickerProps extends Omit<DropdownMenuProps, 'children'> {
   selectedAgent?: Agent | null
@@ -42,24 +42,31 @@ export function AgentPicker({
     loadAgents()
   }, [lang])
 
-  const handleSelectionChange = (keys: 'all' | Set<React.Key>) => {
-    if (keys === 'all') return
+  const handleSelectionChange = useCallback(
+    (keys: 'all' | Set<React.Key>) => {
+      if (keys === 'all') return
 
-    const selectedKey = Array.from(keys)[0] as string
-    const agent = availableAgents.find((a) => a.id === selectedKey) || null
-    onAgentChange?.(agent)
-  }
+      const selectedKey = Array.from(keys)[0] as string
+      const agent = availableAgents.find((a) => a.id === selectedKey) || null
+      onAgentChange?.(agent)
+    },
+    [availableAgents, onAgentChange],
+  )
 
   // Define category display names
-  const categoryNames: Record<string, string> = {
-    scientist: t('Scientists'),
-    advisor: t('Advisors'),
-    artist: t('Artists'),
-    philosopher: t('Philosophers'),
-    musician: t('Musicians'),
-    writer: t('Writers'),
-    other: t('Other Agents'),
-  }
+  const categoryNames = useMemo(
+    () =>
+      ({
+        scientist: t('Scientists'),
+        advisor: t('Advisors'),
+        artist: t('Artists'),
+        philosopher: t('Philosophers'),
+        musician: t('Musicians'),
+        writer: t('Writers'),
+        other: t('Other Agents'),
+      }) as Record<string, string>,
+    [t],
+  )
 
   return (
     <DropdownMenu
@@ -71,8 +78,11 @@ export function AgentPicker({
       {...props}
     >
       {orderedCategories.map((category) => (
-        <DropdownSection key={category} title={categoryNames[category]}>
-          {agentsByCategory[category].map((agent) => (
+        <DropdownSection
+          key={category}
+          title={categoryNames[category] || category}
+        >
+          {agentsByCategory[category]?.map((agent) => (
             <DropdownItem
               key={agent.id}
               description={agent.i18n?.[lang]?.desc ?? agent.desc ?? agent.role}

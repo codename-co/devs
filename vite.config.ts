@@ -7,31 +7,46 @@ import { defineConfig } from 'vite'
 import { createMpaPlugin, type Page } from 'vite-plugin-virtual-mpa'
 
 import { PRODUCT } from './src/config/product'
-import { defaultLang, langs, meta } from './src/i18n'
+import { defaultLang, type Lang, langs, meta } from './src/i18n'
 
-// Dynamically list all pages
-const pagesList = globSync('*/index.tsx', { cwd: './src/pages' }).map((file) =>
-  file.replace('/index.tsx', ''),
-)
+// Dynamically list all pages with their full paths
+const pageFiles = globSync('*/index.{tsx,mdx}', { cwd: './src/pages' })
+const pagesList = pageFiles
+  .map((file) => ({
+    page: file.replace(/\/index\.(tsx|mdx)$/, ''),
+    entry: `/src/pages/${file}` as `/${string}`,
+  }))
+  .map((e) => ({
+    ...e,
+    index: e.page === 'Index',
+    notFound: e.page === 'NotFound',
+  }))
+  .map((e) => ({
+    ...e,
+    name: (lang: Lang) => `${lang}__${e.page.replace(/\//g, '__')}`,
+    filename: (lang: Lang) =>
+      `${
+        e.notFound
+          ? '404'
+          : `${lang ? `${lang}/` : ''}${e.index ? '' : `${e.page.toLowerCase()}/`}index`
+      }.html` as `${string}.html`,
+    title: (lang: Lang) =>
+      e.index
+        ? PRODUCT.displayName
+        : `${PRODUCT.displayName} · ${meta[lang]?.[e.page]?.title}`,
+  }))
 
 // Generate localized pages
-const pages = langs.reduce((acc, lang) => {
-  pagesList.forEach((page) => {
+const pages = langs.reduce((acc, lang = defaultLang) => {
+  pagesList.forEach(({ page, name, entry, filename, title }) => {
     const isIndex = page === 'Index'
-    const is404 = page === 'NotFound'
     acc.push({
-      name: `${lang}__${page.replace(/\//g, '__')}`,
-      filename: isIndex
-        ? `${lang ? `${lang}/` : ''}index.html`
-        : is404
-          ? `404.html`
-          : `${lang ? `${lang}/` : ''}${page.toLowerCase()}/index.html`,
-      entry: `/src/pages/${page}/index.tsx`,
+      name: name(lang),
+      filename: filename(lang),
+      entry,
       data: {
-        lang: lang ?? defaultLang,
-        title: isIndex
-          ? PRODUCT.displayName
-          : `${PRODUCT.displayName} · ${meta[lang]?.[page]?.title}`,
+        lang,
+        title: title(lang),
         description: meta[lang]?.[page]?.description,
       },
     })

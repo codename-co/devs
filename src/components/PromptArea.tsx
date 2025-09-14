@@ -10,7 +10,14 @@ import {
   Tooltip,
   Image,
 } from '@heroui/react'
-import { forwardRef, useEffect, useRef, useState } from 'react'
+import {
+  forwardRef,
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  useCallback,
+} from 'react'
 
 import { AgentPicker } from './AgentPicker'
 import { Icon } from './Icon'
@@ -79,7 +86,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
     }, [selectedAgent, onAgentChange])
 
     // Load knowledge items on demand
-    const loadKnowledgeItems = async () => {
+    const loadKnowledgeItems = useCallback(async () => {
       setLoadingKnowledge(true)
       try {
         if (!db.isInitialized()) {
@@ -107,7 +114,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       } finally {
         setLoadingKnowledge(false)
       }
-    }
+    }, [])
 
     useEffect(() => {
       if (typeof window === 'undefined') return
@@ -180,7 +187,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       }
     }, [onSend, onValueChange, lang])
 
-    const handleMicClick = () => {
+    const handleMicClick = useCallback(() => {
       const recognition = recognitionRef.current
 
       if (!recognition) return
@@ -191,119 +198,144 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         recognition.start()
       }
       setIsRecording(!isRecording)
-    }
+    }, [isRecording])
 
-    const handlePromptChange = (value: string) => {
-      setPrompt(value)
-      if (onValueChange) {
-        onValueChange(value)
-      }
-    }
-
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault()
-        onSend?.()
-      }
-      onKeyDown?.(event)
-    }
-
-    const handleFileSelection = (files: FileList | null) => {
-      if (!files) return
-
-      const fileArray = Array.from(files)
-      const newFiles = [...selectedFiles, ...fileArray]
-
-      setSelectedFiles(newFiles)
-      onFilesChange?.(newFiles)
-    }
-
-    const handleFileInputChange = (
-      event: React.ChangeEvent<HTMLInputElement>,
-    ) => {
-      handleFileSelection(event.target.files)
-      event.target.value = ''
-    }
-
-    const handlePaperclipClick = () => {
-      fileInputRef.current?.click()
-    }
-
-    const handleRemoveFile = (index: number) => {
-      const newFiles = selectedFiles.filter((_, i) => i !== index)
-
-      setSelectedFiles(newFiles)
-      onFilesChange?.(newFiles)
-    }
-
-    const handleKnowledgeFileSelect = async (item: KnowledgeItem) => {
-      // Convert KnowledgeItem to File for consistency
-      try {
-        let fileData: BlobPart
-        let mimeType = item.mimeType || 'application/octet-stream'
-
-        if (item.content?.startsWith('data:')) {
-          // Handle data URLs (for images and binary files)
-          const response = await fetch(item.content)
-          fileData = await response.blob()
-          // Extract mime type from data URL if available
-          const dataUrlMatch = item.content.match(/^data:([^;]+)/)
-          if (dataUrlMatch) {
-            mimeType = dataUrlMatch[1]
-          }
-        } else {
-          // Handle text content
-          fileData = new Blob([item.content || ''], { type: mimeType })
+    const handlePromptChange = useCallback(
+      (value: string) => {
+        setPrompt(value)
+        if (onValueChange) {
+          onValueChange(value)
         }
+      },
+      [onValueChange],
+    )
 
-        const file = new File([fileData], item.name, {
-          type: mimeType,
-          lastModified: new Date(item.lastModified).getTime(),
-        })
+    const handleKeyDown = useCallback(
+      (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault()
+          onSend?.()
+        }
+        onKeyDown?.(event)
+      },
+      [onSend, onKeyDown],
+    )
 
-        const newFiles = [...selectedFiles, file]
+    const handleFileSelection = useCallback(
+      (files: FileList | null) => {
+        if (!files) return
+
+        const fileArray = Array.from(files)
+        const newFiles = [...selectedFiles, ...fileArray]
+
         setSelectedFiles(newFiles)
         onFilesChange?.(newFiles)
-      } catch (error) {
-        console.error('Error converting knowledge item to file:', error)
-      }
-    }
+      },
+      [selectedFiles, onFilesChange],
+    )
 
-    const handleDragEnter = (event: React.DragEvent) => {
+    const handleFileInputChange = useCallback(
+      (event: React.ChangeEvent<HTMLInputElement>) => {
+        handleFileSelection(event.target.files)
+        event.target.value = ''
+      },
+      [handleFileSelection],
+    )
+
+    const handlePaperclipClick = useCallback(() => {
+      fileInputRef.current?.click()
+    }, [])
+
+    const handleRemoveFile = useCallback(
+      (index: number) => {
+        const newFiles = selectedFiles.filter((_, i) => i !== index)
+
+        setSelectedFiles(newFiles)
+        onFilesChange?.(newFiles)
+      },
+      [selectedFiles, onFilesChange],
+    )
+
+    const handleKnowledgeFileSelect = useCallback(
+      async (item: KnowledgeItem) => {
+        // Convert KnowledgeItem to File for consistency
+        try {
+          let fileData: BlobPart
+          let mimeType = item.mimeType || 'application/octet-stream'
+
+          if (item.content?.startsWith('data:')) {
+            // Handle data URLs (for images and binary files)
+            const response = await fetch(item.content)
+            fileData = await response.blob()
+            // Extract mime type from data URL if available
+            const dataUrlMatch = item.content.match(/^data:([^;]+)/)
+            if (dataUrlMatch) {
+              mimeType = dataUrlMatch[1]
+            }
+          } else {
+            // Handle text content
+            fileData = new Blob([item.content || ''], { type: mimeType })
+          }
+
+          const file = new File([fileData], item.name, {
+            type: mimeType,
+            lastModified: new Date(item.lastModified).getTime(),
+          })
+
+          const newFiles = [...selectedFiles, file]
+          setSelectedFiles(newFiles)
+          onFilesChange?.(newFiles)
+        } catch (error) {
+          console.error('Error converting knowledge item to file:', error)
+        }
+      },
+      [selectedFiles, onFilesChange],
+    )
+
+    const handleDragEnter = useCallback((event: React.DragEvent) => {
       event.preventDefault()
       event.stopPropagation() // Prevent background drag handlers from interfering
       setIsDragOver(true)
-    }
+    }, [])
 
-    const handleDragOver = (event: React.DragEvent) => {
+    const handleDragOver = useCallback((event: React.DragEvent) => {
       event.preventDefault()
       event.stopPropagation() // Prevent background drag handlers from interfering
-    }
+    }, [])
 
-    const handleDragLeave = (event: React.DragEvent) => {
-      event.preventDefault()
-      event.stopPropagation() // Prevent background drag handlers from interfering
-      setIsDragOver(false)
-    }
-
-    const handleDrop = (event: React.DragEvent) => {
+    const handleDragLeave = useCallback((event: React.DragEvent) => {
       event.preventDefault()
       event.stopPropagation() // Prevent background drag handlers from interfering
       setIsDragOver(false)
-      handleFileSelection(event.dataTransfer.files)
-    }
+    }, [])
 
-    const handleFocus = (e: React.FocusEvent<HTMLTextAreaElement>) => {
-      setIsFocused(true)
-      onFocus?.(e)
-    }
+    const handleDrop = useCallback(
+      (event: React.DragEvent) => {
+        event.preventDefault()
+        event.stopPropagation() // Prevent background drag handlers from interfering
+        setIsDragOver(false)
+        handleFileSelection(event.dataTransfer.files)
+      },
+      [handleFileSelection],
+    )
 
-    const handleBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
-      setIsFocused(false)
-      onBlur?.(e)
-    }
+    const handleFocus = useCallback(
+      (e: React.FocusEvent<HTMLTextAreaElement>) => {
+        setIsFocused(true)
+        onFocus?.(e)
+      },
+      [onFocus],
+    )
 
-    const renderKnowledgePreview = (item: KnowledgeItem) => {
+    const handleBlur = useCallback(
+      (e: React.FocusEvent<HTMLTextAreaElement>) => {
+        setIsFocused(false)
+        onBlur?.(e)
+      },
+      [onBlur],
+    )
+
+    const renderKnowledgePreview = useCallback((item: KnowledgeItem) => {
       if (
         item.fileType === 'image' &&
         item.content?.startsWith('data:image/')
@@ -319,9 +351,9 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       }
 
       return <Icon name={getFileIcon(item.mimeType || '') as any} size="sm" />
-    }
+    }, [])
 
-    const getDropdownItems = () => {
+    const getDropdownItems = useMemo(() => {
       const items = [
         <DropdownItem
           key="upload"
@@ -384,7 +416,13 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       }
 
       return items
-    }
+    }, [
+      t,
+      loadingKnowledge,
+      knowledgeItems,
+      loadKnowledgeItems,
+      renderKnowledgePreview,
+    ])
 
     return (
       <div
@@ -498,7 +536,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                       }
                     }}
                   >
-                    {getDropdownItems()}
+                    {getDropdownItems}
                   </DropdownMenu>
                 </Dropdown>
 

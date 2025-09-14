@@ -99,7 +99,7 @@ async function loadAgent(agentId: string): Promise<Agent | null> {
   }
 
   try {
-    const response = await fetch(`/agents/${agentId}.json`)
+    const response = await fetch(`/agents/${agentId}.agent.json`)
     if (!response.ok) {
       errorToast('Failed to load agent', `${agentId}: ${response.status}`)
       return null

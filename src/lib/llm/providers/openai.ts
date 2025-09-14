@@ -56,24 +56,33 @@ export class OpenAIProvider implements LLMProviderInterface {
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
   ): Promise<LLMResponse> {
-    const response = await fetch(
-      `${config?.baseUrl || this.baseUrl}/chat/completions`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${config?.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: config?.model || 'gpt-5-2025-08-07',
-          messages: messages.map((msg) =>
-            this.convertMessageToOpenAIFormat(msg),
-          ),
-          temperature: config?.temperature || 0.7,
-          max_tokens: config?.maxTokens,
-        }),
+    const endpoint = `${config?.baseUrl || this.baseUrl}/chat/completions`
+    console.log('[OPENAI-PROVIDER] 🚀 Making LLM request:', {
+      endpoint,
+      model: config?.model || 'gpt-5-2025-08-07',
+      messagesCount: messages.length,
+      temperature: config?.temperature || 0.7,
+    })
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${config?.apiKey}`,
       },
-    )
+      body: JSON.stringify({
+        model: config?.model || 'gpt-5-2025-08-07',
+        messages: messages.map((msg) => this.convertMessageToOpenAIFormat(msg)),
+        temperature: config?.temperature || 0.7,
+        max_tokens: config?.maxTokens,
+      }),
+    })
+
+    console.log('[OPENAI-PROVIDER] 📡 Response received:', {
+      status: response.status,
+      ok: response.ok,
+      headers: Object.fromEntries(response.headers.entries()),
+    })
 
     if (!response.ok) {
       throw new Error(`OpenAI API error: ${response.statusText}`)

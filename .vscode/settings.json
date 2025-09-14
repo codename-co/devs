@@ -1,0 +1,9 @@
+{
+  "markdown.marp.themes": ["./src/components/widget.marpit.css"],
+  "yaml.schemaStore.url": "https://www.schemastore.org/api/json/catalog.json",
+  "yaml.schemaStore.enable": true,
+  "yaml.schemas": {
+    "./public/schemas/agent.schema.json": "*.agent.yaml",
+    "https://devs.new/schemas/agent.schema.json": "*.agent.yaml"
+  }
+}

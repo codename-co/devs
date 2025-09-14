@@ -189,6 +189,7 @@ export const en = [
   'Save',
   'Remove',
   'Cancel',
+  'Export',
   'Copy to clipboard',
 
   // Database Administration

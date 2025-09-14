@@ -214,6 +214,7 @@ export const ko: I18n = {
   Save: '저장',
   Remove: '제거',
   Cancel: '취소',
+  Export: '내보내기',
   'Copy to clipboard': '클립보드에 복사',
 
   // Database Administration

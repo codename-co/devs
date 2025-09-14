@@ -219,6 +219,7 @@ export const fr: I18n = {
   Save: 'Enregistrer',
   Remove: 'Retirer',
   Cancel: 'Annuler',
+  Export: 'Exporter',
   'Copy to clipboard': 'Copier dans le presse-papiers',
 
   // Database Administration

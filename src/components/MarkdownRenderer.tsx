@@ -1,7 +1,11 @@
 import { marked } from 'marked'
 import React, { JSX, useEffect, useMemo, useState } from 'react'
 
-import { type CodeBlockType, detectSpecializedCodeType, Widget } from './Widget'
+import {
+  type CodeBlockType,
+  detectSpecializedCodeType,
+  Widget,
+} from './Widget/Widget'
 import { useI18n } from '@/i18n'
 
 interface MarkdownRendererProps {
@@ -135,18 +139,21 @@ export const MarkdownRenderer = ({
           const incompletePartStart = content.lastIndexOf('```')
           const beforeIncomplete = content.substring(0, incompletePartStart)
           const incompletePart = content.substring(incompletePartStart)
-          
+
           // Extract language and partial code from incomplete block
           const incompleteMatch = incompletePart.match(/```(\w+)?\n?([\s\S]*)$/)
           if (incompleteMatch) {
             const [, incompleteLanguage, incompleteCode] = incompleteMatch
-            const partialSpecializedType = detectSpecializedCodeType(incompleteCode, incompleteLanguage)
-            
+            const partialSpecializedType = detectSpecializedCodeType(
+              incompleteCode,
+              incompleteLanguage,
+            )
+
             // If it's a specialized block (like ABC), render it immediately as incomplete
             if (partialSpecializedType) {
               const incompleteBlockId = `code-block-${blockIndex++}`
               const placeholder = `<div data-code-block-id="${incompleteBlockId}"></div>`
-              
+
               codeBlocks.push({
                 id: incompleteBlockId,
                 code: incompleteCode.trim(),
@@ -154,7 +161,7 @@ export const MarkdownRenderer = ({
                 type: 'specialized',
                 specializedType: partialSpecializedType,
               })
-              
+
               // Configure marked for better formatting
               marked.setOptions({
                 gfm: true, // GitHub Flavored Markdown
@@ -162,7 +169,7 @@ export const MarkdownRenderer = ({
               })
 
               const beforeHtml = await marked.parse(beforeIncomplete)
-              
+
               setProcessedContent({
                 html: beforeHtml + placeholder,
                 codeBlocks,
@@ -311,10 +318,7 @@ export const MarkdownRenderer = ({
           )
           if (thinkBlock) {
             return (
-              <details
-                key={thinkBlockId}
-                className="my-4"
-              >
+              <details key={thinkBlockId} className="my-4">
                 <summary className="cursor-pointer">
                   {thinkBlock.processing ? t('Thinking…') : t('Thoughts')}
                 </summary>

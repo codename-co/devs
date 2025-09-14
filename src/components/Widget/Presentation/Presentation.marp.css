@@ -1,0 +1,305 @@
+/*!
+ * Marp devs theme.
+ *
+ * @theme devs
+ *
+ * @auto-scaling true
+ * @size 16:9 1280px 720px
+ * @size 4:3 960px 720px
+ */
+
+/* @import 'default'; */
+/* --- */
+h1 {
+  border-bottom: none;
+  color: var(--h1-color);
+  font-size: 1.6em;
+}
+h2 {
+  border-bottom: none;
+  font-size: 1.3em;
+}
+h3 {
+  font-size: 1.1em;
+}
+h4 {
+  font-size: 1.05em;
+}
+h5 {
+  font-size: 1em;
+}
+h6 {
+  font-size: 0.9em;
+}
+h1 strong,
+h2 strong,
+h3 strong,
+h4 strong,
+h5 strong,
+h6 strong {
+  font-weight: inherit;
+  color: var(--heading-strong-color);
+}
+h1::part(auto-scaling),
+h2::part(auto-scaling),
+h3::part(auto-scaling),
+h4::part(auto-scaling),
+h5::part(auto-scaling),
+h6::part(auto-scaling) {
+  max-height: 563px;
+}
+hr {
+  height: 0;
+  padding-top: 0.25em;
+}
+img {
+  background-color: transparent;
+}
+pre {
+  /* stylelint-disable-next-line custom-property-pattern */
+  border: 1px solid var(--borderColor-default);
+  line-height: 1.15;
+  overflow: visible;
+  /* stylelint-disable selector-class-pattern */
+  /* stylelint-enable selector-class-pattern */
+}
+pre::part(auto-scaling) {
+  max-height: 529px;
+}
+pre :where(.hljs) {
+  color: var(--color-prettylights-syntax-storage-modifier-import);
+}
+pre :where(.hljs-doctag),
+pre :where(.hljs-keyword),
+pre :where(.hljs-meta .hljs-keyword),
+pre :where(.hljs-template-tag),
+pre :where(.hljs-template-variable),
+pre :where(.hljs-type),
+pre :where(.hljs-variable.language_) {
+  color: var(--color-prettylights-syntax-keyword);
+}
+pre :where(.hljs-title),
+pre :where(.hljs-title.class_),
+pre :where(.hljs-title.class_.inherited__),
+pre :where(.hljs-title.function_) {
+  color: var(--color-prettylights-syntax-entity);
+}
+pre :where(.hljs-attr),
+pre :where(.hljs-attribute),
+pre :where(.hljs-literal),
+pre :where(.hljs-meta),
+pre :where(.hljs-number),
+pre :where(.hljs-operator),
+pre :where(.hljs-selector-attr),
+pre :where(.hljs-selector-class),
+pre :where(.hljs-selector-id),
+pre :where(.hljs-variable) {
+  color: var(--color-prettylights-syntax-constant);
+}
+pre :where(.hljs-string),
+pre :where(.hljs-meta .hljs-string),
+pre :where(.hljs-regexp) {
+  color: var(--color-prettylights-syntax-string);
+}
+pre :where(.hljs-built_in),
+pre :where(.hljs-symbol) {
+  color: var(--color-prettylights-syntax-variable);
+}
+pre :where(.hljs-code),
+pre :where(.hljs-comment),
+pre :where(.hljs-formula) {
+  color: var(--color-prettylights-syntax-comment);
+}
+pre :where(.hljs-name),
+pre :where(.hljs-quote),
+pre :where(.hljs-selector-pseudo),
+pre :where(.hljs-selector-tag) {
+  color: var(--color-prettylights-syntax-entity-tag);
+}
+pre :where(.hljs-subst) {
+  color: var(--color-prettylights-syntax-storage-modifier-import);
+}
+pre :where(.hljs-section) {
+  font-weight: bold;
+  color: var(--color-prettylights-syntax-markup-heading);
+}
+pre :where(.hljs-bullet) {
+  color: var(--color-prettylights-syntax-markup-list);
+}
+pre :where(.hljs-emphasis) {
+  font-style: italic;
+  color: var(--color-prettylights-syntax-markup-italic);
+}
+pre :where(.hljs-strong) {
+  font-weight: bold;
+  color: var(--color-prettylights-syntax-markup-bold);
+}
+pre :where(.hljs-addition) {
+  color: var(--color-prettylights-syntax-markup-inserted-text);
+  background-color: var(--color-prettylights-syntax-markup-inserted-bg);
+}
+pre :where(.hljs-deletion) {
+  color: var(--color-prettylights-syntax-markup-deleted-text);
+  background-color: var(--color-prettylights-syntax-markup-deleted-bg);
+}
+header,
+footer {
+  margin: 0;
+  position: absolute;
+  left: 30px;
+  color: var(--header-footer-color);
+  font-size: 18px;
+}
+header {
+  top: 21px;
+}
+footer {
+  bottom: 21px;
+}
+section {
+  /* stylelint-disable-next-line scss/at-extend-no-missing-placeholder */
+  --h1-color: #246;
+  --header-footer-color: rgba(102, 102, 102, 0.75);
+  --heading-strong-color: #48c;
+  --paginate-color: #777;
+  /* * GitHub Markdown CSS has defined space sizes with the rem unit. The root * font size was changed by `font-size` property on `section` element so we * have to revert them to the default value. */
+  --base-size-4: 4px;
+  --base-size-8: 8px;
+  --base-size-16: 16px;
+  --base-size-24: 24px;
+  --base-size-40: 40px;
+  display: block;
+  place-content: safe center center;
+  font-size: 29px;
+  height: 720px;
+  padding: 78.5px;
+  width: 1280px;
+  /* Definitions for classic bhavior: Users can adopt flex centering by tweaking style `section {
+		 display: flex
+	}
+	` */
+  flex-flow: column nowrap;
+  align-items: stretch;
+}
+section:where(.invert) {
+  --h1-color: #cee7ff;
+  --header-footer-color: rgba(153, 153, 153, 0.75);
+  --heading-strong-color: #7bf;
+  --paginate-color: #999;
+}
+section > *:last-child,
+section[data-footer] > :nth-last-child(2) {
+  margin-bottom: 0;
+}
+section > *:first-child,
+section > header:first-child + * {
+  margin-top: 0;
+}
+section::after {
+  position: absolute;
+  padding: 0;
+  right: 30px;
+  bottom: 21px;
+  font-size: 24px;
+  color: var(--paginate-color);
+}
+section[data-color] h1,
+section[data-color] h2,
+section[data-color] h3,
+section[data-color] h4,
+section[data-color] h5,
+section[data-color] h6 {
+  color: currentcolor;
+}
+
+/* --- */
+
+section {
+  font-size: 1.84rem;
+  padding: 1.2rem 5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+:root {
+  --background: #011;
+  --primary: #2cf;
+  --dimmed: #b6b8bf;
+  font-family:
+    ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
+}
+section {
+  background-color: var(--background);
+  color: #fff;
+}
+h1 {
+  font-size: 3.6em;
+  line-height: 1;
+  margin-right: 4em;
+  color: #fff;
+  font-weight: 700;
+}
+h2,
+h3 {
+  font-size: 2.7em;
+  line-height: 1;
+}
+h4 {
+  font-size: 2.4em;
+}
+h5 {
+  font-size: 1.4em;
+  line-height: 1;
+}
+h2:only-child {
+  align-content: center;
+  padding-left: 2.5em;
+}
+h2:only-child::before {
+  content: '';
+  position: absolute;
+  inset: 0.3em 2.35em;
+  width: 0.15em;
+  background: linear-gradient(0deg, var(--primary) 10%, transparent 10%);
+  background-size: 1% 40px;
+}
+h3:only-child,
+h3:first-child:has(+ * a:last-child),
+h3:first-child + * a:last-child {
+  display: block;
+  text-align: center;
+}
+strong {
+  color: var(--primary) !important;
+}
+em {
+  font-style: normal;
+  color: var(--dimmed);
+}
+a {
+  color: #fffa;
+  text-decoration: underline;
+}
+blockquote {
+  color: #fff;
+}
+blockquote:has(blockquote),
+blockquote blockquote {
+  text-align: center;
+  border: 0;
+}
+blockquote blockquote h4 {
+  margin: 1em auto 1em;
+}
+blockquote blockquote::before {
+  content: '❝';
+  position: absolute;
+  inset: 0.6em;
+  font-size: 3em;
+  color: var(--dimmed);
+}
+footer {
+  margin-left: 2.5em;
+}

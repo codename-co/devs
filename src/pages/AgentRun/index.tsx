@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo, useCallback, memo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   Avatar,
@@ -17,6 +17,7 @@ import {
   MarkdownRenderer,
   PromptArea,
   Section,
+  Widget,
 } from '@/components'
 import DefaultLayout from '@/layouts/Default'
 import type { HeaderProps } from '@/lib/types'
@@ -27,89 +28,26 @@ import { submitChat } from '@/lib/chat'
 import { useConversationStore } from '@/stores/conversationStore'
 import { useArtifactStore } from '@/stores/artifactStore'
 
-export const AgentRunPage = () => {
-  const { t, lang } = useI18n()
-  const location = useLocation()
-  const navigate = useNavigate()
-
-  const [prompt, setPrompt] = useState('')
-  const [isSending, setIsSending] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
-  const [response, setResponse] = useState<string>('')
-  const [conversationMessages, setConversationMessages] = useState<Message[]>(
-    [],
-  )
-  const [agentCache, setAgentCache] = useState<Record<string, Agent>>({})
-  const [conversationArtifacts, setConversationArtifacts] = useState<
-    Artifact[]
-  >([])
-
-  const {
-    currentConversation,
-    createConversation,
-    loadConversation,
-    clearCurrentConversation,
-  } = useConversationStore()
-
-  const { artifacts, loadArtifacts } = useArtifactStore()
-
-  const header: HeaderProps = {
-    icon: {
-      name: (selectedAgent?.icon as any) || 'Sparks',
-      color: 'text-primary-300 dark:text-primary-600',
-    },
-    title: selectedAgent?.name,
-    // subtitle: selectedAgent?.desc || t('AI Assistant'),
-  }
-
-  // Parse the hash to get agentId and optional conversationId
-  const parseHash = () => {
-    const hash = location.hash.replace('#', '')
-    const parts = hash.split('/')
-    return {
-      agentId: parts[0] || 'default',
-      conversationId: parts[1] || null,
-    }
-  }
-
-  const { agentId, conversationId } = parseHash()
-
-  // Helper function to get agent for a message
-  const getMessageAgent = async (message: Message): Promise<Agent | null> => {
-    if (message.role !== 'assistant') return null
-
-    const messageAgentId = message.agentId || selectedAgent?.id
-    if (!messageAgentId) return selectedAgent
-
-    // Check cache first
-    if (agentCache[messageAgentId]) {
-      return agentCache[messageAgentId]
-    }
-
-    // Fetch and cache the agent
-    try {
-      const agent = await getAgentById(messageAgentId)
-      if (agent) {
-        setAgentCache((prev) => ({ ...prev, [messageAgentId]: agent }))
-        return agent
-      }
-    } catch (error) {
-      console.warn(`Failed to load agent ${messageAgentId}:`, error)
-    }
-
-    return selectedAgent
-  }
-
-  // Component to display a single message with proper agent context
-  const MessageDisplay = ({ message }: { message: Message }) => {
+// Component to display a single message with proper agent context
+const MessageDisplay = memo(
+  ({
+    message,
+    selectedAgent,
+    getMessageAgent,
+    detectContentType,
+  }: {
+    message: Message
+    selectedAgent: Agent | null
+    getMessageAgent: (message: Message) => Promise<Agent | null>
+    detectContentType: (content: string) => string
+  }) => {
     const [messageAgent, setMessageAgent] = useState<Agent | null>(null)
 
     useEffect(() => {
       if (message.role === 'assistant') {
         getMessageAgent(message).then(setMessageAgent)
       }
-    }, [message])
+    }, [message, getMessageAgent])
 
     const displayAgent = messageAgent || selectedAgent
     const isFromDifferentAgent =
@@ -166,100 +104,206 @@ export const AgentRunPage = () => {
           )}
           <div className="text-small text-left">
             <div className="prose prose-neutral text-medium break-words">
-              <MarkdownRenderer
-                content={message.content}
-                className="prose dark:prose-invert prose-sm"
-              />
+              {detectContentType(message.content) === 'marpit-presentation' ? (
+                <Widget code={message.content} type="marpit" />
+              ) : (
+                <MarkdownRenderer
+                  content={message.content}
+                  className="prose dark:prose-invert prose-sm"
+                />
+              )}
             </div>
           </div>
         </div>
       </div>
     )
-  }
+  },
+)
 
-  // Component to display artifacts in side panel
-  const ArtifactWidget = ({ artifact }: { artifact: Artifact }) => {
-    const characterCount = artifact.content.length
-    const statusColor =
-      artifact.status === 'approved' || artifact.status === 'final'
-        ? 'success'
-        : artifact.status === 'rejected'
-          ? 'danger'
-          : 'warning'
+MessageDisplay.displayName = 'MessageDisplay'
 
-    return (
-      <Card className="mb-3">
-        <CardBody className="p-3">
-          <Accordion selectionMode="single" className="px-0">
-            <AccordionItem
-              key={artifact.id}
-              aria-label={artifact.title}
-              title={
-                <div className="flex justify-between items-center w-full">
-                  <div className="flex flex-col items-start">
-                    <span className="font-medium text-sm">
-                      {artifact.title}
-                    </span>
-                    <div className="flex gap-2 mt-1">
-                      <Chip
-                        size="sm"
-                        variant="flat"
-                        color={statusColor}
-                        className="text-tiny"
-                      >
-                        {artifact.status}
-                      </Chip>
-                      <Chip
-                        size="sm"
-                        variant="flat"
-                        color="default"
-                        className="text-tiny"
-                      >
-                        {artifact.type}
-                      </Chip>
-                    </div>
-                  </div>
-                  <div className="text-tiny text-default-500">
-                    {characterCount.toLocaleString()} chars
+// Component to display artifacts in side panel
+const ArtifactWidget = memo(({ artifact }: { artifact: Artifact }) => {
+  const characterCount = artifact.content.length
+  const statusColor =
+    artifact.status === 'approved' || artifact.status === 'final'
+      ? 'success'
+      : artifact.status === 'rejected'
+        ? 'danger'
+        : 'warning'
+
+  return (
+    <Card className="mb-3">
+      <CardBody className="p-3">
+        <Accordion selectionMode="single" className="px-0">
+          <AccordionItem
+            key={artifact.id}
+            aria-label={artifact.title}
+            title={
+              <div className="flex justify-between items-center w-full">
+                <div className="flex flex-col items-start">
+                  <span className="font-medium text-sm">{artifact.title}</span>
+                  <div className="flex gap-2 mt-1">
+                    <Chip
+                      size="sm"
+                      variant="flat"
+                      color={statusColor}
+                      className="text-tiny"
+                    >
+                      {artifact.status}
+                    </Chip>
+                    <Chip
+                      size="sm"
+                      variant="flat"
+                      color="default"
+                      className="text-tiny"
+                    >
+                      {artifact.type}
+                    </Chip>
                   </div>
                 </div>
-              }
-            >
-              <div className="space-y-3">
-                {artifact.description && (
-                  <div>
-                    <span className="text-tiny font-medium text-default-700">
-                      Description:
-                    </span>
-                    <p className="text-small text-default-600 mt-1">
-                      {artifact.description}
-                    </p>
-                  </div>
-                )}
-                <div>
-                  <span className="text-tiny font-medium text-default-700">
-                    Content:
-                  </span>
-                  <div className="mt-1 p-2 bg-default-100 rounded-small max-h-48 overflow-y-auto">
-                    <MarkdownRenderer
-                      content={artifact.content}
-                      className="prose dark:prose-invert prose-sm text-small"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-between text-tiny text-default-500">
-                  <span>
-                    Created: {new Date(artifact.createdAt).toLocaleDateString()}
-                  </span>
-                  <span>v{artifact.version}</span>
+                <div className="text-tiny text-default-500">
+                  {characterCount.toLocaleString()} chars
                 </div>
               </div>
-            </AccordionItem>
-          </Accordion>
-        </CardBody>
-      </Card>
-    )
-  }
+            }
+          >
+            <div className="space-y-3">
+              {artifact.description && (
+                <div>
+                  <span className="text-tiny font-medium text-default-700">
+                    Description:
+                  </span>
+                  <p className="text-small text-default-600 mt-1">
+                    {artifact.description}
+                  </p>
+                </div>
+              )}
+              <div>
+                <span className="text-tiny font-medium text-default-700">
+                  Content:
+                </span>
+                <div className="mt-1 p-2 bg-default-100 rounded-small max-h-48 overflow-y-auto">
+                  <MarkdownRenderer
+                    content={artifact.content}
+                    className="prose dark:prose-invert prose-sm text-small"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-between text-tiny text-default-500">
+                <span>
+                  Created: {new Date(artifact.createdAt).toLocaleDateString()}
+                </span>
+                <span>v{artifact.version}</span>
+              </div>
+            </div>
+          </AccordionItem>
+        </Accordion>
+      </CardBody>
+    </Card>
+  )
+})
+
+ArtifactWidget.displayName = 'ArtifactWidget'
+
+export const AgentRunPage = () => {
+  const { t, lang } = useI18n()
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  const [prompt, setPrompt] = useState('')
+  const [isSending, setIsSending] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
+  const [response, setResponse] = useState<string>('')
+  const [conversationMessages, setConversationMessages] = useState<Message[]>(
+    [],
+  )
+  const [agentCache, setAgentCache] = useState<Record<string, Agent>>({})
+  const [conversationArtifacts, setConversationArtifacts] = useState<
+    Artifact[]
+  >([])
+
+  const {
+    currentConversation,
+    createConversation,
+    loadConversation,
+    clearCurrentConversation,
+  } = useConversationStore()
+
+  const { artifacts, loadArtifacts } = useArtifactStore()
+
+  const header: HeaderProps = useMemo(
+    () => ({
+      icon: {
+        name: (selectedAgent?.icon as any) || 'Sparks',
+        color: 'text-primary-300 dark:text-primary-600',
+      },
+      title: selectedAgent?.name,
+      // subtitle: selectedAgent?.desc || t('AI Assistant'),
+    }),
+    [selectedAgent?.icon, selectedAgent?.name],
+  )
+
+  // Parse the hash to get agentId and optional conversationId
+  const parseHash = useCallback(() => {
+    const hash = location.hash.replace('#', '')
+    const parts = hash.split('/')
+    return {
+      agentId: parts[0] || 'default',
+      conversationId: parts[1] || null,
+    }
+  }, [location.hash])
+
+  const { agentId, conversationId } = useMemo(() => parseHash(), [parseHash])
+
+  // Helper function to detect content type
+  const detectContentType = useCallback((content: string) => {
+    // Check for Marpit presentation by looking for YAML frontmatter with marp: true
+    const yamlFrontmatterRegex = /^---\s*\n([\s\S]*?)\n---/
+    const match = content.match(yamlFrontmatterRegex)
+
+    if (match) {
+      const frontmatter = match[1]
+      if (
+        frontmatter.includes('marp: true') ||
+        frontmatter.includes('marp:true')
+      ) {
+        return 'marpit-presentation'
+      }
+    }
+
+    return 'markdown'
+  }, [])
+
+  // Helper function to get agent for a message
+  const getMessageAgent = useCallback(
+    async (message: Message): Promise<Agent | null> => {
+      if (message.role !== 'assistant') return null
+
+      const messageAgentId = message.agentId || selectedAgent?.id
+      if (!messageAgentId) return selectedAgent
+
+      // Check cache first
+      if (agentCache[messageAgentId]) {
+        return agentCache[messageAgentId]
+      }
+
+      // Fetch and cache the agent
+      try {
+        const agent = await getAgentById(messageAgentId)
+        if (agent) {
+          setAgentCache((prev) => ({ ...prev, [messageAgentId]: agent }))
+          return agent
+        }
+      } catch (error) {
+        console.warn(`Failed to load agent ${messageAgentId}:`, error)
+      }
+
+      return selectedAgent
+    },
+    [selectedAgent, agentCache],
+  )
 
   // Load agent and conversation on mount
   useEffect(() => {
@@ -360,29 +404,32 @@ export const AgentRunPage = () => {
   }, [artifacts, currentConversation])
 
   // Auto-submit handler for prompts from Index page
-  const handleAutoSubmit = async (promptText: string, agent: Agent) => {
-    if (isSending) return
+  const handleAutoSubmit = useCallback(
+    async (promptText: string, agent: Agent) => {
+      if (isSending) return
 
-    setIsSending(true)
-    setResponse('')
+      setIsSending(true)
+      setResponse('')
 
-    await submitChat({
-      prompt: promptText,
-      agent,
-      conversationMessages,
-      includeHistory: true,
-      clearResponseAfterSubmit: true,
-      lang,
-      t,
-      onResponseUpdate: setResponse,
-      onPromptClear: () => setPrompt(''),
-      onResponseClear: () => setResponse(''),
-    })
+      await submitChat({
+        prompt: promptText,
+        agent,
+        conversationMessages,
+        includeHistory: true,
+        clearResponseAfterSubmit: true,
+        lang,
+        t,
+        onResponseUpdate: setResponse,
+        onPromptClear: () => setPrompt(''),
+        onResponseClear: () => setResponse(''),
+      })
 
-    setIsSending(false)
-  }
+      setIsSending(false)
+    },
+    [isSending, conversationMessages, lang, t],
+  )
 
-  const onSubmit = async () => {
+  const onSubmit = useCallback(async () => {
     if (!prompt.trim() || isSending || !selectedAgent) return
 
     setIsSending(true)
@@ -402,7 +449,7 @@ export const AgentRunPage = () => {
     })
 
     setIsSending(false)
-  }
+  }, [prompt, isSending, selectedAgent, conversationMessages, lang, t])
 
   if (isLoading) {
     return (
@@ -446,7 +493,13 @@ export const AgentRunPage = () => {
                   {conversationMessages
                     .filter((msg) => msg.role !== 'system')
                     .map((message) => (
-                      <MessageDisplay key={message.id} message={message} />
+                      <MessageDisplay
+                        key={message.id}
+                        message={message}
+                        selectedAgent={selectedAgent}
+                        getMessageAgent={getMessageAgent}
+                        detectContentType={detectContentType}
+                      />
                     ))}
                   <span
                     aria-hidden="true"
@@ -473,10 +526,15 @@ export const AgentRunPage = () => {
                         <div className="rounded-medium text-foreground group relative w-full overflow-hidden font-medium bg-transparent px-1 py-0">
                           <div className="text-small">
                             <div className="prose prose-neutral text-medium break-words">
-                              <MarkdownRenderer
-                                content={response}
-                                className="prose dark:prose-invert prose-sm"
-                              />
+                              {detectContentType(response) ===
+                              'marpit-presentation' ? (
+                                <Widget code={response} type="marpit" />
+                              ) : (
+                                <MarkdownRenderer
+                                  content={response}
+                                  className="prose dark:prose-invert prose-sm"
+                                />
+                              )}
                             </div>
                           </div>
                         </div>
