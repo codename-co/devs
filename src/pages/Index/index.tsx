@@ -10,6 +10,8 @@ import { errorToast } from '@/lib/toast'
 import { useBackgroundImage } from '@/hooks/useBackgroundImage'
 import { useEasySetup } from '@/hooks/useEasySetup'
 import { Alert } from '@heroui/react'
+import { motion } from 'framer-motion'
+import { motionVariants } from './motion'
 
 export const IndexPage = () => {
   const { lang, url, t } = useI18n()
@@ -124,29 +126,42 @@ export const IndexPage = () => {
         )}
 
         <Section mainClassName="text-center relative">
-          <div className="flex flex-col items-center">
-            <Icon
-              size="4xl"
-              name="SparksSolid"
-              className="mb-4 sm:my-6 text-primary-200 dark:text-primary-700"
-            />
-            <Title subtitle={t('Delegate complex tasks to your own AI teams')}>
-              {t('Let your agents take it from here')}
-            </Title>
-          </div>
+          <motion.div
+            layoutId="active"
+            className="flex flex-col items-center"
+            {...motionVariants.container}
+          >
+            <motion.div {...motionVariants.icon}>
+              <Icon
+                size="4xl"
+                name="SparksSolid"
+                className="mb-4 sm:my-6 text-primary-200 dark:text-primary-700"
+              />
+            </motion.div>
 
-          <PromptArea
-            lang={lang}
-            autoFocus
-            className="my-8 sm:my-16"
-            value={prompt}
-            onValueChange={setPrompt}
-            onSend={onSubmit}
-            isSending={isSending}
-            selectedAgent={selectedAgent}
-            onAgentChange={setSelectedAgent}
-            onFilesChange={setSelectedFiles}
-          />
+            <motion.div {...motionVariants.title}>
+              <Title
+                subtitle={t('Delegate complex tasks to your own AI teams')}
+              >
+                {t('Let your agents take it from here')}
+              </Title>
+            </motion.div>
+          </motion.div>
+
+          <motion.div {...motionVariants.promptArea}>
+            <PromptArea
+              lang={lang}
+              autoFocus
+              className="my-8 sm:my-16"
+              value={prompt}
+              onValueChange={setPrompt}
+              onSend={onSubmit}
+              isSending={isSending}
+              selectedAgent={selectedAgent}
+              onAgentChange={setSelectedAgent}
+              onFilesChange={setSelectedFiles}
+            />
+          </motion.div>
         </Section>
       </DefaultLayout>
 
