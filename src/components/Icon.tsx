@@ -2,28 +2,35 @@ import { IconName } from '@/lib/types'
 import * as IconoirIcons from 'iconoir-react'
 import { type ComponentProps } from 'react'
 import * as SimpleIcons from 'simple-icons'
+// @ts-ignore
+import DevsAnimatedIcon from '/devs.svg?raw'
+// @ts-ignore
+import DevsStaticIcon from '/devs-static.svg?raw'
 
 const CustomIcons = {
   Devs: (props: any) => (
+    <span
+      style={{
+        display: 'block',
+        width: props.width ?? 24,
+        height: props.height ?? 24,
+      }}
+      {...props}
+      dangerouslySetInnerHTML={{ __html: DevsStaticIcon }}
+    />
+  ),
+  DevsAnimated: (props: any) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      role="img"
-      viewBox="4 4 24 24"
+      viewBox="0 0 64 64"
       {...props}
-      fill="currentColor"
-    >
-      {/* Central core with subtle glow */}
-      <circle cx="16" cy="16" r="2" opacity="0.75" />
-      <circle cx="16" cy="16" r="3" opacity="0.15" />
-
-      {/* Inner ring - 6 points */}
-      <circle cx="16" cy="10" r="1.5" opacity="0.6" />
-      <circle cx="21" cy="13" r="1.5" opacity="0.6" />
-      <circle cx="21" cy="19" r="1.5" opacity="0.6" />
-      <circle cx="16" cy="22" r="1.5" opacity="0.6" />
-      <circle cx="11" cy="19" r="1.5" opacity="0.6" />
-      <circle cx="11" cy="13" r="1.5" opacity="0.6" />
-    </svg>
+      dangerouslySetInnerHTML={{
+        __html: DevsAnimatedIcon.replace(/<svg[^>]*>/, '').replace(
+          /<\/svg>/,
+          '',
+        ),
+      }}
+    />
   ),
 
   DeepSeek: (props: any) => (
@@ -169,9 +176,10 @@ export const Icons = {
   ...CustomIcons,
 }
 
-type IconProps = ComponentProps<'svg'> & {
+export type IconProps = ComponentProps<'svg'> & {
   name: IconName
   size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl'
+  animation?: 'appear' | 'spin' | 'loading' | 'thinking' | 'pulsating'
 }
 
 const sizeMap = {
@@ -184,7 +192,7 @@ const sizeMap = {
   '4xl': 64,
 }
 
-export function Icon({ name, size = 'md', ...props }: IconProps) {
+export function Icon({ name, size = 'md', animation, ...props }: IconProps) {
   const IconComponent = Icons[
     name as keyof typeof Icons
   ] as React.ComponentType<any>
@@ -198,8 +206,8 @@ export function Icon({ name, size = 'md', ...props }: IconProps) {
     <IconComponent
       width={sizeMap[size]}
       height={sizeMap[size]}
-      className="shrink-0"
       {...props}
+      className={`shrink-0 ${animation ? `anim-${animation}` : ''} ${props.className ?? ''}`}
     />
   )
 }

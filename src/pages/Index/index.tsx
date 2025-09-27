@@ -134,8 +134,9 @@ export const IndexPage = () => {
             <motion.div {...motionVariants.icon}>
               <Icon
                 size="4xl"
-                name="SparksSolid"
-                className="mb-4 sm:my-6 text-primary-200 dark:text-primary-700"
+                name="DevsAnimated"
+                animation="appear"
+                className="mb-4 sm:my-6 text-blue-300 dark:text-white devs-icon-blur-on-out"
               />
             </motion.div>
 

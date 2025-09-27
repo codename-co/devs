@@ -1,8 +1,7 @@
 import { Modal, ModalContent, ModalHeader, ModalBody } from '@heroui/react'
 import { PRODUCT } from '@/config/product'
 import { AboutPage } from '@/pages/About'
-// @ts-ignore
-import SvgIcon from '/devs.svg?url'
+import { Icon } from './Icon'
 
 interface AboutModalProps {
   isOpen: boolean
@@ -21,7 +20,7 @@ export const AboutModal = ({ isOpen, onClose }: AboutModalProps) => {
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">
           <div className="flex items-center gap-3">
-            <img src={SvgIcon} alt="Sparks" className="w-12 h-12 rounded-lg" />
+            <Icon name="DevsAnimated" size="xl" />
             {/* <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-br from-primary-500 to-secondary-500">
             </div> */}
             <div>

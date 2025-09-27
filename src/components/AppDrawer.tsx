@@ -647,7 +647,6 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
       </ScrollShadow>
       {/* Progress indicator and Organization/Product name at bottom */}
       <div className="mt-auto pt-2">
-        <ProgressIndicator />
         <AboutModal
           isOpen={showAboutModal}
           onClose={() => setShowAboutModal(false)}
@@ -660,9 +659,10 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
           <Title
             as="div"
             size="lg"
-            className="text-center text-default-400 dark:text-default-500"
+            className="text-default-400 dark:text-default-500 flex items-center justify-center gap-2"
             aria-label={PRODUCT.name}
           >
+            <ProgressIndicator />
             {PRODUCT.displayName}
           </Title>
         </button>

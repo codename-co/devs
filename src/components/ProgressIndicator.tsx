@@ -1,5 +1,5 @@
-import { Progress } from '@heroui/react'
 import { useEffect, useState } from 'react'
+import { Icon, type IconProps } from './Icon'
 
 export interface LLMRequest {
   requestId: string
@@ -22,7 +22,7 @@ export const ProgressIndicator = () => {
     averageResponseTime: 0,
     completedRequests: 0,
   })
-  const [isVisible, setIsVisible] = useState(false)
+  const [_isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
     const handleServiceWorkerMessage = (event: MessageEvent) => {
@@ -55,23 +55,23 @@ export const ProgressIndicator = () => {
     }
   }, [])
 
-  if (!isVisible) {
-    return null
-  }
+  // if (!isVisible) {
+  //   return null
+  // }
+
+  const animation: IconProps['animation'] =
+    stats.activeRequests > 0 ? 'pulsating' : 'appear'
 
   return (
     <div
       data-testid="task-progress"
       className="flex items-center justify-center py-2"
     >
-      <Progress
-        data-testid="progress-bar"
-        size="sm"
-        isIndeterminate={stats.activeRequests > 0}
-        value={stats.activeRequests}
-        // label={`${stats.activeRequests}/${stats.totalRequests}`}
-        color="secondary"
-        aria-label="LLM progress"
+      <Icon
+        name="DevsAnimated"
+        size="xl"
+        className="text-primary-300"
+        animation={animation}
       />
       <span data-testid="status-text" className="sr-only">
         {stats.activeRequests > 0 ? 'Processing' : 'Idle'}

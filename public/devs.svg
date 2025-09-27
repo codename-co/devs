@@ -1,14 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="4 4 24 24">
-  <rect x="4" y="4" width="24" height="24" fill="#000" />
-  <circle cx="16" cy="16" r="2" opacity=".75" />
-  <circle cx="16" cy="16" r="3" opacity=".15" />
-  <g opacity="0.6">
-    <circle cx="16" cy="10" r="1.5" />
-    <circle cx="21" cy="13" r="1.5" />
-    <circle cx="21" cy="19" r="1.5" />
-    <circle cx="16" cy="22" r="1.5" />
-    <circle cx="11" cy="19" r="1.5" />
-    <circle cx="11" cy="13" r="1.5" />
-  </g>
-  <text x="16" y="16" text-anchor="middle" dominant-baseline="central" font-size="18" fill="#fff">𝐕</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    @media(prefers-color-scheme:dark){html:not(class="light") .devs-icon{fill:#fff;stroke:#fff}}
+    .devs-icon{animation:1s ease-in-out infinite;transform-origin:50%;transition:.3s}
+    html:not(:hover) .devs-icon-blur-on-out .devs-icon{filter:blur(4px)}
+    .anim-appear .devs-icon{animation-name:anim-appear;animation-iteration-count:1}
+    .anim-spin .devs-icon{animation-name:anim-spin;animation-timing-function:linear;animation-duration:4s}
+    .anim-loading .devs-icon{animation-name:anim-loading;animation-duration:2s}
+    .anim-thinking .devs-icon{animation-name:anim-thinking;animation-duration:2s}
+    .anim-pulsating .devs-icon{animation-name:anim-pulsating;animation-duration:1.5s}
+    @keyframes anim-appear{0%,40%{transform:scale(.85) rotate(-72deg)}to{transform:rotate(0)}}
+    @keyframes anim-spin{to{transform:rotate(360deg)}}
+    @keyframes anim-loading{50%{transform:scale(.85);opacity:.8}}
+    @keyframes anim-thinking{50%{transform:scale(.85);opacity:.8;filter:blur(2px)}}
+    @keyframes anim-pulsating{25%,55%,85%{transform:scale(1);opacity:1}40%,70%{transform:scale(1.1);opacity:.8}}
+  </style>
+  <polygon class="devs-icon" points="12,26 46,17 37,51" stroke-width="12" stroke-linejoin="round" stroke="currentColor" fill="currentColor">
+</polygon></svg>
