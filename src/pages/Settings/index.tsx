@@ -763,9 +763,7 @@ export const SettingsPage = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Chip size="sm" color={provider?.color as any}>
-            {credential.provider}
-          </Chip>
+          <Chip size="sm">{credential.provider}</Chip>
           {!isDefault && (
             <Button
               size="sm"
