@@ -2,7 +2,7 @@
   <style>
     @media(prefers-color-scheme:dark){html:not(class="light") .devs-icon{fill:#fff;stroke:#fff}}
     .devs-icon{animation:1s ease-in-out infinite;transform-origin:50%;transition:.3s}
-    html:not(:hover) .devs-icon-blur-on-out .devs-icon{filter:blur(4px)}
+    @media(pointer:fine){html:not(:hover) .devs-icon-blur-on-out .devs-icon{filter:blur(4px)}}
     .anim-appear .devs-icon{animation-name:anim-appear;animation-iteration-count:1}
     .anim-spin .devs-icon{animation-name:anim-spin;animation-timing-function:linear;animation-duration:4s}
     .anim-loading .devs-icon{animation-name:anim-loading;animation-duration:2s}

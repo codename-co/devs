@@ -12,7 +12,7 @@ export class ServiceWorkerManager {
     }
 
     try {
-      console.log('[SW-MANAGER] 🚀 Registering service worker...')
+      console.debug('[SW-MANAGER] 🚀 Registering service worker…')
       this.registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/',
         updateViaCache: 'none', // Force check for updates
@@ -26,7 +26,7 @@ export class ServiceWorkerManager {
       })
 
       // Initialize Langfuse service for handling service worker requests
-      console.log('[SW-MANAGER] 🔧 Initializing Langfuse service...')
+      console.debug('[SW-MANAGER] 🔧 Initializing Langfuse service…')
       await LangfuseService.initialize()
 
       // Listen for updates

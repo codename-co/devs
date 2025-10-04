@@ -8,21 +8,21 @@ class LangfuseService {
 
   static async initializeClient() {
     try {
-      console.log('[Langfuse] Initializing client...')
+      console.debug('[Langfuse] Initializing client…')
       await db.init()
       const configs = await db.getAll('langfuse_config')
       const config = configs[0]
 
-      console.log('[Langfuse] Found config:', !!config, config?.enabled)
+      console.debug('[Langfuse] Found config:', !!config, config?.enabled)
 
       if (!config || !config.enabled) {
         this.client = null
         this.config = null
-        console.log('[Langfuse] Disabled or not configured')
+        console.debug('[Langfuse] Disabled or not configured')
         return
       }
 
-      console.log('[Langfuse] Config found, decrypting credentials...')
+      console.debug('[Langfuse] Config found, decrypting credentials…')
 
       // Decrypt the secret key
       const iv = localStorage.getItem(`${config.id}-iv`)
@@ -102,7 +102,7 @@ class LangfuseService {
         ],
       })
 
-      console.log('[LANGFUSE-MAIN] 🔧 Creating generation...')
+      console.log('[LANGFUSE-MAIN] 🔧 Creating generation…')
       const generation = trace.generation({
         name: `${data.provider} - ${data.model || 'unknown-model'}`,
         model: data.model,
@@ -125,14 +125,14 @@ class LangfuseService {
       })
 
       if (data.messages) {
-        console.log('[Langfuse] Adding input/output to generation...')
+        console.log('[Langfuse] Adding input/output to generation…')
         generation.update({
           input: data.messages,
           output: data.response,
         })
       }
 
-      console.log('[Langfuse] Flushing to Langfuse...')
+      console.log('[Langfuse] Flushing to Langfuse…')
       await this.client.flushAsync()
       console.log('[Langfuse] Request tracked successfully')
     } catch (error) {
@@ -141,7 +141,7 @@ class LangfuseService {
   }
 
   static async handleServiceWorkerMessage(event: MessageEvent) {
-    console.log('[LANGFUSE-MAIN] 📩 Received service worker message:', {
+    console.debug('[LANGFUSE-MAIN] 📩 Received service worker message:', {
       type: event.data.type,
       hasData: !!event.data.data,
       origin: event.origin,
@@ -151,12 +151,12 @@ class LangfuseService {
       console.log('[LANGFUSE-MAIN] 🎯 Processing LANGFUSE_TRACK_REQUEST')
       await this.trackRequest(event.data.data, event.data.ctx)
     } else {
-      console.log('[LANGFUSE-MAIN] ⚠️ Unknown message type:', event.data.type)
+      console.debug('[LANGFUSE-MAIN] ⚠️ Unknown message type:', event.data.type)
     }
   }
 
   static async initialize() {
-    console.log('[LANGFUSE-MAIN] 🚀 Initializing service...')
+    console.debug('[LANGFUSE-MAIN] 🚀 Initializing service…')
 
     // Initialize the client
     await this.initializeClient()
@@ -167,13 +167,13 @@ class LangfuseService {
         'message',
         this.handleServiceWorkerMessage.bind(this),
       )
-      console.log(
+      console.debug(
         '[LANGFUSE-MAIN] 👂 Message listener registered for service worker messages',
       )
 
       // Check if service worker is ready
       if (navigator.serviceWorker.controller) {
-        console.log('[LANGFUSE-MAIN] ✅ Service worker controller is active')
+        console.debug('[LANGFUSE-MAIN] ✅ Service worker controller is active')
       } else {
         console.warn('[LANGFUSE-MAIN] ⚠️ No service worker controller found')
       }

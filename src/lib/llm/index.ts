@@ -110,6 +110,7 @@ export * from './providers'
 
 // Register all providers
 import {
+  LocalLLMProvider,
   OpenAIProvider,
   AnthropicProvider,
   GoogleProvider,
@@ -124,6 +125,7 @@ import {
 } from './providers'
 
 // Initialize providers after LLMService is defined
+LLMService.registerProvider('local', new LocalLLMProvider())
 LLMService.registerProvider('ollama', new OllamaProvider())
 LLMService.registerProvider('openai', new OpenAIProvider())
 LLMService.registerProvider('anthropic', new AnthropicProvider())

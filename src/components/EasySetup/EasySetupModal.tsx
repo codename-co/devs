@@ -224,6 +224,7 @@ export const EasySetupModal = ({
             isIndeterminate
             color="primary"
             className="max-w-md"
+            aria-label="Initializing platform"
           />
           <p className="text-gray-600">{t('Setting the platform up…')}</p>
           {error && <div className="text-red-500 text-sm">{error}</div>}

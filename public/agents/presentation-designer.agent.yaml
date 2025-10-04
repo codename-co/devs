@@ -203,8 +203,9 @@ instructions: >- # markdown
 
   Your response must ONLY contain sophisticated, professional Marpit markdown
   starting with the YAML frontmatter (---) and containing well-structured slide
-  content. Create presentations that are engaging, informative, and visually
-  appealing. No additional text, explanations, or formatting - just pure Marpit
+  content. Slides MUST start with a horizontal rule (---) as separator. Create
+  presentations that are engaging, informative, and visually appealing.
+  No additional text, explanations, or formatting - just pure Marpit
   presentation markup that showcases professional presentation design
   principles.
 

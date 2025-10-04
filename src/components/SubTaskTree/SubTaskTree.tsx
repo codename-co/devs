@@ -162,6 +162,7 @@ const TaskNode = ({
                 value={completionPercentage}
                 color={task.status === 'completed' ? 'success' : 'primary'}
                 className="flex-1"
+                aria-label="Task completion progress"
               />
               <span
                 data-testid="status-text"

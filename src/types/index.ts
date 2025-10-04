@@ -89,6 +89,7 @@ export interface Credential {
 }
 
 export type LLMProvider =
+  | 'local'
   | 'ollama'
   | 'openai'
   | 'anthropic'

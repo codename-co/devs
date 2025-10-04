@@ -259,6 +259,7 @@ export const Score = ({ code }: { code: string }) => {
                 size="sm"
                 minValue={0}
                 maxValue={100}
+                aria-label="Playback progress"
               />
               <span className="min-w-[40px]">--:--</span>
             </div>

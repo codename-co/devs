@@ -681,6 +681,7 @@ export const TaskPage = () => {
                         : 'primary'
                     }
                     className="mb-1"
+                    aria-label="Sub-task progress"
                   />
                   <div className="text-xs text-default-500">
                     {

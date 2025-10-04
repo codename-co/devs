@@ -26,7 +26,6 @@ export const ProgressIndicator = () => {
 
   useEffect(() => {
     const handleServiceWorkerMessage = (event: MessageEvent) => {
-      console.debug('🤡', event.data.type, event.data.stats)
       if (event.data.type === 'LLM_PROGRESS_UPDATE') {
         const newStats = event.data.stats as LLMProgressStats
         setStats(newStats)

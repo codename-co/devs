@@ -34,6 +34,12 @@ import { errorToast, successToast } from '@/lib/toast'
 import { userSettings } from '@/stores/userStore'
 import { PRODUCT } from '@/config/product'
 import { useBackgroundImage } from '@/hooks/useBackgroundImage'
+import {
+  getCacheInfo,
+  clearModelCache,
+  formatBytes,
+  type CacheInfo,
+} from '@/lib/llm/cache-manager'
 import localI18n from './i18n'
 
 interface ProviderConfig {
@@ -47,9 +53,22 @@ interface ProviderConfig {
   apiKeyPlaceholder?: string
   apiKeyPage?: string
   noApiKey?: boolean
+  noServerUrl?: boolean
 }
 
 const PROVIDERS: ProviderConfig[] = [
+  {
+    provider: 'local',
+    name: 'Local (Browser)',
+    models: [
+      'onnx-community/granite-4.0-micro-ONNX-web',
+      'onnx-community/Phi-3.5-mini-instruct-ONNX-web',
+    ],
+    icon: 'Brain',
+    color: 'primary',
+    noApiKey: true,
+    noServerUrl: true,
+  },
   {
     provider: 'ollama',
     name: 'Ollama',
@@ -193,6 +212,8 @@ export const SettingsPage = () => {
   const [availableModels, setAvailableModels] = useState<string[]>([])
   const [isFetchingModels, setIsFetchingModels] = useState(false)
   const [useManualModel, setUseManualModel] = useState(false)
+  const [cacheInfo, setCacheInfo] = useState<CacheInfo | null>(null)
+  const [isClearingCache, setIsClearingCache] = useState(false)
 
   // Langfuse state
   const [langfuseConfig, setLangfuseConfig] = useState<LangfuseConfig | null>(
@@ -238,7 +259,38 @@ export const SettingsPage = () => {
     initializeSecurity()
     loadMasterKey()
     loadLangfuseConfig()
+    loadCacheInfo()
   }, [])
+
+  const loadCacheInfo = async () => {
+    const info = await getCacheInfo()
+    setCacheInfo(info)
+  }
+
+  const handleClearCache = async () => {
+    if (
+      !confirm(
+        'Are you sure you want to clear all cached model files? They will need to be downloaded again on next use.',
+      )
+    ) {
+      return
+    }
+
+    setIsClearingCache(true)
+    try {
+      const success = await clearModelCache()
+      if (success) {
+        successToast('Model cache cleared successfully')
+        await loadCacheInfo()
+      } else {
+        errorToast('Failed to clear model cache')
+      }
+    } catch (error) {
+      errorToast('Failed to clear model cache')
+    } finally {
+      setIsClearingCache(false)
+    }
+  }
 
   // Reset form when provider changes
   useEffect(() => {
@@ -250,6 +302,9 @@ export const SettingsPage = () => {
       // Auto-fetch models for Ollama
       if (selectedProvider === 'ollama') {
         fetchAvailableModels('ollama', apiKey || undefined)
+      } else if (selectedProvider === 'local') {
+        // Load local models
+        fetchAvailableModels('local')
       } else {
         // Load default models for other providers
         fetchAvailableModels(selectedProvider)
@@ -503,7 +558,7 @@ export const SettingsPage = () => {
       (p) => p.provider === selectedProvider,
     )
 
-    // For Ollama, API key is optional (it's actually the server URL)
+    // For Ollama and Local, API key is optional
     if (
       (!apiKey && !providerConfig?.noApiKey) ||
       !model ||
@@ -515,17 +570,20 @@ export const SettingsPage = () => {
 
     setIsValidating(true)
     try {
-      // Validate API key
-      const isValid = await LLMService.validateApiKey(selectedProvider, apiKey)
+      // Validate API key (local provider always returns true)
+      const isValid = await LLMService.validateApiKey(
+        selectedProvider,
+        apiKey || 'local-no-key',
+      )
       if (!isValid) {
         errorToast(t('Invalid API key'))
         setIsValidating(false)
         return
       }
 
-      // For Ollama, use a dummy key if none provided
+      // For providers without API keys, use a dummy key
       const keyToEncrypt =
-        apiKey || (providerConfig?.noApiKey ? 'ollama-no-key' : '')
+        apiKey || (providerConfig?.noApiKey ? `${selectedProvider}-no-key` : '')
 
       // Encrypt and store credential
       const { encrypted, iv, salt } =
@@ -892,6 +950,35 @@ export const SettingsPage = () => {
                     ))
                   )}
                 </div>
+
+                {cacheInfo && cacheInfo.size > 0 && (
+                  <div className="mt-6 pt-6 border-t border-default-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <p className="text-sm font-medium">Local Model Cache</p>
+                        <p className="text-xs text-default-500">
+                          {cacheInfo.itemCount} file
+                          {cacheInfo.itemCount !== 1 ? 's' : ''} cached (
+                          {formatBytes(cacheInfo.size)})
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="flat"
+                        color="danger"
+                        onPress={handleClearCache}
+                        isLoading={isClearingCache}
+                        startContent={<Icon name="Trash" className="h-4 w-4" />}
+                      >
+                        Clear Cache
+                      </Button>
+                    </div>
+                    <p className="text-xs text-default-500">
+                      Downloaded models are cached for 1 year to avoid
+                      re-downloading.
+                    </p>
+                  </div>
+                )}
               </div>
             </AccordionItem>
 
@@ -1091,6 +1178,20 @@ export const SettingsPage = () => {
                 <ModalHeader>{t('Add LLM Provider')}</ModalHeader>
                 <ModalBody>
                   <div className="space-y-4">
+                    {selectedProvider === 'local' && (
+                      <Alert color="primary" variant="faded">
+                        <div className="flex flex-col gap-2">
+                          <p className="font-medium">
+                            Local LLM runs entirely in your browser
+                          </p>
+                          <p className="text-sm text-default-600">
+                            No data is sent to external servers. Requires WebGPU
+                            support. The first use will download the model
+                            (~2-4GB).
+                          </p>
+                        </div>
+                      </Alert>
+                    )}
                     <Select
                       label={t('Select Provider')}
                       defaultSelectedKeys={PROVIDERS[0].provider}
@@ -1124,37 +1225,41 @@ export const SettingsPage = () => {
                       ))}
                     </Select>
 
-                    <div>
-                      <Input
-                        label={
-                          providerConfig?.noApiKey
-                            ? t('Server URL (Optional)')
-                            : t('API Key')
-                        }
-                        placeholder={
-                          providerConfig?.apiKeyPlaceholder ||
-                          t('Enter your API key')
-                        }
-                        type={providerConfig?.noApiKey ? 'text' : 'password'}
-                        value={apiKey}
-                        autoComplete="false"
-                        onChange={(e) => setApiKey(e.target.value)}
-                        isRequired={!providerConfig?.noApiKey}
-                        description={
-                          <Link
-                            href={providerConfig?.apiKeyPage}
-                            target="_blank"
-                          >
-                            {providerConfig?.apiKeyPage}
-                          </Link>
-                        }
-                      />
-                      {providerConfig?.apiKeyFormat && (
-                        <p className="text-xs text-default-500 mt-1">
-                          {t('Format:')} {providerConfig.apiKeyFormat}
-                        </p>
-                      )}
-                    </div>
+                    {!(
+                      providerConfig?.noApiKey && providerConfig?.noServerUrl
+                    ) && (
+                      <div>
+                        <Input
+                          label={
+                            providerConfig?.noApiKey
+                              ? t('Server URL (Optional)')
+                              : t('API Key')
+                          }
+                          placeholder={
+                            providerConfig?.apiKeyPlaceholder ||
+                            t('Enter your API key')
+                          }
+                          type={providerConfig?.noApiKey ? 'text' : 'password'}
+                          value={apiKey}
+                          autoComplete="false"
+                          onChange={(e) => setApiKey(e.target.value)}
+                          isRequired={!providerConfig?.noApiKey}
+                          description={
+                            <Link
+                              href={providerConfig?.apiKeyPage}
+                              target="_blank"
+                            >
+                              {providerConfig?.apiKeyPage}
+                            </Link>
+                          }
+                        />
+                        {providerConfig?.apiKeyFormat && (
+                          <p className="text-xs text-default-500 mt-1">
+                            {t('Format:')} {providerConfig.apiKeyFormat}
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                     {providerConfig?.requiresBaseUrl && (
                       <Input

@@ -285,7 +285,7 @@ self.addEventListener('activate', (event) => {
 
 // Message handler for LLM API calls and progress requests
 self.addEventListener('message', async (event) => {
-  console.log('[SW-MSG] 📨 Received message:', {
+  console.debug('[SW-MSG] 📨 Received message:', {
     type: event.data.type,
     hasData: !!event.data,
     origin: event.origin,
@@ -401,12 +401,119 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url)
 
   // Log ALL requests to see what's being intercepted
-  console.log(`[SW-FETCH] Request to: ${url.hostname}${url.pathname}`, {
-    method: event.request.method,
-    url: event.request.url,
-    port: url.port,
-    headers: Object.fromEntries(event.request.headers.entries()),
-  })
+  console.debug(`[SW-FETCH] Request to: ${url.hostname}${url.pathname}`)
+
+  // Check if this is a HuggingFace model file request
+  const isHuggingFaceModel =
+    url.hostname.endsWith('huggingface.co') ||
+    url.hostname.endsWith('cdn-lfs.huggingface.co') ||
+    url.hostname.endsWith('cdn-lfs-us-1.huggingface.co') ||
+    url.hostname.endsWith('hf.co')
+
+  // For HuggingFace models, implement cache-first strategy
+  if (isHuggingFaceModel) {
+    console.log('[SW-CACHE] 🔍 HuggingFace request:', url.pathname)
+
+    event.respondWith(
+      (async () => {
+        const cache = await caches.open('transformers-cache')
+
+        // Try to get from cache first
+        const cachedResponse = await cache.match(event.request)
+        if (cachedResponse) {
+          console.log('[SW-CACHE] ✅ Serving from cache:', url.pathname)
+          return cachedResponse
+        }
+
+        // Not in cache, fetch from network
+        console.log('[SW-CACHE] 📥 Fetching from network:', url.pathname)
+        try {
+          const response = await fetch(event.request)
+
+          // Cache successful responses, but handle large files
+          if (response.ok) {
+            // Check content length to decide if we should cache
+            const contentLength = response.headers.get('content-length')
+            const sizeInMB = contentLength
+              ? parseInt(contentLength) / (1024 * 1024)
+              : 0
+
+            // Only try to cache files smaller than 200MB (Cache API limit)
+            if (sizeInMB < 200) {
+              console.log(
+                `[SW-CACHE] 💾 Caching response (${sizeInMB.toFixed(1)}MB):`,
+                url.pathname,
+              )
+              try {
+                await cache.put(event.request, response.clone())
+                console.log('[SW-CACHE] ✅ Successfully cached:', url.pathname)
+              } catch (cacheError) {
+                console.warn(
+                  '[SW-CACHE] ⚠️ Failed to cache (file too large?):',
+                  url.pathname,
+                  cacheError.message,
+                )
+              }
+            } else {
+              console.log(
+                `[SW-CACHE] ⏭️ Skipping Cache API for large file (${sizeInMB.toFixed(1)}MB):`,
+                url.pathname,
+              )
+              console.log(
+                '[SW-CACHE] 🔧 Ensuring browser HTTP cache headers are properly set',
+              )
+
+              // For large files, ensure strong caching headers for browser's HTTP cache
+              // Create a new response with enhanced cache headers
+              const headers = new Headers(response.headers)
+
+              // Ensure cache-control is set (HuggingFace already sends this, but we ensure it)
+              if (
+                !headers.has('cache-control') ||
+                !headers.get('cache-control').includes('max-age')
+              ) {
+                headers.set(
+                  'cache-control',
+                  'public, max-age=31536000, immutable',
+                )
+              } else {
+                // Enhance existing cache-control with immutable directive
+                const cacheControl = headers.get('cache-control')
+                if (!cacheControl.includes('immutable')) {
+                  headers.set('cache-control', `${cacheControl}, immutable`)
+                }
+              }
+
+              // Ensure expires header is set far in the future
+              if (!headers.has('expires')) {
+                const oneYearFromNow = new Date()
+                oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
+                headers.set('expires', oneYearFromNow.toUTCString())
+              }
+
+              console.log(
+                '[SW-CACHE] ✅ Enhanced cache headers for browser HTTP cache:',
+                headers.get('cache-control'),
+              )
+
+              // Return response with enhanced headers for browser caching
+              return new Response(response.body, {
+                status: response.status,
+                statusText: response.statusText,
+                headers: headers,
+              })
+            }
+          }
+
+          return response
+        } catch (error) {
+          console.error('[SW-CACHE] ❌ Fetch failed:', error)
+          throw error
+        }
+      })(),
+    )
+    return
+  }
 
   // Only intercept LLM API calls
   const llmHosts = [
@@ -451,20 +558,15 @@ self.addEventListener('fetch', (event) => {
         .match(event.request)
         .then((response) => response || fetch(event.request)),
     )
+    return
   }
 
   // Generate unique request ID for tracking
   const requestId = `fetch_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
   const startTime = Date.now()
 
-  console.log(
+  console.debug(
     `[SW-LLM] 🎯 Intercepted LLM request: ${requestId} to ${url.hostname}`,
-    {
-      provider: url.hostname,
-      endpoint: url.href,
-      method: event.request.method,
-      langfuseEnabled: !!langfuseConfig?.enabled,
-    },
   )
 
   // Track this request
@@ -489,7 +591,7 @@ self.addEventListener('fetch', (event) => {
         )
 
         // Track with Langfuse if enabled (for fetch-based requests)
-        console.log('[SW-TRACK] 🔍 Checking if should track request:', {
+        console.debug('[SW-TRACK] 🔍 Checking if should track request:', {
           method: event.request.method,
           responseOk: response.ok,
           responseType: response.type,
@@ -497,12 +599,12 @@ self.addEventListener('fetch', (event) => {
         })
 
         if (event.request.method === 'POST' && response.ok) {
-          console.log(
+          console.debug(
             '[SW-TRACK] ✅ POST request with OK response, attempting tracking...',
           )
           try {
             const responseClone = response.clone()
-            console.log('[SW-TRACK] 📋 Response details:', {
+            console.debug('[SW-TRACK] 📋 Response details:', {
               type: responseClone.type,
               status: responseClone.status,
               headers: Object.fromEntries(responseClone.headers.entries()),
@@ -527,7 +629,7 @@ self.addEventListener('fetch', (event) => {
                 responseTime,
               )
             } else {
-              console.log(
+              console.debug(
                 '[SW-TRACK] 🔒 CORS response, cannot read body - tracking with limited data',
               )
               // Track anyway with limited data
@@ -554,7 +656,7 @@ self.addEventListener('fetch', (event) => {
             )
           }
         } else {
-          console.log('[SW-TRACK] ⏭️ Skipping tracking:', {
+          console.warn('[SW-TRACK] ⏭️ Skipping tracking:', {
             reason:
               event.request.method !== 'POST' ? 'not POST' : 'response not OK',
           })
@@ -581,7 +683,7 @@ self.addEventListener('fetch', (event) => {
         return response
       })
       .catch(async (error) => {
-        console.log(`[SW] LLM request failed: ${requestId} -`, error.message)
+        console.warn(`[SW] LLM request failed: ${requestId} -`, error.message)
 
         // Calculate response time for error case
         const responseTime = Date.now() - startTime
@@ -606,7 +708,7 @@ self.addEventListener('fetch', (event) => {
         // If network fails, try cache
         const cachedResponse = await caches.match(event.request)
         if (cachedResponse) {
-          console.log(`[SW] Using cached response for ${requestId}`)
+          console.debug(`[SW] Using cached response for ${requestId}`)
           return cachedResponse
         }
         // Re-throw error if no cached response available
