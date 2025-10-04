@@ -249,6 +249,64 @@ export class LocalLLMProvider implements LLMProviderInterface {
       // Small delay to simulate streaming
       await new Promise((resolve) => setTimeout(resolve, 30))
     }
+
+    // const pipe = await this.getPipeline(config?.model)
+    // const prompt = this.messagesToPrompt(messages)
+
+    // let lastText = ''
+    // const chunks: string[] = []
+    // let streamComplete = false
+    // let streamError: Error | null = null
+
+    // // Start the generation with callback
+    // const generationPromise = pipe(prompt, {
+    //   max_new_tokens: config?.maxTokens || 512,
+    //   temperature: config?.temperature || 0.7,
+    //   do_sample: true,
+    //   top_k: 50,
+    //   top_p: 0.95,
+    //   // @ts-ignore - callback_function is supported but not in types
+    //   callback_function: (beams: any) => {
+    //     const decodedText = pipe.tokenizer.decode(beams[0].output_token_ids, {
+    //       skip_special_tokens: true,
+    //     })
+
+    //     // Remove the prompt from the decoded text
+    //     const newText = decodedText.replace(prompt, '').trim()
+
+    //     // Extract only the new portion
+    //     if (newText.length > lastText.length) {
+    //       const chunk = newText.substring(lastText.length)
+    //       chunks.push(chunk)
+    //       lastText = newText
+    //     }
+    //   },
+    // })
+    //   .catch((error: Error) => {
+    //     streamError = error
+    //   })
+    //   .finally(() => {
+    //     streamComplete = true
+    //   })
+
+    // // Yield chunks as they become available
+    // let yieldedCount = 0
+    // while (!streamComplete || yieldedCount < chunks.length) {
+    //   if (streamError) {
+    //     throw streamError
+    //   }
+
+    //   if (yieldedCount < chunks.length) {
+    //     yield chunks[yieldedCount]
+    //     yieldedCount++
+    //   } else {
+    //     // Wait a bit before checking for new chunks
+    //     await new Promise((resolve) => setTimeout(resolve, 10))
+    //   }
+    // }
+
+    // // Wait for generation to complete
+    // await generationPromise
   }
 
   async validateApiKey(_apiKey: string): Promise<boolean> {
@@ -262,6 +320,8 @@ export class LocalLLMProvider implements LLMProviderInterface {
     return [
       LocalLLMProvider.DEFAULT_MODEL,
       'onnx-community/Phi-3.5-mini-instruct-ONNX-web',
+      // 'onnx-community/embeddinggemma-300m-ONNX',
+      'onnx-community/Qwen3-0.6B-ONNX',
     ]
   }
 

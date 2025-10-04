@@ -287,4 +287,7 @@ export const ko: I18n = {
   Password: '비밀번호',
   Continue: '계속',
   'Setting the platform up…': '플랫폼 설정 중…',
+
+  // Local LLM Loading Indicator
+  'Initializing Local AI Model…': '로컬 AI 모델 초기화 중…',
 } as const

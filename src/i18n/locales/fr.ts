@@ -294,4 +294,7 @@ export const fr: I18n = {
   Password: 'Mot de passe',
   Continue: 'Continuer',
   'Setting the platform up…': 'Configuration de la plateforme en cours…',
+
+  // Local LLM Loading Indicator
+  'Initializing Local AI Model…': 'Initialisation du modèle IA local…',
 } as const

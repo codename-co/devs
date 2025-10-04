@@ -258,4 +258,7 @@ export const en = [
   'Password',
   'Continue',
   'Setting the platform up…',
+
+  // Local LLM Loading Indicator
+  'Initializing Local AI Model…',
 ] as const

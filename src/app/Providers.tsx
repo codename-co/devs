@@ -6,7 +6,6 @@ import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
 import { userSettings } from '@/stores/userStore'
 import { useArtifactStore } from '@/stores/artifactStore'
-import { LocalLLMLoadingIndicator } from '@/components'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate()
@@ -70,7 +69,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <HeroUIProvider navigate={navigate} useHref={useHref}>
       <main className="text-foreground bg-background min-h-screen">
         {children}
-        <LocalLLMLoadingIndicator />
       </main>
     </HeroUIProvider>
   )

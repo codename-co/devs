@@ -1,5 +1,6 @@
 import { Outlet, Route, Routes, useParams } from 'react-router-dom'
 
+import { LocalLLMLoadingIndicator } from '@/components'
 import { defaultLang, I18nProvider, Lang, langs } from '@/i18n'
 import { IndexPage } from '@/pages/Index'
 import { NotFoundPage } from '@/pages/NotFound'
@@ -41,6 +42,7 @@ function Router() {
             element={
               <I18nProvider>
                 <Component />
+                <LocalLLMLoadingIndicator />
               </I18nProvider>
             }
             index={path === 'index'}
@@ -70,6 +72,7 @@ const LanguagePath = () => {
   return (
     <I18nProvider lang={lang}>
       {!langs.includes(lang) ? <NotFoundPage /> : <Outlet />}
+      <LocalLLMLoadingIndicator />
     </I18nProvider>
   )
 }

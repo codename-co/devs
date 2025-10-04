@@ -47,7 +47,6 @@ interface ProviderConfig {
   name: string
   models: string[]
   icon: IconName
-  color: string
   requiresBaseUrl?: boolean
   apiKeyFormat?: string
   apiKeyPlaceholder?: string
@@ -63,9 +62,10 @@ const PROVIDERS: ProviderConfig[] = [
     models: [
       'onnx-community/granite-4.0-micro-ONNX-web',
       'onnx-community/Phi-3.5-mini-instruct-ONNX-web',
+      // 'onnx-community/embeddinggemma-300m-ONNX',
+      'onnx-community/Qwen3-0.6B-ONNX',
     ],
-    icon: 'Brain',
-    color: 'primary',
+    icon: 'Internet',
     noApiKey: true,
     noServerUrl: true,
   },
@@ -85,7 +85,6 @@ const PROVIDERS: ProviderConfig[] = [
       'orca-mini',
     ],
     icon: 'Ollama',
-    color: 'default',
     noApiKey: true,
     apiKeyPlaceholder: 'http://localhost:11434',
   },
@@ -94,7 +93,6 @@ const PROVIDERS: ProviderConfig[] = [
     name: 'OpenAI',
     models: ['gpt-5-2025-08-07', 'gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo'],
     icon: 'OpenAI',
-    color: 'success',
     apiKeyPage: 'https://platform.openai.com/api-keys',
   },
   {
@@ -106,7 +104,6 @@ const PROVIDERS: ProviderConfig[] = [
       'claude-opus-4-20250514',
     ],
     icon: 'Anthropic',
-    color: 'primary',
     apiKeyPage: 'https://console.anthropic.com/settings/keys',
   },
   {
@@ -119,7 +116,6 @@ const PROVIDERS: ProviderConfig[] = [
       'gemini-2.5-flash-image-preview',
     ],
     icon: 'Google',
-    color: 'secondary',
   },
   {
     provider: 'vertex-ai',
@@ -136,7 +132,6 @@ const PROVIDERS: ProviderConfig[] = [
       'google/gemini-2.0-flash-lite-001',
     ],
     icon: 'GoogleCloud',
-    color: 'secondary',
     apiKeyFormat: 'LOCATION:PROJECT_ID:API_KEY',
     apiKeyPlaceholder: 'us-central1:my-project:your-api-key',
   },
@@ -145,7 +140,6 @@ const PROVIDERS: ProviderConfig[] = [
     name: 'Mistral AI',
     models: ['mistral-medium', 'mistral-small', 'mistral-tiny'],
     icon: 'MistralAI',
-    color: 'warning',
   },
   {
     provider: 'openrouter',
@@ -157,21 +151,18 @@ const PROVIDERS: ProviderConfig[] = [
       'meta-llama/llama-3-70b',
     ],
     icon: 'OpenRouter',
-    color: 'primary',
   },
   {
     provider: 'deepseek',
     name: 'DeepSeek',
     models: ['deepseek-chat', 'deepseek-coder'],
     icon: 'DeepSeek',
-    color: 'secondary',
   },
   {
     provider: 'grok',
     name: 'Grok (X.AI)',
     models: ['grok-beta'],
     icon: 'X',
-    color: 'default',
   },
   {
     provider: 'huggingface',
@@ -182,14 +173,12 @@ const PROVIDERS: ProviderConfig[] = [
       'google/flan-t5-xxl',
     ],
     icon: 'HuggingFace',
-    color: 'warning',
   },
   {
     provider: 'custom',
     name: 'Custom/Local',
     models: [],
     icon: 'Server',
-    color: 'default',
     requiresBaseUrl: true,
   },
 ]
@@ -255,11 +244,14 @@ export const SettingsPage = () => {
   }
 
   useEffect(() => {
-    loadCredentials()
-    initializeSecurity()
-    loadMasterKey()
-    loadLangfuseConfig()
-    loadCacheInfo()
+    const initialize = async () => {
+      await loadCredentials()
+      initializeSecurity()
+      loadMasterKey()
+      loadLangfuseConfig()
+      loadCacheInfo()
+    }
+    initialize()
   }, [])
 
   const loadCacheInfo = async () => {
@@ -490,6 +482,34 @@ export const SettingsPage = () => {
     }
   }
 
+  const createDefaultLocalProvider = async () => {
+    try {
+      const defaultModel = 'onnx-community/granite-4.0-micro-ONNX-web'
+      const keyToEncrypt = 'local-no-key'
+
+      // Encrypt the dummy key for storage consistency
+      const { encrypted, iv, salt } =
+        await SecureStorage.encryptCredential(keyToEncrypt)
+
+      const credential: Credential = {
+        id: `local-${Date.now()}`,
+        provider: 'local',
+        encryptedApiKey: encrypted,
+        model: defaultModel,
+        timestamp: new Date(),
+        order: 0,
+      }
+
+      // Store encryption metadata
+      localStorage.setItem(`${credential.id}-iv`, iv)
+      localStorage.setItem(`${credential.id}-salt`, salt)
+
+      await db.add('credentials', credential)
+    } catch (error) {
+      console.error('Failed to create default local provider:', error)
+    }
+  }
+
   const loadCredentials = async () => {
     await db.init()
     const creds = await db.getAll('credentials')
@@ -502,7 +522,21 @@ export const SettingsPage = () => {
       return a.order - b.order
     })
 
-    setCredentials(sortedCreds)
+    // If no credentials exist, create a default local provider
+    if (sortedCreds.length === 0) {
+      await createDefaultLocalProvider()
+      // Reload credentials after creating the default
+      const updatedCreds = await db.getAll('credentials')
+      const sortedUpdatedCreds = updatedCreds.sort((a, b) => {
+        if (a.order === undefined && b.order === undefined) return 0
+        if (a.order === undefined) return 1
+        if (b.order === undefined) return -1
+        return a.order - b.order
+      })
+      setCredentials(sortedUpdatedCreds)
+    } else {
+      setCredentials(sortedCreds)
+    }
   }
 
   const updateCredentialOrder = async (
@@ -715,10 +749,7 @@ export const SettingsPage = () => {
         }`}
       >
         <div className="flex items-center gap-8 px-4">
-          <Icon
-            name={provider?.icon as any}
-            className={`h-5 w-5 text-${provider?.color} dark:fill-white`}
-          />
+          <Icon name={provider?.icon as any} className="h-5 w-5" />
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <p className="font-medium">{provider?.name}</p>
