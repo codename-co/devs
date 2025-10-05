@@ -502,7 +502,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
             // ) // Standardize version notation
             .replace(
               /(\d{4})(\d{2})(\d{2})(?!\w)/,
-              (match, p1, p2, p3) =>
+              (_, p1, p2, p3) =>
                 `(${new Date(p1, p2, p3).toLocaleDateString(lang)})`,
             ) // Format dates like 20240115 to 2024-01-15
             // .replace(/[-_]/g, '-')
