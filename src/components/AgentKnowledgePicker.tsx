@@ -19,8 +19,9 @@ import { useState, useEffect, useMemo } from 'react'
 
 import { db } from '@/lib/db'
 import { KnowledgeItem } from '@/types'
-import { formatFileSize } from '@/lib/utils'
 import { Icon } from '@/components/Icon'
+import { formatBytes } from '@/lib/format'
+import { useI18n } from '@/i18n'
 
 interface AgentKnowledgePickerProps {
   selectedKnowledgeIds?: string[]
@@ -33,6 +34,8 @@ export function AgentKnowledgePicker({
   onSelectionChange,
   className,
 }: AgentKnowledgePickerProps) {
+  const { lang } = useI18n()
+
   const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -233,7 +236,7 @@ export function AgentKnowledgePicker({
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-xs text-default-400">
-                      {formatFileSize(item.size || 0)}
+                      {formatBytes(item.size || 0, lang)}
                     </span>
                     <span className="text-xs text-default-400">
                       {new Date(item.lastModified).toLocaleDateString()}
@@ -301,7 +304,7 @@ export function AgentKnowledgePicker({
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="font-medium">Size:</span>{' '}
-                    {formatFileSize(selectedPreview.size || 0)}
+                    {formatBytes(selectedPreview.size || 0, lang)}
                   </div>
                   <div>
                     <span className="font-medium">Modified:</span>{' '}

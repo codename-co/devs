@@ -85,6 +85,7 @@ const SimpleIconToComponent = (icon: any) => {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
+      fill="currentColor"
       {...props}
       dangerouslySetInnerHTML={{ __html: icon.svg }}
     />
@@ -97,6 +98,7 @@ export const Icons = {
   Attachment: IconoirIcons.Attachment,
   Book: IconoirIcons.Book,
   Brain: IconoirIcons.Brain,
+  DesignPencil: IconoirIcons.DesignPencil,
   Internet: IconoirIcons.Internet,
   Calendar: IconoirIcons.Calendar,
   ChatBubble: IconoirIcons.ChatBubble,
@@ -130,16 +132,19 @@ export const Icons = {
   MoreHoriz: IconoirIcons.MoreHoriz,
   MoreVert: IconoirIcons.MoreVert,
   MusicNoteSolid: IconoirIcons.MusicNoteSolid,
+  OpenInBrowser: IconoirIcons.OpenInBrowser,
   Page: IconoirIcons.Page,
   PagePlus: IconoirIcons.PagePlus,
   PageSearch: IconoirIcons.PageSearch,
   Pause: IconoirIcons.Pause,
+  PcNoEntry: IconoirIcons.PcNoEntry,
   PiggyBank: IconoirIcons.PiggyBank,
   Play: IconoirIcons.Play,
   Plus: IconoirIcons.Plus,
   Presentation: IconoirIcons.Presentation,
   PrivacyPolicy: IconoirIcons.PrivacyPolicy,
   ProfileCircle: IconoirIcons.ProfileCircle,
+  QuestionMark: IconoirIcons.QuestionMark,
   Server: IconoirIcons.Server,
   Settings: IconoirIcons.Settings,
   SidebarCollapse: IconoirIcons.SidebarCollapse,

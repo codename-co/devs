@@ -18,6 +18,7 @@ export interface Agent {
     [lang: string]: {
       name?: string
       desc?: string
+      role?: string
     }
   }
 }

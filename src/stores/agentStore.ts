@@ -85,6 +85,11 @@ Your success is measured by delivering complete, high-quality solutions that mee
   i18n: {
     fr: {
       desc: 'Orchestrateur autonome multi-agents pour délégation de tâches complexes',
+      role: "Orchestrateur de tâches autonome et coordinateur d'équipes multi-agents",
+    },
+    ko: {
+      desc: '복잡한 작업 위임을 위한 자율 다중 에이전트 오케스트레이터',
+      role: '자율 작업 오케스트레이터 및 다중 에이전트 팀 코디네이터',
     },
   },
 }

@@ -36,9 +36,16 @@ export default {
           colors: {
             primary: {
               DEFAULT: '#3366FF',
-              foreground: '#000000',
+              foreground: '#FFFFFF',
             },
             focus: '#3366FF',
+          },
+        },
+        dark: {
+          colors: {
+            primary: {
+              DEFAULT: '#3366FFAA',
+            },
           },
         },
       },

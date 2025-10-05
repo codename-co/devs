@@ -46,6 +46,7 @@ import {
 } from '@/lib/knowledge-sync'
 import { errorToast, successToast, warningToast } from '@/lib/toast'
 import localI18n from './i18n'
+import { formatBytes } from '@/lib/format'
 
 interface FileSystemFileHandle {
   readonly kind: 'file'
@@ -76,7 +77,7 @@ declare global {
 }
 
 export const KnowledgePage: React.FC = () => {
-  const { t } = useI18n(localI18n)
+  const { lang, t } = useI18n(localI18n)
   const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
@@ -405,13 +406,6 @@ export const KnowledgePage: React.FC = () => {
     }
   }
 
-  const formatFileSize = (bytes?: number) => {
-    if (!bytes) return 'N/A'
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(1024))
-    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i]
-  }
-
   const formatDate = (date: Date) => {
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
   }
@@ -632,7 +626,9 @@ export const KnowledgePage: React.FC = () => {
                         {item.fileType && (
                           <span className="capitalize">{item.fileType}</span>
                         )}
-                        {item.size && <span>{formatFileSize(item.size)}</span>}
+                        {item.size && (
+                          <span>{formatBytes(item.size, lang)}</span>
+                        )}
                         <span>{formatDate(item.createdAt)}</span>
                       </div>
                       {item.description && (

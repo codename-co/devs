@@ -9,9 +9,11 @@ import {
 import { useState, useEffect } from 'react'
 
 import { Icon } from './Icon'
-import { formatFileSize, getFileIcon } from '@/lib/utils'
+import { getFileIcon } from '@/lib/utils'
 import { db } from '@/lib/db'
 import { KnowledgeItem } from '@/types'
+import { formatBytes } from '@/lib/format'
+import { useI18n } from '@/i18n'
 
 interface KnowledgeBasePickerProps extends Omit<DropdownMenuProps, 'children'> {
   onFileSelect?: (file: KnowledgeItem) => void
@@ -23,6 +25,8 @@ export function KnowledgeBasePicker({
   disabled,
   ...props
 }: KnowledgeBasePickerProps) {
+  const { lang } = useI18n()
+
   const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -173,7 +177,7 @@ export function KnowledgeBasePicker({
               endContent={
                 <div className="flex items-center gap-1">
                   <Chip size="sm" variant="flat" className="text-xs">
-                    {formatFileSize(item.size || 0)}
+                    {formatBytes(item.size || 0, lang)}
                   </Chip>
                 </div>
               }

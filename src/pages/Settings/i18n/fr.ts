@@ -6,7 +6,7 @@ export const fr: I18n = {
   'Platform Settings': 'Paramètres de la plateforme',
   'Configure LLM providers, models and platform defaults for your organization':
     'Configurez les fournisseurs de LLM, les modèles et les paramètres par défaut de la plateforme pour votre organisation',
-  'General Settings': 'Paramètres généraux',
+  Appearance: 'Apparence',
   'Choose your preferred language': 'Choisissez votre langue préférée',
   'Interface Language': 'Langue de l’interface',
   'Platform Name': 'Nom de la plateforme',
@@ -30,7 +30,8 @@ export const fr: I18n = {
   'Your master key is used to encrypt all sensitive data stored locally. Keep it safe and secure.':
     'Votre clé maîtresse est utilisée pour chiffrer toutes les données sensibles stockées localement. Gardez-la en sécurité.',
   'LLM Providers': 'Fournisseurs LLM',
-  'Manage your API credentials': 'Gérez vos identifiants API',
+  'Choose your LLM provider, manage your API credentials':
+    'Choisissez votre fournisseur LLM, gérez vos identifiants API',
   'Add Provider': 'Ajouter un fournisseur',
   'No providers configured. Add one to get started.':
     'Aucun fournisseur configuré. Ajoutez-en un pour commencer.',
@@ -77,11 +78,32 @@ export const fr: I18n = {
   'Use Fetched Models': 'Utiliser les modèles récupérés',
   'Manual Input': 'Saisie manuelle',
   'Model Name': 'Nom du modèle',
-  'Enter model name (e.g., llama2, mistral)':
-    'Entrez le nom du modèle (ex: llama2, mistral)',
   'Enter the exact name of the model you want to use':
     'Entrez le nom exact du modèle que vous souhaitez utiliser',
   'Available Models': 'Modèles disponibles',
   'Default Provider': 'Fournisseur par défaut',
   'Provider set as default': 'Fournisseur défini par défaut',
+  'Advanced Settings': 'Paramètres avancés',
+  '{files} files cached ({size})': '{files} fichiers mis en cache ({size})',
+  'Local models cache': 'Cache de modèles locaux',
+  'Clear cache': 'Vider le cache',
+  'Downloaded models are cached for 1 year to avoid re-downloading.':
+    'Les modèles téléchargés sont mis en cache pendant 1 an pour éviter le re-téléchargement.',
+  'Local LLMs run entirely in your browser':
+    'Les LLM locaux s’exécutent entièrement dans votre navigateur.',
+  'No data is sent to external servers. Download happens at first use.':
+    'Aucune donnée n’est envoyée à des serveurs tiers. Le téléchargement a lieu à la première utilisation.',
+  'Requirements:': 'Exigences :',
+  'WebGPU support': 'Support WebGPU',
+  'At least 8GB of RAM': 'Au moins 8 Go de RAM',
+  'Storage space for model files (2-4GB)':
+    'Espace de stockage pour les fichiers de modèle (2-4 Go)',
+  'Your device:': 'Votre appareil :',
+  'WebGPU:': 'WebGPU :',
+  'Brand: {brand}': 'Marque : {brand}',
+  'Model: {model}': 'Modèle : {model}',
+  'Memory: {memory} or more (imprecise)':
+    'Mémoire : {memory} ou plus (imprécis)',
+  'Vendor: {vendor}': 'Fournisseur : {vendor}',
+  'Browser: {browser}': 'Navigateur : {browser}',
 } as const

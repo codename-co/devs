@@ -6,7 +6,7 @@ export const ko: I18n = {
   'Platform Settings': '플랫폼 설정',
   'Configure LLM providers, models and platform defaults for your organization':
     '조직을 위한 LLM 공급자, 모델 및 플랫폼의 기본 설정을 구성합니다.',
-  'General Settings': '일반 설정',
+  Appearance: '외관',
   'Choose your preferred language': '선호하는 언어를 선택하세요',
   'Interface Language': '인터페이스 언어',
   'Platform Name': '플랫폼 이름',
@@ -29,7 +29,8 @@ export const ko: I18n = {
   'Your master key is used to encrypt all sensitive data stored locally. Keep it safe and secure.':
     '귀하의 마스터 키는 로컬에 저장된 모든 민감한 데이터를 암호화하는 데 사용됩니다. 안전하게 보관하세요.',
   'LLM Providers': 'LLM 공급자',
-  'Manage your API credentials': 'API 자격 증명을 관리하세요',
+  'Choose your LLM provider, manage your API credentials':
+    'LLM 공급자를 선택하고 API 자격 증명을 관리하세요',
   'Add Provider': '공급자 추가',
   'No providers configured. Add one to get started.':
     '구성된 공급자가 없습니다. 시작하려면 하나 추가하세요.',
@@ -75,11 +76,30 @@ export const ko: I18n = {
   'Use Fetched Models': '가져온 모델 사용',
   'Manual Input': '수동 입력',
   'Model Name': '모델 이름',
-  'Enter model name (e.g., llama2, mistral)':
-    '모델 이름을 입력하세요 (예: llama2, mistral)',
   'Enter the exact name of the model you want to use':
     '사용하려는 모델의 정확한 이름을 입력하세요',
   'Available Models': '사용 가능한 모델',
   'Default Provider': '기본 공급자',
   'Provider set as default': '공급자가 기본값으로 설정되었습니다',
+  'Advanced Settings': '고급 설정',
+  '{files} files cached ({size})': '{files}개의 파일이 캐시됨 ({size})',
+  'Local models cache': '로컬 모델 캐시',
+  'Clear cache': '캐시 지우기',
+  'Downloaded models are cached for 1 year to avoid re-downloading.':
+    '다운로드된 모델은 1년 동안 캐시되어 재다운로드를 방지합니다.',
+  'Local LLMs run entirely in your browser':
+    '로컬 LLM은 브라우저에서 완전히 실행됩니다.',
+  'No data is sent to external servers. Download happens at first use.':
+    '외부 서버로 전송되는 데이터가 없습니다. 다운로드는 처음 사용 시 발생합니다.',
+  'Requirements:': '요구 사항:',
+  'WebGPU support': 'WebGPU 지원',
+  'At least 8GB of RAM': '최소 8GB RAM',
+  'Storage space for model files (2-4GB)': '모델 파일을 위한 저장 공간 (2-4GB)',
+  'Your device:': '당신의 장치:',
+  'WebGPU:': 'WebGPU:',
+  'Brand: {brand}': '브랜드: {brand}',
+  'Model: {model}': '모델: {model}',
+  'Memory: {memory} or more (imprecise)': '메모리: {memory} 이상 (부정확)',
+  'Vendor: {vendor}': '공급업체: {vendor}',
+  'Browser: {browser}': '브라우저: {browser}',
 } as const

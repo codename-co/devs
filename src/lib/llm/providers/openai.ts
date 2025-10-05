@@ -3,6 +3,7 @@ import { LLMConfig } from '@/types'
 
 export class OpenAIProvider implements LLMProviderInterface {
   protected baseUrl = 'https://api.openai.com/v1'
+  public static readonly DEFAULT_MODEL = 'gpt-5-2025-08-07'
 
   private convertMessageToOpenAIFormat(message: LLMMessage): any {
     if (!message.attachments || message.attachments.length === 0) {
@@ -59,7 +60,7 @@ export class OpenAIProvider implements LLMProviderInterface {
     const endpoint = `${config?.baseUrl || this.baseUrl}/chat/completions`
     console.log('[OPENAI-PROVIDER] 🚀 Making LLM request:', {
       endpoint,
-      model: config?.model || 'gpt-5-2025-08-07',
+      model: config?.model || OpenAIProvider.DEFAULT_MODEL,
       messagesCount: messages.length,
       temperature: config?.temperature || 0.7,
     })
@@ -71,7 +72,7 @@ export class OpenAIProvider implements LLMProviderInterface {
         Authorization: `Bearer ${config?.apiKey}`,
       },
       body: JSON.stringify({
-        model: config?.model || 'gpt-5-2025-08-07',
+        model: config?.model || OpenAIProvider.DEFAULT_MODEL,
         messages: messages.map((msg) => this.convertMessageToOpenAIFormat(msg)),
         temperature: config?.temperature || 0.7,
         max_tokens: config?.maxTokens,
@@ -115,7 +116,7 @@ export class OpenAIProvider implements LLMProviderInterface {
           Authorization: `Bearer ${config?.apiKey}`,
         },
         body: JSON.stringify({
-          model: config?.model || 'gpt-5-2025-08-07',
+          model: config?.model || OpenAIProvider.DEFAULT_MODEL,
           messages: messages.map((msg) =>
             this.convertMessageToOpenAIFormat(msg),
           ),

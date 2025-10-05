@@ -33,11 +33,6 @@ export const LocalLLMLoadingIndicator = () => {
   }
 
   const progressPercent = loadingProgress.progress || 0
-  // const formatBytes = (bytes?: number) => {
-  //   if (!bytes) return ''
-  //   const mb = bytes / (1024 * 1024)
-  //   return `${mb.toFixed(1)} MB`
-  // }
 
   return (
     <div className="fixed bottom-4 right-4 z-50 w-96">

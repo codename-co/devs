@@ -19,6 +19,7 @@ import type { HeaderProps } from '@/lib/types'
 import clsx from 'clsx'
 import { errorToast, successToast } from '@/lib/toast'
 import localI18n from './i18n'
+import { formatBytes } from '@/lib/format'
 
 interface DatabaseStats {
   name: string
@@ -195,14 +196,6 @@ export const DatabasePage: React.FC = () => {
     }
   }
 
-  const formatBytes = (bytes: number): string => {
-    if (bytes === 0) return '0 B'
-    const k = 1024
-    const sizes = ['B', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-  }
-
   const viewRecord = (record: any) => {
     setSelectedRecord(record)
     setIsDrawerOpen(true)
@@ -370,7 +363,7 @@ export const DatabasePage: React.FC = () => {
     title: t('Database Administration'),
     subtitle:
       stats &&
-      `${stats.name} v${stats.version} · ${t('{n} records', { n: stats.totalRecords })} · ${formatBytes(stats.totalSize)}`,
+      `${stats.name} v${stats.version} · ${t('{n} records', { n: stats.totalRecords })} · ${formatBytes(stats.totalSize, lang)}`,
     moreActions: [
       {
         label: t('Refresh'),
@@ -511,7 +504,7 @@ export const DatabasePage: React.FC = () => {
                               </Tooltip>
                               <span>·</span>
                               <span>
-                                {t('Size')} {formatBytes(store.size)}
+                                {t('Size')} {formatBytes(store.size, lang)}
                               </span>
                             </div>
 

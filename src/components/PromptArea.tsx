@@ -23,10 +23,14 @@ import { AgentPicker } from './AgentPicker'
 import { Icon } from './Icon'
 
 import { type Lang, useTranslations } from '@/i18n'
-import { cn, formatFileSize, getFileIcon } from '@/lib/utils'
-import { type Agent, type KnowledgeItem } from '@/types'
+import { cn, getFileIcon } from '@/lib/utils'
+import { type Agent, type KnowledgeItem, type Credential } from '@/types'
+import { type IconName } from '@/lib/types'
 import { getDefaultAgent } from '@/stores/agentStore'
 import { db } from '@/lib/db'
+import { isLandscape, isMobileDevice, isSmallHeight } from '@/lib/device'
+import { formatBytes } from '@/lib/format'
+import { useLLMModelStore } from '@/stores/llmModelStore'
 
 interface PromptAreaProps
   extends Omit<TextAreaProps, 'onFocus' | 'onBlur' | 'onKeyDown'> {
@@ -69,11 +73,36 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
     const [isFocused, setIsFocused] = useState(false)
     const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([])
     const [loadingKnowledge, setLoadingKnowledge] = useState(false)
+    const [credentials, setCredentials] = useState<Credential[]>([])
     const recognitionRef = useRef<SpeechRecognition | null>(null)
     const finalTranscriptRef = useRef('')
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const t = useTranslations(lang)
+
+    // LLM model store
+    const {
+      selectedCredentialId,
+      setSelectedCredentialId,
+      getSelectedCredential,
+    } = useLLMModelStore()
+    const selectedCredential = getSelectedCredential(credentials)
+
+    // Provider icon mapping
+    const PROVIDER_ICONS: Record<string, IconName> = {
+      local: 'OpenInBrowser',
+      ollama: 'Ollama',
+      openai: 'OpenAI',
+      anthropic: 'Anthropic',
+      google: 'Google',
+      'vertex-ai': 'GoogleCloud',
+      mistral: 'MistralAI',
+      openrouter: 'OpenRouter',
+      deepseek: 'DeepSeek',
+      grok: 'X',
+      huggingface: 'HuggingFace',
+      custom: 'Server',
+    }
 
     // Set default agent if none selected
     const currentAgent = selectedAgent || getDefaultAgent()
@@ -115,6 +144,38 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         setLoadingKnowledge(false)
       }
     }, [])
+
+    // Load credentials
+    const loadCredentials = useCallback(async () => {
+      try {
+        if (!db.isInitialized()) {
+          await db.init()
+        }
+
+        if (!db.hasStore('credentials')) {
+          setCredentials([])
+          return
+        }
+
+        const creds = await db.getAll('credentials')
+        // Sort by order
+        const sortedCreds = creds.sort((a, b) => {
+          if (a.order === undefined && b.order === undefined) return 0
+          if (a.order === undefined) return 1
+          if (b.order === undefined) return -1
+          return a.order - b.order
+        })
+        setCredentials(sortedCreds)
+      } catch (error) {
+        console.error('Error loading credentials:', error)
+        setCredentials([])
+      }
+    }, [])
+
+    // Load credentials on mount
+    useEffect(() => {
+      loadCredentials()
+    }, [loadCredentials])
 
     useEffect(() => {
       if (typeof window === 'undefined') return
@@ -398,7 +459,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
               }
               endContent={
                 <Chip size="sm" variant="flat" className="text-xs">
-                  {formatFileSize(item.size || 0)}
+                  {formatBytes(item.size || 0, lang)}
                 </Chip>
               }
               description={
@@ -423,6 +484,33 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       loadKnowledgeItems,
       renderKnowledgePreview,
     ])
+
+    const displayModelName = useCallback(
+      (model: string | undefined): string => {
+        if (!model) return ''
+
+        // Handle common model name patterns and make them more readable
+        // Remove provider prefixes and common separators
+        return (
+          model
+            .replace(/.*\//, '') // Remove everything before last slash
+            .replace(/[_-]+/g, ' ') // Replace underscores and hyphens with space
+            .replace(/\s+/g, ' ') // Collapse multiple spaces
+            // .replace(
+            //   /(?!\w)(?<version>([\s\.]\d{1,2})+)(?!\w)/,
+            //   (_, p) => ' ' + p.trim().replace(/\s/g, `.`),
+            // ) // Standardize version notation
+            .replace(
+              /(\d{4})(\d{2})(\d{2})(?!\w)/,
+              (match, p1, p2, p3) =>
+                `(${new Date(p1, p2, p3).toLocaleDateString(lang)})`,
+            ) // Format dates like 20240115 to 2024-01-15
+            // .replace(/[-_]/g, '-')
+            .trim()
+        )
+      },
+      [],
+    )
 
     return (
       <div
@@ -470,7 +558,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                       {file.name.substring(0, 48)}
                     </span>
                     <span className="absolute right-2 bg-content2 pl-2 pr-4">
-                      ({formatFileSize(file.size)})
+                      ({formatBytes(file.size, lang)})
                     </span>
                   </span>
                 </Chip>
@@ -487,7 +575,9 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
               inputWrapper: 'shadow-none -mb-20 pb-12 bg-default-200',
             }}
             maxRows={7}
-            minRows={3}
+            minRows={
+              isMobileDevice() && isLandscape() && isSmallHeight() ? 1 : 3
+            }
             placeholder={
               isDragOver ? t('Drop files here…') : t('Need something done?')
             }
@@ -561,6 +651,59 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                     onAgentChange={onAgentChange}
                   />
                 </Dropdown>
+
+                {/* LLM Model Selector */}
+                {credentials.length > 0 && (
+                  <Dropdown className="bg-white dark:bg-default-50 dark:text-white">
+                    <DropdownTrigger>
+                      {/* <Tooltip content={t('Collapse sidebar')}> */}
+                      <Button
+                        radius="full"
+                        variant="light"
+                        size="sm"
+                        startContent={
+                          <Icon
+                            name={
+                              PROVIDER_ICONS[
+                                selectedCredential?.provider || 'custom'
+                              ]
+                            }
+                            size="sm"
+                          />
+                        }
+                      >
+                        <span className="text-xs truncate max-w-48">
+                          {displayModelName(selectedCredential?.model) ||
+                            t('Select Model')}
+                        </span>
+                      </Button>
+                      {/* </Tooltip> */}
+                    </DropdownTrigger>
+                    <DropdownMenu
+                      aria-label="LLM Model selection"
+                      selectedKeys={
+                        selectedCredentialId ? [selectedCredentialId] : []
+                      }
+                      onAction={(key) => setSelectedCredentialId(key as string)}
+                    >
+                      {credentials.map((cred) => (
+                        <DropdownItem
+                          key={cred.id}
+                          startContent={
+                            <Icon
+                              name={PROVIDER_ICONS[cred.provider]}
+                              size="sm"
+                            />
+                          }
+                          description={cred.provider}
+                          textValue={cred.model || cred.provider}
+                        >
+                          {displayModelName(cred.model) || cred.provider}
+                        </DropdownItem>
+                      ))}
+                    </DropdownMenu>
+                  </Dropdown>
+                )}
               </div>
 
               <div className="flex items-center gap-2">

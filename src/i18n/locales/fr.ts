@@ -44,6 +44,7 @@ export const fr: I18n = {
   'Drop files here…': 'Déposez des fichiers ici…',
   'Use microphone': 'Utiliser le microphone',
   'Send prompt': 'Envoyer le prompt',
+  'Select Model': 'Sélectionner un modèle',
 
   // Page: /404
   'Page not found': 'Page non trouvée',
@@ -88,6 +89,7 @@ export const fr: I18n = {
   // Task
   Requirements: 'Exigences',
   'Task Timeline': 'Chronologie de la tâche',
+  'Active Agents': 'Agents actifs',
 
   // Background Image
   'Please select an image file': 'Veuillez sélectionner un fichier image',
@@ -104,8 +106,7 @@ export const fr: I18n = {
   'Change Background': 'Changer l’arrière-plan',
   'Upload Background': 'Télécharger l’arrière-plan',
   'Background image removed': 'Image de fond supprimée',
-  'Configure your platform preferences':
-    'Configurez vos préférences de plateforme',
+  'Make the platform your own': 'Personnalisez la plateforme à votre image',
   Undo: 'Annuler',
   'The URL does not point to a valid image':
     'L’URL ne pointe pas vers une image valide',

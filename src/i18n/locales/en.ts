@@ -42,6 +42,7 @@ export const en = [
   'Drop files here…',
   'Use microphone',
   'Send prompt',
+  'Select Model',
 
   // Page: /404
   'Page not found',
@@ -81,6 +82,7 @@ export const en = [
   // Task
   'Requirements',
   'Task Timeline',
+  'Active Agents',
 
   // Background Image
   'Please select an image file',
@@ -95,7 +97,7 @@ export const en = [
   'Change Background',
   'Upload Background',
   'Background image removed',
-  'Configure your platform preferences',
+  'Make the platform your own',
   'Undo',
   'The URL does not point to a valid image',
   'Failed to load image from URL. Please check the URL and try again.',

@@ -19,6 +19,7 @@ import {
   SelectItem,
   Tooltip,
   useDisclosure,
+  CardHeader,
 } from '@heroui/react'
 import { useNavigate } from 'react-router-dom'
 import { useI18n, useUrl, languages, type Lang } from '@/i18n'
@@ -27,25 +28,38 @@ import type { HeaderProps, IconName } from '@/lib/types'
 import { LLMProvider, Credential, LangfuseConfig } from '@/types'
 import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
-import { LLMService } from '@/lib/llm'
+import {
+  AnthropicProvider,
+  LLMService,
+  LocalLLMProvider,
+  OpenAIProvider,
+  VertexAIProvider,
+} from '@/lib/llm'
 import { Container, Icon, Section, Title } from '@/components'
 import { EasySetupExport } from '@/components/EasySetup/EasySetupExport'
 import { errorToast, successToast } from '@/lib/toast'
 import { userSettings } from '@/stores/userStore'
+import { useLLMModelStore } from '@/stores/llmModelStore'
 import { PRODUCT } from '@/config/product'
 import { useBackgroundImage } from '@/hooks/useBackgroundImage'
 import {
   getCacheInfo,
   clearModelCache,
-  formatBytes,
   type CacheInfo,
 } from '@/lib/llm/cache-manager'
 import localI18n from './i18n'
+import {
+  availableMemory,
+  deviceName,
+  getVideoCardInfo,
+  isWebGPUSupported,
+} from '@/lib/device'
+import { formatBytes } from '@/lib/format'
 
 interface ProviderConfig {
   provider: LLMProvider
   name: string
-  models: string[]
+  models: string[] | Promise<string[]>
   icon: IconName
   requiresBaseUrl?: boolean
   apiKeyFormat?: string
@@ -53,142 +67,22 @@ interface ProviderConfig {
   apiKeyPage?: string
   noApiKey?: boolean
   noServerUrl?: boolean
+  moreDetails?: () => React.ReactNode
 }
-
-const PROVIDERS: ProviderConfig[] = [
-  {
-    provider: 'local',
-    name: 'Local (Browser)',
-    models: [
-      'onnx-community/granite-4.0-micro-ONNX-web',
-      'onnx-community/Phi-3.5-mini-instruct-ONNX-web',
-      // 'onnx-community/embeddinggemma-300m-ONNX',
-      'onnx-community/Qwen3-0.6B-ONNX',
-    ],
-    icon: 'Internet',
-    noApiKey: true,
-    noServerUrl: true,
-  },
-  {
-    provider: 'ollama',
-    name: 'Ollama',
-    models: [
-      'gpt-oss:20b',
-      'gpt-oss:120b',
-      'deepseek-r1:8b',
-      'gemma3:4b',
-      'qwen3:8b',
-      'llama2',
-      'mistral',
-      'codellama',
-      'vicuna',
-      'orca-mini',
-    ],
-    icon: 'Ollama',
-    noApiKey: true,
-    apiKeyPlaceholder: 'http://localhost:11434',
-  },
-  {
-    provider: 'openai',
-    name: 'OpenAI',
-    models: ['gpt-5-2025-08-07', 'gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo'],
-    icon: 'OpenAI',
-    apiKeyPage: 'https://platform.openai.com/api-keys',
-  },
-  {
-    provider: 'anthropic',
-    name: 'Anthropic',
-    models: [
-      'claude-3-7-sonnet-20250219',
-      'claude-sonnet-4-20250514',
-      'claude-opus-4-20250514',
-    ],
-    icon: 'Anthropic',
-    apiKeyPage: 'https://console.anthropic.com/settings/keys',
-  },
-  {
-    provider: 'google',
-    name: 'Google Gemini',
-    models: [
-      'gemini-2.5-pro',
-      'gemini-2.5-flash',
-      'gemini-2.5-flash-lite',
-      'gemini-2.5-flash-image-preview',
-    ],
-    icon: 'Google',
-  },
-  {
-    provider: 'vertex-ai',
-    name: 'Google Vertex AI',
-    models: [
-      'google/gemini-2.5-flash',
-      'google/gemini-2.5-flash-image-preview',
-      'google/gemini-live-2.5-flash-preview-native-audio',
-      'google/gemini-2.5-pro',
-      'google/gemini-2.5-flash-lite',
-      'google/veo-3.0-generate-001',
-      'google/veo-3.0-fast-generate-001',
-      'google/gemini-2.0-flash-001',
-      'google/gemini-2.0-flash-lite-001',
-    ],
-    icon: 'GoogleCloud',
-    apiKeyFormat: 'LOCATION:PROJECT_ID:API_KEY',
-    apiKeyPlaceholder: 'us-central1:my-project:your-api-key',
-  },
-  {
-    provider: 'mistral',
-    name: 'Mistral AI',
-    models: ['mistral-medium', 'mistral-small', 'mistral-tiny'],
-    icon: 'MistralAI',
-  },
-  {
-    provider: 'openrouter',
-    name: 'OpenRouter',
-    models: [
-      'openai/gpt-4',
-      'anthropic/claude-3-opus',
-      'google/gemini-pro',
-      'meta-llama/llama-3-70b',
-    ],
-    icon: 'OpenRouter',
-  },
-  {
-    provider: 'deepseek',
-    name: 'DeepSeek',
-    models: ['deepseek-chat', 'deepseek-coder'],
-    icon: 'DeepSeek',
-  },
-  {
-    provider: 'grok',
-    name: 'Grok (X.AI)',
-    models: ['grok-beta'],
-    icon: 'X',
-  },
-  {
-    provider: 'huggingface',
-    name: 'Hugging Face',
-    models: [
-      'meta-llama/Llama-2-7b-chat-hf',
-      'mistralai/Mistral-7B-Instruct-v0.1',
-      'google/flan-t5-xxl',
-    ],
-    icon: 'HuggingFace',
-  },
-  {
-    provider: 'custom',
-    name: 'Custom/Local',
-    models: [],
-    icon: 'Server',
-    requiresBaseUrl: true,
-  },
-]
 
 export const SettingsPage = () => {
   const { lang, t, url } = useI18n(localI18n)
   const navigate = useNavigate()
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
   const { handleImageFile, setBackgroundImage } = useBackgroundImage()
-  const [credentials, setCredentials] = useState<Credential[]>([])
+
+  // Use the LLM Model Store
+  const credentials = useLLMModelStore((state) => state.credentials)
+  const loadCredentials = useLLMModelStore((state) => state.loadCredentials)
+  const addCredential = useLLMModelStore((state) => state.addCredential)
+  const deleteCredential = useLLMModelStore((state) => state.deleteCredential)
+  const setAsDefault = useLLMModelStore((state) => state.setAsDefault)
+
   const [selectedProvider, setSelectedProvider] = useState<LLMProvider>()
   const [apiKey, setApiKey] = useState('')
   const [model, setModel] = useState('')
@@ -220,6 +114,225 @@ export const SettingsPage = () => {
   const platformName = userSettings((state) => state.platformName)
   const setPlatformName = userSettings((state) => state.setPlatformName)
 
+  const PROVIDERS: ProviderConfig[] = [
+    {
+      provider: 'local',
+      name: 'Local (Browser)',
+      models: new LocalLLMProvider().getAvailableModels(),
+      icon: 'OpenInBrowser',
+      noApiKey: true,
+      noServerUrl: true,
+      moreDetails: () => (
+        <Alert color="primary" variant="faded">
+          <div className="flex flex-col gap-2">
+            <p className="font-medium">
+              {t('Local LLMs run entirely in your browser')}
+            </p>
+            <p className="text-sm text-default-600">
+              {t(
+                'No data is sent to external servers. Download happens at first use.',
+              )}
+              <br />
+              <details>
+                <summary>
+                  {t('Requirements:')}
+                  <Icon
+                    name={
+                      isWebGPUSupported() && Number(availableMemory) >= 8
+                        ? 'CheckCircle'
+                        : 'PcNoEntry'
+                    }
+                    color={
+                      isWebGPUSupported() && Number(availableMemory) >= 8
+                        ? 'green'
+                        : 'red'
+                    }
+                    className="inline h-4 w-4 ml-1"
+                  />
+                </summary>
+                <ul>
+                  <li>
+                    <Icon
+                      name={isWebGPUSupported() ? 'CheckCircle' : 'PcNoEntry'}
+                      color={isWebGPUSupported() ? 'green' : 'red'}
+                      className="inline h-4 w-4 mr-1"
+                    />
+                    {t('WebGPU support')}
+                  </li>
+                  <li>
+                    <Icon
+                      name={
+                        Number(availableMemory) >= 8
+                          ? 'CheckCircle'
+                          : 'PcNoEntry'
+                      }
+                      color={Number(availableMemory) >= 8 ? 'green' : 'red'}
+                      className="inline h-4 w-4 mr-1"
+                    />
+                    {t('At least 8GB of RAM')}
+                  </li>
+                  <li>
+                    <Icon name="QuestionMark" className="inline h-4 w-4 mr-1" />
+                    {t('Storage space for model files (2-4GB)')}
+                  </li>
+                </ul>
+              </details>
+              <details>
+                <summary>
+                  {t('Your device:')} {deviceName()}
+                </summary>
+
+                <ul>
+                  <li>
+                    {t('Brand: {brand}', { brand: getVideoCardInfo()?.brand })}
+                  </li>
+                  <li>
+                    {t('Model: {model}', { model: getVideoCardInfo()?.model })}
+                  </li>
+                  <li>
+                    {t('Memory: {memory} or more (imprecise)', {
+                      memory: formatBytes(
+                        Number(availableMemory) * 1_000_000_000,
+                        lang,
+                      ),
+                    })}
+                  </li>
+                  <li>
+                    {t('Vendor: {vendor}', {
+                      vendor: getVideoCardInfo()?.vendor,
+                    })}
+                  </li>
+                  <li>
+                    {t('Browser: {browser}', { browser: navigator.userAgent })}
+                  </li>
+                </ul>
+              </details>
+            </p>
+          </div>
+        </Alert>
+      ),
+    },
+    {
+      provider: 'ollama',
+      name: 'Ollama',
+      models: [
+        'gpt-oss:20b',
+        'gpt-oss:120b',
+        'deepseek-r1:8b',
+        'gemma3:4b',
+        'qwen3:8b',
+        'llama2',
+        'mistral',
+        'codellama',
+        'vicuna',
+        'orca-mini',
+      ],
+      icon: 'Ollama',
+      noApiKey: true,
+      apiKeyPlaceholder: 'http://localhost:11434',
+    },
+    {
+      provider: 'openai',
+      name: 'OpenAI',
+      models: [
+        OpenAIProvider.DEFAULT_MODEL,
+        'gpt-4',
+        'gpt-4-turbo',
+        'gpt-3.5-turbo',
+      ],
+      icon: 'OpenAI',
+      apiKeyPage: 'https://platform.openai.com/api-keys',
+    },
+    {
+      provider: 'anthropic',
+      name: 'Anthropic',
+      models: [
+        AnthropicProvider.DEFAULT_MODEL,
+        'claude-3-7-sonnet-20250219',
+        'claude-sonnet-4-20250514',
+        'claude-opus-4-20250514',
+      ],
+      icon: 'Anthropic',
+      apiKeyPage: 'https://console.anthropic.com/settings/keys',
+    },
+    {
+      provider: 'google',
+      name: 'Google Gemini',
+      models: [
+        'gemini-2.5-pro',
+        'gemini-2.5-flash',
+        'gemini-2.5-flash-lite',
+        'gemini-2.5-flash-image-preview',
+      ],
+      icon: 'Google',
+    },
+    {
+      provider: 'vertex-ai',
+      name: 'Vertex AI',
+      models: [
+        VertexAIProvider.DEFAULT_MODEL,
+        'claude-sonnet-4-5@20250929',
+        'google/gemini-2.5-flash-image-preview',
+        'google/gemini-live-2.5-flash-preview-native-audio',
+        'google/gemini-2.5-pro',
+        'google/gemini-2.5-flash-lite',
+        'google/veo-3.0-generate-001',
+        'google/veo-3.0-fast-generate-001',
+        'google/gemini-2.0-flash-001',
+        'google/gemini-2.0-flash-lite-001',
+      ],
+      icon: 'GoogleCloud',
+      apiKeyFormat: 'LOCATION:PROJECT_ID:API_KEY',
+      apiKeyPlaceholder: 'us-central1:my-project:your-api-key',
+    },
+    {
+      provider: 'mistral',
+      name: 'Mistral AI',
+      models: ['mistral-medium', 'mistral-small', 'mistral-tiny'],
+      icon: 'MistralAI',
+    },
+    {
+      provider: 'openrouter',
+      name: 'OpenRouter',
+      models: [
+        'openai/gpt-4',
+        'anthropic/claude-3-opus',
+        'google/gemini-pro',
+        'meta-llama/llama-3-70b',
+      ],
+      icon: 'OpenRouter',
+    },
+    {
+      provider: 'deepseek',
+      name: 'DeepSeek',
+      models: ['deepseek-chat', 'deepseek-coder'],
+      icon: 'DeepSeek',
+    },
+    {
+      provider: 'grok',
+      name: 'Grok (X.AI)',
+      models: ['grok-beta'],
+      icon: 'X',
+    },
+    {
+      provider: 'huggingface',
+      name: 'Hugging Face',
+      models: [
+        'meta-llama/Llama-2-7b-chat-hf',
+        'mistralai/Mistral-7B-Instruct-v0.1',
+        'google/flan-t5-xxl',
+      ],
+      icon: 'HuggingFace',
+    },
+    {
+      provider: 'custom',
+      name: 'Custom',
+      models: [],
+      icon: 'Server',
+      requiresBaseUrl: true,
+    },
+  ]
+
   const handleLanguageChange = (newLanguage: Lang) => {
     // Update the language setting in the store
     setLanguage(newLanguage)
@@ -245,13 +358,14 @@ export const SettingsPage = () => {
 
   useEffect(() => {
     const initialize = async () => {
-      await loadCredentials()
       initializeSecurity()
       loadMasterKey()
       loadLangfuseConfig()
       loadCacheInfo()
+      await loadCredentials()
     }
     initialize()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadCacheInfo = async () => {
@@ -482,104 +596,8 @@ export const SettingsPage = () => {
     }
   }
 
-  const createDefaultLocalProvider = async () => {
-    try {
-      const defaultModel = 'onnx-community/granite-4.0-micro-ONNX-web'
-      const keyToEncrypt = 'local-no-key'
-
-      // Encrypt the dummy key for storage consistency
-      const { encrypted, iv, salt } =
-        await SecureStorage.encryptCredential(keyToEncrypt)
-
-      const credential: Credential = {
-        id: `local-${Date.now()}`,
-        provider: 'local',
-        encryptedApiKey: encrypted,
-        model: defaultModel,
-        timestamp: new Date(),
-        order: 0,
-      }
-
-      // Store encryption metadata
-      localStorage.setItem(`${credential.id}-iv`, iv)
-      localStorage.setItem(`${credential.id}-salt`, salt)
-
-      await db.add('credentials', credential)
-    } catch (error) {
-      console.error('Failed to create default local provider:', error)
-    }
-  }
-
-  const loadCredentials = async () => {
-    await db.init()
-    const creds = await db.getAll('credentials')
-
-    // Sort credentials by order, with undefined orders at the end
-    const sortedCreds = creds.sort((a, b) => {
-      if (a.order === undefined && b.order === undefined) return 0
-      if (a.order === undefined) return 1
-      if (b.order === undefined) return -1
-      return a.order - b.order
-    })
-
-    // If no credentials exist, create a default local provider
-    if (sortedCreds.length === 0) {
-      await createDefaultLocalProvider()
-      // Reload credentials after creating the default
-      const updatedCreds = await db.getAll('credentials')
-      const sortedUpdatedCreds = updatedCreds.sort((a, b) => {
-        if (a.order === undefined && b.order === undefined) return 0
-        if (a.order === undefined) return 1
-        if (b.order === undefined) return -1
-        return a.order - b.order
-      })
-      setCredentials(sortedUpdatedCreds)
-    } else {
-      setCredentials(sortedCreds)
-    }
-  }
-
-  const updateCredentialOrder = async (
-    credentialId: string,
-    newOrder: number,
-  ) => {
-    try {
-      await db.init()
-      const credential = await db.get('credentials', credentialId)
-      if (credential) {
-        const updatedCredential = { ...credential, order: newOrder }
-        await db.update('credentials', updatedCredential)
-      }
-    } catch (error) {
-      console.error('Failed to update credential order:', error)
-    }
-  }
-
   const handleSetAsDefault = async (credentialId: string) => {
-    const credentialIndex = credentials.findIndex((c) => c.id === credentialId)
-    if (credentialIndex === -1 || credentialIndex === 0) return // Already default or not found
-
-    // Update all credentials to shift their order
-    for (let i = 0; i < credentials.length; i++) {
-      let newOrder: number
-      if (i < credentialIndex) {
-        // Items before the moved item get +1 order
-        newOrder = (credentials[i].order || i) + 1
-      } else if (i === credentialIndex) {
-        // The moved item becomes order 0 (first)
-        newOrder = 0
-      } else {
-        // Items after remain the same
-        newOrder = credentials[i].order || i
-      }
-
-      if (credentials[i].order !== newOrder) {
-        await updateCredentialOrder(credentials[i].id, newOrder)
-      }
-    }
-
-    // Reload credentials to reflect the new order
-    await loadCredentials()
+    await setAsDefault(credentialId)
     successToast(t('Provider set as default'))
   }
 
@@ -604,56 +622,25 @@ export const SettingsPage = () => {
 
     setIsValidating(true)
     try {
-      // Validate API key (local provider always returns true)
-      const isValid = await LLMService.validateApiKey(
-        selectedProvider,
-        apiKey || 'local-no-key',
-      )
-      if (!isValid) {
-        errorToast(t('Invalid API key'))
-        setIsValidating(false)
-        return
-      }
-
       // For providers without API keys, use a dummy key
       const keyToEncrypt =
         apiKey || (providerConfig?.noApiKey ? `${selectedProvider}-no-key` : '')
 
-      // Encrypt and store credential
-      const { encrypted, iv, salt } =
-        await SecureStorage.encryptCredential(keyToEncrypt)
-
-      const credential: Credential = {
-        id: `${selectedProvider}-${Date.now()}`,
-        provider: selectedProvider,
-        encryptedApiKey: encrypted,
+      const success = await addCredential(
+        selectedProvider,
+        keyToEncrypt,
         model,
-        baseUrl:
-          selectedProvider === 'custom'
-            ? baseUrl
-            : selectedProvider === 'ollama' && apiKey
-              ? apiKey
-              : undefined,
-        timestamp: new Date(),
-        order: credentials.length, // Set order to the end of the list
+        baseUrl,
+      )
+
+      if (success) {
+        // Reset form
+        setApiKey('')
+        setModel('')
+        setBaseUrl('')
+        onOpenChange()
       }
-
-      // Store additional encryption metadata
-      localStorage.setItem(`${credential.id}-iv`, iv)
-      localStorage.setItem(`${credential.id}-salt`, salt)
-
-      await db.add('credentials', credential)
-      await loadCredentials()
-
-      // Reset form
-      setApiKey('')
-      setModel('')
-      setBaseUrl('')
-      onOpenChange()
-
-      successToast(t('Credential added successfully'))
     } catch (error) {
-      errorToast(t('Failed to add credential'))
       console.error(error)
     } finally {
       setIsValidating(false)
@@ -661,15 +648,7 @@ export const SettingsPage = () => {
   }
 
   const handleDeleteCredential = async (id: string) => {
-    try {
-      await db.delete('credentials', id)
-      localStorage.removeItem(`${id}-iv`)
-      localStorage.removeItem(`${id}-salt`)
-      await loadCredentials()
-      successToast(t('Credential deleted'))
-    } catch (error) {
-      errorToast(t('Failed to delete credential'))
-    }
+    await deleteCredential(id)
   }
 
   const handleUnlock = async () => {
@@ -693,7 +672,10 @@ export const SettingsPage = () => {
   ) => {
     if (provider !== 'ollama') {
       const config = PROVIDERS.find((p) => p.provider === provider)
-      setAvailableModels(config?.models || [])
+      const models = config?.models
+      // Handle Promise<string[]> for local provider
+      const resolvedModels = models instanceof Promise ? await models : models
+      setAvailableModels(resolvedModels || [])
       return
     }
 
@@ -830,9 +812,9 @@ export const SettingsPage = () => {
             <AccordionItem
               key="general"
               data-testid="general-settings"
-              title={t('General Settings')}
-              subtitle={t('Configure your platform preferences')}
-              startContent={<Icon name="Settings" className="h-5 w-5" />}
+              title={t('Appearance')}
+              subtitle={t('Make the platform your own')}
+              startContent={<Icon name="DesignPencil" className="h-5 w-5" />}
               classNames={{ content: 'pl-8 mb-4' }}
             >
               <div className="space-y-6 p-2">
@@ -948,7 +930,9 @@ export const SettingsPage = () => {
               key="providers"
               data-testid="llm-providers"
               title={t('LLM Providers')}
-              subtitle={t('Manage your API credentials')}
+              subtitle={t(
+                'Choose your LLM provider, manage your API credentials',
+              )}
               startContent={<Icon name="Brain" className="h-5 w-5" />}
               classNames={{ content: 'pl-8 mb-4' }}
             >
@@ -984,11 +968,14 @@ export const SettingsPage = () => {
                   <div className="mt-6 pt-6 border-t border-default-200">
                     <div className="flex items-center justify-between mb-3">
                       <div>
-                        <p className="text-sm font-medium">Local Model Cache</p>
+                        <p className="text-sm font-medium">
+                          {t('Local models cache')}
+                        </p>
                         <p className="text-xs text-default-500">
-                          {cacheInfo.itemCount} file
-                          {cacheInfo.itemCount !== 1 ? 's' : ''} cached (
-                          {formatBytes(cacheInfo.size)})
+                          {t('{files} files cached ({size})', {
+                            files: cacheInfo.itemCount,
+                            size: formatBytes(cacheInfo.size, lang),
+                          })}
                         </p>
                       </div>
                       <Button
@@ -999,12 +986,13 @@ export const SettingsPage = () => {
                         isLoading={isClearingCache}
                         startContent={<Icon name="Trash" className="h-4 w-4" />}
                       >
-                        Clear Cache
+                        {t('Clear cache')}
                       </Button>
                     </div>
                     <p className="text-xs text-default-500">
-                      Downloaded models are cached for 1 year to avoid
-                      re-downloading.
+                      {t(
+                        'Downloaded models are cached for 1 year to avoid re-downloading.',
+                      )}
                     </p>
                   </div>
                 )}
@@ -1014,7 +1002,19 @@ export const SettingsPage = () => {
             <AccordionItem
               key="langfuse"
               data-testid="langfuse-integration"
-              title="Langfuse Integration"
+              title={
+                <>
+                  Langfuse Integration
+                  <Chip
+                    size="sm"
+                    // color="warning"
+                    variant="flat"
+                    className="ml-2 align-middle"
+                  >
+                    Beta
+                  </Chip>
+                </>
+              }
               subtitle="Configure Langfuse for LLM request tracking and analytics"
               startContent={<Icon name="Langfuse" className="h-5 w-5" />}
               classNames={{ content: 'pl-8 mb-4' }}
@@ -1173,7 +1173,7 @@ export const SettingsPage = () => {
           </Accordion>
 
           <Title size="xl" className="text-gray-500">
-            Advanced Settings
+            {t('Advanced Settings')}
           </Title>
           <Accordion selectionMode="single" variant="bordered">
             <AccordionItem
@@ -1206,195 +1206,209 @@ export const SettingsPage = () => {
               <>
                 <ModalHeader>{t('Add LLM Provider')}</ModalHeader>
                 <ModalBody>
-                  <div className="space-y-4">
-                    {selectedProvider === 'local' && (
-                      <Alert color="primary" variant="faded">
-                        <div className="flex flex-col gap-2">
-                          <p className="font-medium">
-                            Local LLM runs entirely in your browser
-                          </p>
-                          <p className="text-sm text-default-600">
-                            No data is sent to external servers. Requires WebGPU
-                            support. The first use will download the model
-                            (~2-4GB).
-                          </p>
-                        </div>
-                      </Alert>
-                    )}
-                    <Select
-                      label={t('Select Provider')}
-                      defaultSelectedKeys={PROVIDERS[0].provider}
-                      onChange={(e) =>
-                        setSelectedProvider(e.target.value as LLMProvider)
-                      }
-                      startContent={
-                        selectedProvider && (
-                          <Icon
-                            name={findProvider(selectedProvider)?.icon as any}
-                            className="dark:fill-white"
-                          />
-                        )
-                      }
-                      className="w-full"
-                      isRequired
-                    >
+                  {!selectedProvider ? (
+                    <p className="gap-2 flex flex-wrap">
                       {PROVIDERS.map((provider) => (
-                        <SelectItem
+                        <Card
                           key={provider.provider}
-                          textValue={provider.name}
-                          startContent={
-                            <Icon
-                              name={provider.icon}
-                              className="dark:fill-white"
-                            />
+                          className="inline-flex min-w-[8em] sm:w-auto w-full h-[5em] flex-col hover:bg-primary-50"
+                          isPressable
+                          onPress={() =>
+                            setSelectedProvider(
+                              provider.provider as LLMProvider,
+                            )
                           }
                         >
-                          {provider.name}
-                        </SelectItem>
+                          <CardHeader className="justify-center pb-0">
+                            <Icon name={provider.icon} />
+                          </CardHeader>
+                          <CardBody className="text-center place-content-center text-sm">
+                            {provider.name}
+                          </CardBody>
+                        </Card>
                       ))}
-                    </Select>
-
-                    {!(
-                      providerConfig?.noApiKey && providerConfig?.noServerUrl
-                    ) && (
-                      <div>
-                        <Input
-                          label={
-                            providerConfig?.noApiKey
-                              ? t('Server URL (Optional)')
-                              : t('API Key')
-                          }
-                          placeholder={
-                            providerConfig?.apiKeyPlaceholder ||
-                            t('Enter your API key')
-                          }
-                          type={providerConfig?.noApiKey ? 'text' : 'password'}
-                          value={apiKey}
-                          autoComplete="false"
-                          onChange={(e) => setApiKey(e.target.value)}
-                          isRequired={!providerConfig?.noApiKey}
-                          description={
-                            <Link
-                              href={providerConfig?.apiKeyPage}
-                              target="_blank"
-                            >
-                              {providerConfig?.apiKeyPage}
-                            </Link>
-                          }
-                        />
-                        {providerConfig?.apiKeyFormat && (
-                          <p className="text-xs text-default-500 mt-1">
-                            {t('Format:')} {providerConfig.apiKeyFormat}
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    {providerConfig?.requiresBaseUrl && (
-                      <Input
-                        label={t('Base URL')}
-                        placeholder="https://api.example.com/v1"
-                        value={baseUrl}
-                        onChange={(e) => setBaseUrl(e.target.value)}
+                    </p>
+                  ) : (
+                    <div className="space-y-4">
+                      <Select
+                        label={t('Select Provider')}
+                        selectedKeys={[selectedProvider]}
+                        onChange={(e) =>
+                          setSelectedProvider(e.target.value as LLMProvider)
+                        }
+                        startContent={
+                          selectedProvider && (
+                            <Icon
+                              name={findProvider(selectedProvider)?.icon as any}
+                              className="dark:fill-white"
+                            />
+                          )
+                        }
+                        className="w-full"
                         isRequired
-                      />
-                    )}
-
-                    {/* Model Selection */}
-                    {selectedProvider === 'ollama' && (
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="flat"
-                            onPress={() =>
-                              fetchAvailableModels(
-                                'ollama',
-                                apiKey || undefined,
-                              )
-                            }
-                            isLoading={isFetchingModels}
+                      >
+                        {PROVIDERS.map((provider) => (
+                          <SelectItem
+                            key={provider.provider}
+                            textValue={provider.name}
                             startContent={
-                              <Icon name="RefreshDouble" className="h-4 w-4" />
+                              <Icon
+                                name={provider.icon}
+                                className="dark:fill-white"
+                              />
                             }
                           >
-                            {t('Fetch Available Models')}
-                          </Button>
-                          {availableModels.length > 0 && (
-                            <Button
-                              size="sm"
-                              variant="light"
-                              onPress={() => setUseManualModel(!useManualModel)}
-                            >
-                              {useManualModel
-                                ? t('Use Fetched Models')
-                                : t('Manual Input')}
-                            </Button>
+                            {provider.name}
+                          </SelectItem>
+                        ))}
+                      </Select>
+                      {!(
+                        providerConfig?.noApiKey && providerConfig?.noServerUrl
+                      ) && (
+                        <div>
+                          <Input
+                            label={
+                              providerConfig?.noApiKey
+                                ? t('Server URL (Optional)')
+                                : t('API Key')
+                            }
+                            placeholder={
+                              providerConfig?.apiKeyPlaceholder ||
+                              t('Enter your API key')
+                            }
+                            type={
+                              providerConfig?.noApiKey ? 'text' : 'password'
+                            }
+                            value={apiKey}
+                            autoComplete="false"
+                            onChange={(e) => setApiKey(e.target.value)}
+                            isRequired={!providerConfig?.noApiKey}
+                            description={
+                              <Link
+                                href={providerConfig?.apiKeyPage}
+                                target="_blank"
+                              >
+                                {providerConfig?.apiKeyPage}
+                              </Link>
+                            }
+                          />
+                          {providerConfig?.apiKeyFormat && (
+                            <p className="text-xs text-default-500 mt-1">
+                              {t('Format:')} {providerConfig.apiKeyFormat}
+                            </p>
                           )}
                         </div>
-
-                        {useManualModel || availableModels.length === 0 ? (
-                          <Input
-                            label={t('Model Name')}
-                            placeholder={t(
-                              'Enter model name (e.g., llama2, mistral)',
+                      )}
+                      {providerConfig?.requiresBaseUrl && (
+                        <Input
+                          label={t('Base URL')}
+                          placeholder="https://api.example.com/v1"
+                          value={baseUrl}
+                          onChange={(e) => setBaseUrl(e.target.value)}
+                          isRequired
+                        />
+                      )}
+                      {/* Model Selection */}
+                      {['ollama', 'local'].includes(
+                        String(selectedProvider),
+                      ) && (
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="flat"
+                              onPress={() =>
+                                fetchAvailableModels(
+                                  String(selectedProvider) as LLMProvider,
+                                  apiKey || undefined,
+                                )
+                              }
+                              isLoading={isFetchingModels}
+                              startContent={
+                                <Icon
+                                  name="RefreshDouble"
+                                  className="h-4 w-4"
+                                />
+                              }
+                            >
+                              {t('Fetch Available Models')}
+                            </Button>
+                            {availableModels.length > 0 && (
+                              <Button
+                                size="sm"
+                                variant="light"
+                                onPress={() =>
+                                  setUseManualModel(!useManualModel)
+                                }
+                              >
+                                {useManualModel
+                                  ? t('Use Fetched Models')
+                                  : t('Manual Input')}
+                              </Button>
                             )}
-                            value={model}
-                            onChange={(e) => setModel(e.target.value)}
-                            isRequired
-                            description={t(
-                              'Enter the exact name of the model you want to use',
-                            )}
-                          />
-                        ) : (
-                          <Select
-                            label={t('Available Models')}
-                            placeholder={t('Select a model')}
-                            value={model}
-                            onChange={(e) => setModel(e.target.value)}
-                            isRequired
-                            isLoading={isFetchingModels}
-                          >
-                            {availableModels.map((m) => (
-                              <SelectItem key={m} textValue={m}>
-                                {m}
-                              </SelectItem>
-                            ))}
-                          </Select>
-                        )}
-                      </div>
-                    )}
+                          </div>
 
-                    {selectedProvider !== 'ollama' &&
-                      selectedProvider !== 'custom' && (
+                          {useManualModel || availableModels.length === 0 ? (
+                            <Input
+                              label={t('Model Name')}
+                              placeholder={t('Enter model name')}
+                              value={model}
+                              onChange={(e) => setModel(e.target.value)}
+                              isRequired
+                              description={t(
+                                'Enter the exact name of the model you want to use',
+                              )}
+                            />
+                          ) : (
+                            <Select
+                              label={t('Available Models')}
+                              placeholder={t('Select a model')}
+                              value={model}
+                              onChange={(e) => setModel(e.target.value)}
+                              isRequired
+                              isLoading={isFetchingModels}
+                            >
+                              {availableModels.map((m) => (
+                                <SelectItem key={m} textValue={m}>
+                                  {m}
+                                </SelectItem>
+                              ))}
+                            </Select>
+                          )}
+                        </div>
+                      )}
+                      {!['ollama', 'local', 'custom'].includes(
+                        String(selectedProvider),
+                      ) && (
                         <Select
                           label={t('Model')}
                           placeholder={t('Select a model')}
                           value={model}
                           onChange={(e) => setModel(e.target.value)}
                           isRequired
-                          isDisabled={providerConfig?.models.length === 0}
+                          isLoading={isFetchingModels}
                         >
-                          {providerConfig?.models.map((m) => (
+                          {availableModels.map((m) => (
                             <SelectItem key={m} textValue={m}>
                               {m}
                             </SelectItem>
-                          )) || []}
+                          ))}
                         </Select>
                       )}
-
-                    {providerConfig?.provider === 'custom' && (
-                      <Input
-                        label={t('Custom Model Name')}
-                        placeholder={t('Enter model name')}
-                        value={model}
-                        onChange={(e) => setModel(e.target.value)}
-                      />
-                    )}
-                  </div>
+                      {providerConfig?.provider === 'custom' && (
+                        <Input
+                          label={t('Custom Model Name')}
+                          placeholder={t('Enter model name')}
+                          value={model}
+                          onChange={(e) => setModel(e.target.value)}
+                        />
+                      )}
+                      {providerConfig?.moreDetails?.()}
+                    </div>
+                  )}
                 </ModalBody>
                 <ModalFooter>
-                  <Button color="danger" variant="light" onPress={onClose}>
+                  <Button variant="light" onPress={onClose}>
                     {t('Cancel')}
                   </Button>
                   <Button

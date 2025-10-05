@@ -6,11 +6,13 @@ import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
 import { userSettings } from '@/stores/userStore'
 import { useArtifactStore } from '@/stores/artifactStore'
+import { useLLMModelStore } from '@/stores/llmModelStore'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate()
   const theme = userSettings((state) => state.theme)
   const loadArtifacts = useArtifactStore((state) => state.loadArtifacts)
+  const loadCredentials = useLLMModelStore((state) => state.loadCredentials)
 
   useEffect(() => {
     // Initialize platform services
@@ -21,6 +23,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
         // Initialize secure storage
         await SecureStorage.init()
+
+        // Load credentials (will create default local provider if none exist)
+        await loadCredentials()
 
         // Register service worker
         await ServiceWorkerManager.register()
@@ -35,6 +40,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     }
 
     initializePlatform()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Apply theme to document

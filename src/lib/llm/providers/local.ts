@@ -6,6 +6,7 @@ import {
   TextGenerationPipeline,
 } from '@huggingface/transformers'
 import { inspectAllCaches, startCacheMonitoring } from '../cache-debug'
+import { isLowEndDevice } from '@/lib/device'
 
 // Configure transformers.js for browser environment with persistent caching
 env.allowLocalModels = false
@@ -51,9 +52,10 @@ export class LocalLLMProvider implements LLMProviderInterface {
   private static isLoading = false
   private static loadingPromise: Promise<TextGenerationPipeline> | null = null
 
-  // Default model: Granite-4.0 Micro optimized for browser inference
-  private static readonly DEFAULT_MODEL =
-    'onnx-community/granite-4.0-micro-ONNX-web'
+  // Default model, optimized for browser inference
+  public static readonly DEFAULT_MODEL = isLowEndDevice()
+    ? 'onnx-community/SmolLM2-135M-ONNX'
+    : 'onnx-community/granite-4.0-micro-ONNX-web'
 
   // Progress callback for model loading
   private static progressCallback:
@@ -130,6 +132,7 @@ export class LocalLLMProvider implements LLMProviderInterface {
 
     const pipe = await pipeline('text-generation', modelName, {
       device: 'webgpu',
+      // dtype: 'q8',
       // dtype: 'fp16',
       progress_callback: (progress: any) => {
         if (LocalLLMProvider.progressCallback) {
@@ -316,13 +319,67 @@ export class LocalLLMProvider implements LLMProviderInterface {
   }
 
   async getAvailableModels(): Promise<string[]> {
-    // Return list of available local models
-    return [
-      LocalLLMProvider.DEFAULT_MODEL,
-      'onnx-community/Phi-3.5-mini-instruct-ONNX-web',
-      // 'onnx-community/embeddinggemma-300m-ONNX',
-      'onnx-community/Qwen3-0.6B-ONNX',
-    ]
+    try {
+      // Fetch models from HuggingFace API filtered by onnx-community and transformers.js
+      const response = await fetch(
+        'https://huggingface.co/api/models?author=onnx-community&library=transformers.js&limit=1000',
+      )
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const models = await response.json()
+
+      // Extract model IDs and filter for text generation models
+      // We look for models with 'text-generation' or similar tasks
+      const textGenModels = models
+        .filter((model: any) => {
+          // Include models that are likely text generation models
+          const pipeline = model.pipeline_tag
+          const modelId = model.modelId || model.id || ''
+
+          // Include text generation, text2text-generation, and similar tasks
+          // Also include models that don't have a pipeline tag but have common naming patterns
+          return (
+            pipeline === 'text-generation' ||
+            pipeline === 'text2text-generation' ||
+            (!pipeline &&
+              (modelId.toLowerCase().includes('qwen') ||
+                modelId.toLowerCase().includes('phi') ||
+                modelId.toLowerCase().includes('granite') ||
+                modelId.toLowerCase().includes('gemma') ||
+                modelId.toLowerCase().includes('gpt')))
+          )
+        })
+        .map((model: any) => model.modelId || model.id)
+        .filter(Boolean)
+
+      // Always include the default model first if it exists
+      const defaultModel = LocalLLMProvider.DEFAULT_MODEL
+      const modelSet = new Set(textGenModels)
+
+      if (!modelSet.has(defaultModel)) {
+        modelSet.add(defaultModel)
+      }
+
+      // Convert to array with default model first
+      const result = [
+        defaultModel,
+        ...(Array.from(modelSet).filter((m) => m !== defaultModel) as string[]),
+      ]
+
+      return result.length > 0 ? result : [defaultModel]
+    } catch (error) {
+      console.error('Failed to fetch models from HuggingFace:', error)
+      // Fallback to default models list
+      return [
+        LocalLLMProvider.DEFAULT_MODEL,
+        'onnx-community/Phi-3.5-mini-instruct-ONNX-web',
+        'onnx-community/Qwen3-0.6B-ONNX',
+        'onnx-community/gemma-3-270m-it-ONNX',
+      ]
+    }
   }
 
   /**

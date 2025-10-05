@@ -3,6 +3,7 @@ import { LLMConfig } from '@/types'
 
 export class AnthropicProvider implements LLMProviderInterface {
   private baseUrl = 'https://api.anthropic.com/v1'
+  public static readonly DEFAULT_MODEL = 'claude-sonnet-4-5-20250929'
 
   private convertMessageToAnthropicFormat(message: LLMMessage): any {
     if (!message.attachments || message.attachments.length === 0) {
@@ -68,7 +69,7 @@ export class AnthropicProvider implements LLMProviderInterface {
     const endpoint = `${config?.baseUrl || this.baseUrl}/messages`
     console.log('[ANTHROPIC-PROVIDER] 🚀 Making LLM request:', {
       endpoint,
-      model: config?.model || 'claude-sonnet-4-20250514',
+      model: config?.model || AnthropicProvider.DEFAULT_MODEL,
       messagesCount: userMessages.length,
       hasSystemMessage: !!systemMessage,
       temperature: config?.temperature || 0.7,
@@ -83,7 +84,7 @@ export class AnthropicProvider implements LLMProviderInterface {
         'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
-        model: config?.model || 'claude-sonnet-4-20250514',
+        model: config?.model || AnthropicProvider.DEFAULT_MODEL,
         system: systemMessage,
         messages: userMessages,
         temperature: config?.temperature || 0.7,
@@ -136,7 +137,7 @@ export class AnthropicProvider implements LLMProviderInterface {
           'anthropic-dangerous-direct-browser-access': 'true',
         },
         body: JSON.stringify({
-          model: config?.model || 'claude-sonnet-4-20250514',
+          model: config?.model || AnthropicProvider.DEFAULT_MODEL,
           system: systemMessage,
           messages: userMessages,
           temperature: config?.temperature || 0.7,

@@ -2,6 +2,8 @@ import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
 import { LLMConfig } from '@/types'
 
 export class VertexAIProvider implements LLMProviderInterface {
+  public static readonly DEFAULT_MODEL = 'gemini-2.5-flash'
+
   private getEndpoint(config?: Partial<LLMConfig>): string {
     // Vertex AI requires location and project ID in the URL
     // Format: https://LOCATION-aiplatform.googleapis.com/v1/projects/PROJECT_ID/locations/LOCATION/publishers/google/models/MODEL:predict
@@ -33,7 +35,7 @@ export class VertexAIProvider implements LLMProviderInterface {
   ): Promise<LLMResponse> {
     const endpoint = this.getEndpoint(config)
     const apiKey = this.getApiKey(config)
-    const model = config?.model || 'gemini-2.5-flash'
+    const model = config?.model || VertexAIProvider.DEFAULT_MODEL
 
     // Convert messages to Vertex AI format
     const contents = messages.map((msg) => ({
@@ -107,7 +109,7 @@ export class VertexAIProvider implements LLMProviderInterface {
   ): AsyncIterableIterator<string> {
     const endpoint = this.getEndpoint(config)
     const apiKey = this.getApiKey(config)
-    const model = config?.model || 'gemini-2.5-flash'
+    const model = config?.model || VertexAIProvider.DEFAULT_MODEL
 
     // Convert messages to Vertex AI format
     const contents = messages.map((msg) => ({

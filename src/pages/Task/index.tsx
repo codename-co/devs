@@ -243,6 +243,11 @@ export const TaskPage = () => {
         }
         setTask(taskData)
 
+        // Load assigned agent into cache if available
+        if (taskData.assignedAgentId) {
+          await getAndCacheAgent(taskData.assignedAgentId)
+        }
+
         // Load task hierarchy
         try {
           const hierarchy = await getTaskHierarchy(taskData.id)
@@ -788,14 +793,57 @@ export const TaskPage = () => {
                 <p className="text-default-800 whitespace-pre-wrap">
                   {task.description}
                 </p>
-                {task.assignedAgentId && (
-                  <div className="mt-4" data-testid="active-agents">
-                    <span className="text-sm text-default-500">
-                      Assigned to: {task.assignedAgentId}
-                    </span>
-                  </div>
-                )}
               </div>
+
+              {/* Agent Team Formation Section */}
+              {task.assignedAgentId && (
+                <div className="mb-8" data-testid="team-formation">
+                  <h3 className="text-lg font-semibold mb-4">
+                    {t('Active Agents')}
+                  </h3>
+                  <div
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                    data-testid="active-agents"
+                  >
+                    <div data-testid="agent-card">
+                      {agentCache[task.assignedAgentId] ? (
+                        <div className="border border-default-200 rounded-lg p-4 bg-white dark:bg-default-50">
+                          <div className="flex items-center gap-3 mb-2">
+                            {agentCache[task.assignedAgentId].icon && (
+                              <Icon
+                                name={
+                                  agentCache[task.assignedAgentId].icon as any
+                                }
+                                className="w-6 h-6"
+                              />
+                            )}
+                            <h4 className="font-semibold">
+                              {agentCache[task.assignedAgentId].name}
+                            </h4>
+                            <Chip size="sm" color="success" variant="flat">
+                              Active
+                            </Chip>
+                          </div>
+                          <p className="text-small text-default-600">
+                            {agentCache[task.assignedAgentId].role}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="border border-default-200 rounded-lg p-4 bg-white dark:bg-default-50">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="animate-pulse w-6 h-6 bg-default-300 rounded"></div>
+                            <div className="animate-pulse h-4 bg-default-300 rounded w-32"></div>
+                            <Chip size="sm" color="success" variant="flat">
+                              Active
+                            </Chip>
+                          </div>
+                          <div className="animate-pulse h-3 bg-default-200 rounded w-full mt-2"></div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Task Steps Section */}
               {task.steps && task.steps.length > 0 && (

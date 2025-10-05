@@ -44,6 +44,7 @@ export const ko: I18n = {
   'Drop files here…': '여기에 파일을 드롭하세요…',
   'Use microphone': '마이크 사용',
   'Send prompt': '프롬프트 전송',
+  'Select Model': '모델 선택',
 
   // Page: /404
   'Page not found': '페이지를 찾을 수 없습니다',
@@ -86,6 +87,7 @@ export const ko: I18n = {
   // Task
   Requirements: '요구 사항',
   'Task Timeline': '작업 일정',
+  'Active Agents': '활성 에이전트',
 
   // Background Image
   'Please select an image file': '이미지 파일을 선택해주세요',
@@ -102,7 +104,7 @@ export const ko: I18n = {
   'Change Background': '배경 변경',
   'Upload Background': '배경 업로드',
   'Background image removed': '배경 이미지가 제거되었습니다',
-  'Configure your platform preferences': '플랫폼 설정을 구성하세요',
+  'Make the platform your own': '플랫폼을 나만의 것으로 만들기',
   Undo: '실행 취소',
   'The URL does not point to a valid image':
     'URL이 유효한 이미지를 가리키지 않습니다',
