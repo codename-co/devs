@@ -630,79 +630,96 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                   </DropdownMenu>
                 </Dropdown>
 
-                <Dropdown
-                  className="bg-white dark:bg-default-50 dark:text-white"
-                  isDisabled={disabledAgentPicker}
+                <Tooltip
+                  content={t('Select an agent')}
+                  classNames={{
+                    base: 'pointer-events-none',
+                  }}
                 >
-                  <DropdownTrigger>
-                    <Button
-                      data-testid="agent-picker"
-                      radius="full"
-                      variant="light"
-                      size="sm"
-                    >
-                      <Icon name={currentAgent.icon ?? 'User'} size="md" />
-                      {currentAgent.i18n?.[lang]?.name ?? currentAgent.name}
-                    </Button>
-                  </DropdownTrigger>
-                  <AgentPicker
-                    disabled={disabledAgentPicker}
-                    selectedAgent={currentAgent}
-                    onAgentChange={onAgentChange}
-                  />
-                </Dropdown>
-
-                {/* LLM Model Selector */}
-                {credentials.length > 0 && (
-                  <Dropdown className="bg-white dark:bg-default-50 dark:text-white">
+                  <Dropdown
+                    className="bg-white dark:bg-default-50 dark:text-white"
+                    isDisabled={disabledAgentPicker}
+                  >
                     <DropdownTrigger>
-                      {/* <Tooltip content={t('Collapse sidebar')}> */}
                       <Button
+                        data-testid="agent-picker"
                         radius="full"
                         variant="light"
                         size="sm"
-                        startContent={
-                          <Icon
-                            name={
-                              PROVIDER_ICONS[
-                                selectedCredential?.provider || 'custom'
-                              ]
-                            }
-                            size="sm"
-                          />
-                        }
                       >
-                        <span className="text-xs truncate max-w-48">
-                          {displayModelName(selectedCredential?.model) ||
-                            t('Select Model')}
-                        </span>
+                        <Icon name={currentAgent.icon ?? 'User'} size="md" />
+                        {currentAgent.i18n?.[lang]?.name ?? currentAgent.name}
                       </Button>
-                      {/* </Tooltip> */}
                     </DropdownTrigger>
-                    <DropdownMenu
-                      aria-label="LLM Model selection"
-                      selectedKeys={
-                        selectedCredentialId ? [selectedCredentialId] : []
-                      }
-                      onAction={(key) => setSelectedCredentialId(key as string)}
-                    >
-                      {credentials.map((cred) => (
-                        <DropdownItem
-                          key={cred.id}
+                    <AgentPicker
+                      disabled={disabledAgentPicker}
+                      selectedAgent={currentAgent}
+                      onAgentChange={onAgentChange}
+                    />
+                  </Dropdown>
+                </Tooltip>
+
+                {/* LLM Model Selector */}
+                {credentials.length > 0 && (
+                  <Tooltip
+                    content={t('Select a model')}
+                    classNames={{
+                      base: 'pointer-events-none',
+                    }}
+                  >
+                    <Dropdown className="bg-white dark:bg-default-50 dark:text-white">
+                      <DropdownTrigger>
+                        <Button
+                          radius="full"
+                          variant="light"
+                          size="sm"
                           startContent={
                             <Icon
-                              name={PROVIDER_ICONS[cred.provider]}
+                              name={
+                                PROVIDER_ICONS[
+                                  selectedCredential?.provider || 'custom'
+                                ]
+                              }
                               size="sm"
+                              className="hidden md:flex"
                             />
                           }
-                          description={cred.provider}
-                          textValue={cred.model || cred.provider}
                         >
-                          {displayModelName(cred.model) || cred.provider}
-                        </DropdownItem>
-                      ))}
-                    </DropdownMenu>
-                  </Dropdown>
+                          <span className="text-xs truncate max-w-16 md:max-w-48">
+                            {displayModelName(selectedCredential?.model) ||
+                              t('Select a model')}
+                          </span>
+                        </Button>
+                        {/* </Tooltip> */}
+                      </DropdownTrigger>
+                      <DropdownMenu
+                        aria-label="LLM Model selection"
+                        selectionMode="single"
+                        selectedKeys={
+                          selectedCredentialId ? [selectedCredentialId] : []
+                        }
+                        onAction={(key) =>
+                          setSelectedCredentialId(key as string)
+                        }
+                      >
+                        {credentials.map((cred) => (
+                          <DropdownItem
+                            key={cred.id}
+                            startContent={
+                              <Icon
+                                name={PROVIDER_ICONS[cred.provider]}
+                                size="sm"
+                              />
+                            }
+                            description={cred.provider}
+                            textValue={cred.model || cred.provider}
+                          >
+                            {displayModelName(cred.model) || cred.provider}
+                          </DropdownItem>
+                        ))}
+                      </DropdownMenu>
+                    </Dropdown>
+                  </Tooltip>
                 )}
               </div>
 

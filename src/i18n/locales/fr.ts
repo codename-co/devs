@@ -44,7 +44,8 @@ export const fr: I18n = {
   'Drop files here…': 'Déposez des fichiers ici…',
   'Use microphone': 'Utiliser le microphone',
   'Send prompt': 'Envoyer le prompt',
-  'Select Model': 'Sélectionner un modèle',
+  'Select an agent': 'Sélectionner un agent',
+  'Select a model': 'Sélectionner un modèle',
 
   // Page: /404
   'Page not found': 'Page non trouvée',

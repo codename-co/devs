@@ -44,7 +44,8 @@ export const ko: I18n = {
   'Drop files here…': '여기에 파일을 드롭하세요…',
   'Use microphone': '마이크 사용',
   'Send prompt': '프롬프트 전송',
-  'Select Model': '모델 선택',
+  'Select an agent': '에이전트 선택',
+  'Select a model': '모델 선택',
 
   // Page: /404
   'Page not found': '페이지를 찾을 수 없습니다',

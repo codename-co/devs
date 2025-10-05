@@ -42,7 +42,8 @@ export const en = [
   'Drop files here…',
   'Use microphone',
   'Send prompt',
-  'Select Model',
+  'Select an agent',
+  'Select a model',
 
   // Page: /404
   'Page not found',

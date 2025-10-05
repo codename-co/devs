@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Icon, type IconProps } from './Icon'
 
 export interface LLMRequest {
@@ -23,6 +23,7 @@ export const ProgressIndicator = () => {
     completedRequests: 0,
   })
   const [_isVisible, setIsVisible] = useState(false)
+  const [isInferring, setIsInfering] = useState(false)
 
   useEffect(() => {
     const handleServiceWorkerMessage = (event: MessageEvent) => {
@@ -30,6 +31,7 @@ export const ProgressIndicator = () => {
         const newStats = event.data.stats as LLMProgressStats
         setStats(newStats)
         setIsVisible(newStats.activeRequests > 0 || newStats.totalRequests > 0)
+        setIsInfering(newStats.activeRequests > 0)
       }
     }
 
@@ -58,8 +60,15 @@ export const ProgressIndicator = () => {
   //   return null
   // }
 
-  const animation: IconProps['animation'] =
-    stats.activeRequests > 0 ? 'pulsating' : 'appear'
+  const animation: IconProps['animation'] = useMemo(
+    () =>
+      isInferring
+        ? 'pulsating'
+        : stats.activeRequests > 0
+          ? 'thinking'
+          : 'appear',
+    [isInferring, stats.activeRequests],
+  )
 
   return (
     <div

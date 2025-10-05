@@ -8,6 +8,7 @@ import {
   CardBody,
   Accordion,
   AccordionItem,
+  Button,
 } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
@@ -233,6 +234,8 @@ export const AgentRunPage = () => {
 
   const { artifacts, loadArtifacts } = useArtifactStore()
 
+  const [showSystemPrompt, setShowSystemPrompt] = useState(false)
+
   const header: HeaderProps = useMemo(
     () => ({
       icon: {
@@ -240,9 +243,31 @@ export const AgentRunPage = () => {
         color: 'text-primary-300 dark:text-primary-600',
       },
       title: selectedAgent?.name,
+      subtitle: (
+        <>
+          <Button
+            variant={showSystemPrompt ? 'solid' : 'light'}
+            size="sm"
+            startContent={<Icon name="Terminal" />}
+            onPress={() => setShowSystemPrompt((v) => !v)}
+          >
+            {t('System Prompt')}
+          </Button>
+          {showSystemPrompt && (
+            <div className="mt-4 max-h-96 overflow-y-auto">
+              <MarkdownRenderer
+                content={
+                  selectedAgent?.instructions || t('No system prompt defined.')
+                }
+                className="prose dark:prose-invert prose-sm"
+              />
+            </div>
+          )}
+        </>
+      ),
       // subtitle: selectedAgent?.desc || t('AI Assistant'),
     }),
-    [selectedAgent?.icon, selectedAgent?.name],
+    [selectedAgent?.icon, selectedAgent?.name, showSystemPrompt],
   )
 
   // Parse the hash to get agentId and optional conversationId
@@ -473,20 +498,6 @@ export const AgentRunPage = () => {
           {/* Main conversation area */}
           <div className="lg:col-span-3">
             <Container>
-              <details className="my-4 ml-7">
-                <summary className="cursor-pointer">
-                  {t('System Prompt')}
-                </summary>
-                <div className="ml-5">
-                  <MarkdownRenderer
-                    content={
-                      selectedAgent?.instructions ||
-                      t('No system prompt defined.')
-                    }
-                    className="prose dark:prose-invert prose-sm"
-                  />
-                </div>
-              </details>
               {/* Display conversation history */}
               {conversationMessages.length > 0 && (
                 <div className="duration-600 relative flex flex-col gap-6">
@@ -552,55 +563,60 @@ export const AgentRunPage = () => {
           </div>
 
           {/* Artifacts side panel */}
-          <div className="lg:col-span-1 order-first lg:order-last">
-            <div className="sticky top-4">
-              <Card className="mb-4">
-                <CardBody className="p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Icon name="PageSearch" className="w-5 h-5 text-primary" />
-                    <h3 className="text-medium font-semibold">
-                      {t('Artifacts')}
-                    </h3>
-                    <Chip
-                      size="sm"
-                      variant="flat"
-                      color="primary"
-                      className="text-tiny"
-                    >
-                      {conversationArtifacts.length}
-                    </Chip>
-                  </div>
-
-                  {conversationArtifacts.length > 0 ? (
-                    <div className="space-y-3">
-                      {conversationArtifacts
-                        .sort(
-                          (a, b) =>
-                            new Date(b.updatedAt).getTime() -
-                            new Date(a.updatedAt).getTime(),
-                        )
-                        .map((artifact) => (
-                          <ArtifactWidget
-                            key={artifact.id}
-                            artifact={artifact}
-                          />
-                        ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-6">
+          {conversationArtifacts.length > 0 && (
+            <div className="lg:col-span-1 order-first lg:order-last">
+              <div className="sticky top-4">
+                <Card className="mb-4">
+                  <CardBody className="p-4">
+                    <div className="flex items-center gap-2 mb-3">
                       <Icon
                         name="PageSearch"
-                        className="w-8 h-8 text-default-300 mx-auto mb-2"
+                        className="w-5 h-5 text-primary"
                       />
-                      <p className="text-small text-default-500">
-                        {t('No artifacts created yet')}
-                      </p>
+                      <h3 className="text-medium font-semibold">
+                        {t('Artifacts')}
+                      </h3>
+                      <Chip
+                        size="sm"
+                        variant="flat"
+                        color="primary"
+                        className="text-tiny"
+                      >
+                        {conversationArtifacts.length}
+                      </Chip>
                     </div>
-                  )}
-                </CardBody>
-              </Card>
+
+                    {conversationArtifacts.length > 0 ? (
+                      <div className="space-y-3">
+                        {conversationArtifacts
+                          .sort(
+                            (a, b) =>
+                              new Date(b.updatedAt).getTime() -
+                              new Date(a.updatedAt).getTime(),
+                          )
+                          .map((artifact) => (
+                            <ArtifactWidget
+                              key={artifact.id}
+                              artifact={artifact}
+                            />
+                          ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-6">
+                        <Icon
+                          name="PageSearch"
+                          className="w-8 h-8 text-default-300 mx-auto mb-2"
+                        />
+                        <p className="text-small text-default-500">
+                          {t('No artifacts created yet')}
+                        </p>
+                      </div>
+                    )}
+                  </CardBody>
+                </Card>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <PromptArea

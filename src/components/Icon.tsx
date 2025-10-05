@@ -158,6 +158,7 @@ export const Icons = {
   Star: IconoirIcons.Star,
   Square3dCornerToCorner: IconoirIcons.Square3dCornerToCorner,
   TaskSolid: IconoirIcons.TaskList,
+  Terminal: IconoirIcons.Terminal,
   Timer: IconoirIcons.Timer,
   Trash: IconoirIcons.Trash,
   TriangleFlagTwoStripes: IconoirIcons.TriangleFlagTwoStripes,
