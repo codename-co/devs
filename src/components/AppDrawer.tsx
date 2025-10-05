@@ -308,7 +308,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
         <div className="w-full opacity-0 transition-opacity duration-200 group-hover:opacity-100">
           {/* Collapsed Navigation Icons */}
           <nav className="flex flex-col w-full">
-            <Tooltip content={t('New Chat')} placement="right">
+            <Tooltip content={t('New chat')} placement="right">
               <Button
                 as={Link}
                 href={url('/')}
@@ -503,9 +503,9 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                 color="primary"
                 className="dark:text-gray-200 dark:hover:text-primary-500"
                 startContent={<Icon name="ChatPlusIn" />}
-                textValue={t('Chat with AI')}
+                textValue={t('New chat')}
               >
-                {t('Chat with AI')}
+                {t('New chat')}
               </ListboxItem>
             </ListboxSection>
             <ListboxSection showDivider>
