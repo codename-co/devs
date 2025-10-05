@@ -221,7 +221,7 @@ export const AgentRunPage = () => {
     [],
   )
   const [agentCache, setAgentCache] = useState<Record<string, Agent>>({})
-  const [conversationArtifacts, setConversationArtifacts] = useState<
+  const [_conversationArtifacts, setConversationArtifacts] = useState<
     Artifact[]
   >([])
 
@@ -494,9 +494,12 @@ export const AgentRunPage = () => {
   return (
     <DefaultLayout title={selectedAgent?.name} header={header}>
       <Section>
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+        {/* <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-7xl mx-auto"> */}
+        <div className="gap-6 mx-auto">
           {/* Main conversation area */}
-          <div className="lg:col-span-3">
+          <div
+          // className="lg:col-span-3"
+          >
             <Container>
               {/* Display conversation history */}
               {conversationMessages.length > 0 && (
@@ -563,7 +566,7 @@ export const AgentRunPage = () => {
           </div>
 
           {/* Artifacts side panel */}
-          {conversationArtifacts.length > 0 && (
+          {/* {conversationArtifacts.length > 0 && (
             <div className="lg:col-span-1 order-first lg:order-last">
               <div className="sticky top-4">
                 <Card className="mb-4">
@@ -616,7 +619,7 @@ export const AgentRunPage = () => {
                 </Card>
               </div>
             </div>
-          )}
+          )} */}
         </div>
 
         <PromptArea

@@ -1,17 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import {
-  Spinner,
-  Chip,
-  Badge,
-  Progress,
-  CheckboxGroup,
-  Checkbox,
-} from '@heroui/react'
+import { Spinner, Chip, Progress, CheckboxGroup, Checkbox } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
 import {
-  Artifact,
   Container,
   Icon,
   MarkdownRenderer,
@@ -62,8 +54,8 @@ export const TaskPage = () => {
   const [selectedArtifactId, setSelectedArtifactId] = useState<string | null>(
     null,
   )
-  const [isArtifactPanelMinimized, setIsArtifactPanelMinimized] =
-    useState(false)
+  // const [isArtifactPanelMinimized, setIsArtifactPanelMinimized] =
+  //   useState(false)
 
   // Helper function to format duration
   const formatDuration = (duration: number | undefined) => {
@@ -494,9 +486,11 @@ export const TaskPage = () => {
   const TimelineEventDisplay = ({
     event,
     isLast,
+    previousEvent,
   }: {
     event: TimelineEvent
     isLast: boolean
+    previousEvent?: TimelineEvent
   }) => {
     const getEventIcon = () => {
       switch (event.type) {
@@ -579,7 +573,14 @@ export const TaskPage = () => {
           <div className="flex items-center gap-2 mb-2">
             <h3 className="font-semibold text-foreground">{event.title}</h3>
             <Chip size="sm" variant="flat" className="text-tiny">
-              {event.timestamp.toLocaleString()}
+              <time
+                dateTime={event.timestamp.toISOString()}
+                title={event.timestamp.toLocaleString()}
+              >
+                {previousEvent
+                  ? `+${((event.timestamp.getTime() - previousEvent.timestamp.getTime()) / 1000).toFixed(2)}s`
+                  : 'Start'}
+              </time>
             </Chip>
             {event.agent && (
               <Chip
@@ -611,20 +612,20 @@ export const TaskPage = () => {
 
           {event.artifact && (
             <div
-              className="border border-default-200 rounded-lg p-4 cursor-pointer hover:border-primary-300 transition-colors"
+              className="border border-warning-500 rounded-lg p-4 cursor-pointer hover:border-warning-300 transition-colors"
               onClick={() => setSelectedArtifactId(event.artifact!.id)}
             >
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-medium">{event.artifact.title}</h4>
-                <Badge color="primary" variant="flat">
+                {/* <Badge color="primary" variant="flat">
                   {event.artifact.type}
-                </Badge>
+                </Badge> */}
               </div>
               <p className="text-small text-default-600 mb-3">
                 {event.artifact.description}
               </p>
               <details>
-                <summary className="cursor-pointer text-small text-primary">
+                <summary className="cursor-pointer text-small text-warning-600 hover:underline">
                   {t('View Content')}
                 </summary>
                 <div className="mt-2 bg-default-50 rounded p-3">
@@ -774,13 +775,14 @@ export const TaskPage = () => {
   return (
     <DefaultLayout title={task.title} header={header}>
       <Section>
-        <Container size={6}>
+        <Container>
           <div
-            className={`grid gap-6 ${artifacts.length > 0 ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}
+          // className={`grid gap-6 ${artifacts.length > 0 ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}
+          // className="grid gap-6"
           >
             {/* Main Content */}
             <div
-              className={artifacts.length > 0 ? 'lg:col-span-2' : 'col-span-1'}
+              // className={artifacts.length > 0 ? 'lg:col-span-2' : 'col-span-1'}
               data-testid={
                 task.status === 'completed' ? 'task-completed' : undefined
               }
@@ -1094,6 +1096,9 @@ export const TaskPage = () => {
                       key={event.id}
                       event={event}
                       isLast={index === timelineEvents.length - 1}
+                      previousEvent={
+                        index > 0 ? timelineEvents[index - 1] : undefined
+                      }
                     />
                   ))}
                 </div>
@@ -1101,7 +1106,7 @@ export const TaskPage = () => {
             </div>
 
             {/* Artifact Panel - Right Column */}
-            {artifacts.length > 0 && (
+            {/* {artifacts.length > 0 && (
               <div className="lg:col-span-1" data-testid="artifacts">
                 <Artifact
                   artifacts={artifacts}
@@ -1113,7 +1118,7 @@ export const TaskPage = () => {
                   className="sticky top-4 bottom-4"
                 />
               </div>
-            )}
+            )} */}
           </div>
         </Container>
       </Section>

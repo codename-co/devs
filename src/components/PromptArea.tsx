@@ -9,6 +9,7 @@ import {
   type TextAreaProps,
   Tooltip,
   Image,
+  DropdownSection,
 } from '@heroui/react'
 import {
   forwardRef,
@@ -22,15 +23,16 @@ import {
 import { AgentPicker } from './AgentPicker'
 import { Icon } from './Icon'
 
-import { type Lang, useTranslations } from '@/i18n'
+import { type Lang, useI18n } from '@/i18n'
 import { cn, getFileIcon } from '@/lib/utils'
-import { type Agent, type KnowledgeItem, type Credential } from '@/types'
+import { type Agent, type KnowledgeItem } from '@/types'
 import { type IconName } from '@/lib/types'
 import { getDefaultAgent } from '@/stores/agentStore'
 import { db } from '@/lib/db'
 import { isLandscape, isMobileDevice, isSmallHeight } from '@/lib/device'
 import { formatBytes } from '@/lib/format'
 import { useLLMModelStore } from '@/stores/llmModelStore'
+import { useNavigate } from 'react-router-dom'
 
 interface PromptAreaProps
   extends Omit<TextAreaProps, 'onFocus' | 'onBlur' | 'onKeyDown'> {
@@ -64,6 +66,9 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
     },
     ref,
   ) {
+    const navigate = useNavigate()
+    const { t, url } = useI18n(lang as any)
+
     const [prompt, setPrompt] = useState('')
     const [isRecording, setIsRecording] = useState(false)
     const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] =
@@ -73,20 +78,19 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
     const [isFocused, setIsFocused] = useState(false)
     const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([])
     const [loadingKnowledge, setLoadingKnowledge] = useState(false)
-    const [credentials, setCredentials] = useState<Credential[]>([])
     const recognitionRef = useRef<SpeechRecognition | null>(null)
     const finalTranscriptRef = useRef('')
     const fileInputRef = useRef<HTMLInputElement>(null)
 
-    const t = useTranslations(lang)
-
     // LLM model store
     const {
+      credentials,
       selectedCredentialId,
       setSelectedCredentialId,
       getSelectedCredential,
+      loadCredentials,
     } = useLLMModelStore()
-    const selectedCredential = getSelectedCredential(credentials)
+    const selectedCredential = getSelectedCredential()
 
     // Provider icon mapping
     const PROVIDER_ICONS: Record<string, IconName> = {
@@ -142,33 +146,6 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         setKnowledgeItems([])
       } finally {
         setLoadingKnowledge(false)
-      }
-    }, [])
-
-    // Load credentials
-    const loadCredentials = useCallback(async () => {
-      try {
-        if (!db.isInitialized()) {
-          await db.init()
-        }
-
-        if (!db.hasStore('credentials')) {
-          setCredentials([])
-          return
-        }
-
-        const creds = await db.getAll('credentials')
-        // Sort by order
-        const sortedCreds = creds.sort((a, b) => {
-          if (a.order === undefined && b.order === undefined) return 0
-          if (a.order === undefined) return 1
-          if (b.order === undefined) return -1
-          return a.order - b.order
-        })
-        setCredentials(sortedCreds)
-      } catch (error) {
-        console.error('Error loading credentials:', error)
-        setCredentials([])
       }
     }, [])
 
@@ -702,21 +679,50 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                           setSelectedCredentialId(key as string)
                         }
                       >
-                        {credentials.map((cred) => (
-                          <DropdownItem
-                            key={cred.id}
-                            startContent={
-                              <Icon
-                                name={PROVIDER_ICONS[cred.provider]}
-                                size="sm"
-                              />
-                            }
-                            description={cred.provider}
-                            textValue={cred.model || cred.provider}
-                          >
-                            {displayModelName(cred.model) || cred.provider}
-                          </DropdownItem>
-                        ))}
+                        <>
+                          {credentials.length && (
+                            <DropdownSection showDivider>
+                              {credentials.map((cred) => (
+                                <DropdownItem
+                                  key={cred.id}
+                                  startContent={
+                                    <Icon
+                                      name={PROVIDER_ICONS[cred.provider]}
+                                      size="sm"
+                                    />
+                                  }
+                                  description={cred.provider}
+                                  textValue={cred.model || cred.provider}
+                                >
+                                  {displayModelName(cred.model) ||
+                                    cred.provider}
+                                </DropdownItem>
+                              ))}
+                            </DropdownSection>
+                          )}
+                          <DropdownSection>
+                            <DropdownItem
+                              key="settings"
+                              startContent={<Icon name="Plus" size="sm" />}
+                              textValue={t('Add Provider')}
+                              onPress={() =>
+                                navigate(url('/settings#llm-models'))
+                              }
+                            >
+                              {t('Add Provider')}
+                            </DropdownItem>
+                          </DropdownSection>
+                        </>
+                        {/* onnx-community/OpenReasoning-Nemotron-1.5B-ONNX */}
+                        {/* <DropdownItem
+                          key="none"
+                          startContent={<Icon name="Server" size="sm" />}
+                          textValue={t('No model')}
+                        >
+                          {t('No model')}
+                        </DropdownItem>
+                        <hr className="my-1 border-default-200" />
+                        {} */}
                       </DropdownMenu>
                     </Dropdown>
                   </Tooltip>

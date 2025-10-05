@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Chip, Progress, Tooltip } from '@heroui/react'
+import { Button, Card, Chip, Progress } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import type { Task } from '@/types'
@@ -87,8 +87,10 @@ const TaskNode = ({
           : 0
 
   return (
-    <div
-      className={`flex items-center gap-3 py-2 px-3 rounded-lg border border-default-200 hover:border-primary-300 transition-colors ${isSelected ? 'bg-primary-50 border-primary-300' : 'bg-default-50'} ${className}`}
+    <Card
+      className={`flex flex-row w-full items-center text-left gap-3 py-2 px-3 rounded-lg border border-default-200 hover:border-primary-300 transition-colors ${isSelected ? 'bg-primary-50 border-primary-300' : 'bg-default-50'} ${className}`}
+      isPressable
+      onPress={() => navigate(url(`/tasks/${task.id}`))}
     >
       {/* Indentation */}
       <div style={{ width: `${level * 20}px` }} />
@@ -132,12 +134,7 @@ const TaskNode = ({
       {/* Task Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <h4
-            className="font-medium text-foreground truncate cursor-pointer hover:text-primary"
-            onClick={() => navigate(url(`/tasks/${task.id}`))}
-          >
-            {task.title}
-          </h4>
+          <h4 className="font-medium text-foreground truncate">{task.title}</h4>
           <div className="flex gap-1 flex-none">
             <Chip size="sm" color={getStatusColor(task.status)} variant="flat">
               {task.status.replace('_', ' ')}
@@ -184,7 +181,7 @@ const TaskNode = ({
         </p>
 
         {/* Dependencies indicator */}
-        {task.dependencies.length > 0 && (
+        {/* {task.dependencies.length > 0 && (
           <div className="mt-1 flex items-center gap-1">
             <Icon name="ArrowRight" className="w-3 h-3 text-default-400" />
             <span className="text-xs text-default-500">
@@ -192,19 +189,19 @@ const TaskNode = ({
               {task.dependencies.length !== 1 ? 's' : ''}
             </span>
           </div>
-        )}
+        )} */}
 
         {/* Timestamps */}
-        <div className="flex gap-4 mt-2 text-xs text-default-500">
+        {/* <div className="flex gap-4 mt-2 text-xs text-default-500">
           {task.createdAt && (
             <span>Created: {task.createdAt.toLocaleDateString()}</span>
           )}
           {task.completedAt && (
             <span>Completed: {task.completedAt.toLocaleDateString()}</span>
           )}
-        </div>
+        </div> */}
       </div>
-    </div>
+    </Card>
   )
 }
 
@@ -273,11 +270,11 @@ export const SubTaskTree = ({
   return (
     <div
       data-testid="workflow-view"
-      className={`bg-default-100 rounded-lg p-4 ${className}`}
+      className={`bg-default-50 rounded-lg p-4 px-6 -mx-6 ${className}`}
     >
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">{t('Task Hierarchy')}</h3>
-        <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
           <Tooltip content={t('Expand All')}>
             <Button
               isIconOnly
@@ -306,7 +303,7 @@ export const SubTaskTree = ({
               <Icon name="ArrowRight" className="w-4 h-4" />
             </Button>
           </Tooltip>
-        </div>
+        </div> */}
       </div>
 
       <div className="space-y-2">
@@ -380,9 +377,11 @@ export const SubTaskTree = ({
                   )
                 }
                 return (
-                  <div
+                  <Card
                     key={depId}
-                    className="flex items-center gap-3 p-3 bg-default-50 border border-default-200 rounded-lg"
+                    isPressable
+                    onPress={() => navigate(url(`/tasks/${task.id}`))}
+                    className="flex flex-row w-full items-center text-left gap-3 p-3 bg-default-50 border border-default-200 rounded-lg"
                   >
                     <Icon
                       name={
@@ -405,10 +404,7 @@ export const SubTaskTree = ({
                       }`}
                     />
                     <div className="flex-1">
-                      <h5
-                        className="font-medium text-foreground cursor-pointer hover:text-primary"
-                        onClick={() => navigate(url(`/tasks/${depTask.id}`))}
-                      >
+                      <h5 className="font-medium text-foreground">
                         {depTask.title}
                       </h5>
                       <p className="text-xs text-default-500">
@@ -430,7 +426,7 @@ export const SubTaskTree = ({
                     >
                       {depTask.status.replace('_', ' ')}
                     </Chip>
-                  </div>
+                  </Card>
                 )
               })}
             </div>
@@ -438,7 +434,7 @@ export const SubTaskTree = ({
         )}
 
         {/* Summary */}
-        <div className="mt-4 p-3 bg-default-50 rounded-lg">
+        {/* <div className="mt-4 p-3 bg-default-50 rounded-lg">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center text-sm">
             <div>
               <p className="font-medium text-default-600">
@@ -465,7 +461,7 @@ export const SubTaskTree = ({
               </p>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   )

@@ -250,7 +250,7 @@ export class LocalLLMProvider implements LLMProviderInterface {
     for (let i = 0; i < words.length; i++) {
       yield words[i] + (i < words.length - 1 ? ' ' : '')
       // Small delay to simulate streaming
-      await new Promise((resolve) => setTimeout(resolve, 30))
+      await new Promise((resolve) => setTimeout(resolve, 10))
     }
 
     // const pipe = await this.getPipeline(config?.model)

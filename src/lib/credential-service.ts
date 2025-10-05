@@ -1,14 +1,15 @@
-import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
 import { LLMConfig, Credential } from '@/types'
 import { errorToast } from './toast'
+import { useLLMModelStore } from '@/stores/llmModelStore'
 
 export class CredentialService {
   static async getDecryptedConfig(
     credentialId: string,
   ): Promise<LLMConfig | null> {
     try {
-      const credential = await db.get('credentials', credentialId)
+      const { credentials } = useLLMModelStore.getState()
+      const credential = credentials.find((c) => c.id === credentialId)
       if (!credential) return null
 
       const iv = localStorage.getItem(`${credentialId}-iv`)
@@ -43,21 +44,14 @@ export class CredentialService {
   static async getActiveCredential(
     provider?: string,
   ): Promise<Credential | null> {
-    const credentials = await db.getAll('credentials')
+    const { credentials, getSelectedCredential } = useLLMModelStore.getState()
 
     if (provider) {
       return credentials.find((c) => c.provider === provider) || null
     }
 
-    // Return the first credential by order (lowest order number = highest priority)
-    return (
-      credentials.sort((a, b) => {
-        if (a.order === undefined && b.order === undefined) return 0
-        if (a.order === undefined) return 1
-        if (b.order === undefined) return -1
-        return a.order - b.order
-      })[0] || null
-    )
+    // Use the selected credential from the store
+    return getSelectedCredential()
   }
 
   static async getActiveConfig(provider?: string): Promise<LLMConfig | null> {

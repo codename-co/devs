@@ -1,14 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  Divider,
-  Pagination,
-  Spinner,
-} from '@heroui/react'
+import { Button, Card, CardBody, Pagination, Spinner } from '@heroui/react'
 
 import { useConversationStore } from '@/stores/conversationStore'
 import { loadAllAgents } from '@/stores/agentStore'
@@ -21,13 +13,8 @@ import { Container, Section } from '@/components'
 export function ConversationPage() {
   const { t, url } = useI18n()
   const navigate = useNavigate()
-  const {
-    conversations,
-    isLoading,
-    loadConversations,
-    deleteConversation,
-    getConversationTitle,
-  } = useConversationStore()
+  const { conversations, isLoading, loadConversations, getConversationTitle } =
+    useConversationStore()
   const [agents, setAgents] = useState<Agent[]>([])
   const [selectedConversation, setSelectedConversation] = useState<
     string | null
@@ -66,23 +53,25 @@ export function ConversationPage() {
     }
   }
 
-  const handleDeleteConversation = async (
-    conversationId: string,
-    event: React.MouseEvent,
-  ) => {
-    event.stopPropagation()
-    if (confirm('Are you sure you want to delete this conversation?')) {
-      await deleteConversation(conversationId)
-    }
-  }
-
   const getAgentName = (agentId: string) => {
     const agent = agents.find((a) => a.id === agentId)
     return agent?.name || 'Unknown Agent'
   }
 
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleString()
+    const now = new Date()
+    const conversationDate = new Date(date)
+    const diffMs = now.getTime() - conversationDate.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    if (diffDays < 7) return `${diffDays}d ago`
+
+    return conversationDate.toLocaleDateString()
   }
 
   // Sort conversations by timestamp (most recent first) and paginate
@@ -126,67 +115,33 @@ export function ConversationPage() {
             </Card>
           ) : (
             <>
-              <div className="mb-4 flex justify-between items-center">
-                <p className="text-sm text-default-500">
-                  Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
-                  {Math.min(
-                    currentPage * itemsPerPage,
-                    sortedConversations.length,
-                  )}{' '}
-                  of {sortedConversations.length} conversations
-                </p>
-              </div>
-              <div className="grid gap-4">
+              <div className="space-y-2">
                 {paginatedConversations.map((conversation) => (
                   <Card
                     key={conversation.id}
                     isPressable
-                    className="transition-all hover:scale-[1.02]"
+                    isHoverable
+                    shadow="none"
+                    className="transition-transform w-full"
                     onPress={() => handleLoadConversation(conversation.id)}
                   >
-                    <CardHeader className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold">
-                          {getConversationTitle(conversation)}
-                        </h3>
-                        <p className="text-sm text-default-500">
-                          Agent: {getAgentName(conversation.agentId)}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-default-400">
-                          {formatDate(conversation.timestamp)}
-                        </span>
-                        {selectedConversation === conversation.id && (
-                          <Spinner size="sm" />
-                        )}
-                      </div>
-                    </CardHeader>
-                    <Divider />
-                    <CardBody>
-                      <div className="flex justify-between items-center">
-                        <p className="text-sm text-default-600">
-                          {conversation.messages.length} messages
-                        </p>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="light"
-                            color="primary"
-                            disabled={selectedConversation === conversation.id}
-                          >
-                            Load
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="light"
-                            color="danger"
-                            onClick={(e) =>
-                              handleDeleteConversation(conversation.id, e)
-                            }
-                          >
-                            Delete
-                          </Button>
+                    <CardBody className="py-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-base font-medium truncate">
+                            {getConversationTitle(conversation)}
+                          </h3>
+                          <p className="text-sm text-default-500 mt-0.5">
+                            {getAgentName(conversation.agentId)}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <time className="text-sm text-default-400">
+                            {formatDate(conversation.timestamp)}
+                          </time>
+                          {selectedConversation === conversation.id && (
+                            <Spinner size="sm" />
+                          )}
                         </div>
                       </div>
                     </CardBody>
@@ -194,15 +149,14 @@ export function ConversationPage() {
                 ))}
               </div>
 
-              {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex justify-center mt-8">
+                <div className="flex justify-center mt-6">
                   <Pagination
                     total={totalPages}
                     page={currentPage}
                     onChange={setCurrentPage}
                     showControls
-                    showShadow
+                    size="sm"
                     color="primary"
                   />
                 </div>

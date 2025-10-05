@@ -43,6 +43,7 @@ export const en = [
   'Send prompt',
   'Select an agent',
   'Select a model',
+  'Add Provider',
 
   // Page: /404
   'Page not found',

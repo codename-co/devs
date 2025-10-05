@@ -45,6 +45,7 @@ export const fr: I18n = {
   'Send prompt': 'Envoyer le prompt',
   'Select an agent': 'Sélectionner un agent',
   'Select a model': 'Sélectionner un modèle',
+  'Add Provider': 'Ajouter un fournisseur',
 
   // Page: /404
   'Page not found': 'Page non trouvée',

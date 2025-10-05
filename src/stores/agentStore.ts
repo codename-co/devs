@@ -103,6 +103,11 @@ async function loadAgent(agentId: string): Promise<Agent | null> {
     return agentCache.get(agentId)!
   }
 
+  if (agentId.startsWith('custom-')) {
+    // Custom agents are not stored as JSON files
+    return null
+  }
+
   try {
     const response = await fetch(`/agents/${agentId}.agent.json`)
     if (!response.ok) {

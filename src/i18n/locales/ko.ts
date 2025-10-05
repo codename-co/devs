@@ -45,6 +45,7 @@ export const ko: I18n = {
   'Send prompt': '프롬프트 전송',
   'Select an agent': '에이전트 선택',
   'Select a model': '모델 선택',
+  'Add Provider': '제공자 추가',
 
   // Page: /404
   'Page not found': '페이지를 찾을 수 없습니다',
