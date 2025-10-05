@@ -123,7 +123,7 @@ export const SettingsPage = () => {
       noApiKey: true,
       noServerUrl: true,
       moreDetails: () => (
-        <Alert color="primary" variant="faded">
+        <Alert variant="faded">
           <div className="flex flex-col gap-2">
             <p className="font-medium">
               {t('Local LLMs run entirely in your browser')}
@@ -179,16 +179,25 @@ export const SettingsPage = () => {
               </details>
               <details>
                 <summary>
-                  {t('Your device:')} {deviceName()}
+                  {t('Your device:')} {deviceName()},{' '}
+                  {formatBytes(Number(availableMemory) * 1_000_000_000, lang)}＋
                 </summary>
 
                 <ul>
-                  <li>
-                    {t('Brand: {brand}', { brand: getVideoCardInfo()?.brand })}
-                  </li>
-                  <li>
-                    {t('Model: {model}', { model: getVideoCardInfo()?.model })}
-                  </li>
+                  {getVideoCardInfo()?.brand && (
+                    <li>
+                      {t('Brand: {brand}', {
+                        brand: getVideoCardInfo()?.brand,
+                      })}
+                    </li>
+                  )}
+                  {getVideoCardInfo()?.model && (
+                    <li>
+                      {t('Model: {model}', {
+                        model: getVideoCardInfo()?.model,
+                      })}
+                    </li>
+                  )}
                   <li>
                     {t('Memory: {memory} or more (imprecise)', {
                       memory: formatBytes(
@@ -201,9 +210,6 @@ export const SettingsPage = () => {
                     {t('Vendor: {vendor}', {
                       vendor: getVideoCardInfo()?.vendor,
                     })}
-                  </li>
-                  <li>
-                    {t('Browser: {browser}', { browser: navigator.userAgent })}
                   </li>
                 </ul>
               </details>
@@ -1200,7 +1206,11 @@ export const SettingsPage = () => {
           </Accordion>
         </Container>
 
-        <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+        <Modal
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+          scrollBehavior="inside"
+        >
           <ModalContent>
             {(onClose) => (
               <>
@@ -1211,7 +1221,7 @@ export const SettingsPage = () => {
                       {PROVIDERS.map((provider) => (
                         <Card
                           key={provider.provider}
-                          className="inline-flex min-w-[8em] sm:w-auto w-full h-[5em] flex-col hover:bg-primary-50"
+                          className="inline-flex min-w-[8em] w-[calc(50%-0.25rem)] sm:w-auto h-[5em] flex-col hover:bg-primary-50"
                           isPressable
                           onPress={() =>
                             setSelectedProvider(
