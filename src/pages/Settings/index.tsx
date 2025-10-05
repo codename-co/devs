@@ -1240,7 +1240,6 @@ export const SettingsPage = () => {
                           selectedProvider && (
                             <Icon
                               name={findProvider(selectedProvider)?.icon as any}
-                              className="dark:fill-white"
                             />
                           )
                         }
@@ -1251,12 +1250,7 @@ export const SettingsPage = () => {
                           <SelectItem
                             key={provider.provider}
                             textValue={provider.name}
-                            startContent={
-                              <Icon
-                                name={provider.icon}
-                                className="dark:fill-white"
-                              />
-                            }
+                            startContent={<Icon name={provider.icon} />}
                           >
                             {provider.name}
                           </SelectItem>
