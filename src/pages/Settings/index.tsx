@@ -751,7 +751,6 @@ export const SettingsPage = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Chip size="sm">{credential.provider}</Chip>
           {!isDefault && (
             <Button
               size="sm"
