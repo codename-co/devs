@@ -180,11 +180,9 @@ export const useLLMModelStore = create<LLMModelStore>()(
             encryptedApiKey: encrypted,
             model,
             baseUrl:
-              provider === 'custom'
+              provider === 'custom' || provider === 'ollama'
                 ? baseUrl
-                : provider === 'ollama' && apiKey
-                  ? apiKey
-                  : undefined,
+                : undefined,
             timestamp: new Date(),
             order: 0, // Set as default (first position)
           }
