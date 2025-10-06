@@ -224,9 +224,11 @@ export const submitChat = async (
     let fullResponse = ''
 
     for await (const chunk of LLMService.streamChat(messages, config)) {
+      console.debug('▷', chunk)
       fullResponse += chunk
       onResponseUpdate(fullResponse)
     }
+    console.log('▶', fullResponse)
 
     // Save assistant response to conversation
     await addMessage(conversation.id, {

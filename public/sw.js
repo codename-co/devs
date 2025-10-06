@@ -285,12 +285,12 @@ self.addEventListener('activate', (event) => {
 
 // Message handler for LLM API calls and progress requests
 self.addEventListener('message', async (event) => {
-  console.debug('[SW-MSG] 📨 Received message:', {
-    type: event.data.type,
-    hasData: !!event.data,
-    origin: event.origin,
-    source: event.source ? 'client' : 'unknown',
-  })
+  // console.debug('[SW-MSG] 📨 Received message:', {
+  //   type: event.data.type,
+  //   hasData: !!event.data,
+  //   origin: event.origin,
+  //   source: event.source ? 'client' : 'unknown',
+  // })
   if (event.data.type === 'LLM_REQUEST') {
     const { requestId, provider, endpoint, options, model, messages } =
       event.data
@@ -412,7 +412,7 @@ self.addEventListener('fetch', (event) => {
 
   // For HuggingFace models, implement cache-first strategy
   if (isHuggingFaceModel) {
-    console.log('[SW-CACHE] 🔍 HuggingFace request:', url.pathname)
+    console.debug('[SW-CACHE] 🔍 HuggingFace request:', url.pathname)
 
     event.respondWith(
       (async () => {
@@ -421,12 +421,12 @@ self.addEventListener('fetch', (event) => {
         // Try to get from cache first
         const cachedResponse = await cache.match(event.request)
         if (cachedResponse) {
-          console.log('[SW-CACHE] ✅ Serving from cache:', url.pathname)
+          console.debug('[SW-CACHE] ✅ Serving from cache:', url.pathname)
           return cachedResponse
         }
 
         // Not in cache, fetch from network
-        console.log('[SW-CACHE] 📥 Fetching from network:', url.pathname)
+        console.debug('[SW-CACHE] 📥 Fetching from network:', url.pathname)
         try {
           const response = await fetch(event.request)
 
@@ -440,7 +440,7 @@ self.addEventListener('fetch', (event) => {
 
             // Only try to cache files smaller than 200MB (Cache API limit)
             if (sizeInMB < 200) {
-              console.log(
+              console.debug(
                 `[SW-CACHE] 💾 Caching response (${sizeInMB.toFixed(1)}MB):`,
                 url.pathname,
               )
@@ -455,12 +455,9 @@ self.addEventListener('fetch', (event) => {
                 )
               }
             } else {
-              console.log(
+              console.debug(
                 `[SW-CACHE] ⏭️ Skipping Cache API for large file (${sizeInMB.toFixed(1)}MB):`,
                 url.pathname,
-              )
-              console.log(
-                '[SW-CACHE] 🔧 Ensuring browser HTTP cache headers are properly set',
               )
 
               // For large files, ensure strong caching headers for browser's HTTP cache
@@ -490,11 +487,6 @@ self.addEventListener('fetch', (event) => {
                 oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
                 headers.set('expires', oneYearFromNow.toUTCString())
               }
-
-              console.log(
-                '[SW-CACHE] ✅ Enhanced cache headers for browser HTTP cache:',
-                headers.get('cache-control'),
-              )
 
               // Return response with enhanced headers for browser caching
               return new Response(response.body, {

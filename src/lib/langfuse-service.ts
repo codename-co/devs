@@ -141,17 +141,17 @@ class LangfuseService {
   }
 
   static async handleServiceWorkerMessage(event: MessageEvent) {
-    console.debug('[LANGFUSE-MAIN] 📩 Received service worker message:', {
-      type: event.data.type,
-      hasData: !!event.data.data,
-      origin: event.origin,
-    })
+    // console.debug('[LANGFUSE-MAIN] 📩 Received service worker message:', {
+    //   type: event.data.type,
+    //   hasData: !!event.data.data,
+    //   origin: event.origin,
+    // })
 
     if (event.data.type === 'LANGFUSE_TRACK_REQUEST') {
       console.log('[LANGFUSE-MAIN] 🎯 Processing LANGFUSE_TRACK_REQUEST')
       await this.trackRequest(event.data.data, event.data.ctx)
     } else {
-      console.debug('[LANGFUSE-MAIN] ⚠️ Unknown message type:', event.data.type)
+      // console.debug('[LANGFUSE-MAIN] ⚠️ Unknown message type:', event.data.type)
     }
   }
 
