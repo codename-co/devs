@@ -219,21 +219,26 @@ export const submitChat = async (
       attachments:
         knowledgeAttachments.length > 0 ? knowledgeAttachments : undefined,
     })
+    console.log('▶', 'messages:', messages)
+    console.log('▶', 'prompt:', prompt)
+    const timestart = Date.now()
 
     // Call the LLM service with streaming
-    let fullResponse = ''
+    let response = ''
 
     for await (const chunk of LLMService.streamChat(messages, config)) {
-      console.debug('▷', chunk)
-      fullResponse += chunk
-      onResponseUpdate(fullResponse)
+      console.debug('◁', chunk)
+      response += chunk
+      onResponseUpdate(response)
     }
-    console.log('▶', fullResponse)
+    const timeend = Date.now()
+    console.log('◀', { response })
+    console.log(`LLM response time: ${(timeend - timestart) / 1000}s`)
 
     // Save assistant response to conversation
     await addMessage(conversation.id, {
       role: 'assistant',
-      content: fullResponse,
+      content: response,
       agentId: agent.id,
     })
 

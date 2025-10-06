@@ -82,6 +82,7 @@ export class LLMService {
     config: LLMConfig,
   ): AsyncIterableIterator<string> {
     const provider = this.getProvider(config.provider)
+    console.log('△', 'using:', config.provider, config.model, { config })
     yield* provider.streamChat(messages, config)
   }
 
