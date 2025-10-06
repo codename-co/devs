@@ -154,41 +154,34 @@ export class LocalLLMProvider implements LLMProviderInterface {
   }
 
   /**
-   * Convert messages to a single prompt string
+   * Format messages using the tokenizer's chat template or a fallback template
    */
-  private messagesToPrompt(messages: LLMMessage[]): string {
-    let prompt = ''
+  private formatMessages(messages: LLMMessage[], tokenizer: any): string {
+    try {
+      // Try to use the tokenizer's built-in chat template
+      const formatted = tokenizer.apply_chat_template(messages, {
+        tokenize: false,
+        add_generation_prompt: true,
+      })
+      return formatted
+    } catch (error) {
+      // Fallback: Use a simple chat template compatible with most models
+      // This template is based on common instruction-following model formats
+      const chatTemplate = `{% for message in messages %}{% if message['role'] == 'system' %}<|system|>
+{{ message['content'] }}</s>
+{% elif message['role'] == 'user' %}<|user|>
+{{ message['content'] }}</s>
+{% elif message['role'] == 'assistant' %}<|assistant|>
+{{ message['content'] }}</s>
+{% endif %}{% endfor %}{% if add_generation_prompt %}<|assistant|>
+{% endif %}`
 
-    for (const message of messages) {
-      let content = message.content
-
-      // Handle attachments
-      if (message.attachments && message.attachments.length > 0) {
-        message.attachments.forEach((attachment) => {
-          if (attachment.type === 'text') {
-            const fileContent = atob(attachment.data)
-            content += `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`
-          } else if (attachment.type === 'image') {
-            content += `\n\n[Image: ${attachment.name} - Image analysis not supported in local mode]\n\n`
-          } else {
-            content += `\n\n[Document: ${attachment.name} - Document parsing not supported in local mode]\n\n`
-          }
-        })
-      }
-
-      if (message.role === 'system') {
-        prompt += `### System:\n${content}\n\n`
-      } else if (message.role === 'user') {
-        prompt += `### User:\n${content}\n\n`
-      } else if (message.role === 'assistant') {
-        prompt += `### Assistant:\n${content}\n\n`
-      }
+      return tokenizer.apply_chat_template(messages, {
+        tokenize: false,
+        add_generation_prompt: true,
+        chat_template: chatTemplate,
+      })
     }
-
-    // Add final prompt for assistant response
-    prompt += '### Assistant:\n'
-
-    return prompt
   }
 
   async chat(
@@ -196,7 +189,9 @@ export class LocalLLMProvider implements LLMProviderInterface {
     config?: Partial<LLMConfig>,
   ): Promise<LLMResponse> {
     const generator = await this.getPipeline(config?.model)
-    const prompt = this.messagesToPrompt(messages)
+
+    // Format messages using the tokenizer's chat template
+    const prompt = this.formatMessages(messages, generator.tokenizer)
 
     const result = await generator(prompt, {
       max_new_tokens: config?.maxTokens || 512,
@@ -207,7 +202,7 @@ export class LocalLLMProvider implements LLMProviderInterface {
     })
 
     // Extract generated text
-    const generatedText =
+    const response =
       Array.isArray(result) &&
       result[0] &&
       typeof result[0] === 'object' &&
@@ -217,15 +212,12 @@ export class LocalLLMProvider implements LLMProviderInterface {
           ? (result as any).generated_text
           : ''
 
-    // Remove the prompt from the response
-    const response = generatedText.replace(prompt, '').trim()
-
     return {
       content: response,
       usage: {
-        promptTokens: prompt.length / 4, // Rough estimate
+        promptTokens: NaN, // TODO: Not available
         completionTokens: response.length / 4, // Rough estimate
-        totalTokens: (prompt.length + response.length) / 4,
+        totalTokens: NaN, // TODO: Not available
       },
     }
   }
@@ -235,7 +227,9 @@ export class LocalLLMProvider implements LLMProviderInterface {
     config?: Partial<LLMConfig>,
   ): AsyncIterableIterator<string> {
     const generator = await this.getPipeline(config?.model)
-    const prompt = this.messagesToPrompt(messages)
+
+    // Format messages using the tokenizer's chat template
+    const prompt = this.formatMessages(messages, generator.tokenizer)
 
     // Collect chunks from the streamer
     const chunks: string[] = []
