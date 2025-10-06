@@ -4,6 +4,7 @@ import {
   pipeline,
   env,
   TextGenerationPipeline,
+  TextStreamer,
 } from '@huggingface/transformers'
 import { inspectAllCaches, startCacheMonitoring } from '../cache-debug'
 import { isLowEndDevice } from '@/lib/device'
@@ -130,34 +131,26 @@ export class LocalLLMProvider implements LLMProviderInterface {
       })
     }
 
-    const pipe = await pipeline('text-generation', modelName, {
+    const generator = await pipeline('text-generation', modelName, {
       device: 'webgpu',
-      // dtype: 'q8',
+      // dtype: 'q4f16',
       // dtype: 'fp16',
       progress_callback: (progress: any) => {
-        if (LocalLLMProvider.progressCallback) {
-          LocalLLMProvider.progressCallback({
-            status: progress.status || 'downloading',
-            loaded: progress.loaded,
-            total: progress.total,
-            progress: progress.progress,
-          })
-        }
+        LocalLLMProvider.progressCallback?.({
+          status: progress.status || 'downloading',
+          loaded: progress.loaded,
+          total: progress.total,
+          progress: progress.progress,
+        })
       },
     })
 
-    if (LocalLLMProvider.progressCallback) {
-      LocalLLMProvider.progressCallback({
-        status: 'ready',
-        progress: 100,
-      })
-    }
+    LocalLLMProvider.progressCallback?.({
+      status: 'ready',
+      progress: 100,
+    })
 
-    // Inspect cache after model loads
-    console.log('🔍 Model loaded, inspecting cache...')
-    setTimeout(inspectAllCaches, 1000)
-
-    return pipe as TextGenerationPipeline
+    return generator
   }
 
   /**
@@ -202,10 +195,10 @@ export class LocalLLMProvider implements LLMProviderInterface {
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
   ): Promise<LLMResponse> {
-    const pipe = await this.getPipeline(config?.model)
+    const generator = await this.getPipeline(config?.model)
     const prompt = this.messagesToPrompt(messages)
 
-    const result = await pipe(prompt, {
+    const result = await generator(prompt, {
       max_new_tokens: config?.maxTokens || 512,
       temperature: config?.temperature || 0.7,
       do_sample: true,
@@ -241,75 +234,51 @@ export class LocalLLMProvider implements LLMProviderInterface {
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
   ): AsyncIterableIterator<string> {
-    // For now, transformers.js doesn't support true streaming in browser
-    // We'll simulate it by yielding the complete response
-    const response = await this.chat(messages, config)
+    const generator = await this.getPipeline(config?.model)
+    const prompt = this.messagesToPrompt(messages)
 
-    // Yield the response character by character for a streaming effect
-    const words = response.content.split(' ')
-    for (let i = 0; i < words.length; i++) {
-      yield words[i] + (i < words.length - 1 ? ' ' : '')
-      // Small delay to simulate streaming
-      await new Promise((resolve) => setTimeout(resolve, 10))
+    // Collect chunks from the streamer
+    const chunks: string[] = []
+    let chunkIndex = 0
+
+    // Create text streamer with callback
+    const streamer = new TextStreamer(generator.tokenizer, {
+      skip_prompt: true,
+      callback_function: (text) => {
+        chunks.push(text)
+      },
+    })
+
+    // Start generation in background
+    const generationPromise = generator(prompt, {
+      max_new_tokens: config?.maxTokens || 512,
+      temperature: config?.temperature || 0.7,
+      do_sample: true,
+      top_k: 50,
+      top_p: 0.95,
+      streamer,
+    })
+
+    // Yield chunks as they become available
+    while (true) {
+      if (chunkIndex < chunks.length) {
+        yield chunks[chunkIndex]
+        chunkIndex++
+      } else {
+        // Check if generation is complete
+        const status = await Promise.race([
+          generationPromise.then(() => 'done'),
+          new Promise((resolve) => setTimeout(() => resolve('pending'), 10)),
+        ])
+
+        if (status === 'done' && chunkIndex >= chunks.length) {
+          break
+        }
+      }
     }
 
-    // const pipe = await this.getPipeline(config?.model)
-    // const prompt = this.messagesToPrompt(messages)
-
-    // let lastText = ''
-    // const chunks: string[] = []
-    // let streamComplete = false
-    // let streamError: Error | null = null
-
-    // // Start the generation with callback
-    // const generationPromise = pipe(prompt, {
-    //   max_new_tokens: config?.maxTokens || 512,
-    //   temperature: config?.temperature || 0.7,
-    //   do_sample: true,
-    //   top_k: 50,
-    //   top_p: 0.95,
-    //   // @ts-ignore - callback_function is supported but not in types
-    //   callback_function: (beams: any) => {
-    //     const decodedText = pipe.tokenizer.decode(beams[0].output_token_ids, {
-    //       skip_special_tokens: true,
-    //     })
-
-    //     // Remove the prompt from the decoded text
-    //     const newText = decodedText.replace(prompt, '').trim()
-
-    //     // Extract only the new portion
-    //     if (newText.length > lastText.length) {
-    //       const chunk = newText.substring(lastText.length)
-    //       chunks.push(chunk)
-    //       lastText = newText
-    //     }
-    //   },
-    // })
-    //   .catch((error: Error) => {
-    //     streamError = error
-    //   })
-    //   .finally(() => {
-    //     streamComplete = true
-    //   })
-
-    // // Yield chunks as they become available
-    // let yieldedCount = 0
-    // while (!streamComplete || yieldedCount < chunks.length) {
-    //   if (streamError) {
-    //     throw streamError
-    //   }
-
-    //   if (yieldedCount < chunks.length) {
-    //     yield chunks[yieldedCount]
-    //     yieldedCount++
-    //   } else {
-    //     // Wait a bit before checking for new chunks
-    //     await new Promise((resolve) => setTimeout(resolve, 10))
-    //   }
-    // }
-
-    // // Wait for generation to complete
-    // await generationPromise
+    // Ensure generation completes
+    await generationPromise
   }
 
   async validateApiKey(_apiKey: string): Promise<boolean> {
