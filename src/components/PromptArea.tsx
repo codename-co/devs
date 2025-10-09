@@ -514,42 +514,13 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
             onChange={handleFileInputChange}
           />
 
-          {/* Selected files display */}
-          {selectedFiles.length > 0 && (
-            <div className="mb-2 flex flex-wrap gap-2 p-2">
-              {selectedFiles.map((file, index) => (
-                <Chip
-                  key={index}
-                  variant="flat"
-                  onClose={() => handleRemoveFile(index)}
-                >
-                  <span
-                    className="text-xs flex flex-row items-center gap-1 max-w-64 pr-16 overflow-hidden"
-                    title={file.name}
-                  >
-                    <Icon
-                      className="w-4"
-                      name={getFileIcon(file.type) as any}
-                    />
-                    <span className="whitespace-nowrap overflow-hidden text-ellipsis">
-                      {file.name.substring(0, 48)}
-                    </span>
-                    <span className="absolute right-2 bg-content2 pl-2 pr-4">
-                      ({formatBytes(file.size, lang)})
-                    </span>
-                  </span>
-                </Chip>
-              ))}
-            </div>
-          )}
-
           <Textarea
             ref={ref}
             data-testid="prompt-input"
             className="pb-20 bg-content2 rounded-lg"
             classNames={{
               input: 'p-1',
-              inputWrapper: 'shadow-none -mb-20 pb-12 bg-default-200',
+              inputWrapper: `shadow-none -mb-20 pb-12 ${selectedFiles.length ? 'pb-20' : ''} bg-default-200`,
             }}
             maxRows={7}
             minRows={
@@ -564,6 +535,36 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
             onFocus={handleFocus as any}
             onKeyDown={handleKeyDown as any}
             onValueChange={handlePromptChange}
+            endContent={
+              // Selected files display
+              selectedFiles.length > 0 && (
+                <div className="mb-2 flex flex-wrap gap-2 p-2 absolute left-0 bottom-8">
+                  {selectedFiles.map((file, index) => (
+                    <Chip
+                      key={index}
+                      variant="bordered"
+                      onClose={() => handleRemoveFile(index)}
+                    >
+                      <span
+                        className="text-xs flex flex-row items-center gap-1 max-w-64 pr-16 overflow-hidden"
+                        title={file.name}
+                      >
+                        <Icon
+                          className="w-4"
+                          name={getFileIcon(file.type) as any}
+                        />
+                        <span className="whitespace-nowrap overflow-hidden text-ellipsis">
+                          {file.name.substring(0, 48)}
+                        </span>
+                        <span className="absolute right-2 pl-2 pr-4">
+                          ({formatBytes(file.size, lang)})
+                        </span>
+                      </span>
+                    </Chip>
+                  ))}
+                </div>
+              )
+            }
             {...props}
           />
 

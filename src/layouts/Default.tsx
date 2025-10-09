@@ -100,7 +100,7 @@ export default function DefaultLayout({
                             className="rotate-180"
                           />
                         }
-                        className="absolute hidden xl:inline-flex dark:hover:bg-default-300"
+                        className="absolute -ml-20 2xl:-ml-32 hidden xl:inline-flex dark:hover:bg-default-300 transition-[margin-left] duration-300"
                       />
                     </Tooltip>
                   )}

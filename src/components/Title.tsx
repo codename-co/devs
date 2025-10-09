@@ -123,9 +123,9 @@ export const Title = ({
     return (
       <div>
         <_Title {...props}>{children}</_Title>
-        <p id={subtitleId} className="text-muted-foreground">
+        <div id={subtitleId} className="text-muted-foreground">
           {subtitle}
-        </p>
+        </div>
       </div>
     )
   }

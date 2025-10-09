@@ -272,17 +272,22 @@ export const TaskPage = () => {
           try {
             refreshInterval = setInterval(async () => {
               try {
-                // Reload fresh data
-                await Promise.all([loadConversations(), loadArtifacts()])
+                // Reload fresh data from IndexedDB
+                await Promise.all([
+                  loadConversations(),
+                  loadArtifacts(),
+                  loadTasks(),
+                ])
 
                 const currentTaskData = await getTaskById(taskId)
                 if (currentTaskData) {
                   const currentArtifacts = await getArtifactsByTask(taskId)
-                  const currentConversations = useConversationStore
-                    .getState()
-                    .conversations.filter(
-                      (conv) => conv.workflowId === currentTaskData.workflowId,
-                    )
+                  // Get fresh conversations from store AFTER loading
+                  const freshConversations =
+                    useConversationStore.getState().conversations
+                  const currentConversations = freshConversations.filter(
+                    (conv) => conv.workflowId === currentTaskData.workflowId,
+                  )
 
                   // Refresh task hierarchy if needed
                   let currentHierarchy = taskHierarchy
@@ -420,6 +425,10 @@ export const TaskPage = () => {
 
             await performFinalReload()
             setIsOrchestrating(false)
+
+            // Return early after orchestration completes - data is already loaded in performFinalReload
+            setIsLoading(false)
+            return
           } catch (error) {
             // Clear the refresh interval on error
             if (refreshInterval) clearInterval(refreshInterval)
@@ -437,6 +446,10 @@ export const TaskPage = () => {
             } else {
               errorToast('Task orchestration failed', error)
             }
+
+            // After error, still return early - don't load stale data
+            setIsLoading(false)
+            return
           }
         }
 
@@ -473,7 +486,7 @@ export const TaskPage = () => {
     }
 
     loadTaskData()
-  }, [taskId, loadConversations, loadArtifacts])
+  }, [taskId])
 
   // Auto-select first artifact when artifacts change
   useEffect(() => {
@@ -524,31 +537,31 @@ export const TaskPage = () => {
     const getEventColor = () => {
       switch (event.type) {
         case 'task_created':
-          return 'bg-blue-500'
+          return 'bg-blue-100 text-blue-700 dark:bg-blue-500/25 dark:text-blue-300'
         case 'task_started':
-          return 'bg-green-500'
+          return 'bg-green-100 text-green-700 dark:bg-green-500/25 dark:text-green-300'
         case 'agent_assigned':
-          return 'bg-purple-500'
+          return 'bg-purple-100 text-purple-700 dark:bg-purple-500/25 dark:text-purple-300'
         case 'message':
-          return 'bg-gray-500'
+          return 'bg-gray-100 text-gray-700 dark:bg-gray-500/25 dark:text-gray-300'
         case 'artifact_created':
-          return 'bg-orange-500'
+          return 'bg-orange-100 text-orange-700 dark:bg-orange-500/25 dark:text-orange-300'
         case 'task_completed':
-          return 'bg-green-600'
+          return 'bg-green-100 text-green-700 dark:bg-green-500/25 dark:text-green-300'
         case 'requirement_satisfied':
-          return 'bg-emerald-500'
+          return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/25 dark:text-emerald-300'
         case 'requirement_detected':
-          return 'bg-blue-400'
+          return 'bg-blue-100 text-blue-700 dark:bg-blue-500/25 dark:text-blue-300'
         case 'requirement_validated':
-          return 'bg-indigo-500'
+          return 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/25 dark:text-indigo-300'
         case 'task_branched':
-          return 'bg-yellow-500'
+          return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/25 dark:text-yellow-300'
         case 'subtask_created':
-          return 'bg-cyan-500'
+          return 'bg-cyan-100 text-cyan-700 dark:bg-cyan-500/25 dark:text-cyan-300'
         case 'subtask_completed':
-          return 'bg-emerald-600'
+          return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/25 dark:text-emerald-300'
         default:
-          return 'bg-gray-400'
+          return 'bg-gray-100 text-gray-700 dark:bg-gray-500/25 dark:text-gray-300'
       }
     }
 
@@ -556,15 +569,15 @@ export const TaskPage = () => {
       <div className="flex gap-4 relative">
         {/* Timeline line */}
         {!isLast && (
-          <div className="absolute left-4 top-12 w-0.5 h-full bg-gray-200 dark:bg-gray-700"></div>
+          <div className="absolute left-4 top-10 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-800"></div>
         )}
 
         {/* Event marker */}
         <div className="flex-none">
           <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center ${getEventColor()}`}
+            className={`w-8 h-8 -mt-1 rounded-full flex items-center justify-center ${getEventColor()}`}
           >
-            <Icon name={getEventIcon() as any} className="w-4 h-4 text-white" />
+            <Icon name={getEventIcon() as any} className="w-4 h-4" />
           </div>
         </div>
 
@@ -994,7 +1007,7 @@ export const TaskPage = () => {
                     <CheckboxGroup
                       // label={t('Requirements')}
                       value={task.requirements
-                        .filter((req) => req.satisfiedAt)
+                        .filter((req) => req.satisfiedAt || req.validatedAt)
                         .map((req) => req.id)}
                     >
                       {task.requirements.map((requirement) => (

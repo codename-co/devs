@@ -12,6 +12,7 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  Progress,
   Spinner,
   Textarea,
   useDisclosure,
@@ -25,6 +26,7 @@ import {
   MoreVert,
   MediaImage,
   SubmitDocument,
+  RefreshDouble,
 } from 'iconoir-react'
 
 import { db } from '@/lib/db'
@@ -47,6 +49,10 @@ import {
 import { errorToast, successToast, warningToast } from '@/lib/toast'
 import localI18n from './i18n'
 import { formatBytes } from '@/lib/format'
+import {
+  documentProcessor,
+  type ProcessingEvent,
+} from '@/lib/document-processor'
 
 interface FileSystemFileHandle {
   readonly kind: 'file'
@@ -97,6 +103,9 @@ export const KnowledgePage: React.FC = () => {
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'error'>(
     'idle',
   )
+  const [processingJobs, setProcessingJobs] = useState<
+    Map<string, { itemId: string; progress: number; status: string }>
+  >(new Map())
 
   useEffect(() => {
     loadKnowledgeItems()
@@ -147,10 +156,59 @@ export const KnowledgePage: React.FC = () => {
       }
     })
 
+    // Subscribe to processing events
+    const unsubscribeProcessing = documentProcessor.onProcessingEvent(
+      (event: ProcessingEvent) => {
+        console.log('Processing event:', event)
+
+        setProcessingJobs((prev) => {
+          const next = new Map(prev)
+
+          switch (event.type) {
+            case 'job_started':
+              // Find the item being processed
+              const job = documentProcessor.getJobStatus(event.jobId)
+              if (job) {
+                next.set(event.jobId, {
+                  itemId: job.knowledgeItemId,
+                  progress: 0,
+                  status: 'processing',
+                })
+              }
+              break
+
+            case 'job_progress':
+              const existing = next.get(event.jobId)
+              if (existing) {
+                next.set(event.jobId, {
+                  ...existing,
+                  progress: event.progress || 0,
+                })
+              }
+              break
+
+            case 'job_completed':
+              next.delete(event.jobId)
+              loadKnowledgeItems() // Refresh to show updated content
+              successToast('Document processing completed')
+              break
+
+            case 'job_failed':
+              next.delete(event.jobId)
+              errorToast(`Processing failed: ${event.error}`)
+              break
+          }
+
+          return next
+        })
+      },
+    )
+
     // Cleanup subscriptions on unmount
     return () => {
       unsubscribeWatchers()
       unsubscribeSync()
+      unsubscribeProcessing()
     }
   }, [])
 
@@ -205,6 +263,16 @@ export const KnowledgePage: React.FC = () => {
             duplicateCount++
           } else {
             addedCount++
+
+            // Queue document processing for non-duplicate files
+            if (result.fileType === 'document' || result.fileType === 'text') {
+              try {
+                await documentProcessor.queueProcessing(result.id)
+              } catch (error) {
+                console.error('Failed to queue processing:', error)
+                // Non-critical error, continue with upload
+              }
+            }
           }
         }
       }
@@ -370,6 +438,23 @@ export const KnowledgePage: React.FC = () => {
       onEditModalClose()
     } catch (error) {
       console.error('Failed to update item:', error)
+    }
+  }
+
+  const reprocessItem = async (item: KnowledgeItem) => {
+    try {
+      // Only process document and text files
+      // if (item.fileType !== 'document' && item.fileType !== 'text') {
+      //   warningToast('Only document and text files can be processed')
+      //   return
+      // }
+
+      // Queue the item for processing
+      await documentProcessor.queueProcessing(item.id)
+      successToast(`Processing started for "${item.name}"`)
+    } catch (error) {
+      console.error('Failed to reprocess item:', error)
+      errorToast('Failed to start processing. Please try again.')
     }
   }
 
@@ -611,77 +696,108 @@ export const KnowledgePage: React.FC = () => {
               data-testid="knowledge-items"
               className="divide-y divide-default-100 -mt-4"
             >
-              {knowledgeItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="p-4 flex items-center justify-between hover:bg-default-50"
-                >
-                  <div className="flex items-center space-x-4 flex-1">
-                    <div className="flex-shrink-0">{getFileIcon(item)}</div>
+              {knowledgeItems.map((item) => {
+                // Find if this item is being processed
+                const processingJob = Array.from(processingJobs.values()).find(
+                  (job) => job.itemId === item.id,
+                )
 
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium truncate">{item.name}</h3>
-                      <div className="flex items-center space-x-4 text-sm text-default-500 mt-1">
-                        <span>{item.path}</span>
-                        {item.fileType && (
-                          <span className="capitalize">{item.fileType}</span>
-                        )}
-                        {item.size && (
-                          <span>{formatBytes(item.size, lang)}</span>
-                        )}
-                        <span>{formatDate(item.createdAt)}</span>
-                      </div>
-                      {item.description && (
-                        <p className="text-sm text-default-600 mt-1 truncate">
-                          {item.description}
-                        </p>
-                      )}
-                      {item.tags && item.tags.length > 0 && (
-                        <div className="flex gap-1 mt-2">
-                          {item.tags.map((tag) => (
-                            <Chip
-                              key={tag}
-                              size="sm"
-                              variant="flat"
-                              color="primary"
-                            >
-                              {tag}
-                            </Chip>
-                          ))}
+                return (
+                  <div
+                    key={item.id}
+                    className="p-4 flex items-center justify-between hover:bg-default-50"
+                  >
+                    <div className="flex items-center space-x-4 flex-1">
+                      <div className="flex-shrink-0">{getFileIcon(item)}</div>
+
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium truncate">{item.name}</h3>
+                        <div className="flex items-center space-x-4 text-sm text-default-500 mt-1">
+                          <span>{item.path}</span>
+                          {item.fileType && (
+                            <span className="capitalize">{item.fileType}</span>
+                          )}
+                          {item.size && (
+                            <span>{formatBytes(item.size, lang)}</span>
+                          )}
+                          <span>{formatDate(item.createdAt)}</span>
                         </div>
-                      )}
+                        {processingJob && (
+                          <div className="mt-2">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Spinner size="sm" />
+                              <span className="text-xs text-primary">
+                                Processing document...
+                              </span>
+                            </div>
+                            <Progress
+                              size="sm"
+                              value={processingJob.progress}
+                              color="primary"
+                              className="max-w-md"
+                              aria-label="Document processing progress"
+                            />
+                          </div>
+                        )}
+                        {item.description && (
+                          <p className="text-sm text-default-600 mt-1 truncate">
+                            {item.description}
+                          </p>
+                        )}
+                        {item.tags && item.tags.length > 0 && (
+                          <div className="flex gap-1 mt-2">
+                            {item.tags.map((tag) => (
+                              <Chip
+                                key={tag}
+                                size="sm"
+                                variant="flat"
+                                color="primary"
+                              >
+                                {tag}
+                              </Chip>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Dropdown>
+                        <DropdownTrigger>
+                          <Button isIconOnly variant="light" size="sm">
+                            <MoreVert className="w-4 h-4" />
+                          </Button>
+                        </DropdownTrigger>
+                        <DropdownMenu>
+                          <DropdownItem
+                            key="edit"
+                            startContent={<EditPencil className="w-4 h-4" />}
+                            onPress={() => openEditModal(item)}
+                          >
+                            {t('Edit')}
+                          </DropdownItem>
+                          <DropdownItem
+                            key="reprocess"
+                            startContent={<RefreshDouble className="w-4 h-4" />}
+                            onPress={() => reprocessItem(item)}
+                          >
+                            {t('Reprocess')}
+                          </DropdownItem>
+                          <DropdownItem
+                            key="delete"
+                            startContent={<Trash className="w-4 h-4" />}
+                            className="text-danger"
+                            color="danger"
+                            onPress={() => deleteItem(item.id)}
+                          >
+                            {t('Delete')}
+                          </DropdownItem>
+                        </DropdownMenu>
+                      </Dropdown>
                     </div>
                   </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Dropdown>
-                      <DropdownTrigger>
-                        <Button isIconOnly variant="light" size="sm">
-                          <MoreVert className="w-4 h-4" />
-                        </Button>
-                      </DropdownTrigger>
-                      <DropdownMenu>
-                        <DropdownItem
-                          key="edit"
-                          startContent={<EditPencil className="w-4 h-4" />}
-                          onPress={() => openEditModal(item)}
-                        >
-                          {t('Edit')}
-                        </DropdownItem>
-                        <DropdownItem
-                          key="delete"
-                          startContent={<Trash className="w-4 h-4" />}
-                          className="text-danger"
-                          color="danger"
-                          onPress={() => deleteItem(item.id)}
-                        >
-                          {t('Delete')}
-                        </DropdownItem>
-                      </DropdownMenu>
-                    </Dropdown>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
 

@@ -128,7 +128,7 @@ export const IndexPage = () => {
         <Section mainClassName="text-center relative">
           <motion.div
             layoutId="active"
-            className="flex flex-col items-center"
+            className="flex flex-col items-center mt-0 sm:mt-[10vh]"
             {...motionVariants.container}
           >
             <motion.div {...motionVariants.icon}>

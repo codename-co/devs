@@ -211,7 +211,7 @@ export const AgentsPage = () => {
                 color="default"
                 icon={<Icon name="LightBulbOn" />}
                 // variant="faded"
-                className="mb-6"
+                className="mb-6 text-sm"
               >
                 Built-in agents are pre-configured agents that come with the
                 platform. They showcase various capabilities and can serve as

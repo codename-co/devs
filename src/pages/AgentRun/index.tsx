@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo, useCallback, memo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
-  Avatar,
   Spinner,
   Chip,
   Card,
@@ -61,20 +60,10 @@ const MessageDisplay = memo(
         tabIndex={0}
         className="flex w-full gap-3"
       >
-        <div className="relative flex-none pt-0.5">
+        <div className="relative flex-none -mt-1">
           <div className="relative inline-flex shrink-0">
-            {message.role === 'user' ? (
-              <Avatar
-                size="sm"
-                showFallback
-                name="U"
-                classNames={{
-                  base: 'bg-default text-default-foreground',
-                  fallback: 'text-tiny',
-                }}
-              />
-            ) : (
-              <div className="border-1 border-primary-300 dark:border-default-200 flex h-8 w-8 items-center justify-center rounded-full">
+            {message.role === 'assistant' && (
+              <div className="border-1 border-primary-300 dark:border-default-200 hidden md:flex h-8 w-8 items-center justify-center rounded-full">
                 <Icon
                   name={(displayAgent?.icon as any) || 'Sparks'}
                   className="w-4 h-4 text-primary-600"
@@ -84,9 +73,9 @@ const MessageDisplay = memo(
           </div>
         </div>
         <div
-          className={`rounded-medium text-foreground group relative w-full overflow-hidden font-medium ${
+          className={`rounded-medium text-foreground group relative overflow-hidden font-medium ${
             message.role === 'user'
-              ? 'bg-default-100 px-4 py-3'
+              ? 'bg-default-100 px-4 py-3 ml-auto max-w-[80%]'
               : 'bg-transparent px-1 py-0'
           }`}
         >
@@ -242,7 +231,7 @@ export const AgentRunPage = () => {
         name: (selectedAgent?.icon as any) || 'Sparks',
         color: 'text-primary-300 dark:text-primary-600',
       },
-      title: selectedAgent?.name,
+      title: selectedAgent?.name ?? '…',
       subtitle: (
         <>
           <Button
@@ -259,7 +248,7 @@ export const AgentRunPage = () => {
                 content={
                   selectedAgent?.instructions || t('No system prompt defined.')
                 }
-                className="prose dark:prose-invert prose-sm"
+                className="prose dark:prose-invert prose-sm text-default-700"
               />
             </div>
           )}
@@ -458,6 +447,7 @@ export const AgentRunPage = () => {
     if (!prompt.trim() || isSending || !selectedAgent) return
 
     setIsSending(true)
+    setPrompt('')
     setResponse('')
 
     await submitChat({
@@ -481,7 +471,7 @@ export const AgentRunPage = () => {
       <DefaultLayout header={header}>
         <Section mainClassName="text-center">
           <div className="flex flex-col items-center justify-center min-h-[50vh]">
-            <Spinner size="lg" />
+            <Spinner size="lg" color="primary" />
             <p className="mt-4 text-default-500">
               {t('Loading agent and conversation…')}
             </p>

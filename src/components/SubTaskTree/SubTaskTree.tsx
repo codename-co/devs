@@ -1,6 +1,5 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Card, Chip, Progress } from '@heroui/react'
+import { Card, Chip, Progress } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import type { Task } from '@/types'
@@ -18,9 +17,6 @@ interface SubTaskTreeProps {
 interface TaskNodeProps {
   task: Task
   level: number
-  isExpanded?: boolean
-  onToggle?: () => void
-  hasChildren?: boolean
   isSelected?: boolean
   className?: string
 }
@@ -28,9 +24,6 @@ interface TaskNodeProps {
 const TaskNode = ({
   task,
   level,
-  isExpanded = false,
-  onToggle,
-  hasChildren = false,
   isSelected = false,
   className = '',
 }: TaskNodeProps) => {
@@ -94,26 +87,6 @@ const TaskNode = ({
     >
       {/* Indentation */}
       <div style={{ width: `${level * 20}px` }} />
-
-      {/* Expand/Collapse Button */}
-      <div className="w-6 flex justify-center">
-        {hasChildren ? (
-          <Button
-            isIconOnly
-            size="sm"
-            variant="light"
-            onClick={onToggle}
-            className="min-w-6 w-6 h-6"
-          >
-            <Icon
-              name={isExpanded ? 'ArrowRight' : 'ArrowRight'}
-              className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
-            />
-          </Button>
-        ) : (
-          <div className="w-6" />
-        )}
-      </div>
 
       {/* Status Icon */}
       <div className="flex-none">
@@ -215,28 +188,12 @@ export const SubTaskTree = ({
 }: SubTaskTreeProps) => {
   const { t, url } = useI18n(localI18n)
   const navigate = useNavigate()
-  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(
-    new Set([task.id]),
-  )
-
-  const toggleExpanded = (taskId: string) => {
-    setExpandedTasks((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(taskId)) {
-        newSet.delete(taskId)
-      } else {
-        newSet.add(taskId)
-      }
-      return newSet
-    })
-  }
 
   const renderTaskHierarchy = (
     currentTask: Task,
     childTasks: Task[],
     level: number = 0,
   ): React.ReactNode[] => {
-    const isExpanded = expandedTasks.has(currentTask.id)
     const hasChildren = childTasks.length > 0
     const isSelected = currentTask.id === task.id
 
@@ -245,15 +202,12 @@ export const SubTaskTree = ({
         key={currentTask.id}
         task={currentTask}
         level={level}
-        isExpanded={isExpanded}
-        onToggle={() => toggleExpanded(currentTask.id)}
-        hasChildren={hasChildren}
         isSelected={isSelected}
       />,
     ]
 
-    // Recursively render children if expanded
-    if (isExpanded && hasChildren) {
+    // Recursively render children
+    if (hasChildren) {
       childTasks.forEach((childTask) => {
         const grandChildren = children.filter(
           (t) => t.parentTaskId === childTask.id,
@@ -313,13 +267,7 @@ export const SubTaskTree = ({
             <div className="text-sm text-default-600 mb-2 font-medium">
               {t('Parent Task')}
             </div>
-            <TaskNode
-              task={parent}
-              level={0}
-              isExpanded={false}
-              hasChildren={false}
-              isSelected={false}
-            />
+            <TaskNode task={parent} level={0} isSelected={false} />
           </div>
         )}
 
@@ -335,8 +283,6 @@ export const SubTaskTree = ({
                   key={sibling.id}
                   task={sibling}
                   level={0}
-                  isExpanded={false}
-                  hasChildren={false}
                   isSelected={false}
                 />
               ))}
