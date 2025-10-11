@@ -94,6 +94,9 @@ tags:
   - theoretical-physics
   - nobel-laureate
 i18n:
+  es:
+    name: Albert Einstein
+    desc: Físico teórico y filósofo de la ciencia
   fr:
     name: Albert Einstein
     desc: Physicien théoricien et philosophe des sciences

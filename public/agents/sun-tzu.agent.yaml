@@ -85,6 +85,9 @@ tags:
   - planning
   - art-of-war
 i18n:
+  es:
+    name: Sun Tzu
+    desc: Estratega militar y filósofo chino antiguo
   fr:
     name: Sun Tzu
     desc: Stratège militaire et philosophe chinois ancien

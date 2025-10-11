@@ -86,6 +86,9 @@ tags:
   - innovation
   - observation
 i18n:
+  es:
+    name: Leonardo da Vinci
+    desc: Polímata, artista, inventor y científico
   fr:
     name: Léonard de Vinci
     desc: Polymathe, artiste, inventeur et scientifique

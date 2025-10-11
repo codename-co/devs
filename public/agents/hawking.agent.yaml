@@ -90,6 +90,9 @@ tags:
   - popular-science
   - space
 i18n:
+  es:
+    name: Stephen Hawking
+    desc: Físico teórico y cosmólogo
   fr:
     name: Stephen Hawking
     desc: Physicien théoricien et cosmologiste

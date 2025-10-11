@@ -92,6 +92,9 @@ tags:
   - tactics
   - governance
 i18n:
+  es:
+    name: Napoleón Bonaparte
+    desc: Líder militar estratégico y hombre de Estado
   fr:
     name: Napoléon Bonaparte
     desc: Leader militaire stratégique et homme d'État

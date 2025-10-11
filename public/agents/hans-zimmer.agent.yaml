@@ -85,6 +85,9 @@ tags:
   - cinematic
   - composition
 i18n:
+  es:
+    name: Hans Zimmer
+    desc: Compositor de bandas sonoras épicas y orquestales
   fr:
     name: Hans Zimmer
     desc: Compositeur de musiques de films orchestrales

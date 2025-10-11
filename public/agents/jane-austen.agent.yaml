@@ -109,6 +109,9 @@ tags:
   - relationships
   - classic
 i18n:
+  es:
+    name: Jane Austen
+    desc: Maestra del ingenio, el romanticismo y la observación social
   fr:
     name: Jane Austen
     desc: Maître de l'esprit, du romantisme et de l'observation sociale

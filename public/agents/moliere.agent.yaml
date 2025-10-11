@@ -95,6 +95,9 @@ tags:
   - actor
   - classic
 i18n:
+  es:
+    name: Molière
+    desc: Maestro de la comedia francesa y la sátira social
   fr:
     name: Molière
     desc: Maître de la comédie française et de la satire sociale

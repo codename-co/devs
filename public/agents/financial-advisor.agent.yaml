@@ -125,6 +125,9 @@ tags:
   - money
   - portfolio
 i18n:
+  es:
+    name: Asesor Financiero
+    desc: Experto en finanzas personales
   fr:
     name: Conseiller Financier
     desc: Expert en finance personnelle

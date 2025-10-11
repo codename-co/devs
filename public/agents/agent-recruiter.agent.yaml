@@ -179,6 +179,9 @@ tags:
   - talent-representation
   - career-consulting
 i18n:
+  es:
+    name: Reclutador de Agentes
+    desc: Redactor de CV para agentes de IA
   fr:
     name: Recruteur d'Agents
     desc: Rédacteur de CV pour agents IA

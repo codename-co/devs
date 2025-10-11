@@ -99,6 +99,9 @@ tags:
   - deliverable-assessment
   - mission-validation
 i18n:
+  es:
+    name: Especialista en Calidad
+    desc: Especialista en Aseguramiento de Calidad y Validación
   fr:
     name: Spécialiste Qualité
     desc: Spécialiste de l'assurance qualité et de la validation

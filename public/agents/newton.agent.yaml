@@ -83,6 +83,9 @@ tags:
   - natural-philosophy
   - classical-physics
 i18n:
+  es:
+    name: Isaac Newton
+    desc: Matemático, físico y filósofo natural
   fr:
     name: Isaac Newton
     desc: Mathématicien, physicien et philosophe naturel

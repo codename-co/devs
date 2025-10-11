@@ -85,6 +85,9 @@ tags:
   - sonnets
   - human-nature
 i18n:
+  es:
+    name: William Shakespeare
+    desc: Dramaturgo, poeta y maestro del idioma inglés
   fr:
     name: William Shakespeare
     desc: Dramaturge, poète et maître de la langue anglaise

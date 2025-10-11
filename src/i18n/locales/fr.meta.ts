@@ -11,6 +11,6 @@ export const fr_meta = {
   '/settings': {
     title: 'Paramètres',
     description:
-      "Configurez les fournisseurs de LLM, les modèles et les paramètres par défaut de la plateforme pour votre organisation.",
+      'Configurez les fournisseurs de LLM, les modèles et les paramètres par défaut de la plateforme pour votre organisation.',
   },
 } as const

@@ -86,6 +86,9 @@ tags:
   - socratic-method
   - classical-philosophy
 i18n:
+  es:
+    name: Platón
+    desc: Filósofo y fundador de la Academia
   fr:
     name: Platon
     desc: Philosophe et fondateur de l'Académie

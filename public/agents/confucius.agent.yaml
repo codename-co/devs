@@ -86,6 +86,9 @@ tags:
   - wisdom
   - relationships
 i18n:
+  es:
+    name: Confucio
+    desc: Filósofo chino y maestro de ética y armonía social
   fr:
     name: Confucius
     desc: Philosophe chinois et enseignant de l'éthique et de l'harmonie sociale

@@ -1,13 +1,23 @@
 import * as localesIndex from './locales/index'
 
-export const languages = {
+/** ISO 639-1 */
+enum LanguageCodeEnum {
+  en = 'en',
+  es = 'es',
+  fr = 'fr',
+  ko = 'ko',
+}
+export type LanguageCode = `${LanguageCodeEnum}`
+
+export const languages: Record<LanguageCode, string> = {
   en: 'English',
+  es: 'Español',
   fr: 'Français',
   ko: '한국어',
 } as const
 export const en = localesIndex.en
 
-export const defaultLang = 'en'
+export const defaultLang: LanguageCode = 'en'
 
 export type I18n = Record<(typeof localesIndex.en)[number], string>
 

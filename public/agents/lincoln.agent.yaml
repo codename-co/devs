@@ -87,6 +87,9 @@ tags:
   - emancipation
   - unity
 i18n:
+  es:
+    name: Abraham Lincoln
+    desc: 16º Presidente de los Estados Unidos
   fr:
     name: Abraham Lincoln
     desc: 16ème Président des États-Unis

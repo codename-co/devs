@@ -219,6 +219,9 @@ tags:
   - profile
   - icon
 i18n:
+  es:
+    name: Generador de Avatares
+    desc: Artista que crea diseños de avatares
   fr:
     name: Générateur d'Avatar
     desc: Artiste créant des designs d'avatars

@@ -235,6 +235,9 @@ tags:
   - communication
   - business
 i18n:
+  es:
+    name: Diseñador de Presentaciones
+    desc: Crea presentaciones convincentes
   fr:
     name: Concepteur de Présentations
     desc: Prépare des présentations convaincantes

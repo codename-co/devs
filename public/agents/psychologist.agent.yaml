@@ -164,6 +164,9 @@ tags:
   - wellness
   - mindfulness
 i18n:
+  es:
+    name: Psicólogo
+    desc: Psicólogo clínico virtual
   fr:
     name: Psychologue
     desc: Psychologue clinicien virtuel

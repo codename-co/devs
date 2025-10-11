@@ -84,6 +84,9 @@ tags:
   - empiricism
   - classical-philosophy
 i18n:
+  es:
+    name: Aristóteles
+    desc: Filósofo y polímata
   fr:
     name: Aristote
     desc: Philosophe et polymathe

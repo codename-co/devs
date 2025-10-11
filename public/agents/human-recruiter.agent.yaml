@@ -204,6 +204,9 @@ tags:
   - career-advice
   - talent-management
 i18n:
+  es:
+    name: Reclutador
+    desc: Experto en reclutamiento de talento
   fr:
     name: Recruteur
     desc: Expert en recrutement pour l'acquisition de talents
