@@ -24,6 +24,7 @@ const SVG = lazy(() =>
 )
 
 import './widget.css'
+import { completeStreamingHtml } from '@/lib/html-completer'
 
 // Type definitions for specialized widgets
 export type CodeBlockType =
@@ -32,6 +33,7 @@ export type CodeBlockType =
   | 'diagram'
   | 'chart'
   | 'marpit'
+  | 'html'
   | 'generic'
 
 export interface WidgetProps {
@@ -65,6 +67,8 @@ export const Widget = ({
         return 'MathBook'
       case 'marpit':
         return 'Presentation'
+      case 'html':
+        return 'Html5'
       default:
         return 'Code'
     }
@@ -82,6 +86,8 @@ export const Widget = ({
         return 'Chart'
       case 'marpit':
         return presentationTitle
+      case 'html':
+        return 'HTML'
       default:
         return `${language || 'Code'} block`
     }
@@ -125,6 +131,17 @@ export const Widget = ({
           <Suspense fallback={<Fallback />}>
             <Presentation code={code} />
           </Suspense>
+        )
+      case 'html':
+        return (
+          <div className="w-full h-[500px]">
+            <iframe
+              title="HTML Preview"
+              srcDoc={completeStreamingHtml(code)}
+              className="w-full h-full border-0 rounded-md"
+              sandbox="allow-same-origin allow-scripts allow-forms"
+            />
+          </div>
         )
       default:
         // For other types, show source by default until specific renderers are implemented
@@ -203,6 +220,15 @@ export const detectSpecializedCodeType = (
     (trimmedCode.startsWith('<svg') && trimmedCode.endsWith('</svg>'))
   ) {
     return 'svg'
+  }
+
+  // HTML detection
+  if (
+    language === 'html' ||
+    (trimmedCode.match(/<html|<!DOCTYPE html|<head|<body/i) &&
+      trimmedCode.includes('<'))
+  ) {
+    return 'html'
   }
 
   // Diagram detection (placeholder for future implementations)

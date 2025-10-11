@@ -123,6 +123,7 @@ export const Icons = {
   EditPencil: IconoirIcons.EditPencil,
   EvPlugXmark: IconoirIcons.EvPlugXmark,
   Folder: IconoirIcons.Folder,
+  Html5: IconoirIcons.Html5,
   LightBulbOn: IconoirIcons.LightBulbOn,
   Lock: IconoirIcons.Lock,
   MathBook: IconoirIcons.MathBook,
