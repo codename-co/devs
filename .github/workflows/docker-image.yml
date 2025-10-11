@@ -10,9 +10,8 @@ on:
       - 'docs/**'
       - 'tests/**'
       - 'compose.yaml'
-      - 'CONTRIBUTING.md'
+      - '*.md'
       - 'LICENSE'
-      - 'README.md'
   pull_request:
     branches: ['main']
     paths-ignore:
@@ -20,9 +19,8 @@ on:
       - 'docs/**'
       - 'tests/**'
       - 'compose.yaml'
-      - 'CONTRIBUTING.md'
+      - '*.md'
       - 'LICENSE'
-      - 'README.md'
   merge_group:
 
 env:

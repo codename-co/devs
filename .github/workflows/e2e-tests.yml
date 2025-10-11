@@ -3,8 +3,20 @@ name: E2E Tests
 on:
   push:
     branches: [main, develop]
+    paths-ignore:
+      - '.github/workflows/**'
+      - 'docs/**'
+      - 'compose.yaml'
+      - '*.md'
+      - 'LICENSE'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - '.github/workflows/**'
+      - 'docs/**'
+      - 'compose.yaml'
+      - '*.md'
+      - 'LICENSE'
   schedule:
     # Run tests daily at 2 AM UTC to catch flaky tests
     - cron: '0 2 * * *'
