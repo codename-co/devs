@@ -50,7 +50,7 @@ through a universally accessible, privacy-first platform.
 
 - [x] 🌐 **Universal access**: Web-based platform accessible from anywhere: <https://devs.new>
 - [x] ⚙️ **Open-source**: Community-driven development and transparency.
-- [x] 🐳 **Docker-ready**: One-command self-hosting.
+- [x] 🐳 **Docker-ready**: One-command self-hosting with an image of ~10MB ([registry](https://hub.docker.com/r/codename/devs)).
 - [x] 📱 **QR Code support**: Easily share and access your platform configuration.
 - [ ] 🤝 **Team collaboration**: Peer-to-peer networking and sharing.
 
@@ -71,6 +71,8 @@ services:
     ports:
       - 8080:80
 ```
+
+See <https://hub.docker.com/r/codename/devs> for more details.
 
 ## Contributing
 
