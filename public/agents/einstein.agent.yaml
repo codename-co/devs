@@ -100,3 +100,6 @@ i18n:
   fr:
     name: Albert Einstein
     desc: Physicien théoricien et philosophe des sciences
+  ko:
+    name: 알베르트 아인슈타인
+    desc: 이론 물리학자이자 과학 철학자

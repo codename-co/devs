@@ -27,7 +27,7 @@ test.describe('General Settings User Journey', () => {
 
     // Should show general settings controls
     const languageSelect = _.firstLabel('Interface Language')
-    const themeSelect = _.firstLabel('Theme Mode')
+    const themeSelect = _.firstLabel('Theme')
     const platformNameInput = _.firstLabel('Platform Name')
     const backgroundImageSection = page
       .locator('text="Background Image"')
@@ -52,12 +52,12 @@ test.describe('General Settings User Journey', () => {
     await _.selectDropdown(languageSelector, 'Français')
   })
 
-  test('should change theme mode', async ({ page }) => {
+  test('should change theme', async ({ page }) => {
     await _.navigateViaDrawer('Settings')
     await _.selectAccordionItem('General Settings')
 
     const themeSelector = page
-      .getByRole('button', { name: 'Theme Mode System' })
+      .getByRole('button', { name: 'Theme System' })
       .first()
 
     await _.selectDropdown(themeSelector, 'Dark')

@@ -31,6 +31,11 @@ export default {
   plugins: [
     heroui({
       addCommonColors: false,
+      layout: {
+        boxShadow: {
+          medium: '0 0 4px 0 rgba(0, 0, 0, 0.15)',
+        },
+      },
       themes: {
         light: {
           colors: {

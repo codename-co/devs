@@ -5,8 +5,7 @@ type I18n = Record<(typeof en)[number], string>
 export const fr: I18n = {
   'Knowledge Base': 'Base de connaissances',
   'Upload files and synchronize local folders to build your knowledge base':
-    'Téléchargez des fichiers et synchronisez des dossiers locaux pour construire votre base de connaissances',
-  'Add knowledge': 'Ajouter des connaissances',
+    'Ajoutez des fichiers et synchronisez des dossiers locaux pour construire votre base de connaissances',
   'Uploading files…': 'Téléchargement en cours…',
   'Drag & drop files here, or click to select':
     'Glissez-déposez des fichiers ici ou cliquez pour sélectionner',
@@ -19,6 +18,7 @@ export const fr: I18n = {
   Reconnect: 'Reconnecter',
   'My Knowledge': 'Mes connaissances',
   'No knowledge items yet. Upload some files to get started!':
-    'Aucun élément de connaissance pour le moment. Téléchargez des fichiers pour commencer !',
+    'Aucun élément de connaissance pour le moment. Ajoutez des fichiers pour commencer !',
   'Knowledge Item': 'Élément de connaissance',
+  Reprocess: 'Reprocesser',
 } as const

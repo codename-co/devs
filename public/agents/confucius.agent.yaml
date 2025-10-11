@@ -91,4 +91,7 @@ i18n:
     desc: Filósofo chino y maestro de ética y armonía social
   fr:
     name: Confucius
-    desc: Philosophe chinois et enseignant de l'éthique et de l'harmonie sociale
+    desc: Philosophe de l'éthique et de l'harmonie sociale
+  ko:
+    name: 공자
+    desc: 윤리와 사회적 조화의 중국 철학자이자 스승

@@ -10,7 +10,7 @@ export const fr: I18n = {
   'Choose your preferred language': 'Choisissez votre langue préférée',
   'Interface Language': 'Langue de l’interface',
   'Platform Name': 'Nom de la plateforme',
-  'Theme Mode': 'Mode de thème',
+  Theme: 'Thème',
   System: 'Système',
   Light: 'Clair',
   Dark: 'Sombre',

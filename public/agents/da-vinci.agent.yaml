@@ -92,3 +92,6 @@ i18n:
   fr:
     name: Léonard de Vinci
     desc: Polymathe, artiste, inventeur et scientifique
+  ko:
+    name: 레오나르도 다 빈치
+    desc: 박식가, 예술가, 발명가, 과학자

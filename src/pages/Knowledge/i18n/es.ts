@@ -20,4 +20,5 @@ export const es: I18n = {
   'No knowledge items yet. Upload some files to get started!':
     'No hay elementos de conocimiento por el momento. ¡Sube algunos archivos para comenzar!',
   'Knowledge Item': 'Elemento de conocimiento',
+  Reprocess: 'Reprocesar',
 } as const

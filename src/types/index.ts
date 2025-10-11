@@ -1,3 +1,4 @@
+import { LanguageCode } from '@/i18n'
 import { IconName } from '@/lib/types'
 
 export interface Agent {
@@ -15,7 +16,7 @@ export interface Agent {
   updatedAt?: Date
   version?: string
   i18n?: {
-    [lang: string]: {
+    [K in LanguageCode]?: {
       name?: string
       desc?: string
       role?: string
@@ -239,7 +240,7 @@ export interface Artifact {
   title: string
   description: string
   type: 'document' | 'code' | 'design' | 'analysis' | 'plan' | 'report'
-  format: 'markdown' | 'json' | 'code' | 'binary'
+  format: 'markdown' | 'json' | 'code' | 'html' | 'binary'
   content: string
   version: number
   status: 'draft' | 'review' | 'approved' | 'rejected' | 'final'

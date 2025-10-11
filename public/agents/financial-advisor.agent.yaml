@@ -131,3 +131,6 @@ i18n:
   fr:
     name: Conseiller Financier
     desc: Expert en finance personnelle
+  ko:
+    name: 재정 고문
+    desc: 개인 금융 전문가

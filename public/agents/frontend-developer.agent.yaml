@@ -76,3 +76,6 @@ i18n:
   fr:
     name: Développeur Frontend
     desc: Expert en développement d'applications web
+  ko:
+    name: 프론트엔드 개발자
+    desc: 웹 애플리케이션 개발 전문가

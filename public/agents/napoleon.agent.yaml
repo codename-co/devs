@@ -98,3 +98,6 @@ i18n:
   fr:
     name: Napoléon Bonaparte
     desc: Leader militaire stratégique et homme d'État
+  ko:
+    name: 나폴레옹 보나파르트
+    desc: 전략적 군사 지도자이자 정치가

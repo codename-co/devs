@@ -1,3 +1,11 @@
+/**
+ * Utility to complete potentially incomplete streaming HTML/JSX content.
+ * It attempts to close unclosed tags, delimiters, and strings.
+ * This is a heuristic approach and may not cover all edge cases.
+ *
+ * @param html The potentially incomplete HTML/JSX string.
+ * @returns The completed HTML/JSX string.
+ */
 export const completeStreamingHtml = (html: string): string => {
   const foundIssues: { type: string; message: string }[] = []
   let completed: string = html
@@ -39,11 +47,9 @@ export const completeStreamingHtml = (html: string): string => {
     let bracketCount = 0
     let inString = false
     let stringChar = ''
-    let lastNonWhitespace = ''
 
     // First pass: track delimiter stack and strings
     const delimiterStack: string[] = [] // Track opening order
-    let lastAngleBracket = '' // Track last < or > we saw
     let inJsxContentPass1 = false
 
     for (let i = 0; i < scriptContent.length; i++) {
@@ -54,11 +60,9 @@ export const completeStreamingHtml = (html: string): string => {
       // If we just saw a > and haven't seen a < yet, we might be in JSX content
       if (!inString) {
         if (char === '>') {
-          lastAngleBracket = '>'
           // After >, we're potentially in JSX content
           inJsxContentPass1 = true
         } else if (char === '<') {
-          lastAngleBracket = '<'
           inJsxContentPass1 = false
         }
       }
@@ -109,8 +113,6 @@ export const completeStreamingHtml = (html: string): string => {
           }
           bracketCount--
         }
-
-        if (char.trim()) lastNonWhitespace = char
       }
     }
 
@@ -121,7 +123,6 @@ export const completeStreamingHtml = (html: string): string => {
     stringChar = ''
     let jsxDepth = 0 // Track JSX nesting depth
     let inJsxContent = false // Track if we're inside JSX element text content
-    let inJsxTag = false // Track if we're currently parsing a JSX tag
 
     while (i < scriptContent.length) {
       const char = scriptContent[i]
@@ -162,7 +163,6 @@ export const completeStreamingHtml = (html: string): string => {
       if (!inString && char === '<') {
         // Entering a JSX tag - no longer in JSX content
         inJsxContent = false
-        inJsxTag = true
 
         i++
 
@@ -204,7 +204,6 @@ export const completeStreamingHtml = (html: string): string => {
         if (i < scriptContent.length && scriptContent[i] === '>') {
           foundClosingBracket = true
           i++ // consume the >
-          inJsxTag = false
         }
 
         // Only process complete tags (that have a closing >)

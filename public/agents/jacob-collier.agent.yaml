@@ -75,3 +75,6 @@ i18n:
   fr:
     name: Jacob Collier
     desc: Compositeur, expert en théorie musicale
+  ko:
+    name: 제이콥 콜리어
+    desc: 작곡가, 음악 이론 전문가

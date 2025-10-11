@@ -1,0 +1,1145 @@
+# AOSTC (Analysis, Objectives, Strategies, Tactics, Control) Methodology
+# Hierarchical strategic planning and execution framework
+
+metadata:
+  id: aostc
+  name: AOSTC
+  description: >
+    A hierarchical methodology for strategic planning and execution.
+    AOSTC (Analysis, Objectives, Strategies, Tactics, Control) provides
+    a cascading framework from high-level analysis down to tactical
+    execution with continuous control.
+  type: hierarchical
+  version: 1.0.0
+  origin: Strategic Management / Military Strategy
+  domains:
+    - strategic-planning
+    - business-strategy
+    - program-management
+    - organizational-transformation
+  complexity: expert
+  tags:
+    - strategic
+    - hierarchical
+    - goal-cascade
+    - execution
+    - control
+  i18n:
+    es:
+      description: >
+        Una metodología jerárquica para la planificación y ejecución estratégica.
+        AOSTC (Análisis, Objetivos, Estrategias, Tácticas, Control) proporciona
+        un marco que va desde el análisis de alto nivel hasta la ejecución táctica
+        con control continuo.
+    fr:
+      description: >
+        Une méthodologie hiérarchique pour la planification et l'exécution
+        stratégique. AOSTC (Analyse, Objectifs, Stratégies, Tactiques, Contrôle)
+        fournit un cadre allant de l'analyse de haut niveau à l'exécution tactique
+        avec un contrôle continu.
+    ko:
+      description: >
+        전략적 기획 및 실행을 위한 계층적 방법론입니다.
+        AOSTC(분석, 목표, 전략, 전술, 통제)는 지속적인 통제를 통해
+        고수준 분석에서 전술적 실행에 이르는 프레임워크를 제공합니다.
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 1
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 5
+    maxConcurrentAgents: 8
+
+phases:
+  - id: analysis
+    name: Analysis
+    description: >
+      Comprehensive situational analysis including environmental scanning,
+      SWOT analysis, stakeholder analysis, and trend identification. This
+      phase establishes the foundation for strategic decisions.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Situational analysis must exist
+        artifactType: situational-analysis
+      - type: artifact-exists
+        description: SWOT analysis must exist
+        artifactType: swot-analysis
+    tasks:
+      - id: environmental-scan
+        title: Conduct Environmental Scan
+        description: Analyze external environment including market, competitors, regulations
+        type: analysis
+        complexity: complex
+        assignedRole: strategic-analyst
+        estimatedDuration: 240
+        artifacts:
+          outputs:
+            - typeId: environmental-scan
+              required: true
+        requirements:
+          - type: functional
+            description: Scan must cover all relevant environmental factors
+            priority: must
+            validationCriteria:
+              - Political factors analyzed
+              - Economic trends identified
+              - Social dynamics assessed
+              - Technological changes mapped
+              - Legal requirements documented
+              - Environmental concerns noted
+      - id: internal-assessment
+        title: Conduct Internal Assessment
+        description: Evaluate internal capabilities, resources, and constraints
+        type: analysis
+        complexity: complex
+        assignedRole: strategic-analyst
+        estimatedDuration: 240
+        parallelizable: true
+        artifacts:
+          outputs:
+            - typeId: internal-assessment
+              required: true
+        requirements:
+          - type: functional
+            description: Assessment must be comprehensive and honest
+            priority: must
+            validationCriteria:
+              - Capabilities catalogued
+              - Resources quantified
+              - Constraints identified
+              - Core competencies defined
+      - id: swot-analysis
+        title: Perform SWOT Analysis
+        description: Identify Strengths, Weaknesses, Opportunities, and Threats
+        type: analysis
+        complexity: simple
+        assignedRole: strategic-analyst
+        estimatedDuration: 120
+        dependencies:
+          - environmental-scan
+          - internal-assessment
+        artifacts:
+          inputs:
+            - typeId: environmental-scan
+              required: true
+            - typeId: internal-assessment
+              required: true
+          outputs:
+            - typeId: swot-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: SWOT must be data-driven and actionable
+            priority: must
+            validationCriteria:
+              - All quadrants populated
+              - Items are specific
+              - Evidence provided
+      - id: stakeholder-analysis
+        title: Analyze Stakeholders
+        description: Identify and analyze key stakeholders and their interests
+        type: analysis
+        complexity: simple
+        assignedRole: stakeholder-manager
+        estimatedDuration: 120
+        parallelizable: true
+        artifacts:
+          outputs:
+            - typeId: stakeholder-map
+              required: true
+        requirements:
+          - type: functional
+            description: All key stakeholders must be identified
+            priority: must
+            validationCriteria:
+              - Stakeholders mapped
+              - Interests documented
+              - Influence assessed
+              - Engagement strategy outlined
+      - id: synthesize-analysis
+        title: Synthesize Situational Analysis
+        description: Integrate all analysis into comprehensive situational assessment
+        type: analysis
+        complexity: complex
+        assignedRole: chief-strategist
+        estimatedDuration: 180
+        dependencies:
+          - swot-analysis
+          - stakeholder-analysis
+        artifacts:
+          inputs:
+            - typeId: environmental-scan
+              required: true
+            - typeId: internal-assessment
+              required: true
+            - typeId: swot-analysis
+              required: true
+            - typeId: stakeholder-map
+              required: true
+          outputs:
+            - typeId: situational-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: Synthesis must provide clear strategic insights
+            priority: must
+            validationCriteria:
+              - Key insights identified
+              - Strategic implications clear
+              - Recommendations preliminary
+    agentRequirements:
+      roles:
+        - strategic-analyst
+        - chief-strategist
+        - stakeholder-manager
+      skills:
+        - strategic-analysis
+        - environmental-scanning
+        - swot-analysis
+        - stakeholder-management
+      minExperience: senior
+
+  - id: objectives
+    name: Objectives
+    description: >
+      Define strategic objectives based on the analysis. Objectives should
+      be SMART (Specific, Measurable, Achievable, Relevant, Time-bound)
+      and aligned with organizational vision.
+    order: 1
+    parentPhaseId: analysis
+    entryCriteria:
+      - type: phase-completed
+        description: Analysis phase must be completed
+        phaseId: analysis
+    exitCriteria:
+      - type: artifact-exists
+        description: Strategic objectives must be defined
+        artifactType: strategic-objectives
+    tasks:
+      - id: define-vision
+        title: Define or Refine Vision
+        description: Articulate the desired future state
+        type: planning
+        complexity: simple
+        assignedRole: chief-strategist
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: situational-analysis
+              required: true
+          outputs:
+            - typeId: vision-statement
+              required: true
+        requirements:
+          - type: functional
+            description: Vision must be inspiring and directional
+            priority: must
+            validationCriteria:
+              - Vision is clear
+              - Vision is aspirational
+              - Vision aligns with analysis
+      - id: set-strategic-goals
+        title: Set Strategic Goals
+        description: Define high-level strategic goals aligned with vision
+        type: planning
+        complexity: complex
+        assignedRole: chief-strategist
+        estimatedDuration: 180
+        dependencies:
+          - define-vision
+        artifacts:
+          inputs:
+            - typeId: vision-statement
+              required: true
+            - typeId: situational-analysis
+              required: true
+          outputs:
+            - typeId: strategic-goals
+              required: true
+        requirements:
+          - type: functional
+            description: Goals must be strategic and bold
+            priority: must
+            validationCriteria:
+              - 3-5 strategic goals defined
+              - Goals are outcome-focused
+              - Goals address key challenges
+      - id: define-objectives
+        title: Define SMART Objectives
+        description: Break down strategic goals into SMART objectives
+        type: planning
+        complexity: simple
+        assignedRole: program-manager
+        estimatedDuration: 180
+        dependencies:
+          - set-strategic-goals
+        artifacts:
+          inputs:
+            - typeId: strategic-goals
+              required: true
+          outputs:
+            - typeId: strategic-objectives
+              required: true
+        requirements:
+          - type: functional
+            description: Objectives must be SMART
+            priority: must
+            validationCriteria:
+              - Specific criteria met
+              - Measurable metrics defined
+              - Achievable with resources
+              - Relevant to goals
+              - Time-bound with deadlines
+      - id: define-kpis
+        title: Define Key Performance Indicators
+        description: Establish KPIs to measure objective achievement
+        type: planning
+        complexity: simple
+        assignedRole: performance-analyst
+        estimatedDuration: 120
+        dependencies:
+          - define-objectives
+        artifacts:
+          inputs:
+            - typeId: strategic-objectives
+              required: true
+          outputs:
+            - typeId: kpi-framework
+              required: true
+        requirements:
+          - type: functional
+            description: KPIs must be measurable and relevant
+            priority: must
+            validationCriteria:
+              - KPIs for each objective
+              - Baselines established
+              - Targets defined
+              - Measurement method specified
+    agentRequirements:
+      roles:
+        - chief-strategist
+        - program-manager
+        - performance-analyst
+      skills:
+        - strategic-planning
+        - goal-setting
+        - kpi-design
+      minExperience: senior
+
+  - id: strategies
+    name: Strategies
+    description: >
+      Develop strategies to achieve the objectives. Strategies are the
+      broad approaches or game plans. Multiple strategies may support
+      each objective.
+    order: 2
+    parentPhaseId: objectives
+    entryCriteria:
+      - type: phase-completed
+        description: Objectives phase must be completed
+        phaseId: objectives
+    exitCriteria:
+      - type: artifact-exists
+        description: Strategic initiatives must be defined
+        artifactType: strategic-initiatives
+    tasks:
+      - id: generate-strategy-options
+        title: Generate Strategic Options
+        description: Brainstorm and evaluate multiple strategic approaches
+        type: design
+        complexity: complex
+        assignedRole: strategy-consultant
+        estimatedDuration: 240
+        artifacts:
+          inputs:
+            - typeId: strategic-objectives
+              required: true
+            - typeId: situational-analysis
+              required: true
+          outputs:
+            - typeId: strategy-options
+              required: true
+        requirements:
+          - type: functional
+            description: Multiple strategies must be considered
+            priority: must
+            validationCriteria:
+              - At least 3 options per objective
+              - Options are diverse
+              - Pros and cons evaluated
+      - id: evaluate-strategies
+        title: Evaluate and Select Strategies
+        description: Assess strategies against criteria and select best approaches
+        type: decision
+        complexity: complex
+        assignedRole: chief-strategist
+        estimatedDuration: 180
+        dependencies:
+          - generate-strategy-options
+        artifacts:
+          inputs:
+            - typeId: strategy-options
+              required: true
+            - typeId: swot-analysis
+              required: true
+          outputs:
+            - typeId: strategy-evaluation
+              required: true
+        requirements:
+          - type: functional
+            description: Evaluation must be rigorous
+            priority: must
+            validationCriteria:
+              - Criteria established
+              - All options scored
+              - Recommendations justified
+      - id: define-strategic-initiatives
+        title: Define Strategic Initiatives
+        description: Detail the selected strategies as executable initiatives
+        type: planning
+        complexity: complex
+        assignedRole: program-manager
+        estimatedDuration: 240
+        dependencies:
+          - evaluate-strategies
+        artifacts:
+          inputs:
+            - typeId: strategy-evaluation
+              required: true
+          outputs:
+            - typeId: strategic-initiatives
+              required: true
+        requirements:
+          - type: functional
+            description: Initiatives must be well-defined
+            priority: must
+            validationCriteria:
+              - Scope defined
+              - Resources estimated
+              - Dependencies mapped
+              - Timeline projected
+      - id: risk-assessment
+        title: Conduct Strategic Risk Assessment
+        description: Identify and assess risks to strategy execution
+        type: analysis
+        complexity: simple
+        assignedRole: risk-manager
+        estimatedDuration: 120
+        dependencies:
+          - define-strategic-initiatives
+        artifacts:
+          inputs:
+            - typeId: strategic-initiatives
+              required: true
+          outputs:
+            - typeId: risk-register
+              required: true
+        requirements:
+          - type: functional
+            description: Major risks must be identified
+            priority: must
+            validationCriteria:
+              - Risks identified
+              - Impact assessed
+              - Likelihood estimated
+              - Mitigation planned
+    agentRequirements:
+      roles:
+        - chief-strategist
+        - strategy-consultant
+        - program-manager
+        - risk-manager
+      skills:
+        - strategic-thinking
+        - option-analysis
+        - risk-management
+      minExperience: senior
+
+  - id: tactics
+    name: Tactics
+    description: >
+      Translate strategies into concrete tactical plans and actions.
+      Tactics are the specific activities, projects, and tasks that
+      will be executed to implement the strategies.
+    order: 3
+    parentPhaseId: strategies
+    entryCriteria:
+      - type: phase-completed
+        description: Strategies phase must be completed
+        phaseId: strategies
+    exitCriteria:
+      - type: artifact-exists
+        description: Tactical action plans must exist
+        artifactType: tactical-plans
+    tasks:
+      - id: decompose-initiatives
+        title: Decompose Initiatives into Projects
+        description: Break down strategic initiatives into manageable projects
+        type: planning
+        complexity: complex
+        assignedRole: program-manager
+        estimatedDuration: 240
+        artifacts:
+          inputs:
+            - typeId: strategic-initiatives
+              required: true
+          outputs:
+            - typeId: project-portfolio
+              required: true
+        requirements:
+          - type: functional
+            description: Projects must be well-structured
+            priority: must
+            validationCriteria:
+              - All initiatives covered
+              - Projects are scoped
+              - Dependencies identified
+      - id: develop-project-plans
+        title: Develop Detailed Project Plans
+        description: Create detailed plans for each tactical project
+        type: planning
+        complexity: complex
+        assignedRole: project-manager
+        estimatedDuration: 360
+        parallelizable: true
+        dependencies:
+          - decompose-initiatives
+        artifacts:
+          inputs:
+            - typeId: project-portfolio
+              required: true
+          outputs:
+            - typeId: project-plans
+              required: true
+              minCount: 1
+              maxCount: 50
+        requirements:
+          - type: functional
+            description: Each project must have detailed plan
+            priority: must
+            validationCriteria:
+              - Scope defined
+              - Tasks identified
+              - Resources allocated
+              - Timeline created
+              - Budget estimated
+      - id: create-action-plans
+        title: Create Tactical Action Plans
+        description: Define specific actions, owners, and timelines
+        type: planning
+        complexity: simple
+        assignedRole: tactical-coordinator
+        estimatedDuration: 240
+        dependencies:
+          - develop-project-plans
+        artifacts:
+          inputs:
+            - typeId: project-plans
+              required: true
+          outputs:
+            - typeId: tactical-plans
+              required: true
+        requirements:
+          - type: functional
+            description: Actions must be specific and assigned
+            priority: must
+            validationCriteria:
+              - All actions have owners
+              - Deadlines set
+              - Dependencies noted
+              - Resources confirmed
+      - id: establish-governance
+        title: Establish Execution Governance
+        description: Define governance structure for execution oversight
+        type: planning
+        complexity: simple
+        assignedRole: program-manager
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: tactical-plans
+              required: true
+          outputs:
+            - typeId: governance-framework
+              required: true
+        requirements:
+          - type: functional
+            description: Governance must be clear and effective
+            priority: must
+            validationCriteria:
+              - Roles defined
+              - Meeting cadence set
+              - Decision rights clear
+              - Escalation paths defined
+    agentRequirements:
+      roles:
+        - program-manager
+        - project-manager
+        - tactical-coordinator
+      skills:
+        - project-planning
+        - task-decomposition
+        - resource-allocation
+      minExperience: mid
+
+  - id: control
+    name: Control
+    description: >
+      Establish monitoring and control mechanisms to track progress,
+      measure performance, and ensure strategies are executed effectively.
+      Includes feedback loops for continuous adjustment.
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Tactics phase must be completed
+        phaseId: tactics
+    exitCriteria:
+      - type: artifact-exists
+        description: Control systems must be operational
+        artifactType: control-dashboard
+    tasks:
+      - id: design-monitoring-system
+        title: Design Performance Monitoring System
+        description: Create system to track KPIs and project progress
+        type: design
+        complexity: simple
+        assignedRole: performance-analyst
+        estimatedDuration: 180
+        artifacts:
+          inputs:
+            - typeId: kpi-framework
+              required: true
+            - typeId: tactical-plans
+              required: true
+          outputs:
+            - typeId: monitoring-design
+              required: true
+        requirements:
+          - type: functional
+            description: System must track all key metrics
+            priority: must
+            validationCriteria:
+              - All KPIs covered
+              - Data sources identified
+              - Reporting frequency defined
+              - Dashboard design completed
+      - id: implement-control-systems
+        title: Implement Control Systems
+        description: Set up monitoring, reporting, and control mechanisms
+        type: implementation
+        complexity: simple
+        assignedRole: implementation-specialist
+        estimatedDuration: 240
+        dependencies:
+          - design-monitoring-system
+        artifacts:
+          inputs:
+            - typeId: monitoring-design
+              required: true
+          outputs:
+            - typeId: control-dashboard
+              required: true
+        requirements:
+          - type: functional
+            description: Systems must be functional
+            priority: must
+            validationCriteria:
+              - Dashboard operational
+              - Data flowing
+              - Alerts configured
+              - Access granted
+      - id: establish-review-cycles
+        title: Establish Review Cycles
+        description: Define regular review meetings and cadences
+        type: planning
+        complexity: simple
+        assignedRole: program-manager
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: governance-framework
+              required: true
+          outputs:
+            - typeId: review-schedule
+              required: true
+        requirements:
+          - type: functional
+            description: Review cycles must be appropriate
+            priority: must
+            validationCriteria:
+              - Daily/weekly/monthly reviews defined
+              - Participants identified
+              - Agendas created
+              - Actions tracked
+      - id: create-feedback-loops
+        title: Create Strategic Feedback Loops
+        description: Establish mechanisms to feed learnings back to strategy
+        type: design
+        complexity: simple
+        assignedRole: chief-strategist
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: control-dashboard
+              required: true
+          outputs:
+            - typeId: feedback-mechanisms
+              required: true
+        requirements:
+          - type: functional
+            description: Feedback must inform strategy adjustment
+            priority: must
+            validationCriteria:
+              - Learning capture process defined
+              - Strategy review process created
+              - Adjustment triggers identified
+    agentRequirements:
+      roles:
+        - performance-analyst
+        - program-manager
+        - implementation-specialist
+        - chief-strategist
+      skills:
+        - performance-monitoring
+        - dashboard-design
+        - governance
+      minExperience: mid
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - analysis
+    - objectives
+    - strategies
+    - tactics
+    - control
+  failureHandling:
+    strategy: fallback
+    fallbackPhase: analysis
+
+agentCoordination:
+  roles:
+    - id: chief-strategist
+      name: Chief Strategist
+      description: Leads strategic planning and ensures strategic coherence
+      responsibilities:
+        - Lead situational analysis
+        - Define vision and strategic goals
+        - Select strategies
+        - Ensure strategic alignment
+      requiredSkills:
+        - strategic-planning
+        - systems-thinking
+        - leadership
+      experienceLevel: expert
+      authority: leader
+    - id: strategic-analyst
+      name: Strategic Analyst
+      description: Conducts detailed analysis and research
+      responsibilities:
+        - Environmental scanning
+        - Internal assessment
+        - SWOT analysis
+        - Trend analysis
+      requiredSkills:
+        - research
+        - analysis
+        - data-synthesis
+      experienceLevel: senior
+      authority: contributor
+    - id: strategy-consultant
+      name: Strategy Consultant
+      description: Provides strategic expertise and option generation
+      responsibilities:
+        - Generate strategy options
+        - Facilitate strategy workshops
+        - Provide external perspective
+      requiredSkills:
+        - strategic-thinking
+        - facilitation
+        - consulting
+      experienceLevel: senior
+      authority: contributor
+    - id: program-manager
+      name: Program Manager
+      description: Manages strategic program execution
+      responsibilities:
+        - Define objectives
+        - Plan strategic initiatives
+        - Oversee tactical execution
+        - Manage portfolio
+      requiredSkills:
+        - program-management
+        - planning
+        - coordination
+      experienceLevel: senior
+      authority: approver
+    - id: project-manager
+      name: Project Manager
+      description: Manages individual tactical projects
+      responsibilities:
+        - Develop project plans
+        - Manage project execution
+        - Track progress
+        - Deliver results
+      requiredSkills:
+        - project-management
+        - execution
+        - problem-solving
+      experienceLevel: mid
+      authority: contributor
+    - id: tactical-coordinator
+      name: Tactical Coordinator
+      description: Coordinates tactical activities and actions
+      responsibilities:
+        - Create action plans
+        - Coordinate teams
+        - Track actions
+        - Remove blockers
+      requiredSkills:
+        - coordination
+        - communication
+        - action-tracking
+      experienceLevel: mid
+      authority: contributor
+    - id: performance-analyst
+      name: Performance Analyst
+      description: Designs and manages performance measurement systems
+      responsibilities:
+        - Define KPIs
+        - Design monitoring systems
+        - Analyze performance
+        - Report insights
+      requiredSkills:
+        - analytics
+        - kpi-design
+        - data-visualization
+      experienceLevel: mid
+      authority: contributor
+    - id: stakeholder-manager
+      name: Stakeholder Manager
+      description: Manages stakeholder relationships and communications
+      responsibilities:
+        - Analyze stakeholders
+        - Manage engagement
+        - Communicate progress
+        - Handle concerns
+      requiredSkills:
+        - stakeholder-management
+        - communication
+        - relationship-building
+      experienceLevel: mid
+      authority: contributor
+    - id: risk-manager
+      name: Risk Manager
+      description: Identifies and manages strategic risks
+      responsibilities:
+        - Assess risks
+        - Develop mitigation plans
+        - Monitor risk levels
+        - Report risk status
+      requiredSkills:
+        - risk-management
+        - risk-assessment
+        - mitigation-planning
+      experienceLevel: mid
+      authority: reviewer
+    - id: implementation-specialist
+      name: Implementation Specialist
+      description: Implements systems and processes
+      responsibilities:
+        - Implement control systems
+        - Configure dashboards
+        - Train users
+        - Support adoption
+      requiredSkills:
+        - implementation
+        - system-configuration
+        - training
+      experienceLevel: mid
+      authority: contributor
+  teamComposition:
+    minSize: 5
+    maxSize: 12
+    required:
+      - chief-strategist
+      - strategic-analyst
+      - program-manager
+      - performance-analyst
+    optional:
+      - strategy-consultant
+      - project-manager
+      - tactical-coordinator
+      - stakeholder-manager
+      - risk-manager
+      - implementation-specialist
+  communicationPatterns:
+    - from: chief-strategist
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+    - from: any
+      to: chief-strategist
+      type: direct
+      contextTypes:
+        - finding
+        - constraint
+    - from: program-manager
+      to: project-manager
+      type: direct
+      contextTypes:
+        - decision
+        - resource
+    - from: project-manager
+      to: program-manager
+      type: direct
+      contextTypes:
+        - finding
+        - constraint
+  decisionAuthority:
+    - decision: Strategic direction
+      authority: chief-strategist
+      requiresConsensus: true
+      consensusRoles:
+        - program-manager
+        - strategic-analyst
+    - decision: Strategy selection
+      authority: chief-strategist
+      requiresConsensus: true
+      consensusRoles:
+        - strategy-consultant
+    - decision: Resource allocation
+      authority: program-manager
+      requiresConsensus: false
+    - decision: Tactical execution
+      authority: project-manager
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: environmental-scan
+      name: Environmental Scan
+      description: Analysis of external environment
+      format: markdown
+    - id: internal-assessment
+      name: Internal Assessment
+      description: Evaluation of internal capabilities
+      format: markdown
+    - id: swot-analysis
+      name: SWOT Analysis
+      description: Strengths, Weaknesses, Opportunities, Threats analysis
+      format: structured
+    - id: stakeholder-map
+      name: Stakeholder Map
+      description: Identification and analysis of stakeholders
+      format: structured
+    - id: situational-analysis
+      name: Situational Analysis
+      description: Comprehensive synthesis of all analysis
+      format: markdown
+    - id: vision-statement
+      name: Vision Statement
+      description: Articulation of desired future state
+      format: markdown
+    - id: strategic-goals
+      name: Strategic Goals
+      description: High-level strategic goals
+      format: structured
+    - id: strategic-objectives
+      name: Strategic Objectives
+      description: SMART objectives supporting goals
+      format: structured
+    - id: kpi-framework
+      name: KPI Framework
+      description: Key performance indicators
+      format: structured
+    - id: strategy-options
+      name: Strategy Options
+      description: Alternative strategic approaches
+      format: structured
+    - id: strategy-evaluation
+      name: Strategy Evaluation
+      description: Assessment of strategy options
+      format: markdown
+    - id: strategic-initiatives
+      name: Strategic Initiatives
+      description: Defined strategic initiatives
+      format: structured
+    - id: risk-register
+      name: Risk Register
+      description: Identified risks and mitigations
+      format: structured
+    - id: project-portfolio
+      name: Project Portfolio
+      description: Collection of tactical projects
+      format: structured
+    - id: project-plans
+      name: Project Plans
+      description: Detailed plans for each project
+      format: markdown
+    - id: tactical-plans
+      name: Tactical Action Plans
+      description: Specific actions with owners and timelines
+      format: structured
+    - id: governance-framework
+      name: Governance Framework
+      description: Execution governance structure
+      format: markdown
+    - id: monitoring-design
+      name: Monitoring System Design
+      description: Design of performance monitoring
+      format: structured
+    - id: control-dashboard
+      name: Control Dashboard
+      description: Operational performance dashboard
+      format: binary
+    - id: review-schedule
+      name: Review Schedule
+      description: Calendar of review meetings
+      format: structured
+    - id: feedback-mechanisms
+      name: Feedback Mechanisms
+      description: Processes for strategic feedback
+      format: markdown
+  dependencies:
+    - artifact: swot-analysis
+      dependsOn:
+        - environmental-scan
+        - internal-assessment
+    - artifact: situational-analysis
+      dependsOn:
+        - swot-analysis
+        - stakeholder-map
+    - artifact: vision-statement
+      dependsOn:
+        - situational-analysis
+    - artifact: strategic-goals
+      dependsOn:
+        - vision-statement
+    - artifact: strategic-objectives
+      dependsOn:
+        - strategic-goals
+    - artifact: kpi-framework
+      dependsOn:
+        - strategic-objectives
+    - artifact: strategy-options
+      dependsOn:
+        - strategic-objectives
+        - situational-analysis
+    - artifact: strategy-evaluation
+      dependsOn:
+        - strategy-options
+    - artifact: strategic-initiatives
+      dependsOn:
+        - strategy-evaluation
+    - artifact: risk-register
+      dependsOn:
+        - strategic-initiatives
+    - artifact: project-portfolio
+      dependsOn:
+        - strategic-initiatives
+    - artifact: project-plans
+      dependsOn:
+        - project-portfolio
+    - artifact: tactical-plans
+      dependsOn:
+        - project-plans
+    - artifact: governance-framework
+      dependsOn:
+        - tactical-plans
+    - artifact: monitoring-design
+      dependsOn:
+        - kpi-framework
+        - tactical-plans
+    - artifact: control-dashboard
+      dependsOn:
+        - monitoring-design
+    - artifact: review-schedule
+      dependsOn:
+        - governance-framework
+    - artifact: feedback-mechanisms
+      dependsOn:
+        - control-dashboard
+
+ceremonies:
+  - id: strategic-kickoff
+    name: Strategic Planning Kickoff
+    description: Launch of strategic planning cycle
+    timing: phase-start
+    duration: 240
+    participants:
+      - chief-strategist
+      - strategic-analyst
+      - program-manager
+      - stakeholder-manager
+    objectives:
+      - Align on process
+      - Set expectations
+      - Define timeline
+  - id: strategy-workshop
+    name: Strategy Formulation Workshop
+    description: Collaborative strategy development session
+    timing: phase-start
+    duration: 480
+    participants:
+      - chief-strategist
+      - strategy-consultant
+      - program-manager
+      - strategic-analyst
+    artifacts:
+      inputs:
+        - strategic-objectives
+      outputs:
+        - strategy-options
+    objectives:
+      - Generate strategy options
+      - Evaluate alternatives
+      - Build consensus
+  - id: quarterly-business-review
+    name: Quarterly Business Review
+    description: Quarterly review of strategic execution
+    timing: periodic
+    duration: 180
+    participants:
+      - chief-strategist
+      - program-manager
+      - performance-analyst
+      - project-manager
+    artifacts:
+      inputs:
+        - control-dashboard
+        - project-plans
+      outputs:
+        - review-notes
+    objectives:
+      - Review performance
+      - Assess progress
+      - Make adjustments
+      - Resolve issues
+  - id: annual-strategy-refresh
+    name: Annual Strategy Refresh
+    description: Annual review and update of strategy
+    timing: periodic
+    duration: 480
+    participants:
+      - chief-strategist
+      - strategic-analyst
+      - program-manager
+      - stakeholder-manager
+    artifacts:
+      inputs:
+        - situational-analysis
+        - strategic-objectives
+        - control-dashboard
+      outputs:
+        - updated-strategy
+    objectives:
+      - Review environmental changes
+      - Assess strategy effectiveness
+      - Update objectives
+      - Realign initiatives

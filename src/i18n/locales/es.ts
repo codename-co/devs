@@ -20,6 +20,7 @@ export const es: I18n = {
   Teams: 'Equipos',
   Settings: 'Configuraciones',
   Agents: 'Agentes',
+  Methodologies: 'Metodologías',
   Conversations: 'Conversaciones',
   'Conversations history': 'Historial de conversaciones',
   Knowledge: 'Conocimientos',
@@ -32,6 +33,7 @@ export const es: I18n = {
   Chat: 'Chat',
   'Main navigation': 'Navegación principal',
   'New Agent': 'Nuevo agente',
+  'New Methodology': 'Nueva metodología',
   'Upgrade to Pro': 'Actualizar a Pro',
 
   // PromptArea
@@ -43,9 +45,9 @@ export const es: I18n = {
   'Drop files here…': 'Suelta archivos aquí…',
   'Use microphone': 'Usar micrófono',
   'Send prompt': 'Enviar prompt',
-  'Select an agent': 'SSeleccionar un agente',
-  'Select a model': 'SSeleccionar un modelo',
-  'Add Provider': 'Agregar proveedor',
+  'Select an agent': 'Seleccionar un agente',
+  'Select a model': 'Seleccionar un modelo',
+  'Add a model': 'Agregar un modelo',
 
   // Page: /404
   'Page not found': 'Página no encontrada',

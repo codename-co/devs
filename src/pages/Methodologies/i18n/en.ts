@@ -1,0 +1,17 @@
+export const en = [
+  'Reproduce real-world task execution methodologies',
+  'Methodology Details',
+  'No methodology ID provided',
+  'Methodology not found',
+  'Failed to load methodology',
+  'Loading...',
+  'Domains',
+  'Tags',
+  'Workflow Diagram',
+  'Phases',
+  'Optional',
+  'Repeatable',
+  'task',
+  'tasks',
+  'Agent Roles',
+] as const

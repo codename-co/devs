@@ -18,6 +18,7 @@ export const en = [
   'Teams',
   'Settings',
   'Agents',
+  'Methodologies',
   'Conversations',
   'Conversations history',
   'Knowledge',
@@ -30,6 +31,7 @@ export const en = [
   'Chat',
   'Main navigation',
   'New Agent',
+  'New Methodology',
   'Upgrade to Pro',
 
   // PromptArea
@@ -43,7 +45,7 @@ export const en = [
   'Send prompt',
   'Select an agent',
   'Select a model',
-  'Add Provider',
+  'Add a model',
 
   // Page: /404
   'Page not found',
@@ -63,6 +65,7 @@ export const en = [
   // AgentsPage
   'My Agents ({count})',
   'Built-in Agents ({count})',
+  'Built-in agents are pre-configured agents that come with the platform. They showcase various capabilities and can serve as inspiration for your own custom agents.',
 
   // AgentRunPage
   'View and manage your past conversations',

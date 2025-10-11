@@ -90,3 +90,6 @@ i18n:
   fr:
     name: Aristote
     desc: Philosophe et polymathe
+  ko:
+    name: 아리스토텔레스
+    desc: 철학자이자 박식가

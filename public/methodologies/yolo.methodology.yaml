@@ -1,0 +1,28 @@
+# YOLO Methodology
+# A simple methodology that encourages action without overthinking.
+
+metadata:
+  id: yolo
+  name: YOLO
+  description: >
+    A simple methodology that encourages action without overthinking.
+  type: sequential
+  version: 1.0.0
+  i18n:
+    es:
+      description: >
+        Una metodología simple que fomenta la acción sin pensar demasiado.
+    fr:
+      description: >
+        Une méthodologie simple qui encourage l'action sans trop réfléchir.
+    ko:
+      description: >
+        과도한 생각 없이 행동을 장려하는 간단한 방법론입니다.
+phases:
+  - id: do
+    name: Just do it
+    tasks:
+      - id: do
+        title: Do
+execution:
+  strategy: sequential

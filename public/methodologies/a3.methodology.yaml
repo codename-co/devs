@@ -1,0 +1,1286 @@
+# A3 Problem Solving Methodology
+# Toyota's structured problem-solving approach on a single A3-sized sheet
+
+metadata:
+  id: a3
+  name: A3 Problem Solving
+  description: >
+    Toyota's systematic problem-solving methodology that captures the entire
+    problem-solving process on a single A3-sized sheet of paper. The A3 process
+    emphasizes conciseness, visual thinking, and collaborative problem-solving
+    through PDCA cycles. It promotes transparency and alignment across teams.
+  type: sequential
+  version: 1.0.0
+  origin: Toyota Production System / Lean Manufacturing
+  domains:
+    - lean-manufacturing
+    - problem-solving
+    - continuous-improvement
+    - process-improvement
+    - quality-management
+  complexity: moderate
+  tags:
+    - lean
+    - toyota
+    - visual
+    - pdca
+    - collaborative
+    - structured-thinking
+  i18n:
+    es:
+      name: Resolución de Problemas A3
+      description: >
+        La metodología sistemática de resolución de problemas de Toyota que
+        captura todo el proceso en una sola hoja tamaño A3. El proceso A3
+        enfatiza la concisión, el pensamiento visual y la resolución de problemas
+        colaborativa a través de ciclos PDCA. Promueve la transparencia y la
+        alineación entre equipos.
+    fr:
+      name: Résolution de Problèmes A3
+      description: >
+        La méthodologie systématique de résolution de problèmes de Toyota qui
+        capture l'ensemble du processus sur une seule feuille au format A3.
+        Le processus A3 met l'accent sur la concision, la pensée visuelle et la
+        résolution collaborative de problèmes à travers des cycles PDCA. Il
+        favorise la transparence et l'alignement entre les équipes.
+    ko:
+      name: A3 문제 해결
+      description: >
+        Toyota의 체계적인 문제 해결 방법론으로, A3 크기의 한 장의 종이에
+        전체 문제 해결 프로세스를 담습니다. A3 프로세스는 간결함,
+        시각적 사고, PDCA 사이클을 통한 협력적 문제 해결을 강조합니다.
+        팀 간 투명성과 정렬을 촉진합니다.
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 2
+  parallelization:
+    enabled: false
+    maxConcurrentTasks: 1
+
+phases:
+  - id: background
+    name: Background
+    description: >
+      Establish context and clarify the problem. Explain why this problem
+      matters to the organization and what prompted the need for action.
+      Connect the problem to organizational objectives.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Background context must be documented
+        artifactType: background-statement
+      - type: artifact-exists
+        description: Business case must be established
+        artifactType: business-case
+    tasks:
+      - id: describe-situation
+        title: Describe the Situation
+        description: Provide context about where and when the problem occurs
+        type: analysis
+        complexity: simple
+        assignedRole: problem-owner
+        estimatedDuration: 45
+        artifacts:
+          outputs:
+            - typeId: situation-description
+              required: true
+        requirements:
+          - type: functional
+            description: Situation must be clearly described
+            priority: must
+            validationCriteria:
+              - Context is clear
+              - Scope is defined
+              - Timing is specified
+      - id: explain-importance
+        title: Explain Why This Matters
+        description: Connect the problem to business objectives and impact
+        type: analysis
+        complexity: simple
+        assignedRole: problem-owner
+        estimatedDuration: 30
+        dependencies:
+          - describe-situation
+        artifacts:
+          inputs:
+            - typeId: situation-description
+              required: true
+          outputs:
+            - typeId: business-case
+              required: true
+        requirements:
+          - type: functional
+            description: Business impact must be quantified
+            priority: must
+            validationCriteria:
+              - Financial impact stated
+              - Customer impact noted
+              - Strategic alignment shown
+      - id: create-background-summary
+        title: Create Background Summary
+        description: Synthesize situation and importance into concise background
+        type: documentation
+        complexity: simple
+        assignedRole: problem-owner
+        estimatedDuration: 30
+        dependencies:
+          - explain-importance
+        artifacts:
+          inputs:
+            - typeId: situation-description
+              required: true
+            - typeId: business-case
+              required: true
+          outputs:
+            - typeId: background-statement
+              required: true
+        requirements:
+          - type: constraint
+            description: Background must fit in A3 section
+            priority: must
+            validationCriteria:
+              - Concise and clear
+              - Key facts only
+              - Visual if possible
+    agentRequirements:
+      roles:
+        - problem-owner
+      skills:
+        - business-analysis
+        - communication
+        - contextual-thinking
+      minExperience: mid
+
+  - id: current-state
+    name: Current State
+    description: >
+      Understand the current condition through direct observation and data.
+      Go to the gemba (actual place) to see the problem firsthand. Use data
+      and visuals to show what is happening now.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Background phase must be completed
+        phaseId: background
+    exitCriteria:
+      - type: artifact-exists
+        description: Current state must be documented with data
+        artifactType: current-state-map
+    tasks:
+      - id: observe-at-gemba
+        title: Go to Gemba and Observe
+        description: Visit the actual place where work happens and observe directly
+        type: analysis
+        complexity: simple
+        assignedRole: analyst
+        estimatedDuration: 120
+        artifacts:
+          outputs:
+            - typeId: gemba-observations
+              required: true
+        requirements:
+          - type: functional
+            description: Observations must be firsthand
+            priority: must
+            validationCriteria:
+              - Direct observation conducted
+              - Multiple perspectives gathered
+              - Photos or sketches captured
+      - id: collect-current-data
+        title: Collect Current State Data
+        description: Gather quantitative data about the current process
+        type: analysis
+        complexity: simple
+        assignedRole: analyst
+        estimatedDuration: 90
+        parallelizable: true
+        artifacts:
+          outputs:
+            - typeId: current-state-data
+              required: true
+        requirements:
+          - type: functional
+            description: Data must be factual and recent
+            priority: must
+            validationCriteria:
+              - Baseline metrics collected
+              - Sample size adequate
+              - Data sources documented
+      - id: map-current-process
+        title: Map Current State Process
+        description: Visualize the current process flow showing key steps and metrics
+        type: design
+        complexity: simple
+        assignedRole: process-mapper
+        estimatedDuration: 90
+        dependencies:
+          - observe-at-gemba
+          - collect-current-data
+        artifacts:
+          inputs:
+            - typeId: gemba-observations
+              required: true
+            - typeId: current-state-data
+              required: true
+          outputs:
+            - typeId: current-state-map
+              required: true
+        requirements:
+          - type: functional
+            description: Map must be visual and data-driven
+            priority: must
+            validationCriteria:
+              - Process flow shown
+              - Key metrics displayed
+              - Problem areas highlighted
+          - type: constraint
+            description: Must fit on A3 section
+            priority: must
+            validationCriteria:
+              - Concise visual representation
+              - Essential information only
+    agentRequirements:
+      roles:
+        - analyst
+        - process-mapper
+      skills:
+        - observation
+        - data-collection
+        - process-mapping
+        - visual-thinking
+      minExperience: mid
+
+  - id: goal-target
+    name: Goal / Target State
+    description: >
+      Define the desired future state and specific measurable targets.
+      Be clear about what success looks like. The target should be
+      specific, measurable, and time-bound.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Current state phase must be completed
+        phaseId: current-state
+    exitCriteria:
+      - type: artifact-exists
+        description: Target state must be defined
+        artifactType: target-state
+    tasks:
+      - id: define-ideal-state
+        title: Define Ideal Target State
+        description: Describe what the ideal future state looks like
+        type: planning
+        complexity: simple
+        assignedRole: problem-owner
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: current-state-map
+              required: true
+          outputs:
+            - typeId: ideal-state-vision
+              required: true
+        requirements:
+          - type: functional
+            description: Ideal state must be clear and inspiring
+            priority: must
+            validationCriteria:
+              - Vision is compelling
+              - State is achievable
+              - Benefits are clear
+      - id: set-measurable-targets
+        title: Set Specific Measurable Targets
+        description: Define concrete metrics and targets for success
+        type: planning
+        complexity: simple
+        assignedRole: analyst
+        estimatedDuration: 60
+        dependencies:
+          - define-ideal-state
+        artifacts:
+          inputs:
+            - typeId: ideal-state-vision
+              required: true
+            - typeId: current-state-data
+              required: true
+          outputs:
+            - typeId: target-metrics
+              required: true
+        requirements:
+          - type: functional
+            description: Targets must be SMART
+            priority: must
+            validationCriteria:
+              - Specific metrics defined
+              - Measurable with numbers
+              - Achievable targets set
+              - Relevant to problem
+              - Time-bound with deadline
+      - id: visualize-target-state
+        title: Visualize Target State
+        description: Create visual representation of target state
+        type: design
+        complexity: simple
+        assignedRole: process-mapper
+        estimatedDuration: 45
+        dependencies:
+          - set-measurable-targets
+        artifacts:
+          inputs:
+            - typeId: ideal-state-vision
+              required: true
+            - typeId: target-metrics
+              required: true
+          outputs:
+            - typeId: target-state
+              required: true
+        requirements:
+          - type: functional
+            description: Target state must be visual
+            priority: must
+            validationCriteria:
+              - Visual representation created
+              - Gap from current shown
+              - Targets clearly displayed
+    agentRequirements:
+      roles:
+        - problem-owner
+        - analyst
+        - process-mapper
+      skills:
+        - goal-setting
+        - metrics-design
+        - visual-thinking
+      minExperience: mid
+
+  - id: root-cause-analysis
+    name: Root Cause Analysis
+    description: >
+      Identify the root causes of the gap between current and target state.
+      Use the 5 Whys technique and other root cause analysis tools. Focus
+      on systemic causes, not symptoms or blame.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Goal/Target phase must be completed
+        phaseId: goal-target
+    exitCriteria:
+      - type: artifact-exists
+        description: Root causes must be identified
+        artifactType: root-cause-analysis
+    tasks:
+      - id: identify-problem-gap
+        title: Identify Gap Between Current and Target
+        description: Clearly articulate the gap to be closed
+        type: analysis
+        complexity: simple
+        assignedRole: analyst
+        estimatedDuration: 30
+        artifacts:
+          inputs:
+            - typeId: current-state-map
+              required: true
+            - typeId: target-state
+              required: true
+          outputs:
+            - typeId: gap-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: Gap must be clearly quantified
+            priority: must
+            validationCriteria:
+              - Gap size measured
+              - Key differences noted
+              - Priority areas identified
+      - id: apply-five-whys
+        title: Apply 5 Whys Technique
+        description: Ask why repeatedly to drill down to root causes
+        type: analysis
+        complexity: simple
+        assignedRole: facilitator
+        estimatedDuration: 90
+        dependencies:
+          - identify-problem-gap
+        artifacts:
+          inputs:
+            - typeId: gap-analysis
+              required: true
+          outputs:
+            - typeId: five-whys-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: Must reach root causes, not symptoms
+            priority: must
+            validationCriteria:
+              - At least 5 why levels
+              - Systemic causes identified
+              - Blame avoided
+      - id: use-fishbone-diagram
+        title: Create Fishbone Diagram
+        description: Use cause-and-effect diagram to explore contributing factors
+        type: analysis
+        complexity: simple
+        assignedRole: facilitator
+        estimatedDuration: 60
+        parallelizable: true
+        artifacts:
+          inputs:
+            - typeId: gap-analysis
+              required: true
+          outputs:
+            - typeId: fishbone-diagram
+              required: true
+        requirements:
+          - type: functional
+            description: Major cause categories must be explored
+            priority: should
+            validationCriteria:
+              - Methods explored
+              - Machines considered
+              - Materials reviewed
+              - People factors noted
+              - Environment checked
+              - Measurements assessed
+      - id: validate-root-causes
+        title: Validate Root Causes with Data
+        description: Verify identified root causes with evidence
+        type: analysis
+        complexity: simple
+        assignedRole: analyst
+        estimatedDuration: 90
+        dependencies:
+          - apply-five-whys
+          - use-fishbone-diagram
+        artifacts:
+          inputs:
+            - typeId: five-whys-analysis
+              required: true
+            - typeId: fishbone-diagram
+              required: true
+          outputs:
+            - typeId: root-cause-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: Root causes must be data-validated
+            priority: must
+            validationCriteria:
+              - Evidence supports causes
+              - Data confirms relationships
+              - Alternative causes ruled out
+    agentRequirements:
+      roles:
+        - analyst
+        - facilitator
+      skills:
+        - root-cause-analysis
+        - five-whys
+        - fishbone-diagrams
+        - facilitation
+      minExperience: mid
+
+  - id: countermeasures
+    name: Countermeasures
+    description: >
+      Develop countermeasures (not just solutions) to address root causes.
+      Countermeasures prevent recurrence. Evaluate alternatives and select
+      the best approach considering feasibility and impact.
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Root cause analysis must be completed
+        phaseId: root-cause-analysis
+    exitCriteria:
+      - type: artifact-exists
+        description: Countermeasures must be defined
+        artifactType: countermeasure-plan
+    tasks:
+      - id: brainstorm-countermeasures
+        title: Brainstorm Countermeasure Options
+        description: Generate multiple countermeasure ideas for each root cause
+        type: design
+        complexity: simple
+        assignedRole: facilitator
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: root-cause-analysis
+              required: true
+          outputs:
+            - typeId: countermeasure-options
+              required: true
+        requirements:
+          - type: functional
+            description: Multiple options must be considered
+            priority: must
+            validationCriteria:
+              - At least 3 options per root cause
+              - Options address causes not symptoms
+              - Creative alternatives explored
+      - id: evaluate-countermeasures
+        title: Evaluate Countermeasure Options
+        description: Assess options based on impact, feasibility, cost
+        type: decision
+        complexity: simple
+        assignedRole: problem-owner
+        estimatedDuration: 60
+        dependencies:
+          - brainstorm-countermeasures
+        artifacts:
+          inputs:
+            - typeId: countermeasure-options
+              required: true
+          outputs:
+            - typeId: countermeasure-evaluation
+              required: true
+        requirements:
+          - type: functional
+            description: Evaluation must be systematic
+            priority: must
+            validationCriteria:
+              - Criteria defined
+              - All options scored
+              - Trade-offs considered
+      - id: select-countermeasures
+        title: Select Best Countermeasures
+        description: Choose the countermeasures to implement
+        type: decision
+        complexity: simple
+        assignedRole: problem-owner
+        estimatedDuration: 45
+        dependencies:
+          - evaluate-countermeasures
+        artifacts:
+          inputs:
+            - typeId: countermeasure-evaluation
+              required: true
+          outputs:
+            - typeId: selected-countermeasures
+              required: true
+        requirements:
+          - type: functional
+            description: Selection must be justified
+            priority: must
+            validationCriteria:
+              - Rationale documented
+              - Expected impact stated
+              - Resources required identified
+      - id: create-implementation-plan
+        title: Create Countermeasure Implementation Plan
+        description: Plan who, what, when for implementing countermeasures
+        type: planning
+        complexity: simple
+        assignedRole: implementation-lead
+        estimatedDuration: 90
+        dependencies:
+          - select-countermeasures
+        artifacts:
+          inputs:
+            - typeId: selected-countermeasures
+              required: true
+          outputs:
+            - typeId: countermeasure-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Plan must be actionable
+            priority: must
+            validationCriteria:
+              - Actions specified
+              - Owners assigned
+              - Timeline defined
+              - Resources allocated
+    agentRequirements:
+      roles:
+        - facilitator
+        - problem-owner
+        - implementation-lead
+      skills:
+        - creative-thinking
+        - decision-making
+        - planning
+      minExperience: mid
+
+  - id: implementation
+    name: Implementation
+    description: >
+      Execute the countermeasure plan. Implement changes systematically,
+      document what is done, and track progress. Adjust as needed based
+      on real-world feedback during implementation.
+    order: 5
+    entryCriteria:
+      - type: phase-completed
+        description: Countermeasures phase must be completed
+        phaseId: countermeasures
+    exitCriteria:
+      - type: artifact-exists
+        description: Implementation must be completed
+        artifactType: implementation-log
+    tasks:
+      - id: prepare-implementation
+        title: Prepare for Implementation
+        description: Set up resources, communicate plan, train stakeholders
+        type: planning
+        complexity: simple
+        assignedRole: implementation-lead
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: countermeasure-plan
+              required: true
+          outputs:
+            - typeId: implementation-readiness
+              required: true
+        requirements:
+          - type: functional
+            description: All prerequisites must be ready
+            priority: must
+            validationCriteria:
+              - Resources secured
+              - Stakeholders informed
+              - Training completed
+      - id: execute-countermeasures
+        title: Execute Countermeasures
+        description: Implement the planned countermeasures
+        type: implementation
+        complexity: complex
+        assignedRole: implementation-team
+        estimatedDuration: 240
+        dependencies:
+          - prepare-implementation
+        artifacts:
+          inputs:
+            - typeId: countermeasure-plan
+              required: true
+          outputs:
+            - typeId: implementation-log
+              required: true
+        requirements:
+          - type: functional
+            description: Implementation must follow plan
+            priority: must
+            validationCriteria:
+              - All actions completed
+              - Deviations documented
+              - Issues resolved
+      - id: track-implementation-progress
+        title: Track Implementation Progress
+        description: Monitor progress and address issues during implementation
+        type: review
+        complexity: simple
+        assignedRole: implementation-lead
+        estimatedDuration: 60
+        dependencies:
+          - execute-countermeasures
+        artifacts:
+          inputs:
+            - typeId: implementation-log
+              required: true
+          outputs:
+            - typeId: progress-tracking
+              required: true
+        requirements:
+          - type: functional
+            description: Progress must be visible
+            priority: must
+            validationCriteria:
+              - Status updated regularly
+              - Blockers identified
+              - Adjustments made
+    agentRequirements:
+      roles:
+        - implementation-lead
+        - implementation-team
+      skills:
+        - execution
+        - project-management
+        - problem-solving
+      minExperience: mid
+
+  - id: follow-up
+    name: Follow-up
+    description: >
+      Confirm results and effectiveness of countermeasures. Compare actual
+      results to targets. Identify remaining gaps. Plan for standardization
+      and sustainability. Share learnings.
+    order: 6
+    entryCriteria:
+      - type: phase-completed
+        description: Implementation phase must be completed
+        phaseId: implementation
+    exitCriteria:
+      - type: artifact-exists
+        description: Follow-up results must be documented
+        artifactType: follow-up-report
+    tasks:
+      - id: measure-results
+        title: Measure Actual Results
+        description: Collect data on actual outcomes after implementation
+        type: analysis
+        complexity: simple
+        assignedRole: analyst
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: target-metrics
+              required: true
+          outputs:
+            - typeId: actual-results
+              required: true
+        requirements:
+          - type: functional
+            description: Results must be measured objectively
+            priority: must
+            validationCriteria:
+              - All target metrics measured
+              - Data collection consistent
+              - Time period appropriate
+      - id: compare-to-targets
+        title: Compare Results to Targets
+        description: Analyze gap between actual results and targets
+        type: analysis
+        complexity: simple
+        assignedRole: analyst
+        estimatedDuration: 60
+        dependencies:
+          - measure-results
+        artifacts:
+          inputs:
+            - typeId: actual-results
+              required: true
+            - typeId: target-metrics
+              required: true
+          outputs:
+            - typeId: results-comparison
+              required: true
+        requirements:
+          - type: functional
+            description: Comparison must be thorough
+            priority: must
+            validationCriteria:
+              - All metrics compared
+              - Gaps identified
+              - Trends analyzed
+      - id: assess-effectiveness
+        title: Assess Countermeasure Effectiveness
+        description: Determine if countermeasures achieved desired effect
+        type: review
+        complexity: simple
+        assignedRole: problem-owner
+        estimatedDuration: 60
+        dependencies:
+          - compare-to-targets
+        artifacts:
+          inputs:
+            - typeId: results-comparison
+              required: true
+          outputs:
+            - typeId: effectiveness-assessment
+              required: true
+        requirements:
+          - type: functional
+            description: Assessment must be honest
+            priority: must
+            validationCriteria:
+              - Successes acknowledged
+              - Shortfalls identified
+              - Lessons captured
+      - id: standardize-improvements
+        title: Standardize Successful Improvements
+        description: Update standard work and procedures to sustain gains
+        type: documentation
+        complexity: simple
+        assignedRole: process-owner
+        estimatedDuration: 90
+        dependencies:
+          - assess-effectiveness
+        artifacts:
+          inputs:
+            - typeId: effectiveness-assessment
+              required: true
+          outputs:
+            - typeId: updated-standards
+              required: true
+        requirements:
+          - type: functional
+            description: Standards must reflect new methods
+            priority: must
+            validationCriteria:
+              - Procedures updated
+              - Training materials revised
+              - Visual management updated
+      - id: identify-next-steps
+        title: Identify Remaining Issues and Next Steps
+        description: Plan next A3 or additional work if needed
+        type: planning
+        complexity: simple
+        assignedRole: problem-owner
+        estimatedDuration: 45
+        dependencies:
+          - assess-effectiveness
+        artifacts:
+          inputs:
+            - typeId: results-comparison
+              required: true
+          outputs:
+            - typeId: next-steps
+              required: true
+        requirements:
+          - type: functional
+            description: Next steps must be clear
+            priority: must
+            validationCriteria:
+              - Remaining gaps noted
+              - Actions defined
+              - Ownership assigned
+      - id: create-follow-up-report
+        title: Create Follow-up Report
+        description: Document complete A3 story and share learnings
+        type: documentation
+        complexity: simple
+        assignedRole: problem-owner
+        estimatedDuration: 60
+        dependencies:
+          - standardize-improvements
+          - identify-next-steps
+        artifacts:
+          inputs:
+            - typeId: effectiveness-assessment
+              required: true
+            - typeId: updated-standards
+              required: true
+            - typeId: next-steps
+              required: true
+          outputs:
+            - typeId: follow-up-report
+              required: true
+        requirements:
+          - type: functional
+            description: Report must tell complete story
+            priority: must
+            validationCriteria:
+              - All phases documented
+              - Results quantified
+              - Learnings captured
+          - type: constraint
+            description: Complete A3 fits on one page
+            priority: should
+            validationCriteria:
+              - Concise presentation
+              - Visual emphasis
+              - Key information only
+    agentRequirements:
+      roles:
+        - analyst
+        - problem-owner
+        - process-owner
+      skills:
+        - measurement
+        - evaluation
+        - standardization
+        - documentation
+      minExperience: mid
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - background
+    - current-state
+    - goal-target
+    - root-cause-analysis
+    - countermeasures
+    - implementation
+    - follow-up
+  failureHandling:
+    strategy: fallback
+    fallbackPhase: root-cause-analysis
+
+agentCoordination:
+  roles:
+    - id: problem-owner
+      name: Problem Owner
+      description: Owns the A3 and leads the problem-solving process
+      responsibilities:
+        - Define problem and context
+        - Set targets
+        - Make decisions
+        - Drive implementation
+        - Report results
+      requiredSkills:
+        - problem-solving
+        - leadership
+        - communication
+      experienceLevel: mid
+      authority: leader
+    - id: analyst
+      name: Analyst
+      description: Provides data analysis and measurement support
+      responsibilities:
+        - Collect and analyze data
+        - Measure current state
+        - Validate root causes
+        - Measure results
+      requiredSkills:
+        - data-analysis
+        - measurement
+        - statistical-thinking
+      experienceLevel: mid
+      authority: contributor
+    - id: process-mapper
+      name: Process Mapper
+      description: Creates visual representations of processes
+      responsibilities:
+        - Map current state
+        - Visualize target state
+        - Create process diagrams
+        - Support visual thinking
+      requiredSkills:
+        - process-mapping
+        - visual-thinking
+        - diagramming
+      experienceLevel: mid
+      authority: contributor
+    - id: facilitator
+      name: Facilitator
+      description: Facilitates root cause analysis and ideation sessions
+      responsibilities:
+        - Facilitate 5 Whys
+        - Lead brainstorming
+        - Enable team collaboration
+        - Keep process on track
+      requiredSkills:
+        - facilitation
+        - root-cause-analysis
+        - group-dynamics
+      experienceLevel: mid
+      authority: contributor
+    - id: implementation-lead
+      name: Implementation Lead
+      description: Leads countermeasure implementation
+      responsibilities:
+        - Plan implementation
+        - Coordinate execution
+        - Track progress
+        - Resolve issues
+      requiredSkills:
+        - project-management
+        - coordination
+        - problem-solving
+      experienceLevel: mid
+      authority: contributor
+    - id: implementation-team
+      name: Implementation Team Member
+      description: Executes countermeasures
+      responsibilities:
+        - Implement changes
+        - Follow standards
+        - Report progress
+        - Suggest improvements
+      requiredSkills:
+        - execution
+        - adaptability
+        - collaboration
+      experienceLevel: mid
+      authority: contributor
+    - id: process-owner
+      name: Process Owner
+      description: Owns the process being improved
+      responsibilities:
+        - Provide process knowledge
+        - Support implementation
+        - Update standards
+        - Sustain improvements
+      requiredSkills:
+        - process-knowledge
+        - standardization
+        - continuous-improvement
+      experienceLevel: mid
+      authority: approver
+  teamComposition:
+    minSize: 3
+    maxSize: 6
+    required:
+      - problem-owner
+      - analyst
+    optional:
+      - process-mapper
+      - facilitator
+      - implementation-lead
+      - implementation-team
+      - process-owner
+  communicationPatterns:
+    - from: problem-owner
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+    - from: any
+      to: problem-owner
+      type: direct
+      contextTypes:
+        - finding
+        - constraint
+  decisionAuthority:
+    - decision: Problem definition
+      authority: problem-owner
+      requiresConsensus: true
+      consensusRoles:
+        - process-owner
+    - decision: Countermeasure selection
+      authority: problem-owner
+      requiresConsensus: true
+      consensusRoles:
+        - implementation-lead
+        - process-owner
+    - decision: Standardization
+      authority: process-owner
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: situation-description
+      name: Situation Description
+      description: Context about where and when problem occurs
+      format: markdown
+    - id: business-case
+      name: Business Case
+      description: Why this problem matters to the organization
+      format: markdown
+    - id: background-statement
+      name: Background Statement
+      description: Concise summary of context and importance
+      format: markdown
+    - id: gemba-observations
+      name: Gemba Observations
+      description: Direct observations from the actual workplace
+      format: markdown
+    - id: current-state-data
+      name: Current State Data
+      description: Quantitative data about current performance
+      format: json
+    - id: current-state-map
+      name: Current State Process Map
+      description: Visual representation of current process
+      format: markdown
+    - id: ideal-state-vision
+      name: Ideal State Vision
+      description: Description of desired future state
+      format: markdown
+    - id: target-metrics
+      name: Target Metrics
+      description: Specific measurable targets
+      format: structured
+    - id: target-state
+      name: Target State Visualization
+      description: Visual representation of target state
+      format: markdown
+    - id: gap-analysis
+      name: Gap Analysis
+      description: Analysis of gap between current and target
+      format: markdown
+    - id: five-whys-analysis
+      name: 5 Whys Analysis
+      description: Results of 5 Whys technique
+      format: markdown
+    - id: fishbone-diagram
+      name: Fishbone Diagram
+      description: Cause-and-effect diagram
+      format: markdown
+    - id: root-cause-analysis
+      name: Root Cause Analysis
+      description: Validated root causes
+      format: markdown
+    - id: countermeasure-options
+      name: Countermeasure Options
+      description: Brainstormed countermeasure ideas
+      format: structured
+    - id: countermeasure-evaluation
+      name: Countermeasure Evaluation
+      description: Assessment of countermeasure options
+      format: structured
+    - id: selected-countermeasures
+      name: Selected Countermeasures
+      description: Chosen countermeasures to implement
+      format: structured
+    - id: countermeasure-plan
+      name: Countermeasure Implementation Plan
+      description: Detailed plan for implementing countermeasures
+      format: structured
+    - id: implementation-readiness
+      name: Implementation Readiness
+      description: Confirmation that implementation can begin
+      format: markdown
+    - id: implementation-log
+      name: Implementation Log
+      description: Record of implementation activities
+      format: markdown
+    - id: progress-tracking
+      name: Progress Tracking
+      description: Implementation progress updates
+      format: structured
+    - id: actual-results
+      name: Actual Results
+      description: Measured outcomes after implementation
+      format: json
+    - id: results-comparison
+      name: Results Comparison
+      description: Comparison of actual vs target results
+      format: structured
+    - id: effectiveness-assessment
+      name: Effectiveness Assessment
+      description: Assessment of countermeasure effectiveness
+      format: markdown
+    - id: updated-standards
+      name: Updated Standards
+      description: Revised standard work and procedures
+      format: markdown
+    - id: next-steps
+      name: Next Steps
+      description: Remaining issues and planned actions
+      format: structured
+    - id: follow-up-report
+      name: A3 Follow-up Report
+      description: Complete A3 story on one page
+      format: markdown
+  dependencies:
+    - artifact: background-statement
+      dependsOn:
+        - situation-description
+        - business-case
+    - artifact: current-state-map
+      dependsOn:
+        - gemba-observations
+        - current-state-data
+    - artifact: target-state
+      dependsOn:
+        - ideal-state-vision
+        - target-metrics
+    - artifact: gap-analysis
+      dependsOn:
+        - current-state-map
+        - target-state
+    - artifact: root-cause-analysis
+      dependsOn:
+        - five-whys-analysis
+        - fishbone-diagram
+    - artifact: countermeasure-evaluation
+      dependsOn:
+        - countermeasure-options
+    - artifact: selected-countermeasures
+      dependsOn:
+        - countermeasure-evaluation
+    - artifact: countermeasure-plan
+      dependsOn:
+        - selected-countermeasures
+    - artifact: implementation-log
+      dependsOn:
+        - countermeasure-plan
+    - artifact: results-comparison
+      dependsOn:
+        - actual-results
+        - target-metrics
+    - artifact: follow-up-report
+      dependsOn:
+        - effectiveness-assessment
+        - updated-standards
+        - next-steps
+
+ceremonies:
+  - id: a3-kickoff
+    name: A3 Kickoff Meeting
+    description: Launch the A3 process with team alignment
+    timing: phase-start
+    duration: 60
+    participants:
+      - problem-owner
+      - process-owner
+      - analyst
+    objectives:
+      - Align on problem
+      - Clarify scope
+      - Assign roles
+      - Set expectations
+  - id: gemba-walk
+    name: Gemba Walk
+    description: Visit the actual workplace to observe
+    timing: phase-start
+    duration: 120
+    participants:
+      - problem-owner
+      - analyst
+      - process-mapper
+      - process-owner
+    artifacts:
+      outputs:
+        - gemba-observations
+    objectives:
+      - See problem firsthand
+      - Understand context
+      - Gather facts
+      - Build respect
+  - id: root-cause-workshop
+    name: Root Cause Analysis Workshop
+    description: Collaborative session to identify root causes
+    timing: phase-start
+    duration: 120
+    participants:
+      - problem-owner
+      - facilitator
+      - analyst
+      - process-owner
+      - implementation-team
+    artifacts:
+      inputs:
+        - current-state-map
+        - target-state
+      outputs:
+        - five-whys-analysis
+        - fishbone-diagram
+    objectives:
+      - Apply 5 Whys
+      - Create fishbone diagram
+      - Identify root causes
+      - Build consensus
+  - id: countermeasure-session
+    name: Countermeasure Brainstorming
+    description: Generate and evaluate countermeasure ideas
+    timing: phase-start
+    duration: 120
+    participants:
+      - problem-owner
+      - facilitator
+      - implementation-lead
+      - process-owner
+    artifacts:
+      inputs:
+        - root-cause-analysis
+      outputs:
+        - countermeasure-options
+        - selected-countermeasures
+    objectives:
+      - Generate options
+      - Evaluate alternatives
+      - Select countermeasures
+      - Build commitment
+  - id: a3-review
+    name: A3 Review Session
+    description: Review completed A3 with management
+    timing: phase-end
+    duration: 60
+    participants:
+      - problem-owner
+      - process-owner
+      - management
+    artifacts:
+      inputs:
+        - follow-up-report
+    objectives:
+      - Share results
+      - Demonstrate learning
+      - Get feedback
+      - Gain support for standardization

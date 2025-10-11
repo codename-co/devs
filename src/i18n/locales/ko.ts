@@ -20,6 +20,7 @@ export const ko: I18n = {
   Teams: '팀',
   Settings: '설정',
   Agents: '에이전트',
+  Methodologies: '방법론',
   Conversations: '대화',
   'Conversations history': '대화 기록',
   Knowledge: '지식',
@@ -32,6 +33,7 @@ export const ko: I18n = {
   Chat: '채팅',
   'Main navigation': '주 탐색',
   'New Agent': '새로운 에이전트',
+  'New Methodology': '새로운 방법론',
   'Upgrade to Pro': 'Pro로 업그레이드',
 
   // PromptArea
@@ -45,7 +47,7 @@ export const ko: I18n = {
   'Send prompt': '프롬프트 전송',
   'Select an agent': '에이전트 선택',
   'Select a model': '모델 선택',
-  'Add Provider': '제공자 추가',
+  'Add a model': '모델 추가',
 
   // Page: /404
   'Page not found': '페이지를 찾을 수 없습니다',
@@ -68,6 +70,8 @@ export const ko: I18n = {
   // AgentsPage
   'My Agents ({count})': '내 에이전트 ({count})',
   'Built-in Agents ({count})': '내장 에이전트 ({count})',
+  'Built-in agents are pre-configured agents that come with the platform. They showcase various capabilities and can serve as inspiration for your own custom agents.':
+    '내장 에이전트는 플랫폼과 함께 제공되는 사전 구성된 에이전트입니다. 다양한 기능을 보여주며 나만의 맞춤형 에이전트에 영감을 줄 수 있습니다.',
 
   // AgentRunPage
   'View and manage your past conversations': '이전 대화를 보고 관리하세요',

@@ -5,7 +5,7 @@ export const en = [
   'Choose your preferred language',
   'Interface Language',
   'Platform Name',
-  'Theme Mode',
+  'Theme',
   'System',
   'Light',
   'Dark',

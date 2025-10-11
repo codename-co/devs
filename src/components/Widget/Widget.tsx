@@ -7,6 +7,9 @@ import { ErrorBoundary } from '../ErrorBoundary'
 import { Icon } from '../Icon'
 import { useScoreTitle } from './Score/titles'
 import { usePresentationTitle } from './Presentation/titles'
+import { completeStreamingHtml } from './stream-html.utils'
+import './widget.css'
+import { MonacoEditor } from '../MonacoEditor'
 
 const Diagram = lazy(() =>
   import('./Diagram/Diagram').then((module) => ({ default: module.Diagram })),
@@ -23,15 +26,11 @@ const SVG = lazy(() =>
   import('./SVG/SVG').then((module) => ({ default: module.SVG })),
 )
 
-import './widget.css'
-import { completeStreamingHtml } from '@/lib/html-completer'
-
 // Type definitions for specialized widgets
 export type CodeBlockType =
   | 'abc'
   | 'svg'
   | 'diagram'
-  | 'chart'
   | 'marpit'
   | 'html'
   | 'generic'
@@ -41,6 +40,7 @@ export interface WidgetProps {
   type: CodeBlockType
   language?: string
   className?: string
+  title?: string
 }
 
 // Main specialized widget component
@@ -49,6 +49,7 @@ export const Widget = ({
   type,
   language,
   className = '',
+  title,
 }: WidgetProps) => {
   const [viewMode, setViewMode] = useState<'source' | 'render'>('render')
   const { t } = useI18n(localI18n)
@@ -62,9 +63,7 @@ export const Widget = ({
       case 'svg':
         return 'MediaImage'
       case 'diagram':
-        return 'Square3dCornerToCorner'
-      case 'chart':
-        return 'MathBook'
+        return 'CubeScan'
       case 'marpit':
         return 'Presentation'
       case 'html':
@@ -82,8 +81,6 @@ export const Widget = ({
         return 'SVG graphics'
       case 'diagram':
         return 'Mermaid diagram'
-      case 'chart':
-        return 'Chart'
       case 'marpit':
         return presentationTitle
       case 'html':
@@ -93,11 +90,31 @@ export const Widget = ({
     }
   }
 
+  const getLanguage = () => {
+    if (language) return language
+
+    switch (type) {
+      case 'abc':
+        return 'abc'
+      case 'svg':
+        return 'xml'
+      case 'diagram':
+        return 'mermaid'
+      case 'marpit':
+        return 'yaml'
+      case 'html':
+        return 'html'
+      default:
+        return 'plaintext'
+    }
+  }
+
   const renderContent = () => {
     if (viewMode === 'source') {
       return (
         <pre className="bg-default-100 p-4 rounded-md overflow-x-auto">
-          <code className="text-sm font-mono">{code}</code>
+          <MonacoEditor defaultLanguage={getLanguage()} defaultValue={code} />
+          {/* <code className="text-sm font-mono">{code}</code> */}
         </pre>
       )
     }
@@ -117,7 +134,7 @@ export const Widget = ({
       case 'svg':
         return (
           <Suspense fallback={<Fallback />}>
-            <SVG code={code} />
+            <SVG code={completeStreamingHtml(code)} />
           </Suspense>
         )
       case 'diagram':
@@ -166,7 +183,7 @@ export const Widget = ({
         <CardHeader className="flex justify-between items-center">
           <h4 className="text-sm font-semibold text-default-600">
             <Icon name={getIcon()} className="w-4 h-4 inline-block mr-2" />
-            {getTitle()}
+            {title ?? getTitle()}
           </h4>
 
           <div className="flex gap-2">
@@ -234,11 +251,6 @@ export const detectSpecializedCodeType = (
   // Diagram detection (placeholder for future implementations)
   if (language === 'mermaid' || language === 'diagram') {
     return 'diagram'
-  }
-
-  // Chart detection (placeholder for future implementations)
-  if (language === 'chart' || language === 'plotly') {
-    return 'chart'
   }
 
   // Marpit detection

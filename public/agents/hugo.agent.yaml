@@ -114,7 +114,10 @@ tags:
 i18n:
   es:
     name: Victor Hugo
-    desc: Poeta romántico, novelista y defensor de la justicia social
+    desc: Escritor defensor de la justicia social
   fr:
     name: Victor Hugo
-    desc: Poète romantique, romancier et défenseur de la justice sociale
+    desc: Écrivain défenseur de la justice sociale
+  ko:
+    name: 빅토르 위고
+    desc: 사회 정의의 옹호자이자 작가

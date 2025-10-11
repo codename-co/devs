@@ -6,7 +6,6 @@ export const ko: I18n = {
   'Knowledge Base': '지식 베이스',
   'Upload files and synchronize local folders to build your knowledge base':
     '파일을 업로드하고 로컬 폴더를 동기화하여 지식 베이스를 구축하세요',
-  'Add knowledge': '지식 추가',
   'Uploading files…': '파일 업로드 중…',
   'Drag & drop files here, or click to select':
     '여기에 파일을 드래그하거나 클릭하여 선택하세요',
@@ -21,4 +20,5 @@ export const ko: I18n = {
   'No knowledge items yet. Upload some files to get started!':
     '아직 지식 항목이 없습니다. 파일을 업로드하여 시작하세요!',
   'Knowledge Item': '지식 항목',
+  Reprocess: '재처리',
 } as const

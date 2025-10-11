@@ -1,0 +1,1515 @@
+# 8D (Eight Disciplines) Problem Solving Methodology
+# Structured team-based approach to solving problems and preventing recurrence
+
+metadata:
+  id: 8d
+  name: 8D (Eight Disciplines)
+  description: >
+    A problem-solving methodology developed by Ford Motor Company for quality
+    and process improvement. The 8D method uses a team-based approach to
+    systematically identify, correct, and eliminate recurring problems. It
+    emphasizes root cause analysis, corrective actions, and preventive measures.
+  type: sequential
+  version: 1.0.0
+  origin: Ford Motor Company / Automotive Industry
+  domains:
+    - quality-management
+    - automotive
+    - manufacturing
+    - customer-complaints
+    - defect-resolution
+  complexity: complex
+  tags:
+    - quality
+    - team-based
+    - structured
+    - corrective-action
+    - preventive-action
+    - ford
+  i18n:
+    es:
+      name: 8D (Ocho Disciplinas)
+      description: >
+        Una metodología de resolución de problemas desarrollada por Ford Motor
+        Company para la mejora de la calidad y los procesos. El método 8D utiliza
+        un enfoque basado en equipos para identificar, corregir y eliminar
+        sistemáticamente problemas recurrentes. Hace hincapié en el análisis de
+        la causa raíz, las acciones correctivas y las medidas preventivas.
+    fr:
+      name: 8D (Huit Disciplines)
+      description: >
+        Une méthodologie de résolution de problèmes développée par Ford Motor
+        Company pour l'amélioration de la qualité et des processus. La méthode 8D
+        utilise une approche en équipe pour identifier, corriger et éliminer
+        systématiquement les problèmes récurrents. Elle met l'accent sur
+        l'analyse des causes profondes, les actions correctives et les mesures
+        préventives.
+    ko:
+      name: 8D (8단계 문제 해결)
+      description: >
+        포드 자동차 회사에서 개발한 품질 및 프로세스 개선을 위한 문제 해결
+        방법론입니다. 8D 방법은 팀 기반 접근 방식을 사용하여 반복되는 문제를
+        체계적으로 식별, 수정 및 제거합니다. 근본 원인 분석, 시정 조치 및 예방
+        조치를 강조합니다.
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 2
+  parallelization:
+    enabled: false
+    maxConcurrentTasks: 1
+
+phases:
+  - id: d0-prepare
+    name: D0 - Prepare and Plan
+    description: >
+      Prepare for the 8D process (D0 is preparatory, before the formal 8 disciplines).
+      Recognize the problem, assess if 8D is appropriate, collect initial data,
+      and plan the 8D approach.
+    order: 0
+    optional: false
+    exitCriteria:
+      - type: artifact-exists
+        description: Problem statement must exist
+        artifactType: problem-statement
+      - type: artifact-exists
+        description: 8D decision must be made
+        artifactType: 8d-decision
+    tasks:
+      - id: recognize-problem
+        title: Recognize and Document the Problem
+        description: Identify and clearly describe the problem or customer complaint
+        type: analysis
+        complexity: simple
+        assignedRole: quality-manager
+        estimatedDuration: 60
+        artifacts:
+          outputs:
+            - typeId: initial-problem-description
+              required: true
+        requirements:
+          - type: functional
+            description: Problem must be clearly articulated
+            priority: must
+            validationCriteria:
+              - Problem described factually
+              - Customer impact noted
+              - Urgency assessed
+      - id: assess-8d-need
+        title: Assess if 8D is Appropriate
+        description: Determine if problem severity warrants full 8D process
+        type: decision
+        complexity: simple
+        assignedRole: quality-manager
+        estimatedDuration: 30
+        dependencies:
+          - recognize-problem
+        artifacts:
+          inputs:
+            - typeId: initial-problem-description
+              required: true
+          outputs:
+            - typeId: 8d-decision
+              required: true
+        requirements:
+          - type: functional
+            description: Decision must be justified
+            priority: must
+            validationCriteria:
+              - Severity assessed
+              - Complexity evaluated
+              - Resource requirements considered
+      - id: collect-emergency-data
+        title: Collect Initial Emergency Data
+        description: Gather critical immediate data about the problem
+        type: analysis
+        complexity: simple
+        assignedRole: quality-engineer
+        estimatedDuration: 90
+        parallelizable: true
+        artifacts:
+          outputs:
+            - typeId: emergency-data
+              required: true
+        requirements:
+          - type: functional
+            description: Data must support immediate actions
+            priority: must
+            validationCriteria:
+              - Scope documented
+              - Affected units identified
+              - Timeline established
+      - id: define-problem-statement
+        title: Define Comprehensive Problem Statement
+        description: Create detailed problem statement with 5W2H
+        type: documentation
+        complexity: simple
+        assignedRole: quality-engineer
+        estimatedDuration: 60
+        dependencies:
+          - collect-emergency-data
+        artifacts:
+          inputs:
+            - typeId: initial-problem-description
+              required: true
+            - typeId: emergency-data
+              required: true
+          outputs:
+            - typeId: problem-statement
+              required: true
+        requirements:
+          - type: functional
+            description: Problem statement must use 5W2H
+            priority: must
+            validationCriteria:
+              - What is the problem
+              - When did it occur
+              - Where did it occur
+              - Who discovered it
+              - Why is it important
+              - How was it detected
+              - How many are affected
+    agentRequirements:
+      roles:
+        - quality-manager
+        - quality-engineer
+      skills:
+        - problem-identification
+        - quality-management
+        - data-collection
+      minExperience: senior
+
+  - id: d1-team
+    name: D1 - Establish the Team
+    description: >
+      Form a cross-functional team with the knowledge, time, authority,
+      and skill to solve the problem and implement corrective actions.
+      Define roles and responsibilities.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: D0 must be completed
+        phaseId: d0-prepare
+    exitCriteria:
+      - type: artifact-exists
+        description: Team must be formed
+        artifactType: team-charter
+    tasks:
+      - id: identify-team-members
+        title: Identify Required Team Members
+        description: Determine who needs to be on the team based on expertise
+        type: planning
+        complexity: simple
+        assignedRole: team-leader
+        estimatedDuration: 45
+        artifacts:
+          inputs:
+            - typeId: problem-statement
+              required: true
+          outputs:
+            - typeId: team-composition
+              required: true
+        requirements:
+          - type: functional
+            description: Team must have necessary expertise
+            priority: must
+            validationCriteria:
+              - Cross-functional representation
+              - Technical expertise covered
+              - Authority to implement changes
+      - id: assign-roles
+        title: Assign Team Roles and Responsibilities
+        description: Define who does what in the 8D process
+        type: planning
+        complexity: simple
+        assignedRole: team-leader
+        estimatedDuration: 30
+        dependencies:
+          - identify-team-members
+        artifacts:
+          inputs:
+            - typeId: team-composition
+              required: true
+          outputs:
+            - typeId: role-assignments
+              required: true
+        requirements:
+          - type: functional
+            description: Roles must be clear
+            priority: must
+            validationCriteria:
+              - Team leader identified
+              - Technical lead assigned
+              - Scribe designated
+              - Champions named
+      - id: create-team-charter
+        title: Create Team Charter
+        description: Document team mission, scope, authority, and operating rules
+        type: documentation
+        complexity: simple
+        assignedRole: team-leader
+        estimatedDuration: 60
+        dependencies:
+          - assign-roles
+        artifacts:
+          inputs:
+            - typeId: role-assignments
+              required: true
+          outputs:
+            - typeId: team-charter
+              required: true
+        requirements:
+          - type: functional
+            description: Charter must define team parameters
+            priority: must
+            validationCriteria:
+              - Mission clear
+              - Scope defined
+              - Authority documented
+              - Meeting schedule set
+    agentRequirements:
+      roles:
+        - team-leader
+      skills:
+        - team-building
+        - leadership
+        - planning
+      minExperience: senior
+
+  - id: d2-describe
+    name: D2 - Describe the Problem
+    description: >
+      Describe the problem in measurable terms. Specify internal/external
+      customer problem by describing in detail the Who, What, When, Where,
+      Why, How, and How Many (5W2H) for the problem.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: D1 must be completed
+        phaseId: d1-team
+    exitCriteria:
+      - type: artifact-exists
+        description: Problem description must be complete
+        artifactType: is-is-not-analysis
+    tasks:
+      - id: gather-detailed-data
+        title: Gather Detailed Problem Data
+        description: Collect comprehensive data about the problem occurrence
+        type: analysis
+        complexity: simple
+        assignedRole: data-analyst
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: problem-statement
+              required: true
+          outputs:
+            - typeId: detailed-problem-data
+              required: true
+        requirements:
+          - type: functional
+            description: Data must be comprehensive
+            priority: must
+            validationCriteria:
+              - Multiple data sources used
+              - Sample size adequate
+              - Timeline documented
+      - id: perform-is-is-not-analysis
+        title: Perform IS / IS NOT Analysis
+        description: Clearly define what IS the problem and what IS NOT
+        type: analysis
+        complexity: simple
+        assignedRole: technical-lead
+        estimatedDuration: 90
+        dependencies:
+          - gather-detailed-data
+        artifacts:
+          inputs:
+            - typeId: detailed-problem-data
+              required: true
+          outputs:
+            - typeId: is-is-not-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: IS/IS NOT must clarify problem boundaries
+            priority: must
+            validationCriteria:
+              - What IS the problem defined
+              - What IS NOT the problem defined
+              - Where it occurs
+              - Where it does not occur
+              - When it occurs
+              - When it does not occur
+              - Extent quantified
+      - id: create-problem-photos
+        title: Create Visual Problem Documentation
+        description: Take photos, create diagrams to illustrate the problem
+        type: documentation
+        complexity: simple
+        assignedRole: quality-engineer
+        estimatedDuration: 60
+        parallelizable: true
+        artifacts:
+          outputs:
+            - typeId: visual-documentation
+              required: true
+        requirements:
+          - type: functional
+            description: Visuals must clearly show problem
+            priority: should
+            validationCriteria:
+              - Photos captured
+              - Diagrams created
+              - Annotations added
+    agentRequirements:
+      roles:
+        - data-analyst
+        - technical-lead
+        - quality-engineer
+      skills:
+        - data-analysis
+        - is-is-not-analysis
+        - documentation
+      minExperience: mid
+
+  - id: d3-containment
+    name: D3 - Develop Interim Containment Actions
+    description: >
+      Define and implement containment actions to isolate the problem from
+      any customer until permanent corrective action is implemented. Verify
+      the effectiveness of the containment actions.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: D2 must be completed
+        phaseId: d2-describe
+    exitCriteria:
+      - type: artifact-exists
+        description: Containment actions must be implemented
+        artifactType: containment-verification
+    tasks:
+      - id: identify-containment-actions
+        title: Identify Interim Containment Actions
+        description: Determine immediate actions to protect customers
+        type: planning
+        complexity: simple
+        assignedRole: technical-lead
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: is-is-not-analysis
+              required: true
+          outputs:
+            - typeId: containment-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Containment must protect customers
+            priority: must
+            validationCriteria:
+              - Actions prevent problem spread
+              - Implementation feasible
+              - Resources available
+      - id: implement-containment
+        title: Implement Containment Actions
+        description: Execute the containment plan immediately
+        type: implementation
+        complexity: simple
+        assignedRole: operations-team
+        estimatedDuration: 120
+        dependencies:
+          - identify-containment-actions
+        artifacts:
+          inputs:
+            - typeId: containment-plan
+              required: true
+          outputs:
+            - typeId: containment-implementation
+              required: true
+        requirements:
+          - type: functional
+            description: Containment must be in place
+            priority: must
+            validationCriteria:
+              - Actions fully implemented
+              - Team trained
+              - Process monitored
+      - id: verify-containment-effectiveness
+        title: Verify Containment Effectiveness
+        description: Confirm containment actions are working
+        type: testing
+        complexity: simple
+        assignedRole: quality-engineer
+        estimatedDuration: 90
+        dependencies:
+          - implement-containment
+        artifacts:
+          inputs:
+            - typeId: containment-implementation
+              required: true
+          outputs:
+            - typeId: containment-verification
+              required: true
+        requirements:
+          - type: functional
+            description: Containment effectiveness must be proven
+            priority: must
+            validationCriteria:
+              - No escapes to customer
+              - Metrics show effectiveness
+              - Monitoring in place
+    agentRequirements:
+      roles:
+        - technical-lead
+        - operations-team
+        - quality-engineer
+      skills:
+        - problem-containment
+        - implementation
+        - verification
+      minExperience: mid
+
+  - id: d4-root-cause
+    name: D4 - Determine Root Cause
+    description: >
+      Identify all potential causes which could explain why the problem
+      occurred. Isolate and verify the root cause by testing each potential
+      cause against the problem description and test data. Identify alternative
+      corrective actions to eliminate root cause.
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: D3 must be completed
+        phaseId: d3-containment
+    exitCriteria:
+      - type: artifact-exists
+        description: Root cause must be verified
+        artifactType: verified-root-cause
+    tasks:
+      - id: identify-potential-causes
+        title: Identify All Potential Causes
+        description: Brainstorm all possible causes using fishbone, 5 Whys, etc.
+        type: analysis
+        complexity: complex
+        assignedRole: technical-lead
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: is-is-not-analysis
+              required: true
+          outputs:
+            - typeId: potential-causes
+              required: true
+        requirements:
+          - type: functional
+            description: All reasonable causes must be considered
+            priority: must
+            validationCriteria:
+              - Multiple analysis methods used
+              - All team input gathered
+              - Causes categorized
+      - id: test-root-cause-theories
+        title: Test Root Cause Theories
+        description: Test each potential cause against problem data
+        type: testing
+        complexity: complex
+        assignedRole: technical-lead
+        estimatedDuration: 180
+        dependencies:
+          - identify-potential-causes
+        artifacts:
+          inputs:
+            - typeId: potential-causes
+              required: true
+            - typeId: is-is-not-analysis
+              required: true
+          outputs:
+            - typeId: root-cause-tests
+              required: true
+        requirements:
+          - type: functional
+            description: Testing must be rigorous
+            priority: must
+            validationCriteria:
+              - Each cause tested against IS/IS NOT
+              - Hypotheses validated or refuted
+              - Evidence documented
+      - id: verify-root-cause
+        title: Verify True Root Cause
+        description: Confirm the root cause with additional testing or experiments
+        type: testing
+        complexity: simple
+        assignedRole: quality-engineer
+        estimatedDuration: 120
+        dependencies:
+          - test-root-cause-theories
+        artifacts:
+          inputs:
+            - typeId: root-cause-tests
+              required: true
+          outputs:
+            - typeId: verified-root-cause
+              required: true
+        requirements:
+          - type: functional
+            description: Root cause must be proven
+            priority: must
+            validationCriteria:
+              - Cause explains all observations
+              - Evidence is conclusive
+              - Alternative causes ruled out
+    agentRequirements:
+      roles:
+        - technical-lead
+        - quality-engineer
+      skills:
+        - root-cause-analysis
+        - hypothesis-testing
+        - problem-solving
+      minExperience: senior
+
+  - id: d5-permanent-actions
+    name: D5 - Choose and Verify Permanent Corrective Actions
+    description: >
+      Through pre-production programs, quantitatively confirm that the selected
+      corrective actions will resolve the problem for the customer and will not
+      cause undesirable side effects. Define contingency actions if necessary.
+    order: 5
+    entryCriteria:
+      - type: phase-completed
+        description: D4 must be completed
+        phaseId: d4-root-cause
+    exitCriteria:
+      - type: artifact-exists
+        description: Corrective actions must be verified
+        artifactType: pca-verification
+    tasks:
+      - id: generate-corrective-actions
+        title: Generate Permanent Corrective Action Options
+        description: Develop multiple solutions to eliminate root cause
+        type: design
+        complexity: complex
+        assignedRole: technical-lead
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: verified-root-cause
+              required: true
+          outputs:
+            - typeId: pca-options
+              required: true
+        requirements:
+          - type: functional
+            description: Multiple solutions must be evaluated
+            priority: must
+            validationCriteria:
+              - At least 3 options generated
+              - Pros and cons analyzed
+              - Feasibility assessed
+      - id: select-best-pca
+        title: Select Best Permanent Corrective Action
+        description: Choose the optimal solution based on criteria
+        type: decision
+        complexity: simple
+        assignedRole: team-leader
+        estimatedDuration: 60
+        dependencies:
+          - generate-corrective-actions
+        artifacts:
+          inputs:
+            - typeId: pca-options
+              required: true
+          outputs:
+            - typeId: selected-pca
+              required: true
+        requirements:
+          - type: functional
+            description: Selection must be justified
+            priority: must
+            validationCriteria:
+              - Criteria defined
+              - Options scored
+              - Decision documented
+      - id: verify-pca-effectiveness
+        title: Verify PCA Effectiveness
+        description: Test corrective action in controlled environment
+        type: testing
+        complexity: complex
+        assignedRole: quality-engineer
+        estimatedDuration: 240
+        dependencies:
+          - select-best-pca
+        artifacts:
+          inputs:
+            - typeId: selected-pca
+              required: true
+          outputs:
+            - typeId: pca-verification
+              required: true
+        requirements:
+          - type: functional
+            description: PCA must be proven effective
+            priority: must
+            validationCriteria:
+              - Pilot testing completed
+              - Problem eliminated
+              - No negative side effects
+      - id: assess-side-effects
+        title: Assess Potential Side Effects
+        description: Evaluate if corrective action causes other problems
+        type: analysis
+        complexity: simple
+        assignedRole: quality-engineer
+        estimatedDuration: 90
+        dependencies:
+          - verify-pca-effectiveness
+        artifacts:
+          inputs:
+            - typeId: pca-verification
+              required: true
+          outputs:
+            - typeId: side-effects-assessment
+              required: true
+        requirements:
+          - type: functional
+            description: Side effects must be evaluated
+            priority: must
+            validationCriteria:
+              - Impact on other processes checked
+              - Risks identified
+              - Mitigation planned
+    agentRequirements:
+      roles:
+        - technical-lead
+        - team-leader
+        - quality-engineer
+      skills:
+        - solution-design
+        - testing
+        - risk-assessment
+      minExperience: senior
+
+  - id: d6-implement
+    name: D6 - Implement Permanent Corrective Actions
+    description: >
+      Define and implement the permanent corrective actions. Choose ongoing
+      controls to ensure the root cause is eliminated. Once in production,
+      monitor the long-term effects and implement contingency actions if necessary.
+      Remove interim containment actions.
+    order: 6
+    entryCriteria:
+      - type: phase-completed
+        description: D5 must be completed
+        phaseId: d5-permanent-actions
+    exitCriteria:
+      - type: artifact-exists
+        description: PCA must be fully implemented
+        artifactType: implementation-confirmation
+    tasks:
+      - id: create-implementation-plan
+        title: Create PCA Implementation Plan
+        description: Plan the rollout of permanent corrective actions
+        type: planning
+        complexity: simple
+        assignedRole: implementation-manager
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: selected-pca
+              required: true
+          outputs:
+            - typeId: pca-implementation-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Plan must be comprehensive
+            priority: must
+            validationCriteria:
+              - Steps defined
+              - Resources allocated
+              - Timeline set
+              - Training planned
+      - id: implement-pca
+        title: Implement Permanent Corrective Actions
+        description: Execute the implementation plan
+        type: implementation
+        complexity: complex
+        assignedRole: operations-team
+        estimatedDuration: 240
+        dependencies:
+          - create-implementation-plan
+        artifacts:
+          inputs:
+            - typeId: pca-implementation-plan
+              required: true
+          outputs:
+            - typeId: pca-implementation
+              required: true
+        requirements:
+          - type: functional
+            description: Implementation must be complete
+            priority: must
+            validationCriteria:
+              - All changes deployed
+              - Personnel trained
+              - Documentation updated
+      - id: establish-controls
+        title: Establish Ongoing Controls
+        description: Put monitoring and control systems in place
+        type: implementation
+        complexity: simple
+        assignedRole: quality-engineer
+        estimatedDuration: 120
+        dependencies:
+          - implement-pca
+        artifacts:
+          inputs:
+            - typeId: pca-implementation
+              required: true
+          outputs:
+            - typeId: control-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Controls must prevent recurrence
+            priority: must
+            validationCriteria:
+              - Monitoring defined
+              - Control limits set
+              - Response plan created
+      - id: remove-containment
+        title: Remove Interim Containment Actions
+        description: Phase out temporary containment once PCA is proven
+        type: implementation
+        complexity: simple
+        assignedRole: operations-team
+        estimatedDuration: 60
+        dependencies:
+          - establish-controls
+        artifacts:
+          inputs:
+            - typeId: control-plan
+              required: true
+          outputs:
+            - typeId: implementation-confirmation
+              required: true
+        requirements:
+          - type: functional
+            description: Containment removal must be safe
+            priority: must
+            validationCriteria:
+              - PCA proven effective
+              - Controls operational
+              - Containment safely removed
+    agentRequirements:
+      roles:
+        - implementation-manager
+        - operations-team
+        - quality-engineer
+      skills:
+        - implementation
+        - change-management
+        - process-control
+      minExperience: mid
+
+  - id: d7-prevent
+    name: D7 - Prevent Recurrence
+    description: >
+      Modify management systems, operating systems, practices, and procedures
+      to prevent recurrence of this and all similar problems. Make
+      recommendations for systemic improvements.
+    order: 7
+    entryCriteria:
+      - type: phase-completed
+        description: D6 must be completed
+        phaseId: d6-implement
+    exitCriteria:
+      - type: artifact-exists
+        description: Preventive measures must be implemented
+        artifactType: prevention-confirmation
+    tasks:
+      - id: identify-similar-processes
+        title: Identify Similar Processes or Products
+        description: Find other areas where similar problems could occur
+        type: analysis
+        complexity: simple
+        assignedRole: quality-manager
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: verified-root-cause
+              required: true
+          outputs:
+            - typeId: similar-processes
+              required: true
+        requirements:
+          - type: functional
+            description: All similar areas must be identified
+            priority: must
+            validationCriteria:
+              - Thorough search conducted
+              - Similar processes listed
+              - Risk levels assessed
+      - id: develop-preventive-measures
+        title: Develop Systemic Preventive Measures
+        description: Create preventive actions for broader application
+        type: planning
+        complexity: complex
+        assignedRole: quality-manager
+        estimatedDuration: 120
+        dependencies:
+          - identify-similar-processes
+        artifacts:
+          inputs:
+            - typeId: similar-processes
+              required: true
+            - typeId: selected-pca
+              required: true
+          outputs:
+            - typeId: preventive-measures
+              required: true
+        requirements:
+          - type: functional
+            description: Prevention must be systemic
+            priority: must
+            validationCriteria:
+              - System-level changes proposed
+              - Standards updated
+              - Training revised
+      - id: update-procedures
+        title: Update Management Systems and Procedures
+        description: Revise procedures, work instructions, and systems
+        type: documentation
+        complexity: simple
+        assignedRole: process-engineer
+        estimatedDuration: 120
+        dependencies:
+          - develop-preventive-measures
+        artifacts:
+          inputs:
+            - typeId: preventive-measures
+              required: true
+          outputs:
+            - typeId: updated-procedures
+              required: true
+        requirements:
+          - type: functional
+            description: Procedures must reflect preventive measures
+            priority: must
+            validationCriteria:
+              - All relevant procedures updated
+              - Changes approved
+              - Version control maintained
+      - id: implement-prevention
+        title: Implement Preventive Measures
+        description: Deploy preventive measures across organization
+        type: implementation
+        complexity: simple
+        assignedRole: operations-team
+        estimatedDuration: 180
+        dependencies:
+          - update-procedures
+        artifacts:
+          inputs:
+            - typeId: updated-procedures
+              required: true
+          outputs:
+            - typeId: prevention-confirmation
+              required: true
+        requirements:
+          - type: functional
+            description: Prevention must be deployed
+            priority: must
+            validationCriteria:
+              - Changes implemented
+              - Training completed
+              - Effectiveness verified
+    agentRequirements:
+      roles:
+        - quality-manager
+        - process-engineer
+        - operations-team
+      skills:
+        - systems-thinking
+        - process-improvement
+        - change-management
+      minExperience: senior
+
+  - id: d8-congratulate
+    name: D8 - Congratulate the Team
+    description: >
+      Recognize the collective efforts of the team. Communicate achievements
+      to the organization. Document lessons learned and best practices.
+      Formally close the 8D process.
+    order: 8
+    entryCriteria:
+      - type: phase-completed
+        description: D7 must be completed
+        phaseId: d7-prevent
+    exitCriteria:
+      - type: artifact-exists
+        description: 8D report must be complete
+        artifactType: 8d-final-report
+    tasks:
+      - id: document-lessons-learned
+        title: Document Lessons Learned
+        description: Capture key learnings from the 8D process
+        type: documentation
+        complexity: simple
+        assignedRole: team-leader
+        estimatedDuration: 60
+        artifacts:
+          outputs:
+            - typeId: lessons-learned
+              required: true
+        requirements:
+          - type: functional
+            description: Lessons must be actionable
+            priority: must
+            validationCriteria:
+              - Successes documented
+              - Challenges noted
+              - Improvements identified
+      - id: create-8d-report
+        title: Create Final 8D Report
+        description: Compile complete 8D documentation
+        type: documentation
+        complexity: simple
+        assignedRole: team-leader
+        estimatedDuration: 120
+        dependencies:
+          - document-lessons-learned
+        artifacts:
+          inputs:
+            - typeId: lessons-learned
+              required: true
+          outputs:
+            - typeId: 8d-final-report
+              required: true
+        requirements:
+          - type: functional
+            description: Report must be comprehensive
+            priority: must
+            validationCriteria:
+              - All 8D phases documented
+              - Results quantified
+              - Attachments included
+      - id: communicate-results
+        title: Communicate Results to Organization
+        description: Share 8D results and learnings broadly
+        type: documentation
+        complexity: simple
+        assignedRole: team-leader
+        estimatedDuration: 60
+        dependencies:
+          - create-8d-report
+        artifacts:
+          inputs:
+            - typeId: 8d-final-report
+              required: true
+          outputs:
+            - typeId: communication-package
+              required: true
+        requirements:
+          - type: functional
+            description: Communication must be clear
+            priority: must
+            validationCriteria:
+              - Stakeholders informed
+              - Presentation prepared
+              - Database updated
+      - id: recognize-team
+        title: Recognize and Thank Team Members
+        description: Formally acknowledge team contributions
+        type: review
+        complexity: simple
+        assignedRole: quality-manager
+        estimatedDuration: 30
+        dependencies:
+          - communicate-results
+        artifacts:
+          outputs:
+            - typeId: team-recognition
+              required: true
+        requirements:
+          - type: functional
+            description: Recognition must be meaningful
+            priority: should
+            validationCriteria:
+              - Individual contributions noted
+              - Public recognition given
+              - Celebration held
+      - id: close-8d
+        title: Formally Close 8D Process
+        description: Complete administrative closure of 8D
+        type: documentation
+        complexity: simple
+        assignedRole: team-leader
+        estimatedDuration: 30
+        dependencies:
+          - recognize-team
+        artifacts:
+          inputs:
+            - typeId: 8d-final-report
+              required: true
+          outputs:
+            - typeId: 8d-closure
+              required: true
+        requirements:
+          - type: functional
+            description: Closure must be formal
+            priority: must
+            validationCriteria:
+              - Sign-offs obtained
+              - Files archived
+              - Metrics recorded
+    agentRequirements:
+      roles:
+        - team-leader
+        - quality-manager
+      skills:
+        - documentation
+        - communication
+        - leadership
+      minExperience: mid
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - d0-prepare
+    - d1-team
+    - d2-describe
+    - d3-containment
+    - d4-root-cause
+    - d5-permanent-actions
+    - d6-implement
+    - d7-prevent
+    - d8-congratulate
+  failureHandling:
+    strategy: retry
+    fallbackPhase: d4-root-cause
+
+agentCoordination:
+  roles:
+    - id: quality-manager
+      name: Quality Manager
+      description: Oversees 8D process and provides organizational support
+      responsibilities:
+        - Authorize 8D process
+        - Provide resources
+        - Remove organizational barriers
+        - Ensure systemic improvements
+      requiredSkills:
+        - quality-management
+        - leadership
+        - systems-thinking
+      experienceLevel: senior
+      authority: leader
+    - id: team-leader
+      name: 8D Team Leader
+      description: Leads the 8D team through the process
+      responsibilities:
+        - Form and lead team
+        - Facilitate 8D process
+        - Manage timeline
+        - Report results
+      requiredSkills:
+        - leadership
+        - facilitation
+        - 8d-methodology
+      experienceLevel: senior
+      authority: leader
+    - id: technical-lead
+      name: Technical Lead
+      description: Provides technical expertise for problem-solving
+      responsibilities:
+        - Lead root cause analysis
+        - Develop corrective actions
+        - Verify solutions
+        - Support implementation
+      requiredSkills:
+        - technical-expertise
+        - root-cause-analysis
+        - problem-solving
+      experienceLevel: senior
+      authority: contributor
+    - id: quality-engineer
+      name: Quality Engineer
+      description: Provides quality and testing expertise
+      responsibilities:
+        - Collect data
+        - Verify containment
+        - Test solutions
+        - Establish controls
+      requiredSkills:
+        - quality-engineering
+        - testing
+        - data-analysis
+      experienceLevel: mid
+      authority: contributor
+    - id: data-analyst
+      name: Data Analyst
+      description: Analyzes problem data
+      responsibilities:
+        - Gather detailed data
+        - Perform statistical analysis
+        - Support IS/IS NOT analysis
+        - Track metrics
+      requiredSkills:
+        - data-analysis
+        - statistics
+        - measurement
+      experienceLevel: mid
+      authority: contributor
+    - id: operations-team
+      name: Operations Team Member
+      description: Implements changes in operations
+      responsibilities:
+        - Implement containment
+        - Execute corrective actions
+        - Update processes
+        - Support verification
+      requiredSkills:
+        - operations
+        - implementation
+        - process-knowledge
+      experienceLevel: mid
+      authority: contributor
+    - id: implementation-manager
+      name: Implementation Manager
+      description: Manages implementation of corrective actions
+      responsibilities:
+        - Plan implementation
+        - Coordinate resources
+        - Manage timeline
+        - Track progress
+      requiredSkills:
+        - project-management
+        - coordination
+        - change-management
+      experienceLevel: mid
+      authority: contributor
+    - id: process-engineer
+      name: Process Engineer
+      description: Updates processes and procedures
+      responsibilities:
+        - Update procedures
+        - Revise work instructions
+        - Support standardization
+        - Ensure compliance
+      requiredSkills:
+        - process-engineering
+        - documentation
+        - standards
+      experienceLevel: mid
+      authority: contributor
+  teamComposition:
+    minSize: 4
+    maxSize: 8
+    required:
+      - team-leader
+      - technical-lead
+      - quality-engineer
+      - operations-team
+    optional:
+      - quality-manager
+      - data-analyst
+      - implementation-manager
+      - process-engineer
+  communicationPatterns:
+    - from: team-leader
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+    - from: any
+      to: team-leader
+      type: direct
+      contextTypes:
+        - finding
+        - constraint
+    - from: quality-manager
+      to: team-leader
+      type: direct
+      contextTypes:
+        - resource
+        - decision
+  decisionAuthority:
+    - decision: 8D initiation
+      authority: quality-manager
+      requiresConsensus: false
+    - decision: Root cause determination
+      authority: technical-lead
+      requiresConsensus: true
+      consensusRoles:
+        - team-leader
+        - quality-engineer
+    - decision: Corrective action selection
+      authority: team-leader
+      requiresConsensus: true
+      consensusRoles:
+        - technical-lead
+        - quality-manager
+    - decision: 8D closure
+      authority: quality-manager
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: initial-problem-description
+      name: Initial Problem Description
+      description: First description of the problem
+      format: markdown
+    - id: 8d-decision
+      name: 8D Decision
+      description: Decision to use 8D methodology
+      format: structured
+    - id: emergency-data
+      name: Emergency Data
+      description: Initial critical data about problem
+      format: json
+    - id: problem-statement
+      name: Problem Statement (5W2H)
+      description: Comprehensive problem statement
+      format: structured
+    - id: team-composition
+      name: Team Composition
+      description: Identified team members
+      format: structured
+    - id: role-assignments
+      name: Role Assignments
+      description: Team member roles and responsibilities
+      format: structured
+    - id: team-charter
+      name: Team Charter
+      description: Team mission, scope, and operating rules
+      format: markdown
+    - id: detailed-problem-data
+      name: Detailed Problem Data
+      description: Comprehensive problem data
+      format: json
+    - id: is-is-not-analysis
+      name: IS / IS NOT Analysis
+      description: Problem boundary definition
+      format: structured
+    - id: visual-documentation
+      name: Visual Documentation
+      description: Photos and diagrams of problem
+      format: binary
+    - id: containment-plan
+      name: Containment Plan
+      description: Interim containment actions
+      format: structured
+    - id: containment-implementation
+      name: Containment Implementation
+      description: Record of containment execution
+      format: markdown
+    - id: containment-verification
+      name: Containment Verification
+      description: Proof of containment effectiveness
+      format: json
+    - id: potential-causes
+      name: Potential Causes
+      description: List of all possible root causes
+      format: structured
+    - id: root-cause-tests
+      name: Root Cause Tests
+      description: Results of testing potential causes
+      format: markdown
+    - id: verified-root-cause
+      name: Verified Root Cause
+      description: Proven root cause with evidence
+      format: markdown
+    - id: pca-options
+      name: PCA Options
+      description: Permanent corrective action alternatives
+      format: structured
+    - id: selected-pca
+      name: Selected PCA
+      description: Chosen permanent corrective action
+      format: structured
+    - id: pca-verification
+      name: PCA Verification
+      description: Proof of PCA effectiveness
+      format: json
+    - id: side-effects-assessment
+      name: Side Effects Assessment
+      description: Evaluation of potential negative impacts
+      format: markdown
+    - id: pca-implementation-plan
+      name: PCA Implementation Plan
+      description: Plan for deploying permanent actions
+      format: structured
+    - id: pca-implementation
+      name: PCA Implementation
+      description: Record of PCA deployment
+      format: markdown
+    - id: control-plan
+      name: Control Plan
+      description: Ongoing monitoring and control mechanisms
+      format: structured
+    - id: implementation-confirmation
+      name: Implementation Confirmation
+      description: Confirmation of full PCA deployment
+      format: markdown
+    - id: similar-processes
+      name: Similar Processes
+      description: Other areas where problem could occur
+      format: structured
+    - id: preventive-measures
+      name: Preventive Measures
+      description: Systemic prevention actions
+      format: structured
+    - id: updated-procedures
+      name: Updated Procedures
+      description: Revised procedures and work instructions
+      format: markdown
+    - id: prevention-confirmation
+      name: Prevention Confirmation
+      description: Confirmation of preventive deployment
+      format: markdown
+    - id: lessons-learned
+      name: Lessons Learned
+      description: Key learnings from 8D process
+      format: markdown
+    - id: 8d-final-report
+      name: 8D Final Report
+      description: Complete 8D documentation
+      format: markdown
+    - id: communication-package
+      name: Communication Package
+      description: Materials for sharing results
+      format: markdown
+    - id: team-recognition
+      name: Team Recognition
+      description: Record of team acknowledgment
+      format: markdown
+    - id: 8d-closure
+      name: 8D Closure
+      description: Formal closure documentation
+      format: structured
+  dependencies:
+    - artifact: problem-statement
+      dependsOn:
+        - initial-problem-description
+        - emergency-data
+    - artifact: team-charter
+      dependsOn:
+        - role-assignments
+    - artifact: is-is-not-analysis
+      dependsOn:
+        - detailed-problem-data
+    - artifact: containment-verification
+      dependsOn:
+        - containment-implementation
+    - artifact: verified-root-cause
+      dependsOn:
+        - root-cause-tests
+    - artifact: pca-verification
+      dependsOn:
+        - selected-pca
+    - artifact: implementation-confirmation
+      dependsOn:
+        - pca-implementation
+        - control-plan
+    - artifact: prevention-confirmation
+      dependsOn:
+        - updated-procedures
+    - artifact: 8d-final-report
+      dependsOn:
+        - lessons-learned
+
+ceremonies:
+  - id: 8d-kickoff
+    name: 8D Kickoff Meeting
+    description: Launch the 8D process
+    timing: phase-start
+    duration: 90
+    participants:
+      - quality-manager
+      - team-leader
+      - technical-lead
+      - quality-engineer
+    artifacts:
+      inputs:
+        - problem-statement
+      outputs:
+        - team-charter
+    objectives:
+      - Align on problem
+      - Form team
+      - Set expectations
+      - Plan timeline
+  - id: daily-standup
+    name: Daily Team Standup
+    description: Brief daily synchronization
+    timing: daily
+    duration: 15
+    participants:
+      - team-leader
+      - technical-lead
+      - quality-engineer
+      - operations-team
+    objectives:
+      - Share progress
+      - Identify blockers
+      - Coordinate activities
+  - id: root-cause-workshop
+    name: Root Cause Workshop
+    description: Intensive session to identify root cause
+    timing: phase-start
+    duration: 240
+    participants:
+      - team-leader
+      - technical-lead
+      - quality-engineer
+      - data-analyst
+      - operations-team
+    artifacts:
+      inputs:
+        - is-is-not-analysis
+      outputs:
+        - verified-root-cause
+    objectives:
+      - Identify all potential causes
+      - Test hypotheses
+      - Verify root cause
+  - id: solution-review
+    name: Solution Review
+    description: Review and approve corrective actions
+    timing: phase-end
+    duration: 120
+    participants:
+      - quality-manager
+      - team-leader
+      - technical-lead
+    artifacts:
+      inputs:
+        - pca-verification
+        - side-effects-assessment
+      outputs:
+        - selected-pca
+    objectives:
+      - Review test results
+      - Approve solution
+      - Plan implementation
+  - id: 8d-closeout
+    name: 8D Closeout Presentation
+    description: Final presentation and team recognition
+    timing: phase-end
+    duration: 60
+    participants:
+      - quality-manager
+      - team-leader
+      - all-team-members
+    artifacts:
+      inputs:
+        - 8d-final-report
+    objectives:
+      - Present results
+      - Share lessons learned
+      - Recognize team
+      - Celebrate success

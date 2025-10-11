@@ -5,4 +5,6 @@ node_modules
 /playwright-report
 /public/agents/manifest.json
 /public/agents/*.agent.json
+/public/methodologies/manifest.json
+/public/methodologies/*.methodology.json
 /test-results*

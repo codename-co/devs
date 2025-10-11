@@ -170,3 +170,6 @@ i18n:
   fr:
     name: Psychologue
     desc: Psychologue clinicien virtuel
+  ko:
+    name: 심리학자
+    desc: 가상 임상 심리학자

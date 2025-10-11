@@ -84,6 +84,12 @@ export default defineConfig({
           //   langs.map((lang) => [`i18n-${lang}`, [`@/i18n/locales/${lang}`]]),
           // ),
           icons: ['@/components/Icon'],
+          editor: [
+            '@/components/MonacoEditor',
+            '@monaco-editor/react',
+            'monaco-mermaid',
+            'monaco-yaml',
+          ],
         },
       },
     },

@@ -101,3 +101,6 @@ i18n:
   fr:
     name: Molière
     desc: Maître de la comédie française et de la satire sociale
+  ko:
+    name: 몰리에르
+    desc: 프랑스 코미디와 사회 풍자의 대가

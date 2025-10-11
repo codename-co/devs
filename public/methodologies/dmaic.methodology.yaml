@@ -1,0 +1,819 @@
+# DMAIC (Define, Measure, Analyze, Improve, Control) Methodology
+# Six Sigma problem-solving framework
+
+metadata:
+  id: dmaic
+  name: DMAIC
+  description: >
+    Six Sigma methodology for process improvement and problem-solving.
+    DMAIC stands for Define, Measure, Analyze, Improve, and Control.
+    It's a data-driven quality strategy used to improve processes.
+  type: sequential
+  version: 1.0.0
+  origin: Six Sigma / Motorola
+  domains:
+    - manufacturing
+    - quality-management
+    - process-improvement
+    - problem-solving
+  complexity: complex
+  tags:
+    - six-sigma
+    - data-driven
+    - quality
+    - process-improvement
+  i18n:
+    es:
+      description: >
+        Metodología Six Sigma para la mejora de procesos y resolución de problemas.
+        DMAIC significa Definir, Medir, Analizar, Mejorar y Controlar.
+        Es una estrategia de calidad basada en datos utilizada para mejorar procesos.
+    fr:
+      description: >
+        Méthodologie Six Sigma pour l'amélioration des processus et la résolution de problèmes.
+        DMAIC signifie Définir, Mesurer, Analyser, Améliorer et Contrôler.
+        C'est une stratégie de qualité basée sur les données utilisée pour améliorer les processus.
+    ko:
+      description: >
+        프로세스 개선 및 문제 해결을 위한 식스 시그마 방법론.
+        DMAIC는 정의(Define), 측정(Measure), 분석(Analyze), 개선(Improve), 관리(Control)를 의미합니다.
+        이는 프로세스를 개선하는 데 사용되는 데이터 기반 품질 전략입니다.
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 2
+  parallelization:
+    enabled: false
+    maxConcurrentTasks: 1
+
+phases:
+  - id: define
+    name: Define
+    description: >
+      Define the problem, improvement opportunity, and project goals.
+      Establish the business case and the voice of the customer (VOC).
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Problem statement artifact must exist
+        artifactType: problem-statement
+      - type: artifact-exists
+        description: Project charter artifact must exist
+        artifactType: project-charter
+    tasks:
+      - id: identify-problem
+        title: Identify and Define the Problem
+        description: Clearly articulate the problem or opportunity for improvement
+        type: analysis
+        complexity: simple
+        assignedRole: process-analyst
+        estimatedDuration: 120
+        artifacts:
+          outputs:
+            - typeId: problem-statement
+              required: true
+              minCount: 1
+              maxCount: 1
+        requirements:
+          - type: functional
+            description: Problem statement must be specific and measurable
+            priority: must
+            validationCriteria:
+              - Problem is clearly defined
+              - Problem scope is bounded
+              - Impact is quantified
+      - id: create-project-charter
+        title: Create Project Charter
+        description: Document project goals, scope, timeline, and stakeholders
+        type: documentation
+        complexity: simple
+        assignedRole: project-manager
+        estimatedDuration: 90
+        dependencies:
+          - identify-problem
+        artifacts:
+          inputs:
+            - typeId: problem-statement
+              required: true
+          outputs:
+            - typeId: project-charter
+              required: true
+        requirements:
+          - type: functional
+            description: Charter must define clear objectives and success criteria
+            priority: must
+            validationCriteria:
+              - Objectives are SMART (Specific, Measurable, Achievable, Relevant, Time-bound)
+              - Scope is clearly defined
+              - Stakeholders are identified
+      - id: map-current-process
+        title: Map Current Process
+        description: Create a high-level process map of the current state
+        type: design
+        complexity: simple
+        assignedRole: process-analyst
+        estimatedDuration: 150
+        artifacts:
+          outputs:
+            - typeId: process-map
+              required: true
+        requirements:
+          - type: functional
+            description: Process map must show all major steps and decision points
+            priority: must
+            validationCriteria:
+              - All process steps are identified
+              - Decision points are marked
+              - Inputs and outputs are labeled
+    agentRequirements:
+      roles:
+        - process-analyst
+        - project-manager
+      skills:
+        - problem-definition
+        - process-mapping
+        - project-management
+      minExperience: mid
+
+  - id: measure
+    name: Measure
+    description: >
+      Measure the current process performance and collect relevant data.
+      Establish baseline metrics and data collection systems.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Define phase must be completed
+        phaseId: define
+    exitCriteria:
+      - type: artifact-exists
+        description: Baseline metrics must exist
+        artifactType: baseline-metrics
+      - type: artifact-exists
+        description: Data collection plan must exist
+        artifactType: data-collection-plan
+    tasks:
+      - id: develop-measurement-plan
+        title: Develop Data Collection Plan
+        description: Plan what data to collect, how, when, and by whom
+        type: planning
+        complexity: simple
+        assignedRole: data-analyst
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: problem-statement
+              required: true
+            - typeId: process-map
+              required: true
+          outputs:
+            - typeId: data-collection-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Plan must specify all data sources and collection methods
+            priority: must
+            validationCriteria:
+              - Key metrics are identified
+              - Data sources are defined
+              - Collection frequency is specified
+      - id: collect-baseline-data
+        title: Collect Baseline Data
+        description: Gather data about current process performance
+        type: analysis
+        complexity: simple
+        assignedRole: data-analyst
+        estimatedDuration: 180
+        dependencies:
+          - develop-measurement-plan
+        artifacts:
+          inputs:
+            - typeId: data-collection-plan
+              required: true
+          outputs:
+            - typeId: baseline-metrics
+              required: true
+        requirements:
+          - type: functional
+            description: Baseline data must be statistically valid
+            priority: must
+            validationCriteria:
+              - Sufficient sample size
+              - Data quality is validated
+              - Measurement system is calibrated
+      - id: validate-measurement-system
+        title: Validate Measurement System
+        description: Ensure measurement system is accurate and reliable
+        type: testing
+        complexity: simple
+        assignedRole: quality-engineer
+        estimatedDuration: 120
+        dependencies:
+          - collect-baseline-data
+        artifacts:
+          outputs:
+            - typeId: measurement-validation
+              required: true
+        requirements:
+          - type: non_functional
+            description: Measurement system must be reliable and repeatable
+            priority: must
+            validationCriteria:
+              - Gage R&R study completed
+              - Acceptable measurement error
+              - Repeatability confirmed
+    agentRequirements:
+      roles:
+        - data-analyst
+        - quality-engineer
+      skills:
+        - statistical-analysis
+        - data-collection
+        - measurement-systems
+      minExperience: mid
+
+  - id: analyze
+    name: Analyze
+    description: >
+      Analyze the data to identify root causes of defects or problems.
+      Use statistical tools to understand process variation and capability.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Measure phase must be completed
+        phaseId: measure
+    exitCriteria:
+      - type: artifact-exists
+        description: Root cause analysis must exist
+        artifactType: root-cause-analysis
+      - type: artifact-exists
+        description: Statistical analysis must exist
+        artifactType: statistical-analysis
+    tasks:
+      - id: perform-statistical-analysis
+        title: Perform Statistical Analysis
+        description: Analyze data using statistical methods to identify patterns and trends
+        type: analysis
+        complexity: complex
+        assignedRole: data-analyst
+        estimatedDuration: 240
+        artifacts:
+          inputs:
+            - typeId: baseline-metrics
+              required: true
+          outputs:
+            - typeId: statistical-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: Analysis must use appropriate statistical methods
+            priority: must
+            validationCriteria:
+              - Statistical tests are appropriate
+              - Confidence levels are documented
+              - Assumptions are validated
+      - id: identify-root-causes
+        title: Identify Root Causes
+        description: Use tools like 5 Whys, Fishbone diagrams to find root causes
+        type: analysis
+        complexity: complex
+        assignedRole: process-analyst
+        estimatedDuration: 180
+        dependencies:
+          - perform-statistical-analysis
+        artifacts:
+          inputs:
+            - typeId: statistical-analysis
+              required: true
+            - typeId: process-map
+              required: true
+          outputs:
+            - typeId: root-cause-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: Root causes must be verified with data
+            priority: must
+            validationCriteria:
+              - Causes are data-driven
+              - Multiple analysis methods used
+              - Verification tests performed
+      - id: validate-root-causes
+        title: Validate Root Causes
+        description: Verify identified root causes through experiments or additional data
+        type: testing
+        complexity: simple
+        assignedRole: quality-engineer
+        estimatedDuration: 150
+        dependencies:
+          - identify-root-causes
+        artifacts:
+          inputs:
+            - typeId: root-cause-analysis
+              required: true
+          outputs:
+            - typeId: validation-report
+              required: true
+        requirements:
+          - type: functional
+            description: Root causes must be empirically validated
+            priority: must
+            validationCriteria:
+              - Hypothesis tests performed
+              - Statistical significance demonstrated
+              - Alternative causes ruled out
+    agentRequirements:
+      roles:
+        - data-analyst
+        - process-analyst
+        - quality-engineer
+      skills:
+        - statistical-analysis
+        - root-cause-analysis
+        - hypothesis-testing
+      minExperience: senior
+
+  - id: improve
+    name: Improve
+    description: >
+      Develop and implement solutions to address root causes.
+      Pilot and optimize solutions before full-scale implementation.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Analyze phase must be completed
+        phaseId: analyze
+    exitCriteria:
+      - type: artifact-exists
+        description: Implementation plan must exist
+        artifactType: implementation-plan
+      - type: artifact-exists
+        description: Pilot results must exist
+        artifactType: pilot-results
+    tasks:
+      - id: generate-solutions
+        title: Generate Improvement Solutions
+        description: Brainstorm and evaluate potential solutions
+        type: design
+        complexity: complex
+        assignedRole: process-engineer
+        estimatedDuration: 180
+        artifacts:
+          inputs:
+            - typeId: root-cause-analysis
+              required: true
+          outputs:
+            - typeId: solution-options
+              required: true
+        requirements:
+          - type: functional
+            description: Multiple solution options must be evaluated
+            priority: must
+            validationCriteria:
+              - At least 3 solutions identified
+              - Cost-benefit analysis performed
+              - Risk assessment completed
+      - id: pilot-solution
+        title: Pilot Solution Implementation
+        description: Test the solution on a small scale before full deployment
+        type: implementation
+        complexity: complex
+        assignedRole: process-engineer
+        estimatedDuration: 300
+        dependencies:
+          - generate-solutions
+        artifacts:
+          inputs:
+            - typeId: solution-options
+              required: true
+          outputs:
+            - typeId: pilot-results
+              required: true
+        requirements:
+          - type: functional
+            description: Pilot must demonstrate measurable improvement
+            priority: must
+            validationCriteria:
+              - Success metrics defined
+              - Baseline comparison performed
+              - Statistical significance shown
+      - id: create-implementation-plan
+        title: Create Full Implementation Plan
+        description: Plan the full-scale rollout of the solution
+        type: planning
+        complexity: simple
+        assignedRole: project-manager
+        estimatedDuration: 120
+        dependencies:
+          - pilot-solution
+        artifacts:
+          inputs:
+            - typeId: pilot-results
+              required: true
+          outputs:
+            - typeId: implementation-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Plan must address all implementation aspects
+            priority: must
+            validationCriteria:
+              - Timeline defined
+              - Resources allocated
+              - Risk mitigation planned
+    agentRequirements:
+      roles:
+        - process-engineer
+        - project-manager
+      skills:
+        - solution-design
+        - pilot-testing
+        - implementation-planning
+      minExperience: mid
+
+  - id: control
+    name: Control
+    description: >
+      Establish controls to sustain the improvements.
+      Monitor the process and implement response plans.
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Improve phase must be completed
+        phaseId: improve
+    exitCriteria:
+      - type: artifact-exists
+        description: Control plan must exist
+        artifactType: control-plan
+      - type: artifact-exists
+        description: Documentation must exist
+        artifactType: final-report
+    tasks:
+      - id: develop-control-plan
+        title: Develop Process Control Plan
+        description: Create monitoring and control mechanisms
+        type: planning
+        complexity: simple
+        assignedRole: quality-engineer
+        estimatedDuration: 150
+        artifacts:
+          inputs:
+            - typeId: implementation-plan
+              required: true
+          outputs:
+            - typeId: control-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Control plan must prevent regression
+            priority: must
+            validationCriteria:
+              - Monitoring metrics defined
+              - Control limits established
+              - Response plans documented
+      - id: implement-controls
+        title: Implement Control Systems
+        description: Put control mechanisms in place
+        type: implementation
+        complexity: simple
+        assignedRole: process-engineer
+        estimatedDuration: 180
+        dependencies:
+          - develop-control-plan
+        artifacts:
+          inputs:
+            - typeId: control-plan
+              required: true
+          outputs:
+            - typeId: control-implementation
+              required: true
+        requirements:
+          - type: functional
+            description: Controls must be operational and effective
+            priority: must
+            validationCriteria:
+              - Monitoring systems active
+              - Alerts configured
+              - Responsibilities assigned
+      - id: create-final-documentation
+        title: Create Final Documentation
+        description: Document the entire DMAIC project and results
+        type: documentation
+        complexity: simple
+        assignedRole: project-manager
+        estimatedDuration: 120
+        dependencies:
+          - implement-controls
+        artifacts:
+          inputs:
+            - typeId: control-plan
+              required: true
+            - typeId: pilot-results
+              required: true
+            - typeId: baseline-metrics
+              required: true
+          outputs:
+            - typeId: final-report
+              required: true
+        requirements:
+          - type: functional
+            description: Documentation must be complete and transferable
+            priority: must
+            validationCriteria:
+              - All phases documented
+              - Results quantified
+              - Lessons learned captured
+      - id: transfer-ownership
+        title: Transfer Process Ownership
+        description: Hand off the improved process to process owners
+        type: review
+        complexity: simple
+        assignedRole: project-manager
+        estimatedDuration: 90
+        dependencies:
+          - create-final-documentation
+        artifacts:
+          inputs:
+            - typeId: final-report
+              required: true
+          outputs:
+            - typeId: handoff-document
+              required: true
+        requirements:
+          - type: functional
+            description: Process owners must be trained and capable
+            priority: must
+            validationCriteria:
+              - Training completed
+              - Ownership accepted
+              - Transition plan executed
+    agentRequirements:
+      roles:
+        - quality-engineer
+        - process-engineer
+        - project-manager
+      skills:
+        - process-control
+        - documentation
+        - knowledge-transfer
+      minExperience: mid
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - define
+    - measure
+    - analyze
+    - improve
+    - control
+  failureHandling:
+    strategy: retry
+    fallbackPhase: define
+
+agentCoordination:
+  roles:
+    - id: process-analyst
+      name: Process Analyst
+      description: Analyzes current processes and identifies improvement opportunities
+      responsibilities:
+        - Map current processes
+        - Define problems clearly
+        - Identify root causes
+        - Facilitate process analysis
+      requiredSkills:
+        - process-mapping
+        - problem-definition
+        - root-cause-analysis
+      experienceLevel: mid
+      authority: contributor
+    - id: data-analyst
+      name: Data Analyst
+      description: Collects, analyzes, and interprets process data
+      responsibilities:
+        - Design data collection plans
+        - Perform statistical analysis
+        - Create data visualizations
+        - Validate measurement systems
+      requiredSkills:
+        - statistical-analysis
+        - data-collection
+        - data-visualization
+      experienceLevel: mid
+      authority: contributor
+    - id: quality-engineer
+      name: Quality Engineer
+      description: Ensures quality standards and validates improvements
+      responsibilities:
+        - Validate measurement systems
+        - Verify root causes
+        - Develop control plans
+        - Monitor process performance
+      requiredSkills:
+        - quality-management
+        - measurement-systems
+        - process-control
+      experienceLevel: senior
+      authority: reviewer
+    - id: process-engineer
+      name: Process Engineer
+      description: Designs and implements process improvements
+      responsibilities:
+        - Generate improvement solutions
+        - Pilot solutions
+        - Implement changes
+        - Optimize processes
+      requiredSkills:
+        - solution-design
+        - implementation
+        - process-optimization
+      experienceLevel: mid
+      authority: contributor
+    - id: project-manager
+      name: Project Manager
+      description: Coordinates the DMAIC project and team
+      responsibilities:
+        - Create project charters
+        - Manage timeline and resources
+        - Create implementation plans
+        - Document project outcomes
+      requiredSkills:
+        - project-management
+        - planning
+        - documentation
+      experienceLevel: mid
+      authority: leader
+  teamComposition:
+    minSize: 3
+    maxSize: 5
+    required:
+      - process-analyst
+      - data-analyst
+      - project-manager
+    optional:
+      - quality-engineer
+      - process-engineer
+  communicationPatterns:
+    - from: project-manager
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+        - constraint
+    - from: any
+      to: project-manager
+      type: direct
+      contextTypes:
+        - finding
+        - constraint
+    - from: data-analyst
+      to: process-analyst
+      type: direct
+      contextTypes:
+        - finding
+    - from: process-engineer
+      to: quality-engineer
+      type: request-response
+      contextTypes:
+        - decision
+  decisionAuthority:
+    - decision: Define project scope
+      authority: project-manager
+      requiresConsensus: true
+      consensusRoles:
+        - process-analyst
+    - decision: Select improvement solution
+      authority: process-engineer
+      requiresConsensus: true
+      consensusRoles:
+        - quality-engineer
+        - project-manager
+    - decision: Approve phase completion
+      authority: project-manager
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: problem-statement
+      name: Problem Statement
+      description: Clear articulation of the problem to be solved
+      format: markdown
+      validationRules:
+        - rule: Must contain problem description, scope, and impact
+          errorMessage: Problem statement is incomplete
+    - id: project-charter
+      name: Project Charter
+      description: Project goals, scope, timeline, and stakeholders
+      format: structured
+      schema:
+        type: object
+        required:
+          - goals
+          - scope
+          - timeline
+          - stakeholders
+        properties:
+          goals:
+            type: array
+            items:
+              type: string
+          scope:
+            type: string
+          timeline:
+            type: string
+          stakeholders:
+            type: array
+            items:
+              type: string
+    - id: process-map
+      name: Process Map
+      description: Visual representation of the current process
+      format: markdown
+    - id: data-collection-plan
+      name: Data Collection Plan
+      description: Plan for collecting process data
+      format: structured
+    - id: baseline-metrics
+      name: Baseline Metrics
+      description: Current process performance data
+      format: json
+    - id: measurement-validation
+      name: Measurement System Validation
+      description: Results of measurement system analysis
+      format: markdown
+    - id: statistical-analysis
+      name: Statistical Analysis
+      description: Results of statistical data analysis
+      format: markdown
+    - id: root-cause-analysis
+      name: Root Cause Analysis
+      description: Identified root causes of problems
+      format: markdown
+    - id: validation-report
+      name: Validation Report
+      description: Verification of identified root causes
+      format: markdown
+    - id: solution-options
+      name: Solution Options
+      description: Evaluated improvement solutions
+      format: structured
+    - id: pilot-results
+      name: Pilot Results
+      description: Results from pilot implementation
+      format: json
+    - id: implementation-plan
+      name: Implementation Plan
+      description: Full-scale implementation plan
+      format: markdown
+    - id: control-plan
+      name: Control Plan
+      description: Plan for sustaining improvements
+      format: structured
+    - id: control-implementation
+      name: Control Implementation
+      description: Implemented control mechanisms
+      format: markdown
+    - id: final-report
+      name: Final Report
+      description: Complete DMAIC project documentation
+      format: markdown
+    - id: handoff-document
+      name: Handoff Document
+      description: Process ownership transfer documentation
+      format: markdown
+  dependencies:
+    - artifact: project-charter
+      dependsOn:
+        - problem-statement
+    - artifact: data-collection-plan
+      dependsOn:
+        - problem-statement
+        - process-map
+    - artifact: baseline-metrics
+      dependsOn:
+        - data-collection-plan
+    - artifact: statistical-analysis
+      dependsOn:
+        - baseline-metrics
+    - artifact: root-cause-analysis
+      dependsOn:
+        - statistical-analysis
+        - process-map
+    - artifact: solution-options
+      dependsOn:
+        - root-cause-analysis
+    - artifact: pilot-results
+      dependsOn:
+        - solution-options
+    - artifact: implementation-plan
+      dependsOn:
+        - pilot-results
+    - artifact: control-plan
+      dependsOn:
+        - implementation-plan
+    - artifact: final-report
+      dependsOn:
+        - control-plan
+        - pilot-results
+        - baseline-metrics

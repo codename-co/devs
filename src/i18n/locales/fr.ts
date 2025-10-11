@@ -20,6 +20,7 @@ export const fr: I18n = {
   Teams: 'Équipes',
   Settings: 'Paramètres',
   Agents: 'Agents',
+  Methodologies: 'Méthodologies',
   Conversations: 'Conversations',
   'Conversations history': 'Historique des conversations',
   Knowledge: 'Connaissances',
@@ -32,11 +33,12 @@ export const fr: I18n = {
   Chat: 'Chat',
   'Main navigation': 'Navigation principale',
   'New Agent': 'Nouvel agent',
+  'New Methodology': 'Nouvelle méthodologie',
   'Upgrade to Pro': 'Passer à la version Pro',
 
   // PromptArea
   'Need something done?': 'Besoin de quelque chose ?',
-  'More actions': "Plus d'actions",
+  'More actions': 'Plus d’actions',
   'Attach a file or image': 'Joindre un fichier ou une image',
   'Upload new file': 'Télécharger un nouveau fichier',
   'Choose from knowledge base': 'Choisir dans la base de connaissances',
@@ -45,7 +47,7 @@ export const fr: I18n = {
   'Send prompt': 'Envoyer le prompt',
   'Select an agent': 'Sélectionner un agent',
   'Select a model': 'Sélectionner un modèle',
-  'Add Provider': 'Ajouter un fournisseur',
+  'Add a model': 'Ajouter un modèle',
 
   // Page: /404
   'Page not found': 'Page non trouvée',
@@ -68,6 +70,8 @@ export const fr: I18n = {
   // AgentsPage
   'My Agents ({count})': 'Mes agents ({count})',
   'Built-in Agents ({count})': 'Agents intégrés ({count})',
+  'Built-in agents are pre-configured agents that come with the platform. They showcase various capabilities and can serve as inspiration for your own custom agents.':
+    'Les agents intégrés sont des agents préconfigurés qui accompagnent la plateforme. Ils démontrent diverses capacités et peuvent servir d’inspiration pour vos propres agents personnalisés.',
 
   // AgentRunPage
   'View and manage your past conversations':

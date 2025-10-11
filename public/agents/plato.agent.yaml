@@ -92,3 +92,6 @@ i18n:
   fr:
     name: Platon
     desc: Philosophe et fondateur de l'Académie
+  ko:
+    name: 플라톤
+    desc: 철학자이자 아카데미 설립자

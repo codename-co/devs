@@ -1,0 +1,912 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://devs.new/schemas/methodology.schema.json",
+  "title": "Agentic Methodology Schema",
+  "description": "Universal schema for defining task execution methodologies for AI agent swarm coordination",
+  "type": "object",
+  "required": ["metadata", "phases", "execution"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Methodology identification and classification",
+      "required": ["id", "name", "type", "version"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the methodology",
+          "pattern": "^[a-z0-9-]+$",
+          "examples": ["dmaic", "pdca", "scrum", "aostc"]
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable name",
+          "examples": ["DMAIC", "Plan-Do-Check-Act", "Scrum Framework"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the methodology's purpose and approach"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "sequential",
+            "iterative",
+            "hierarchical",
+            "time-boxed",
+            "hybrid"
+          ],
+          "description": "Primary methodology pattern type"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Semantic version of the methodology definition"
+        },
+        "origin": {
+          "type": "string",
+          "description": "Source or framework origin (e.g., 'Six Sigma', 'Toyota Production System', 'Agile Manifesto')"
+        },
+        "domains": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Applicable domains or industries",
+          "examples": [
+            ["manufacturing", "software-development", "problem-solving"]
+          ]
+        },
+        "complexity": {
+          "type": "string",
+          "enum": ["simple", "moderate", "complex", "expert"],
+          "description": "Complexity level of the methodology"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Searchable tags for categorization"
+        },
+        "i18n": {
+          "type": "object",
+          "description": "Internationalization translations for the agent's name and role",
+          "patternProperties": {
+            "^[a-z]{2}(-[A-Z]{2})?$": {
+              "type": "object",
+              "description": "Translations for a specific locale",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Translated name for this locale",
+                  "minLength": 1
+                },
+                "description": {
+                  "type": "string",
+                  "description": "Translated description for this locale",
+                  "minLength": 1
+                },
+                "origin": {
+                  "type": "string",
+                  "description": "Translated origin for this locale",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "configuration": {
+      "type": "object",
+      "description": "Global configuration settings for methodology execution",
+      "properties": {
+        "maxIterations": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum number of iterations for iterative methodologies"
+        },
+        "timeBox": {
+          "type": "object",
+          "description": "Time-boxing configuration for sprints/cycles",
+          "properties": {
+            "duration": {
+              "type": "integer",
+              "description": "Duration in minutes"
+            },
+            "unit": {
+              "type": "string",
+              "enum": ["minutes", "hours", "days", "weeks"],
+              "description": "Time unit"
+            },
+            "strict": {
+              "type": "boolean",
+              "description": "Whether time box is strictly enforced"
+            }
+          }
+        },
+        "qualityGates": {
+          "type": "object",
+          "description": "Global quality gate settings",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "autoRetry": {
+              "type": "boolean",
+              "description": "Automatically retry failed phases"
+            },
+            "maxRetries": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 2
+            }
+          }
+        },
+        "parallelization": {
+          "type": "object",
+          "description": "Parallel execution settings",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "maxConcurrentTasks": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum tasks to run in parallel"
+            },
+            "maxConcurrentAgents": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum agents working simultaneously"
+            }
+          }
+        },
+        "convergence": {
+          "type": "object",
+          "description": "Convergence criteria for iterative loops",
+          "properties": {
+            "metric": {
+              "type": "string",
+              "description": "Metric to measure convergence"
+            },
+            "threshold": {
+              "type": "number",
+              "description": "Threshold value for convergence"
+            },
+            "operator": {
+              "type": "string",
+              "enum": ["<", "<=", ">", ">=", "=="],
+              "description": "Comparison operator"
+            }
+          }
+        }
+      }
+    },
+    "phases": {
+      "type": "array",
+      "description": "Ordered list of methodology phases/stages",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/Phase"
+      }
+    },
+    "execution": {
+      "type": "object",
+      "description": "Execution flow and control logic",
+      "required": ["strategy"],
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "enum": [
+            "sequential",
+            "parallel",
+            "conditional",
+            "iterative",
+            "nested"
+          ],
+          "description": "Overall execution strategy"
+        },
+        "phaseOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Explicit phase execution order (by phase ID)"
+        },
+        "loops": {
+          "type": "array",
+          "description": "Iteration loops in the methodology",
+          "items": {
+            "$ref": "#/$defs/Loop"
+          }
+        },
+        "branches": {
+          "type": "array",
+          "description": "Conditional branching logic",
+          "items": {
+            "$ref": "#/$defs/Branch"
+          }
+        },
+        "failureHandling": {
+          "type": "object",
+          "description": "Global failure handling strategy",
+          "properties": {
+            "strategy": {
+              "type": "string",
+              "enum": ["abort", "retry", "skip", "fallback"],
+              "default": "retry"
+            },
+            "fallbackPhase": {
+              "type": "string",
+              "description": "Phase ID to fall back to on failure"
+            }
+          }
+        }
+      }
+    },
+    "agentCoordination": {
+      "type": "object",
+      "description": "Rules for agent team coordination",
+      "properties": {
+        "roles": {
+          "type": "array",
+          "description": "Defined agent roles in the methodology",
+          "items": {
+            "$ref": "#/$defs/AgentRole"
+          }
+        },
+        "teamComposition": {
+          "type": "object",
+          "description": "Team structure requirements",
+          "properties": {
+            "minSize": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "maxSize": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "required": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Required role IDs"
+            },
+            "optional": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Optional role IDs"
+            }
+          }
+        },
+        "communicationPatterns": {
+          "type": "array",
+          "description": "Inter-agent communication patterns",
+          "items": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string",
+                "description": "Source role ID or 'any'"
+              },
+              "to": {
+                "type": "string",
+                "description": "Target role ID or 'any' or 'all'"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "direct",
+                  "broadcast",
+                  "request-response",
+                  "publish-subscribe"
+                ],
+                "description": "Communication type"
+              },
+              "contextTypes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["decision", "finding", "resource", "constraint"]
+                },
+                "description": "Types of context shared"
+              }
+            }
+          }
+        },
+        "decisionAuthority": {
+          "type": "array",
+          "description": "Decision-making authority matrix",
+          "items": {
+            "type": "object",
+            "properties": {
+              "decision": {
+                "type": "string",
+                "description": "Type of decision"
+              },
+              "authority": {
+                "type": "string",
+                "description": "Role ID with authority"
+              },
+              "requiresConsensus": {
+                "type": "boolean",
+                "default": false
+              },
+              "consensusRoles": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Roles required for consensus"
+              }
+            }
+          }
+        }
+      }
+    },
+    "artifactFlow": {
+      "type": "object",
+      "description": "Artifact definitions and flow between phases",
+      "properties": {
+        "artifactTypes": {
+          "type": "array",
+          "description": "Defined artifact types in this methodology",
+          "items": {
+            "$ref": "#/$defs/ArtifactType"
+          }
+        },
+        "dependencies": {
+          "type": "array",
+          "description": "Artifact dependency graph",
+          "items": {
+            "type": "object",
+            "properties": {
+              "artifact": {
+                "type": "string",
+                "description": "Artifact type ID"
+              },
+              "dependsOn": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Required artifact type IDs"
+              }
+            }
+          }
+        }
+      }
+    },
+    "ceremonies": {
+      "type": "array",
+      "description": "Structured events or ceremonies (common in Scrum/Agile)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "timing": {
+            "type": "string",
+            "enum": [
+              "phase-start",
+              "phase-end",
+              "daily",
+              "periodic",
+              "on-demand"
+            ],
+            "description": "When the ceremony occurs"
+          },
+          "duration": {
+            "type": "integer",
+            "description": "Duration in minutes"
+          },
+          "participants": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Required role IDs"
+          },
+          "artifacts": {
+            "type": "object",
+            "properties": {
+              "inputs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "outputs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "objectives": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["id", "name", "timing", "participants"]
+      }
+    }
+  },
+  "$defs": {
+    "Phase": {
+      "type": "object",
+      "description": "A single phase or stage in the methodology",
+      "required": ["id", "name", "tasks"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$",
+          "description": "Unique phase identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable phase name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed phase description"
+        },
+        "order": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Execution order (0-based)"
+        },
+        "parentPhaseId": {
+          "type": "string",
+          "description": "Parent phase ID for hierarchical methodologies"
+        },
+        "entryCriteria": {
+          "type": "array",
+          "description": "Conditions that must be met before phase starts",
+          "items": {
+            "$ref": "#/$defs/Criterion"
+          }
+        },
+        "exitCriteria": {
+          "type": "array",
+          "description": "Conditions that must be met before phase completes (quality gate)",
+          "items": {
+            "$ref": "#/$defs/Criterion"
+          }
+        },
+        "tasks": {
+          "type": "array",
+          "description": "Tasks to be performed in this phase",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/TaskTemplate"
+          }
+        },
+        "duration": {
+          "type": "object",
+          "description": "Estimated phase duration",
+          "properties": {
+            "estimated": {
+              "type": "integer",
+              "description": "Estimated duration in minutes"
+            },
+            "min": {
+              "type": "integer"
+            },
+            "max": {
+              "type": "integer"
+            }
+          }
+        },
+        "artifacts": {
+          "type": "object",
+          "description": "Artifacts consumed and produced by this phase",
+          "properties": {
+            "inputs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ArtifactReference"
+              }
+            },
+            "outputs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ArtifactReference"
+              }
+            }
+          }
+        },
+        "agentRequirements": {
+          "type": "object",
+          "description": "Agent requirements for this phase",
+          "properties": {
+            "roles": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Required role IDs"
+            },
+            "skills": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Required skills"
+            },
+            "minExperience": {
+              "type": "string",
+              "enum": ["junior", "mid", "senior", "expert"]
+            }
+          }
+        },
+        "parallelizable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this phase can run in parallel with others"
+        },
+        "optional": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this phase is optional"
+        },
+        "repeatable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this phase can repeat"
+        }
+      }
+    },
+    "TaskTemplate": {
+      "type": "object",
+      "description": "Template for a task within a phase",
+      "required": ["id", "title"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "analysis",
+            "design",
+            "implementation",
+            "review",
+            "decision",
+            "documentation",
+            "testing",
+            "planning"
+          ],
+          "description": "Task type"
+        },
+        "complexity": {
+          "type": "string",
+          "enum": ["simple", "complex"]
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Task IDs this task depends on"
+        },
+        "assignedRole": {
+          "type": "string",
+          "description": "Role ID assigned to this task"
+        },
+        "estimatedDuration": {
+          "type": "integer",
+          "description": "Estimated duration in minutes"
+        },
+        "artifacts": {
+          "type": "object",
+          "properties": {
+            "inputs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ArtifactReference"
+              }
+            },
+            "outputs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ArtifactReference"
+              }
+            }
+          }
+        },
+        "requirements": {
+          "type": "array",
+          "description": "Specific requirements for this task",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["functional", "non_functional", "constraint"]
+              },
+              "description": {
+                "type": "string"
+              },
+              "priority": {
+                "type": "string",
+                "enum": ["must", "should", "could", "wont"]
+              },
+              "validationCriteria": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parallelizable": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "Criterion": {
+      "type": "object",
+      "description": "A condition that must be satisfied",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "artifact-exists",
+            "requirement-satisfied",
+            "metric-threshold",
+            "phase-completed",
+            "custom"
+          ],
+          "description": "Type of criterion"
+        },
+        "description": {
+          "type": "string"
+        },
+        "artifactType": {
+          "type": "string",
+          "description": "Required artifact type ID (for artifact-exists)"
+        },
+        "requirementId": {
+          "type": "string",
+          "description": "Requirement ID (for requirement-satisfied)"
+        },
+        "metric": {
+          "type": "string",
+          "description": "Metric name (for metric-threshold)"
+        },
+        "threshold": {
+          "type": "number",
+          "description": "Threshold value"
+        },
+        "operator": {
+          "type": "string",
+          "enum": ["<", "<=", ">", ">=", "==", "!="],
+          "description": "Comparison operator"
+        },
+        "phaseId": {
+          "type": "string",
+          "description": "Phase ID (for phase-completed)"
+        },
+        "customValidator": {
+          "type": "string",
+          "description": "Custom validation function reference"
+        }
+      }
+    },
+    "ArtifactReference": {
+      "type": "object",
+      "description": "Reference to an artifact with constraints",
+      "required": ["typeId"],
+      "properties": {
+        "typeId": {
+          "type": "string",
+          "description": "Artifact type ID"
+        },
+        "required": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether this artifact is required"
+        },
+        "minCount": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 1,
+          "description": "Minimum number of artifacts"
+        },
+        "maxCount": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum number of artifacts (null = unlimited)"
+        }
+      }
+    },
+    "ArtifactType": {
+      "type": "object",
+      "description": "Definition of an artifact type",
+      "required": ["id", "name", "format"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["markdown", "json", "code", "html", "binary", "structured"],
+          "description": "Artifact format"
+        },
+        "schema": {
+          "type": "object",
+          "description": "JSON schema for structured artifacts"
+        },
+        "validationRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "rule": {
+                "type": "string"
+              },
+              "errorMessage": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "templates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "AgentRole": {
+      "type": "object",
+      "description": "Agent role definition",
+      "required": ["id", "name", "responsibilities"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "responsibilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requiredSkills": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "optionalSkills": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "experienceLevel": {
+          "type": "string",
+          "enum": ["junior", "mid", "senior", "expert"]
+        },
+        "authority": {
+          "type": "string",
+          "enum": ["observer", "contributor", "reviewer", "approver", "leader"],
+          "default": "contributor"
+        }
+      }
+    },
+    "Loop": {
+      "type": "object",
+      "description": "Iteration loop definition",
+      "required": ["id", "phases"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "phases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Phase IDs in the loop"
+        },
+        "maxIterations": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "convergenceCriteria": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Criterion"
+          }
+        },
+        "exitConditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Criterion"
+          }
+        }
+      }
+    },
+    "Branch": {
+      "type": "object",
+      "description": "Conditional branch definition",
+      "required": ["condition", "truePhase", "falsePhase"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "condition": {
+          "$ref": "#/$defs/Criterion"
+        },
+        "truePhase": {
+          "type": "string",
+          "description": "Phase ID to execute if condition is true"
+        },
+        "falsePhase": {
+          "type": "string",
+          "description": "Phase ID to execute if condition is false"
+        }
+      }
+    }
+  }
+}

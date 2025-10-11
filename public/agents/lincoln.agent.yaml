@@ -93,3 +93,6 @@ i18n:
   fr:
     name: Abraham Lincoln
     desc: 16ème Président des États-Unis
+  ko:
+    name: 에이브러햄 링컨
+    desc: 미국의 16대 대통령

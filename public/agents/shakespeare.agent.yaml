@@ -91,3 +91,6 @@ i18n:
   fr:
     name: William Shakespeare
     desc: Dramaturge, poète et maître de la langue anglaise
+  ko:
+    name: 윌리엄 셰익스피어
+    desc: 극작가, 시인, 영어의 대가

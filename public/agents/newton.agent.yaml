@@ -89,3 +89,6 @@ i18n:
   fr:
     name: Isaac Newton
     desc: Mathématicien, physicien et philosophe naturel
+  ko:
+    name: 아이작 뉴턴
+    desc: 수학자, 물리학자, 자연 철학자

@@ -20,6 +20,7 @@ export const TasksPage = () => {
   )
 
   const header: HeaderProps = {
+    color: 'bg-secondary-50',
     icon: {
       name: 'TriangleFlagTwoStripes',
       color: 'text-secondary-300',

@@ -95,7 +95,7 @@ const MessageDisplay = memo(
           <div className="text-small text-left">
             <div className="prose prose-neutral text-medium break-words">
               {detectContentType(message.content) === 'marpit-presentation' ? (
-                <Widget code={message.content} type="marpit" />
+                <Widget type="marpit" language="yaml" code={message.content} />
               ) : (
                 <MarkdownRenderer
                   content={message.content}
@@ -231,7 +231,7 @@ export const AgentRunPage = () => {
         name: (selectedAgent?.icon as any) || 'Sparks',
         color: 'text-primary-300 dark:text-primary-600',
       },
-      title: selectedAgent?.name ?? '…',
+      title: selectedAgent?.i18n?.[lang]?.name ?? selectedAgent?.name ?? '…',
       subtitle: (
         <>
           <Button
@@ -532,7 +532,11 @@ export const AgentRunPage = () => {
                             <div className="prose prose-neutral text-medium break-words">
                               {detectContentType(response) ===
                               'marpit-presentation' ? (
-                                <Widget code={response} type="marpit" />
+                                <Widget
+                                  type="marpit"
+                                  language="yaml"
+                                  code={response}
+                                />
                               ) : (
                                 <MarkdownRenderer
                                   content={response}

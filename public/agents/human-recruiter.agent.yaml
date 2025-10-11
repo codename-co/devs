@@ -210,3 +210,6 @@ i18n:
   fr:
     name: Recruteur
     desc: Expert en recrutement pour l'acquisition de talents
+  ko:
+    name: 인재 채용 전문가
+    desc: 인재 확보를 위한 전문 채용 담당자

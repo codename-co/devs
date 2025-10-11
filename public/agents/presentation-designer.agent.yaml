@@ -241,3 +241,6 @@ i18n:
   fr:
     name: Concepteur de Présentations
     desc: Prépare des présentations convaincantes
+  ko:
+    name: 프레젠테이션 디자이너
+    desc: 매력적인 프레젠테이션 제작 전문가

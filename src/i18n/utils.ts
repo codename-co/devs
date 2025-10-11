@@ -2,9 +2,9 @@ import { marked } from 'marked'
 import { createElement, Fragment } from 'react'
 import { Link } from 'react-router-dom'
 
-import { defaultLang, languages, locales } from './locales'
+import { defaultLang, LanguageCode, languages, locales } from './locales'
 
-export type Lang = keyof typeof languages
+export type Lang = LanguageCode
 
 export const langs = Object.keys(languages).map(
   (lang) => (lang === defaultLang ? '' : lang) as Lang,

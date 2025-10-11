@@ -10,7 +10,7 @@ export const ko: I18n = {
   'Choose your preferred language': '선호하는 언어를 선택하세요',
   'Interface Language': '인터페이스 언어',
   'Platform Name': '플랫폼 이름',
-  'Theme Mode': '테마 모드',
+  Theme: '테마',
   System: '시스템',
   Light: '밝은 테마',
   Dark: '어두운 테마',

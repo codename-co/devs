@@ -1,0 +1,1134 @@
+# Agile Software Development Methodology
+# Iterative and incremental approach based on Agile Manifesto principles
+
+metadata:
+  id: agile
+  name: Agile Software Development
+  description: >
+    A flexible, iterative approach to software development based on the Agile
+    Manifesto. Agile emphasizes individuals and interactions, working software,
+    customer collaboration, and responding to change. This is a general Agile
+    framework that can be adapted to various implementations (Scrum, Kanban, XP).
+  type: iterative
+  version: 1.0.0
+  origin: Agile Manifesto (2001)
+  domains:
+    - software-development
+    - product-development
+    - innovation
+    - digital-transformation
+  complexity: moderate
+  tags:
+    - agile
+    - iterative
+    - adaptive
+    - customer-centric
+    - collaborative
+    - continuous-delivery
+  i18n:
+    es:
+      name: Desarrollo Ágil de Software
+      description: >
+        Un enfoque flexible e iterativo para el desarrollo de software basado en
+        el Manifiesto Ágil. Ágil enfatiza a las personas y las interacciones,
+        el software que funciona, la colaboración con el cliente y la respuesta
+        al cambio. Este es un marco ágil general que se puede adaptar a varias
+        implementaciones (Scrum, Kanban, XP).
+    fr:
+      name: Développement Agile de Logiciels
+      description: >
+        Une approche flexible et itérative du développement logiciel basée sur
+        le Manifeste Agile. Agile met l'accent sur les individus et les
+        interactions, les logiciels fonctionnels, la collaboration avec le client
+        et la réponse au changement. Il s'agit d'un cadre Agile général qui peut
+        être adapté à diverses implémentations (Scrum, Kanban, XP).
+    ko:
+      name: 애자일 소프트웨어 개발
+      description: >
+        애자일 선언문을 기반으로 한 유연하고 반복적인 소프트웨어 개발
+        접근 방식입니다. 애자일은 개인과 상호작용, 작동하는 소프트웨어,
+        고객 협업 및 변화에 대한 대응을 강조합니다. 이는 다양한 구현(Scrum,
+        Kanban, XP)에 적용할 수 있는 일반적인 애자일 프레임워크입니다.
+
+configuration:
+  maxIterations: 50
+  timeBox:
+    duration: 2
+    unit: weeks
+    strict: false
+  qualityGates:
+    enabled: true
+    autoRetry: false
+    maxRetries: 1
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 20
+    maxConcurrentAgents: 15
+  convergence:
+    metric: product_completeness
+    threshold: 100
+    operator: '>='
+
+phases:
+  - id: envision
+    name: Envision
+    description: >
+      Establish product vision, identify stakeholders, and create initial
+      product backlog. Define what success looks like and align the team
+      on the overall direction.
+    order: 0
+    repeatable: false
+    exitCriteria:
+      - type: artifact-exists
+        description: Product vision must exist
+        artifactType: product-vision
+      - type: artifact-exists
+        description: Initial backlog must exist
+        artifactType: product-backlog
+    tasks:
+      - id: define-product-vision
+        title: Define Product Vision
+        description: Create compelling vision of what the product will become
+        type: planning
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 120
+        artifacts:
+          outputs:
+            - typeId: product-vision
+              required: true
+        requirements:
+          - type: functional
+            description: Vision must be clear and inspiring
+            priority: must
+            validationCriteria:
+              - Vision statement created
+              - Target users identified
+              - Key benefits articulated
+              - Success criteria defined
+      - id: identify-stakeholders
+        title: Identify and Engage Stakeholders
+        description: Map all stakeholders and their interests
+        type: planning
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 90
+        parallelizable: true
+        artifacts:
+          outputs:
+            - typeId: stakeholder-map
+              required: true
+        requirements:
+          - type: functional
+            description: All key stakeholders must be identified
+            priority: must
+            validationCriteria:
+              - Stakeholders listed
+              - Interests documented
+              - Engagement plan created
+      - id: create-initial-backlog
+        title: Create Initial Product Backlog
+        description: Develop first version of prioritized feature list
+        type: planning
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 180
+        dependencies:
+          - define-product-vision
+        artifacts:
+          inputs:
+            - typeId: product-vision
+              required: true
+          outputs:
+            - typeId: product-backlog
+              required: true
+        requirements:
+          - type: functional
+            description: Backlog must have prioritized items
+            priority: must
+            validationCriteria:
+              - User stories created
+              - Priorities assigned
+              - High-level estimates provided
+      - id: establish-team
+        title: Establish Agile Team
+        description: Form cross-functional team and define working agreements
+        type: planning
+        complexity: simple
+        assignedRole: agile-coach
+        estimatedDuration: 120
+        parallelizable: true
+        artifacts:
+          outputs:
+            - typeId: team-charter
+              required: true
+        requirements:
+          - type: functional
+            description: Team must be cross-functional
+            priority: must
+            validationCriteria:
+              - Team members identified
+              - Roles defined
+              - Working agreements established
+              - Communication norms set
+    agentRequirements:
+      roles:
+        - product-owner
+        - agile-coach
+      skills:
+        - product-management
+        - stakeholder-management
+        - backlog-management
+      minExperience: senior
+
+  - id: speculate
+    name: Speculate (Plan Iteration)
+    description: >
+      Plan the upcoming iteration by selecting work from backlog, breaking
+      down stories, and committing to iteration goals. This is lightweight
+      planning that adapts as we learn.
+    order: 1
+    repeatable: true
+    entryCriteria:
+      - type: artifact-exists
+        description: Product backlog must exist
+        artifactType: product-backlog
+    exitCriteria:
+      - type: artifact-exists
+        description: Iteration plan must exist
+        artifactType: iteration-plan
+    tasks:
+      - id: refine-backlog-items
+        title: Refine Top Backlog Items
+        description: Detail and estimate upcoming backlog items
+        type: planning
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: product-backlog
+              required: true
+          outputs:
+            - typeId: refined-backlog
+              required: true
+        requirements:
+          - type: functional
+            description: Top items must be ready
+            priority: must
+            validationCriteria:
+              - Acceptance criteria clear
+              - Dependencies identified
+              - Estimates updated
+      - id: select-iteration-work
+        title: Select Work for Iteration
+        description: Team selects stories they can complete this iteration
+        type: planning
+        complexity: simple
+        assignedRole: development-team
+        estimatedDuration: 60
+        dependencies:
+          - refine-backlog-items
+        artifacts:
+          inputs:
+            - typeId: refined-backlog
+              required: true
+          outputs:
+            - typeId: iteration-backlog
+              required: true
+        requirements:
+          - type: functional
+            description: Selection must match team capacity
+            priority: must
+            validationCriteria:
+              - Team velocity considered
+              - Commitment sustainable
+              - Dependencies manageable
+      - id: define-iteration-goal
+        title: Define Iteration Goal
+        description: Articulate what this iteration will achieve
+        type: planning
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 30
+        dependencies:
+          - select-iteration-work
+        artifacts:
+          inputs:
+            - typeId: iteration-backlog
+              required: true
+          outputs:
+            - typeId: iteration-goal
+              required: true
+        requirements:
+          - type: functional
+            description: Goal must be clear and achievable
+            priority: must
+            validationCriteria:
+              - Goal is specific
+              - Value is clear
+              - Team understands
+      - id: break-down-stories
+        title: Break Down Stories into Tasks
+        description: Decompose user stories into technical tasks
+        type: planning
+        complexity: simple
+        assignedRole: development-team
+        estimatedDuration: 90
+        dependencies:
+          - define-iteration-goal
+        artifacts:
+          inputs:
+            - typeId: iteration-backlog
+              required: true
+          outputs:
+            - typeId: iteration-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Tasks must be actionable
+            priority: must
+            validationCriteria:
+              - All stories have tasks
+              - Tasks are sized appropriately
+              - Owners identified
+    agentRequirements:
+      roles:
+        - product-owner
+        - development-team
+      skills:
+        - estimation
+        - planning
+        - decomposition
+      minExperience: mid
+
+  - id: explore
+    name: Explore (Develop & Test)
+    description: >
+      Execute the iteration plan through collaborative development, continuous
+      integration, and testing. Adapt daily based on progress and learnings.
+      Focus on delivering working, tested software.
+    order: 2
+    repeatable: true
+    parallelizable: true
+    entryCriteria:
+      - type: phase-completed
+        description: Speculate phase must be completed
+        phaseId: speculate
+    exitCriteria:
+      - type: artifact-exists
+        description: Working software must be delivered
+        artifactType: working-software
+    tasks:
+      - id: develop-features
+        title: Develop Features Collaboratively
+        description: Build features through pair programming and collaboration
+        type: implementation
+        complexity: complex
+        assignedRole: developers
+        estimatedDuration: 6000
+        parallelizable: true
+        artifacts:
+          inputs:
+            - typeId: iteration-plan
+              required: true
+          outputs:
+            - typeId: source-code
+              required: true
+              minCount: 1
+              maxCount: 999
+        requirements:
+          - type: functional
+            description: Code must meet acceptance criteria
+            priority: must
+            validationCriteria:
+              - Acceptance criteria satisfied
+              - Code standards followed
+              - Peer reviewed
+          - type: non_functional
+            description: Code must be maintainable
+            priority: must
+            validationCriteria:
+              - Clean code principles
+              - Adequate comments
+              - Design patterns used
+      - id: write-tests
+        title: Write and Execute Tests
+        description: Create unit, integration, and acceptance tests
+        type: testing
+        complexity: simple
+        assignedRole: developers
+        estimatedDuration: 2400
+        parallelizable: true
+        dependencies:
+          - develop-features
+        artifacts:
+          inputs:
+            - typeId: source-code
+              required: true
+          outputs:
+            - typeId: test-suite
+              required: true
+        requirements:
+          - type: functional
+            description: Test coverage must be adequate
+            priority: must
+            validationCriteria:
+              - Unit tests pass
+              - Integration tests pass
+              - Acceptance tests pass
+              - Coverage meets standard
+      - id: continuous-integration
+        title: Continuously Integrate Code
+        description: Integrate code frequently and run automated builds
+        type: implementation
+        complexity: simple
+        assignedRole: developers
+        estimatedDuration: 1200
+        parallelizable: true
+        dependencies:
+          - write-tests
+        artifacts:
+          inputs:
+            - typeId: source-code
+              required: true
+            - typeId: test-suite
+              required: true
+          outputs:
+            - typeId: build-results
+              required: true
+        requirements:
+          - type: non_functional
+            description: Build must be stable
+            priority: must
+            validationCriteria:
+              - Build succeeds
+              - All tests pass
+              - No integration conflicts
+      - id: refactor-code
+        title: Refactor for Quality
+        description: Continuously improve code design and structure
+        type: implementation
+        complexity: simple
+        assignedRole: developers
+        estimatedDuration: 1200
+        parallelizable: true
+        artifacts:
+          inputs:
+            - typeId: source-code
+              required: true
+          outputs:
+            - typeId: refactored-code
+              required: true
+        requirements:
+          - type: non_functional
+            description: Code quality must improve
+            priority: should
+            validationCriteria:
+              - Technical debt reduced
+              - Code smells addressed
+              - Performance optimized
+      - id: create-working-software
+        title: Integrate into Working Software
+        description: Combine all work into deployable increment
+        type: implementation
+        complexity: simple
+        assignedRole: developers
+        estimatedDuration: 600
+        dependencies:
+          - continuous-integration
+        artifacts:
+          inputs:
+            - typeId: build-results
+              required: true
+          outputs:
+            - typeId: working-software
+              required: true
+        requirements:
+          - type: functional
+            description: Software must be potentially shippable
+            priority: must
+            validationCriteria:
+              - All features integrated
+              - No critical bugs
+              - Acceptance criteria met
+    agentRequirements:
+      roles:
+        - developers
+      skills:
+        - software-development
+        - testing
+        - refactoring
+        - collaboration
+      minExperience: mid
+
+  - id: adapt
+    name: Adapt (Review & Retrospect)
+    description: >
+      Review the working software with stakeholders, gather feedback, and
+      retrospect on the process. Adapt the product backlog and team practices
+      based on learnings. Measure progress toward goals.
+    order: 3
+    repeatable: true
+    entryCriteria:
+      - type: phase-completed
+        description: Explore phase must be completed
+        phaseId: explore
+    exitCriteria:
+      - type: artifact-exists
+        description: Feedback must be gathered
+        artifactType: stakeholder-feedback
+      - type: artifact-exists
+        description: Improvements must be identified
+        artifactType: process-improvements
+    tasks:
+      - id: demo-to-stakeholders
+        title: Demonstrate Working Software
+        description: Show completed features to stakeholders and users
+        type: review
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: working-software
+              required: true
+          outputs:
+            - typeId: demonstration-log
+              required: true
+        requirements:
+          - type: functional
+            description: All completed work must be shown
+            priority: must
+            validationCriteria:
+              - Features demonstrated
+              - Value articulated
+              - Questions answered
+      - id: gather-feedback
+        title: Gather Stakeholder Feedback
+        description: Collect feedback on demonstrated features
+        type: review
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 60
+        dependencies:
+          - demo-to-stakeholders
+        artifacts:
+          inputs:
+            - typeId: demonstration-log
+              required: true
+          outputs:
+            - typeId: stakeholder-feedback
+              required: true
+        requirements:
+          - type: functional
+            description: Feedback must be actionable
+            priority: must
+            validationCriteria:
+              - Reactions captured
+              - Suggestions documented
+              - Priority changes noted
+      - id: update-backlog
+        title: Update Product Backlog
+        description: Adjust backlog based on feedback and learnings
+        type: planning
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 90
+        dependencies:
+          - gather-feedback
+        artifacts:
+          inputs:
+            - typeId: stakeholder-feedback
+              required: true
+            - typeId: product-backlog
+              required: true
+          outputs:
+            - typeId: product-backlog
+              required: true
+        requirements:
+          - type: functional
+            description: Backlog must reflect new priorities
+            priority: must
+            validationCriteria:
+              - Feedback incorporated
+              - Priorities updated
+              - New items added
+      - id: hold-retrospective
+        title: Hold Team Retrospective
+        description: Reflect on process and identify improvements
+        type: review
+        complexity: simple
+        assignedRole: agile-coach
+        estimatedDuration: 90
+        parallelizable: true
+        artifacts:
+          outputs:
+            - typeId: retrospective-notes
+              required: true
+        requirements:
+          - type: functional
+            description: Retrospective must be productive
+            priority: must
+            validationCriteria:
+              - All voices heard
+              - What went well identified
+              - What didn't go well identified
+              - Root causes explored
+      - id: identify-improvements
+        title: Identify Process Improvements
+        description: Select specific improvements to implement
+        type: planning
+        complexity: simple
+        assignedRole: agile-coach
+        estimatedDuration: 45
+        dependencies:
+          - hold-retrospective
+        artifacts:
+          inputs:
+            - typeId: retrospective-notes
+              required: true
+          outputs:
+            - typeId: process-improvements
+              required: true
+        requirements:
+          - type: functional
+            description: Improvements must be actionable
+            priority: must
+            validationCriteria:
+              - Specific actions defined
+              - Owners assigned
+              - Measurement planned
+      - id: measure-progress
+        title: Measure Progress Toward Vision
+        description: Assess how much closer we are to product vision
+        type: analysis
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 45
+        parallelizable: true
+        artifacts:
+          inputs:
+            - typeId: working-software
+              required: true
+            - typeId: product-vision
+              required: true
+          outputs:
+            - typeId: progress-metrics
+              required: true
+        requirements:
+          - type: functional
+            description: Progress must be measurable
+            priority: should
+            validationCriteria:
+              - Velocity tracked
+              - Features completed counted
+              - Value delivered assessed
+              - Remaining work estimated
+    agentRequirements:
+      roles:
+        - product-owner
+        - agile-coach
+        - developers
+      skills:
+        - feedback-gathering
+        - facilitation
+        - continuous-improvement
+        - metrics
+      minExperience: mid
+
+  - id: close
+    name: Close (Product Release)
+    description: >
+      When product vision is achieved or strategic direction changes, formally
+      close the product development cycle. Document lessons learned, celebrate
+      achievements, and transition to maintenance or next product.
+    order: 4
+    repeatable: false
+    optional: true
+    entryCriteria:
+      - type: custom
+        description: Product vision achieved or pivot decided
+        customValidator: product_complete_or_pivot
+    exitCriteria:
+      - type: artifact-exists
+        description: Closure report must exist
+        artifactType: closure-report
+    tasks:
+      - id: finalize-documentation
+        title: Finalize Product Documentation
+        description: Complete all user and technical documentation
+        type: documentation
+        complexity: simple
+        assignedRole: developers
+        estimatedDuration: 240
+        artifacts:
+          inputs:
+            - typeId: working-software
+              required: true
+          outputs:
+            - typeId: product-documentation
+              required: true
+        requirements:
+          - type: functional
+            description: Documentation must be complete
+            priority: must
+            validationCriteria:
+              - User guides created
+              - API documentation complete
+              - Architecture documented
+      - id: prepare-for-operations
+        title: Prepare for Production Operations
+        description: Set up monitoring, support processes, and handoff
+        type: planning
+        complexity: simple
+        assignedRole: operations-specialist
+        estimatedDuration: 180
+        artifacts:
+          outputs:
+            - typeId: operations-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Operations must be ready
+            priority: must
+            validationCriteria:
+              - Monitoring configured
+              - Support process defined
+              - Runbooks created
+      - id: document-lessons-learned
+        title: Document Project Lessons Learned
+        description: Capture key learnings from entire project
+        type: documentation
+        complexity: simple
+        assignedRole: agile-coach
+        estimatedDuration: 120
+        artifacts:
+          outputs:
+            - typeId: lessons-learned
+              required: true
+        requirements:
+          - type: functional
+            description: Learnings must be actionable
+            priority: must
+            validationCriteria:
+              - Successes documented
+              - Challenges noted
+              - Recommendations made
+      - id: celebrate-achievements
+        title: Celebrate Team Achievements
+        description: Recognize team contributions and successes
+        type: review
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 60
+        artifacts:
+          outputs:
+            - typeId: celebration-record
+              required: true
+        requirements:
+          - type: functional
+            description: Recognition must be meaningful
+            priority: should
+            validationCriteria:
+              - Team celebrated
+              - Individual contributions recognized
+              - Success shared
+      - id: create-closure-report
+        title: Create Project Closure Report
+        description: Summarize project outcomes and learnings
+        type: documentation
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 120
+        dependencies:
+          - document-lessons-learned
+        artifacts:
+          inputs:
+            - typeId: lessons-learned
+              required: true
+          outputs:
+            - typeId: closure-report
+              required: true
+        requirements:
+          - type: functional
+            description: Report must be comprehensive
+            priority: must
+            validationCriteria:
+              - Outcomes documented
+              - Value delivered quantified
+              - Learnings captured
+    agentRequirements:
+      roles:
+        - product-owner
+        - agile-coach
+        - developers
+        - operations-specialist
+      skills:
+        - documentation
+        - knowledge-transfer
+        - operations
+      minExperience: mid
+
+execution:
+  strategy: iterative
+  phaseOrder:
+    - envision
+    - speculate
+    - explore
+    - adapt
+    - close
+  loops:
+    - id: iteration-cycle
+      name: Agile Iteration Loop
+      description: Repeating cycle of Speculate-Explore-Adapt
+      phases:
+        - speculate
+        - explore
+        - adapt
+      maxIterations: 50
+      convergenceCriteria:
+        - type: metric-threshold
+          description: Product vision achieved
+          metric: product_completeness
+          threshold: 100
+          operator: '>='
+      exitConditions:
+        - type: custom
+          description: Strategic pivot or product cancellation
+          customValidator: pivot_or_cancel_check
+  failureHandling:
+    strategy: retry
+    fallbackPhase: speculate
+
+agentCoordination:
+  roles:
+    - id: product-owner
+      name: Product Owner
+      description: Maximizes product value and manages backlog
+      responsibilities:
+        - Define product vision
+        - Manage product backlog
+        - Engage stakeholders
+        - Accept completed work
+      requiredSkills:
+        - product-management
+        - stakeholder-management
+        - prioritization
+        - business-value
+      experienceLevel: senior
+      authority: leader
+    - id: agile-coach
+      name: Agile Coach / Scrum Master
+      description: Facilitates agile process and removes impediments
+      responsibilities:
+        - Coach team on agile practices
+        - Facilitate ceremonies
+        - Remove impediments
+        - Foster continuous improvement
+      requiredSkills:
+        - coaching
+        - facilitation
+        - agile-practices
+        - servant-leadership
+      experienceLevel: senior
+      authority: contributor
+    - id: developers
+      name: Development Team Member
+      description: Cross-functional team member who builds the product
+      responsibilities:
+        - Develop features
+        - Write tests
+        - Collaborate with team
+        - Participate in planning and retrospectives
+      requiredSkills:
+        - software-development
+        - testing
+        - collaboration
+        - continuous-learning
+      experienceLevel: mid
+      authority: contributor
+    - id: development-team
+      name: Development Team (Collective)
+      description: Self-organizing cross-functional team
+      responsibilities:
+        - Select iteration work
+        - Estimate stories
+        - Deliver working software
+        - Improve practices
+      requiredSkills:
+        - team-collaboration
+        - estimation
+        - self-organization
+      experienceLevel: mid
+      authority: contributor
+    - id: operations-specialist
+      name: Operations Specialist
+      description: Supports deployment and operations
+      responsibilities:
+        - Configure infrastructure
+        - Set up monitoring
+        - Support production
+        - Enable DevOps
+      requiredSkills:
+        - operations
+        - devops
+        - monitoring
+      experienceLevel: mid
+      authority: contributor
+  teamComposition:
+    minSize: 3
+    maxSize: 12
+    required:
+      - product-owner
+      - developers
+    optional:
+      - agile-coach
+      - operations-specialist
+  communicationPatterns:
+    - from: product-owner
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+    - from: developers
+      to: developers
+      type: publish-subscribe
+      contextTypes:
+        - finding
+        - constraint
+    - from: any
+      to: agile-coach
+      type: direct
+      contextTypes:
+        - constraint
+  decisionAuthority:
+    - decision: Product direction
+      authority: product-owner
+      requiresConsensus: false
+    - decision: Technical approach
+      authority: development-team
+      requiresConsensus: true
+      consensusRoles:
+        - developers
+    - decision: Iteration commitment
+      authority: development-team
+      requiresConsensus: true
+      consensusRoles:
+        - developers
+
+artifactFlow:
+  artifactTypes:
+    - id: product-vision
+      name: Product Vision
+      description: Compelling description of product future state
+      format: markdown
+    - id: stakeholder-map
+      name: Stakeholder Map
+      description: Identified stakeholders and their interests
+      format: structured
+    - id: product-backlog
+      name: Product Backlog
+      description: Prioritized list of product features and improvements
+      format: structured
+    - id: team-charter
+      name: Team Charter
+      description: Team composition and working agreements
+      format: markdown
+    - id: refined-backlog
+      name: Refined Product Backlog
+      description: Detailed and estimated backlog items
+      format: structured
+    - id: iteration-backlog
+      name: Iteration Backlog
+      description: Work selected for current iteration
+      format: structured
+    - id: iteration-goal
+      name: Iteration Goal
+      description: Objective for the iteration
+      format: markdown
+    - id: iteration-plan
+      name: Iteration Plan
+      description: Detailed task breakdown for iteration
+      format: structured
+    - id: source-code
+      name: Source Code
+      description: Developed software code
+      format: code
+    - id: test-suite
+      name: Test Suite
+      description: Automated tests
+      format: code
+    - id: build-results
+      name: Build Results
+      description: Results from continuous integration
+      format: json
+    - id: refactored-code
+      name: Refactored Code
+      description: Improved code from refactoring
+      format: code
+    - id: working-software
+      name: Working Software
+      description: Potentially shippable product increment
+      format: binary
+    - id: demonstration-log
+      name: Demonstration Log
+      description: Record of features demonstrated
+      format: markdown
+    - id: stakeholder-feedback
+      name: Stakeholder Feedback
+      description: Feedback from product review
+      format: structured
+    - id: retrospective-notes
+      name: Retrospective Notes
+      description: Team reflections from retrospective
+      format: markdown
+    - id: process-improvements
+      name: Process Improvements
+      description: Identified team improvements
+      format: structured
+    - id: progress-metrics
+      name: Progress Metrics
+      description: Velocity and progress measurements
+      format: json
+    - id: product-documentation
+      name: Product Documentation
+      description: User and technical documentation
+      format: markdown
+    - id: operations-plan
+      name: Operations Plan
+      description: Production support plan
+      format: markdown
+    - id: lessons-learned
+      name: Lessons Learned
+      description: Project learnings
+      format: markdown
+    - id: celebration-record
+      name: Celebration Record
+      description: Record of team recognition
+      format: markdown
+    - id: closure-report
+      name: Project Closure Report
+      description: Final project summary
+      format: markdown
+  dependencies:
+    - artifact: product-backlog
+      dependsOn:
+        - product-vision
+    - artifact: refined-backlog
+      dependsOn:
+        - product-backlog
+    - artifact: iteration-backlog
+      dependsOn:
+        - refined-backlog
+    - artifact: iteration-goal
+      dependsOn:
+        - iteration-backlog
+    - artifact: iteration-plan
+      dependsOn:
+        - iteration-backlog
+    - artifact: test-suite
+      dependsOn:
+        - source-code
+    - artifact: build-results
+      dependsOn:
+        - source-code
+        - test-suite
+    - artifact: working-software
+      dependsOn:
+        - build-results
+    - artifact: stakeholder-feedback
+      dependsOn:
+        - demonstration-log
+    - artifact: closure-report
+      dependsOn:
+        - lessons-learned
+
+ceremonies:
+  - id: iteration-planning
+    name: Iteration Planning Meeting
+    description: Plan the upcoming iteration
+    timing: phase-start
+    duration: 240
+    participants:
+      - product-owner
+      - development-team
+      - agile-coach
+    artifacts:
+      inputs:
+        - product-backlog
+      outputs:
+        - iteration-plan
+        - iteration-goal
+    objectives:
+      - Refine backlog items
+      - Select iteration work
+      - Define iteration goal
+      - Break down into tasks
+  - id: daily-standup
+    name: Daily Standup
+    description: Daily team synchronization
+    timing: daily
+    duration: 15
+    participants:
+      - development-team
+      - agile-coach
+    objectives:
+      - Share progress
+      - Plan next 24 hours
+      - Identify impediments
+  - id: backlog-refinement
+    name: Backlog Refinement Session
+    description: Ongoing grooming of product backlog
+    timing: periodic
+    duration: 120
+    participants:
+      - product-owner
+      - development-team
+    artifacts:
+      inputs:
+        - product-backlog
+      outputs:
+        - refined-backlog
+    objectives:
+      - Add detail to stories
+      - Estimate stories
+      - Identify dependencies
+      - Clarify acceptance criteria
+  - id: iteration-review
+    name: Iteration Review
+    description: Demonstrate working software to stakeholders
+    timing: phase-end
+    duration: 120
+    participants:
+      - product-owner
+      - development-team
+      - stakeholders
+    artifacts:
+      inputs:
+        - working-software
+      outputs:
+        - stakeholder-feedback
+        - product-backlog
+    objectives:
+      - Demonstrate completed work
+      - Gather feedback
+      - Update backlog
+  - id: retrospective
+    name: Team Retrospective
+    description: Reflect on process and identify improvements
+    timing: phase-end
+    duration: 90
+    participants:
+      - development-team
+      - agile-coach
+      - product-owner
+    artifacts:
+      outputs:
+        - retrospective-notes
+        - process-improvements
+    objectives:
+      - Reflect on what went well
+      - Identify what didn't go well
+      - Select improvements
+      - Commit to changes

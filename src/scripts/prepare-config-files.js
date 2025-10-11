@@ -20,7 +20,7 @@ async function convertYamlToJson(yamlFilePath, jsonFilePath) {
   }
 }
 
-async function generateManifest() {
+async function generateAgentsManifest() {
   try {
     let files = await readdir(agentsDir)
 
@@ -37,13 +37,11 @@ async function generateManifest() {
     files = await readdir(agentsDir)
     const agents = files
       .filter((file) => file.endsWith('.json') && file !== 'manifest.json')
-      .map((file) => {
-        // Handle both .agent.json and .json naming conventions
-        if (file.endsWith('.agent.json')) {
-          return file.replace('.agent.json', '')
-        }
-        return file.replace('.json', '')
-      })
+      .map((file) =>
+        file.endsWith('.agent.json')
+          ? file.replace('.agent.json', '')
+          : file.replace('.json', ''),
+      )
       .sort()
 
     const manifest = { agents }
@@ -57,4 +55,51 @@ async function generateManifest() {
   }
 }
 
-generateManifest()
+const methodologiesDir = join(__dirname, '../../public/methodologies')
+const methodologiesManifestPath = join(methodologiesDir, 'manifest.json')
+
+async function generateMethodologiesManifest() {
+  try {
+    let files = await readdir(methodologiesDir)
+
+    // First, convert any agent source YAML files to JSON
+    const yamlFiles = files.filter((file) => file.endsWith('.methodology.yaml'))
+    for (const yamlFile of yamlFiles) {
+      const yamlPath = join(methodologiesDir, yamlFile)
+      const jsonFile = yamlFile.replace(
+        '.methodology.yaml',
+        '.methodology.json',
+      )
+      const jsonPath = join(methodologiesDir, jsonFile)
+      await convertYamlToJson(yamlPath, jsonPath)
+    }
+
+    // Get updated file list after YAML conversion
+    files = await readdir(methodologiesDir)
+    const methodologies = files
+      .filter((file) => file.endsWith('.json') && file !== 'manifest.json')
+      .map((file) =>
+        file.endsWith('.methodology.json')
+          ? file.replace('.methodology.json', '')
+          : file.replace('.json', ''),
+      )
+      .sort()
+
+    const manifest = { methodologies }
+
+    await writeFile(
+      methodologiesManifestPath,
+      JSON.stringify(manifest, null, 2) + '\n',
+    )
+
+    console.log(
+      `Generated manifest with ${methodologies.length} methodologies.`,
+    )
+  } catch (error) {
+    console.error('Error generating methodologies manifest:', error)
+    process.exit(1)
+  }
+}
+
+generateAgentsManifest()
+generateMethodologiesManifest()

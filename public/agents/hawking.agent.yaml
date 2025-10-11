@@ -96,3 +96,6 @@ i18n:
   fr:
     name: Stephen Hawking
     desc: Physicien théoricien et cosmologiste
+  ko:
+    name: 스티븐 호킹
+    desc: 이론 물리학자이자 우주론자

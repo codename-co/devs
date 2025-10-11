@@ -2,6 +2,7 @@ import { PRODUCT } from '@/config/product'
 import { errorToast, successToast } from '@/lib/toast'
 import { db } from '@/lib/db'
 import { type Agent } from '@/types'
+import { Lang } from '@/i18n'
 
 type AgentJSON = Omit<Agent, 'createdAt' | 'updatedAt' | 'version' | 'tools'>
 
@@ -83,8 +84,12 @@ Your success is measured by delivering complete, high-quality solutions that mee
   tags: ['orchestrator', 'autonomous', 'multi-agent', 'coordination'],
   createdAt: new Date(),
   i18n: {
+    es: {
+      desc: 'Orquestador multiagente autónomo para la delegación de tareas complejas',
+      role: 'Orquestador de tareas autónomo y coordinador de equipos multiagente',
+    },
     fr: {
-      desc: 'Orchestrateur autonome multi-agents pour délégation de tâches complexes',
+      desc: "Orchestrateur d'agents, délégateur de tâches",
       role: "Orchestrateur de tâches autonome et coordinateur d'équipes multi-agents",
     },
     ko: {
@@ -253,8 +258,9 @@ export async function getAgentsByCategory(lang: string = 'en'): Promise<{
   // Sort agents within each category by name
   Object.values(agentsByCategory).forEach((categoryAgents) => {
     categoryAgents.sort((a, b) => {
-      return (a.i18n?.[lang]?.name || a.name).localeCompare(
-        b.i18n?.[lang]?.name || b.name,
+      const langKey = lang as Lang
+      return (a.i18n?.[langKey]?.name ?? a.name).localeCompare(
+        b.i18n?.[langKey]?.name ?? b.name,
       )
     })
   })

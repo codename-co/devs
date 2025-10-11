@@ -91,3 +91,6 @@ i18n:
   fr:
     name: Sun Tzu
     desc: Stratège militaire et philosophe chinois ancien
+  ko:
+    name: 손자
+    desc: 고대 중국의 군사 전략가이자 철학자

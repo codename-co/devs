@@ -1,4 +1,76 @@
-<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="50" cy="50" r="45" fill="#3498db" stroke="#2980b9" stroke-width="5"/>
-  <rect x="35" y="35" width="30" height="30" fill="#ffffff"/>
+<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="fondCosmique" cx="50%" cy="50%" r="75%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#2E3192" />
+      <stop offset="40%" stop-color="#1B1464" />
+      <stop offset="100%" stop-color="#000020" />
+    </radialGradient>
+    <linearGradient id="cristalAzur" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00AEEF" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#2E3192" stop-opacity="0.8"/>
+    </linearGradient>
+    <linearGradient id="cristalMagenta" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#EC008C" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#662D8C" stop-opacity="0.7"/>
+    </linearGradient>
+    <linearGradient id="becOr" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#FFF59D" />
+      <stop offset="50%" stop-color="#F9A825" />
+      <stop offset="100%" stop-color="#E65100" />
+    </linearGradient>
+    <radialGradient id="irisGalactique" cx="50%" cy="50%" r="50%" fx="70%" fy="30%">
+      <stop offset="0%" stop-color="#F1F5F9" />
+      <stop offset="20%" stop-color="#00AEEF" />
+      <stop offset="80%" stop-color="#662D8C" />
+      <stop offset="100%" stop-color="#1B1464" />
+    </radialGradient>
+    <filter id="eclatPlume" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur" />
+      <feOffset in="blur" dx="0" dy="0" result="offsetBlur" />
+      <feFlood flood-color="#EC008C" flood-opacity="0.5" result="glowColor" />
+      <feComposite in="glowColor" in2="offsetBlur" operator="in" result="glow" />
+      <feMerge>
+        <feMergeNode in="glow" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <clipPath id="masqueTete">
+      <path d="M64 12 C 95 12, 118 40, 118 70 C 118 105, 85 118, 64 118 C 43 118, 10 105, 10 70 C 10 40, 33 12, 64 12 Z" />
+    </clipPath>
+  </defs>
+
+  <rect width="128" height="128" fill="url(#fondCosmique)" />
+
+  <g clip-path="url(#masqueTete)">
+    <path d="M-10 0 L138 0 L138 128 L-10 128Z" fill="#1B1464" opacity="0.8"/>
+    <path d="M 128 0 L 64 128 L 0 0 Z" fill="url(#cristalAzur)" opacity="0.3" transform="rotate(-15 64 64)"/>
+    <path d="M 0 128 L 128 64 L 128 0 Z" fill="url(#cristalMagenta)" opacity="0.25" transform="rotate(25 64 64)"/>
+  </g>
+
+  <g id="structureCristalline">
+    <path d="M64,12 L88,40 L70,45 Z" fill="url(#cristalAzur)" opacity="0.9" />
+    <path d="M64,12 L40,40 L58,45 Z" fill="url(#cristalAzur)" opacity="0.7" />
+    <path d="M88,40 L95,68 L70,45 Z" fill="url(#cristalMagenta)" opacity="0.8" />
+    <path d="M40,40 L33,68 L58,45 Z" fill="url(#cristalMagenta)" opacity="0.6" />
+    <path d="M95,68 L75,95 L64,118 L43,95 Z" fill="#662D8C" opacity="0.5" />
+    <path d="M33,68 L53,95 L64,118 L43,95 Z" fill="#2E3192" opacity="0.6" />
+    <path d="M118,70 C110,50 95,40 88,40 L95,68 C110,75 118,80 118,70 Z" fill="url(#cristalAzur)" opacity="0.5" />
+    <path d="M10,70 C18,50 33,40 40,40 L33,68 C18,75 10,80 10,70 Z" fill="url(#cristalAzur)" opacity="0.4" />
+  </g>
+
+  <g id="oeil">
+    <circle cx="82" cy="65" r="18" fill="#1B1464" />
+    <circle cx="82" cy="65" r="16" fill="url(#irisGalactique)" />
+    <circle cx="82" cy="65" r="7" fill="#000020" />
+    <circle cx="87" cy="58" r="4" fill="white" opacity="0.9" />
+    <circle cx="78" cy="70" r="1.5" fill="white" opacity="0.6" />
+  </g>
+
+  <path id="bec" d="M 108 80 C 115 85, 115 95, 108 100 L 90 90 Z" fill="url(#becOr)" stroke="#FFFDE7" stroke-width="0.5" />
+
+  <g id="plumage" filter="url(#eclatPlume)">
+    <path d="M 64 12 C 50 2, 30 15, 35 35 S 50 45, 60 40" fill="none" stroke="url(#cristalMagenta)" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
+    <path d="M 64 12 C 68 5, 80 10, 80 30 S 70 42, 65 40" fill="none" stroke="url(#cristalAzur)" stroke-width="2.5" stroke-linecap="round" opacity="1"/>
+    <path d="M 64 12 C 60 -5, 40 -2, 40 25" fill="none" stroke="#FFF" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+  </g>
 </svg>

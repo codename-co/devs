@@ -164,6 +164,8 @@ export const KnowledgePage: React.FC = () => {
         setProcessingJobs((prev) => {
           const next = new Map(prev)
 
+          if (!event.jobId) return next
+
           switch (event.type) {
             case 'job_started':
               // Find the item being processed
@@ -527,7 +529,6 @@ export const KnowledgePage: React.FC = () => {
       <Section>
         <Container>
           {/* Upload Area */}
-          <Title level={2}>{t('Add knowledge')}</Title>
           <div
             data-testid="upload-area"
             className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
@@ -671,134 +672,150 @@ export const KnowledgePage: React.FC = () => {
           )}
 
           {/* Knowledge Items List */}
-          <Title level={2}>
-            {t('My Knowledge')}
-            <span className="ml-2 text-lg text-default-500">
-              ({knowledgeItems.length})
-            </span>
-          </Title>
-          {loading ? (
-            <div className="flex justify-center p-8">
-              <Spinner size="lg" />
-            </div>
-          ) : knowledgeItems.length === 0 ? (
-            <div
-              data-testid="empty-state"
-              className="text-center p-8 text-default-500"
-            >
-              <Page className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>
-                {t('No knowledge items yet. Upload some files to get started!')}
-              </p>
-            </div>
-          ) : (
-            <div
-              data-testid="knowledge-items"
-              className="divide-y divide-default-100 -mt-4"
-            >
-              {knowledgeItems.map((item) => {
-                // Find if this item is being processed
-                const processingJob = Array.from(processingJobs.values()).find(
-                  (job) => job.itemId === item.id,
-                )
+          {knowledgeItems.length > 0 && (
+            <>
+              <Title level={2}>
+                {t('My Knowledge')}
+                <span className="ml-2 text-lg text-default-500">
+                  ({knowledgeItems.length})
+                </span>
+              </Title>
+              {loading ? (
+                <div className="flex justify-center p-8">
+                  <Spinner size="lg" />
+                </div>
+              ) : knowledgeItems.length === 0 ? (
+                <div
+                  data-testid="empty-state"
+                  className="text-center p-8 text-default-500"
+                >
+                  <Page className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>
+                    {t(
+                      'No knowledge items yet. Upload some files to get started!',
+                    )}
+                  </p>
+                </div>
+              ) : (
+                <div
+                  data-testid="knowledge-items"
+                  className="divide-y divide-default-100 -mt-4"
+                >
+                  {knowledgeItems.map((item) => {
+                    // Find if this item is being processed
+                    const processingJob = Array.from(
+                      processingJobs.values(),
+                    ).find((job) => job.itemId === item.id)
 
-                return (
-                  <div
-                    key={item.id}
-                    className="p-4 flex items-center justify-between hover:bg-default-50"
-                  >
-                    <div className="flex items-center space-x-4 flex-1">
-                      <div className="flex-shrink-0">{getFileIcon(item)}</div>
+                    return (
+                      <div
+                        key={item.id}
+                        className="p-4 flex items-center justify-between hover:bg-default-50"
+                      >
+                        <div className="flex items-center space-x-4 flex-1">
+                          <div className="flex-shrink-0">
+                            {getFileIcon(item)}
+                          </div>
 
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium truncate">{item.name}</h3>
-                        <div className="flex items-center space-x-4 text-sm text-default-500 mt-1">
-                          <span>{item.path}</span>
-                          {item.fileType && (
-                            <span className="capitalize">{item.fileType}</span>
-                          )}
-                          {item.size && (
-                            <span>{formatBytes(item.size, lang)}</span>
-                          )}
-                          <span>{formatDate(item.createdAt)}</span>
-                        </div>
-                        {processingJob && (
-                          <div className="mt-2">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Spinner size="sm" />
-                              <span className="text-xs text-primary">
-                                Processing document...
-                              </span>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium truncate">
+                              {item.name}
+                            </h3>
+                            <div className="flex items-center space-x-4 text-sm text-default-500 mt-1">
+                              <span>{item.path}</span>
+                              {item.fileType && (
+                                <span className="capitalize">
+                                  {item.fileType}
+                                </span>
+                              )}
+                              {item.size && (
+                                <span>{formatBytes(item.size, lang)}</span>
+                              )}
+                              <span>{formatDate(item.createdAt)}</span>
                             </div>
-                            <Progress
-                              size="sm"
-                              value={processingJob.progress}
-                              color="primary"
-                              className="max-w-md"
-                              aria-label="Document processing progress"
-                            />
+                            {processingJob && (
+                              <div className="mt-2">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <Spinner size="sm" />
+                                  <span className="text-xs text-primary">
+                                    Processing document...
+                                  </span>
+                                </div>
+                                <Progress
+                                  size="sm"
+                                  value={processingJob.progress}
+                                  color="primary"
+                                  className="max-w-md"
+                                  aria-label="Document processing progress"
+                                />
+                              </div>
+                            )}
+                            {item.description && (
+                              <p className="text-sm text-default-600 mt-1 truncate">
+                                {item.description}
+                              </p>
+                            )}
+                            {item.tags && item.tags.length > 0 && (
+                              <div className="flex gap-1 mt-2">
+                                {item.tags.map((tag) => (
+                                  <Chip
+                                    key={tag}
+                                    size="sm"
+                                    variant="flat"
+                                    color="primary"
+                                  >
+                                    {tag}
+                                  </Chip>
+                                ))}
+                              </div>
+                            )}
                           </div>
-                        )}
-                        {item.description && (
-                          <p className="text-sm text-default-600 mt-1 truncate">
-                            {item.description}
-                          </p>
-                        )}
-                        {item.tags && item.tags.length > 0 && (
-                          <div className="flex gap-1 mt-2">
-                            {item.tags.map((tag) => (
-                              <Chip
-                                key={tag}
-                                size="sm"
-                                variant="flat"
-                                color="primary"
-                              >
-                                {tag}
-                              </Chip>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                        </div>
 
-                    <div className="flex items-center space-x-2">
-                      <Dropdown>
-                        <DropdownTrigger>
-                          <Button isIconOnly variant="light" size="sm">
-                            <MoreVert className="w-4 h-4" />
-                          </Button>
-                        </DropdownTrigger>
-                        <DropdownMenu>
-                          <DropdownItem
-                            key="edit"
-                            startContent={<EditPencil className="w-4 h-4" />}
-                            onPress={() => openEditModal(item)}
-                          >
-                            {t('Edit')}
-                          </DropdownItem>
-                          <DropdownItem
-                            key="reprocess"
-                            startContent={<RefreshDouble className="w-4 h-4" />}
-                            onPress={() => reprocessItem(item)}
-                          >
-                            {t('Reprocess')}
-                          </DropdownItem>
-                          <DropdownItem
-                            key="delete"
-                            startContent={<Trash className="w-4 h-4" />}
-                            className="text-danger"
-                            color="danger"
-                            onPress={() => deleteItem(item.id)}
-                          >
-                            {t('Delete')}
-                          </DropdownItem>
-                        </DropdownMenu>
-                      </Dropdown>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+                        <div className="flex items-center space-x-2">
+                          <Dropdown>
+                            <DropdownTrigger>
+                              <Button isIconOnly variant="light" size="sm">
+                                <MoreVert className="w-4 h-4" />
+                              </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu>
+                              <DropdownItem
+                                key="edit"
+                                startContent={
+                                  <EditPencil className="w-4 h-4" />
+                                }
+                                onPress={() => openEditModal(item)}
+                              >
+                                {t('Edit')}
+                              </DropdownItem>
+                              <DropdownItem
+                                key="reprocess"
+                                startContent={
+                                  <RefreshDouble className="w-4 h-4" />
+                                }
+                                onPress={() => reprocessItem(item)}
+                              >
+                                {t('Reprocess')}
+                              </DropdownItem>
+                              <DropdownItem
+                                key="delete"
+                                startContent={<Trash className="w-4 h-4" />}
+                                className="text-danger"
+                                color="danger"
+                                onPress={() => deleteItem(item.id)}
+                              >
+                                {t('Delete')}
+                              </DropdownItem>
+                            </DropdownMenu>
+                          </Dropdown>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </>
           )}
 
           {/* Edit Modal */}

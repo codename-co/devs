@@ -1,10 +1,11 @@
 import { Container, Section, Widget } from '@/components'
-import ABCExample from '@/components/Widget/Score/Score.example.abc?raw'
-import CodeExample from '@/components/Widget/Code/Code.example.js?raw'
-import DiagramExample from '@/components/Widget/Diagram/Diagram.example.mmd?raw'
-import PresentationExample from '@/components/Widget/Presentation/Presentation.example.marp.md?raw'
-import SVGExample from '@/components/Widget/SVG/SVG.example.svg?raw'
 import Layout from '@/layouts/Default'
+import ABC from './abc.mdx'
+import Code from './code.mdx'
+import Diagram from './diagram.mdx'
+import Html from './html.mdx'
+import Presentation from './presentation.mdx'
+import Svg from './svg.mdx'
 
 <Layout header={{
     color: 'bg-default-50',
@@ -14,17 +15,12 @@ import Layout from '@/layouts/Default'
   }}>
   <Section>
     <Container>
-
-<Widget type="marpit" code={PresentationExample} />
-
-<Widget type="abc" code={ABCExample} />
-
-<Widget type="diagram" code={DiagramExample} />
-
-<Widget type="svg" code={SVGExample} />
-
-<Widget type="code" code={CodeExample} />
-
+      <Presentation />
+      <ABC />
+      <Diagram />
+      <Html />
+      <Svg />
+      <Code />
     </Container>
   </Section>
 </Layout>

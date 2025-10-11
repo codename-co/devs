@@ -22,12 +22,13 @@
     "test:e2e:report": "playwright show-report",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write .",
-    "scripts": "./src/scripts/generate-agent-manifest.js"
+    "scripts": "./src/scripts/prepare-config-files.js"
   },
   "dependencies": {
     "@heroui/react": "^2.8.2",
     "@huggingface/transformers": "^3.7.5",
     "@marp-team/marpit": "^3.1.3",
+    "@monaco-editor/react": "^4.7.0-rc.0",
     "abcjs": "^6.5.2",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -36,6 +37,8 @@
     "langfuse": "^3.38.4",
     "marked": "^16.1.1",
     "mermaid": "^11.11.0",
+    "monaco-mermaid": "^1.1.0",
+    "monaco-yaml": "^5.4.0",
     "nanoid": "^5.1.5",
     "pretty-bytes": "^7.1.0",
     "qrcode": "^1.5.4",

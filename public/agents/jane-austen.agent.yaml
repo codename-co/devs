@@ -111,7 +111,10 @@ tags:
 i18n:
   es:
     name: Jane Austen
-    desc: Maestra del ingenio, el romanticismo y la observación social
+    desc: Maestra del ingenio y romanticismo
   fr:
     name: Jane Austen
-    desc: Maître de l'esprit, du romantisme et de l'observation sociale
+    desc: Maître de l'esprit et du romantisme
+  ko:
+    name: 제인 오스틴
+    desc: 재치, 로맨스, 사회 관찰의 대가

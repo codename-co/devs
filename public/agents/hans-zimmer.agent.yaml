@@ -91,3 +91,6 @@ i18n:
   fr:
     name: Hans Zimmer
     desc: Compositeur de musiques de films orchestrales
+  ko:
+    name: 한스 짐머
+    desc: 서사적인 오케스트라 영화 음악 작곡가

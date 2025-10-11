@@ -1,0 +1,6 @@
+import { Widget } from '@/components'
+import HtmlExample from '@/components/Widget/HTML/HtmlExample.example.html?raw'
+import { completeStreamingHtml } from '@/components/Widget/stream-html.utils'
+
+
+<Widget type="html" language="html" code={completeStreamingHtml(HtmlExample)} />

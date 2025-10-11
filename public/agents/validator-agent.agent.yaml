@@ -105,3 +105,6 @@ i18n:
   fr:
     name: Spécialiste Qualité
     desc: Spécialiste de l'assurance qualité et de la validation
+  ko:
+    name: 품질 보증 전문가
+    desc: 품질 보증 및 검증 전문가

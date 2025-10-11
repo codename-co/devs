@@ -334,6 +334,19 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
                 <Icon name="Sparks" />
               </Button>
             </Tooltip>
+            <Tooltip content={t('Methodologies')} placement="right">
+              <Button
+                as={Link}
+                href={url('/methodologies')}
+                isIconOnly
+                color="success"
+                variant="light"
+                className="w-full"
+                aria-label={t('Methodologies')}
+              >
+                <Icon name="PageStar" />
+              </Button>
+            </Tooltip>
             <Tooltip content={t('Tasks')} placement="right">
               <Button
                 as={Link}
@@ -541,6 +554,37 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                 textValue={t('Agents')}
               >
                 {t('Agents')}
+              </ListboxItem>
+              <ListboxItem
+                href={url('/methodologies')}
+                color="success"
+                startContent={<Icon name="PageStar" />}
+                endContent={
+                  <Tooltip content={t('New Methodology')} placement="right">
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      className="inline-flex items-center justify-center w-6 h-6 rounded-small bg-success/20 text-success hover:bg-success/30 cursor-pointer transition-colors"
+                      aria-label={t('New Methodology')}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        navigate(url('/methodologies/new'))
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          navigate(url('/methodologies/new'))
+                        }
+                      }}
+                    >
+                      <Icon name="Plus" />
+                    </span>
+                  </Tooltip>
+                }
+              >
+                {t('Methodologies')}
               </ListboxItem>
               <ListboxItem
                 href={url('/tasks')}

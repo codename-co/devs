@@ -1,0 +1,785 @@
+# PDCA (Plan-Do-Check-Act) Methodology
+# Iterative continuous improvement cycle
+
+metadata:
+  id: pdca
+  name: PDCA (Plan-Do-Check-Act)
+  description: >
+    An iterative four-step management method used for continuous improvement
+    of processes and products. Also known as the Deming Cycle or Shewhart Cycle.
+    PDCA is a fundamental tool for achieving continual improvement.
+  type: iterative
+  version: 1.0.0
+  origin: W. Edwards Deming / Walter A. Shewhart
+  domains:
+    - quality-management
+    - continuous-improvement
+    - process-optimization
+    - lean-manufacturing
+    - problem-solving
+  complexity: simple
+  tags:
+    - deming-cycle
+    - continuous-improvement
+    - iterative
+    - kaizen
+    - lean
+  i18n:
+    es:
+      description: >
+        Un método de gestión iterativo de cuatro pasos utilizado para la mejora continua
+        de procesos y productos. También conocido como el Ciclo de Deming o el Ciclo de Shewhart.
+        PDCA es una herramienta fundamental para lograr la mejora continua.
+    fr:
+      description: >
+        Une méthode de gestion itérative en quatre étapes utilisée pour l'amélioration continue
+        des processus et des produits. Également connu sous le nom de Cycle de Deming ou Cycle de Shewhart.
+        PDCA est un outil fondamental pour atteindre l'amélioration continue.
+    ko:
+      description: >
+        프로세스 및 제품의 지속적인 개선을 위해 사용되는 4단계 반복 관리 방법입니다.
+        데밍 사이클 또는 쉐와르트 사이클로도 알려져 있습니다.
+        PDCA는 지속적인 개선을 달성하기 위한 기본 도구입니다.
+
+configuration:
+  maxIterations: 10
+  qualityGates:
+    enabled: true
+    autoRetry: false
+    maxRetries: 0
+  parallelization:
+    enabled: false
+    maxConcurrentTasks: 1
+  convergence:
+    metric: improvement_percentage
+    threshold: 95
+    operator: '>='
+
+phases:
+  - id: plan
+    name: Plan
+    description: >
+      Identify an opportunity and plan for change. Establish objectives,
+      analyze the current situation, and develop a hypothesis about
+      what the problem is and how to fix it.
+    order: 0
+    repeatable: true
+    exitCriteria:
+      - type: artifact-exists
+        description: Improvement plan must exist
+        artifactType: improvement-plan
+      - type: artifact-exists
+        description: Success metrics must be defined
+        artifactType: success-metrics
+    tasks:
+      - id: identify-opportunity
+        title: Identify Improvement Opportunity
+        description: Recognize an area that needs improvement or a problem to solve
+        type: analysis
+        complexity: simple
+        assignedRole: process-owner
+        estimatedDuration: 60
+        artifacts:
+          outputs:
+            - typeId: opportunity-statement
+              required: true
+        requirements:
+          - type: functional
+            description: Opportunity must be clearly defined and measurable
+            priority: must
+            validationCriteria:
+              - Clear problem or opportunity statement
+              - Current state documented
+              - Expected benefits identified
+      - id: analyze-current-state
+        title: Analyze Current State
+        description: Gather data and analyze the current situation
+        type: analysis
+        complexity: simple
+        assignedRole: analyst
+        estimatedDuration: 90
+        dependencies:
+          - identify-opportunity
+        artifacts:
+          inputs:
+            - typeId: opportunity-statement
+              required: true
+          outputs:
+            - typeId: current-state-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: Current state must be data-driven
+            priority: must
+            validationCriteria:
+              - Baseline measurements collected
+              - Data is recent and relevant
+              - Key factors identified
+      - id: develop-hypothesis
+        title: Develop Improvement Hypothesis
+        description: Form a theory about root causes and potential solutions
+        type: design
+        complexity: simple
+        assignedRole: improvement-specialist
+        estimatedDuration: 60
+        dependencies:
+          - analyze-current-state
+        artifacts:
+          inputs:
+            - typeId: current-state-analysis
+              required: true
+          outputs:
+            - typeId: hypothesis
+              required: true
+        requirements:
+          - type: functional
+            description: Hypothesis must be testable
+            priority: must
+            validationCriteria:
+              - Clear cause-effect relationship
+              - Testable prediction
+              - Success criteria defined
+      - id: create-action-plan
+        title: Create Action Plan
+        description: Develop a detailed plan for implementing the change
+        type: planning
+        complexity: simple
+        assignedRole: improvement-specialist
+        estimatedDuration: 60
+        dependencies:
+          - develop-hypothesis
+        artifacts:
+          inputs:
+            - typeId: hypothesis
+              required: true
+          outputs:
+            - typeId: improvement-plan
+              required: true
+            - typeId: success-metrics
+              required: true
+        requirements:
+          - type: functional
+            description: Plan must be specific and actionable
+            priority: must
+            validationCriteria:
+              - Specific actions defined
+              - Timeline established
+              - Resources identified
+              - Metrics for success defined
+    agentRequirements:
+      roles:
+        - process-owner
+        - analyst
+        - improvement-specialist
+      skills:
+        - problem-identification
+        - data-analysis
+        - planning
+      minExperience: mid
+
+  - id: do
+    name: Do
+    description: >
+      Implement the change on a small scale. Test the hypothesis and
+      collect data on the results. This is typically a pilot or
+      experiment phase.
+    order: 1
+    repeatable: true
+    entryCriteria:
+      - type: phase-completed
+        description: Plan phase must be completed
+        phaseId: plan
+    exitCriteria:
+      - type: artifact-exists
+        description: Implementation results must exist
+        artifactType: implementation-results
+    tasks:
+      - id: prepare-implementation
+        title: Prepare for Implementation
+        description: Set up necessary resources and conditions for the trial
+        type: planning
+        complexity: simple
+        assignedRole: coordinator
+        estimatedDuration: 45
+        artifacts:
+          inputs:
+            - typeId: improvement-plan
+              required: true
+          outputs:
+            - typeId: implementation-checklist
+              required: true
+        requirements:
+          - type: functional
+            description: All prerequisites must be ready
+            priority: must
+            validationCriteria:
+              - Resources allocated
+              - Stakeholders informed
+              - Data collection ready
+      - id: execute-trial
+        title: Execute the Trial Change
+        description: Implement the planned change on a small scale
+        type: implementation
+        complexity: simple
+        assignedRole: implementer
+        estimatedDuration: 120
+        dependencies:
+          - prepare-implementation
+        artifacts:
+          inputs:
+            - typeId: improvement-plan
+              required: true
+            - typeId: implementation-checklist
+              required: true
+          outputs:
+            - typeId: trial-log
+              required: true
+        requirements:
+          - type: functional
+            description: Trial must follow the plan
+            priority: must
+            validationCriteria:
+              - Actions completed as planned
+              - Deviations documented
+              - Issues logged
+      - id: collect-trial-data
+        title: Collect Trial Data
+        description: Gather data during and after the trial implementation
+        type: analysis
+        complexity: simple
+        assignedRole: analyst
+        estimatedDuration: 60
+        dependencies:
+          - execute-trial
+        artifacts:
+          inputs:
+            - typeId: trial-log
+              required: true
+            - typeId: success-metrics
+              required: true
+          outputs:
+            - typeId: implementation-results
+              required: true
+        requirements:
+          - type: functional
+            description: Data must be complete and accurate
+            priority: must
+            validationCriteria:
+              - All metrics collected
+              - Data quality verified
+              - Observations documented
+    agentRequirements:
+      roles:
+        - coordinator
+        - implementer
+        - analyst
+      skills:
+        - implementation
+        - data-collection
+        - coordination
+      minExperience: mid
+
+  - id: check
+    name: Check
+    description: >
+      Study the results. Compare actual results against expected results
+      to determine if the change achieved the desired improvement and
+      if the hypothesis was correct.
+    order: 2
+    repeatable: true
+    entryCriteria:
+      - type: phase-completed
+        description: Do phase must be completed
+        phaseId: do
+    exitCriteria:
+      - type: artifact-exists
+        description: Evaluation report must exist
+        artifactType: evaluation-report
+    tasks:
+      - id: analyze-results
+        title: Analyze Trial Results
+        description: Examine the data collected during the trial
+        type: analysis
+        complexity: simple
+        assignedRole: analyst
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: implementation-results
+              required: true
+            - typeId: success-metrics
+              required: true
+            - typeId: current-state-analysis
+              required: true
+          outputs:
+            - typeId: results-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: Analysis must be objective and data-driven
+            priority: must
+            validationCriteria:
+              - Baseline comparison performed
+              - Statistical significance assessed
+              - Unexpected results noted
+      - id: compare-to-expectations
+        title: Compare Results to Expectations
+        description: Determine if the change met the success criteria
+        type: review
+        complexity: simple
+        assignedRole: improvement-specialist
+        estimatedDuration: 60
+        dependencies:
+          - analyze-results
+        artifacts:
+          inputs:
+            - typeId: results-analysis
+              required: true
+            - typeId: hypothesis
+              required: true
+          outputs:
+            - typeId: comparison-report
+              required: true
+        requirements:
+          - type: functional
+            description: Comparison must be thorough
+            priority: must
+            validationCriteria:
+              - Expected vs actual documented
+              - Gaps identified
+              - Success level determined
+      - id: identify-learnings
+        title: Identify Lessons Learned
+        description: Extract insights from the trial regardless of success
+        type: analysis
+        complexity: simple
+        assignedRole: improvement-specialist
+        estimatedDuration: 60
+        dependencies:
+          - compare-to-expectations
+        artifacts:
+          inputs:
+            - typeId: comparison-report
+              required: true
+          outputs:
+            - typeId: evaluation-report
+              required: true
+        requirements:
+          - type: functional
+            description: Learnings must be actionable
+            priority: must
+            validationCriteria:
+              - What worked identified
+              - What didn't work identified
+              - Next steps recommended
+    agentRequirements:
+      roles:
+        - analyst
+        - improvement-specialist
+      skills:
+        - data-analysis
+        - evaluation
+        - critical-thinking
+      minExperience: mid
+
+  - id: act
+    name: Act
+    description: >
+      Take action based on the results. If successful, standardize
+      the change and implement broadly. If not successful, start
+      another PDCA cycle with refined approach.
+    order: 3
+    repeatable: true
+    entryCriteria:
+      - type: phase-completed
+        description: Check phase must be completed
+        phaseId: check
+    exitCriteria:
+      - type: artifact-exists
+        description: Action decision must exist
+        artifactType: action-decision
+    tasks:
+      - id: make-decision
+        title: Make Implementation Decision
+        description: Decide whether to adopt, adapt, or abandon the change
+        type: decision
+        complexity: simple
+        assignedRole: process-owner
+        estimatedDuration: 45
+        artifacts:
+          inputs:
+            - typeId: evaluation-report
+              required: true
+          outputs:
+            - typeId: action-decision
+              required: true
+        requirements:
+          - type: functional
+            description: Decision must be clear and justified
+            priority: must
+            validationCriteria:
+              - Decision made (adopt/adapt/abandon)
+              - Rationale documented
+              - Next steps identified
+      - id: standardize-or-iterate
+        title: Standardize Success or Plan Next Iteration
+        description: Either implement broadly or refine for next PDCA cycle
+        type: planning
+        complexity: simple
+        assignedRole: improvement-specialist
+        estimatedDuration: 90
+        dependencies:
+          - make-decision
+        artifacts:
+          inputs:
+            - typeId: action-decision
+              required: true
+            - typeId: evaluation-report
+              required: true
+          outputs:
+            - typeId: standardization-plan
+              required: false
+            - typeId: next-cycle-plan
+              required: false
+        requirements:
+          - type: functional
+            description: Either standardization or iteration plan must exist
+            priority: must
+            validationCriteria:
+              - If adopting - standardization plan created
+              - If adapting - next cycle plan created
+              - If abandoning - alternative approach identified
+      - id: communicate-results
+        title: Communicate Results and Actions
+        description: Share learnings and decisions with stakeholders
+        type: documentation
+        complexity: simple
+        assignedRole: coordinator
+        estimatedDuration: 45
+        dependencies:
+          - standardize-or-iterate
+        artifacts:
+          inputs:
+            - typeId: action-decision
+              required: true
+            - typeId: evaluation-report
+              required: true
+          outputs:
+            - typeId: communication-package
+              required: true
+        requirements:
+          - type: functional
+            description: Communication must be clear and complete
+            priority: must
+            validationCriteria:
+              - Results shared
+              - Learnings documented
+              - Next steps communicated
+    agentRequirements:
+      roles:
+        - process-owner
+        - improvement-specialist
+        - coordinator
+      skills:
+        - decision-making
+        - standardization
+        - communication
+      minExperience: mid
+
+execution:
+  strategy: iterative
+  phaseOrder:
+    - plan
+    - do
+    - check
+    - act
+  loops:
+    - id: pdca-cycle
+      name: PDCA Continuous Improvement Loop
+      description: Repeating cycle until convergence or max iterations
+      phases:
+        - plan
+        - do
+        - check
+        - act
+      maxIterations: 10
+      convergenceCriteria:
+        - type: metric-threshold
+          description: Stop when improvement target is reached
+          metric: improvement_percentage
+          threshold: 95
+          operator: '>='
+      exitConditions:
+        - type: custom
+          description: Stop if three consecutive cycles show no improvement
+          customValidator: no_improvement_detector
+  branches:
+    - id: act-decision-branch
+      condition:
+        type: custom
+        description: Branch based on Act phase decision
+        customValidator: check_action_decision
+      truePhase: plan
+      falsePhase: plan
+  failureHandling:
+    strategy: retry
+    fallbackPhase: plan
+
+agentCoordination:
+  roles:
+    - id: process-owner
+      name: Process Owner
+      description: Owns the process being improved and makes key decisions
+      responsibilities:
+        - Identify improvement opportunities
+        - Make adoption decisions
+        - Allocate resources
+        - Champion improvements
+      requiredSkills:
+        - process-knowledge
+        - decision-making
+        - leadership
+      experienceLevel: senior
+      authority: leader
+    - id: analyst
+      name: Analyst
+      description: Analyzes data and evaluates results
+      responsibilities:
+        - Analyze current state
+        - Collect trial data
+        - Analyze trial results
+        - Assess statistical significance
+      requiredSkills:
+        - data-analysis
+        - statistics
+        - critical-thinking
+      experienceLevel: mid
+      authority: contributor
+    - id: improvement-specialist
+      name: Improvement Specialist
+      description: Designs and refines improvement approaches
+      responsibilities:
+        - Develop hypotheses
+        - Create action plans
+        - Evaluate results
+        - Recommend next steps
+      requiredSkills:
+        - problem-solving
+        - continuous-improvement
+        - planning
+      experienceLevel: mid
+      authority: contributor
+    - id: coordinator
+      name: Coordinator
+      description: Coordinates implementation and communication
+      responsibilities:
+        - Prepare implementation
+        - Coordinate activities
+        - Communicate results
+        - Document learnings
+      requiredSkills:
+        - coordination
+        - communication
+        - documentation
+      experienceLevel: mid
+      authority: contributor
+    - id: implementer
+      name: Implementer
+      description: Executes the trial changes
+      responsibilities:
+        - Execute trial changes
+        - Follow action plan
+        - Document execution
+        - Report issues
+      requiredSkills:
+        - execution
+        - attention-to-detail
+        - adaptability
+      experienceLevel: mid
+      authority: contributor
+  teamComposition:
+    minSize: 2
+    maxSize: 5
+    required:
+      - process-owner
+      - analyst
+    optional:
+      - improvement-specialist
+      - coordinator
+      - implementer
+  communicationPatterns:
+    - from: process-owner
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+    - from: any
+      to: process-owner
+      type: direct
+      contextTypes:
+        - finding
+        - constraint
+    - from: analyst
+      to: improvement-specialist
+      type: direct
+      contextTypes:
+        - finding
+  decisionAuthority:
+    - decision: Select improvement opportunity
+      authority: process-owner
+      requiresConsensus: false
+    - decision: Adopt/adapt/abandon change
+      authority: process-owner
+      requiresConsensus: true
+      consensusRoles:
+        - analyst
+        - improvement-specialist
+
+artifactFlow:
+  artifactTypes:
+    - id: opportunity-statement
+      name: Opportunity Statement
+      description: Description of the improvement opportunity
+      format: markdown
+    - id: current-state-analysis
+      name: Current State Analysis
+      description: Data and analysis of the current situation
+      format: json
+    - id: hypothesis
+      name: Improvement Hypothesis
+      description: Theory about problem cause and solution
+      format: markdown
+    - id: improvement-plan
+      name: Improvement Action Plan
+      description: Detailed plan for implementing the change
+      format: structured
+    - id: success-metrics
+      name: Success Metrics
+      description: Metrics for measuring improvement success
+      format: json
+    - id: implementation-checklist
+      name: Implementation Checklist
+      description: Preparation checklist for trial
+      format: markdown
+    - id: trial-log
+      name: Trial Execution Log
+      description: Record of trial execution activities
+      format: markdown
+    - id: implementation-results
+      name: Implementation Results
+      description: Data collected during trial
+      format: json
+    - id: results-analysis
+      name: Results Analysis
+      description: Analysis of trial results
+      format: markdown
+    - id: comparison-report
+      name: Comparison Report
+      description: Comparison of actual vs expected results
+      format: markdown
+    - id: evaluation-report
+      name: Evaluation Report
+      description: Overall evaluation and lessons learned
+      format: markdown
+    - id: action-decision
+      name: Action Decision
+      description: Decision on how to proceed (adopt/adapt/abandon)
+      format: structured
+    - id: standardization-plan
+      name: Standardization Plan
+      description: Plan for broad implementation of successful change
+      format: markdown
+    - id: next-cycle-plan
+      name: Next Cycle Plan
+      description: Plan for next PDCA iteration with refinements
+      format: markdown
+    - id: communication-package
+      name: Communication Package
+      description: Results and learnings to share with stakeholders
+      format: markdown
+  dependencies:
+    - artifact: current-state-analysis
+      dependsOn:
+        - opportunity-statement
+    - artifact: hypothesis
+      dependsOn:
+        - current-state-analysis
+    - artifact: improvement-plan
+      dependsOn:
+        - hypothesis
+    - artifact: success-metrics
+      dependsOn:
+        - hypothesis
+    - artifact: implementation-checklist
+      dependsOn:
+        - improvement-plan
+    - artifact: trial-log
+      dependsOn:
+        - implementation-checklist
+    - artifact: implementation-results
+      dependsOn:
+        - trial-log
+        - success-metrics
+    - artifact: results-analysis
+      dependsOn:
+        - implementation-results
+        - current-state-analysis
+    - artifact: comparison-report
+      dependsOn:
+        - results-analysis
+        - hypothesis
+    - artifact: evaluation-report
+      dependsOn:
+        - comparison-report
+    - artifact: action-decision
+      dependsOn:
+        - evaluation-report
+
+ceremonies:
+  - id: cycle-kickoff
+    name: PDCA Cycle Kickoff
+    description: Launch meeting for each PDCA cycle
+    timing: phase-start
+    duration: 30
+    participants:
+      - process-owner
+      - analyst
+      - improvement-specialist
+    objectives:
+      - Align on improvement opportunity
+      - Review previous cycle learnings (if applicable)
+      - Set expectations for current cycle
+  - id: mid-cycle-check
+    name: Mid-Cycle Check-in
+    description: Brief status review during Do phase
+    timing: periodic
+    duration: 15
+    participants:
+      - coordinator
+      - implementer
+      - analyst
+    objectives:
+      - Verify trial is on track
+      - Address any issues
+      - Ensure data collection is working
+  - id: cycle-review
+    name: Cycle Review
+    description: End-of-cycle retrospective and decision meeting
+    timing: phase-end
+    duration: 60
+    participants:
+      - process-owner
+      - analyst
+      - improvement-specialist
+      - coordinator
+    artifacts:
+      inputs:
+        - evaluation-report
+        - comparison-report
+      outputs:
+        - action-decision
+    objectives:
+      - Review cycle results
+      - Make adoption decision
+      - Plan next steps
+      - Capture lessons learned

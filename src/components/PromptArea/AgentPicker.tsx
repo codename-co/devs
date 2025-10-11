@@ -6,7 +6,7 @@ import {
 } from '@heroui/react'
 import { type Agent } from '@/types'
 import { loadAllAgents, getAgentsByCategory } from '@/stores/agentStore'
-import { Icon } from './Icon'
+import { Icon } from '../Icon'
 import { useI18n } from '@/i18n'
 import { useState, useEffect, useMemo, useCallback } from 'react'
 
@@ -57,6 +57,7 @@ export function AgentPicker({
   const categoryNames = useMemo(
     () =>
       ({
+        default: '',
         scientist: t('Scientists'),
         advisor: t('Advisors'),
         artist: t('Artists'),
@@ -71,6 +72,7 @@ export function AgentPicker({
   return (
     <DropdownMenu
       aria-label="Agent selection"
+      disallowEmptySelection
       selectionMode="single"
       selectedKeys={selectedAgent ? [selectedAgent.id] : undefined}
       onSelectionChange={handleSelectionChange}
@@ -80,7 +82,7 @@ export function AgentPicker({
       {orderedCategories.map((category) => (
         <DropdownSection
           key={category}
-          title={categoryNames[category] || category}
+          title={categoryNames[category] ?? category}
         >
           {agentsByCategory[category]?.map((agent) => (
             <DropdownItem

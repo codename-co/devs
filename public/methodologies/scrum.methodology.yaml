@@ -1,0 +1,839 @@
+# Scrum Methodology
+# Agile framework for iterative software development
+
+metadata:
+  id: scrum
+  name: Scrum
+  description: >
+    An Agile framework for managing complex projects, particularly software
+    development. Scrum uses fixed-length iterations called sprints, typically
+    2-4 weeks long, with specific roles, events, and artifacts to enable
+    rapid delivery of working increments.
+  type: time-boxed
+  version: 1.0.0
+  origin: Agile Manifesto / Ken Schwaber & Jeff Sutherland
+  domains:
+    - software-development
+    - product-development
+    - agile-projects
+    - innovation
+  complexity: moderate
+  tags:
+    - agile
+    - iterative
+    - time-boxed
+    - incremental
+    - team-based
+  i18n:
+    es:
+      description: >
+        Un marco ágil para la gestión de proyectos complejos, particularmente en el desarrollo de software.
+        Scrum utiliza iteraciones de longitud fija llamadas sprints, que suelen durar de 2 a 4 semanas,
+        con roles, eventos y artefactos específicos para permitir la entrega rápida de incrementos funcionales.
+    fr:
+      description: >
+        Un cadre agile pour la gestion de projets complexes, en particulier dans le développement logiciel.
+        Scrum utilise des itérations de durée fixe appelées sprints, qui durent généralement de 2 à 4 semaines,
+        avec des rôles, des événements et des artefacts spécifiques pour permettre une livraison rapide d'incréments fonctionnels.
+    ko:
+      description: >
+        복잡한 프로젝트, 특히 소프트웨어 개발을 위한 애자일 프레임워크입니다.
+        스크럼은 일반적으로 2-4주 길이의 고정 길이 반복인 스프린트를 사용하며,
+        빠른 작업 인크리먼트 제공을 가능하게 하는 특정 역할, 이벤트 및 산출물을 포함합니다.
+
+configuration:
+  maxIterations: 20
+  timeBox:
+    duration: 2
+    unit: weeks
+    strict: true
+  qualityGates:
+    enabled: true
+    autoRetry: false
+    maxRetries: 0
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 10
+    maxConcurrentAgents: 9
+
+phases:
+  - id: sprint-planning
+    name: Sprint Planning
+    description: >
+      The sprint begins with sprint planning where the team selects items
+      from the product backlog and creates a sprint backlog. The team
+      commits to delivering a potentially shippable increment by sprint end.
+    order: 0
+    repeatable: true
+    duration:
+      estimated: 480
+      min: 240
+      max: 480
+    exitCriteria:
+      - type: artifact-exists
+        description: Sprint backlog must be created
+        artifactType: sprint-backlog
+      - type: artifact-exists
+        description: Sprint goal must be defined
+        artifactType: sprint-goal
+    tasks:
+      - id: review-product-backlog
+        title: Review and Refine Product Backlog
+        description: Product Owner presents top priority items from backlog
+        type: review
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: product-backlog
+              required: true
+          outputs:
+            - typeId: refined-backlog
+              required: true
+        requirements:
+          - type: functional
+            description: Top backlog items must be ready for sprint
+            priority: must
+            validationCriteria:
+              - Items have clear acceptance criteria
+              - Items are estimated
+              - Dependencies identified
+      - id: define-sprint-goal
+        title: Define Sprint Goal
+        description: Team collaborates to define the sprint objective
+        type: planning
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 30
+        dependencies:
+          - review-product-backlog
+        artifacts:
+          inputs:
+            - typeId: refined-backlog
+              required: true
+          outputs:
+            - typeId: sprint-goal
+              required: true
+        requirements:
+          - type: functional
+            description: Sprint goal must be clear and achievable
+            priority: must
+            validationCriteria:
+              - Goal is specific
+              - Goal aligns with product vision
+              - Team understands and commits to goal
+      - id: select-sprint-items
+        title: Select Sprint Backlog Items
+        description: Development team selects items they can complete this sprint
+        type: planning
+        complexity: simple
+        assignedRole: scrum-master
+        estimatedDuration: 90
+        dependencies:
+          - define-sprint-goal
+        artifacts:
+          inputs:
+            - typeId: refined-backlog
+              required: true
+            - typeId: sprint-goal
+              required: true
+          outputs:
+            - typeId: sprint-backlog
+              required: true
+        requirements:
+          - type: functional
+            description: Sprint backlog must be realistic
+            priority: must
+            validationCriteria:
+              - Team capacity considered
+              - Items contribute to sprint goal
+              - Team commits to delivery
+      - id: create-task-breakdown
+        title: Break Down Stories into Tasks
+        description: Team breaks selected stories into concrete tasks
+        type: planning
+        complexity: simple
+        assignedRole: development-team
+        estimatedDuration: 120
+        dependencies:
+          - select-sprint-items
+        artifacts:
+          inputs:
+            - typeId: sprint-backlog
+              required: true
+          outputs:
+            - typeId: task-board
+              required: true
+        requirements:
+          - type: functional
+            description: Tasks must be actionable and estimable
+            priority: must
+            validationCriteria:
+              - Tasks are 1 day or less
+              - All stories have tasks
+              - Tasks are clear and specific
+    agentRequirements:
+      roles:
+        - product-owner
+        - scrum-master
+        - development-team
+      skills:
+        - planning
+        - estimation
+        - collaboration
+      minExperience: mid
+
+  - id: sprint-execution
+    name: Sprint Execution
+    description: >
+      The development team works on sprint backlog items, self-organizing
+      to complete the work. Daily standups provide synchronization. Work
+      proceeds in parallel across team members.
+    order: 1
+    repeatable: true
+    parallelizable: true
+    duration:
+      estimated: 7200
+      min: 3600
+      max: 14400
+    entryCriteria:
+      - type: phase-completed
+        description: Sprint planning must be complete
+        phaseId: sprint-planning
+    exitCriteria:
+      - type: artifact-exists
+        description: Increment must be created
+        artifactType: product-increment
+    tasks:
+      - id: implement-features
+        title: Implement Sprint Features
+        description: Develop the selected features and functionality
+        type: implementation
+        complexity: complex
+        assignedRole: development-team
+        estimatedDuration: 6000
+        parallelizable: true
+        artifacts:
+          inputs:
+            - typeId: sprint-backlog
+              required: true
+            - typeId: task-board
+              required: true
+          outputs:
+            - typeId: code
+              required: true
+              minCount: 1
+              maxCount: 999
+        requirements:
+          - type: functional
+            description: Code must meet acceptance criteria
+            priority: must
+            validationCriteria:
+              - Acceptance criteria satisfied
+              - Code follows standards
+              - Unit tests written
+          - type: non_functional
+            description: Code must be maintainable and tested
+            priority: must
+            validationCriteria:
+              - Code is reviewed
+              - Tests pass
+              - Documentation updated
+      - id: continuous-integration
+        title: Continuously Integrate Code
+        description: Integrate and test code multiple times per day
+        type: testing
+        complexity: simple
+        assignedRole: development-team
+        estimatedDuration: 600
+        parallelizable: true
+        dependencies:
+          - implement-features
+        artifacts:
+          inputs:
+            - typeId: code
+              required: true
+          outputs:
+            - typeId: integration-results
+              required: true
+        requirements:
+          - type: non_functional
+            description: All tests must pass
+            priority: must
+            validationCriteria:
+              - Build succeeds
+              - All tests pass
+              - No merge conflicts
+      - id: update-burndown
+        title: Update Sprint Progress
+        description: Track sprint progress and update burndown chart
+        type: documentation
+        complexity: simple
+        assignedRole: scrum-master
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: task-board
+              required: true
+          outputs:
+            - typeId: burndown-chart
+              required: true
+        requirements:
+          - type: functional
+            description: Progress must be visible and accurate
+            priority: should
+            validationCriteria:
+              - Burndown updated daily
+              - Impediments noted
+              - Velocity tracked
+      - id: refine-backlog-ongoing
+        title: Refine Backlog During Sprint
+        description: Product Owner refines upcoming backlog items
+        type: planning
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 240
+        parallelizable: true
+        artifacts:
+          inputs:
+            - typeId: product-backlog
+              required: true
+          outputs:
+            - typeId: refined-backlog
+              required: true
+        requirements:
+          - type: functional
+            description: Backlog must be ready for next sprint
+            priority: should
+            validationCriteria:
+              - Next sprint items detailed
+              - Acceptance criteria clear
+              - Dependencies resolved
+    agentRequirements:
+      roles:
+        - development-team
+        - scrum-master
+        - product-owner
+      skills:
+        - software-development
+        - testing
+        - collaboration
+      minExperience: mid
+
+  - id: sprint-review
+    name: Sprint Review
+    description: >
+      At sprint end, the team demonstrates completed work to stakeholders.
+      The Product Owner determines what is "done". Stakeholders provide
+      feedback to inform the product backlog.
+    order: 2
+    repeatable: true
+    duration:
+      estimated: 240
+      min: 120
+      max: 240
+    entryCriteria:
+      - type: phase-completed
+        description: Sprint execution must be complete
+        phaseId: sprint-execution
+    exitCriteria:
+      - type: artifact-exists
+        description: Review feedback must be captured
+        artifactType: review-feedback
+    tasks:
+      - id: demonstrate-increment
+        title: Demonstrate Product Increment
+        description: Show what was completed during the sprint
+        type: review
+        complexity: simple
+        assignedRole: development-team
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: product-increment
+              required: true
+            - typeId: sprint-goal
+              required: true
+          outputs:
+            - typeId: demonstration-log
+              required: true
+        requirements:
+          - type: functional
+            description: Only done items are demonstrated
+            priority: must
+            validationCriteria:
+              - Items meet Definition of Done
+              - Functionality is working
+              - Demo is clear and complete
+      - id: collect-stakeholder-feedback
+        title: Collect Stakeholder Feedback
+        description: Gather feedback and new insights from stakeholders
+        type: review
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 60
+        dependencies:
+          - demonstrate-increment
+        artifacts:
+          inputs:
+            - typeId: demonstration-log
+              required: true
+          outputs:
+            - typeId: review-feedback
+              required: true
+        requirements:
+          - type: functional
+            description: Feedback must be documented
+            priority: must
+            validationCriteria:
+              - Stakeholder reactions noted
+              - New ideas captured
+              - Changes requested logged
+      - id: update-product-backlog-review
+        title: Update Product Backlog
+        description: Adjust backlog based on review feedback
+        type: planning
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 60
+        dependencies:
+          - collect-stakeholder-feedback
+        artifacts:
+          inputs:
+            - typeId: review-feedback
+              required: true
+            - typeId: product-backlog
+              required: true
+          outputs:
+            - typeId: product-backlog
+              required: true
+        requirements:
+          - type: functional
+            description: Backlog must reflect new priorities
+            priority: must
+            validationCriteria:
+              - Feedback incorporated
+              - Priorities adjusted
+              - New items added
+    agentRequirements:
+      roles:
+        - development-team
+        - product-owner
+        - stakeholders
+      skills:
+        - presentation
+        - feedback-collection
+        - prioritization
+      minExperience: mid
+
+  - id: sprint-retrospective
+    name: Sprint Retrospective
+    description: >
+      The team reflects on the sprint and identifies improvements for
+      the next sprint. This is about improving the process, team dynamics,
+      and practices.
+    order: 3
+    repeatable: true
+    duration:
+      estimated: 180
+      min: 90
+      max: 180
+    entryCriteria:
+      - type: phase-completed
+        description: Sprint review must be complete
+        phaseId: sprint-review
+    exitCriteria:
+      - type: artifact-exists
+        description: Improvement actions must be identified
+        artifactType: improvement-actions
+    tasks:
+      - id: reflect-on-sprint
+        title: Reflect on Sprint Performance
+        description: Team discusses what went well and what didn't
+        type: review
+        complexity: simple
+        assignedRole: scrum-master
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: burndown-chart
+              required: false
+          outputs:
+            - typeId: retrospective-notes
+              required: true
+        requirements:
+          - type: functional
+            description: All voices must be heard
+            priority: must
+            validationCriteria:
+              - Safe environment maintained
+              - Successes celebrated
+              - Problems identified
+      - id: identify-improvements
+        title: Identify Process Improvements
+        description: Select specific improvements to implement next sprint
+        type: planning
+        complexity: simple
+        assignedRole: scrum-master
+        estimatedDuration: 60
+        dependencies:
+          - reflect-on-sprint
+        artifacts:
+          inputs:
+            - typeId: retrospective-notes
+              required: true
+          outputs:
+            - typeId: improvement-actions
+              required: true
+        requirements:
+          - type: functional
+            description: Improvements must be actionable
+            priority: must
+            validationCriteria:
+              - Actions are specific
+              - Owners assigned
+              - Success criteria defined
+      - id: update-team-practices
+        title: Update Team Working Agreements
+        description: Revise team norms and practices as needed
+        type: documentation
+        complexity: simple
+        assignedRole: scrum-master
+        estimatedDuration: 30
+        dependencies:
+          - identify-improvements
+        artifacts:
+          inputs:
+            - typeId: improvement-actions
+              required: true
+          outputs:
+            - typeId: working-agreements
+              required: true
+        requirements:
+          - type: functional
+            description: Team must agree on changes
+            priority: must
+            validationCriteria:
+              - Team consensus achieved
+              - Agreements documented
+              - Commitments clear
+    agentRequirements:
+      roles:
+        - scrum-master
+        - development-team
+        - product-owner
+      skills:
+        - facilitation
+        - reflection
+        - continuous-improvement
+      minExperience: mid
+
+execution:
+  strategy: iterative
+  phaseOrder:
+    - sprint-planning
+    - sprint-execution
+    - sprint-review
+    - sprint-retrospective
+  loops:
+    - id: sprint-cycle
+      name: Sprint Iteration
+      description: Repeating sprints until product completion or cancellation
+      phases:
+        - sprint-planning
+        - sprint-execution
+        - sprint-review
+        - sprint-retrospective
+      maxIterations: 20
+      exitConditions:
+        - type: custom
+          description: Product is complete or project is cancelled
+          customValidator: product_complete_check
+  failureHandling:
+    strategy: retry
+    fallbackPhase: sprint-planning
+
+agentCoordination:
+  roles:
+    - id: product-owner
+      name: Product Owner
+      description: Maximizes product value and manages product backlog
+      responsibilities:
+        - Define and prioritize backlog
+        - Set sprint goals
+        - Accept or reject work
+        - Engage stakeholders
+      requiredSkills:
+        - product-management
+        - prioritization
+        - stakeholder-management
+      experienceLevel: senior
+      authority: leader
+    - id: scrum-master
+      name: Scrum Master
+      description: Facilitates Scrum process and removes impediments
+      responsibilities:
+        - Facilitate ceremonies
+        - Remove impediments
+        - Coach the team
+        - Protect team focus
+      requiredSkills:
+        - facilitation
+        - coaching
+        - servant-leadership
+      experienceLevel: mid
+      authority: contributor
+    - id: development-team
+      name: Development Team Member
+      description: Cross-functional team member who builds the product
+      responsibilities:
+        - Deliver sprint commitment
+        - Self-organize work
+        - Collaborate on solutions
+        - Maintain quality
+      requiredSkills:
+        - software-development
+        - testing
+        - collaboration
+      experienceLevel: mid
+      authority: contributor
+    - id: stakeholders
+      name: Stakeholders
+      description: Those with interest in the product outcome
+      responsibilities:
+        - Provide feedback
+        - Share priorities
+        - Accept deliverables
+      requiredSkills:
+        - domain-knowledge
+        - feedback
+      experienceLevel: mid
+      authority: observer
+  teamComposition:
+    minSize: 5
+    maxSize: 11
+    required:
+      - product-owner
+      - scrum-master
+      - development-team
+    optional:
+      - stakeholders
+  communicationPatterns:
+    - from: product-owner
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+        - constraint
+    - from: scrum-master
+      to: development-team
+      type: broadcast
+      contextTypes:
+        - resource
+    - from: development-team
+      to: development-team
+      type: publish-subscribe
+      contextTypes:
+        - finding
+        - constraint
+    - from: any
+      to: scrum-master
+      type: direct
+      contextTypes:
+        - constraint
+  decisionAuthority:
+    - decision: Backlog prioritization
+      authority: product-owner
+      requiresConsensus: false
+    - decision: Sprint commitment
+      authority: development-team
+      requiresConsensus: true
+      consensusRoles:
+        - development-team
+    - decision: Work acceptance
+      authority: product-owner
+      requiresConsensus: false
+    - decision: Process improvements
+      authority: scrum-master
+      requiresConsensus: true
+      consensusRoles:
+        - development-team
+
+artifactFlow:
+  artifactTypes:
+    - id: product-backlog
+      name: Product Backlog
+      description: Ordered list of everything needed in the product
+      format: structured
+    - id: refined-backlog
+      name: Refined Product Backlog
+      description: Groomed backlog with detailed items
+      format: structured
+    - id: sprint-goal
+      name: Sprint Goal
+      description: Objective for the sprint
+      format: markdown
+    - id: sprint-backlog
+      name: Sprint Backlog
+      description: Items selected for the sprint plus plan to deliver them
+      format: structured
+    - id: task-board
+      name: Task Board
+      description: Visual representation of sprint work
+      format: structured
+    - id: code
+      name: Source Code
+      description: Developed software code
+      format: code
+    - id: integration-results
+      name: Integration Test Results
+      description: Results from continuous integration
+      format: json
+    - id: burndown-chart
+      name: Sprint Burndown Chart
+      description: Visual tracking of remaining work
+      format: json
+    - id: product-increment
+      name: Product Increment
+      description: Potentially shippable product increment
+      format: binary
+    - id: demonstration-log
+      name: Demonstration Log
+      description: Record of what was demonstrated
+      format: markdown
+    - id: review-feedback
+      name: Sprint Review Feedback
+      description: Stakeholder feedback from sprint review
+      format: structured
+    - id: retrospective-notes
+      name: Retrospective Notes
+      description: Team reflections from retrospective
+      format: markdown
+    - id: improvement-actions
+      name: Improvement Actions
+      description: Specific actions to improve next sprint
+      format: structured
+    - id: working-agreements
+      name: Team Working Agreements
+      description: Team norms and practices
+      format: markdown
+  dependencies:
+    - artifact: refined-backlog
+      dependsOn:
+        - product-backlog
+    - artifact: sprint-goal
+      dependsOn:
+        - refined-backlog
+    - artifact: sprint-backlog
+      dependsOn:
+        - refined-backlog
+        - sprint-goal
+    - artifact: task-board
+      dependsOn:
+        - sprint-backlog
+    - artifact: code
+      dependsOn:
+        - task-board
+    - artifact: integration-results
+      dependsOn:
+        - code
+    - artifact: product-increment
+      dependsOn:
+        - code
+        - integration-results
+    - artifact: demonstration-log
+      dependsOn:
+        - product-increment
+    - artifact: review-feedback
+      dependsOn:
+        - demonstration-log
+
+ceremonies:
+  - id: daily-standup
+    name: Daily Scrum (Standup)
+    description: 15-minute daily synchronization meeting
+    timing: daily
+    duration: 15
+    participants:
+      - development-team
+      - scrum-master
+    objectives:
+      - Synchronize team activities
+      - Plan next 24 hours
+      - Identify impediments
+  - id: backlog-refinement
+    name: Backlog Refinement
+    description: Ongoing activity to add detail and estimates to backlog
+    timing: periodic
+    duration: 120
+    participants:
+      - product-owner
+      - development-team
+      - scrum-master
+    artifacts:
+      inputs:
+        - product-backlog
+      outputs:
+        - refined-backlog
+    objectives:
+      - Detail upcoming backlog items
+      - Estimate story points
+      - Identify dependencies
+  - id: sprint-planning-ceremony
+    name: Sprint Planning Meeting
+    description: Ceremony to plan the sprint
+    timing: phase-start
+    duration: 480
+    participants:
+      - product-owner
+      - development-team
+      - scrum-master
+    artifacts:
+      inputs:
+        - product-backlog
+      outputs:
+        - sprint-goal
+        - sprint-backlog
+    objectives:
+      - Define sprint goal
+      - Select sprint items
+      - Create sprint plan
+  - id: sprint-review-ceremony
+    name: Sprint Review Meeting
+    description: Ceremony to inspect increment and adapt backlog
+    timing: phase-end
+    duration: 240
+    participants:
+      - product-owner
+      - development-team
+      - scrum-master
+      - stakeholders
+    artifacts:
+      inputs:
+        - product-increment
+        - sprint-goal
+      outputs:
+        - review-feedback
+        - product-backlog
+    objectives:
+      - Demonstrate increment
+      - Collect feedback
+      - Update backlog
+  - id: sprint-retrospective-ceremony
+    name: Sprint Retrospective Meeting
+    description: Ceremony for team to inspect itself and create improvement plan
+    timing: phase-end
+    duration: 180
+    participants:
+      - development-team
+      - scrum-master
+      - product-owner
+    artifacts:
+      outputs:
+        - improvement-actions
+        - working-agreements
+    objectives:
+      - Inspect team process
+      - Identify improvements
+      - Plan changes

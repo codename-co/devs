@@ -225,3 +225,6 @@ i18n:
   fr:
     name: Générateur d'Avatar
     desc: Artiste créant des designs d'avatars
+  ko:
+    name: 아바타 생성기
+    desc: 아바타 디자인을 만드는 아티스트

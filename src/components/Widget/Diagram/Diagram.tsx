@@ -48,7 +48,7 @@ export const Diagram = ({ code }: { code: string }) => {
 
   return (
     <div
-      className="mermaid-diagram-container"
+      className="mermaid-diagram-container place-items-center"
       dangerouslySetInnerHTML={{ __html: svg || '' }}
     />
   )
