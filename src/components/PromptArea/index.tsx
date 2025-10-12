@@ -404,35 +404,38 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                         <Icon name="ArrowRight" size="sm" />
                       </Button>
                     </Tooltip>
-                    <Dropdown placement="bottom-end">
-                      <DropdownTrigger>
-                        <Button
-                          isIconOnly
-                          size="sm"
-                          variant="light"
-                          className="w-full"
-                          aria-label={t('Chat')}
-                        >
-                          <Icon name="MoreVert" size="sm" />
-                        </Button>
-                      </DropdownTrigger>
-                      <DropdownMenu aria-label="Submit options">
-                        <DropdownItem
-                          key="task"
-                          color="secondary"
-                          variant="flat"
-                          startContent={
-                            <Icon
-                              name="TriangleFlagTwoStripes"
-                              size="sm"
-                              color="secondary"
-                            />
-                          }
-                          description={t('New Task')}
-                          onPress={onSubmitTask}
-                        />
-                      </DropdownMenu>
-                    </Dropdown>
+
+                    {onSubmitToAgent && (
+                      <Dropdown placement="bottom-end">
+                        <DropdownTrigger>
+                          <Button
+                            isIconOnly
+                            size="sm"
+                            variant="light"
+                            className="w-full"
+                            aria-label={t('Chat')}
+                          >
+                            <Icon name="MoreVert" size="sm" />
+                          </Button>
+                        </DropdownTrigger>
+                        <DropdownMenu aria-label="Submit options">
+                          <DropdownItem
+                            key="task"
+                            color="secondary"
+                            variant="flat"
+                            startContent={
+                              <Icon
+                                name="TriangleFlagTwoStripes"
+                                size="sm"
+                                color="secondary"
+                              />
+                            }
+                            description={t('New Task')}
+                            onPress={onSubmitTask}
+                          />
+                        </DropdownMenu>
+                      </Dropdown>
+                    )}
                   </ButtonGroup>
                 )}
               </div>

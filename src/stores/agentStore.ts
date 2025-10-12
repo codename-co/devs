@@ -449,3 +449,31 @@ export async function getAgentsSeparated(): Promise<{
     builtInAgents,
   }
 }
+
+export async function listAgentExamples(lang?: Lang): Promise<
+  {
+    agent: Agent
+    examples: { id: string; title?: string; prompt: string }[]
+  }[]
+> {
+  const agents = await loadAllAgents()
+
+  return agents
+    .filter((agent) => agent?.examples?.length)
+    .map((agent) => ({
+      agent,
+      examples: (agent.examples || []).map((example) => ({
+        id: example.id,
+        title:
+          lang && agent.i18n?.[lang]?.examples
+            ? agent.i18n[lang].examples?.find((ex) => ex.id === example.id)
+                ?.title || example.title
+            : example.title,
+        prompt:
+          lang && agent.i18n?.[lang]?.examples
+            ? agent.i18n[lang].examples?.find((ex) => ex.id === example.id)
+                ?.prompt || example.prompt
+            : example.prompt,
+      })),
+    }))
+}
