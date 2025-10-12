@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { WorkflowOrchestrator } from '@/lib/orchestrator'
 import { render, screen, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
-import { TaskPage } from '@/pages/Task'
+import { TaskPage } from '@/pages/Tasks/show'
 
 // Mock functions
 const mockGetTaskById = vi.fn()

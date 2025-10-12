@@ -15,6 +15,11 @@ export interface TimelineEvent {
     | 'subtask_created'
     | 'subtask_completed'
     | 'task_branched'
+    | 'methodology_selected'
+    | 'phase_started'
+    | 'phase_completed'
+    | 'team_built'
+    | 'role_assigned'
   timestamp: Date
   title: string
   description?: string
@@ -42,6 +47,18 @@ export const buildTimelineEvents = async (
     title: 'Task Created',
     data: task,
   })
+
+  // Methodology selection event (if methodology-based task)
+  if (task.methodologyId) {
+    events.push({
+      id: `methodology-selected-${task.id}`,
+      type: 'methodology_selected',
+      timestamp: task.createdAt,
+      title: 'Methodology Selected',
+      description: `Using ${task.methodologyId.toUpperCase()} methodology for structured execution`,
+      data: { methodologyId: task.methodologyId },
+    })
+  }
 
   // Task assignment event - use assignedAt if available, otherwise createdAt
   if (task.assignedAgentId) {
@@ -209,17 +226,92 @@ export const buildTimelineEvents = async (
       subTask.createdAt < earliest.createdAt ? subTask : earliest,
     )
 
-    events.push({
-      id: `task-branched-${task.id}`,
-      type: 'task_branched',
-      timestamp: earliestSubTask.createdAt,
-      title: 'Task Branched',
-      description: `Task split into ${subTasks.length} sub-tasks`,
-      data: {
-        subTaskCount: subTasks.length,
-        subTaskIds: subTasks.map((st) => st.id),
-      },
-    })
+    // If methodology-based, group by phases
+    if (task.methodologyId) {
+      const phaseGroups = new Map<string, Task[]>()
+
+      for (const subTask of subTasks) {
+        if (subTask.phaseId) {
+          if (!phaseGroups.has(subTask.phaseId)) {
+            phaseGroups.set(subTask.phaseId, [])
+          }
+          phaseGroups.get(subTask.phaseId)!.push(subTask)
+        }
+      }
+
+      // Create phase events
+      for (const [phaseId, phaseTasks] of phaseGroups) {
+        const phaseStart = phaseTasks.reduce((earliest, t) =>
+          t.createdAt < earliest.createdAt ? t : earliest,
+        )
+        const allCompleted = phaseTasks.every((t) => t.status === 'completed')
+        // const anyCompleted = phaseTasks.some((t) => t.status === 'completed')
+
+        // Phase started event
+        events.push({
+          id: `phase-started-${task.id}-${phaseId}`,
+          type: 'phase_started',
+          timestamp: phaseStart.createdAt,
+          title: `Phase Started: ${phaseId.toUpperCase()}`,
+          description: `Beginning ${phaseId} phase with ${phaseTasks.length} tasks`,
+          data: {
+            phaseId,
+            taskCount: phaseTasks.length,
+            tasks: phaseTasks.map((t) => ({ id: t.id, title: t.title })),
+          },
+        })
+
+        // Phase completed event
+        if (allCompleted) {
+          const phaseEnd = phaseTasks.reduce((latest, t) =>
+            (t.completedAt || t.updatedAt) >
+            (latest.completedAt || latest.updatedAt)
+              ? t
+              : latest,
+          )
+          events.push({
+            id: `phase-completed-${task.id}-${phaseId}`,
+            type: 'phase_completed',
+            timestamp: phaseEnd.completedAt || phaseEnd.updatedAt,
+            title: `Phase Completed: ${phaseId.toUpperCase()}`,
+            description: `Finished ${phaseId} phase - all ${phaseTasks.length} tasks completed`,
+            data: {
+              phaseId,
+              taskCount: phaseTasks.length,
+            },
+          })
+        }
+      }
+
+      // Team building event (if role assignments detected)
+      const rolesAssigned = subTasks.filter((t) => t.assignedRoleId).length
+      if (rolesAssigned > 0) {
+        events.push({
+          id: `team-built-${task.id}`,
+          type: 'team_built',
+          timestamp: earliestSubTask.createdAt,
+          title: 'Team Built',
+          description: `Assembled team with ${rolesAssigned} role assignments across ${phaseGroups.size} phases`,
+          data: {
+            roleCount: rolesAssigned,
+            phaseCount: phaseGroups.size,
+          },
+        })
+      }
+    } else {
+      // Non-methodology branching event
+      events.push({
+        id: `task-branched-${task.id}`,
+        type: 'task_branched',
+        timestamp: earliestSubTask.createdAt,
+        title: 'Task Branched',
+        description: `Task split into ${subTasks.length} sub-tasks`,
+        data: {
+          subTaskCount: subTasks.length,
+          subTaskIds: subTasks.map((st) => st.id),
+        },
+      })
+    }
 
     // Individual sub-task creation events
     for (const subTask of subTasks) {
@@ -227,15 +319,33 @@ export const buildTimelineEvents = async (
         ? await getAgentById(subTask.assignedAgentId)
         : null
 
-      events.push({
-        id: `subtask-created-${subTask.id}`,
-        type: 'subtask_created',
-        timestamp: subTask.createdAt,
-        title: 'Sub-task Created',
-        description: subTask.title,
-        agent: agent || undefined,
-        subTask,
-      })
+      // For methodology tasks, show role assignment instead of generic subtask creation
+      if (task.methodologyId && subTask.assignedRoleId && agent) {
+        events.push({
+          id: `role-assigned-${subTask.id}`,
+          type: 'role_assigned',
+          timestamp: subTask.assignedAt || subTask.createdAt,
+          title: `Role Assigned: ${subTask.assignedRoleId}`,
+          description: `${agent.name} assigned as ${subTask.assignedRoleId} for task: ${subTask.title}`,
+          agent: agent || undefined,
+          data: {
+            roleId: subTask.assignedRoleId,
+            taskTitle: subTask.title,
+            phaseId: subTask.phaseId,
+          },
+        })
+      } else {
+        // Non-methodology subtask creation
+        events.push({
+          id: `subtask-created-${subTask.id}`,
+          type: 'subtask_created',
+          timestamp: subTask.createdAt,
+          title: 'Sub-task Created',
+          description: subTask.title,
+          agent: agent || undefined,
+          subTask,
+        })
+      }
 
       // Sub-task completion events
       if (subTask.status === 'completed') {

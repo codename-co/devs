@@ -157,6 +157,7 @@ export interface Task {
   status: 'pending' | 'in_progress' | 'completed' | 'failed'
   assignedAgentId?: string
   assignedAt?: Date // When the agent was assigned
+  assignedRoleId?: string // Methodology role ID for this assignment
   parentTaskId?: string
   dependencies: string[]
   requirements: Requirement[]
@@ -168,6 +169,10 @@ export interface Task {
   updatedAt: Date
   completedAt?: Date // When the task was completed
   dueDate?: Date
+  // Methodology-specific fields
+  methodologyId?: string // Which methodology is guiding this task
+  phaseId?: string // Which phase of the methodology this task belongs to
+  taskTemplateId?: string // Reference to the methodology's task template
 }
 
 export interface Requirement {
