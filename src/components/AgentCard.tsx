@@ -72,7 +72,7 @@ export const AgentCard = ({
           {agent.icon && <Icon name={agent.icon} className="w-6 h-6" />}
           <h4 className="text-sm font-medium truncate">{displayName}</h4>
         </div>
-        {showDetails && agent.tags && agent.tags.length > 0 && (
+        {/* {showDetails && agent.tags && agent.tags.length > 0 && (
           <div data-testid="agent-tags" className="flex gap-1 mt-2 flex-wrap">
             {agent.tags.slice(0, 3).map((tag: string) => (
               <Chip key={tag} size="sm" variant="flat" className="tag">
@@ -80,14 +80,22 @@ export const AgentCard = ({
               </Chip>
             ))}
           </div>
-        )}
+        )} */}
       </CardHeader>
       {showDetails && (
         <CardBody className="px-4 pb-4">
-          {displayDesc && (
+          {displayDesc ? (
             <p className="text-small text-default-600 line-clamp-2">
               {displayDesc}
             </p>
+          ) : (
+            <div data-testid="agent-tags" className="flex gap-1 mt-2 flex-wrap">
+              {agent.tags?.slice(0, 1).map((tag: string) => (
+                <Chip key={tag} size="sm" variant="flat" className="tag">
+                  {tag}
+                </Chip>
+              ))}
+            </div>
           )}
           {agent.knowledgeItemIds && agent.knowledgeItemIds.length > 0 && (
             <div className="flex items-center gap-1 mt-2">

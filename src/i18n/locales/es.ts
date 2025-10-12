@@ -52,14 +52,6 @@ export const es: I18n = {
   // Page: /404
   'Page not found': 'Página no encontrada',
 
-  // Page: /
-  'Let your agents take it from here':
-    'Deja que tus agentes se encarguen de esto',
-  'Delegate complex tasks to your own AI teams':
-    'Delegar tareas complejas a tus propios equipos de IA',
-  'Failed to get response from LLM. Please try again later.':
-    'Error al obtener respuesta del LLM. Por favor, inténtalo de nuevo más tarde.',
-
   // LLM Integration
   'No LLM provider configured. Please [configure one in Settings]({path}).':
     'Ningún proveedor de LLM configurado. Por favor, [configura uno en Configuraciones]({path}).',
@@ -232,6 +224,7 @@ export const es: I18n = {
   Cancel: 'Cancelar',
   Export: 'Exportar',
   'Copy to clipboard': 'Copiar al portapapeles',
+  Download: 'Descargar',
 
   // Database Administration
   'Loading database information…': 'Cargando información de la base de datos…',

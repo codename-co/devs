@@ -52,13 +52,6 @@ export const ko: I18n = {
   // Page: /404
   'Page not found': '페이지를 찾을 수 없습니다',
 
-  // Page: /
-  'Let your agents take it from here': '당신의 에이전트에게 맡기세요',
-  'Delegate complex tasks to your own AI teams':
-    '복잡한 작업을 자신의 AI 팀에 위임하세요',
-  'Failed to get response from LLM. Please try again later.':
-    'LLM의 응답을 받지 못했습니다. 나중에 다시 시도하세요.',
-
   // LLM Integration
   'No LLM provider configured. Please [configure one in Settings]({path}).':
     '구성된 LLM 공급자가 없습니다. [설정에서 하나 구성하세요]({path}).',
@@ -228,6 +221,7 @@ export const ko: I18n = {
   Cancel: '취소',
   Export: '내보내기',
   'Copy to clipboard': '클립보드에 복사',
+  Download: '다운로드',
 
   // Database Administration
   'Loading database information…': '데이터베이스 정보 로딩 중…',

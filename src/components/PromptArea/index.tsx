@@ -1,11 +1,23 @@
 import {
   Button,
+  ButtonGroup,
   Chip,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
   Textarea,
   type TextAreaProps,
   Tooltip,
 } from '@heroui/react'
-import { forwardRef, useEffect, useRef, useState, useCallback } from 'react'
+import {
+  forwardRef,
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  useMemo,
+} from 'react'
 
 import { Icon } from '../Icon'
 import { useSpeechRecognition } from './useSpeechRecognition'
@@ -25,9 +37,11 @@ import { formatBytes } from '@/lib/format'
 interface PromptAreaProps
   extends Omit<TextAreaProps, 'onFocus' | 'onBlur' | 'onKeyDown'> {
   lang: LanguageCode
-  onSend?: () => void
+  onSubmitToAgent?: () => void
+  onSubmitTask?: () => void
   isSending?: boolean
   onFilesChange?: (files: File[]) => void
+  defaultPrompt?: string
   onAgentChange?: (agent: Agent | null) => void
   disabledAgentPicker?: boolean
   selectedAgent?: Agent | null
@@ -41,9 +55,11 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
     {
       className,
       lang,
-      onSend,
+      onSubmitToAgent,
+      onSubmitTask,
       onValueChange,
       onFilesChange,
+      defaultPrompt = '',
       onAgentChange,
       disabledAgentPicker,
       selectedAgent,
@@ -56,7 +72,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
   ) {
     const { t } = useI18n(lang as any)
 
-    const [prompt, setPrompt] = useState('')
+    const [prompt, setPrompt] = useState(defaultPrompt)
     const [selectedFiles, setSelectedFiles] = useState<File[]>([])
     const [isDragOver, setIsDragOver] = useState(false)
     const [isFocused, setIsFocused] = useState(false)
@@ -67,6 +83,10 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
 
     // Set default agent if none selected
     const currentAgent = selectedAgent || getDefaultAgent()
+
+    useEffect(() => {
+      setPrompt(defaultPrompt)
+    }, [defaultPrompt])
 
     // Set default agent in useEffect to avoid setState during render
     useEffect(() => {
@@ -83,7 +103,11 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
 
         // Clear the URL fragment after loading
         if (window.location.hash) {
-          window.history.replaceState(null, '', window.location.pathname + window.location.search)
+          window.history.replaceState(
+            null,
+            '',
+            window.location.pathname + window.location.search,
+          )
         }
       }
     }, [urlPrompt, prompt, onValueChange])
@@ -100,7 +124,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         onValueChange?.(transcript)
       },
       onFinalTranscript: () => {
-        onSend?.()
+        onSubmitToAgent?.()
       },
     })
 
@@ -118,11 +142,11 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (event.key === 'Enter' && !event.shiftKey) {
           event.preventDefault()
-          onSend?.()
+          onSubmitToAgent?.()
         }
         onKeyDown?.(event)
       },
-      [onSend, onKeyDown],
+      [onSubmitToAgent, onKeyDown],
     )
 
     const handleFileSelection = useCallback(
@@ -237,6 +261,11 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         onBlur?.(e)
       },
       [onBlur],
+    )
+
+    const canSubmit = useMemo(
+      () => prompt.trim().length > 0 && !isRecording,
+      [prompt, isRecording],
     )
 
     return (
@@ -358,22 +387,53 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                   </Tooltip>
                 )}
 
-                {prompt.trim() && (
-                  <Tooltip content={t('Send prompt')} placement="bottom">
-                    <Button
-                      data-testid="submit-button"
-                      isIconOnly
-                      disabled={props.isSending}
-                      color={!prompt.trim() ? 'default' : 'primary'}
-                      radius="full"
-                      variant="solid"
-                      size="sm"
-                      isLoading={props.isSending}
-                      onPress={onSend}
-                    >
-                      <Icon name="ArrowRight" size="sm" />
-                    </Button>
-                  </Tooltip>
+                {canSubmit && (
+                  <ButtonGroup variant="flat">
+                    <Tooltip content={t('Send prompt')} placement="bottom">
+                      <Button
+                        data-testid="submit-button"
+                        isIconOnly
+                        disabled={props.isSending}
+                        color={!prompt.trim() ? 'default' : 'primary'}
+                        radius="full"
+                        variant="solid"
+                        size="sm"
+                        isLoading={props.isSending}
+                        onPress={onSubmitToAgent}
+                      >
+                        <Icon name="ArrowRight" size="sm" />
+                      </Button>
+                    </Tooltip>
+                    <Dropdown placement="bottom-end">
+                      <DropdownTrigger>
+                        <Button
+                          isIconOnly
+                          size="sm"
+                          variant="light"
+                          className="w-full"
+                          aria-label={t('Chat')}
+                        >
+                          <Icon name="MoreVert" size="sm" />
+                        </Button>
+                      </DropdownTrigger>
+                      <DropdownMenu aria-label="Submit options">
+                        <DropdownItem
+                          key="task"
+                          color="secondary"
+                          variant="flat"
+                          startContent={
+                            <Icon
+                              name="TriangleFlagTwoStripes"
+                              size="sm"
+                              color="secondary"
+                            />
+                          }
+                          description={t('New Task')}
+                          onPress={onSubmitTask}
+                        />
+                      </DropdownMenu>
+                    </Dropdown>
+                  </ButtonGroup>
                 )}
               </div>
             </div>

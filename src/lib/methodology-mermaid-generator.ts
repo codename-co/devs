@@ -168,12 +168,44 @@ export class MethodologyMermaidGenerator {
     this.addLine('[*] --> ' + this.getPhaseAlias(phaseOrder[0]))
     this.addLine('')
 
-    // Generate phases that are not in loops first
+    // Identify phases in loops
     const loopPhaseIds = new Set(loops.flatMap((loop) => loop.phases))
-    const nonLoopPhases = phaseOrder.filter((id) => !loopPhaseIds.has(id))
 
-    nonLoopPhases.forEach((phaseId) => {
+    // Separate phases into pre-loop, loop, and post-loop
+    const preLoopPhases: string[] = []
+    const postLoopPhases: string[] = []
+    let inLoop = false
+    let passedLoop = false
+
+    for (const phaseId of phaseOrder) {
+      if (loopPhaseIds.has(phaseId)) {
+        inLoop = true
+      } else if (!inLoop) {
+        preLoopPhases.push(phaseId)
+      } else {
+        if (!passedLoop) {
+          passedLoop = true
+        }
+        postLoopPhases.push(phaseId)
+      }
+    }
+
+    // Generate pre-loop phases
+    preLoopPhases.forEach((phaseId, index) => {
       this.generatePhase(phaseId)
+
+      if (index < preLoopPhases.length - 1) {
+        // Connect to next pre-loop phase
+        const currentAlias = this.getPhaseAlias(phaseId)
+        const nextAlias = this.getPhaseAlias(preLoopPhases[index + 1])
+        this.addLine(`${currentAlias} --> ${nextAlias}`)
+      } else {
+        // Connect last pre-loop phase to first loop phase
+        const currentAlias = this.getPhaseAlias(phaseId)
+        const firstLoopPhase = loops[0].phases[0]
+        const firstLoopAlias = this.getPhaseAlias(firstLoopPhase)
+        this.addLine(`${currentAlias} --> ${firstLoopAlias}`)
+      }
       this.addLine('')
     })
 
@@ -200,9 +232,10 @@ export class MethodologyMermaidGenerator {
           this.addLine(`state ${choiceId} <<choice>>`)
           this.addLine(`${lastAlias} --> ${choiceId}`)
 
-          // Add convergence criteria
+          // Add convergence criteria (loop back - condition not met)
           if (loop.convergenceCriteria && loop.convergenceCriteria.length > 0) {
             const criteriaDesc = this.formatCriteria(loop.convergenceCriteria)
+            // Note: The loop continues while criteria is NOT met
             this.addLine(
               `${choiceId} --> ${firstAlias}: Continue (${criteriaDesc})`,
             )
@@ -210,19 +243,53 @@ export class MethodologyMermaidGenerator {
             this.addLine(`${choiceId} --> ${firstAlias}: Continue`)
           }
 
-          // Exit loop condition
-          if (loop.exitConditions && loop.exitConditions.length > 0) {
-            const exitDesc = this.formatCriteria(loop.exitConditions)
-            this.addLine(`${choiceId} --> [*]: ${exitDesc}`)
-          } else if (loop.maxIterations) {
-            this.addLine(
-              `${choiceId} --> [*]: Max iterations (${loop.maxIterations})`,
-            )
+          // Exit loop condition - find next phase or end
+          const nextPhaseId =
+            postLoopPhases.length > 0 ? postLoopPhases[0] : null
+
+          if (nextPhaseId) {
+            const nextPhaseAlias = this.getPhaseAlias(nextPhaseId)
+            if (loop.exitConditions && loop.exitConditions.length > 0) {
+              const exitDesc = this.formatCriteria(loop.exitConditions)
+              this.addLine(`${choiceId} --> ${nextPhaseAlias}: ${exitDesc}`)
+            } else if (loop.maxIterations) {
+              this.addLine(
+                `${choiceId} --> ${nextPhaseAlias}: Max iterations (${loop.maxIterations})`,
+              )
+            } else {
+              this.addLine(`${choiceId} --> ${nextPhaseAlias}: Done`)
+            }
           } else {
-            this.addLine(`${choiceId} --> [*]: Done`)
+            // No phase after loop, go to end
+            if (loop.exitConditions && loop.exitConditions.length > 0) {
+              const exitDesc = this.formatCriteria(loop.exitConditions)
+              this.addLine(`${choiceId} --> [*]: ${exitDesc}`)
+            } else if (loop.maxIterations) {
+              this.addLine(
+                `${choiceId} --> [*]: Max iterations (${loop.maxIterations})`,
+              )
+            } else {
+              this.addLine(`${choiceId} --> [*]: Done`)
+            }
           }
         }
       })
+      this.addLine('')
+    })
+
+    // Generate post-loop phases
+    postLoopPhases.forEach((phaseId, index) => {
+      this.generatePhase(phaseId)
+
+      if (index < postLoopPhases.length - 1) {
+        // Connect to next post-loop phase
+        const currentAlias = this.getPhaseAlias(phaseId)
+        const nextAlias = this.getPhaseAlias(postLoopPhases[index + 1])
+        this.addLine(`${currentAlias} --> ${nextAlias}`)
+      } else {
+        // Last phase to end
+        this.addLine(`${this.getPhaseAlias(phaseId)} --> [*]`)
+      }
       this.addLine('')
     })
   }

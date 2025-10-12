@@ -16,15 +16,16 @@ import { useTaskStore } from '@/stores/taskStore'
 import { errorToast } from '@/lib/toast'
 import { useBackgroundImage } from '@/hooks/useBackgroundImage'
 import { useEasySetup } from '@/hooks/useEasySetup'
-import { Alert } from '@heroui/react'
+import { Alert, Card, CardBody } from '@heroui/react'
 import { motion } from 'framer-motion'
 import { motionVariants } from './motion'
-import { getAgentsByCategory } from '@/stores/agentStore'
+import { getAgentsByCategory, listAgentExamples } from '@/stores/agentStore'
 // import { loadAllMethodologies } from '@/stores/methodologiesStore'
 // import type { Methodology } from '@/types/methodology.types'
+import localeI18n from './i18n'
 
 export const IndexPage = () => {
-  const { lang, url, t } = useI18n()
+  const { lang, url, t } = useI18n(localeI18n)
   const navigate = useNavigate()
   const [prompt, setPrompt] = useState('')
   const [isSending, setIsSending] = useState(false)
@@ -40,6 +41,17 @@ export const IndexPage = () => {
     useBackgroundImage()
   const { hasSetupData, setupData, clearSetupData } = useEasySetup()
 
+  const [usecases, setUsecases] = useState<
+    Awaited<ReturnType<typeof listAgentExamples>>
+  >([])
+
+  useEffect(() => {
+    ;(async () => {
+      const examples = await listAgentExamples(lang)
+      setUsecases(examples)
+    })()
+  }, [])
+
   // Load agents and methodologies on mount
   useEffect(() => {
     const loadData = async () => {
@@ -51,6 +63,13 @@ export const IndexPage = () => {
         const allAgents = orderedCategories.flatMap(
           (category) => agentsByCategory[category] || [],
         )
+
+        // Create a map for quick agent lookup
+        const agentsMap = new Map<string, Agent>()
+        allAgents.forEach((agent) => {
+          agentsMap.set(agent.id, agent)
+        })
+
         setAgents(
           allAgents
             .filter((agent) => agent.id !== 'devs')
@@ -96,7 +115,56 @@ export const IndexPage = () => {
     })
   }
 
-  const onSubmit = async () => {
+  const handleUseCaseClick = (useCase: {
+    prompt: string
+    title?: string
+    agent: Agent
+  }) => {
+    // Find the agent from the map
+    if (useCase.agent) {
+      setSelectedAgent(useCase.agent)
+    }
+    setPrompt(useCase.prompt)
+    // Focus the prompt area
+    ;(document.querySelector('[data-testid="prompt-input"]') as any)?.focus()
+    // Scroll to the prompt area
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const onSubmitToAgent = async () => {
+    if (!prompt.trim() || isSending) return
+
+    setIsSending(true)
+
+    // Determine which agent to use (default to 'devs' if none selected)
+    const agent = selectedAgent || { id: 'devs' }
+
+    // Store prompt, agent, and files in sessionStorage for AgentRunPage to pick up
+    sessionStorage.setItem('pendingPrompt', prompt)
+    sessionStorage.setItem('pendingAgent', JSON.stringify(agent))
+    if (selectedFiles.length > 0) {
+      // Convert files to base64 for storage
+      const filesData = await Promise.all(
+        selectedFiles.map(async (file) => ({
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          data: await fileToBase64(file),
+        })),
+      )
+      sessionStorage.setItem('pendingFiles', JSON.stringify(filesData))
+    }
+
+    // Navigate to the agent run page
+    navigate(url(`/agents/run#${agent.id}`))
+
+    // Clear the prompt and files
+    setPrompt('')
+    setSelectedFiles([])
+    setIsSending(false)
+  }
+
+  const onSubmitTask = async () => {
     if (!prompt.trim() || isSending) return
 
     setIsSending(true)
@@ -211,8 +279,10 @@ export const IndexPage = () => {
               autoFocus
               className="my-8 sm:my-16"
               value={prompt}
+              defaultPrompt={prompt}
               onValueChange={setPrompt}
-              onSend={onSubmit}
+              onSubmitToAgent={onSubmitToAgent}
+              onSubmitTask={onSubmitTask}
               isSending={isSending}
               selectedAgent={selectedAgent}
               onAgentChange={setSelectedAgent}
@@ -221,9 +291,57 @@ export const IndexPage = () => {
           </motion.div>
         </Section>
 
-        {/* Agents Section */}
         <motion.div {...motionVariants.agentSection}>
           <Section mainClassName="bg-default-50">
+            {/* Use Cases Section */}
+            {!isLoadingAgents && (
+              <motion.div {...motionVariants.usecases}>
+                <Container>
+                  <Title level={3} size="lg">
+                    {t('Try these examples')}
+                  </Title>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
+                    {usecases.map(({ agent, examples }) =>
+                      examples.map((example) => (
+                        <Card
+                          key={example.id}
+                          isPressable
+                          isHoverable
+                          shadow="sm"
+                          className="transition-all hover:scale-105"
+                          onPress={() =>
+                            handleUseCaseClick({ ...example, agent })
+                          }
+                        >
+                          <CardBody className="p-4">
+                            <div className="flex items-start gap-3">
+                              {agent.icon && (
+                                <div className="text-3xl flex-shrink-0">
+                                  <Icon
+                                    name={agent.icon}
+                                    className="text-primary-500"
+                                  />
+                                </div>
+                              )}
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-sm mb-2">
+                                  {example.title}
+                                </h4>
+                                <p className="text-xs text-default-500 line-clamp-3">
+                                  {example.prompt}
+                                </p>
+                              </div>
+                            </div>
+                          </CardBody>
+                        </Card>
+                      )),
+                    )}
+                  </div>
+                </Container>
+              </motion.div>
+            )}
+
+            {/* Agents Section */}
             {!isLoadingAgents && (
               <motion.div {...motionVariants.agentCards}>
                 <Container>

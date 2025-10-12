@@ -357,21 +357,26 @@ export const AgentRunPage = () => {
         // Check for pending prompt from Index page
         const pendingPrompt = sessionStorage.getItem('pendingPrompt')
         const pendingAgentData = sessionStorage.getItem('pendingAgent')
+        const pendingFilesData = sessionStorage.getItem('pendingFiles')
 
         if (pendingPrompt && pendingAgentData) {
           const pendingAgent = JSON.parse(pendingAgentData)
+          const pendingFiles = pendingFilesData
+            ? JSON.parse(pendingFilesData)
+            : []
 
           // Clear the session storage
           sessionStorage.removeItem('pendingPrompt')
           sessionStorage.removeItem('pendingAgent')
+          sessionStorage.removeItem('pendingFiles')
 
           // Set the prompt and auto-submit if the agent matches
           if (pendingAgent.id === agent.id) {
-            setPrompt(pendingPrompt)
+            // setPrompt(pendingPrompt)
 
             // Auto-submit after a short delay to ensure everything is loaded
             setTimeout(() => {
-              handleAutoSubmit(pendingPrompt, agent)
+              handleAutoSubmit(pendingPrompt, agent, pendingFiles)
             }, 100)
           }
         }
@@ -419,11 +424,21 @@ export const AgentRunPage = () => {
 
   // Auto-submit handler for prompts from Index page
   const handleAutoSubmit = useCallback(
-    async (promptText: string, agent: Agent) => {
+    async (
+      promptText: string,
+      agent: Agent,
+      files: Array<{
+        name: string
+        type: string
+        size: number
+        data: string
+      }> = [],
+    ) => {
       if (isSending) return
 
       setIsSending(true)
       setResponse('')
+      setPrompt('')
 
       await submitChat({
         prompt: promptText,
@@ -431,6 +446,7 @@ export const AgentRunPage = () => {
         conversationMessages,
         includeHistory: true,
         clearResponseAfterSubmit: true,
+        attachments: files,
         lang,
         t,
         onResponseUpdate: setResponse,
@@ -622,7 +638,7 @@ export const AgentRunPage = () => {
           className="max-w-4xl mx-auto mt-6"
           value={prompt}
           onValueChange={setPrompt}
-          onSend={onSubmit}
+          onSubmitTask={onSubmit}
           isSending={isSending}
           selectedAgent={selectedAgent}
           onAgentChange={setSelectedAgent}

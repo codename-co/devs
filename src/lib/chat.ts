@@ -17,6 +17,12 @@ export interface ChatSubmitOptions {
   conversationMessages?: Message[]
   includeHistory?: boolean
   clearResponseAfterSubmit?: boolean
+  attachments?: Array<{
+    name: string
+    type: string
+    size: number
+    data: string // base64 encoded
+  }>
   lang: Lang
   t: any
   onResponseUpdate: (response: string) => void
@@ -38,6 +44,7 @@ export const submitChat = async (
     conversationMessages = [],
     includeHistory = false,
     clearResponseAfterSubmit = false,
+    attachments = [],
     lang,
     t,
     onResponseUpdate,
@@ -213,11 +220,30 @@ export const submitChat = async (
       )
     }
 
+    // Convert user-provided attachments to LLMMessageAttachment format
+    const userAttachments = attachments.map((file) => {
+      let type: 'image' | 'document' | 'text' = 'document'
+      if (file.type.startsWith('image/')) {
+        type = 'image'
+      } else if (file.type.startsWith('text/')) {
+        type = 'text'
+      }
+
+      return {
+        type,
+        name: file.name,
+        data: file.data,
+        mimeType: file.type,
+      }
+    })
+
+    // Merge knowledge attachments with user-provided attachments
+    const allAttachments = [...knowledgeAttachments, ...userAttachments]
+
     messages.push({
       role: 'user',
       content: prompt,
-      attachments:
-        knowledgeAttachments.length > 0 ? knowledgeAttachments : undefined,
+      attachments: allAttachments.length > 0 ? allAttachments : undefined,
     })
     console.log('▶', 'messages:', messages)
     console.log('▶', 'prompt:', prompt)

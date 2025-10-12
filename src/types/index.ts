@@ -15,13 +15,21 @@ export interface Agent {
   createdAt: Date
   updatedAt?: Date
   version?: string
+  examples?: Example[]
   i18n?: {
     [K in LanguageCode]?: {
       name?: string
       desc?: string
       role?: string
+      examples?: Example[]
     }
   }
+}
+
+export interface Example {
+  id: string
+  title?: string
+  prompt: string
 }
 
 export interface Message {

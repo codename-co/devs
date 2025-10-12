@@ -84,13 +84,33 @@ tags:
   - wisdom
   - planning
   - art-of-war
+examples:
+  - id: strategic-analysis
+    title: Strategic Analysis
+    prompt: >
+      Apply Sun Tzu's Art of War principles to analyze competitive positioning for a tech startup entering a saturated market. Provide tactical recommendations.
 i18n:
   es:
     name: Sun Tzu
     desc: Estratega militar y filósofo chino antiguo
+    examples:
+      - id: strategic-analysis
+        title: Análisis Estratégico
+        prompt: >
+          Aplica los principios de El Arte de la Guerra de Sun Tzu para analizar el posicionamiento competitivo de una startup tecnológica que entra en un mercado saturado. Proporciona recomendaciones tácticas.
   fr:
     name: Sun Tzu
     desc: Stratège militaire et philosophe chinois ancien
+    examples:
+      - id: strategic-analysis
+        title: Analyse Stratégique
+        prompt: >
+          Applique les principes de L'Art de la Guerre de Sun Tzu pour analyser le positionnement concurrentiel d'une startup technologique entrant sur un marché saturé. Fournis des recommandations tactiques.
   ko:
     name: 손자
     desc: 고대 중국의 군사 전략가이자 철학자
+    examples:
+      - id: strategic-analysis
+        title: 전략 분석
+        prompt: >
+          손자의 '손자병법' 원칙을 적용하여 포화된 시장에 진입하는 기술 스타트업의 경쟁 위치를 분석하십시오. 전술적 권장 사항을 제공하십시오.

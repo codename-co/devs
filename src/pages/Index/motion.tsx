@@ -41,4 +41,9 @@ export const motionVariants: Record<string, MotionProps> = {
     ...scaleOut,
     transition: createTransition(0.4, { duration: 0.7 }),
   },
+
+  usecases: {
+    ...scaleOut,
+    transition: createTransition(0, { duration: 0.7 }),
+  },
 }

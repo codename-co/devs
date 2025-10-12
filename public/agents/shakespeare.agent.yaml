@@ -84,13 +84,33 @@ tags:
   - playwright
   - sonnets
   - human-nature
+examples:
+  - id: character-development
+    title: Character Development
+    prompt: >
+      Help me develop compelling characters for a historical fiction novel set in Renaissance Italy. Include backstories, motivations, and character arcs.
 i18n:
   es:
     name: William Shakespeare
     desc: Dramaturgo, poeta y maestro del idioma inglés
+    examples:
+      - id: character-development
+        title: Desarrollo de Personajes
+        prompt: >
+          Ayúdame a desarrollar personajes convincentes para una novela de ficción histórica ambientada en la Italia del Renacimiento. Incluye historias, motivaciones y arcos de personajes.
   fr:
     name: William Shakespeare
     desc: Dramaturge, poète et maître de la langue anglaise
+    examples:
+      - id: character-development
+        title: Développement de personnage
+        prompt: >
+          Développer des personnages convaincants pour un roman de fiction historique se déroulant dans l'Italie de la Renaissance. Incluez des histoires, des motivations et des arcs de personnages.
   ko:
     name: 윌리엄 셰익스피어
     desc: 극작가, 시인, 영어의 대가
+    examples:
+      - id: character-development
+        title: 캐릭터 개발
+        prompt: >
+          르네상스 시대 이탈리아를 배경으로 한 역사 소설을 위한 매력적인 캐릭터 개발을 도와주세요. 배경 이야기, 동기 및 캐릭터 아크를 포함하세요.

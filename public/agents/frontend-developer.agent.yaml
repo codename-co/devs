@@ -15,7 +15,7 @@ instructions: >- # markdown
     for JSX transformation.
   - The response must follow the template provided below.
   - The final App component in its own function; instead, wrap it in an anonymous function
-    passed to _render.
+    passed to `_render`.
   - The code must be self-contained, with all necessary styles and scripts included
     via CDN links.
   - The design must be clean, modern, and user-friendly, following best practices in UI/UX.
@@ -24,7 +24,7 @@ instructions: >- # markdown
   <!doctype html>
   <html lang="en">
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
@@ -69,13 +69,41 @@ tags:
   - developer
   - frontend
   - react
+examples:
+  - id: saas-landing-page
+    title: Web page for SaaS
+    prompt: >
+      Create a landing page for a SaaS that can save time spent sleeping at night,
+      thanks to an incredible find, seen on TV, for just $19.99/week, on pre-signup.
+      A form captures prospect contact details.
 i18n:
   es:
     name: Desarrollador Frontend
     desc: Experto en desarrollo de aplicaciones web
+    examples:
+      - id: saas-landing-page
+        title: Página SaaS
+        prompt: >
+          Crea una página de aterrizaje para una SaaS que pueda ahorrar tiempo
+          dedicado a dormir por la noche, gracias a un hallazgo increíble, visto en
+          la televisión, por solo 19,99€/semana, en preinscripción. Un formulario
+          captura los datos de contacto de los prospectos.
   fr:
     name: Développeur Frontend
     desc: Expert en développement d'applications web
+    examples:
+      - id: saas-landing-page
+        title: Page web SaaS
+        prompt: >
+          Crée une landing page pour une SaaS capable de faire économiser le temps passé à dormir la nuit,
+          grâce à une trouvaille incroyable, vue à la télé, pour seulement 19,99€/semaine, sur pré-inscription.
+          Un formulaire permet de glaner les coordonnées de contact des prospects.
   ko:
     name: 프론트엔드 개발자
     desc: 웹 애플리케이션 개발 전문가
+    examples:
+      - id: saas-landing-page
+        title: SaaS용 웹 페이지
+        prompt: >
+          TV에서 본 놀라운 발견 덕분에 밤에 자는 데 보내는 시간을 절약할 수 있는 SaaS의 랜딩 페이지를 만드세요.
+          주당 $19.99에 사전 등록할 수 있습니다. 양식은 잠재 고객의 연락처 세부 정보를 캡처합니다.

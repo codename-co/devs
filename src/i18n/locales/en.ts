@@ -50,11 +50,6 @@ export const en = [
   // Page: /404
   'Page not found',
 
-  // Page: /
-  'Let your agents take it from here',
-  'Delegate complex tasks to your own AI teams',
-  'Failed to get response from LLM. Please try again later.',
-
   // LLM Integration
   'No LLM provider configured. Please [configure one in Settings]({path}).',
 
@@ -202,6 +197,7 @@ export const en = [
   'Cancel',
   'Export',
   'Copy to clipboard',
+  'Download',
 
   // Database Administration
   'Loading database information…',

@@ -50,6 +50,30 @@
       },
       "uniqueItems": true
     },
+    "examples": {
+      "type": "array",
+      "description": "Example prompts or interactions to demonstrate the agent's capabilities",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID of the example",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "description": "Title for the example"
+          },
+          "prompt": {
+            "type": "string",
+            "description": "Example prompt to show how to interact with the agent",
+            "minLength": 1
+          }
+        },
+        "required": ["id", "prompt"]
+      }
+    },
     "i18n": {
       "type": "object",
       "description": "Internationalization translations for the agent's name and role",
@@ -67,6 +91,30 @@
               "type": "string",
               "description": "Translated description for this locale",
               "minLength": 1
+            },
+            "examples": {
+              "type": "array",
+              "description": "Translated examples for this locale",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "ID of the example to translate",
+                    "minLength": 1
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "Title for the example"
+                  },
+                  "prompt": {
+                    "type": "string",
+                    "description": "Example prompt to show how to interact with the agent",
+                    "minLength": 1
+                  }
+                },
+                "required": ["id", "prompt"]
+              }
             }
           },
           "additionalProperties": false

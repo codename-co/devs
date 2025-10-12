@@ -120,12 +120,9 @@ export const AgentsPage = () => {
     }
 
     return (
-      <div className="gap-2 grid grid-cols-12 grid-rows-2">
+      <div className="gap-3 columns columns-2 sm:columns-3 lg:columns-4">
         {agents.map((agent) => (
-          <div
-            key={agent.id}
-            className="col-span-12 sm:col-span-4 relative group"
-          >
+          <div key={agent.id} className="mb-3">
             <AgentCard
               id={agent.id}
               showDetails

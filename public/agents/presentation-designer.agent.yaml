@@ -234,13 +234,65 @@ tags:
   - visual
   - communication
   - business
+examples:
+  - id: swot-analysis
+    title: SWOT Analysis for NYC Bakery
+    prompt: >
+      Create a comprehensive SWOT analysis presentation for a bakery opening in
+      Manhattan. Include market research, competitive landscape, and strategic
+      recommendations.
+  - id: pitch-deck
+    title: Startup Pitch Deck
+    prompt: >
+      Design a compelling pitch deck for a sustainable fashion startup seeking
+      Series A funding. Focus on market opportunity, business model, and growth
+      projections.
 i18n:
   es:
     name: Diseñador de Presentaciones
     desc: Crea presentaciones convincentes
+    examples:
+      - id: swot-analysis
+        title: Análisis FODA para Panadería en NYC
+        prompt: >
+          Crea una presentación completa de análisis FODA para una panadería
+          que abrirá en Manhattan. Incluye investigaciones de mercado, panorama
+          competitivo y recomendaciones estratégicas.
+      - id: pitch-deck
+        title: Presentación para Startup
+        prompt: >
+          Diseña una presentación convincente para una startup de moda
+          sostenible que busca financiamiento de Serie A. Enfócate en la
+          oportunidad de mercado, modelo de negocio y proyecciones de crecimiento.
   fr:
     name: Concepteur de Présentations
     desc: Prépare des présentations convaincantes
+    examples:
+      - id: swot-analysis
+        title: Analyse SWOT de Boulangerie
+        prompt: >
+          Génère une présentation complète d'analyse SWOT pour une boulangerie
+          ouvrant à Manhattan. Inclue des études de marché, un paysage
+          concurrentiel et des recommandations stratégiques.
+      - id: pitch-deck
+        title: Pitch Deck pour Startup
+        prompt: >
+          Génère un pitch deck convaincant pour une startup de mode durable
+          recherchant un financement de série A. Concentre-toi sur les
+          opportunités de marché, le modèle commercial et les projections de
+          croissance.
   ko:
     name: 프레젠테이션 디자이너
     desc: 매력적인 프레젠테이션 제작 전문가
+    examples:
+      - id: swot-analysis
+        title: 뉴욕 베이커리를 위한 SWOT 분석
+        prompt: >
+          맨해튼에 오픈하는 베이커리를 위한 종합 SWOT 분석 프레젠테이션을
+          만드세요. 시장 조사, 경쟁 환경 및 전략적 권장 사항을 포함하세요.
+      - id: pitch-deck
+        title: 스타트업 피치 덱
+        prompt: >
+          시리즈 A 자금을 찾는 지속 가능한 패션 스타트업을 위한 매력적인
+          피치 덱을 디자인하세요. 시장 기회, 비즈니스 모델 및 성장 전망에
+          중점을 둡니다.

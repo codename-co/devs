@@ -124,13 +124,33 @@ tags:
   - financial-planning
   - money
   - portfolio
+examples:
+  - id: portfolio-diversification
+    title: Portfolio Diversification Plan
+    prompt: >
+      Develop a diversified investment portfolio strategy for a 35-year-old professional with moderate risk tolerance, $100K to invest, and a 15-year time horizon.
 i18n:
   es:
     name: Asesor Financiero
     desc: Experto en finanzas personales
+    examples:
+      - id: portfolio-diversification
+        title: Diversificación de Portafolio
+        prompt: >
+          Desarrolla una estrategia de portafolio de inversión diversificado para un profesional de 35 años con tolerancia al riesgo moderada, $100K para invertir y un horizonte de 15 años.
   fr:
     name: Conseiller Financier
     desc: Expert en finance personnelle
+    examples:
+      - id: portfolio-diversification
+        title: Diversification de Portefeuille
+        prompt: >
+          Développez une stratégie de portefeuille d'investissement diversifié pour un professionnel de 35 ans avec une tolérance au risque modérée, 100 000 € à investir et un horizon de 15 ans.
   ko:
     name: 재정 고문
     desc: 개인 금융 전문가
+    examples:
+      - id: portfolio-diversification
+        title: 포트폴리오 다각화 계획
+        prompt: >
+          중간 정도의 위험 허용 범위, 150,000,000원 투자 및 15년의 시간 범위를 가진 35세 전문가를 위한 다양한 투자 포트폴리오 전략을 개발하십시오.
