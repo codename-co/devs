@@ -1,9 +1,7 @@
-# Agile Software Development Methodology
-# Iterative and incremental approach based on Agile Manifesto principles
-
 metadata:
   id: agile
-  name: Agile Software Development
+  name: Agile
+  title: Agile software development
   description: >
     A flexible, iterative approach to software development based on the Agile
     Manifesto. Agile emphasizes individuals and interactions, working software,
@@ -27,7 +25,7 @@ metadata:
     - continuous-delivery
   i18n:
     es:
-      name: Desarrollo Ágil de Software
+      title: Desarrollo ágil de software
       description: >
         Un enfoque flexible e iterativo para el desarrollo de software basado en
         el Manifiesto Ágil. Ágil enfatiza a las personas y las interacciones,
@@ -35,7 +33,7 @@ metadata:
         al cambio. Este es un marco ágil general que se puede adaptar a varias
         implementaciones (Scrum, Kanban, XP).
     fr:
-      name: Développement Agile de Logiciels
+      title: Développement agile de logiciels
       description: >
         Une approche flexible et itérative du développement logiciel basée sur
         le Manifeste Agile. Agile met l'accent sur les individus et les
@@ -43,7 +41,7 @@ metadata:
         et la réponse au changement. Il s'agit d'un cadre Agile général qui peut
         être adapté à diverses implémentations (Scrum, Kanban, XP).
     ko:
-      name: 애자일 소프트웨어 개발
+      title: 애자일 소프트웨어 개발
       description: >
         애자일 선언문을 기반으로 한 유연하고 반복적인 소프트웨어 개발
         접근 방식입니다. 애자일은 개인과 상호작용, 작동하는 소프트웨어,
@@ -67,7 +65,7 @@ configuration:
   convergence:
     metric: product_completeness
     threshold: 100
-    operator: '>='
+    operator: '≥'
 
 phases:
   - id: envision
@@ -792,7 +790,7 @@ execution:
           description: Product vision achieved
           metric: product_completeness
           threshold: 100
-          operator: '>='
+          operator: '≥'
       exitConditions:
         - type: custom
           description: Strategic pivot or product cancellation
@@ -805,6 +803,7 @@ agentCoordination:
   roles:
     - id: product-owner
       name: Product Owner
+      icon: EmojiSatisfied
       description: Maximizes product value and manages backlog
       responsibilities:
         - Define product vision
@@ -820,6 +819,7 @@ agentCoordination:
       authority: leader
     - id: agile-coach
       name: Agile Coach / Scrum Master
+      icon: EmojiSingRightNote
       description: Facilitates agile process and removes impediments
       responsibilities:
         - Coach team on agile practices
@@ -835,6 +835,7 @@ agentCoordination:
       authority: contributor
     - id: developers
       name: Development Team Member
+      icon: EmojiLookDown
       description: Cross-functional team member who builds the product
       responsibilities:
         - Develop features
@@ -850,6 +851,7 @@ agentCoordination:
       authority: contributor
     - id: development-team
       name: Development Team (Collective)
+      icon: EmojiThinkRight
       description: Self-organizing cross-functional team
       responsibilities:
         - Select iteration work
@@ -864,6 +866,7 @@ agentCoordination:
       authority: contributor
     - id: operations-specialist
       name: Operations Specialist
+      icon: EmojiReally
       description: Supports deployment and operations
       responsibilities:
         - Configure infrastructure

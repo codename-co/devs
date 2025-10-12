@@ -10,13 +10,14 @@ import { AgentsPage } from '@/pages/Agents'
 import { ConversationPage } from '@/pages/Conversation'
 import DemoPage from '@/pages/Demo/index.mdx'
 import HTMLdemoPage from '@/pages/Demo/html.mdx'
+import DiagramPage from '@/pages/Demo/diagram.mdx'
 import { KnowledgePage } from '@/pages/Knowledge'
 import { MethodologiesPage } from '@/pages/Methodologies/index'
 import { MethodologyNewPage } from '@/pages/Methodologies/new'
 import { MethodologyPage } from '@/pages/Methodologies/show'
 import { NotFoundPage } from '@/pages/NotFound'
 import { SettingsPage } from '@/pages/Settings'
-import { TaskPage } from '@/pages/Task'
+import { TaskPage } from '@/pages/Tasks/show'
 import { TasksPage } from '@/pages/Tasks'
 
 const routes = {
@@ -27,6 +28,7 @@ const routes = {
   'agents/new': AgentsNewPage,
   conversations: ConversationPage,
   demo: DemoPage,
+  'demo/diagram': DiagramPage,
   'demo/html': HTMLdemoPage,
   knowledge: KnowledgePage,
   methodologies: MethodologiesPage,

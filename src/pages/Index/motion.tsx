@@ -3,9 +3,9 @@ import {
   createTransition,
   fadeInUp,
   scaleIn,
+  scaleOut,
   SPRING_CONFIG,
 } from '@/lib/motion'
-
 export const motionVariants: Record<string, MotionProps> = {
   container: {
     ...fadeInUp(20),
@@ -14,7 +14,7 @@ export const motionVariants: Record<string, MotionProps> = {
 
   icon: {
     ...scaleIn,
-    transition: createTransition(0.2, {
+    transition: createTransition(0.1, {
       type: 'spring',
       damping: 20,
       stiffness: 100,
@@ -24,11 +24,21 @@ export const motionVariants: Record<string, MotionProps> = {
 
   title: {
     ...fadeInUp(10),
-    transition: createTransition(0.4),
+    transition: createTransition(0.2),
   },
 
   promptArea: {
     ...fadeInUp(30),
-    transition: createTransition(0.6, { duration: 0.7 }),
+    transition: createTransition(0.3, { duration: 0.7 }),
+  },
+
+  agentSection: {
+    ...fadeInUp(30),
+    transition: createTransition(0.35, { duration: 0.7 }),
+  },
+
+  agentCards: {
+    ...scaleOut,
+    transition: createTransition(0.4, { duration: 0.7 }),
   },
 }

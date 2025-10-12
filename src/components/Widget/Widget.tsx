@@ -41,6 +41,9 @@ export interface WidgetProps {
   language?: string
   className?: string
   title?: string
+  showTitle?: boolean
+  showActions?: boolean
+  showShadows?: boolean
 }
 
 // Main specialized widget component
@@ -50,6 +53,9 @@ export const Widget = ({
   language,
   className = '',
   title,
+  showTitle = true,
+  showActions = true,
+  showShadows = true,
 }: WidgetProps) => {
   const [viewMode, setViewMode] = useState<'source' | 'render'>('render')
   const { t } = useI18n(localI18n)
@@ -86,7 +92,9 @@ export const Widget = ({
       case 'html':
         return 'HTML'
       default:
-        return `${language || 'Code'} block`
+        return language
+          ? language.at(0)?.toUpperCase() + language.slice(1)
+          : 'Code'
     }
   }
 
@@ -95,7 +103,7 @@ export const Widget = ({
 
     switch (type) {
       case 'abc':
-        return 'abc'
+        return 'yaml'
       case 'svg':
         return 'xml'
       case 'diagram':
@@ -163,42 +171,42 @@ export const Widget = ({
       default:
         // For other types, show source by default until specific renderers are implemented
         return (
-          <div className="p-4 bg-warning-50 border border-warning-200 text-warning-700 rounded-md">
-            <p className="font-semibold">Renderer Not Implemented</p>
-            <p className="text-sm">
-              The renderer for "{type}" blocks is not yet implemented. Showing
-              source code.
-            </p>
-            <pre className="bg-default-100 p-4 rounded-md overflow-x-auto mt-2">
-              <code className="text-sm font-mono">{code}</code>
-            </pre>
-          </div>
+          <pre className="bg-default-100 p-4 rounded-md overflow-x-auto mt-2">
+            <code className="text-sm font-mono">{code}</code>
+          </pre>
         )
     }
   }
 
   return (
     <ErrorBoundary>
-      <Card className={`specialized-code-block ${className}`}>
+      <Card
+        className={`specialized-code-block ${className}`}
+        shadow={showShadows ? 'md' : 'none'}
+      >
         <CardHeader className="flex justify-between items-center">
-          <h4 className="text-sm font-semibold text-default-600">
-            <Icon name={getIcon()} className="w-4 h-4 inline-block mr-2" />
-            {title ?? getTitle()}
-          </h4>
+          {showTitle && (
+            <h4 className="text-sm font-semibold text-default-600">
+              <Icon name={getIcon()} className="w-4 h-4 inline-block mr-2" />
+              {title ?? getTitle()}
+            </h4>
+          )}
 
-          <div className="flex gap-2">
-            <Tabs
-              aria-label="View mode"
-              size="sm"
-              selectedKey={viewMode === 'render' ? 'render' : 'source'}
-              onSelectionChange={(key) =>
-                setViewMode(key as 'render' | 'source')
-              }
-            >
-              <Tab key="render" title={t('Render')} />
-              <Tab key="source" title={t('Code')} />
-            </Tabs>
-          </div>
+          {showActions && (
+            <div className="flex gap-2">
+              <Tabs
+                aria-label="View mode"
+                size="sm"
+                selectedKey={viewMode === 'render' ? 'render' : 'source'}
+                onSelectionChange={(key) =>
+                  setViewMode(key as 'render' | 'source')
+                }
+              >
+                <Tab key="render" title={t('Render')} />
+                <Tab key="source" title={t('Code')} />
+              </Tabs>
+            </div>
+          )}
         </CardHeader>
         <CardBody className="pt-0">{renderContent()}</CardBody>
       </Card>

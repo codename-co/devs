@@ -59,6 +59,15 @@
     text-decoration: none;
   }
 
+  [role='section']:not(.section-blank):nth-child(odd) {
+    @apply bg-default-50;
+  }
+
+  [role='heading'] {
+    font-family: Optima, Candara, 'Noto Sans', source-sans-pro, sans-serif;
+    font-weight: normal;
+  }
+
   /* * {
     @apply select-none;
   }

@@ -15,6 +15,7 @@ export const Container = ({
 }: ContainerProps) => {
   return (
     <div
+      role="container"
       className={cn(`max-w-${size}xl my-6 space-y-6 gap-6 mx-auto`, className)}
       {...{ style }}
     >

@@ -578,289 +578,292 @@ export const KnowledgePage: React.FC = () => {
             )}
           </div>
         </Container>
+      </Section>
 
-        <Container>
-          {/* Watched Folders Section */}
-          {watchedFolders.length > 0 && (
-            <>
-              <Title level={2}>
-                {t('Synced folders')}
-                <span className="ml-2 text-lg text-default-500">
-                  ({watchedFolders.length})
-                </span>
-              </Title>
-              {syncStatus !== 'idle' && (
-                <Chip
-                  color={syncStatus === 'syncing' ? 'primary' : 'danger'}
-                  size="sm"
-                  variant="flat"
-                >
-                  {syncStatus === 'syncing' ? 'Syncing…' : 'Sync Error'}
-                </Chip>
-              )}
-              <div className="space-y-2">
-                {watchedFolders.map((watcher) => (
-                  <div
-                    key={watcher.id}
-                    className="flex items-center justify-between p-3 bg-default-50 rounded-lg"
+      {watchedFolders.length > 0 ||
+        (knowledgeItems.length > 0 && (
+          <Section>
+            {/* Watched Folders Section */}
+            {watchedFolders.length > 0 && (
+              <Container>
+                <Title level={2}>
+                  {t('Synced folders')}
+                  <span className="ml-2 text-lg text-default-500">
+                    ({watchedFolders.length})
+                  </span>
+                </Title>
+                {syncStatus !== 'idle' && (
+                  <Chip
+                    color={syncStatus === 'syncing' ? 'primary' : 'danger'}
+                    size="sm"
+                    variant="flat"
                   >
-                    <div className="flex items-center space-x-3">
-                      <div className="relative">
-                        <Folder
-                          className={`w-5 h-5 ${watcher.isActive ? 'text-warning' : 'text-default-400'}`}
-                        />
-                        <div
-                          className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${
-                            watcher.isActive ? 'bg-success' : 'bg-danger'
-                          }`}
-                        />
-                      </div>
-                      <div>
-                        <p
-                          className={`font-medium ${watcher.isActive ? '' : 'text-default-500'}`}
-                        >
-                          {watcher.basePath}
-                        </p>
-                        <p className="text-sm text-default-500">
-                          {watcher.isActive ? (
-                            <>
-                              {t('Last sync: {time}', {
-                                time: watcher.lastSync.toLocaleTimeString(),
-                              })}
-                            </>
-                          ) : (
-                            t('Disconnected')
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      {watcher.isActive ? (
-                        <Button
-                          size="sm"
-                          variant="light"
-                          color="danger"
-                          onPress={() => handleUnwatchFolder(watcher.id)}
-                        >
-                          {t('Stop syncing')}
-                        </Button>
-                      ) : (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="light"
-                            color="primary"
-                            onPress={() => handleReconnectFolder(watcher.id)}
+                    {syncStatus === 'syncing' ? 'Syncing…' : 'Sync Error'}
+                  </Chip>
+                )}
+                <div className="space-y-2">
+                  {watchedFolders.map((watcher) => (
+                    <div
+                      key={watcher.id}
+                      className="flex items-center justify-between p-3 bg-default-50 rounded-lg"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="relative">
+                          <Folder
+                            className={`w-5 h-5 ${watcher.isActive ? 'text-warning' : 'text-default-400'}`}
+                          />
+                          <div
+                            className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${
+                              watcher.isActive ? 'bg-success' : 'bg-danger'
+                            }`}
+                          />
+                        </div>
+                        <div>
+                          <p
+                            className={`font-medium ${watcher.isActive ? '' : 'text-default-500'}`}
                           >
-                            {t('Reconnect')}
-                          </Button>
+                            {watcher.basePath}
+                          </p>
+                          <p className="text-sm text-default-500">
+                            {watcher.isActive ? (
+                              <>
+                                {t('Last sync: {time}', {
+                                  time: watcher.lastSync.toLocaleTimeString(),
+                                })}
+                              </>
+                            ) : (
+                              t('Disconnected')
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        {watcher.isActive ? (
                           <Button
                             size="sm"
                             variant="light"
                             color="danger"
                             onPress={() => handleUnwatchFolder(watcher.id)}
                           >
-                            {t('Remove')}
+                            {t('Stop syncing')}
                           </Button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {/* Knowledge Items List */}
-          {knowledgeItems.length > 0 && (
-            <>
-              <Title level={2}>
-                {t('My Knowledge')}
-                <span className="ml-2 text-lg text-default-500">
-                  ({knowledgeItems.length})
-                </span>
-              </Title>
-              {loading ? (
-                <div className="flex justify-center p-8">
-                  <Spinner size="lg" />
-                </div>
-              ) : knowledgeItems.length === 0 ? (
-                <div
-                  data-testid="empty-state"
-                  className="text-center p-8 text-default-500"
-                >
-                  <Page className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>
-                    {t(
-                      'No knowledge items yet. Upload some files to get started!',
-                    )}
-                  </p>
-                </div>
-              ) : (
-                <div
-                  data-testid="knowledge-items"
-                  className="divide-y divide-default-100 -mt-4"
-                >
-                  {knowledgeItems.map((item) => {
-                    // Find if this item is being processed
-                    const processingJob = Array.from(
-                      processingJobs.values(),
-                    ).find((job) => job.itemId === item.id)
-
-                    return (
-                      <div
-                        key={item.id}
-                        className="p-4 flex items-center justify-between hover:bg-default-50"
-                      >
-                        <div className="flex items-center space-x-4 flex-1">
-                          <div className="flex-shrink-0">
-                            {getFileIcon(item)}
-                          </div>
-
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-medium truncate">
-                              {item.name}
-                            </h3>
-                            <div className="flex items-center space-x-4 text-sm text-default-500 mt-1">
-                              <span>{item.path}</span>
-                              {item.fileType && (
-                                <span className="capitalize">
-                                  {item.fileType}
-                                </span>
-                              )}
-                              {item.size && (
-                                <span>{formatBytes(item.size, lang)}</span>
-                              )}
-                              <span>{formatDate(item.createdAt)}</span>
-                            </div>
-                            {processingJob && (
-                              <div className="mt-2">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <Spinner size="sm" />
-                                  <span className="text-xs text-primary">
-                                    Processing document...
-                                  </span>
-                                </div>
-                                <Progress
-                                  size="sm"
-                                  value={processingJob.progress}
-                                  color="primary"
-                                  className="max-w-md"
-                                  aria-label="Document processing progress"
-                                />
-                              </div>
-                            )}
-                            {item.description && (
-                              <p className="text-sm text-default-600 mt-1 truncate">
-                                {item.description}
-                              </p>
-                            )}
-                            {item.tags && item.tags.length > 0 && (
-                              <div className="flex gap-1 mt-2">
-                                {item.tags.map((tag) => (
-                                  <Chip
-                                    key={tag}
-                                    size="sm"
-                                    variant="flat"
-                                    color="primary"
-                                  >
-                                    {tag}
-                                  </Chip>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-                          <Dropdown>
-                            <DropdownTrigger>
-                              <Button isIconOnly variant="light" size="sm">
-                                <MoreVert className="w-4 h-4" />
-                              </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu>
-                              <DropdownItem
-                                key="edit"
-                                startContent={
-                                  <EditPencil className="w-4 h-4" />
-                                }
-                                onPress={() => openEditModal(item)}
-                              >
-                                {t('Edit')}
-                              </DropdownItem>
-                              <DropdownItem
-                                key="reprocess"
-                                startContent={
-                                  <RefreshDouble className="w-4 h-4" />
-                                }
-                                onPress={() => reprocessItem(item)}
-                              >
-                                {t('Reprocess')}
-                              </DropdownItem>
-                              <DropdownItem
-                                key="delete"
-                                startContent={<Trash className="w-4 h-4" />}
-                                className="text-danger"
-                                color="danger"
-                                onPress={() => deleteItem(item.id)}
-                              >
-                                {t('Delete')}
-                              </DropdownItem>
-                            </DropdownMenu>
-                          </Dropdown>
-                        </div>
+                        ) : (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="light"
+                              color="primary"
+                              onPress={() => handleReconnectFolder(watcher.id)}
+                            >
+                              {t('Reconnect')}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="light"
+                              color="danger"
+                              onPress={() => handleUnwatchFolder(watcher.id)}
+                            >
+                              {t('Remove')}
+                            </Button>
+                          </>
+                        )}
                       </div>
-                    )
-                  })}
+                    </div>
+                  ))}
                 </div>
-              )}
-            </>
-          )}
+              </Container>
+            )}
 
-          {/* Edit Modal */}
-          <Modal isOpen={isEditModalOpen} onClose={onEditModalClose} size="2xl">
-            <ModalContent>
-              <ModalHeader>{t('Knowledge Item')}</ModalHeader>
-              <ModalBody>
-                <div className="space-y-4">
-                  <Input
-                    label={t('name')}
-                    value={editForm.name}
-                    onValueChange={(value) =>
-                      setEditForm((prev) => ({ ...prev, name: value }))
-                    }
-                  />
-                  <Textarea
-                    label={t('description')}
-                    placeholder="Optional description for this item…"
-                    value={editForm.description}
-                    onValueChange={(value) =>
-                      setEditForm((prev) => ({ ...prev, description: value }))
-                    }
-                  />
-                  <Input
-                    label={t('tags')}
-                    placeholder="tag1, tag2, tag3"
-                    value={editForm.tags}
-                    onValueChange={(value) =>
-                      setEditForm((prev) => ({ ...prev, tags: value }))
-                    }
-                  />
-                </div>
-              </ModalBody>
-              <ModalFooter>
-                <Button variant="light" onPress={onEditModalClose}>
-                  {t('Cancel')}
-                </Button>
-                <Button color="primary" onPress={saveItemChanges}>
-                  {t('Save')}
-                </Button>
-              </ModalFooter>
-            </ModalContent>
-          </Modal>
-        </Container>
-      </Section>
+            {/* Knowledge Items List */}
+            {knowledgeItems.length > 0 && (
+              <Container>
+                <Title level={2}>
+                  {t('My Knowledge')}
+                  <span className="ml-2 text-lg text-default-500">
+                    ({knowledgeItems.length})
+                  </span>
+                </Title>
+                {loading ? (
+                  <div className="flex justify-center p-8">
+                    <Spinner size="lg" />
+                  </div>
+                ) : knowledgeItems.length === 0 ? (
+                  <div
+                    data-testid="empty-state"
+                    className="text-center p-8 text-default-500"
+                  >
+                    <Page className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>
+                      {t(
+                        'No knowledge items yet. Upload some files to get started!',
+                      )}
+                    </p>
+                  </div>
+                ) : (
+                  <div
+                    data-testid="knowledge-items"
+                    className="divide-y divide-default-100 -mt-4"
+                  >
+                    {knowledgeItems.map((item) => {
+                      // Find if this item is being processed
+                      const processingJob = Array.from(
+                        processingJobs.values(),
+                      ).find((job) => job.itemId === item.id)
+
+                      return (
+                        <div
+                          key={item.id}
+                          className="p-4 flex items-center justify-between hover:bg-default-50"
+                        >
+                          <div className="flex items-center space-x-4 flex-1">
+                            <div className="flex-shrink-0">
+                              {getFileIcon(item)}
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-medium truncate">
+                                {item.name}
+                              </h3>
+                              <div className="flex items-center space-x-4 text-sm text-default-500 mt-1">
+                                <span>{item.path}</span>
+                                {item.fileType && (
+                                  <span className="capitalize">
+                                    {item.fileType}
+                                  </span>
+                                )}
+                                {item.size && (
+                                  <span>{formatBytes(item.size, lang)}</span>
+                                )}
+                                <span>{formatDate(item.createdAt)}</span>
+                              </div>
+                              {processingJob && (
+                                <div className="mt-2">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <Spinner size="sm" />
+                                    <span className="text-xs text-primary">
+                                      Processing document...
+                                    </span>
+                                  </div>
+                                  <Progress
+                                    size="sm"
+                                    value={processingJob.progress}
+                                    color="primary"
+                                    className="max-w-md"
+                                    aria-label="Document processing progress"
+                                  />
+                                </div>
+                              )}
+                              {item.description && (
+                                <p className="text-sm text-default-600 mt-1 truncate">
+                                  {item.description}
+                                </p>
+                              )}
+                              {item.tags && item.tags.length > 0 && (
+                                <div className="flex gap-1 mt-2">
+                                  {item.tags.map((tag) => (
+                                    <Chip
+                                      key={tag}
+                                      size="sm"
+                                      variant="flat"
+                                      color="primary"
+                                    >
+                                      {tag}
+                                    </Chip>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center space-x-2">
+                            <Dropdown>
+                              <DropdownTrigger>
+                                <Button isIconOnly variant="light" size="sm">
+                                  <MoreVert className="w-4 h-4" />
+                                </Button>
+                              </DropdownTrigger>
+                              <DropdownMenu>
+                                <DropdownItem
+                                  key="edit"
+                                  startContent={
+                                    <EditPencil className="w-4 h-4" />
+                                  }
+                                  onPress={() => openEditModal(item)}
+                                >
+                                  {t('Edit')}
+                                </DropdownItem>
+                                <DropdownItem
+                                  key="reprocess"
+                                  startContent={
+                                    <RefreshDouble className="w-4 h-4" />
+                                  }
+                                  onPress={() => reprocessItem(item)}
+                                >
+                                  {t('Reprocess')}
+                                </DropdownItem>
+                                <DropdownItem
+                                  key="delete"
+                                  startContent={<Trash className="w-4 h-4" />}
+                                  className="text-danger"
+                                  color="danger"
+                                  onPress={() => deleteItem(item.id)}
+                                >
+                                  {t('Delete')}
+                                </DropdownItem>
+                              </DropdownMenu>
+                            </Dropdown>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </Container>
+            )}
+          </Section>
+        ))}
+
+      {/* Edit Modal */}
+      <Modal isOpen={isEditModalOpen} onClose={onEditModalClose} size="2xl">
+        <ModalContent>
+          <ModalHeader>{t('Knowledge Item')}</ModalHeader>
+          <ModalBody>
+            <div className="space-y-4">
+              <Input
+                label={t('name')}
+                value={editForm.name}
+                onValueChange={(value) =>
+                  setEditForm((prev) => ({ ...prev, name: value }))
+                }
+              />
+              <Textarea
+                label={t('description')}
+                placeholder="Optional description for this item…"
+                value={editForm.description}
+                onValueChange={(value) =>
+                  setEditForm((prev) => ({ ...prev, description: value }))
+                }
+              />
+              <Input
+                label={t('tags')}
+                placeholder="tag1, tag2, tag3"
+                value={editForm.tags}
+                onValueChange={(value) =>
+                  setEditForm((prev) => ({ ...prev, tags: value }))
+                }
+              />
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="light" onPress={onEditModalClose}>
+              {t('Cancel')}
+            </Button>
+            <Button color="primary" onPress={saveItemChanges}>
+              {t('Save')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </DefaultLayout>
   )
 }

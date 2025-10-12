@@ -1,9 +1,6 @@
-# A3 Problem Solving Methodology
-# Toyota's structured problem-solving approach on a single A3-sized sheet
-
 metadata:
   id: a3
-  name: A3 Problem Solving
+  name: A3
   description: >
     Toyota's systematic problem-solving methodology that captures the entire
     problem-solving process on a single A3-sized sheet of paper. The A3 process
@@ -28,7 +25,6 @@ metadata:
     - structured-thinking
   i18n:
     es:
-      name: Resolución de Problemas A3
       description: >
         La metodología sistemática de resolución de problemas de Toyota que
         captura todo el proceso en una sola hoja tamaño A3. El proceso A3
@@ -36,7 +32,6 @@ metadata:
         colaborativa a través de ciclos PDCA. Promueve la transparencia y la
         alineación entre equipos.
     fr:
-      name: Résolution de Problèmes A3
       description: >
         La méthodologie systématique de résolution de problèmes de Toyota qui
         capture l'ensemble du processus sur une seule feuille au format A3.
@@ -44,7 +39,6 @@ metadata:
         résolution collaborative de problèmes à travers des cycles PDCA. Il
         favorise la transparence et l'alignement entre les équipes.
     ko:
-      name: A3 문제 해결
       description: >
         Toyota의 체계적인 문제 해결 방법론으로, A3 크기의 한 장의 종이에
         전체 문제 해결 프로세스를 담습니다. A3 프로세스는 간결함,
@@ -904,6 +898,7 @@ agentCoordination:
   roles:
     - id: problem-owner
       name: Problem Owner
+      icon: EmojiTalkingAngry
       description: Owns the A3 and leads the problem-solving process
       responsibilities:
         - Define problem and context
@@ -919,6 +914,7 @@ agentCoordination:
       authority: leader
     - id: analyst
       name: Analyst
+      icon: EmojiLookUp
       description: Provides data analysis and measurement support
       responsibilities:
         - Collect and analyze data
@@ -933,6 +929,7 @@ agentCoordination:
       authority: contributor
     - id: process-mapper
       name: Process Mapper
+      icon: EmojiBall
       description: Creates visual representations of processes
       responsibilities:
         - Map current state
@@ -947,6 +944,7 @@ agentCoordination:
       authority: contributor
     - id: facilitator
       name: Facilitator
+      icon: EmojiTalkingHappy
       description: Facilitates root cause analysis and ideation sessions
       responsibilities:
         - Facilitate 5 Whys
@@ -961,6 +959,7 @@ agentCoordination:
       authority: contributor
     - id: implementation-lead
       name: Implementation Lead
+      icon: EmojiLookDown
       description: Leads countermeasure implementation
       responsibilities:
         - Plan implementation
@@ -975,6 +974,7 @@ agentCoordination:
       authority: contributor
     - id: implementation-team
       name: Implementation Team Member
+      icon: EmojiLookDown
       description: Executes countermeasures
       responsibilities:
         - Implement changes
@@ -989,6 +989,7 @@ agentCoordination:
       authority: contributor
     - id: process-owner
       name: Process Owner
+      icon: EmojiLookLeft
       description: Owns the process being improved
       responsibilities:
         - Provide process knowledge

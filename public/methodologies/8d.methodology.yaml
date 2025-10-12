@@ -1,9 +1,7 @@
-# 8D (Eight Disciplines) Problem Solving Methodology
-# Structured team-based approach to solving problems and preventing recurrence
-
 metadata:
   id: 8d
-  name: 8D (Eight Disciplines)
+  name: 8D
+  title: Eight Disciplines
   description: >
     A problem-solving methodology developed by Ford Motor Company for quality
     and process improvement. The 8D method uses a team-based approach to
@@ -28,7 +26,7 @@ metadata:
     - ford
   i18n:
     es:
-      name: 8D (Ocho Disciplinas)
+      title: Ocho Disciplinas
       description: >
         Una metodología de resolución de problemas desarrollada por Ford Motor
         Company para la mejora de la calidad y los procesos. El método 8D utiliza
@@ -36,7 +34,7 @@ metadata:
         sistemáticamente problemas recurrentes. Hace hincapié en el análisis de
         la causa raíz, las acciones correctivas y las medidas preventivas.
     fr:
-      name: 8D (Huit Disciplines)
+      title: Huit Disciplines
       description: >
         Une méthodologie de résolution de problèmes développée par Ford Motor
         Company pour l'amélioration de la qualité et des processus. La méthode 8D
@@ -45,7 +43,7 @@ metadata:
         l'analyse des causes profondes, les actions correctives et les mesures
         préventives.
     ko:
-      name: 8D (8단계 문제 해결)
+      title: 8단계 문제 해결
       description: >
         포드 자동차 회사에서 개발한 품질 및 프로세스 개선을 위한 문제 해결
         방법론입니다. 8D 방법은 팀 기반 접근 방식을 사용하여 반복되는 문제를
@@ -1096,6 +1094,7 @@ agentCoordination:
   roles:
     - id: quality-manager
       name: Quality Manager
+      icon: EmojiTalkingAngry
       description: Oversees 8D process and provides organizational support
       responsibilities:
         - Authorize 8D process
@@ -1110,6 +1109,7 @@ agentCoordination:
       authority: leader
     - id: team-leader
       name: 8D Team Leader
+      icon: EmojiSingRightNote
       description: Leads the 8D team through the process
       responsibilities:
         - Form and lead team
@@ -1124,6 +1124,7 @@ agentCoordination:
       authority: leader
     - id: technical-lead
       name: Technical Lead
+      icon: EmojiTalkingHappy
       description: Provides technical expertise for problem-solving
       responsibilities:
         - Lead root cause analysis
@@ -1138,6 +1139,7 @@ agentCoordination:
       authority: contributor
     - id: quality-engineer
       name: Quality Engineer
+      icon: EmojiLookRight
       description: Provides quality and testing expertise
       responsibilities:
         - Collect data
@@ -1152,6 +1154,7 @@ agentCoordination:
       authority: contributor
     - id: data-analyst
       name: Data Analyst
+      icon: EmojiLookUp
       description: Analyzes problem data
       responsibilities:
         - Gather detailed data
@@ -1166,6 +1169,7 @@ agentCoordination:
       authority: contributor
     - id: operations-team
       name: Operations Team Member
+      icon: EmojiLookDown
       description: Implements changes in operations
       responsibilities:
         - Implement containment
@@ -1180,6 +1184,7 @@ agentCoordination:
       authority: contributor
     - id: implementation-manager
       name: Implementation Manager
+      icon: EmojiLookDown
       description: Manages implementation of corrective actions
       responsibilities:
         - Plan implementation
@@ -1194,6 +1199,7 @@ agentCoordination:
       authority: contributor
     - id: process-engineer
       name: Process Engineer
+      icon: EmojiThinkLeft
       description: Updates processes and procedures
       responsibilities:
         - Update procedures

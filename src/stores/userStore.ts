@@ -29,11 +29,12 @@ interface UserSettingsStore extends UserSettings {
   toggleDrawer: () => void
   setPlatformName: (platformName: string) => void
   setBackgroundImage: (backgroundImage: string | undefined) => void
+  isDarkTheme: () => boolean
 }
 
 export const userSettings = create<UserSettingsStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...defaultSettings,
       setTheme: (theme: ThemeMode) => set({ theme }),
       setLanguage: (language: Lang) => set({ language }),
@@ -42,6 +43,13 @@ export const userSettings = create<UserSettingsStore>()(
       setPlatformName: (platformName: string) => set({ platformName }),
       setBackgroundImage: (backgroundImage: string | undefined) =>
         set({ backgroundImage }),
+      isDarkTheme: () => {
+        const { theme } = get()
+        if (theme === 'dark') return true
+        if (theme === 'light') return false
+        // For 'system', check the user's system preference
+        return window.matchMedia('(prefers-color-scheme: dark)').matches
+      },
     }),
     {
       name: 'devs-user-settings',

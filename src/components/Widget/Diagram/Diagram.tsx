@@ -1,17 +1,38 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import mermaid from 'mermaid'
-
-// Global initialization to ensure mermaid is only initialized once
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'neutral',
-  securityLevel: 'loose',
-  fontFamily: 'inherit',
-})
+import elkLayouts from '@mermaid-js/layout-elk'
+import { userSettings } from '@/stores/userStore'
 
 const useMermaid = (code: string) => {
   const [svg, setSvg] = useState<string | null>()
   const diagramIdRef = useRef<string>(undefined)
+
+  const { theme, isDarkTheme } = userSettings()
+
+  const isDark = useMemo(() => isDarkTheme(), [theme])
+
+  useEffect(() => {
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: 'loose',
+      layout: 'elk',
+      fontFamily:
+        "Bahnschrift, 'DIN Alternate', 'Franklin Gothic Medium', 'Nimbus Sans Narrow', sans-serif-condensed, sans-serif",
+      theme: 'base',
+      themeVariables: {
+        darkMode: isDark,
+        background: '#f4f4f4',
+        fontSize: '16px',
+        // noteBkgColor: '#f00',
+        primaryColor: isDark ? '#15a15155' : '#e9faf1bb',
+        secondaryColor: isDark ? '#ccc9' : '#fffce9',
+        // noteTextColor: '#333',
+        lineColor: isDark ? '#fff9' : '#333',
+      },
+    })
+
+    mermaid.registerLayoutLoaders(elkLayouts)
+  }, [isDark])
 
   // Create a unique ID per component instance
   if (!diagramIdRef.current) {

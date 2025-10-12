@@ -54,8 +54,9 @@ export function ConversationPage() {
   }
 
   const getAgentName = (agentId: string) => {
+    if (!agentId) return '??'
     const agent = agents.find((a) => a.id === agentId)
-    return agent?.name || 'Unknown Agent'
+    return agent?.name || '–'
   }
 
   const formatDate = (date: Date) => {

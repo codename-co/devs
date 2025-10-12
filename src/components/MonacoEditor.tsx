@@ -15,9 +15,7 @@ export const MonacoEditor = ({
   defaultValue,
   onChange,
 }: YamlEditorProps) => {
-  const { theme } = userSettings()
-
-  console.log({ theme })
+  const { isDarkTheme } = userSettings()
 
   const monaco = useMonaco()
 
@@ -45,11 +43,11 @@ export const MonacoEditor = ({
       ],
     })
   }
+
   const handleEditorDidMount = (_editor: any, monaco: Monaco) => {
-    monaco.editor.setTheme(
-      theme === 'light' ? 'vs-light' : theme === 'dark' ? 'vs-dark' : '',
-    )
+    monaco.editor.setTheme(isDarkTheme() ? 'vs-dark' : 'vs-light')
   }
+
   return (
     <Editor
       className="w-full h-full min-h-100"
@@ -59,7 +57,7 @@ export const MonacoEditor = ({
       onChange={onChange}
       onMount={handleEditorDidMount}
       options={{
-        lineNumbers: 'off',
+        // lineNumbers: 'off',
         minimap: {
           enabled: false,
         },

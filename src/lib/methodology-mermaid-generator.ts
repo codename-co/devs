@@ -402,7 +402,9 @@ export class MethodologyMermaidGenerator {
     const alias = this.getPhaseAlias(phaseId)
 
     // Define state with name
-    this.addLine(`state "${phase.name}" as ${alias}`)
+    this.addLine(
+      `state "<a href='#phase-${phase.name.toLowerCase().replace(/\s+/g, '-')}'>${phase.name}</a>" as ${alias}`,
+    )
 
     // Add description as note
     if (this.options.includeNotes && phase.description) {
@@ -426,12 +428,16 @@ export class MethodologyMermaidGenerator {
       phase.agentRequirements?.roles &&
       phase.agentRequirements.roles.length > 0
     ) {
-      const roles = phase.agentRequirements.roles.slice(0, 2).join(', ')
+      const roles = phase.agentRequirements.roles
+        .slice(0, 2)
+        .join(', ')
+        .replace(/-/g, ' ')
       const moreRoles =
         phase.agentRequirements.roles.length > 2
           ? ` +${phase.agentRequirements.roles.length - 2}`
           : ''
-      this.addLine(`${alias}: 👥 ${roles}${moreRoles}`)
+
+      this.addLine(`${alias}: ${roles}${moreRoles}`)
     }
 
     // Add artifacts if enabled
@@ -443,6 +449,11 @@ export class MethodologyMermaidGenerator {
           .join(', ')
         this.addLine(`${alias}: 📦 → ${outputs}`)
       }
+    }
+
+    // Add repeatable loopback
+    if (phase.repeatable) {
+      this.addLine(`${alias} --> ${alias}`)
     }
 
     this.processedPhases.add(phaseId)

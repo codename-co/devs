@@ -15,7 +15,7 @@ export const MethodologyNewPage = () => {
   const header: HeaderProps = {
     color: 'bg-success-50',
     icon: {
-      name: 'PageStar',
+      name: 'Strategy',
       color: 'text-success-300',
     },
     title: t('New Methodology'),

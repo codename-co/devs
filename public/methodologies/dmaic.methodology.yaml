@@ -1,9 +1,7 @@
-# DMAIC (Define, Measure, Analyze, Improve, Control) Methodology
-# Six Sigma problem-solving framework
-
 metadata:
   id: dmaic
   name: DMAIC
+  title: Define, Measure, Analyze, Improve, Control
   description: >
     Six Sigma methodology for process improvement and problem-solving.
     DMAIC stands for Define, Measure, Analyze, Improve, and Control.
@@ -24,16 +22,19 @@ metadata:
     - process-improvement
   i18n:
     es:
+      title: Definir, Medir, Analizar, Mejorar, Controlar
       description: >
         Metodología Six Sigma para la mejora de procesos y resolución de problemas.
         DMAIC significa Definir, Medir, Analizar, Mejorar y Controlar.
         Es una estrategia de calidad basada en datos utilizada para mejorar procesos.
     fr:
+      title: Définir, Mesurer, Analyser, Améliorer, Contrôler
       description: >
         Méthodologie Six Sigma pour l'amélioration des processus et la résolution de problèmes.
         DMAIC signifie Définir, Mesurer, Analyser, Améliorer et Contrôler.
         C'est une stratégie de qualité basée sur les données utilisée pour améliorer les processus.
     ko:
+      title: 정의, 측정, 분석, 개선, 관리
       description: >
         프로세스 개선 및 문제 해결을 위한 식스 시그마 방법론.
         DMAIC는 정의(Define), 측정(Measure), 분석(Analyze), 개선(Improve), 관리(Control)를 의미합니다.

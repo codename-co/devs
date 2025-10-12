@@ -1,9 +1,7 @@
-# PDCA (Plan-Do-Check-Act) Methodology
-# Iterative continuous improvement cycle
-
 metadata:
   id: pdca
-  name: PDCA (Plan-Do-Check-Act)
+  name: PDCA
+  title: Plan-Do-Check-Act
   description: >
     An iterative four-step management method used for continuous improvement
     of processes and products. Also known as the Deming Cycle or Shewhart Cycle.
@@ -26,16 +24,19 @@ metadata:
     - lean
   i18n:
     es:
+      title: Planificar-Hacer-Verificar-Actuar
       description: >
         Un método de gestión iterativo de cuatro pasos utilizado para la mejora continua
         de procesos y productos. También conocido como el Ciclo de Deming o el Ciclo de Shewhart.
         PDCA es una herramienta fundamental para lograr la mejora continua.
     fr:
+      title: Planifier-Faire-Vérifier-Agir
       description: >
         Une méthode de gestion itérative en quatre étapes utilisée pour l'amélioration continue
         des processus et des produits. Également connu sous le nom de Cycle de Deming ou Cycle de Shewhart.
         PDCA est un outil fondamental pour atteindre l'amélioration continue.
     ko:
+      title: 계획-실행-검토-조치
       description: >
         프로세스 및 제품의 지속적인 개선을 위해 사용되는 4단계 반복 관리 방법입니다.
         데밍 사이클 또는 쉐와르트 사이클로도 알려져 있습니다.
@@ -53,7 +54,7 @@ configuration:
   convergence:
     metric: improvement_percentage
     threshold: 95
-    operator: '>='
+    operator: '≥'
 
 phases:
   - id: plan
@@ -508,7 +509,7 @@ execution:
           description: Stop when improvement target is reached
           metric: improvement_percentage
           threshold: 95
-          operator: '>='
+          operator: '≥'
       exitConditions:
         - type: custom
           description: Stop if three consecutive cycles show no improvement

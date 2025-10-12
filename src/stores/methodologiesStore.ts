@@ -36,7 +36,7 @@ async function loadMethodology(
 
 export async function getAvailableMethodologies(): Promise<string[]> {
   if (methodologiesList !== null) {
-    return methodologiesList as string[]
+    return methodologiesList
   }
 
   try {

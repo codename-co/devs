@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./public/favicon.svg" width="48" alt="DEVS Logo" />
+[<img src="./public/favicon.svg" width="48" alt="DEVS Logo" />](https://devs.new)
 
 # <span title='DEVS, from Latin "Deus"'>𝐃𝐄𝐕𝐒</span>
 

@@ -3,8 +3,8 @@ import type { SharedContext, Agent } from '@/types'
 
 export interface ContextSubscription {
   agentId: string
-  keywords: string[]
-  contextTypes: SharedContext['contextType'][]
+  keywords?: string[]
+  contextTypes?: SharedContext['contextType'][]
   callback?: (contexts: SharedContext[]) => void
 }
 
@@ -36,8 +36,8 @@ export class ContextBroker {
     // Immediately send relevant existing contexts
     const relevantContexts = await this.getRelevantContexts(
       subscription.agentId,
-      subscription.keywords,
-      subscription.contextTypes,
+      subscription.keywords || [],
+      subscription.contextTypes || [],
     )
 
     if (subscription.callback && relevantContexts.length > 0) {
@@ -200,12 +200,13 @@ export class ContextBroker {
     subscription: ContextSubscription,
   ): Promise<boolean> {
     // Check if agent is explicitly listed as relevant
-    if (context.relevantAgents.includes(agentId)) {
+    if (context.relevantAgents?.includes(agentId)) {
       return true
     }
 
     // Check context type filter
     if (
+      subscription.contextTypes &&
       subscription.contextTypes.length > 0 &&
       !subscription.contextTypes.includes(context.contextType)
     ) {
@@ -213,7 +214,7 @@ export class ContextBroker {
     }
 
     // Check keyword matches
-    if (subscription.keywords.length > 0) {
+    if (subscription.keywords && subscription.keywords.length > 0) {
       const searchText = (context.title + ' ' + context.content).toLowerCase()
       return subscription.keywords.some((keyword) =>
         searchText.includes(keyword.toLowerCase()),
@@ -301,8 +302,10 @@ export class ContextBroker {
     }
 
     for (const subscription of this.subscriptions.values()) {
-      for (const contextType of subscription.contextTypes) {
-        contextTypeCoverage[contextType]++
+      if (subscription.contextTypes) {
+        for (const contextType of subscription.contextTypes) {
+          contextTypeCoverage[contextType]++
+        }
       }
     }
 

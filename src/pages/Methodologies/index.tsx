@@ -28,7 +28,7 @@ export function MethodologiesPage() {
   const header: HeaderProps = {
     color: 'bg-success-50',
     icon: {
-      name: 'PageStar',
+      name: 'Strategy',
       color: 'text-success-300',
     },
     title: t('Methodologies'),
@@ -45,16 +45,7 @@ export function MethodologiesPage() {
       setIsLoading(true)
       try {
         const data = await loadAllMethodologies()
-        setMethodologies(
-          data.map((m) => ({
-            ...m,
-            name: () => m.metadata.i18n?.[lang]?.name || m.metadata.name,
-            description: () =>
-              m.metadata.i18n?.[lang]?.description ||
-              m.metadata.description ||
-              '',
-          })),
-        )
+        setMethodologies(data)
       } catch (error) {
         console.error('Failed to load methodologies:', error)
       } finally {
@@ -62,7 +53,7 @@ export function MethodologiesPage() {
       }
     }
     loadData()
-  }, [])
+  }, [lang])
 
   const handleSelectMethodology = (methodologyId: string) => {
     // Navigate to methodology details or apply it
@@ -70,10 +61,13 @@ export function MethodologiesPage() {
   }
 
   // Sort methodologies by name and paginate
-  const sortedMethodologies = useMemo(
-    () => methodologies.sort((a, b) => a.name().localeCompare(b.name())),
-    [methodologies],
-  )
+  const sortedMethodologies = useMemo(() => {
+    return methodologies.sort((a, b) => {
+      const aName = a.metadata.i18n?.[lang]?.name || a.metadata.name
+      const bName = b.metadata.i18n?.[lang]?.name || b.metadata.name
+      return aName.localeCompare(bName)
+    })
+  }, [methodologies, lang])
 
   const totalPages = Math.ceil(sortedMethodologies.length / itemsPerPage)
 
@@ -142,7 +136,18 @@ export function MethodologiesPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <h3 className="text-base font-medium">
-                              {methodology.name()}
+                              {methodology.metadata.i18n?.[lang]?.name ||
+                                methodology.metadata.name}
+
+                              {methodology?.metadata.i18n?.[lang]?.title ||
+                              methodology?.metadata.title ? (
+                                <>
+                                  {' '}
+                                  ·{' '}
+                                  {methodology?.metadata.i18n?.[lang]?.title ||
+                                    methodology?.metadata.title}
+                                </>
+                              ) : null}
                             </h3>
                             <Chip size="sm" variant="flat">
                               {methodology.metadata.type}
@@ -159,9 +164,10 @@ export function MethodologiesPage() {
                               </Chip>
                             )}
                           </div>
-                          {methodology.description() && (
+                          {methodology.metadata.description && (
                             <p className="text-sm text-default-500 truncate">
-                              {methodology.description()}
+                              {methodology.metadata.i18n?.[lang]?.description ||
+                                methodology.metadata.description}
                             </p>
                           )}
                           {methodology.metadata.tags && (

@@ -190,6 +190,11 @@ export const TaskPage = () => {
       requirement_detected: t('Requirement Detected'),
       requirement_validated: t('Requirement Validated'),
       task_started: t('Task Started'),
+      methodology_selected: t('Methodology Selected'),
+      phase_started: t('Phase Started'),
+      phase_completed: t('Phase Completed'),
+      team_built: t('Team Built'),
+      role_assigned: t('Role Assigned'),
     }
 
     const descriptionTranslations: Record<string, string> = {

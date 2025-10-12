@@ -20,7 +20,12 @@
         "name": {
           "type": "string",
           "description": "Human-readable name",
-          "examples": ["DMAIC", "Plan-Do-Check-Act", "Scrum Framework"]
+          "examples": ["DMAIC", "PDCA", "Scrum"]
+        },
+        "title": {
+          "type": "string",
+          "description": "Longer title for the methodology",
+          "examples": ["Plan-Do-Check-Act"]
         },
         "description": {
           "type": "string",
@@ -79,6 +84,11 @@
                 "name": {
                   "type": "string",
                   "description": "Translated name for this locale",
+                  "minLength": 1
+                },
+                "title": {
+                  "type": "string",
+                  "description": "Translated title for this locale",
                   "minLength": 1
                 },
                 "description": {
@@ -180,7 +190,7 @@
             },
             "operator": {
               "type": "string",
-              "enum": ["<", "<=", ">", ">=", "=="],
+              "enum": ["<", "≤", ">", "≥", "=="],
               "description": "Comparison operator"
             }
           }
@@ -710,7 +720,7 @@
         },
         "operator": {
           "type": "string",
-          "enum": ["<", "<=", ">", ">=", "==", "!="],
+          "enum": ["<", "≤", ">", "≥", "==", "!="],
           "description": "Comparison operator"
         },
         "phaseId": {
@@ -815,6 +825,35 @@
         },
         "name": {
           "type": "string"
+        },
+        "icon": {
+          "type": "string",
+          "enum": [
+            "Emoji",
+            "EmojiBall",
+            "EmojiBlinkLeft",
+            "EmojiBlinkRight",
+            "EmojiLookDown",
+            "EmojiLookLeft",
+            "EmojiLookRight",
+            "EmojiLookUp",
+            "EmojiPuzzled",
+            "EmojiQuite",
+            "EmojiReally",
+            "EmojiSad",
+            "EmojiSatisfied",
+            "EmojiSingLeft",
+            "EmojiSingLeftNote",
+            "EmojiSingRight",
+            "EmojiSingRightNote",
+            "EmojiSurprise",
+            "EmojiSurpriseAlt",
+            "EmojiTalkingAngry",
+            "EmojiTalkingHappy",
+            "EmojiThinkLeft",
+            "EmojiThinkRight"
+          ],
+          "description": "Icon representing the role"
         },
         "description": {
           "type": "string"

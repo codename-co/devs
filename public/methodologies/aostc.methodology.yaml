@@ -1,9 +1,7 @@
-# AOSTC (Analysis, Objectives, Strategies, Tactics, Control) Methodology
-# Hierarchical strategic planning and execution framework
-
 metadata:
   id: aostc
   name: AOSTC
+  title: Analysis, Objectives, Strategies, Tactics, Control
   description: >
     A hierarchical methodology for strategic planning and execution.
     AOSTC (Analysis, Objectives, Strategies, Tactics, Control) provides
@@ -26,18 +24,21 @@ metadata:
     - control
   i18n:
     es:
+      title: Análisis, Objetivos, Estrategias, Tácticas, Control
       description: >
         Una metodología jerárquica para la planificación y ejecución estratégica.
         AOSTC (Análisis, Objetivos, Estrategias, Tácticas, Control) proporciona
         un marco que va desde el análisis de alto nivel hasta la ejecución táctica
         con control continuo.
     fr:
+      title: Analyse, Objectifs, Stratégies, Tactiques, Contrôle
       description: >
         Une méthodologie hiérarchique pour la planification et l'exécution
         stratégique. AOSTC (Analyse, Objectifs, Stratégies, Tactiques, Contrôle)
         fournit un cadre allant de l'analyse de haut niveau à l'exécution tactique
         avec un contrôle continu.
     ko:
+      title: 분석, 목표, 전략, 전술, 통제
       description: >
         전략적 기획 및 실행을 위한 계층적 방법론입니다.
         AOSTC(분석, 목표, 전략, 전술, 통제)는 지속적인 통제를 통해
@@ -725,6 +726,7 @@ agentCoordination:
   roles:
     - id: chief-strategist
       name: Chief Strategist
+      icon: EmojiTalkingHappy
       description: Leads strategic planning and ensures strategic coherence
       responsibilities:
         - Lead situational analysis
@@ -739,6 +741,7 @@ agentCoordination:
       authority: leader
     - id: strategic-analyst
       name: Strategic Analyst
+      icon: EmojiLookUp
       description: Conducts detailed analysis and research
       responsibilities:
         - Environmental scanning
@@ -753,6 +756,7 @@ agentCoordination:
       authority: contributor
     - id: strategy-consultant
       name: Strategy Consultant
+      icon: EmojiSingLeftNote
       description: Provides strategic expertise and option generation
       responsibilities:
         - Generate strategy options
@@ -766,6 +770,7 @@ agentCoordination:
       authority: contributor
     - id: program-manager
       name: Program Manager
+      icon: EmojiSingRight
       description: Manages strategic program execution
       responsibilities:
         - Define objectives
@@ -780,6 +785,7 @@ agentCoordination:
       authority: approver
     - id: project-manager
       name: Project Manager
+      icon: EmojiReally
       description: Manages individual tactical projects
       responsibilities:
         - Develop project plans
@@ -836,6 +842,7 @@ agentCoordination:
       authority: contributor
     - id: risk-manager
       name: Risk Manager
+      icon: EmojiPuzzled
       description: Identifies and manages strategic risks
       responsibilities:
         - Assess risks
@@ -850,6 +857,7 @@ agentCoordination:
       authority: reviewer
     - id: implementation-specialist
       name: Implementation Specialist
+      icon: EmojiLookDown
       description: Implements systems and processes
       responsibilities:
         - Implement control systems

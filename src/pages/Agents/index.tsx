@@ -128,6 +128,7 @@ export const AgentsPage = () => {
           >
             <AgentCard
               id={agent.id}
+              showDetails
               className="w-full"
               onPress={handleAgentClick}
               children={

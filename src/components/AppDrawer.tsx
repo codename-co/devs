@@ -344,7 +344,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
                 className="w-full"
                 aria-label={t('Methodologies')}
               >
-                <Icon name="PageStar" />
+                <Icon name="Strategy" />
               </Button>
             </Tooltip>
             <Tooltip content={t('Tasks')} placement="right">
@@ -558,7 +558,7 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
               <ListboxItem
                 href={url('/methodologies')}
                 color="success"
-                startContent={<Icon name="PageStar" />}
+                startContent={<Icon name="Strategy" />}
                 endContent={
                   <Tooltip content={t('New Methodology')} placement="right">
                     <span

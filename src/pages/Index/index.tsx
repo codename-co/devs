@@ -1,8 +1,15 @@
 import { useI18n } from '@/i18n'
-import { Icon, PromptArea, Section, Title } from '@/components'
+import {
+  AgentCard,
+  Container,
+  Icon,
+  PromptArea,
+  Section,
+  Title,
+} from '@/components'
 import { EasySetupModal } from '@/components/EasySetup/EasySetupModal'
 import DefaultLayout from '@/layouts/Default'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Agent } from '@/types'
 import { useTaskStore } from '@/stores/taskStore'
@@ -12,6 +19,9 @@ import { useEasySetup } from '@/hooks/useEasySetup'
 import { Alert } from '@heroui/react'
 import { motion } from 'framer-motion'
 import { motionVariants } from './motion'
+import { getAgentsByCategory } from '@/stores/agentStore'
+// import { loadAllMethodologies } from '@/stores/methodologiesStore'
+// import type { Methodology } from '@/types/methodology.types'
 
 export const IndexPage = () => {
   const { lang, url, t } = useI18n()
@@ -20,11 +30,57 @@ export const IndexPage = () => {
   const [isSending, setIsSending] = useState(false)
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [agents, setAgents] = useState<Agent[]>([])
+  // const [methodologies, setMethodologies] = useState<Methodology[]>([])
+  const [isLoadingAgents, setIsLoadingAgents] = useState(true)
+  // const [isLoadingMethodologies, setIsLoadingMethodologies] = useState(true)
 
   const { createTaskWithRequirements } = useTaskStore()
   const { backgroundImage, backgroundLoaded, isDragOver, dragHandlers } =
     useBackgroundImage()
   const { hasSetupData, setupData, clearSetupData } = useEasySetup()
+
+  // Load agents and methodologies on mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoadingAgents(true)
+        const { agentsByCategory, orderedCategories } =
+          await getAgentsByCategory(lang)
+        // Flatten all agents from all categories
+        const allAgents = orderedCategories.flatMap(
+          (category) => agentsByCategory[category] || [],
+        )
+        setAgents(
+          allAgents
+            .filter((agent) => agent.id !== 'devs')
+            // .filter((agent) => !agent.id.startsWith('custom-'))
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 12),
+        )
+      } catch (error) {
+        console.error('Failed to load agents:', error)
+      } finally {
+        setIsLoadingAgents(false)
+      }
+    }
+    loadData()
+  }, [lang])
+
+  // useEffect(() => {
+  //   const loadData = async () => {
+  //     try {
+  //       setIsLoadingMethodologies(true)
+  //       const data = await loadAllMethodologies()
+  //       setMethodologies(data)
+  //     } catch (error) {
+  //       console.error('Failed to load methodologies:', error)
+  //     } finally {
+  //       setIsLoadingMethodologies(false)
+  //     }
+  //   }
+  //   loadData()
+  // }, [lang])
 
   // Helper function to convert File to base64
   const fileToBase64 = (file: File): Promise<string> => {
@@ -125,7 +181,7 @@ export const IndexPage = () => {
           </div>
         )}
 
-        <Section mainClassName="text-center relative">
+        <Section mainClassName="section-blank">
           <motion.div
             layoutId="active"
             className="flex flex-col items-center mt-0 sm:mt-[10vh]"
@@ -164,6 +220,66 @@ export const IndexPage = () => {
             />
           </motion.div>
         </Section>
+
+        {/* Agents Section */}
+        <motion.div {...motionVariants.agentSection}>
+          <Section mainClassName="bg-default-50">
+            {!isLoadingAgents && (
+              <motion.div {...motionVariants.agentCards}>
+                <Container>
+                  {/* <Title level={3} size="lg" className="text-gray-600">
+                {t('Agents')}
+              </Title> */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                    {agents.map((agent) => (
+                      <AgentCard
+                        key={agent.id}
+                        id={agent.id}
+                        onPress={() =>
+                          setSelectedAgent(
+                            selectedAgent?.id === agent.id ? null : agent,
+                          )
+                        }
+                      />
+                    ))}
+                  </div>
+                </Container>
+              </motion.div>
+            )}
+
+            {/* Methodologies Section */}
+            {/* {!isLoadingMethodologies && (
+            <Container>
+              <Title level={3} size="lg" className="text-gray-600">
+                {t('Methodologies')}
+              </Title>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {methodologies.map((methodology) => {
+                  const methodologyName =
+                    methodology.metadata.i18n?.[lang]?.name ||
+                    methodology.metadata.name
+                  return (
+                    <Card
+                      key={methodology.metadata.id}
+                      isPressable
+                      isHoverable
+                      shadow="sm"
+                      className="transition-transform"
+                      onPress={() => {
+                        window.location.hash = `p=${encodeURIComponent(methodologyName)}`
+                      }}
+                    >
+                      <CardBody className="p-3 text-center">
+                        <p className="text-sm font-medium">{methodologyName}</p>
+                      </CardBody>
+                    </Card>
+                  )
+                })}
+              </div>
+            </Container>
+          )} */}
+          </Section>
+        </motion.div>
       </DefaultLayout>
 
       {hasSetupData && setupData && (

@@ -11,6 +11,7 @@ interface AgentCardProps {
   className?: string
   onPress?: (agentId: string) => void
   children?: React.ReactNode
+  showDetails?: boolean
 }
 
 export const AgentCard = ({
@@ -18,6 +19,7 @@ export const AgentCard = ({
   className,
   onPress,
   children,
+  showDetails = false,
 }: AgentCardProps) => {
   const [agent, setAgent] = useState<Agent | null>(null)
   const [loading, setLoading] = useState(true)
@@ -68,9 +70,9 @@ export const AgentCard = ({
           data-testid="agent-details"
         >
           {agent.icon && <Icon name={agent.icon} className="w-6 h-6" />}
-          <h4 className="font-bold text-large">{displayName}</h4>
+          <h4 className="text-sm font-medium truncate">{displayName}</h4>
         </div>
-        {agent.tags && agent.tags.length > 0 && (
+        {showDetails && agent.tags && agent.tags.length > 0 && (
           <div data-testid="agent-tags" className="flex gap-1 mt-2 flex-wrap">
             {agent.tags.slice(0, 3).map((tag: string) => (
               <Chip key={tag} size="sm" variant="flat" className="tag">
@@ -80,22 +82,24 @@ export const AgentCard = ({
           </div>
         )}
       </CardHeader>
-      <CardBody className="px-4 pb-4">
-        {displayDesc && (
-          <p className="text-small text-default-600 line-clamp-2">
-            {displayDesc}
-          </p>
-        )}
-        {agent.knowledgeItemIds && agent.knowledgeItemIds.length > 0 && (
-          <div className="flex items-center gap-1 mt-2">
-            <Icon name="Brain" size="sm" />
-            <span className="text-xs">
-              {agent.knowledgeItemIds.length} knowledge item
-              {agent.knowledgeItemIds.length !== 1 ? 's' : ''}
-            </span>
-          </div>
-        )}
-      </CardBody>
+      {showDetails && (
+        <CardBody className="px-4 pb-4">
+          {displayDesc && (
+            <p className="text-small text-default-600 line-clamp-2">
+              {displayDesc}
+            </p>
+          )}
+          {agent.knowledgeItemIds && agent.knowledgeItemIds.length > 0 && (
+            <div className="flex items-center gap-1 mt-2">
+              <Icon name="Brain" size="sm" />
+              <span className="text-xs">
+                {agent.knowledgeItemIds.length} knowledge item
+                {agent.knowledgeItemIds.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+          )}
+        </CardBody>
+      )}
     </Card>
   )
 }

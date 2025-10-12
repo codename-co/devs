@@ -87,7 +87,7 @@ export default function DefaultLayout({
                   header?.color,
                 )}
               >
-                <Section>
+                <Section mainClassName="section-blank">
                   {showBackButton && (
                     <Tooltip content={t('Back')}>
                       <Button
@@ -122,11 +122,7 @@ export default function DefaultLayout({
                         href={header.cta?.href ?? ''}
                         startContent={
                           header.cta.icon && (
-                            <Icon
-                              name={header.cta.icon}
-                              size="sm"
-                              className="rotate-180"
-                            />
+                            <Icon name={header.cta.icon} size="sm" />
                           )
                         }
                         className="absolute right-0 shrink-0 dark:hover:bg-default-300"

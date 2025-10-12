@@ -9,6 +9,7 @@ import { forwardRef, useEffect, useRef, useState, useCallback } from 'react'
 
 import { Icon } from '../Icon'
 import { useSpeechRecognition } from './useSpeechRecognition'
+import { useUrlFragment } from './useUrlFragment'
 import { ModelSelector } from './ModelSelector'
 import { AgentSelector } from './AgentSelector'
 import { AttachmentSelector } from './AttachmentSelector'
@@ -61,6 +62,9 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
     const [isFocused, setIsFocused] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
+    // Parse URL fragment for prompt parameter
+    const { prompt: urlPrompt } = useUrlFragment()
+
     // Set default agent if none selected
     const currentAgent = selectedAgent || getDefaultAgent()
 
@@ -70,6 +74,19 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         onAgentChange(getDefaultAgent())
       }
     }, [selectedAgent, onAgentChange])
+
+    // Populate prompt from URL fragment
+    useEffect(() => {
+      if (urlPrompt && !prompt) {
+        setPrompt(urlPrompt)
+        onValueChange?.(urlPrompt)
+
+        // Clear the URL fragment after loading
+        if (window.location.hash) {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search)
+        }
+      }
+    }, [urlPrompt, prompt, onValueChange])
 
     // Speech recognition hook
     const {

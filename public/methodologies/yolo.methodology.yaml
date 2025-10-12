@@ -1,21 +1,22 @@
-# YOLO Methodology
-# A simple methodology that encourages action without overthinking.
-
 metadata:
   id: yolo
   name: YOLO
+  title: You Only Live Once
   description: >
     A simple methodology that encourages action without overthinking.
   type: sequential
   version: 1.0.0
   i18n:
     es:
+      title: Solo se vive una vez
       description: >
         Una metodología simple que fomenta la acción sin pensar demasiado.
     fr:
+      title: On ne vit qu'une fois
       description: >
         Une méthodologie simple qui encourage l'action sans trop réfléchir.
     ko:
+      title: 당신은 단 한 번만 살고 있습니다
       description: >
         과도한 생각 없이 행동을 장려하는 간단한 방법론입니다.
 phases:

@@ -3,6 +3,8 @@
  * Universal schema for defining task execution methodologies for AI agent swarm coordination
  */
 
+import { IconName } from '@/lib/types'
+
 export type MethodologyType =
   | 'sequential'
   | 'iterative'
@@ -55,7 +57,7 @@ export type CriterionType =
   | 'metric-threshold'
   | 'phase-completed'
   | 'custom'
-export type ComparisonOperator = '<' | '<=' | '>' | '>=' | '==' | '!='
+export type ComparisonOperator = '<' | '≤' | '>' | '≥' | '==' | '!='
 export type TimeUnit = 'minutes' | 'hours' | 'days' | 'weeks'
 export type CeremonyTiming =
   | 'phase-start'
@@ -67,6 +69,7 @@ export type CeremonyTiming =
 export interface MethodologyMetadata {
   id: string
   name: string
+  title?: string
   description?: string
   type: MethodologyType
   version: string
@@ -74,7 +77,7 @@ export interface MethodologyMetadata {
   domains?: string[]
   complexity?: ComplexityLevel
   tags?: string[]
-  i18n?: Record<string, { name?: string; description?: string }>
+  i18n?: Record<string, { name?: string; title?: string; description?: string }>
 }
 
 export interface TimeBoxConfiguration {
@@ -167,6 +170,7 @@ export interface PhaseAgentRequirements {
 export interface Phase {
   id: string
   name: string
+  title?: string
   description?: string
   order?: number
   parentPhaseId?: string
@@ -217,6 +221,7 @@ export interface Execution {
 export interface AgentRole {
   id: string
   name: string
+  icon?: IconName
   description?: string
   responsibilities: string[]
   requiredSkills?: string[]
@@ -298,8 +303,6 @@ export interface Ceremony {
 }
 
 export interface Methodology {
-  name: () => string
-  description: () => string
   metadata: MethodologyMetadata
   configuration?: MethodologyConfiguration
   phases: Phase[]
