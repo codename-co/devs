@@ -2,10 +2,6 @@ import {
   Button,
   ButtonGroup,
   Chip,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
   Textarea,
   type TextAreaProps,
   Tooltip,
@@ -423,26 +419,6 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                           <Icon name="ArrowRight" size="sm" />
                         </Button>
                       </Tooltip>
-                      // <Dropdown placement="bottom-end">
-                      //   <DropdownTrigger>
-                      //   </DropdownTrigger>
-                      //   <DropdownMenu aria-label="Submit options">
-                      //     <DropdownItem
-                      //       key="task"
-                      //       color="secondary"
-                      //       variant="flat"
-                      //       startContent={
-                      //         <Icon
-                      //           name="TriangleFlagTwoStripes"
-                      //           size="sm"
-                      //           color="secondary"
-                      //         />
-                      //       }
-                      //       description={t('New Task')}
-                      //       onPress={onSubmitTask}
-                      //     />
-                      //   </DropdownMenu>
-                      // </Dropdown>
                     )}
                   </ButtonGroup>
                 )}
