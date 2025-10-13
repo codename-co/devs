@@ -40,7 +40,9 @@ export function AgentSelector({
             size="sm"
           >
             <Icon name={selectedAgent.icon ?? 'User'} size="md" />
-            {selectedAgent.i18n?.[lang]?.name ?? selectedAgent.name}
+            <span className="hidden min-[36em]:inline-flex">
+              {selectedAgent.i18n?.[lang]?.name ?? selectedAgent.name}
+            </span>
           </Button>
         </DropdownTrigger>
         <AgentPicker

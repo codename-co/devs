@@ -399,6 +399,19 @@ export const AgentRunPage = () => {
     }
   }, [currentConversation])
 
+  // Update URL hash when conversation ID becomes available
+  useEffect(() => {
+    if (currentConversation?.id && selectedAgent?.id) {
+      const expectedHash = `#${selectedAgent.id}/${currentConversation.id}`
+      const currentHash = location.hash
+
+      // Only update if the hash doesn't already include the conversation ID
+      if (currentHash !== expectedHash) {
+        navigate(expectedHash, { replace: true })
+      }
+    }
+  }, [currentConversation?.id, selectedAgent?.id, location.hash, navigate])
+
   // Load artifacts on mount
   useEffect(() => {
     loadArtifacts()
@@ -638,7 +651,7 @@ export const AgentRunPage = () => {
           className="max-w-4xl mx-auto mt-6"
           value={prompt}
           onValueChange={setPrompt}
-          onSubmitTask={onSubmit}
+          onSubmitToAgent={onSubmit}
           isSending={isSending}
           selectedAgent={selectedAgent}
           onAgentChange={setSelectedAgent}
