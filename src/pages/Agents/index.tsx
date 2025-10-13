@@ -191,14 +191,16 @@ export const AgentsPage = () => {
             onSelectionChange={(key) => setActiveTab(key as string)}
             className="w-full"
           >
-            <Tab
-              key="my-agents"
-              title={t(`My Agents ({count})`, {
-                count: userAgents.length,
-              })}
-            >
-              {renderAgentGrid(userAgents, false)}
-            </Tab>
+            {userAgents.length > 0 && (
+              <Tab
+                key="my-agents"
+                title={t(`My Agents ({count})`, {
+                  count: userAgents.length,
+                })}
+              >
+                {renderAgentGrid(userAgents, false)}
+              </Tab>
+            )}
             <Tab
               key="global-agents"
               title={t(`Built-in Agents ({count})`, {

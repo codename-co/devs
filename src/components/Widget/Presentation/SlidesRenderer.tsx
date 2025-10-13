@@ -172,11 +172,13 @@ export const SlidesRenderer = ({
         </ModalContent>
       </Modal>
 
-      <div className={`slides-presentation ${className}`}>
+      <div
+        className={`slides-presentation @container/presentation ${className}`}
+      >
         <div className="flex gap-4">
           {/* Slides Preview Panel */}
           {totalSlides > 1 && (
-            <div className="slides-preview flex-shrink-0 w-48">
+            <div className="slides-preview hidden @3xl/presentation:block flex-shrink-0 w-48">
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
                 {slides.map((slide, index) => (
                   <div
@@ -233,6 +235,7 @@ export const SlidesRenderer = ({
                 <Pagination
                   loop
                   isCompact
+                  siblings={0}
                   showControls
                   variant="light"
                   page={currentSlide + 1}

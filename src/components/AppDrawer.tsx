@@ -298,7 +298,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
             isIconOnly
             variant="light"
             onPress={() => userSettings.getState().toggleDrawer()}
-            className="mb-4 pointer-events-auto"
+            className="mb-4 pointer-events-auto backdrop-blur-xs backdrop-brightness-120"
             aria-label={t('Expand sidebar')}
           >
             <Icon name="SidebarExpand" className="opacity-40 dark:opacity-60" />
@@ -442,7 +442,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
       </div>
 
       {/* Progress indicator and Product name at bottom */}
-      <div className="mt-auto pt-4">
+      <div className="mt-auto pt-4 hidden lg:block">
         <ProgressIndicator />
         <AboutModal
           isOpen={showAboutModal}

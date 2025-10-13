@@ -84,10 +84,6 @@ export const Presentation = ({ code }: { code: string }) => {
     renderMarpit()
   }, [code])
 
-  const handleSlideChange = (_slideIndex: number) => {
-    // Slide change is now handled by SlidesRenderer
-  }
-
   const exportToPDF = () => {
     if (!renderedContent) return
 
@@ -232,7 +228,6 @@ export const Presentation = ({ code }: { code: string }) => {
   return (
     <SlidesRenderer
       slides={renderedSlides}
-      onSlideChange={handleSlideChange}
       onExportPDF={exportToPDF}
       className="marpit-presentation"
     />
