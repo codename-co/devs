@@ -249,6 +249,7 @@ export const AgentRunPage = () => {
                   selectedAgent?.instructions || t('No system prompt defined.')
                 }
                 className="prose dark:prose-invert prose-sm text-default-700"
+                renderWidgets={false}
               />
             </div>
           )}

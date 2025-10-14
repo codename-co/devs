@@ -1,9 +1,24 @@
 import { useEffect, useState } from 'react'
-import { Alert } from '@heroui/react'
+import { Alert, Spinner } from '@heroui/react'
 import { type Marpit as MarpitType } from '@marp-team/marpit'
 // @ts-ignore
 import MarpitCSS from './Presentation.marp.css?raw'
 import { SlidesRenderer } from './SlidesRenderer'
+import { errorToast } from '@/lib/toast'
+
+// Extract individual slide HTML from the full rendered content
+const extractSlideHTML = (fullHTML: string, slideIndex: number): string => {
+  // Parse the HTML to extract individual sections
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(fullHTML, 'text/html')
+  const sections = doc.querySelectorAll('section')
+
+  if (slideIndex < sections.length) {
+    return sections[slideIndex].outerHTML
+  }
+
+  return ''
+}
 
 /**
  * Marpit Presentation Renderer
@@ -90,7 +105,7 @@ export const Presentation = ({ code }: { code: string }) => {
     // Create a new window
     const win = window.open('', '_blank')
     if (!win) {
-      alert('Please allow popups')
+      errorToast('Please allow popups')
       return
     }
 
@@ -152,7 +167,7 @@ export const Presentation = ({ code }: { code: string }) => {
   // This effect is now handled in the individual slide containers
 
   if (loading) {
-    return <p className="text-sm text-default-600">Loading presentation…</p>
+    return <Spinner size="lg" className="m-4" />
   }
 
   if (error) {
@@ -167,62 +182,10 @@ export const Presentation = ({ code }: { code: string }) => {
     return <Alert color="default">No slides to display</Alert>
   }
 
-  // Create slides array - each slide needs its own container with the specific slide visible
+  // Create slides array - each slide contains only its specific section HTML
   const renderedSlides = Array.from(
     { length: renderedContent.slides },
-    (_, index) => (
-      <div
-        key={`marpit-slide-${index}`}
-        className="marpit-content w-full h-full flex items-center justify-center"
-      >
-        <div
-          dangerouslySetInnerHTML={{ __html: renderedContent.html }}
-          style={{
-            // Hide all sections except the one at this index
-            ['--slide-index' as any]: index,
-          }}
-          ref={(el) => {
-            if (el) {
-              const container = el.parentElement
-              if (!container) return
-
-              const sections = el.querySelectorAll('section')
-              sections.forEach((section, sectionIndex) => {
-                const htmlSection = section as HTMLElement
-                if (sectionIndex === index) {
-                  htmlSection.style.display = 'flex'
-
-                  // Calculate scale to fit container while maintaining aspect ratio
-                  const containerWidth = container.clientWidth
-                  const containerHeight = container.clientHeight
-                  const slideWidth = 1280
-                  const slideHeight = 720
-
-                  const scaleX = containerWidth / slideWidth
-                  const scaleY = containerHeight / slideHeight
-                  const scale = Math.min(scaleX, scaleY, 1) // Don't scale up
-
-                  htmlSection.style.width = `${slideWidth}px`
-                  htmlSection.style.height = `${slideHeight}px`
-                  htmlSection.style.transform = `scale(${scale})`
-                  htmlSection.style.transformOrigin = 'center center'
-                } else {
-                  htmlSection.style.display = 'none'
-                }
-              })
-
-              // Apply the original CSS
-              const existingStyle = el.querySelector('style')
-              if (!existingStyle) {
-                const styleElement = document.createElement('style')
-                styleElement.textContent = renderedContent.css
-                el.appendChild(styleElement)
-              }
-            }
-          }}
-        />
-      </div>
-    ),
+    (_, index) => extractSlideHTML(renderedContent.html, index),
   )
 
   return (

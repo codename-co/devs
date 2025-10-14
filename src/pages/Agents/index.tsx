@@ -33,7 +33,9 @@ export const AgentsPage = () => {
   const [userAgents, setUserAgents] = useState<Agent[]>([])
   const [globalAgents, setGlobalAgents] = useState<Agent[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('my-agents')
+  const [activeTab, setActiveTab] = useState<
+    'global-agents' | 'my-agents' | undefined
+  >(undefined)
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null)
   const [selectedKnowledgeIds, setSelectedKnowledgeIds] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
@@ -47,6 +49,11 @@ export const AgentsPage = () => {
     try {
       const { customAgents, builtInAgents } = await getAgentsSeparated()
 
+      if (customAgents.length === 0) {
+        setActiveTab('global-agents')
+      } else {
+        setActiveTab('my-agents')
+      }
       setUserAgents(customAgents)
       setGlobalAgents(builtInAgents)
     } catch (error) {

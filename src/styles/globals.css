@@ -84,6 +84,10 @@
   navigation: auto;
 }
 @layer utilities {
+  .no-scrollbar {
+    @apply [scrollbar-width:none] [&::-webkit-scrollbar]:hidden;
+  }
+
   /* Default smooth slide transition */
   ::view-transition-old(root),
   ::view-transition-new(root) {

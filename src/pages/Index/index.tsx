@@ -252,7 +252,7 @@ export const IndexPage = () => {
         <Section mainClassName="section-blank">
           <motion.div
             layoutId="active"
-            className="flex flex-col items-center mt-0 sm:mt-[10vh]"
+            className="flex flex-col text-center items-center mt-0 sm:mt-[10vh]"
             {...motionVariants.container}
           >
             <motion.div {...motionVariants.icon}>
@@ -292,15 +292,19 @@ export const IndexPage = () => {
         </Section>
 
         <motion.div {...motionVariants.agentSection}>
-          <Section mainClassName="bg-default-50">
+          <Section
+            mainClassName="bg-default-50"
+            className="@container"
+            size={7}
+          >
             {/* Use Cases Section */}
             {!isLoadingAgents && (
               <motion.div {...motionVariants.usecases}>
-                <Container>
+                <Container size={7}>
                   <Title level={3} size="lg">
                     {t('Try these examples')}
                   </Title>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mx-auto">
                     {usecases.map(({ agent, examples }) =>
                       examples.map((example) => (
                         <Card
@@ -344,11 +348,11 @@ export const IndexPage = () => {
             {/* Agents Section */}
             {!isLoadingAgents && (
               <motion.div {...motionVariants.agentCards}>
-                <Container>
+                <Container size={6}>
                   {/* <Title level={3} size="lg" className="text-gray-600">
                 {t('Agents')}
               </Title> */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  <div className="grid grid-cols-2 @sm:grid-cols-3 @md:grid-cols-4 @lg:grid-cols-6 gap-3">
                     {agents.map((agent) => (
                       <AgentCard
                         key={agent.id}

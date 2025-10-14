@@ -11,6 +11,7 @@ import {
 } from '@heroui/react'
 import { useI18n } from '@/i18n'
 import localI18n from './i18n'
+import { Slide } from './PresentationSlide'
 import { Icon } from '../../Icon'
 
 /**
@@ -23,7 +24,7 @@ export const SlidesRenderer = ({
   onSlideChange,
   onExportPDF,
 }: {
-  slides: React.ReactNode[]
+  slides: string[]
   children?: React.ReactNode
   className?: string
   onSlideChange?: (slideIndex: number) => void
@@ -123,7 +124,7 @@ export const SlidesRenderer = ({
             <div className="flex items-center gap-3">
               <div className="w-full h-full flex items-center justify-center">
                 <div className="relative w-full h-full max-w-none max-h-none">
-                  {slides[currentSlide]}
+                  <Slide content={slides[currentSlide]} />
 
                   {/* Navigation overlay - only show on hover */}
                   <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300">
@@ -207,7 +208,10 @@ export const SlidesRenderer = ({
                         className="absolute inset-0 transform scale-[0.35] origin-top-left overflow-hidden"
                         style={{ width: '286%', height: '286%' }}
                       >
-                        {slide}
+                        <Slide
+                          content={slide}
+                          className="pointer-events-none"
+                        />
                       </div>
                       <div className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">
                         {index + 1}
@@ -222,12 +226,7 @@ export const SlidesRenderer = ({
           {/* Main Content */}
           <div className="flex-1 min-w-0">
             {/* Slide Content */}
-            <div
-              className="slide-container bg-white border border-default-200 rounded-md mb-4 overflow-hidden"
-              style={{ aspectRatio: '16/9', minHeight: '300px' }}
-            >
-              {slides[currentSlide]}
-            </div>
+            <Slide content={slides[currentSlide]} />
 
             {/* Navigation Controls */}
             <div className="flex items-center justify-between">

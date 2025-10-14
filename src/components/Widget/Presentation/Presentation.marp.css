@@ -10,6 +10,22 @@
 
 /* @import 'default'; */
 /* --- */
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 h1 {
   border-bottom: none;
   color: var(--h1-color);
@@ -174,6 +190,11 @@ section {
   height: 720px;
   padding: 78.5px;
   width: 1280px;
+  transform-origin: center center;
+  /* transform: scale(min(100cqw / 1280px, 100cqh / 720px)); */
+  zoom: min(100cqw / 1280px, 100cqh / 720px);
+  max-width: 1280px;
+  max-height: 720px;
   /* Definitions for classic bhavior: Users can adopt flex centering by tweaking style `section {
 		 display: flex
 	}
@@ -229,11 +250,13 @@ section {
   font-family:
     ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
     'Segoe UI Symbol', 'Noto Color Emoji';
-}
-section {
   background-color: var(--background);
   color: #fff;
 }
+/* section {
+  background-color: var(--background);
+  color: #fff;
+} */
 h1 {
   font-size: 3.6em;
   line-height: 1;

@@ -153,7 +153,7 @@ export const fr: I18n = {
   simple: 'simple',
   moderate: 'modéré',
   complex: 'complexe',
-  Overview: 'Aperçu',
+  Overview: 'Vue d’ensemble',
   'Team & Roles': 'Équipe et rôles',
   Artifacts: 'Artefacts',
   Details: 'Détails',

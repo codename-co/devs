@@ -258,6 +258,7 @@ export const MethodologyPage = () => {
                   showTitle={false}
                   showActions={false}
                   showShadows={false}
+                  className="max-h-240"
                 />
               )}
             </Container>
@@ -526,320 +527,330 @@ export const MethodologyPage = () => {
           </Section>
         </Tab>
 
-        <Tab key="roles" title={t('Roles')}>
-          {/* Agent Coordination */}
-          <Section>
-            <Container>
-              <Title level={2}>{t('Role Distribution')}</Title>
-              {methodology.agentCoordination?.roles &&
-                methodology.agentCoordination.roles.length > 0 && (
-                  <div className="space-y-3 gap-3 grid grid-cols-12 grid-rows-2">
-                    {methodology.agentCoordination.roles.map((role) => {
-                      const isRequired =
-                        methodology.agentCoordination?.teamComposition?.required?.includes(
-                          role.id,
-                        ) ?? false
-
-                      return (
-                        <div
-                          key={role.id}
-                          className="col-span-12 md:col-span-4 relative group"
-                        >
-                          <Icon
-                            name={role.icon ?? 'Emoji'}
-                            size="xl"
-                            className="text-default-400 my-2"
-                          />
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <h4 className="font-semibold">{role.name}</h4>
-                            {role.authority && (
-                              <Chip size="sm" variant="flat">
-                                {t(role.authority)}
-                              </Chip>
-                            )}
-                            {role.experienceLevel && (
-                              <Chip size="sm" variant="flat" color="secondary">
-                                {t(role.experienceLevel)}
-                              </Chip>
-                            )}
-                            {isRequired && (
-                              <Chip size="sm" variant="flat" color="danger">
-                                {t('Required')}
-                              </Chip>
-                            )}
-                          </div>
-                          {role.description && (
-                            <p className="text-sm text-default-600 mb-2">
-                              {role.description}
-                            </p>
-                          )}
-                          {role.responsibilities.length > 0 && (
-                            <div className="mb-2">
-                              <p className="text-xs font-semibold text-default-500 mb-1">
-                                {t('Responsibilities')}:
-                              </p>
-                              <ul className="text-sm text-default-500 list-disc list-inside">
-                                {role.responsibilities.map((resp, i) => (
-                                  <li key={i}>{resp}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                          {role.requiredSkills &&
-                            role.requiredSkills.length > 0 && (
-                              <div className="mb-2">
-                                <p className="text-xs font-semibold text-default-500 mb-1">
-                                  {t('Required Skills')}:
-                                </p>
-                                <div className="flex gap-1 flex-wrap">
-                                  {role.requiredSkills.map((skill) => (
-                                    <Chip
-                                      key={skill}
-                                      size="sm"
-                                      variant="flat"
-                                      color="success"
-                                    >
-                                      {skill}
-                                    </Chip>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          {role.optionalSkills &&
-                            role.optionalSkills.length > 0 && (
-                              <div>
-                                <p className="text-xs font-semibold text-default-500 mb-1">
-                                  {t('Optional Skills')}:
-                                </p>
-                                <div className="flex gap-1 flex-wrap">
-                                  {role.optionalSkills.map((skill) => (
-                                    <Chip key={skill} size="sm" variant="dot">
-                                      {skill}
-                                    </Chip>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-            </Container>
-          </Section>
-
-          {/* Team Composition */}
-          {methodology.agentCoordination?.teamComposition && (
+        {Boolean(methodology.agentCoordination?.roles?.length) && (
+          <Tab key="roles" title={t('Roles')}>
+            {/* Agent Coordination */}
             <Section>
               <Container>
-                <Title level={2}>{t('Team Composition')}</Title>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {methodology.agentCoordination.teamComposition.minSize && (
-                    <Card>
-                      <CardBody>
-                        <p className="text-sm text-default-600">
-                          {t('Minimum team size')}
-                        </p>
-                        <p className="text-2xl font-semibold">
-                          {
-                            methodology.agentCoordination.teamComposition
-                              .minSize
-                          }
-                        </p>
-                      </CardBody>
-                    </Card>
+                <Title level={2}>{t('Role Distribution')}</Title>
+                {methodology.agentCoordination?.roles &&
+                  methodology.agentCoordination.roles.length > 0 && (
+                    <div className="space-y-3 gap-3 grid grid-cols-12 grid-rows-2">
+                      {methodology.agentCoordination.roles.map((role) => {
+                        const isRequired =
+                          methodology.agentCoordination?.teamComposition?.required?.includes(
+                            role.id,
+                          ) ?? false
+
+                        return (
+                          <div
+                            key={role.id}
+                            className="col-span-12 md:col-span-4 relative group"
+                          >
+                            <Icon
+                              name={role.icon ?? 'Emoji'}
+                              size="xl"
+                              className="text-default-400 my-2"
+                            />
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <h4 className="font-semibold">{role.name}</h4>
+                              {role.authority && (
+                                <Chip size="sm" variant="flat">
+                                  {t(role.authority)}
+                                </Chip>
+                              )}
+                              {role.experienceLevel && (
+                                <Chip
+                                  size="sm"
+                                  variant="flat"
+                                  color="secondary"
+                                >
+                                  {t(role.experienceLevel)}
+                                </Chip>
+                              )}
+                              {isRequired && (
+                                <Chip size="sm" variant="flat" color="danger">
+                                  {t('Required')}
+                                </Chip>
+                              )}
+                            </div>
+                            {role.description && (
+                              <p className="text-sm text-default-600 mb-2">
+                                {role.description}
+                              </p>
+                            )}
+                            {role.responsibilities.length > 0 && (
+                              <div className="mb-2">
+                                <p className="text-xs font-semibold text-default-500 mb-1">
+                                  {t('Responsibilities')}:
+                                </p>
+                                <ul className="text-sm text-default-500 list-disc list-inside">
+                                  {role.responsibilities.map((resp, i) => (
+                                    <li key={i}>{resp}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {role.requiredSkills &&
+                              role.requiredSkills.length > 0 && (
+                                <div className="mb-2">
+                                  <p className="text-xs font-semibold text-default-500 mb-1">
+                                    {t('Required Skills')}:
+                                  </p>
+                                  <div className="flex gap-1 flex-wrap">
+                                    {role.requiredSkills.map((skill) => (
+                                      <Chip
+                                        key={skill}
+                                        size="sm"
+                                        variant="flat"
+                                        color="success"
+                                      >
+                                        {skill}
+                                      </Chip>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            {role.optionalSkills &&
+                              role.optionalSkills.length > 0 && (
+                                <div>
+                                  <p className="text-xs font-semibold text-default-500 mb-1">
+                                    {t('Optional Skills')}:
+                                  </p>
+                                  <div className="flex gap-1 flex-wrap">
+                                    {role.optionalSkills.map((skill) => (
+                                      <Chip key={skill} size="sm" variant="dot">
+                                        {skill}
+                                      </Chip>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                          </div>
+                        )
+                      })}
+                    </div>
                   )}
-                  {methodology.agentCoordination.teamComposition.maxSize && (
-                    <Card>
-                      <CardBody>
-                        <p className="text-sm text-default-600">
-                          {t('Maximum team size')}
-                        </p>
-                        <p className="text-2xl font-semibold">
-                          {
-                            methodology.agentCoordination.teamComposition
-                              .maxSize
-                          }
-                        </p>
-                      </CardBody>
-                    </Card>
-                  )}
-                </div>
               </Container>
             </Section>
-          )}
 
-          {/* Communication Patterns */}
-          {methodology.agentCoordination?.communicationPatterns &&
-            methodology.agentCoordination.communicationPatterns.length > 0 && (
+            {/* Team Composition */}
+            {methodology.agentCoordination?.teamComposition && (
               <Section>
                 <Container>
-                  <Title level={2}>{t('Communication Patterns')}</Title>
-                  <div className="space-y-3">
-                    {methodology.agentCoordination.communicationPatterns.map(
-                      (pattern, index) => {
-                        // Find role names from IDs
-                        const fromRole =
-                          methodology.agentCoordination?.roles?.find(
-                            (r) => r.id === pattern.from,
-                          )
-                        const toRole =
-                          methodology.agentCoordination?.roles?.find(
-                            (r) => r.id === pattern.to,
-                          )
-
-                        return (
-                          <Card key={index}>
-                            <CardBody>
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                  <p className="text-sm text-default-600">
-                                    {t('From')}
-                                  </p>
-                                  <p className="font-semibold">
-                                    {fromRole?.name || pattern.from}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-sm text-default-600">
-                                    {t('To')}
-                                  </p>
-                                  <p className="font-semibold">
-                                    {toRole?.name || pattern.to}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-sm text-default-600">
-                                    {t('Type')}
-                                  </p>
-                                  <Chip size="sm" variant="flat">
-                                    {t(pattern.type)}
-                                  </Chip>
-                                </div>
-                              </div>
-                              {pattern.contextTypes &&
-                                pattern.contextTypes.length > 0 && (
-                                  <div className="mt-3">
-                                    <p className="text-sm text-default-600 mb-2">
-                                      {t('Context types')}
-                                    </p>
-                                    <div className="flex gap-2 flex-wrap">
-                                      {pattern.contextTypes.map((type) => (
-                                        <Chip
-                                          key={type}
-                                          size="sm"
-                                          variant="dot"
-                                        >
-                                          {t(type)}
-                                        </Chip>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                            </CardBody>
-                          </Card>
-                        )
-                      },
+                  <Title level={2}>{t('Team Composition')}</Title>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {methodology.agentCoordination.teamComposition.minSize && (
+                      <Card>
+                        <CardBody>
+                          <p className="text-sm text-default-600">
+                            {t('Minimum team size')}
+                          </p>
+                          <p className="text-2xl font-semibold">
+                            {
+                              methodology.agentCoordination.teamComposition
+                                .minSize
+                            }
+                          </p>
+                        </CardBody>
+                      </Card>
+                    )}
+                    {methodology.agentCoordination.teamComposition.maxSize && (
+                      <Card>
+                        <CardBody>
+                          <p className="text-sm text-default-600">
+                            {t('Maximum team size')}
+                          </p>
+                          <p className="text-2xl font-semibold">
+                            {
+                              methodology.agentCoordination.teamComposition
+                                .maxSize
+                            }
+                          </p>
+                        </CardBody>
+                      </Card>
                     )}
                   </div>
                 </Container>
               </Section>
             )}
 
-          {/* Decision Authority */}
-          {methodology.agentCoordination?.decisionAuthority &&
-            methodology.agentCoordination.decisionAuthority.length > 0 && (
-              <Section>
-                <Container>
-                  <Title level={2}>{t('Decision Authority')}</Title>
-                  <div className="space-y-3">
-                    {methodology.agentCoordination.decisionAuthority.map(
-                      (decision, index) => {
-                        // Find authority role name
-                        const authorityRole =
-                          methodology.agentCoordination?.roles?.find(
-                            (r) => r.id === decision.authority,
-                          )
+            {/* Communication Patterns */}
+            {methodology.agentCoordination?.communicationPatterns &&
+              methodology.agentCoordination.communicationPatterns.length >
+                0 && (
+                <Section>
+                  <Container>
+                    <Title level={2}>{t('Communication Patterns')}</Title>
+                    <div className="space-y-3">
+                      {methodology.agentCoordination.communicationPatterns.map(
+                        (pattern, index) => {
+                          // Find role names from IDs
+                          const fromRole =
+                            methodology.agentCoordination?.roles?.find(
+                              (r) => r.id === pattern.from,
+                            )
+                          const toRole =
+                            methodology.agentCoordination?.roles?.find(
+                              (r) => r.id === pattern.to,
+                            )
 
-                        return (
-                          <Card key={index}>
-                            <CardBody>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                  <p className="text-sm text-default-600">
-                                    {t('Decision')}
-                                  </p>
-                                  <p className="font-semibold">
-                                    {decision.decision}
-                                  </p>
+                          return (
+                            <Card key={index}>
+                              <CardBody>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                  <div>
+                                    <p className="text-sm text-default-600">
+                                      {t('From')}
+                                    </p>
+                                    <p className="font-semibold">
+                                      {fromRole?.name || pattern.from}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-sm text-default-600">
+                                      {t('To')}
+                                    </p>
+                                    <p className="font-semibold">
+                                      {toRole?.name || pattern.to}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-sm text-default-600">
+                                      {t('Type')}
+                                    </p>
+                                    <Chip size="sm" variant="flat">
+                                      {t(pattern.type)}
+                                    </Chip>
+                                  </div>
                                 </div>
-                                <div>
-                                  <p className="text-sm text-default-600">
-                                    {t('Authority')}
-                                  </p>
-                                  <Chip
-                                    size="sm"
-                                    variant="flat"
-                                    color="primary"
-                                  >
-                                    {authorityRole?.name || decision.authority}
-                                  </Chip>
-                                </div>
-                              </div>
-                              <div className="mt-3 flex items-center gap-4">
-                                <div className="flex items-center gap-2">
-                                  <p className="text-sm text-default-600">
-                                    {t('Requires consensus')}:
-                                  </p>
-                                  <Chip
-                                    size="sm"
-                                    variant="flat"
-                                    color={
-                                      decision.requiresConsensus
-                                        ? 'success'
-                                        : 'default'
-                                    }
-                                  >
-                                    {decision.requiresConsensus
-                                      ? t('Yes')
-                                      : t('No')}
-                                  </Chip>
-                                </div>
-                                {decision.consensusRoles &&
-                                  decision.consensusRoles.length > 0 && (
-                                    <div>
-                                      <p className="text-sm text-default-600 inline mr-2">
-                                        {t('Consensus roles')}:
+                                {pattern.contextTypes &&
+                                  pattern.contextTypes.length > 0 && (
+                                    <div className="mt-3">
+                                      <p className="text-sm text-default-600 mb-2">
+                                        {t('Context types')}
                                       </p>
-                                      {decision.consensusRoles.map((roleId) => {
-                                        const role =
-                                          methodology.agentCoordination?.roles?.find(
-                                            (r) => r.id === roleId,
-                                          )
-                                        return (
+                                      <div className="flex gap-2 flex-wrap">
+                                        {pattern.contextTypes.map((type) => (
                                           <Chip
-                                            key={roleId}
+                                            key={type}
                                             size="sm"
                                             variant="dot"
-                                            className="mr-1"
                                           >
-                                            {role?.name || roleId}
+                                            {t(type)}
                                           </Chip>
-                                        )
-                                      })}
+                                        ))}
+                                      </div>
                                     </div>
                                   )}
-                              </div>
-                            </CardBody>
-                          </Card>
-                        )
-                      },
-                    )}
-                  </div>
-                </Container>
-              </Section>
-            )}
-        </Tab>
+                              </CardBody>
+                            </Card>
+                          )
+                        },
+                      )}
+                    </div>
+                  </Container>
+                </Section>
+              )}
+
+            {/* Decision Authority */}
+            {methodology.agentCoordination?.decisionAuthority &&
+              methodology.agentCoordination.decisionAuthority.length > 0 && (
+                <Section>
+                  <Container>
+                    <Title level={2}>{t('Decision Authority')}</Title>
+                    <div className="space-y-3">
+                      {methodology.agentCoordination.decisionAuthority.map(
+                        (decision, index) => {
+                          // Find authority role name
+                          const authorityRole =
+                            methodology.agentCoordination?.roles?.find(
+                              (r) => r.id === decision.authority,
+                            )
+
+                          return (
+                            <Card key={index}>
+                              <CardBody>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div>
+                                    <p className="text-sm text-default-600">
+                                      {t('Decision')}
+                                    </p>
+                                    <p className="font-semibold">
+                                      {decision.decision}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-sm text-default-600">
+                                      {t('Authority')}
+                                    </p>
+                                    <Chip
+                                      size="sm"
+                                      variant="flat"
+                                      color="primary"
+                                    >
+                                      {authorityRole?.name ||
+                                        decision.authority}
+                                    </Chip>
+                                  </div>
+                                </div>
+                                <div className="mt-3 flex items-center gap-4">
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-sm text-default-600">
+                                      {t('Requires consensus')}:
+                                    </p>
+                                    <Chip
+                                      size="sm"
+                                      variant="flat"
+                                      color={
+                                        decision.requiresConsensus
+                                          ? 'success'
+                                          : 'default'
+                                      }
+                                    >
+                                      {decision.requiresConsensus
+                                        ? t('Yes')
+                                        : t('No')}
+                                    </Chip>
+                                  </div>
+                                  {decision.consensusRoles &&
+                                    decision.consensusRoles.length > 0 && (
+                                      <div>
+                                        <p className="text-sm text-default-600 inline mr-2">
+                                          {t('Consensus roles')}:
+                                        </p>
+                                        {decision.consensusRoles.map(
+                                          (roleId) => {
+                                            const role =
+                                              methodology.agentCoordination?.roles?.find(
+                                                (r) => r.id === roleId,
+                                              )
+                                            return (
+                                              <Chip
+                                                key={roleId}
+                                                size="sm"
+                                                variant="dot"
+                                                className="mr-1"
+                                              >
+                                                {role?.name || roleId}
+                                              </Chip>
+                                            )
+                                          },
+                                        )}
+                                      </div>
+                                    )}
+                                </div>
+                              </CardBody>
+                            </Card>
+                          )
+                        },
+                      )}
+                    </div>
+                  </Container>
+                </Section>
+              )}
+          </Tab>
+        )}
 
         <Tab key="details" title={t('Details')}>
           {/* Configuration */}
@@ -1356,9 +1367,9 @@ export const MethodologyPage = () => {
             )}
         </Tab>
 
-        <Tab key="ceremonies" title={t('Ceremonies')}>
-          {/* Ceremonies */}
-          {methodology.ceremonies && methodology.ceremonies.length > 0 && (
+        {/* Ceremonies */}
+        {methodology.ceremonies && methodology.ceremonies.length > 0 && (
+          <Tab key="ceremonies" title={t('Ceremonies')}>
             <Section>
               <Container>
                 <Title level={2}>{t('Ceremonies')}</Title>
@@ -1486,8 +1497,8 @@ export const MethodologyPage = () => {
                 </div>
               </Container>
             </Section>
-          )}
-        </Tab>
+          </Tab>
+        )}
 
         <Tab key="code" title="API">
           <Section>

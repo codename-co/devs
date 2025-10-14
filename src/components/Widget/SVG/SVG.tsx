@@ -25,6 +25,12 @@ export const SVG = ({ code }: { code: string }) => {
   }
 
   return (
+    // <iframe
+    //   title="SVG Preview"
+    //   srcDoc={code}
+    //   className="svg-container flex justify-center items-center p-4"
+    //   sandbox="allow-same-origin allow-scripts allow-forms"
+    // />
     <div
       className="svg-container flex justify-center items-center p-4"
       dangerouslySetInnerHTML={{ __html: code }}

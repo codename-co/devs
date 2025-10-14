@@ -291,7 +291,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
     <div
       className={`group w-18 p-2 lg:p-4 h-screen z-50 flex flex-col transition-all duration-200 border-r border-transparent hover:bg-gray-50 dark:hover:bg-content1 hover:border-default-200 ${className} hover:pointer-events-auto`}
     >
-      <div className="flex flex-col items-center overflow-y-auto overflow-x-hidden">
+      <div className="flex flex-col items-center overflow-y-auto overflow-x-hidden no-scrollbar">
         <Tooltip content={t('Expand sidebar')} placement="right">
           <Button
             data-testid="menu-button"
