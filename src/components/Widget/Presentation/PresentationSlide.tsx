@@ -1,3 +1,4 @@
+// @ts-ignore
 import css from './Presentation.marp.css?raw'
 
 export const Slide = ({

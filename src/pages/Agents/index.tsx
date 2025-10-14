@@ -195,7 +195,7 @@ export const AgentsPage = () => {
         <Container>
           <Tabs
             selectedKey={activeTab}
-            onSelectionChange={(key) => setActiveTab(key as string)}
+            onSelectionChange={(key) => setActiveTab(key as any)}
             className="w-full"
           >
             {userAgents.length > 0 && (
