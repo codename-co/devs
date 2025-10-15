@@ -14,8 +14,9 @@ import DefaultLayout from '@/layouts/Default'
 import type { Methodology } from '@/types/methodology.types'
 import { useI18n } from '@/i18n'
 import { HeaderProps } from '@/lib/types'
-import { Container, Section } from '@/components'
+import { Container, Section, Widget } from '@/components'
 import localI18n from './i18n'
+import { MethodologyMermaidGenerator } from '@/lib/methodology-mermaid-generator'
 
 export function MethodologiesPage() {
   const { lang, t, url } = useI18n(localI18n)
@@ -133,6 +134,24 @@ export function MethodologiesPage() {
                   >
                     <CardBody className="py-4">
                       <div className="flex items-center justify-between gap-4">
+                        <Widget
+                          type="diagram"
+                          language="mermaid"
+                          code={
+                            // Generate Mermaid diagram
+                            new MethodologyMermaidGenerator(methodology, {
+                              includeNotes: false,
+                              includeAgentRoles: false,
+                              includeArtifacts: false,
+                              showTaskDetails: false,
+                            }).generate()
+                          }
+                          title={t('Graphical Representation')}
+                          showTitle={false}
+                          showActions={false}
+                          showShadows={true}
+                          className="hidden md:block max-h-240 w-32 h-32"
+                        />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <h3 className="text-base font-medium">
@@ -149,20 +168,22 @@ export function MethodologiesPage() {
                                 </>
                               ) : null}
                             </h3>
-                            <Chip size="sm" variant="flat">
-                              {methodology.metadata.type}
-                            </Chip>
-                            {methodology.metadata.complexity && (
-                              <Chip
-                                size="sm"
-                                color={getComplexityColor(
-                                  methodology.metadata.complexity,
-                                )}
-                                variant="flat"
-                              >
-                                {methodology.metadata.complexity}
+                            <div className="hidden sm:flex items-center gap-2 mb-1">
+                              <Chip size="sm" variant="flat">
+                                {methodology.metadata.type}
                               </Chip>
-                            )}
+                              {methodology.metadata.complexity && (
+                                <Chip
+                                  size="sm"
+                                  color={getComplexityColor(
+                                    methodology.metadata.complexity,
+                                  )}
+                                  variant="flat"
+                                >
+                                  {methodology.metadata.complexity}
+                                </Chip>
+                              )}
+                            </div>
                           </div>
                           {methodology.metadata.description && (
                             <p className="text-sm text-default-500 truncate">
@@ -171,7 +192,7 @@ export function MethodologiesPage() {
                             </p>
                           )}
                           {methodology.metadata.tags && (
-                            <div className="flex gap-1 mt-2 flex-wrap">
+                            <div className="hidden sm:flex gap-1 mt-2 flex-wrap">
                               {methodology.metadata.tags
                                 .slice(0, 3)
                                 .map((tag) => (
@@ -196,7 +217,7 @@ export function MethodologiesPage() {
                             </div>
                           )}
                         </div>
-                        <div className="flex items-center gap-3 shrink-0">
+                        <div className="hidden sm:flex items-center gap-3 shrink-0">
                           <span className="text-sm text-default-400">
                             {methodology.phases.length}{' '}
                             {methodology.phases.length === 1
