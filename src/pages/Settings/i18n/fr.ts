@@ -10,10 +10,6 @@ export const fr: I18n = {
   'Choose your preferred language': 'Choisissez votre langue préférée',
   'Interface Language': 'Langue de l’interface',
   'Platform Name': 'Nom de la plateforme',
-  Theme: 'Thème',
-  System: 'Système',
-  Light: 'Clair',
-  Dark: 'Sombre',
   'Secure Storage': 'Stockage sécurisé',
   'Manage your encryption keys and secure storage':
     'Gérez vos clés de chiffrement et votre stockage sécurisé',

@@ -35,6 +35,14 @@ export const es: I18n = {
   'New Agent': 'Nuevo agente',
   'New Methodology': 'Nueva metodología',
   'Upgrade to Pro': 'Actualizar a Pro',
+  'Quick Actions': 'Acciones rápidas',
+  'Toggle Theme': 'Cambiar tema',
+  Theme: 'Tema',
+  System: 'Sistema',
+  Light: 'Claro',
+  Dark: 'Oscuro',
+  About: 'Acerca de',
+  Language: 'Idioma',
 
   // PromptArea
   'Need something done?': '¿Necesitas que se haga algo?',

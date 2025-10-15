@@ -3,7 +3,6 @@ import DefaultLayout from '@/layouts/Default'
 import { useI18n } from '@/i18n'
 import { HeaderProps } from '@/lib/types'
 import localI18n from './i18n'
-// @ts-ignore
 import yolo from '../../../public/methodologies/yolo.methodology.yaml?raw'
 
 const DEFAULT_VALUE = `# yaml-language-server: $schema=/schemas/methodology.schema.json

@@ -33,6 +33,14 @@ export const en = [
   'New Agent',
   'New Methodology',
   'Upgrade to Pro',
+  'Quick Actions',
+  'Toggle Theme',
+  'Theme',
+  'System',
+  'Light',
+  'Dark',
+  'About',
+  'Language',
 
   // PromptArea
   'Need something done?',

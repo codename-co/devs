@@ -77,7 +77,7 @@ export const ProgressIndicator = () => {
     >
       <Icon
         name="DevsAnimated"
-        size="xl"
+        size="lg"
         className="text-primary-300 dark:text-white"
         animation={animation}
       />

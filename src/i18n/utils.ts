@@ -10,16 +10,6 @@ export const langs = Object.keys(languages).map(
   (lang) => (lang === defaultLang ? '' : lang) as Lang,
 )
 
-export const getLangFromUrl = (url: URL) => {
-  const [, lang] = url.pathname.split('/')
-
-  try {
-    if (lang in locales) return lang as keyof typeof locales
-  } catch {}
-
-  return defaultLang
-}
-
 /**
  * Parses markdown-style links [text](url) and converts them to React Router Link components
  * @param text - The text containing markdown links

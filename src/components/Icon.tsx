@@ -2,9 +2,7 @@ import { IconName } from '@/lib/types'
 import * as IconoirIcons from 'iconoir-react'
 import { type ComponentProps } from 'react'
 import * as SimpleIcons from 'simple-icons'
-// @ts-ignore
 import DevsAnimatedIcon from '/devs.svg?raw'
-// @ts-ignore
 import DevsStaticIcon from '/devs-static.svg?raw'
 
 const CustomIcons = {
@@ -148,10 +146,12 @@ export const Icons = {
   Folder: IconoirIcons.Folder,
   Html5: IconoirIcons.Html5,
   Internet: IconoirIcons.Internet,
+  Language: IconoirIcons.Language,
   LightBulbOn: IconoirIcons.LightBulbOn,
   Lock: IconoirIcons.Lock,
   MathBook: IconoirIcons.MathBook,
   MediaImage: IconoirIcons.MediaImage,
+  Menu: IconoirIcons.Menu,
   Microphone: IconoirIcons.Microphone,
   MicrophoneSpeaking: IconoirIcons.MicrophoneSpeaking,
   MoreHoriz: IconoirIcons.MoreHoriz,

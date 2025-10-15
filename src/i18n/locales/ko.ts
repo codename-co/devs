@@ -35,6 +35,14 @@ export const ko: I18n = {
   'New Agent': '새로운 에이전트',
   'New Methodology': '새로운 방법론',
   'Upgrade to Pro': 'Pro로 업그레이드',
+  'Quick Actions': '빠른 작업',
+  'Toggle Theme': '테마 전환',
+  Theme: '테마',
+  System: '시스템',
+  Light: '라이트',
+  Dark: '다크',
+  About: '정보',
+  Language: '언어',
 
   // PromptArea
   'Need something done?': '무언가 필요하신가요?',

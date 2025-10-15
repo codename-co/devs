@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Alert, Spinner } from '@heroui/react'
 import { type Marpit as MarpitType } from '@marp-team/marpit'
-// @ts-ignore
 import MarpitCSS from './Presentation.marp.css?raw'
 import { SlidesRenderer } from './SlidesRenderer'
 import { errorToast } from '@/lib/toast'

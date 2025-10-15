@@ -6,9 +6,15 @@ import {
   ListboxSection,
   ScrollShadow,
   Tooltip,
+  DropdownMenu,
+  DropdownItem,
+  DropdownTrigger,
+  Dropdown,
+  Select,
+  SelectItem,
 } from '@heroui/react'
 
-import { useI18n } from '@/i18n'
+import { Lang, languages, useI18n, useUrl } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
 
 import { Icon } from './Icon'
@@ -285,7 +291,6 @@ export const AppDrawer = () => {
 
 const CollapsedDrawer = ({ className }: { className?: string }) => {
   const { t, url } = useI18n()
-  const [showAboutModal, setShowAboutModal] = useState(false)
 
   return (
     <div
@@ -444,34 +449,36 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
       {/* Progress indicator and Product name at bottom */}
       <div className="mt-auto pt-4 hidden lg:block">
         <ProgressIndicator />
-        <AboutModal
-          isOpen={showAboutModal}
-          onClose={() => setShowAboutModal(false)}
-        />
-        <button
-          className="pointer-events-auto w-full text-center text-default-400 dark:text-default-500 hover:text-primary-500 cursor-pointer transition-colors border-0 bg-transparent p-0"
-          aria-label={PRODUCT.name}
-          onClick={() => setShowAboutModal(true)}
-        >
-          <Title
-            as="div"
-            size="sm"
-            className="text-center text-default-400 dark:text-default-500"
-            aria-label={PRODUCT.name}
-          >
-            {PRODUCT.displayName}
-          </Title>
-        </button>
       </div>
     </div>
   )
 }
 
 const ExpandedDrawer = ({ className }: { className?: string }) => {
-  const { t, url } = useI18n()
+  const { lang, t, url } = useI18n()
   const navigate = useNavigate()
   const customPlatformName = userSettings((state) => state.platformName)
+  const isDarkTheme = userSettings((state) => state.isDarkTheme())
+  const setTheme = userSettings((state) => state.setTheme)
+  const theme = userSettings((state) => state.theme)
   const [showAboutModal, setShowAboutModal] = useState(false)
+
+  const setLanguage = userSettings((state) => state.setLanguage)
+
+  const handleLanguageChange = (newLanguage: Lang) => {
+    // Update the language setting in the store
+    setLanguage(newLanguage)
+
+    // Generate the URL for the new language using useUrl from that language context
+    const newUrl = useUrl(newLanguage)
+    const currentPath =
+      window.location.pathname + window.location.search + window.location.hash
+    const path = currentPath.replace(`/${lang}`, '')
+    const newPath = newUrl(path)
+
+    // Navigate to the new URL
+    navigate(newPath)
+  }
 
   return (
     <div
@@ -689,28 +696,89 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
           {t('Upgrade to Pro')}
         </Button> */}
       </ScrollShadow>
-      {/* Progress indicator and Organization/Product name at bottom */}
-      <div className="mt-auto pt-2">
+
+      {/* Bottom navigation */}
+      <nav className="pointer-events-auto w-full flex flex-row mt-4 ml-2 items-center">
+        {/* Progress indicator and Organization/Product name at bottom */}
         <AboutModal
           isOpen={showAboutModal}
           onClose={() => setShowAboutModal(false)}
         />
-        <button
-          className="pointer-events-auto w-full text-center text-default-400 dark:text-default-500 hover:text-primary-500 cursor-pointer transition-colors border-0 bg-transparent p-0"
-          aria-label={PRODUCT.name}
-          onClick={() => setShowAboutModal(true)}
-        >
+        <span className=" w-full" aria-label={PRODUCT.name}>
           <Title
             as="div"
             size="lg"
-            className="text-default-400 dark:text-default-500 flex items-center justify-center gap-2"
+            className="text-default-400 dark:text-default-500 flex items-center gap-2"
             aria-label={PRODUCT.name}
           >
             <ProgressIndicator />
             {PRODUCT.displayName}
           </Title>
-        </button>
-      </div>
+        </span>
+        {/* Quick Actions Menu */}
+        <Dropdown placement="top-end">
+          <DropdownTrigger>
+            <Button
+              isIconOnly
+              startContent={
+                <Tooltip content={t('Quick Actions')} placement="top-end">
+                  <Icon name="Menu" />
+                </Tooltip>
+              }
+              size="sm"
+              variant="light"
+              className="opacity-40 dark:opacity-60"
+              aria-label={t('Quick Actions')}
+            />
+          </DropdownTrigger>
+          <DropdownMenu aria-label={t('Quick Actions')}>
+            <DropdownItem key="about" onClick={() => setShowAboutModal(true)}>
+              {t('About')}
+            </DropdownItem>
+            <DropdownItem
+              key="lang"
+              closeOnSelect={false}
+              // startContent={<Icon name="Language" />}
+              shortcut={
+                <Select
+                  selectedKeys={[lang]}
+                  onSelectionChange={(keys) => {
+                    const selectedLang = Array.from(keys)[0] as Lang
+                    if (selectedLang && selectedLang !== lang) {
+                      handleLanguageChange(selectedLang)
+                    }
+                  }}
+                  className="min-w-30"
+                  size="sm"
+                  variant="underlined"
+                >
+                  {Object.entries(languages).map(([key, name]) => (
+                    <SelectItem key={key} textValue={name}>
+                      {name}
+                    </SelectItem>
+                  ))}
+                </Select>
+              }
+              onPress={() => {
+                setLanguage(lang === 'en' ? 'es' : 'en')
+              }}
+            >
+              {t('Language')}
+            </DropdownItem>
+            <DropdownItem
+              key="theme"
+              closeOnSelect={false}
+              // startContent={<Icon name="LightBulbOn" />}
+              shortcut={theme === 'light' ? t('Light') : t('Dark')}
+              onPress={() => {
+                setTheme(isDarkTheme ? 'light' : 'dark')
+              }}
+            >
+              {t('Theme')}
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
+      </nav>
     </div>
   )
 }
