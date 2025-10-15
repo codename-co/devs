@@ -1,0 +1,643 @@
+metadata:
+  id: toc
+  name: TOC
+  title: Theory of Constraints
+  description: >
+    Management paradigm focusing on identifying and eliminating system constraints.
+    TOC uses the Five Focusing Steps to drive continuous improvement by addressing bottlenecks.
+  type: iterative
+  version: 1.0.0
+  origin: Eliyahu M. Goldratt
+  domains:
+    - operations-management
+    - process-improvement
+    - problem-solving
+    - systems-thinking
+  complexity: moderate
+  tags:
+    - constraints
+    - bottlenecks
+    - throughput
+    - continuous-improvement
+  i18n:
+    es:
+      title: Teoría de las Restricciones
+      description: >
+        Paradigma de gestión centrado en identificar y eliminar restricciones del sistema.
+        TOC utiliza los Cinco Pasos de Enfoque para impulsar la mejora continua abordando cuellos de botella.
+    fr:
+      title: Théorie des Contraintes
+      description: >
+        Paradigme de gestion axé sur l'identification et l'élimination des contraintes du système.
+        TOC utilise les Cinq Étapes de Focalisation pour favoriser l'amélioration continue en traitant les goulots d'étranglement.
+    ko:
+      title: 제약 이론
+      description: >
+        시스템 제약을 식별하고 제거하는 데 중점을 둔 관리 패러다임.
+        TOC는 병목 현상을 해결하여 지속적인 개선을 추진하기 위해 5가지 집중 단계를 사용합니다.
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 2
+  parallelization:
+    enabled: false
+    maxConcurrentTasks: 1
+
+phases:
+  - id: identify-constraint
+    name: Identify the Constraint
+    description: >
+      Find the single constraint (bottleneck) limiting system performance.
+      Focus on the weakest link in the chain.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Constraint must be identified
+        artifactType: constraint-analysis
+    tasks:
+      - id: map-system
+        title: Map System Flow
+        description: Document the entire system or process
+        type: analysis
+        complexity: simple
+        assignedRole: process-analyst
+        estimatedDuration: 120
+        artifacts:
+          outputs:
+            - typeId: system-map
+              required: true
+        requirements:
+          - type: functional
+            description: System flow must be completely mapped
+            priority: must
+            validationCriteria:
+              - All steps documented
+              - Inputs and outputs identified
+              - Resources mapped
+      - id: measure-capacity
+        title: Measure Capacity and Throughput
+        description: Measure each step's capacity and actual throughput
+        type: analysis
+        complexity: simple
+        assignedRole: data-analyst
+        estimatedDuration: 180
+        dependencies:
+          - map-system
+        artifacts:
+          inputs:
+            - typeId: system-map
+              required: true
+          outputs:
+            - typeId: capacity-metrics
+              required: true
+        requirements:
+          - type: functional
+            description: Capacity data must be accurate
+            priority: must
+            validationCriteria:
+              - All steps measured
+              - Bottlenecks identified
+              - Utilization calculated
+      - id: identify-bottleneck
+        title: Identify the Primary Constraint
+        description: Determine which step is the true constraint
+        type: analysis
+        complexity: simple
+        assignedRole: toc-specialist
+        estimatedDuration: 90
+        dependencies:
+          - measure-capacity
+        artifacts:
+          inputs:
+            - typeId: capacity-metrics
+              required: true
+          outputs:
+            - typeId: constraint-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: Primary constraint must be clearly identified
+            priority: must
+            validationCriteria:
+              - Single constraint identified
+              - Impact quantified
+              - Root cause understood
+    agentRequirements:
+      roles:
+        - process-analyst
+        - data-analyst
+        - toc-specialist
+      skills:
+        - process-mapping
+        - data-analysis
+        - systems-thinking
+      minExperience: mid
+
+  - id: exploit-constraint
+    name: Exploit the Constraint
+    description: >
+      Maximize output from the existing constraint without major investment.
+      Get the most from what you have.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Identify the Constraint phase must be completed
+        phaseId: identify-constraint
+    exitCriteria:
+      - type: artifact-exists
+        description: Exploitation plan must be implemented
+        artifactType: exploitation-results
+    tasks:
+      - id: develop-exploitation-plan
+        title: Develop Exploitation Plan
+        description: Identify ways to maximize constraint utilization
+        type: planning
+        complexity: simple
+        assignedRole: improvement-specialist
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: constraint-analysis
+              required: true
+          outputs:
+            - typeId: exploitation-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Plan must maximize constraint without capital investment
+            priority: must
+            validationCriteria:
+              - Quick wins identified
+              - Zero downtime targeted
+              - Quality maintained
+      - id: implement-exploitation
+        title: Implement Exploitation Measures
+        description: Execute quick improvements to maximize constraint
+        type: implementation
+        complexity: simple
+        assignedRole: operations-team
+        estimatedDuration: 240
+        dependencies:
+          - develop-exploitation-plan
+        artifacts:
+          inputs:
+            - typeId: exploitation-plan
+              required: true
+          outputs:
+            - typeId: exploitation-results
+              required: true
+        requirements:
+          - type: functional
+            description: Exploitation must increase throughput
+            priority: must
+            validationCriteria:
+              - Utilization improved
+              - Throughput increased
+              - No new constraints created
+    agentRequirements:
+      roles:
+        - improvement-specialist
+        - operations-team
+      skills:
+        - process-improvement
+        - implementation
+        - change-management
+      minExperience: mid
+
+  - id: subordinate-everything
+    name: Subordinate Everything Else
+    description: >
+      Align all other processes to support the constraint.
+      Don't overproduce at non-constraints.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Exploit the Constraint phase must be completed
+        phaseId: exploit-constraint
+    exitCriteria:
+      - type: artifact-exists
+        description: System must be synchronized
+        artifactType: subordination-plan
+    tasks:
+      - id: design-subordination
+        title: Design Subordination Strategy
+        description: Plan how to synchronize system around constraint
+        type: planning
+        complexity: simple
+        assignedRole: toc-specialist
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: constraint-analysis
+              required: true
+          outputs:
+            - typeId: subordination-plan
+              required: true
+        requirements:
+          - type: functional
+            description: All processes must support the constraint
+            priority: must
+            validationCriteria:
+              - Upstream processes controlled
+              - Downstream processes synchronized
+              - Buffer management defined
+      - id: implement-subordination
+        title: Implement System Subordination
+        description: Adjust all processes to support constraint rhythm
+        type: implementation
+        complexity: simple
+        assignedRole: operations-team
+        estimatedDuration: 180
+        dependencies:
+          - design-subordination
+        artifacts:
+          inputs:
+            - typeId: subordination-plan
+              required: true
+          outputs:
+            - typeId: subordination-results
+              required: true
+        requirements:
+          - type: functional
+            description: System must operate in sync with constraint
+            priority: must
+            validationCriteria:
+              - No overproduction
+              - Smooth flow achieved
+              - Inventory reduced
+    agentRequirements:
+      roles:
+        - toc-specialist
+        - operations-team
+      skills:
+        - systems-thinking
+        - flow-management
+        - coordination
+      minExperience: mid
+
+  - id: elevate-constraint
+    name: Elevate the Constraint
+    description: >
+      If constraint still limits performance, invest in expanding its capacity.
+      Consider capital improvements and major changes.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Subordinate Everything Else phase must be completed
+        phaseId: subordinate-everything
+    exitCriteria:
+      - type: artifact-exists
+        description: Constraint must be elevated or broken
+        artifactType: elevation-results
+    tasks:
+      - id: evaluate-elevation-options
+        title: Evaluate Elevation Options
+        description: Analyze investment options to increase capacity
+        type: analysis
+        complexity: complex
+        assignedRole: business-analyst
+        estimatedDuration: 180
+        artifacts:
+          inputs:
+            - typeId: constraint-analysis
+              required: true
+          outputs:
+            - typeId: elevation-options
+              required: true
+        requirements:
+          - type: functional
+            description: Options must be financially justified
+            priority: must
+            validationCriteria:
+              - ROI calculated
+              - Risk assessed
+              - Alternatives compared
+      - id: implement-elevation
+        title: Implement Elevation Plan
+        description: Execute chosen elevation strategy
+        type: implementation
+        complexity: complex
+        assignedRole: project-manager
+        estimatedDuration: 720
+        dependencies:
+          - evaluate-elevation-options
+        artifacts:
+          inputs:
+            - typeId: elevation-options
+              required: true
+          outputs:
+            - typeId: elevation-results
+              required: true
+        requirements:
+          - type: functional
+            description: Constraint capacity must increase significantly
+            priority: must
+            validationCriteria:
+              - Capacity increased
+              - Throughput improved
+              - Investment justified
+    agentRequirements:
+      roles:
+        - business-analyst
+        - project-manager
+      skills:
+        - financial-analysis
+        - project-management
+        - investment-planning
+      minExperience: senior
+
+  - id: repeat-process
+    name: Repeat the Process
+    description: >
+      Once constraint is broken, return to step 1 and find the next constraint.
+      Prevent inertia from becoming the constraint.
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Elevate the Constraint phase must be completed
+        phaseId: elevate-constraint
+    exitCriteria:
+      - type: artifact-exists
+        description: Next constraint must be identified
+        artifactType: next-constraint-analysis
+    tasks:
+      - id: validate-constraint-broken
+        title: Validate Constraint is Broken
+        description: Confirm previous constraint is no longer limiting
+        type: testing
+        complexity: simple
+        assignedRole: data-analyst
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: elevation-results
+              required: true
+          outputs:
+            - typeId: validation-report
+              required: true
+        requirements:
+          - type: functional
+            description: Previous constraint must be verified as broken
+            priority: must
+            validationCriteria:
+              - New throughput measured
+              - No longer bottleneck
+              - Improvement sustained
+      - id: identify-next-constraint
+        title: Identify Next System Constraint
+        description: Find the new limiting factor in the system
+        type: analysis
+        complexity: simple
+        assignedRole: toc-specialist
+        estimatedDuration: 120
+        dependencies:
+          - validate-constraint-broken
+        artifacts:
+          inputs:
+            - typeId: validation-report
+              required: true
+          outputs:
+            - typeId: next-constraint-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: New constraint must be identified
+            priority: must
+            validationCriteria:
+              - New bottleneck found
+              - Impact assessed
+              - Ready for next cycle
+    agentRequirements:
+      roles:
+        - data-analyst
+        - toc-specialist
+      skills:
+        - measurement
+        - analysis
+        - continuous-improvement
+      minExperience: mid
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - identify-constraint
+    - exploit-constraint
+    - subordinate-everything
+    - elevate-constraint
+    - repeat-process
+  loops:
+    - id: toc-cycle
+      name: TOC Improvement Cycle
+      description: Continuous constraint identification and elimination
+      phases:
+        - identify-constraint
+        - exploit-constraint
+        - subordinate-everything
+        - elevate-constraint
+        - repeat-process
+      maxIterations: 100
+  failureHandling:
+    strategy: retry
+    fallbackPhase: identify-constraint
+
+agentCoordination:
+  roles:
+    - id: toc-specialist
+      name: TOC Specialist
+      description: Expert in Theory of Constraints methodology
+      responsibilities:
+        - Identify constraints
+        - Design subordination
+        - Guide TOC process
+      requiredSkills:
+        - toc-methodology
+        - systems-thinking
+        - constraint-management
+      experienceLevel: senior
+      authority: leader
+    - id: process-analyst
+      name: Process Analyst
+      description: Maps and analyzes system flows
+      responsibilities:
+        - Map system processes
+        - Analyze workflows
+        - Document flows
+      requiredSkills:
+        - process-mapping
+        - analysis
+        - documentation
+      experienceLevel: mid
+      authority: contributor
+    - id: data-analyst
+      name: Data Analyst
+      description: Measures system performance
+      responsibilities:
+        - Collect metrics
+        - Analyze capacity
+        - Validate improvements
+      requiredSkills:
+        - data-analysis
+        - measurement
+        - statistics
+      experienceLevel: mid
+      authority: contributor
+    - id: improvement-specialist
+      name: Improvement Specialist
+      description: Develops and implements improvements
+      responsibilities:
+        - Develop exploitation plans
+        - Implement improvements
+        - Track results
+      requiredSkills:
+        - process-improvement
+        - implementation
+        - project-management
+      experienceLevel: mid
+      authority: contributor
+    - id: operations-team
+      name: Operations Team
+      description: Executes operational changes
+      responsibilities:
+        - Implement changes
+        - Operate processes
+        - Report issues
+      requiredSkills:
+        - operations
+        - execution
+        - collaboration
+      experienceLevel: mid
+      authority: contributor
+    - id: business-analyst
+      name: Business Analyst
+      description: Evaluates investment options
+      responsibilities:
+        - Analyze ROI
+        - Evaluate options
+        - Make recommendations
+      requiredSkills:
+        - financial-analysis
+        - business-case
+        - decision-support
+      experienceLevel: senior
+      authority: contributor
+    - id: project-manager
+      name: Project Manager
+      description: Manages elevation projects
+      responsibilities:
+        - Plan projects
+        - Manage execution
+        - Deliver results
+      requiredSkills:
+        - project-management
+        - execution
+        - stakeholder-management
+      experienceLevel: senior
+      authority: leader
+  teamComposition:
+    minSize: 3
+    maxSize: 7
+    required:
+      - toc-specialist
+      - process-analyst
+      - data-analyst
+    optional:
+      - improvement-specialist
+      - operations-team
+      - business-analyst
+      - project-manager
+  communicationPatterns:
+    - from: toc-specialist
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+        - constraint
+    - from: data-analyst
+      to: toc-specialist
+      type: direct
+      contextTypes:
+        - finding
+    - from: operations-team
+      to: improvement-specialist
+      type: request-response
+      contextTypes:
+        - constraint
+  decisionAuthority:
+    - decision: Identify primary constraint
+      authority: toc-specialist
+      requiresConsensus: true
+      consensusRoles:
+        - data-analyst
+    - decision: Approve elevation investment
+      authority: project-manager
+      requiresConsensus: true
+      consensusRoles:
+        - business-analyst
+
+artifactFlow:
+  artifactTypes:
+    - id: system-map
+      name: System Map
+      description: Complete process flow diagram
+      format: markdown
+    - id: capacity-metrics
+      name: Capacity Metrics
+      description: Capacity and throughput measurements
+      format: json
+    - id: constraint-analysis
+      name: Constraint Analysis
+      description: Identified constraint with supporting data
+      format: markdown
+    - id: exploitation-plan
+      name: Exploitation Plan
+      description: Plan to maximize constraint utilization
+      format: markdown
+    - id: exploitation-results
+      name: Exploitation Results
+      description: Results from exploitation phase
+      format: json
+    - id: subordination-plan
+      name: Subordination Plan
+      description: Strategy for synchronizing system
+      format: markdown
+    - id: subordination-results
+      name: Subordination Results
+      description: Results from subordination implementation
+      format: json
+    - id: elevation-options
+      name: Elevation Options
+      description: Investment options analysis
+      format: structured
+    - id: elevation-results
+      name: Elevation Results
+      description: Results from constraint elevation
+      format: json
+    - id: validation-report
+      name: Validation Report
+      description: Confirmation that constraint is broken
+      format: markdown
+    - id: next-constraint-analysis
+      name: Next Constraint Analysis
+      description: Identification of next system constraint
+      format: markdown
+  dependencies:
+    - artifact: capacity-metrics
+      dependsOn:
+        - system-map
+    - artifact: constraint-analysis
+      dependsOn:
+        - capacity-metrics
+    - artifact: exploitation-plan
+      dependsOn:
+        - constraint-analysis
+    - artifact: subordination-plan
+      dependsOn:
+        - constraint-analysis
+    - artifact: elevation-options
+      dependsOn:
+        - constraint-analysis
+    - artifact: next-constraint-analysis
+      dependsOn:
+        - validation-report

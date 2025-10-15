@@ -1,0 +1,800 @@
+metadata:
+  id: kaizen
+  name: Kaizen
+  title: Continuous Improvement
+  description: >
+    Japanese philosophy of continuous improvement through small, incremental changes.
+    Kaizen emphasizes involving all employees in improvement activities,
+    creating a culture of continuous learning and adaptation.
+  type: iterative
+  version: 1.0.0
+  origin: Toyota Production System / Japan
+  domains:
+    - manufacturing
+    - operations
+    - process-improvement
+    - organizational-development
+  complexity: moderate
+  tags:
+    - continuous-improvement
+    - lean
+    - incremental-change
+    - employee-engagement
+  i18n:
+    es:
+      title: Mejora Continua
+      description: >
+        Filosofía japonesa de mejora continua mediante pequeños cambios incrementales.
+        Kaizen enfatiza la participación de todos los empleados en las actividades de mejora,
+        creando una cultura de aprendizaje y adaptación continua.
+    fr:
+      title: Amélioration Continue
+      description: >
+        Philosophie japonaise d'amélioration continue par de petits changements progressifs.
+        Kaizen met l'accent sur l'implication de tous les employés dans les activités d'amélioration,
+        créant une culture d'apprentissage et d'adaptation continues.
+    ko:
+      title: 지속적 개선
+      description: >
+        작은 점진적 변화를 통한 지속적 개선의 일본 철학.
+        카이젠은 모든 직원을 개선 활동에 참여시켜
+        지속적인 학습과 적응의 문화를 창출하는 것을 강조합니다.
+
+configuration:
+  maxIterations: 100
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 3
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 3
+  convergence:
+    metric: improvement-rate
+    threshold: 0.01
+    operator: "<"
+
+phases:
+  - id: identify
+    name: Identify
+    description: >
+      Identify opportunities for improvement in current processes.
+      Engage team members to surface problems and inefficiencies.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Improvement opportunities must be identified
+        artifactType: improvement-opportunities
+    tasks:
+      - id: observe-current-state
+        title: Observe Current State
+        description: Go to gemba (the actual place) to observe the current process
+        type: analysis
+        complexity: simple
+        assignedRole: team-member
+        estimatedDuration: 60
+        artifacts:
+          outputs:
+            - typeId: current-state-observations
+              required: true
+        requirements:
+          - type: functional
+            description: Observations must be fact-based and detailed
+            priority: must
+            validationCriteria:
+              - Direct observations documented
+              - Data collected from actual workplace
+              - No assumptions or interpretations
+      - id: identify-waste
+        title: Identify Waste (Muda)
+        description: Identify the seven types of waste in the process
+        type: analysis
+        complexity: simple
+        assignedRole: improvement-facilitator
+        estimatedDuration: 90
+        dependencies:
+          - observe-current-state
+        artifacts:
+          inputs:
+            - typeId: current-state-observations
+              required: true
+          outputs:
+            - typeId: waste-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: All seven types of waste must be evaluated
+            priority: must
+            validationCriteria:
+              - Transportation waste assessed
+              - Inventory waste assessed
+              - Motion waste assessed
+              - Waiting waste assessed
+              - Overprocessing waste assessed
+              - Overproduction waste assessed
+              - Defects waste assessed
+      - id: brainstorm-improvements
+        title: Brainstorm Improvement Ideas
+        description: Engage team in generating improvement ideas
+        type: design
+        complexity: simple
+        assignedRole: team-member
+        estimatedDuration: 60
+        dependencies:
+          - identify-waste
+        artifacts:
+          inputs:
+            - typeId: waste-analysis
+              required: true
+          outputs:
+            - typeId: improvement-opportunities
+              required: true
+        requirements:
+          - type: functional
+            description: Multiple improvement ideas must be generated
+            priority: must
+            validationCriteria:
+              - At least 5 ideas generated
+              - All team members contributed
+              - Ideas address identified waste
+    agentRequirements:
+      roles:
+        - team-member
+        - improvement-facilitator
+      skills:
+        - observation
+        - waste-identification
+        - brainstorming
+      minExperience: junior
+
+  - id: plan
+    name: Plan
+    description: >
+      Plan small, incremental improvements.
+      Prioritize based on impact and ease of implementation.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Identify phase must be completed
+        phaseId: identify
+    exitCriteria:
+      - type: artifact-exists
+        description: Improvement plan must exist
+        artifactType: kaizen-plan
+    tasks:
+      - id: prioritize-improvements
+        title: Prioritize Improvement Ideas
+        description: Select and prioritize improvements based on impact and effort
+        type: planning
+        complexity: simple
+        assignedRole: improvement-facilitator
+        estimatedDuration: 45
+        artifacts:
+          inputs:
+            - typeId: improvement-opportunities
+              required: true
+          outputs:
+            - typeId: prioritized-improvements
+              required: true
+        requirements:
+          - type: functional
+            description: Prioritization must be data-driven
+            priority: must
+            validationCriteria:
+              - Impact assessed for each idea
+              - Effort estimated for each idea
+              - Priority ranking established
+      - id: create-action-plan
+        title: Create Action Plan
+        description: Develop detailed plan for implementing top improvements
+        type: planning
+        complexity: simple
+        assignedRole: team-leader
+        estimatedDuration: 60
+        dependencies:
+          - prioritize-improvements
+        artifacts:
+          inputs:
+            - typeId: prioritized-improvements
+              required: true
+          outputs:
+            - typeId: kaizen-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Plan must be specific and actionable
+            priority: must
+            validationCriteria:
+              - Clear action steps defined
+              - Responsibilities assigned
+              - Timeline established
+              - Success metrics defined
+      - id: prepare-resources
+        title: Prepare Resources
+        description: Ensure necessary resources and support are available
+        type: planning
+        complexity: simple
+        assignedRole: team-leader
+        estimatedDuration: 30
+        dependencies:
+          - create-action-plan
+        artifacts:
+          inputs:
+            - typeId: kaizen-plan
+              required: true
+          outputs:
+            - typeId: resource-plan
+              required: true
+        requirements:
+          - type: functional
+            description: All required resources must be identified
+            priority: must
+            validationCriteria:
+              - Resource needs documented
+              - Resource availability confirmed
+              - Budget approved if needed
+    agentRequirements:
+      roles:
+        - improvement-facilitator
+        - team-leader
+      skills:
+        - prioritization
+        - planning
+        - resource-management
+      minExperience: mid
+
+  - id: implement
+    name: Implement
+    description: >
+      Implement the planned improvements quickly.
+      Make small changes and test them immediately.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Plan phase must be completed
+        phaseId: plan
+    exitCriteria:
+      - type: artifact-exists
+        description: Implementation results must be documented
+        artifactType: implementation-results
+    tasks:
+      - id: execute-improvements
+        title: Execute Improvements
+        description: Implement the planned changes in the workplace
+        type: implementation
+        complexity: simple
+        assignedRole: team-member
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: kaizen-plan
+              required: true
+            - typeId: resource-plan
+              required: true
+          outputs:
+            - typeId: implementation-log
+              required: true
+        requirements:
+          - type: functional
+            description: Changes must be implemented as planned
+            priority: must
+            validationCriteria:
+              - All planned actions completed
+              - Changes documented
+              - Issues tracked
+      - id: train-team
+        title: Train Team Members
+        description: Provide training on new processes or methods
+        type: documentation
+        complexity: simple
+        assignedRole: team-leader
+        estimatedDuration: 60
+        dependencies:
+          - execute-improvements
+        artifacts:
+          inputs:
+            - typeId: implementation-log
+              required: true
+          outputs:
+            - typeId: training-documentation
+              required: true
+        requirements:
+          - type: functional
+            description: All affected team members must be trained
+            priority: must
+            validationCriteria:
+              - Training materials created
+              - All team members trained
+              - Understanding verified
+      - id: gather-initial-feedback
+        title: Gather Initial Feedback
+        description: Collect immediate feedback from team on changes
+        type: review
+        complexity: simple
+        assignedRole: improvement-facilitator
+        estimatedDuration: 45
+        dependencies:
+          - train-team
+        artifacts:
+          inputs:
+            - typeId: implementation-log
+              required: true
+          outputs:
+            - typeId: implementation-results
+              required: true
+        requirements:
+          - type: functional
+            description: Feedback must be collected from all stakeholders
+            priority: must
+            validationCriteria:
+              - Feedback sessions conducted
+              - Issues documented
+              - Quick wins identified
+    agentRequirements:
+      roles:
+        - team-member
+        - team-leader
+        - improvement-facilitator
+      skills:
+        - implementation
+        - training
+        - feedback-gathering
+      minExperience: junior
+
+  - id: evaluate
+    name: Evaluate
+    description: >
+      Evaluate the results of the improvements.
+      Measure performance and compare to baseline.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Implement phase must be completed
+        phaseId: implement
+    exitCriteria:
+      - type: artifact-exists
+        description: Evaluation results must exist
+        artifactType: evaluation-results
+    tasks:
+      - id: measure-performance
+        title: Measure Performance
+        description: Collect data on process performance after changes
+        type: analysis
+        complexity: simple
+        assignedRole: data-collector
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: implementation-results
+              required: true
+          outputs:
+            - typeId: performance-metrics
+              required: true
+        requirements:
+          - type: functional
+            description: Metrics must be objective and measurable
+            priority: must
+            validationCriteria:
+              - Baseline data collected
+              - Current performance measured
+              - Metrics align with success criteria
+      - id: analyze-results
+        title: Analyze Results
+        description: Compare before and after performance to assess improvement
+        type: analysis
+        complexity: simple
+        assignedRole: improvement-facilitator
+        estimatedDuration: 60
+        dependencies:
+          - measure-performance
+        artifacts:
+          inputs:
+            - typeId: performance-metrics
+              required: true
+            - typeId: current-state-observations
+              required: true
+          outputs:
+            - typeId: impact-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: Analysis must quantify improvement
+            priority: must
+            validationCriteria:
+              - Before/after comparison completed
+              - Improvement percentage calculated
+              - Statistical significance assessed
+      - id: document-learnings
+        title: Document Learnings
+        description: Capture lessons learned and best practices
+        type: documentation
+        complexity: simple
+        assignedRole: team-leader
+        estimatedDuration: 45
+        dependencies:
+          - analyze-results
+        artifacts:
+          inputs:
+            - typeId: impact-analysis
+              required: true
+          outputs:
+            - typeId: evaluation-results
+              required: true
+        requirements:
+          - type: functional
+            description: Learnings must be actionable and shareable
+            priority: must
+            validationCriteria:
+              - Success factors identified
+              - Failures analyzed
+              - Recommendations documented
+    agentRequirements:
+      roles:
+        - data-collector
+        - improvement-facilitator
+        - team-leader
+      skills:
+        - data-collection
+        - analysis
+        - documentation
+      minExperience: junior
+
+  - id: standardize
+    name: Standardize
+    description: >
+      Standardize successful improvements.
+      Update procedures and share best practices.
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Evaluate phase must be completed
+        phaseId: evaluate
+    exitCriteria:
+      - type: artifact-exists
+        description: Standard work must be documented
+        artifactType: standard-work
+    repeatable: true
+    tasks:
+      - id: update-procedures
+        title: Update Standard Operating Procedures
+        description: Document the new improved process as standard work
+        type: documentation
+        complexity: simple
+        assignedRole: process-owner
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: evaluation-results
+              required: true
+          outputs:
+            - typeId: standard-work
+              required: true
+        requirements:
+          - type: functional
+            description: Standard work must be clear and complete
+            priority: must
+            validationCriteria:
+              - Step-by-step procedures documented
+              - Visual aids included
+              - Quality standards defined
+      - id: communicate-changes
+        title: Communicate Changes
+        description: Share improvements with broader organization
+        type: documentation
+        complexity: simple
+        assignedRole: improvement-facilitator
+        estimatedDuration: 60
+        dependencies:
+          - update-procedures
+        artifacts:
+          inputs:
+            - typeId: standard-work
+              required: true
+            - typeId: evaluation-results
+              required: true
+          outputs:
+            - typeId: communication-materials
+              required: true
+        requirements:
+          - type: functional
+            description: Communications must reach all stakeholders
+            priority: must
+            validationCriteria:
+              - Key stakeholders identified
+              - Communication plan executed
+              - Feedback mechanism established
+      - id: plan-next-cycle
+        title: Plan Next Kaizen Cycle
+        description: Identify next improvement opportunity to pursue
+        type: planning
+        complexity: simple
+        assignedRole: team-leader
+        estimatedDuration: 45
+        dependencies:
+          - communicate-changes
+        artifacts:
+          inputs:
+            - typeId: evaluation-results
+              required: true
+          outputs:
+            - typeId: next-cycle-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Next cycle must build on current learnings
+            priority: must
+            validationCriteria:
+              - Next opportunity identified
+              - Team commitment secured
+              - Timeline proposed
+    agentRequirements:
+      roles:
+        - process-owner
+        - improvement-facilitator
+        - team-leader
+      skills:
+        - standardization
+        - documentation
+        - communication
+      minExperience: mid
+
+execution:
+  strategy: iterative
+  phaseOrder:
+    - identify
+    - plan
+    - implement
+    - evaluate
+    - standardize
+  loops:
+    - id: continuous-improvement-cycle
+      name: Continuous Improvement Cycle
+      description: Repeating cycle of incremental improvements
+      phases:
+        - identify
+        - plan
+        - implement
+        - evaluate
+        - standardize
+      convergenceCriteria:
+        - type: metric-threshold
+          description: Improvement rate below threshold
+          metric: improvement-rate
+          threshold: 0.01
+          operator: "<"
+      exitConditions:
+        - type: custom
+          description: Team decides to focus on different area
+  failureHandling:
+    strategy: retry
+    fallbackPhase: identify
+
+agentCoordination:
+  roles:
+    - id: team-member
+      name: Team Member
+      description: Front-line worker participating in Kaizen activities
+      responsibilities:
+        - Observe current processes
+        - Identify improvement opportunities
+        - Implement changes
+        - Provide feedback
+      requiredSkills:
+        - observation
+        - problem-identification
+        - collaboration
+      experienceLevel: junior
+      authority: contributor
+    - id: improvement-facilitator
+      name: Improvement Facilitator
+      description: Guides Kaizen activities and methodology
+      responsibilities:
+        - Facilitate brainstorming
+        - Guide waste identification
+        - Analyze results
+        - Communicate findings
+      requiredSkills:
+        - facilitation
+        - lean-methods
+        - analysis
+      experienceLevel: mid
+      authority: contributor
+    - id: team-leader
+      name: Team Leader
+      description: Leads team and coordinates improvement efforts
+      responsibilities:
+        - Create action plans
+        - Allocate resources
+        - Train team members
+        - Document learnings
+      requiredSkills:
+        - leadership
+        - planning
+        - training
+      experienceLevel: mid
+      authority: leader
+    - id: data-collector
+      name: Data Collector
+      description: Gathers and validates performance data
+      responsibilities:
+        - Collect baseline data
+        - Measure performance
+        - Validate measurements
+        - Report findings
+      requiredSkills:
+        - data-collection
+        - measurement
+        - accuracy
+      experienceLevel: junior
+      authority: contributor
+    - id: process-owner
+      name: Process Owner
+      description: Owns and maintains process standards
+      responsibilities:
+        - Update procedures
+        - Maintain standards
+        - Ensure compliance
+        - Approve changes
+      requiredSkills:
+        - process-management
+        - standardization
+        - documentation
+      experienceLevel: mid
+      authority: approver
+  teamComposition:
+    minSize: 3
+    maxSize: 6
+    required:
+      - team-member
+      - improvement-facilitator
+      - team-leader
+    optional:
+      - data-collector
+      - process-owner
+  communicationPatterns:
+    - from: team-leader
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+        - resource
+    - from: team-member
+      to: improvement-facilitator
+      type: direct
+      contextTypes:
+        - finding
+    - from: improvement-facilitator
+      to: team-leader
+      type: direct
+      contextTypes:
+        - finding
+        - decision
+    - from: any
+      to: all
+      type: broadcast
+      contextTypes:
+        - finding
+  decisionAuthority:
+    - decision: Select improvement to pursue
+      authority: team-leader
+      requiresConsensus: true
+      consensusRoles:
+        - improvement-facilitator
+        - team-member
+    - decision: Approve standard work changes
+      authority: process-owner
+      requiresConsensus: false
+    - decision: Continue to next cycle
+      authority: team-leader
+      requiresConsensus: true
+      consensusRoles:
+        - team-member
+
+artifactFlow:
+  artifactTypes:
+    - id: current-state-observations
+      name: Current State Observations
+      description: Detailed observations from the actual workplace
+      format: markdown
+    - id: waste-analysis
+      name: Waste Analysis
+      description: Identification of seven types of waste
+      format: structured
+    - id: improvement-opportunities
+      name: Improvement Opportunities
+      description: List of potential improvements identified by team
+      format: structured
+    - id: prioritized-improvements
+      name: Prioritized Improvements
+      description: Ranked list of improvements to pursue
+      format: structured
+    - id: kaizen-plan
+      name: Kaizen Action Plan
+      description: Detailed plan for implementing improvements
+      format: structured
+    - id: resource-plan
+      name: Resource Plan
+      description: Required resources and support for improvements
+      format: structured
+    - id: implementation-log
+      name: Implementation Log
+      description: Record of changes made during implementation
+      format: markdown
+    - id: training-documentation
+      name: Training Documentation
+      description: Materials for training team on new processes
+      format: markdown
+    - id: implementation-results
+      name: Implementation Results
+      description: Initial outcomes and feedback from changes
+      format: structured
+    - id: performance-metrics
+      name: Performance Metrics
+      description: Before and after performance measurements
+      format: json
+    - id: impact-analysis
+      name: Impact Analysis
+      description: Analysis of improvement impact
+      format: structured
+    - id: evaluation-results
+      name: Evaluation Results
+      description: Complete evaluation including lessons learned
+      format: markdown
+    - id: standard-work
+      name: Standard Work Documentation
+      description: Updated standard operating procedures
+      format: structured
+    - id: communication-materials
+      name: Communication Materials
+      description: Materials for sharing improvements
+      format: markdown
+    - id: next-cycle-plan
+      name: Next Cycle Plan
+      description: Plan for next improvement cycle
+      format: structured
+  dependencies:
+    - artifact: waste-analysis
+      dependsOn:
+        - current-state-observations
+    - artifact: improvement-opportunities
+      dependsOn:
+        - waste-analysis
+    - artifact: prioritized-improvements
+      dependsOn:
+        - improvement-opportunities
+    - artifact: kaizen-plan
+      dependsOn:
+        - prioritized-improvements
+    - artifact: resource-plan
+      dependsOn:
+        - kaizen-plan
+    - artifact: implementation-log
+      dependsOn:
+        - kaizen-plan
+        - resource-plan
+    - artifact: training-documentation
+      dependsOn:
+        - implementation-log
+    - artifact: implementation-results
+      dependsOn:
+        - implementation-log
+    - artifact: performance-metrics
+      dependsOn:
+        - implementation-results
+    - artifact: impact-analysis
+      dependsOn:
+        - performance-metrics
+        - current-state-observations
+    - artifact: evaluation-results
+      dependsOn:
+        - impact-analysis
+    - artifact: standard-work
+      dependsOn:
+        - evaluation-results
+    - artifact: communication-materials
+      dependsOn:
+        - standard-work
+        - evaluation-results
+    - artifact: next-cycle-plan
+      dependsOn:
+        - evaluation-results

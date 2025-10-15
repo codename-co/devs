@@ -1,0 +1,456 @@
+metadata:
+  id: xp
+  name: XP
+  title: Extreme Programming
+  description: >
+    Agile software development methodology emphasizing technical excellence and customer satisfaction.
+    XP uses practices like pair programming, TDD, and continuous integration.
+  type: iterative
+  version: 1.0.0
+  origin: Kent Beck
+  domains:
+    - software-development
+    - agile
+    - engineering-practices
+  complexity: moderate
+  tags:
+    - agile
+    - tdd
+    - pair-programming
+    - refactoring
+    - continuous-integration
+
+configuration:
+  timeBox:
+    duration: 1
+    unit: weeks
+    strict: true
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 2
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 4
+
+phases:
+  - id: planning
+    name: Planning
+    description: Plan iteration based on customer stories
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Iteration plan must exist
+        artifactType: iteration-plan
+    tasks:
+      - id: write-stories
+        title: Write User Stories
+        description: Customer writes user stories
+        type: planning
+        complexity: simple
+        assignedRole: customer
+        estimatedDuration: 120
+        artifacts:
+          outputs:
+            - typeId: user-stories
+              required: true
+      - id: estimate-stories
+        title: Estimate Stories
+        description: Developers estimate story points
+        type: planning
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 60
+        dependencies:
+          - write-stories
+        artifacts:
+          inputs:
+            - typeId: user-stories
+              required: true
+          outputs:
+            - typeId: story-estimates
+              required: true
+      - id: plan-iteration
+        title: Plan Iteration
+        description: Select stories for iteration
+        type: planning
+        complexity: simple
+        assignedRole: coach
+        estimatedDuration: 30
+        dependencies:
+          - estimate-stories
+        artifacts:
+          inputs:
+            - typeId: story-estimates
+              required: true
+          outputs:
+            - typeId: iteration-plan
+              required: true
+    agentRequirements:
+      roles:
+        - customer
+        - developer
+        - coach
+      skills:
+        - story-writing
+        - estimation
+        - planning
+      minExperience: mid
+
+  - id: design
+    name: Design
+    description: Simple design that passes all tests
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Planning phase must be completed
+        phaseId: planning
+    exitCriteria:
+      - type: artifact-exists
+        description: Design must be complete
+        artifactType: simple-design
+    tasks:
+      - id: create-simple-design
+        title: Create Simple Design
+        description: Design the simplest thing that could possibly work
+        type: design
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: iteration-plan
+              required: true
+          outputs:
+            - typeId: simple-design
+              required: true
+    agentRequirements:
+      roles:
+        - developer
+      skills:
+        - simple-design
+        - yagni
+      minExperience: mid
+
+  - id: coding
+    name: Coding
+    description: Implement features using XP practices
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Design phase must be completed
+        phaseId: design
+    exitCriteria:
+      - type: artifact-exists
+        description: Code must pass all tests
+        artifactType: working-code
+    tasks:
+      - id: write-test-first
+        title: Write Test First (TDD)
+        description: Write failing test before code
+        type: testing
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 30
+        artifacts:
+          inputs:
+            - typeId: simple-design
+              required: true
+          outputs:
+            - typeId: test-code
+              required: true
+      - id: pair-program
+        title: Pair Program
+        description: Two developers, one computer
+        type: implementation
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 480
+        dependencies:
+          - write-test-first
+        artifacts:
+          inputs:
+            - typeId: test-code
+              required: true
+          outputs:
+            - typeId: implementation-code
+              required: true
+      - id: refactor
+        title: Refactor Continuously
+        description: Improve code design continuously
+        type: implementation
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 120
+        dependencies:
+          - pair-program
+        artifacts:
+          inputs:
+            - typeId: implementation-code
+              required: true
+          outputs:
+            - typeId: working-code
+              required: true
+    agentRequirements:
+      roles:
+        - developer
+      skills:
+        - tdd
+        - pair-programming
+        - refactoring
+      minExperience: mid
+
+  - id: integration
+    name: Integration
+    description: Integrate and test frequently
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Coding phase must be completed
+        phaseId: coding
+    exitCriteria:
+      - type: artifact-exists
+        description: Integration must be successful
+        artifactType: integrated-system
+    tasks:
+      - id: continuous-integration
+        title: Continuous Integration
+        description: Integrate code multiple times per day
+        type: implementation
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: working-code
+              required: true
+          outputs:
+            - typeId: integrated-system
+              required: true
+    agentRequirements:
+      roles:
+        - developer
+      skills:
+        - continuous-integration
+        - version-control
+      minExperience: mid
+
+  - id: acceptance
+    name: Acceptance Testing
+    description: Customer validates features
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Integration phase must be completed
+        phaseId: integration
+    exitCriteria:
+      - type: artifact-exists
+        description: Acceptance tests must pass
+        artifactType: acceptance-results
+    tasks:
+      - id: run-acceptance-tests
+        title: Run Acceptance Tests
+        description: Customer runs acceptance tests
+        type: testing
+        complexity: simple
+        assignedRole: customer
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: integrated-system
+              required: true
+          outputs:
+            - typeId: acceptance-results
+              required: true
+    agentRequirements:
+      roles:
+        - customer
+      skills:
+        - acceptance-testing
+        - validation
+      minExperience: mid
+
+execution:
+  strategy: iterative
+  phaseOrder:
+    - planning
+    - design
+    - coding
+    - integration
+    - acceptance
+  loops:
+    - id: iteration-cycle
+      name: Weekly Iteration
+      description: One-week development cycle
+      phases:
+        - planning
+        - design
+        - coding
+        - integration
+        - acceptance
+      maxIterations: 52
+  failureHandling:
+    strategy: retry
+    fallbackPhase: planning
+
+agentCoordination:
+  roles:
+    - id: customer
+      name: Customer
+      description: Product owner representative
+      responsibilities:
+        - Write stories
+        - Prioritize work
+        - Accept features
+      requiredSkills:
+        - domain-knowledge
+        - story-writing
+      experienceLevel: mid
+      authority: leader
+    - id: developer
+      name: Developer
+      description: Engineers building the system
+      responsibilities:
+        - Write code
+        - Write tests
+        - Refactor
+        - Integrate
+      requiredSkills:
+        - programming
+        - tdd
+        - pair-programming
+        - refactoring
+      experienceLevel: mid
+      authority: contributor
+    - id: coach
+      name: XP Coach
+      description: Guides team in XP practices
+      responsibilities:
+        - Coach practices
+        - Facilitate planning
+        - Remove impediments
+      requiredSkills:
+        - xp-practices
+        - coaching
+        - facilitation
+      experienceLevel: senior
+      authority: leader
+  teamComposition:
+    minSize: 3
+    maxSize: 12
+    required:
+      - customer
+      - developer
+      - coach
+  communicationPatterns:
+    - from: customer
+      to: developer
+      type: direct
+      contextTypes:
+        - requirement
+    - from: coach
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+  decisionAuthority:
+    - decision: Accept story
+      authority: customer
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: user-stories
+      name: User Stories
+      description: Customer requirements as stories
+      format: markdown
+    - id: story-estimates
+      name: Story Estimates
+      description: Story points for each story
+      format: json
+    - id: iteration-plan
+      name: Iteration Plan
+      description: Selected stories for iteration
+      format: structured
+    - id: simple-design
+      name: Simple Design
+      description: Minimal design for stories
+      format: markdown
+    - id: test-code
+      name: Test Code
+      description: Unit tests
+      format: code
+    - id: implementation-code
+      name: Implementation Code
+      description: Production code
+      format: code
+    - id: working-code
+      name: Working Code
+      description: Refactored, tested code
+      format: code
+    - id: integrated-system
+      name: Integrated System
+      description: Integrated codebase
+      format: code
+    - id: acceptance-results
+      name: Acceptance Results
+      description: Customer acceptance test results
+      format: json
+  dependencies:
+    - artifact: story-estimates
+      dependsOn:
+        - user-stories
+    - artifact: iteration-plan
+      dependsOn:
+        - story-estimates
+    - artifact: simple-design
+      dependsOn:
+        - iteration-plan
+    - artifact: working-code
+      dependsOn:
+        - implementation-code
+    - artifact: integrated-system
+      dependsOn:
+        - working-code
+    - artifact: acceptance-results
+      dependsOn:
+        - integrated-system
+
+ceremonies:
+  - id: iteration-planning
+    name: Iteration Planning
+    description: Plan work for the week
+    timing: phase-start
+    duration: 120
+    participants:
+      - customer
+      - developer
+      - coach
+    objectives:
+      - Select stories
+      - Commit to work
+      - Clarify requirements
+  - id: daily-standup
+    name: Daily Stand-up
+    description: Daily synchronization
+    timing: daily
+    duration: 15
+    participants:
+      - developer
+      - coach
+    objectives:
+      - Share progress
+      - Identify blockers
+      - Coordinate work
+  - id: iteration-demo
+    name: Iteration Demo
+    description: Demonstrate completed work
+    timing: phase-end
+    duration: 60
+    participants:
+      - customer
+      - developer
+    objectives:
+      - Show working software
+      - Get feedback
+      - Celebrate progress

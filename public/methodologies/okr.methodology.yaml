@@ -1,0 +1,807 @@
+metadata:
+  id: okr
+  name: OKRs
+  title: Objectives and Key Results
+  description: >
+    Goal-setting framework for defining and tracking objectives and measurable outcomes.
+    OKRs align organizational efforts through ambitious objectives and quantifiable key results.
+  type: iterative
+  version: 1.0.0
+  origin: Intel / Google
+  domains:
+    - business-strategy
+    - goal-setting
+    - performance-management
+    - organizational-alignment
+  complexity: moderate
+  tags:
+    - goals
+    - metrics
+    - alignment
+    - performance
+  i18n:
+    es:
+      title: Objetivos y Resultados Clave
+      description: >
+        Marco de establecimiento de objetivos para definir y rastrear objetivos y resultados medibles.
+        Los OKR alinean los esfuerzos organizacionales a través de objetivos ambiciosos y resultados clave cuantificables.
+    fr:
+      title: Objectifs et Résultats Clés
+      description: >
+        Cadre de définition d'objectifs pour définir et suivre les objectifs et les résultats mesurables.
+        Les OKR alignent les efforts organisationnels grâce à des objectifs ambitieux et des résultats clés quantifiables.
+    ko:
+      title: 목표 및 핵심 결과
+      description: >
+        목표 및 측정 가능한 결과를 정의하고 추적하기 위한 목표 설정 프레임워크.
+        OKR은 야심찬 목표와 정량화 가능한 핵심 결과를 통해 조직의 노력을 정렬합니다.
+
+configuration:
+  maxIterations: 4
+  timeBox:
+    duration: 3
+    unit: months
+    strict: false
+  qualityGates:
+    enabled: true
+    autoRetry: false
+    maxRetries: 1
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 3
+
+phases:
+  - id: set-objectives
+    name: Set Objectives
+    description: >
+      Define ambitious, qualitative objectives that inspire and align the organization.
+      Objectives should be aspirational and memorable.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Objectives must be defined
+        artifactType: objectives-document
+    tasks:
+      - id: brainstorm-objectives
+        title: Brainstorm Potential Objectives
+        description: Identify strategic priorities and ambitious goals
+        type: planning
+        complexity: simple
+        assignedRole: strategy-lead
+        estimatedDuration: 90
+        artifacts:
+          outputs:
+            - typeId: objectives-draft
+              required: true
+        requirements:
+          - type: functional
+            description: Objectives must be qualitative and inspiring
+            priority: must
+            validationCriteria:
+              - Objectives are aspirational
+              - Objectives align with company vision
+              - Objectives are memorable
+      - id: finalize-objectives
+        title: Finalize Objectives
+        description: Review and refine objectives with stakeholders
+        type: review
+        complexity: simple
+        assignedRole: leadership-team
+        estimatedDuration: 60
+        dependencies:
+          - brainstorm-objectives
+        artifacts:
+          inputs:
+            - typeId: objectives-draft
+              required: true
+          outputs:
+            - typeId: objectives-document
+              required: true
+        requirements:
+          - type: functional
+            description: Objectives must have leadership buy-in
+            priority: must
+            validationCriteria:
+              - Stakeholder consensus achieved
+              - 3-5 objectives per level
+              - Clear ownership assigned
+    agentRequirements:
+      roles:
+        - strategy-lead
+        - leadership-team
+      skills:
+        - strategic-thinking
+        - stakeholder-management
+        - goal-setting
+      minExperience: senior
+
+  - id: define-key-results
+    name: Define Key Results
+    description: >
+      Create measurable key results that track progress toward objectives.
+      Key results should be specific, time-bound, and quantifiable.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Set Objectives phase must be completed
+        phaseId: set-objectives
+    exitCriteria:
+      - type: artifact-exists
+        description: Key results must be defined
+        artifactType: key-results-document
+    tasks:
+      - id: identify-metrics
+        title: Identify Success Metrics
+        description: Determine measurable indicators for each objective
+        type: analysis
+        complexity: simple
+        assignedRole: metrics-analyst
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: objectives-document
+              required: true
+          outputs:
+            - typeId: metrics-list
+              required: true
+        requirements:
+          - type: functional
+            description: Metrics must be quantifiable
+            priority: must
+            validationCriteria:
+              - Metrics have baseline values
+              - Metrics are measurable
+              - Data sources identified
+      - id: create-key-results
+        title: Create Key Results
+        description: Define 3-5 key results per objective
+        type: planning
+        complexity: simple
+        assignedRole: okr-champion
+        estimatedDuration: 90
+        dependencies:
+          - identify-metrics
+        artifacts:
+          inputs:
+            - typeId: metrics-list
+              required: true
+            - typeId: objectives-document
+              required: true
+          outputs:
+            - typeId: key-results-document
+              required: true
+        requirements:
+          - type: functional
+            description: Key results must follow SMART criteria
+            priority: must
+            validationCriteria:
+              - 3-5 key results per objective
+              - Results are specific and measurable
+              - Target values defined
+              - Timeframes established
+    agentRequirements:
+      roles:
+        - metrics-analyst
+        - okr-champion
+      skills:
+        - data-analysis
+        - metrics-definition
+        - goal-setting
+      minExperience: mid
+
+  - id: cascade-and-align
+    name: Cascade and Align
+    description: >
+      Cascade OKRs throughout the organization ensuring alignment.
+      Teams create their OKRs that support higher-level objectives.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Define Key Results phase must be completed
+        phaseId: define-key-results
+    exitCriteria:
+      - type: artifact-exists
+        description: Team OKRs must be created
+        artifactType: team-okrs
+    tasks:
+      - id: communicate-okrs
+        title: Communicate Company OKRs
+        description: Share top-level OKRs with all teams
+        type: documentation
+        complexity: simple
+        assignedRole: okr-champion
+        estimatedDuration: 45
+        artifacts:
+          inputs:
+            - typeId: objectives-document
+              required: true
+            - typeId: key-results-document
+              required: true
+          outputs:
+            - typeId: okr-communication
+              required: true
+        requirements:
+          - type: functional
+            description: OKRs must be clearly communicated
+            priority: must
+            validationCriteria:
+              - All teams notified
+              - OKRs are accessible
+              - Context provided
+      - id: create-team-okrs
+        title: Create Team OKRs
+        description: Teams develop OKRs aligned with company objectives
+        type: planning
+        complexity: simple
+        assignedRole: team-lead
+        estimatedDuration: 120
+        dependencies:
+          - communicate-okrs
+        artifacts:
+          inputs:
+            - typeId: okr-communication
+              required: true
+          outputs:
+            - typeId: team-okrs
+              required: true
+        requirements:
+          - type: functional
+            description: Team OKRs must support company OKRs
+            priority: must
+            validationCriteria:
+              - Clear alignment demonstrated
+              - No conflicting objectives
+              - Ownership assigned
+      - id: review-alignment
+        title: Review Alignment
+        description: Validate alignment across all organizational levels
+        type: review
+        complexity: simple
+        assignedRole: okr-champion
+        estimatedDuration: 90
+        dependencies:
+          - create-team-okrs
+        artifacts:
+          inputs:
+            - typeId: team-okrs
+              required: true
+          outputs:
+            - typeId: alignment-report
+              required: true
+        requirements:
+          - type: functional
+            description: Alignment must be verified
+            priority: must
+            validationCriteria:
+              - All OKRs aligned
+              - Dependencies mapped
+              - Gaps identified and addressed
+    agentRequirements:
+      roles:
+        - okr-champion
+        - team-lead
+      skills:
+        - alignment-analysis
+        - communication
+        - facilitation
+      minExperience: mid
+
+  - id: track-and-update
+    name: Track and Update
+    description: >
+      Monitor progress regularly and update key results.
+      Conduct check-ins to maintain momentum and transparency.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Cascade and Align phase must be completed
+        phaseId: cascade-and-align
+    exitCriteria:
+      - type: artifact-exists
+        description: Progress reports must exist
+        artifactType: progress-report
+    tasks:
+      - id: establish-tracking
+
+        title: Establish Tracking System
+        description: Set up dashboards and reporting mechanisms
+        type: implementation
+        complexity: simple
+        assignedRole: data-engineer
+        estimatedDuration: 180
+        artifacts:
+          inputs:
+            - typeId: key-results-document
+              required: true
+          outputs:
+            - typeId: tracking-dashboard
+              required: true
+        requirements:
+          - type: non_functional
+            description: Tracking must be real-time and accessible
+            priority: must
+            validationCriteria:
+              - Dashboard is live
+              - Data updates automatically
+              - All teams have access
+      - id: conduct-weekly-checkins
+        title: Conduct Weekly Check-ins
+        description: Regular team check-ins to review progress
+        type: review
+        complexity: simple
+        assignedRole: team-lead
+        estimatedDuration: 30
+        dependencies:
+          - establish-tracking
+        artifacts:
+          inputs:
+            - typeId: tracking-dashboard
+              required: true
+          outputs:
+            - typeId: checkin-notes
+              required: true
+        requirements:
+          - type: functional
+            description: Check-ins must be regular and documented
+            priority: must
+            validationCriteria:
+              - Weekly cadence maintained
+              - Progress updated
+              - Blockers identified
+      - id: monthly-review
+        title: Monthly Progress Review
+        description: Comprehensive review of OKR progress
+        type: review
+        complexity: simple
+        assignedRole: okr-champion
+        estimatedDuration: 90
+        dependencies:
+          - conduct-weekly-checkins
+        artifacts:
+          inputs:
+            - typeId: tracking-dashboard
+              required: true
+            - typeId: checkin-notes
+              required: true
+          outputs:
+            - typeId: progress-report
+              required: true
+        requirements:
+          - type: functional
+            description: Progress must be accurately reported
+            priority: must
+            validationCriteria:
+              - All key results scored
+              - Trends analyzed
+              - Adjustments recommended
+    agentRequirements:
+      roles:
+        - data-engineer
+        - team-lead
+        - okr-champion
+      skills:
+        - data-visualization
+        - progress-tracking
+        - reporting
+      minExperience: mid
+
+  - id: reflect-and-grade
+    name: Reflect and Grade
+    description: >
+      At cycle end, grade key results and reflect on learnings.
+      Celebrate successes and identify improvement areas.
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Track and Update phase must be completed
+        phaseId: track-and-update
+    exitCriteria:
+      - type: artifact-exists
+        description: Final grades and retrospective must exist
+        artifactType: okr-retrospective
+    tasks:
+      - id: grade-key-results
+        title: Grade Key Results
+        description: Score all key results on 0.0-1.0 scale
+        type: review
+        complexity: simple
+        assignedRole: okr-champion
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: progress-report
+              required: true
+            - typeId: key-results-document
+              required: true
+          outputs:
+            - typeId: okr-grades
+              required: true
+        requirements:
+          - type: functional
+            description: Grading must be objective and consistent
+            priority: must
+            validationCriteria:
+              - All key results graded
+              - Grading criteria applied
+              - Achievement levels documented
+      - id: conduct-retrospective
+        title: Conduct OKR Retrospective
+        description: Reflect on the OKR cycle and capture learnings
+        type: review
+        complexity: simple
+        assignedRole: okr-champion
+        estimatedDuration: 90
+        dependencies:
+          - grade-key-results
+        artifacts:
+          inputs:
+            - typeId: okr-grades
+              required: true
+          outputs:
+            - typeId: okr-retrospective
+              required: true
+        requirements:
+          - type: functional
+            description: Learnings must be documented for future cycles
+            priority: must
+            validationCriteria:
+              - Successes identified
+              - Challenges documented
+              - Improvement actions defined
+      - id: celebrate-and-communicate
+        title: Celebrate and Communicate Results
+        description: Share results and celebrate achievements
+        type: documentation
+        complexity: simple
+        assignedRole: communication-lead
+        estimatedDuration: 60
+        dependencies:
+          - conduct-retrospective
+        artifacts:
+          inputs:
+            - typeId: okr-grades
+              required: true
+            - typeId: okr-retrospective
+              required: true
+          outputs:
+            - typeId: results-communication
+              required: true
+        requirements:
+          - type: functional
+            description: Results must be transparently communicated
+            priority: must
+            validationCriteria:
+              - All stakeholders informed
+              - Achievements celebrated
+              - Learnings shared
+    agentRequirements:
+      roles:
+        - okr-champion
+        - communication-lead
+      skills:
+        - evaluation
+        - facilitation
+        - communication
+      minExperience: mid
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - set-objectives
+    - define-key-results
+    - cascade-and-align
+    - track-and-update
+    - reflect-and-grade
+  loops:
+    - id: quarterly-cycle
+      name: Quarterly OKR Cycle
+      description: Standard 3-month OKR cycle
+      phases:
+        - set-objectives
+        - define-key-results
+        - cascade-and-align
+        - track-and-update
+        - reflect-and-grade
+      maxIterations: 100
+  failureHandling:
+    strategy: retry
+    fallbackPhase: set-objectives
+
+agentCoordination:
+  roles:
+    - id: strategy-lead
+      name: Strategy Lead
+      description: Defines strategic direction and top-level objectives
+      responsibilities:
+        - Set company vision
+        - Define strategic priorities
+        - Ensure alignment with mission
+      requiredSkills:
+        - strategic-thinking
+        - vision-setting
+        - leadership
+      experienceLevel: senior
+      authority: leader
+    - id: okr-champion
+      name: OKR Champion
+      description: Facilitates OKR process and ensures best practices
+      responsibilities:
+        - Facilitate OKR creation
+        - Ensure methodology compliance
+        - Track and report progress
+        - Conduct reviews and retrospectives
+      requiredSkills:
+        - okr-methodology
+        - facilitation
+        - coaching
+      experienceLevel: senior
+      authority: leader
+    - id: metrics-analyst
+      name: Metrics Analyst
+      description: Defines and validates key results and metrics
+      responsibilities:
+        - Identify success metrics
+        - Validate measurability
+        - Design tracking systems
+      requiredSkills:
+        - data-analysis
+        - metrics-design
+        - measurement
+      experienceLevel: mid
+      authority: contributor
+    - id: team-lead
+      name: Team Lead
+      description: Creates and tracks team-level OKRs
+      responsibilities:
+        - Create team OKRs
+        - Conduct check-ins
+        - Update progress
+      requiredSkills:
+        - team-management
+        - goal-setting
+        - progress-tracking
+      experienceLevel: mid
+      authority: contributor
+    - id: data-engineer
+      name: Data Engineer
+      description: Builds tracking and reporting infrastructure
+      responsibilities:
+        - Build dashboards
+        - Automate data collection
+        - Ensure data accuracy
+      requiredSkills:
+        - data-engineering
+        - dashboard-design
+        - automation
+      experienceLevel: mid
+      authority: contributor
+    - id: communication-lead
+      name: Communication Lead
+      description: Manages internal communications around OKRs
+      responsibilities:
+        - Communicate OKRs
+        - Share progress updates
+        - Celebrate achievements
+      requiredSkills:
+        - communication
+        - storytelling
+        - stakeholder-management
+      experienceLevel: mid
+      authority: contributor
+    - id: leadership-team
+      name: Leadership Team
+      description: Reviews and approves company-level OKRs
+      responsibilities:
+        - Review objectives
+        - Provide strategic input
+        - Approve final OKRs
+      requiredSkills:
+        - strategic-thinking
+        - decision-making
+        - leadership
+      experienceLevel: expert
+      authority: approver
+  teamComposition:
+    minSize: 3
+    maxSize: 7
+    required:
+      - okr-champion
+      - strategy-lead
+      - metrics-analyst
+    optional:
+      - team-lead
+      - data-engineer
+      - communication-lead
+      - leadership-team
+  communicationPatterns:
+    - from: okr-champion
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+        - constraint
+    - from: any
+      to: okr-champion
+      type: direct
+      contextTypes:
+        - finding
+        - constraint
+    - from: team-lead
+      to: okr-champion
+      type: request-response
+      contextTypes:
+        - finding
+    - from: strategy-lead
+      to: leadership-team
+      type: request-response
+      contextTypes:
+        - decision
+  decisionAuthority:
+    - decision: Approve company objectives
+      authority: leadership-team
+      requiresConsensus: true
+      consensusRoles:
+        - strategy-lead
+    - decision: Define key results
+      authority: okr-champion
+      requiresConsensus: true
+      consensusRoles:
+        - metrics-analyst
+    - decision: Approve team OKRs
+      authority: team-lead
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: objectives-draft
+      name: Objectives Draft
+      description: Initial brainstormed objectives
+      format: markdown
+    - id: objectives-document
+      name: Objectives Document
+      description: Finalized organizational objectives
+      format: structured
+      schema:
+        type: object
+        required:
+          - objectives
+        properties:
+          objectives:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                objective:
+                  type: string
+                owner:
+                  type: string
+                level:
+                  type: string
+    - id: metrics-list
+      name: Metrics List
+      description: List of potential success metrics
+      format: json
+    - id: key-results-document
+      name: Key Results Document
+      description: Defined key results for all objectives
+      format: structured
+    - id: okr-communication
+      name: OKR Communication
+      description: Communication materials for OKRs
+      format: markdown
+    - id: team-okrs
+      name: Team OKRs
+      description: Team-level OKRs
+      format: json
+    - id: alignment-report
+      name: Alignment Report
+      description: Analysis of OKR alignment across organization
+      format: markdown
+    - id: tracking-dashboard
+      name: Tracking Dashboard
+      description: Real-time OKR progress dashboard
+      format: html
+    - id: checkin-notes
+      name: Check-in Notes
+      description: Notes from weekly OKR check-ins
+      format: markdown
+    - id: progress-report
+      name: Progress Report
+      description: Monthly OKR progress analysis
+      format: markdown
+    - id: okr-grades
+      name: OKR Grades
+      description: Final scores for all key results
+      format: json
+    - id: okr-retrospective
+      name: OKR Retrospective
+      description: Learnings and reflections from OKR cycle
+      format: markdown
+    - id: results-communication
+      name: Results Communication
+      description: Communication of OKR results
+      format: markdown
+  dependencies:
+    - artifact: objectives-document
+      dependsOn:
+        - objectives-draft
+    - artifact: key-results-document
+      dependsOn:
+        - objectives-document
+        - metrics-list
+    - artifact: team-okrs
+      dependsOn:
+        - okr-communication
+    - artifact: alignment-report
+      dependsOn:
+        - team-okrs
+    - artifact: tracking-dashboard
+      dependsOn:
+        - key-results-document
+    - artifact: progress-report
+      dependsOn:
+        - tracking-dashboard
+        - checkin-notes
+    - artifact: okr-grades
+      dependsOn:
+        - progress-report
+    - artifact: okr-retrospective
+      dependsOn:
+        - okr-grades
+
+ceremonies:
+  - id: okr-kickoff
+    name: OKR Cycle Kickoff
+    description: Launch meeting for new OKR cycle
+    timing: phase-start
+    duration: 90
+    participants:
+      - okr-champion
+      - strategy-lead
+      - leadership-team
+    objectives:
+      - Communicate strategic priorities
+      - Align on timeline
+      - Set expectations
+  - id: weekly-checkin
+    name: Weekly OKR Check-in
+    description: Team check-in on OKR progress
+    timing: periodic
+    duration: 30
+    participants:
+      - team-lead
+      - okr-champion
+    objectives:
+      - Review progress
+      - Identify blockers
+      - Update status
+  - id: monthly-review
+    name: Monthly OKR Review
+    description: Comprehensive progress review
+    timing: periodic
+    duration: 90
+    participants:
+      - okr-champion
+      - strategy-lead
+      - team-lead
+    objectives:
+      - Assess overall progress
+      - Identify trends
+      - Make adjustments
+  - id: okr-retrospective
+    name: End-of-Cycle Retrospective
+    description: Reflection and grading session
+    timing: phase-end
+    duration: 120
+    participants:
+      - okr-champion
+      - strategy-lead
+      - team-lead
+      - leadership-team
+    objectives:
+      - Grade key results
+      - Capture learnings
+      - Celebrate achievements
+      - Plan next cycle

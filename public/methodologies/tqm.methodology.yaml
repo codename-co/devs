@@ -1,0 +1,555 @@
+metadata:
+  id: tqm
+  name: TQM
+  title: Total Quality Management
+  description: >
+    Comprehensive management approach focusing on long-term success through customer satisfaction.
+    TQM involves all members of an organization in improving processes, products, services, and culture.
+  type: iterative
+  version: 1.0.0
+  origin: W. Edwards Deming / Kaoru Ishikawa
+  domains:
+    - quality-management
+    - continuous-improvement
+    - organizational-culture
+    - customer-focus
+  complexity: complex
+  tags:
+    - quality
+    - continuous-improvement
+    - customer-satisfaction
+    - culture-change
+  i18n:
+    es:
+      title: Gestión de Calidad Total
+      description: >
+        Enfoque integral de gestión que se centra en el éxito a largo plazo a través de la satisfacción del cliente.
+        TQM involucra a todos los miembros de una organización en la mejora de procesos, productos, servicios y cultura.
+    fr:
+      title: Gestion de la Qualité Totale
+      description: >
+        Approche globale de gestion axée sur le succès à long terme grâce à la satisfaction client.
+        TQM implique tous les membres d'une organisation dans l'amélioration des processus, produits, services et culture.
+    ko:
+      title: 전사적 품질 관리
+      description: >
+        고객 만족을 통한 장기적인 성공에 초점을 맞춘 종합적인 관리 접근 방식.
+        TQM은 조직의 모든 구성원이 프로세스, 제품, 서비스 및 문화를 개선하는 데 참여합니다.
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 3
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 4
+
+phases:
+  - id: customer-focus
+    name: Customer Focus
+    description: >
+      Understand and meet customer requirements and expectations.
+      Make customer satisfaction the primary driver.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Customer requirements must be documented
+        artifactType: customer-requirements
+    tasks:
+      - id: identify-customers
+        title: Identify Customer Segments
+        description: Define all customer groups and stakeholders
+        type: analysis
+        complexity: simple
+        assignedRole: customer-analyst
+        estimatedDuration: 90
+        artifacts:
+          outputs:
+            - typeId: customer-segments
+              required: true
+        requirements:
+          - type: functional
+            description: All customer groups must be identified
+            priority: must
+            validationCriteria:
+              - Internal and external customers identified
+              - Segments clearly defined
+              - Priorities established
+      - id: gather-requirements
+        title: Gather Customer Requirements
+        description: Collect and document customer needs and expectations
+        type: analysis
+        complexity: simple
+        assignedRole: quality-analyst
+        estimatedDuration: 120
+        dependencies:
+          - identify-customers
+        artifacts:
+          inputs:
+            - typeId: customer-segments
+              required: true
+          outputs:
+            - typeId: customer-requirements
+              required: true
+        requirements:
+          - type: functional
+            description: Requirements must be comprehensive and measurable
+            priority: must
+            validationCriteria:
+              - Voice of customer captured
+              - Needs prioritized
+              - Metrics defined
+    agentRequirements:
+      roles:
+        - customer-analyst
+        - quality-analyst
+      skills:
+        - customer-research
+        - requirements-analysis
+        - voc-methods
+      minExperience: mid
+
+  - id: process-approach
+    name: Process Approach
+    description: >
+      Identify and manage interrelated processes as a system.
+      Focus on process improvement and optimization.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Customer Focus phase must be completed
+        phaseId: customer-focus
+    exitCriteria:
+      - type: artifact-exists
+        description: Process improvements must be implemented
+        artifactType: process-improvements
+    tasks:
+      - id: map-processes
+        title: Map Key Processes
+        description: Document all critical business processes
+        type: analysis
+        complexity: simple
+        assignedRole: process-expert
+        estimatedDuration: 180
+        artifacts:
+          outputs:
+            - typeId: process-maps
+              required: true
+        requirements:
+          - type: functional
+            description: Core processes must be mapped
+            priority: must
+            validationCriteria:
+              - End-to-end processes documented
+              - Interfaces identified
+              - Metrics defined
+      - id: improve-processes
+        title: Implement Process Improvements
+        description: Apply PDCA to improve processes
+        type: implementation
+        complexity: complex
+        assignedRole: improvement-team
+        estimatedDuration: 360
+        dependencies:
+          - map-processes
+        artifacts:
+          inputs:
+            - typeId: process-maps
+              required: true
+          outputs:
+            - typeId: process-improvements
+              required: true
+        requirements:
+          - type: functional
+            description: Improvements must enhance customer value
+            priority: must
+            validationCriteria:
+              - Quality improved
+              - Waste reduced
+              - Customer value increased
+    agentRequirements:
+      roles:
+        - process-expert
+        - improvement-team
+      skills:
+        - process-mapping
+        - process-improvement
+        - pdca
+      minExperience: mid
+
+  - id: employee-engagement
+    name: Employee Engagement
+    description: >
+      Engage and empower all employees in quality improvement.
+      Build quality culture through training and involvement.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Process Approach phase must be completed
+        phaseId: process-approach
+    exitCriteria:
+      - type: artifact-exists
+        description: Employee engagement program must be active
+        artifactType: engagement-metrics
+    tasks:
+      - id: quality-training
+        title: Deliver Quality Training
+        description: Train all employees in quality principles and tools
+        type: implementation
+        complexity: simple
+        assignedRole: training-coordinator
+        estimatedDuration: 240
+        artifacts:
+          outputs:
+            - typeId: training-completion
+              required: true
+        requirements:
+          - type: functional
+            description: All employees must receive quality training
+            priority: must
+            validationCriteria:
+              - 100% training completion
+              - Competency verified
+              - Tools mastered
+      - id: empower-teams
+        title: Empower Quality Teams
+        description: Create and empower cross-functional quality teams
+        type: implementation
+        complexity: simple
+        assignedRole: quality-manager
+        estimatedDuration: 180
+        dependencies:
+          - quality-training
+        artifacts:
+          inputs:
+            - typeId: training-completion
+              required: true
+          outputs:
+            - typeId: engagement-metrics
+              required: true
+        requirements:
+          - type: functional
+            description: Teams must be active and empowered
+            priority: must
+            validationCriteria:
+              - Teams formed
+              - Authority granted
+              - Improvements implemented
+    agentRequirements:
+      roles:
+        - training-coordinator
+        - quality-manager
+      skills:
+        - training
+        - team-building
+        - empowerment
+      minExperience: mid
+
+  - id: data-driven-decisions
+    name: Data-Driven Decisions
+    description: >
+      Make decisions based on data analysis and facts.
+      Implement measurement systems and analytics.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Employee Engagement phase must be completed
+        phaseId: employee-engagement
+    exitCriteria:
+      - type: artifact-exists
+        description: Data-driven decision framework must be operational
+        artifactType: decision-analytics
+    tasks:
+      - id: establish-metrics
+        title: Establish Quality Metrics
+        description: Define comprehensive quality measurement system
+        type: planning
+        complexity: simple
+        assignedRole: metrics-specialist
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: customer-requirements
+              required: true
+          outputs:
+            - typeId: quality-metrics
+              required: true
+        requirements:
+          - type: functional
+            description: Metrics must measure customer satisfaction and process quality
+            priority: must
+            validationCriteria:
+              - Leading and lagging indicators
+              - Balanced scorecard approach
+              - Real-time tracking
+      - id: implement-analytics
+        title: Implement Analytics Framework
+        description: Deploy tools for data collection and analysis
+        type: implementation
+        complexity: complex
+        assignedRole: data-engineer
+        estimatedDuration: 240
+        dependencies:
+          - establish-metrics
+        artifacts:
+          inputs:
+            - typeId: quality-metrics
+              required: true
+          outputs:
+            - typeId: decision-analytics
+              required: true
+        requirements:
+          - type: functional
+            description: Analytics must support decision-making
+            priority: must
+            validationCriteria:
+              - Dashboards operational
+              - Reports automated
+              - Insights actionable
+    agentRequirements:
+      roles:
+        - metrics-specialist
+        - data-engineer
+      skills:
+        - metrics-design
+        - data-analytics
+        - dashboard-development
+      minExperience: mid
+
+  - id: continuous-improvement
+    name: Continuous Improvement
+    description: >
+      Establish culture of ongoing improvement.
+      Use PDCA cycles to drive incremental enhancements.
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Data-Driven Decisions phase must be completed
+        phaseId: data-driven-decisions
+    exitCriteria:
+      - type: artifact-exists
+        description: Continuous improvement culture must be established
+        artifactType: improvement-results
+    tasks:
+      - id: establish-kaizen
+        title: Establish Kaizen Culture
+        description: Implement continuous improvement practices
+        type: implementation
+        complexity: simple
+        assignedRole: kaizen-facilitator
+        estimatedDuration: 180
+        artifacts:
+          outputs:
+            - typeId: kaizen-program
+              required: true
+        requirements:
+          - type: functional
+            description: Improvement must be everyone's responsibility
+            priority: must
+            validationCriteria:
+              - Suggestion system active
+              - Regular kaizen events
+              - Improvements tracked
+      - id: measure-results
+        title: Measure Improvement Results
+        description: Track and report continuous improvement outcomes
+        type: analysis
+        complexity: simple
+        assignedRole: quality-analyst
+        estimatedDuration: 90
+        dependencies:
+          - establish-kaizen
+        artifacts:
+          inputs:
+            - typeId: kaizen-program
+              required: true
+            - typeId: quality-metrics
+              required: true
+          outputs:
+            - typeId: improvement-results
+              required: true
+        requirements:
+          - type: functional
+            description: Results must show sustained improvement
+            priority: must
+            validationCriteria:
+              - Quality trends improving
+              - Customer satisfaction increasing
+              - Cost of quality decreasing
+    agentRequirements:
+      roles:
+        - kaizen-facilitator
+        - quality-analyst
+      skills:
+        - kaizen
+        - facilitation
+        - measurement
+      minExperience: mid
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - customer-focus
+    - process-approach
+    - employee-engagement
+    - data-driven-decisions
+    - continuous-improvement
+  loops:
+    - id: pdca-cycle
+      name: PDCA Continuous Improvement Cycle
+      description: Ongoing quality improvement through PDCA
+      phases:
+        - process-approach
+        - data-driven-decisions
+        - continuous-improvement
+      maxIterations: 100
+  failureHandling:
+    strategy: retry
+    fallbackPhase: customer-focus
+
+agentCoordination:
+  roles:
+    - id: quality-manager
+      name: Quality Manager
+      description: Leads TQM implementation
+      responsibilities:
+        - Coordinate TQM program
+        - Empower teams
+        - Drive culture change
+      requiredSkills:
+        - quality-management
+        - leadership
+        - change-management
+      experienceLevel: senior
+      authority: leader
+    - id: customer-analyst
+      name: Customer Analyst
+      description: Analyzes customer needs
+      responsibilities:
+        - Research customers
+        - Identify requirements
+        - Monitor satisfaction
+      requiredSkills:
+        - customer-research
+        - voc-methods
+        - analysis
+      experienceLevel: mid
+      authority: contributor
+    - id: process-expert
+      name: Process Expert
+      description: Maps and improves processes
+      responsibilities:
+        - Document processes
+        - Identify improvements
+        - Implement changes
+      requiredSkills:
+        - process-mapping
+        - process-improvement
+        - lean-six-sigma
+      experienceLevel: senior
+      authority: contributor
+    - id: improvement-team
+      name: Improvement Team
+      description: Cross-functional improvement teams
+      responsibilities:
+        - Execute improvements
+        - Solve problems
+        - Implement solutions
+      requiredSkills:
+        - problem-solving
+        - teamwork
+        - quality-tools
+      experienceLevel: mid
+      authority: contributor
+    - id: kaizen-facilitator
+      name: Kaizen Facilitator
+      description: Facilitates continuous improvement
+      responsibilities:
+        - Facilitate kaizen events
+        - Coach teams
+        - Track improvements
+      requiredSkills:
+        - kaizen
+        - facilitation
+        - coaching
+      experienceLevel: mid
+      authority: contributor
+  teamComposition:
+    minSize: 3
+    maxSize: 5
+    required:
+      - quality-manager
+      - customer-analyst
+      - process-expert
+    optional:
+      - improvement-team
+      - kaizen-facilitator
+  communicationPatterns:
+    - from: quality-manager
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+        - constraint
+  decisionAuthority:
+    - decision: Approve quality initiatives
+      authority: quality-manager
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: customer-segments
+      name: Customer Segments
+      description: Identified customer groups
+      format: json
+    - id: customer-requirements
+      name: Customer Requirements
+      description: Customer needs and expectations
+      format: structured
+    - id: process-maps
+      name: Process Maps
+      description: Documented business processes
+      format: markdown
+    - id: process-improvements
+      name: Process Improvements
+      description: Implemented process enhancements
+      format: json
+    - id: training-completion
+      name: Training Completion
+      description: Training records and competencies
+      format: json
+    - id: engagement-metrics
+      name: Engagement Metrics
+      description: Employee engagement measurements
+      format: json
+    - id: quality-metrics
+      name: Quality Metrics
+      description: Quality measurement system
+      format: structured
+    - id: decision-analytics
+      name: Decision Analytics
+      description: Data analytics framework
+      format: json
+    - id: kaizen-program
+      name: Kaizen Program
+      description: Continuous improvement program
+      format: markdown
+    - id: improvement-results
+      name: Improvement Results
+      description: Quality improvement outcomes
+      format: json
+  dependencies:
+    - artifact: customer-requirements
+      dependsOn:
+        - customer-segments
+    - artifact: process-improvements
+      dependsOn:
+        - process-maps
+    - artifact: quality-metrics
+      dependsOn:
+        - customer-requirements
+    - artifact: improvement-results
+      dependsOn:
+        - kaizen-program
+        - quality-metrics

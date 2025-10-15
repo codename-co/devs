@@ -1,0 +1,456 @@
+metadata:
+  id: apf
+  name: APF
+  title: Adaptive Project Framework
+  description: >
+    Agile project management framework for projects with high uncertainty.
+    APF adapts to changing requirements and discovers solutions iteratively.
+  type: iterative
+  version: 1.0.0
+  origin: Robert K. Wysocki
+  domains:
+    - project-management
+    - agile
+    - adaptive-management
+    - high-uncertainty
+  complexity: moderate
+  tags:
+    - adaptive
+    - iterative
+    - change-driven
+    - discovery
+
+configuration:
+  timeBox:
+    duration: 2
+    unit: weeks
+    strict: false
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 3
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 5
+
+phases:
+  - id: version-scope
+    name: Version Scope
+    description: Define project vision and high-level requirements
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Project overview must exist
+        artifactType: project-overview
+    tasks:
+      - id: develop-conditions-of-satisfaction
+        title: Develop Conditions of Satisfaction
+        description: Define success criteria with client
+        type: planning
+        complexity: simple
+        assignedRole: project-manager
+        estimatedDuration: 120
+        artifacts:
+          outputs:
+            - typeId: conditions-of-satisfaction
+              required: true
+      - id: prioritize-requirements
+        title: Prioritize Requirements
+        description: Create prioritized requirements list
+        type: planning
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 90
+        dependencies:
+          - develop-conditions-of-satisfaction
+        artifacts:
+          inputs:
+            - typeId: conditions-of-satisfaction
+              required: true
+          outputs:
+            - typeId: prioritized-requirements
+              required: true
+      - id: develop-mid-level-wbs
+        title: Develop Mid-Level WBS
+        description: Create work breakdown structure
+        type: planning
+        complexity: simple
+        assignedRole: project-manager
+        estimatedDuration: 60
+        dependencies:
+          - prioritize-requirements
+        artifacts:
+          inputs:
+            - typeId: prioritized-requirements
+              required: true
+          outputs:
+            - typeId: project-overview
+              required: true
+    agentRequirements:
+      roles:
+        - project-manager
+        - product-owner
+      skills:
+        - requirements-gathering
+        - prioritization
+        - wbs-development
+      minExperience: senior
+
+  - id: cycle-plan
+    name: Cycle Plan
+    description: Plan iteration based on priorities
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Version Scope phase must be completed
+        phaseId: version-scope
+    exitCriteria:
+      - type: artifact-exists
+        description: Cycle plan must exist
+        artifactType: cycle-plan
+    tasks:
+      - id: select-cycle-functionality
+        title: Select Cycle Functionality
+        description: Choose features for this cycle
+        type: planning
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: prioritized-requirements
+              required: true
+          outputs:
+            - typeId: cycle-backlog
+              required: true
+      - id: plan-cycle
+        title: Plan Cycle Activities
+        description: Plan work for the cycle
+        type: planning
+        complexity: simple
+        assignedRole: project-manager
+        estimatedDuration: 90
+        dependencies:
+          - select-cycle-functionality
+        artifacts:
+          inputs:
+            - typeId: cycle-backlog
+              required: true
+          outputs:
+            - typeId: cycle-plan
+              required: true
+    agentRequirements:
+      roles:
+        - product-owner
+        - project-manager
+      skills:
+        - planning
+        - timeboxing
+      minExperience: mid
+
+  - id: cycle-build
+    name: Cycle Build
+    description: Develop functionality for the cycle
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Cycle Plan phase must be completed
+        phaseId: cycle-plan
+    exitCriteria:
+      - type: artifact-exists
+        description: Working functionality must be delivered
+        artifactType: cycle-deliverables
+    tasks:
+      - id: build-functionality
+        title: Build Functionality
+        description: Develop selected features
+        type: implementation
+        complexity: complex
+        assignedRole: development-team
+        estimatedDuration: 480
+        artifacts:
+          inputs:
+            - typeId: cycle-plan
+              required: true
+          outputs:
+            - typeId: working-software
+              required: true
+      - id: monitor-and-adjust
+        title: Monitor and Adjust
+        description: Track progress and adapt as needed
+        type: review
+        complexity: simple
+        assignedRole: project-manager
+        estimatedDuration: 60
+        dependencies:
+          - build-functionality
+        artifacts:
+          inputs:
+            - typeId: working-software
+              required: true
+          outputs:
+            - typeId: progress-report
+              required: true
+      - id: client-checkpoint
+        title: Client Checkpoint
+        description: Review with client and gather feedback
+        type: review
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 90
+        dependencies:
+          - monitor-and-adjust
+        artifacts:
+          inputs:
+            - typeId: working-software
+              required: true
+          outputs:
+            - typeId: cycle-deliverables
+              required: true
+    agentRequirements:
+      roles:
+        - development-team
+        - project-manager
+        - product-owner
+      skills:
+        - development
+        - monitoring
+        - client-communication
+      minExperience: mid
+
+  - id: cycle-review
+    name: Cycle Review
+    description: Reflect and adapt for next cycle
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Cycle Build phase must be completed
+        phaseId: cycle-build
+    exitCriteria:
+      - type: artifact-exists
+        description: Cycle review must be complete
+        artifactType: cycle-review
+    tasks:
+      - id: team-retrospective
+        title: Team Retrospective
+        description: Team reflects on cycle
+        type: review
+        complexity: simple
+        assignedRole: scrum-master
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: cycle-deliverables
+              required: true
+          outputs:
+            - typeId: retrospective-notes
+              required: true
+      - id: adjust-scope
+        title: Adjust Scope and Plan
+        description: Update requirements based on learnings
+        type: planning
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 60
+        dependencies:
+          - team-retrospective
+        artifacts:
+          inputs:
+            - typeId: retrospective-notes
+              required: true
+            - typeId: prioritized-requirements
+              required: true
+          outputs:
+            - typeId: updated-requirements
+              required: true
+      - id: decide-next-cycle
+        title: Decide on Next Cycle
+        description: Determine if another cycle is needed
+        type: decision
+        complexity: simple
+        assignedRole: project-manager
+        estimatedDuration: 30
+        dependencies:
+          - adjust-scope
+        artifacts:
+          inputs:
+            - typeId: updated-requirements
+              required: true
+          outputs:
+            - typeId: cycle-review
+              required: true
+    agentRequirements:
+      roles:
+        - scrum-master
+        - product-owner
+        - project-manager
+      skills:
+        - retrospective-facilitation
+        - adaptive-planning
+        - decision-making
+      minExperience: mid
+
+execution:
+  strategy: iterative
+  phaseOrder:
+    - version-scope
+    - cycle-plan
+    - cycle-build
+    - cycle-review
+  loops:
+    - id: cycle-loop
+      name: APF Cycle
+      description: Iterative development cycles
+      phases:
+        - cycle-plan
+        - cycle-build
+        - cycle-review
+      maxIterations: 20
+  failureHandling:
+    strategy: retry
+    fallbackPhase: cycle-plan
+
+agentCoordination:
+  roles:
+    - id: project-manager
+      name: Project Manager
+      description: Coordinates APF process
+      responsibilities:
+        - Scope project
+        - Plan cycles
+        - Monitor progress
+      requiredSkills:
+        - apf-framework
+        - project-management
+        - adaptation
+      experienceLevel: senior
+      authority: leader
+    - id: product-owner
+      name: Product Owner
+      description: Represents client interests
+      responsibilities:
+        - Define requirements
+        - Prioritize features
+        - Accept deliverables
+      requiredSkills:
+        - requirements-management
+        - prioritization
+        - client-communication
+      experienceLevel: senior
+      authority: leader
+    - id: development-team
+      name: Development Team
+      description: Builds functionality
+      responsibilities:
+        - Develop features
+        - Collaborate
+        - Deliver quality
+      requiredSkills:
+        - development
+        - testing
+        - collaboration
+      experienceLevel: mid
+      authority: contributor
+    - id: scrum-master
+      name: Scrum Master
+      description: Facilitates team processes
+      responsibilities:
+        - Facilitate retrospectives
+        - Coach team
+        - Remove impediments
+      requiredSkills:
+        - facilitation
+        - coaching
+        - agile-practices
+      experienceLevel: mid
+      authority: contributor
+  teamComposition:
+    minSize: 3
+    maxSize: 9
+    required:
+      - project-manager
+      - product-owner
+      - development-team
+    optional:
+      - scrum-master
+  communicationPatterns:
+    - from: product-owner
+      to: development-team
+      type: direct
+      contextTypes:
+        - requirement
+    - from: project-manager
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+  decisionAuthority:
+    - decision: Continue or stop cycles
+      authority: project-manager
+      requiresConsensus: true
+      consensusRoles:
+        - product-owner
+
+artifactFlow:
+  artifactTypes:
+    - id: conditions-of-satisfaction
+      name: Conditions of Satisfaction
+      description: Client success criteria
+      format: structured
+    - id: prioritized-requirements
+      name: Prioritized Requirements
+      description: Ordered list of requirements
+      format: json
+    - id: project-overview
+      name: Project Overview
+      description: High-level project definition
+      format: markdown
+    - id: cycle-backlog
+      name: Cycle Backlog
+      description: Selected features for cycle
+      format: json
+    - id: cycle-plan
+      name: Cycle Plan
+      description: Detailed cycle plan
+      format: structured
+    - id: working-software
+      name: Working Software
+      description: Developed functionality
+      format: code
+    - id: progress-report
+      name: Progress Report
+      description: Cycle progress tracking
+      format: markdown
+    - id: cycle-deliverables
+      name: Cycle Deliverables
+      description: Completed cycle output
+      format: code
+    - id: retrospective-notes
+      name: Retrospective Notes
+      description: Team reflection notes
+      format: markdown
+    - id: updated-requirements
+      name: Updated Requirements
+      description: Adjusted requirements
+      format: json
+    - id: cycle-review
+      name: Cycle Review
+      description: Cycle completion review
+      format: markdown
+  dependencies:
+    - artifact: prioritized-requirements
+      dependsOn:
+        - conditions-of-satisfaction
+    - artifact: project-overview
+      dependsOn:
+        - prioritized-requirements
+    - artifact: cycle-plan
+      dependsOn:
+        - cycle-backlog
+    - artifact: cycle-deliverables
+      dependsOn:
+        - working-software
+    - artifact: updated-requirements
+      dependsOn:
+        - retrospective-notes
+        - prioritized-requirements

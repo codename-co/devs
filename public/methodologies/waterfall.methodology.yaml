@@ -1,0 +1,442 @@
+metadata:
+  id: waterfall
+  name: Waterfall
+  title: Waterfall Software Development
+  description: >
+    Sequential software development methodology where progress flows steadily downwards through phases.
+    Each phase must be completed before moving to the next, like a waterfall.
+  type: sequential
+  version: 1.0.0
+  origin: Winston W. Royce
+  domains:
+    - software-development
+    - project-management
+    - systems-engineering
+  complexity: moderate
+  tags:
+    - sdlc
+    - sequential
+    - traditional
+    - phase-gate
+  i18n:
+    es:
+      name: Modelo en Cascada
+      title: Desarrollo de Software en Cascada
+      description: >
+        Metodología secuencial de desarrollo de software donde el progreso fluye constantemente hacia abajo a través de fases.
+        Cada fase debe completarse antes de pasar a la siguiente, como una cascada.
+    fr:
+      name: Modèle en Cascade
+      title: Développement Logiciel en Cascade
+      description: >
+        Méthodologie de développement logiciel séquentielle où le progrès s'écoule régulièrement vers le bas à travers les phases.
+        Chaque phase doit être terminée avant de passer à la suivante, comme une cascade.
+    ko:
+      name: 폭포수 모델
+      title: 폭포수 소프트웨어 개발
+      description: >
+        단계별로 순차적으로 진행되는 소프트웨어 개발 방법론입니다.
+        각 단계를 완료한 후 다음 단계로 넘어갑니다.
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: false
+    maxRetries: 1
+  parallelization:
+    enabled: false
+    maxConcurrentTasks: 1
+
+phases:
+  - id: requirements
+    name: Requirements
+    description: Gather and document all system requirements
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Requirements specification must be approved
+        artifactType: requirements-spec
+    tasks:
+      - id: gather-requirements
+        title: Gather System Requirements
+        description: Collect all functional and non-functional requirements
+        type: analysis
+        complexity: complex
+        assignedRole: business-analyst
+        estimatedDuration: 480
+        artifacts:
+          outputs:
+            - typeId: requirements-spec
+              required: true
+    agentRequirements:
+      roles:
+        - business-analyst
+      skills:
+        - requirements-elicitation
+        - documentation
+      minExperience: senior
+
+  - id: design
+    name: System Design
+    description: Create system architecture and detailed design
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Requirements phase must be completed
+        phaseId: requirements
+    exitCriteria:
+      - type: artifact-exists
+        description: Design documents must be approved
+        artifactType: design-spec
+    tasks:
+      - id: create-architecture
+        title: Create System Architecture
+        description: Design high-level system architecture
+        type: design
+        complexity: complex
+        assignedRole: architect
+        estimatedDuration: 360
+        artifacts:
+          inputs:
+            - typeId: requirements-spec
+              required: true
+          outputs:
+            - typeId: architecture-doc
+              required: true
+      - id: detailed-design
+        title: Create Detailed Design
+        description: Design detailed component specifications
+        type: design
+        complexity: complex
+        assignedRole: designer
+        estimatedDuration: 480
+        dependencies:
+          - create-architecture
+        artifacts:
+          inputs:
+            - typeId: architecture-doc
+              required: true
+          outputs:
+            - typeId: design-spec
+              required: true
+    agentRequirements:
+      roles:
+        - architect
+        - designer
+      skills:
+        - system-design
+        - architecture
+        - uml
+      minExperience: senior
+
+  - id: implementation
+    name: Implementation
+    description: Write code based on design specifications
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: System Design phase must be completed
+        phaseId: design
+    exitCriteria:
+      - type: artifact-exists
+        description: Code must be complete
+        artifactType: source-code
+    tasks:
+      - id: write-code
+        title: Write Source Code
+        description: Implement system according to design
+        type: implementation
+        complexity: complex
+        assignedRole: developer
+        estimatedDuration: 1440
+        artifacts:
+          inputs:
+            - typeId: design-spec
+              required: true
+          outputs:
+            - typeId: source-code
+              required: true
+    agentRequirements:
+      roles:
+        - developer
+      skills:
+        - programming
+        - coding-standards
+      minExperience: mid
+
+  - id: testing
+    name: Testing
+    description: Verify system meets requirements
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Implementation phase must be completed
+        phaseId: implementation
+    exitCriteria:
+      - type: artifact-exists
+        description: Test reports must show passing results
+        artifactType: test-report
+    tasks:
+      - id: execute-tests
+        title: Execute Test Plans
+        description: Run comprehensive system tests
+        type: testing
+        complexity: complex
+        assignedRole: qa-engineer
+        estimatedDuration: 720
+        artifacts:
+          inputs:
+            - typeId: source-code
+              required: true
+          outputs:
+            - typeId: test-report
+              required: true
+    agentRequirements:
+      roles:
+        - qa-engineer
+      skills:
+        - testing
+        - quality-assurance
+      minExperience: mid
+
+  - id: deployment
+    name: Deployment
+    description: Deploy system to production
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Testing phase must be completed
+        phaseId: testing
+    exitCriteria:
+      - type: artifact-exists
+        description: System must be deployed
+        artifactType: deployment-report
+    tasks:
+      - id: deploy-system
+        title: Deploy to Production
+        description: Install and configure system in production
+        type: implementation
+        complexity: simple
+        assignedRole: devops-engineer
+        estimatedDuration: 240
+        artifacts:
+          inputs:
+            - typeId: source-code
+              required: true
+          outputs:
+            - typeId: deployment-report
+              required: true
+    agentRequirements:
+      roles:
+        - devops-engineer
+      skills:
+        - deployment
+        - operations
+      minExperience: mid
+
+  - id: maintenance
+    name: Maintenance
+    description: Ongoing support and bug fixes
+    order: 5
+    entryCriteria:
+      - type: phase-completed
+        description: Deployment phase must be completed
+        phaseId: deployment
+    exitCriteria:
+      - type: artifact-exists
+        description: Maintenance log must exist
+        artifactType: maintenance-log
+    tasks:
+      - id: provide-support
+        title: Provide Ongoing Support
+        description: Fix bugs and provide user support
+        type: implementation
+        complexity: simple
+        assignedRole: support-engineer
+        estimatedDuration: 2880
+        artifacts:
+          inputs:
+            - typeId: deployment-report
+              required: true
+          outputs:
+            - typeId: maintenance-log
+              required: true
+    agentRequirements:
+      roles:
+        - support-engineer
+      skills:
+        - troubleshooting
+        - customer-support
+      minExperience: mid
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - requirements
+    - design
+    - implementation
+    - testing
+    - deployment
+    - maintenance
+  failureHandling:
+    strategy: retry
+    fallbackPhase: requirements
+
+agentCoordination:
+  roles:
+    - id: business-analyst
+      name: Business Analyst
+      description: Gathers requirements
+      responsibilities:
+        - Elicit requirements
+        - Document specifications
+        - Validate completeness
+      requiredSkills:
+        - requirements-analysis
+        - documentation
+      experienceLevel: senior
+      authority: contributor
+    - id: architect
+      name: System Architect
+      description: Designs system architecture
+      responsibilities:
+        - Create architecture
+        - Define components
+        - Review design
+      requiredSkills:
+        - architecture
+        - system-design
+      experienceLevel: expert
+      authority: leader
+    - id: designer
+      name: Designer
+      description: Creates detailed designs
+      responsibilities:
+        - Detail design
+        - Create specifications
+        - Design review
+      requiredSkills:
+        - design
+        - uml
+      experienceLevel: senior
+      authority: contributor
+    - id: developer
+      name: Developer
+      description: Writes code
+      responsibilities:
+        - Implement features
+        - Write code
+        - Code review
+      requiredSkills:
+        - programming
+        - coding
+      experienceLevel: mid
+      authority: contributor
+    - id: qa-engineer
+      name: QA Engineer
+      description: Tests system
+      responsibilities:
+        - Test execution
+        - Bug reporting
+        - Quality verification
+      requiredSkills:
+        - testing
+        - quality-assurance
+      experienceLevel: mid
+      authority: contributor
+    - id: devops-engineer
+      name: DevOps Engineer
+      description: Deploys system
+      responsibilities:
+        - Deploy system
+        - Configure environment
+        - Monitor production
+      requiredSkills:
+        - deployment
+        - operations
+      experienceLevel: mid
+      authority: contributor
+    - id: support-engineer
+      name: Support Engineer
+      description: Maintains system
+      responsibilities:
+        - Fix bugs
+        - Support users
+        - Maintain system
+      requiredSkills:
+        - troubleshooting
+        - support
+      experienceLevel: mid
+      authority: contributor
+  teamComposition:
+    minSize: 4
+    maxSize: 7
+    required:
+      - business-analyst
+      - architect
+      - developer
+      - qa-engineer
+    optional:
+      - designer
+      - devops-engineer
+      - support-engineer
+  communicationPatterns:
+    - from: architect
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+  decisionAuthority:
+    - decision: Approve phase completion
+      authority: architect
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: requirements-spec
+      name: Requirements Specification
+      description: Complete system requirements
+      format: structured
+    - id: architecture-doc
+      name: Architecture Document
+      description: System architecture design
+      format: markdown
+    - id: design-spec
+      name: Design Specification
+      description: Detailed component designs
+      format: structured
+    - id: source-code
+      name: Source Code
+      description: Implemented system code
+      format: code
+    - id: test-report
+      name: Test Report
+      description: Test execution results
+      format: markdown
+    - id: deployment-report
+      name: Deployment Report
+      description: Deployment documentation
+      format: markdown
+    - id: maintenance-log
+      name: Maintenance Log
+      description: Ongoing maintenance activities
+      format: json
+  dependencies:
+    - artifact: architecture-doc
+      dependsOn:
+        - requirements-spec
+    - artifact: design-spec
+      dependsOn:
+        - architecture-doc
+    - artifact: source-code
+      dependsOn:
+        - design-spec
+    - artifact: test-report
+      dependsOn:
+        - source-code
+    - artifact: deployment-report
+      dependsOn:
+        - source-code
+    - artifact: maintenance-log
+      dependsOn:
+        - deployment-report

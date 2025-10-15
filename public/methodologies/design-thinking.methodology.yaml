@@ -1,0 +1,1219 @@
+metadata:
+  id: design-thinking
+  name: Design Thinking
+  description: >
+    Human-centered approach to innovation that integrates user needs, technology possibilities, and business success.
+    Design Thinking uses empathy, ideation, and experimentation to solve complex problems.
+    Non-linear process that encourages iteration and learning from failure.
+  type: iterative
+  version: 1.0.0
+  origin: Stanford d.school / IDEO
+  domains:
+    - innovation
+    - product-development
+    - problem-solving
+    - user-experience
+    - service-design
+  complexity: moderate
+  tags:
+    - human-centered
+    - innovation
+    - creative-problem-solving
+    - prototyping
+    - empathy
+  i18n:
+    es:
+      name: Pensamiento de Diseño
+      title: O Pensamiento de Diseño
+      description: >
+        Enfoque centrado en el ser humano para la innovación que integra las necesidades del usuario, las posibilidades tecnológicas y el éxito empresarial.
+        El Pensamiento de Diseño utiliza empatía, ideación y experimentación para resolver problemas complejos.
+        Proceso no lineal que fomenta la iteración y el aprendizaje del fracaso.
+    fr:
+      name: Pensée Design
+      title: Ou Design Thinking
+      description: >
+        Approche centrée sur l'humain pour l'innovation qui intègre les besoins des utilisateurs, les possibilités technologiques et le succès commercial.
+        Le Design Thinking utilise l'empathie, l'idéation et l'expérimentation pour résoudre des problèmes complexes.
+        Processus non linéaire qui encourage l'itération et l'apprentissage à partir de l'échec.
+    ko:
+      name: 디자인 씽킹
+      title: 또는 디자인 씽킹
+      description: >
+        사용자 요구사항, 기술 가능성 및 비즈니스 성공을 통합하는 인간 중심 혁신 접근 방식.
+        디자인 씽킹은 공감, 아이디어 창출 및 실험을 사용하여 복잡한 문제를 해결합니다.
+        반복과 실패로부터의 학습을 장려하는 비선형 프로세스.
+
+configuration:
+  maxIterations: 20
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 3
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 4
+  convergence:
+    metric: solution-validated
+    threshold: 1
+    operator: '≥'
+
+phases:
+  - id: empathize
+    name: Empathize
+    description: >
+      Understand users through research and immersion.
+      Build empathy by observing, engaging, and experiencing what users experience.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: User research must be conducted
+        artifactType: user-research
+      - type: artifact-exists
+        description: Empathy maps must be created
+        artifactType: empathy-maps
+    tasks:
+      - id: conduct-user-interviews
+        title: Conduct User Interviews
+        description: Have conversations with users to understand their needs and pain points
+        type: analysis
+        complexity: simple
+        assignedRole: user-researcher
+        estimatedDuration: 360
+        artifacts:
+          outputs:
+            - typeId: interview-notes
+              required: true
+        requirements:
+          - type: functional
+            description: Diverse user perspectives must be captured
+            priority: must
+            validationCriteria:
+              - Multiple users interviewed
+              - Open-ended questions asked
+              - Stories captured
+              - Context understood
+      - id: observe-users
+        title: Observe Users in Context
+        description: Watch users in their natural environment
+        type: analysis
+        complexity: simple
+        assignedRole: user-researcher
+        estimatedDuration: 240
+        artifacts:
+          outputs:
+            - typeId: observation-notes
+              required: true
+        requirements:
+          - type: functional
+            description: Contextual understanding must be gained
+            priority: must
+            validationCriteria:
+              - Users observed in context
+              - Behaviors documented
+              - Environment noted
+              - Workarounds identified
+      - id: immerse-in-user-experience
+        title: Immerse in User Experience
+        description: Experience what users experience firsthand
+        type: analysis
+        complexity: simple
+        assignedRole: designer
+        estimatedDuration: 180
+        artifacts:
+          outputs:
+            - typeId: immersion-insights
+              required: true
+        requirements:
+          - type: functional
+            description: First-hand experience must be gained
+            priority: should
+            validationCriteria:
+              - Direct experience obtained
+              - Pain points felt
+              - Insights captured
+      - id: create-empathy-maps
+        title: Create Empathy Maps
+        description: Synthesize research into empathy maps
+        type: analysis
+        complexity: simple
+        assignedRole: design-researcher
+        estimatedDuration: 120
+        dependencies:
+          - conduct-user-interviews
+          - observe-users
+          - immerse-in-user-experience
+        artifacts:
+          inputs:
+            - typeId: interview-notes
+              required: true
+            - typeId: observation-notes
+              required: true
+            - typeId: immersion-insights
+              required: false
+          outputs:
+            - typeId: empathy-maps
+              required: true
+        requirements:
+          - type: functional
+            description: User perspectives must be synthesized
+            priority: must
+            validationCriteria:
+              - Says/Thinks/Does/Feels captured
+              - Patterns identified
+              - Insights surfaced
+      - id: compile-user-research
+        title: Compile User Research Findings
+        description: Document all research findings
+        type: documentation
+        complexity: simple
+        assignedRole: design-researcher
+        estimatedDuration: 90
+        dependencies:
+          - create-empathy-maps
+        artifacts:
+          inputs:
+            - typeId: empathy-maps
+              required: true
+            - typeId: interview-notes
+              required: true
+            - typeId: observation-notes
+              required: true
+          outputs:
+            - typeId: user-research
+              required: true
+        requirements:
+          - type: functional
+            description: Research must be well-documented
+            priority: must
+            validationCriteria:
+              - All findings captured
+              - Insights highlighted
+              - Quotes included
+              - Themes identified
+    agentRequirements:
+      roles:
+        - user-researcher
+        - design-researcher
+        - designer
+      skills:
+        - user-research
+        - interviewing
+        - observation
+        - empathy
+      minExperience: mid
+
+  - id: define
+    name: Define
+    description: >
+      Frame the problem based on user insights.
+      Create a point of view that guides ideation.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Empathize phase must be completed
+        phaseId: empathize
+    exitCriteria:
+      - type: artifact-exists
+        description: Problem statement must be defined
+        artifactType: problem-statement
+      - type: artifact-exists
+        description: Point of view must be established
+        artifactType: point-of-view
+    tasks:
+      - id: synthesize-findings
+        title: Synthesize Research Findings
+        description: Identify patterns and insights from research
+        type: analysis
+        complexity: complex
+        assignedRole: design-researcher
+        estimatedDuration: 180
+        artifacts:
+          inputs:
+            - typeId: user-research
+              required: true
+          outputs:
+            - typeId: synthesis-insights
+              required: true
+        requirements:
+          - type: functional
+            description: Patterns must emerge from data
+            priority: must
+            validationCriteria:
+              - Themes identified
+              - Connections made
+              - Insights prioritized
+              - Opportunities spotted
+      - id: create-personas
+        title: Create User Personas
+        description: Develop archetypal users based on research
+        type: design
+        complexity: simple
+        assignedRole: ux-designer
+        estimatedDuration: 120
+        dependencies:
+          - synthesize-findings
+        artifacts:
+          inputs:
+            - typeId: synthesis-insights
+              required: true
+          outputs:
+            - typeId: user-personas
+              required: true
+        requirements:
+          - type: functional
+            description: Personas must represent real users
+            priority: must
+            validationCriteria:
+              - Based on research
+              - Goals captured
+              - Pain points included
+              - Behaviors described
+      - id: map-user-journey
+        title: Map User Journey
+        description: Visualize user experience over time
+        type: design
+        complexity: simple
+        assignedRole: ux-designer
+        estimatedDuration: 150
+        dependencies:
+          - create-personas
+        artifacts:
+          inputs:
+            - typeId: user-personas
+              required: true
+          outputs:
+            - typeId: journey-map
+              required: true
+        requirements:
+          - type: functional
+            description: Journey must show pain points and opportunities
+            priority: must
+            validationCriteria:
+              - Stages identified
+              - Touchpoints mapped
+              - Emotions captured
+              - Opportunities highlighted
+      - id: define-problem-statement
+        title: Define Problem Statement
+        description: Frame the challenge in human-centric way
+        type: planning
+        complexity: simple
+        assignedRole: design-lead
+        estimatedDuration: 90
+        dependencies:
+          - synthesize-findings
+        artifacts:
+          inputs:
+            - typeId: synthesis-insights
+              required: true
+          outputs:
+            - typeId: problem-statement
+              required: true
+        requirements:
+          - type: functional
+            description: Problem must be well-framed
+            priority: must
+            validationCriteria:
+              - User-focused
+              - Actionable
+              - Specific enough
+              - Broad enough
+      - id: establish-point-of-view
+        title: Establish Point of View
+        description: Create POV that guides solution development
+        type: planning
+        complexity: simple
+        assignedRole: design-lead
+        estimatedDuration: 60
+        dependencies:
+          - define-problem-statement
+          - create-personas
+        artifacts:
+          inputs:
+            - typeId: problem-statement
+              required: true
+            - typeId: user-personas
+              required: true
+          outputs:
+            - typeId: point-of-view
+              required: true
+        requirements:
+          - type: functional
+            description: POV must inspire innovation
+            priority: must
+            validationCriteria:
+              - User identified
+              - Need stated
+              - Insight included
+              - Inspiring format
+    agentRequirements:
+      roles:
+        - design-researcher
+        - ux-designer
+        - design-lead
+      skills:
+        - synthesis
+        - persona-creation
+        - journey-mapping
+        - problem-framing
+      minExperience: mid
+
+  - id: ideate
+    name: Ideate
+    description: >
+      Generate a wide range of creative solutions.
+      Use brainstorming and divergent thinking.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Define phase must be completed
+        phaseId: define
+    exitCriteria:
+      - type: artifact-exists
+        description: Ideas must be generated
+        artifactType: idea-collection
+    tasks:
+      - id: brainstorm-solutions
+        title: Brainstorm Solution Ideas
+        description: Generate many ideas without judgment
+        type: design
+        complexity: simple
+        assignedRole: facilitator
+        estimatedDuration: 180
+        artifacts:
+          inputs:
+            - typeId: point-of-view
+              required: true
+          outputs:
+            - typeId: brainstorm-ideas
+              required: true
+        requirements:
+          - type: functional
+            description: Quantity over quality in ideation
+            priority: must
+            validationCriteria:
+              - Many ideas generated (50+)
+              - Wild ideas encouraged
+              - No judgment during generation
+              - Build on others' ideas
+      - id: apply-creative-techniques
+        title: Apply Creative Thinking Techniques
+        description: Use structured methods to generate ideas
+        type: design
+        complexity: simple
+        assignedRole: innovation-specialist
+        estimatedDuration: 150
+        artifacts:
+          inputs:
+            - typeId: point-of-view
+              required: true
+          outputs:
+            - typeId: creative-ideas
+              required: true
+        requirements:
+          - type: functional
+            description: Techniques must push creative boundaries
+            priority: should
+            validationCriteria:
+              - SCAMPER applied
+              - Analogies explored
+              - Reverse thinking used
+              - Random stimuli tried
+      - id: sketch-concepts
+        title: Sketch Concept Ideas
+        description: Visualize ideas through quick sketches
+        type: design
+        complexity: simple
+        assignedRole: designer
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: brainstorm-ideas
+              required: true
+          outputs:
+            - typeId: concept-sketches
+              required: true
+        requirements:
+          - type: functional
+            description: Visual thinking must be encouraged
+            priority: should
+            validationCriteria:
+              - Quick sketches created
+              - Ideas visualized
+              - Concepts communicated
+      - id: cluster-and-organize-ideas
+        title: Cluster and Organize Ideas
+        description: Group ideas into themes
+        type: analysis
+        complexity: simple
+        assignedRole: facilitator
+        estimatedDuration: 90
+        dependencies:
+          - brainstorm-solutions
+          - apply-creative-techniques
+          - sketch-concepts
+        artifacts:
+          inputs:
+            - typeId: brainstorm-ideas
+              required: true
+            - typeId: creative-ideas
+              required: true
+            - typeId: concept-sketches
+              required: false
+          outputs:
+            - typeId: organized-ideas
+              required: true
+        requirements:
+          - type: functional
+            description: Ideas must be organized for selection
+            priority: must
+            validationCriteria:
+              - Themes identified
+              - Ideas grouped
+              - Duplicates consolidated
+      - id: select-promising-ideas
+        title: Select Most Promising Ideas
+        description: Choose ideas to prototype based on criteria
+        type: decision
+        complexity: simple
+        assignedRole: design-lead
+        estimatedDuration: 90
+        dependencies:
+          - cluster-and-organize-ideas
+        artifacts:
+          inputs:
+            - typeId: organized-ideas
+              required: true
+            - typeId: point-of-view
+              required: true
+          outputs:
+            - typeId: idea-collection
+              required: true
+        requirements:
+          - type: functional
+            description: Selection must balance feasibility and desirability
+            priority: must
+            validationCriteria:
+              - Selection criteria defined
+              - 3-5 ideas selected
+              - Rationale documented
+              - Stakeholder input considered
+    agentRequirements:
+      roles:
+        - facilitator
+        - innovation-specialist
+        - designer
+        - design-lead
+      skills:
+        - brainstorming
+        - creative-thinking
+        - facilitation
+        - sketching
+      minExperience: mid
+
+  - id: prototype
+    name: Prototype
+    description: >
+      Build quick, low-fidelity prototypes to explore ideas.
+      Create tangible representations for testing.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Ideate phase must be completed
+        phaseId: ideate
+    exitCriteria:
+      - type: artifact-exists
+        description: Prototypes must be created
+        artifactType: prototypes
+    tasks:
+      - id: plan-prototypes
+        title: Plan Prototype Strategy
+        description: Decide what to prototype and at what fidelity
+        type: planning
+        complexity: simple
+        assignedRole: design-lead
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: idea-collection
+              required: true
+          outputs:
+            - typeId: prototype-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Prototyping approach must be efficient
+            priority: must
+            validationCriteria:
+              - Fidelity level chosen
+              - Key features identified
+              - Test questions defined
+              - Resources allocated
+      - id: build-low-fidelity-prototypes
+        title: Build Low-Fidelity Prototypes
+        description: Create quick prototypes with basic materials
+        type: implementation
+        complexity: simple
+        assignedRole: designer
+        estimatedDuration: 240
+        dependencies:
+          - plan-prototypes
+        artifacts:
+          inputs:
+            - typeId: prototype-plan
+              required: true
+          outputs:
+            - typeId: low-fi-prototypes
+              required: true
+        requirements:
+          - type: functional
+            description: Prototypes must be quick to build
+            priority: must
+            validationCriteria:
+              - Built in hours not days
+              - Key interactions shown
+              - Testable with users
+              - Multiple versions created
+      - id: refine-selected-prototypes
+        title: Refine Selected Prototypes
+        description: Increase fidelity of most promising concepts
+        type: implementation
+        complexity: simple
+        assignedRole: designer
+        estimatedDuration: 300
+        dependencies:
+          - build-low-fidelity-prototypes
+        artifacts:
+          inputs:
+            - typeId: low-fi-prototypes
+              required: true
+          outputs:
+            - typeId: refined-prototypes
+              required: true
+        requirements:
+          - type: functional
+            description: Refinement must enable better testing
+            priority: should
+            validationCriteria:
+              - More detail added
+              - Interactions clearer
+              - Realistic enough for feedback
+      - id: prepare-testing-scenarios
+        title: Prepare User Testing Scenarios
+        description: Create scenarios and scripts for testing
+        type: planning
+        complexity: simple
+        assignedRole: user-researcher
+        estimatedDuration: 90
+        dependencies:
+          - plan-prototypes
+        artifacts:
+          inputs:
+            - typeId: prototype-plan
+              required: true
+          outputs:
+            - typeId: testing-scenarios
+              required: true
+        requirements:
+          - type: functional
+            description: Scenarios must elicit useful feedback
+            priority: must
+            validationCriteria:
+              - Test questions defined
+              - Tasks identified
+              - Script prepared
+              - Realistic scenarios
+      - id: compile-prototypes
+        title: Compile All Prototypes
+        description: Organize prototypes for testing
+        type: documentation
+        complexity: simple
+        assignedRole: designer
+        estimatedDuration: 60
+        dependencies:
+          - refine-selected-prototypes
+          - prepare-testing-scenarios
+        artifacts:
+          inputs:
+            - typeId: refined-prototypes
+              required: true
+            - typeId: testing-scenarios
+              required: true
+          outputs:
+            - typeId: prototypes
+              required: true
+        requirements:
+          - type: functional
+            description: Prototypes must be ready for testing
+            priority: must
+            validationCriteria:
+              - Prototypes complete
+              - Testing materials ready
+              - Scenarios prepared
+    agentRequirements:
+      roles:
+        - designer
+        - design-lead
+        - user-researcher
+      skills:
+        - prototyping
+        - design-tools
+        - user-testing
+      minExperience: mid
+
+  - id: test
+    name: Test
+    description: >
+      Test prototypes with real users.
+      Learn from feedback and iterate.
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Prototype phase must be completed
+        phaseId: prototype
+    exitCriteria:
+      - type: artifact-exists
+        description: Testing must be conducted
+        artifactType: test-results
+      - type: artifact-exists
+        description: Learnings must be documented
+        artifactType: iteration-learnings
+    repeatable: true
+    tasks:
+      - id: recruit-test-participants
+        title: Recruit Test Participants
+        description: Find users matching target personas
+        type: planning
+        complexity: simple
+        assignedRole: user-researcher
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: user-personas
+              required: true
+          outputs:
+            - typeId: participant-roster
+              required: true
+        requirements:
+          - type: functional
+            description: Participants must represent target users
+            priority: must
+            validationCriteria:
+              - Match personas
+              - Diverse perspectives
+              - Availability confirmed
+      - id: conduct-user-testing
+        title: Conduct User Testing Sessions
+        description: Test prototypes with users
+        type: testing
+        complexity: simple
+        assignedRole: user-researcher
+        estimatedDuration: 360
+        dependencies:
+          - recruit-test-participants
+        artifacts:
+          inputs:
+            - typeId: prototypes
+              required: true
+            - typeId: testing-scenarios
+              required: true
+            - typeId: participant-roster
+              required: true
+          outputs:
+            - typeId: testing-observations
+              required: true
+        requirements:
+          - type: functional
+            description: Testing must generate actionable insights
+            priority: must
+            validationCriteria:
+              - Multiple users tested
+              - Observations documented
+              - Quotes captured
+              - Behaviors noted
+      - id: analyze-test-results
+        title: Analyze Testing Results
+        description: Identify patterns and insights from testing
+        type: analysis
+        complexity: simple
+        assignedRole: design-researcher
+        estimatedDuration: 180
+        dependencies:
+          - conduct-user-testing
+        artifacts:
+          inputs:
+            - typeId: testing-observations
+              required: true
+          outputs:
+            - typeId: test-results
+              required: true
+        requirements:
+          - type: functional
+            description: Analysis must guide iteration
+            priority: must
+            validationCriteria:
+              - Patterns identified
+              - Issues prioritized
+              - Successes noted
+              - Next steps clear
+      - id: identify-iteration-opportunities
+        title: Identify Iteration Opportunities
+        description: Determine what to change in next iteration
+        type: planning
+        complexity: simple
+        assignedRole: design-lead
+        estimatedDuration: 90
+        dependencies:
+          - analyze-test-results
+        artifacts:
+          inputs:
+            - typeId: test-results
+              required: true
+          outputs:
+            - typeId: iteration-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Clear direction for next iteration
+            priority: must
+            validationCriteria:
+              - Changes identified
+              - Priority set
+              - Hypothesis formed
+              - Next steps defined
+      - id: decide-iterate-or-proceed
+        title: Decide to Iterate or Proceed
+        description: Determine if more iteration needed
+        type: decision
+        complexity: simple
+        assignedRole: design-lead
+        estimatedDuration: 60
+        dependencies:
+          - identify-iteration-opportunities
+        artifacts:
+          inputs:
+            - typeId: iteration-plan
+              required: true
+            - typeId: test-results
+              required: true
+          outputs:
+            - typeId: iteration-decision
+              required: true
+        requirements:
+          - type: functional
+            description: Decision must be evidence-based
+            priority: must
+            validationCriteria:
+              - Evidence reviewed
+              - Criteria applied
+              - Decision documented
+              - Rationale clear
+      - id: document-learnings
+        title: Document Iteration Learnings
+        description: Capture insights from this iteration
+        type: documentation
+        complexity: simple
+        assignedRole: design-researcher
+        estimatedDuration: 60
+        dependencies:
+          - decide-iterate-or-proceed
+        artifacts:
+          inputs:
+            - typeId: test-results
+              required: true
+            - typeId: iteration-decision
+              required: true
+          outputs:
+            - typeId: iteration-learnings
+              required: true
+        requirements:
+          - type: functional
+            description: Learnings must be shared
+            priority: must
+            validationCriteria:
+              - Key insights captured
+              - Failures celebrated
+              - Success factors noted
+              - Team informed
+    agentRequirements:
+      roles:
+        - user-researcher
+        - design-researcher
+        - design-lead
+      skills:
+        - user-testing
+        - observation
+        - analysis
+        - iteration
+      minExperience: mid
+
+execution:
+  strategy: iterative
+  phaseOrder:
+    - empathize
+    - define
+    - ideate
+    - prototype
+    - test
+  loops:
+    - id: design-thinking-loop
+      name: Design Thinking Iteration Cycle
+      description: Non-linear iteration between phases
+      phases:
+        - empathize
+        - define
+        - ideate
+        - prototype
+        - test
+      maxIterations: 5
+      convergenceCriteria:
+        - type: custom
+          description: Solution validated with users
+        - type: metric-threshold
+          description: Solution meets success criteria
+          metric: solution-validated
+          threshold: 1
+          operator: '≥'
+      exitConditions:
+        - type: custom
+          description: Team decides solution is ready
+  failureHandling:
+    strategy: retry
+    fallbackPhase: empathize
+
+agentCoordination:
+  roles:
+    - id: user-researcher
+      name: User Researcher
+      description: Conducts research with users
+      responsibilities:
+        - Interview users
+        - Observe users
+        - Conduct user testing
+        - Recruit participants
+      requiredSkills:
+        - user-research
+        - interviewing
+        - observation
+        - testing
+      experienceLevel: mid
+      authority: contributor
+    - id: design-researcher
+      name: Design Researcher
+      description: Synthesizes research into insights
+      responsibilities:
+        - Create empathy maps
+        - Synthesize findings
+        - Analyze test results
+        - Document learnings
+      requiredSkills:
+        - research-synthesis
+        - analysis
+        - insight-generation
+      experienceLevel: mid
+      authority: contributor
+    - id: designer
+      name: Designer
+      description: Creates prototypes and visualizations
+      responsibilities:
+        - Immerse in user experience
+        - Sketch concepts
+        - Build prototypes
+        - Refine designs
+      requiredSkills:
+        - prototyping
+        - sketching
+        - design-tools
+        - visual-thinking
+      experienceLevel: mid
+      authority: contributor
+    - id: ux-designer
+      name: UX Designer
+      description: Designs user experiences
+      responsibilities:
+        - Create personas
+        - Map journeys
+        - Design interactions
+        - Ensure usability
+      requiredSkills:
+        - user-experience-design
+        - persona-creation
+        - journey-mapping
+      experienceLevel: mid
+      authority: contributor
+    - id: design-lead
+      name: Design Lead
+      description: Guides design thinking process
+      responsibilities:
+        - Define problem statement
+        - Establish point of view
+        - Select ideas
+        - Make iteration decisions
+      requiredSkills:
+        - design-thinking
+        - leadership
+        - decision-making
+        - facilitation
+      experienceLevel: senior
+      authority: leader
+    - id: facilitator
+      name: Facilitator
+      description: Facilitates workshops and brainstorming
+      responsibilities:
+        - Facilitate brainstorming
+        - Organize ideas
+        - Guide discussions
+        - Ensure participation
+      requiredSkills:
+        - facilitation
+        - workshop-design
+        - group-dynamics
+      experienceLevel: mid
+      authority: contributor
+    - id: innovation-specialist
+      name: Innovation Specialist
+      description: Applies creative thinking techniques
+      responsibilities:
+        - Apply creative techniques
+        - Push boundaries
+        - Challenge assumptions
+        - Inspire innovation
+      requiredSkills:
+        - creative-thinking
+        - innovation-methods
+        - lateral-thinking
+      experienceLevel: mid
+      authority: contributor
+  teamComposition:
+    minSize: 4
+    maxSize: 8
+    required:
+      - user-researcher
+      - design-researcher
+      - designer
+      - design-lead
+    optional:
+      - ux-designer
+      - facilitator
+      - innovation-specialist
+  communicationPatterns:
+    - from: design-lead
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+    - from: user-researcher
+      to: design-researcher
+      type: direct
+      contextTypes:
+        - finding
+    - from: any
+      to: design-lead
+      type: direct
+      contextTypes:
+        - finding
+        - constraint
+  decisionAuthority:
+    - decision: Problem framing
+      authority: design-lead
+      requiresConsensus: true
+      consensusRoles:
+        - design-researcher
+    - decision: Idea selection
+      authority: design-lead
+      requiresConsensus: true
+      consensusRoles:
+        - designer
+        - user-researcher
+    - decision: Iteration decision
+      authority: design-lead
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: interview-notes
+      name: Interview Notes
+      description: Notes from user interviews
+      format: markdown
+    - id: observation-notes
+      name: Observation Notes
+      description: Notes from observing users
+      format: markdown
+    - id: immersion-insights
+      name: Immersion Insights
+      description: Insights from firsthand experience
+      format: markdown
+    - id: empathy-maps
+      name: Empathy Maps
+      description: Visual synthesis of user perspectives
+      format: markdown
+    - id: user-research
+      name: User Research
+      description: Compiled research findings
+      format: markdown
+    - id: synthesis-insights
+      name: Synthesis Insights
+      description: Patterns and insights from research
+      format: structured
+    - id: user-personas
+      name: User Personas
+      description: Archetypal user profiles
+      format: structured
+    - id: journey-map
+      name: Journey Map
+      description: User experience over time
+      format: markdown
+    - id: problem-statement
+      name: Problem Statement
+      description: Human-centric problem framing
+      format: markdown
+    - id: point-of-view
+      name: Point of View
+      description: Guiding perspective for ideation
+      format: markdown
+    - id: brainstorm-ideas
+      name: Brainstorm Ideas
+      description: Ideas from brainstorming sessions
+      format: structured
+    - id: creative-ideas
+      name: Creative Ideas
+      description: Ideas from creative techniques
+      format: structured
+    - id: concept-sketches
+      name: Concept Sketches
+      description: Visual sketches of ideas
+      format: markdown
+    - id: organized-ideas
+      name: Organized Ideas
+      description: Clustered and grouped ideas
+      format: structured
+    - id: idea-collection
+      name: Idea Collection
+      description: Selected ideas for prototyping
+      format: structured
+    - id: prototype-plan
+      name: Prototype Plan
+      description: Strategy for prototyping
+      format: structured
+    - id: low-fi-prototypes
+      name: Low-Fidelity Prototypes
+      description: Quick, basic prototypes
+      format: html
+    - id: refined-prototypes
+      name: Refined Prototypes
+      description: Higher fidelity prototypes
+      format: html
+    - id: testing-scenarios
+      name: Testing Scenarios
+      description: Scenarios and scripts for testing
+      format: structured
+    - id: prototypes
+      name: Prototypes
+      description: Complete prototypes ready for testing
+      format: html
+    - id: participant-roster
+      name: Participant Roster
+      description: List of test participants
+      format: structured
+    - id: testing-observations
+      name: Testing Observations
+      description: Observations from user testing
+      format: markdown
+    - id: test-results
+      name: Test Results
+      description: Analysis of testing insights
+      format: structured
+    - id: iteration-plan
+      name: Iteration Plan
+      description: Plan for next iteration
+      format: structured
+    - id: iteration-decision
+      name: Iteration Decision
+      description: Decision to iterate or proceed
+      format: structured
+    - id: iteration-learnings
+      name: Iteration Learnings
+      description: Documented learnings from iteration
+      format: markdown
+  dependencies:
+    - artifact: empathy-maps
+      dependsOn:
+        - interview-notes
+        - observation-notes
+    - artifact: user-research
+      dependsOn:
+        - empathy-maps
+        - interview-notes
+        - observation-notes
+    - artifact: synthesis-insights
+      dependsOn:
+        - user-research
+    - artifact: user-personas
+      dependsOn:
+        - synthesis-insights
+    - artifact: journey-map
+      dependsOn:
+        - user-personas
+    - artifact: problem-statement
+      dependsOn:
+        - synthesis-insights
+    - artifact: point-of-view
+      dependsOn:
+        - problem-statement
+        - user-personas
+    - artifact: brainstorm-ideas
+      dependsOn:
+        - point-of-view
+    - artifact: creative-ideas
+      dependsOn:
+        - point-of-view
+    - artifact: concept-sketches
+      dependsOn:
+        - brainstorm-ideas
+    - artifact: organized-ideas
+      dependsOn:
+        - brainstorm-ideas
+        - creative-ideas
+    - artifact: idea-collection
+      dependsOn:
+        - organized-ideas
+        - point-of-view
+    - artifact: prototype-plan
+      dependsOn:
+        - idea-collection
+    - artifact: low-fi-prototypes
+      dependsOn:
+        - prototype-plan
+    - artifact: refined-prototypes
+      dependsOn:
+        - low-fi-prototypes
+    - artifact: testing-scenarios
+      dependsOn:
+        - prototype-plan
+    - artifact: prototypes
+      dependsOn:
+        - refined-prototypes
+        - testing-scenarios
+    - artifact: participant-roster
+      dependsOn:
+        - user-personas
+    - artifact: testing-observations
+      dependsOn:
+        - prototypes
+        - testing-scenarios
+        - participant-roster
+    - artifact: test-results
+      dependsOn:
+        - testing-observations
+    - artifact: iteration-plan
+      dependsOn:
+        - test-results
+    - artifact: iteration-decision
+      dependsOn:
+        - iteration-plan
+        - test-results
+    - artifact: iteration-learnings
+      dependsOn:
+        - test-results
+        - iteration-decision

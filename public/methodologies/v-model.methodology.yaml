@@ -1,0 +1,1007 @@
+metadata:
+  id: v-model
+  name: V-Model
+  title: V-Model Software Development
+  description: >
+    Extension of Waterfall model emphasizing verification and validation at each development stage.
+    The V-Model represents development and testing phases in a V-shape, with corresponding test levels for each development phase.
+  type: sequential
+  version: 1.0.0
+  origin: Germany / Paul Rook
+  domains:
+    - software-development
+    - systems-engineering
+    - testing
+    - quality-assurance
+  complexity: moderate
+  tags:
+    - sdlc
+    - verification
+    - validation
+    - testing
+    - sequential
+  i18n:
+    es:
+      title: Desarrollo de Software Modelo V
+      description: >
+        Extensión del modelo en cascada que enfatiza la verificación y validación en cada etapa de desarrollo.
+        El Modelo V representa las fases de desarrollo y prueba en forma de V, con niveles de prueba correspondientes para cada fase de desarrollo.
+    fr:
+      title: Développement Logiciel Modèle en V
+      description: >
+        Extension du modèle en cascade mettant l'accent sur la vérification et la validation à chaque étape de développement.
+        Le Modèle en V représente les phases de développement et de test en forme de V, avec des niveaux de test correspondants pour chaque phase de développement.
+    ko:
+      title: V-모델 소프트웨어 개발
+      description: >
+        각 개발 단계에서 검증 및 확인을 강조하는 폭포수 모델의 확장.
+        V-모델은 V자 형태로 개발 및 테스트 단계를 나타내며, 각 개발 단계에 해당하는 테스트 레벨이 있습니다.
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: false
+    maxRetries: 1
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 2
+
+phases:
+  - id: requirements-analysis
+    name: Requirements Analysis
+    description: >
+      Gather and analyze business and user requirements.
+      Define what the system should do from user perspective.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Requirements specification must be complete
+        artifactType: requirements-spec
+      - type: artifact-exists
+        description: Acceptance test plan must be defined
+        artifactType: acceptance-test-plan
+    tasks:
+      - id: elicit-requirements
+        title: Elicit Business Requirements
+        description: Gather requirements from stakeholders
+        type: analysis
+        complexity: complex
+        assignedRole: business-analyst
+        estimatedDuration: 360
+        artifacts:
+          outputs:
+            - typeId: requirements-spec
+              required: true
+        requirements:
+          - type: functional
+            description: All business requirements must be documented
+            priority: must
+            validationCriteria:
+              - Functional requirements complete
+              - Non-functional requirements defined
+              - Constraints documented
+      - id: define-acceptance-tests
+        title: Define Acceptance Test Plan
+        description: Plan tests to validate requirements with users
+        type: planning
+        complexity: simple
+        assignedRole: qa-lead
+        estimatedDuration: 180
+        dependencies:
+          - elicit-requirements
+        artifacts:
+          inputs:
+            - typeId: requirements-spec
+              required: true
+          outputs:
+            - typeId: acceptance-test-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Acceptance criteria must be testable
+            priority: must
+            validationCriteria:
+              - Test scenarios defined
+              - Success criteria clear
+              - User involvement planned
+    agentRequirements:
+      roles:
+        - business-analyst
+        - qa-lead
+      skills:
+        - requirements-elicitation
+        - acceptance-testing
+        - stakeholder-management
+      minExperience: senior
+
+  - id: system-design
+    name: System Design
+    description: >
+      Design high-level system architecture and interfaces.
+      Define how the system will be structured.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Requirements Analysis phase must be completed
+        phaseId: requirements-analysis
+    exitCriteria:
+      - type: artifact-exists
+        description: System design must be complete
+        artifactType: system-design
+      - type: artifact-exists
+        description: System test plan must be defined
+        artifactType: system-test-plan
+    tasks:
+      - id: create-architecture
+        title: Create System Architecture
+        description: Design high-level system structure
+        type: design
+        complexity: complex
+        assignedRole: system-architect
+        estimatedDuration: 480
+        artifacts:
+          inputs:
+            - typeId: requirements-spec
+              required: true
+          outputs:
+            - typeId: system-design
+              required: true
+        requirements:
+          - type: functional
+            description: Architecture must meet all requirements
+            priority: must
+            validationCriteria:
+              - All requirements addressed
+              - Technology stack defined
+              - System interfaces specified
+      - id: define-system-tests
+        title: Define System Test Plan
+        description: Plan tests to verify system integration
+        type: planning
+        complexity: simple
+        assignedRole: test-architect
+        estimatedDuration: 240
+        dependencies:
+          - create-architecture
+        artifacts:
+          inputs:
+            - typeId: system-design
+              required: true
+          outputs:
+            - typeId: system-test-plan
+              required: true
+        requirements:
+          - type: functional
+            description: System integration must be testable
+            priority: must
+            validationCriteria:
+              - Integration scenarios defined
+              - Interface tests planned
+              - Performance tests specified
+    agentRequirements:
+      roles:
+        - system-architect
+        - test-architect
+      skills:
+        - system-architecture
+        - integration-testing
+        - design-patterns
+      minExperience: expert
+
+  - id: detailed-design
+    name: Detailed Design
+    description: >
+      Design individual components and modules in detail.
+      Specify internal logic and data structures.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: System Design phase must be completed
+        phaseId: system-design
+    exitCriteria:
+      - type: artifact-exists
+        description: Detailed design must be complete
+        artifactType: detailed-design
+      - type: artifact-exists
+        description: Integration test plan must be defined
+        artifactType: integration-test-plan
+    tasks:
+      - id: design-modules
+        title: Design Modules and Components
+        description: Create detailed design for each module
+        type: design
+        complexity: complex
+        assignedRole: software-designer
+        estimatedDuration: 600
+        artifacts:
+          inputs:
+            - typeId: system-design
+              required: true
+          outputs:
+            - typeId: detailed-design
+              required: true
+        requirements:
+          - type: functional
+            description: All modules must be fully specified
+            priority: must
+            validationCriteria:
+              - Module interfaces defined
+              - Data structures specified
+              - Algorithms documented
+      - id: define-integration-tests
+        title: Define Integration Test Plan
+        description: Plan tests to verify module integration
+        type: planning
+        complexity: simple
+        assignedRole: integration-tester
+        estimatedDuration: 180
+        dependencies:
+          - design-modules
+        artifacts:
+          inputs:
+            - typeId: detailed-design
+              required: true
+          outputs:
+            - typeId: integration-test-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Module interactions must be testable
+            priority: must
+            validationCriteria:
+              - Integration points identified
+              - Test scenarios defined
+              - Data flow validated
+    agentRequirements:
+      roles:
+        - software-designer
+        - integration-tester
+      skills:
+        - detailed-design
+        - integration-testing
+        - uml
+      minExperience: senior
+
+  - id: implementation
+    name: Implementation
+    description: >
+      Write code for individual modules based on detailed design.
+      Implement the lowest level components.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Detailed Design phase must be completed
+        phaseId: detailed-design
+    exitCriteria:
+      - type: artifact-exists
+        description: Source code must be complete
+        artifactType: source-code
+      - type: artifact-exists
+        description: Unit test results must be available
+        artifactType: unit-test-results
+    tasks:
+      - id: write-code
+        title: Write Source Code
+        description: Implement modules according to detailed design
+        type: implementation
+        complexity: complex
+        assignedRole: developer
+        estimatedDuration: 1440
+        artifacts:
+          inputs:
+            - typeId: detailed-design
+              required: true
+          outputs:
+            - typeId: source-code
+              required: true
+        requirements:
+          - type: functional
+            description: Code must implement design specifications
+            priority: must
+            validationCriteria:
+              - All modules coded
+              - Coding standards followed
+              - Code reviews completed
+      - id: execute-unit-tests
+        title: Execute Unit Tests
+        description: Test individual units and modules
+        type: testing
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 360
+        dependencies:
+          - write-code
+        artifacts:
+          inputs:
+            - typeId: source-code
+              required: true
+          outputs:
+            - typeId: unit-test-results
+              required: true
+        requirements:
+          - type: functional
+            description: All units must pass tests
+            priority: must
+            validationCriteria:
+              - 100% unit coverage
+              - All tests passing
+              - Defects documented
+    agentRequirements:
+      roles:
+        - developer
+      skills:
+        - programming
+        - unit-testing
+        - debugging
+      minExperience: mid
+
+  - id: integration-testing
+    name: Integration Testing
+    description: >
+      Test integrated modules and components.
+      Verify that modules work together correctly.
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Implementation phase must be completed
+        phaseId: implementation
+    exitCriteria:
+      - type: artifact-exists
+        description: Integration test results must show passing tests
+        artifactType: integration-test-results
+    tasks:
+      - id: integrate-modules
+        title: Integrate Modules
+        description: Combine modules according to integration plan
+        type: implementation
+        complexity: simple
+        assignedRole: integration-engineer
+        estimatedDuration: 240
+        artifacts:
+          inputs:
+            - typeId: source-code
+              required: true
+          outputs:
+            - typeId: integrated-system
+              required: true
+        requirements:
+          - type: functional
+            description: Modules must integrate successfully
+            priority: must
+            validationCriteria:
+              - Build succeeds
+              - Interfaces compatible
+              - Dependencies resolved
+      - id: execute-integration-tests
+        title: Execute Integration Tests
+        description: Run integration test suite
+        type: testing
+        complexity: complex
+        assignedRole: integration-tester
+        estimatedDuration: 480
+        dependencies:
+          - integrate-modules
+        artifacts:
+          inputs:
+            - typeId: integrated-system
+              required: true
+            - typeId: integration-test-plan
+              required: true
+          outputs:
+            - typeId: integration-test-results
+              required: true
+        requirements:
+          - type: functional
+            description: All integration tests must pass
+            priority: must
+            validationCriteria:
+              - All planned tests executed
+              - Integration points verified
+              - Defects resolved
+    agentRequirements:
+      roles:
+        - integration-engineer
+        - integration-tester
+      skills:
+        - integration
+        - testing
+        - debugging
+      minExperience: mid
+
+  - id: system-testing
+    name: System Testing
+    description: >
+      Test complete integrated system against system design.
+      Verify system-level requirements and performance.
+    order: 5
+    entryCriteria:
+      - type: phase-completed
+        description: Integration Testing phase must be completed
+        phaseId: integration-testing
+    exitCriteria:
+      - type: artifact-exists
+        description: System test results must show passing tests
+        artifactType: system-test-results
+    tasks:
+      - id: execute-system-tests
+        title: Execute System Tests
+        description: Run complete system test suite
+        type: testing
+        complexity: complex
+        assignedRole: system-tester
+        estimatedDuration: 720
+        artifacts:
+          inputs:
+            - typeId: integrated-system
+              required: true
+            - typeId: system-test-plan
+              required: true
+          outputs:
+            - typeId: system-test-results
+              required: true
+        requirements:
+          - type: functional
+            description: System must meet all design specifications
+            priority: must
+            validationCriteria:
+              - Functional tests passed
+              - Performance requirements met
+              - Security validated
+              - Scalability verified
+      - id: verify-nfrs
+        title: Verify Non-Functional Requirements
+        description: Test performance, security, usability, etc.
+        type: testing
+        complexity: complex
+        assignedRole: nfr-specialist
+        estimatedDuration: 360
+        dependencies:
+          - execute-system-tests
+        artifacts:
+          inputs:
+            - typeId: integrated-system
+              required: true
+          outputs:
+            - typeId: nfr-test-results
+              required: true
+        requirements:
+          - type: non_functional
+            description: All non-functional requirements must be verified
+            priority: must
+            validationCriteria:
+              - Performance benchmarks met
+              - Security tests passed
+              - Usability validated
+    agentRequirements:
+      roles:
+        - system-tester
+        - nfr-specialist
+      skills:
+        - system-testing
+        - performance-testing
+        - security-testing
+      minExperience: senior
+
+  - id: acceptance-testing
+    name: Acceptance Testing
+    description: >
+      Validate system with end users against requirements.
+      Confirm system meets business needs.
+    order: 6
+    entryCriteria:
+      - type: phase-completed
+        description: System Testing phase must be completed
+        phaseId: system-testing
+    exitCriteria:
+      - type: artifact-exists
+        description: Acceptance test results must show user approval
+        artifactType: acceptance-test-results
+    tasks:
+      - id: prepare-uat-environment
+        title: Prepare UAT Environment
+        description: Set up user acceptance testing environment
+        type: implementation
+        complexity: simple
+        assignedRole: devops-engineer
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: integrated-system
+              required: true
+          outputs:
+            - typeId: uat-environment
+              required: true
+        requirements:
+          - type: functional
+            description: UAT environment must mirror production
+            priority: must
+            validationCriteria:
+              - Environment configured
+              - Test data loaded
+              - Access granted
+      - id: execute-acceptance-tests
+        title: Execute Acceptance Tests
+        description: Run acceptance tests with end users
+        type: testing
+        complexity: complex
+        assignedRole: uat-coordinator
+        estimatedDuration: 600
+        dependencies:
+          - prepare-uat-environment
+        artifacts:
+          inputs:
+            - typeId: uat-environment
+              required: true
+            - typeId: acceptance-test-plan
+              required: true
+          outputs:
+            - typeId: acceptance-test-results
+              required: true
+        requirements:
+          - type: functional
+            description: Users must accept the system
+            priority: must
+            validationCriteria:
+              - All acceptance criteria met
+              - User sign-off obtained
+              - Business objectives validated
+    agentRequirements:
+      roles:
+        - devops-engineer
+        - uat-coordinator
+      skills:
+        - uat-coordination
+        - user-training
+        - stakeholder-management
+      minExperience: mid
+
+  - id: deployment
+    name: Deployment
+    description: >
+      Deploy validated system to production environment.
+      Go live with the system.
+    order: 7
+    entryCriteria:
+      - type: phase-completed
+        description: Acceptance Testing phase must be completed
+        phaseId: acceptance-testing
+    exitCriteria:
+      - type: artifact-exists
+        description: System must be operational in production
+        artifactType: deployment-report
+    tasks:
+      - id: deploy-to-production
+        title: Deploy to Production
+        description: Install system in production environment
+        type: implementation
+        complexity: complex
+        assignedRole: devops-engineer
+        estimatedDuration: 240
+        artifacts:
+          inputs:
+            - typeId: integrated-system
+              required: true
+          outputs:
+            - typeId: production-system
+              required: true
+        requirements:
+          - type: functional
+            description: Deployment must be successful
+            priority: must
+            validationCriteria:
+              - System installed
+              - Configuration verified
+              - Smoke tests passed
+      - id: handover-to-operations
+        title: Handover to Operations
+        description: Transfer system to operations team
+        type: documentation
+        complexity: simple
+        assignedRole: devops-engineer
+        estimatedDuration: 120
+        dependencies:
+          - deploy-to-production
+        artifacts:
+          inputs:
+            - typeId: production-system
+              required: true
+          outputs:
+            - typeId: deployment-report
+              required: true
+        requirements:
+          - type: functional
+            description: Operations team must be ready to support
+            priority: must
+            validationCriteria:
+              - Documentation complete
+              - Training delivered
+              - Support processes established
+    agentRequirements:
+      roles:
+        - devops-engineer
+      skills:
+        - deployment
+        - operations
+        - documentation
+      minExperience: senior
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - requirements-analysis
+    - system-design
+    - detailed-design
+    - implementation
+    - integration-testing
+    - system-testing
+    - acceptance-testing
+    - deployment
+  failureHandling:
+    strategy: retry
+    fallbackPhase: requirements-analysis
+
+agentCoordination:
+  roles:
+    - id: business-analyst
+      name: Business Analyst
+      description: Gathers and analyzes business requirements
+      responsibilities:
+        - Elicit requirements
+        - Document specifications
+        - Validate completeness
+      requiredSkills:
+        - requirements-analysis
+        - business-analysis
+        - documentation
+      experienceLevel: senior
+      authority: contributor
+    - id: system-architect
+      name: System Architect
+      description: Designs system architecture
+      responsibilities:
+        - Create system architecture
+        - Define technical standards
+        - Review designs
+      requiredSkills:
+        - architecture
+        - system-design
+        - technical-leadership
+      experienceLevel: expert
+      authority: leader
+    - id: software-designer
+      name: Software Designer
+      description: Creates detailed component designs
+      responsibilities:
+        - Design modules
+        - Specify interfaces
+        - Create design documentation
+      requiredSkills:
+        - detailed-design
+        - uml
+        - design-patterns
+      experienceLevel: senior
+      authority: contributor
+    - id: developer
+      name: Developer
+      description: Implements and unit tests code
+      responsibilities:
+        - Write code
+        - Execute unit tests
+        - Fix defects
+      requiredSkills:
+        - programming
+        - unit-testing
+        - debugging
+      experienceLevel: mid
+      authority: contributor
+    - id: integration-engineer
+      name: Integration Engineer
+      description: Integrates system components
+      responsibilities:
+        - Integrate modules
+        - Resolve integration issues
+        - Build system
+      requiredSkills:
+        - integration
+        - build-management
+        - troubleshooting
+      experienceLevel: mid
+      authority: contributor
+    - id: integration-tester
+      name: Integration Tester
+      description: Tests integrated components
+      responsibilities:
+        - Define integration tests
+        - Execute integration tests
+        - Report defects
+      requiredSkills:
+        - integration-testing
+        - test-automation
+        - defect-tracking
+      experienceLevel: mid
+      authority: contributor
+    - id: system-tester
+      name: System Tester
+      description: Tests complete system
+      responsibilities:
+        - Execute system tests
+        - Verify requirements
+        - Validate quality
+      requiredSkills:
+        - system-testing
+        - test-management
+        - quality-assurance
+      experienceLevel: senior
+      authority: contributor
+    - id: nfr-specialist
+      name: NFR Specialist
+      description: Tests non-functional requirements
+      responsibilities:
+        - Performance testing
+        - Security testing
+        - Verify NFRs
+      requiredSkills:
+        - performance-testing
+        - security-testing
+        - load-testing
+      experienceLevel: senior
+      authority: contributor
+    - id: qa-lead
+      name: QA Lead
+      description: Leads quality assurance activities
+      responsibilities:
+        - Define test strategy
+        - Coordinate testing
+        - Ensure quality
+      requiredSkills:
+        - test-planning
+        - test-management
+        - quality-leadership
+      experienceLevel: expert
+      authority: leader
+    - id: test-architect
+      name: Test Architect
+      description: Designs test strategy and framework
+      responsibilities:
+        - Define test plans
+        - Design test framework
+        - Review test coverage
+      requiredSkills:
+        - test-architecture
+        - test-automation
+        - strategy
+      experienceLevel: expert
+      authority: contributor
+    - id: uat-coordinator
+      name: UAT Coordinator
+      description: Coordinates user acceptance testing
+      responsibilities:
+        - Coordinate UAT
+        - Facilitate user testing
+        - Obtain sign-off
+      requiredSkills:
+        - uat-coordination
+        - stakeholder-management
+        - facilitation
+      experienceLevel: mid
+      authority: contributor
+    - id: devops-engineer
+      name: DevOps Engineer
+      description: Manages deployment and operations
+      responsibilities:
+        - Deploy system
+        - Configure environments
+        - Support operations
+      requiredSkills:
+        - deployment
+        - operations
+        - automation
+      experienceLevel: senior
+      authority: contributor
+  teamComposition:
+    minSize: 6
+    maxSize: 12
+    required:
+      - system-architect
+      - qa-lead
+      - developer
+      - system-tester
+      - devops-engineer
+    optional:
+      - business-analyst
+      - software-designer
+      - integration-engineer
+      - integration-tester
+      - nfr-specialist
+      - test-architect
+      - uat-coordinator
+  communicationPatterns:
+    - from: system-architect
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+        - constraint
+    - from: qa-lead
+      to: all-testers
+      type: broadcast
+      contextTypes:
+        - decision
+    - from: developer
+      to: integration-tester
+      type: direct
+      contextTypes:
+        - finding
+  decisionAuthority:
+    - decision: Approve phase completion
+      authority: system-architect
+      requiresConsensus: true
+      consensusRoles:
+        - qa-lead
+    - decision: Accept system
+      authority: business-analyst
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: requirements-spec
+      name: Requirements Specification
+      description: Complete business and user requirements
+      format: structured
+    - id: acceptance-test-plan
+      name: Acceptance Test Plan
+      description: User acceptance test plan
+      format: structured
+    - id: system-design
+      name: System Design
+      description: High-level system architecture
+      format: markdown
+    - id: system-test-plan
+      name: System Test Plan
+      description: System-level test plan
+      format: structured
+    - id: detailed-design
+      name: Detailed Design
+      description: Detailed component designs
+      format: structured
+    - id: integration-test-plan
+      name: Integration Test Plan
+      description: Component integration test plan
+      format: structured
+    - id: source-code
+      name: Source Code
+      description: Implemented system code
+      format: code
+    - id: unit-test-results
+      name: Unit Test Results
+      description: Unit test execution results
+      format: json
+    - id: integrated-system
+      name: Integrated System
+      description: Integrated system build
+      format: code
+    - id: integration-test-results
+      name: Integration Test Results
+      description: Integration test execution results
+      format: json
+    - id: system-test-results
+      name: System Test Results
+      description: System test execution results
+      format: json
+    - id: nfr-test-results
+      name: NFR Test Results
+      description: Non-functional requirement test results
+      format: json
+    - id: uat-environment
+      name: UAT Environment
+      description: User acceptance testing environment
+      format: structured
+    - id: acceptance-test-results
+      name: Acceptance Test Results
+      description: User acceptance test results
+      format: json
+    - id: production-system
+      name: Production System
+      description: System deployed to production
+      format: code
+    - id: deployment-report
+      name: Deployment Report
+      description: Deployment documentation and handover
+      format: markdown
+  dependencies:
+    - artifact: acceptance-test-plan
+      dependsOn:
+        - requirements-spec
+    - artifact: system-design
+      dependsOn:
+        - requirements-spec
+    - artifact: system-test-plan
+      dependsOn:
+        - system-design
+    - artifact: detailed-design
+      dependsOn:
+        - system-design
+    - artifact: integration-test-plan
+      dependsOn:
+        - detailed-design
+    - artifact: source-code
+      dependsOn:
+        - detailed-design
+    - artifact: unit-test-results
+      dependsOn:
+        - source-code
+    - artifact: integrated-system
+      dependsOn:
+        - source-code
+    - artifact: integration-test-results
+      dependsOn:
+        - integrated-system
+        - integration-test-plan
+    - artifact: system-test-results
+      dependsOn:
+        - integrated-system
+        - system-test-plan
+    - artifact: acceptance-test-results
+      dependsOn:
+        - uat-environment
+        - acceptance-test-plan
+    - artifact: production-system
+      dependsOn:
+        - integrated-system
+    - artifact: deployment-report
+      dependsOn:
+        - production-system
+
+ceremonies:
+  - id: phase-gate-review
+    name: Phase Gate Review
+    description: Review at end of each phase before proceeding
+    timing: phase-end
+    duration: 120
+    participants:
+      - system-architect
+      - qa-lead
+      - business-analyst
+    objectives:
+      - Validate phase completion
+      - Review deliverables
+      - Approve next phase
+  - id: design-review
+    name: Design Review
+    description: Technical review of design artifacts
+    timing: periodic
+    duration: 180
+    participants:
+      - system-architect
+      - software-designer
+      - qa-lead
+    objectives:
+      - Review design quality
+      - Ensure traceability
+      - Identify risks
+  - id: test-readiness-review
+    name: Test Readiness Review
+    description: Review before major test phases
+    timing: phase-start
+    duration: 90
+    participants:
+      - qa-lead
+      - test-architect
+      - system-tester
+    objectives:
+      - Verify test readiness
+      - Review test plans
+      - Confirm resources
+  - id: defect-triage
+    name: Defect Triage Meeting
+    description: Review and prioritize defects
+    timing: periodic
+    duration: 60
+    participants:
+      - qa-lead
+      - developer
+      - system-architect
+    objectives:
+      - Review defects
+      - Prioritize fixes
+      - Assign ownership

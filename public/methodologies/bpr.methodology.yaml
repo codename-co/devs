@@ -1,0 +1,694 @@
+metadata:
+  id: bpr
+  name: BPR
+  title: Business Process Reengineering
+  description: >
+    Radical redesign of business processes to achieve dramatic improvements in performance.
+    BPR challenges assumptions and fundamentally rethinks how work should be done.
+  type: sequential
+  version: 1.0.0
+  origin: Michael Hammer & James Champy
+  domains:
+    - business-transformation
+    - process-improvement
+    - change-management
+    - organizational-design
+  complexity: complex
+  tags:
+    - transformation
+    - radical-change
+    - process-redesign
+    - innovation
+  i18n:
+    es:
+      title: Reingeniería de Procesos de Negocio
+      description: >
+        Rediseño radical de procesos de negocio para lograr mejoras dramáticas en el rendimiento.
+        BPR desafía suposiciones y repensa fundamentalmente cómo se debe realizar el trabajo.
+    fr:
+      title: Réingénierie des Processus d'Entreprise
+      description: >
+        Refonte radicale des processus métier pour obtenir des améliorations spectaculaires des performances.
+        Le BPR remet en question les hypothèses et repense fondamentalement la façon dont le travail doit être effectué.
+    ko:
+      title: 비즈니스 프로세스 리엔지니어링
+      description: >
+        성과의 극적인 개선을 달성하기 위한 비즈니스 프로세스의 급진적인 재설계.
+        BPR은 가정에 도전하고 작업이 어떻게 수행되어야 하는지를 근본적으로 재고합니다.
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: false
+    maxRetries: 1
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 3
+
+phases:
+  - id: envision
+    name: Envision
+    description: >
+      Define compelling vision for the future state.
+      Set aggressive targets for improvement.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Vision and targets must be defined
+        artifactType: vision-document
+    tasks:
+      - id: define-vision
+        title: Define Future State Vision
+        description: Create compelling vision of transformed organization
+        type: planning
+        complexity: complex
+        assignedRole: leadership-team
+        estimatedDuration: 240
+        artifacts:
+          outputs:
+            - typeId: vision-document
+              required: true
+        requirements:
+          - type: functional
+            description: Vision must be transformational and measurable
+            priority: must
+            validationCriteria:
+              - Clear future state described
+              - Quantifiable targets set
+              - Strategic alignment
+      - id: identify-processes
+        title: Identify Core Processes
+        description: Select critical processes for reengineering
+        type: analysis
+        complexity: simple
+        assignedRole: process-architect
+        estimatedDuration: 120
+        dependencies:
+          - define-vision
+        artifacts:
+          inputs:
+            - typeId: vision-document
+              required: true
+          outputs:
+            - typeId: process-inventory
+              required: true
+        requirements:
+          - type: functional
+            description: Core processes must be strategically important
+            priority: must
+            validationCriteria:
+              - High-impact processes selected
+              - Customer-facing prioritized
+              - Value chain analyzed
+    agentRequirements:
+      roles:
+        - leadership-team
+        - process-architect
+      skills:
+        - strategic-thinking
+        - process-analysis
+        - vision-setting
+      minExperience: expert
+
+  - id: analyze
+    name: Analyze
+    description: >
+      Understand current state and identify disconnects.
+      Question fundamental assumptions about how work is done.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Envision phase must be completed
+        phaseId: envision
+    exitCriteria:
+      - type: artifact-exists
+        description: Current state analysis must be complete
+        artifactType: current-state-analysis
+    tasks:
+      - id: map-as-is
+        title: Map As-Is Processes
+        description: Document current process in detail
+        type: analysis
+        complexity: simple
+        assignedRole: process-analyst
+        estimatedDuration: 180
+        artifacts:
+          inputs:
+            - typeId: process-inventory
+              required: true
+          outputs:
+            - typeId: as-is-process-map
+              required: true
+        requirements:
+          - type: functional
+            description: Current state must be fully documented
+            priority: must
+            validationCriteria:
+              - Complete process documentation
+              - Pain points identified
+              - Inefficiencies highlighted
+      - id: challenge-assumptions
+        title: Challenge Process Assumptions
+        description: Question why work is done the current way
+        type: analysis
+        complexity: complex
+        assignedRole: change-agent
+        estimatedDuration: 150
+        dependencies:
+          - map-as-is
+        artifacts:
+          inputs:
+            - typeId: as-is-process-map
+              required: true
+          outputs:
+            - typeId: assumption-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: All assumptions must be challenged
+            priority: must
+            validationCriteria:
+              - Root assumptions identified
+              - Constraints questioned
+              - Alternatives explored
+      - id: analyze-disconnects
+        title: Analyze Current vs Future Gaps
+        description: Identify gaps between current and desired state
+        type: analysis
+        complexity: simple
+        assignedRole: business-analyst
+        estimatedDuration: 120
+        dependencies:
+          - challenge-assumptions
+        artifacts:
+          inputs:
+            - typeId: assumption-analysis
+              required: true
+            - typeId: vision-document
+              required: true
+          outputs:
+            - typeId: current-state-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: Gap analysis must be comprehensive
+            priority: must
+            validationCriteria:
+              - All gaps documented
+              - Root causes identified
+              - Opportunities prioritized
+    agentRequirements:
+      roles:
+        - process-analyst
+        - change-agent
+        - business-analyst
+      skills:
+        - process-mapping
+        - critical-thinking
+        - gap-analysis
+      minExperience: senior
+
+  - id: redesign
+    name: Redesign
+    description: >
+      Create radically new process designs.
+      Design for breakthrough performance, not incremental improvement.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Analyze phase must be completed
+        phaseId: analyze
+    exitCriteria:
+      - type: artifact-exists
+        description: New process design must be complete
+        artifactType: to-be-process-design
+    tasks:
+      - id: design-to-be
+        title: Design To-Be Process
+        description: Create fundamentally new process design
+        type: design
+        complexity: complex
+        assignedRole: process-architect
+        estimatedDuration: 300
+        artifacts:
+          inputs:
+            - typeId: current-state-analysis
+              required: true
+          outputs:
+            - typeId: to-be-process-design
+              required: true
+        requirements:
+          - type: functional
+            description: Design must be radical, not incremental
+            priority: must
+            validationCriteria:
+              - Clean sheet design
+              - Technology leveraged
+              - Customer-centric
+              - Dramatic improvement potential
+      - id: design-organization
+        title: Design Supporting Organization
+        description: Design organizational structure to support new process
+        type: design
+        complexity: complex
+        assignedRole: org-design-specialist
+        estimatedDuration: 180
+        dependencies:
+          - design-to-be
+        artifacts:
+          inputs:
+            - typeId: to-be-process-design
+              required: true
+          outputs:
+            - typeId: org-design
+              required: true
+        requirements:
+          - type: functional
+            description: Organization must enable new processes
+            priority: must
+            validationCriteria:
+              - Roles defined
+              - Skills identified
+              - Structure aligned
+      - id: plan-technology
+        title: Plan Technology Enablement
+        description: Define technology solutions to enable redesign
+        type: planning
+        complexity: complex
+        assignedRole: technology-architect
+        estimatedDuration: 240
+        dependencies:
+          - design-to-be
+        artifacts:
+          inputs:
+            - typeId: to-be-process-design
+              required: true
+          outputs:
+            - typeId: technology-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Technology must enable radical change
+            priority: must
+            validationCriteria:
+              - Systems identified
+              - Integration planned
+              - Automation maximized
+    agentRequirements:
+      roles:
+        - process-architect
+        - org-design-specialist
+        - technology-architect
+      skills:
+        - process-design
+        - organizational-design
+        - technology-strategy
+      minExperience: expert
+
+  - id: implement
+    name: Implement
+    description: >
+      Execute the transformation with strong change management.
+      Pilot, refine, and roll out new processes.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Redesign phase must be completed
+        phaseId: redesign
+    exitCriteria:
+      - type: artifact-exists
+        description: New processes must be operational
+        artifactType: implementation-results
+    tasks:
+      - id: pilot-process
+        title: Pilot New Process
+        description: Test new process in controlled environment
+        type: testing
+        complexity: complex
+        assignedRole: implementation-lead
+        estimatedDuration: 480
+        artifacts:
+          inputs:
+            - typeId: to-be-process-design
+              required: true
+          outputs:
+            - typeId: pilot-results
+              required: true
+        requirements:
+          - type: functional
+            description: Pilot must validate design assumptions
+            priority: must
+            validationCriteria:
+              - Success criteria met
+              - Issues identified
+              - Refinements documented
+      - id: manage-change
+        title: Execute Change Management
+        description: Prepare organization for transformation
+        type: implementation
+        complexity: complex
+        assignedRole: change-manager
+        estimatedDuration: 600
+        artifacts:
+          inputs:
+            - typeId: org-design
+              required: true
+          outputs:
+            - typeId: change-management-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Change management must be comprehensive
+            priority: must
+            validationCriteria:
+              - Stakeholders engaged
+              - Training delivered
+              - Resistance managed
+      - id: full-rollout
+        title: Execute Full Rollout
+        description: Deploy new processes across organization
+        type: implementation
+        complexity: complex
+        assignedRole: implementation-lead
+        estimatedDuration: 720
+        dependencies:
+          - pilot-process
+          - manage-change
+        artifacts:
+          inputs:
+            - typeId: pilot-results
+              required: true
+            - typeId: change-management-plan
+              required: true
+          outputs:
+            - typeId: implementation-results
+              required: true
+        requirements:
+          - type: functional
+            description: Rollout must achieve target improvements
+            priority: must
+            validationCriteria:
+              - Processes operational
+              - Targets achieved
+              - Sustainability ensured
+    agentRequirements:
+      roles:
+        - implementation-lead
+        - change-manager
+      skills:
+        - project-management
+        - change-management
+        - execution
+      minExperience: senior
+
+  - id: monitor
+    name: Monitor
+    description: >
+      Track results and ensure sustainability.
+      Establish continuous improvement culture.
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Implement phase must be completed
+        phaseId: implement
+    exitCriteria:
+      - type: artifact-exists
+        description: Monitoring system must be operational
+        artifactType: monitoring-report
+    tasks:
+      - id: measure-results
+        title: Measure Transformation Results
+        description: Quantify improvements achieved
+        type: analysis
+        complexity: simple
+        assignedRole: performance-analyst
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: implementation-results
+              required: true
+            - typeId: vision-document
+              required: true
+          outputs:
+            - typeId: performance-report
+              required: true
+        requirements:
+          - type: functional
+            description: Results must demonstrate dramatic improvement
+            priority: must
+            validationCriteria:
+              - Targets measured
+              - ROI calculated
+              - Benefits realized
+      - id: establish-governance
+        title: Establish Process Governance
+        description: Create ongoing management and improvement system
+        type: planning
+        complexity: simple
+        assignedRole: process-owner
+        estimatedDuration: 90
+        dependencies:
+          - measure-results
+        artifacts:
+          inputs:
+            - typeId: performance-report
+              required: true
+          outputs:
+            - typeId: governance-framework
+              required: true
+        requirements:
+          - type: functional
+            description: Governance must ensure sustainability
+            priority: must
+            validationCriteria:
+              - Ownership assigned
+              - Metrics tracked
+              - Continuous improvement enabled
+      - id: continuous-monitoring
+        title: Implement Continuous Monitoring
+        description: Track ongoing process performance
+        type: implementation
+        complexity: simple
+        assignedRole: process-owner
+        estimatedDuration: 60
+        dependencies:
+          - establish-governance
+        artifacts:
+          inputs:
+            - typeId: governance-framework
+              required: true
+          outputs:
+            - typeId: monitoring-report
+              required: true
+        requirements:
+          - type: functional
+            description: Monitoring must be ongoing
+            priority: must
+            validationCriteria:
+              - Dashboards active
+              - Reviews scheduled
+              - Improvement cycles running
+    agentRequirements:
+      roles:
+        - performance-analyst
+        - process-owner
+      skills:
+        - performance-measurement
+        - governance
+        - continuous-improvement
+      minExperience: mid
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - envision
+    - analyze
+    - redesign
+    - implement
+    - monitor
+  failureHandling:
+    strategy: retry
+    fallbackPhase: envision
+
+agentCoordination:
+  roles:
+    - id: leadership-team
+      name: Leadership Team
+      description: Executive sponsors driving transformation
+      responsibilities:
+        - Set vision
+        - Provide resources
+        - Remove barriers
+      requiredSkills:
+        - leadership
+        - strategic-thinking
+        - sponsorship
+      experienceLevel: expert
+      authority: leader
+    - id: process-architect
+      name: Process Architect
+      description: Designs new processes
+      responsibilities:
+        - Design processes
+        - Ensure coherence
+        - Guide implementation
+      requiredSkills:
+        - process-design
+        - systems-thinking
+        - innovation
+      experienceLevel: expert
+      authority: leader
+    - id: change-agent
+      name: Change Agent
+      description: Champions transformation
+      responsibilities:
+        - Challenge status quo
+        - Drive innovation
+        - Manage resistance
+      requiredSkills:
+        - change-management
+        - influence
+        - creativity
+      experienceLevel: senior
+      authority: contributor
+    - id: implementation-lead
+      name: Implementation Lead
+      description: Manages transformation execution
+      responsibilities:
+        - Plan implementation
+        - Coordinate workstreams
+        - Deliver results
+      requiredSkills:
+        - program-management
+        - execution
+        - coordination
+      experienceLevel: senior
+      authority: leader
+    - id: change-manager
+      name: Change Manager
+      description: Manages organizational change
+      responsibilities:
+        - Prepare organization
+        - Manage stakeholders
+        - Enable adoption
+      requiredSkills:
+        - change-management
+        - communication
+        - training
+      experienceLevel: senior
+      authority: contributor
+    - id: process-owner
+      name: Process Owner
+      description: Long-term process steward
+      responsibilities:
+        - Own process
+        - Drive improvement
+        - Ensure governance
+      requiredSkills:
+        - process-management
+        - governance
+        - leadership
+      experienceLevel: mid
+      authority: contributor
+  teamComposition:
+    minSize: 4
+    maxSize: 6
+    required:
+      - leadership-team
+      - process-architect
+      - implementation-lead
+    optional:
+      - change-agent
+      - change-manager
+      - process-owner
+  communicationPatterns:
+    - from: leadership-team
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+    - from: process-architect
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+        - constraint
+  decisionAuthority:
+    - decision: Approve transformation vision
+      authority: leadership-team
+      requiresConsensus: true
+      consensusRoles:
+        - process-architect
+    - decision: Approve process design
+      authority: process-architect
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: vision-document
+      name: Vision Document
+      description: Future state vision and targets
+      format: markdown
+    - id: process-inventory
+      name: Process Inventory
+      description: List of processes for reengineering
+      format: json
+    - id: as-is-process-map
+      name: As-Is Process Map
+      description: Current state process documentation
+      format: markdown
+    - id: assumption-analysis
+      name: Assumption Analysis
+      description: Challenged assumptions and alternatives
+      format: markdown
+    - id: current-state-analysis
+      name: Current State Analysis
+      description: Gap analysis and opportunities
+      format: markdown
+    - id: to-be-process-design
+      name: To-Be Process Design
+      description: Redesigned process
+      format: markdown
+    - id: org-design
+      name: Organization Design
+      description: Supporting organizational structure
+      format: structured
+    - id: technology-plan
+      name: Technology Plan
+      description: Technology enablement plan
+      format: markdown
+    - id: pilot-results
+      name: Pilot Results
+      description: Results from pilot implementation
+      format: json
+    - id: change-management-plan
+      name: Change Management Plan
+      description: Comprehensive change plan
+      format: markdown
+    - id: implementation-results
+      name: Implementation Results
+      description: Full rollout results
+      format: json
+    - id: performance-report
+      name: Performance Report
+      description: Measured transformation results
+      format: markdown
+    - id: governance-framework
+      name: Governance Framework
+      description: Ongoing process governance
+      format: structured
+    - id: monitoring-report
+      name: Monitoring Report
+      description: Ongoing performance tracking
+      format: markdown
+  dependencies:
+    - artifact: process-inventory
+      dependsOn:
+        - vision-document
+    - artifact: to-be-process-design
+      dependsOn:
+        - current-state-analysis
+    - artifact: implementation-results
+      dependsOn:
+        - pilot-results
+        - change-management-plan

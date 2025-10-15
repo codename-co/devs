@@ -1,0 +1,1012 @@
+metadata:
+  id: fmea
+  name: FMEA
+  title: Failure Mode and Effects Analysis
+  description: >
+    Systematic method for identifying potential failures in a design, process, or system.
+    FMEA evaluates failure modes, their causes, and effects to prioritize risk mitigation.
+    Uses Risk Priority Number (RPN) to rank and address the most critical failure modes.
+  type: sequential
+  version: 1.0.0
+  origin: US Military / Automotive Industry
+  domains:
+    - quality-management
+    - risk-management
+    - product-development
+    - process-improvement
+  complexity: complex
+  tags:
+    - risk-analysis
+    - failure-prevention
+    - quality
+    - safety
+  i18n:
+    es:
+      title: Análisis de Modos y Efectos de Fallas
+      description: >
+        Método sistemático para identificar fallas potenciales en un diseño, proceso o sistema.
+        FMEA evalúa los modos de falla, sus causas y efectos para priorizar la mitigación de riesgos.
+        Utiliza el Número de Prioridad de Riesgo (RPN) para clasificar y abordar los modos de falla más críticos.
+    fr:
+      title: Analyse des Modes de Défaillance et de leurs Effets
+      description: >
+        Méthode systématique pour identifier les défaillances potentielles dans une conception, un processus ou un système.
+        FMEA évalue les modes de défaillance, leurs causes et leurs effets pour prioriser l'atténuation des risques.
+        Utilise le Nombre de Priorité de Risque (RPN) pour classer et traiter les modes de défaillance les plus critiques.
+    ko:
+      title: 고장 모드 및 영향 분석
+      description: >
+        설계, 프로세스 또는 시스템에서 잠재적 고장을 식별하는 체계적인 방법.
+        FMEA는 고장 모드, 그 원인 및 영향을 평가하여 위험 완화의 우선순위를 정합니다.
+        위험 우선순위 번호(RPN)를 사용하여 가장 중요한 고장 모드를 순위를 매기고 해결합니다.
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 2
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 3
+
+phases:
+  - id: prepare
+    name: Prepare
+    description: >
+      Define the scope and assemble the FMEA team.
+      Gather necessary information about the system or process.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: FMEA scope must be defined
+        artifactType: fmea-scope
+      - type: artifact-exists
+        description: System description must exist
+        artifactType: system-description
+    tasks:
+      - id: define-scope
+        title: Define FMEA Scope
+        description: Establish what will be analyzed and boundaries
+        type: planning
+        complexity: simple
+        assignedRole: fmea-lead
+        estimatedDuration: 60
+        artifacts:
+          outputs:
+            - typeId: fmea-scope
+              required: true
+        requirements:
+          - type: functional
+            description: Scope must be clear and focused
+            priority: must
+            validationCriteria:
+              - Analysis subject defined (design/process/system)
+              - Boundaries established
+              - Level of detail specified
+      - id: assemble-team
+        title: Assemble FMEA Team
+        description: Form cross-functional team with relevant expertise
+        type: planning
+        complexity: simple
+        assignedRole: fmea-lead
+        estimatedDuration: 45
+        dependencies:
+          - define-scope
+        artifacts:
+          inputs:
+            - typeId: fmea-scope
+              required: true
+          outputs:
+            - typeId: team-roster
+              required: true
+        requirements:
+          - type: functional
+            description: Team must have diverse expertise
+            priority: must
+            validationCriteria:
+              - Design expertise included
+              - Manufacturing expertise included
+              - Quality expertise included
+              - Customer perspective represented
+      - id: document-system
+        title: Document System/Process
+        description: Create detailed description of what is being analyzed
+        type: documentation
+        complexity: simple
+        assignedRole: systems-engineer
+        estimatedDuration: 120
+        dependencies:
+          - define-scope
+        artifacts:
+          inputs:
+            - typeId: fmea-scope
+              required: true
+          outputs:
+            - typeId: system-description
+              required: true
+        requirements:
+          - type: functional
+            description: System must be thoroughly documented
+            priority: must
+            validationCriteria:
+              - Components/steps identified
+              - Functions described
+              - Interfaces mapped
+              - Block diagrams included
+      - id: gather-historical-data
+        title: Gather Historical Data
+        description: Collect data on past failures and issues
+        type: analysis
+        complexity: simple
+        assignedRole: quality-engineer
+        estimatedDuration: 90
+        artifacts:
+          outputs:
+            - typeId: historical-data
+              required: true
+        requirements:
+          - type: functional
+            description: Historical data should inform analysis
+            priority: should
+            validationCriteria:
+              - Warranty data reviewed
+              - Field failures documented
+              - Customer complaints analyzed
+    agentRequirements:
+      roles:
+        - fmea-lead
+        - systems-engineer
+        - quality-engineer
+      skills:
+        - fmea-methodology
+        - systems-thinking
+        - documentation
+      minExperience: mid
+
+  - id: identify-failures
+    name: Identify Failures
+    description: >
+      Identify all potential failure modes for each component or step.
+      Document what could go wrong and how.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Prepare phase must be completed
+        phaseId: prepare
+    exitCriteria:
+      - type: artifact-exists
+        description: Failure modes must be identified
+        artifactType: failure-modes-list
+    tasks:
+      - id: identify-functions
+        title: Identify Functions
+        description: List all functions of each component or process step
+        type: analysis
+        complexity: simple
+        assignedRole: systems-engineer
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: system-description
+              required: true
+          outputs:
+            - typeId: function-list
+              required: true
+        requirements:
+          - type: functional
+            description: All functions must be identified
+            priority: must
+            validationCriteria:
+              - Primary functions listed
+              - Secondary functions listed
+              - Function requirements specified
+      - id: brainstorm-failure-modes
+        title: Brainstorm Potential Failure Modes
+        description: Identify ways each function could fail
+        type: analysis
+        complexity: complex
+        assignedRole: fmea-facilitator
+        estimatedDuration: 180
+        dependencies:
+          - identify-functions
+        artifacts:
+          inputs:
+            - typeId: function-list
+              required: true
+            - typeId: historical-data
+              required: false
+          outputs:
+            - typeId: failure-modes-list
+              required: true
+        requirements:
+          - type: functional
+            description: Comprehensive failure mode identification
+            priority: must
+            validationCriteria:
+              - Failure modes for each function
+              - No obvious modes missed
+              - Historical failures included
+      - id: document-effects
+        title: Document Failure Effects
+        description: Describe the consequences of each failure mode
+        type: analysis
+        complexity: simple
+        assignedRole: quality-engineer
+        estimatedDuration: 150
+        dependencies:
+          - brainstorm-failure-modes
+        artifacts:
+          inputs:
+            - typeId: failure-modes-list
+              required: true
+          outputs:
+            - typeId: failure-effects
+              required: true
+        requirements:
+          - type: functional
+            description: Effects must be specific and measurable
+            priority: must
+            validationCriteria:
+              - Local effects described
+              - System effects described
+              - End effects described
+              - Customer impact assessed
+    agentRequirements:
+      roles:
+        - systems-engineer
+        - fmea-facilitator
+        - quality-engineer
+      skills:
+        - functional-analysis
+        - failure-analysis
+        - brainstorming
+      minExperience: mid
+
+  - id: assess-risk
+    name: Assess Risk
+    description: >
+      Evaluate the risk of each failure mode.
+      Rate severity, occurrence, and detection to calculate RPN.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Identify Failures phase must be completed
+        phaseId: identify-failures
+    exitCriteria:
+      - type: artifact-exists
+        description: Risk assessment must be complete
+        artifactType: risk-assessment
+    tasks:
+      - id: rate-severity
+        title: Rate Severity of Effects
+        description: Score the seriousness of each failure effect (1-10)
+        type: analysis
+        complexity: simple
+        assignedRole: quality-engineer
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: failure-effects
+              required: true
+          outputs:
+            - typeId: severity-ratings
+              required: true
+        requirements:
+          - type: functional
+            description: Severity must be consistently rated
+            priority: must
+            validationCriteria:
+              - Rating scale defined (1-10)
+              - Customer impact considered
+              - Safety implications assessed
+              - Ratings justified
+      - id: rate-occurrence
+        title: Rate Occurrence Probability
+        description: Score the likelihood of each failure cause (1-10)
+        type: analysis
+        complexity: simple
+        assignedRole: reliability-engineer
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: failure-modes-list
+              required: true
+            - typeId: historical-data
+              required: false
+          outputs:
+            - typeId: occurrence-ratings
+              required: true
+        requirements:
+          - type: functional
+            description: Occurrence must be based on data when possible
+            priority: must
+            validationCriteria:
+              - Rating scale defined (1-10)
+              - Historical data used
+              - Expert judgment applied
+              - Ratings justified
+      - id: identify-controls
+        title: Identify Current Controls
+        description: Document existing prevention and detection controls
+        type: analysis
+        complexity: simple
+        assignedRole: process-engineer
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: failure-modes-list
+              required: true
+          outputs:
+            - typeId: current-controls
+              required: true
+        requirements:
+          - type: functional
+            description: All existing controls must be identified
+            priority: must
+            validationCriteria:
+              - Prevention controls listed
+              - Detection controls listed
+              - Control effectiveness noted
+      - id: rate-detection
+        title: Rate Detection Capability
+        description: Score the ability to detect failure before impact (1-10)
+        type: analysis
+        complexity: simple
+        assignedRole: quality-engineer
+        estimatedDuration: 90
+        dependencies:
+          - identify-controls
+        artifacts:
+          inputs:
+            - typeId: current-controls
+              required: true
+          outputs:
+            - typeId: detection-ratings
+              required: true
+        requirements:
+          - type: functional
+            description: Detection ratings must reflect control effectiveness
+            priority: must
+            validationCriteria:
+              - Rating scale defined (1-10)
+              - Control effectiveness assessed
+              - Detection timing considered
+              - Ratings justified
+      - id: calculate-rpn
+        title: Calculate Risk Priority Numbers
+        description: Calculate RPN (Severity × Occurrence × Detection) for each mode
+        type: analysis
+        complexity: simple
+        assignedRole: fmea-lead
+        estimatedDuration: 60
+        dependencies:
+          - rate-severity
+          - rate-occurrence
+          - rate-detection
+        artifacts:
+          inputs:
+            - typeId: severity-ratings
+              required: true
+            - typeId: occurrence-ratings
+              required: true
+            - typeId: detection-ratings
+              required: true
+          outputs:
+            - typeId: risk-assessment
+              required: true
+        requirements:
+          - type: functional
+            description: RPN must be calculated for all failure modes
+            priority: must
+            validationCriteria:
+              - RPN = S × O × D
+              - Failure modes ranked by RPN
+              - High-risk modes flagged
+    agentRequirements:
+      roles:
+        - quality-engineer
+        - reliability-engineer
+        - process-engineer
+        - fmea-lead
+      skills:
+        - risk-assessment
+        - statistical-analysis
+        - process-knowledge
+      minExperience: mid
+
+  - id: mitigate-risks
+    name: Mitigate Risks
+    description: >
+      Develop and recommend actions to reduce high-risk failure modes.
+      Focus on reducing severity, occurrence, or improving detection.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Assess Risk phase must be completed
+        phaseId: assess-risk
+    exitCriteria:
+      - type: artifact-exists
+        description: Recommended actions must exist
+        artifactType: recommended-actions
+    tasks:
+      - id: prioritize-failure-modes
+        title: Prioritize Failure Modes for Action
+        description: Select high-RPN failure modes requiring action
+        type: planning
+        complexity: simple
+        assignedRole: fmea-lead
+        estimatedDuration: 45
+        artifacts:
+          inputs:
+            - typeId: risk-assessment
+              required: true
+          outputs:
+            - typeId: priority-list
+              required: true
+        requirements:
+          - type: functional
+            description: Prioritization must be risk-based
+            priority: must
+            validationCriteria:
+              - RPN threshold defined
+              - High severity modes included
+              - Safety-critical modes prioritized
+      - id: generate-mitigation-actions
+        title: Generate Mitigation Actions
+        description: Brainstorm ways to reduce risk of prioritized failure modes
+        type: design
+        complexity: complex
+        assignedRole: design-engineer
+        estimatedDuration: 180
+        dependencies:
+          - prioritize-failure-modes
+        artifacts:
+          inputs:
+            - typeId: priority-list
+              required: true
+            - typeId: current-controls
+              required: true
+          outputs:
+            - typeId: mitigation-options
+              required: true
+        requirements:
+          - type: functional
+            description: Multiple mitigation strategies must be considered
+            priority: must
+            validationCriteria:
+              - Design changes proposed
+              - Process improvements proposed
+              - Enhanced detection proposed
+              - Prevention measures proposed
+      - id: evaluate-actions
+        title: Evaluate Recommended Actions
+        description: Assess feasibility, cost, and effectiveness of proposed actions
+        type: analysis
+        complexity: simple
+        assignedRole: program-manager
+        estimatedDuration: 120
+        dependencies:
+          - generate-mitigation-actions
+        artifacts:
+          inputs:
+            - typeId: mitigation-options
+              required: true
+          outputs:
+            - typeId: action-evaluation
+              required: true
+        requirements:
+          - type: functional
+            description: Evaluation must be objective
+            priority: must
+            validationCriteria:
+              - Cost-benefit analyzed
+              - Implementation difficulty assessed
+              - Expected RPN reduction estimated
+      - id: finalize-recommendations
+        title: Finalize Recommended Actions
+        description: Select and document final recommended actions
+        type: planning
+        complexity: simple
+        assignedRole: fmea-lead
+        estimatedDuration: 90
+        dependencies:
+          - evaluate-actions
+        artifacts:
+          inputs:
+            - typeId: action-evaluation
+              required: true
+          outputs:
+            - typeId: recommended-actions
+              required: true
+        requirements:
+          - type: functional
+            description: Actions must be specific and assignable
+            priority: must
+            validationCriteria:
+              - Actions clearly described
+              - Owners identified
+              - Target dates set
+              - Expected outcomes defined
+    agentRequirements:
+      roles:
+        - fmea-lead
+        - design-engineer
+        - program-manager
+      skills:
+        - mitigation-design
+        - cost-benefit-analysis
+        - decision-making
+      minExperience: mid
+
+  - id: document-followup
+    name: Document & Follow-up
+    description: >
+      Document the FMEA results and create follow-up plan.
+      Track implementation of recommended actions and verify effectiveness.
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Mitigate Risks phase must be completed
+        phaseId: mitigate-risks
+    exitCriteria:
+      - type: artifact-exists
+        description: FMEA report must exist
+        artifactType: fmea-report
+      - type: artifact-exists
+        description: Follow-up plan must exist
+        artifactType: followup-plan
+    tasks:
+      - id: create-fmea-document
+        title: Create FMEA Documentation
+        description: Compile complete FMEA with all analysis and recommendations
+        type: documentation
+        complexity: simple
+        assignedRole: fmea-lead
+        estimatedDuration: 150
+        artifacts:
+          inputs:
+            - typeId: system-description
+              required: true
+            - typeId: risk-assessment
+              required: true
+            - typeId: recommended-actions
+              required: true
+          outputs:
+            - typeId: fmea-report
+              required: true
+        requirements:
+          - type: functional
+            description: FMEA document must be complete and traceable
+            priority: must
+            validationCriteria:
+              - FMEA worksheet completed
+              - All ratings justified
+              - Actions documented
+              - Approvals obtained
+      - id: create-followup-plan
+        title: Create Follow-up Action Plan
+        description: Develop plan for implementing and tracking recommended actions
+        type: planning
+        complexity: simple
+        assignedRole: program-manager
+        estimatedDuration: 90
+        dependencies:
+          - create-fmea-document
+        artifacts:
+          inputs:
+            - typeId: recommended-actions
+              required: true
+          outputs:
+            - typeId: followup-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Plan must ensure actions are completed
+            priority: must
+            validationCriteria:
+              - Action owners assigned
+              - Timelines established
+              - Review dates set
+              - Verification methods defined
+      - id: establish-review-cycle
+        title: Establish Review Cycle
+        description: Define when and how FMEA will be updated
+        type: planning
+        complexity: simple
+        assignedRole: fmea-lead
+        estimatedDuration: 45
+        dependencies:
+          - create-followup-plan
+        artifacts:
+          inputs:
+            - typeId: fmea-report
+              required: true
+          outputs:
+            - typeId: review-schedule
+              required: true
+        requirements:
+          - type: functional
+            description: FMEA must be living document
+            priority: must
+            validationCriteria:
+              - Review frequency defined
+              - Update triggers identified
+              - Document owner assigned
+      - id: communicate-results
+        title: Communicate FMEA Results
+        description: Present findings and actions to stakeholders
+        type: documentation
+        complexity: simple
+        assignedRole: fmea-lead
+        estimatedDuration: 60
+        dependencies:
+          - create-fmea-document
+        artifacts:
+          inputs:
+            - typeId: fmea-report
+              required: true
+            - typeId: recommended-actions
+              required: true
+          outputs:
+            - typeId: stakeholder-communication
+              required: true
+        requirements:
+          - type: functional
+            description: Key stakeholders must be informed
+            priority: must
+            validationCriteria:
+              - Management briefed
+              - Action owners notified
+              - Customer implications shared if relevant
+    agentRequirements:
+      roles:
+        - fmea-lead
+        - program-manager
+      skills:
+        - documentation
+        - project-management
+        - communication
+      minExperience: mid
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - prepare
+    - identify-failures
+    - assess-risk
+    - mitigate-risks
+    - document-followup
+  failureHandling:
+    strategy: retry
+    fallbackPhase: prepare
+
+agentCoordination:
+  roles:
+    - id: fmea-lead
+      name: FMEA Lead
+      description: Facilitates and coordinates FMEA process
+      responsibilities:
+        - Define FMEA scope
+        - Assemble team
+        - Calculate RPN
+        - Finalize recommendations
+        - Create documentation
+      requiredSkills:
+        - fmea-methodology
+        - facilitation
+        - risk-assessment
+      experienceLevel: senior
+      authority: leader
+    - id: systems-engineer
+      name: Systems Engineer
+      description: Provides system/process expertise
+      responsibilities:
+        - Document system
+        - Identify functions
+        - Analyze interactions
+        - Support failure analysis
+      requiredSkills:
+        - systems-thinking
+        - technical-documentation
+        - functional-analysis
+      experienceLevel: mid
+      authority: contributor
+    - id: quality-engineer
+      name: Quality Engineer
+      description: Ensures quality and risk assessment rigor
+      responsibilities:
+        - Gather historical data
+        - Document failure effects
+        - Rate severity
+        - Rate detection
+      requiredSkills:
+        - quality-management
+        - failure-analysis
+        - risk-assessment
+      experienceLevel: mid
+      authority: contributor
+    - id: fmea-facilitator
+      name: FMEA Facilitator
+      description: Guides brainstorming and analysis sessions
+      responsibilities:
+        - Facilitate sessions
+        - Drive failure mode identification
+        - Ensure participation
+        - Challenge assumptions
+      requiredSkills:
+        - facilitation
+        - brainstorming
+        - group-dynamics
+      experienceLevel: mid
+      authority: contributor
+    - id: reliability-engineer
+      name: Reliability Engineer
+      description: Assesses failure probabilities and reliability
+      responsibilities:
+        - Rate occurrence
+        - Analyze reliability data
+        - Provide statistical insights
+        - Predict failure rates
+      requiredSkills:
+        - reliability-engineering
+        - statistics
+        - data-analysis
+      experienceLevel: mid
+      authority: contributor
+    - id: process-engineer
+      name: Process Engineer
+      description: Understands manufacturing/process controls
+      responsibilities:
+        - Identify current controls
+        - Assess process capability
+        - Propose process improvements
+        - Evaluate manufacturability
+      requiredSkills:
+        - process-engineering
+        - manufacturing
+        - process-control
+      experienceLevel: mid
+      authority: contributor
+    - id: design-engineer
+      name: Design Engineer
+      description: Develops design mitigation actions
+      responsibilities:
+        - Generate mitigation actions
+        - Propose design changes
+        - Assess technical feasibility
+        - Support implementation
+      requiredSkills:
+        - design-engineering
+        - problem-solving
+        - innovation
+      experienceLevel: mid
+      authority: contributor
+    - id: program-manager
+      name: Program Manager
+      description: Manages action implementation and resources
+      responsibilities:
+        - Evaluate actions
+        - Create follow-up plan
+        - Allocate resources
+        - Track progress
+      requiredSkills:
+        - program-management
+        - planning
+        - resource-allocation
+      experienceLevel: mid
+      authority: leader
+  teamComposition:
+    minSize: 4
+    maxSize: 8
+    required:
+      - fmea-lead
+      - systems-engineer
+      - quality-engineer
+      - program-manager
+    optional:
+      - fmea-facilitator
+      - reliability-engineer
+      - process-engineer
+      - design-engineer
+  communicationPatterns:
+    - from: fmea-lead
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+        - finding
+    - from: any
+      to: fmea-lead
+      type: direct
+      contextTypes:
+        - finding
+        - constraint
+    - from: design-engineer
+      to: process-engineer
+      type: request-response
+      contextTypes:
+        - decision
+  decisionAuthority:
+    - decision: Define FMEA scope
+      authority: fmea-lead
+      requiresConsensus: true
+      consensusRoles:
+        - program-manager
+    - decision: Prioritize failure modes
+      authority: fmea-lead
+      requiresConsensus: true
+      consensusRoles:
+        - quality-engineer
+        - systems-engineer
+    - decision: Approve recommended actions
+      authority: program-manager
+      requiresConsensus: true
+      consensusRoles:
+        - fmea-lead
+        - design-engineer
+
+artifactFlow:
+  artifactTypes:
+    - id: fmea-scope
+      name: FMEA Scope
+      description: Definition of what will be analyzed
+      format: structured
+    - id: team-roster
+      name: Team Roster
+      description: FMEA team members and roles
+      format: structured
+    - id: system-description
+      name: System Description
+      description: Detailed description of system or process
+      format: markdown
+    - id: historical-data
+      name: Historical Failure Data
+      description: Past failures and reliability data
+      format: json
+    - id: function-list
+      name: Function List
+      description: All functions of components or steps
+      format: structured
+    - id: failure-modes-list
+      name: Failure Modes List
+      description: Identified potential failure modes
+      format: structured
+    - id: failure-effects
+      name: Failure Effects
+      description: Consequences of each failure mode
+      format: structured
+    - id: severity-ratings
+      name: Severity Ratings
+      description: Severity scores for each failure effect
+      format: json
+    - id: occurrence-ratings
+      name: Occurrence Ratings
+      description: Occurrence probability scores
+      format: json
+    - id: current-controls
+      name: Current Controls
+      description: Existing prevention and detection controls
+      format: structured
+    - id: detection-ratings
+      name: Detection Ratings
+      description: Detection capability scores
+      format: json
+    - id: risk-assessment
+      name: Risk Assessment
+      description: Complete RPN calculations and rankings
+      format: structured
+      schema:
+        type: object
+        required:
+          - failureModes
+        properties:
+          failureModes:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                description:
+                  type: string
+                severity:
+                  type: integer
+                occurrence:
+                  type: integer
+                detection:
+                  type: integer
+                rpn:
+                  type: integer
+    - id: priority-list
+      name: Priority List
+      description: Prioritized failure modes requiring action
+      format: structured
+    - id: mitigation-options
+      name: Mitigation Options
+      description: Proposed risk mitigation actions
+      format: structured
+    - id: action-evaluation
+      name: Action Evaluation
+      description: Assessment of mitigation options
+      format: structured
+    - id: recommended-actions
+      name: Recommended Actions
+      description: Final recommended mitigation actions
+      format: structured
+    - id: fmea-report
+      name: FMEA Report
+      description: Complete FMEA documentation
+      format: markdown
+    - id: followup-plan
+      name: Follow-up Action Plan
+      description: Plan for implementing and tracking actions
+      format: structured
+    - id: review-schedule
+      name: Review Schedule
+      description: Schedule for FMEA updates
+      format: structured
+    - id: stakeholder-communication
+      name: Stakeholder Communication
+      description: FMEA results communication materials
+      format: markdown
+  dependencies:
+    - artifact: team-roster
+      dependsOn:
+        - fmea-scope
+    - artifact: system-description
+      dependsOn:
+        - fmea-scope
+    - artifact: function-list
+      dependsOn:
+        - system-description
+    - artifact: failure-modes-list
+      dependsOn:
+        - function-list
+    - artifact: failure-effects
+      dependsOn:
+        - failure-modes-list
+    - artifact: severity-ratings
+      dependsOn:
+        - failure-effects
+    - artifact: occurrence-ratings
+      dependsOn:
+        - failure-modes-list
+    - artifact: current-controls
+      dependsOn:
+        - failure-modes-list
+    - artifact: detection-ratings
+      dependsOn:
+        - current-controls
+    - artifact: risk-assessment
+      dependsOn:
+        - severity-ratings
+        - occurrence-ratings
+        - detection-ratings
+    - artifact: priority-list
+      dependsOn:
+        - risk-assessment
+    - artifact: mitigation-options
+      dependsOn:
+        - priority-list
+        - current-controls
+    - artifact: action-evaluation
+      dependsOn:
+        - mitigation-options
+    - artifact: recommended-actions
+      dependsOn:
+        - action-evaluation
+    - artifact: fmea-report
+      dependsOn:
+        - system-description
+        - risk-assessment
+        - recommended-actions
+    - artifact: followup-plan
+      dependsOn:
+        - recommended-actions
+    - artifact: review-schedule
+      dependsOn:
+        - fmea-report
+    - artifact: stakeholder-communication
+      dependsOn:
+        - fmea-report
+        - recommended-actions

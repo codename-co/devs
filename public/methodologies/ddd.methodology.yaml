@@ -1,0 +1,1162 @@
+metadata:
+  id: ddd
+  name: DDD
+  title: Domain-Driven Design
+  description: >
+    Software design approach that focuses on modeling software to match business domain.
+    DDD emphasizes collaboration between technical and domain experts using ubiquitous language.
+    Uses strategic and tactical patterns to manage complex domains.
+  type: sequential
+  version: 1.0.0
+  origin: Eric Evans
+  domains:
+    - software-architecture
+    - enterprise-software
+    - complex-systems
+    - business-modeling
+  complexity: complex
+  tags:
+    - architecture
+    - modeling
+    - domain-modeling
+    - strategic-design
+    - tactical-design
+  i18n:
+    es:
+      title: Diseño Guiado por el Dominio
+      description: >
+        Enfoque de diseño de software que se centra en modelar software para coincidir con el dominio empresarial.
+        DDD enfatiza la colaboración entre expertos técnicos y de dominio usando lenguaje ubicuo.
+        Utiliza patrones estratégicos y tácticos para gestionar dominios complejos.
+    fr:
+      title: Conception Pilotée par le Domaine
+      description: >
+        Approche de conception logicielle qui se concentre sur la modélisation du logiciel pour correspondre au domaine métier.
+        DDD met l'accent sur la collaboration entre experts techniques et du domaine en utilisant un langage omniprésent.
+        Utilise des patterns stratégiques et tactiques pour gérer des domaines complexes.
+    ko:
+      title: 도메인 주도 설계
+      description: >
+        비즈니스 도메인과 일치하도록 소프트웨어를 모델링하는 데 중점을 둔 소프트웨어 설계 접근 방식.
+        DDD는 보편적 언어를 사용하여 기술 및 도메인 전문가 간의 협업을 강조합니다.
+        복잡한 도메인을 관리하기 위해 전략적 및 전술적 패턴을 사용합니다.
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 2
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 3
+
+phases:
+  - id: discover-domain
+    name: Discover Domain
+    description: >
+      Explore and understand the business domain.
+      Engage with domain experts to learn the business.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Domain knowledge must be documented
+        artifactType: domain-knowledge
+      - type: artifact-exists
+        description: Ubiquitous language must be defined
+        artifactType: ubiquitous-language
+    tasks:
+      - id: engage-domain-experts
+        title: Engage Domain Experts
+        description: Establish collaboration with business domain experts
+        type: analysis
+        complexity: simple
+        assignedRole: domain-expert
+        estimatedDuration: 60
+        artifacts:
+          outputs:
+            - typeId: expert-roster
+              required: true
+        requirements:
+          - type: functional
+            description: Domain experts must be identified and engaged
+            priority: must
+            validationCriteria:
+              - Key experts identified
+              - Access established
+              - Communication channels set up
+      - id: conduct-knowledge-crunching
+        title: Conduct Knowledge Crunching Sessions
+        description: Deep dive sessions with domain experts to understand the domain
+        type: analysis
+        complexity: complex
+        assignedRole: domain-modeler
+        estimatedDuration: 240
+        dependencies:
+          - engage-domain-experts
+        artifacts:
+          inputs:
+            - typeId: expert-roster
+              required: true
+          outputs:
+            - typeId: domain-knowledge
+              required: true
+        requirements:
+          - type: functional
+            description: Domain understanding must be comprehensive
+            priority: must
+            validationCriteria:
+              - Core concepts identified
+              - Business rules understood
+              - Workflows documented
+              - Pain points captured
+      - id: develop-ubiquitous-language
+        title: Develop Ubiquitous Language
+        description: Create shared vocabulary between technical and domain teams
+        type: documentation
+        complexity: simple
+        assignedRole: domain-modeler
+        estimatedDuration: 90
+        dependencies:
+          - conduct-knowledge-crunching
+        artifacts:
+          inputs:
+            - typeId: domain-knowledge
+              required: true
+          outputs:
+            - typeId: ubiquitous-language
+              required: true
+        requirements:
+          - type: functional
+            description: Language must be consistent and shared
+            priority: must
+            validationCriteria:
+              - Terms defined
+              - Ambiguities resolved
+              - Used by all team members
+              - Reflected in code
+      - id: identify-core-domain
+        title: Identify Core Domain
+        description: Determine what is most important and differentiating
+        type: analysis
+        complexity: simple
+        assignedRole: strategic-designer
+        estimatedDuration: 120
+        dependencies:
+          - develop-ubiquitous-language
+        artifacts:
+          inputs:
+            - typeId: domain-knowledge
+              required: true
+          outputs:
+            - typeId: core-domain-identification
+              required: true
+        requirements:
+          - type: functional
+            description: Core domain must be clearly identified
+            priority: must
+            validationCriteria:
+              - Core domain defined
+              - Supporting subdomains identified
+              - Generic subdomains identified
+              - Priorities established
+    agentRequirements:
+      roles:
+        - domain-expert
+        - domain-modeler
+        - strategic-designer
+      skills:
+        - domain-analysis
+        - knowledge-crunching
+        - modeling
+      minExperience: senior
+
+  - id: strategic-design
+    name: Strategic Design
+    description: >
+      Design the high-level structure of the system.
+      Define bounded contexts and their relationships.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Discover Domain phase must be completed
+        phaseId: discover-domain
+    exitCriteria:
+      - type: artifact-exists
+        description: Context map must exist
+        artifactType: context-map
+      - type: artifact-exists
+        description: Bounded contexts must be defined
+        artifactType: bounded-contexts
+    tasks:
+      - id: identify-bounded-contexts
+        title: Identify Bounded Contexts
+        description: Define explicit boundaries for different models
+        type: design
+        complexity: complex
+        assignedRole: strategic-designer
+        estimatedDuration: 180
+        artifacts:
+          inputs:
+            - typeId: domain-knowledge
+              required: true
+            - typeId: ubiquitous-language
+              required: true
+            - typeId: core-domain-identification
+              required: true
+          outputs:
+            - typeId: bounded-contexts
+              required: true
+        requirements:
+          - type: functional
+            description: Contexts must have clear boundaries
+            priority: must
+            validationCriteria:
+              - Contexts identified
+              - Boundaries explicit
+              - Models separated
+              - Responsibilities clear
+      - id: define-context-relationships
+        title: Define Context Relationships
+        description: Establish how bounded contexts interact
+        type: design
+        complexity: complex
+        assignedRole: strategic-designer
+        estimatedDuration: 120
+        dependencies:
+          - identify-bounded-contexts
+        artifacts:
+          inputs:
+            - typeId: bounded-contexts
+              required: true
+          outputs:
+            - typeId: context-relationships
+              required: true
+        requirements:
+          - type: functional
+            description: Relationships must follow DDD patterns
+            priority: must
+            validationCriteria:
+              - Integration patterns chosen
+              - Upstream/downstream defined
+              - Shared kernels identified
+              - Anti-corruption layers planned
+      - id: create-context-map
+        title: Create Context Map
+        description: Visual representation of contexts and relationships
+        type: design
+        complexity: simple
+        assignedRole: strategic-designer
+        estimatedDuration: 90
+        dependencies:
+          - define-context-relationships
+        artifacts:
+          inputs:
+            - typeId: bounded-contexts
+              required: true
+            - typeId: context-relationships
+              required: true
+          outputs:
+            - typeId: context-map
+              required: true
+        requirements:
+          - type: functional
+            description: Map must show complete architecture
+            priority: must
+            validationCriteria:
+              - All contexts shown
+              - All relationships shown
+              - Integration points clear
+              - Team boundaries visible
+      - id: plan-distillation
+        title: Plan Domain Distillation
+        description: Focus resources on core domain
+        type: planning
+        complexity: simple
+        assignedRole: strategic-designer
+        estimatedDuration: 60
+        dependencies:
+          - create-context-map
+        artifacts:
+          inputs:
+            - typeId: core-domain-identification
+              required: true
+            - typeId: context-map
+              required: true
+          outputs:
+            - typeId: distillation-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Investment priorities must be clear
+            priority: must
+            validationCriteria:
+              - Core domain prioritized
+              - Supporting subdomains planned
+              - Generic subdomains outsourced or simplified
+    agentRequirements:
+      roles:
+        - strategic-designer
+        - architect
+      skills:
+        - strategic-design
+        - bounded-contexts
+        - context-mapping
+      minExperience: senior
+
+  - id: tactical-design
+    name: Tactical Design
+    description: >
+      Design detailed domain model using DDD patterns.
+      Implement entities, value objects, aggregates, and services.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Strategic Design phase must be completed
+        phaseId: strategic-design
+    exitCriteria:
+      - type: artifact-exists
+        description: Domain model must be designed
+        artifactType: domain-model
+    tasks:
+      - id: identify-entities
+        title: Identify Entities
+        description: Find objects with identity and lifecycle
+        type: design
+        complexity: simple
+        assignedRole: domain-modeler
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: domain-knowledge
+              required: true
+            - typeId: bounded-contexts
+              required: true
+          outputs:
+            - typeId: entity-definitions
+              required: true
+        requirements:
+          - type: functional
+            description: Entities must have clear identity
+            priority: must
+            validationCriteria:
+              - Identity defined
+              - Lifecycle understood
+              - Continuity needs clear
+      - id: identify-value-objects
+        title: Identify Value Objects
+        description: Find immutable objects without identity
+        type: design
+        complexity: simple
+        assignedRole: domain-modeler
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: domain-knowledge
+              required: true
+          outputs:
+            - typeId: value-object-definitions
+              required: true
+        requirements:
+          - type: functional
+            description: Value objects must be immutable
+            priority: must
+            validationCriteria:
+              - Immutability ensured
+              - Equality by value
+              - No identity needed
+      - id: design-aggregates
+        title: Design Aggregates
+        description: Group entities and value objects into consistency boundaries
+        type: design
+        complexity: complex
+        assignedRole: domain-modeler
+        estimatedDuration: 150
+        dependencies:
+          - identify-entities
+          - identify-value-objects
+        artifacts:
+          inputs:
+            - typeId: entity-definitions
+              required: true
+            - typeId: value-object-definitions
+              required: true
+          outputs:
+            - typeId: aggregate-designs
+              required: true
+        requirements:
+          - type: functional
+            description: Aggregates must enforce invariants
+            priority: must
+            validationCriteria:
+              - Root entity identified
+              - Boundaries clear
+              - Invariants protected
+              - References by ID
+      - id: define-domain-services
+        title: Define Domain Services
+        description: Identify operations that don't belong to entities
+        type: design
+        complexity: simple
+        assignedRole: domain-modeler
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: domain-knowledge
+              required: true
+          outputs:
+            - typeId: domain-service-definitions
+              required: true
+        requirements:
+          - type: functional
+            description: Services must be stateless operations
+            priority: must
+            validationCriteria:
+              - Stateless
+              - Domain concepts
+              - Clear responsibility
+      - id: design-repositories
+        title: Design Repositories
+        description: Define how aggregates are persisted and retrieved
+        type: design
+        complexity: simple
+        assignedRole: technical-architect
+        estimatedDuration: 90
+        dependencies:
+          - design-aggregates
+        artifacts:
+          inputs:
+            - typeId: aggregate-designs
+              required: true
+          outputs:
+            - typeId: repository-designs
+              required: true
+        requirements:
+          - type: functional
+            description: Repositories must work with aggregates
+            priority: must
+            validationCriteria:
+              - One per aggregate root
+              - Collection-like interface
+              - Persistence abstracted
+      - id: design-domain-events
+        title: Design Domain Events
+        description: Identify significant domain occurrences
+        type: design
+        complexity: simple
+        assignedRole: domain-modeler
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: domain-knowledge
+              required: true
+            - typeId: aggregate-designs
+              required: true
+          outputs:
+            - typeId: domain-event-definitions
+              required: true
+        requirements:
+          - type: functional
+            description: Events must capture domain significance
+            priority: should
+            validationCriteria:
+              - Past tense naming
+              - Immutable
+              - Complete information
+              - Domain language used
+      - id: compile-domain-model
+        title: Compile Complete Domain Model
+        description: Integrate all tactical patterns into cohesive model
+        type: design
+        complexity: simple
+        assignedRole: domain-modeler
+        estimatedDuration: 60
+        dependencies:
+          - design-aggregates
+          - define-domain-services
+          - design-repositories
+          - design-domain-events
+        artifacts:
+          inputs:
+            - typeId: aggregate-designs
+              required: true
+            - typeId: domain-service-definitions
+              required: true
+            - typeId: repository-designs
+              required: true
+            - typeId: domain-event-definitions
+              required: true
+          outputs:
+            - typeId: domain-model
+              required: true
+        requirements:
+          - type: functional
+            description: Model must be complete and consistent
+            priority: must
+            validationCriteria:
+              - All patterns integrated
+              - Consistency maintained
+              - Ubiquitous language used
+    agentRequirements:
+      roles:
+        - domain-modeler
+        - technical-architect
+      skills:
+        - tactical-design
+        - object-modeling
+        - ddd-patterns
+      minExperience: senior
+
+  - id: implement
+    name: Implement
+    description: >
+      Implement the domain model in code.
+      Build infrastructure and application layers.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Tactical Design phase must be completed
+        phaseId: tactical-design
+    exitCriteria:
+      - type: artifact-exists
+        description: Implementation must be complete
+        artifactType: implementation-code
+    tasks:
+      - id: implement-domain-layer
+        title: Implement Domain Layer
+        description: Code entities, value objects, aggregates, and services
+        type: implementation
+        complexity: complex
+        assignedRole: developer
+        estimatedDuration: 480
+        artifacts:
+          inputs:
+            - typeId: domain-model
+              required: true
+            - typeId: ubiquitous-language
+              required: true
+          outputs:
+            - typeId: domain-layer-code
+              required: true
+        requirements:
+          - type: functional
+            description: Code must reflect domain model
+            priority: must
+            validationCriteria:
+              - Ubiquitous language used
+              - Patterns implemented correctly
+              - Rich domain model
+              - Business logic in domain
+      - id: implement-repositories
+        title: Implement Repositories
+        description: Code persistence abstraction for aggregates
+        type: implementation
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 180
+        dependencies:
+          - implement-domain-layer
+        artifacts:
+          inputs:
+            - typeId: repository-designs
+              required: true
+            - typeId: domain-layer-code
+              required: true
+          outputs:
+            - typeId: repository-implementations
+              required: true
+        requirements:
+          - type: functional
+            description: Repositories must hide persistence details
+            priority: must
+            validationCriteria:
+              - Interface defined
+              - Implementation separated
+              - Transaction handling
+      - id: implement-application-services
+        title: Implement Application Services
+        description: Build use case orchestration layer
+        type: implementation
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 240
+        dependencies:
+          - implement-domain-layer
+        artifacts:
+          inputs:
+            - typeId: domain-layer-code
+              required: true
+          outputs:
+            - typeId: application-services
+              required: true
+        requirements:
+          - type: functional
+            description: Application services coordinate use cases
+            priority: must
+            validationCriteria:
+              - Thin layer
+              - Orchestration only
+              - Transaction boundaries
+              - Security checks
+      - id: implement-anti-corruption-layers
+        title: Implement Anti-Corruption Layers
+        description: Build translation layers for external systems
+        type: implementation
+        complexity: complex
+        assignedRole: integration-developer
+        estimatedDuration: 300
+        artifacts:
+          inputs:
+            - typeId: context-map
+              required: true
+            - typeId: domain-model
+              required: true
+          outputs:
+            - typeId: acl-implementations
+              required: true
+        requirements:
+          - type: functional
+            description: ACLs must protect domain model
+            priority: should
+            validationCriteria:
+              - External models translated
+              - Domain model protected
+              - Adapters implemented
+      - id: build-infrastructure
+        title: Build Infrastructure Layer
+        description: Implement technical infrastructure concerns
+        type: implementation
+        complexity: simple
+        assignedRole: infrastructure-developer
+        estimatedDuration: 240
+        dependencies:
+          - implement-repositories
+        artifacts:
+          inputs:
+            - typeId: repository-implementations
+              required: true
+          outputs:
+            - typeId: infrastructure-code
+              required: true
+        requirements:
+          - type: non_functional
+            description: Infrastructure supports domain
+            priority: must
+            validationCriteria:
+              - Persistence implemented
+              - Messaging implemented
+              - Configuration managed
+      - id: integrate-layers
+        title: Integrate All Layers
+        description: Connect domain, application, and infrastructure layers
+        type: implementation
+        complexity: simple
+        assignedRole: architect
+        estimatedDuration: 120
+        dependencies:
+          - implement-application-services
+          - build-infrastructure
+        artifacts:
+          inputs:
+            - typeId: domain-layer-code
+              required: true
+            - typeId: application-services
+              required: true
+            - typeId: infrastructure-code
+              required: true
+          outputs:
+            - typeId: implementation-code
+              required: true
+        requirements:
+          - type: functional
+            description: Layers must be properly separated
+            priority: must
+            validationCriteria:
+              - Dependency direction correct
+              - Clean architecture maintained
+              - Dependency injection used
+    agentRequirements:
+      roles:
+        - developer
+        - integration-developer
+        - infrastructure-developer
+        - architect
+      skills:
+        - software-development
+        - ddd-implementation
+        - architecture
+      minExperience: mid
+
+  - id: refine
+    name: Refine
+    description: >
+      Continuously refine the domain model.
+      Incorporate learnings and evolve the design.
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Implement phase must be completed
+        phaseId: implement
+    exitCriteria:
+      - type: artifact-exists
+        description: Refinement must be documented
+        artifactType: refinement-log
+    repeatable: true
+    tasks:
+      - id: model-exploration
+        title: Explore Model Alternatives
+        description: Investigate different modeling approaches
+        type: design
+        complexity: complex
+        assignedRole: domain-modeler
+        estimatedDuration: 180
+        artifacts:
+          inputs:
+            - typeId: domain-model
+              required: true
+            - typeId: implementation-code
+              required: true
+          outputs:
+            - typeId: model-alternatives
+              required: true
+        requirements:
+          - type: functional
+            description: Alternatives must be evaluated
+            priority: should
+            validationCriteria:
+              - Multiple approaches considered
+              - Trade-offs analyzed
+              - Best fit identified
+      - id: refactor-toward-insight
+        title: Refactor Toward Deeper Insight
+        description: Improve model based on new understanding
+        type: implementation
+        complexity: complex
+        assignedRole: developer
+        estimatedDuration: 240
+        dependencies:
+          - model-exploration
+        artifacts:
+          inputs:
+            - typeId: implementation-code
+              required: true
+            - typeId: model-alternatives
+              required: true
+          outputs:
+            - typeId: refined-implementation
+              required: true
+        requirements:
+          - type: functional
+            description: Refactoring must improve model
+            priority: must
+            validationCriteria:
+              - Model more expressive
+              - Concepts clearer
+              - Code more maintainable
+              - Tests still pass
+      - id: update-ubiquitous-language
+        title: Update Ubiquitous Language
+        description: Evolve language based on new insights
+        type: documentation
+        complexity: simple
+        assignedRole: domain-modeler
+        estimatedDuration: 60
+        dependencies:
+          - refactor-toward-insight
+        artifacts:
+          inputs:
+            - typeId: ubiquitous-language
+              required: true
+            - typeId: refined-implementation
+              required: true
+          outputs:
+            - typeId: updated-ubiquitous-language
+              required: true
+        requirements:
+          - type: functional
+            description: Language must stay current
+            priority: must
+            validationCriteria:
+              - New terms added
+              - Obsolete terms removed
+              - Team alignment maintained
+      - id: document-learnings
+        title: Document Design Learnings
+        description: Capture insights for team knowledge
+        type: documentation
+        complexity: simple
+        assignedRole: domain-modeler
+        estimatedDuration: 45
+        dependencies:
+          - update-ubiquitous-language
+        artifacts:
+          inputs:
+            - typeId: refined-implementation
+              required: true
+          outputs:
+            - typeId: refinement-log
+              required: true
+        requirements:
+          - type: functional
+            description: Learnings must be shared
+            priority: should
+            validationCriteria:
+              - Insights documented
+              - Rationale captured
+              - Team informed
+    agentRequirements:
+      roles:
+        - domain-modeler
+        - developer
+      skills:
+        - refactoring
+        - model-exploration
+        - continuous-learning
+      minExperience: senior
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - discover-domain
+    - strategic-design
+    - tactical-design
+    - implement
+    - refine
+  failureHandling:
+    strategy: retry
+    fallbackPhase: discover-domain
+
+agentCoordination:
+  roles:
+    - id: domain-expert
+      name: Domain Expert
+      description: Business expert with deep domain knowledge
+      responsibilities:
+        - Share domain knowledge
+        - Validate models
+        - Clarify business rules
+        - Participate in knowledge crunching
+      requiredSkills:
+        - domain-knowledge
+        - business-expertise
+        - communication
+      experienceLevel: expert
+      authority: approver
+    - id: domain-modeler
+      name: Domain Modeler
+      description: Specialist in domain modeling and DDD
+      responsibilities:
+        - Facilitate knowledge crunching
+        - Design domain models
+        - Define ubiquitous language
+        - Apply DDD patterns
+      requiredSkills:
+        - domain-modeling
+        - ddd-expertise
+        - facilitation
+      experienceLevel: senior
+      authority: contributor
+    - id: strategic-designer
+      name: Strategic Designer
+      description: Architects system using strategic DDD patterns
+      responsibilities:
+        - Identify bounded contexts
+        - Create context maps
+        - Design strategic architecture
+        - Plan distillation
+      requiredSkills:
+        - strategic-design
+        - bounded-contexts
+        - architecture
+      experienceLevel: senior
+      authority: leader
+    - id: architect
+      name: Technical Architect
+      description: Ensures technical implementation quality
+      responsibilities:
+        - Design technical architecture
+        - Ensure layering
+        - Guide implementation
+        - Integrate components
+      requiredSkills:
+        - software-architecture
+        - design-patterns
+        - technical-leadership
+      experienceLevel: senior
+      authority: leader
+    - id: developer
+      name: DDD Developer
+      description: Implements domain models in code
+      responsibilities:
+        - Implement domain layer
+        - Apply tactical patterns
+        - Refactor code
+        - Write tests
+      requiredSkills:
+        - software-development
+        - ddd-patterns
+        - object-oriented-design
+      experienceLevel: mid
+      authority: contributor
+    - id: integration-developer
+      name: Integration Developer
+      description: Handles external system integrations
+      responsibilities:
+        - Build anti-corruption layers
+        - Implement adapters
+        - Manage external APIs
+        - Translate models
+      requiredSkills:
+        - integration
+        - api-design
+        - adapter-pattern
+      experienceLevel: mid
+      authority: contributor
+    - id: infrastructure-developer
+      name: Infrastructure Developer
+      description: Builds technical infrastructure
+      responsibilities:
+        - Implement persistence
+        - Build messaging
+        - Configure infrastructure
+        - Support deployment
+      requiredSkills:
+        - infrastructure
+        - databases
+        - devops
+      experienceLevel: mid
+      authority: contributor
+  teamComposition:
+    minSize: 4
+    maxSize: 8
+    required:
+      - domain-expert
+      - domain-modeler
+      - strategic-designer
+      - developer
+    optional:
+      - architect
+      - integration-developer
+      - infrastructure-developer
+  communicationPatterns:
+    - from: domain-expert
+      to: domain-modeler
+      type: direct
+      contextTypes:
+        - finding
+        - constraint
+    - from: strategic-designer
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+    - from: domain-modeler
+      to: developer
+      type: direct
+      contextTypes:
+        - decision
+        - finding
+  decisionAuthority:
+    - decision: Model design decisions
+      authority: domain-modeler
+      requiresConsensus: true
+      consensusRoles:
+        - domain-expert
+    - decision: Strategic architecture
+      authority: strategic-designer
+      requiresConsensus: true
+      consensusRoles:
+        - architect
+    - decision: Technical implementation
+      authority: architect
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: expert-roster
+      name: Expert Roster
+      description: List of domain experts and their areas
+      format: structured
+    - id: domain-knowledge
+      name: Domain Knowledge
+      description: Captured understanding of the business domain
+      format: markdown
+    - id: ubiquitous-language
+      name: Ubiquitous Language
+      description: Shared vocabulary for the domain
+      format: structured
+    - id: core-domain-identification
+      name: Core Domain Identification
+      description: Definition of core vs supporting domains
+      format: structured
+    - id: bounded-contexts
+      name: Bounded Contexts
+      description: Defined context boundaries
+      format: structured
+    - id: context-relationships
+      name: Context Relationships
+      description: How contexts relate and integrate
+      format: structured
+    - id: context-map
+      name: Context Map
+      description: Visual map of all contexts
+      format: markdown
+    - id: distillation-plan
+      name: Distillation Plan
+      description: Plan for focusing on core domain
+      format: structured
+    - id: entity-definitions
+      name: Entity Definitions
+      description: Domain entities with identity
+      format: structured
+    - id: value-object-definitions
+      name: Value Object Definitions
+      description: Immutable value objects
+      format: structured
+    - id: aggregate-designs
+      name: Aggregate Designs
+      description: Aggregate roots and boundaries
+      format: structured
+    - id: domain-service-definitions
+      name: Domain Service Definitions
+      description: Stateless domain services
+      format: structured
+    - id: repository-designs
+      name: Repository Designs
+      description: Persistence abstractions
+      format: structured
+    - id: domain-event-definitions
+      name: Domain Event Definitions
+      description: Significant domain occurrences
+      format: structured
+    - id: domain-model
+      name: Domain Model
+      description: Complete tactical domain model
+      format: structured
+    - id: domain-layer-code
+      name: Domain Layer Code
+      description: Implemented domain layer
+      format: code
+    - id: repository-implementations
+      name: Repository Implementations
+      description: Concrete repository code
+      format: code
+    - id: application-services
+      name: Application Services
+      description: Use case orchestration code
+      format: code
+    - id: acl-implementations
+      name: ACL Implementations
+      description: Anti-corruption layer code
+      format: code
+    - id: infrastructure-code
+      name: Infrastructure Code
+      description: Technical infrastructure implementation
+      format: code
+    - id: implementation-code
+      name: Implementation Code
+      description: Complete integrated implementation
+      format: code
+    - id: model-alternatives
+      name: Model Alternatives
+      description: Alternative modeling approaches
+      format: markdown
+    - id: refined-implementation
+      name: Refined Implementation
+      description: Improved implementation
+      format: code
+    - id: updated-ubiquitous-language
+      name: Updated Ubiquitous Language
+      description: Evolved shared vocabulary
+      format: structured
+    - id: refinement-log
+      name: Refinement Log
+      description: Documentation of model evolution
+      format: markdown
+  dependencies:
+    - artifact: domain-knowledge
+      dependsOn:
+        - expert-roster
+    - artifact: ubiquitous-language
+      dependsOn:
+        - domain-knowledge
+    - artifact: core-domain-identification
+      dependsOn:
+        - domain-knowledge
+    - artifact: bounded-contexts
+      dependsOn:
+        - domain-knowledge
+        - ubiquitous-language
+        - core-domain-identification
+    - artifact: context-relationships
+      dependsOn:
+        - bounded-contexts
+    - artifact: context-map
+      dependsOn:
+        - bounded-contexts
+        - context-relationships
+    - artifact: distillation-plan
+      dependsOn:
+        - core-domain-identification
+        - context-map
+    - artifact: entity-definitions
+      dependsOn:
+        - domain-knowledge
+        - bounded-contexts
+    - artifact: value-object-definitions
+      dependsOn:
+        - domain-knowledge
+    - artifact: aggregate-designs
+      dependsOn:
+        - entity-definitions
+        - value-object-definitions
+    - artifact: repository-designs
+      dependsOn:
+        - aggregate-designs
+    - artifact: domain-event-definitions
+      dependsOn:
+        - domain-knowledge
+        - aggregate-designs
+    - artifact: domain-model
+      dependsOn:
+        - aggregate-designs
+        - domain-service-definitions
+        - repository-designs
+        - domain-event-definitions
+    - artifact: domain-layer-code
+      dependsOn:
+        - domain-model
+        - ubiquitous-language
+    - artifact: repository-implementations
+      dependsOn:
+        - repository-designs
+        - domain-layer-code
+    - artifact: application-services
+      dependsOn:
+        - domain-layer-code
+    - artifact: acl-implementations
+      dependsOn:
+        - context-map
+        - domain-model
+    - artifact: infrastructure-code
+      dependsOn:
+        - repository-implementations
+    - artifact: implementation-code
+      dependsOn:
+        - domain-layer-code
+        - application-services
+        - infrastructure-code
+    - artifact: model-alternatives
+      dependsOn:
+        - domain-model
+        - implementation-code
+    - artifact: refined-implementation
+      dependsOn:
+        - implementation-code
+        - model-alternatives
+    - artifact: updated-ubiquitous-language
+      dependsOn:
+        - ubiquitous-language
+        - refined-implementation
+    - artifact: refinement-log
+      dependsOn:
+        - refined-implementation

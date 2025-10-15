@@ -1,0 +1,1150 @@
+metadata:
+  id: rad
+  name: RAD
+  title: Rapid Application Development
+  description: >
+    Agile software development methodology emphasizing rapid prototyping and iterative delivery.
+    RAD prioritizes user feedback and quick adaptation over detailed planning.
+    Uses time-boxed development cycles and extensive user involvement.
+  type: time-boxed
+  version: 1.0.0
+  origin: James Martin
+  domains:
+    - software-development
+    - agile-development
+    - prototyping
+    - user-centered-design
+  complexity: moderate
+  tags:
+    - agile
+    - prototyping
+    - iterative
+    - user-feedback
+    - rapid-delivery
+  i18n:
+    es:
+      title: Desarrollo Rápido de Aplicaciones
+      description: >
+        Metodología ágil de desarrollo de software que enfatiza la creación rápida de prototipos y la entrega iterativa.
+        RAD prioriza el feedback del usuario y la adaptación rápida sobre la planificación detallada.
+        Utiliza ciclos de desarrollo con límite de tiempo y extensa participación del usuario.
+    fr:
+      title: Développement Rapide d'Applications
+      description: >
+        Méthodologie agile de développement logiciel mettant l'accent sur le prototypage rapide et la livraison itérative.
+        RAD priorise les retours utilisateurs et l'adaptation rapide plutôt que la planification détaillée.
+        Utilise des cycles de développement limités dans le temps et une implication extensive des utilisateurs.
+    ko:
+      title: 신속한 애플리케이션 개발
+      description: >
+        빠른 프로토타이핑과 반복적 제공을 강조하는 애자일 소프트웨어 개발 방법론.
+        RAD는 상세한 계획보다 사용자 피드백과 빠른 적응을 우선시합니다.
+        시간 제한이 있는 개발 주기와 광범위한 사용자 참여를 사용합니다.
+
+configuration:
+  timeBox:
+    duration: 90
+    unit: days
+    strict: false
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 2
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 4
+
+phases:
+  - id: requirements-planning
+    name: Requirements Planning
+    description: >
+      Define project scope and high-level requirements.
+      Establish objectives, constraints, and success criteria.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Requirements must be documented
+        artifactType: requirements-document
+      - type: artifact-exists
+        description: Project plan must exist
+        artifactType: project-plan
+    tasks:
+      - id: conduct-joint-requirements-planning
+        title: Conduct Joint Requirements Planning (JRP)
+        description: Workshop with stakeholders to gather requirements
+        type: planning
+        complexity: simple
+        assignedRole: requirements-analyst
+        estimatedDuration: 480
+        artifacts:
+          outputs:
+            - typeId: jrp-outcomes
+              required: true
+        requirements:
+          - type: functional
+            description: All key stakeholders must participate
+            priority: must
+            validationCriteria:
+              - Business users present
+              - IT representatives present
+              - Management present
+              - Requirements captured
+      - id: define-scope
+        title: Define Project Scope
+        description: Establish clear boundaries for the project
+        type: planning
+        complexity: simple
+        assignedRole: project-manager
+        estimatedDuration: 120
+        dependencies:
+          - conduct-joint-requirements-planning
+        artifacts:
+          inputs:
+            - typeId: jrp-outcomes
+              required: true
+          outputs:
+            - typeId: scope-definition
+              required: true
+        requirements:
+          - type: functional
+            description: Scope must be realistic for timeframe
+            priority: must
+            validationCriteria:
+              - Clear boundaries
+              - Deliverables identified
+              - Out-of-scope items listed
+              - Timeline feasible
+      - id: prioritize-requirements
+        title: Prioritize Requirements
+        description: Rank requirements by business value and necessity
+        type: planning
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 90
+        dependencies:
+          - conduct-joint-requirements-planning
+        artifacts:
+          inputs:
+            - typeId: jrp-outcomes
+              required: true
+          outputs:
+            - typeId: prioritized-requirements
+              required: true
+        requirements:
+          - type: functional
+            description: Priorities must reflect business value
+            priority: must
+            validationCriteria:
+              - MoSCoW method applied
+              - Business value assessed
+              - Dependencies identified
+              - Consensus achieved
+      - id: create-project-plan
+        title: Create High-Level Project Plan
+        description: Develop timeline and resource allocation plan
+        type: planning
+        complexity: simple
+        assignedRole: project-manager
+        estimatedDuration: 120
+        dependencies:
+          - define-scope
+          - prioritize-requirements
+        artifacts:
+          inputs:
+            - typeId: scope-definition
+              required: true
+            - typeId: prioritized-requirements
+              required: true
+          outputs:
+            - typeId: project-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Plan must fit RAD timeframe
+            priority: must
+            validationCriteria:
+              - Timeline defined
+              - Resources allocated
+              - Milestones set
+              - Risk assessed
+      - id: assemble-rad-team
+        title: Assemble RAD Team
+        description: Form cross-functional team with co-located members
+        type: planning
+        complexity: simple
+        assignedRole: project-manager
+        estimatedDuration: 60
+        artifacts:
+          outputs:
+            - typeId: team-composition
+              required: true
+        requirements:
+          - type: functional
+            description: Team must be empowered and dedicated
+            priority: must
+            validationCriteria:
+              - Full-time commitment
+              - Co-located if possible
+              - Skills coverage
+              - Decision authority
+      - id: document-requirements
+        title: Document Initial Requirements
+        description: Create living requirements document
+        type: documentation
+        complexity: simple
+        assignedRole: requirements-analyst
+        estimatedDuration: 120
+        dependencies:
+          - prioritize-requirements
+        artifacts:
+          inputs:
+            - typeId: prioritized-requirements
+              required: true
+          outputs:
+            - typeId: requirements-document
+              required: true
+        requirements:
+          - type: functional
+            description: Requirements must be clear but flexible
+            priority: must
+            validationCriteria:
+              - User stories written
+              - Acceptance criteria defined
+              - Flexibility for changes
+    agentRequirements:
+      roles:
+        - requirements-analyst
+        - project-manager
+        - product-owner
+      skills:
+        - requirements-gathering
+        - facilitation
+        - planning
+      minExperience: mid
+
+  - id: user-design
+    name: User Design
+    description: >
+      Collaborate with users to design the application.
+      Use prototyping and JAD sessions for rapid feedback.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Requirements Planning phase must be completed
+        phaseId: requirements-planning
+    exitCriteria:
+      - type: artifact-exists
+        description: Design must be approved by users
+        artifactType: approved-design
+    tasks:
+      - id: conduct-jad-sessions
+        title: Conduct Joint Application Design (JAD) Sessions
+        description: Intensive workshops with users to design application
+        type: design
+        complexity: complex
+        assignedRole: ux-designer
+        estimatedDuration: 960
+        artifacts:
+          inputs:
+            - typeId: requirements-document
+              required: true
+          outputs:
+            - typeId: jad-outcomes
+              required: true
+        requirements:
+          - type: functional
+            description: Users must actively participate in design
+            priority: must
+            validationCriteria:
+              - Daily user participation
+              - Design decisions made collaboratively
+              - UI mockups created
+              - Workflow designed
+      - id: create-prototypes
+        title: Create Interactive Prototypes
+        description: Build working prototypes for user feedback
+        type: implementation
+        complexity: simple
+        assignedRole: prototype-developer
+        estimatedDuration: 360
+        dependencies:
+          - conduct-jad-sessions
+        artifacts:
+          inputs:
+            - typeId: jad-outcomes
+              required: true
+          outputs:
+            - typeId: prototypes
+              required: true
+        requirements:
+          - type: functional
+            description: Prototypes must be interactive
+            priority: must
+            validationCriteria:
+              - Key features prototyped
+              - Interactive elements work
+              - User flows navigable
+              - Quick to build
+      - id: gather-user-feedback
+        title: Gather User Feedback on Prototypes
+        description: Conduct user testing and collect feedback
+        type: review
+        complexity: simple
+        assignedRole: ux-designer
+        estimatedDuration: 240
+        dependencies:
+          - create-prototypes
+        artifacts:
+          inputs:
+            - typeId: prototypes
+              required: true
+          outputs:
+            - typeId: user-feedback
+              required: true
+        requirements:
+          - type: functional
+            description: Feedback must be comprehensive
+            priority: must
+            validationCriteria:
+              - Multiple users tested
+              - Usability issues identified
+              - Preferences captured
+              - Changes documented
+      - id: refine-design
+        title: Refine Design Based on Feedback
+        description: Iterate on design incorporating user feedback
+        type: design
+        complexity: simple
+        assignedRole: ux-designer
+        estimatedDuration: 240
+        dependencies:
+          - gather-user-feedback
+        artifacts:
+          inputs:
+            - typeId: jad-outcomes
+              required: true
+            - typeId: user-feedback
+              required: true
+          outputs:
+            - typeId: refined-design
+              required: true
+        requirements:
+          - type: functional
+            description: Design must address feedback
+            priority: must
+            validationCriteria:
+              - Feedback incorporated
+              - Usability improved
+              - User approval obtained
+      - id: finalize-design-specifications
+        title: Finalize Design Specifications
+        description: Document approved design for implementation
+        type: documentation
+        complexity: simple
+        assignedRole: business-analyst
+        estimatedDuration: 120
+        dependencies:
+          - refine-design
+        artifacts:
+          inputs:
+            - typeId: refined-design
+              required: true
+          outputs:
+            - typeId: approved-design
+              required: true
+        requirements:
+          - type: functional
+            description: Design must be implementation-ready
+            priority: must
+            validationCriteria:
+              - Specifications complete
+              - UI components defined
+              - Data models outlined
+              - Business rules documented
+    agentRequirements:
+      roles:
+        - ux-designer
+        - prototype-developer
+        - business-analyst
+      skills:
+        - user-centered-design
+        - prototyping
+        - facilitation
+      minExperience: mid
+
+  - id: rapid-construction
+    name: Rapid Construction
+    description: >
+      Build the application using RAD tools and techniques.
+      Focus on speed while maintaining quality through automation.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: User Design phase must be completed
+        phaseId: user-design
+    exitCriteria:
+      - type: artifact-exists
+        description: Working application must exist
+        artifactType: application-build
+    tasks:
+      - id: setup-development-environment
+        title: Setup RAD Development Environment
+        description: Configure tools and frameworks for rapid development
+        type: implementation
+        complexity: simple
+        assignedRole: devops-engineer
+        estimatedDuration: 120
+        artifacts:
+          outputs:
+            - typeId: dev-environment
+              required: true
+        requirements:
+          - type: non_functional
+            description: Environment must support rapid development
+            priority: must
+            validationCriteria:
+              - IDE configured
+              - RAD tools available
+              - CI/CD pipeline ready
+              - Database provisioned
+      - id: implement-core-functionality
+        title: Implement Core Functionality
+        description: Build essential features using RAD techniques
+        type: implementation
+        complexity: complex
+        assignedRole: developer
+        estimatedDuration: 960
+        dependencies:
+          - setup-development-environment
+        artifacts:
+          inputs:
+            - typeId: approved-design
+              required: true
+            - typeId: dev-environment
+              required: true
+          outputs:
+            - typeId: core-implementation
+              required: true
+        requirements:
+          - type: functional
+            description: Core features must work
+            priority: must
+            validationCriteria:
+              - Must-have features implemented
+              - Integration points working
+              - Basic error handling
+              - Code reuse maximized
+      - id: use-code-generators
+        title: Use Code Generators and Tools
+        description: Leverage RAD tools to accelerate development
+        type: implementation
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 240
+        artifacts:
+          inputs:
+            - typeId: approved-design
+              required: true
+          outputs:
+            - typeId: generated-code
+              required: true
+        requirements:
+          - type: non_functional
+            description: Generated code must be maintainable
+            priority: should
+            validationCriteria:
+              - CRUD operations generated
+              - UI scaffolding created
+              - API endpoints generated
+              - Code reviewed
+      - id: integrate-components
+        title: Integrate Application Components
+        description: Connect all parts into cohesive application
+        type: implementation
+        complexity: simple
+        assignedRole: integration-specialist
+        estimatedDuration: 360
+        dependencies:
+          - implement-core-functionality
+          - use-code-generators
+        artifacts:
+          inputs:
+            - typeId: core-implementation
+              required: true
+            - typeId: generated-code
+              required: true
+          outputs:
+            - typeId: integrated-application
+              required: true
+        requirements:
+          - type: functional
+            description: All components must work together
+            priority: must
+            validationCriteria:
+              - Integration tested
+              - Data flows correctly
+              - APIs functioning
+              - Error handling complete
+      - id: implement-automated-tests
+        title: Implement Automated Tests
+        description: Create test suite for continuous validation
+        type: testing
+        complexity: simple
+        assignedRole: test-automation-engineer
+        estimatedDuration: 360
+        artifacts:
+          inputs:
+            - typeId: integrated-application
+              required: true
+          outputs:
+            - typeId: automated-test-suite
+              required: true
+        requirements:
+          - type: non_functional
+            description: Tests must provide adequate coverage
+            priority: must
+            validationCriteria:
+              - Unit tests written
+              - Integration tests written
+              - Critical paths covered
+              - Tests run automatically
+      - id: build-application
+        title: Build Deployable Application
+        description: Create deployable build of the application
+        type: implementation
+        complexity: simple
+        assignedRole: devops-engineer
+        estimatedDuration: 120
+        dependencies:
+          - integrate-components
+          - implement-automated-tests
+        artifacts:
+          inputs:
+            - typeId: integrated-application
+              required: true
+            - typeId: automated-test-suite
+              required: true
+          outputs:
+            - typeId: application-build
+              required: true
+        requirements:
+          - type: functional
+            description: Build must be production-ready
+            priority: must
+            validationCriteria:
+              - Build succeeds
+              - Tests pass
+              - Packaging complete
+              - Deployment scripts ready
+    agentRequirements:
+      roles:
+        - developer
+        - devops-engineer
+        - integration-specialist
+        - test-automation-engineer
+      skills:
+        - rapid-development
+        - code-generation-tools
+        - automation
+      minExperience: mid
+
+  - id: cutover
+    name: Cutover
+    description: >
+      Deploy the application and transition to production.
+      Provide training and ongoing support.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Rapid Construction phase must be completed
+        phaseId: rapid-construction
+    exitCriteria:
+      - type: artifact-exists
+        description: Application must be deployed
+        artifactType: deployment-record
+      - type: artifact-exists
+        description: Users must be trained
+        artifactType: training-completion
+    tasks:
+      - id: conduct-user-acceptance-testing
+        title: Conduct User Acceptance Testing (UAT)
+        description: Validate application meets user needs
+        type: testing
+        complexity: simple
+        assignedRole: qa-engineer
+        estimatedDuration: 240
+        artifacts:
+          inputs:
+            - typeId: application-build
+              required: true
+            - typeId: requirements-document
+              required: true
+          outputs:
+            - typeId: uat-results
+              required: true
+        requirements:
+          - type: functional
+            description: Users must accept the application
+            priority: must
+            validationCriteria:
+              - All must-have features tested
+              - Critical issues resolved
+              - User sign-off obtained
+      - id: prepare-deployment
+        title: Prepare Production Deployment
+        description: Ready production environment and migration plan
+        type: planning
+        complexity: simple
+        assignedRole: devops-engineer
+        estimatedDuration: 180
+        artifacts:
+          inputs:
+            - typeId: application-build
+              required: true
+          outputs:
+            - typeId: deployment-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Deployment must be planned and tested
+            priority: must
+            validationCriteria:
+              - Environment prepared
+              - Migration scripts tested
+              - Rollback plan ready
+              - Monitoring configured
+      - id: train-users
+        title: Train End Users
+        description: Provide training on new application
+        type: documentation
+        complexity: simple
+        assignedRole: trainer
+        estimatedDuration: 360
+        artifacts:
+          inputs:
+            - typeId: application-build
+              required: true
+          outputs:
+            - typeId: training-materials
+              required: true
+        requirements:
+          - type: functional
+            description: All users must be trained
+            priority: must
+            validationCriteria:
+              - Training materials created
+              - Sessions conducted
+              - Hands-on practice provided
+              - Questions addressed
+      - id: deploy-to-production
+        title: Deploy to Production
+        description: Execute production deployment
+        type: implementation
+        complexity: simple
+        assignedRole: devops-engineer
+        estimatedDuration: 120
+        dependencies:
+          - conduct-user-acceptance-testing
+          - prepare-deployment
+        artifacts:
+          inputs:
+            - typeId: application-build
+              required: true
+            - typeId: deployment-plan
+              required: true
+            - typeId: uat-results
+              required: true
+          outputs:
+            - typeId: deployment-record
+              required: true
+        requirements:
+          - type: functional
+            description: Deployment must be successful
+            priority: must
+            validationCriteria:
+              - Application deployed
+              - Smoke tests passed
+              - No critical issues
+              - Users can access
+      - id: provide-hypercare-support
+        title: Provide Hypercare Support
+        description: Intensive support during initial period
+        type: review
+        complexity: simple
+        assignedRole: support-engineer
+        estimatedDuration: 480
+        dependencies:
+          - deploy-to-production
+          - train-users
+        artifacts:
+          inputs:
+            - typeId: deployment-record
+              required: true
+          outputs:
+            - typeId: support-log
+              required: true
+        requirements:
+          - type: functional
+            description: Users must be supported
+            priority: must
+            validationCriteria:
+              - Support team available
+              - Issues tracked
+              - Quick response time
+              - User satisfaction high
+      - id: document-training-completion
+        title: Document Training Completion
+        description: Record training and user readiness
+        type: documentation
+        complexity: simple
+        assignedRole: trainer
+        estimatedDuration: 60
+        dependencies:
+          - train-users
+        artifacts:
+          inputs:
+            - typeId: training-materials
+              required: true
+          outputs:
+            - typeId: training-completion
+              required: true
+        requirements:
+          - type: functional
+            description: Training completion must be verified
+            priority: must
+            validationCriteria:
+              - Attendance recorded
+              - Competency assessed
+              - Feedback gathered
+    agentRequirements:
+      roles:
+        - qa-engineer
+        - devops-engineer
+        - trainer
+        - support-engineer
+      skills:
+        - testing
+        - deployment
+        - training
+        - support
+      minExperience: mid
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - requirements-planning
+    - user-design
+    - rapid-construction
+    - cutover
+  failureHandling:
+    strategy: retry
+    fallbackPhase: user-design
+
+agentCoordination:
+  roles:
+    - id: requirements-analyst
+      name: Requirements Analyst
+      description: Facilitates requirements gathering and documentation
+      responsibilities:
+        - Conduct JRP sessions
+        - Document requirements
+        - Maintain requirements
+        - Facilitate communication
+      requiredSkills:
+        - requirements-engineering
+        - facilitation
+        - documentation
+      experienceLevel: mid
+      authority: contributor
+    - id: project-manager
+      name: Project Manager
+      description: Manages RAD project timeline and resources
+      responsibilities:
+        - Define scope
+        - Create project plan
+        - Assemble team
+        - Track progress
+      requiredSkills:
+        - project-management
+        - agile-methodologies
+        - resource-management
+      experienceLevel: mid
+      authority: leader
+    - id: product-owner
+      name: Product Owner
+      description: Represents user needs and priorities
+      responsibilities:
+        - Prioritize requirements
+        - Make decisions
+        - Accept deliverables
+        - Communicate with stakeholders
+      requiredSkills:
+        - product-management
+        - stakeholder-management
+        - decision-making
+      experienceLevel: mid
+      authority: approver
+    - id: ux-designer
+      name: UX Designer
+      description: Designs user experience and facilitates JAD sessions
+      responsibilities:
+        - Conduct JAD sessions
+        - Design interfaces
+        - Gather user feedback
+        - Refine designs
+      requiredSkills:
+        - user-experience-design
+        - facilitation
+        - prototyping
+      experienceLevel: mid
+      authority: contributor
+    - id: prototype-developer
+      name: Prototype Developer
+      description: Creates rapid prototypes for validation
+      responsibilities:
+        - Build prototypes
+        - Iterate quickly
+        - Support user testing
+        - Demonstrate features
+      requiredSkills:
+        - rapid-prototyping
+        - front-end-development
+        - agile-development
+      experienceLevel: junior
+      authority: contributor
+    - id: business-analyst
+      name: Business Analyst
+      description: Bridges business and technical teams
+      responsibilities:
+        - Analyze requirements
+        - Document specifications
+        - Validate designs
+        - Ensure alignment
+      requiredSkills:
+        - business-analysis
+        - requirements-analysis
+        - documentation
+      experienceLevel: mid
+      authority: contributor
+    - id: developer
+      name: Developer
+      description: Implements application features rapidly
+      responsibilities:
+        - Implement features
+        - Use RAD tools
+        - Write tests
+        - Collaborate with team
+      requiredSkills:
+        - software-development
+        - rad-tools
+        - agile-development
+      experienceLevel: mid
+      authority: contributor
+    - id: devops-engineer
+      name: DevOps Engineer
+      description: Manages infrastructure and deployment
+      responsibilities:
+        - Setup environments
+        - Build pipelines
+        - Deploy applications
+        - Monitor systems
+      requiredSkills:
+        - devops
+        - automation
+        - deployment
+      experienceLevel: mid
+      authority: contributor
+    - id: integration-specialist
+      name: Integration Specialist
+      description: Integrates application components and systems
+      responsibilities:
+        - Integrate components
+        - Connect systems
+        - Test integration
+        - Troubleshoot issues
+      requiredSkills:
+        - integration
+        - api-development
+        - troubleshooting
+      experienceLevel: mid
+      authority: contributor
+    - id: test-automation-engineer
+      name: Test Automation Engineer
+      description: Creates and maintains automated tests
+      responsibilities:
+        - Write automated tests
+        - Maintain test suite
+        - Ensure coverage
+        - Run CI/CD tests
+      requiredSkills:
+        - test-automation
+        - testing
+        - automation-frameworks
+      experienceLevel: mid
+      authority: contributor
+    - id: qa-engineer
+      name: QA Engineer
+      description: Ensures quality through testing
+      responsibilities:
+        - Conduct UAT
+        - Test functionality
+        - Report issues
+        - Verify fixes
+      requiredSkills:
+        - quality-assurance
+        - testing
+        - bug-tracking
+      experienceLevel: mid
+      authority: contributor
+    - id: trainer
+      name: Trainer
+      description: Trains users on new application
+      responsibilities:
+        - Create training materials
+        - Conduct training
+        - Assess competency
+        - Gather feedback
+      requiredSkills:
+        - training
+        - communication
+        - documentation
+      experienceLevel: junior
+      authority: contributor
+    - id: support-engineer
+      name: Support Engineer
+      description: Provides user support post-deployment
+      responsibilities:
+        - Provide support
+        - Resolve issues
+        - Document problems
+        - Communicate with users
+      requiredSkills:
+        - technical-support
+        - troubleshooting
+        - communication
+      experienceLevel: junior
+      authority: contributor
+  teamComposition:
+    minSize: 6
+    maxSize: 12
+    required:
+      - requirements-analyst
+      - project-manager
+      - product-owner
+      - ux-designer
+      - developer
+      - devops-engineer
+    optional:
+      - prototype-developer
+      - business-analyst
+      - integration-specialist
+      - test-automation-engineer
+      - qa-engineer
+      - trainer
+      - support-engineer
+  communicationPatterns:
+    - from: project-manager
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+        - resource
+    - from: product-owner
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+    - from: ux-designer
+      to: developer
+      type: direct
+      contextTypes:
+        - finding
+    - from: any
+      to: project-manager
+      type: direct
+      contextTypes:
+        - constraint
+  decisionAuthority:
+    - decision: Scope changes
+      authority: product-owner
+      requiresConsensus: true
+      consensusRoles:
+        - project-manager
+    - decision: Design decisions
+      authority: ux-designer
+      requiresConsensus: true
+      consensusRoles:
+        - product-owner
+    - decision: Technical decisions
+      authority: developer
+      requiresConsensus: false
+    - decision: Go-live decision
+      authority: project-manager
+      requiresConsensus: true
+      consensusRoles:
+        - product-owner
+        - qa-engineer
+
+artifactFlow:
+  artifactTypes:
+    - id: jrp-outcomes
+      name: JRP Outcomes
+      description: Results from Joint Requirements Planning workshop
+      format: structured
+    - id: scope-definition
+      name: Scope Definition
+      description: Clear project boundaries and deliverables
+      format: structured
+    - id: prioritized-requirements
+      name: Prioritized Requirements
+      description: Requirements ranked by priority
+      format: structured
+    - id: project-plan
+      name: Project Plan
+      description: Timeline and resource allocation
+      format: structured
+    - id: team-composition
+      name: Team Composition
+      description: RAD team members and roles
+      format: structured
+    - id: requirements-document
+      name: Requirements Document
+      description: Documented user stories and acceptance criteria
+      format: markdown
+    - id: jad-outcomes
+      name: JAD Outcomes
+      description: Results from Joint Application Design sessions
+      format: structured
+    - id: prototypes
+      name: Interactive Prototypes
+      description: Working prototypes for user feedback
+      format: html
+    - id: user-feedback
+      name: User Feedback
+      description: Feedback from prototype testing
+      format: structured
+    - id: refined-design
+      name: Refined Design
+      description: Design incorporating user feedback
+      format: structured
+    - id: approved-design
+      name: Approved Design
+      description: Final approved design specifications
+      format: structured
+    - id: dev-environment
+      name: Development Environment
+      description: Configured RAD development tools
+      format: structured
+    - id: core-implementation
+      name: Core Implementation
+      description: Essential features implementation
+      format: code
+    - id: generated-code
+      name: Generated Code
+      description: Code generated using RAD tools
+      format: code
+    - id: integrated-application
+      name: Integrated Application
+      description: Fully integrated application
+      format: code
+    - id: automated-test-suite
+      name: Automated Test Suite
+      description: Automated tests for validation
+      format: code
+    - id: application-build
+      name: Application Build
+      description: Deployable application package
+      format: binary
+    - id: uat-results
+      name: UAT Results
+      description: User acceptance testing outcomes
+      format: structured
+    - id: deployment-plan
+      name: Deployment Plan
+      description: Production deployment plan
+      format: structured
+    - id: training-materials
+      name: Training Materials
+      description: User training documentation
+      format: markdown
+    - id: deployment-record
+      name: Deployment Record
+      description: Production deployment documentation
+      format: structured
+    - id: support-log
+      name: Support Log
+      description: Record of support activities
+      format: structured
+    - id: training-completion
+      name: Training Completion
+      description: Training attendance and competency record
+      format: structured
+  dependencies:
+    - artifact: scope-definition
+      dependsOn:
+        - jrp-outcomes
+    - artifact: prioritized-requirements
+      dependsOn:
+        - jrp-outcomes
+    - artifact: project-plan
+      dependsOn:
+        - scope-definition
+        - prioritized-requirements
+    - artifact: requirements-document
+      dependsOn:
+        - prioritized-requirements
+    - artifact: jad-outcomes
+      dependsOn:
+        - requirements-document
+    - artifact: prototypes
+      dependsOn:
+        - jad-outcomes
+    - artifact: user-feedback
+      dependsOn:
+        - prototypes
+    - artifact: refined-design
+      dependsOn:
+        - jad-outcomes
+        - user-feedback
+    - artifact: approved-design
+      dependsOn:
+        - refined-design
+    - artifact: core-implementation
+      dependsOn:
+        - approved-design
+        - dev-environment
+    - artifact: generated-code
+      dependsOn:
+        - approved-design
+    - artifact: integrated-application
+      dependsOn:
+        - core-implementation
+        - generated-code
+    - artifact: automated-test-suite
+      dependsOn:
+        - integrated-application
+    - artifact: application-build
+      dependsOn:
+        - integrated-application
+        - automated-test-suite
+    - artifact: uat-results
+      dependsOn:
+        - application-build
+        - requirements-document
+    - artifact: deployment-plan
+      dependsOn:
+        - application-build
+    - artifact: training-materials
+      dependsOn:
+        - application-build
+    - artifact: deployment-record
+      dependsOn:
+        - application-build
+        - deployment-plan
+        - uat-results
+    - artifact: support-log
+      dependsOn:
+        - deployment-record
+    - artifact: training-completion
+      dependsOn:
+        - training-materials

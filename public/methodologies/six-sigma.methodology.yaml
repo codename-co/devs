@@ -1,0 +1,273 @@
+metadata:
+  id: six-sigma
+  name: Six Sigma
+  title: Six Sigma Quality Management
+  description: >
+    Data-driven methodology for eliminating defects and improving quality.
+    Six Sigma aims for near-perfect processes with 3.4 defects per million opportunities.
+  type: sequential
+  version: 1.0.0
+  origin: Motorola
+  domains:
+    - quality-management
+    - process-improvement
+    - defect-reduction
+    - statistical-analysis
+  complexity: complex
+  tags:
+    - quality
+    - statistical-analysis
+    - defect-reduction
+    - dmaic
+    - dmadv
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 2
+  parallelization:
+    enabled: false
+    maxConcurrentTasks: 1
+
+phases:
+  - id: select-project
+    name: Select Project
+    description: Identify and prioritize Six Sigma projects
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Project charter must exist
+        artifactType: project-charter
+    tasks:
+      - id: identify-opportunities
+        title: Identify Improvement Opportunities
+        description: Use data to find high-impact quality issues
+        type: analysis
+        complexity: simple
+        assignedRole: champion
+        estimatedDuration: 120
+        artifacts:
+          outputs:
+            - typeId: opportunity-list
+              required: true
+      - id: select-and-charter
+        title: Select Project and Create Charter
+        description: Prioritize and define Six Sigma project
+        type: planning
+        complexity: simple
+        assignedRole: champion
+        estimatedDuration: 90
+        dependencies:
+          - identify-opportunities
+        artifacts:
+          inputs:
+            - typeId: opportunity-list
+              required: true
+          outputs:
+            - typeId: project-charter
+              required: true
+    agentRequirements:
+      roles:
+        - champion
+      skills:
+        - project-selection
+        - prioritization
+      minExperience: senior
+
+  - id: execute-dmaic
+    name: Execute DMAIC
+    description: Run Define-Measure-Analyze-Improve-Control cycle
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Select Project phase must be completed
+        phaseId: select-project
+    exitCriteria:
+      - type: artifact-exists
+        description: DMAIC results must be documented
+        artifactType: dmaic-results
+    tasks:
+      - id: run-dmaic
+        title: Execute DMAIC Methodology
+        description: Run full DMAIC cycle (see DMAIC methodology)
+        type: implementation
+        complexity: complex
+        assignedRole: black-belt
+        estimatedDuration: 2880
+        artifacts:
+          inputs:
+            - typeId: project-charter
+              required: true
+          outputs:
+            - typeId: dmaic-results
+              required: true
+    agentRequirements:
+      roles:
+        - black-belt
+      skills:
+        - dmaic
+        - statistical-analysis
+        - project-management
+      minExperience: expert
+
+  - id: validate-results
+    name: Validate Results
+    description: Confirm achievement of Six Sigma quality levels
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Execute DMAIC phase must be completed
+        phaseId: execute-dmaic
+    exitCriteria:
+      - type: artifact-exists
+        description: Validation report must exist
+        artifactType: validation-report
+    tasks:
+      - id: measure-sigma-level
+        title: Measure Sigma Level Achieved
+        description: Calculate defects per million opportunities
+        type: analysis
+        complexity: simple
+        assignedRole: black-belt
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: dmaic-results
+              required: true
+          outputs:
+            - typeId: validation-report
+              required: true
+    agentRequirements:
+      roles:
+        - black-belt
+      skills:
+        - statistical-analysis
+        - sigma-calculation
+      minExperience: expert
+
+  - id: share-learnings
+    name: Share Learnings
+    description: Disseminate best practices across organization
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Validate Results phase must be completed
+        phaseId: validate-results
+    exitCriteria:
+      - type: artifact-exists
+        description: Knowledge sharing must be complete
+        artifactType: knowledge-transfer
+    tasks:
+      - id: document-learnings
+        title: Document and Share Learnings
+        description: Create reusable knowledge from project
+        type: documentation
+        complexity: simple
+        assignedRole: black-belt
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: validation-report
+              required: true
+          outputs:
+            - typeId: knowledge-transfer
+              required: true
+    agentRequirements:
+      roles:
+        - black-belt
+      skills:
+        - documentation
+        - knowledge-management
+      minExperience: senior
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - select-project
+    - execute-dmaic
+    - validate-results
+    - share-learnings
+  failureHandling:
+    strategy: retry
+    fallbackPhase: select-project
+
+agentCoordination:
+  roles:
+    - id: champion
+      name: Six Sigma Champion
+      description: Executive sponsor
+      responsibilities:
+        - Select projects
+        - Remove barriers
+        - Provide resources
+      requiredSkills:
+        - leadership
+        - strategic-thinking
+      experienceLevel: expert
+      authority: leader
+    - id: black-belt
+      name: Six Sigma Black Belt
+      description: Full-time quality expert
+      responsibilities:
+        - Lead projects
+        - Execute DMAIC
+        - Coach team
+      requiredSkills:
+        - dmaic
+        - statistical-analysis
+        - project-management
+      experienceLevel: expert
+      authority: leader
+  teamComposition:
+    minSize: 2
+    maxSize: 3
+    required:
+      - champion
+      - black-belt
+  communicationPatterns:
+    - from: champion
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+  decisionAuthority:
+    - decision: Approve project
+      authority: champion
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: opportunity-list
+      name: Opportunity List
+      description: Prioritized improvement opportunities
+      format: json
+    - id: project-charter
+      name: Project Charter
+      description: Six Sigma project definition
+      format: structured
+    - id: dmaic-results
+      name: DMAIC Results
+      description: Complete DMAIC cycle outcomes
+      format: markdown
+    - id: validation-report
+      name: Validation Report
+      description: Sigma level achievement validation
+      format: markdown
+    - id: knowledge-transfer
+      name: Knowledge Transfer
+      description: Documented learnings and best practices
+      format: markdown
+  dependencies:
+    - artifact: project-charter
+      dependsOn:
+        - opportunity-list
+    - artifact: dmaic-results
+      dependsOn:
+        - project-charter
+    - artifact: validation-report
+      dependsOn:
+        - dmaic-results
+    - artifact: knowledge-transfer
+      dependsOn:
+        - validation-report

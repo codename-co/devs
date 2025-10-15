@@ -1,0 +1,914 @@
+metadata:
+  id: hoshin-kanri
+  name: Hoshin Kanri
+  title: Policy Deployment and Strategic Planning
+  description: >
+    Japanese strategic planning methodology that aligns organizational goals with execution.
+    Hoshin Kanri creates a clear line of sight from strategic vision to daily actions.
+  type: iterative
+  version: 1.0.0
+  origin: Toyota Production System
+  domains:
+    - strategic-planning
+    - quality-management
+    - organizational-alignment
+    - continuous-improvement
+  complexity: complex
+  tags:
+    - strategy
+    - alignment
+    - catchball
+    - pdca
+  i18n:
+    es:
+      title: Despliegue de Políticas y Planificación Estratégica
+      description: >
+        Metodología japonesa de planificación estratégica que alinea los objetivos organizacionales con la ejecución.
+        Hoshin Kanri crea una línea clara de visión desde la visión estratégica hasta las acciones diarias.
+    fr:
+      title: Déploiement de Politique et Planification Stratégique
+      description: >
+        Méthodologie japonaise de planification stratégique qui aligne les objectifs organisationnels avec l'exécution.
+        Hoshin Kanri crée une ligne de mire claire de la vision stratégique aux actions quotidiennes.
+    ko:
+      title: 정책 전개 및 전략 계획
+      description: >
+        조직 목표와 실행을 정렬하는 일본의 전략 계획 방법론.
+        호신 칸리는 전략적 비전에서 일상 활동까지 명확한 시야를 만듭니다.
+
+configuration:
+  maxIterations: 10
+  timeBox:
+    duration: 1
+    unit: years
+    strict: false
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 3
+  parallelization:
+    enabled: false
+    maxConcurrentTasks: 1
+
+phases:
+  - id: establish-vision
+    name: Establish Vision
+    description: >
+      Define the long-term strategic vision and breakthrough objectives.
+      Leadership sets the direction for 3-5 year horizon.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Strategic vision must be documented
+        artifactType: strategic-vision
+    tasks:
+      - id: define-vision
+        title: Define Strategic Vision
+        description: Create compelling 3-5 year vision
+        type: planning
+        complexity: complex
+        assignedRole: executive-team
+        estimatedDuration: 240
+        artifacts:
+          outputs:
+            - typeId: strategic-vision
+              required: true
+        requirements:
+          - type: functional
+            description: Vision must be clear and inspiring
+            priority: must
+            validationCriteria:
+              - Vision is future-focused
+              - Vision is measurable
+              - Vision inspires action
+      - id: identify-breakthroughs
+        title: Identify Breakthrough Objectives
+        description: Define 2-3 critical strategic priorities
+        type: planning
+        complexity: complex
+        assignedRole: strategy-team
+        estimatedDuration: 180
+        dependencies:
+          - define-vision
+        artifacts:
+          inputs:
+            - typeId: strategic-vision
+              required: true
+          outputs:
+            - typeId: breakthrough-objectives
+              required: true
+        requirements:
+          - type: functional
+            description: Breakthrough objectives must be transformational
+            priority: must
+            validationCriteria:
+              - 2-3 objectives identified
+              - Objectives are measurable
+              - Resources estimated
+    agentRequirements:
+      roles:
+        - executive-team
+        - strategy-team
+      skills:
+        - strategic-planning
+        - vision-setting
+        - systems-thinking
+      minExperience: expert
+
+  - id: develop-annual-plan
+    name: Develop Annual Plan
+    description: >
+      Create annual Hoshin plan with specific targets and initiatives.
+      Break down breakthrough objectives into annual goals.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Establish Vision phase must be completed
+        phaseId: establish-vision
+    exitCriteria:
+      - type: artifact-exists
+        description: Annual Hoshin plan must exist
+        artifactType: hoshin-plan
+    tasks:
+      - id: set-annual-objectives
+        title: Set Annual Objectives
+        description: Define annual objectives aligned with breakthroughs
+        type: planning
+        complexity: complex
+        assignedRole: planning-team
+        estimatedDuration: 180
+        artifacts:
+          inputs:
+            - typeId: breakthrough-objectives
+              required: true
+          outputs:
+            - typeId: annual-objectives
+              required: true
+        requirements:
+          - type: functional
+            description: Annual objectives must support breakthrough goals
+            priority: must
+            validationCriteria:
+              - Clear alignment to breakthroughs
+              - SMART objectives defined
+              - Ownership assigned
+      - id: create-hoshin-matrix
+        title: Create Hoshin X-Matrix
+        description: Develop X-Matrix linking objectives, strategies, tactics, and metrics
+        type: design
+        complexity: complex
+        assignedRole: hoshin-facilitator
+        estimatedDuration: 240
+        dependencies:
+          - set-annual-objectives
+        artifacts:
+          inputs:
+            - typeId: annual-objectives
+              required: true
+          outputs:
+            - typeId: x-matrix
+              required: true
+        requirements:
+          - type: functional
+            description: X-Matrix must show all critical relationships
+            priority: must
+            validationCriteria:
+              - Objectives linked to strategies
+              - Strategies linked to tactics
+              - Metrics defined for all
+              - Owners assigned
+      - id: finalize-hoshin-plan
+        title: Finalize Annual Hoshin Plan
+        description: Complete the comprehensive annual plan document
+        type: documentation
+        complexity: simple
+        assignedRole: planning-team
+        estimatedDuration: 120
+        dependencies:
+          - create-hoshin-matrix
+        artifacts:
+          inputs:
+            - typeId: x-matrix
+              required: true
+            - typeId: annual-objectives
+              required: true
+          outputs:
+            - typeId: hoshin-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Plan must be comprehensive and actionable
+            priority: must
+            validationCriteria:
+              - All sections complete
+              - Resources allocated
+              - Timeline defined
+    agentRequirements:
+      roles:
+        - planning-team
+        - hoshin-facilitator
+      skills:
+        - strategic-planning
+        - hoshin-methodology
+        - facilitation
+      minExperience: senior
+
+  - id: catchball-process
+    name: Catchball Process
+    description: >
+      Engage in iterative dialogue to refine and align plans.
+      "Catchball" ensures two-way communication and commitment.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Develop Annual Plan phase must be completed
+        phaseId: develop-annual-plan
+    exitCriteria:
+      - type: artifact-exists
+        description: Refined plan with organizational buy-in must exist
+        artifactType: refined-hoshin-plan
+    tasks:
+      - id: cascade-down
+        title: Cascade Plan Down
+        description: Share plan with next level and gather input
+        type: review
+        complexity: simple
+        assignedRole: middle-management
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: hoshin-plan
+              required: true
+          outputs:
+            - typeId: feedback-collection
+              required: true
+        requirements:
+          - type: functional
+            description: Feedback must be gathered from all levels
+            priority: must
+            validationCriteria:
+              - All departments consulted
+              - Feedback documented
+              - Concerns captured
+      - id: negotiate-and-refine
+        title: Negotiate and Refine
+        description: Iterate on plan through catchball dialogue
+        type: review
+        complexity: complex
+        assignedRole: hoshin-facilitator
+        estimatedDuration: 180
+        dependencies:
+          - cascade-down
+        artifacts:
+          inputs:
+            - typeId: feedback-collection
+              required: true
+            - typeId: hoshin-plan
+              required: true
+          outputs:
+            - typeId: refined-plan-draft
+              required: true
+        requirements:
+          - type: functional
+            description: Plan must incorporate feedback appropriately
+            priority: must
+            validationCriteria:
+              - Feedback addressed
+              - Tradeoffs documented
+              - Consensus building
+      - id: gain-commitment
+        title: Gain Organizational Commitment
+        description: Secure buy-in and commitment from all levels
+        type: review
+        complexity: simple
+        assignedRole: executive-team
+        estimatedDuration: 90
+        dependencies:
+          - negotiate-and-refine
+        artifacts:
+          inputs:
+            - typeId: refined-plan-draft
+              required: true
+          outputs:
+            - typeId: refined-hoshin-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Organization must commit to the plan
+            priority: must
+            validationCriteria:
+              - Leadership approval
+              - Department commitments
+              - Resources confirmed
+    agentRequirements:
+      roles:
+        - hoshin-facilitator
+        - middle-management
+        - executive-team
+      skills:
+        - negotiation
+        - facilitation
+        - stakeholder-management
+      minExperience: senior
+
+  - id: implement-and-execute
+    name: Implement and Execute
+    description: >
+      Execute the Hoshin plan with disciplined follow-through.
+      Deploy resources and begin tactical implementation.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Catchball Process phase must be completed
+        phaseId: catchball-process
+    exitCriteria:
+      - type: artifact-exists
+        description: Implementation progress must be tracked
+        artifactType: implementation-status
+    tasks:
+      - id: deploy-resources
+        title: Deploy Resources
+        description: Allocate people, budget, and resources to initiatives
+        type: planning
+        complexity: simple
+        assignedRole: resource-manager
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: refined-hoshin-plan
+              required: true
+          outputs:
+            - typeId: resource-allocation
+              required: true
+        requirements:
+          - type: functional
+            description: Resources must be adequately allocated
+            priority: must
+            validationCriteria:
+              - Budget assigned
+              - Teams staffed
+              - Tools provided
+      - id: execute-initiatives
+        title: Execute Strategic Initiatives
+        description: Begin implementation of planned activities
+        type: implementation
+        complexity: complex
+        assignedRole: project-team
+        estimatedDuration: 2880
+        dependencies:
+          - deploy-resources
+        artifacts:
+          inputs:
+            - typeId: resource-allocation
+              required: true
+          outputs:
+            - typeId: implementation-status
+              required: true
+        requirements:
+          - type: functional
+            description: Initiatives must progress according to plan
+            priority: must
+            validationCriteria:
+              - Milestones tracked
+              - Deliverables produced
+              - Issues managed
+    agentRequirements:
+      roles:
+        - resource-manager
+        - project-team
+      skills:
+        - project-management
+        - execution
+        - resource-management
+      minExperience: mid
+
+  - id: monthly-review
+    name: Monthly Review
+    description: >
+      Conduct monthly Hoshin reviews to track progress.
+      Use PDCA cycle for continuous improvement.
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Implement and Execute phase must be completed
+        phaseId: implement-and-execute
+    exitCriteria:
+      - type: artifact-exists
+        description: Monthly review reports must exist
+        artifactType: monthly-review-report
+    tasks:
+      - id: collect-metrics
+        title: Collect Performance Metrics
+        description: Gather data on all key performance indicators
+        type: analysis
+        complexity: simple
+        assignedRole: data-analyst
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: implementation-status
+              required: true
+          outputs:
+            - typeId: performance-metrics
+              required: true
+        requirements:
+          - type: functional
+            description: Metrics must be accurate and current
+            priority: must
+            validationCriteria:
+              - All metrics collected
+              - Data validated
+              - Trends identified
+      - id: conduct-review-meeting
+        title: Conduct Monthly Review Meeting
+        description: Review progress and identify corrective actions
+        type: review
+        complexity: simple
+        assignedRole: hoshin-facilitator
+        estimatedDuration: 120
+        dependencies:
+          - collect-metrics
+        artifacts:
+          inputs:
+            - typeId: performance-metrics
+              required: true
+          outputs:
+            - typeId: monthly-review-report
+              required: true
+        requirements:
+          - type: functional
+            description: Review must lead to actionable decisions
+            priority: must
+            validationCriteria:
+              - Performance assessed
+              - Root causes identified
+              - Actions assigned
+      - id: implement-countermeasures
+        title: Implement Countermeasures
+        description: Execute corrective actions from review
+        type: implementation
+        complexity: simple
+        assignedRole: project-team
+        estimatedDuration: 240
+        dependencies:
+          - conduct-review-meeting
+        artifacts:
+          inputs:
+            - typeId: monthly-review-report
+              required: true
+          outputs:
+            - typeId: countermeasures-status
+              required: true
+        requirements:
+          - type: functional
+            description: Countermeasures must address root causes
+            priority: must
+            validationCriteria:
+              - Actions implemented
+              - Effectiveness verified
+              - Follow-up scheduled
+    agentRequirements:
+      roles:
+        - hoshin-facilitator
+        - data-analyst
+        - project-team
+      skills:
+        - pdca
+        - root-cause-analysis
+        - problem-solving
+      minExperience: mid
+
+  - id: annual-review
+    name: Annual Review
+    description: >
+      Conduct comprehensive annual review of Hoshin performance.
+      Reflect on achievements and plan next cycle.
+    order: 5
+    entryCriteria:
+      - type: phase-completed
+        description: Monthly Review phase must be completed
+        phaseId: monthly-review
+    exitCriteria:
+      - type: artifact-exists
+        description: Annual review and next year plan must exist
+        artifactType: annual-review-report
+    tasks:
+      - id: assess-annual-performance
+        title: Assess Annual Performance
+        description: Evaluate achievement against annual objectives
+        type: analysis
+        complexity: complex
+        assignedRole: strategy-team
+        estimatedDuration: 180
+        artifacts:
+          inputs:
+            - typeId: hoshin-plan
+              required: true
+            - typeId: performance-metrics
+              required: true
+          outputs:
+            - typeId: performance-assessment
+              required: true
+        requirements:
+          - type: functional
+            description: Assessment must be objective and comprehensive
+            priority: must
+            validationCriteria:
+              - All objectives evaluated
+              - Quantitative results
+              - Qualitative insights
+      - id: conduct-annual-retrospective
+        title: Conduct Annual Retrospective
+        description: Reflect on successes, failures, and learnings
+        type: review
+        complexity: simple
+        assignedRole: hoshin-facilitator
+        estimatedDuration: 240
+        dependencies:
+          - assess-annual-performance
+        artifacts:
+          inputs:
+            - typeId: performance-assessment
+              required: true
+          outputs:
+            - typeId: annual-review-report
+              required: true
+        requirements:
+          - type: functional
+            description: Retrospective must capture key learnings
+            priority: must
+            validationCriteria:
+              - Successes documented
+              - Failures analyzed
+              - Lessons identified
+              - Best practices captured
+      - id: plan-next-cycle
+        title: Plan Next Hoshin Cycle
+        description: Begin planning for the next annual cycle
+        type: planning
+        complexity: complex
+        assignedRole: planning-team
+        estimatedDuration: 180
+        dependencies:
+          - conduct-annual-retrospective
+        artifacts:
+          inputs:
+            - typeId: annual-review-report
+              required: true
+            - typeId: strategic-vision
+              required: true
+          outputs:
+            - typeId: next-cycle-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Next cycle must build on learnings
+            priority: must
+            validationCriteria:
+              - Vision revalidated
+              - Objectives updated
+              - Resources planned
+    agentRequirements:
+      roles:
+        - strategy-team
+        - hoshin-facilitator
+        - planning-team
+      skills:
+        - strategic-review
+        - reflection
+        - planning
+      minExperience: senior
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - establish-vision
+    - develop-annual-plan
+    - catchball-process
+    - implement-and-execute
+    - monthly-review
+    - annual-review
+  loops:
+    - id: annual-cycle
+      name: Annual Hoshin Cycle
+      description: Yearly strategic planning and execution cycle
+      phases:
+        - develop-annual-plan
+        - catchball-process
+        - implement-and-execute
+        - monthly-review
+        - annual-review
+      maxIterations: 10
+    - id: monthly-pdca
+      name: Monthly PDCA Cycle
+      description: Monthly review and improvement cycle
+      phases:
+        - monthly-review
+      maxIterations: 12
+  failureHandling:
+    strategy: retry
+    fallbackPhase: develop-annual-plan
+
+agentCoordination:
+  roles:
+    - id: executive-team
+      name: Executive Team
+      description: Senior leadership setting strategic direction
+      responsibilities:
+        - Define strategic vision
+        - Approve annual plans
+        - Review performance
+      requiredSkills:
+        - strategic-leadership
+        - decision-making
+        - vision-setting
+      experienceLevel: expert
+      authority: leader
+    - id: strategy-team
+      name: Strategy Team
+      description: Strategic planning and analysis
+      responsibilities:
+        - Develop breakthrough objectives
+        - Analyze performance
+        - Plan next cycles
+      requiredSkills:
+        - strategic-planning
+        - analysis
+        - synthesis
+      experienceLevel: senior
+      authority: contributor
+    - id: hoshin-facilitator
+      name: Hoshin Facilitator
+      description: Facilitates Hoshin process and methodology
+      responsibilities:
+        - Guide Hoshin process
+        - Facilitate catchball
+        - Conduct reviews
+      requiredSkills:
+        - hoshin-methodology
+        - facilitation
+        - coaching
+      experienceLevel: expert
+      authority: leader
+    - id: planning-team
+      name: Planning Team
+      description: Develops detailed plans and coordinates execution
+      responsibilities:
+        - Create annual plans
+        - Coordinate catchball
+        - Plan next cycles
+      requiredSkills:
+        - planning
+        - coordination
+        - documentation
+      experienceLevel: senior
+      authority: contributor
+    - id: middle-management
+      name: Middle Management
+      description: Department and team-level implementation
+      responsibilities:
+        - Provide feedback
+        - Execute initiatives
+        - Report progress
+      requiredSkills:
+        - execution
+        - team-management
+        - communication
+      experienceLevel: mid
+      authority: contributor
+    - id: resource-manager
+      name: Resource Manager
+      description: Manages resource allocation
+      responsibilities:
+        - Allocate resources
+        - Track utilization
+        - Optimize allocation
+      requiredSkills:
+        - resource-management
+        - budgeting
+        - optimization
+      experienceLevel: mid
+      authority: contributor
+    - id: project-team
+      name: Project Team
+      description: Executes strategic initiatives
+      responsibilities:
+        - Implement initiatives
+        - Deliver results
+        - Report status
+      requiredSkills:
+        - project-execution
+        - collaboration
+        - problem-solving
+      experienceLevel: mid
+      authority: contributor
+    - id: data-analyst
+      name: Data Analyst
+      description: Collects and analyzes performance data
+      responsibilities:
+        - Collect metrics
+        - Analyze trends
+        - Create reports
+      requiredSkills:
+        - data-analysis
+        - metrics
+        - reporting
+      experienceLevel: mid
+      authority: contributor
+  teamComposition:
+    minSize: 5
+    maxSize: 8
+    required:
+      - hoshin-facilitator
+      - executive-team
+      - strategy-team
+      - planning-team
+    optional:
+      - middle-management
+      - resource-manager
+      - project-team
+      - data-analyst
+  communicationPatterns:
+    - from: hoshin-facilitator
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+        - constraint
+    - from: middle-management
+      to: executive-team
+      type: request-response
+      contextTypes:
+        - finding
+        - constraint
+    - from: project-team
+      to: planning-team
+      type: direct
+      contextTypes:
+        - finding
+    - from: data-analyst
+      to: strategy-team
+      type: direct
+      contextTypes:
+        - finding
+  decisionAuthority:
+    - decision: Approve strategic vision
+      authority: executive-team
+      requiresConsensus: true
+      consensusRoles:
+        - strategy-team
+    - decision: Finalize annual plan
+      authority: hoshin-facilitator
+      requiresConsensus: true
+      consensusRoles:
+        - executive-team
+        - planning-team
+    - decision: Implement countermeasures
+      authority: planning-team
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: strategic-vision
+      name: Strategic Vision
+      description: Long-term strategic vision (3-5 years)
+      format: markdown
+    - id: breakthrough-objectives
+      name: Breakthrough Objectives
+      description: 2-3 transformational strategic priorities
+      format: structured
+    - id: annual-objectives
+      name: Annual Objectives
+      description: Year-specific objectives aligned to breakthroughs
+      format: json
+    - id: x-matrix
+      name: Hoshin X-Matrix
+      description: Visual mapping of objectives, strategies, tactics, and metrics
+      format: structured
+    - id: hoshin-plan
+      name: Annual Hoshin Plan
+      description: Comprehensive annual strategic plan
+      format: markdown
+    - id: feedback-collection
+      name: Feedback Collection
+      description: Gathered feedback from catchball process
+      format: json
+    - id: refined-plan-draft
+      name: Refined Plan Draft
+      description: Plan incorporating feedback
+      format: markdown
+    - id: refined-hoshin-plan
+      name: Refined Hoshin Plan
+      description: Final plan with organizational commitment
+      format: markdown
+    - id: resource-allocation
+      name: Resource Allocation
+      description: Budget, people, and resource assignments
+      format: structured
+    - id: implementation-status
+      name: Implementation Status
+      description: Current status of strategic initiatives
+      format: json
+    - id: performance-metrics
+      name: Performance Metrics
+      description: KPI data and measurements
+      format: json
+    - id: monthly-review-report
+      name: Monthly Review Report
+      description: Monthly performance review and action items
+      format: markdown
+    - id: countermeasures-status
+      name: Countermeasures Status
+      description: Status of corrective actions
+      format: json
+    - id: performance-assessment
+      name: Performance Assessment
+      description: Annual performance evaluation
+      format: markdown
+    - id: annual-review-report
+      name: Annual Review Report
+      description: Comprehensive annual review and retrospective
+      format: markdown
+    - id: next-cycle-plan
+      name: Next Cycle Plan
+      description: Initial plan for next Hoshin cycle
+      format: markdown
+  dependencies:
+    - artifact: breakthrough-objectives
+      dependsOn:
+        - strategic-vision
+    - artifact: x-matrix
+      dependsOn:
+        - annual-objectives
+    - artifact: hoshin-plan
+      dependsOn:
+        - x-matrix
+        - annual-objectives
+    - artifact: refined-hoshin-plan
+      dependsOn:
+        - feedback-collection
+        - hoshin-plan
+    - artifact: implementation-status
+      dependsOn:
+        - resource-allocation
+    - artifact: monthly-review-report
+      dependsOn:
+        - performance-metrics
+    - artifact: annual-review-report
+      dependsOn:
+        - performance-assessment
+
+ceremonies:
+  - id: hoshin-planning-retreat
+    name: Annual Hoshin Planning Retreat
+    description: Multi-day strategic planning session
+    timing: phase-start
+    duration: 480
+    participants:
+      - executive-team
+      - strategy-team
+      - hoshin-facilitator
+    objectives:
+      - Define strategic vision
+      - Set breakthrough objectives
+      - Create annual plan
+  - id: catchball-sessions
+    name: Catchball Dialogue Sessions
+    description: Iterative feedback and refinement sessions
+    timing: periodic
+    duration: 120
+    participants:
+      - hoshin-facilitator
+      - middle-management
+      - planning-team
+    objectives:
+      - Gather feedback
+      - Refine plans
+      - Build commitment
+  - id: monthly-hoshin-review
+    name: Monthly Hoshin Review
+    description: Monthly performance review meeting
+    timing: periodic
+    duration: 120
+    participants:
+      - hoshin-facilitator
+      - strategy-team
+      - project-team
+    objectives:
+      - Review metrics
+      - Identify issues
+      - Assign countermeasures
+  - id: annual-hoshin-review
+    name: Annual Hoshin Review
+    description: Comprehensive year-end review
+    timing: phase-end
+    duration: 240
+    participants:
+      - executive-team
+      - strategy-team
+      - hoshin-facilitator
+      - planning-team
+    objectives:
+      - Assess annual performance
+      - Capture learnings
+      - Plan next cycle

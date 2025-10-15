@@ -1,0 +1,1294 @@
+metadata:
+  id: double-diamond
+  name: Double Diamond
+  title: Double Diamond Design Process
+  description: >
+    Design process framework developed by the British Design Council.
+    Consists of four phases: Discover, Define, Develop, and Deliver.
+    Two diamonds represent divergent and convergent thinking in problem and solution spaces.
+  type: sequential
+  version: 1.0.0
+  origin: British Design Council
+  domains:
+    - design
+    - innovation
+    - product-development
+    - service-design
+  complexity: moderate
+  tags:
+    - design-process
+    - divergent-convergent
+    - user-centered
+    - innovation
+  i18n:
+    es:
+      name: Doble Diamante
+      title: Proceso de Diseño Doble Diamante
+      description: >
+        Marco de proceso de diseño desarrollado por el British Design Council.
+        Consiste en cuatro fases: Descubrir, Definir, Desarrollar y Entregar.
+        Dos diamantes representan el pensamiento divergente y convergente en espacios de problemas y soluciones.
+    fr:
+      name: Double Diamant
+      title: Processus de Conception Double Diamant
+      description: >
+        Cadre de processus de conception développé par le British Design Council.
+        Composé de quatre phases : Découvrir, Définir, Développer et Livrer.
+        Deux diamants représentent la pensée divergente et convergente dans les espaces de problèmes et de solutions.
+    ko:
+      name: 더블 다이아몬드
+      title: 더블 다이아몬드 디자인 프로세스
+      description: >
+        영국 디자인 위원회에서 개발한 디자인 프로세스 프레임워크.
+        발견, 정의, 개발, 제공의 네 단계로 구성됩니다.
+        두 개의 다이아몬드는 문제 및 솔루션 공간에서 발산적 및 수렴적 사고를 나타냅니다.
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 2
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 3
+
+phases:
+  - id: discover
+    name: Discover
+    description: >
+      Divergent phase to explore and understand the problem space.
+      Gather insights about users, context, and challenges.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Research insights must be gathered
+        artifactType: research-insights
+      - type: artifact-exists
+        description: Opportunity areas must be identified
+        artifactType: opportunity-areas
+    tasks:
+      - id: conduct-desk-research
+        title: Conduct Desk Research
+        description: Review existing knowledge and secondary research
+        type: analysis
+        complexity: simple
+        assignedRole: researcher
+        estimatedDuration: 120
+        artifacts:
+          outputs:
+            - typeId: desk-research-findings
+              required: true
+        requirements:
+          - type: functional
+            description: Existing knowledge must be reviewed
+            priority: must
+            validationCriteria:
+              - Literature reviewed
+              - Market research examined
+              - Competitor analysis done
+              - Trends identified
+      - id: engage-with-users
+        title: Engage with Users
+        description: Talk to and observe users in their context
+        type: analysis
+        complexity: simple
+        assignedRole: user-researcher
+        estimatedDuration: 360
+        artifacts:
+          outputs:
+            - typeId: user-engagement-data
+              required: true
+        requirements:
+          - type: functional
+            description: Direct user engagement required
+            priority: must
+            validationCriteria:
+              - Users interviewed
+              - Observations conducted
+              - Context understood
+              - Pain points captured
+      - id: explore-analogous-experiences
+        title: Explore Analogous Experiences
+        description: Look at similar problems in different contexts
+        type: analysis
+        complexity: simple
+        assignedRole: innovation-researcher
+        estimatedDuration: 180
+        artifacts:
+          outputs:
+            - typeId: analogous-insights
+              required: true
+        requirements:
+          - type: functional
+            description: Broader perspectives explored
+            priority: should
+            validationCriteria:
+              - Analogies identified
+              - Lessons extracted
+              - Inspiration gathered
+      - id: map-stakeholders
+        title: Map Stakeholders
+        description: Identify all people affected by the problem
+        type: analysis
+        complexity: simple
+        assignedRole: business-analyst
+        estimatedDuration: 90
+        artifacts:
+          outputs:
+            - typeId: stakeholder-map
+              required: true
+        requirements:
+          - type: functional
+            description: All stakeholders identified
+            priority: must
+            validationCriteria:
+              - Primary stakeholders mapped
+              - Secondary stakeholders identified
+              - Relationships understood
+      - id: synthesize-research
+        title: Synthesize Research Findings
+        description: Analyze and consolidate all discovery insights
+        type: analysis
+        complexity: complex
+        assignedRole: design-lead
+        estimatedDuration: 240
+        dependencies:
+          - conduct-desk-research
+          - engage-with-users
+          - explore-analogous-experiences
+          - map-stakeholders
+        artifacts:
+          inputs:
+            - typeId: desk-research-findings
+              required: true
+            - typeId: user-engagement-data
+              required: true
+            - typeId: analogous-insights
+              required: false
+            - typeId: stakeholder-map
+              required: true
+          outputs:
+            - typeId: research-insights
+              required: true
+        requirements:
+          - type: functional
+            description: Clear insights must emerge
+            priority: must
+            validationCriteria:
+              - Patterns identified
+              - Themes emerged
+              - Insights articulated
+      - id: identify-opportunities
+        title: Identify Opportunity Areas
+        description: Spot areas where design can make a difference
+        type: analysis
+        complexity: simple
+        assignedRole: design-lead
+        estimatedDuration: 120
+        dependencies:
+          - synthesize-research
+        artifacts:
+          inputs:
+            - typeId: research-insights
+              required: true
+          outputs:
+            - typeId: opportunity-areas
+              required: true
+        requirements:
+          - type: functional
+            description: Opportunities must be actionable
+            priority: must
+            validationCriteria:
+              - Opportunities identified
+              - Impact assessed
+              - Feasibility considered
+    agentRequirements:
+      roles:
+        - researcher
+        - user-researcher
+        - innovation-researcher
+        - business-analyst
+        - design-lead
+      skills:
+        - research
+        - user-engagement
+        - synthesis
+        - opportunity-identification
+      minExperience: mid
+
+  - id: define
+    name: Define
+    description: >
+      Convergent phase to focus on the specific problem to solve.
+      Create clear problem statement and design brief.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Discover phase must be completed
+        phaseId: discover
+    exitCriteria:
+      - type: artifact-exists
+        description: Problem definition must exist
+        artifactType: problem-definition
+      - type: artifact-exists
+        description: Design brief must be created
+        artifactType: design-brief
+    tasks:
+      - id: analyze-insights
+        title: Analyze Research Insights
+        description: Deep dive into research to extract meaning
+        type: analysis
+        complexity: simple
+        assignedRole: design-strategist
+        estimatedDuration: 180
+        artifacts:
+          inputs:
+            - typeId: research-insights
+              required: true
+          outputs:
+            - typeId: insight-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: Insights must guide problem definition
+            priority: must
+            validationCriteria:
+              - Key insights prioritized
+              - User needs clear
+              - Gaps identified
+      - id: frame-problem
+        title: Frame the Problem
+        description: Create clear problem statement
+        type: planning
+        complexity: simple
+        assignedRole: design-strategist
+        estimatedDuration: 120
+        dependencies:
+          - analyze-insights
+        artifacts:
+          inputs:
+            - typeId: insight-analysis
+              required: true
+            - typeId: opportunity-areas
+              required: true
+          outputs:
+            - typeId: problem-statement
+              required: true
+        requirements:
+          - type: functional
+            description: Problem must be well-framed
+            priority: must
+            validationCriteria:
+              - Focused and clear
+              - User-centered
+              - Actionable
+              - Inspiring
+      - id: define-success-criteria
+        title: Define Success Criteria
+        description: Establish how success will be measured
+        type: planning
+        complexity: simple
+        assignedRole: product-manager
+        estimatedDuration: 90
+        dependencies:
+          - frame-problem
+        artifacts:
+          inputs:
+            - typeId: problem-statement
+              required: true
+          outputs:
+            - typeId: success-criteria
+              required: true
+        requirements:
+          - type: functional
+            description: Success must be measurable
+            priority: must
+            validationCriteria:
+              - Metrics defined
+              - Goals set
+              - Acceptance criteria clear
+      - id: create-design-brief
+        title: Create Design Brief
+        description: Document the design challenge and constraints
+        type: documentation
+        complexity: simple
+        assignedRole: design-lead
+        estimatedDuration: 150
+        dependencies:
+          - frame-problem
+          - define-success-criteria
+        artifacts:
+          inputs:
+            - typeId: problem-statement
+              required: true
+            - typeId: success-criteria
+              required: true
+          outputs:
+            - typeId: design-brief
+              required: true
+        requirements:
+          - type: functional
+            description: Brief must guide development
+            priority: must
+            validationCriteria:
+              - Challenge clear
+              - Constraints documented
+              - Audience defined
+              - Scope set
+      - id: align-stakeholders
+        title: Align Stakeholders on Problem
+        description: Get agreement on problem definition
+        type: review
+        complexity: simple
+        assignedRole: design-lead
+        estimatedDuration: 120
+        dependencies:
+          - create-design-brief
+        artifacts:
+          inputs:
+            - typeId: design-brief
+              required: true
+          outputs:
+            - typeId: stakeholder-alignment
+              required: true
+        requirements:
+          - type: functional
+            description: Stakeholders must agree
+            priority: must
+            validationCriteria:
+              - Key stakeholders consulted
+              - Feedback incorporated
+              - Agreement documented
+      - id: finalize-problem-definition
+        title: Finalize Problem Definition
+        description: Lock in the problem to solve
+        type: documentation
+        complexity: simple
+        assignedRole: design-lead
+        estimatedDuration: 60
+        dependencies:
+          - align-stakeholders
+        artifacts:
+          inputs:
+            - typeId: design-brief
+              required: true
+            - typeId: stakeholder-alignment
+              required: true
+          outputs:
+            - typeId: problem-definition
+              required: true
+        requirements:
+          - type: functional
+            description: Definition must be final
+            priority: must
+            validationCriteria:
+              - Signed off
+              - Documented
+              - Communicated
+    agentRequirements:
+      roles:
+        - design-strategist
+        - product-manager
+        - design-lead
+      skills:
+        - problem-framing
+        - strategic-thinking
+        - stakeholder-management
+      minExperience: senior
+
+  - id: develop
+    name: Develop
+    description: >
+      Divergent phase to generate many possible solutions.
+      Ideate, prototype, and iterate on potential solutions.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Define phase must be completed
+        phaseId: define
+    exitCriteria:
+      - type: artifact-exists
+        description: Solution concepts must be developed
+        artifactType: solution-concepts
+      - type: artifact-exists
+        description: Tested prototypes must exist
+        artifactType: tested-prototypes
+    tasks:
+      - id: ideation-workshops
+        title: Run Ideation Workshops
+        description: Generate many solution ideas
+        type: design
+        complexity: simple
+        assignedRole: facilitator
+        estimatedDuration: 240
+        artifacts:
+          inputs:
+            - typeId: design-brief
+              required: true
+          outputs:
+            - typeId: ideas
+              required: true
+        requirements:
+          - type: functional
+            description: Quantity of ideas matters
+            priority: must
+            validationCriteria:
+              - 50+ ideas generated
+              - Diverse approaches
+              - Wild ideas encouraged
+              - All voices heard
+      - id: concept-development
+        title: Develop Solution Concepts
+        description: Refine promising ideas into concepts
+        type: design
+        complexity: simple
+        assignedRole: designer
+        estimatedDuration: 180
+        dependencies:
+          - ideation-workshops
+        artifacts:
+          inputs:
+            - typeId: ideas
+              required: true
+          outputs:
+            - typeId: concepts
+              required: true
+        requirements:
+          - type: functional
+            description: Concepts must be viable
+            priority: must
+            validationCriteria:
+              - 5-10 concepts developed
+              - Feasibility considered
+              - Value clear
+      - id: create-prototypes
+        title: Create Prototypes
+        description: Build representations of concepts for testing
+        type: implementation
+        complexity: simple
+        assignedRole: prototyper
+        estimatedDuration: 360
+        dependencies:
+          - concept-development
+        artifacts:
+          inputs:
+            - typeId: concepts
+              required: true
+          outputs:
+            - typeId: prototypes
+              required: true
+        requirements:
+          - type: functional
+            description: Prototypes must be testable
+            priority: must
+            validationCriteria:
+              - Multiple prototypes built
+              - Appropriate fidelity
+              - Key features shown
+              - Quick to build
+      - id: test-with-users
+        title: Test Prototypes with Users
+        description: Get user feedback on prototypes
+        type: testing
+        complexity: simple
+        assignedRole: user-researcher
+        estimatedDuration: 300
+        dependencies:
+          - create-prototypes
+        artifacts:
+          inputs:
+            - typeId: prototypes
+              required: true
+          outputs:
+            - typeId: user-feedback
+              required: true
+        requirements:
+          - type: functional
+            description: Real user feedback required
+            priority: must
+            validationCriteria:
+              - Users tested prototypes
+              - Feedback documented
+              - Preferences noted
+              - Issues identified
+      - id: iterate-designs
+        title: Iterate Based on Feedback
+        description: Refine solutions based on learning
+        type: design
+        complexity: simple
+        assignedRole: designer
+        estimatedDuration: 240
+        dependencies:
+          - test-with-users
+        artifacts:
+          inputs:
+            - typeId: prototypes
+              required: true
+            - typeId: user-feedback
+              required: true
+          outputs:
+            - typeId: refined-concepts
+              required: true
+        requirements:
+          - type: functional
+            description: Learning must inform design
+            priority: must
+            validationCriteria:
+              - Feedback addressed
+              - Designs improved
+              - Issues resolved
+      - id: develop-final-concepts
+        title: Develop Final Solution Concepts
+        description: Polish concepts for final selection
+        type: design
+        complexity: simple
+        assignedRole: designer
+        estimatedDuration: 180
+        dependencies:
+          - iterate-designs
+        artifacts:
+          inputs:
+            - typeId: refined-concepts
+              required: true
+          outputs:
+            - typeId: solution-concepts
+              required: true
+        requirements:
+          - type: functional
+            description: Concepts must be presentation-ready
+            priority: must
+            validationCriteria:
+              - Well-documented
+              - Benefits clear
+              - Feasible
+              - User-validated
+      - id: compile-tested-prototypes
+        title: Compile Tested Prototypes
+        description: Document all testing and iterations
+        type: documentation
+        complexity: simple
+        assignedRole: designer
+        estimatedDuration: 90
+        dependencies:
+          - develop-final-concepts
+        artifacts:
+          inputs:
+            - typeId: solution-concepts
+              required: true
+            - typeId: user-feedback
+              required: true
+          outputs:
+            - typeId: tested-prototypes
+              required: true
+        requirements:
+          - type: functional
+            description: Testing journey documented
+            priority: must
+            validationCriteria:
+              - Iterations shown
+              - Learning captured
+              - Evidence compiled
+    agentRequirements:
+      roles:
+        - facilitator
+        - designer
+        - prototyper
+        - user-researcher
+      skills:
+        - ideation
+        - prototyping
+        - user-testing
+        - iteration
+      minExperience: mid
+
+  - id: deliver
+    name: Deliver
+    description: >
+      Convergent phase to finalize and implement the solution.
+      Test at scale, refine, and launch the final solution.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Develop phase must be completed
+        phaseId: develop
+    exitCriteria:
+      - type: artifact-exists
+        description: Final solution must be ready
+        artifactType: final-solution
+      - type: artifact-exists
+        description: Launch plan must exist
+        artifactType: launch-plan
+    tasks:
+      - id: select-final-solution
+        title: Select Final Solution
+        description: Choose solution to take to market
+        type: decision
+        complexity: simple
+        assignedRole: decision-maker
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: solution-concepts
+              required: true
+            - typeId: tested-prototypes
+              required: true
+          outputs:
+            - typeId: selected-solution
+              required: true
+        requirements:
+          - type: functional
+            description: Selection must be justified
+            priority: must
+            validationCriteria:
+              - Evidence-based decision
+              - Stakeholder buy-in
+              - Rationale documented
+      - id: develop-detailed-design
+        title: Develop Detailed Design
+        description: Create production-ready specifications
+        type: design
+        complexity: complex
+        assignedRole: designer
+        estimatedDuration: 480
+        dependencies:
+          - select-final-solution
+        artifacts:
+          inputs:
+            - typeId: selected-solution
+              required: true
+          outputs:
+            - typeId: detailed-design
+              required: true
+        requirements:
+          - type: functional
+            description: Design must be implementable
+            priority: must
+            validationCriteria:
+              - Specifications complete
+              - Edge cases handled
+              - Standards followed
+              - Accessible
+      - id: build-final-solution
+        title: Build Final Solution
+        description: Implement the production version
+        type: implementation
+        complexity: complex
+        assignedRole: developer
+        estimatedDuration: 960
+        dependencies:
+          - develop-detailed-design
+        artifacts:
+          inputs:
+            - typeId: detailed-design
+              required: true
+          outputs:
+            - typeId: built-solution
+              required: true
+        requirements:
+          - type: functional
+            description: Implementation must match design
+            priority: must
+            validationCriteria:
+              - Fully functional
+              - Quality standards met
+              - Performance acceptable
+              - Tested
+      - id: pilot-test
+        title: Conduct Pilot Testing
+        description: Test solution at small scale
+        type: testing
+        complexity: simple
+        assignedRole: qa-engineer
+        estimatedDuration: 360
+        dependencies:
+          - build-final-solution
+        artifacts:
+          inputs:
+            - typeId: built-solution
+              required: true
+          outputs:
+            - typeId: pilot-results
+              required: true
+        requirements:
+          - type: functional
+            description: Real-world validation required
+            priority: must
+            validationCriteria:
+              - Pilot conducted
+              - Issues identified
+              - Performance measured
+              - User satisfaction assessed
+      - id: refine-for-launch
+        title: Refine Based on Pilot
+        description: Make final adjustments before launch
+        type: implementation
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 240
+        dependencies:
+          - pilot-test
+        artifacts:
+          inputs:
+            - typeId: built-solution
+              required: true
+            - typeId: pilot-results
+              required: true
+          outputs:
+            - typeId: final-solution
+              required: true
+        requirements:
+          - type: functional
+            description: Solution must be launch-ready
+            priority: must
+            validationCriteria:
+              - Pilot issues resolved
+              - Quality verified
+              - Stakeholder approval
+      - id: plan-launch
+        title: Plan Launch Strategy
+        description: Prepare for full rollout
+        type: planning
+        complexity: simple
+        assignedRole: product-manager
+        estimatedDuration: 180
+        dependencies:
+          - refine-for-launch
+        artifacts:
+          inputs:
+            - typeId: final-solution
+              required: true
+          outputs:
+            - typeId: launch-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Launch must be planned
+            priority: must
+            validationCriteria:
+              - Timeline set
+              - Resources allocated
+              - Communication planned
+              - Success metrics defined
+      - id: execute-launch
+        title: Execute Launch
+        description: Release solution to users
+        type: implementation
+        complexity: simple
+        assignedRole: product-manager
+        estimatedDuration: 120
+        dependencies:
+          - plan-launch
+        artifacts:
+          inputs:
+            - typeId: launch-plan
+              required: true
+            - typeId: final-solution
+              required: true
+          outputs:
+            - typeId: launch-record
+              required: true
+        requirements:
+          - type: functional
+            description: Launch must be successful
+            priority: must
+            validationCriteria:
+              - Solution deployed
+              - Users informed
+              - Support ready
+              - Monitoring active
+      - id: measure-impact
+        title: Measure Impact
+        description: Evaluate solution performance against goals
+        type: analysis
+        complexity: simple
+        assignedRole: data-analyst
+        estimatedDuration: 240
+        dependencies:
+          - execute-launch
+        artifacts:
+          inputs:
+            - typeId: launch-record
+              required: true
+            - typeId: success-criteria
+              required: true
+          outputs:
+            - typeId: impact-report
+              required: true
+        requirements:
+          - type: functional
+            description: Impact must be measured
+            priority: must
+            validationCriteria:
+              - Metrics collected
+              - Goals assessed
+              - Learning documented
+              - Insights shared
+    agentRequirements:
+      roles:
+        - decision-maker
+        - designer
+        - developer
+        - qa-engineer
+        - product-manager
+        - data-analyst
+      skills:
+        - detailed-design
+        - implementation
+        - testing
+        - launch-planning
+      minExperience: mid
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - discover
+    - define
+    - develop
+    - deliver
+  failureHandling:
+    strategy: retry
+    fallbackPhase: develop
+
+agentCoordination:
+  roles:
+    - id: researcher
+      name: Researcher
+      description: Conducts desk research and analysis
+      responsibilities:
+        - Review literature
+        - Analyze market
+        - Study competitors
+        - Identify trends
+      requiredSkills:
+        - research
+        - analysis
+        - synthesis
+      experienceLevel: mid
+      authority: contributor
+    - id: user-researcher
+      name: User Researcher
+      description: Engages with users to understand needs
+      responsibilities:
+        - Interview users
+        - Conduct observations
+        - Test prototypes
+        - Gather feedback
+      requiredSkills:
+        - user-research
+        - interviewing
+        - user-testing
+      experienceLevel: mid
+      authority: contributor
+    - id: innovation-researcher
+      name: Innovation Researcher
+      description: Explores analogous experiences for inspiration
+      responsibilities:
+        - Explore analogies
+        - Identify patterns
+        - Extract insights
+        - Inspire innovation
+      requiredSkills:
+        - innovation-research
+        - lateral-thinking
+        - pattern-recognition
+      experienceLevel: mid
+      authority: contributor
+    - id: business-analyst
+      name: Business Analyst
+      description: Analyzes business context and stakeholders
+      responsibilities:
+        - Map stakeholders
+        - Analyze business impact
+        - Identify constraints
+        - Assess feasibility
+      requiredSkills:
+        - business-analysis
+        - stakeholder-mapping
+        - feasibility-analysis
+      experienceLevel: mid
+      authority: contributor
+    - id: design-lead
+      name: Design Lead
+      description: Leads the design process
+      responsibilities:
+        - Synthesize research
+        - Identify opportunities
+        - Align stakeholders
+        - Guide process
+      requiredSkills:
+        - design-leadership
+        - synthesis
+        - facilitation
+      experienceLevel: senior
+      authority: leader
+    - id: design-strategist
+      name: Design Strategist
+      description: Frames problems and defines strategy
+      responsibilities:
+        - Analyze insights
+        - Frame problems
+        - Define strategy
+        - Guide direction
+      requiredSkills:
+        - strategic-thinking
+        - problem-framing
+        - insight-analysis
+      experienceLevel: senior
+      authority: contributor
+    - id: product-manager
+      name: Product Manager
+      description: Defines success and manages delivery
+      responsibilities:
+        - Define success criteria
+        - Plan launch
+        - Execute launch
+        - Measure impact
+      requiredSkills:
+        - product-management
+        - launch-planning
+        - metrics
+      experienceLevel: mid
+      authority: leader
+    - id: facilitator
+      name: Facilitator
+      description: Facilitates ideation and workshops
+      responsibilities:
+        - Run workshops
+        - Guide ideation
+        - Ensure participation
+        - Capture ideas
+      requiredSkills:
+        - facilitation
+        - workshop-design
+        - ideation
+      experienceLevel: mid
+      authority: contributor
+    - id: designer
+      name: Designer
+      description: Designs solutions and creates prototypes
+      responsibilities:
+        - Develop concepts
+        - Create designs
+        - Iterate solutions
+        - Develop specifications
+      requiredSkills:
+        - design
+        - prototyping
+        - iteration
+      experienceLevel: mid
+      authority: contributor
+    - id: prototyper
+      name: Prototyper
+      description: Builds prototypes for testing
+      responsibilities:
+        - Build prototypes
+        - Create representations
+        - Enable testing
+        - Iterate quickly
+      requiredSkills:
+        - prototyping
+        - rapid-building
+        - technical-skills
+      experienceLevel: junior
+      authority: contributor
+    - id: decision-maker
+      name: Decision Maker
+      description: Makes strategic decisions
+      responsibilities:
+        - Select solutions
+        - Approve directions
+        - Allocate resources
+        - Set priorities
+      requiredSkills:
+        - decision-making
+        - strategic-thinking
+        - leadership
+      experienceLevel: senior
+      authority: approver
+    - id: developer
+      name: Developer
+      description: Implements the solution
+      responsibilities:
+        - Build solution
+        - Implement features
+        - Refine product
+        - Ensure quality
+      requiredSkills:
+        - software-development
+        - implementation
+        - quality
+      experienceLevel: mid
+      authority: contributor
+    - id: qa-engineer
+      name: QA Engineer
+      description: Tests and validates solution
+      responsibilities:
+        - Conduct pilot testing
+        - Validate quality
+        - Identify issues
+        - Verify fixes
+      requiredSkills:
+        - testing
+        - quality-assurance
+        - validation
+      experienceLevel: mid
+      authority: contributor
+    - id: data-analyst
+      name: Data Analyst
+      description: Measures and analyzes impact
+      responsibilities:
+        - Collect metrics
+        - Analyze data
+        - Measure impact
+        - Report findings
+      requiredSkills:
+        - data-analysis
+        - metrics
+        - reporting
+      experienceLevel: mid
+      authority: contributor
+  teamComposition:
+    minSize: 6
+    maxSize: 12
+    required:
+      - design-lead
+      - user-researcher
+      - designer
+      - product-manager
+    optional:
+      - researcher
+      - innovation-researcher
+      - business-analyst
+      - design-strategist
+      - facilitator
+      - prototyper
+      - decision-maker
+      - developer
+      - qa-engineer
+      - data-analyst
+  communicationPatterns:
+    - from: design-lead
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+        - finding
+    - from: product-manager
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+    - from: any
+      to: design-lead
+      type: direct
+      contextTypes:
+        - finding
+        - constraint
+  decisionAuthority:
+    - decision: Problem definition
+      authority: design-lead
+      requiresConsensus: true
+      consensusRoles:
+        - design-strategist
+        - product-manager
+    - decision: Solution selection
+      authority: decision-maker
+      requiresConsensus: true
+      consensusRoles:
+        - design-lead
+        - product-manager
+    - decision: Launch approval
+      authority: product-manager
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: desk-research-findings
+      name: Desk Research Findings
+      description: Insights from secondary research
+      format: markdown
+    - id: user-engagement-data
+      name: User Engagement Data
+      description: Data from user interviews and observations
+      format: structured
+    - id: analogous-insights
+      name: Analogous Insights
+      description: Insights from analogous experiences
+      format: markdown
+    - id: stakeholder-map
+      name: Stakeholder Map
+      description: Map of all stakeholders
+      format: markdown
+    - id: research-insights
+      name: Research Insights
+      description: Synthesized research findings
+      format: structured
+    - id: opportunity-areas
+      name: Opportunity Areas
+      description: Identified opportunities for design
+      format: structured
+    - id: insight-analysis
+      name: Insight Analysis
+      description: Deep analysis of insights
+      format: structured
+    - id: problem-statement
+      name: Problem Statement
+      description: Clear problem framing
+      format: markdown
+    - id: success-criteria
+      name: Success Criteria
+      description: Metrics and goals for success
+      format: structured
+    - id: design-brief
+      name: Design Brief
+      description: Complete design challenge documentation
+      format: markdown
+    - id: stakeholder-alignment
+      name: Stakeholder Alignment
+      description: Record of stakeholder agreement
+      format: structured
+    - id: problem-definition
+      name: Problem Definition
+      description: Final problem definition
+      format: markdown
+    - id: ideas
+      name: Ideas
+      description: Raw ideas from ideation
+      format: structured
+    - id: concepts
+      name: Concepts
+      description: Refined solution concepts
+      format: structured
+    - id: prototypes
+      name: Prototypes
+      description: Built prototypes for testing
+      format: html
+    - id: user-feedback
+      name: User Feedback
+      description: Feedback from user testing
+      format: structured
+    - id: refined-concepts
+      name: Refined Concepts
+      description: Iterated concepts
+      format: structured
+    - id: solution-concepts
+      name: Solution Concepts
+      description: Final solution concepts
+      format: structured
+    - id: tested-prototypes
+      name: Tested Prototypes
+      description: Documentation of testing journey
+      format: markdown
+    - id: selected-solution
+      name: Selected Solution
+      description: Chosen solution for implementation
+      format: structured
+    - id: detailed-design
+      name: Detailed Design
+      description: Production-ready specifications
+      format: structured
+    - id: built-solution
+      name: Built Solution
+      description: Implemented solution
+      format: code
+    - id: pilot-results
+      name: Pilot Results
+      description: Results from pilot testing
+      format: structured
+    - id: final-solution
+      name: Final Solution
+      description: Launch-ready solution
+      format: code
+    - id: launch-plan
+      name: Launch Plan
+      description: Strategy for solution launch
+      format: structured
+    - id: launch-record
+      name: Launch Record
+      description: Documentation of launch
+      format: structured
+    - id: impact-report
+      name: Impact Report
+      description: Measurement of solution impact
+      format: markdown
+  dependencies:
+    - artifact: research-insights
+      dependsOn:
+        - desk-research-findings
+        - user-engagement-data
+        - stakeholder-map
+    - artifact: opportunity-areas
+      dependsOn:
+        - research-insights
+    - artifact: insight-analysis
+      dependsOn:
+        - research-insights
+    - artifact: problem-statement
+      dependsOn:
+        - insight-analysis
+        - opportunity-areas
+    - artifact: success-criteria
+      dependsOn:
+        - problem-statement
+    - artifact: design-brief
+      dependsOn:
+        - problem-statement
+        - success-criteria
+    - artifact: stakeholder-alignment
+      dependsOn:
+        - design-brief
+    - artifact: problem-definition
+      dependsOn:
+        - design-brief
+        - stakeholder-alignment
+    - artifact: ideas
+      dependsOn:
+        - design-brief
+    - artifact: concepts
+      dependsOn:
+        - ideas
+    - artifact: prototypes
+      dependsOn:
+        - concepts
+    - artifact: user-feedback
+      dependsOn:
+        - prototypes
+    - artifact: refined-concepts
+      dependsOn:
+        - prototypes
+        - user-feedback
+    - artifact: solution-concepts
+      dependsOn:
+        - refined-concepts
+    - artifact: tested-prototypes
+      dependsOn:
+        - solution-concepts
+        - user-feedback
+    - artifact: selected-solution
+      dependsOn:
+        - solution-concepts
+        - tested-prototypes
+    - artifact: detailed-design
+      dependsOn:
+        - selected-solution
+    - artifact: built-solution
+      dependsOn:
+        - detailed-design
+    - artifact: pilot-results
+      dependsOn:
+        - built-solution
+    - artifact: final-solution
+      dependsOn:
+        - built-solution
+        - pilot-results
+    - artifact: launch-plan
+      dependsOn:
+        - final-solution
+    - artifact: launch-record
+      dependsOn:
+        - launch-plan
+        - final-solution
+    - artifact: impact-report
+      dependsOn:
+        - launch-record
+        - success-criteria

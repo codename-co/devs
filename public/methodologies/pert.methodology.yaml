@@ -1,0 +1,468 @@
+metadata:
+  id: pert
+  name: PERT
+  title: Program Evaluation and Review Technique
+  description: >
+    Statistical project management technique for analyzing and representing project tasks.
+    PERT uses probabilistic time estimates to model project uncertainty.
+  type: sequential
+  version: 1.0.0
+  origin: U.S. Navy / Booz Allen Hamilton
+  domains:
+    - project-management
+    - scheduling
+    - planning
+    - risk-management
+  complexity: complex
+  tags:
+    - scheduling
+    - network-diagram
+    - critical-path
+    - probabilistic
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: false
+    maxRetries: 1
+  parallelization:
+    enabled: false
+    maxConcurrentTasks: 1
+
+phases:
+  - id: identify-activities
+    name: Identify Activities
+    description: Define all project activities and tasks
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Activity list must exist
+        artifactType: activity-list
+    tasks:
+      - id: define-activities
+        title: Define Project Activities
+        description: Break down project into discrete activities
+        type: planning
+        complexity: simple
+        assignedRole: project-manager
+        estimatedDuration: 180
+        artifacts:
+          outputs:
+            - typeId: activity-list
+              required: true
+    agentRequirements:
+      roles:
+        - project-manager
+      skills:
+        - wbs-development
+        - task-decomposition
+      minExperience: senior
+
+  - id: determine-sequence
+    name: Determine Sequence
+    description: Establish dependencies between activities
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Identify Activities phase must be completed
+        phaseId: identify-activities
+    exitCriteria:
+      - type: artifact-exists
+        description: Dependency matrix must exist
+        artifactType: dependency-matrix
+    tasks:
+      - id: identify-dependencies
+        title: Identify Activity Dependencies
+        description: Determine predecessor/successor relationships
+        type: analysis
+        complexity: simple
+        assignedRole: project-planner
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: activity-list
+              required: true
+          outputs:
+            - typeId: dependency-matrix
+              required: true
+    agentRequirements:
+      roles:
+        - project-planner
+      skills:
+        - dependency-analysis
+        - logical-sequencing
+      minExperience: mid
+
+  - id: estimate-durations
+    name: Estimate Durations
+    description: Estimate time for each activity using three-point estimates
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Determine Sequence phase must be completed
+        phaseId: determine-sequence
+    exitCriteria:
+      - type: artifact-exists
+        description: Duration estimates must exist
+        artifactType: duration-estimates
+    tasks:
+      - id: three-point-estimates
+        title: Create Three-Point Estimates
+        description: Estimate optimistic, most likely, and pessimistic durations
+        type: analysis
+        complexity: complex
+        assignedRole: estimator
+        estimatedDuration: 180
+        artifacts:
+          inputs:
+            - typeId: activity-list
+              required: true
+          outputs:
+            - typeId: three-point-estimates
+              required: true
+      - id: calculate-expected-time
+        title: Calculate Expected Time
+        description: Calculate weighted average using PERT formula
+        type: analysis
+        complexity: simple
+        assignedRole: scheduler
+        estimatedDuration: 90
+        dependencies:
+          - three-point-estimates
+        artifacts:
+          inputs:
+            - typeId: three-point-estimates
+              required: true
+          outputs:
+            - typeId: duration-estimates
+              required: true
+    agentRequirements:
+      roles:
+        - estimator
+        - scheduler
+      skills:
+        - estimation
+        - statistical-analysis
+        - pert-formula
+      minExperience: mid
+
+  - id: create-network-diagram
+    name: Create Network Diagram
+    description: Build PERT network diagram showing all activities and dependencies
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Estimate Durations phase must be completed
+        phaseId: estimate-durations
+    exitCriteria:
+      - type: artifact-exists
+        description: PERT network diagram must exist
+        artifactType: pert-diagram
+    tasks:
+      - id: draw-network
+        title: Draw PERT Network
+        description: Create network diagram with nodes and arrows
+        type: design
+        complexity: complex
+        assignedRole: scheduler
+        estimatedDuration: 240
+        artifacts:
+          inputs:
+            - typeId: dependency-matrix
+              required: true
+            - typeId: duration-estimates
+              required: true
+          outputs:
+            - typeId: pert-diagram
+              required: true
+    agentRequirements:
+      roles:
+        - scheduler
+      skills:
+        - network-diagramming
+        - pert-technique
+      minExperience: senior
+
+  - id: analyze-critical-path
+    name: Analyze Critical Path
+    description: Identify critical path and calculate project duration
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Create Network Diagram phase must be completed
+        phaseId: create-network-diagram
+    exitCriteria:
+      - type: artifact-exists
+        description: Critical path analysis must exist
+        artifactType: critical-path-analysis
+    tasks:
+      - id: forward-pass
+        title: Perform Forward Pass
+        description: Calculate early start and early finish times
+        type: analysis
+        complexity: simple
+        assignedRole: scheduler
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: pert-diagram
+              required: true
+          outputs:
+            - typeId: forward-pass-results
+              required: true
+      - id: backward-pass
+        title: Perform Backward Pass
+        description: Calculate late start and late finish times
+        type: analysis
+        complexity: simple
+        assignedRole: scheduler
+        estimatedDuration: 60
+        dependencies:
+          - forward-pass
+        artifacts:
+          inputs:
+            - typeId: forward-pass-results
+              required: true
+          outputs:
+            - typeId: backward-pass-results
+              required: true
+      - id: calculate-float
+        title: Calculate Float and Identify Critical Path
+        description: Determine total float and critical path
+        type: analysis
+        complexity: simple
+        assignedRole: scheduler
+        estimatedDuration: 60
+        dependencies:
+          - backward-pass
+        artifacts:
+          inputs:
+            - typeId: backward-pass-results
+              required: true
+          outputs:
+            - typeId: critical-path-analysis
+              required: true
+    agentRequirements:
+      roles:
+        - scheduler
+      skills:
+        - critical-path-method
+        - float-calculation
+        - schedule-analysis
+      minExperience: senior
+
+  - id: monitor-and-control
+    name: Monitor and Control
+    description: Track progress and update estimates
+    order: 5
+    entryCriteria:
+      - type: phase-completed
+        description: Analyze Critical Path phase must be completed
+        phaseId: analyze-critical-path
+    exitCriteria:
+      - type: artifact-exists
+        description: Progress reports must exist
+        artifactType: progress-report
+    tasks:
+      - id: track-progress
+        title: Track Activity Progress
+        description: Monitor actual completion against plan
+        type: analysis
+        complexity: simple
+        assignedRole: project-manager
+        estimatedDuration: 480
+        artifacts:
+          inputs:
+            - typeId: critical-path-analysis
+              required: true
+          outputs:
+            - typeId: actual-progress
+              required: true
+      - id: update-estimates
+        title: Update Time Estimates
+        description: Revise estimates based on actuals
+        type: planning
+        complexity: simple
+        assignedRole: scheduler
+        estimatedDuration: 90
+        dependencies:
+          - track-progress
+        artifacts:
+          inputs:
+            - typeId: actual-progress
+              required: true
+          outputs:
+            - typeId: revised-estimates
+              required: true
+      - id: report-status
+        title: Report Project Status
+        description: Generate status reports and forecasts
+        type: documentation
+        complexity: simple
+        assignedRole: project-manager
+        estimatedDuration: 60
+        dependencies:
+          - update-estimates
+        artifacts:
+          inputs:
+            - typeId: revised-estimates
+              required: true
+          outputs:
+            - typeId: progress-report
+              required: true
+    agentRequirements:
+      roles:
+        - project-manager
+        - scheduler
+      skills:
+        - progress-tracking
+        - variance-analysis
+        - reporting
+      minExperience: mid
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - identify-activities
+    - determine-sequence
+    - estimate-durations
+    - create-network-diagram
+    - analyze-critical-path
+    - monitor-and-control
+  failureHandling:
+    strategy: retry
+    fallbackPhase: identify-activities
+
+agentCoordination:
+  roles:
+    - id: project-manager
+      name: Project Manager
+      description: Oversees PERT planning and execution
+      responsibilities:
+        - Define activities
+        - Track progress
+        - Report status
+      requiredSkills:
+        - project-management
+        - pert-methodology
+        - stakeholder-communication
+      experienceLevel: senior
+      authority: leader
+    - id: project-planner
+      name: Project Planner
+      description: Plans project structure
+      responsibilities:
+        - Identify dependencies
+        - Structure work
+      requiredSkills:
+        - planning
+        - dependency-analysis
+      experienceLevel: mid
+      authority: contributor
+    - id: estimator
+      name: Estimator
+      description: Provides duration estimates
+      responsibilities:
+        - Create estimates
+        - Assess uncertainty
+      requiredSkills:
+        - estimation
+        - risk-assessment
+      experienceLevel: mid
+      authority: contributor
+    - id: scheduler
+      name: Scheduler
+      description: Creates and maintains PERT schedule
+      responsibilities:
+        - Build PERT diagram
+        - Calculate critical path
+        - Update schedule
+      requiredSkills:
+        - pert-technique
+        - scheduling
+        - critical-path-analysis
+      experienceLevel: senior
+      authority: contributor
+  teamComposition:
+    minSize: 2
+    maxSize: 4
+    required:
+      - project-manager
+      - scheduler
+    optional:
+      - project-planner
+      - estimator
+  communicationPatterns:
+    - from: project-manager
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+  decisionAuthority:
+    - decision: Approve schedule
+      authority: project-manager
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: activity-list
+      name: Activity List
+      description: Complete list of project activities
+      format: json
+    - id: dependency-matrix
+      name: Dependency Matrix
+      description: Activity dependencies
+      format: structured
+    - id: three-point-estimates
+      name: Three-Point Estimates
+      description: Optimistic, most likely, pessimistic estimates
+      format: json
+    - id: duration-estimates
+      name: Duration Estimates
+      description: Expected duration for each activity
+      format: json
+    - id: pert-diagram
+      name: PERT Diagram
+      description: Network diagram
+      format: structured
+    - id: forward-pass-results
+      name: Forward Pass Results
+      description: Early start and finish times
+      format: json
+    - id: backward-pass-results
+      name: Backward Pass Results
+      description: Late start and finish times
+      format: json
+    - id: critical-path-analysis
+      name: Critical Path Analysis
+      description: Critical path and float calculations
+      format: structured
+    - id: actual-progress
+      name: Actual Progress
+      description: Actual completion data
+      format: json
+    - id: revised-estimates
+      name: Revised Estimates
+      description: Updated time estimates
+      format: json
+    - id: progress-report
+      name: Progress Report
+      description: Status report with forecasts
+      format: markdown
+  dependencies:
+    - artifact: dependency-matrix
+      dependsOn:
+        - activity-list
+    - artifact: duration-estimates
+      dependsOn:
+        - three-point-estimates
+    - artifact: pert-diagram
+      dependsOn:
+        - dependency-matrix
+        - duration-estimates
+    - artifact: critical-path-analysis
+      dependsOn:
+        - backward-pass-results
+    - artifact: progress-report
+      dependsOn:
+        - revised-estimates

@@ -1,0 +1,610 @@
+metadata:
+  id: 5-whys
+  name: 5 Whys
+  title: Five Whys Root Cause Analysis
+  description: >
+    Iterative interrogative technique to explore cause-and-effect relationships.
+    By asking "Why?" five times, teams can identify the root cause of a problem.
+  type: sequential
+  version: 1.0.0
+  origin: Toyota Production System / Sakichi Toyoda
+  domains:
+    - problem-solving
+    - root-cause-analysis
+    - quality-management
+    - process-improvement
+  complexity: simple
+  tags:
+    - root-cause
+    - problem-solving
+    - lean
+    - analysis
+  i18n:
+    es:
+      name: 5 Porqués
+      title: Análisis de Causa Raíz de los Cinco Porqués
+      description: >
+        Técnica interrogativa iterativa para explorar relaciones de causa y efecto.
+        Al preguntar "¿Por qué?" cinco veces, los equipos pueden identificar la causa raíz de un problema.
+    fr:
+      name: 5 Pourquoi
+      title: Analyse des Causes Racines des Cinq Pourquoi
+      description: >
+        Technique interrogative itérative pour explorer les relations de cause à effet.
+        En posant "Pourquoi ?" cinq fois, les équipes peuvent identifier la cause racine d'un problème.
+    ko:
+      name: 5 왜
+      title: 5 Whys 근본 원인 분석
+      description: >
+        인과 관계를 탐구하는 반복적 질문 기법.
+        "왜?"라고 다섯 번 물음으로써 팀은 문제의 근본 원인을 식별할 수 있습니다.
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 2
+  parallelization:
+    enabled: false
+    maxConcurrentTasks: 1
+
+phases:
+  - id: define-problem
+    name: Define the Problem
+    description: >
+      Clearly state the problem you want to solve.
+      Ensure the problem is specific and observable.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Problem statement must be defined
+        artifactType: problem-statement
+    tasks:
+      - id: state-problem
+        title: State the Problem Clearly
+        description: Write a specific, observable problem statement
+        type: analysis
+        complexity: simple
+        assignedRole: problem-solver
+        estimatedDuration: 30
+        artifacts:
+          outputs:
+            - typeId: problem-statement
+              required: true
+        requirements:
+          - type: functional
+            description: Problem must be specific and measurable
+            priority: must
+            validationCriteria:
+              - Problem is observable
+              - Scope is clear
+              - Impact is understood
+      - id: assemble-team
+        title: Assemble Problem-Solving Team
+        description: Gather people with knowledge of the problem
+        type: planning
+        complexity: simple
+        assignedRole: facilitator
+        estimatedDuration: 15
+        dependencies:
+          - state-problem
+        artifacts:
+          outputs:
+            - typeId: team-roster
+              required: true
+        requirements:
+          - type: functional
+            description: Team must have relevant knowledge
+            priority: must
+            validationCriteria:
+              - Right expertise present
+              - Decision makers included
+              - Small team size (3-7 people)
+    agentRequirements:
+      roles:
+        - facilitator
+        - problem-solver
+      skills:
+        - problem-definition
+        - facilitation
+      minExperience: mid
+
+  - id: ask-why-1
+    name: Ask Why #1
+    description: >
+      Ask why the problem occurs.
+      Focus on facts, not assumptions.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Define the Problem phase must be completed
+        phaseId: define-problem
+    exitCriteria:
+      - type: artifact-exists
+        description: First why must be answered
+        artifactType: why-1-answer
+    tasks:
+      - id: question-1
+        title: Ask First Why
+        description: Why does this problem occur?
+        type: analysis
+        complexity: simple
+        assignedRole: problem-solver
+        estimatedDuration: 15
+        artifacts:
+          inputs:
+            - typeId: problem-statement
+              required: true
+          outputs:
+            - typeId: why-1-answer
+              required: true
+        requirements:
+          - type: functional
+            description: Answer must be fact-based
+            priority: must
+            validationCriteria:
+              - Based on evidence
+              - Verifiable
+              - Direct cause identified
+    agentRequirements:
+      roles:
+        - problem-solver
+      skills:
+        - critical-thinking
+        - analysis
+      minExperience: mid
+
+  - id: ask-why-2
+    name: Ask Why #2
+    description: >
+      Ask why the first cause occurs.
+      Dig deeper into the causal chain.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Ask Why #1 phase must be completed
+        phaseId: ask-why-1
+    exitCriteria:
+      - type: artifact-exists
+        description: Second why must be answered
+        artifactType: why-2-answer
+    tasks:
+      - id: question-2
+        title: Ask Second Why
+        description: Why does the first cause occur?
+        type: analysis
+        complexity: simple
+        assignedRole: problem-solver
+        estimatedDuration: 15
+        artifacts:
+          inputs:
+            - typeId: why-1-answer
+              required: true
+          outputs:
+            - typeId: why-2-answer
+              required: true
+        requirements:
+          - type: functional
+            description: Answer must reveal deeper cause
+            priority: must
+            validationCriteria:
+              - Causal link established
+              - Evidence supports
+              - Not a symptom
+    agentRequirements:
+      roles:
+        - problem-solver
+      skills:
+        - critical-thinking
+        - causal-reasoning
+      minExperience: mid
+
+  - id: ask-why-3
+    name: Ask Why #3
+    description: >
+      Ask why the second cause occurs.
+      Continue drilling down.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Ask Why #2 phase must be completed
+        phaseId: ask-why-2
+    exitCriteria:
+      - type: artifact-exists
+        description: Third why must be answered
+        artifactType: why-3-answer
+    tasks:
+      - id: question-3
+        title: Ask Third Why
+        description: Why does the second cause occur?
+        type: analysis
+        complexity: simple
+        assignedRole: problem-solver
+        estimatedDuration: 15
+        artifacts:
+          inputs:
+            - typeId: why-2-answer
+              required: true
+          outputs:
+            - typeId: why-3-answer
+              required: true
+        requirements:
+          - type: functional
+            description: Answer must continue causal chain
+            priority: must
+            validationCriteria:
+              - Logic chain intact
+              - Getting closer to root
+              - Verifiable cause
+    agentRequirements:
+      roles:
+        - problem-solver
+      skills:
+        - analytical-thinking
+        - persistence
+      minExperience: mid
+
+  - id: ask-why-4
+    name: Ask Why #4
+    description: >
+      Ask why the third cause occurs.
+      Approaching root cause.
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Ask Why #3 phase must be completed
+        phaseId: ask-why-3
+    exitCriteria:
+      - type: artifact-exists
+        description: Fourth why must be answered
+        artifactType: why-4-answer
+    tasks:
+      - id: question-4
+        title: Ask Fourth Why
+        description: Why does the third cause occur?
+        type: analysis
+        complexity: simple
+        assignedRole: problem-solver
+        estimatedDuration: 15
+        artifacts:
+          inputs:
+            - typeId: why-3-answer
+              required: true
+          outputs:
+            - typeId: why-4-answer
+              required: true
+        requirements:
+          - type: functional
+            description: Answer must be substantive
+            priority: must
+            validationCriteria:
+              - Causal chain continues
+              - System issues emerging
+              - Close to controllable cause
+    agentRequirements:
+      roles:
+        - problem-solver
+      skills:
+        - systems-thinking
+        - analysis
+      minExperience: mid
+
+  - id: ask-why-5
+    name: Ask Why #5
+    description: >
+      Ask why the fourth cause occurs.
+      Identify the root cause.
+    order: 5
+    entryCriteria:
+      - type: phase-completed
+        description: Ask Why #4 phase must be completed
+        phaseId: ask-why-4
+    exitCriteria:
+      - type: artifact-exists
+        description: Root cause must be identified
+        artifactType: root-cause
+    tasks:
+      - id: question-5
+        title: Ask Fifth Why
+        description: Why does the fourth cause occur?
+        type: analysis
+        complexity: simple
+        assignedRole: problem-solver
+        estimatedDuration: 15
+        artifacts:
+          inputs:
+            - typeId: why-4-answer
+              required: true
+          outputs:
+            - typeId: why-5-answer
+              required: true
+        requirements:
+          - type: functional
+            description: Answer should reveal root cause
+            priority: must
+            validationCriteria:
+              - Systemic issue identified
+              - Actionable cause
+              - Within control
+      - id: identify-root-cause
+        title: Confirm Root Cause
+        description: Validate that root cause is identified
+        type: review
+        complexity: simple
+        assignedRole: facilitator
+        estimatedDuration: 20
+        dependencies:
+          - question-5
+        artifacts:
+          inputs:
+            - typeId: why-5-answer
+              required: true
+          outputs:
+            - typeId: root-cause
+              required: true
+        requirements:
+          - type: functional
+            description: Root cause must be addressable
+            priority: must
+            validationCriteria:
+              - Stops recurring problem if fixed
+              - Within organization's control
+              - Team consensus achieved
+    agentRequirements:
+      roles:
+        - problem-solver
+        - facilitator
+      skills:
+        - root-cause-analysis
+        - validation
+      minExperience: mid
+
+  - id: develop-countermeasures
+    name: Develop Countermeasures
+    description: >
+      Create solutions to address the root cause.
+      Prevent problem recurrence.
+    order: 6
+    entryCriteria:
+      - type: phase-completed
+        description: Ask Why #5 phase must be completed
+        phaseId: ask-why-5
+    exitCriteria:
+      - type: artifact-exists
+        description: Countermeasures must be defined
+        artifactType: action-plan
+    tasks:
+      - id: brainstorm-solutions
+        title: Brainstorm Countermeasures
+        description: Generate solutions to address root cause
+        type: planning
+        complexity: simple
+        assignedRole: problem-solver
+        estimatedDuration: 30
+        artifacts:
+          inputs:
+            - typeId: root-cause
+              required: true
+          outputs:
+            - typeId: solution-options
+              required: true
+        requirements:
+          - type: functional
+            description: Solutions must address root cause
+            priority: must
+            validationCriteria:
+              - Multiple options generated
+              - Feasibility considered
+              - Impact assessed
+      - id: create-action-plan
+        title: Create Action Plan
+        description: Develop implementation plan for best solution
+        type: planning
+        complexity: simple
+        assignedRole: facilitator
+        estimatedDuration: 30
+        dependencies:
+          - brainstorm-solutions
+        artifacts:
+          inputs:
+            - typeId: solution-options
+              required: true
+          outputs:
+            - typeId: action-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Plan must be specific and actionable
+            priority: must
+            validationCriteria:
+              - Who, what, when defined
+              - Responsibilities assigned
+              - Success metrics established
+      - id: implement-and-verify
+        title: Implement and Verify
+        description: Execute plan and confirm effectiveness
+        type: implementation
+        complexity: simple
+        assignedRole: action-owner
+        estimatedDuration: 240
+        dependencies:
+          - create-action-plan
+        artifacts:
+          inputs:
+            - typeId: action-plan
+              required: true
+          outputs:
+            - typeId: implementation-results
+              required: true
+        requirements:
+          - type: functional
+            description: Implementation must prevent recurrence
+            priority: must
+            validationCriteria:
+              - Countermeasures implemented
+              - Problem recurrence prevented
+              - Effectiveness verified
+    agentRequirements:
+      roles:
+        - problem-solver
+        - facilitator
+        - action-owner
+      skills:
+        - solution-design
+        - planning
+        - implementation
+      minExperience: mid
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - define-problem
+    - ask-why-1
+    - ask-why-2
+    - ask-why-3
+    - ask-why-4
+    - ask-why-5
+    - develop-countermeasures
+  failureHandling:
+    strategy: retry
+    fallbackPhase: define-problem
+
+agentCoordination:
+  roles:
+    - id: facilitator
+      name: Facilitator
+      description: Guides 5 Whys process
+      responsibilities:
+        - Facilitate session
+        - Keep team focused
+        - Document findings
+      requiredSkills:
+        - facilitation
+        - documentation
+        - process-guidance
+      experienceLevel: mid
+      authority: leader
+    - id: problem-solver
+      name: Problem Solver
+      description: Analyzes causes
+      responsibilities:
+        - Answer why questions
+        - Provide evidence
+        - Identify causes
+      requiredSkills:
+        - critical-thinking
+        - problem-solving
+        - evidence-based-analysis
+      experienceLevel: mid
+      authority: contributor
+    - id: action-owner
+      name: Action Owner
+      description: Implements countermeasures
+      responsibilities:
+        - Execute action plan
+        - Verify effectiveness
+        - Report results
+      requiredSkills:
+        - implementation
+        - project-execution
+        - verification
+      experienceLevel: mid
+      authority: contributor
+  teamComposition:
+    minSize: 2
+    maxSize: 7
+    required:
+      - facilitator
+      - problem-solver
+    optional:
+      - action-owner
+  communicationPatterns:
+    - from: facilitator
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+        - constraint
+    - from: problem-solver
+      to: facilitator
+      type: direct
+      contextTypes:
+        - finding
+  decisionAuthority:
+    - decision: Confirm root cause
+      authority: facilitator
+      requiresConsensus: true
+      consensusRoles:
+        - problem-solver
+
+artifactFlow:
+  artifactTypes:
+    - id: problem-statement
+      name: Problem Statement
+      description: Clear description of the problem
+      format: markdown
+    - id: team-roster
+      name: Team Roster
+      description: List of team members
+      format: json
+    - id: why-1-answer
+      name: Why #1 Answer
+      description: First why answer
+      format: markdown
+    - id: why-2-answer
+      name: Why #2 Answer
+      description: Second why answer
+      format: markdown
+    - id: why-3-answer
+      name: Why #3 Answer
+      description: Third why answer
+      format: markdown
+    - id: why-4-answer
+      name: Why #4 Answer
+      description: Fourth why answer
+      format: markdown
+    - id: why-5-answer
+      name: Why #5 Answer
+      description: Fifth why answer
+      format: markdown
+    - id: root-cause
+      name: Root Cause
+      description: Identified root cause
+      format: markdown
+    - id: solution-options
+      name: Solution Options
+      description: Potential countermeasures
+      format: json
+    - id: action-plan
+      name: Action Plan
+      description: Implementation plan
+      format: structured
+    - id: implementation-results
+      name: Implementation Results
+      description: Results of countermeasures
+      format: json
+  dependencies:
+    - artifact: why-1-answer
+      dependsOn:
+        - problem-statement
+    - artifact: why-2-answer
+      dependsOn:
+        - why-1-answer
+    - artifact: why-3-answer
+      dependsOn:
+        - why-2-answer
+    - artifact: why-4-answer
+      dependsOn:
+        - why-3-answer
+    - artifact: why-5-answer
+      dependsOn:
+        - why-4-answer
+    - artifact: root-cause
+      dependsOn:
+        - why-5-answer
+    - artifact: action-plan
+      dependsOn:
+        - solution-options
+    - artifact: implementation-results
+      dependsOn:
+        - action-plan

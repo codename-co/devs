@@ -1,0 +1,957 @@
+metadata:
+  id: rca
+  name: RCA
+  title: Root Cause Analysis
+  description: >
+    Systematic approach to identifying the fundamental causes of problems.
+    RCA uses structured techniques like 5 Whys, Fishbone diagrams, and Fault Tree Analysis
+    to uncover underlying issues rather than treating symptoms.
+  type: sequential
+  version: 1.0.0
+  origin: Various / Industrial Engineering
+  domains:
+    - problem-solving
+    - quality-management
+    - incident-response
+    - process-improvement
+  complexity: moderate
+  tags:
+    - problem-solving
+    - analysis
+    - root-cause
+    - prevention
+  i18n:
+    es:
+      title: Análisis de Causa Raíz
+      description: >
+        Enfoque sistemático para identificar las causas fundamentales de los problemas.
+        RCA utiliza técnicas estructuradas como los 5 Por Qué, diagramas de Ishikawa y análisis de árbol de fallas
+        para descubrir problemas subyacentes en lugar de tratar síntomas.
+    fr:
+      title: Analyse des Causes Profondes
+      description: >
+        Approche systématique pour identifier les causes fondamentales des problèmes.
+        RCA utilise des techniques structurées comme les 5 Pourquoi, les diagrammes d'Ishikawa et l'analyse par arbre des défaillances
+        pour découvrir les problèmes sous-jacents plutôt que de traiter les symptômes.
+    ko:
+      title: 근본 원인 분석
+      description: >
+        문제의 근본 원인을 식별하는 체계적인 접근 방식.
+        RCA는 5 Whys, 피쉬본 다이어그램, 결함 트리 분석과 같은 구조화된 기법을 사용하여
+        증상을 치료하는 대신 근본적인 문제를 발견합니다.
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 2
+  parallelization:
+    enabled: false
+    maxConcurrentTasks: 1
+
+phases:
+  - id: define-problem
+    name: Define Problem
+    description: >
+      Clearly define and scope the problem to be analyzed.
+      Establish the impact and urgency of the problem.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Problem statement must exist
+        artifactType: problem-statement
+      - type: artifact-exists
+        description: Problem scope must be defined
+        artifactType: problem-scope
+    tasks:
+      - id: document-problem
+        title: Document the Problem
+        description: Create clear, factual description of the problem
+        type: documentation
+        complexity: simple
+        assignedRole: problem-owner
+        estimatedDuration: 60
+        artifacts:
+          outputs:
+            - typeId: problem-statement
+              required: true
+        requirements:
+          - type: functional
+            description: Problem statement must be clear and specific
+            priority: must
+            validationCriteria:
+              - What is happening described
+              - Where it is happening identified
+              - When it occurs documented
+              - Impact quantified
+      - id: assess-impact
+        title: Assess Problem Impact
+        description: Evaluate the severity and consequences of the problem
+        type: analysis
+        complexity: simple
+        assignedRole: business-analyst
+        estimatedDuration: 45
+        dependencies:
+          - document-problem
+        artifacts:
+          inputs:
+            - typeId: problem-statement
+              required: true
+          outputs:
+            - typeId: impact-assessment
+              required: true
+        requirements:
+          - type: functional
+            description: Impact must be quantified
+            priority: must
+            validationCriteria:
+              - Financial impact estimated
+              - Customer impact assessed
+              - Operational impact evaluated
+      - id: define-scope
+        title: Define Investigation Scope
+        description: Establish boundaries for the root cause analysis
+        type: planning
+        complexity: simple
+        assignedRole: investigation-lead
+        estimatedDuration: 45
+        dependencies:
+          - assess-impact
+        artifacts:
+          inputs:
+            - typeId: problem-statement
+              required: true
+            - typeId: impact-assessment
+              required: true
+          outputs:
+            - typeId: problem-scope
+              required: true
+        requirements:
+          - type: functional
+            description: Scope must be realistic and achievable
+            priority: must
+            validationCriteria:
+              - Time boundaries set
+              - System boundaries defined
+              - Resource constraints identified
+    agentRequirements:
+      roles:
+        - problem-owner
+        - business-analyst
+        - investigation-lead
+      skills:
+        - problem-definition
+        - impact-assessment
+        - scoping
+      minExperience: mid
+
+  - id: collect-data
+    name: Collect Data
+    description: >
+      Gather all relevant information about the problem.
+      Collect evidence, data, and testimony from stakeholders.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Define Problem phase must be completed
+        phaseId: define-problem
+    exitCriteria:
+      - type: artifact-exists
+        description: Evidence collection must be complete
+        artifactType: evidence-collection
+    tasks:
+      - id: identify-data-sources
+        title: Identify Data Sources
+        description: Determine what data is needed and where to find it
+        type: planning
+        complexity: simple
+        assignedRole: data-analyst
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: problem-scope
+              required: true
+          outputs:
+            - typeId: data-collection-plan
+              required: true
+        requirements:
+          - type: functional
+            description: All relevant data sources must be identified
+            priority: must
+            validationCriteria:
+              - Data requirements defined
+              - Data sources identified
+              - Collection methods specified
+      - id: gather-evidence
+        title: Gather Evidence
+        description: Collect logs, reports, measurements, and documentation
+        type: analysis
+        complexity: simple
+        assignedRole: investigator
+        estimatedDuration: 120
+        dependencies:
+          - identify-data-sources
+        artifacts:
+          inputs:
+            - typeId: data-collection-plan
+              required: true
+          outputs:
+            - typeId: raw-evidence
+              required: true
+        requirements:
+          - type: functional
+            description: Evidence must be factual and verifiable
+            priority: must
+            validationCriteria:
+              - Data collected from all sources
+              - Evidence documented
+              - Chain of custody maintained
+      - id: interview-stakeholders
+        title: Interview Stakeholders
+        description: Gather testimony and perspectives from those involved
+        type: analysis
+        complexity: simple
+        assignedRole: investigator
+        estimatedDuration: 90
+        dependencies:
+          - identify-data-sources
+        artifacts:
+          inputs:
+            - typeId: data-collection-plan
+              required: true
+          outputs:
+            - typeId: stakeholder-testimony
+              required: true
+        requirements:
+          - type: functional
+            description: All key stakeholders must be interviewed
+            priority: must
+            validationCriteria:
+              - Interview questions prepared
+              - All stakeholders contacted
+              - Responses documented
+      - id: organize-findings
+        title: Organize Findings
+        description: Consolidate and structure all collected information
+        type: documentation
+        complexity: simple
+        assignedRole: data-analyst
+        estimatedDuration: 90
+        dependencies:
+          - gather-evidence
+          - interview-stakeholders
+        artifacts:
+          inputs:
+            - typeId: raw-evidence
+              required: true
+            - typeId: stakeholder-testimony
+              required: true
+          outputs:
+            - typeId: evidence-collection
+              required: true
+        requirements:
+          - type: functional
+            description: Findings must be well-organized and accessible
+            priority: must
+            validationCriteria:
+              - Data categorized
+              - Timeline created
+              - Key facts highlighted
+    agentRequirements:
+      roles:
+        - data-analyst
+        - investigator
+      skills:
+        - data-collection
+        - interviewing
+        - documentation
+      minExperience: mid
+
+  - id: identify-causes
+    name: Identify Causes
+    description: >
+      Analyze data to identify potential causes.
+      Use structured techniques to explore causal relationships.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Collect Data phase must be completed
+        phaseId: collect-data
+    exitCriteria:
+      - type: artifact-exists
+        description: Causal analysis must be complete
+        artifactType: causal-analysis
+    tasks:
+      - id: apply-five-whys
+        title: Apply 5 Whys Technique
+        description: Repeatedly ask why to drill down to root causes
+        type: analysis
+        complexity: simple
+        assignedRole: rca-specialist
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: evidence-collection
+              required: true
+          outputs:
+            - typeId: five-whys-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: Must dig deep enough to find root causes
+            priority: must
+            validationCriteria:
+              - Multiple why chains explored
+              - Root causes identified
+              - Evidence supports conclusions
+      - id: create-fishbone-diagram
+        title: Create Fishbone Diagram
+        description: Use Ishikawa diagram to categorize potential causes
+        type: analysis
+        complexity: simple
+        assignedRole: rca-specialist
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: evidence-collection
+              required: true
+          outputs:
+            - typeId: fishbone-diagram
+              required: true
+        requirements:
+          - type: functional
+            description: All major cause categories must be explored
+            priority: must
+            validationCriteria:
+              - 6Ms explored (Man, Machine, Method, Material, Measurement, Mother Nature)
+              - Contributing factors identified
+              - Relationships mapped
+      - id: perform-fault-tree-analysis
+        title: Perform Fault Tree Analysis
+        description: Map logical relationships between failures and causes
+        type: analysis
+        complexity: complex
+        assignedRole: systems-analyst
+        estimatedDuration: 180
+        artifacts:
+          inputs:
+            - typeId: evidence-collection
+              required: true
+          outputs:
+            - typeId: fault-tree-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: Logical fault paths must be traced
+            priority: should
+            validationCriteria:
+              - Top event defined
+              - Logic gates applied
+              - Failure modes identified
+      - id: synthesize-causes
+        title: Synthesize Causal Findings
+        description: Integrate insights from all analysis techniques
+        type: analysis
+        complexity: simple
+        assignedRole: investigation-lead
+        estimatedDuration: 90
+        dependencies:
+          - apply-five-whys
+          - create-fishbone-diagram
+          - perform-fault-tree-analysis
+        artifacts:
+          inputs:
+            - typeId: five-whys-analysis
+              required: true
+            - typeId: fishbone-diagram
+              required: true
+            - typeId: fault-tree-analysis
+              required: false
+          outputs:
+            - typeId: causal-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: Synthesis must identify most likely root causes
+            priority: must
+            validationCriteria:
+              - Common themes identified
+              - Root causes prioritized
+              - Causal chains documented
+    agentRequirements:
+      roles:
+        - rca-specialist
+        - systems-analyst
+        - investigation-lead
+      skills:
+        - root-cause-analysis
+        - systems-thinking
+        - analytical-reasoning
+      minExperience: senior
+
+  - id: verify-causes
+    name: Verify Causes
+    description: >
+      Test and validate identified root causes.
+      Ensure causes are actual contributors to the problem.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Identify Causes phase must be completed
+        phaseId: identify-causes
+    exitCriteria:
+      - type: artifact-exists
+        description: Root causes must be verified
+        artifactType: verified-root-causes
+    tasks:
+      - id: develop-verification-plan
+        title: Develop Verification Plan
+        description: Plan how to test each suspected root cause
+        type: planning
+        complexity: simple
+        assignedRole: test-engineer
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: causal-analysis
+              required: true
+          outputs:
+            - typeId: verification-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Each suspected cause must have a test
+            priority: must
+            validationCriteria:
+              - Test methods defined
+              - Success criteria established
+              - Resources identified
+      - id: conduct-verification-tests
+        title: Conduct Verification Tests
+        description: Execute tests to confirm or refute suspected causes
+        type: testing
+        complexity: complex
+        assignedRole: test-engineer
+        estimatedDuration: 180
+        dependencies:
+          - develop-verification-plan
+        artifacts:
+          inputs:
+            - typeId: verification-plan
+              required: true
+          outputs:
+            - typeId: verification-results
+              required: true
+        requirements:
+          - type: functional
+            description: Tests must provide clear evidence
+            priority: must
+            validationCriteria:
+              - All tests executed
+              - Results documented
+              - Data supports conclusions
+      - id: confirm-root-causes
+        title: Confirm Root Causes
+        description: Validate which causes are truly root causes
+        type: analysis
+        complexity: simple
+        assignedRole: investigation-lead
+        estimatedDuration: 60
+        dependencies:
+          - conduct-verification-tests
+        artifacts:
+          inputs:
+            - typeId: verification-results
+              required: true
+            - typeId: causal-analysis
+              required: true
+          outputs:
+            - typeId: verified-root-causes
+              required: true
+        requirements:
+          - type: functional
+            description: Root causes must be proven with evidence
+            priority: must
+            validationCriteria:
+              - Evidence supports each root cause
+              - False causes eliminated
+              - Confidence level assessed
+    agentRequirements:
+      roles:
+        - test-engineer
+        - investigation-lead
+      skills:
+        - hypothesis-testing
+        - experimentation
+        - evidence-evaluation
+      minExperience: mid
+
+  - id: recommend-solutions
+    name: Recommend Solutions
+    description: >
+      Develop recommendations to eliminate root causes.
+      Prioritize solutions and create action plans.
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Verify Causes phase must be completed
+        phaseId: verify-causes
+    exitCriteria:
+      - type: artifact-exists
+        description: Corrective actions must be recommended
+        artifactType: corrective-actions
+      - type: artifact-exists
+        description: Final RCA report must exist
+        artifactType: rca-report
+    tasks:
+      - id: generate-solutions
+        title: Generate Solution Options
+        description: Brainstorm ways to eliminate or mitigate root causes
+        type: design
+        complexity: simple
+        assignedRole: solution-designer
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: verified-root-causes
+              required: true
+          outputs:
+            - typeId: solution-options
+              required: true
+        requirements:
+          - type: functional
+            description: Multiple solutions must be considered
+            priority: must
+            validationCriteria:
+              - At least 2 solutions per root cause
+              - Preventive measures included
+              - Detective controls considered
+      - id: evaluate-solutions
+        title: Evaluate and Prioritize Solutions
+        description: Assess solutions based on feasibility, cost, and effectiveness
+        type: analysis
+        complexity: simple
+        assignedRole: business-analyst
+        estimatedDuration: 90
+        dependencies:
+          - generate-solutions
+        artifacts:
+          inputs:
+            - typeId: solution-options
+              required: true
+          outputs:
+            - typeId: solution-evaluation
+              required: true
+        requirements:
+          - type: functional
+            description: Evaluation must be objective and data-driven
+            priority: must
+            validationCriteria:
+              - Criteria established
+              - All options evaluated
+              - Recommendations prioritized
+      - id: create-action-plan
+        title: Create Corrective Action Plan
+        description: Develop detailed implementation plan for selected solutions
+        type: planning
+        complexity: simple
+        assignedRole: action-owner
+        estimatedDuration: 120
+        dependencies:
+          - evaluate-solutions
+        artifacts:
+          inputs:
+            - typeId: solution-evaluation
+              required: true
+          outputs:
+            - typeId: corrective-actions
+              required: true
+        requirements:
+          - type: functional
+            description: Action plan must be specific and achievable
+            priority: must
+            validationCriteria:
+              - Actions clearly defined
+              - Owners assigned
+              - Timelines established
+              - Success metrics defined
+      - id: prepare-rca-report
+        title: Prepare Final RCA Report
+        description: Document complete analysis and recommendations
+        type: documentation
+        complexity: simple
+        assignedRole: investigation-lead
+        estimatedDuration: 150
+        dependencies:
+          - create-action-plan
+        artifacts:
+          inputs:
+            - typeId: problem-statement
+              required: true
+            - typeId: verified-root-causes
+              required: true
+            - typeId: corrective-actions
+              required: true
+          outputs:
+            - typeId: rca-report
+              required: true
+        requirements:
+          - type: functional
+            description: Report must be comprehensive and actionable
+            priority: must
+            validationCriteria:
+              - Executive summary included
+              - Analysis methodology documented
+              - Root causes clearly stated
+              - Recommendations detailed
+              - Evidence attached
+    agentRequirements:
+      roles:
+        - solution-designer
+        - business-analyst
+        - action-owner
+        - investigation-lead
+      skills:
+        - solution-design
+        - evaluation
+        - planning
+        - documentation
+      minExperience: mid
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - define-problem
+    - collect-data
+    - identify-causes
+    - verify-causes
+    - recommend-solutions
+  failureHandling:
+    strategy: retry
+    fallbackPhase: collect-data
+
+agentCoordination:
+  roles:
+    - id: problem-owner
+      name: Problem Owner
+      description: Person responsible for the problem area
+      responsibilities:
+        - Define the problem
+        - Provide context
+        - Support investigation
+        - Own corrective actions
+      requiredSkills:
+        - domain-knowledge
+        - problem-definition
+        - accountability
+      experienceLevel: mid
+      authority: contributor
+    - id: investigation-lead
+      name: Investigation Lead
+      description: Leads the root cause analysis effort
+      responsibilities:
+        - Scope investigation
+        - Coordinate team
+        - Synthesize findings
+        - Prepare final report
+      requiredSkills:
+        - leadership
+        - root-cause-analysis
+        - coordination
+      experienceLevel: senior
+      authority: leader
+    - id: data-analyst
+      name: Data Analyst
+      description: Collects and organizes evidence
+      responsibilities:
+        - Plan data collection
+        - Organize findings
+        - Analyze patterns
+        - Visualize data
+      requiredSkills:
+        - data-collection
+        - data-analysis
+        - organization
+      experienceLevel: mid
+      authority: contributor
+    - id: investigator
+      name: Investigator
+      description: Gathers evidence and conducts interviews
+      responsibilities:
+        - Gather evidence
+        - Interview stakeholders
+        - Document findings
+        - Maintain objectivity
+      requiredSkills:
+        - investigation
+        - interviewing
+        - documentation
+      experienceLevel: mid
+      authority: contributor
+    - id: rca-specialist
+      name: RCA Specialist
+      description: Expert in root cause analysis techniques
+      responsibilities:
+        - Apply RCA techniques
+        - Facilitate analysis
+        - Challenge assumptions
+        - Ensure rigor
+      requiredSkills:
+        - root-cause-analysis
+        - five-whys
+        - fishbone-diagrams
+      experienceLevel: senior
+      authority: contributor
+    - id: systems-analyst
+      name: Systems Analyst
+      description: Analyzes complex system interactions
+      responsibilities:
+        - Perform fault tree analysis
+        - Map system relationships
+        - Identify failure modes
+        - Assess systemic issues
+      requiredSkills:
+        - systems-thinking
+        - fault-tree-analysis
+        - complexity-analysis
+      experienceLevel: senior
+      authority: contributor
+    - id: test-engineer
+      name: Test Engineer
+      description: Designs and conducts verification tests
+      responsibilities:
+        - Design verification tests
+        - Conduct experiments
+        - Analyze results
+        - Validate hypotheses
+      requiredSkills:
+        - test-design
+        - experimentation
+        - analysis
+      experienceLevel: mid
+      authority: contributor
+    - id: business-analyst
+      name: Business Analyst
+      description: Assesses business impact and solutions
+      responsibilities:
+        - Assess problem impact
+        - Evaluate solutions
+        - Perform cost-benefit analysis
+        - Prioritize actions
+      requiredSkills:
+        - business-analysis
+        - cost-benefit-analysis
+        - prioritization
+      experienceLevel: mid
+      authority: contributor
+    - id: solution-designer
+      name: Solution Designer
+      description: Designs corrective and preventive solutions
+      responsibilities:
+        - Generate solution options
+        - Design preventive measures
+        - Consider trade-offs
+        - Innovate approaches
+      requiredSkills:
+        - solution-design
+        - creative-thinking
+        - prevention-strategies
+      experienceLevel: mid
+      authority: contributor
+    - id: action-owner
+      name: Action Owner
+      description: Owns implementation of corrective actions
+      responsibilities:
+        - Create action plans
+        - Commit to implementation
+        - Track progress
+        - Report results
+      requiredSkills:
+        - planning
+        - accountability
+        - execution
+      experienceLevel: mid
+      authority: approver
+  teamComposition:
+    minSize: 4
+    maxSize: 8
+    required:
+      - problem-owner
+      - investigation-lead
+      - rca-specialist
+      - action-owner
+    optional:
+      - data-analyst
+      - investigator
+      - systems-analyst
+      - test-engineer
+      - business-analyst
+      - solution-designer
+  communicationPatterns:
+    - from: investigation-lead
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+        - finding
+    - from: any
+      to: investigation-lead
+      type: direct
+      contextTypes:
+        - finding
+        - constraint
+    - from: rca-specialist
+      to: investigation-lead
+      type: direct
+      contextTypes:
+        - finding
+  decisionAuthority:
+    - decision: Define investigation scope
+      authority: investigation-lead
+      requiresConsensus: true
+      consensusRoles:
+        - problem-owner
+    - decision: Confirm root causes
+      authority: investigation-lead
+      requiresConsensus: true
+      consensusRoles:
+        - rca-specialist
+    - decision: Approve corrective actions
+      authority: action-owner
+      requiresConsensus: true
+      consensusRoles:
+        - problem-owner
+        - business-analyst
+
+artifactFlow:
+  artifactTypes:
+    - id: problem-statement
+      name: Problem Statement
+      description: Clear description of the problem
+      format: markdown
+    - id: impact-assessment
+      name: Impact Assessment
+      description: Evaluation of problem severity and consequences
+      format: structured
+    - id: problem-scope
+      name: Problem Scope
+      description: Boundaries of the investigation
+      format: structured
+    - id: data-collection-plan
+      name: Data Collection Plan
+      description: Plan for gathering evidence
+      format: structured
+    - id: raw-evidence
+      name: Raw Evidence
+      description: Collected logs, reports, and measurements
+      format: json
+    - id: stakeholder-testimony
+      name: Stakeholder Testimony
+      description: Interview notes and perspectives
+      format: markdown
+    - id: evidence-collection
+      name: Evidence Collection
+      description: Organized findings from all sources
+      format: structured
+    - id: five-whys-analysis
+      name: 5 Whys Analysis
+      description: Results from applying 5 Whys technique
+      format: markdown
+    - id: fishbone-diagram
+      name: Fishbone Diagram
+      description: Ishikawa diagram showing cause categories
+      format: markdown
+    - id: fault-tree-analysis
+      name: Fault Tree Analysis
+      description: Logical fault path mapping
+      format: structured
+    - id: causal-analysis
+      name: Causal Analysis
+      description: Synthesized causal findings
+      format: structured
+    - id: verification-plan
+      name: Verification Plan
+      description: Plan for testing suspected causes
+      format: structured
+    - id: verification-results
+      name: Verification Results
+      description: Results from verification tests
+      format: json
+    - id: verified-root-causes
+      name: Verified Root Causes
+      description: Confirmed root causes with evidence
+      format: structured
+    - id: solution-options
+      name: Solution Options
+      description: Potential corrective and preventive actions
+      format: structured
+    - id: solution-evaluation
+      name: Solution Evaluation
+      description: Assessment and prioritization of solutions
+      format: structured
+    - id: corrective-actions
+      name: Corrective Action Plan
+      description: Detailed implementation plan
+      format: structured
+    - id: rca-report
+      name: RCA Report
+      description: Complete root cause analysis documentation
+      format: markdown
+  dependencies:
+    - artifact: impact-assessment
+      dependsOn:
+        - problem-statement
+    - artifact: problem-scope
+      dependsOn:
+        - problem-statement
+        - impact-assessment
+    - artifact: data-collection-plan
+      dependsOn:
+        - problem-scope
+    - artifact: raw-evidence
+      dependsOn:
+        - data-collection-plan
+    - artifact: stakeholder-testimony
+      dependsOn:
+        - data-collection-plan
+    - artifact: evidence-collection
+      dependsOn:
+        - raw-evidence
+        - stakeholder-testimony
+    - artifact: five-whys-analysis
+      dependsOn:
+        - evidence-collection
+    - artifact: fishbone-diagram
+      dependsOn:
+        - evidence-collection
+    - artifact: fault-tree-analysis
+      dependsOn:
+        - evidence-collection
+    - artifact: causal-analysis
+      dependsOn:
+        - five-whys-analysis
+        - fishbone-diagram
+    - artifact: verification-plan
+      dependsOn:
+        - causal-analysis
+    - artifact: verification-results
+      dependsOn:
+        - verification-plan
+    - artifact: verified-root-causes
+      dependsOn:
+        - verification-results
+        - causal-analysis
+    - artifact: solution-options
+      dependsOn:
+        - verified-root-causes
+    - artifact: solution-evaluation
+      dependsOn:
+        - solution-options
+    - artifact: corrective-actions
+      dependsOn:
+        - solution-evaluation
+    - artifact: rca-report
+      dependsOn:
+        - problem-statement
+        - verified-root-causes
+        - corrective-actions

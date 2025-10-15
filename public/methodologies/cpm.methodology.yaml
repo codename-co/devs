@@ -1,0 +1,495 @@
+metadata:
+  id: cpm
+  name: CPM
+  title: Critical Path Method
+  description: >
+    Project scheduling technique identifying the longest sequence of dependent activities.
+    CPM helps determine minimum project duration and critical activities.
+  type: sequential
+  version: 1.0.0
+  origin: DuPont / Remington Rand
+  domains:
+    - project-management
+    - scheduling
+    - planning
+    - construction
+  complexity: moderate
+  tags:
+    - scheduling
+    - critical-path
+    - network-diagram
+    - deterministic
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: false
+    maxRetries: 1
+  parallelization:
+    enabled: false
+    maxConcurrentTasks: 1
+
+phases:
+  - id: define-activities
+    name: Define Activities
+    description: List all project activities
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Activity list must exist
+        artifactType: activity-list
+    tasks:
+      - id: list-activities
+        title: List All Activities
+        description: Identify every activity needed to complete project
+        type: planning
+        complexity: simple
+        assignedRole: project-manager
+        estimatedDuration: 120
+        artifacts:
+          outputs:
+            - typeId: activity-list
+              required: true
+    agentRequirements:
+      roles:
+        - project-manager
+      skills:
+        - project-planning
+        - work-breakdown
+      minExperience: mid
+
+  - id: sequence-activities
+    name: Sequence Activities
+    description: Determine activity dependencies
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Define Activities phase must be completed
+        phaseId: define-activities
+    exitCriteria:
+      - type: artifact-exists
+        description: Activity sequence must exist
+        artifactType: activity-sequence
+    tasks:
+      - id: map-dependencies
+        title: Map Activity Dependencies
+        description: Identify which activities must precede others
+        type: analysis
+        complexity: simple
+        assignedRole: scheduler
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: activity-list
+              required: true
+          outputs:
+            - typeId: activity-sequence
+              required: true
+    agentRequirements:
+      roles:
+        - scheduler
+      skills:
+        - dependency-mapping
+        - logical-sequencing
+      minExperience: mid
+
+  - id: estimate-durations
+    name: Estimate Durations
+    description: Estimate single duration for each activity
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Sequence Activities phase must be completed
+        phaseId: sequence-activities
+    exitCriteria:
+      - type: artifact-exists
+        description: Duration estimates must exist
+        artifactType: duration-estimates
+    tasks:
+      - id: estimate-time
+        title: Estimate Activity Durations
+        description: Provide single-point duration estimate for each activity
+        type: analysis
+        complexity: simple
+        assignedRole: estimator
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: activity-list
+              required: true
+          outputs:
+            - typeId: duration-estimates
+              required: true
+    agentRequirements:
+      roles:
+        - estimator
+      skills:
+        - time-estimation
+        - historical-data-analysis
+      minExperience: mid
+
+  - id: draw-network
+    name: Draw Network Diagram
+    description: Create CPM network diagram
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Estimate Durations phase must be completed
+        phaseId: estimate-durations
+    exitCriteria:
+      - type: artifact-exists
+        description: Network diagram must exist
+        artifactType: network-diagram
+    tasks:
+      - id: create-diagram
+        title: Create Network Diagram
+        description: Draw activity-on-node or activity-on-arrow diagram
+        type: design
+        complexity: simple
+        assignedRole: scheduler
+        estimatedDuration: 180
+        artifacts:
+          inputs:
+            - typeId: activity-sequence
+              required: true
+            - typeId: duration-estimates
+              required: true
+          outputs:
+            - typeId: network-diagram
+              required: true
+    agentRequirements:
+      roles:
+        - scheduler
+      skills:
+        - network-diagramming
+        - cpm-technique
+      minExperience: mid
+
+  - id: calculate-critical-path
+    name: Calculate Critical Path
+    description: Identify critical path through forward and backward pass
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Draw Network Diagram phase must be completed
+        phaseId: draw-network
+    exitCriteria:
+      - type: artifact-exists
+        description: Critical path must be identified
+        artifactType: critical-path
+    tasks:
+      - id: forward-pass
+        title: Forward Pass Calculation
+        description: Calculate earliest start and finish times
+        type: analysis
+        complexity: simple
+        assignedRole: scheduler
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: network-diagram
+              required: true
+          outputs:
+            - typeId: early-times
+              required: true
+      - id: backward-pass
+        title: Backward Pass Calculation
+        description: Calculate latest start and finish times
+        type: analysis
+        complexity: simple
+        assignedRole: scheduler
+        estimatedDuration: 60
+        dependencies:
+          - forward-pass
+        artifacts:
+          inputs:
+            - typeId: early-times
+              required: true
+          outputs:
+            - typeId: late-times
+              required: true
+      - id: find-critical-path
+        title: Identify Critical Path
+        description: Find path with zero float
+        type: analysis
+        complexity: simple
+        assignedRole: scheduler
+        estimatedDuration: 30
+        dependencies:
+          - backward-pass
+        artifacts:
+          inputs:
+            - typeId: late-times
+              required: true
+          outputs:
+            - typeId: critical-path
+              required: true
+    agentRequirements:
+      roles:
+        - scheduler
+      skills:
+        - critical-path-calculation
+        - float-analysis
+      minExperience: mid
+
+  - id: optimize-schedule
+    name: Optimize Schedule
+    description: Compress schedule if needed using crashing or fast-tracking
+    order: 5
+    entryCriteria:
+      - type: phase-completed
+        description: Calculate Critical Path phase must be completed
+        phaseId: calculate-critical-path
+    exitCriteria:
+      - type: artifact-exists
+        description: Optimized schedule must exist
+        artifactType: optimized-schedule
+    tasks:
+      - id: analyze-compression
+        title: Analyze Compression Options
+        description: Evaluate crashing and fast-tracking opportunities
+        type: analysis
+        complexity: complex
+        assignedRole: project-manager
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: critical-path
+              required: true
+          outputs:
+            - typeId: compression-analysis
+              required: true
+      - id: optimize
+        title: Create Optimized Schedule
+        description: Apply selected compression techniques
+        type: planning
+        complexity: simple
+        assignedRole: scheduler
+        estimatedDuration: 90
+        dependencies:
+          - analyze-compression
+        artifacts:
+          inputs:
+            - typeId: compression-analysis
+              required: true
+          outputs:
+            - typeId: optimized-schedule
+              required: true
+    agentRequirements:
+      roles:
+        - project-manager
+        - scheduler
+      skills:
+        - schedule-compression
+        - cost-benefit-analysis
+        - optimization
+      minExperience: senior
+
+  - id: monitor-control
+    name: Monitor and Control
+    description: Track progress and update schedule
+    order: 6
+    entryCriteria:
+      - type: phase-completed
+        description: Optimize Schedule phase must be completed
+        phaseId: optimize-schedule
+    exitCriteria:
+      - type: artifact-exists
+        description: Status reports must exist
+        artifactType: status-report
+    tasks:
+      - id: track-performance
+        title: Track Schedule Performance
+        description: Monitor actual vs planned progress
+        type: analysis
+        complexity: simple
+        assignedRole: project-manager
+        estimatedDuration: 360
+        artifacts:
+          inputs:
+            - typeId: optimized-schedule
+              required: true
+          outputs:
+            - typeId: performance-data
+              required: true
+      - id: update-schedule
+        title: Update CPM Schedule
+        description: Revise schedule based on actuals
+        type: planning
+        complexity: simple
+        assignedRole: scheduler
+        estimatedDuration: 60
+        dependencies:
+          - track-performance
+        artifacts:
+          inputs:
+            - typeId: performance-data
+              required: true
+          outputs:
+            - typeId: updated-schedule
+              required: true
+      - id: report-status
+        title: Report Status
+        description: Communicate schedule status to stakeholders
+        type: documentation
+        complexity: simple
+        assignedRole: project-manager
+        estimatedDuration: 30
+        dependencies:
+          - update-schedule
+        artifacts:
+          inputs:
+            - typeId: updated-schedule
+              required: true
+          outputs:
+            - typeId: status-report
+              required: true
+    agentRequirements:
+      roles:
+        - project-manager
+        - scheduler
+      skills:
+        - performance-tracking
+        - schedule-updating
+        - stakeholder-communication
+      minExperience: mid
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - define-activities
+    - sequence-activities
+    - estimate-durations
+    - draw-network
+    - calculate-critical-path
+    - optimize-schedule
+    - monitor-control
+  failureHandling:
+    strategy: retry
+    fallbackPhase: define-activities
+
+agentCoordination:
+  roles:
+    - id: project-manager
+      name: Project Manager
+      description: Manages CPM process
+      responsibilities:
+        - Define activities
+        - Optimize schedule
+        - Track performance
+      requiredSkills:
+        - project-management
+        - cpm-methodology
+        - optimization
+      experienceLevel: senior
+      authority: leader
+    - id: scheduler
+      name: Scheduler
+      description: Creates and maintains CPM schedule
+      responsibilities:
+        - Build network diagram
+        - Calculate critical path
+        - Update schedule
+      requiredSkills:
+        - cpm-technique
+        - scheduling
+        - network-analysis
+      experienceLevel: mid
+      authority: contributor
+    - id: estimator
+      name: Estimator
+      description: Provides duration estimates
+      responsibilities:
+        - Estimate durations
+        - Validate estimates
+      requiredSkills:
+        - estimation
+        - historical-analysis
+      experienceLevel: mid
+      authority: contributor
+  teamComposition:
+    minSize: 2
+    maxSize: 3
+    required:
+      - project-manager
+      - scheduler
+    optional:
+      - estimator
+  communicationPatterns:
+    - from: project-manager
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+  decisionAuthority:
+    - decision: Approve schedule compression
+      authority: project-manager
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: activity-list
+      name: Activity List
+      description: Complete project activity list
+      format: json
+    - id: activity-sequence
+      name: Activity Sequence
+      description: Activity dependencies
+      format: structured
+    - id: duration-estimates
+      name: Duration Estimates
+      description: Single-point duration estimates
+      format: json
+    - id: network-diagram
+      name: Network Diagram
+      description: CPM network diagram
+      format: structured
+    - id: early-times
+      name: Early Times
+      description: Early start and finish calculations
+      format: json
+    - id: late-times
+      name: Late Times
+      description: Late start and finish calculations
+      format: json
+    - id: critical-path
+      name: Critical Path
+      description: Identified critical path
+      format: structured
+    - id: compression-analysis
+      name: Compression Analysis
+      description: Schedule compression options
+      format: markdown
+    - id: optimized-schedule
+      name: Optimized Schedule
+      description: Compressed/optimized schedule
+      format: structured
+    - id: performance-data
+      name: Performance Data
+      description: Actual vs planned performance
+      format: json
+    - id: updated-schedule
+      name: Updated Schedule
+      description: Revised CPM schedule
+      format: structured
+    - id: status-report
+      name: Status Report
+      description: Schedule status report
+      format: markdown
+  dependencies:
+    - artifact: activity-sequence
+      dependsOn:
+        - activity-list
+    - artifact: network-diagram
+      dependsOn:
+        - activity-sequence
+        - duration-estimates
+    - artifact: critical-path
+      dependsOn:
+        - late-times
+    - artifact: optimized-schedule
+      dependsOn:
+        - compression-analysis
+    - artifact: status-report
+      dependsOn:
+        - updated-schedule

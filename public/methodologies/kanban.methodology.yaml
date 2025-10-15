@@ -1,0 +1,383 @@
+metadata:
+  id: kanban
+  name: Kanban
+  title: Kanban Flow Management
+  description: >
+    Visual workflow management method that emphasizes continuous delivery and limiting work in progress.
+    Kanban helps teams visualize work, maximize efficiency, and continuously improve.
+  type: iterative
+  version: 1.0.0
+  origin: Toyota Production System / David J. Anderson
+  domains:
+    - workflow-management
+    - agile
+    - lean
+    - continuous-delivery
+  complexity: simple
+  tags:
+    - visualization
+    - wip-limits
+    - flow
+    - continuous-improvement
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 3
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 5
+
+phases:
+  - id: visualize
+    name: Visualize Workflow
+    description: Create visual representation of work and workflow
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Kanban board must be created
+        artifactType: kanban-board
+    tasks:
+      - id: create-board
+        title: Create Kanban Board
+        description: Set up board with columns representing workflow states
+        type: design
+        complexity: simple
+        assignedRole: kanban-coach
+        estimatedDuration: 60
+        artifacts:
+          outputs:
+            - typeId: kanban-board
+              required: true
+    agentRequirements:
+      roles:
+        - kanban-coach
+      skills:
+        - kanban
+        - visualization
+      minExperience: mid
+
+  - id: limit-wip
+    name: Limit Work in Progress
+    description: Set WIP limits for each workflow state
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Visualize Workflow phase must be completed
+        phaseId: visualize
+    exitCriteria:
+      - type: artifact-exists
+        description: WIP limits must be defined
+        artifactType: wip-limits
+    tasks:
+      - id: set-wip-limits
+        title: Set WIP Limits
+        description: Define maximum work items per column
+        type: planning
+        complexity: simple
+        assignedRole: kanban-coach
+        estimatedDuration: 30
+        artifacts:
+          inputs:
+            - typeId: kanban-board
+              required: true
+          outputs:
+            - typeId: wip-limits
+              required: true
+    agentRequirements:
+      roles:
+        - kanban-coach
+      skills:
+        - flow-management
+        - wip-theory
+      minExperience: mid
+
+  - id: manage-flow
+    name: Manage Flow
+    description: Monitor and optimize work flow through the system
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Limit Work in Progress phase must be completed
+        phaseId: limit-wip
+    exitCriteria:
+      - type: artifact-exists
+        description: Flow metrics must be tracked
+        artifactType: flow-metrics
+    tasks:
+      - id: pull-work
+        title: Pull Work Through System
+        description: Team pulls work based on capacity
+        type: implementation
+        complexity: simple
+        assignedRole: team-member
+        estimatedDuration: 1440
+        artifacts:
+          inputs:
+            - typeId: wip-limits
+              required: true
+          outputs:
+            - typeId: completed-work
+              required: true
+      - id: track-metrics
+        title: Track Flow Metrics
+        description: Monitor lead time, cycle time, throughput
+        type: analysis
+        complexity: simple
+        assignedRole: kanban-coach
+        estimatedDuration: 60
+        dependencies:
+          - pull-work
+        artifacts:
+          inputs:
+            - typeId: completed-work
+              required: true
+          outputs:
+            - typeId: flow-metrics
+              required: true
+    agentRequirements:
+      roles:
+        - team-member
+        - kanban-coach
+      skills:
+        - flow-management
+        - metrics
+      minExperience: mid
+
+  - id: make-policies-explicit
+    name: Make Policies Explicit
+    description: Document and communicate workflow policies
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Manage Flow phase must be completed
+        phaseId: manage-flow
+    exitCriteria:
+      - type: artifact-exists
+        description: Policies must be documented
+        artifactType: workflow-policies
+    tasks:
+      - id: document-policies
+        title: Document Workflow Policies
+        description: Define and document all workflow rules
+        type: documentation
+        complexity: simple
+        assignedRole: kanban-coach
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: kanban-board
+              required: true
+          outputs:
+            - typeId: workflow-policies
+              required: true
+    agentRequirements:
+      roles:
+        - kanban-coach
+      skills:
+        - documentation
+        - policy-definition
+      minExperience: mid
+
+  - id: improve-collaboratively
+    name: Improve Collaboratively
+    description: Use feedback loops and metrics to drive continuous improvement
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Make Policies Explicit phase must be completed
+        phaseId: make-policies-explicit
+    exitCriteria:
+      - type: artifact-exists
+        description: Improvement actions must be implemented
+        artifactType: improvement-actions
+    tasks:
+      - id: review-retrospective
+        title: Conduct Retrospective
+        description: Team reflects on process and identifies improvements
+        type: review
+        complexity: simple
+        assignedRole: kanban-coach
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: flow-metrics
+              required: true
+          outputs:
+            - typeId: retrospective-notes
+              required: true
+      - id: implement-improvements
+        title: Implement Improvements
+        description: Execute agreed improvement actions
+        type: implementation
+        complexity: simple
+        assignedRole: team-member
+        estimatedDuration: 240
+        dependencies:
+          - review-retrospective
+        artifacts:
+          inputs:
+            - typeId: retrospective-notes
+              required: true
+          outputs:
+            - typeId: improvement-actions
+              required: true
+    agentRequirements:
+      roles:
+        - kanban-coach
+        - team-member
+      skills:
+        - retrospective-facilitation
+        - continuous-improvement
+      minExperience: mid
+
+execution:
+  strategy: iterative
+  phaseOrder:
+    - visualize
+    - limit-wip
+    - manage-flow
+    - make-policies-explicit
+    - improve-collaboratively
+  loops:
+    - id: continuous-flow
+      name: Continuous Flow Cycle
+      description: Ongoing flow management and improvement
+      phases:
+        - manage-flow
+        - improve-collaboratively
+      maxIterations: 100
+  failureHandling:
+    strategy: retry
+    fallbackPhase: visualize
+
+agentCoordination:
+  roles:
+    - id: kanban-coach
+      name: Kanban Coach
+      description: Guides team in Kanban practices
+      responsibilities:
+        - Coach team
+        - Set up board
+        - Track metrics
+        - Facilitate improvements
+      requiredSkills:
+        - kanban
+        - coaching
+        - facilitation
+      experienceLevel: senior
+      authority: leader
+    - id: team-member
+      name: Team Member
+      description: Executes work
+      responsibilities:
+        - Pull work items
+        - Complete tasks
+        - Participate in improvements
+      requiredSkills:
+        - collaboration
+        - self-organization
+      experienceLevel: mid
+      authority: contributor
+  teamComposition:
+    minSize: 2
+    maxSize: 10
+    required:
+      - kanban-coach
+      - team-member
+  communicationPatterns:
+    - from: kanban-coach
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+        - constraint
+  decisionAuthority:
+    - decision: Set WIP limits
+      authority: kanban-coach
+      requiresConsensus: true
+      consensusRoles:
+        - team-member
+
+artifactFlow:
+  artifactTypes:
+    - id: kanban-board
+      name: Kanban Board
+      description: Visual workflow board
+      format: structured
+    - id: wip-limits
+      name: WIP Limits
+      description: Work in progress constraints
+      format: json
+    - id: completed-work
+      name: Completed Work
+      description: Finished work items
+      format: json
+    - id: flow-metrics
+      name: Flow Metrics
+      description: Lead time, cycle time, throughput data
+      format: json
+    - id: workflow-policies
+      name: Workflow Policies
+      description: Documented workflow rules
+      format: markdown
+    - id: retrospective-notes
+      name: Retrospective Notes
+      description: Improvement discussions
+      format: markdown
+    - id: improvement-actions
+      name: Improvement Actions
+      description: Implemented improvements
+      format: json
+  dependencies:
+    - artifact: wip-limits
+      dependsOn:
+        - kanban-board
+    - artifact: flow-metrics
+      dependsOn:
+        - completed-work
+    - artifact: workflow-policies
+      dependsOn:
+        - kanban-board
+    - artifact: improvement-actions
+      dependsOn:
+        - retrospective-notes
+
+ceremonies:
+  - id: daily-standup
+    name: Daily Stand-up
+    description: Brief daily synchronization
+    timing: daily
+    duration: 15
+    participants:
+      - team-member
+      - kanban-coach
+    objectives:
+      - Identify blockers
+      - Update board
+      - Coordinate work
+  - id: replenishment-meeting
+    name: Replenishment Meeting
+    description: Add new work to backlog
+    timing: periodic
+    duration: 60
+    participants:
+      - kanban-coach
+      - team-member
+    objectives:
+      - Review backlog
+      - Prioritize work
+      - Commit to work items
+  - id: retrospective
+    name: Team Retrospective
+    description: Continuous improvement session
+    timing: periodic
+    duration: 90
+    participants:
+      - kanban-coach
+      - team-member
+    objectives:
+      - Review metrics
+      - Identify improvements
+      - Plan changes

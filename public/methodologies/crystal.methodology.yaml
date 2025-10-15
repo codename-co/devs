@@ -1,0 +1,400 @@
+metadata:
+  id: crystal
+  name: Crystal
+  title: Crystal Methodology Family
+  description: >
+    Family of agile methodologies tailored to team size and project criticality.
+    Crystal emphasizes people, interaction, community, skills, talents, and communications.
+  type: iterative
+  version: 1.0.0
+  origin: Alistair Cockburn
+  domains:
+    - software-development
+    - agile
+    - team-based
+    - lightweight-methodology
+  complexity: simple
+  tags:
+    - agile
+    - lightweight
+    - people-focused
+    - adaptive
+
+configuration:
+  timeBox:
+    duration: 2
+    unit: weeks
+    strict: false
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 2
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 3
+
+phases:
+  - id: chartering
+    name: Chartering
+    description: Build the development team and initial project plan
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Project charter must exist
+        artifactType: project-charter
+    tasks:
+      - id: build-team
+        title: Build Development Team
+        description: Assemble the right people with right skills
+        type: planning
+        complexity: simple
+        assignedRole: project-lead
+        estimatedDuration: 60
+        artifacts:
+          outputs:
+            - typeId: team-roster
+              required: true
+      - id: exploratory-360
+        title: Exploratory 360°
+        description: Quick overview of project from all angles
+        type: analysis
+        complexity: simple
+        assignedRole: project-lead
+        estimatedDuration: 120
+        dependencies:
+          - build-team
+        artifacts:
+          inputs:
+            - typeId: team-roster
+              required: true
+          outputs:
+            - typeId: project-overview
+              required: true
+      - id: create-charter
+        title: Create Project Charter
+        description: Document vision, constraints, and approach
+        type: documentation
+        complexity: simple
+        assignedRole: project-lead
+        estimatedDuration: 90
+        dependencies:
+          - exploratory-360
+        artifacts:
+          inputs:
+            - typeId: project-overview
+              required: true
+          outputs:
+            - typeId: project-charter
+              required: true
+    agentRequirements:
+      roles:
+        - project-lead
+      skills:
+        - team-building
+        - project-planning
+        - chartering
+      minExperience: senior
+
+  - id: cyclic-delivery
+    name: Cyclic Delivery
+    description: Iterative development with frequent delivery
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Chartering phase must be completed
+        phaseId: chartering
+    exitCriteria:
+      - type: artifact-exists
+        description: Working increment must be delivered
+        artifactType: working-increment
+    tasks:
+      - id: plan-iteration
+        title: Plan Iteration
+        description: Plan next iteration with team
+        type: planning
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: project-charter
+              required: true
+          outputs:
+            - typeId: iteration-plan
+              required: true
+      - id: develop-increment
+        title: Develop Increment
+        description: Build working software increment
+        type: implementation
+        complexity: complex
+        assignedRole: developer
+        estimatedDuration: 360
+        dependencies:
+          - plan-iteration
+        artifacts:
+          inputs:
+            - typeId: iteration-plan
+              required: true
+          outputs:
+            - typeId: code-increment
+              required: true
+      - id: integrate-and-test
+        title: Integrate and Test
+        description: Integrate work and run automated tests
+        type: testing
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 120
+        dependencies:
+          - develop-increment
+        artifacts:
+          inputs:
+            - typeId: code-increment
+              required: true
+          outputs:
+            - typeId: tested-increment
+              required: true
+      - id: user-viewing
+        title: User Viewing
+        description: Show work to users and get feedback
+        type: review
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 60
+        dependencies:
+          - integrate-and-test
+        artifacts:
+          inputs:
+            - typeId: tested-increment
+              required: true
+          outputs:
+            - typeId: working-increment
+              required: true
+    agentRequirements:
+      roles:
+        - developer
+        - product-owner
+      skills:
+        - iterative-development
+        - testing
+        - user-collaboration
+      minExperience: mid
+
+  - id: reflection-workshop
+    name: Reflection Workshop
+    description: Team reflects on process and improves
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Cyclic Delivery phase must be completed
+        phaseId: cyclic-delivery
+    exitCriteria:
+      - type: artifact-exists
+        description: Improvement actions must be identified
+        artifactType: improvement-actions
+    tasks:
+      - id: reflect-on-process
+        title: Reflect on Process
+        description: Team discusses what worked and what didn't
+        type: review
+        complexity: simple
+        assignedRole: facilitator
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: working-increment
+              required: true
+          outputs:
+            - typeId: reflection-notes
+              required: true
+      - id: identify-improvements
+        title: Identify Process Improvements
+        description: Agree on changes to make
+        type: planning
+        complexity: simple
+        assignedRole: facilitator
+        estimatedDuration: 60
+        dependencies:
+          - reflect-on-process
+        artifacts:
+          inputs:
+            - typeId: reflection-notes
+              required: true
+          outputs:
+            - typeId: improvement-actions
+              required: true
+    agentRequirements:
+      roles:
+        - facilitator
+        - developer
+      skills:
+        - retrospective-facilitation
+        - continuous-improvement
+      minExperience: mid
+
+execution:
+  strategy: iterative
+  phaseOrder:
+    - chartering
+    - cyclic-delivery
+    - reflection-workshop
+  loops:
+    - id: delivery-cycle
+      name: Delivery Cycle
+      description: Iterative development and reflection
+      phases:
+        - cyclic-delivery
+        - reflection-workshop
+      maxIterations: 26
+  failureHandling:
+    strategy: retry
+    fallbackPhase: cyclic-delivery
+
+agentCoordination:
+  roles:
+    - id: project-lead
+      name: Project Lead
+      description: Coordinates project activities
+      responsibilities:
+        - Charter project
+        - Remove impediments
+        - Facilitate collaboration
+      requiredSkills:
+        - leadership
+        - project-coordination
+        - crystal-methodology
+      experienceLevel: senior
+      authority: leader
+    - id: developer
+      name: Developer
+      description: Builds software
+      responsibilities:
+        - Develop features
+        - Test code
+        - Collaborate closely
+      requiredSkills:
+        - programming
+        - testing
+        - collaboration
+      experienceLevel: mid
+      authority: contributor
+    - id: product-owner
+      name: Product Owner
+      description: Represents users
+      responsibilities:
+        - Define requirements
+        - Provide feedback
+        - Accept deliverables
+      requiredSkills:
+        - domain-knowledge
+        - communication
+      experienceLevel: mid
+      authority: contributor
+    - id: facilitator
+      name: Facilitator
+      description: Guides reflection workshops
+      responsibilities:
+        - Facilitate retrospectives
+        - Coach team
+        - Foster improvement
+      requiredSkills:
+        - facilitation
+        - coaching
+      experienceLevel: mid
+      authority: contributor
+  teamComposition:
+    minSize: 2
+    maxSize: 8
+    required:
+      - project-lead
+      - developer
+    optional:
+      - product-owner
+      - facilitator
+  communicationPatterns:
+    - from: project-lead
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+    - from: developer
+      to: developer
+      type: direct
+      contextTypes:
+        - finding
+  decisionAuthority:
+    - decision: Approve process changes
+      authority: project-lead
+      requiresConsensus: true
+      consensusRoles:
+        - developer
+
+artifactFlow:
+  artifactTypes:
+    - id: team-roster
+      name: Team Roster
+      description: Team members and roles
+      format: json
+    - id: project-overview
+      name: Project Overview
+      description: 360° project overview
+      format: markdown
+    - id: project-charter
+      name: Project Charter
+      description: Project vision and approach
+      format: markdown
+    - id: iteration-plan
+      name: Iteration Plan
+      description: Plan for iteration
+      format: structured
+    - id: code-increment
+      name: Code Increment
+      description: Developed code
+      format: code
+    - id: tested-increment
+      name: Tested Increment
+      description: Tested code increment
+      format: code
+    - id: working-increment
+      name: Working Increment
+      description: Deliverable increment
+      format: code
+    - id: reflection-notes
+      name: Reflection Notes
+      description: Retrospective discussion notes
+      format: markdown
+    - id: improvement-actions
+      name: Improvement Actions
+      description: Agreed process improvements
+      format: json
+  dependencies:
+    - artifact: project-overview
+      dependsOn:
+        - team-roster
+    - artifact: project-charter
+      dependsOn:
+        - project-overview
+    - artifact: code-increment
+      dependsOn:
+        - iteration-plan
+    - artifact: working-increment
+      dependsOn:
+        - tested-increment
+    - artifact: improvement-actions
+      dependsOn:
+        - reflection-notes
+
+ceremonies:
+  - id: reflection-workshop
+    name: Reflection Workshop
+    description: Regular retrospective
+    timing: phase-end
+    duration: 120
+    participants:
+      - project-lead
+      - developer
+      - facilitator
+    objectives:
+      - Reflect on process
+      - Identify improvements
+      - Strengthen team

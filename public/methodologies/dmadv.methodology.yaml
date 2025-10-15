@@ -1,0 +1,929 @@
+metadata:
+  id: dmadv
+  name: DMADV
+  title: Define, Measure, Analyze, Design, Verify
+  description: >
+    Six Sigma methodology for designing new products, processes, or services.
+    DMADV stands for Define, Measure, Analyze, Design, and Verify.
+    It's a data-driven quality strategy used for creating new designs optimized for quality.
+  type: sequential
+  version: 1.0.0
+  origin: Six Sigma / Motorola
+  domains:
+    - product-development
+    - process-design
+    - service-design
+    - innovation
+  complexity: complex
+  tags:
+    - six-sigma
+    - data-driven
+    - design
+    - new-product-development
+  i18n:
+    es:
+      title: Definir, Medir, Analizar, Diseñar, Verificar
+      description: >
+        Metodología Six Sigma para diseñar nuevos productos, procesos o servicios.
+        DMADV significa Definir, Medir, Analizar, Diseñar y Verificar.
+        Es una estrategia de calidad basada en datos utilizada para crear nuevos diseños optimizados para la calidad.
+    fr:
+      title: Définir, Mesurer, Analyser, Concevoir, Vérifier
+      description: >
+        Méthodologie Six Sigma pour concevoir de nouveaux produits, processus ou services.
+        DMADV signifie Définir, Mesurer, Analyser, Concevoir et Vérifier.
+        C'est une stratégie de qualité basée sur les données utilisée pour créer de nouvelles conceptions optimisées pour la qualité.
+    ko:
+      title: 정의, 측정, 분석, 설계, 검증
+      description: >
+        새로운 제품, 프로세스 또는 서비스 설계를 위한 식스 시그마 방법론.
+        DMADV는 정의(Define), 측정(Measure), 분석(Analyze), 설계(Design), 검증(Verify)를 의미합니다.
+        품질에 최적화된 새로운 설계를 생성하는 데 사용되는 데이터 기반 품질 전략입니다.
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 2
+  parallelization:
+    enabled: false
+    maxConcurrentTasks: 1
+
+phases:
+  - id: define
+    name: Define
+    description: >
+      Define the project goals and customer deliverables.
+      Establish design requirements and customer needs.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Design goals artifact must exist
+        artifactType: design-goals
+      - type: artifact-exists
+        description: Customer requirements artifact must exist
+        artifactType: customer-requirements
+    tasks:
+      - id: identify-customer-needs
+        title: Identify Customer Needs
+        description: Gather and document customer requirements and expectations
+        type: analysis
+        complexity: simple
+        assignedRole: product-manager
+        estimatedDuration: 120
+        artifacts:
+          outputs:
+            - typeId: customer-requirements
+              required: true
+              minCount: 1
+              maxCount: 1
+        requirements:
+          - type: functional
+            description: Customer needs must be specific and measurable
+            priority: must
+            validationCriteria:
+              - Customer needs are clearly defined
+              - Requirements are quantified
+              - Success criteria are established
+      - id: define-design-goals
+        title: Define Design Goals
+        description: Establish clear design objectives and success criteria
+        type: planning
+        complexity: simple
+        assignedRole: product-manager
+        estimatedDuration: 90
+        dependencies:
+          - identify-customer-needs
+        artifacts:
+          inputs:
+            - typeId: customer-requirements
+              required: true
+          outputs:
+            - typeId: design-goals
+              required: true
+        requirements:
+          - type: functional
+            description: Design goals must align with customer needs
+            priority: must
+            validationCriteria:
+              - Goals are SMART
+              - Goals are prioritized
+              - Stakeholders are aligned
+      - id: create-project-scope
+        title: Create Project Scope
+        description: Define project boundaries, timeline, and resources
+        type: documentation
+        complexity: simple
+        assignedRole: project-manager
+        estimatedDuration: 90
+        dependencies:
+          - define-design-goals
+        artifacts:
+          inputs:
+            - typeId: design-goals
+              required: true
+          outputs:
+            - typeId: project-scope
+              required: true
+        requirements:
+          - type: functional
+            description: Scope must be clearly bounded
+            priority: must
+            validationCriteria:
+              - In-scope items identified
+              - Out-of-scope items identified
+              - Resource requirements defined
+    agentRequirements:
+      roles:
+        - product-manager
+        - project-manager
+      skills:
+        - requirements-gathering
+        - stakeholder-management
+        - project-planning
+      minExperience: mid
+
+  - id: measure
+    name: Measure
+    description: >
+      Measure and determine customer needs and specifications.
+      Benchmark existing products or processes.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Define phase must be completed
+        phaseId: define
+    exitCriteria:
+      - type: artifact-exists
+        description: Measurement plan must exist
+        artifactType: measurement-plan
+      - type: artifact-exists
+        description: Benchmark data must exist
+        artifactType: benchmark-data
+    tasks:
+      - id: develop-measurement-plan
+        title: Develop Measurement Plan
+        description: Create plan for measuring customer needs and specifications
+        type: planning
+        complexity: simple
+        assignedRole: data-analyst
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: customer-requirements
+              required: true
+          outputs:
+            - typeId: measurement-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Measurement plan must cover all critical requirements
+            priority: must
+            validationCriteria:
+              - All CTQs (Critical to Quality) identified
+              - Measurement methods defined
+              - Data sources identified
+      - id: benchmark-competitors
+        title: Benchmark Competitors
+        description: Analyze competitor and existing solutions
+        type: analysis
+        complexity: complex
+        assignedRole: market-analyst
+        estimatedDuration: 180
+        dependencies:
+          - develop-measurement-plan
+        artifacts:
+          inputs:
+            - typeId: measurement-plan
+              required: true
+          outputs:
+            - typeId: benchmark-data
+              required: true
+        requirements:
+          - type: functional
+            description: Benchmark must include relevant competitors
+            priority: must
+            validationCriteria:
+              - Key competitors identified
+              - Performance metrics collected
+              - Gap analysis completed
+      - id: quantify-requirements
+        title: Quantify Customer Requirements
+        description: Convert customer needs into measurable specifications
+        type: analysis
+        complexity: simple
+        assignedRole: quality-engineer
+        estimatedDuration: 150
+        dependencies:
+          - benchmark-competitors
+        artifacts:
+          inputs:
+            - typeId: customer-requirements
+              required: true
+            - typeId: benchmark-data
+              required: true
+          outputs:
+            - typeId: quantified-specifications
+              required: true
+        requirements:
+          - type: functional
+            description: All requirements must be quantifiable
+            priority: must
+            validationCriteria:
+              - Specifications have numeric targets
+              - Tolerances defined
+              - Measurement methods established
+    agentRequirements:
+      roles:
+        - data-analyst
+        - market-analyst
+        - quality-engineer
+      skills:
+        - data-analysis
+        - benchmarking
+        - requirements-analysis
+      minExperience: mid
+
+  - id: analyze
+    name: Analyze
+    description: >
+      Analyze design alternatives and select the best design.
+      Use simulation and modeling to optimize the design.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Measure phase must be completed
+        phaseId: measure
+    exitCriteria:
+      - type: artifact-exists
+        description: Design alternatives must exist
+        artifactType: design-alternatives
+      - type: artifact-exists
+        description: Selected design must exist
+        artifactType: selected-design
+    tasks:
+      - id: generate-design-concepts
+        title: Generate Design Concepts
+        description: Create multiple design alternatives to meet requirements
+        type: design
+        complexity: complex
+        assignedRole: design-engineer
+        estimatedDuration: 240
+        artifacts:
+          inputs:
+            - typeId: quantified-specifications
+              required: true
+          outputs:
+            - typeId: design-alternatives
+              required: true
+        requirements:
+          - type: functional
+            description: Multiple viable alternatives must be generated
+            priority: must
+            validationCriteria:
+              - At least 3 design concepts created
+              - Each concept meets basic requirements
+              - Concepts are diverse in approach
+      - id: evaluate-designs
+        title: Evaluate Design Alternatives
+        description: Assess each design against requirements and constraints
+        type: analysis
+        complexity: complex
+        assignedRole: systems-engineer
+        estimatedDuration: 180
+        dependencies:
+          - generate-design-concepts
+        artifacts:
+          inputs:
+            - typeId: design-alternatives
+              required: true
+            - typeId: quantified-specifications
+              required: true
+          outputs:
+            - typeId: design-evaluation
+              required: true
+        requirements:
+          - type: functional
+            description: Evaluation must use objective criteria
+            priority: must
+            validationCriteria:
+              - Scoring criteria defined
+              - All designs scored consistently
+              - Risk assessment completed
+      - id: select-optimal-design
+        title: Select Optimal Design
+        description: Choose the best design based on evaluation results
+        type: decision
+        complexity: simple
+        assignedRole: design-engineer
+        estimatedDuration: 90
+        dependencies:
+          - evaluate-designs
+        artifacts:
+          inputs:
+            - typeId: design-evaluation
+              required: true
+          outputs:
+            - typeId: selected-design
+              required: true
+        requirements:
+          - type: functional
+            description: Selection must be justified with data
+            priority: must
+            validationCriteria:
+              - Selection rationale documented
+              - Stakeholder consensus achieved
+              - Risks identified and mitigated
+    agentRequirements:
+      roles:
+        - design-engineer
+        - systems-engineer
+      skills:
+        - conceptual-design
+        - systems-thinking
+        - decision-analysis
+      minExperience: senior
+
+  - id: design
+    name: Design
+    description: >
+      Develop detailed design and optimize it.
+      Create prototypes and detailed specifications.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Analyze phase must be completed
+        phaseId: analyze
+    exitCriteria:
+      - type: artifact-exists
+        description: Detailed design must exist
+        artifactType: detailed-design
+      - type: artifact-exists
+        description: Prototype must exist
+        artifactType: prototype
+    tasks:
+      - id: create-detailed-design
+        title: Create Detailed Design
+        description: Develop complete specifications and design documentation
+        type: design
+        complexity: complex
+        assignedRole: design-engineer
+        estimatedDuration: 300
+        artifacts:
+          inputs:
+            - typeId: selected-design
+              required: true
+          outputs:
+            - typeId: detailed-design
+              required: true
+        requirements:
+          - type: functional
+            description: Design must be complete and implementable
+            priority: must
+            validationCriteria:
+              - All components specified
+              - Assembly instructions included
+              - Materials and tolerances defined
+      - id: optimize-design
+        title: Optimize Design
+        description: Use simulation and analysis to optimize performance
+        type: analysis
+        complexity: complex
+        assignedRole: systems-engineer
+        estimatedDuration: 240
+        dependencies:
+          - create-detailed-design
+        artifacts:
+          inputs:
+            - typeId: detailed-design
+              required: true
+          outputs:
+            - typeId: optimization-results
+              required: true
+        requirements:
+          - type: non_functional
+            description: Design must be optimized for key metrics
+            priority: must
+            validationCriteria:
+              - Performance simulations completed
+              - Optimization objectives achieved
+              - Trade-offs analyzed
+      - id: build-prototype
+        title: Build Prototype
+        description: Create physical or virtual prototype for testing
+        type: implementation
+        complexity: complex
+        assignedRole: prototype-engineer
+        estimatedDuration: 360
+        dependencies:
+          - optimize-design
+        artifacts:
+          inputs:
+            - typeId: detailed-design
+              required: true
+            - typeId: optimization-results
+              required: true
+          outputs:
+            - typeId: prototype
+              required: true
+        requirements:
+          - type: functional
+            description: Prototype must be testable
+            priority: must
+            validationCriteria:
+              - Prototype represents final design
+              - Key features functional
+              - Ready for verification testing
+    agentRequirements:
+      roles:
+        - design-engineer
+        - systems-engineer
+        - prototype-engineer
+      skills:
+        - detailed-design
+        - optimization
+        - prototyping
+      minExperience: mid
+
+  - id: verify
+    name: Verify
+    description: >
+      Verify the design meets customer requirements.
+      Test and validate the prototype, prepare for production.
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Design phase must be completed
+        phaseId: design
+    exitCriteria:
+      - type: artifact-exists
+        description: Verification report must exist
+        artifactType: verification-report
+      - type: artifact-exists
+        description: Production plan must exist
+        artifactType: production-plan
+    tasks:
+      - id: develop-test-plan
+        title: Develop Verification Test Plan
+        description: Create comprehensive test plan for design verification
+        type: planning
+        complexity: simple
+        assignedRole: test-engineer
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: quantified-specifications
+              required: true
+            - typeId: prototype
+              required: true
+          outputs:
+            - typeId: test-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Test plan must cover all requirements
+            priority: must
+            validationCriteria:
+              - All specifications have test cases
+              - Test methods defined
+              - Success criteria established
+      - id: execute-verification-tests
+        title: Execute Verification Tests
+        description: Test prototype against all requirements
+        type: testing
+        complexity: complex
+        assignedRole: test-engineer
+        estimatedDuration: 300
+        dependencies:
+          - develop-test-plan
+        artifacts:
+          inputs:
+            - typeId: test-plan
+              required: true
+            - typeId: prototype
+              required: true
+          outputs:
+            - typeId: test-results
+              required: true
+        requirements:
+          - type: functional
+            description: Tests must validate design meets requirements
+            priority: must
+            validationCriteria:
+              - All tests executed
+              - Results documented
+              - Non-conformances identified
+      - id: create-verification-report
+        title: Create Verification Report
+        description: Document verification results and design readiness
+        type: documentation
+        complexity: simple
+        assignedRole: quality-engineer
+        estimatedDuration: 150
+        dependencies:
+          - execute-verification-tests
+        artifacts:
+          inputs:
+            - typeId: test-results
+              required: true
+          outputs:
+            - typeId: verification-report
+              required: true
+        requirements:
+          - type: functional
+            description: Report must demonstrate requirement satisfaction
+            priority: must
+            validationCriteria:
+              - All requirements addressed
+              - Pass/fail criteria met
+              - Recommendations documented
+      - id: prepare-production-plan
+        title: Prepare Production Plan
+        description: Develop plan for manufacturing or implementation
+        type: planning
+        complexity: simple
+        assignedRole: manufacturing-engineer
+        estimatedDuration: 180
+        dependencies:
+          - create-verification-report
+        artifacts:
+          inputs:
+            - typeId: detailed-design
+              required: true
+            - typeId: verification-report
+              required: true
+          outputs:
+            - typeId: production-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Production plan must be executable
+            priority: must
+            validationCriteria:
+              - Manufacturing steps defined
+              - Resource requirements identified
+              - Quality control measures established
+    agentRequirements:
+      roles:
+        - test-engineer
+        - quality-engineer
+        - manufacturing-engineer
+      skills:
+        - testing
+        - quality-assurance
+        - production-planning
+      minExperience: mid
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - define
+    - measure
+    - analyze
+    - design
+    - verify
+  failureHandling:
+    strategy: retry
+    fallbackPhase: define
+
+agentCoordination:
+  roles:
+    - id: product-manager
+      name: Product Manager
+      description: Defines product vision and customer requirements
+      responsibilities:
+        - Gather customer needs
+        - Define design goals
+        - Manage stakeholder expectations
+        - Prioritize requirements
+      requiredSkills:
+        - requirements-gathering
+        - stakeholder-management
+        - product-strategy
+      experienceLevel: mid
+      authority: leader
+    - id: data-analyst
+      name: Data Analyst
+      description: Analyzes data and develops measurement plans
+      responsibilities:
+        - Create measurement plans
+        - Analyze benchmarking data
+        - Quantify requirements
+        - Generate insights
+      requiredSkills:
+        - data-analysis
+        - statistical-methods
+        - measurement-systems
+      experienceLevel: mid
+      authority: contributor
+    - id: market-analyst
+      name: Market Analyst
+      description: Researches market and competitive landscape
+      responsibilities:
+        - Benchmark competitors
+        - Analyze market trends
+        - Identify opportunities
+        - Assess threats
+      requiredSkills:
+        - market-research
+        - competitive-analysis
+        - business-intelligence
+      experienceLevel: mid
+      authority: contributor
+    - id: design-engineer
+      name: Design Engineer
+      description: Creates and develops product designs
+      responsibilities:
+        - Generate design concepts
+        - Select optimal designs
+        - Create detailed designs
+        - Optimize solutions
+      requiredSkills:
+        - conceptual-design
+        - detailed-design
+        - design-optimization
+      experienceLevel: senior
+      authority: contributor
+    - id: systems-engineer
+      name: Systems Engineer
+      description: Ensures design integration and optimization
+      responsibilities:
+        - Evaluate design alternatives
+        - Optimize system performance
+        - Manage interfaces
+        - Validate integration
+      requiredSkills:
+        - systems-thinking
+        - integration
+        - optimization
+      experienceLevel: senior
+      authority: reviewer
+    - id: prototype-engineer
+      name: Prototype Engineer
+      description: Builds and tests prototypes
+      responsibilities:
+        - Build prototypes
+        - Test feasibility
+        - Iterate designs
+        - Document results
+      requiredSkills:
+        - prototyping
+        - fabrication
+        - testing
+      experienceLevel: mid
+      authority: contributor
+    - id: test-engineer
+      name: Test Engineer
+      description: Verifies design meets requirements
+      responsibilities:
+        - Develop test plans
+        - Execute tests
+        - Analyze results
+        - Report findings
+      requiredSkills:
+        - test-planning
+        - test-execution
+        - data-analysis
+      experienceLevel: mid
+      authority: contributor
+    - id: quality-engineer
+      name: Quality Engineer
+      description: Ensures quality standards are met
+      responsibilities:
+        - Define quality standards
+        - Review designs
+        - Verify compliance
+        - Approve releases
+      requiredSkills:
+        - quality-assurance
+        - standards-compliance
+        - auditing
+      experienceLevel: senior
+      authority: reviewer
+    - id: manufacturing-engineer
+      name: Manufacturing Engineer
+      description: Plans production and manufacturing processes
+      responsibilities:
+        - Design for manufacturability
+        - Plan production processes
+        - Optimize manufacturing
+        - Ensure feasibility
+      requiredSkills:
+        - manufacturing-processes
+        - production-planning
+        - process-optimization
+      experienceLevel: mid
+      authority: contributor
+    - id: project-manager
+      name: Project Manager
+      description: Coordinates the DMADV project
+      responsibilities:
+        - Define project scope
+        - Manage timeline
+        - Allocate resources
+        - Track progress
+      requiredSkills:
+        - project-management
+        - planning
+        - coordination
+      experienceLevel: mid
+      authority: leader
+  teamComposition:
+    minSize: 4
+    maxSize: 8
+    required:
+      - product-manager
+      - design-engineer
+      - test-engineer
+      - project-manager
+    optional:
+      - data-analyst
+      - market-analyst
+      - systems-engineer
+      - prototype-engineer
+      - quality-engineer
+      - manufacturing-engineer
+  communicationPatterns:
+    - from: project-manager
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+        - constraint
+    - from: any
+      to: project-manager
+      type: direct
+      contextTypes:
+        - finding
+        - constraint
+    - from: design-engineer
+      to: systems-engineer
+      type: request-response
+      contextTypes:
+        - decision
+    - from: test-engineer
+      to: quality-engineer
+      type: request-response
+      contextTypes:
+        - finding
+  decisionAuthority:
+    - decision: Define design goals
+      authority: product-manager
+      requiresConsensus: true
+      consensusRoles:
+        - design-engineer
+    - decision: Select optimal design
+      authority: design-engineer
+      requiresConsensus: true
+      consensusRoles:
+        - systems-engineer
+        - product-manager
+    - decision: Approve design for production
+      authority: quality-engineer
+      requiresConsensus: true
+      consensusRoles:
+        - test-engineer
+        - manufacturing-engineer
+    - decision: Approve phase completion
+      authority: project-manager
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: customer-requirements
+      name: Customer Requirements
+      description: Documented customer needs and expectations
+      format: structured
+      schema:
+        type: object
+        required:
+          - requirements
+          - priorities
+        properties:
+          requirements:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                description:
+                  type: string
+                priority:
+                  type: string
+          priorities:
+            type: array
+            items:
+              type: string
+    - id: design-goals
+      name: Design Goals
+      description: Clear design objectives and success criteria
+      format: markdown
+    - id: project-scope
+      name: Project Scope
+      description: Project boundaries, timeline, and resources
+      format: structured
+    - id: measurement-plan
+      name: Measurement Plan
+      description: Plan for measuring customer needs and specifications
+      format: structured
+    - id: benchmark-data
+      name: Benchmark Data
+      description: Competitive analysis and market research
+      format: json
+    - id: quantified-specifications
+      name: Quantified Specifications
+      description: Measurable design specifications
+      format: structured
+    - id: design-alternatives
+      name: Design Alternatives
+      description: Multiple design concepts
+      format: markdown
+    - id: design-evaluation
+      name: Design Evaluation
+      description: Assessment of design alternatives
+      format: structured
+    - id: selected-design
+      name: Selected Design
+      description: Chosen design with rationale
+      format: markdown
+    - id: detailed-design
+      name: Detailed Design
+      description: Complete design specifications and documentation
+      format: structured
+    - id: optimization-results
+      name: Optimization Results
+      description: Results from design optimization
+      format: json
+    - id: prototype
+      name: Prototype
+      description: Physical or virtual prototype
+      format: binary
+    - id: test-plan
+      name: Test Plan
+      description: Verification test plan
+      format: structured
+    - id: test-results
+      name: Test Results
+      description: Verification test outcomes
+      format: json
+    - id: verification-report
+      name: Verification Report
+      description: Complete verification documentation
+      format: markdown
+    - id: production-plan
+      name: Production Plan
+      description: Manufacturing or implementation plan
+      format: structured
+  dependencies:
+    - artifact: design-goals
+      dependsOn:
+        - customer-requirements
+    - artifact: project-scope
+      dependsOn:
+        - design-goals
+    - artifact: measurement-plan
+      dependsOn:
+        - customer-requirements
+    - artifact: benchmark-data
+      dependsOn:
+        - measurement-plan
+    - artifact: quantified-specifications
+      dependsOn:
+        - customer-requirements
+        - benchmark-data
+    - artifact: design-alternatives
+      dependsOn:
+        - quantified-specifications
+    - artifact: design-evaluation
+      dependsOn:
+        - design-alternatives
+        - quantified-specifications
+    - artifact: selected-design
+      dependsOn:
+        - design-evaluation
+    - artifact: detailed-design
+      dependsOn:
+        - selected-design
+    - artifact: optimization-results
+      dependsOn:
+        - detailed-design
+    - artifact: prototype
+      dependsOn:
+        - detailed-design
+        - optimization-results
+    - artifact: test-plan
+      dependsOn:
+        - quantified-specifications
+        - prototype
+    - artifact: test-results
+      dependsOn:
+        - test-plan
+        - prototype
+    - artifact: verification-report
+      dependsOn:
+        - test-results
+    - artifact: production-plan
+      dependsOn:
+        - detailed-design
+        - verification-report

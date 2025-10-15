@@ -6,6 +6,7 @@ metadata:
     A simple methodology that encourages action without overthinking.
   type: sequential
   version: 1.0.0
+  complexity: simple
   i18n:
     es:
       title: Solo se vive una vez

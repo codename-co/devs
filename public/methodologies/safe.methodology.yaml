@@ -1,0 +1,435 @@
+metadata:
+  id: safe
+  name: SAFe
+  title: Scaled Agile Framework
+  description: >
+    Framework for scaling agile practices across large enterprises.
+    SAFe combines Lean, Agile, and DevOps practices for enterprise-scale development.
+  type: hierarchical
+  version: 1.0.0
+  origin: Dean Leffingwell
+  domains:
+    - enterprise-agile
+    - scaled-agile
+    - portfolio-management
+    - program-management
+  complexity: expert
+  tags:
+    - scaled-agile
+    - enterprise
+    - pi-planning
+    - agile-release-train
+
+configuration:
+  timeBox:
+    duration: 10
+    unit: weeks
+    strict: true
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 2
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 10
+
+phases:
+  - id: pi-planning
+    name: PI Planning
+    description: Program Increment planning event
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: PI objectives must be defined
+        artifactType: pi-objectives
+    tasks:
+      - id: strategic-alignment
+        title: Strategic Alignment
+        description: Align teams with strategic themes
+        type: planning
+        complexity: complex
+        assignedRole: rte
+        estimatedDuration: 240
+        artifacts:
+          outputs:
+            - typeId: strategic-themes
+              required: true
+      - id: team-planning
+        title: Team Planning
+        description: Teams plan their iterations
+        type: planning
+        complexity: complex
+        assignedRole: scrum-master
+        estimatedDuration: 480
+        dependencies:
+          - strategic-alignment
+        artifacts:
+          inputs:
+            - typeId: strategic-themes
+              required: true
+          outputs:
+            - typeId: team-plans
+              required: true
+      - id: draft-plan-review
+        title: Draft Plan Review
+        description: Review and adjust plans
+        type: review
+        complexity: simple
+        assignedRole: rte
+        estimatedDuration: 120
+        dependencies:
+          - team-planning
+        artifacts:
+          inputs:
+            - typeId: team-plans
+              required: true
+          outputs:
+            - typeId: pi-objectives
+              required: true
+    agentRequirements:
+      roles:
+        - rte
+        - scrum-master
+        - product-owner
+      skills:
+        - pi-planning
+        - facilitation
+        - coordination
+      minExperience: expert
+
+  - id: execution
+    name: Execution
+    description: Execute the PI with multiple sprints
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: PI Planning phase must be completed
+        phaseId: pi-planning
+    exitCriteria:
+      - type: artifact-exists
+        description: Working software must be delivered
+        artifactType: system-demo
+    tasks:
+      - id: sprint-execution
+        title: Execute Sprints
+        description: Teams execute 2-week sprints
+        type: implementation
+        complexity: complex
+        assignedRole: agile-team
+        estimatedDuration: 2880
+        artifacts:
+          inputs:
+            - typeId: pi-objectives
+              required: true
+          outputs:
+            - typeId: increments
+              required: true
+      - id: scrum-of-scrums
+        title: Scrum of Scrums
+        description: Coordinate across teams
+        type: review
+        complexity: simple
+        assignedRole: rte
+        estimatedDuration: 30
+        dependencies:
+          - sprint-execution
+        artifacts:
+          inputs:
+            - typeId: increments
+              required: true
+          outputs:
+            - typeId: coordination-notes
+              required: true
+      - id: system-demo
+        title: System Demo
+        description: Demo integrated system every 2 weeks
+        type: review
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 60
+        dependencies:
+          - scrum-of-scrums
+        artifacts:
+          inputs:
+            - typeId: increments
+              required: true
+          outputs:
+            - typeId: system-demo
+              required: true
+    agentRequirements:
+      roles:
+        - agile-team
+        - rte
+        - product-owner
+      skills:
+        - agile-development
+        - integration
+        - coordination
+      minExperience: mid
+
+  - id: inspect-and-adapt
+    name: Inspect and Adapt
+    description: PI retrospective and problem solving
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Execution phase must be completed
+        phaseId: execution
+    exitCriteria:
+      - type: artifact-exists
+        description: Improvement backlog must exist
+        artifactType: improvement-backlog
+    tasks:
+      - id: pi-demo
+        title: PI System Demo
+        description: Demonstrate all PI achievements
+        type: review
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 120
+        artifacts:
+          inputs:
+            - typeId: system-demo
+              required: true
+          outputs:
+            - typeId: pi-demo-feedback
+              required: true
+      - id: quantitative-measurement
+        title: Quantitative Measurement
+        description: Review PI metrics
+        type: analysis
+        complexity: simple
+        assignedRole: rte
+        estimatedDuration: 60
+        dependencies:
+          - pi-demo
+        artifacts:
+          outputs:
+            - typeId: pi-metrics
+              required: true
+      - id: problem-solving-workshop
+        title: Problem Solving Workshop
+        description: Identify and address systemic issues
+        type: review
+        complexity: complex
+        assignedRole: rte
+        estimatedDuration: 240
+        dependencies:
+          - quantitative-measurement
+        artifacts:
+          inputs:
+            - typeId: pi-metrics
+              required: true
+          outputs:
+            - typeId: improvement-backlog
+              required: true
+    agentRequirements:
+      roles:
+        - rte
+        - product-owner
+        - agile-team
+      skills:
+        - retrospective-facilitation
+        - problem-solving
+        - metrics-analysis
+      minExperience: senior
+
+execution:
+  strategy: iterative
+  phaseOrder:
+    - pi-planning
+    - execution
+    - inspect-and-adapt
+  loops:
+    - id: pi-cycle
+      name: Program Increment Cycle
+      description: 10-week PI cycle
+      phases:
+        - pi-planning
+        - execution
+        - inspect-and-adapt
+      maxIterations: 10
+  failureHandling:
+    strategy: retry
+    fallbackPhase: pi-planning
+
+agentCoordination:
+  roles:
+    - id: rte
+      name: Release Train Engineer
+      description: Chief Scrum Master for the ART
+      responsibilities:
+        - Facilitate PI planning
+        - Coordinate execution
+        - Remove impediments
+      requiredSkills:
+        - safe-framework
+        - facilitation
+        - servant-leadership
+      experienceLevel: expert
+      authority: leader
+    - id: product-owner
+      name: Product Owner
+      description: Defines features and acceptance criteria
+      responsibilities:
+        - Define features
+        - Prioritize backlog
+        - Accept work
+      requiredSkills:
+        - product-management
+        - prioritization
+      experienceLevel: senior
+      authority: leader
+    - id: scrum-master
+      name: Scrum Master
+      description: Facilitates team processes
+      responsibilities:
+        - Facilitate team events
+        - Coach team
+        - Remove blockers
+      requiredSkills:
+        - scrum
+        - coaching
+      experienceLevel: mid
+      authority: contributor
+    - id: agile-team
+      name: Agile Team
+      description: Cross-functional development team
+      responsibilities:
+        - Deliver value
+        - Self-organize
+        - Continuously improve
+      requiredSkills:
+        - development
+        - testing
+        - collaboration
+      experienceLevel: mid
+      authority: contributor
+  teamComposition:
+    minSize: 50
+    maxSize: 125
+    required:
+      - rte
+      - product-owner
+      - agile-team
+    optional:
+      - scrum-master
+  communicationPatterns:
+    - from: rte
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+        - constraint
+  decisionAuthority:
+    - decision: Approve PI objectives
+      authority: product-owner
+      requiresConsensus: true
+      consensusRoles:
+        - rte
+
+artifactFlow:
+  artifactTypes:
+    - id: strategic-themes
+      name: Strategic Themes
+      description: Strategic priorities for the PI
+      format: markdown
+    - id: team-plans
+      name: Team Plans
+      description: Individual team iteration plans
+      format: json
+    - id: pi-objectives
+      name: PI Objectives
+      description: Committed objectives for the PI
+      format: structured
+    - id: increments
+      name: Increments
+      description: Working software increments
+      format: code
+    - id: coordination-notes
+      name: Coordination Notes
+      description: Cross-team coordination notes
+      format: markdown
+    - id: system-demo
+      name: System Demo
+      description: Integrated system demonstration
+      format: markdown
+    - id: pi-demo-feedback
+      name: PI Demo Feedback
+      description: Stakeholder feedback on PI
+      format: json
+    - id: pi-metrics
+      name: PI Metrics
+      description: Quantitative PI measurements
+      format: json
+    - id: improvement-backlog
+      name: Improvement Backlog
+      description: Identified improvements
+      format: json
+  dependencies:
+    - artifact: team-plans
+      dependsOn:
+        - strategic-themes
+    - artifact: pi-objectives
+      dependsOn:
+        - team-plans
+    - artifact: system-demo
+      dependsOn:
+        - increments
+    - artifact: improvement-backlog
+      dependsOn:
+        - pi-metrics
+
+ceremonies:
+  - id: pi-planning-event
+    name: PI Planning Event
+    description: Two-day planning event
+    timing: phase-start
+    duration: 960
+    participants:
+      - rte
+      - product-owner
+      - scrum-master
+      - agile-team
+    objectives:
+      - Align on vision
+      - Plan iterations
+      - Commit to objectives
+  - id: scrum-of-scrums
+    name: Scrum of Scrums
+    description: Daily cross-team coordination
+    timing: daily
+    duration: 30
+    participants:
+      - rte
+      - scrum-master
+    objectives:
+      - Coordinate dependencies
+      - Identify impediments
+      - Share progress
+  - id: system-demo
+    name: System Demo
+    description: Biweekly system integration demo
+    timing: periodic
+    duration: 60
+    participants:
+      - product-owner
+      - agile-team
+    objectives:
+      - Demonstrate integration
+      - Get feedback
+      - Validate features
+  - id: inspect-and-adapt
+    name: Inspect and Adapt Workshop
+    description: End-of-PI retrospective
+    timing: phase-end
+    duration: 480
+    participants:
+      - rte
+      - product-owner
+      - scrum-master
+      - agile-team
+    objectives:
+      - Review PI performance
+      - Identify improvements
+      - Plan changes

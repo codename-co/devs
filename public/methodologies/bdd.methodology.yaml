@@ -1,0 +1,873 @@
+metadata:
+  id: bdd
+  name: BDD
+  title: Behavior-Driven Development
+  description: >
+    Software development methodology that extends TDD by writing tests in natural language.
+    BDD focuses on business behavior and uses Given-When-Then scenarios to describe features.
+    Promotes collaboration between developers, testers, and business stakeholders.
+  type: iterative
+  version: 1.0.0
+  origin: Dan North / Agile Community
+  domains:
+    - software-development
+    - requirements-engineering
+    - agile-development
+    - acceptance-testing
+  complexity: moderate
+  tags:
+    - testing
+    - agile
+    - collaboration
+    - requirements
+    - acceptance-testing
+  i18n:
+    es:
+      title: Desarrollo Guiado por Comportamiento
+      description: >
+        Metodología de desarrollo de software que extiende TDD escribiendo pruebas en lenguaje natural.
+        BDD se centra en el comportamiento empresarial y utiliza escenarios Dado-Cuando-Entonces para describir funcionalidades.
+        Promueve la colaboración entre desarrolladores, testers y stakeholders del negocio.
+    fr:
+      title: Développement Piloté par le Comportement
+      description: >
+        Méthodologie de développement logiciel qui étend TDD en écrivant des tests en langage naturel.
+        BDD se concentre sur le comportement métier et utilise des scénarios Étant donné-Quand-Alors pour décrire les fonctionnalités.
+        Favorise la collaboration entre développeurs, testeurs et parties prenantes métier.
+    ko:
+      title: 행동 주도 개발
+      description: >
+        자연어로 테스트를 작성하여 TDD를 확장하는 소프트웨어 개발 방법론.
+        BDD는 비즈니스 행동에 초점을 맞추고 Given-When-Then 시나리오를 사용하여 기능을 설명합니다.
+        개발자, 테스터 및 비즈니스 이해관계자 간의 협업을 촉진합니다.
+
+configuration:
+  maxIterations: 500
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 3
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 3
+  convergence:
+    metric: scenarios-remaining
+    threshold: 0
+    operator: "=="
+
+phases:
+  - id: discover
+    name: Discover
+    description: >
+      Collaborate with stakeholders to discover and understand feature requirements.
+      Use example mapping and conversations to explore the problem domain.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Feature description must exist
+        artifactType: feature-description
+      - type: artifact-exists
+        description: Example scenarios must exist
+        artifactType: example-scenarios
+    tasks:
+      - id: conduct-three-amigos
+        title: Conduct Three Amigos Session
+        description: Meet with business, development, and testing perspectives
+        type: analysis
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 45
+        artifacts:
+          outputs:
+            - typeId: three-amigos-notes
+              required: true
+        requirements:
+          - type: functional
+            description: All three perspectives must participate
+            priority: must
+            validationCriteria:
+              - Business perspective present
+              - Development perspective present
+              - Testing perspective present
+              - Common understanding achieved
+      - id: describe-feature
+        title: Describe Feature in Business Terms
+        description: Write feature description focusing on business value
+        type: documentation
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 30
+        dependencies:
+          - conduct-three-amigos
+        artifacts:
+          inputs:
+            - typeId: three-amigos-notes
+              required: true
+          outputs:
+            - typeId: feature-description
+              required: true
+        requirements:
+          - type: functional
+            description: Feature must be described in business language
+            priority: must
+            validationCriteria:
+              - Business value stated
+              - User role identified
+              - Feature benefit clear
+              - Acceptance criteria outlined
+      - id: create-example-scenarios
+        title: Create Concrete Examples
+        description: Develop specific scenarios that illustrate feature behavior
+        type: analysis
+        complexity: simple
+        assignedRole: business-analyst
+        estimatedDuration: 60
+        dependencies:
+          - describe-feature
+        artifacts:
+          inputs:
+            - typeId: feature-description
+              required: true
+            - typeId: three-amigos-notes
+              required: true
+          outputs:
+            - typeId: example-scenarios
+              required: true
+        requirements:
+          - type: functional
+            description: Examples must cover key scenarios
+            priority: must
+            validationCriteria:
+              - Happy path covered
+              - Edge cases included
+              - Error scenarios considered
+              - Examples are concrete
+      - id: example-mapping
+        title: Perform Example Mapping
+        description: Organize examples into rules and questions
+        type: analysis
+        complexity: simple
+        assignedRole: business-analyst
+        estimatedDuration: 30
+        dependencies:
+          - create-example-scenarios
+        artifacts:
+          inputs:
+            - typeId: example-scenarios
+              required: true
+          outputs:
+            - typeId: example-map
+              required: true
+        requirements:
+          - type: functional
+            description: Examples must be well-organized
+            priority: must
+            validationCriteria:
+              - Rules identified
+              - Examples grouped
+              - Questions captured
+              - Scope clear
+    agentRequirements:
+      roles:
+        - product-owner
+        - business-analyst
+        - developer
+        - tester
+      skills:
+        - requirements-elicitation
+        - collaboration
+        - example-mapping
+      minExperience: mid
+
+  - id: formulate
+    name: Formulate
+    description: >
+      Convert examples into Given-When-Then scenarios.
+      Write scenarios in structured natural language.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Discover phase must be completed
+        phaseId: discover
+    exitCriteria:
+      - type: artifact-exists
+        description: BDD scenarios must be written
+        artifactType: bdd-scenarios
+    tasks:
+      - id: write-gherkin-scenarios
+        title: Write Gherkin Scenarios
+        description: Transform examples into Given-When-Then format
+        type: documentation
+        complexity: simple
+        assignedRole: business-analyst
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: example-scenarios
+              required: true
+            - typeId: example-map
+              required: true
+          outputs:
+            - typeId: gherkin-draft
+              required: true
+        requirements:
+          - type: functional
+            description: Scenarios must follow Gherkin syntax
+            priority: must
+            validationCriteria:
+              - Given-When-Then structure used
+              - Scenarios are readable
+              - One behavior per scenario
+              - Background used when appropriate
+      - id: review-scenarios
+        title: Review Scenarios with Team
+        description: Validate scenarios with stakeholders
+        type: review
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 30
+        dependencies:
+          - write-gherkin-scenarios
+        artifacts:
+          inputs:
+            - typeId: gherkin-draft
+              required: true
+          outputs:
+            - typeId: scenario-feedback
+              required: true
+        requirements:
+          - type: functional
+            description: Scenarios must be approved by stakeholders
+            priority: must
+            validationCriteria:
+              - Business validates scenarios
+              - Development confirms feasibility
+              - Testing confirms testability
+      - id: refine-scenarios
+        title: Refine Scenarios Based on Feedback
+        description: Incorporate feedback and finalize scenarios
+        type: documentation
+        complexity: simple
+        assignedRole: business-analyst
+        estimatedDuration: 30
+        dependencies:
+          - review-scenarios
+        artifacts:
+          inputs:
+            - typeId: gherkin-draft
+              required: true
+            - typeId: scenario-feedback
+              required: true
+          outputs:
+            - typeId: bdd-scenarios
+              required: true
+        requirements:
+          - type: functional
+            description: Final scenarios must be agreed upon
+            priority: must
+            validationCriteria:
+              - Feedback incorporated
+              - Ambiguities resolved
+              - All stakeholders agree
+              - Scenarios are specific
+    agentRequirements:
+      roles:
+        - business-analyst
+        - product-owner
+        - developer
+        - tester
+      skills:
+        - gherkin
+        - specification-by-example
+        - communication
+      minExperience: mid
+
+  - id: automate
+    name: Automate
+    description: >
+      Implement step definitions to automate scenarios.
+      Connect Gherkin steps to executable code.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Formulate phase must be completed
+        phaseId: formulate
+    exitCriteria:
+      - type: artifact-exists
+        description: Step definitions must be implemented
+        artifactType: step-definitions
+      - type: custom
+        description: Scenarios must be executable
+    tasks:
+      - id: identify-step-definitions
+        title: Identify Required Step Definitions
+        description: Analyze scenarios to determine what steps need implementation
+        type: analysis
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 30
+        artifacts:
+          inputs:
+            - typeId: bdd-scenarios
+              required: true
+          outputs:
+            - typeId: step-inventory
+              required: true
+        requirements:
+          - type: functional
+            description: All steps must be accounted for
+            priority: must
+            validationCriteria:
+              - Unique steps identified
+              - Reusable steps noted
+              - Parameters identified
+              - Data requirements clear
+      - id: implement-step-definitions
+        title: Implement Step Definitions
+        description: Write code that executes each Given-When-Then step
+        type: implementation
+        complexity: complex
+        assignedRole: developer
+        estimatedDuration: 120
+        dependencies:
+          - identify-step-definitions
+        artifacts:
+          inputs:
+            - typeId: step-inventory
+              required: true
+            - typeId: bdd-scenarios
+              required: true
+          outputs:
+            - typeId: step-definitions
+              required: true
+        requirements:
+          - type: functional
+            description: Step definitions must be complete and correct
+            priority: must
+            validationCriteria:
+              - All steps implemented
+              - Steps are reusable
+              - Code is maintainable
+              - Clear separation of concerns
+      - id: run-scenarios
+        title: Run Automated Scenarios
+        description: Execute scenarios to verify they run (should fail initially)
+        type: testing
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 15
+        dependencies:
+          - implement-step-definitions
+        artifacts:
+          inputs:
+            - typeId: step-definitions
+              required: true
+            - typeId: bdd-scenarios
+              required: true
+          outputs:
+            - typeId: scenario-execution-results
+              required: true
+        requirements:
+          - type: functional
+            description: Scenarios must execute without errors
+            priority: must
+            validationCriteria:
+              - Scenarios run
+              - Steps are found
+              - Failures are expected
+              - No undefined steps
+    agentRequirements:
+      roles:
+        - developer
+        - test-automation-engineer
+      skills:
+        - test-automation
+        - bdd-frameworks
+        - coding
+      minExperience: mid
+
+  - id: implement
+    name: Implement
+    description: >
+      Develop application code to make scenarios pass.
+      Follow TDD principles within BDD framework.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Automate phase must be completed
+        phaseId: automate
+    exitCriteria:
+      - type: artifact-exists
+        description: Application code must exist
+        artifactType: application-code
+      - type: custom
+        description: All scenarios must pass
+    tasks:
+      - id: implement-feature-code
+        title: Implement Feature Code
+        description: Write application code to make scenarios pass
+        type: implementation
+        complexity: complex
+        assignedRole: developer
+        estimatedDuration: 180
+        artifacts:
+          inputs:
+            - typeId: bdd-scenarios
+              required: true
+            - typeId: step-definitions
+              required: true
+          outputs:
+            - typeId: application-code
+              required: true
+        requirements:
+          - type: functional
+            description: Code must satisfy scenario requirements
+            priority: must
+            validationCriteria:
+              - Feature implemented
+              - Code follows standards
+              - Unit tests written
+              - Code is testable
+      - id: run-all-scenarios
+        title: Run All BDD Scenarios
+        description: Execute complete scenario suite
+        type: testing
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 20
+        dependencies:
+          - implement-feature-code
+        artifacts:
+          inputs:
+            - typeId: application-code
+              required: true
+            - typeId: bdd-scenarios
+              required: true
+          outputs:
+            - typeId: full-scenario-results
+              required: true
+        requirements:
+          - type: functional
+            description: All scenarios must pass
+            priority: must
+            validationCriteria:
+              - All scenarios pass
+              - No pending steps
+              - No failures
+              - Performance acceptable
+      - id: refactor-implementation
+        title: Refactor Implementation
+        description: Improve code quality while keeping scenarios passing
+        type: implementation
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 60
+        dependencies:
+          - run-all-scenarios
+        artifacts:
+          inputs:
+            - typeId: application-code
+              required: true
+          outputs:
+            - typeId: refactored-application-code
+              required: true
+        requirements:
+          - type: non_functional
+            description: Code quality must improve
+            priority: should
+            validationCriteria:
+              - Code is clean
+              - Duplication removed
+              - Names are clear
+              - Structure is logical
+    agentRequirements:
+      roles:
+        - developer
+      skills:
+        - software-development
+        - refactoring
+        - testing
+      minExperience: mid
+
+  - id: demonstrate
+    name: Demonstrate
+    description: >
+      Show working feature to stakeholders.
+      Use living documentation to demonstrate behavior.
+    order: 4
+    entryCriteria:
+      - type: phase-completed
+        description: Implement phase must be completed
+        phaseId: implement
+    exitCriteria:
+      - type: artifact-exists
+        description: Demo must be conducted
+        artifactType: demo-record
+      - type: artifact-exists
+        description: Living documentation must be generated
+        artifactType: living-documentation
+    repeatable: true
+    tasks:
+      - id: generate-living-docs
+        title: Generate Living Documentation
+        description: Create readable documentation from scenarios
+        type: documentation
+        complexity: simple
+        assignedRole: test-automation-engineer
+        estimatedDuration: 15
+        artifacts:
+          inputs:
+            - typeId: bdd-scenarios
+              required: true
+            - typeId: full-scenario-results
+              required: true
+          outputs:
+            - typeId: living-documentation
+              required: true
+        requirements:
+          - type: functional
+            description: Documentation must be current and accurate
+            priority: must
+            validationCriteria:
+              - All scenarios documented
+              - Pass/fail status shown
+              - Format is readable
+              - Automatically generated
+      - id: demonstrate-feature
+        title: Demonstrate Feature to Stakeholders
+        description: Show working feature and explain behavior
+        type: review
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 30
+        dependencies:
+          - generate-living-docs
+        artifacts:
+          inputs:
+            - typeId: living-documentation
+              required: true
+            - typeId: refactored-application-code
+              required: true
+          outputs:
+            - typeId: demo-record
+              required: true
+        requirements:
+          - type: functional
+            description: Stakeholders must accept feature
+            priority: must
+            validationCriteria:
+              - Feature demonstrated
+              - Scenarios validated
+              - Business value confirmed
+              - Acceptance obtained
+      - id: gather-feedback
+        title: Gather Feedback
+        description: Collect feedback for future improvements
+        type: review
+        complexity: simple
+        assignedRole: product-owner
+        estimatedDuration: 20
+        dependencies:
+          - demonstrate-feature
+        artifacts:
+          inputs:
+            - typeId: demo-record
+              required: true
+          outputs:
+            - typeId: stakeholder-feedback
+              required: true
+        requirements:
+          - type: functional
+            description: Feedback must be captured
+            priority: should
+            validationCriteria:
+              - Feedback documented
+              - Issues noted
+              - Enhancements identified
+              - Next steps clear
+    agentRequirements:
+      roles:
+        - product-owner
+        - test-automation-engineer
+        - developer
+      skills:
+        - demonstration
+        - communication
+        - documentation
+      minExperience: mid
+
+execution:
+  strategy: iterative
+  phaseOrder:
+    - discover
+    - formulate
+    - automate
+    - implement
+    - demonstrate
+  loops:
+    - id: bdd-cycle
+      name: BDD Feature Development Cycle
+      description: Iterative cycle of behavior-driven development
+      phases:
+        - discover
+        - formulate
+        - automate
+        - implement
+        - demonstrate
+      convergenceCriteria:
+        - type: custom
+          description: All features delivered
+        - type: metric-threshold
+          description: No scenarios remaining
+          metric: scenarios-remaining
+          threshold: 0
+          operator: "=="
+      exitConditions:
+        - type: custom
+          description: Feature set complete
+  failureHandling:
+    strategy: retry
+    fallbackPhase: discover
+
+agentCoordination:
+  roles:
+    - id: product-owner
+      name: Product Owner
+      description: Represents business and customer needs
+      responsibilities:
+        - Facilitate Three Amigos
+        - Describe features
+        - Review scenarios
+        - Accept features
+        - Demonstrate value
+      requiredSkills:
+        - business-analysis
+        - stakeholder-management
+        - communication
+      experienceLevel: mid
+      authority: approver
+    - id: business-analyst
+      name: Business Analyst
+      description: Translates requirements into scenarios
+      responsibilities:
+        - Create examples
+        - Perform example mapping
+        - Write Gherkin scenarios
+        - Refine scenarios
+      requiredSkills:
+        - requirements-analysis
+        - gherkin
+        - specification-by-example
+      experienceLevel: mid
+      authority: contributor
+    - id: developer
+      name: Developer
+      description: Implements features and automation
+      responsibilities:
+        - Implement step definitions
+        - Develop features
+        - Run scenarios
+        - Refactor code
+      requiredSkills:
+        - software-development
+        - test-automation
+        - bdd-frameworks
+      experienceLevel: mid
+      authority: contributor
+    - id: tester
+      name: Tester
+      description: Ensures quality and testability
+      responsibilities:
+        - Contribute to scenarios
+        - Validate test coverage
+        - Identify edge cases
+        - Verify quality
+      requiredSkills:
+        - testing
+        - test-design
+        - quality-assurance
+      experienceLevel: mid
+      authority: contributor
+    - id: test-automation-engineer
+      name: Test Automation Engineer
+      description: Specializes in test automation
+      responsibilities:
+        - Design automation framework
+        - Implement step definitions
+        - Generate living documentation
+        - Maintain test suite
+      requiredSkills:
+        - test-automation
+        - bdd-frameworks
+        - coding
+      experienceLevel: mid
+      authority: contributor
+  teamComposition:
+    minSize: 3
+    maxSize: 5
+    required:
+      - product-owner
+      - business-analyst
+      - developer
+    optional:
+      - tester
+      - test-automation-engineer
+  communicationPatterns:
+    - from: product-owner
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+        - resource
+    - from: business-analyst
+      to: developer
+      type: direct
+      contextTypes:
+        - finding
+    - from: developer
+      to: tester
+      type: request-response
+      contextTypes:
+        - finding
+    - from: any
+      to: product-owner
+      type: direct
+      contextTypes:
+        - constraint
+  decisionAuthority:
+    - decision: Feature scope
+      authority: product-owner
+      requiresConsensus: true
+      consensusRoles:
+        - business-analyst
+    - decision: Scenario acceptance
+      authority: product-owner
+      requiresConsensus: true
+      consensusRoles:
+        - business-analyst
+        - developer
+    - decision: Feature acceptance
+      authority: product-owner
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: three-amigos-notes
+      name: Three Amigos Notes
+      description: Notes from collaborative discovery session
+      format: markdown
+    - id: feature-description
+      name: Feature Description
+      description: Business-focused feature description
+      format: markdown
+    - id: example-scenarios
+      name: Example Scenarios
+      description: Concrete examples of feature behavior
+      format: markdown
+    - id: example-map
+      name: Example Map
+      description: Organized mapping of examples to rules
+      format: structured
+    - id: gherkin-draft
+      name: Gherkin Draft
+      description: Initial Given-When-Then scenarios
+      format: code
+    - id: scenario-feedback
+      name: Scenario Feedback
+      description: Stakeholder feedback on scenarios
+      format: markdown
+    - id: bdd-scenarios
+      name: BDD Scenarios
+      description: Final Gherkin scenarios
+      format: code
+    - id: step-inventory
+      name: Step Inventory
+      description: List of required step definitions
+      format: structured
+    - id: step-definitions
+      name: Step Definitions
+      description: Implemented step definition code
+      format: code
+    - id: scenario-execution-results
+      name: Scenario Execution Results
+      description: Initial scenario run results
+      format: json
+    - id: application-code
+      name: Application Code
+      description: Feature implementation code
+      format: code
+    - id: full-scenario-results
+      name: Full Scenario Results
+      description: Complete scenario suite results
+      format: json
+    - id: refactored-application-code
+      name: Refactored Application Code
+      description: Improved application code
+      format: code
+    - id: living-documentation
+      name: Living Documentation
+      description: Generated documentation from scenarios
+      format: html
+    - id: demo-record
+      name: Demo Record
+      description: Record of feature demonstration
+      format: structured
+    - id: stakeholder-feedback
+      name: Stakeholder Feedback
+      description: Feedback from demonstration
+      format: markdown
+  dependencies:
+    - artifact: feature-description
+      dependsOn:
+        - three-amigos-notes
+    - artifact: example-scenarios
+      dependsOn:
+        - feature-description
+        - three-amigos-notes
+    - artifact: example-map
+      dependsOn:
+        - example-scenarios
+    - artifact: gherkin-draft
+      dependsOn:
+        - example-scenarios
+        - example-map
+    - artifact: scenario-feedback
+      dependsOn:
+        - gherkin-draft
+    - artifact: bdd-scenarios
+      dependsOn:
+        - gherkin-draft
+        - scenario-feedback
+    - artifact: step-inventory
+      dependsOn:
+        - bdd-scenarios
+    - artifact: step-definitions
+      dependsOn:
+        - step-inventory
+        - bdd-scenarios
+    - artifact: scenario-execution-results
+      dependsOn:
+        - step-definitions
+        - bdd-scenarios
+    - artifact: application-code
+      dependsOn:
+        - bdd-scenarios
+        - step-definitions
+    - artifact: full-scenario-results
+      dependsOn:
+        - application-code
+        - bdd-scenarios
+    - artifact: refactored-application-code
+      dependsOn:
+        - application-code
+    - artifact: living-documentation
+      dependsOn:
+        - bdd-scenarios
+        - full-scenario-results
+    - artifact: demo-record
+      dependsOn:
+        - living-documentation
+        - refactored-application-code
+    - artifact: stakeholder-feedback
+      dependsOn:
+        - demo-record

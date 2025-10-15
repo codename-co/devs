@@ -1,0 +1,609 @@
+metadata:
+  id: tdd
+  name: TDD
+  title: Test-Driven Development
+  description: >
+    Software development methodology where tests are written before code.
+    TDD follows Red-Green-Refactor cycle: write failing test, make it pass, improve code.
+    Ensures code quality, maintainability, and adherence to requirements.
+  type: iterative
+  version: 1.0.0
+  origin: Extreme Programming / Kent Beck
+  domains:
+    - software-development
+    - quality-assurance
+    - agile-development
+  complexity: moderate
+  tags:
+    - testing
+    - agile
+    - code-quality
+    - continuous-improvement
+  i18n:
+    es:
+      title: Desarrollo Guiado por Pruebas
+      description: >
+        Metodología de desarrollo de software donde las pruebas se escriben antes del código.
+        TDD sigue el ciclo Rojo-Verde-Refactorizar: escribir prueba fallida, hacerla pasar, mejorar código.
+        Garantiza calidad del código, mantenibilidad y cumplimiento de requisitos.
+    fr:
+      title: Développement Piloté par les Tests
+      description: >
+        Méthodologie de développement logiciel où les tests sont écrits avant le code.
+        TDD suit le cycle Rouge-Vert-Refactoriser : écrire un test qui échoue, le faire passer, améliorer le code.
+        Assure la qualité du code, la maintenabilité et le respect des exigences.
+    ko:
+      title: 테스트 주도 개발
+      description: >
+        테스트를 코드보다 먼저 작성하는 소프트웨어 개발 방법론.
+        TDD는 Red-Green-Refactor 사이클을 따릅니다: 실패하는 테스트 작성, 통과시키기, 코드 개선.
+        코드 품질, 유지보수성 및 요구사항 준수를 보장합니다.
+
+configuration:
+  maxIterations: 1000
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 3
+  parallelization:
+    enabled: false
+    maxConcurrentTasks: 1
+  convergence:
+    metric: features-remaining
+    threshold: 0
+    operator: "=="
+
+phases:
+  - id: red
+    name: Red
+    description: >
+      Write a failing test that defines desired functionality.
+      The test should fail because the feature doesn't exist yet.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Failing test must exist
+        artifactType: test-code
+      - type: custom
+        description: Test must fail when run
+    tasks:
+      - id: understand-requirement
+        title: Understand Feature Requirement
+        description: Clarify what functionality needs to be implemented
+        type: analysis
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 15
+        artifacts:
+          outputs:
+            - typeId: requirement-understanding
+              required: true
+        requirements:
+          - type: functional
+            description: Requirement must be clearly understood
+            priority: must
+            validationCriteria:
+              - Feature purpose clear
+              - Expected behavior defined
+              - Edge cases identified
+      - id: write-test
+        title: Write Failing Test
+        description: Write a test that describes the desired behavior
+        type: implementation
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 20
+        dependencies:
+          - understand-requirement
+        artifacts:
+          inputs:
+            - typeId: requirement-understanding
+              required: true
+          outputs:
+            - typeId: test-code
+              required: true
+        requirements:
+          - type: functional
+            description: Test must be specific and focused
+            priority: must
+            validationCriteria:
+              - One test per behavior
+              - Test is readable
+              - Assertions are clear
+              - Test follows naming conventions
+      - id: verify-test-fails
+        title: Verify Test Fails
+        description: Run the test to confirm it fails as expected
+        type: testing
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 5
+        dependencies:
+          - write-test
+        artifacts:
+          inputs:
+            - typeId: test-code
+              required: true
+          outputs:
+            - typeId: test-results
+              required: true
+        requirements:
+          - type: functional
+            description: Test must fail for the right reason
+            priority: must
+            validationCriteria:
+              - Test runs
+              - Test fails
+              - Failure reason is expected
+              - No syntax errors
+    agentRequirements:
+      roles:
+        - developer
+      skills:
+        - testing
+        - requirement-analysis
+        - coding
+      minExperience: mid
+
+  - id: green
+    name: Green
+    description: >
+      Write the simplest code that makes the test pass.
+      Focus on functionality, not perfection.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Red phase must be completed
+        phaseId: red
+    exitCriteria:
+      - type: artifact-exists
+        description: Implementation code must exist
+        artifactType: production-code
+      - type: custom
+        description: All tests must pass
+    tasks:
+      - id: implement-feature
+        title: Implement Minimal Solution
+        description: Write just enough code to make the test pass
+        type: implementation
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 30
+        artifacts:
+          inputs:
+            - typeId: test-code
+              required: true
+          outputs:
+            - typeId: production-code
+              required: true
+        requirements:
+          - type: functional
+            description: Code must make test pass
+            priority: must
+            validationCriteria:
+              - Code compiles
+              - Test passes
+              - No unnecessary complexity
+              - Simplest solution chosen
+      - id: run-all-tests
+        title: Run All Tests
+        description: Execute entire test suite to ensure no regressions
+        type: testing
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 10
+        dependencies:
+          - implement-feature
+        artifacts:
+          inputs:
+            - typeId: production-code
+              required: true
+            - typeId: test-code
+              required: true
+          outputs:
+            - typeId: test-suite-results
+              required: true
+        requirements:
+          - type: functional
+            description: All tests must pass
+            priority: must
+            validationCriteria:
+              - New test passes
+              - All existing tests pass
+              - No test failures
+              - No test errors
+    agentRequirements:
+      roles:
+        - developer
+      skills:
+        - coding
+        - problem-solving
+        - testing
+      minExperience: mid
+
+  - id: refactor
+    name: Refactor
+    description: >
+      Improve code quality without changing behavior.
+      Eliminate duplication, improve names, enhance structure.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Green phase must be completed
+        phaseId: green
+    exitCriteria:
+      - type: artifact-exists
+        description: Refactored code must exist
+        artifactType: refactored-code
+      - type: custom
+        description: All tests must still pass
+    optional: true
+    repeatable: true
+    tasks:
+      - id: identify-improvements
+        title: Identify Code Improvements
+        description: Look for code smells, duplication, and improvement opportunities
+        type: review
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 15
+        artifacts:
+          inputs:
+            - typeId: production-code
+              required: true
+          outputs:
+            - typeId: refactoring-opportunities
+              required: true
+        requirements:
+          - type: non_functional
+            description: Identify meaningful improvements
+            priority: should
+            validationCriteria:
+              - Code smells identified
+              - Duplication noted
+              - Naming issues flagged
+              - Structural improvements listed
+      - id: apply-refactorings
+        title: Apply Refactorings
+        description: Improve code structure while maintaining behavior
+        type: implementation
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 25
+        dependencies:
+          - identify-improvements
+        artifacts:
+          inputs:
+            - typeId: production-code
+              required: true
+            - typeId: refactoring-opportunities
+              required: true
+          outputs:
+            - typeId: refactored-code
+              required: true
+        requirements:
+          - type: non_functional
+            description: Code quality must improve
+            priority: should
+            validationCriteria:
+              - Duplication removed
+              - Names improved
+              - Structure enhanced
+              - Behavior unchanged
+      - id: verify-tests-still-pass
+        title: Verify Tests Still Pass
+        description: Run tests to ensure refactoring didn't break anything
+        type: testing
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 10
+        dependencies:
+          - apply-refactorings
+        artifacts:
+          inputs:
+            - typeId: refactored-code
+              required: true
+            - typeId: test-code
+              required: true
+          outputs:
+            - typeId: refactor-verification
+              required: true
+        requirements:
+          - type: functional
+            description: All tests must still pass
+            priority: must
+            validationCriteria:
+              - All tests pass
+              - No new failures
+              - No performance degradation
+      - id: commit-changes
+        title: Commit Changes
+        description: Commit refactored code to version control
+        type: documentation
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 5
+        dependencies:
+          - verify-tests-still-pass
+        artifacts:
+          inputs:
+            - typeId: refactored-code
+              required: true
+          outputs:
+            - typeId: commit-record
+              required: true
+        requirements:
+          - type: functional
+            description: Changes must be committed
+            priority: must
+            validationCriteria:
+              - Code committed
+              - Commit message clear
+              - Tests committed
+    agentRequirements:
+      roles:
+        - developer
+      skills:
+        - refactoring
+        - code-quality
+        - design-patterns
+      minExperience: mid
+
+  - id: integrate
+    name: Integrate
+    description: >
+      Integrate changes and prepare for next iteration.
+      Review progress and plan next test.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Refactor phase must be completed
+        phaseId: refactor
+    exitCriteria:
+      - type: artifact-exists
+        description: Integration status must be documented
+        artifactType: integration-status
+    repeatable: true
+    tasks:
+      - id: review-progress
+        title: Review Development Progress
+        description: Assess what has been completed and what remains
+        type: review
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 10
+        artifacts:
+          inputs:
+            - typeId: refactored-code
+              required: true
+          outputs:
+            - typeId: progress-assessment
+              required: true
+        requirements:
+          - type: functional
+            description: Progress must be accurately assessed
+            priority: must
+            validationCriteria:
+              - Completed features identified
+              - Remaining features listed
+              - Code coverage noted
+      - id: plan-next-test
+        title: Plan Next Test
+        description: Decide what test to write next
+        type: planning
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 10
+        dependencies:
+          - review-progress
+        artifacts:
+          inputs:
+            - typeId: progress-assessment
+              required: true
+          outputs:
+            - typeId: next-test-plan
+              required: true
+        requirements:
+          - type: functional
+            description: Next test must be clearly defined
+            priority: must
+            validationCriteria:
+              - Next feature identified
+              - Test scope defined
+              - Priority confirmed
+      - id: document-integration
+        title: Document Integration Status
+        description: Record current state for team awareness
+        type: documentation
+        complexity: simple
+        assignedRole: developer
+        estimatedDuration: 5
+        dependencies:
+          - plan-next-test
+        artifacts:
+          inputs:
+            - typeId: progress-assessment
+              required: true
+            - typeId: next-test-plan
+              required: true
+          outputs:
+            - typeId: integration-status
+              required: true
+        requirements:
+          - type: functional
+            description: Status must be communicated
+            priority: should
+            validationCriteria:
+              - Current state documented
+              - Next steps clear
+              - Team informed
+    agentRequirements:
+      roles:
+        - developer
+      skills:
+        - planning
+        - communication
+        - assessment
+      minExperience: mid
+
+execution:
+  strategy: iterative
+  phaseOrder:
+    - red
+    - green
+    - refactor
+    - integrate
+  loops:
+    - id: tdd-cycle
+      name: TDD Red-Green-Refactor Cycle
+      description: Continuous cycle of test-first development
+      phases:
+        - red
+        - green
+        - refactor
+        - integrate
+      convergenceCriteria:
+        - type: custom
+          description: All features implemented
+        - type: metric-threshold
+          description: No more features to implement
+          metric: features-remaining
+          threshold: 0
+          operator: "=="
+      exitConditions:
+        - type: custom
+          description: Feature complete or iteration ends
+  failureHandling:
+    strategy: retry
+    fallbackPhase: red
+
+agentCoordination:
+  roles:
+    - id: developer
+      name: TDD Developer
+      description: Writes tests first, then implements features
+      responsibilities:
+        - Write failing tests
+        - Implement minimal solutions
+        - Refactor code
+        - Maintain test suite
+        - Follow TDD discipline
+      requiredSkills:
+        - testing
+        - coding
+        - refactoring
+        - test-frameworks
+      experienceLevel: mid
+      authority: contributor
+  teamComposition:
+    minSize: 1
+    maxSize: 2
+    required:
+      - developer
+    optional: []
+  communicationPatterns:
+    - from: developer
+      to: developer
+      type: direct
+      contextTypes:
+        - finding
+        - decision
+  decisionAuthority:
+    - decision: What test to write next
+      authority: developer
+      requiresConsensus: false
+    - decision: When to refactor
+      authority: developer
+      requiresConsensus: false
+    - decision: Feature complete
+      authority: developer
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: requirement-understanding
+      name: Requirement Understanding
+      description: Clear understanding of what needs to be built
+      format: markdown
+    - id: test-code
+      name: Test Code
+      description: Unit test that defines expected behavior
+      format: code
+    - id: test-results
+      name: Test Results
+      description: Results from running the failing test
+      format: json
+    - id: production-code
+      name: Production Code
+      description: Implementation code that makes test pass
+      format: code
+    - id: test-suite-results
+      name: Test Suite Results
+      description: Results from running all tests
+      format: json
+    - id: refactoring-opportunities
+      name: Refactoring Opportunities
+      description: Identified code improvements
+      format: markdown
+    - id: refactored-code
+      name: Refactored Code
+      description: Improved code with same behavior
+      format: code
+    - id: refactor-verification
+      name: Refactor Verification
+      description: Test results after refactoring
+      format: json
+    - id: commit-record
+      name: Commit Record
+      description: Version control commit information
+      format: structured
+    - id: progress-assessment
+      name: Progress Assessment
+      description: Current development status
+      format: structured
+    - id: next-test-plan
+      name: Next Test Plan
+      description: Plan for next test to write
+      format: markdown
+    - id: integration-status
+      name: Integration Status
+      description: Current integration state
+      format: structured
+  dependencies:
+    - artifact: test-code
+      dependsOn:
+        - requirement-understanding
+    - artifact: test-results
+      dependsOn:
+        - test-code
+    - artifact: production-code
+      dependsOn:
+        - test-code
+    - artifact: test-suite-results
+      dependsOn:
+        - production-code
+        - test-code
+    - artifact: refactoring-opportunities
+      dependsOn:
+        - production-code
+    - artifact: refactored-code
+      dependsOn:
+        - production-code
+        - refactoring-opportunities
+    - artifact: refactor-verification
+      dependsOn:
+        - refactored-code
+        - test-code
+    - artifact: commit-record
+      dependsOn:
+        - refactored-code
+    - artifact: progress-assessment
+      dependsOn:
+        - refactored-code
+    - artifact: next-test-plan
+      dependsOn:
+        - progress-assessment
+    - artifact: integration-status
+      dependsOn:
+        - progress-assessment
+        - next-test-plan
