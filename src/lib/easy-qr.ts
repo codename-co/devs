@@ -56,10 +56,8 @@ export async function generateSetupQRData(
 export async function generateSetupQRCode(url: string): Promise<string> {
   // Dynamic import to avoid bundling QR code library if not used
   try {
-    // @ts-ignore - qrcode is an optional dependency
     const QRCodeModule = await import('qrcode')
     const QRCode = QRCodeModule.default || QRCodeModule
-    // @ts-ignore - QR code types are complex and this is optional functionality
     return await QRCode.toDataURL(url, {
       errorCorrectionLevel: 'M',
       margin: 1,

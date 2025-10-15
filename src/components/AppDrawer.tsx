@@ -607,13 +607,13 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                       onClick={(e) => {
                         e.preventDefault()
                         e.stopPropagation()
-                        navigate(url('/tasks/new'))
+                        navigate(url(''))
                       }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault()
                           e.stopPropagation()
-                          navigate(url('/tasks/new'))
+                          navigate(url(''))
                         }
                       }}
                     >

@@ -29,7 +29,7 @@ export const TasksPage = () => {
     subtitle: t('Manage and monitor tasks for your organization'),
     cta: {
       label: t('New Task'),
-      href: url('/tasks/new'),
+      href: url(''),
       icon: 'Plus',
     },
   }
