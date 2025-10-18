@@ -321,7 +321,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
                 isIconOnly
                 color="primary"
                 variant="light"
-                className="w-full"
+                className="w-full dark:text-white"
                 aria-label={t('Chat')}
               >
                 <Icon name="ChatPlusIn" />
@@ -360,7 +360,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
                 isIconOnly
                 color="secondary"
                 variant="light"
-                className="w-full"
+                className="w-full dark:text-secondary-600"
                 aria-label={t('Tasks')}
               >
                 <Icon name="TriangleFlagTwoStripes" />
@@ -373,7 +373,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
                 isIconOnly
                 color="danger"
                 variant="light"
-                className="w-full"
+                className="w-full dark:text-danger-600"
                 aria-label={t('Knowledge')}
               >
                 <Icon name="Brain" />
@@ -398,7 +398,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
                 href={url('/conversations')}
                 isIconOnly
                 variant="light"
-                className="w-full"
+                className="w-full text-gray-500  dark:text-gray-400"
                 aria-label={t('Conversations history')}
               >
                 <Icon name="ChatBubble" />
@@ -422,7 +422,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
                 href={url('/settings')}
                 isIconOnly
                 variant="light"
-                className="w-full"
+                className="w-full text-gray-500 dark:text-gray-400"
                 aria-label={t('Settings')}
               >
                 <Icon name="Settings" />
@@ -524,7 +524,10 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                 color="primary"
                 className="dark:text-gray-200 dark:hover:text-primary-500"
                 startContent={
-                  <Icon name="ChatPlusIn" className="text-primary" />
+                  <Icon
+                    name="ChatPlusIn"
+                    className="text-primary-400 dark:text-white"
+                  />
                 }
                 textValue={t('New chat')}
               >
@@ -602,7 +605,7 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                 startContent={
                   <Icon
                     name="TriangleFlagTwoStripes"
-                    className="text-secondary"
+                    className="text-secondary dark:text-secondary-600"
                   />
                 }
                 // endContent={
@@ -635,7 +638,12 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
               <ListboxItem
                 href={url('/knowledge')}
                 color="danger"
-                startContent={<Icon name="Brain" className="text-danger" />}
+                startContent={
+                  <Icon
+                    name="Brain"
+                    className="text-danger dark:text-danger-600"
+                  />
+                }
               >
                 {t('Knowledge')}
               </ListboxItem>
@@ -674,7 +682,12 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
               </ListboxItem> */}
             <ListboxItem
               href={url('/conversations')}
-              startContent={<Icon name="ChatBubble" />}
+              startContent={
+                <Icon
+                  name="ChatBubble"
+                  className="text-gray-500 dark:text-gray-400"
+                />
+              }
             >
               {t('Conversations')}
             </ListboxItem>
