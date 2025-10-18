@@ -1,0 +1,884 @@
+metadata:
+  id: operator-pattern
+  name: Operator Pattern
+  title: Intent Negotiation and Specialized Routing Workflow
+  description: >
+    Advanced agentic interaction pattern that builds on the Greeter Pattern by routing
+    requests to appropriate specialist agents or humans while negotiating intent when needed.
+    The Operator Pattern provides intelligent triage for environments with high specialization,
+    ensuring users reach the most qualified resource through iterative intent clarification.
+  type: sequential
+  version: 1.0.0
+  origin: Enterprise Agentic Architecture / Salesforce
+  domains:
+    - customer-service
+    - specialized-support
+    - intent-negotiation
+    - agent-orchestration
+  complexity: moderate
+  tags:
+    - interaction-pattern
+    - intent-negotiation
+    - specialized-routing
+    - triage
+    - agentic-front-door
+  diagram: | # mermaid
+    graph LR
+        UserPrompt
+        Intent[User Intent /<br/>Objectives]
+        subgraph Orchestrator[Orchestrator Agent]
+            Topics[Topics]
+            Instructions[Instructions]
+            Actions[Actions]
+        end
+        Capabilities[Worker<br/>Capabilities]
+        Routing[Routing<br/>Guidance,<br/>Pre-conditions]
+        Escalation[Transfer /<br/>Escalate]
+        subgraph Workers[Transfer to Human or AI Agent]
+            WorkerAgent[Worker Agent]
+            HumanAgent[Human<br/>Agent]
+        end
+        End
+
+        %% Relations
+        UserPrompt --> Intent
+        Intent <--> Orchestrator
+        Topics --> Capabilities
+        Instructions --> Routing
+        Actions --> Escalation
+        Escalation --> Workers
+        Workers --> End
+
+        %% Style
+        UserPrompt@{ shape: circle, label: " " }
+        Intent@{ shape: rounded }
+        Topics@{ shape: subprocess }
+        Instructions@{ shape: subprocess }
+        Actions@{ shape: subprocess }
+        Capabilities@{ shape: docs }
+        Routing@{ shape: docs }
+        Escalation@{ shape: decision }
+        WorkerAgent@{ shape: subprocess }
+        HumanAgent@{ shape: stadium }
+        End@{ shape: fr-circ }
+  i18n:
+    es:
+      name: Patrón de Operador
+      title: Flujo de Negociación de Intención y Enrutamiento Especializado
+      description: >
+        Patrón de interacción agéntica avanzado que se basa en el Patrón Greeter al enrutar
+        solicitudes a agentes especializados o humanos apropiados mientras negocia la intención cuando es necesario.
+        El Patrón Operator proporciona triaje inteligente para entornos con alta especialización.
+    fr:
+      name: Modèle d'Opérateur
+      title: Flux de Négociation d'Intention et de Routage Spécialisé
+      description: >
+        Modèle d'interaction agentique avancé qui s'appuie sur le modèle Greeter en acheminant
+        les demandes vers des agents spécialisés ou humains appropriés tout en négociant l'intention si nécessaire.
+        Le modèle Operator fournit un triage intelligent pour les environnements hautement spécialisés.
+    ko:
+      name: 운영자 패턴
+      title: 의도 협상 및 전문 라우팅 워크플로
+      description: >
+        필요 시 의도를 협상하면서 적절한 전문 에이전트 또는 인간에게 요청을 라우팅하여 Greeter 패턴을 기반으로 하는
+        고급 에이전트 상호 작용 패턴입니다. Operator 패턴은 높은 전문화 환경을 위한 지능형 분류를 제공합니다.
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 3
+  parallelization:
+    enabled: false
+    maxConcurrentTasks: 1
+
+phases:
+  - id: engage-and-capture
+    name: Engage and Capture
+    description: >
+      Initial engagement with the user, capturing preliminary intent and context
+      for intelligent routing decisions.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Initial interaction must be captured
+        artifactType: interaction-transcript
+      - type: artifact-exists
+        description: Preliminary intent must be identified
+        artifactType: preliminary-intent
+    tasks:
+      - id: welcome-user
+        title: Welcome User
+        description: Provide brand-appropriate greeting and set expectations for specialized assistance
+        type: communication
+        complexity: simple
+        assignedRole: operator-agent
+        estimatedDuration: 30
+        artifacts:
+          outputs:
+            - typeId: greeting-message
+              required: true
+              minCount: 1
+              maxCount: 1
+        requirements:
+          - type: functional
+            description: Greeting must establish operator role and specialized service offering
+            priority: must
+            validationCriteria:
+              - Brand voice maintained
+              - Specialization capability communicated
+              - User encouraged to share details
+      - id: gather-initial-context
+        title: Gather Initial Context
+        description: Collect user input and contextual information through natural dialogue
+        type: communication
+        complexity: simple
+        assignedRole: operator-agent
+        estimatedDuration: 60
+        dependencies:
+          - welcome-user
+        artifacts:
+          inputs:
+            - typeId: greeting-message
+              required: true
+          outputs:
+            - typeId: interaction-transcript
+              required: true
+            - typeId: user-context
+              required: true
+        requirements:
+          - type: functional
+            description: Sufficient context must be gathered for intelligent routing
+            priority: must
+            validationCriteria:
+              - User query captured
+              - Channel metadata collected
+              - Session context established
+      - id: identify-preliminary-intent
+        title: Identify Preliminary Intent
+        description: Perform initial intent classification to determine next steps
+        type: analysis
+        complexity: simple
+        assignedRole: intent-classifier
+        estimatedDuration: 45
+        dependencies:
+          - gather-initial-context
+        artifacts:
+          inputs:
+            - typeId: interaction-transcript
+              required: true
+            - typeId: user-context
+              required: true
+          outputs:
+            - typeId: preliminary-intent
+              required: true
+        requirements:
+          - type: functional
+            description: Preliminary intent must be classified with confidence assessment
+            priority: must
+            validationCriteria:
+              - Intent category identified
+              - Confidence score calculated
+              - Ambiguity flagged if present
+    agentRequirements:
+      roles:
+        - operator-agent
+        - intent-classifier
+      skills:
+        - natural-language-understanding
+        - brand-alignment
+        - intent-classification
+      minExperience: mid
+
+  - id: negotiate-intent
+    name: Negotiate Intent
+    description: >
+      Iteratively clarify and refine intent through dialogue when ambiguity exists
+      or when multiple specialist options are available.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Engage and Capture phase must be completed
+        phaseId: engage-and-capture
+    exitCriteria:
+      - type: artifact-exists
+        description: Refined intent must exist
+        artifactType: refined-intent
+      - type: custom
+        description: Intent confidence must meet threshold or max clarification attempts reached
+        validator: intent-confidence-check
+    tasks:
+      - id: assess-clarity
+        title: Assess Intent Clarity
+        description: Evaluate whether intent is sufficiently clear for routing or requires negotiation
+        type: analysis
+        complexity: simple
+        assignedRole: intent-negotiator
+        estimatedDuration: 30
+        artifacts:
+          inputs:
+            - typeId: preliminary-intent
+              required: true
+          outputs:
+            - typeId: clarity-assessment
+              required: true
+        requirements:
+          - type: functional
+            description: Clarity must be objectively assessed against routing requirements
+            priority: must
+            validationCriteria:
+              - Confidence threshold evaluated
+              - Ambiguity factors identified
+              - Clarification need determined
+      - id: formulate-clarifying-questions
+        title: Formulate Clarifying Questions
+        description: Generate targeted questions to resolve ambiguity or narrow specialist options
+        type: communication
+        complexity: moderate
+        assignedRole: intent-negotiator
+        estimatedDuration: 45
+        dependencies:
+          - assess-clarity
+        condition: clarity-assessment.requiresClarification == true
+        artifacts:
+          inputs:
+            - typeId: clarity-assessment
+              required: true
+            - typeId: specialist-catalog
+              required: true
+          outputs:
+            - typeId: clarifying-questions
+              required: true
+        requirements:
+          - type: functional
+            description: Questions must be specific and help differentiate between specialist options
+            priority: must
+            validationCriteria:
+              - Questions target ambiguity points
+              - Options presented when appropriate
+              - Natural conversational flow maintained
+      - id: collect-clarifications
+        title: Collect Clarifications
+        description: Engage with user to gather additional information
+        type: communication
+        complexity: simple
+        assignedRole: operator-agent
+        estimatedDuration: 60
+        dependencies:
+          - formulate-clarifying-questions
+        condition: clarity-assessment.requiresClarification == true
+        artifacts:
+          inputs:
+            - typeId: clarifying-questions
+              required: true
+          outputs:
+            - typeId: clarification-responses
+              required: true
+        requirements:
+          - type: functional
+            description: User responses must be captured and validated
+            priority: must
+            validationCriteria:
+              - Responses received
+              - Interaction transcript updated
+              - Context enriched
+      - id: refine-intent
+        title: Refine Intent
+        description: Update intent classification based on clarifications
+        type: analysis
+        complexity: moderate
+        assignedRole: intent-classifier
+        estimatedDuration: 45
+        dependencies:
+          - collect-clarifications
+        artifacts:
+          inputs:
+            - typeId: preliminary-intent
+              required: true
+            - typeId: clarification-responses
+              required: false
+          outputs:
+            - typeId: refined-intent
+              required: true
+        requirements:
+          - type: functional
+            description: Intent must be refined with updated confidence scores
+            priority: must
+            validationCriteria:
+              - Intent category confirmed or updated
+              - Confidence score recalculated
+              - Routing target identifiable
+    agentRequirements:
+      roles:
+        - intent-negotiator
+        - intent-classifier
+        - operator-agent
+      skills:
+        - intent-negotiation
+        - questioning-strategy
+        - classification-refinement
+      minExperience: senior
+
+  - id: match-specialist
+    name: Match Specialist
+    description: >
+      Identify the optimal specialist agent or human based on refined intent,
+      availability, and capability matching.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Negotiate Intent phase must be completed
+        phaseId: negotiate-intent
+    exitCriteria:
+      - type: artifact-exists
+        description: Specialist match must exist
+        artifactType: specialist-match
+      - type: artifact-exists
+        description: Routing decision must be documented
+        artifactType: routing-decision
+    tasks:
+      - id: query-specialist-catalog
+        title: Query Specialist Catalog
+        description: Retrieve available specialists matching the refined intent
+        type: analysis
+        complexity: simple
+        assignedRole: routing-engine
+        estimatedDuration: 30
+        artifacts:
+          inputs:
+            - typeId: refined-intent
+              required: true
+            - typeId: specialist-catalog
+              required: true
+          outputs:
+            - typeId: candidate-specialists
+              required: true
+        requirements:
+          - type: functional
+            description: All qualified specialists must be identified
+            priority: must
+            validationCriteria:
+              - Capability matching performed
+              - Availability checked
+              - Candidate list generated
+      - id: apply-routing-rules
+        title: Apply Routing Rules
+        description: Apply business rules and priorities to select optimal specialist
+        type: analysis
+        complexity: moderate
+        assignedRole: routing-engine
+        estimatedDuration: 45
+        dependencies:
+          - query-specialist-catalog
+        artifacts:
+          inputs:
+            - typeId: candidate-specialists
+              required: true
+            - typeId: routing-rules
+              required: true
+            - typeId: user-context
+              required: true
+          outputs:
+            - typeId: routing-decision
+              required: true
+        requirements:
+          - type: functional
+            description: Routing decision must be optimized based on multiple factors
+            priority: must
+            validationCriteria:
+              - Business rules applied
+              - Load balancing considered
+              - Priority routing honored
+              - SLA requirements met
+      - id: confirm-specialist-match
+        title: Confirm Specialist Match
+        description: Validate specialist availability and prepare for handoff
+        type: planning
+        complexity: simple
+        assignedRole: handoff-coordinator
+        estimatedDuration: 30
+        dependencies:
+          - apply-routing-rules
+        artifacts:
+          inputs:
+            - typeId: routing-decision
+              required: true
+          outputs:
+            - typeId: specialist-match
+              required: true
+        requirements:
+          - type: functional
+            description: Specialist must be confirmed as ready to receive handoff
+            priority: must
+            validationCriteria:
+              - Availability verified in real-time
+              - Pre-conditions met
+              - Handoff accepted
+    agentRequirements:
+      roles:
+        - routing-engine
+        - handoff-coordinator
+      skills:
+        - routing-optimization
+        - availability-management
+        - rule-application
+      minExperience: mid
+
+  - id: prepare-and-transfer
+    name: Prepare and Transfer
+    description: >
+      Package context, brief the specialist, and execute warm handoff
+      ensuring continuity of service.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Match Specialist phase must be completed
+        phaseId: match-specialist
+    exitCriteria:
+      - type: artifact-exists
+        description: Transfer must be completed
+        artifactType: transfer-confirmation
+      - type: artifact-exists
+        description: Interaction must be documented
+        artifactType: interaction-record
+    tasks:
+      - id: create-specialist-brief
+        title: Create Specialist Brief
+        description: Compile comprehensive brief for receiving specialist
+        type: documentation
+        complexity: moderate
+        assignedRole: context-packager
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: interaction-transcript
+              required: true
+            - typeId: refined-intent
+              required: true
+            - typeId: user-context
+              required: true
+            - typeId: routing-decision
+              required: true
+          outputs:
+            - typeId: specialist-brief
+              required: true
+        requirements:
+          - type: functional
+            description: Brief must enable specialist to continue seamlessly
+            priority: must
+            validationCriteria:
+              - Intent clearly stated
+              - User journey summarized
+              - Key context highlighted
+              - Expectations documented
+      - id: notify-specialist
+        title: Notify Specialist
+        description: Alert specialist and provide brief before transfer
+        type: communication
+        complexity: simple
+        assignedRole: handoff-coordinator
+        estimatedDuration: 45
+        dependencies:
+          - create-specialist-brief
+        artifacts:
+          inputs:
+            - typeId: specialist-brief
+              required: true
+            - typeId: specialist-match
+              required: true
+          outputs:
+            - typeId: specialist-acknowledgment
+              required: true
+        requirements:
+          - type: functional
+            description: Specialist must acknowledge readiness
+            priority: must
+            validationCriteria:
+              - Brief delivered
+              - Specialist prepared
+              - Readiness confirmed
+      - id: inform-user
+        title: Inform User
+        description: Communicate transfer to user with specialist introduction
+        type: communication
+        complexity: simple
+        assignedRole: operator-agent
+        estimatedDuration: 45
+        dependencies:
+          - notify-specialist
+        artifacts:
+          inputs:
+            - typeId: specialist-match
+              required: true
+            - typeId: specialist-brief
+              required: true
+          outputs:
+            - typeId: transfer-message
+              required: true
+        requirements:
+          - type: functional
+            description: User must be informed and reassured about transfer
+            priority: must
+            validationCriteria:
+              - Specialist introduced
+              - Expertise highlighted
+              - Confidence built
+              - Gratitude expressed
+      - id: execute-transfer
+        title: Execute Transfer
+        description: Perform technical handoff to specialist
+        type: implementation
+        complexity: simple
+        assignedRole: handoff-coordinator
+        estimatedDuration: 30
+        dependencies:
+          - inform-user
+        artifacts:
+          inputs:
+            - typeId: specialist-match
+              required: true
+            - typeId: specialist-brief
+              required: true
+            - typeId: transfer-message
+              required: true
+          outputs:
+            - typeId: transfer-confirmation
+              required: true
+        requirements:
+          - type: functional
+            description: Transfer must be technically complete
+            priority: must
+            validationCriteria:
+              - Session transferred
+              - Context preserved
+              - Specialist engaged
+              - Transfer logged
+      - id: document-interaction
+        title: Document Interaction
+        description: Record complete operator interaction for analytics and improvement
+        type: documentation
+        complexity: simple
+        assignedRole: data-recorder
+        estimatedDuration: 60
+        dependencies:
+          - execute-transfer
+        artifacts:
+          inputs:
+            - typeId: transfer-confirmation
+              required: true
+            - typeId: interaction-transcript
+              required: true
+            - typeId: refined-intent
+              required: true
+            - typeId: routing-decision
+              required: true
+          outputs:
+            - typeId: interaction-record
+              required: true
+        requirements:
+          - type: functional
+            description: Complete interaction must be documented
+            priority: must
+            validationCriteria:
+              - All phases captured
+              - Clarification iterations logged
+              - Routing rationale documented
+              - Metrics recorded
+    agentRequirements:
+      roles:
+        - context-packager
+        - handoff-coordinator
+        - operator-agent
+        - data-recorder
+      skills:
+        - documentation
+        - coordination
+        - communication
+        - handoff-execution
+      minExperience: mid
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - engage-and-capture
+    - negotiate-intent
+    - match-specialist
+    - prepare-and-transfer
+  failureHandling:
+    strategy: retry-with-escalation
+    fallbackPhase: engage-and-capture
+    escalationPath:
+      - attempt: 1-2
+        action: retry-intent-negotiation
+      - attempt: 3
+        action: escalate-to-general-specialist
+
+agentCoordination:
+  roles:
+    - id: operator-agent
+      name: Operator Agent
+      description: Primary interface managing user interaction and dialogue flow
+      responsibilities:
+        - Welcome users and set expectations
+        - Gather context through natural conversation
+        - Collect clarifications when needed
+        - Communicate transfers professionally
+      requiredSkills:
+        - natural-language-understanding
+        - brand-alignment
+        - conversation-management
+        - communication
+      experienceLevel: mid
+      authority: contributor
+    - id: intent-classifier
+      name: Intent Classifier
+      description: Specialized agent for intent recognition and classification
+      responsibilities:
+        - Identify preliminary intent
+        - Calculate confidence scores
+        - Refine intent based on clarifications
+        - Flag ambiguity
+      requiredSkills:
+        - intent-classification
+        - confidence-scoring
+        - pattern-recognition
+      experienceLevel: mid
+      authority: contributor
+    - id: intent-negotiator
+      name: Intent Negotiator
+      description: Expert in clarifying ambiguous intent through strategic questioning
+      responsibilities:
+        - Assess intent clarity
+        - Formulate clarifying questions
+        - Guide disambiguation dialogue
+        - Optimize question efficiency
+      requiredSkills:
+        - intent-negotiation
+        - questioning-strategy
+        - conversation-design
+      experienceLevel: senior
+      authority: leader
+    - id: routing-engine
+      name: Routing Engine
+      description: Intelligent routing system for specialist matching
+      responsibilities:
+        - Query specialist catalog
+        - Apply routing rules
+        - Optimize specialist matching
+        - Consider availability and load
+      requiredSkills:
+        - routing-optimization
+        - rule-application
+        - availability-management
+      experienceLevel: mid
+      authority: contributor
+    - id: handoff-coordinator
+      name: Handoff Coordinator
+      description: Manages technical and communicative aspects of handoffs
+      responsibilities:
+        - Confirm specialist availability
+        - Notify specialists
+        - Execute transfers
+        - Verify handoff completion
+      requiredSkills:
+        - coordination
+        - handoff-execution
+        - system-integration
+      experienceLevel: mid
+      authority: leader
+    - id: context-packager
+      name: Context Packager
+      description: Creates comprehensive briefs for specialist continuity
+      responsibilities:
+        - Compile specialist briefs
+        - Summarize user journey
+        - Highlight critical context
+        - Ensure completeness
+      requiredSkills:
+        - documentation
+        - summarization
+        - information-architecture
+      experienceLevel: mid
+      authority: contributor
+    - id: data-recorder
+      name: Data Recorder
+      description: Documents interactions for analytics and learning
+      responsibilities:
+        - Record interaction details
+        - Capture metrics
+        - Log routing decisions
+        - Support continuous improvement
+      requiredSkills:
+        - documentation
+        - data-management
+        - analytics-support
+      experienceLevel: junior
+      authority: contributor
+  teamComposition:
+    minSize: 4
+    maxSize: 7
+    required:
+      - operator-agent
+      - intent-classifier
+      - intent-negotiator
+      - routing-engine
+      - handoff-coordinator
+    optional:
+      - context-packager
+      - data-recorder
+  communicationPatterns:
+    - from: operator-agent
+      to: intent-classifier
+      type: direct
+      contextTypes:
+        - finding
+    - from: intent-classifier
+      to: intent-negotiator
+      type: direct
+      contextTypes:
+        - finding
+        - constraint
+    - from: intent-negotiator
+      to: operator-agent
+      type: direct
+      contextTypes:
+        - decision
+    - from: intent-classifier
+      to: routing-engine
+      type: direct
+      contextTypes:
+        - finding
+    - from: routing-engine
+      to: handoff-coordinator
+      type: direct
+      contextTypes:
+        - decision
+  decisionAuthority:
+    - decision: Determine if clarification needed
+      authority: intent-negotiator
+      requiresConsensus: false
+    - decision: Formulate clarifying questions
+      authority: intent-negotiator
+      requiresConsensus: false
+    - decision: Select specialist
+      authority: routing-engine
+      requiresConsensus: false
+    - decision: Execute transfer
+      authority: handoff-coordinator
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: greeting-message
+      name: Greeting Message
+      description: Operator greeting establishing specialized service
+      format: text
+    - id: interaction-transcript
+      name: Interaction Transcript
+      description: Complete conversation record including clarifications
+      format: structured
+    - id: user-context
+      name: User Context
+      description: User and session contextual information
+      format: json
+    - id: preliminary-intent
+      name: Preliminary Intent
+      description: Initial intent classification before negotiation
+      format: json
+      schema:
+        type: object
+        required:
+          - category
+          - confidence
+        properties:
+          category:
+            type: string
+          confidence:
+            type: number
+          ambiguityFlags:
+            type: array
+    - id: clarity-assessment
+      name: Clarity Assessment
+      description: Evaluation of intent clarity and clarification needs
+      format: json
+    - id: specialist-catalog
+      name: Specialist Catalog
+      description: Available specialists with capabilities and availability
+      format: structured
+    - id: clarifying-questions
+      name: Clarifying Questions
+      description: Questions designed to resolve intent ambiguity
+      format: structured
+    - id: clarification-responses
+      name: Clarification Responses
+      description: User responses to clarifying questions
+      format: json
+    - id: refined-intent
+      name: Refined Intent
+      description: Updated intent after clarification iterations
+      format: json
+    - id: candidate-specialists
+      name: Candidate Specialists
+      description: Specialists matching refined intent
+      format: json
+    - id: routing-rules
+      name: Routing Rules
+      description: Business rules for specialist selection
+      format: structured
+    - id: routing-decision
+      name: Routing Decision
+      description: Selected specialist with rationale
+      format: json
+    - id: specialist-match
+      name: Specialist Match
+      description: Confirmed specialist ready for handoff
+      format: json
+    - id: specialist-brief
+      name: Specialist Brief
+      description: Comprehensive context package for specialist
+      format: markdown
+    - id: specialist-acknowledgment
+      name: Specialist Acknowledgment
+      description: Specialist confirmation of readiness
+      format: json
+    - id: transfer-message
+      name: Transfer Message
+      description: User notification of transfer with specialist introduction
+      format: text
+    - id: transfer-confirmation
+      name: Transfer Confirmation
+      description: Technical confirmation of completed handoff
+      format: json
+    - id: interaction-record
+      name: Interaction Record
+      description: Complete documented operator interaction
+      format: structured
+  dependencies:
+    - artifact: preliminary-intent
+      dependsOn:
+        - interaction-transcript
+        - user-context
+    - artifact: clarity-assessment
+      dependsOn:
+        - preliminary-intent
+    - artifact: clarifying-questions
+      dependsOn:
+        - clarity-assessment
+        - specialist-catalog
+    - artifact: refined-intent
+      dependsOn:
+        - preliminary-intent
+        - clarification-responses
+    - artifact: routing-decision
+      dependsOn:
+        - candidate-specialists
+        - routing-rules
+    - artifact: specialist-brief
+      dependsOn:
+        - interaction-transcript
+        - refined-intent
+        - routing-decision
+    - artifact: transfer-confirmation
+      dependsOn:
+        - specialist-match
+        - specialist-brief

@@ -1,0 +1,783 @@
+metadata:
+  id: greeter-pattern
+  name: Greeter Pattern
+  title: Intent Recognition and Handoff Workflow
+  description: >
+    Agentic interaction pattern for determining user intent through natural language
+    and routing to appropriate resources. The Greeter Pattern provides a seamless,
+    efficient first contact experience by replacing traditional menu-driven chatbots
+    with intelligent intent analysis and warm handoffs to human agents or specialist AI agents.
+  type: sequential
+  version: 1.0.0
+  origin: Enterprise Agentic Architecture / Salesforce
+  domains:
+    - customer-service
+    - user-experience
+    - intent-recognition
+    - agent-orchestration
+  complexity: simple
+  tags:
+    - interaction-pattern
+    - intent-analysis
+    - handoff
+    - customer-engagement
+    - agentic-front-door
+  diagram: | # mermaid
+    graph LR
+        UserPrompt
+        Intent[User Intent /<br/>Objectives]
+        subgraph Agent
+            Topics[Topics]
+            Instructions[Instructions]
+            Actions[Actions]
+        end
+        Knowledge[Industry /<br/>Brand /<br/>Products &<br/>Services Info]
+        Escalation[Transfer /<br/>Escalate]
+        HumanAgent[Human Agent /<br/>Specialist]
+        End
+
+        %% Relations
+        UserPrompt --> Intent
+        Intent <--> Agent
+        Instructions --> Knowledge
+        Actions --> Escalation
+        Escalation --> HumanAgent
+        HumanAgent --> End
+
+        %% Style
+        UserPrompt@{ shape: circle, label: " " }
+        Intent@{ shape: rounded }
+        Topics@{ shape: subprocess }
+        Instructions@{ shape: subprocess }
+        Actions@{ shape: subprocess }
+        Knowledge@{ shape: docs }
+        Escalation@{ shape: decision }
+        HumanAgent@{ shape: stadium }
+        End@{ shape: fr-circ }
+  i18n:
+    es:
+      name: Patrón de Saludo
+      title: Reconocimiento de Intención y Flujo de Transferencia
+      description: >
+        Patrón de interacción agéntica para determinar la intención del usuario a través del lenguaje natural
+        y enrutar a los recursos apropiados. El Patrón Greeter proporciona una experiencia de primer contacto
+        fluida y eficiente reemplazando los chatbots tradicionales basados en menús con análisis inteligente
+        de intención y transferencias cálidas a agentes humanos o agentes de IA especializados.
+    fr:
+      name: Modèle d'accueil
+      title: Reconnaissance d'Intention et Flux de Transfert
+      description: >
+        Modèle d'interaction agentique pour déterminer l'intention de l'utilisateur par le langage naturel
+        et le router vers les ressources appropriées. Le modèle Greeter offre une expérience de premier contact
+        fluide et efficace en remplaçant les chatbots traditionnels basés sur des menus par une analyse intelligente
+        de l'intention et des transferts chaleureux vers des agents humains ou des agents IA spécialisés.
+    ko:
+      name: 인사 패턴
+      title: 의도 인식 및 핸드오프 워크플로
+      description: >
+        자연어를 통해 사용자 의도를 파악하고 적절한 리소스로 라우팅하는 에이전트 상호 작용 패턴입니다.
+        Greeter 패턴은 기존 메뉴 기반 챗봇을 지능형 의도 분석 및 인간 에이전트 또는 전문 AI 에이전트로의
+        따뜻한 핸드오프로 대체하여 원활하고 효율적인 첫 접촉 경험을 제공합니다.
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 2
+  parallelization:
+    enabled: false
+    maxConcurrentTasks: 1
+
+phases:
+  - id: engage
+    name: Engage
+    description: >
+      Initial engagement with the user through natural language interaction.
+      Establish rapport and begin collecting contextual information.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Initial interaction transcript must exist
+        artifactType: interaction-transcript
+      - type: artifact-exists
+        description: User context must be captured
+        artifactType: user-context
+    tasks:
+      - id: greet-user
+        title: Greet User
+        description: Provide welcoming, brand-appropriate greeting to establish positive first contact
+        type: communication
+        complexity: simple
+        assignedRole: greeter-agent
+        estimatedDuration: 30
+        artifacts:
+          outputs:
+            - typeId: greeting-message
+              required: true
+              minCount: 1
+              maxCount: 1
+        requirements:
+          - type: functional
+            description: Greeting must be warm, professional, and aligned with brand voice
+            priority: must
+            validationCriteria:
+              - Brand guidelines followed
+              - Appropriate tone established
+              - User acknowledgment received
+      - id: invite-inquiry
+        title: Invite User Inquiry
+        description: Prompt user to express their need or question in natural language
+        type: communication
+        complexity: simple
+        assignedRole: greeter-agent
+        estimatedDuration: 45
+        dependencies:
+          - greet-user
+        artifacts:
+          inputs:
+            - typeId: greeting-message
+              required: true
+          outputs:
+            - typeId: interaction-transcript
+              required: true
+            - typeId: user-context
+              required: true
+        requirements:
+          - type: functional
+            description: User must be encouraged to express intent freely
+            priority: must
+            validationCriteria:
+              - Open-ended prompt provided
+              - User response captured
+              - Context metadata collected (timestamp, channel, etc.)
+    agentRequirements:
+      roles:
+        - greeter-agent
+      skills:
+        - natural-language-understanding
+        - brand-alignment
+        - customer-engagement
+      minExperience: mid
+
+  - id: analyze-intent
+    name: Analyze Intent
+    description: >
+      Process user input to determine intent, extract key information,
+      and classify the type of assistance needed.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Engage phase must be completed
+        phaseId: engage
+    exitCriteria:
+      - type: artifact-exists
+        description: Intent analysis must exist
+        artifactType: intent-analysis
+      - type: artifact-exists
+        description: Classification result must exist
+        artifactType: intent-classification
+    tasks:
+      - id: extract-entities
+        title: Extract Key Entities
+        description: Identify important entities, topics, and context from user input
+        type: analysis
+        complexity: simple
+        assignedRole: intent-analyzer
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: interaction-transcript
+              required: true
+            - typeId: user-context
+              required: true
+          outputs:
+            - typeId: entity-extraction
+              required: true
+        requirements:
+          - type: functional
+            description: Key entities must be accurately identified
+            priority: must
+            validationCriteria:
+              - Product/service mentions extracted
+              - Problem/need identified
+              - Urgency level detected
+      - id: classify-intent
+        title: Classify User Intent
+        description: Categorize the user's intent based on available service domains
+        type: analysis
+        complexity: simple
+        assignedRole: intent-analyzer
+        estimatedDuration: 60
+        dependencies:
+          - extract-entities
+        artifacts:
+          inputs:
+            - typeId: entity-extraction
+              required: true
+            - typeId: service-catalog
+              required: true
+          outputs:
+            - typeId: intent-classification
+              required: true
+        requirements:
+          - type: functional
+            description: Intent must be classified with confidence score
+            priority: must
+            validationCriteria:
+              - Primary intent identified
+              - Confidence threshold met (>70%)
+              - Secondary intents noted if applicable
+      - id: determine-routing
+        title: Determine Routing Target
+        description: Identify the appropriate resource (human agent, specialist AI, department) for handoff
+        type: decision
+        complexity: simple
+        assignedRole: routing-specialist
+        estimatedDuration: 45
+        dependencies:
+          - classify-intent
+        artifacts:
+          inputs:
+            - typeId: intent-classification
+              required: true
+            - typeId: routing-rules
+              required: true
+          outputs:
+            - typeId: intent-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: Routing target must be identified with clear rationale
+            priority: must
+            validationCriteria:
+              - Target resource identified
+              - Availability verified
+              - Priority level assigned
+    agentRequirements:
+      roles:
+        - intent-analyzer
+        - routing-specialist
+      skills:
+        - natural-language-processing
+        - intent-classification
+        - entity-recognition
+        - routing-logic
+      minExperience: mid
+
+  - id: prepare-handoff
+    name: Prepare Handoff
+    description: >
+      Prepare a comprehensive summary of the interaction and user context
+      for smooth transfer to the next resource.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Analyze Intent phase must be completed
+        phaseId: analyze-intent
+    exitCriteria:
+      - type: artifact-exists
+        description: Handoff package must exist
+        artifactType: handoff-package
+      - type: artifact-exists
+        description: User summary must exist
+        artifactType: user-summary
+    tasks:
+      - id: summarize-context
+        title: Summarize User Context
+        description: Create concise summary of user need, intent, and relevant context
+        type: documentation
+        complexity: simple
+        assignedRole: context-summarizer
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: interaction-transcript
+              required: true
+            - typeId: intent-analysis
+              required: true
+            - typeId: user-context
+              required: true
+          outputs:
+            - typeId: user-summary
+              required: true
+        requirements:
+          - type: functional
+            description: Summary must be clear, concise, and actionable
+            priority: must
+            validationCriteria:
+              - Intent clearly stated
+              - Key details included
+              - User sentiment captured
+              - Previous interactions referenced (if applicable)
+      - id: prepare-transition-message
+        title: Prepare Transition Message
+        description: Craft message to inform user of handoff and set expectations
+        type: communication
+        complexity: simple
+        assignedRole: greeter-agent
+        estimatedDuration: 60
+        dependencies:
+          - summarize-context
+        artifacts:
+          inputs:
+            - typeId: user-summary
+              required: true
+            - typeId: intent-analysis
+              required: true
+          outputs:
+            - typeId: transition-message
+              required: true
+        requirements:
+          - type: functional
+            description: Transition must be smooth and confidence-building
+            priority: must
+            validationCriteria:
+              - User informed of next step
+              - Wait time expectations set
+              - Confidence in resolution expressed
+      - id: package-handoff
+        title: Package Handoff Information
+        description: Compile all necessary information for the receiving resource
+        type: documentation
+        complexity: simple
+        assignedRole: context-summarizer
+        estimatedDuration: 45
+        dependencies:
+          - prepare-transition-message
+        artifacts:
+          inputs:
+            - typeId: user-summary
+              required: true
+            - typeId: intent-analysis
+              required: true
+            - typeId: interaction-transcript
+              required: true
+          outputs:
+            - typeId: handoff-package
+              required: true
+        requirements:
+          - type: functional
+            description: Handoff package must contain all relevant context
+            priority: must
+            validationCriteria:
+              - User summary included
+              - Intent classification included
+              - Full transcript attached
+              - Routing target specified
+              - Priority level indicated
+    agentRequirements:
+      roles:
+        - context-summarizer
+        - greeter-agent
+      skills:
+        - summarization
+        - communication
+        - documentation
+      minExperience: mid
+
+  - id: execute-handoff
+    name: Execute Handoff
+    description: >
+      Transfer the interaction to the designated resource with full context,
+      ensuring a warm handoff experience.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Prepare Handoff phase must be completed
+        phaseId: prepare-handoff
+    exitCriteria:
+      - type: artifact-exists
+        description: Handoff confirmation must exist
+        artifactType: handoff-confirmation
+      - type: artifact-exists
+        description: Interaction record must exist
+        artifactType: interaction-record
+    tasks:
+      - id: notify-target-resource
+        title: Notify Target Resource
+        description: Alert the receiving agent or system of incoming handoff
+        type: communication
+        complexity: simple
+        assignedRole: handoff-coordinator
+        estimatedDuration: 30
+        artifacts:
+          inputs:
+            - typeId: handoff-package
+              required: true
+          outputs:
+            - typeId: notification-receipt
+              required: true
+        requirements:
+          - type: functional
+            description: Target resource must acknowledge incoming handoff
+            priority: must
+            validationCriteria:
+              - Notification delivered
+              - Receipt acknowledged
+              - Availability confirmed
+      - id: deliver-transition-message
+        title: Deliver Transition Message
+        description: Inform user that transfer is occurring and provide reassurance
+        type: communication
+        complexity: simple
+        assignedRole: greeter-agent
+        estimatedDuration: 30
+        dependencies:
+          - notify-target-resource
+        artifacts:
+          inputs:
+            - typeId: transition-message
+              required: true
+          outputs:
+            - typeId: user-notification
+              required: true
+        requirements:
+          - type: functional
+            description: User must be kept informed throughout transition
+            priority: must
+            validationCriteria:
+              - Message delivered to user
+              - Professional tone maintained
+              - User acknowledgment received
+      - id: transfer-interaction
+        title: Transfer Interaction
+        description: Execute the technical handoff to the next resource
+        type: implementation
+        complexity: simple
+        assignedRole: handoff-coordinator
+        estimatedDuration: 45
+        dependencies:
+          - deliver-transition-message
+        artifacts:
+          inputs:
+            - typeId: handoff-package
+              required: true
+            - typeId: notification-receipt
+              required: true
+          outputs:
+            - typeId: handoff-confirmation
+              required: true
+        requirements:
+          - type: functional
+            description: Handoff must be technically complete and verified
+            priority: must
+            validationCriteria:
+              - Context transferred successfully
+              - Target resource engaged
+              - Handoff logged in system
+      - id: record-interaction
+        title: Record Interaction
+        description: Document the complete interaction for analytics and improvement
+        type: documentation
+        complexity: simple
+        assignedRole: data-recorder
+        estimatedDuration: 60
+        dependencies:
+          - transfer-interaction
+        artifacts:
+          inputs:
+            - typeId: handoff-confirmation
+              required: true
+            - typeId: interaction-transcript
+              required: true
+            - typeId: intent-analysis
+              required: true
+          outputs:
+            - typeId: interaction-record
+              required: true
+        requirements:
+          - type: functional
+            description: Complete interaction record must be stored
+            priority: must
+            validationCriteria:
+              - All artifacts linked
+              - Timestamps recorded
+              - Outcome documented
+              - Metrics captured (duration, classification accuracy, etc.)
+    agentRequirements:
+      roles:
+        - handoff-coordinator
+        - greeter-agent
+        - data-recorder
+      skills:
+        - coordination
+        - communication
+        - documentation
+        - system-integration
+      minExperience: mid
+
+execution:
+  strategy: sequential
+  phaseOrder:
+    - engage
+    - analyze-intent
+    - prepare-handoff
+    - execute-handoff
+  failureHandling:
+    strategy: retry
+    fallbackPhase: engage
+
+agentCoordination:
+  roles:
+    - id: greeter-agent
+      name: Greeter Agent
+      description: Primary interface agent that engages users and manages the interaction flow
+      responsibilities:
+        - Provide warm, brand-appropriate greeting
+        - Invite user to express their needs
+        - Communicate transitions smoothly
+        - Maintain professional tone throughout
+      requiredSkills:
+        - natural-language-understanding
+        - brand-alignment
+        - customer-engagement
+        - communication
+      experienceLevel: mid
+      authority: contributor
+    - id: intent-analyzer
+      name: Intent Analyzer
+      description: Specialized agent for processing user input and determining intent
+      responsibilities:
+        - Extract key entities from user input
+        - Classify user intent accurately
+        - Provide confidence scores
+        - Identify multiple intents when present
+      requiredSkills:
+        - natural-language-processing
+        - intent-classification
+        - entity-recognition
+      experienceLevel: mid
+      authority: contributor
+    - id: routing-specialist
+      name: Routing Specialist
+      description: Determines optimal routing based on intent and resource availability
+      responsibilities:
+        - Match intent to appropriate resources
+        - Verify resource availability
+        - Apply routing rules and priorities
+        - Optimize handoff targets
+      requiredSkills:
+        - routing-logic
+        - resource-management
+        - decision-making
+      experienceLevel: mid
+      authority: contributor
+    - id: context-summarizer
+      name: Context Summarizer
+      description: Creates concise, actionable summaries for handoff recipients
+      responsibilities:
+        - Summarize user context
+        - Package handoff information
+        - Ensure completeness of context transfer
+        - Highlight critical details
+      requiredSkills:
+        - summarization
+        - documentation
+        - information-architecture
+      experienceLevel: mid
+      authority: contributor
+    - id: handoff-coordinator
+      name: Handoff Coordinator
+      description: Manages the technical execution of handoffs
+      responsibilities:
+        - Coordinate with target resources
+        - Execute transfer operations
+        - Verify successful handoffs
+        - Handle escalations if needed
+      requiredSkills:
+        - coordination
+        - system-integration
+        - problem-solving
+      experienceLevel: mid
+      authority: leader
+    - id: data-recorder
+      name: Data Recorder
+      description: Documents interactions for analytics and continuous improvement
+      responsibilities:
+        - Record complete interaction history
+        - Capture metrics and metadata
+        - Ensure data quality
+        - Support analytics requirements
+      requiredSkills:
+        - documentation
+        - data-management
+        - quality-assurance
+      experienceLevel: junior
+      authority: contributor
+  teamComposition:
+    minSize: 3
+    maxSize: 6
+    required:
+      - greeter-agent
+      - intent-analyzer
+      - handoff-coordinator
+    optional:
+      - routing-specialist
+      - context-summarizer
+      - data-recorder
+  communicationPatterns:
+    - from: greeter-agent
+      to: intent-analyzer
+      type: direct
+      contextTypes:
+        - finding
+    - from: intent-analyzer
+      to: routing-specialist
+      type: direct
+      contextTypes:
+        - finding
+    - from: routing-specialist
+      to: handoff-coordinator
+      type: direct
+      contextTypes:
+        - decision
+    - from: handoff-coordinator
+      to: all
+      type: broadcast
+      contextTypes:
+        - decision
+        - constraint
+  decisionAuthority:
+    - decision: Classify user intent
+      authority: intent-analyzer
+      requiresConsensus: false
+    - decision: Select handoff target
+      authority: routing-specialist
+      requiresConsensus: false
+    - decision: Execute handoff
+      authority: handoff-coordinator
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: greeting-message
+      name: Greeting Message
+      description: Initial welcoming message to user
+      format: text
+      validationRules:
+        - rule: Must align with brand voice and tone
+          errorMessage: Greeting does not match brand guidelines
+    - id: interaction-transcript
+      name: Interaction Transcript
+      description: Complete record of user-agent conversation
+      format: structured
+      schema:
+        type: object
+        required:
+          - messages
+          - timestamp
+          - channel
+        properties:
+          messages:
+            type: array
+            items:
+              type: object
+          timestamp:
+            type: string
+          channel:
+            type: string
+    - id: user-context
+      name: User Context
+      description: Contextual information about the user and their session
+      format: json
+    - id: entity-extraction
+      name: Entity Extraction
+      description: Identified entities, topics, and key information from user input
+      format: json
+    - id: service-catalog
+      name: Service Catalog
+      description: Available services, departments, and capabilities for routing
+      format: structured
+    - id: intent-classification
+      name: Intent Classification
+      description: Categorized user intent with confidence scores
+      format: json
+    - id: routing-rules
+      name: Routing Rules
+      description: Rules and logic for determining appropriate handoff targets
+      format: structured
+    - id: intent-analysis
+      name: Intent Analysis
+      description: Complete analysis including intent, entities, and routing recommendation
+      format: markdown
+    - id: user-summary
+      name: User Summary
+      description: Concise summary of user need and context for handoff recipient
+      format: markdown
+    - id: transition-message
+      name: Transition Message
+      description: Message to inform user of handoff
+      format: text
+    - id: handoff-package
+      name: Handoff Package
+      description: Complete package of information for receiving resource
+      format: structured
+      schema:
+        type: object
+        required:
+          - userSummary
+          - intentAnalysis
+          - transcript
+          - routingTarget
+        properties:
+          userSummary:
+            type: string
+          intentAnalysis:
+            type: object
+          transcript:
+            type: array
+          routingTarget:
+            type: string
+          priority:
+            type: string
+    - id: notification-receipt
+      name: Notification Receipt
+      description: Acknowledgment from target resource
+      format: json
+    - id: user-notification
+      name: User Notification
+      description: Confirmation that user was informed of transition
+      format: json
+    - id: handoff-confirmation
+      name: Handoff Confirmation
+      description: Verification that handoff was completed successfully
+      format: json
+    - id: interaction-record
+      name: Interaction Record
+      description: Complete record of the greeter interaction for analytics
+      format: structured
+  dependencies:
+    - artifact: interaction-transcript
+      dependsOn:
+        - greeting-message
+    - artifact: entity-extraction
+      dependsOn:
+        - interaction-transcript
+        - user-context
+    - artifact: intent-classification
+      dependsOn:
+        - entity-extraction
+        - service-catalog
+    - artifact: intent-analysis
+      dependsOn:
+        - intent-classification
+        - routing-rules
+    - artifact: user-summary
+      dependsOn:
+        - interaction-transcript
+        - intent-analysis
+        - user-context
+    - artifact: handoff-package
+      dependsOn:
+        - user-summary
+        - intent-analysis
+        - interaction-transcript
+    - artifact: handoff-confirmation
+      dependsOn:
+        - handoff-package
+        - notification-receipt
+    - artifact: interaction-record
+      dependsOn:
+        - handoff-confirmation
+        - interaction-transcript
+        - intent-analysis

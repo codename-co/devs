@@ -1,0 +1,931 @@
+metadata:
+  id: orchestrator-pattern
+  name: Orchestrator Pattern
+  title: Multi-Agent Swarm Coordination Workflow
+  description: >
+    Advanced multi-agent interaction pattern that manages an AI Agent "Swarm" by passing
+    user utterances to one or more specialist agents and aggregating their responses.
+    Unlike the Operator Pattern, the Orchestrator remains the first point of contact,
+    coordinating multiple agents to handle complex, multi-faceted conversations that may
+    span multiple topics and require diverse expertise.
+  type: parallel-sequential
+  version: 1.0.0
+  origin: Enterprise Agentic Architecture / Salesforce
+  domains:
+    - multi-agent-coordination
+    - customer-service
+    - complex-inquiry-handling
+    - agent-collaboration
+  complexity: complex
+  tags:
+    - interaction-pattern
+    - orchestration
+    - multi-agent
+    - swarm-intelligence
+    - response-aggregation
+    - agentic-front-door
+  diagram: | # mermaid
+    graph LR
+        Utterance[Utterance]
+        subgraph Orchestrator[Orchestrator Agent]
+            Topics[Topics]
+            Instructions[Instructions]
+            Actions[Actions]
+        end
+        WorkerUses[Worker<br/>Agents Uses]
+        Relay[Relay<br/>Utterance]
+        subgraph Workers[Available Agents]
+            WorkerAgent[Worker Agent]
+            A2AAgent[A2A Agent]
+        end
+        End
+
+        %% Relations
+        Utterance --> Orchestrator
+        WorkerUses --> Instructions
+        Actions -.-> Relay
+        Relay -.-> Workers
+        Workers -.-> Relay
+        Relay -.-> Actions
+        Orchestrator -.-> End
+
+        %% Style
+        Utterance@{ shape: circle, label: " " }
+        Topics@{ shape: subprocess }
+        Instructions@{ shape: subprocess }
+        Actions@{ shape: subprocess }
+        WorkerUses@{ shape: docs }
+        Relay@{ shape: decision }
+        WorkerAgent@{ shape: subprocess }
+        A2AAgent@{ shape: subprocess }
+        End@{ shape: fr-circ }
+
+        %% Note
+        Note[Forward the utterance to agents that match intent. If no agents match, utterance is discarded. If one or more agents match, the utterance is passed to them, responses collected, and returned.]
+
+        style Note fill:transparent,stroke:none
+  i18n:
+    es:
+      name: Patrón de Orquestador
+      title: Flujo de Coordinación Multi-Agente
+      description: >
+        Patrón de interacción multi-agente avanzado que gestiona un "enjambre" de agentes de IA pasando
+        las expresiones del usuario a uno o más agentes especialistas y agregando sus respuestas.
+    fr:
+      name: Modèle d'Orchestrateur
+      title: Flux de Coordination Multi-Agent
+      description: >
+        Modèle d'interaction multi-agent avancé qui gère un "essaim" d'agents IA en transmettant
+        les énoncés des utilisateurs à un ou plusieurs agents spécialistes et en agrégeant leurs réponses.
+    ko:
+      name: 오케스트레이터 패턴
+      title: 다중 에이전트 군집 조정 워크플로
+      description: >
+        사용자 발화를 하나 이상의 전문 에이전트에게 전달하고 응답을 집계하여 AI 에이전트 "군집"을 관리하는
+        고급 다중 에이전트 상호 작용 패턴입니다.
+
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 2
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 5
+
+phases:
+  - id: receive-and-analyze
+    name: Receive and Analyze
+    description: >
+      Receive user utterance and analyze to identify all relevant topics
+      and required specialist agents.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Utterance analysis must exist
+        artifactType: utterance-analysis
+      - type: artifact-exists
+        description: Agent selection must exist
+        artifactType: agent-selection
+    tasks:
+      - id: capture-utterance
+        title: Capture Utterance
+        description: Receive and log user utterance with full context
+        type: communication
+        complexity: simple
+        assignedRole: orchestrator-agent
+        estimatedDuration: 20
+        artifacts:
+          outputs:
+            - typeId: utterance
+              required: true
+            - typeId: conversation-context
+              required: true
+        requirements:
+          - type: functional
+            description: Utterance must be captured with complete context
+            priority: must
+            validationCriteria:
+              - Full utterance recorded
+              - Conversation history maintained
+              - User context preserved
+      - id: parse-topics
+        title: Parse Topics
+        description: Identify all topics and domains present in utterance
+        type: analysis
+        complexity: moderate
+        assignedRole: topic-analyzer
+        estimatedDuration: 60
+        dependencies:
+          - capture-utterance
+        artifacts:
+          inputs:
+            - typeId: utterance
+              required: true
+            - typeId: conversation-context
+              required: true
+          outputs:
+            - typeId: topic-extraction
+              required: true
+        requirements:
+          - type: functional
+            description: All relevant topics must be identified
+            priority: must
+            validationCriteria:
+              - Primary topics identified
+              - Secondary topics noted
+              - Topic relationships mapped
+              - Multi-topic scenarios recognized
+      - id: assess-complexity
+        title: Assess Complexity
+        description: Evaluate utterance complexity and multi-agent coordination needs
+        type: analysis
+        complexity: moderate
+        assignedRole: complexity-assessor
+        estimatedDuration: 45
+        dependencies:
+          - parse-topics
+        artifacts:
+          inputs:
+            - typeId: topic-extraction
+              required: true
+          outputs:
+            - typeId: complexity-assessment
+              required: true
+        requirements:
+          - type: functional
+            description: Complexity must be assessed to guide orchestration strategy
+            priority: must
+            validationCriteria:
+              - Complexity level determined
+              - Agent count estimated
+              - Coordination strategy recommended
+      - id: select-agents
+        title: Select Worker Agents
+        description: Identify and select appropriate specialist agents for each topic
+        type: analysis
+        complexity: moderate
+        assignedRole: agent-selector
+        estimatedDuration: 60
+        dependencies:
+          - assess-complexity
+        artifacts:
+          inputs:
+            - typeId: topic-extraction
+              required: true
+            - typeId: agent-catalog
+              required: true
+            - typeId: complexity-assessment
+              required: true
+          outputs:
+            - typeId: agent-selection
+              required: true
+            - typeId: utterance-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: Optimal agent set must be selected
+            priority: must
+            validationCriteria:
+              - Agents match topics
+              - Capabilities verified
+              - Availability confirmed
+              - A2A agents included if needed
+    agentRequirements:
+      roles:
+        - orchestrator-agent
+        - topic-analyzer
+        - complexity-assessor
+        - agent-selector
+      skills:
+        - natural-language-understanding
+        - topic-extraction
+        - complexity-assessment
+        - agent-matching
+      minExperience: senior
+
+  - id: relay-to-workers
+    name: Relay to Workers
+    description: >
+      Distribute utterance to selected worker agents with appropriate context
+      and coordination instructions.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Receive and Analyze phase must be completed
+        phaseId: receive-and-analyze
+    exitCriteria:
+      - type: artifact-exists
+        description: All relay confirmations must exist
+        artifactType: relay-confirmations
+    tasks:
+      - id: prepare-relay-packages
+        title: Prepare Relay Packages
+        description: Create contextualized relay packages for each worker agent
+        type: documentation
+        complexity: moderate
+        assignedRole: context-packager
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: utterance
+              required: true
+            - typeId: agent-selection
+              required: true
+            - typeId: conversation-context
+              required: true
+          outputs:
+            - typeId: relay-packages
+              required: true
+        requirements:
+          - type: functional
+            description: Each package must contain relevant context for its agent
+            priority: must
+            validationCriteria:
+              - Utterance included
+              - Topic focus specified
+              - Context scoped appropriately
+              - Response expectations set
+      - id: dispatch-to-workers
+        title: Dispatch to Workers
+        description: Send relay packages to worker agents in parallel
+        type: communication
+        complexity: moderate
+        assignedRole: dispatcher
+        estimatedDuration: 30
+        dependencies:
+          - prepare-relay-packages
+        artifacts:
+          inputs:
+            - typeId: relay-packages
+              required: true
+          outputs:
+            - typeId: dispatch-confirmations
+              required: true
+        requirements:
+          - type: functional
+            description: All dispatches must be confirmed
+            priority: must
+            validationCriteria:
+              - All packages delivered
+              - Confirmations received
+              - Timing recorded
+      - id: monitor-worker-progress
+        title: Monitor Worker Progress
+        description: Track worker agent processing and identify any issues
+        type: planning
+        complexity: moderate
+        assignedRole: progress-monitor
+        estimatedDuration: 120
+        dependencies:
+          - dispatch-to-workers
+        artifacts:
+          inputs:
+            - typeId: dispatch-confirmations
+              required: true
+          outputs:
+            - typeId: progress-updates
+              required: true
+        requirements:
+          - type: functional
+            description: Worker progress must be tracked in real-time
+            priority: should
+            validationCriteria:
+              - Status updates received
+              - Timeouts detected
+              - Failures identified
+      - id: collect-worker-responses
+        title: Collect Worker Responses
+        description: Gather responses from all worker agents
+        type: communication
+        complexity: simple
+        assignedRole: response-collector
+        estimatedDuration: 60
+        dependencies:
+          - monitor-worker-progress
+        artifacts:
+          inputs:
+            - typeId: progress-updates
+              required: true
+          outputs:
+            - typeId: worker-responses
+              required: true
+            - typeId: relay-confirmations
+              required: true
+        requirements:
+          - type: functional
+            description: All worker responses must be collected
+            priority: must
+            validationCriteria:
+              - All responses received or timeout handled
+              - Response quality validated
+              - Metadata captured
+    agentRequirements:
+      roles:
+        - context-packager
+        - dispatcher
+        - progress-monitor
+        - response-collector
+      skills:
+        - context-management
+        - parallel-coordination
+        - progress-tracking
+        - response-collection
+      minExperience: mid
+
+  - id: synthesize-responses
+    name: Synthesize Responses
+    description: >
+      Aggregate, synthesize, and format worker responses into a coherent,
+      comprehensive response for the user.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Relay to Workers phase must be completed
+        phaseId: relay-to-workers
+    exitCriteria:
+      - type: artifact-exists
+        description: Synthesized response must exist
+        artifactType: synthesized-response
+    tasks:
+      - id: analyze-responses
+        title: Analyze Worker Responses
+        description: Evaluate worker responses for quality, relevance, and coherence
+        type: analysis
+        complexity: moderate
+        assignedRole: response-analyzer
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: worker-responses
+              required: true
+            - typeId: utterance-analysis
+              required: true
+          outputs:
+            - typeId: response-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: Responses must be analyzed for synthesis strategy
+            priority: must
+            validationCriteria:
+              - Quality assessed
+              - Conflicts identified
+              - Gaps detected
+              - Redundancies noted
+      - id: resolve-conflicts
+        title: Resolve Conflicts
+        description: Handle any conflicting information from worker agents
+        type: analysis
+        complexity: complex
+        assignedRole: conflict-resolver
+        estimatedDuration: 120
+        dependencies:
+          - analyze-responses
+        condition: response-analysis.hasConflicts == true
+        artifacts:
+          inputs:
+            - typeId: response-analysis
+              required: true
+            - typeId: worker-responses
+              required: true
+          outputs:
+            - typeId: conflict-resolution
+              required: true
+        requirements:
+          - type: functional
+            description: Conflicts must be resolved with clear rationale
+            priority: must
+            validationCriteria:
+              - Conflicts identified
+              - Resolution strategy applied
+              - Authoritative source determined
+              - User trust maintained
+      - id: aggregate-content
+        title: Aggregate Content
+        description: Combine worker responses into unified content
+        type: documentation
+        complexity: moderate
+        assignedRole: content-aggregator
+        estimatedDuration: 120
+        dependencies:
+          - resolve-conflicts
+        artifacts:
+          inputs:
+            - typeId: worker-responses
+              required: true
+            - typeId: response-analysis
+              required: true
+            - typeId: conflict-resolution
+              required: false
+          outputs:
+            - typeId: aggregated-content
+              required: true
+        requirements:
+          - type: functional
+            description: Content must be logically organized and complete
+            priority: must
+            validationCriteria:
+              - All relevant content included
+              - Logical flow established
+              - Transitions smooth
+              - No duplication
+      - id: format-response
+        title: Format Response
+        description: Format aggregated content for optimal user experience
+        type: documentation
+        complexity: moderate
+        assignedRole: response-formatter
+        estimatedDuration: 60
+        dependencies:
+          - aggregate-content
+        artifacts:
+          inputs:
+            - typeId: aggregated-content
+              required: true
+            - typeId: conversation-context
+              required: true
+          outputs:
+            - typeId: synthesized-response
+              required: true
+        requirements:
+          - type: functional
+            description: Response must be formatted for clarity and engagement
+            priority: must
+            validationCriteria:
+              - Format appropriate for channel
+              - Key points highlighted
+              - Citations included
+              - Action items clear
+    agentRequirements:
+      roles:
+        - response-analyzer
+        - conflict-resolver
+        - content-aggregator
+        - response-formatter
+      skills:
+        - response-analysis
+        - conflict-resolution
+        - content-synthesis
+        - formatting
+      minExperience: senior
+
+  - id: deliver-and-track
+    name: Deliver and Track
+    description: >
+      Deliver synthesized response to user and track interaction
+      for continuous improvement.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Synthesize Responses phase must be completed
+        phaseId: synthesize-responses
+    exitCriteria:
+      - type: artifact-exists
+        description: Delivery confirmation must exist
+        artifactType: delivery-confirmation
+      - type: artifact-exists
+        description: Orchestration record must exist
+        artifactType: orchestration-record
+    tasks:
+      - id: deliver-response
+        title: Deliver Response
+        description: Present synthesized response to user
+        type: communication
+        complexity: simple
+        assignedRole: orchestrator-agent
+        estimatedDuration: 30
+        artifacts:
+          inputs:
+            - typeId: synthesized-response
+              required: true
+          outputs:
+            - typeId: delivery-confirmation
+              required: true
+        requirements:
+          - type: functional
+            description: Response must be successfully delivered
+            priority: must
+            validationCriteria:
+              - Response transmitted
+              - User acknowledgment received
+              - Timing recorded
+      - id: monitor-user-satisfaction
+        title: Monitor User Satisfaction
+        description: Assess user response and satisfaction signals
+        type: analysis
+        complexity: simple
+        assignedRole: satisfaction-monitor
+        estimatedDuration: 60
+        dependencies:
+          - deliver-response
+        artifacts:
+          inputs:
+            - typeId: delivery-confirmation
+              required: true
+          outputs:
+            - typeId: satisfaction-metrics
+              required: true
+        requirements:
+          - type: functional
+            description: User satisfaction must be assessed
+            priority: should
+            validationCriteria:
+              - Follow-up questions captured
+              - Sentiment analyzed
+              - Satisfaction indicators noted
+      - id: document-orchestration
+        title: Document Orchestration
+        description: Record complete orchestration for analytics and learning
+        type: documentation
+        complexity: moderate
+        assignedRole: orchestration-recorder
+        estimatedDuration: 90
+        dependencies:
+          - monitor-user-satisfaction
+        artifacts:
+          inputs:
+            - typeId: utterance-analysis
+              required: true
+            - typeId: agent-selection
+              required: true
+            - typeId: worker-responses
+              required: true
+            - typeId: synthesized-response
+              required: true
+            - typeId: satisfaction-metrics
+              required: true
+          outputs:
+            - typeId: orchestration-record
+              required: true
+        requirements:
+          - type: functional
+            description: Complete orchestration must be documented
+            priority: must
+            validationCriteria:
+              - All phases captured
+              - Worker contributions logged
+              - Performance metrics recorded
+              - Learnings identified
+    agentRequirements:
+      roles:
+        - orchestrator-agent
+        - satisfaction-monitor
+        - orchestration-recorder
+      skills:
+        - communication
+        - sentiment-analysis
+        - documentation
+        - analytics
+      minExperience: mid
+
+execution:
+  strategy: parallel-sequential
+  phaseOrder:
+    - receive-and-analyze
+    - relay-to-workers
+    - synthesize-responses
+    - deliver-and-track
+  parallelPhases:
+    - relay-to-workers
+  failureHandling:
+    strategy: graceful-degradation
+    fallbackActions:
+      - condition: worker-timeout
+        action: proceed-with-available-responses
+      - condition: worker-failure
+        action: exclude-failed-worker
+      - condition: all-workers-failed
+        action: provide-general-assistance
+
+agentCoordination:
+  roles:
+    - id: orchestrator-agent
+      name: Orchestrator Agent
+      description: Central coordinator managing entire multi-agent interaction
+      responsibilities:
+        - Capture user utterances
+        - Deliver synthesized responses
+        - Maintain conversation continuity
+        - Ensure user satisfaction
+      requiredSkills:
+        - conversation-management
+        - user-experience
+        - communication
+      experienceLevel: senior
+      authority: leader
+    - id: topic-analyzer
+      name: Topic Analyzer
+      description: Specialist in multi-topic identification and extraction
+      responsibilities:
+        - Parse topics from utterances
+        - Identify relationships between topics
+        - Recognize multi-faceted queries
+      requiredSkills:
+        - topic-extraction
+        - natural-language-processing
+        - pattern-recognition
+      experienceLevel: senior
+      authority: contributor
+    - id: complexity-assessor
+      name: Complexity Assessor
+      description: Evaluates orchestration complexity and coordination needs
+      responsibilities:
+        - Assess utterance complexity
+        - Estimate agent requirements
+        - Recommend coordination strategy
+      requiredSkills:
+        - complexity-assessment
+        - strategic-planning
+      experienceLevel: senior
+      authority: contributor
+    - id: agent-selector
+      name: Agent Selector
+      description: Matches topics to optimal worker agents
+      responsibilities:
+        - Select appropriate worker agents
+        - Verify agent capabilities
+        - Confirm availability
+        - Include A2A agents when needed
+      requiredSkills:
+        - agent-matching
+        - capability-assessment
+      experienceLevel: mid
+      authority: contributor
+    - id: context-packager
+      name: Context Packager
+      description: Prepares contextualized packages for worker agents
+      responsibilities:
+        - Create relay packages
+        - Scope context appropriately
+        - Set response expectations
+      requiredSkills:
+        - context-management
+        - documentation
+      experienceLevel: mid
+      authority: contributor
+    - id: dispatcher
+      name: Dispatcher
+      description: Manages parallel dispatch to worker agents
+      responsibilities:
+        - Dispatch relay packages
+        - Confirm deliveries
+        - Track timing
+      requiredSkills:
+        - parallel-coordination
+        - system-integration
+      experienceLevel: mid
+      authority: contributor
+    - id: progress-monitor
+      name: Progress Monitor
+      description: Tracks worker agent progress in real-time
+      responsibilities:
+        - Monitor worker status
+        - Detect timeouts
+        - Identify failures
+      requiredSkills:
+        - progress-tracking
+        - monitoring
+      experienceLevel: mid
+      authority: contributor
+    - id: response-collector
+      name: Response Collector
+      description: Gathers and validates worker responses
+      responsibilities:
+        - Collect worker responses
+        - Validate response quality
+        - Handle timeouts
+      requiredSkills:
+        - response-collection
+        - quality-validation
+      experienceLevel: mid
+      authority: contributor
+    - id: response-analyzer
+      name: Response Analyzer
+      description: Analyzes worker responses for synthesis
+      responsibilities:
+        - Assess response quality
+        - Identify conflicts
+        - Detect gaps
+        - Note redundancies
+      requiredSkills:
+        - response-analysis
+        - critical-thinking
+      experienceLevel: senior
+      authority: contributor
+    - id: conflict-resolver
+      name: Conflict Resolver
+      description: Resolves conflicting information from workers
+      responsibilities:
+        - Identify conflicts
+        - Apply resolution strategy
+        - Maintain user trust
+      requiredSkills:
+        - conflict-resolution
+        - decision-making
+      experienceLevel: senior
+      authority: leader
+    - id: content-aggregator
+      name: Content Aggregator
+      description: Combines worker responses into unified content
+      responsibilities:
+        - Aggregate content
+        - Establish logical flow
+        - Eliminate duplication
+      requiredSkills:
+        - content-synthesis
+        - organization
+      experienceLevel: senior
+      authority: contributor
+    - id: response-formatter
+      name: Response Formatter
+      description: Formats aggregated content for user delivery
+      responsibilities:
+        - Format for channel
+        - Highlight key points
+        - Include citations
+        - Clarify action items
+      requiredSkills:
+        - formatting
+        - user-experience
+      experienceLevel: mid
+      authority: contributor
+    - id: satisfaction-monitor
+      name: Satisfaction Monitor
+      description: Assesses user satisfaction and engagement
+      responsibilities:
+        - Monitor user response
+        - Analyze sentiment
+        - Capture satisfaction indicators
+      requiredSkills:
+        - sentiment-analysis
+        - user-research
+      experienceLevel: mid
+      authority: contributor
+    - id: orchestration-recorder
+      name: Orchestration Recorder
+      description: Documents orchestration for learning and improvement
+      responsibilities:
+        - Record orchestration details
+        - Log worker contributions
+        - Capture metrics
+        - Identify learnings
+      requiredSkills:
+        - documentation
+        - analytics
+      experienceLevel: junior
+      authority: contributor
+  teamComposition:
+    minSize: 6
+    maxSize: 14
+    required:
+      - orchestrator-agent
+      - topic-analyzer
+      - agent-selector
+      - dispatcher
+      - response-collector
+      - content-aggregator
+    optional:
+      - complexity-assessor
+      - context-packager
+      - progress-monitor
+      - response-analyzer
+      - conflict-resolver
+      - response-formatter
+      - satisfaction-monitor
+      - orchestration-recorder
+  communicationPatterns:
+    - from: orchestrator-agent
+      to: topic-analyzer
+      type: direct
+      contextTypes:
+        - finding
+    - from: topic-analyzer
+      to: agent-selector
+      type: direct
+      contextTypes:
+        - finding
+    - from: dispatcher
+      to: worker-agents
+      type: broadcast
+      contextTypes:
+        - decision
+    - from: response-collector
+      to: content-aggregator
+      type: direct
+      contextTypes:
+        - finding
+    - from: content-aggregator
+      to: orchestrator-agent
+      type: direct
+      contextTypes:
+        - resource
+  decisionAuthority:
+    - decision: Select worker agents
+      authority: agent-selector
+      requiresConsensus: false
+    - decision: Resolve conflicts
+      authority: conflict-resolver
+      requiresConsensus: false
+    - decision: Synthesize final response
+      authority: content-aggregator
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: utterance
+      name: Utterance
+      description: User's complete utterance or query
+      format: text
+    - id: conversation-context
+      name: Conversation Context
+      description: Historical context of the conversation
+      format: structured
+    - id: topic-extraction
+      name: Topic Extraction
+      description: Identified topics and domains from utterance
+      format: json
+    - id: complexity-assessment
+      name: Complexity Assessment
+      description: Evaluation of utterance complexity
+      format: json
+    - id: agent-catalog
+      name: Agent Catalog
+      description: Available worker agents with capabilities
+      format: structured
+    - id: agent-selection
+      name: Agent Selection
+      description: Selected worker agents for the utterance
+      format: json
+    - id: utterance-analysis
+      name: Utterance Analysis
+      description: Complete analysis of utterance including topics and agents
+      format: markdown
+    - id: relay-packages
+      name: Relay Packages
+      description: Contextualized packages for each worker agent
+      format: structured
+    - id: dispatch-confirmations
+      name: Dispatch Confirmations
+      description: Confirmations of relay package deliveries
+      format: json
+    - id: progress-updates
+      name: Progress Updates
+      description: Real-time status updates from workers
+      format: json
+    - id: worker-responses
+      name: Worker Responses
+      description: Collected responses from all worker agents
+      format: structured
+    - id: relay-confirmations
+      name: Relay Confirmations
+      description: Complete confirmation of relay process
+      format: json
+    - id: response-analysis
+      name: Response Analysis
+      description: Analysis of worker responses
+      format: json
+    - id: conflict-resolution
+      name: Conflict Resolution
+      description: Resolution of conflicting information
+      format: markdown
+    - id: aggregated-content
+      name: Aggregated Content
+      description: Combined content from worker responses
+      format: markdown
+    - id: synthesized-response
+      name: Synthesized Response
+      description: Final formatted response for user
+      format: text
+    - id: delivery-confirmation
+      name: Delivery Confirmation
+      description: Confirmation of response delivery
+      format: json
+    - id: satisfaction-metrics
+      name: Satisfaction Metrics
+      description: User satisfaction indicators
+      format: json
+    - id: orchestration-record
+      name: Orchestration Record
+      description: Complete record of orchestration
+      format: structured

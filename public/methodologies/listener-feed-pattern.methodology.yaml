@@ -1,0 +1,905 @@
+metadata:
+  id: listener-feed-pattern
+  name: Listener / Feed Pattern
+  title: Conversational Context Surfacing Workflow
+  description: >
+    Real-time agentic pattern that surfaces relevant context and insights during the flow
+    of a conversation. The Listener is triggered during each conversational turn to find
+    and display relevant information for an employee, creating a dynamic feed of contextual
+    intelligence. This pattern acts as a Universal Assistant, augmenting human agents with
+    AI-driven insights, suggestions, and knowledge retrieval in real-time.
+  type: event-driven
+  version: 1.0.0
+  origin: Enterprise Agentic Architecture / Salesforce
+  domains:
+    - customer-service
+    - sales-enablement
+    - real-time-assistance
+    - contextual-intelligence
+  complexity: moderate
+  tags:
+    - interaction-pattern
+    - real-time
+    - contextual-awareness
+    - employee-assistance
+    - universal-assistant
+    - feed-generation
+  diagram: | # mermaid
+    graph LR
+        Customer[Customer]
+        Employee[Employee]
+        Channel[Turn-Based<br/>Channel<br/>Voice, Chat,<br/>etc.]
+        Feed[Feed]
+        TopicsRelevance[Topics for each<br/>area of relevance]
+
+        subgraph ListenerAgent[Listener Agent]
+            Topics[Topics]
+            Instructions[Instructions]
+            Actions[Actions]
+        end
+
+        Knowledge[Knowledge]
+        RAG[RAG]
+
+        subgraph DomainAgent[Domain Specific Agent]
+            DomainAI[AI Agent]
+        end
+
+        subgraph DataAccess[Data/Data Access<br/>Points]
+            Cloud[Cloud Service]
+            API[API Service]
+            RAGAccess[RAG]
+        end
+
+        EntSystem[(Enterprise<br/>System)]
+        EntData[(Enterprise<br/>Data)]
+
+        %% Relations
+        Customer --> Channel
+        Employee --> Channel
+        Channel -->|Turn Transcript| ListenerAgent
+        Feed -->|Relevant Context| ListenerAgent
+        TopicsRelevance --> Topics
+        Actions -.-> Knowledge
+        Knowledge --> RAG
+        Actions -.-> DomainAgent
+        DomainAgent -.-> DataAccess
+        DataAccess <--> EntSystem
+        DataAccess <--> EntData
+        Feed --> Employee
+
+        %% Style
+        Customer@{ shape: stadium }
+        Employee@{ shape: stadium }
+        Channel@{ shape: process }
+        Feed@{ shape: process }
+        TopicsRelevance@{ shape: docs }
+        Topics@{ shape: subprocess }
+        Instructions@{ shape: subprocess }
+        Actions@{ shape: subprocess }
+        Knowledge@{ shape: docs }
+        RAG@{ shape: cloud }
+        DomainAI@{ shape: subprocess }
+        Cloud@{ shape: cloud }
+        API@{ shape: subprocess }
+        RAGAccess@{ shape: cloud }
+        EntSystem@{ shape: database }
+        EntData@{ shape: database }
+  i18n:
+    es:
+      name: Patrón de Listener / Feed
+      title: Flujo de Superficialización de Contexto Conversacional
+      description: >
+        Patrón agéntico en tiempo real que hace emerger contexto e ideas relevantes durante
+        el flujo de una conversación. El Listener se activa durante cada turno conversacional
+        para encontrar y mostrar información relevante para un empleado, creando un feed
+        dinámico de inteligencia contextual. Este patrón actúa como un Asistente Universal,
+        aumentando a los agentes humanos con ideas impulsadas por IA, sugerencias y recuperación
+        de conocimiento en tiempo real.
+    fr:
+      name: Modèle Veille / Flux Contextuel
+      title: Flux de Contextualisation Conversationnelle en Temps Réel
+      description: >
+        Modèle agentique en temps réel qui fait émerger le contexte et les informations pertinentes
+        au fil d'une conversation. L'agent de Veille est déclenché à chaque tour de parole
+        pour identifier et afficher des informations contextuelles pertinentes destinées à l'employé,
+        créant un flux dynamique d'intelligence contextuelle.
+    ko:
+      name: 리스너 / 피드 패턴
+      title: 대화형 컨텍스트 서피싱 워크플로
+      description: >
+        대화 흐름 중에 관련 컨텍스트와 통찰력을 제공하는 실시간 에이전트 패턴.
+        리스너는 각 대화 턴 동안 트리거되어 직원에게 관련 정보를 찾아 표시하여
+        컨텍스트 인텔리전스의 동적 피드를 생성합니다.
+configuration:
+  qualityGates:
+    enabled: true
+    autoRetry: true
+    maxRetries: 2
+  parallelization:
+    enabled: true
+    maxConcurrentTasks: 3
+  eventDriven:
+    enabled: true
+    triggerEvent: conversational-turn
+    subscriptionPattern: turn-based-channel
+
+phases:
+  - id: monitor-conversation
+    name: Monitor Conversation
+    description: >
+      Continuously monitor the turn-based conversation channel and capture
+      each turn's transcript for analysis.
+    order: 0
+    exitCriteria:
+      - type: artifact-exists
+        description: Turn transcript must exist
+        artifactType: turn-transcript
+      - type: artifact-exists
+        description: Conversation state must be updated
+        artifactType: conversation-state
+    tasks:
+      - id: subscribe-to-channel
+        title: Subscribe to Channel
+        description: Establish subscription to turn-based channel (chat, voice, SMS)
+        type: implementation
+        complexity: simple
+        assignedRole: channel-monitor
+        estimatedDuration: 10
+        artifacts:
+          inputs:
+            - typeId: channel-configuration
+              required: true
+          outputs:
+            - typeId: subscription-handle
+              required: true
+        requirements:
+          - type: functional
+            description: Channel subscription must be active and reliable
+            priority: must
+            validationCriteria:
+              - Subscription established
+              - Events receivable
+              - Error handling configured
+      - id: capture-turn
+        title: Capture Conversational Turn
+        description: Capture the complete turn including speaker, content, and metadata
+        type: communication
+        complexity: simple
+        assignedRole: turn-capturer
+        estimatedDuration: 15
+        dependencies:
+          - subscribe-to-channel
+        artifacts:
+          inputs:
+            - typeId: subscription-handle
+              required: true
+          outputs:
+            - typeId: turn-transcript
+              required: true
+        requirements:
+          - type: functional
+            description: Every turn must be captured accurately
+            priority: must
+            validationCriteria:
+              - Speaker identified
+              - Content captured
+              - Timestamp recorded
+              - Turn sequence maintained
+      - id: update-conversation-state
+        title: Update Conversation State
+        description: Update running conversation state with new turn
+        type: implementation
+        complexity: simple
+        assignedRole: state-manager
+        estimatedDuration: 20
+        dependencies:
+          - capture-turn
+        artifacts:
+          inputs:
+            - typeId: turn-transcript
+              required: true
+          outputs:
+            - typeId: conversation-state
+              required: true
+        requirements:
+          - type: functional
+            description: Conversation state must reflect current context
+            priority: must
+            validationCriteria:
+              - State updated
+              - History maintained
+              - Context preserved
+    agentRequirements:
+      roles:
+        - channel-monitor
+        - turn-capturer
+        - state-manager
+      skills:
+        - event-monitoring
+        - real-time-processing
+        - state-management
+      minExperience: mid
+
+  - id: analyze-turn
+    name: Analyze Turn
+    description: >
+      Analyze the conversational turn to identify topics, extract entities,
+      and determine relevance areas for context retrieval.
+    order: 1
+    entryCriteria:
+      - type: phase-completed
+        description: Monitor Conversation phase must be completed
+        phaseId: monitor-conversation
+    exitCriteria:
+      - type: artifact-exists
+        description: Turn analysis must exist
+        artifactType: turn-analysis
+      - type: artifact-exists
+        description: Relevance topics must be identified
+        artifactType: relevance-topics
+    tasks:
+      - id: identify-topics
+        title: Identify Topics
+        description: Extract topics and subject areas from the turn
+        type: analysis
+        complexity: moderate
+        assignedRole: topic-identifier
+        estimatedDuration: 45
+        artifacts:
+          inputs:
+            - typeId: turn-transcript
+              required: true
+            - typeId: conversation-state
+              required: true
+          outputs:
+            - typeId: identified-topics
+              required: true
+        requirements:
+          - type: functional
+            description: Topics must be accurately identified
+            priority: must
+            validationCriteria:
+              - Primary topics extracted
+              - Context-aware identification
+              - Confidence scores provided
+      - id: extract-entities
+        title: Extract Key Entities
+        description: Identify important entities (products, people, dates, etc.)
+        type: analysis
+        complexity: moderate
+        assignedRole: entity-extractor
+        estimatedDuration: 40
+        dependencies:
+          - identify-topics
+        artifacts:
+          inputs:
+            - typeId: turn-transcript
+              required: true
+          outputs:
+            - typeId: extracted-entities
+              required: true
+        requirements:
+          - type: functional
+            description: Entities must be extracted with type classification
+            priority: must
+            validationCriteria:
+              - Entities identified
+              - Types classified
+              - Relationships noted
+      - id: assess-relevance
+        title: Assess Relevance Areas
+        description: Determine which knowledge domains and data sources are relevant
+        type: analysis
+        complexity: moderate
+        assignedRole: relevance-assessor
+        estimatedDuration: 50
+        dependencies:
+          - extract-entities
+        artifacts:
+          inputs:
+            - typeId: identified-topics
+              required: true
+            - typeId: extracted-entities
+              required: true
+            - typeId: topic-relevance-map
+              required: true
+          outputs:
+            - typeId: relevance-topics
+              required: true
+            - typeId: turn-analysis
+              required: true
+        requirements:
+          - type: functional
+            description: Relevance assessment must guide retrieval strategy
+            priority: must
+            validationCriteria:
+              - Relevant domains identified
+              - Priority ordering established
+              - Retrieval targets specified
+    agentRequirements:
+      roles:
+        - topic-identifier
+        - entity-extractor
+        - relevance-assessor
+      skills:
+        - topic-extraction
+        - entity-recognition
+        - relevance-assessment
+      minExperience: mid
+
+  - id: retrieve-context
+    name: Retrieve Context
+    description: >
+      Retrieve relevant information from knowledge bases, domain agents,
+      and data sources based on turn analysis.
+    order: 2
+    entryCriteria:
+      - type: phase-completed
+        description: Analyze Turn phase must be completed
+        phaseId: analyze-turn
+    exitCriteria:
+      - type: artifact-exists
+        description: Retrieved context must exist
+        artifactType: retrieved-context
+    tasks:
+      - id: search-knowledge-base
+        title: Search Knowledge Base
+        description: Query knowledge repositories using identified topics and entities
+        type: analysis
+        complexity: moderate
+        assignedRole: knowledge-searcher
+        estimatedDuration: 60
+        artifacts:
+          inputs:
+            - typeId: relevance-topics
+              required: true
+            - typeId: extracted-entities
+              required: true
+          outputs:
+            - typeId: knowledge-results
+              required: true
+        requirements:
+          - type: functional
+            description: Knowledge search must return relevant articles and documents
+            priority: must
+            validationCriteria:
+              - RAG query executed
+              - Results ranked by relevance
+              - Sources cited
+      - id: invoke-domain-agents
+        title: Invoke Domain Agents
+        description: Call specialist domain agents for specific insights
+        type: communication
+        complexity: moderate
+        assignedRole: agent-invoker
+        estimatedDuration: 90
+        artifacts:
+          inputs:
+            - typeId: relevance-topics
+              required: true
+            - typeId: turn-transcript
+              required: true
+          outputs:
+            - typeId: domain-agent-responses
+              required: true
+        requirements:
+          - type: functional
+            description: Domain agents must provide specialized context
+            priority: should
+            validationCriteria:
+              - Relevant agents identified
+              - Agents invoked successfully
+              - Responses received
+      - id: query-data-sources
+        title: Query Data Sources
+        description: Retrieve data from enterprise systems and APIs
+        type: implementation
+        complexity: moderate
+        assignedRole: data-retriever
+        estimatedDuration: 75
+        artifacts:
+          inputs:
+            - typeId: relevance-topics
+              required: true
+            - typeId: extracted-entities
+              required: true
+          outputs:
+            - typeId: data-results
+              required: true
+        requirements:
+          - type: functional
+            description: Data queries must return current, accurate information
+            priority: must
+            validationCriteria:
+              - Queries executed
+              - Data retrieved
+              - Freshness verified
+      - id: compile-context
+        title: Compile Retrieved Context
+        description: Aggregate all retrieved information into unified context
+        type: documentation
+        complexity: moderate
+        assignedRole: context-compiler
+        estimatedDuration: 60
+        dependencies:
+          - search-knowledge-base
+          - invoke-domain-agents
+          - query-data-sources
+        artifacts:
+          inputs:
+            - typeId: knowledge-results
+              required: true
+            - typeId: domain-agent-responses
+              required: false
+            - typeId: data-results
+              required: true
+          outputs:
+            - typeId: retrieved-context
+              required: true
+        requirements:
+          - type: functional
+            description: Context must be comprehensive and organized
+            priority: must
+            validationCriteria:
+              - All sources integrated
+              - Duplicates removed
+              - Context structured
+    agentRequirements:
+      roles:
+        - knowledge-searcher
+        - agent-invoker
+        - data-retriever
+        - context-compiler
+      skills:
+        - knowledge-retrieval
+        - agent-coordination
+        - data-access
+        - information-synthesis
+      minExperience: mid
+
+  - id: format-and-post
+    name: Format and Post
+    description: >
+      Format retrieved context for optimal presentation and post to
+      the employee feed with appropriate highlighting and organization.
+    order: 3
+    entryCriteria:
+      - type: phase-completed
+        description: Retrieve Context phase must be completed
+        phaseId: retrieve-context
+    exitCriteria:
+      - type: artifact-exists
+        description: Feed update must be posted
+        artifactType: feed-update
+      - type: artifact-exists
+        description: Listener activity must be logged
+        artifactType: activity-log
+    tasks:
+      - id: prioritize-information
+        title: Prioritize Information
+        description: Rank and prioritize retrieved context by relevance and urgency
+        type: analysis
+        complexity: moderate
+        assignedRole: priority-ranker
+        estimatedDuration: 45
+        artifacts:
+          inputs:
+            - typeId: retrieved-context
+              required: true
+            - typeId: turn-analysis
+              required: true
+          outputs:
+            - typeId: prioritized-context
+              required: true
+        requirements:
+          - type: functional
+            description: Information must be prioritized for employee efficiency
+            priority: must
+            validationCriteria:
+              - Relevance scoring applied
+              - Urgency considered
+              - Ranking established
+      - id: format-for-feed
+        title: Format for Feed
+        description: Structure context for visual presentation in feed
+        type: documentation
+        complexity: moderate
+        assignedRole: feed-formatter
+        estimatedDuration: 60
+        dependencies:
+          - prioritize-information
+        artifacts:
+          inputs:
+            - typeId: prioritized-context
+              required: true
+            - typeId: feed-template
+              required: true
+          outputs:
+            - typeId: formatted-feed-content
+              required: true
+        requirements:
+          - type: functional
+            description: Format must enable quick scanning and comprehension
+            priority: must
+            validationCriteria:
+              - Key points highlighted
+              - Visual hierarchy clear
+              - Actionable items emphasized
+              - Comparisons formatted
+      - id: post-to-feed
+        title: Post to Employee Feed
+        description: Publish formatted content to the running employee feed
+        type: communication
+        complexity: simple
+        assignedRole: feed-publisher
+        estimatedDuration: 20
+        dependencies:
+          - format-for-feed
+        artifacts:
+          inputs:
+            - typeId: formatted-feed-content
+              required: true
+          outputs:
+            - typeId: feed-update
+              required: true
+        requirements:
+          - type: functional
+            description: Content must be posted immediately and visibly
+            priority: must
+            validationCriteria:
+              - Feed updated
+              - Timestamp recorded
+              - Visibility confirmed
+      - id: log-activity
+        title: Log Listener Activity
+        description: Record listener activity for analytics and improvement
+        type: documentation
+        complexity: simple
+        assignedRole: activity-logger
+        estimatedDuration: 30
+        dependencies:
+          - post-to-feed
+        artifacts:
+          inputs:
+            - typeId: turn-analysis
+              required: true
+            - typeId: retrieved-context
+              required: true
+            - typeId: feed-update
+              required: true
+          outputs:
+            - typeId: activity-log
+              required: true
+        requirements:
+          - type: functional
+            description: Activity must be logged for analytics
+            priority: should
+            validationCriteria:
+              - Turn captured
+              - Retrieval logged
+              - Performance metrics recorded
+    agentRequirements:
+      roles:
+        - priority-ranker
+        - feed-formatter
+        - feed-publisher
+        - activity-logger
+      skills:
+        - prioritization
+        - formatting
+        - publishing
+        - documentation
+      minExperience: mid
+
+execution:
+  strategy: event-driven-sequential
+  eventTrigger: conversational-turn
+  phaseOrder:
+    - monitor-conversation
+    - analyze-turn
+    - retrieve-context
+    - format-and-post
+  parallelPhases:
+    - retrieve-context
+  failureHandling:
+    strategy: continue-on-error
+    fallbackActions:
+      - condition: knowledge-search-timeout
+        action: proceed-without-knowledge
+      - condition: domain-agent-failure
+        action: proceed-with-available-context
+      - condition: all-retrieval-failed
+        action: skip-feed-update
+
+agentCoordination:
+  roles:
+    - id: channel-monitor
+      name: Channel Monitor
+      description: Monitors turn-based conversation channels for events
+      responsibilities:
+        - Subscribe to conversation channels
+        - Detect turn events
+        - Maintain connection health
+      requiredSkills:
+        - event-monitoring
+        - channel-integration
+      experienceLevel: mid
+      authority: contributor
+    - id: turn-capturer
+      name: Turn Capturer
+      description: Captures complete conversational turn data
+      responsibilities:
+        - Extract turn content
+        - Identify speaker
+        - Record metadata
+      requiredSkills:
+        - real-time-processing
+        - data-capture
+      experienceLevel: junior
+      authority: contributor
+    - id: state-manager
+      name: State Manager
+      description: Maintains conversation state across turns
+      responsibilities:
+        - Update conversation state
+        - Maintain history
+        - Preserve context
+      requiredSkills:
+        - state-management
+        - context-preservation
+      experienceLevel: mid
+      authority: contributor
+    - id: topic-identifier
+      name: Topic Identifier
+      description: Identifies topics from conversational content
+      responsibilities:
+        - Extract topics
+        - Provide confidence scores
+        - Context-aware analysis
+      requiredSkills:
+        - topic-extraction
+        - natural-language-processing
+      experienceLevel: mid
+      authority: contributor
+    - id: entity-extractor
+      name: Entity Extractor
+      description: Extracts and classifies entities
+      responsibilities:
+        - Identify entities
+        - Classify types
+        - Note relationships
+      requiredSkills:
+        - entity-recognition
+        - classification
+      experienceLevel: mid
+      authority: contributor
+    - id: relevance-assessor
+      name: Relevance Assessor
+      description: Assesses information relevance for retrieval
+      responsibilities:
+        - Identify relevant domains
+        - Prioritize retrieval targets
+        - Guide search strategy
+      requiredSkills:
+        - relevance-assessment
+        - strategic-thinking
+      experienceLevel: senior
+      authority: leader
+    - id: knowledge-searcher
+      name: Knowledge Searcher
+      description: Searches knowledge bases using RAG
+      responsibilities:
+        - Execute RAG queries
+        - Rank results
+        - Cite sources
+      requiredSkills:
+        - knowledge-retrieval
+        - rag-query-optimization
+      experienceLevel: mid
+      authority: contributor
+    - id: agent-invoker
+      name: Agent Invoker
+      description: Invokes domain specialist agents
+      responsibilities:
+        - Identify relevant agents
+        - Invoke agents
+        - Collect responses
+      requiredSkills:
+        - agent-coordination
+        - integration
+      experienceLevel: mid
+      authority: contributor
+    - id: data-retriever
+      name: Data Retriever
+      description: Queries enterprise data sources
+      responsibilities:
+        - Execute data queries
+        - Verify data freshness
+        - Handle API integrations
+      requiredSkills:
+        - data-access
+        - api-integration
+      experienceLevel: mid
+      authority: contributor
+    - id: context-compiler
+      name: Context Compiler
+      description: Aggregates retrieved information
+      responsibilities:
+        - Integrate all sources
+        - Remove duplicates
+        - Structure context
+      requiredSkills:
+        - information-synthesis
+        - deduplication
+      experienceLevel: mid
+      authority: contributor
+    - id: priority-ranker
+      name: Priority Ranker
+      description: Ranks information by relevance and urgency
+      responsibilities:
+        - Apply relevance scoring
+        - Consider urgency
+        - Establish ranking
+      requiredSkills:
+        - prioritization
+        - scoring-algorithms
+      experienceLevel: mid
+      authority: contributor
+    - id: feed-formatter
+      name: Feed Formatter
+      description: Formats content for visual presentation
+      responsibilities:
+        - Apply visual hierarchy
+        - Highlight key points
+        - Format for scanning
+      requiredSkills:
+        - formatting
+        - user-experience
+        - visual-design
+      experienceLevel: mid
+      authority: contributor
+    - id: feed-publisher
+      name: Feed Publisher
+      description: Publishes content to employee feed
+      responsibilities:
+        - Post feed updates
+        - Confirm visibility
+        - Track timestamps
+      requiredSkills:
+        - publishing
+        - system-integration
+      experienceLevel: junior
+      authority: contributor
+    - id: activity-logger
+      name: Activity Logger
+      description: Logs listener activity for analytics
+      responsibilities:
+        - Record activity
+        - Capture metrics
+        - Support analytics
+      requiredSkills:
+        - documentation
+        - metrics-capture
+      experienceLevel: junior
+      authority: contributor
+  teamComposition:
+    minSize: 8
+    maxSize: 14
+    required:
+      - channel-monitor
+      - turn-capturer
+      - topic-identifier
+      - relevance-assessor
+      - knowledge-searcher
+      - context-compiler
+      - feed-formatter
+      - feed-publisher
+    optional:
+      - state-manager
+      - entity-extractor
+      - agent-invoker
+      - data-retriever
+      - priority-ranker
+      - activity-logger
+  communicationPatterns:
+    - from: turn-capturer
+      to: topic-identifier
+      type: direct
+      contextTypes:
+        - finding
+    - from: relevance-assessor
+      to: all-retrievers
+      type: broadcast
+      contextTypes:
+        - decision
+    - from: context-compiler
+      to: feed-formatter
+      type: direct
+      contextTypes:
+        - resource
+  decisionAuthority:
+    - decision: Assess relevance areas
+      authority: relevance-assessor
+      requiresConsensus: false
+    - decision: Prioritize information
+      authority: priority-ranker
+      requiresConsensus: false
+    - decision: Format feed content
+      authority: feed-formatter
+      requiresConsensus: false
+
+artifactFlow:
+  artifactTypes:
+    - id: channel-configuration
+      name: Channel Configuration
+      description: Configuration for turn-based channel subscription
+      format: json
+    - id: subscription-handle
+      name: Subscription Handle
+      description: Active channel subscription handle
+      format: structured
+    - id: turn-transcript
+      name: Turn Transcript
+      description: Captured conversational turn with metadata
+      format: structured
+    - id: conversation-state
+      name: Conversation State
+      description: Current state of the ongoing conversation
+      format: json
+    - id: identified-topics
+      name: Identified Topics
+      description: Topics extracted from turn
+      format: json
+    - id: extracted-entities
+      name: Extracted Entities
+      description: Entities identified in turn
+      format: json
+    - id: topic-relevance-map
+      name: Topic Relevance Map
+      description: Mapping of topics to knowledge domains
+      format: structured
+    - id: relevance-topics
+      name: Relevance Topics
+      description: Relevant topic areas for retrieval
+      format: json
+    - id: turn-analysis
+      name: Turn Analysis
+      description: Complete analysis of conversational turn
+      format: json
+    - id: knowledge-results
+      name: Knowledge Results
+      description: Results from knowledge base search
+      format: structured
+    - id: domain-agent-responses
+      name: Domain Agent Responses
+      description: Responses from domain specialist agents
+      format: structured
+    - id: data-results
+      name: Data Results
+      description: Data retrieved from enterprise sources
+      format: structured
+    - id: retrieved-context
+      name: Retrieved Context
+      description: Aggregated context from all sources
+      format: structured
+    - id: prioritized-context
+      name: Prioritized Context
+      description: Context ranked by relevance
+      format: structured
+    - id: feed-template
+      name: Feed Template
+      description: Template for feed formatting
+      format: structured
+    - id: formatted-feed-content
+      name: Formatted Feed Content
+      description: Formatted content ready for feed
+      format: html
+    - id: feed-update
+      name: Feed Update
+      description: Posted feed update confirmation
+      format: json
+    - id: activity-log
+      name: Activity Log
+      description: Log of listener activity
+      format: structured
