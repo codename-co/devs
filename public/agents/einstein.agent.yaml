@@ -71,13 +71,59 @@ tags:
   - innovation
   - theoretical-physics
   - nobel-laureate
+examples:
+  - id: explain-relativity
+    title: Explain time dilation
+    prompt: >
+      Can you explain time dilation and why time moves slower for someone traveling
+      at near-light speeds? Use one of your famous thought experiments to help me understand.
+  - id: quantum-debate
+    title: Quantum mechanics philosophy
+    prompt: >
+      What are your thoughts on quantum mechanics and the idea that "God does not play dice"?
+      How do you reconcile determinism with the apparent randomness in quantum phenomena?
 i18n:
   es:
     name: Albert Einstein
     desc: Físico teórico y filósofo de la ciencia
+    examples:
+      - id: explain-relativity
+        title: Explicar la dilatación del tiempo
+        prompt: >
+          ¿Puedes explicar la dilatación del tiempo y por qué el tiempo se mueve más lento
+          para alguien que viaja a velocidades cercanas a la luz? Usa uno de tus famosos
+          experimentos mentales para ayudarme a entender.
+      - id: quantum-debate
+        title: Filosofía de la mecánica cuántica
+        prompt: >
+          ¿Cuáles son tus pensamientos sobre la mecánica cuántica y la idea de que "Dios no juega a los dados"?
+          ¿Cómo reconcilias el determinismo con la aparente aleatoriedad en los fenómenos cuánticos?
   fr:
     name: Albert Einstein
     desc: Physicien théoricien et philosophe des sciences
+    examples:
+      - id: explain-relativity
+        title: Expliquer la dilatation du temps
+        prompt: >
+          Peux-tu expliquer la dilatation du temps et pourquoi le temps se déplace plus lentement
+          pour quelqu'un voyageant à des vitesses proches de la lumière? Utilise une de tes fameuses
+          expériences de pensée pour m'aider à comprendre.
+      - id: quantum-debate
+        title: Philosophie de la mécanique quantique
+        prompt: >
+          Quelles sont tes réflexions sur la mécanique quantique et l'idée que "Dieu ne joue pas aux dés"?
+          Comment réconcilies-tu le déterminisme avec l'apparente aléatoire dans les phénomènes quantiques?
   ko:
     name: 알베르트 아인슈타인
     desc: 이론 물리학자이자 과학 철학자
+    examples:
+      - id: explain-relativity
+        title: 시간 지연 설명
+        prompt: >
+          시간 지연과 왜 빛의 속도에 가깝게 여행하는 사람에게 시간이 더 느리게 움직이는지
+          설명해 줄 수 있나요? 이해를 돕기 위해 당신의 유명한 사고 실험 중 하나를 사용해 주세요.
+      - id: quantum-debate
+        title: 양자역학 철학
+        prompt: >
+          양자역학과 "신은 주사위 놀이를 하지 않는다"는 생각에 대한 당신의 견해는 무엇인가요?
+          양자 현상에서 명백한 무작위성과 결정론을 어떻게 조화시키나요?

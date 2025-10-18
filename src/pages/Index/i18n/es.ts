@@ -10,4 +10,11 @@ export const es: I18n = {
   'Failed to get response from LLM. Please try again later.':
     'Error al obtener respuesta del LLM. Por favor, inténtalo de nuevo más tarde.',
   'Try these examples': 'Prueba estos ejemplos',
+
+  // Agent themes
+  Writing: 'Escriptura',
+  Learn: 'Aprendizaje',
+  Life: 'Vida',
+  Art: 'Arte',
+  Coding: 'Programación',
 } as const

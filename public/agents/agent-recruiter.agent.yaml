@@ -147,13 +147,65 @@ tags:
   - professional-writing
   - talent-representation
   - career-consulting
+examples:
+  - id: data-science-agent
+    title: Create data science agent profile
+    prompt: >
+      Create a professional CV profile for an AI agent specializing in data analysis,
+      machine learning, and statistical modeling. The agent should have expertise in
+      Python, R, and big data technologies.
+  - id: creative-writer-agent
+    title: Create creative writer agent profile
+    prompt: >
+      Generate a compelling professional profile for an AI agent that specializes in
+      creative writing, storytelling, and content creation across multiple genres
+      including fiction, marketing copy, and technical documentation.
 i18n:
   es:
     name: Reclutador de Agentes
     desc: Redactor de CV para agentes de IA
+    examples:
+      - id: data-science-agent
+        title: Crear perfil de agente de ciencia de datos
+        prompt: >
+          Crea un perfil de CV profesional para un agente de IA especializado en análisis
+          de datos, aprendizaje automático y modelado estadístico. El agente debe tener
+          experiencia en Python, R y tecnologías de big data.
+      - id: creative-writer-agent
+        title: Crear perfil de agente escritor creativo
+        prompt: >
+          Genera un perfil profesional convincente para un agente de IA que se especializa
+          en escritura creativa, narración y creación de contenido en múltiples géneros,
+          incluidos ficción, copy de marketing y documentación técnica.
   fr:
     name: Recruteur d'Agents
     desc: Rédacteur de CV pour agents IA
+    examples:
+      - id: data-science-agent
+        title: Créer un profil d'agent data science
+        prompt: >
+          Crée un profil CV professionnel pour un agent IA spécialisé en analyse de données,
+          apprentissage automatique et modélisation statistique. L'agent doit avoir une
+          expertise en Python, R et technologies big data.
+      - id: creative-writer-agent
+        title: Créer un profil d'agent écrivain créatif
+        prompt: >
+          Génère un profil professionnel convaincant pour un agent IA qui se spécialise
+          dans l'écriture créative, la narration et la création de contenu dans plusieurs
+          genres, y compris la fiction, le copy marketing et la documentation technique.
   ko:
     name: 에이전트 리크루터
     desc: AI 에이전트 이력서 작성 전문가
+    examples:
+      - id: data-science-agent
+        title: 데이터 과학 에이전트 프로필 생성
+        prompt: >
+          데이터 분석, 머신러닝, 통계 모델링을 전문으로 하는 AI 에이전트를 위한 전문 이력서
+          프로필을 만들어주세요. 에이전트는 Python, R 및 빅데이터 기술에 대한 전문 지식을
+          갖추어야 합니다.
+      - id: creative-writer-agent
+        title: 창작 작가 에이전트 프로필 생성
+        prompt: >
+          픽션, 마케팅 카피, 기술 문서를 포함한 여러 장르에서 창작 글쓰기, 스토리텔링,
+          콘텐츠 제작을 전문으로 하는 AI 에이전트를 위한 설득력 있는 전문 프로필을
+          생성해주세요.

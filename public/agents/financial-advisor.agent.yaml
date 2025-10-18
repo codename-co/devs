@@ -91,26 +91,41 @@ tags:
   - portfolio
 examples:
   - id: portfolio-diversification
-    title: Portfolio Diversification Plan
+    title: Portfolio diversification plan
     prompt: >
       Develop a diversified investment portfolio strategy for a 35-year-old professional with moderate risk tolerance, $100K to invest, and a 15-year time horizon.
+  - id: retirement-planning
+    title: Retirement savings strategy
+    prompt: >
+      I'm 45 years old, earning $120K annually, and want to retire at 65. I have $200K saved in my 401(k).
+      How much should I save monthly to retire comfortably, and what investment strategy should I follow?
 i18n:
   es:
     name: Asesor Financiero
     desc: Experto en finanzas personales
     examples:
       - id: portfolio-diversification
-        title: Diversificación de Portafolio
+        title: Diversificación de portafolio
         prompt: >
           Desarrolla una estrategia de portafolio de inversión diversificado para un profesional de 35 años con tolerancia al riesgo moderada, $100K para invertir y un horizonte de 15 años.
+      - id: retirement-planning
+        title: Estrategia de ahorro para la jubilación
+        prompt: >
+          Tengo 45 años, gano $120K al año y quiero jubilarme a los 65. Tengo $200K ahorrados en mi 401(k).
+          ¿Cuánto debería ahorrar mensualmente para jubilarme cómodamente y qué estrategia de inversión debería seguir?
   fr:
     name: Conseiller Financier
     desc: Expert en finance personnelle
     examples:
       - id: portfolio-diversification
-        title: Diversification de Portefeuille
+        title: Diversification de portefeuille
         prompt: >
           Développez une stratégie de portefeuille d'investissement diversifié pour un professionnel de 35 ans avec une tolérance au risque modérée, 100 000 € à investir et un horizon de 15 ans.
+      - id: retirement-planning
+        title: Stratégie d'épargne retraite
+        prompt: >
+          J'ai 45 ans, je gagne 120 000 € par an et je veux prendre ma retraite à 65 ans. J'ai 200 000 € épargnés dans mon plan retraite.
+          Combien devrais-je épargner mensuellement pour prendre ma retraite confortablement, et quelle stratégie d'investissement devrais-je suivre?
   ko:
     name: 재정 고문
     desc: 개인 금융 전문가
@@ -119,3 +134,8 @@ i18n:
         title: 포트폴리오 다각화 계획
         prompt: >
           중간 정도의 위험 허용 범위, 150,000,000원 투자 및 15년의 시간 범위를 가진 35세 전문가를 위한 다양한 투자 포트폴리오 전략을 개발하십시오.
+      - id: retirement-planning
+        title: 은퇴 저축 전략
+        prompt: >
+          저는 45세이고 연봉이 1억 5천만원이며 65세에 은퇴하고 싶습니다. 401(k)에 2억 5천만원이 저축되어 있습니다.
+          편안한 은퇴를 위해 매달 얼마를 저축해야 하며, 어떤 투자 전략을 따라야 하나요?

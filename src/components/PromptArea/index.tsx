@@ -34,6 +34,7 @@ import {
   isSmallWidth,
 } from '@/lib/device'
 import { formatBytes } from '@/lib/format'
+import { userSettings } from '@/stores/userStore'
 
 interface PromptAreaProps
   extends Omit<TextAreaProps, 'onFocus' | 'onBlur' | 'onKeyDown'> {
@@ -78,6 +79,9 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
     const [isDragOver, setIsDragOver] = useState(false)
     const [isFocused, setIsFocused] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const speechToTextEnabled = userSettings(
+      (state) => state.speechToTextEnabled,
+    )
 
     // Parse URL fragment for prompt parameter
     const { prompt: urlPrompt } = useUrlFragment()
@@ -271,6 +275,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
 
     return (
       <div
+        id="prompt-area"
         data-testid="prompt-area"
         className={cn(
           'w-full max-w-4xl mx-auto relative p-[3px] prompt-area',
@@ -363,12 +368,12 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                   selectedAgent={currentAgent}
                   onAgentChange={onAgentChange}
                 />
-
-                <ModelSelector lang={lang} />
               </div>
 
               <div className="flex items-center gap-2">
-                {(!prompt.trim() || isRecording) && (
+                <ModelSelector lang={lang} />
+
+                {speechToTextEnabled && (!prompt.trim() || isRecording) && (
                   <Tooltip
                     content={t('Speak to microphone')}
                     placement="bottom"
@@ -414,6 +419,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                   {selectedAgent?.id !== 'devs' && onSubmitToAgent && (
                     <Tooltip content={t('Send prompt')} placement="bottom">
                       <Button
+                        type="submit"
                         data-testid="submit-agent-button"
                         // isIconOnly
                         disabled={props.isSending}

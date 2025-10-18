@@ -218,13 +218,13 @@ tags:
   - business
 examples:
   - id: swot-analysis
-    title: SWOT Analysis for NYC Bakery
+    title: SWOT analysis for NYC bakery
     prompt: >
       Create a comprehensive SWOT analysis presentation for a bakery opening in
       Manhattan. Include market research, competitive landscape, and strategic
       recommendations.
   - id: pitch-deck
-    title: Startup Pitch Deck
+    title: Startup pitch deck
     prompt: >
       Design a compelling pitch deck for a sustainable fashion startup seeking
       Series A funding. Focus on market opportunity, business model, and growth
@@ -235,13 +235,13 @@ i18n:
     desc: Crea presentaciones convincentes
     examples:
       - id: swot-analysis
-        title: Análisis FODA para Panadería en NYC
+        title: Análisis FODA para panadería en NYC
         prompt: >
           Crea una presentación completa de análisis FODA para una panadería
           que abrirá en Manhattan. Incluye investigaciones de mercado, panorama
           competitivo y recomendaciones estratégicas.
       - id: pitch-deck
-        title: Presentación para Startup
+        title: Presentación para startup
         prompt: >
           Diseña una presentación convincente para una startup de moda
           sostenible que busca financiamiento de Serie A. Enfócate en la
@@ -251,13 +251,13 @@ i18n:
     desc: Prépare des présentations convaincantes
     examples:
       - id: swot-analysis
-        title: Analyse SWOT de Boulangerie
+        title: Analyse SWOT de boulangerie
         prompt: >
           Génère une présentation complète d'analyse SWOT pour une boulangerie
           ouvrant à Manhattan. Inclues des études de marché, un paysage
           concurrentiel et des recommandations stratégiques.
       - id: pitch-deck
-        title: Pitch Deck pour Startup
+        title: Pitch deck pour startup
         prompt: >
           Génère un pitch deck convaincant pour une startup de mode durable
           recherchant un financement de série A. Concentre-toi sur les

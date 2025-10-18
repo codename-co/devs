@@ -192,7 +192,7 @@ export const Artifact = ({
                       onPress={navigateToPrevious}
                       isDisabled={artifacts.length <= 1}
                     >
-                      <Icon name="ChevronLeft" className="w-4 h-4" />
+                      <Icon name="NavArrowLeft" className="w-4 h-4" />
                     </Button>
                   </Tooltip>
                   <Button
@@ -209,7 +209,7 @@ export const Artifact = ({
                       onPress={navigateToNext}
                       isDisabled={artifacts.length <= 1}
                     >
-                      <Icon name="ChevronRight" className="w-4 h-4" />
+                      <Icon name="NavArrowRight" className="w-4 h-4" />
                     </Button>
                   </Tooltip>
                 </ButtonGroup>

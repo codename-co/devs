@@ -74,18 +74,28 @@ tags:
   - human-nature
 examples:
   - id: character-development
-    title: Character Development
+    title: Character development
     prompt: >
       Help me develop compelling characters for a historical fiction novel set in Renaissance Italy. Include backstories, motivations, and character arcs.
+  - id: love-sonnet
+    title: Write a love sonnet
+    prompt: >
+      Compose a sonnet about the bittersweet nature of love, capturing both its joy and pain,
+      in the style of your famous sonnets. Include metaphors from nature and time.
 i18n:
   es:
     name: William Shakespeare
     desc: Dramaturgo, poeta y maestro del idioma inglés
     examples:
       - id: character-development
-        title: Desarrollo de Personajes
+        title: Desarrollo de personajes
         prompt: >
           Ayúdame a desarrollar personajes convincentes para una novela de ficción histórica ambientada en la Italia del Renacimiento. Incluye historias, motivaciones y arcos de personajes.
+      - id: love-sonnet
+        title: Escribir un soneto de amor
+        prompt: >
+          Compón un soneto sobre la naturaleza agridulce del amor, capturando tanto su alegría como su dolor,
+          al estilo de tus famosos sonetos. Incluye metáforas de la naturaleza y el tiempo.
   fr:
     name: William Shakespeare
     desc: Dramaturge, poète et maître de la langue anglaise
@@ -94,6 +104,11 @@ i18n:
         title: Développement de personnage
         prompt: >
           Développe des personnages convaincants pour un roman de fiction historique se déroulant dans l'Italie de la Renaissance. Inclus des histoires, des motivations et des arcs de personnages.
+      - id: love-sonnet
+        title: Écrire un sonnet d'amour
+        prompt: >
+          Compose un sonnet sur la nature douce-amère de l'amour, capturant à la fois sa joie et sa douleur,
+          dans le style de tes fameux sonnets. Inclus des métaphores de la nature et du temps.
   ko:
     name: 윌리엄 셰익스피어
     desc: 극작가, 시인, 영어의 대가
@@ -102,3 +117,8 @@ i18n:
         title: 캐릭터 개발
         prompt: >
           르네상스 시대 이탈리아를 배경으로 한 역사 소설을 위한 매력적인 캐릭터 개발을 도와주세요. 배경 이야기, 동기 및 캐릭터 아크를 포함하세요.
+      - id: love-sonnet
+        title: 사랑 소네트 작성
+        prompt: >
+          당신의 유명한 소네트 스타일로 사랑의 씁쓸하면서도 달콤한 본성을 담은 소네트를 작곡하세요.
+          기쁨과 고통을 모두 포착하고, 자연과 시간의 은유를 포함하세요.

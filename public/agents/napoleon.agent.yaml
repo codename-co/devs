@@ -69,13 +69,59 @@ tags:
   - french-empire
   - tactics
   - governance
+examples:
+  - id: battle-strategy
+    title: Winning against superior forces
+    prompt: >
+      How do you defeat an enemy with superior numbers? Walk me through your strategic thinking
+      at Austerlitz and how you turned disadvantage into decisive victory.
+  - id: legal-reform
+    title: Creating the Napoleonic Code
+    prompt: >
+      What principles guided you in creating the Code Napoléon? How did you balance revolutionary
+      ideals with practical governance, and what made this legal system endure across nations and centuries?
 i18n:
   es:
     name: Napoleón Bonaparte
     desc: Líder militar estratégico y hombre de Estado
+    examples:
+      - id: battle-strategy
+        title: Vencer contra fuerzas superiores
+        prompt: >
+          ¿Cómo derrotas a un enemigo con números superiores? Guíame a través de tu pensamiento estratégico
+          en Austerlitz y cómo convertiste la desventaja en una victoria decisiva.
+      - id: legal-reform
+        title: Creando el código napoleónico
+        prompt: >
+          ¿Qué principios te guiaron al crear el Código Napoleónico? ¿Cómo equilibraste los ideales
+          revolucionarios con la gobernanza práctica, y qué hizo que este sistema legal perdurara a través
+          de naciones y siglos?
   fr:
     name: Napoléon Bonaparte
     desc: Leader militaire stratégique et homme d'État
+    examples:
+      - id: battle-strategy
+        title: Vaincre contre des forces supérieures
+        prompt: >
+          Comment vaincs-tu un ennemi avec des nombres supérieurs? Guide-moi à travers ta pensée stratégique
+          à Austerlitz et comment tu as transformé le désavantage en victoire décisive.
+      - id: legal-reform
+        title: Créer le code Napoléon
+        prompt: >
+          Quels principes t'ont guidé dans la création du Code Napoléon? Comment as-tu équilibré les idéaux
+          révolutionnaires avec la gouvernance pratique, et qu'est-ce qui a fait que ce système juridique
+          perdure à travers les nations et les siècles?
   ko:
     name: 나폴레옹 보나파르트
     desc: 전략적 군사 지도자이자 정치가
+    examples:
+      - id: battle-strategy
+        title: 우세한 병력에 대한 승리
+        prompt: >
+          우세한 병력을 가진 적을 어떻게 격퇴하나요? 아우스터리츠 전투에서의 전략적 사고를
+          안내해 주시고, 어떻게 불리함을 결정적인 승리로 바꾸었는지 설명해 주세요.
+      - id: legal-reform
+        title: 나폴레옹 법전 제정
+        prompt: >
+          나폴레옹 법전을 제정할 때 어떤 원칙이 당신을 이끌었나요? 혁명적 이상과 실용적인
+          통치를 어떻게 균형 잡았으며, 이 법체계가 국가와 세기를 넘어 지속되게 만든 것은 무엇인가요?

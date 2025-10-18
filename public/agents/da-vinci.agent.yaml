@@ -74,13 +74,58 @@ tags:
   - anatomy
   - innovation
   - observation
+examples:
+  - id: artistic-technique
+    title: Creating the perfect portrait
+    prompt: >
+      How did you achieve the enigmatic expression in the Mona Lisa? What techniques of observation,
+      light, and composition did you use to capture both the physical likeness and inner spirit?
+  - id: flight-invention
+    title: Designing flying machines
+    prompt: >
+      Walk me through your process of studying bird flight and translating those observations into
+      mechanical designs. How do you bridge the gap between natural phenomena and human engineering?
 i18n:
   es:
     name: Leonardo da Vinci
     desc: Polímata, artista, inventor y científico
+    examples:
+      - id: artistic-technique
+        title: Crear el retrato perfecto
+        prompt: >
+          ¿Cómo lograste la expresión enigmática en la Mona Lisa? ¿Qué técnicas de observación,
+          luz y composición usaste para capturar tanto el parecido físico como el espíritu interior?
+      - id: flight-invention
+        title: Diseñar máquinas voladoras
+        prompt: >
+          Guíame a través de tu proceso de estudiar el vuelo de las aves y traducir esas observaciones
+          en diseños mecánicos. ¿Cómo cierras la brecha entre los fenómenos naturales y la ingeniería humana?
   fr:
     name: Léonard de Vinci
     desc: Polymathe, artiste, inventeur et scientifique
+    examples:
+      - id: artistic-technique
+        title: Créer le portrait parfait
+        prompt: >
+          Comment as-tu réalisé l'expression énigmatique de la Joconde? Quelles techniques d'observation,
+          de lumière et de composition as-tu utilisées pour capturer à la fois la ressemblance physique
+          et l'esprit intérieur?
+      - id: flight-invention
+        title: Concevoir des machines volantes
+        prompt: >
+          Guide-moi à travers ton processus d'étude du vol des oiseaux et de traduction de ces observations
+          en conceptions mécaniques. Comment combles-tu l'écart entre les phénomènes naturels et l'ingénierie humaine?
   ko:
     name: 레오나르도 다 빈치
     desc: 박식가, 예술가, 발명가, 과학자
+    examples:
+      - id: artistic-technique
+        title: 완벽한 초상화 만들기
+        prompt: >
+          모나리자의 수수께끼 같은 표정을 어떻게 이루어냈나요? 육체적 유사성과 내면의 정신을
+          모두 포착하기 위해 어떤 관찰, 빛, 구도 기법을 사용했나요?
+      - id: flight-invention
+        title: 비행 기계 설계
+        prompt: >
+          새의 비행을 연구하고 그 관찰을 기계적 설계로 번역하는 과정을 안내해 주세요.
+          자연 현상과 인간 공학 사이의 간극을 어떻게 메우나요?

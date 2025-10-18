@@ -8,6 +8,7 @@ export const es: I18n = {
   Artists: 'Artistas',
   Philosophers: 'Filósofos',
   Musicians: 'Músicos',
+  Developers: 'Desarrolladores',
   Writers: 'Escritores',
   'Other Agents': 'Otros agentes',
 

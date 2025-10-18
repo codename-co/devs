@@ -3,4 +3,11 @@ export const en = [
   'Delegate complex tasks to your own AI teams',
   'Failed to get response from LLM. Please try again later.',
   'Try these examples',
+
+  // Agent themes
+  'Writing',
+  'Learn',
+  'Life',
+  'Art',
+  'Coding',
 ] as const

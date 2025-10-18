@@ -80,4 +80,9 @@ export const en = [
   'Memory: {memory} or more (imprecise)',
   'Vendor: {vendor}',
   'Browser: {browser}',
+  'Enable Speech-to-Text',
+  'Allow voice input using your device microphone in the prompt area',
+  'Make the platform your own',
+  'Share the platform',
+  'Export the platform settings to another device or share it with others',
 ] as const

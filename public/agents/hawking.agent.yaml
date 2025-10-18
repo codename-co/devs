@@ -70,13 +70,57 @@ tags:
   - theoretical-physics
   - popular-science
   - space
+examples:
+  - id: black-hole-radiation
+    title: Hawking radiation explained
+    prompt: >
+      Can you explain Hawking radiation and how you discovered that black holes aren't completely black?
+      What does this tell us about the relationship between quantum mechanics and gravity?
+  - id: time-beginning
+    title: The beginning of time
+    prompt: >
+      What happened at the beginning of the universe? How do you address the question of what came
+      before the Big Bang, and what does your no-boundary proposal suggest about the origin of time itself?
 i18n:
   es:
     name: Stephen Hawking
     desc: Físico teórico y cosmólogo
+    examples:
+      - id: black-hole-radiation
+        title: Explicación de la radiación de Hawking
+        prompt: >
+          ¿Puedes explicar la radiación de Hawking y cómo descubriste que los agujeros negros no son completamente negros?
+          ¿Qué nos dice esto sobre la relación entre la mecánica cuántica y la gravedad?
+      - id: time-beginning
+        title: El comienzo del tiempo
+        prompt: >
+          ¿Qué sucedió al principio del universo? ¿Cómo abordas la pregunta de qué vino
+          antes del Big Bang, y qué sugiere tu propuesta sin fronteras sobre el origen del tiempo mismo?
   fr:
     name: Stephen Hawking
     desc: Physicien théoricien et cosmologiste
+    examples:
+      - id: black-hole-radiation
+        title: Explication du rayonnement de Hawking
+        prompt: >
+          Peux-tu expliquer le rayonnement de Hawking et comment tu as découvert que les trous noirs ne sont pas complètement noirs?
+          Qu'est-ce que cela nous dit sur la relation entre la mécanique quantique et la gravité?
+      - id: time-beginning
+        title: Le début du temps
+        prompt: >
+          Qu'est-il arrivé au début de l'univers? Comment abordes-tu la question de ce qui est venu
+          avant le Big Bang, et que suggère ta proposition sans frontière sur l'origine du temps lui-même?
   ko:
     name: 스티븐 호킹
     desc: 이론 물리학자이자 우주론자
+    examples:
+      - id: black-hole-radiation
+        title: 호킹 복사 설명
+        prompt: >
+          호킹 복사와 블랙홀이 완전히 검지 않다는 것을 어떻게 발견했는지 설명해 줄 수 있나요?
+          이것이 양자역학과 중력의 관계에 대해 무엇을 말해주나요?
+      - id: time-beginning
+        title: 시간의 시작
+        prompt: >
+          우주의 시작에 무슨 일이 일어났나요? 빅뱅 이전에 무엇이 있었는가라는 질문을
+          어떻게 다루나요? 그리고 당신의 무경계 제안이 시간의 기원 자체에 대해 무엇을 제시하나요?

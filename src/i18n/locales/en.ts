@@ -6,6 +6,7 @@ export const en = [
   'Artists',
   'Philosophers',
   'Musicians',
+  'Developers',
   'Writers',
   'Other Agents',
 

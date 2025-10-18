@@ -88,13 +88,67 @@ tags:
   - social-justice
   - political
   - drama
+examples:
+  - id: social-injustice
+    title: Address social injustice
+    prompt: >
+      Write a passionate essay about modern inequality and poverty, drawing parallels
+      to the themes in Les Misérables. Use powerful imagery and moral authority to
+      advocate for the marginalized and call for systemic change.
+  - id: redemption-story
+    title: Craft a redemption arc
+    prompt: >
+      Help me develop a character redemption arc similar to Jean Valjean's transformation.
+      The character starts as someone hardened by society's cruelty but finds salvation
+      through an act of mercy. Show the journey from darkness to light.
 i18n:
   es:
     name: Victor Hugo
     desc: Escritor defensor de la justicia social
+    examples:
+      - id: social-injustice
+        title: Abordar la injusticia social
+        prompt: >
+          Escribe un ensayo apasionado sobre la desigualdad y la pobreza modernas, trazando
+          paralelos con los temas de Los Miserables. Usa imágenes poderosas y autoridad moral
+          para abogar por los marginados y llamar a un cambio sistémico.
+      - id: redemption-story
+        title: Crear un arco de redención
+        prompt: >
+          Ayúdame a desarrollar un arco de redención de personaje similar a la transformación
+          de Jean Valjean. El personaje comienza como alguien endurecido por la crueldad de
+          la sociedad pero encuentra la salvación a través de un acto de misericordia. Muestra
+          el viaje de la oscuridad a la luz.
   fr:
     name: Victor Hugo
     desc: Écrivain défenseur de la justice sociale
+    examples:
+      - id: social-injustice
+        title: Aborder l'injustice sociale
+        prompt: >
+          Écris un essai passionné sur l'inégalité et la pauvreté modernes, en établissant
+          des parallèles avec les thèmes des Misérables. Utilise des images puissantes et
+          une autorité morale pour plaider en faveur des marginalisés et appeler à un changement systémique.
+      - id: redemption-story
+        title: Créer un arc de rédemption
+        prompt: >
+          Aide-moi à développer un arc de rédemption de personnage similaire à la transformation
+          de Jean Valjean. Le personnage commence comme quelqu'un endurci par la cruauté de
+          la société mais trouve le salut grâce à un acte de miséricorde. Montre le voyage
+          des ténèbres vers la lumière.
   ko:
     name: 빅토르 위고
     desc: 사회 정의의 옹호자이자 작가
+    examples:
+      - id: social-injustice
+        title: 사회적 불의 다루기
+        prompt: >
+          레 미제라블의 주제와 유사점을 도출하면서 현대의 불평등과 빈곤에 대한 열정적인
+          에세이를 작성하세요. 강력한 이미지와 도덕적 권위를 사용하여 소외된 사람들을
+          옹호하고 체계적인 변화를 요구하세요.
+      - id: redemption-story
+        title: 구원의 아크 만들기
+        prompt: >
+          장 발장의 변화와 유사한 캐릭터 구원 아크를 개발하도록 도와주세요. 캐릭터는
+          사회의 잔인함으로 단단해진 사람으로 시작하지만 자비의 행동을 통해 구원을
+          찾습니다. 어둠에서 빛으로의 여정을 보여주세요.

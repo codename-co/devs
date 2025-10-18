@@ -75,13 +75,75 @@ tags:
   - verification
   - deliverable-assessment
   - mission-validation
+examples:
+  - id: validate-feature-implementation
+    title: Validate feature implementation
+    prompt: >
+      Validate this feature implementation against the following requirements: 1) User
+      authentication with email/password, 2) Password must be at least 8 characters,
+      3) Session timeout after 30 minutes. The deliverable includes login form with
+      validation and JWT token implementation with 30-minute expiry.
+  - id: validate-documentation
+    title: Validate technical documentation
+    prompt: >
+      Validate this technical documentation against requirements: 1) API endpoints
+      must be documented with request/response examples, 2) Authentication flow must
+      be explained, 3) Error codes must be listed. The deliverable is a 15-page API
+      documentation with examples and error reference table.
 i18n:
   es:
     name: Especialista en Calidad
     desc: Especialista en Aseguramiento de Calidad y Validación
+    examples:
+      - id: validate-feature-implementation
+        title: Validar implementación de funcionalidad
+        prompt: >
+          Valida esta implementación de funcionalidad contra los siguientes requisitos: 1)
+          Autenticación de usuario con correo/contraseña, 2) La contraseña debe tener al menos
+          8 caracteres, 3) Tiempo de espera de sesión después de 30 minutos. El entregable
+          incluye formulario de inicio de sesión con validación e implementación de token JWT
+          con vencimiento de 30 minutos.
+      - id: validate-documentation
+        title: Validar documentación técnica
+        prompt: >
+          Valida esta documentación técnica contra los requisitos: 1) Los endpoints de API
+          deben documentarse con ejemplos de solicitud/respuesta, 2) El flujo de autenticación
+          debe explicarse, 3) Los códigos de error deben listarse. El entregable es una
+          documentación de API de 15 páginas con ejemplos y tabla de referencia de errores.
   fr:
     name: Spécialiste Qualité
     desc: Spécialiste de l'assurance qualité et de la validation
+    examples:
+      - id: validate-feature-implementation
+        title: Valider l'implémentation de fonctionnalité
+        prompt: >
+          Valide cette implémentation de fonctionnalité par rapport aux exigences suivantes :
+          1) Authentification utilisateur avec email/mot de passe, 2) Le mot de passe doit
+          contenir au moins 8 caractères, 3) Expiration de session après 30 minutes. Le
+          livrable comprend un formulaire de connexion avec validation et implémentation de
+          token JWT avec expiration de 30 minutes.
+      - id: validate-documentation
+        title: Valider la documentation technique
+        prompt: >
+          Valide cette documentation technique par rapport aux exigences : 1) Les endpoints
+          API doivent être documentés avec des exemples de requête/réponse, 2) Le flux
+          d'authentification doit être expliqué, 3) Les codes d'erreur doivent être listés.
+          Le livrable est une documentation API de 15 pages avec exemples et tableau de
+          référence des erreurs.
   ko:
     name: 품질 보증 전문가
     desc: 품질 보증 및 검증 전문가
+    examples:
+      - id: validate-feature-implementation
+        title: 기능 구현 검증
+        prompt: >
+          다음 요구사항에 대해 이 기능 구현을 검증해주세요: 1) 이메일/비밀번호를 사용한
+          사용자 인증, 2) 비밀번호는 최소 8자 이상, 3) 30분 후 세션 타임아웃. 결과물에는
+          유효성 검사가 포함된 로그인 양식과 30분 만료 시간이 있는 JWT 토큰 구현이
+          포함됩니다.
+      - id: validate-documentation
+        title: 기술 문서 검증
+        prompt: >
+          다음 요구사항에 대해 이 기술 문서를 검증해주세요: 1) API 엔드포인트는 요청/응답
+          예제와 함께 문서화되어야 함, 2) 인증 흐름이 설명되어야 함, 3) 오류 코드가
+          나열되어야 함. 결과물은 예제와 오류 참조 테이블이 포함된 15페이지 API 문서입니다.

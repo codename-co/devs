@@ -20,6 +20,7 @@ import {
   Tooltip,
   useDisclosure,
   CardHeader,
+  Switch,
 } from '@heroui/react'
 import { useNavigate } from 'react-router-dom'
 import { useI18n, useUrl, languages, type Lang } from '@/i18n'
@@ -336,6 +337,10 @@ export const SettingsPage = () => {
   const setTheme = userSettings((state) => state.setTheme)
   const platformName = userSettings((state) => state.platformName)
   const setPlatformName = userSettings((state) => state.setPlatformName)
+  const speechToTextEnabled = userSettings((state) => state.speechToTextEnabled)
+  const setSpeechToTextEnabled = userSettings(
+    (state) => state.setSpeechToTextEnabled,
+  )
 
   const handleLanguageChange = (newLanguage: Lang) => {
     // Update the language setting in the store
@@ -819,7 +824,7 @@ export const SettingsPage = () => {
               data-testid="general-settings"
               title={t('Appearance')}
               subtitle={t('Make the platform your own')}
-              startContent={<Icon name="DesignPencil" className="h-5 w-5" />}
+              startContent={<Icon name="DesignPencil" className="h-5 w-7" />}
               classNames={{ content: 'pl-8 mb-4' }}
             >
               <div className="space-y-6 p-2">
@@ -873,6 +878,21 @@ export const SettingsPage = () => {
                   onChange={(e) => setPlatformName(e.target.value)}
                   className="max-w-xs mr-3"
                 />
+
+                <div className="max-w-xs mr-3">
+                  <Switch
+                    isSelected={speechToTextEnabled}
+                    onChange={(e) => setSpeechToTextEnabled(e.target.checked)}
+                    size="sm"
+                  >
+                    {t('Enable Speech-to-Text')}
+                  </Switch>
+                  <p className="text-xs text-default-500 mt-1 ml-7">
+                    {t(
+                      'Allow voice input using your device microphone in the prompt area',
+                    )}
+                  </p>
+                </div>
 
                 <div>
                   <label className="text-sm font-medium text-default-600">
@@ -938,7 +958,7 @@ export const SettingsPage = () => {
               subtitle={t(
                 'Choose your LLM provider, manage your API credentials',
               )}
-              startContent={<Icon name="Brain" className="h-5 w-5" />}
+              startContent={<Icon name="Brain" className="h-5 w-7" />}
               classNames={{ content: 'pl-8 mb-4' }}
             >
               <div className="space-y-4 p-2">
@@ -1021,7 +1041,7 @@ export const SettingsPage = () => {
                 </>
               }
               subtitle="Configure Langfuse for LLM request tracking and analytics"
-              startContent={<Icon name="Langfuse" className="h-5 w-5" />}
+              startContent={<Icon name="Langfuse" className="h-5 w-7" />}
               classNames={{ content: 'pl-8 mb-4' }}
             >
               <div className="space-y-4 p-2">
@@ -1122,7 +1142,7 @@ export const SettingsPage = () => {
               data-testid="security-settings"
               title={t('Secure Storage')}
               subtitle={t('Manage your encryption keys and secure storage')}
-              startContent={<Icon name="Lock" className="h-5 w-5" />}
+              startContent={<Icon name="Lock" className="h-5 w-7" />}
               classNames={{ content: 'pl-8 mb-4' }}
             >
               <div className="space-y-4 p-2">
@@ -1188,7 +1208,7 @@ export const SettingsPage = () => {
               subtitle={t(
                 'Export the platform settings to another device or share it with others',
               )}
-              startContent={<Icon name="Share" className="h-5 w-5" />}
+              startContent={<Icon name="Share" className="h-5 w-7" />}
               classNames={{ content: 'pl-8 mb-4' }}
             >
               <EasySetupExport />
@@ -1198,7 +1218,7 @@ export const SettingsPage = () => {
               data-testid="database-management"
               title={t('Database Management')}
               subtitle={t('Export, import, or clear your local database')}
-              startContent={<Icon name="Database" className="h-5 w-5" />}
+              startContent={<Icon name="Database" className="h-5 w-7" />}
               indicator={<Icon name="ArrowRight" className="h-4 w-4" />}
               onPress={() => navigate(url('/admin/database'))}
             />

@@ -74,13 +74,60 @@ tags:
   - statesman
   - emancipation
   - unity
+examples:
+  - id: crisis-leadership
+    title: Leading through national crisis
+    prompt: >
+      How do you maintain resolve and unity when leading a nation through its darkest hour?
+      What principles guide you when making decisions that will affect millions of lives?
+  - id: preserving-democracy
+    title: Balancing liberty and security
+    prompt: >
+      How do you balance the need for strong executive action during wartime with preserving
+      constitutional rights and democratic principles? What advice would you give to leaders
+      facing similar tensions?
 i18n:
   es:
     name: Abraham Lincoln
     desc: 16º Presidente de los Estados Unidos
+    examples:
+      - id: crisis-leadership
+        title: Liderando a través de una crisis nacional
+        prompt: >
+          ¿Cómo mantienes la determinación y la unidad al liderar una nación en su hora más oscura?
+          ¿Qué principios te guían al tomar decisiones que afectarán a millones de vidas?
+      - id: preserving-democracy
+        title: Equilibrando libertad y seguridad
+        prompt: >
+          ¿Cómo equilibras la necesidad de una acción ejecutiva fuerte durante la guerra con la preservación
+          de los derechos constitucionales y los principios democráticos? ¿Qué consejo darías a líderes
+          que enfrentan tensiones similares?
   fr:
     name: Abraham Lincoln
     desc: 16ème Président des États-Unis
+    examples:
+      - id: crisis-leadership
+        title: Diriger à travers une crise nationale
+        prompt: >
+          Comment maintiens-tu la résolution et l'unité en dirigeant une nation pendant son heure la plus sombre?
+          Quels principes te guident lorsque tu prends des décisions qui affecteront des millions de vies?
+      - id: preserving-democracy
+        title: Équilibrer liberté et sécurité
+        prompt: >
+          Comment équilibres-tu le besoin d'une action exécutive forte en temps de guerre avec la préservation
+          des droits constitutionnels et des principes démocratiques? Quel conseil donnerais-tu aux leaders
+          confrontés à des tensions similaires?
   ko:
     name: 에이브러햄 링컨
     desc: 미국의 16대 대통령
+    examples:
+      - id: crisis-leadership
+        title: 국가 위기 상황에서의 리더십
+        prompt: >
+          국가가 가장 어두운 시기를 겪을 때 어떻게 결의와 단결을 유지하나요?
+          수백만 명의 삶에 영향을 미칠 결정을 내릴 때 어떤 원칙이 당신을 인도하나요?
+      - id: preserving-democracy
+        title: 자유와 안보의 균형
+        prompt: >
+          전시에 강력한 행정 조치의 필요성과 헌법적 권리 및 민주주의 원칙의 보존을
+          어떻게 균형 잡나요? 비슷한 긴장에 직면한 리더들에게 어떤 조언을 하시겠습니까?

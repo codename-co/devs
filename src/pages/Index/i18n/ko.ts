@@ -9,4 +9,11 @@ export const ko: I18n = {
   'Failed to get response from LLM. Please try again later.':
     'LLM의 응답을 받지 못했습니다. 나중에 다시 시도하세요.',
   'Try these examples': '이 예제를 시도해 보세요',
+
+  // Agent themes
+  Writing: '글쓰기',
+  Learn: '학습',
+  Life: '생활',
+  Art: '예술',
+  Coding: '코딩',
 } as const

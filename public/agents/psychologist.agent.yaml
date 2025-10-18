@@ -99,8 +99,8 @@ instructions: | # markdown
   Every person has inherent worth, resilience, and the capacity for growth and positive change.
 temperature: 0.7
 tags:
-  - scientist
   - psychologist
+  - scientist
   - psychology
   - mental-health
   - therapy
@@ -113,13 +113,65 @@ tags:
   - emotional-support
   - wellness
   - mindfulness
+examples:
+  - id: anxiety-management
+    title: Managing anxiety and panic attacks
+    prompt: >
+      I've been experiencing intense anxiety and occasional panic attacks, especially in social
+      situations. Can you help me understand what's happening and teach me some techniques to
+      manage these feelings when they arise?
+  - id: work-life-balance
+    title: Work-life balance and burnout
+    prompt: >
+      I feel completely burned out from work. I'm exhausted all the time, losing motivation,
+      and it's affecting my relationships. How can I establish better boundaries and find
+      balance in my life?
 i18n:
   es:
     name: Psicólogo
     desc: Psicólogo clínico virtual
+    examples:
+      - id: anxiety-management
+        title: Manejo de la ansiedad y ataques de pánico
+        prompt: >
+          He estado experimentando ansiedad intensa y ataques de pánico ocasionales, especialmente
+          en situaciones sociales. ¿Puedes ayudarme a entender qué está pasando y enseñarme algunas
+          técnicas para manejar estos sentimientos cuando surgen?
+      - id: work-life-balance
+        title: Equilibrio trabajo-vida y agotamiento
+        prompt: >
+          Me siento completamente agotado por el trabajo. Estoy exhausto todo el tiempo, perdiendo
+          motivación, y está afectando mis relaciones. ¿Cómo puedo establecer mejores límites y
+          encontrar equilibrio en mi vida?
   fr:
     name: Psychologue
     desc: Psychologue clinicien virtuel
+    examples:
+      - id: anxiety-management
+        title: Gestion de l'anxiété et des crises de panique
+        prompt: >
+          J'ai vécu une anxiété intense et des crises de panique occasionnelles, surtout dans
+          les situations sociales. Peux-tu m'aider à comprendre ce qui se passe et m'enseigner
+          quelques techniques pour gérer ces sentiments quand ils surgissent?
+      - id: work-life-balance
+        title: Équilibre travail-vie et épuisement professionnel
+        prompt: >
+          Je me sens complètement épuisé par le travail. Je suis fatigué tout le temps, je perds
+          ma motivation, et cela affecte mes relations. Comment puis-je établir de meilleures
+          limites et trouver l'équilibre dans ma vie?
   ko:
     name: 심리학자
     desc: 가상 임상 심리학자
+    examples:
+      - id: anxiety-management
+        title: 불안 및 공황 발작 관리
+        prompt: >
+          특히 사회적 상황에서 극심한 불안과 가끔 공황 발작을 경험하고 있습니다.
+          무슨 일이 일어나고 있는지 이해하도록 도와주시고, 이러한 감정이 생길 때
+          관리할 수 있는 몇 가지 기법을 가르쳐 주실 수 있나요?
+      - id: work-life-balance
+        title: 일과 삶의 균형 및 번아웃
+        prompt: >
+          일로 인해 완전히 지쳤습니다. 항상 피곤하고 동기를 잃고 있으며,
+          이것이 제 관계에 영향을 미치고 있습니다. 더 나은 경계를 설정하고
+          삶의 균형을 찾으려면 어떻게 해야 하나요?

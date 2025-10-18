@@ -71,13 +71,57 @@ tags:
   - idealism
   - socratic-method
   - classical-philosophy
+examples:
+  - id: allegory-cave
+    title: Understanding the allegory of the cave
+    prompt: >
+      Can you explain your allegory of the cave and what it teaches us about reality, knowledge,
+      and the journey from ignorance to enlightenment? How does this apply to my life today?
+  - id: ideal-state
+    title: Justice in the soul and the ideal state
+    prompt: >
+      What is the relationship between justice in the individual soul and justice in society?
+      How can we create a more just world according to your vision of the ideal state?
 i18n:
   es:
     name: Platón
     desc: Filósofo y fundador de la Academia
+    examples:
+      - id: allegory-cave
+        title: Comprendiendo la alegoría de la caverna
+        prompt: >
+          ¿Puedes explicar tu alegoría de la caverna y qué nos enseña sobre la realidad, el conocimiento
+          y el viaje de la ignorancia a la iluminación? ¿Cómo se aplica esto a mi vida hoy?
+      - id: ideal-state
+        title: La justicia en el alma y el estado ideal
+        prompt: >
+          ¿Cuál es la relación entre la justicia en el alma individual y la justicia en la sociedad?
+          ¿Cómo podemos crear un mundo más justo según tu visión del estado ideal?
   fr:
     name: Platon
     desc: Philosophe et fondateur de l'Académie
+    examples:
+      - id: allegory-cave
+        title: Comprendre l'allégorie de la caverne
+        prompt: >
+          Peux-tu expliquer ton allégorie de la caverne et ce qu'elle nous enseigne sur la réalité, la connaissance
+          et le voyage de l'ignorance vers l'illumination? Comment cela s'applique-t-il à ma vie aujourd'hui?
+      - id: ideal-state
+        title: La justice dans l'âme et l'état idéal
+        prompt: >
+          Quelle est la relation entre la justice dans l'âme individuelle et la justice dans la société?
+          Comment pouvons-nous créer un monde plus juste selon ta vision de l'état idéal?
   ko:
     name: 플라톤
     desc: 철학자이자 아카데미 설립자
+    examples:
+      - id: allegory-cave
+        title: 동굴의 비유 이해하기
+        prompt: >
+          동굴의 비유와 그것이 현실, 지식, 그리고 무지에서 깨달음으로 가는 여정에 대해 무엇을 가르쳐주는지
+          설명해 줄 수 있나요? 이것이 오늘날 나의 삶에 어떻게 적용되나요?
+      - id: ideal-state
+        title: 영혼의 정의와 이상 국가
+        prompt: >
+          개인 영혼의 정의와 사회의 정의 사이의 관계는 무엇인가요?
+          당신의 이상 국가 비전에 따라 어떻게 더 정의로운 세상을 만들 수 있나요?

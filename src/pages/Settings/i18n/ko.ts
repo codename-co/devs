@@ -98,4 +98,11 @@ export const ko: I18n = {
   'Memory: {memory} or more (imprecise)': '메모리: {memory} 이상 (부정확)',
   'Vendor: {vendor}': '공급업체: {vendor}',
   'Browser: {browser}': '브라우저: {browser}',
+  'Enable Speech-to-Text': '음성-텍스트 변환 활성화',
+  'Allow voice input using your device microphone in the prompt area':
+    '프롬프트 영역에서 기기 마이크를 사용한 음성 입력 허용',
+  'Make the platform your own': '플랫폼을 개인화하세요',
+  'Share the platform': '플랫폼 공유',
+  'Export the platform settings to another device or share it with others':
+    '플랫폼 설정을 다른 기기로 내보내거나 다른 사용자와 공유',
 } as const

@@ -8,6 +8,7 @@ export const ko: I18n = {
   Artists: '예술가',
   Philosophers: '철학자',
   Musicians: '음악가',
+  Developers: '개발자',
   Writers: '작가',
   'Other Agents': '기타 에이전트',
 

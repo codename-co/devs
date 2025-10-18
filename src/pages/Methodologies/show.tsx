@@ -1543,7 +1543,7 @@ export const MethodologyPage = () => {
               variant="flat"
               startContent={
                 <Icon
-                  name="ChevronLeft"
+                  name="NavArrowLeft"
                   size="sm"
                   className="text-default-500"
                 />
@@ -1574,7 +1574,7 @@ export const MethodologyPage = () => {
                 variant="flat"
                 endContent={
                   <Icon
-                    name="ChevronRight"
+                    name="NavArrowRight"
                     size="sm"
                     className="text-default-500"
                   />

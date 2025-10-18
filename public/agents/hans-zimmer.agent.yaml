@@ -65,13 +65,57 @@ tags:
   - orchestration
   - cinematic
   - composition
+examples:
+  - id: epic-battle-theme
+    title: Epic battle theme
+    prompt: >
+      Create an epic battle theme with a heroic brass fanfare and driving percussion.
+      Use ABC notation to compose a powerful cinematic piece.
+  - id: melancholic-piano-climax
+    title: Melancholic piano to orchestral climax
+    prompt: >
+      Write a melancholic piano piece that builds to an overwhelming orchestral climax.
+      Show how to develop emotional intensity through layering and dynamics.
 i18n:
   es:
     name: Hans Zimmer
     desc: Compositor de bandas sonoras épicas y orquestales
+    examples:
+      - id: epic-battle-theme
+        title: Tema de batalla épico
+        prompt: >
+          Crea un tema de batalla épico con una fanfarria heroica de metales y percusión impulsora.
+          Usa notación ABC para componer una pieza cinematográfica poderosa.
+      - id: melancholic-piano-climax
+        title: Piano melancólico a clímax orquestal
+        prompt: >
+          Escribe una pieza melancólica de piano que se construye hasta un clímax orquestal abrumador.
+          Muestra cómo desarrollar intensidad emocional a través de capas y dinámicas.
   fr:
     name: Hans Zimmer
     desc: Compositeur de musiques de films orchestrales
+    examples:
+      - id: epic-battle-theme
+        title: Thème de bataille épique
+        prompt: >
+          Crée un thème de bataille épique avec une fanfare héroïque de cuivres et une percussion entraînante.
+          Utilise la notation ABC pour composer une pièce cinématographique puissante.
+      - id: melancholic-piano-climax
+        title: Piano mélancolique vers climax orchestral
+        prompt: >
+          Écris une pièce mélancolique pour piano qui monte vers un climax orchestral bouleversant.
+          Montre comment développer l'intensité émotionnelle à travers les couches et les dynamiques.
   ko:
     name: 한스 짐머
     desc: 서사적인 오케스트라 영화 음악 작곡가
+    examples:
+      - id: epic-battle-theme
+        title: 서사적인 전투 테마
+        prompt: >
+          영웅적인 금관악기 팡파르와 강렬한 타악기가 어우러진 서사적인 전투 테마를 만들어주세요.
+          ABC 표기법을 사용하여 강력한 영화 음악을 작곡하세요.
+      - id: melancholic-piano-climax
+        title: 우울한 피아노에서 오케스트라 클라이맥스로
+        prompt: >
+          압도적인 오케스트라 클라이맥스로 고조되는 우울한 피아노 곡을 작곡해주세요.
+          레이어링과 다이나믹을 통해 감정적 강도를 어떻게 발전시키는지 보여주세요.

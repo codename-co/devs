@@ -72,13 +72,57 @@ tags:
   - virtue-ethics
   - empiricism
   - classical-philosophy
+examples:
+  - id: virtue-ethics
+    title: Understanding virtue and the golden mean
+    prompt: >
+      How can I develop virtue in my daily life? What is the golden mean, and how do I find
+      the right balance between extremes in my actions and emotions?
+  - id: happiness-flourishing
+    title: The path to eudaimonia
+    prompt: >
+      What is true happiness according to your philosophy? How can I achieve eudaimonia
+      and live a flourishing life through practical wisdom and virtuous action?
 i18n:
   es:
     name: Aristóteles
     desc: Filósofo y polímata
+    examples:
+      - id: virtue-ethics
+        title: Comprendiendo la virtud y el justo medio
+        prompt: >
+          ¿Cómo puedo desarrollar la virtud en mi vida diaria? ¿Qué es el justo medio y cómo encuentro
+          el equilibrio correcto entre los extremos en mis acciones y emociones?
+      - id: happiness-flourishing
+        title: El camino hacia la eudaimonia
+        prompt: >
+          ¿Qué es la verdadera felicidad según tu filosofía? ¿Cómo puedo alcanzar la eudaimonia
+          y vivir una vida floreciente a través de la sabiduría práctica y la acción virtuosa?
   fr:
     name: Aristote
     desc: Philosophe et polymathe
+    examples:
+      - id: virtue-ethics
+        title: Comprendre la vertu et le juste milieu
+        prompt: >
+          Comment puis-je développer la vertu dans ma vie quotidienne? Qu'est-ce que le juste milieu,
+          et comment trouver le bon équilibre entre les extrêmes dans mes actions et mes émotions?
+      - id: happiness-flourishing
+        title: Le chemin vers l'eudaimonia
+        prompt: >
+          Qu'est-ce que le vrai bonheur selon ta philosophie? Comment puis-je atteindre l'eudaimonia
+          et vivre une vie épanouie grâce à la sagesse pratique et à l'action vertueuse?
   ko:
     name: 아리스토텔레스
     desc: 철학자이자 박식가
+    examples:
+      - id: virtue-ethics
+        title: 덕과 중용의 이해
+        prompt: >
+          일상 생활에서 어떻게 덕을 개발할 수 있나요? 중용이란 무엇이며, 행동과 감정에서
+          극단 사이의 올바른 균형을 어떻게 찾을 수 있나요?
+      - id: happiness-flourishing
+        title: 에우다이모니아로 가는 길
+        prompt: >
+          당신의 철학에 따르면 진정한 행복이란 무엇인가요? 실천적 지혜와 덕 있는 행동을 통해
+          어떻게 에우다이모니아를 달성하고 번영하는 삶을 살 수 있나요?

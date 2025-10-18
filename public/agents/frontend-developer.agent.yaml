@@ -71,6 +71,18 @@ examples:
       Create a landing page for a SaaS that can save time spent sleeping at night,
       thanks to an incredible find, seen on TV, for just $19.99/week, on pre-signup.
       A form captures prospect contact details.
+  - id: todo-app
+    title: Interactive todo application
+    prompt: >
+      Build a todo list application with the ability to add, delete, and mark tasks as complete.
+      Include filters to show all tasks, active tasks, or completed tasks. Use local storage
+      to persist the tasks between browser sessions.
+  - id: dashboard-analytics
+    title: Analytics dashboard
+    prompt: >
+      Create a dashboard displaying key metrics with cards showing total users, revenue,
+      conversion rate, and active sessions. Include a mock line chart for trends over time
+      and a table showing recent transactions. Make it responsive for mobile and desktop.
 i18n:
   es:
     name: Desarrollador Frontend
@@ -83,6 +95,20 @@ i18n:
           dedicado a dormir por la noche, gracias a un hallazgo increíble, visto en
           la televisión, por solo 19,99€/semana, en preinscripción. Un formulario
           captura los datos de contacto de los prospectos.
+      - id: todo-app
+        title: Aplicación de Tareas Interactiva
+        prompt: >
+          Construye una aplicación de lista de tareas con la capacidad de agregar, eliminar
+          y marcar tareas como completadas. Incluye filtros para mostrar todas las tareas,
+          tareas activas o tareas completadas. Usa almacenamiento local para persistir
+          las tareas entre sesiones del navegador.
+      - id: dashboard-analytics
+        title: Panel de Análisis
+        prompt: >
+          Crea un panel que muestre métricas clave con tarjetas mostrando usuarios totales,
+          ingresos, tasa de conversión y sesiones activas. Incluye un gráfico de líneas simulado
+          para tendencias en el tiempo y una tabla mostrando transacciones recientes. Hazlo
+          responsivo para móvil y escritorio.
   fr:
     name: Développeur Frontend
     desc: Expert en développement d'applications web
@@ -93,6 +119,20 @@ i18n:
           Crée une landing page pour une SaaS capable de faire économiser le temps passé à dormir la nuit,
           grâce à une trouvaille incroyable, vue à la télé, pour seulement 19,99€/semaine, sur pré-inscription.
           Un formulaire permet de glaner les coordonnées de contact des prospects.
+      - id: todo-app
+        title: Application de Tâches Interactive
+        prompt: >
+          Construis une application de liste de tâches avec la possibilité d'ajouter, supprimer
+          et marquer les tâches comme terminées. Inclus des filtres pour afficher toutes les tâches,
+          les tâches actives ou les tâches terminées. Utilise le stockage local pour persister
+          les tâches entre les sessions du navigateur.
+      - id: dashboard-analytics
+        title: Tableau de Bord Analytique
+        prompt: >
+          Crée un tableau de bord affichant des métriques clés avec des cartes montrant le total
+          d'utilisateurs, le revenu, le taux de conversion et les sessions actives. Inclus un graphique
+          linéaire simulé pour les tendances dans le temps et un tableau montrant les transactions récentes.
+          Rends-le responsive pour mobile et ordinateur.
   ko:
     name: 프론트엔드 개발자
     desc: 웹 애플리케이션 개발 전문가
@@ -102,3 +142,15 @@ i18n:
         prompt: >
           TV에서 본 놀라운 발견 덕분에 밤에 자는 데 보내는 시간을 절약할 수 있는 SaaS의 랜딩 페이지를 만드세요.
           주당 $19.99에 사전 등록할 수 있습니다. 양식은 잠재 고객의 연락처 세부 정보를 캡처합니다.
+      - id: todo-app
+        title: 대화형 할 일 애플리케이션
+        prompt: >
+          작업을 추가, 삭제 및 완료로 표시할 수 있는 할 일 목록 애플리케이션을 만드세요.
+          모든 작업, 활성 작업 또는 완료된 작업을 표시하는 필터를 포함하세요. 브라우저 세션 간에
+          작업을 유지하기 위해 로컬 스토리지를 사용하세요.
+      - id: dashboard-analytics
+        title: 분석 대시보드
+        prompt: >
+          총 사용자, 수익, 전환율 및 활성 세션을 보여주는 카드와 함께 주요 메트릭을 표시하는
+          대시보드를 만드세요. 시간 경과에 따른 추세를 위한 모의 선 그래프와 최근 거래를 보여주는
+          표를 포함하세요. 모바일과 데스크톱에 반응형으로 만드세요.

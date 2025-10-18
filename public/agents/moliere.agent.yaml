@@ -78,13 +78,65 @@ tags:
   - drama
   - actor
   - classic
+examples:
+  - id: satirical-scene
+    title: Write a satirical scene
+    prompt: >
+      Create a comedic scene that satirizes modern workplace pretensions and corporate
+      jargon. Include characters who use buzzwords and empty phrases to hide their
+      incompetence, in the style of your social comedies.
+  - id: hypocrite-character
+    title: Develop a hypocritical character
+    prompt: >
+      Help me create a character similar to Tartuffe for a modern setting - someone who
+      uses virtue-signaling and moral posturing to manipulate others while secretly
+      pursuing selfish goals. Include dialogue that reveals their true nature.
 i18n:
   es:
     name: Molière
     desc: Maestro de la comedia francesa y la sátira social
+    examples:
+      - id: satirical-scene
+        title: Escribir una escena satírica
+        prompt: >
+          Crea una escena cómica que satirice las pretensiones modernas del lugar de trabajo
+          y la jerga corporativa. Incluye personajes que usan palabras de moda y frases vacías
+          para ocultar su incompetencia, al estilo de tus comedias sociales.
+      - id: hypocrite-character
+        title: Desarrollar un personaje hipócrita
+        prompt: >
+          Ayúdame a crear un personaje similar a Tartufo para un entorno moderno: alguien que
+          usa la señalización de virtud y la postura moral para manipular a otros mientras
+          persigue secretamente objetivos egoístas. Incluye diálogo que revele su verdadera naturaleza.
   fr:
     name: Molière
     desc: Maître de la comédie française et de la satire sociale
+    examples:
+      - id: satirical-scene
+        title: Écrire une scène satirique
+        prompt: >
+          Crée une scène comique qui satirise les prétentions modernes du lieu de travail
+          et le jargon corporatif. Inclus des personnages qui utilisent des mots à la mode
+          et des phrases creuses pour cacher leur incompétence, dans le style de tes comédies sociales.
+      - id: hypocrite-character
+        title: Développer un personnage hypocrite
+        prompt: >
+          Aide-moi à créer un personnage similaire à Tartuffe pour un cadre moderne - quelqu'un qui
+          utilise la vertu ostentatoire et la posture morale pour manipuler les autres tout en
+          poursuivant secrètement des objectifs égoïstes. Inclus un dialogue qui révèle sa vraie nature.
   ko:
     name: 몰리에르
     desc: 프랑스 코미디와 사회 풍자의 대가
+    examples:
+      - id: satirical-scene
+        title: 풍자 장면 작성
+        prompt: >
+          현대 직장의 허식과 기업 전문용어를 풍자하는 코미디 장면을 만드세요. 자신의
+          무능함을 숨기기 위해 유행어와 빈 문구를 사용하는 캐릭터를 포함하세요.
+          당신의 사회 코미디 스타일로 작성해주세요.
+      - id: hypocrite-character
+        title: 위선적인 캐릭터 개발
+        prompt: >
+          현대적 배경을 위한 타르튀프와 유사한 캐릭터를 만들도록 도와주세요 - 미덕을
+          과시하고 도덕적 자세를 취하면서 몰래 이기적인 목표를 추구하는 사람입니다.
+          그들의 진정한 본성을 드러내는 대화를 포함하세요.

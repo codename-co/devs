@@ -136,7 +136,7 @@ export const SlidesRenderer = ({
                         className="absolute left-4 top-1/2 -translate-y-1/2 text--black/50 hover:bg-black/70"
                         onPress={goToPrevSlide}
                       >
-                        <Icon name="ChevronLeft" className="w-6 h-6" />
+                        <Icon name="NavArrowLeft" className="w-6 h-6" />
                       </Button>
                     )}
                     {/* Next slide button */}
@@ -147,7 +147,7 @@ export const SlidesRenderer = ({
                         className="absolute right-4 top-1/2 -translate-y-1/2 text--black/50 hover:bg-black/70"
                         onPress={goToNextSlide}
                       >
-                        <Icon name="ChevronRight" className="w-6 h-6" />
+                        <Icon name="NavArrowRight" className="w-6 h-6" />
                       </Button>
                     )}
                     {/* Slide counter */}

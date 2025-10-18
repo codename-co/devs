@@ -16,12 +16,14 @@ export interface UserSettings {
   isDrawerCollapsed: boolean
   platformName?: string
   backgroundImage?: string
+  speechToTextEnabled: boolean
 }
 
 const defaultSettings: UserSettings = {
   theme: 'system',
   language: 'en',
   isDrawerCollapsed: true,
+  speechToTextEnabled: false,
 }
 interface UserSettingsStore extends UserSettings {
   setTheme: (theme: ThemeMode) => void
@@ -29,6 +31,7 @@ interface UserSettingsStore extends UserSettings {
   toggleDrawer: () => void
   setPlatformName: (platformName: string) => void
   setBackgroundImage: (backgroundImage: string | undefined) => void
+  setSpeechToTextEnabled: (enabled: boolean) => void
   isDarkTheme: () => boolean
 }
 
@@ -43,6 +46,8 @@ export const userSettings = create<UserSettingsStore>()(
       setPlatformName: (platformName: string) => set({ platformName }),
       setBackgroundImage: (backgroundImage: string | undefined) =>
         set({ backgroundImage }),
+      setSpeechToTextEnabled: (enabled: boolean) =>
+        set({ speechToTextEnabled: enabled }),
       isDarkTheme: () => {
         const { theme } = get()
         if (theme === 'dark') return true
@@ -59,6 +64,7 @@ export const userSettings = create<UserSettingsStore>()(
         isDrawerCollapsed: state.isDrawerCollapsed,
         platformName: state.platformName,
         backgroundImage: state.backgroundImage,
+        speechToTextEnabled: state.speechToTextEnabled,
       }),
     },
   ),

@@ -99,4 +99,11 @@ export const es: I18n = {
   'Memory: {memory} or more (imprecise)': 'Memoria: {memory} o más (impreciso)',
   'Vendor: {vendor}': 'Proveedor: {vendor}',
   'Browser: {browser}': 'Navegador: {browser}',
+  'Enable Speech-to-Text': 'Habilitar voz a texto',
+  'Allow voice input using your device microphone in the prompt area':
+    'Permitir entrada de voz usando el micrófono de su dispositivo en el área de prompt',
+  'Make the platform your own': 'Personalice la plataforma',
+  'Share the platform': 'Compartir la plataforma',
+  'Export the platform settings to another device or share it with others':
+    'Exporte la configuración de la plataforma a otro dispositivo o compártala con otros',
 } as const

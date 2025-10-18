@@ -172,13 +172,66 @@ tags:
   - visual
   - profile
   - icon
+examples:
+  - id: cyberpunk-avatar
+    title: Create cyberpunk avatar
+    prompt: >
+      Create a sophisticated SVG avatar in cyberpunk style with neon gradients,
+      circuit patterns, and holographic textures. Use electric blue and neon pink
+      color palette with futuristic elements.
+  - id: art-deco-avatar
+    title: Create art deco avatar
+    prompt: >
+      Design an elegant SVG avatar inspired by Art Deco movement with geometric luxury,
+      gold accents, symmetrical patterns, and sophisticated visual hierarchy. Use
+      premium color palette with black, gold, and cream tones.
 i18n:
   es:
     name: Generador de Avatares
     desc: Artista que crea diseños de avatares
+    examples:
+      - id: cyberpunk-avatar
+        title: Crear avatar cyberpunk
+        prompt: >
+          Crea un avatar SVG sofisticado en estilo cyberpunk con gradientes de neón,
+          patrones de circuitos y texturas holográficas. Usa una paleta de colores
+          de azul eléctrico y rosa neón con elementos futuristas.
+      - id: art-deco-avatar
+        title: Crear avatar art deco
+        prompt: >
+          Diseña un avatar SVG elegante inspirado en el movimiento Art Deco con lujo
+          geométrico, acentos dorados, patrones simétricos y jerarquía visual sofisticada.
+          Usa una paleta de colores premium con tonos negros, dorados y crema.
   fr:
     name: Générateur d'Avatar
     desc: Artiste créant des designs d'avatars
+    examples:
+      - id: cyberpunk-avatar
+        title: Créer un avatar cyberpunk
+        prompt: >
+          Crée un avatar SVG sophistiqué dans un style cyberpunk avec des dégradés néon,
+          des motifs de circuits et des textures holographiques. Utilise une palette de
+          couleurs bleu électrique et rose néon avec des éléments futuristes.
+      - id: art-deco-avatar
+        title: Créer un avatar art déco
+        prompt: >
+          Conçois un avatar SVG élégant inspiré du mouvement Art Déco avec un luxe
+          géométrique, des accents dorés, des motifs symétriques et une hiérarchie
+          visuelle sophistiquée. Utilise une palette de couleurs premium avec des
+          tons noirs, dorés et crème.
   ko:
     name: 아바타 생성기
     desc: 아바타 디자인을 만드는 아티스트
+    examples:
+      - id: cyberpunk-avatar
+        title: 사이버펑크 아바타 생성
+        prompt: >
+          네온 그라디언트, 회로 패턴, 홀로그래픽 텍스처가 있는 사이버펑크 스타일의
+          정교한 SVG 아바타를 만들어주세요. 미래지향적인 요소와 함께 전기 블루와
+          네온 핑크 색상 팔레트를 사용해주세요.
+      - id: art-deco-avatar
+        title: 아르데코 아바타 생성
+        prompt: >
+          기하학적 럭셔리, 금색 액센트, 대칭 패턴, 정교한 시각적 계층구조가 있는
+          아르데코 운동에서 영감을 받은 우아한 SVG 아바타를 디자인해주세요.
+          검정, 금색, 크림 톤의 프리미엄 색상 팔레트를 사용해주세요.

@@ -54,13 +54,60 @@ tags:
   - theory
   - abc-notation
   - harmony
+examples:
+  - id: jazz-fusion-progression
+    title: Jazz-fusion chord progression
+    prompt: >
+      Write a jazz-fusion chord progression in ABC notation using extended harmonies
+      like 9ths, 11ths, and 13ths. Include voice leading principles and explain
+      the harmonic movement between chords.
+  - id: polyrhythmic-melody
+    title: Polyrhythmic composition
+    prompt: >
+      Create a polyrhythmic melody in 7/8 time signature with layered harmonies in ABC notation.
+      Show how different rhythmic patterns can interlock and create interesting textures.
 i18n:
   es:
     name: Jacob Collier
     desc: Compositor, experto en teoría musical
+    examples:
+      - id: jazz-fusion-progression
+        title: Progresión de acordes jazz-fusión
+        prompt: >
+          Escribe una progresión de acordes jazz-fusión en notación ABC usando armonías
+          extendidas como 9as, 11as y 13as. Incluye principios de conducción de voces y
+          explica el movimiento armónico entre acordes.
+      - id: polyrhythmic-melody
+        title: Composición polirrítmica
+        prompt: >
+          Crea una melodía polirrítmica en compás de 7/8 con armonías en capas en notación ABC.
+          Muestra cómo diferentes patrones rítmicos pueden entrelazarse y crear texturas interesantes.
   fr:
     name: Jacob Collier
     desc: Compositeur, expert en théorie musicale
+    examples:
+      - id: jazz-fusion-progression
+        title: Progression d'accords jazz-fusion
+        prompt: >
+          Écris une progression d'accords jazz-fusion en notation ABC utilisant des harmonies
+          étendues comme les 9èmes, 11èmes et 13èmes. Inclus les principes de conduite de voix
+          et explique le mouvement harmonique entre les accords.
+      - id: polyrhythmic-melody
+        title: Composition polyrythmique
+        prompt: >
+          Crée une mélodie polyrythmique en 7/8 avec des harmonies superposées en notation ABC.
+          Montre comment différents motifs rythmiques peuvent s'entrelacer et créer des textures intéressantes.
   ko:
     name: 제이콥 콜리어
     desc: 작곡가, 음악 이론 전문가
+    examples:
+      - id: jazz-fusion-progression
+        title: 재즈 퓨전 코드 진행
+        prompt: >
+          9도, 11도, 13도와 같은 확장 화성을 사용하여 ABC 표기법으로 재즈 퓨전 코드 진행을
+          작성해주세요. 성부 진행 원칙을 포함하고 코드 간의 화성 이동을 설명해주세요.
+      - id: polyrhythmic-melody
+        title: 폴리리듬 작곡
+        prompt: >
+          ABC 표기법으로 7/8 박자의 다층 하모니가 있는 폴리리듬 멜로디를 만들어주세요.
+          다양한 리듬 패턴이 어떻게 맞물려 흥미로운 텍스처를 만들 수 있는지 보여주세요.

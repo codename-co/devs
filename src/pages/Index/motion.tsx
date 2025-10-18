@@ -3,7 +3,7 @@ import {
   createTransition,
   fadeInUp,
   scaleIn,
-  scaleOut,
+  // scaleOut,
   SPRING_CONFIG,
 } from '@/lib/motion'
 export const motionVariants: Record<string, MotionProps> = {
@@ -37,13 +37,18 @@ export const motionVariants: Record<string, MotionProps> = {
     transition: createTransition(0.35, { duration: 0.7 }),
   },
 
-  agentCards: {
-    ...scaleOut,
-    transition: createTransition(0.4, { duration: 0.7 }),
-  },
+  // agentCards: {
+  //   ...scaleOut,
+  //   transition: createTransition(0.4, { duration: 0.7 }),
+  // },
 
-  usecases: {
-    ...scaleOut,
-    transition: createTransition(0, { duration: 0.7 }),
+  // usecases: {
+  //   ...scaleOut,
+  //   transition: createTransition(0.5, { duration: 0.7 }),
+  // },
+
+  usecase: {
+    ...fadeInUp(30),
+    transition: createTransition(0.7, { duration: 0.3 }),
   },
 }

@@ -76,26 +76,41 @@ tags:
   - art-of-war
 examples:
   - id: strategic-analysis
-    title: Strategic Analysis
+    title: Strategic analysis
     prompt: >
       Apply Sun Tzu's Art of War principles to analyze competitive positioning for a tech startup entering a saturated market. Provide tactical recommendations.
+  - id: negotiation-strategy
+    title: Negotiation strategy
+    prompt: >
+      I'm entering a difficult business negotiation where the other party seems to have more leverage.
+      How can I apply the Art of War principles to achieve a favorable outcome without direct confrontation?
 i18n:
   es:
     name: Sun Tzu
     desc: Estratega militar y filósofo chino antiguo
     examples:
       - id: strategic-analysis
-        title: Análisis Estratégico
+        title: Análisis estratégico
         prompt: >
           Aplica los principios de El Arte de la Guerra de Sun Tzu para analizar el posicionamiento competitivo de una startup tecnológica que entra en un mercado saturado. Proporciona recomendaciones tácticas.
+      - id: negotiation-strategy
+        title: Estrategia de negociación
+        prompt: >
+          Estoy entrando en una negociación comercial difícil donde la otra parte parece tener más ventaja.
+          ¿Cómo puedo aplicar los principios del Arte de la Guerra para lograr un resultado favorable sin confrontación directa?
   fr:
     name: Sun Tzu
     desc: Stratège militaire et philosophe chinois ancien
     examples:
       - id: strategic-analysis
-        title: Analyse Stratégique
+        title: Analyse stratégique
         prompt: >
           Applique les principes de L'Art de la Guerre de Sun Tzu pour analyser le positionnement concurrentiel d'une startup technologique entrant sur un marché saturé. Fournis des recommandations tactiques.
+      - id: negotiation-strategy
+        title: Stratégie de négociation
+        prompt: >
+          J'entre dans une négociation commerciale difficile où l'autre partie semble avoir plus de levier.
+          Comment puis-je appliquer les principes de l'Art de la Guerre pour obtenir un résultat favorable sans confrontation directe?
   ko:
     name: 손자
     desc: 고대 중국의 군사 전략가이자 철학자
@@ -104,3 +119,8 @@ i18n:
         title: 전략 분석
         prompt: >
           손자의 '손자병법' 원칙을 적용하여 포화된 시장에 진입하는 기술 스타트업의 경쟁 위치를 분석하십시오. 전술적 권장 사항을 제공하십시오.
+      - id: negotiation-strategy
+        title: 협상 전략
+        prompt: >
+          상대방이 더 많은 영향력을 가지고 있는 것처럼 보이는 어려운 비즈니스 협상에 참여하고 있습니다.
+          직접적인 대립 없이 유리한 결과를 얻기 위해 손자병법의 원칙을 어떻게 적용할 수 있나요?

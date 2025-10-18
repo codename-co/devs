@@ -1,12 +1,5 @@
 import { useI18n } from '@/i18n'
-import {
-  AgentCard,
-  Container,
-  Icon,
-  PromptArea,
-  Section,
-  Title,
-} from '@/components'
+import { Container, Icon, PromptArea, Section, Title } from '@/components'
 import { EasySetupModal } from '@/components/EasySetup/EasySetupModal'
 import DefaultLayout from '@/layouts/Default'
 import { useEffect, useState } from 'react'
@@ -16,13 +9,21 @@ import { useTaskStore } from '@/stores/taskStore'
 import { errorToast } from '@/lib/toast'
 import { useBackgroundImage } from '@/hooks/useBackgroundImage'
 import { useEasySetup } from '@/hooks/useEasySetup'
-import { Alert, Card, CardBody } from '@heroui/react'
+import {
+  Alert,
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+} from '@heroui/react'
 import { motion } from 'framer-motion'
 import { motionVariants } from './motion'
-import { getAgentsByCategory, listAgentExamples } from '@/stores/agentStore'
+import { getAgentsByCategory } from '@/stores/agentStore'
 // import { loadAllMethodologies } from '@/stores/methodologiesStore'
 // import type { Methodology } from '@/types/methodology.types'
 import localeI18n from './i18n'
+import { agentThemeIcon, useCasesByThemes } from '@/lib/agents'
 
 export const IndexPage = () => {
   const { lang, url, t } = useI18n(localeI18n)
@@ -40,17 +41,6 @@ export const IndexPage = () => {
   const { backgroundImage, backgroundLoaded, isDragOver, dragHandlers } =
     useBackgroundImage()
   const { hasSetupData, setupData, clearSetupData } = useEasySetup()
-
-  const [usecases, setUsecases] = useState<
-    Awaited<ReturnType<typeof listAgentExamples>>
-  >([])
-
-  useEffect(() => {
-    ;(async () => {
-      const examples = await listAgentExamples(lang)
-      setUsecases(examples)
-    })()
-  }, [])
 
   // Load agents and methodologies on mount
   useEffect(() => {
@@ -70,13 +60,7 @@ export const IndexPage = () => {
           agentsMap.set(agent.id, agent)
         })
 
-        setAgents(
-          allAgents
-            .filter((agent) => agent.id !== 'devs')
-            // .filter((agent) => !agent.id.startsWith('custom-'))
-            .sort(() => Math.random() - 0.5)
-            .slice(0, 12),
-        )
+        setAgents(allAgents.filter((agent) => agent.id !== 'devs'))
       } catch (error) {
         console.error('Failed to load agents:', error)
       } finally {
@@ -115,20 +99,31 @@ export const IndexPage = () => {
     })
   }
 
-  const handleUseCaseClick = (useCase: {
-    prompt: string
-    title?: string
-    agent: Agent
-  }) => {
+  const handleUseCaseClick = (
+    useCase: {
+      prompt: string
+      id: string
+      title?: string
+      agent: Agent
+    },
+    focus = true,
+  ) => {
     // Find the agent from the map
     if (useCase.agent) {
       setSelectedAgent(useCase.agent)
     }
-    setPrompt(useCase.prompt)
-    // Focus the prompt area
-    ;(document.querySelector('[data-testid="prompt-input"]') as any)?.focus()
-    // Scroll to the prompt area
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setPrompt(
+      useCase.agent.i18n?.[lang]?.examples?.find((ex) => ex.id === useCase.id)
+        ?.title ?? useCase.prompt,
+    )
+
+    if (focus) {
+      // Focus the prompt area
+      ;(document.querySelector('[data-testid="prompt-input"]') as any)?.focus()
+
+      // Scroll to the prompt area
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
   }
 
   const onSubmitToAgent = async () => {
@@ -289,56 +284,120 @@ export const IndexPage = () => {
               onFilesChange={setSelectedFiles}
             />
           </motion.div>
-        </Section>
 
-        <motion.div {...motionVariants.agentSection}>
-          <Section
-            mainClassName="bg-default-50"
-            size={7}
-            className="@container"
-          >
+          <motion.div {...motionVariants.agentSection}>
             {/* Use Cases Section */}
             {!isLoadingAgents && (
               <motion.div {...motionVariants.usecases}>
-                <Container size={7}>
-                  <Title level={3} size="lg">
+                <Container size={7} className="mt-0 sm:-mt-8">
+                  {/* <Title level={3} size="lg">
                     {t('Try these examples')}
-                  </Title>
-                  <div className="grid grid-cols-1 @xl:grid-cols-2 @4xl:grid-cols-3 gap-4 mx-auto">
-                    {usecases.map(({ agent, examples }) =>
-                      examples.map((example) => (
-                        <Card
-                          key={example.id}
-                          isPressable
-                          isHoverable
-                          shadow="sm"
-                          className="transition-all hover:scale-105"
-                          onPress={() =>
-                            handleUseCaseClick({ ...example, agent })
-                          }
+                  </Title> */}
+                  <div className="flex gap-2 flex-wrap justify-center">
+                    {useCasesByThemes(agents).map(
+                      ({ theme, usecases }, index) => (
+                        <motion.div
+                          {...motionVariants.usecase}
+                          transition={{
+                            ...motionVariants.usecase.transition,
+                            delay: 0.7 + 0.06 * index,
+                          }}
+                          key={theme}
                         >
-                          <CardBody className="p-4">
-                            <div className="flex items-start gap-3">
-                              {agent.icon && (
-                                <div className="text-3xl flex-shrink-0">
-                                  <Icon
-                                    name={agent.icon}
-                                    className="text-primary-500"
-                                  />
-                                </div>
-                              )}
-                              <div className="flex-1">
-                                <h4 className="font-semibold text-sm mb-2">
-                                  {example.title}
-                                </h4>
-                                <p className="text-xs text-default-500 line-clamp-3">
-                                  {example.prompt}
-                                </p>
-                              </div>
-                            </div>
-                          </CardBody>
-                        </Card>
-                      )),
+                          <Dropdown key={theme} placement="bottom-start">
+                            <DropdownTrigger>
+                              <Button
+                                variant="ghost"
+                                size="md"
+                                className="inline-flex justify-start"
+                                startContent={
+                                  usecases[0]?.agent.icon && (
+                                    <Icon
+                                      name={(agentThemeIcon as any)[theme]}
+                                      size="lg"
+                                      className="text-default-500"
+                                    />
+                                  )
+                                }
+                              >
+                                <span className="font-semibold">
+                                  {t(theme as any)}
+                                </span>
+                              </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu
+                              aria-label={`${theme} examples`}
+                              className="max-h-[70vh] overflow-y-auto"
+                            >
+                              {[
+                                <DropdownItem
+                                  key="aa"
+                                  className="py-2 text-default-500 !data-[hover=true]:bg-transparent"
+                                  startContent={
+                                    usecases[0]?.agent.icon && (
+                                      <Icon
+                                        name={(agentThemeIcon as any)[theme]}
+                                        size="md"
+                                        className="text-default-00"
+                                      />
+                                    )
+                                  }
+                                  endContent={
+                                    <Icon
+                                      name="Xmark"
+                                      size="md"
+                                      className="text-default-500"
+                                    />
+                                  }
+                                >
+                                  <span className="font-medium">
+                                    {t(theme as any)}
+                                  </span>
+                                </DropdownItem>,
+
+                                ...usecases.map((example) => (
+                                  <DropdownItem
+                                    key={example.id}
+                                    endContent={
+                                      <Icon
+                                        name="NavArrowRight"
+                                        size="md"
+                                        className="text-default-500"
+                                      />
+                                    }
+                                    // description={
+                                    //   <span className="text-xs text-default-500 line-clamp-2">
+                                    //     {example.prompt}
+                                    //   </span>
+                                    // }
+                                    classNames={{
+                                      base: 'py-3',
+                                      title: 'font-medium',
+                                      description: 'text-xs',
+                                    }}
+                                    onPress={() => {
+                                      handleUseCaseClick(example)
+                                      // submit
+                                      const submitButton =
+                                        document.querySelector(
+                                          '#prompt-area [type="submit"]',
+                                        ) as HTMLButtonElement | null
+                                      submitButton?.click()
+                                    }}
+                                    onMouseEnter={() =>
+                                      handleUseCaseClick(example, false)
+                                    }
+                                  >
+                                    {example.agent.i18n?.[lang]?.examples?.find(
+                                      (ex) => ex.id === example.id,
+                                    )?.title ?? example.title}
+                                  </DropdownItem>
+                                )),
+                              ]}
+                            </DropdownMenu>
+                          </Dropdown>
+                        </motion.div>
+                      ),
                     )}
                   </div>
                 </Container>
@@ -346,12 +405,9 @@ export const IndexPage = () => {
             )}
 
             {/* Agents Section */}
-            {!isLoadingAgents && (
+            {/* {!isLoadingAgents && (
               <motion.div {...motionVariants.agentCards}>
                 <Container size={6}>
-                  {/* <Title level={3} size="lg" className="text-gray-600">
-                {t('Agents')}
-              </Title> */}
                   <div className="grid grid-cols-2 @md:grid-cols-3 @xl:grid-cols-4 @4xl:grid-cols-6 gap-3">
                     {agents.map((agent) => (
                       <AgentCard
@@ -367,7 +423,7 @@ export const IndexPage = () => {
                   </div>
                 </Container>
               </motion.div>
-            )}
+            )} */}
 
             {/* Methodologies Section */}
             {/* {!isLoadingMethodologies && (
@@ -400,8 +456,8 @@ export const IndexPage = () => {
               </div>
             </Container>
           )} */}
-          </Section>
-        </motion.div>
+          </motion.div>
+        </Section>
       </DefaultLayout>
 
       {hasSetupData && setupData && (

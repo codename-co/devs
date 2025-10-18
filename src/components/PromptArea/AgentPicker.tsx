@@ -8,7 +8,8 @@ import { type Agent } from '@/types'
 import { loadAllAgents, getAgentsByCategory } from '@/stores/agentStore'
 import { Icon } from '../Icon'
 import { useI18n } from '@/i18n'
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { agentCategoryNames } from '@/lib/agents'
 
 interface AgentPickerProps extends Omit<DropdownMenuProps, 'children'> {
   selectedAgent?: Agent | null
@@ -22,7 +23,7 @@ export function AgentPicker({
   disabled,
   ...props
 }: AgentPickerProps) {
-  const { t, lang } = useI18n()
+  const { lang, t } = useI18n()
   const [availableAgents, setAvailableAgents] = useState<Agent[]>([])
   const [agentsByCategory, setAgentsByCategory] = useState<
     Record<string, Agent[]>
@@ -53,22 +54,7 @@ export function AgentPicker({
     [availableAgents, onAgentChange],
   )
 
-  // Define category display names
-  const categoryNames = useMemo(
-    () =>
-      ({
-        default: '',
-        scientist: t('Scientists'),
-        advisor: t('Advisors'),
-        artist: t('Artists'),
-        philosopher: t('Philosophers'),
-        musician: t('Musicians'),
-        writer: t('Writers'),
-        other: t('Other Agents'),
-      }) as Record<string, string>,
-    [t],
-  )
-
+  // Define category displ
   return (
     <DropdownMenu
       aria-label="Agent selection"
@@ -82,7 +68,7 @@ export function AgentPicker({
       {orderedCategories.map((category) => (
         <DropdownSection
           key={category}
-          title={categoryNames[category] ?? category}
+          title={t((agentCategoryNames as any)[category] ?? category)}
         >
           {agentsByCategory[category]?.map((agent) => (
             <DropdownItem

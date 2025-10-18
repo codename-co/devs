@@ -217,6 +217,7 @@ export type AgentCategory =
   | 'artist'
   | 'philosopher'
   | 'musician'
+  | 'developer'
   | 'writer'
   | 'other'
 
@@ -245,6 +246,7 @@ export async function getAgentsByCategory(lang: string = 'en'): Promise<{
         'artist',
         'philosopher',
         'musician',
+        'developer',
         'writer',
       ]
       const category =

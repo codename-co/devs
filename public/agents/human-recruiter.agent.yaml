@@ -137,13 +137,69 @@ tags:
   - job-market
   - career-advice
   - talent-management
+examples:
+  - id: senior-engineer-hiring
+    title: Develop hiring strategy for senior engineer
+    prompt: >
+      I need to hire a Senior Software Engineer with 7+ years of experience in distributed
+      systems and cloud architecture. Help me develop a comprehensive hiring strategy
+      including sourcing channels, interview process, and competitive compensation package.
+  - id: interview-questions-data
+    title: Create interview questions for data scientist
+    prompt: >
+      Create a structured interview guide for a Data Scientist position requiring expertise
+      in machine learning, Python, and SQL. Include behavioral questions, technical assessments,
+      and STAR method questions to evaluate problem-solving abilities.
 i18n:
   es:
     name: Reclutador
     desc: Experto en reclutamiento de talento
+    examples:
+      - id: senior-engineer-hiring
+        title: Desarrollar estrategia de contratación para ingeniero senior
+        prompt: >
+          Necesito contratar un Ingeniero de Software Senior con más de 7 años de experiencia
+          en sistemas distribuidos y arquitectura en la nube. Ayúdame a desarrollar una estrategia
+          integral de contratación que incluya canales de búsqueda, proceso de entrevista y
+          paquete de compensación competitivo.
+      - id: interview-questions-data
+        title: Crear preguntas de entrevista para científico de datos
+        prompt: >
+          Crea una guía de entrevista estructurada para un puesto de Científico de Datos que
+          requiere experiencia en aprendizaje automático, Python y SQL. Incluye preguntas
+          conductuales, evaluaciones técnicas y preguntas con el método STAR para evaluar
+          habilidades de resolución de problemas.
   fr:
     name: Recruteur
     desc: Expert en recrutement pour l'acquisition de talents
+    examples:
+      - id: senior-engineer-hiring
+        title: Développer une stratégie de recrutement pour ingénieur senior
+        prompt: >
+          Je dois embaucher un Ingénieur Logiciel Senior avec plus de 7 ans d'expérience
+          en systèmes distribués et architecture cloud. Aide-moi à développer une stratégie
+          de recrutement complète incluant les canaux de sourcing, le processus d'entretien
+          et un package de rémunération compétitif.
+      - id: interview-questions-data
+        title: Créer des questions d'entretien pour data scientist
+        prompt: >
+          Crée un guide d'entretien structuré pour un poste de Data Scientist nécessitant
+          une expertise en apprentissage automatique, Python et SQL. Inclus des questions
+          comportementales, des évaluations techniques et des questions méthode STAR pour
+          évaluer les capacités de résolution de problèmes.
   ko:
     name: 인재 채용 전문가
     desc: 인재 확보를 위한 전문 채용 담당자
+    examples:
+      - id: senior-engineer-hiring
+        title: 시니어 엔지니어 채용 전략 개발
+        prompt: >
+          분산 시스템 및 클라우드 아키텍처에서 7년 이상의 경험을 가진 시니어 소프트웨어
+          엔지니어를 채용해야 합니다. 소싱 채널, 면접 프로세스 및 경쟁력 있는 보상
+          패키지를 포함한 포괄적인 채용 전략을 개발하는 데 도움을 주세요.
+      - id: interview-questions-data
+        title: 데이터 과학자 면접 질문 작성
+        prompt: >
+          머신러닝, Python, SQL에 대한 전문 지식이 필요한 데이터 과학자 직책에 대한
+          구조화된 면접 가이드를 만들어주세요. 문제 해결 능력을 평가하기 위한 행동
+          질문, 기술 평가 및 STAR 방법 질문을 포함해주세요.

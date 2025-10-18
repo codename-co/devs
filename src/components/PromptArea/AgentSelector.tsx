@@ -42,7 +42,11 @@ export function AgentSelector({
             variant="light"
             size="sm"
           >
-            <Icon name={selectedAgent.icon ?? 'User'} size="md" />
+            <Icon
+              name={selectedAgent.icon ?? 'User'}
+              size="md"
+              className="text-default-500 dark:text-default-600"
+            />
             <span className="hidden min-[36em]:inline-flex">
               {selectedAgent.i18n?.[lang]?.name ?? selectedAgent.name}
             </span>

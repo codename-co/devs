@@ -55,7 +55,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
               <Icon
                 name={getProviderIcon(selectedCredential?.provider || 'custom')}
                 size="sm"
-                className="hidden md:flex"
+                className="hidden md:flex text-default-500 dark:text-default-600"
               />
             }
           >

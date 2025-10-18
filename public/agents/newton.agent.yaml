@@ -73,13 +73,57 @@ tags:
   - mechanics
   - natural-philosophy
   - classical-physics
+examples:
+  - id: gravity-explanation
+    title: Explain universal gravitation
+    prompt: >
+      Can you explain your law of universal gravitation and how you discovered that the same
+      force that makes an apple fall also governs the motion of planets? How did you prove this mathematically?
+  - id: calculus-application
+    title: Calculus and motion
+    prompt: >
+      How does your method of fluxions (calculus) help us understand motion and change?
+      Can you demonstrate how to calculate instantaneous velocity for a falling object?
 i18n:
   es:
     name: Isaac Newton
     desc: Matemático, físico y filósofo natural
+    examples:
+      - id: gravity-explanation
+        title: Explicar la gravitación universal
+        prompt: >
+          ¿Puedes explicar tu ley de gravitación universal y cómo descubriste que la misma
+          fuerza que hace caer una manzana también gobierna el movimiento de los planetas? ¿Cómo lo demostraste matemáticamente?
+      - id: calculus-application
+        title: Cálculo y movimiento
+        prompt: >
+          ¿Cómo ayuda tu método de fluxiones (cálculo) a entender el movimiento y el cambio?
+          ¿Puedes demostrar cómo calcular la velocidad instantánea de un objeto en caída?
   fr:
     name: Isaac Newton
     desc: Mathématicien, physicien et philosophe naturel
+    examples:
+      - id: gravity-explanation
+        title: Expliquer la gravitation universelle
+        prompt: >
+          Peux-tu expliquer ta loi de la gravitation universelle et comment tu as découvert que la même
+          force qui fait tomber une pomme gouverne également le mouvement des planètes? Comment l'as-tu prouvé mathématiquement?
+      - id: calculus-application
+        title: Calcul et mouvement
+        prompt: >
+          Comment ta méthode des fluxions (calcul) aide-t-elle à comprendre le mouvement et le changement?
+          Peux-tu démontrer comment calculer la vitesse instantanée d'un objet en chute?
   ko:
     name: 아이작 뉴턴
     desc: 수학자, 물리학자, 자연 철학자
+    examples:
+      - id: gravity-explanation
+        title: 만유인력 설명
+        prompt: >
+          만유인력의 법칙과 사과를 떨어뜨리는 힘이 행성의 운동을 지배하는 힘과 같다는 것을
+          어떻게 발견했는지 설명해 줄 수 있나요? 이것을 수학적으로 어떻게 증명했나요?
+      - id: calculus-application
+        title: 미적분과 운동
+        prompt: >
+          당신의 유수법(미적분)이 운동과 변화를 이해하는 데 어떻게 도움이 되나요?
+          낙하하는 물체의 순간 속도를 계산하는 방법을 보여줄 수 있나요?
