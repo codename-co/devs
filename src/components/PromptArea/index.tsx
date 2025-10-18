@@ -404,6 +404,9 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                         isIconOnly={isSmallWidth()}
                         disabled={props.isSending}
                         color={!prompt.trim() ? 'default' : 'primary'}
+                        className={cn(
+                          canSubmit && 'dark:bg-white dark:text-black',
+                        )}
                         radius="md"
                         variant="solid"
                         size="sm"
@@ -424,6 +427,9 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                         // isIconOnly
                         disabled={props.isSending}
                         color={!prompt.trim() ? 'default' : 'primary'}
+                        className={cn(
+                          canSubmit && 'dark:bg-white dark:text-black',
+                        )}
                         radius="md"
                         variant="solid"
                         size="sm"

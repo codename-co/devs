@@ -13,7 +13,7 @@ export const fr: I18n = {
   // Agent themes
   Writing: 'Écriture',
   Learn: 'Apprentissage',
-  Life: 'Vie',
+  Life: 'Quotidien',
   Art: 'Art',
   Coding: 'Code',
 } as const

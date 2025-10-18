@@ -114,7 +114,7 @@ export const IndexPage = () => {
     }
     setPrompt(
       useCase.agent.i18n?.[lang]?.examples?.find((ex) => ex.id === useCase.id)
-        ?.title ?? useCase.prompt,
+        ?.prompt ?? useCase.prompt,
     )
 
     if (focus) {
@@ -377,12 +377,15 @@ export const IndexPage = () => {
                                     }}
                                     onPress={() => {
                                       handleUseCaseClick(example)
+
                                       // submit
-                                      const submitButton =
-                                        document.querySelector(
-                                          '#prompt-area [type="submit"]',
-                                        ) as HTMLButtonElement | null
-                                      submitButton?.click()
+                                      setTimeout(() => {
+                                        const submitButton =
+                                          document.querySelector(
+                                            '#prompt-area [type="submit"]',
+                                          ) as HTMLButtonElement | null
+                                        submitButton?.click()
+                                      }, 150)
                                     }}
                                     onMouseEnter={() =>
                                       handleUseCaseClick(example, false)
