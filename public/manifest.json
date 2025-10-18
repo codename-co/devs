@@ -1,0 +1,69 @@
+{
+  "id": "devs",
+  "short_name": "𝐃𝐄𝐕𝐒",
+  "name": "𝐃𝐄𝐕𝐒",
+  "description": "Delegate complex tasks to a swarm of AI agents",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/devs-mobile-home.webp",
+      "sizes": "405x877",
+      "type": "image/webp",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshots/devs-mobile-prompt.webp",
+      "sizes": "405x877",
+      "type": "image/webp",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshots/devs-mobile-generative.webp",
+      "sizes": "405x877",
+      "type": "image/webp",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshots/devs-mobile-widgets.webp",
+      "sizes": "405x877",
+      "type": "image/webp",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshots/devs-desktop-home.webp",
+      "sizes": "1644x1558",
+      "type": "image/webp",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshots/devs-desktop-prompt.webp",
+      "sizes": "1644x1558",
+      "type": "image/webp",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshots/devs-desktop-generative.webp",
+      "sizes": "1644x1558",
+      "type": "image/webp",
+      "form_factor": "wide"
+    }
+  ],
+  "display": "standalone",
+  "theme_color": "#36F",
+  "background_color": "#FFF",
+  "start_url": "/",
+  "scope": "/"
+}
