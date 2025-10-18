@@ -34,11 +34,11 @@ export function MethodologiesPage() {
     },
     title: t('Methodologies'),
     subtitle: t('Reproduce real-world task execution methodologies'),
-    cta: {
-      label: t('New Methodology'),
-      href: url('/methodologies/new'),
-      icon: 'Plus',
-    },
+    // cta: {
+    //   label: t('New Methodology'),
+    //   href: url('/methodologies/new'),
+    //   icon: 'Plus',
+    // },
   }
 
   useEffect(() => {
