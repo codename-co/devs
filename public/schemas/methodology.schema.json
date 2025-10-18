@@ -73,6 +73,10 @@
           },
           "description": "Searchable tags for categorization"
         },
+        "diagram": {
+          "type": "string",
+          "description": "Optional Mermaid diagram definition for visualizing the methodology workflow. This should be a valid Mermaid syntax diagram (e.g., flowchart, sequence, state diagram) that illustrates the methodology's phases, flow, and decision points."
+        },
         "i18n": {
           "type": "object",
           "description": "Internationalization translations for the agent's name and role",
@@ -176,6 +180,25 @@
             }
           }
         },
+        "eventDriven": {
+          "type": "object",
+          "description": "Event-driven execution settings",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable event-driven execution"
+            },
+            "triggerEvent": {
+              "type": "string",
+              "description": "Event that triggers execution"
+            },
+            "subscriptionPattern": {
+              "type": "string",
+              "description": "Pattern for event subscription"
+            }
+          }
+        },
         "convergence": {
           "type": "object",
           "description": "Convergence criteria for iterative loops",
@@ -217,7 +240,10 @@
             "parallel",
             "conditional",
             "iterative",
-            "nested"
+            "nested",
+            "parallel-sequential",
+            "event-driven",
+            "event-driven-sequential"
           ],
           "description": "Overall execution strategy"
         },
@@ -248,14 +274,67 @@
           "properties": {
             "strategy": {
               "type": "string",
-              "enum": ["abort", "retry", "skip", "fallback"],
+              "enum": [
+                "abort",
+                "retry",
+                "skip",
+                "fallback",
+                "retry-with-escalation",
+                "graceful-degradation",
+                "continue-on-error"
+              ],
               "default": "retry"
             },
             "fallbackPhase": {
               "type": "string",
               "description": "Phase ID to fall back to on failure"
+            },
+            "escalationPath": {
+              "type": "array",
+              "description": "Escalation path for retry-with-escalation strategy",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "attempt": {
+                    "type": "string",
+                    "description": "Attempt range (e.g., '1-2', '3')"
+                  },
+                  "action": {
+                    "type": "string",
+                    "description": "Action to take on this attempt"
+                  }
+                }
+              }
+            },
+            "fallbackActions": {
+              "type": "array",
+              "description": "Conditional fallback actions for graceful degradation",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "condition": {
+                    "type": "string",
+                    "description": "Condition that triggers this fallback"
+                  },
+                  "action": {
+                    "type": "string",
+                    "description": "Action to take when condition is met"
+                  }
+                }
+              }
             }
           }
+        },
+        "parallelPhases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Phase IDs that can execute in parallel"
+        },
+        "eventTrigger": {
+          "type": "string",
+          "description": "Event that triggers workflow execution"
         }
       }
     },
@@ -611,7 +690,9 @@
             "decision",
             "documentation",
             "testing",
-            "planning"
+            "planning",
+            "communication",
+            "coordination"
           ],
           "description": "Task type"
         },
@@ -680,6 +761,10 @@
         "parallelizable": {
           "type": "boolean",
           "default": false
+        },
+        "condition": {
+          "type": "string",
+          "description": "Conditional expression for task execution"
         }
       }
     },
@@ -777,7 +862,15 @@
         },
         "format": {
           "type": "string",
-          "enum": ["markdown", "json", "code", "html", "binary", "structured"],
+          "enum": [
+            "markdown",
+            "json",
+            "code",
+            "html",
+            "binary",
+            "structured",
+            "text"
+          ],
           "description": "Artifact format"
         },
         "schema": {

@@ -27,7 +27,12 @@ import { type LanguageCode } from '@/i18n/locales'
 import { cn, getFileIcon } from '@/lib/utils'
 import { type Agent, type KnowledgeItem } from '@/types'
 import { getDefaultAgent } from '@/stores/agentStore'
-import { isLandscape, isMobileDevice, isSmallHeight } from '@/lib/device'
+import {
+  isLandscape,
+  isMobileDevice,
+  isSmallHeight,
+  isSmallWidth,
+} from '@/lib/device'
 import { formatBytes } from '@/lib/format'
 
 interface PromptAreaProps
@@ -343,9 +348,9 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
             {...props}
           />
 
-          <div className="absolute z-10 bottom-0 inset-x-px p-2 rounded-b-lg">
-            <div className="flex flex-wrap justify-between items-end gap-2">
-              <div className="flex items-center gap-2">
+          <div className="absolute z-10 bottom-0 inset-x-px p-1 sm:p-2 rounded-b-lg">
+            <div className="flex flex-wrap justify-between items-end gap-1">
+              <div className="flex items-center gap-1">
                 <AttachmentSelector
                   lang={lang}
                   onFileUpload={handlePaperclipClick}
@@ -364,7 +369,10 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
 
               <div className="flex items-center gap-2">
                 {(!prompt.trim() || isRecording) && (
-                  <Tooltip content={t('Use microphone')} placement="bottom">
+                  <Tooltip
+                    content={t('Speak to microphone')}
+                    placement="bottom"
+                  >
                     <Button
                       isIconOnly
                       color={isRecording ? 'primary' : 'default'}
@@ -383,45 +391,45 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                   </Tooltip>
                 )}
 
-                {canSubmit && (
-                  <ButtonGroup variant="flat">
-                    {selectedAgent?.id === 'devs' && onSubmitTask && (
-                      <Tooltip content={t('Send prompt')} placement="bottom">
-                        <Button
-                          data-testid="submit-button"
-                          // isIconOnly
-                          disabled={props.isSending}
-                          color={!prompt.trim() ? 'default' : 'primary'}
-                          radius="md"
-                          variant="solid"
-                          size="sm"
-                          isLoading={props.isSending}
-                          onPress={onSubmitTask}
-                        >
-                          <Icon name="ArrowRight" size="sm" />
-                        </Button>
-                      </Tooltip>
-                    )}
+                <ButtonGroup variant="flat">
+                  {selectedAgent?.id === 'devs' && onSubmitTask && (
+                    <Tooltip content={t('Send prompt')} placement="bottom">
+                      <Button
+                        data-testid="submit-button"
+                        isIconOnly={isSmallWidth()}
+                        disabled={props.isSending}
+                        color={!prompt.trim() ? 'default' : 'primary'}
+                        radius="md"
+                        variant="solid"
+                        size="sm"
+                        isDisabled={!canSubmit}
+                        isLoading={props.isSending}
+                        onPress={onSubmitTask}
+                      >
+                        <Icon name="ArrowRight" size="sm" />
+                      </Button>
+                    </Tooltip>
+                  )}
 
-                    {selectedAgent?.id !== 'devs' && onSubmitToAgent && (
-                      <Tooltip content={t('Send prompt')} placement="bottom">
-                        <Button
-                          data-testid="submit-agent-button"
-                          // isIconOnly
-                          disabled={props.isSending}
-                          color={!prompt.trim() ? 'default' : 'primary'}
-                          radius="md"
-                          variant="solid"
-                          size="sm"
-                          isLoading={props.isSending}
-                          onPress={onSubmitToAgent}
-                        >
-                          <Icon name="ArrowRight" size="sm" />
-                        </Button>
-                      </Tooltip>
-                    )}
-                  </ButtonGroup>
-                )}
+                  {selectedAgent?.id !== 'devs' && onSubmitToAgent && (
+                    <Tooltip content={t('Send prompt')} placement="bottom">
+                      <Button
+                        data-testid="submit-agent-button"
+                        // isIconOnly
+                        disabled={props.isSending}
+                        color={!prompt.trim() ? 'default' : 'primary'}
+                        radius="md"
+                        variant="solid"
+                        size="sm"
+                        isDisabled={!canSubmit}
+                        isLoading={props.isSending}
+                        onPress={onSubmitToAgent}
+                      >
+                        <Icon name="ArrowRight" size="sm" />
+                      </Button>
+                    </Tooltip>
+                  )}
+                </ButtonGroup>
               </div>
             </div>
           </div>

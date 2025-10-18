@@ -51,7 +51,7 @@ export const fr: I18n = {
   'Upload new file': 'Télécharger un nouveau fichier',
   'Choose from knowledge base': 'Choisir dans la base de connaissances',
   'Drop files here…': 'Déposez des fichiers ici…',
-  'Use microphone': 'Utiliser le microphone',
+  'Speak to microphone': 'Dicter au microphone',
   'Send prompt': 'Envoyer le prompt',
   'Select an agent': 'Sélectionner un agent',
   'Select a model': 'Sélectionner un modèle',

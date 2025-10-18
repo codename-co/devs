@@ -157,6 +157,7 @@ export const Icons = {
   MoreHoriz: IconoirIcons.MoreHoriz,
   MoreVert: IconoirIcons.MoreVert,
   MusicNoteSolid: IconoirIcons.MusicNoteSolid,
+  NavArrowDown: IconoirIcons.NavArrowDown,
   OpenInBrowser: IconoirIcons.OpenInBrowser,
   Page: IconoirIcons.Page,
   PagePlus: IconoirIcons.PagePlus,

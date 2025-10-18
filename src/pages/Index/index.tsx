@@ -294,8 +294,8 @@ export const IndexPage = () => {
         <motion.div {...motionVariants.agentSection}>
           <Section
             mainClassName="bg-default-50"
-            className="@container"
             size={7}
+            className="@container"
           >
             {/* Use Cases Section */}
             {!isLoadingAgents && (
@@ -304,7 +304,7 @@ export const IndexPage = () => {
                   <Title level={3} size="lg">
                     {t('Try these examples')}
                   </Title>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mx-auto">
+                  <div className="grid grid-cols-1 @xl:grid-cols-2 @4xl:grid-cols-3 gap-4 mx-auto">
                     {usecases.map(({ agent, examples }) =>
                       examples.map((example) => (
                         <Card
@@ -352,7 +352,7 @@ export const IndexPage = () => {
                   {/* <Title level={3} size="lg" className="text-gray-600">
                 {t('Agents')}
               </Title> */}
-                  <div className="grid grid-cols-2 @sm:grid-cols-3 @md:grid-cols-4 @lg:grid-cols-6 gap-3">
+                  <div className="grid grid-cols-2 @md:grid-cols-3 @xl:grid-cols-4 @4xl:grid-cols-6 gap-3">
                     {agents.map((agent) => (
                       <AgentCard
                         key={agent.id}

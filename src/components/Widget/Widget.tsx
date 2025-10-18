@@ -128,7 +128,9 @@ export const Widget = ({
     }
 
     const Fallback = () => (
-      <div className="p-4 text-center text-default-500">{t('Loading…')}</div>
+      <div className="p-4 text-center text-sm text-default-500">
+        {t('Loading…')}
+      </div>
     )
 
     // Render based on type

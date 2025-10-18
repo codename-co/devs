@@ -138,6 +138,7 @@ export function MethodologiesPage() {
                           type="diagram"
                           language="mermaid"
                           code={
+                            methodology.metadata.diagram ??
                             // Generate Mermaid diagram
                             new MethodologyMermaidGenerator(methodology, {
                               includeNotes: false,
@@ -150,7 +151,7 @@ export function MethodologiesPage() {
                           showTitle={false}
                           showActions={false}
                           showShadows={true}
-                          className="hidden md:block max-h-240 w-32 h-32"
+                          className="hidden md:block @xl/main:block max-h-240 w-32 h-32 select-none"
                         />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">

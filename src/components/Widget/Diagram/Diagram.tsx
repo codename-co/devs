@@ -56,7 +56,7 @@ const useMermaid = (code: string) => {
     }
 
     renderMermaid()
-  }, [code])
+  }, [code, isDark])
 
   return { diagramId: diagramIdRef.current, svg }
 }

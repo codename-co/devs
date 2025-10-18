@@ -93,7 +93,7 @@ i18n:
       - id: character-development
         title: Développement de personnage
         prompt: >
-          Développer des personnages convaincants pour un roman de fiction historique se déroulant dans l'Italie de la Renaissance. Incluez des histoires, des motivations et des arcs de personnages.
+          Développe des personnages convaincants pour un roman de fiction historique se déroulant dans l'Italie de la Renaissance. Inclus des histoires, des motivations et des arcs de personnages.
   ko:
     name: 윌리엄 셰익스피어
     desc: 극작가, 시인, 영어의 대가

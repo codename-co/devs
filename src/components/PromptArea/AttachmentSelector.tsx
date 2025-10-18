@@ -83,13 +83,13 @@ export function AttachmentSelector({
     const items = [
       <DropdownItem
         key="upload"
-        startContent={<Icon name="Upload" size="sm" />}
+        startContent={<Icon name="Attachment" size="sm" />}
       >
         {t('Upload new file')}
       </DropdownItem>,
       <DropdownItem
         key="knowledge"
-        startContent={<Icon name="Database" size="sm" />}
+        startContent={<Icon name="Brain" size="sm" />}
         onPress={loadKnowledgeItems}
       >
         {t('Choose from knowledge base')}
@@ -109,7 +109,6 @@ export function AttachmentSelector({
       items.push(
         <DropdownItem key="empty" isDisabled>
           <div className="flex items-center gap-2 text-default-500 pl-4">
-            <Icon name="Folder" size="sm" />
             No files in knowledge base
           </div>
         </DropdownItem>,
@@ -167,10 +166,13 @@ export function AttachmentSelector({
   )
 
   return (
-    <Dropdown className="bg-white dark:bg-default-50 dark:text-white">
+    <Dropdown
+      placement="bottom-start"
+      className="bg-white dark:bg-default-50 dark:text-white"
+    >
       <DropdownTrigger>
-        <Button isIconOnly radius="full" variant="light" size="sm">
-          <Icon name="Attachment" size="sm" />
+        <Button isIconOnly radius="md" variant="bordered" size="sm">
+          <Icon name="Plus" />
         </Button>
       </DropdownTrigger>
       <DropdownMenu

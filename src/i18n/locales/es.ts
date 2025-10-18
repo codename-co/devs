@@ -51,7 +51,7 @@ export const es: I18n = {
   'Upload new file': 'Subir nuevo archivo',
   'Choose from knowledge base': 'Elegir de la base de conocimientos',
   'Drop files here…': 'Suelta archivos aquí…',
-  'Use microphone': 'Usar micrófono',
+  'Speak to microphone': 'Hablar al micrófono',
   'Send prompt': 'Enviar prompt',
   'Select an agent': 'Seleccionar un agente',
   'Select a model': 'Seleccionar un modelo',

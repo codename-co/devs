@@ -12,6 +12,7 @@ import {
   Dropdown,
   Select,
   SelectItem,
+  DropdownSection,
 } from '@heroui/react'
 
 import { Lang, languages, useI18n, useUrl } from '@/i18n'
@@ -222,7 +223,7 @@ const AgentList = () => {
 
 const BackDrop = () => (
   <div
-    className="fixed inset-0 bg-black opacity-30 -z-1 pointer-events-auto"
+    className="fixed inset-0 bg-black opacity-40 dark:opacity-70 -z-1 pointer-events-auto"
     onClick={userSettings.getState().toggleDrawer}
   />
 )
@@ -482,13 +483,27 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
 
   return (
     <div
-      className={`w-64 bg-gray-50 dark:bg-content1 p-4 border-r border-default-200 dark:border-default-300 h-screen flex flex-col ${className}`}
+      className={`w-64 bg-gray-50 dark:bg-content1 p-3 border-r border-default-200 dark:border-default-300 h-screen flex flex-col ${className}`}
     >
       <ScrollShadow
         hideScrollBar
-        className="pointer-events-auto flex flex-col overflow-y-auto flex-1"
+        className="pointer-events-auto flex flex-col overflow-y-auto flex-1 p-0.5"
       >
-        <div className="mb-2 flex items-center justify-between ml-2">
+        <div className="mb-3.5 flex items-center p-0.5">
+          {/* <Tooltip content={t('Collapse sidebar')} placement="right"> */}
+          <Button
+            data-testid="menu-button-collapse"
+            isIconOnly
+            variant="light"
+            onPress={() => userSettings.getState().toggleDrawer()}
+            aria-label={t('Collapse sidebar')}
+          >
+            <Icon
+              name="SidebarCollapse"
+              className="opacity-40 dark:opacity-60"
+            />
+          </Button>
+          {/* </Tooltip> */}
           <Title
             level={3}
             as="div"
@@ -498,20 +513,6 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
           >
             {customPlatformName || PRODUCT.displayName}
           </Title>
-          <Tooltip content={t('Collapse sidebar')} placement="right">
-            <Button
-              data-testid="menu-button-collapse"
-              isIconOnly
-              variant="light"
-              onPress={() => userSettings.getState().toggleDrawer()}
-              aria-label={t('Collapse sidebar')}
-            >
-              <Icon
-                name="SidebarCollapse"
-                className="opacity-40 dark:opacity-60"
-              />
-            </Button>
-          </Tooltip>
         </div>
 
         {/* Navigation */}
@@ -522,7 +523,9 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                 href={url('')}
                 color="primary"
                 className="dark:text-gray-200 dark:hover:text-primary-500"
-                startContent={<Icon name="ChatPlusIn" />}
+                startContent={
+                  <Icon name="ChatPlusIn" className="text-primary" />
+                }
                 textValue={t('New chat')}
               >
                 {t('New chat')}
@@ -533,31 +536,31 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                 href={url('/agents')}
                 color="warning"
                 className="dark:text-gray-200 dark:hover:text-warning-500"
-                startContent={<Icon name="Sparks" />}
-                endContent={
-                  <Tooltip content={t('New Agent')} placement="right">
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      className="inline-flex items-center justify-center w-6 h-6 rounded-small bg-warning/20 text-warning hover:bg-warning/30 cursor-pointer transition-colors"
-                      aria-label={t('New Agent')}
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        navigate(url('/agents/new'))
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          navigate(url('/agents/new'))
-                        }
-                      }}
-                    >
-                      <Icon name="Plus" />
-                    </span>
-                  </Tooltip>
-                }
+                startContent={<Icon name="Sparks" className="text-warning" />}
+                // endContent={
+                //   <Tooltip content={t('New Agent')} placement="right">
+                //     <span
+                //       role="button"
+                //       tabIndex={0}
+                //       className="inline-flex items-center justify-center w-6 h-6 rounded-small bg-warning/20 text-warning hover:bg-warning/30 cursor-pointer transition-colors"
+                //       aria-label={t('New Agent')}
+                //       onClick={(e) => {
+                //         e.preventDefault()
+                //         e.stopPropagation()
+                //         navigate(url('/agents/new'))
+                //       }}
+                //       onKeyDown={(e) => {
+                //         if (e.key === 'Enter' || e.key === ' ') {
+                //           e.preventDefault()
+                //           e.stopPropagation()
+                //           navigate(url('/agents/new'))
+                //         }
+                //       }}
+                //     >
+                //       <Icon name="Plus" />
+                //     </span>
+                //   </Tooltip>
+                // }
                 textValue={t('Agents')}
               >
                 {t('Agents')}
@@ -565,69 +568,74 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
               <ListboxItem
                 href={url('/methodologies')}
                 color="success"
-                startContent={<Icon name="Strategy" />}
-                endContent={
-                  <Tooltip content={t('New Methodology')} placement="right">
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      className="inline-flex items-center justify-center w-6 h-6 rounded-small bg-success/20 text-success hover:bg-success/30 cursor-pointer transition-colors"
-                      aria-label={t('New Methodology')}
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        navigate(url('/methodologies/new'))
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          navigate(url('/methodologies/new'))
-                        }
-                      }}
-                    >
-                      <Icon name="Plus" />
-                    </span>
-                  </Tooltip>
-                }
+                startContent={<Icon name="Strategy" className="text-success" />}
+                // endContent={
+                //   <Tooltip content={t('New Methodology')} placement="right">
+                //     <span
+                //       role="button"
+                //       tabIndex={0}
+                //       className="inline-flex items-center justify-center w-6 h-6 rounded-small bg-success/20 text-success hover:bg-success/30 cursor-pointer transition-colors"
+                //       aria-label={t('New Methodology')}
+                //       onClick={(e) => {
+                //         e.preventDefault()
+                //         e.stopPropagation()
+                //         navigate(url('/methodologies/new'))
+                //       }}
+                //       onKeyDown={(e) => {
+                //         if (e.key === 'Enter' || e.key === ' ') {
+                //           e.preventDefault()
+                //           e.stopPropagation()
+                //           navigate(url('/methodologies/new'))
+                //         }
+                //       }}
+                //     >
+                //       <Icon name="Plus" />
+                //     </span>
+                //   </Tooltip>
+                // }
               >
                 {t('Methodologies')}
               </ListboxItem>
               <ListboxItem
                 href={url('/tasks')}
                 color="secondary"
-                startContent={<Icon name="TriangleFlagTwoStripes" />}
-                endContent={
-                  <Tooltip content={t('New Task')} placement="right">
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      className="inline-flex items-center justify-center w-6 h-6 rounded-small bg-secondary/20 text-secondary hover:bg-secondary/30 cursor-pointer transition-colors"
-                      aria-label={t('New Task')}
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        navigate(url(''))
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          navigate(url(''))
-                        }
-                      }}
-                    >
-                      <Icon name="Plus" />
-                    </span>
-                  </Tooltip>
+                startContent={
+                  <Icon
+                    name="TriangleFlagTwoStripes"
+                    className="text-secondary"
+                  />
                 }
+                // endContent={
+                //   <Tooltip content={t('New Task')} placement="right">
+                //     <span
+                //       role="button"
+                //       tabIndex={0}
+                //       className="inline-flex items-center justify-center w-6 h-6 rounded-small bg-secondary/20 text-secondary hover:bg-secondary/30 cursor-pointer transition-colors"
+                //       aria-label={t('New Task')}
+                //       onClick={(e) => {
+                //         e.preventDefault()
+                //         e.stopPropagation()
+                //         navigate(url(''))
+                //       }}
+                //       onKeyDown={(e) => {
+                //         if (e.key === 'Enter' || e.key === ' ') {
+                //           e.preventDefault()
+                //           e.stopPropagation()
+                //           navigate(url(''))
+                //         }
+                //       }}
+                //     >
+                //       <Icon name="Plus" />
+                //     </span>
+                //   </Tooltip>
+                // }
               >
                 {t('Tasks')}
               </ListboxItem>
               <ListboxItem
                 href={url('/knowledge')}
                 color="danger"
-                startContent={<Icon name="Brain" />}
+                startContent={<Icon name="Brain" className="text-danger" />}
               >
                 {t('Knowledge')}
               </ListboxItem>
@@ -670,14 +678,6 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
             >
               {t('Conversations')}
             </ListboxItem>
-            <ListboxItem
-              className="dark:text-gray-200 dark:hover:text-grey-500"
-              href={url('/settings')}
-              startContent={<Icon name="Settings" />}
-              textValue={t('Settings')}
-            >
-              {t('Settings')}
-            </ListboxItem>
           </Listbox>
 
           <AgentList />
@@ -698,72 +698,99 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
       </ScrollShadow>
 
       {/* Bottom navigation */}
-      <nav className="pointer-events-auto w-full flex flex-row mt-4 ml-2 items-center">
+      <nav className="pointer-events-auto w-full flex flex-row mt-4 items-center">
         {/* Progress indicator and Organization/Product name at bottom */}
         <AboutModal
           isOpen={showAboutModal}
           onClose={() => setShowAboutModal(false)}
         />
-        <span className=" w-full" aria-label={PRODUCT.name}>
-          <Title
-            as="div"
-            size="lg"
-            className="text-default-400 dark:text-default-500 flex items-center gap-2"
-            aria-label={PRODUCT.name}
-          >
-            <ProgressIndicator />
-            {PRODUCT.displayName}
-          </Title>
-        </span>
+
         {/* Quick Actions Menu */}
-        <Dropdown placement="top-end">
+        <Dropdown placement="top" aria-label={PRODUCT.name}>
           <DropdownTrigger>
             <Button
-              isIconOnly
-              startContent={
+              endContent={
                 <Tooltip content={t('Quick Actions')} placement="top-end">
-                  <Icon name="Menu" />
+                  <Icon
+                    name="NavArrowDown"
+                    className="opacity-40 dark:opacity-60 -mr-3"
+                  />
                 </Tooltip>
               }
-              size="sm"
+              size="lg"
               variant="light"
-              className="opacity-40 dark:opacity-60"
+              className="w-full justify-between"
               aria-label={t('Quick Actions')}
-            />
+            >
+              <Title
+                as="div"
+                size="lg"
+                className="text-default-400 dark:text-default-500 flex items-center gap-2 -ml-3"
+                aria-label={PRODUCT.name}
+              >
+                <ProgressIndicator />
+                {PRODUCT.displayName}
+              </Title>
+            </Button>
           </DropdownTrigger>
           <DropdownMenu aria-label={t('Quick Actions')}>
-            <DropdownItem key="about" onClick={() => setShowAboutModal(true)}>
-              {t('About')}
-            </DropdownItem>
+            <DropdownSection showDivider>
+              <DropdownItem
+                key="about"
+                startContent={<Icon name="Devs" size="sm" color="grey" />}
+                onClick={() => setShowAboutModal(true)}
+              >
+                {t('About')}
+              </DropdownItem>
+              <DropdownItem
+                key="settings"
+                href={url('/settings')}
+                startContent={<Icon name="Settings" size="sm" />}
+              >
+                {t('Settings')}
+              </DropdownItem>
+              <DropdownItem
+                key="open"
+                startContent={<Icon name="GitHub" size="sm" />}
+                endContent={<Icon name="ArrowRight" size="sm" color="grey" />}
+                href="https://github.com/codename-co/devs"
+                hrefLang="en"
+                target="_blank"
+                onClick={() => {
+                  window.open('https://github.com/codename-co/devs', '_blank')
+                }}
+              >
+                {t('Open Source')}
+              </DropdownItem>
+            </DropdownSection>
             <DropdownItem
               key="lang"
               closeOnSelect={false}
               // startContent={<Icon name="Language" />}
-              shortcut={
-                <Select
-                  selectedKeys={[lang]}
-                  onSelectionChange={(keys) => {
-                    const selectedLang = Array.from(keys)[0] as Lang
-                    if (selectedLang && selectedLang !== lang) {
-                      handleLanguageChange(selectedLang)
-                    }
-                  }}
-                  className="min-w-30"
-                  size="sm"
-                  variant="underlined"
-                >
-                  {Object.entries(languages).map(([key, name]) => (
-                    <SelectItem key={key} textValue={name}>
-                      {name}
-                    </SelectItem>
-                  ))}
-                </Select>
-              }
               onPress={() => {
                 setLanguage(lang === 'en' ? 'es' : 'en')
               }}
             >
-              {t('Language')}
+              <Select
+                selectedKeys={[lang]}
+                onSelectionChange={(keys) => {
+                  const selectedLang = Array.from(keys)[0] as Lang
+                  if (selectedLang && selectedLang !== lang) {
+                    handleLanguageChange(selectedLang)
+                  }
+                }}
+                classNames={{
+                  mainWrapper: '-ml-0.5',
+                }}
+                size="sm"
+                variant="underlined"
+              >
+                {Object.entries(languages).map(([key, name]) => (
+                  <SelectItem key={key} textValue={name}>
+                    {name}
+                  </SelectItem>
+                ))}
+              </Select>
             </DropdownItem>
             <DropdownItem
               key="theme"

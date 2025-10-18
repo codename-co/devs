@@ -116,7 +116,7 @@ export class MethodologyMermaidGenerator {
 
     // Process each phase
     phaseOrder.forEach((phaseId, index) => {
-      this.generatePhase(phaseId)
+      this.generatePhase(phaseId, index)
 
       // Add transition to next phase or end
       if (index < phaseOrder.length - 1) {
@@ -192,7 +192,7 @@ export class MethodologyMermaidGenerator {
 
     // Generate pre-loop phases
     preLoopPhases.forEach((phaseId, index) => {
-      this.generatePhase(phaseId)
+      this.generatePhase(phaseId, index)
 
       if (index < preLoopPhases.length - 1) {
         // Connect to next pre-loop phase
@@ -215,7 +215,7 @@ export class MethodologyMermaidGenerator {
 
       loop.phases.forEach((phaseId, index) => {
         if (!this.processedPhases.has(phaseId)) {
-          this.generatePhase(phaseId)
+          this.generatePhase(phaseId, index)
         }
 
         // Add transitions within loop
@@ -279,7 +279,7 @@ export class MethodologyMermaidGenerator {
 
     // Generate post-loop phases
     postLoopPhases.forEach((phaseId, index) => {
-      this.generatePhase(phaseId)
+      this.generatePhase(phaseId, index)
 
       if (index < postLoopPhases.length - 1) {
         // Connect to next post-loop phase
@@ -321,12 +321,12 @@ export class MethodologyMermaidGenerator {
 
     // Sequential phases before parallel
     let reachedParallel = false
-    for (const phaseId of phaseOrder) {
+    for (const [index, phaseId] of phaseOrder.entries()) {
       const phase = this.getPhase(phaseId)
       if (!phase) continue
 
       if (!phase.parallelizable && !reachedParallel) {
-        this.generatePhase(phaseId)
+        this.generatePhase(phaseId, index)
 
         const nextPhaseId = phaseOrder[phaseOrder.indexOf(phaseId) + 1]
         if (nextPhaseId) {
@@ -344,7 +344,7 @@ export class MethodologyMermaidGenerator {
           }
         }
       } else if (phase.parallelizable) {
-        this.generatePhase(phaseId)
+        this.generatePhase(phaseId, index)
         this.addLine(`fork_parallel --> ${this.getPhaseAlias(phaseId)}`)
         this.addLine(`${this.getPhaseAlias(phaseId)} --> join_parallel`)
       }
@@ -403,7 +403,7 @@ export class MethodologyMermaidGenerator {
         this.generateCompositePhase(phase, children)
       } else {
         // Simple state
-        this.generatePhase(phase.id)
+        this.generatePhase(phase.id, index)
       }
 
       // Transition to next
@@ -462,7 +462,7 @@ export class MethodologyMermaidGenerator {
   /**
    * Generate a single phase
    */
-  private generatePhase(phaseId: string): void {
+  private generatePhase(phaseId: string, index: number): void {
     const phase = this.getPhase(phaseId)
     if (!phase || this.processedPhases.has(phaseId)) return
 
@@ -470,7 +470,7 @@ export class MethodologyMermaidGenerator {
 
     // Define state with name
     this.addLine(
-      `state "<a href='#phase-${phase.name.toLowerCase().replace(/\s+/g, '-')}'>${phase.name}</a>" as ${alias}`,
+      `state "<a href='#phase-${index}-${phase.name.toLowerCase().replace(/\s+/g, '-')}'>${phase.name}</a>" as ${alias}`,
     )
 
     // Add description as note

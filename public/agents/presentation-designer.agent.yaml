@@ -254,7 +254,7 @@ i18n:
         title: Analyse SWOT de Boulangerie
         prompt: >
           Génère une présentation complète d'analyse SWOT pour une boulangerie
-          ouvrant à Manhattan. Inclue des études de marché, un paysage
+          ouvrant à Manhattan. Inclues des études de marché, un paysage
           concurrentiel et des recommandations stratégiques.
       - id: pitch-deck
         title: Pitch Deck pour Startup

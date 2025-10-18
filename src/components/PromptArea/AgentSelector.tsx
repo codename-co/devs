@@ -5,6 +5,7 @@ import { Icon } from '../Icon'
 
 import { useI18n, type Lang } from '@/i18n'
 import { type Agent } from '@/types'
+import { isSmallWidth } from '@/lib/device'
 
 interface AgentSelectorProps {
   lang: Lang
@@ -29,12 +30,14 @@ export function AgentSelector({
       }}
     >
       <Dropdown
-        className="bg-white dark:bg-default-50 dark:text-white"
+        className="bg-white dark:bg-default-50 dark:text-white max-w-[94dvw]"
         isDisabled={disabled}
+        placement="bottom-start"
       >
         <DropdownTrigger>
           <Button
             data-testid="agent-picker"
+            isIconOnly={isSmallWidth()}
             radius="full"
             variant="light"
             size="sm"

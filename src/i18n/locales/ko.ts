@@ -51,7 +51,7 @@ export const ko: I18n = {
   'Upload new file': '새 파일 업로드',
   'Choose from knowledge base': '지식 베이스에서 선택',
   'Drop files here…': '여기에 파일을 드롭하세요…',
-  'Use microphone': '마이크 사용',
+  'Speak to microphone': '마이크에 대고 말하기',
   'Send prompt': '프롬프트 전송',
   'Select an agent': '에이전트 선택',
   'Select a model': '모델 선택',

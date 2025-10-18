@@ -77,6 +77,7 @@ export interface MethodologyMetadata {
   domains?: string[]
   complexity?: ComplexityLevel
   tags?: string[]
+  diagram?: string
   i18n?: Record<string, { name?: string; title?: string; description?: string }>
 }
 

@@ -68,6 +68,10 @@ export const isSmallHeight = () => {
   return window.innerHeight < 500
 }
 
+export const isSmallWidth = () => {
+  return window.innerWidth < 500
+}
+
 /**
  * Check if the device is low-end (less than 2GB RAM or a mobile device).
  * @returns {boolean} True if the device is low-end, false otherwise.

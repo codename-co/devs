@@ -49,7 +49,7 @@ export const en = [
   'Upload new file',
   'Choose from knowledge base',
   'Drop files here…',
-  'Use microphone',
+  'Speak to microphone',
   'Send prompt',
   'Select an agent',
   'Select a model',

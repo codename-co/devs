@@ -42,7 +42,10 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
         base: 'pointer-events-none',
       }}
     >
-      <Dropdown className="bg-white dark:bg-default-50 dark:text-white">
+      <Dropdown
+        placement="bottom-start"
+        className="bg-white dark:bg-default-50 dark:text-white"
+      >
         <DropdownTrigger>
           <Button
             radius="full"
@@ -56,7 +59,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
               />
             }
           >
-            <span className="text-xs truncate max-w-16 md:max-w-48">
+            <span className="text-xs truncate max-w-22 md:max-w-48">
               {displayModelName(selectedCredential?.model) ||
                 t('Select a model')}
             </span>

@@ -101,15 +101,19 @@ export const MethodologyPage = () => {
 
         setMethodology(data)
 
-        // Generate Mermaid diagram
-        const generator = new MethodologyMermaidGenerator(data, {
-          includeNotes: false,
-          includeAgentRoles: true,
-          includeArtifacts: true,
-          showTaskDetails: false,
-        })
-        const code = generator.generate()
-        setDiagramCode(code)
+        if (data.metadata.diagram) {
+          setDiagramCode(data.metadata.diagram)
+        } else {
+          // Generate Mermaid diagram
+          const generator = new MethodologyMermaidGenerator(data, {
+            includeNotes: false,
+            includeAgentRoles: true,
+            includeArtifacts: true,
+            showTaskDetails: false,
+          })
+          const code = generator.generate()
+          setDiagramCode(code)
+        }
       } catch (error) {
         console.error('Failed to load methodology:', error)
         errorToast(t('Failed to load methodology'))
@@ -237,7 +241,7 @@ export const MethodologyPage = () => {
       <Tabs
         aria-label="Methodology sections"
         variant="underlined"
-        color="primary"
+        // color="primary
         classNames={{
           base: 'flex place-self-center w-full max-w-4xl -mb-3',
           tab: 'py-6',
@@ -277,8 +281,8 @@ export const MethodologyPage = () => {
               >
                 {methodology.phases.map((phase, index) => (
                   <AccordionItem
-                    key={`phase-${phase.name.toLowerCase().replace(/\s+/g, '-')}`}
-                    id={`phase-${phase.name.toLowerCase().replace(/\s+/g, '-')}`}
+                    key={`phase-${index}-${phase.name.toLowerCase().replace(/\s+/g, '-')}`}
+                    id={`phase-${index}-${phase.name.toLowerCase().replace(/\s+/g, '-')}`}
                     aria-label={phase.name}
                     title={phase.name}
                     subtitle={`${phase.tasks.length} ${
@@ -288,7 +292,7 @@ export const MethodologyPage = () => {
                       content: 'pl-4',
                     }}
                     startContent={
-                      <span className="text-sm font-mono text-default-400">
+                      <span className="text-sm font-mono text-default-400 mx-4">
                         {index + 1}
                       </span>
                     }
@@ -296,6 +300,23 @@ export const MethodologyPage = () => {
                     {phase.description && (
                       <div className="mb-4">{phase.description}</div>
                     )}
+
+                    {/* Tasks */}
+                    <div className="mb-2">
+                      <p className="text-xs font-semibold text-default-500 mb-2">
+                        {t('tasks')}:
+                      </p>
+                      <ol className="ml-4 list-decimal">
+                        {phase.tasks?.map((task) => (
+                          <li key={task.id} className="py-2">
+                            <h4 className="">{task.title}</h4>
+                            <p className="text-sm text-default-600">
+                              {task.description}
+                            </p>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
 
                     <div className="flex gap-2 flex-wrap mb-4">
                       {phase.optional && (
@@ -503,23 +524,6 @@ export const MethodologyPage = () => {
                           </div>
                         </div>
                       )}
-
-                    {/* Tasks */}
-                    <div className="mb-2">
-                      <p className="text-xs font-semibold text-default-500 mb-2">
-                        {t('tasks')}:
-                      </p>
-                      <ol className="ml-4 list-decimal">
-                        {phase.tasks?.map((task) => (
-                          <li key={task.id} className="py-2">
-                            <h4 className="">{task.title}</h4>
-                            <p className="text-sm text-default-600">
-                              {task.description}
-                            </p>
-                          </li>
-                        ))}
-                      </ol>
-                    </div>
                   </AccordionItem>
                 ))}
               </Accordion>
