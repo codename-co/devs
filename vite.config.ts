@@ -8,6 +8,7 @@ import { createMpaPlugin, type Page } from 'vite-plugin-virtual-mpa'
 
 import { PRODUCT } from './src/config/product'
 import { defaultLang, type Lang, langs, meta } from './src/i18n'
+import { cacheVersionPlugin } from './src/lib/cache-version-plugin'
 
 // Dynamically list all pages with their full paths
 const pageFiles = globSync('*/index.{tsx,mdx}', { cwd: './src/pages' })
@@ -64,6 +65,7 @@ export default defineConfig({
       htmlMinify: true,
       pages,
     }),
+    cacheVersionPlugin(),
   ],
   resolve: {
     alias: {

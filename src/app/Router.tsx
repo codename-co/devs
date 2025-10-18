@@ -50,10 +50,10 @@ function Router() {
             key={path}
             path={path === 'index' ? undefined : path}
             element={
-              <I18nProvider>
+              <>
                 <Component />
                 <LocalLLMLoadingIndicator />
-              </I18nProvider>
+              </>
             }
             index={path === 'index'}
           />

@@ -1,6 +1,8 @@
 // Service Worker for LLM API proxy and caching
-const CACHE_NAME = 'devs-ai-v1'
-const API_CACHE_NAME = 'devs-api-cache-v1'
+const CACHE_VERSION = 'dev' // Will be replaced at build time
+const CACHE_NAME = 'devs-new-v1' // Will be replaced at build time
+const API_CACHE_NAME = 'devs-new-cache-v1' // Will be replaced at build time
+const TRANSFORMERS_CACHE_NAME = 'transformers-cache' // Persistent cache for HuggingFace models
 
 // LLM progress tracking
 let activeRequests = new Map()
@@ -18,8 +20,10 @@ let langfuseInitialized = false
 // Database helper functions for service worker
 async function openDatabase() {
   return new Promise((resolve, reject) => {
-    console.log('[SW-DB] 🗄️ Opening database: devs-ai-platform, version: 8')
-    const request = indexedDB.open('devs-ai-platform', 8)
+    console.log(
+      `[SW-DB] 🗄️ Opening database: ${Database.DB_NAME}, version: ${Database.DB_VERSION}`,
+    )
+    const request = indexedDB.open(Database.DB_NAME, Database.DB_VERSION)
 
     request.onerror = () => {
       console.error('[SW-DB] ❌ Database open error:', request.error)
@@ -259,12 +263,19 @@ self.addEventListener('install', (event) => {
 // Activate event - clean up old caches and initialize Langfuse
 self.addEventListener('activate', (event) => {
   console.log('[SW] ⚡ Activating service worker...')
+  console.log(`[SW] 🔖 Cache version: ${CACHE_VERSION}`)
+
   event.waitUntil(
     Promise.all([
       caches.keys().then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
-            if (cacheName !== CACHE_NAME && cacheName !== API_CACHE_NAME) {
+            // Keep current version caches and transformers cache
+            if (
+              cacheName !== CACHE_NAME &&
+              cacheName !== API_CACHE_NAME &&
+              cacheName !== TRANSFORMERS_CACHE_NAME
+            ) {
               console.log('[SW] 🗑️ Deleting old cache:', cacheName)
               return caches.delete(cacheName)
             }
@@ -276,6 +287,15 @@ self.addEventListener('activate', (event) => {
         console.log(
           '[SW] 🎯 Langfuse initialization completed during activation',
         )
+      }),
+      // Notify clients about the new version
+      self.clients.matchAll().then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({
+            type: 'SW_ACTIVATED',
+            version: CACHE_VERSION,
+          })
+        })
       }),
     ]),
   )
@@ -393,6 +413,16 @@ self.addEventListener('message', async (event) => {
       enabled: !!langfuseConfig?.enabled,
       configured: !!langfuseConfig,
     })
+  } else if (event.data.type === 'GET_SW_VERSION') {
+    // Send current service worker version
+    event.source.postMessage({
+      type: 'SW_VERSION',
+      version: CACHE_VERSION,
+    })
+  } else if (event.data.type === 'SKIP_WAITING') {
+    // Force service worker to activate immediately
+    console.log('[SW] ⏭️ Skip waiting requested')
+    self.skipWaiting()
   }
 })
 
@@ -416,7 +446,7 @@ self.addEventListener('fetch', (event) => {
 
     event.respondWith(
       (async () => {
-        const cache = await caches.open('transformers-cache')
+        const cache = await caches.open(TRANSFORMERS_CACHE_NAME)
 
         // Try to get from cache first
         const cachedResponse = await cache.match(event.request)
@@ -544,11 +574,56 @@ self.addEventListener('fetch', (event) => {
       return
     }
 
-    // For production assets and non-dev resources, use cache-first strategy
+    // Determine caching strategy based on file type
+    const isHTMLRequest =
+      url.pathname.endsWith('.html') ||
+      url.pathname.endsWith('/') ||
+      !url.pathname.includes('.')
+
+    if (isHTMLRequest) {
+      // Network-first for HTML to ensure users get latest version
+      event.respondWith(
+        fetch(event.request)
+          .then((response) => {
+            // Cache the new version
+            if (response.ok) {
+              const responseToCache = response.clone()
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(event.request, responseToCache)
+              })
+            }
+            return response
+          })
+          .catch(() => {
+            // Fallback to cache if offline
+            return caches.match(event.request)
+          }),
+      )
+      return
+    }
+
+    // For assets (JS, CSS, images), use stale-while-revalidate
     event.respondWith(
-      caches
-        .match(event.request)
-        .then((response) => response || fetch(event.request)),
+      caches.match(event.request).then((cachedResponse) => {
+        const fetchPromise = fetch(event.request)
+          .then((networkResponse) => {
+            // Update cache in background
+            if (networkResponse.ok) {
+              const responseToCache = networkResponse.clone()
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(event.request, responseToCache)
+              })
+            }
+            return networkResponse
+          })
+          .catch(() => {
+            // If network fails, we already have cached version
+            return cachedResponse
+          })
+
+        // Return cached version immediately, but update cache in background
+        return cachedResponse || fetchPromise
+      }),
     )
     return
   }

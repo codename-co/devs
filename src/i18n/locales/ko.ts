@@ -57,6 +57,12 @@ export const ko: I18n = {
   'Select a model': '모델 선택',
   'Add a model': '모델 추가',
 
+  // Service worker
+  'New features are waiting': '새로운 기능이 기다리고 있습니다',
+  '{product} v{version} is ready to be installed.':
+    '{product} v{version} 설치 준비 완료.',
+  Upgrade: '업그레이드',
+
   // Page: /404
   'Page not found': '페이지를 찾을 수 없습니다',
 

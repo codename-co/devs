@@ -57,6 +57,12 @@ export const fr: I18n = {
   'Select a model': 'Sélectionner un modèle',
   'Add a model': 'Ajouter un modèle',
 
+  // Service worker
+  'New features are waiting': 'De nouvelles fonctionnalités vous attendent',
+  '{product} v{version} is ready to be installed.':
+    '{product} v{version} est prêt à être installé.',
+  Upgrade: 'Mettre à jour',
+
   // Page: /404
   'Page not found': 'Page non trouvée',
 

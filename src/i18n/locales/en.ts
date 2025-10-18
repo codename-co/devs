@@ -55,6 +55,11 @@ export const en = [
   'Select a model',
   'Add a model',
 
+  // Service worker
+  'New features are waiting',
+  '{product} v{version} is ready to be installed.',
+  'Upgrade',
+
   // Page: /404
   'Page not found',
 

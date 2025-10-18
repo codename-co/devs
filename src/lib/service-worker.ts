@@ -1,4 +1,5 @@
 import { LangfuseService } from './langfuse-service'
+import { swUpdateHandler } from './sw-update-handler'
 
 export class ServiceWorkerManager {
   private static registration: ServiceWorkerRegistration | null = null
@@ -13,10 +14,14 @@ export class ServiceWorkerManager {
 
     try {
       console.debug('[SW-MANAGER] 🚀 Registering service worker…')
-      this.registration = await navigator.serviceWorker.register('/sw.js', {
-        scope: '/',
-        updateViaCache: 'none', // Force check for updates
-      })
+
+      // Use the new update handler for registration
+      this.registration = await swUpdateHandler.initialize()
+
+      if (!this.registration) {
+        console.warn('[SW-MANAGER] ⚠️ Service worker registration returned null')
+        return
+      }
 
       console.log('[SW-MANAGER] ✅ Service Worker registered successfully:', {
         scope: this.registration.scope,
@@ -29,28 +34,18 @@ export class ServiceWorkerManager {
       console.debug('[SW-MANAGER] 🔧 Initializing Langfuse service…')
       await LangfuseService.initialize()
 
-      // Listen for updates
-      this.registration.addEventListener('updatefound', () => {
-        const newWorker = this.registration!.installing
-        if (newWorker) {
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'activated') {
-              console.log('Service Worker updated')
-              // Force page reload in development to use new service worker
-              if (process.env.NODE_ENV === 'development') {
-                window.location.reload()
-              }
-            }
-          })
-        }
-      })
-
-      // In development, check for updates immediately
+      // In development, check for updates more frequently
       if (process.env.NODE_ENV === 'development') {
-        this.registration.update()
+        // Check for updates every 10 seconds in development
+        setInterval(
+          () => {
+            swUpdateHandler.checkForUpdates()
+          },
+          10000,
+        )
       }
     } catch (error) {
-      console.error('Service Worker registration failed:', error)
+      console.error('[SW-MANAGER] ❌ Service Worker registration failed:', error)
     }
   }
 

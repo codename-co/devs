@@ -7,6 +7,8 @@ import { SecureStorage } from '@/lib/crypto'
 import { userSettings } from '@/stores/userStore'
 import { useArtifactStore } from '@/stores/artifactStore'
 import { useLLMModelStore } from '@/stores/llmModelStore'
+import { ServiceWorkerUpdatePrompt } from '@/components/ServiceWorkerUpdatePrompt'
+import { I18nProvider } from '@/i18n'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate()
@@ -73,9 +75,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <HeroUIProvider navigate={navigate} useHref={useHref}>
-      <main className="text-foreground bg-background min-h-screen">
-        {children}
-      </main>
+      <I18nProvider>
+        <main className="text-foreground bg-background min-h-screen">
+          {children}
+        </main>
+        <ServiceWorkerUpdatePrompt />
+      </I18nProvider>
     </HeroUIProvider>
   )
 }
