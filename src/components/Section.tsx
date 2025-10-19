@@ -18,7 +18,7 @@ export const Section = ({
   return (
     <section
       role="section"
-      className={cn('w-full p-6 lg:px-8 overflow-x-hidden', mainClassName)}
+      className={cn('w-full p-6 lg:px-8 overflow-hidden', mainClassName)}
       {...{ style }}
     >
       <div

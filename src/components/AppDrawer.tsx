@@ -253,7 +253,7 @@ export const AppDrawer = () => {
   return (
     <aside
       className={clsx(
-        'pointer-events-none flex-0 h-full md:h-screen z-20 fixed md:relative dark:bg-default-50',
+        'pointer-events-none flex-0 h-full md:h-screen z-200 fixed md:relative dark:bg-default-50',
       )}
     >
       <div
