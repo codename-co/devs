@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, createElement } from 'react'
 import { usePWAInstall } from './usePWAInstall'
 import { infoToast } from '@/lib/toast'
-import { Button, ToastProps } from '@heroui/react'
+import { ToastProps } from '@heroui/react'
 import { Icon } from '@/components'
 
 interface UsePWAInstallPromptOptions {
@@ -33,7 +33,7 @@ interface UsePWAInstallPromptOptions {
  */
 export const usePWAInstallPrompt = (options: UsePWAInstallPromptOptions) => {
   const {
-    enabled = true,
+    enabled = false,
     title,
     description,
     buttonLabel,
@@ -79,8 +79,6 @@ export const usePWAInstallPrompt = (options: UsePWAInstallPromptOptions) => {
       }
     }
 
-    console.log('CLOZN  ')
-
     infoToast(title, description, {
       'aria-label': 'PWA Install Prompt',
       timeout,
@@ -88,16 +86,11 @@ export const usePWAInstallPrompt = (options: UsePWAInstallPromptOptions) => {
         dismissInstallPrompt()
       },
       placement,
-      endContent: createElement(Button, {
-        color: 'default',
-        size: 'sm',
-        startContent: createElement(Icon, {
-          name: 'CloudDownload',
-          size: 'md',
-        }),
-        onPress: handleInstallClick,
-        children: buttonLabel,
+      icon: createElement(Icon, {
+        name: 'CloudDownload',
+        size: 'md',
       }),
+      onClick: handleInstallClick,
     })
   }, [
     showInstallPrompt,
