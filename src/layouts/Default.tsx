@@ -75,14 +75,14 @@ export default function DefaultLayout({
   }
   return (
     <div className="flex-grow w-full">
-      <div className="flex min-h-screen relative">
+      <div className="flex relative">
         <AppDrawer />
 
         <main
           role="main"
-          className="flex-1 flex flex-col h-screen overflow-y-auto w-full @container/main"
+          className="flex-1 flex flex-col overflow-y-auto w-full @container/main"
         >
-          <div className="h-full space-y space-y-8 relative bg-transparent">
+          <div className="space-y space-y-8 relative bg-transparent">
             {(header || showBackButton) && (
               <div
                 className={clsx(

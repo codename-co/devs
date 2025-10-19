@@ -76,7 +76,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <HeroUIProvider navigate={navigate} useHref={useHref}>
       <I18nProvider>
-        <main className="text-foreground bg-background min-h-screen">
+        <main className="text-foreground bg-background min-h-full">
           {children}
         </main>
         <ServiceWorkerUpdatePrompt />

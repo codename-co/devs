@@ -253,7 +253,7 @@ export const AppDrawer = () => {
   return (
     <aside
       className={clsx(
-        'pointer-events-none flex-0 h-screen z-20 fixed md:relative dark:bg-default-50',
+        'pointer-events-none flex-0 h-full md:h-screen z-20 fixed md:relative dark:bg-default-50',
       )}
     >
       <div
@@ -295,7 +295,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
 
   return (
     <div
-      className={`group w-18 p-2 lg:p-4 h-screen z-50 flex flex-col transition-all duration-200 border-r border-transparent hover:bg-gray-50 dark:hover:bg-content1 hover:border-default-200 ${className} hover:pointer-events-auto`}
+      className={`group w-18 p-2 lg:p-4 h-full z-50 flex flex-col transition-all duration-200 border-r border-transparent hover:bg-gray-50 dark:hover:bg-content1 hover:border-default-200 ${className} hover:pointer-events-auto`}
     >
       <div className="flex flex-col items-center overflow-y-auto overflow-x-hidden no-scrollbar">
         <Tooltip content={t('Expand sidebar')} placement="right">
@@ -483,7 +483,7 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
 
   return (
     <div
-      className={`w-64 bg-gray-50 dark:bg-content1 p-3 border-r border-default-200 dark:border-default-300 h-screen flex flex-col ${className}`}
+      className={`w-64 bg-gray-50 dark:bg-content1 p-3 border-r border-default-200 dark:border-default-300 h-full flex flex-col ${className}`}
     >
       <ScrollShadow
         hideScrollBar

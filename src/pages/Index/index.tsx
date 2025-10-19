@@ -223,7 +223,7 @@ export const IndexPage = () => {
 
   return (
     <div
-      className="relative min-h-screen"
+      className="relative min-h-full"
       onDragEnter={dragHandlers.onDragEnter}
       onDragLeave={dragHandlers.onDragLeave}
       onDragOver={dragHandlers.onDragOver}
