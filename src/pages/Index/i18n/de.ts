@@ -8,7 +8,6 @@ export const de: I18n = {
     'Delegieren Sie komplexe Aufgaben an Ihre eigenen KI-Teams',
   'Failed to get response from LLM. Please try again later.':
     'LLM-Antwort fehlgeschlagen. Bitte versuchen Sie es später erneut.',
-  'Try these examples': 'Probieren Sie diese Beispiele',
 
   // Agent themes
   Writing: 'Schreiben',
@@ -16,4 +15,9 @@ export const de: I18n = {
   Life: 'Leben',
   Art: 'Kunst',
   Coding: 'Programmierung',
+
+  // PWA Install
+  'Install {productName}': '{productName} installieren',
+  'Install this app on your device for a better experience and offline access.':
+    'Installieren Sie diese App auf Ihrem Gerät für eine bessere Erfahrung und Offline-Zugriff.',
 } as const

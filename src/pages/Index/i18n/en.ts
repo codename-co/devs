@@ -2,7 +2,6 @@ export const en = [
   'Let your agents take it from here',
   'Delegate complex tasks to your own AI teams',
   'Failed to get response from LLM. Please try again later.',
-  'Try these examples',
 
   // Agent themes
   'Writing',
@@ -10,4 +9,8 @@ export const en = [
   'Life',
   'Art',
   'Coding',
+
+  // PWA Install
+  'Install {productName}',
+  'Install this app on your device for a better experience and offline access.',
 ] as const

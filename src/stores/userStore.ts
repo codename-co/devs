@@ -17,6 +17,7 @@ export interface UserSettings {
   platformName?: string
   backgroundImage?: string
   speechToTextEnabled: boolean
+  pwaInstallPromptDismissed: boolean
 }
 
 const defaultSettings: UserSettings = {
@@ -24,6 +25,7 @@ const defaultSettings: UserSettings = {
   language: 'en',
   isDrawerCollapsed: true,
   speechToTextEnabled: false,
+  pwaInstallPromptDismissed: false,
 }
 interface UserSettingsStore extends UserSettings {
   setTheme: (theme: ThemeMode) => void
@@ -32,6 +34,7 @@ interface UserSettingsStore extends UserSettings {
   setPlatformName: (platformName: string) => void
   setBackgroundImage: (backgroundImage: string | undefined) => void
   setSpeechToTextEnabled: (enabled: boolean) => void
+  setPwaInstallPromptDismissed: (dismissed: boolean) => void
   isDarkTheme: () => boolean
 }
 
@@ -48,6 +51,8 @@ export const userSettings = create<UserSettingsStore>()(
         set({ backgroundImage }),
       setSpeechToTextEnabled: (enabled: boolean) =>
         set({ speechToTextEnabled: enabled }),
+      setPwaInstallPromptDismissed: (dismissed: boolean) =>
+        set({ pwaInstallPromptDismissed: dismissed }),
       isDarkTheme: () => {
         const { theme } = get()
         if (theme === 'dark') return true
@@ -65,6 +70,7 @@ export const userSettings = create<UserSettingsStore>()(
         platformName: state.platformName,
         backgroundImage: state.backgroundImage,
         speechToTextEnabled: state.speechToTextEnabled,
+        pwaInstallPromptDismissed: state.pwaInstallPromptDismissed,
       }),
     },
   ),

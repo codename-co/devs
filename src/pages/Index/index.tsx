@@ -9,6 +9,7 @@ import { useTaskStore } from '@/stores/taskStore'
 import { errorToast } from '@/lib/toast'
 import { useBackgroundImage } from '@/hooks/useBackgroundImage'
 import { useEasySetup } from '@/hooks/useEasySetup'
+import { usePWAInstallPrompt } from '@/hooks/usePWAInstallPrompt'
 import {
   Alert,
   Button,
@@ -24,6 +25,7 @@ import { getAgentsByCategory } from '@/stores/agentStore'
 // import type { Methodology } from '@/types/methodology.types'
 import localeI18n from './i18n'
 import { agentThemeIcon, useCasesByThemes } from '@/lib/agents'
+import { PRODUCT } from '@/config/product'
 
 export const IndexPage = () => {
   const { lang, url, t } = useI18n(localeI18n)
@@ -41,6 +43,14 @@ export const IndexPage = () => {
   const { backgroundImage, backgroundLoaded, isDragOver, dragHandlers } =
     useBackgroundImage()
   const { hasSetupData, setupData, clearSetupData } = useEasySetup()
+
+  // PWA install prompt
+  usePWAInstallPrompt({
+    title: t('Install {productName}', { productName: PRODUCT.displayName }),
+    description: t(
+      'Install this app on your device for a better experience and offline access.',
+    ),
+  })
 
   // Load agents and methodologies on mount
   useEffect(() => {
@@ -288,145 +298,119 @@ export const IndexPage = () => {
           <motion.div {...motionVariants.agentSection}>
             {/* Use Cases Section */}
             {!isLoadingAgents && (
-              <motion.div {...motionVariants.usecases}>
-                <Container size={7} className="mt-0 sm:-mt-8">
-                  {/* <Title level={3} size="lg">
-                    {t('Try these examples')}
-                  </Title> */}
-                  <div className="flex gap-2 flex-wrap justify-center">
-                    {useCasesByThemes(agents).map(
-                      ({ theme, usecases }, index) => (
-                        <motion.div
-                          {...motionVariants.usecase}
-                          transition={{
-                            ...motionVariants.usecase.transition,
-                            delay: 0.7 + 0.06 * index,
-                          }}
-                          key={theme}
-                        >
-                          <Dropdown key={theme} placement="bottom-start">
-                            <DropdownTrigger>
-                              <Button
-                                variant="ghost"
-                                size="md"
-                                className="inline-flex justify-start"
+              <Container size={7} className="mt-0 sm:-mt-8">
+                <div className="flex gap-2 flex-wrap justify-center">
+                  {useCasesByThemes(agents).map(
+                    ({ theme, usecases }, index) => (
+                      <motion.div
+                        {...motionVariants.usecase}
+                        transition={{
+                          ...motionVariants.usecase.transition,
+                          delay: 0.7 + 0.06 * index,
+                        }}
+                        key={theme}
+                      >
+                        <Dropdown key={theme} placement="bottom-start">
+                          <DropdownTrigger>
+                            <Button
+                              variant="ghost"
+                              size="md"
+                              className="inline-flex justify-start"
+                              startContent={
+                                usecases[0]?.agent.icon && (
+                                  <Icon
+                                    name={(agentThemeIcon as any)[theme]}
+                                    size="lg"
+                                    className="text-default-500"
+                                  />
+                                )
+                              }
+                            >
+                              <span className="font-semibold">
+                                {t(theme as any)}
+                              </span>
+                            </Button>
+                          </DropdownTrigger>
+                          <DropdownMenu
+                            aria-label={`${theme} examples`}
+                            className="max-h-[70vh] overflow-y-auto"
+                          >
+                            {[
+                              <DropdownItem
+                                key="aa"
+                                className="py-2 text-default-500 !data-[hover=true]:bg-transparent"
                                 startContent={
                                   usecases[0]?.agent.icon && (
                                     <Icon
                                       name={(agentThemeIcon as any)[theme]}
-                                      size="lg"
-                                      className="text-default-500"
+                                      size="md"
+                                      className="text-default-00"
                                     />
                                   )
                                 }
+                                endContent={
+                                  <Icon
+                                    name="Xmark"
+                                    size="md"
+                                    className="text-default-500"
+                                  />
+                                }
                               >
-                                <span className="font-semibold">
+                                <span className="font-medium">
                                   {t(theme as any)}
                                 </span>
-                              </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu
-                              aria-label={`${theme} examples`}
-                              className="max-h-[70vh] overflow-y-auto"
-                            >
-                              {[
+                              </DropdownItem>,
+
+                              ...usecases.map((example) => (
                                 <DropdownItem
-                                  key="aa"
-                                  className="py-2 text-default-500 !data-[hover=true]:bg-transparent"
-                                  startContent={
-                                    usecases[0]?.agent.icon && (
-                                      <Icon
-                                        name={(agentThemeIcon as any)[theme]}
-                                        size="md"
-                                        className="text-default-00"
-                                      />
-                                    )
-                                  }
+                                  key={example.id}
                                   endContent={
                                     <Icon
-                                      name="Xmark"
+                                      name="NavArrowRight"
                                       size="md"
                                       className="text-default-500"
                                     />
                                   }
+                                  // description={
+                                  //   <span className="text-xs text-default-500 line-clamp-2">
+                                  //     {example.prompt}
+                                  //   </span>
+                                  // }
+                                  classNames={{
+                                    base: 'py-3',
+                                    title: 'font-medium',
+                                    description: 'text-xs',
+                                  }}
+                                  onPress={() => {
+                                    handleUseCaseClick(example)
+
+                                    // submit
+                                    setTimeout(() => {
+                                      const submitButton =
+                                        document.querySelector(
+                                          '#prompt-area [type="submit"]',
+                                        ) as HTMLButtonElement | null
+                                      submitButton?.click()
+                                    }, 150)
+                                  }}
+                                  onMouseEnter={() =>
+                                    handleUseCaseClick(example, false)
+                                  }
                                 >
-                                  <span className="font-medium">
-                                    {t(theme as any)}
-                                  </span>
-                                </DropdownItem>,
-
-                                ...usecases.map((example) => (
-                                  <DropdownItem
-                                    key={example.id}
-                                    endContent={
-                                      <Icon
-                                        name="NavArrowRight"
-                                        size="md"
-                                        className="text-default-500"
-                                      />
-                                    }
-                                    // description={
-                                    //   <span className="text-xs text-default-500 line-clamp-2">
-                                    //     {example.prompt}
-                                    //   </span>
-                                    // }
-                                    classNames={{
-                                      base: 'py-3',
-                                      title: 'font-medium',
-                                      description: 'text-xs',
-                                    }}
-                                    onPress={() => {
-                                      handleUseCaseClick(example)
-
-                                      // submit
-                                      setTimeout(() => {
-                                        const submitButton =
-                                          document.querySelector(
-                                            '#prompt-area [type="submit"]',
-                                          ) as HTMLButtonElement | null
-                                        submitButton?.click()
-                                      }, 150)
-                                    }}
-                                    onMouseEnter={() =>
-                                      handleUseCaseClick(example, false)
-                                    }
-                                  >
-                                    {example.agent.i18n?.[lang]?.examples?.find(
-                                      (ex) => ex.id === example.id,
-                                    )?.title ?? example.title}
-                                  </DropdownItem>
-                                )),
-                              ]}
-                            </DropdownMenu>
-                          </Dropdown>
-                        </motion.div>
-                      ),
-                    )}
-                  </div>
-                </Container>
-              </motion.div>
+                                  {example.agent.i18n?.[lang]?.examples?.find(
+                                    (ex) => ex.id === example.id,
+                                  )?.title ?? example.title}
+                                </DropdownItem>
+                              )),
+                            ]}
+                          </DropdownMenu>
+                        </Dropdown>
+                      </motion.div>
+                    ),
+                  )}
+                </div>
+              </Container>
             )}
-
-            {/* Agents Section */}
-            {/* {!isLoadingAgents && (
-              <motion.div {...motionVariants.agentCards}>
-                <Container size={6}>
-                  <div className="grid grid-cols-2 @md:grid-cols-3 @xl:grid-cols-4 @4xl:grid-cols-6 gap-3">
-                    {agents.map((agent) => (
-                      <AgentCard
-                        key={agent.id}
-                        id={agent.id}
-                        onPress={() =>
-                          setSelectedAgent(
-                            selectedAgent?.id === agent.id ? null : agent,
-                          )
-                        }
-                      />
-                    ))}
-                  </div>
-                </Container>
-              </motion.div>
-            )} */}
 
             {/* Methodologies Section */}
             {/* {!isLoadingMethodologies && (

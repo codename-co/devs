@@ -9,7 +9,6 @@ export const es: I18n = {
     'Delegar tareas complejas a tus propios equipos de IA',
   'Failed to get response from LLM. Please try again later.':
     'Error al obtener respuesta del LLM. Por favor, inténtalo de nuevo más tarde.',
-  'Try these examples': 'Prueba estos ejemplos',
 
   // Agent themes
   Writing: 'Escriptura',
@@ -17,4 +16,9 @@ export const es: I18n = {
   Life: 'Vida',
   Art: 'Arte',
   Coding: 'Programación',
+
+  // PWA Install
+  'Install {productName}': 'Instalar {productName}',
+  'Install this app on your device for a better experience and offline access.':
+    'Instale esta aplicación en su dispositivo para una mejor experiencia y acceso sin conexión.',
 } as const

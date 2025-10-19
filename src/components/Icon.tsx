@@ -103,6 +103,7 @@ export const Icons = {
   CheckCircle: IconoirIcons.CheckCircle,
   Circle: IconoirIcons.Circle,
   Clock: IconoirIcons.Clock,
+  CloudDownload: IconoirIcons.CloudDownload,
   Code: IconoirIcons.Code,
   CoffeeCup: IconoirIcons.CoffeeCup,
   Copy: IconoirIcons.Copy,

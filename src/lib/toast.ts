@@ -11,7 +11,7 @@ const toast = (
     | 'default'
     | 'primary'
     | 'secondary',
-  config?: ToastProps,
+  config?: Partial<ToastProps>,
 ) => {
   addToast({
     title,
@@ -29,7 +29,7 @@ const toast = (
 export const errorToast = (
   title: string | JSX.Element,
   description?: string | Error | unknown,
-  config?: ToastProps,
+  config?: Partial<ToastProps>,
 ) => {
   toast(title, description, 'danger', config)
 }
@@ -37,7 +37,7 @@ export const errorToast = (
 export const warningToast = (
   title: string | JSX.Element,
   description?: string | Error | unknown,
-  config?: ToastProps,
+  config?: Partial<ToastProps>,
 ) => {
   toast(title, description, 'warning', config)
 }
@@ -45,7 +45,7 @@ export const warningToast = (
 export const successToast = (
   title: string | JSX.Element,
   description?: string | Error | unknown,
-  config?: ToastProps,
+  config?: Partial<ToastProps>,
 ) => {
   toast(title, description, 'success', config)
 }
@@ -53,7 +53,7 @@ export const successToast = (
 export const infoToast = (
   title: string | JSX.Element,
   description?: string | Error | unknown,
-  config?: ToastProps,
+  config?: Partial<ToastProps>,
 ) => {
   toast(title, description, 'default', config)
 }

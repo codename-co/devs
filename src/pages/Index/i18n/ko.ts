@@ -8,7 +8,6 @@ export const ko: I18n = {
     '복잡한 작업을 자신의 AI 팀에 위임하세요',
   'Failed to get response from LLM. Please try again later.':
     'LLM의 응답을 받지 못했습니다. 나중에 다시 시도하세요.',
-  'Try these examples': '이 예제를 시도해 보세요',
 
   // Agent themes
   Writing: '글쓰기',
@@ -16,4 +15,9 @@ export const ko: I18n = {
   Life: '생활',
   Art: '예술',
   Coding: '코딩',
+
+  // PWA Install
+  'Install {productName}': '{productName} 설치',
+  'Install this app on your device for a better experience and offline access.':
+    '더 나은 경험과 오프라인 액세스를 위해 이 앱을 기기에 설치하세요.',
 } as const
