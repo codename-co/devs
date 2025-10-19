@@ -3,6 +3,8 @@
 
 @layer base {
   :root {
+    @apply scroll-smooth;
+
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -246,12 +248,6 @@
   .markdown-content em {
     @apply italic;
   }
-}
-
-html {
-  font-size: 1rem; /* Base font size */
-  overflow-y: hidden;
-  height: 100%; /* Ensure full height for body */
 }
 
 body {

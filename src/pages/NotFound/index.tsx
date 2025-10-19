@@ -24,7 +24,7 @@ export const NotFoundPage = () => {
   return (
     <DefaultLayout>
       <Section
-        mainClassName="flex items-center h-full"
+        mainClassName="flex items-center"
         className="justify-items-center"
       >
         <Icon name="PageSearch" size="3xl" className="mb-8 opacity-50" />
