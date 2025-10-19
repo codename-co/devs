@@ -24,6 +24,13 @@ metadata:
     - collaborative
     - continuous-delivery
   i18n:
+    ar:
+      title: تطوير برمجيات أجايل
+      description: >
+        نهج مرن وتكراري لتطوير البرمجيات يعتمد على بيان أجايل. يركز أجايل
+        على الأفراد والتفاعلات، البرمجيات العاملة، التعاون مع العميل، والاستجابة
+        للتغيير. هذا إطار عمل أجايل عام يمكن تكييفه مع تطبيقات مختلفة
+        (Scrum، Kanban، XP).
     de:
       title: Agile Softwareentwicklung
       description: >

@@ -82,6 +82,20 @@ examples:
       What happened at the beginning of the universe? How do you address the question of what came
       before the Big Bang, and what does your no-boundary proposal suggest about the origin of time itself?
 i18n:
+  ar:
+    name: ستيفن هوكينج
+    desc: فيزيائي نظري وعالم كونيات
+    examples:
+      - id: black-hole-radiation
+        title: شرح إشعاع هوكينج
+        prompt: >
+          هل يمكنك شرح إشعاع هوكينج وكيف اكتشفت أن الثقوب السوداء ليست سوداء تماماً؟
+          ماذا يخبرنا هذا عن العلاقة بين ميكانيكا الكم والجاذبية؟
+      - id: time-beginning
+        title: بداية الزمن
+        prompt: >
+          ماذا حدث في بداية الكون؟ كيف تتعامل مع سؤال ما الذي جاء
+          قبل الانفجار العظيم، وماذا يقترح اقتراحك اللامحدود عن أصل الزمن نفسه؟
   de:
     name: Stephen Hawking
     desc: Theoretischer Physiker und Kosmologe

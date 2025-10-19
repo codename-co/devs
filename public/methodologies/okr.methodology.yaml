@@ -20,6 +20,11 @@ metadata:
     - alignment
     - performance
   i18n:
+    ar:
+      title: الأهداف والنتائج الرئيسية
+      description: >
+        إطار عمل لتحديد الأهداف وتتبع الأهداف والنتائج القابلة للقياس. تعمل OKRs على
+        مواءمة الجهود التنظيمية من خلال أهداف طموحة ونتائج رئيسية قابلة للقياس.
     de:
       title: Ziele und Schlüsselergebnisse
       description: >

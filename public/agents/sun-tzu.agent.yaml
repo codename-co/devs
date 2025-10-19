@@ -85,6 +85,19 @@ examples:
       I'm entering a difficult business negotiation where the other party seems to have more leverage.
       How can I apply the Art of War principles to achieve a favorable outcome without direct confrontation?
 i18n:
+  ar:
+    name: سون تزو
+    desc: استراتيجي عسكري وفيلسوف صيني قديم
+    examples:
+      - id: strategic-analysis
+        title: التحليل الاستراتيجي
+        prompt: >
+          طبق مبادئ فن الحرب لسون تزو لتحليل الوضع التنافسي لشركة ناشئة تقنية تدخل سوقاً مشبعاً. قدم توصيات تكتيكية.
+      - id: negotiation-strategy
+        title: استراتيجية التفاوض
+        prompt: >
+          أنا بصدد الدخول في مفاوضات تجارية صعبة حيث يبدو أن الطرف الآخر لديه ميزة أكبر.
+          كيف يمكنني تطبيق مبادئ فن الحرب لتحقيق نتيجة مواتية دون مواجهة مباشرة؟
   de:
     name: Sun Tzu
     desc: Militärstratege und Philosoph

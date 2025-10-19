@@ -133,7 +133,7 @@ export const SlidesRenderer = ({
                       <Button
                         isIconOnly
                         variant="light"
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text--black/50 hover:bg-black/70"
+                        className="absolute start-4 top-1/2 -translate-y-1/2 text--black/50 hover:bg-black/70"
                         onPress={goToPrevSlide}
                       >
                         <Icon name="NavArrowLeft" className="w-6 h-6" />
@@ -144,14 +144,14 @@ export const SlidesRenderer = ({
                       <Button
                         isIconOnly
                         variant="light"
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text--black/50 hover:bg-black/70"
+                        className="absolute end-4 top-1/2 -translate-y-1/2 text--black/50 hover:bg-black/70"
                         onPress={goToNextSlide}
                       >
                         <Icon name="NavArrowRight" className="w-6 h-6" />
                       </Button>
                     )}
                     {/* Slide counter */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-black/50 px-3 py-1 rounded-full text-sm z-200">
+                    <div className="absolute bottom-4 start-1/2 -translate-x-1/2 text-black/50 px-3 py-1 rounded-full text-sm z-200">
                       {currentSlide + 1} / {totalSlides}
                     </div>
                   </div>
@@ -213,7 +213,7 @@ export const SlidesRenderer = ({
                           className="pointer-events-none"
                         />
                       </div>
-                      <div className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">
+                      <div className="absolute bottom-1 end-1 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">
                         {index + 1}
                       </div>
                     </div>

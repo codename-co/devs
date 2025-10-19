@@ -21,6 +21,13 @@ metadata:
     - user-centered
     - innovation
   i18n:
+    ar:
+      name: الماسة المزدوجة
+      title: عملية تصميم الماسة المزدوجة
+      description: >
+        إطار عمل لعملية التصميم طوره مجلس التصميم البريطاني. يتكون من أربع مراحل:
+        اكتشف، حدد، طور، وسلّم. تمثل الماستان التفكير المتباعد والمتقارب في فضاءات
+        المشكلة والحل.
     de:
       title: Double Diamond Design-Prozess
       description: >

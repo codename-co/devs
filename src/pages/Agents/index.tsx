@@ -138,7 +138,7 @@ export const AgentsPage = () => {
               children={
                 !isGlobal &&
                 agent.id.startsWith('custom-') && (
-                  <div className="absolute right-2 top-2">
+                  <div className="absolute end-2 top-2">
                     <Dropdown>
                       <DropdownTrigger>
                         <Button isIconOnly variant="light" size="sm">

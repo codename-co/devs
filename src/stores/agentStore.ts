@@ -84,6 +84,10 @@ Your success is measured by delivering complete, high-quality solutions that mee
   tags: ['orchestrator', 'autonomous', 'multi-agent', 'coordination'],
   createdAt: new Date(),
   i18n: {
+    ar: {
+      desc: 'منسق متعدد الوكلاء المستقل لتفويض المهام المعقدة',
+      role: 'منسق مهام مستقل ومنسق فريق متعدد الوكلاء',
+    },
     de: {
       desc: 'Autonomer Multi-Agenten-Orchestrator für die Delegation komplexer Aufgaben',
       role: 'Autonomer Aufgabenorchestrator und Koordinator für Multi-Agenten-Teams',

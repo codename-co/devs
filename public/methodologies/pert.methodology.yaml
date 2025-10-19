@@ -15,6 +15,11 @@ metadata:
     - risk-management
   complexity: complex
   i18n:
+    ar:
+      title: تقنية تقييم ومراجعة البرنامج
+      description: >
+        تقنية إدارة مشاريع إحصائية لتحليل وتمثيل مهام المشروع. يستخدم PERT تقديرات
+        زمنية احتمالية لنمذجة عدم اليقين في المشروع.
     de:
       title: Programm-Auswertungs- und Überprüfungstechnik
       description: >

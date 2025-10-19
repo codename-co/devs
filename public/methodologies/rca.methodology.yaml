@@ -21,6 +21,12 @@ metadata:
     - root-cause
     - prevention
   i18n:
+    ar:
+      title: تحليل السبب الجذري
+      description: >
+        نهج منظم لتحديد الأسباب الأساسية للمشكلات. يستخدم RCA تقنيات منظمة مثل
+        5 لماذا، مخططات عظم السمكة، وتحليل شجرة الأعطال للكشف عن المشاكل الأساسية
+        بدلاً من معالجة الأعراض.
     de:
       title: Grundursachenanalyse
       description: >

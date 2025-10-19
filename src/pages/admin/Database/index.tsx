@@ -544,7 +544,7 @@ export const DatabasePage: React.FC = () => {
                             <Container className="relative">
                               {/* Record Detail Drawer */}
                               {isDrawerOpen && (
-                                <div className="float-right bg-background w-1/2 max-w-1/2 overflow-x-hidden px-4 border-l border-default-200 overflow-y-auto">
+                                <div className="float-end bg-background w-1/2 max-w-1/2 overflow-x-hidden px-4 border-l border-default-200 overflow-y-auto">
                                   <div>
                                     <Button
                                       isIconOnly

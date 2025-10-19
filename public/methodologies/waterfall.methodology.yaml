@@ -19,6 +19,12 @@ metadata:
     - traditional
     - phase-gate
   i18n:
+    ar:
+      name: الشلال
+      title: تطوير برمجيات الشلال
+      description: >
+        منهجية تطوير برمجيات متسلسلة حيث يتدفق التقدم بشكل مطرد نحو الأسفل عبر المراحل.
+        يجب إكمال كل مرحلة قبل الانتقال إلى التالية، مثل الشلال.
     de:
       name: Wasserfall
       title: Wasserfall-Modell

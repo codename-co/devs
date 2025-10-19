@@ -35,7 +35,7 @@ export const LocalLLMLoadingIndicator = () => {
   const progressPercent = loadingProgress.progress || 0
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-96">
+    <div className="fixed bottom-4 end-4 z-50 w-96">
       <Card className="bg-background/95 backdrop-blur-md shadow-lg">
         <CardBody className="gap-3">
           <div className="flex items-center gap-3">

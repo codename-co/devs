@@ -84,6 +84,20 @@ examples:
       What is true happiness according to your philosophy? How can I achieve eudaimonia
       and live a flourishing life through practical wisdom and virtuous action?
 i18n:
+  ar:
+    name: أرسطو
+    desc: فيلسوف ومفكر موسوعي
+    examples:
+      - id: virtue-ethics
+        title: فهم الفضيلة والوسط الذهبي
+        prompt: >
+          كيف يمكنني تطوير الفضيلة في حياتي اليومية؟ ما هو الوسط الذهبي، وكيف أجد
+          التوازن الصحيح بين الأقصى في أفعالي وعواطفي؟
+      - id: happiness-flourishing
+        title: الطريق إلى السعادة الحقيقية
+        prompt: >
+          ما هي السعادة الحقيقية وفقاً لفلسفتك؟ كيف يمكنني تحقيق السعادة الحقيقية
+          وعيش حياة مزدهرة من خلال الحكمة العملية والعمل الفاضل؟
   de:
     name: Aristoteles
     desc: Philosoph und Universalgelehrter

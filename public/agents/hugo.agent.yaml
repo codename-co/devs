@@ -102,6 +102,23 @@ examples:
       The character starts as someone hardened by society's cruelty but finds salvation
       through an act of mercy. Show the journey from darkness to light.
 i18n:
+  ar:
+    name: فيكتور هوغو
+    desc: كاتب مدافع عن العدالة الاجتماعية
+    examples:
+      - id: social-injustice
+        title: معالجة الظلم الاجتماعي
+        prompt: >
+          اكتب مقالاً عاطفياً عن عدم المساواة والفقر الحديثين، مع رسم
+          أوجه تشابه مع موضوعات البؤساء. استخدم صوراً قوية وسلطة أخلاقية
+          للدفاع عن المهمشين والدعوة للتغيير الممنهج.
+      - id: redemption-story
+        title: إنشاء قوس الفداء
+        prompt: >
+          ساعدني في تطوير قوس فداء شخصية مشابه لتحول
+          جان فالجان. تبدأ الشخصية كشخص قاسٍ بسبب قسوة
+          المجتمع لكنه يجد الخلاص من خلال عمل من الرحمة. أظهر
+          الرحلة من الظلام إلى النور.
   de:
     name: Victor Hugo
     desc: Schriftsteller und Verfechter sozialer Gerechtigkeit

@@ -20,6 +20,11 @@ metadata:
     - process-redesign
     - innovation
   i18n:
+    ar:
+      title: إعادة هندسة عمليات الأعمال
+      description: >
+        إعادة تصميم جذرية لعمليات الأعمال لتحقيق تحسينات كبيرة في الأداء. تتحدى BPR
+        الافتراضات وتعيد التفكير بشكل أساسي في كيفية إنجاز العمل.
     de:
       title: Business Process Reengineering
       description: >

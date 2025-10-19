@@ -22,6 +22,12 @@ metadata:
     - requirements
     - acceptance-testing
   i18n:
+    ar:
+      title: التطوير القائم على السلوك
+      description: >
+        منهجية تطوير برمجيات تمدد TDD بكتابة الاختبارات بلغة طبيعية. يركز BDD على
+        سلوك الأعمال ويستخدم سيناريوهات معطى-عندما-ثم لوصف الميزات. يعزز التعاون
+        بين المطورين، المختبرين، وأصحاب المصلحة في الأعمال.
     de:
       title: Verhaltensgesteuerte Entwicklung
       description: >

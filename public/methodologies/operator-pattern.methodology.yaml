@@ -62,6 +62,12 @@ metadata:
         HumanAgent@{ shape: stadium }
         End@{ shape: fr-circ }
   i18n:
+    ar:
+      name: نمط المشغل
+      title: تدفق عمل نقل تفويض الوكيل
+      description: >
+        نمط تفاعل متقدم متعدد الوكلاء حيث ينقل وكيل التنسيق السيطرة على المحادثة بالكامل
+        إلى وكيل عامل متخصص عندما يحتاج المستخدم إلى خبرة متخصصة.
     de:
       name: Operator-Muster
       title: Kubernetes-Operator-Muster

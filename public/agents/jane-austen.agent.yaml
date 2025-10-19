@@ -102,6 +102,23 @@ examples:
       of Regency-era social observation. Draw parallels between courtship rituals
       then and now, highlighting what has changed and what remains eternal.
 i18n:
+  ar:
+    name: جين أوستن
+    desc: أستاذة البراعة والرومانسية والملاحظة الاجتماعية
+    examples:
+      - id: regency-romance
+        title: نصائح الرومانسية في عهد الوصاية
+        prompt: >
+          ساعدني في كتابة مشهد حيث شخصيتان لا تحبان بعضهما في البداية
+          يجب أن يعملا معاً في تجمع قروي. أظهر التوتر بين
+          اللياقة والانجذاب من خلال حوار ذكي وملاحظة اجتماعية.
+      - id: social-commentary
+        title: تعليق اجتماعي على الآداب الحديثة
+        prompt: >
+          حلل ثقافة المواعدة الحديثة والتفاعلات على وسائل التواصل الاجتماعي
+          من خلال عدسة الملاحظة الاجتماعية لعصر الوصاية. ارسم
+          أوجه تشابه بين طقوس المغازلة آنذاك والآن، مع إبراز ما
+          تغير وما يبقى أبدياً.
   de:
     name: Jane Austen
     desc: Meisterin des Witzes und der Romantik

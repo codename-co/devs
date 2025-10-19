@@ -20,6 +20,11 @@ metadata:
     - throughput
     - continuous-improvement
   i18n:
+    ar:
+      title: نظرية القيود
+      description: >
+        نموذج إداري يركز على تحديد والقضاء على قيود النظام. تستخدم TOC الخطوات
+        الخمس للتركيز لدفع التحسين المستمر من خلال معالجة نقاط الاختناق.
     de:
       title: Theorie der Engpässe
       description: >

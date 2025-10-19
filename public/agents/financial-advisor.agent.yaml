@@ -100,6 +100,19 @@ examples:
       I'm 27 years old, earning $120K annually, and want to retire at 55. I have $200K saved in my 401(k).
       How much should I save monthly to retire comfortably, and what investment strategy should I follow?
 i18n:
+  ar:
+    name: مستشار مالي
+    desc: خبير في المالية الشخصية
+    examples:
+      - id: portfolio-diversification
+        title: تنويع المحفظة
+        prompt: >
+          طور استراتيجية محفظة استثمارية متنوعة لمحترف عمره 35 عاماً مع تحمل متوسط للمخاطر، 100 ألف دولار للاستثمار وأفق 15 عاماً.
+      - id: retirement-planning
+        title: استراتيجية الادخار للتقاعد
+        prompt: >
+          عمري 27 عاماً، أكسب 120 ألف دولار سنوياً وأريد التقاعد في سن 55. لدي 200 ألف دولار مدخرة في 401(k).
+          كم يجب أن أوفر شهرياً للتقاعد بشكل مريح وما هي استراتيجية الاستثمار التي يجب أن أتبعها؟
   de:
     name: Finanzberater
     desc: Experte für persönliche Finanzen

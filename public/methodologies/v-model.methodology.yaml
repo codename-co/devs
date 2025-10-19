@@ -21,6 +21,12 @@ metadata:
     - testing
     - sequential
   i18n:
+    ar:
+      name: نموذج V
+      title: تطوير برمجيات نموذج V
+      description: >
+        امتداد لنموذج الشلال يركز على التحقق والمصادقة في كل مرحلة تطوير. يمثل نموذج V
+        مراحل التطوير والاختبار على شكل حرف V، مع مستويات اختبار مقابلة لكل مرحلة تطوير.
     de:
       name: V-Modell
       title: V-Modell Softwareentwicklung

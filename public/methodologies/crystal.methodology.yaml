@@ -15,6 +15,11 @@ metadata:
     - lightweight-methodology
   complexity: simple
   i18n:
+    ar:
+      title: عائلة منهجية كريستال
+      description: >
+        عائلة من منهجيات أجايل مصممة لحجم الفريق وأهمية المشروع. تركز كريستال على
+        الأشخاص، التفاعل، المجتمع، المهارات، المواهب، والتواصل.
     de:
       title: Crystal Methodenfamilie
       description: >

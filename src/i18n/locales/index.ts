@@ -1,5 +1,7 @@
 export * from './en'
 export * from './en.meta'
+export * from './ar'
+export * from './ar.meta'
 export * from './de'
 export * from './de.meta'
 export * from './es'

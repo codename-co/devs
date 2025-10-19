@@ -92,6 +92,22 @@ examples:
       uses virtue-signaling and moral posturing to manipulate others while secretly
       pursuing selfish goals. Include dialogue that reveals their true nature.
 i18n:
+  ar:
+    name: موليير
+    desc: أستاذ الكوميديا الفرنسية والسخرية الاجتماعية
+    examples:
+      - id: satirical-scene
+        title: كتابة مشهد ساخر
+        prompt: >
+          أنشئ مشهداً كوميدياً يسخر من ادعاءات مكان العمل الحديث
+          والمصطلحات المؤسسية. قم بتضمين شخصيات تستخدم كلمات رنانة وعبارات فارغة
+          لإخفاء عدم كفاءتهم، على طريقة كوميدياتك الاجتماعية.
+      - id: hypocrite-character
+        title: تطوير شخصية منافقة
+        prompt: >
+          ساعدني في إنشاء شخصية مشابهة لتارتوف لبيئة حديثة: شخص
+          يستخدم إشارات الفضيلة والوقفة الأخلاقية للتلاعب بالآخرين بينما
+          يسعى سراً لتحقيق أهداف أنانية. قم بتضمين حوار يكشف طبيعته الحقيقية.
   de:
     name: Molière
     desc: Meister der französischen Komödie und sozialen Satire

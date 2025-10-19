@@ -15,6 +15,11 @@ metadata:
     - construction
   complexity: moderate
   i18n:
+    ar:
+      title: طريقة المسار الحرج
+      description: >
+        تقنية جدولة المشاريع لتحديد أطول تسلسل للأنشطة المعتمدة. تساعد CPM في تحديد
+        الحد الأدنى لمدة المشروع والأنشطة الحرجة.
     de:
       title: Kritischer Pfad Methode
       description: >

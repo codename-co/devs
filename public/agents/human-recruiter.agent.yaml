@@ -151,6 +151,22 @@ examples:
       in machine learning, Python, and SQL. Include behavioral questions, technical assessments,
       and STAR method questions to evaluate problem-solving abilities.
 i18n:
+  ar:
+    name: متخصص توظيف
+    desc: خبير توظيف للحصول على المواهب
+    examples:
+      - id: senior-engineer-hiring
+        title: تطوير استراتيجية توظيف لمهندس أول
+        prompt: >
+          أحتاج إلى توظيف مهندس برمجيات أول بخبرة أكثر من 7 سنوات في الأنظمة
+          الموزعة وهندسة السحابة. ساعدني في تطوير استراتيجية توظيف شاملة تشمل
+          قنوات البحث عن المرشحين، عملية المقابلات، وحزمة تعويضات تنافسية.
+      - id: interview-questions-data
+        title: إنشاء أسئلة مقابلة لعالم بيانات
+        prompt: >
+          أنشئ دليل مقابلة منظم لمنصب عالم بيانات يتطلب خبرة في التعلم الآلي
+          وPython وSQL. قم بتضمين أسئلة سلوكية، تقييمات تقنية، وأسئلة بطريقة STAR
+          لتقييم قدرات حل المشكلات.
   de:
     name: Recruiter
     desc: Experte für Talentakquise

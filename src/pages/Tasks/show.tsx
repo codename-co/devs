@@ -574,7 +574,7 @@ export const TaskPage = () => {
       <div className="flex gap-4 relative">
         {/* Timeline line */}
         {!isLast && (
-          <div className="absolute left-4 top-10 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-800"></div>
+          <div className="absolute start-4 top-10 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-800"></div>
         )}
 
         {/* Event marker */}

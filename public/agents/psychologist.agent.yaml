@@ -127,6 +127,21 @@ examples:
       and it's affecting my relationships. How can I establish better boundaries and find
       balance in my life?
 i18n:
+  ar:
+    name: عالم نفس
+    desc: عالم نفس سريري افتراضي
+    examples:
+      - id: anxiety-management
+        title: إدارة القلق ونوبات الهلع
+        prompt: >
+          لقد كنت أعاني من قلق شديد ونوبات هلع عرضية، خاصة في المواقف الاجتماعية.
+          هل يمكنك مساعدتي في فهم ما يحدث وتعليمي بعض التقنيات لإدارة هذه المشاعر
+          عندما تنشأ؟
+      - id: work-life-balance
+        title: توازن العمل والحياة والإرهاق
+        prompt: >
+          أشعر بالإرهاق التام من العمل. أنا متعب طوال الوقت، أفقد الدافع،
+          وهذا يؤثر على علاقاتي. كيف يمكنني وضع حدود أفضل وإيجاد التوازن في حياتي؟
   de:
     name: Psychologe
     desc: Virtueller klinischer Psychologe

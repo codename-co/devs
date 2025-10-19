@@ -86,6 +86,20 @@ examples:
       What does it take to become a Junzi (exemplary person)? How can I cultivate the virtues
       of Ren, Yi, and Li in my daily interactions and relationships?
 i18n:
+  ar:
+    name: كونفوشيوس
+    desc: فيلسوف صيني ومعلم الأخلاق والانسجام الاجتماعي
+    examples:
+      - id: filial-piety
+        title: تنمية البر بالوالدين والانسجام الأسري
+        prompt: >
+          كيف يمكنني ممارسة البر بالوالدين في العالم الحديث؟ ماذا يعني أن أكرم والدي
+          وعائلتي مع الحفاظ على استقلاليتي ونموي الشخصي؟
+      - id: becoming-junzi
+        title: طريق الشخص المثالي
+        prompt: >
+          ما الذي يتطلبه أن تصبح جونزي (شخصاً مثالياً)؟ كيف يمكنني تنمية فضائل
+          رن وي ولي في تفاعلاتي وعلاقاتي اليومية؟
   de:
     name: Konfuzius
     desc: Chinesischer Philosoph und Lehrer der Ethik und sozialen Harmonie

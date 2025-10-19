@@ -20,6 +20,11 @@ metadata:
     - catchball
     - pdca
   i18n:
+    ar:
+      title: نشر السياسات والتخطيط الاستراتيجي
+      description: >
+        منهجية تخطيط استراتيجي يابانية تعمل على مواءمة الأهداف التنظيمية مع التنفيذ.
+        ينشئ هوشين كانري خط رؤية واضح من الرؤية الاستراتيجية إلى الإجراءات اليومية.
     de:
       title: Hoshin Kanri Strategische Planung
       description: >

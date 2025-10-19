@@ -21,6 +21,12 @@ metadata:
     - design
     - new-product-development
   i18n:
+    ar:
+      title: حدد، قس، حلل، صمم، تحقق
+      description: >
+        منهجية سيكس سيجما لتصميم منتجات أو عمليات أو خدمات جديدة. DMADV تعني حدد، قس،
+        حلل، صمم، وتحقق. إنها استراتيجية جودة قائمة على البيانات تستخدم لإنشاء تصاميم
+        جديدة محسّنة للجودة.
     de:
       title: Definieren, Messen, Analysieren, Entwerfen, Verifizieren
       description: >

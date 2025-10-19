@@ -613,7 +613,7 @@ export const KnowledgePage: React.FC = () => {
                             className={`w-5 h-5 ${watcher.isActive ? 'text-warning' : 'text-default-400'}`}
                           />
                           <div
-                            className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${
+                            className={`absolute -top-1 -end-1 w-3 h-3 rounded-full ${
                               watcher.isActive ? 'bg-success' : 'bg-danger'
                             }`}
                           />

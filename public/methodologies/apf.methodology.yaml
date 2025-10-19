@@ -15,6 +15,11 @@ metadata:
     - high-uncertainty
   complexity: moderate
   i18n:
+    ar:
+      title: إطار المشروع التكيفي
+      description: >
+        إطار عمل أجايل لإدارة المشاريع ذات عدم اليقين العالي. يتكيف APF مع المتطلبات
+        المتغيرة ويكتشف الحلول بشكل تكراري.
     de:
       title: Adaptives Projekt-Framework
       description: >

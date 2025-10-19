@@ -15,6 +15,11 @@ metadata:
     - program-management
   complexity: expert
   i18n:
+    ar:
+      title: إطار العمل الأجايل الموسع
+      description: >
+        إطار عمل لتوسيع ممارسات أجايل عبر المؤسسات الكبيرة. يجمع SAFe بين ممارسات
+        Lean وAgile وDevOps للتطوير على مستوى المؤسسة.
     de:
       title: Skaliertes Agiles Framework
       description: >

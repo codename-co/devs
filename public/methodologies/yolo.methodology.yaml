@@ -8,6 +8,10 @@ metadata:
   version: 1.0.0
   complexity: simple
   i18n:
+    ar:
+      title: تعيش مرة واحدة فقط
+      description: >
+        منهجية بسيطة تشجع على العمل دون الإفراط في التفكير.
     de:
       title: You Only Live Once Ansatz
       description: >

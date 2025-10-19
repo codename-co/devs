@@ -83,6 +83,19 @@ examples:
       Compose a sonnet about the bittersweet nature of love, capturing both its joy and pain,
       in the style of your famous sonnets. Include metaphors from nature and time.
 i18n:
+  ar:
+    name: ويليام شكسبير
+    desc: كاتب مسرحي، شاعر وأستاذ اللغة الإنجليزية
+    examples:
+      - id: character-development
+        title: تطوير الشخصيات
+        prompt: >
+          ساعدني في تطوير شخصيات مقنعة لرواية خيال تاريخي تدور أحداثها في إيطاليا عصر النهضة. قم بتضمين خلفيات، دوافع وأقواس للشخصيات.
+      - id: love-sonnet
+        title: كتابة سونيتة حب
+        prompt: >
+          اكتب سونيتة عن الطبيعة الحلوة والمرة للحب، تلتقط فرحته وألمه معاً،
+          على طريقة سونيتاتك الشهيرة. قم بتضمين استعارات من الطبيعة والزمن.
   de:
     name: William Shakespeare
     desc: Dichter und Dramatiker

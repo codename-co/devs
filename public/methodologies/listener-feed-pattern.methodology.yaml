@@ -86,6 +86,13 @@ metadata:
         EntSystem@{ shape: database }
         EntData@{ shape: database }
   i18n:
+    ar:
+      name: نمط المستمع / التغذية
+      title: تدفق إظهار السياق الحواري
+      description: >
+        نمط وكيل في الوقت الفعلي يُظهر السياق والرؤى ذات الصلة خلال تدفق المحادثة.
+        يتم تفعيل المستمع خلال كل دورة محادثة لإيجاد وعرض معلومات ذات صلة للموظف، مما
+        يخلق تغذية ديناميكية للذكاء السياقي.
     de:
       title: Listener / Feed Muster
       description: >

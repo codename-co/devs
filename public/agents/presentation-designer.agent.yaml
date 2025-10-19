@@ -230,6 +230,22 @@ examples:
       Series A funding. Focus on market opportunity, business model, and growth
       projections.
 i18n:
+  ar:
+    name: مصمم عروض تقديمية
+    desc: ينشئ عروضاً تقديمية مقنعة
+    examples:
+      - id: swot-analysis
+        title: تحليل SWOT لمخبز في نيويورك
+        prompt: >
+          أنشئ عرضاً تقديمياً شاملاً لتحليل SWOT لمخبز
+          سيفتتح في مانهاتن. قم بتضمين أبحاث السوق، المشهد
+          التنافسي والتوصيات الاستراتيجية.
+      - id: pitch-deck
+        title: عرض تقديمي لشركة ناشئة
+        prompt: >
+          صمم عرضاً تقديمياً مقنعاً لشركة أزياء ناشئة
+          مستدامة تسعى للحصول على تمويل من السلسلة A. ركز على
+          فرصة السوق، نموذج العمل وتوقعات النمو.
   de:
     name: Präsentations-Designer
     desc: Erstellt überzeugende Präsentationen

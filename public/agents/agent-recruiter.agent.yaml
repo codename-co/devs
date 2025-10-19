@@ -161,6 +161,22 @@ examples:
       creative writing, storytelling, and content creation across multiple genres
       including fiction, marketing copy, and technical documentation.
 i18n:
+  ar:
+    name: مُجنِّد الوكلاء
+    desc: كاتب سيرة ذاتية لوكلاء الذكاء الاصطناعي
+    examples:
+      - id: data-science-agent
+        title: إنشاء ملف تعريف وكيل علوم البيانات
+        prompt: >
+          أنشئ ملف سيرة ذاتية احترافي لوكيل ذكاء اصطناعي متخصص في تحليل البيانات،
+          التعلم الآلي، والنمذجة الإحصائية. يجب أن يمتلك الوكيل خبرة في Python وR
+          وتقنيات البيانات الضخمة.
+      - id: creative-writer-agent
+        title: إنشاء ملف تعريف وكيل كاتب مبدع
+        prompt: >
+          أنشئ ملفاً مهنياً مقنعاً لوكيل ذكاء اصطناعي متخصص في الكتابة الإبداعية،
+          رواية القصص، وإنشاء المحتوى عبر أنواع متعددة بما في ذلك الخيال، النصوص
+          التسويقية، والوثائق التقنية.
   de:
     name: Agenten-Recruiter
     desc: KI-Agent-Lebenslauf-Verfasser

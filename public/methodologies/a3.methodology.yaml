@@ -24,6 +24,11 @@ metadata:
     - collaborative
     - structured-thinking
   i18n:
+    ar:
+      description: >
+        منهجية تويوتا المنظمة لحل المشكلات التي تجمع عملية حل المشكلات بأكملها
+        على ورقة واحدة بحجم A3. تركز عملية A3 على الإيجاز، التفكير البصري، وحل
+        المشكلات التعاوني من خلال دورات PDCA. تعزز الشفافية والتنسيق بين الفرق.
     de:
       title: A3-Problemlösungsbericht
       description: >

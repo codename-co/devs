@@ -23,6 +23,12 @@ metadata:
     - execution
     - control
   i18n:
+    ar:
+      title: التحليل، الأهداف، الاستراتيجيات، التكتيكات، التحكم
+      description: >
+        منهجية هرمية للتخطيط والتنفيذ الاستراتيجي. توفر AOSTC (التحليل، الأهداف،
+        الاستراتيجيات، التكتيكات، التحكم) إطاراً متتالياً من التحليل عالي المستوى
+        إلى التنفيذ التكتيكي مع التحكم المستمر.
     de:
       title: Analyse, Ziele, Strategien, Taktiken, Kontrolle
       description: >

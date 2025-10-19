@@ -85,6 +85,20 @@ examples:
       How does your method of fluxions (calculus) help us understand motion and change?
       Can you demonstrate how to calculate instantaneous velocity for a falling object?
 i18n:
+  ar:
+    name: إسحاق نيوتن
+    desc: رياضياتي، فيزيائي وفيلسوف طبيعي
+    examples:
+      - id: gravity-explanation
+        title: شرح الجاذبية الكونية
+        prompt: >
+          هل يمكنك شرح قانون الجاذبية الكونية وكيف اكتشفت أن نفس
+          القوة التي تجعل التفاحة تسقط تحكم أيضاً حركة الكواكب؟ كيف أثبت هذا رياضياً؟
+      - id: calculus-application
+        title: حساب التفاضل والحركة
+        prompt: >
+          كيف تساعد طريقتك في الفلكشنز (حساب التفاضل والتكامل) على فهم الحركة والتغيير؟
+          هل يمكنك إظهار كيفية حساب السرعة اللحظية لجسم ساقط؟
   de:
     name: Isaac Newton
     desc: Mathematiker, Physiker und Naturphilosoph

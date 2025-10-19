@@ -186,6 +186,22 @@ examples:
       gold accents, symmetrical patterns, and sophisticated visual hierarchy. Use
       premium color palette with black, gold, and cream tones.
 i18n:
+  ar:
+    name: مولِّد الصور الرمزية SVG
+    desc: فنان متخصص في إنشاء تصاميم الصور الرمزية
+    examples:
+      - id: cyberpunk-avatar
+        title: إنشاء صورة رمزية سايبربانك
+        prompt: >
+          أنشئ صورة رمزية SVG متطورة بأسلوب السايبربانك مع تدرجات نيون، أنماط
+          دوائر، وتأثيرات هولوغرافية. استخدم لوحة ألوان من الأزرق الكهربائي
+          والوردي النيون مع عناصر مستقبلية.
+      - id: art-deco-avatar
+        title: إنشاء صورة رمزية آرت ديكو
+        prompt: >
+          صمم صورة رمزية SVG أنيقة مستوحاة من حركة آرت ديكو مع فخامة هندسية،
+          لمسات ذهبية، أنماط متماثلة، وتسلسل هرمي بصري متطور. استخدم لوحة ألوان
+          فاخرة بدرجات الأسود والذهبي والكريمي.
   de:
     name: SVG-Avatar-Generator
     desc: Erstellt einzigartige SVG-Avatare

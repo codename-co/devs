@@ -20,6 +20,12 @@ metadata:
     - code-quality
     - continuous-improvement
   i18n:
+    ar:
+      title: التطوير القائم على الاختبار
+      description: >
+        منهجية تطوير برمجيات حيث تُكتب الاختبارات قبل الكود. يتبع TDD دورة
+        الأحمر-الأخضر-إعادة الهيكلة: كتابة اختبار فاشل، جعله ينجح، تحسين الكود.
+        يضمن جودة الكود، قابلية الصيانة، والالتزام بالمتطلبات.
     de:
       title: Testgetriebene Entwicklung
       description: >

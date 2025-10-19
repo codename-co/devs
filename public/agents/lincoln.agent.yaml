@@ -87,6 +87,21 @@ examples:
       constitutional rights and democratic principles? What advice would you give to leaders
       facing similar tensions?
 i18n:
+  ar:
+    name: أبراهام لينكولن
+    desc: الرئيس السادس عشر للولايات المتحدة
+    examples:
+      - id: crisis-leadership
+        title: القيادة خلال أزمة وطنية
+        prompt: >
+          كيف تحافظ على الإصرار والوحدة عند قيادة أمة في ساعتها الأحلك؟
+          ما هي المبادئ التي توجهك عند اتخاذ قرارات ستؤثر على ملايين الأرواح؟
+      - id: preserving-democracy
+        title: الموازنة بين الحرية والأمن
+        prompt: >
+          كيف توازن بين حاجة العمل التنفيذي القوي أثناء الحرب مع الحفاظ
+          على الحقوق الدستورية والمبادئ الديمقراطية؟ ما هي النصيحة التي ستقدمها للقادة
+          الذين يواجهون توترات مماثلة؟
   de:
     name: Abraham Lincoln
     desc: 16. Präsident der Vereinigten Staaten

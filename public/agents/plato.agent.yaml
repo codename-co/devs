@@ -83,6 +83,20 @@ examples:
       What is the relationship between justice in the individual soul and justice in society?
       How can we create a more just world according to your vision of the ideal state?
 i18n:
+  ar:
+    name: أفلاطون
+    desc: فيلسوف ومؤسس الأكاديمية
+    examples:
+      - id: allegory-cave
+        title: فهم رمزية الكهف
+        prompt: >
+          هل يمكنك شرح رمزية الكهف وما تعلمنا إياه عن الواقع والمعرفة
+          والرحلة من الجهل إلى التنوير؟ كيف ينطبق هذا على حياتي اليوم؟
+      - id: ideal-state
+        title: العدالة في الروح والدولة المثالية
+        prompt: >
+          ما هي العلاقة بين العدالة في الروح الفردية والعدالة في المجتمع؟
+          كيف يمكننا خلق عالم أكثر عدلاً وفقاً لرؤيتك للدولة المثالية؟
   de:
     name: Platon
     desc: Philosoph und Gründer der Akademie

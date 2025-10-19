@@ -323,7 +323,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
             endContent={
               // Selected files display
               selectedFiles.length > 0 && (
-                <div className="mb-2 flex flex-wrap gap-2 p-2 absolute left-0 bottom-8">
+                <div className="mb-2 flex flex-wrap gap-2 p-2 absolute start-0 bottom-8">
                   {selectedFiles.map((file, index) => (
                     <Chip
                       key={index}
@@ -341,7 +341,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                         <span className="whitespace-nowrap overflow-hidden text-ellipsis">
                           {file.name.substring(0, 48)}
                         </span>
-                        <span className="absolute right-2 pl-2 pr-4">
+                        <span className="absolute end-2 pl-2 pr-4">
                           ({formatBytes(file.size, lang)})
                         </span>
                       </span>
@@ -405,6 +405,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                         disabled={props.isSending}
                         color={!prompt.trim() ? 'default' : 'primary'}
                         className={cn(
+                          'rtl:rotate-180',
                           canSubmit && 'dark:bg-white dark:text-black',
                         )}
                         radius="md"
@@ -428,6 +429,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                         disabled={props.isSending}
                         color={!prompt.trim() ? 'default' : 'primary'}
                         className={cn(
+                          'rtl:rotate-180',
                           canSubmit && 'dark:bg-white dark:text-black',
                         )}
                         radius="md"

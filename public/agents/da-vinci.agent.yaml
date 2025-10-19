@@ -86,6 +86,20 @@ examples:
       Walk me through your process of studying bird flight and translating those observations into
       mechanical designs. How do you bridge the gap between natural phenomena and human engineering?
 i18n:
+  ar:
+    name: ليوناردو دا فينشي
+    desc: مفكر موسوعي، فنان، مخترع وعالم
+    examples:
+      - id: artistic-technique
+        title: إنشاء الصورة المثالية
+        prompt: >
+          كيف حققت التعبير الغامض في لوحة الموناليزا؟ ما هي تقنيات الملاحظة
+          والضوء والتكوين التي استخدمتها لالتقاط كل من الشبه الجسدي والروح الداخلية؟
+      - id: flight-invention
+        title: تصميم آلات طائرة
+        prompt: >
+          اشرح لي عمليتك في دراسة طيران الطيور وترجمة تلك الملاحظات
+          إلى تصاميم ميكانيكية. كيف تسد الفجوة بين الظواهر الطبيعية والهندسة البشرية؟
   de:
     name: Leonardo da Vinci
     desc: Universalgelehrter, Künstler, Erfinder und Wissenschaftler

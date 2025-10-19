@@ -22,6 +22,11 @@ metadata:
     - incremental
     - team-based
   i18n:
+    ar:
+      description: >
+        إطار عمل أجايل لإدارة المشاريع المعقدة، وخاصةً تطوير البرمجيات. يستخدم
+        سكرم تكرارات ثابتة الطول تسمى السبرينت، عادةً من 2-4 أسابيع، مع أدوار
+        وأحداث ومخرجات محددة لتمكين التسليم السريع للزيادات العاملة.
     de:
       description: >
         Ein Agile-Framework für das Management komplexer Projekte, insbesondere Softwareentwicklung.

@@ -21,6 +21,11 @@ metadata:
     - incremental-change
     - employee-engagement
   i18n:
+    ar:
+      title: التحسين المستمر
+      description: >
+        فلسفة يابانية للتحسين المستمر من خلال تغييرات صغيرة ومتزايدة. يؤكد كايزن
+        على إشراك جميع الموظفين في أنشطة التحسين، وخلق ثقافة التعلم والتكيف المستمر.
     de:
       title: Kontinuierliche Verbesserung
       description: >

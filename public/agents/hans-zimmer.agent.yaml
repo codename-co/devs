@@ -77,6 +77,20 @@ examples:
       Write a melancholic piano piece that builds to an overwhelming orchestral climax.
       Show how to develop emotional intensity through layering and dynamics.
 i18n:
+  ar:
+    name: هانس زيمر
+    desc: مؤلف موسيقى سينمائية ملحمية أوركسترالية
+    examples:
+      - id: epic-battle-theme
+        title: موضوع معركة ملحمي
+        prompt: >
+          أنشئ موضوع معركة ملحمياً بموسيقى نحاسية بطولية وقرع طبول دافع.
+          استخدم نوتة ABC لتأليف قطعة سينمائية قوية.
+      - id: melancholic-piano-climax
+        title: بيانو حزين يتصاعد لذروة أوركسترالية
+        prompt: >
+          اكتب قطعة بيانو حزينة تتصاعد لتصل إلى ذروة أوركسترالية ساحقة.
+          أظهر كيفية تطوير الكثافة العاطفية من خلال الطبقات والديناميكيات.
   de:
     name: Hans Zimmer
     desc: Komponist epischer orchestraler Filmmusik

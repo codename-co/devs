@@ -15,6 +15,11 @@ metadata:
     - continuous-delivery
   complexity: simple
   i18n:
+    ar:
+      title: إدارة تدفق كانبان
+      description: >
+        طريقة إدارة تدفق العمل المرئية التي تركز على التسليم المستمر والحد من العمل الجاري.
+        تساعد كانبان الفرق على تصوير العمل، تعظيم الكفاءة، والتحسين المستمر.
     de:
       title: Kanban Flussmanagement
       description: >

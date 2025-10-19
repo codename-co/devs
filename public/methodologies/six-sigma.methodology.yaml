@@ -15,6 +15,11 @@ metadata:
     - statistical-analysis
   complexity: complex
   i18n:
+    ar:
+      title: إدارة جودة سيكس سيجما
+      description: >
+        منهجية قائمة على البيانات للقضاء على العيوب وتحسين الجودة. تهدف سيكس سيجما
+        إلى عمليات شبه مثالية مع 3.4 عيوب لكل مليون فرصة.
     de:
       title: Six Sigma Qualitätsmanagement
       description: >

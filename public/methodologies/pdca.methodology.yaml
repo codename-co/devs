@@ -23,6 +23,12 @@ metadata:
     - kaizen
     - lean
   i18n:
+    ar:
+      title: خطط-نفذ-تحقق-اعمل
+      description: >
+        طريقة إدارية تكرارية من أربع خطوات تستخدم للتحسين المستمر للعمليات والمنتجات.
+        تُعرف أيضاً بدورة ديمينج أو دورة شيوهارت. PDCA هي أداة أساسية لتحقيق
+        التحسين المستمر.
     de:
       title: Planen-Durchführen-Prüfen-Handeln
       description: >

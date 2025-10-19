@@ -20,6 +20,11 @@ metadata:
     - customer-satisfaction
     - culture-change
   i18n:
+    ar:
+      title: إدارة الجودة الشاملة
+      description: >
+        نهج إداري شامل يركز على النجاح طويل الأجل من خلال رضا العملاء. تشمل TQM
+        جميع أعضاء المنظمة في تحسين العمليات، المنتجات، الخدمات، والثقافة.
     de:
       title: Total Quality Management
       description: >

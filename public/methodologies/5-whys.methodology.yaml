@@ -20,6 +20,12 @@ metadata:
     - lean
     - analysis
   i18n:
+    ar:
+      name: 5 لماذا
+      title: تحليل السبب الجذري للأسباب الخمسة
+      description: >
+        تقنية استفهامية تكرارية لاستكشاف علاقات السبب والنتيجة.
+        من خلال السؤال "لماذا؟" خمس مرات، يمكن للفرق تحديد السبب الجذري للمشكلة.
     de:
       name: 5 Warums
       title: Ursachenanalyse der Fünf Warums

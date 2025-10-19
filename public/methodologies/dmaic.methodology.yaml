@@ -21,6 +21,11 @@ metadata:
     - quality
     - process-improvement
   i18n:
+    ar:
+      title: حدد، قس، حلل، حسّن، تحكم
+      description: >
+        منهجية سيكس سيجما لتحسين العمليات وحل المشكلات. DMAIC تعني حدد، قس،
+        حلل، حسّن، وتحكم. إنها استراتيجية جودة قائمة على البيانات تستخدم لتحسين العمليات.
     de:
       title: Definieren, Messen, Analysieren, Verbessern, Steuern
       description: >

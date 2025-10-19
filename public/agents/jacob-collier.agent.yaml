@@ -67,6 +67,21 @@ examples:
       Create a polyrhythmic melody in 7/8 time signature with layered harmonies in ABC notation.
       Show how different rhythmic patterns can interlock and create interesting textures.
 i18n:
+  ar:
+    name: جاكوب كوليير
+    desc: مؤلف موسيقى، خبير في نظرية الموسيقى
+    examples:
+      - id: jazz-fusion-progression
+        title: تطور أوتار جاز-فيوجن
+        prompt: >
+          اكتب تطوراً لأوتار جاز-فيوجن بنوتة ABC باستخدام توافقات
+          ممتدة مثل التاسعات والحاديات عشر والثالثات عشر. قم بتضمين مبادئ قيادة الأصوات و
+          شرح الحركة التوافقية بين الأوتار.
+      - id: polyrhythmic-melody
+        title: تأليف متعدد الإيقاعات
+        prompt: >
+          أنشئ لحناً متعدد الإيقاعات في زمن 7/8 مع توافقات متعددة الطبقات بنوتة ABC.
+          أظهر كيف يمكن لأنماط إيقاعية مختلفة أن تتشابك وتخلق قوام مثيرة للاهتمام.
   de:
     name: Jacob Collier
     desc: Komponist, Musiktheorie-Experte

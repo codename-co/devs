@@ -22,6 +22,12 @@ metadata:
     - user-feedback
     - rapid-delivery
   i18n:
+    ar:
+      title: التطوير السريع للتطبيقات
+      description: >
+        منهجية تطوير برمجيات أجايل تركز على النماذج الأولية السريعة والتسليم التكراري.
+        يعطي RAD الأولوية لملاحظات المستخدم والتكيف السريع على التخطيط التفصيلي.
+        يستخدم دورات تطوير محددة زمنياً ومشاركة واسعة من المستخدمين.
     de:
       title: Schnelle Anwendungsentwicklung
       description: >

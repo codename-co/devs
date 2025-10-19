@@ -21,6 +21,12 @@ metadata:
     - quality
     - safety
   i18n:
+    ar:
+      title: تحليل أنماط الفشل وتأثيراتها
+      description: >
+        طريقة منظمة لتحديد الإخفاقات المحتملة في تصميم أو عملية أو نظام. يقيّم FMEA
+        أنماط الفشل وأسبابها وتأثيراتها لتحديد أولويات تخفيف المخاطر. يستخدم رقم
+        أولوية المخاطر (RPN) لتصنيف ومعالجة أنماط الفشل الأكثر حرجة.
     de:
       title: Fehlermöglichkeits- und Einflussanalyse
       description: >

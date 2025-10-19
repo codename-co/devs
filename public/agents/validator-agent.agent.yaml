@@ -91,6 +91,23 @@ examples:
       be explained, 3) Error codes must be listed. The deliverable is a 15-page API
       documentation with examples and error reference table.
 i18n:
+  ar:
+    name: متخصص ضمان الجودة
+    desc: متخصص في التحقق من الصحة وضمان الجودة
+    examples:
+      - id: validate-feature-implementation
+        title: التحقق من تنفيذ الميزة
+        prompt: >
+          تحقق من صحة تنفيذ هذه الميزة مقابل المتطلبات التالية: 1) مصادقة المستخدم
+          بالبريد الإلكتروني/كلمة المرور، 2) يجب أن تكون كلمة المرور 8 أحرف على الأقل،
+          3) انتهاء مهلة الجلسة بعد 30 دقيقة. يتضمن المُخرَج نموذج تسجيل دخول مع
+          التحقق من الصحة وتنفيذ رمز JWT بانتهاء صلاحية 30 دقيقة.
+      - id: validate-documentation
+        title: التحقق من الوثائق التقنية
+        prompt: >
+          تحقق من صحة هذه الوثائق التقنية مقابل المتطلبات: 1) يجب توثيق نقاط نهاية API
+          مع أمثلة الطلب/الاستجابة، 2) يجب شرح تدفق المصادقة، 3) يجب إدراج رموز الخطأ.
+          المُخرَج هو وثائق API مكونة من 15 صفحة مع أمثلة وجدول مرجعي للأخطاء.
   de:
     name: Validierungs-Agent
     desc: Überprüft Anforderungen und Ergebnisse

@@ -1,6 +1,6 @@
 import { Container, Icon, Section, Title } from '@/components'
 import { AppDrawer } from '@/components/AppDrawer'
-import { useI18n } from '@/i18n'
+import { languageDirection, useI18n } from '@/i18n'
 import type { HeaderProps, IconName } from '@/lib/types'
 import { userSettings } from '@/stores/userStore'
 import {
@@ -32,9 +32,11 @@ export default function DefaultLayout({
   showBackButton?: boolean
   children: React.ReactNode
 }) {
-  const { t } = useI18n()
+  const { lang, t } = useI18n()
   const navigate = useNavigate()
   const location = useLocation()
+
+  const direction = languageDirection[lang]
 
   const { theme } = userSettings()
   const [systemPrefersDark, setSystemPrefersDark] = useState(false)
@@ -74,7 +76,7 @@ export default function DefaultLayout({
     }
   }
   return (
-    <div className="flex-grow w-full">
+    <div className="flex-grow w-full" dir={direction}>
       <div className="flex relative">
         <AppDrawer />
 
@@ -103,7 +105,7 @@ export default function DefaultLayout({
                             className="rotate-180"
                           />
                         }
-                        className="absolute -ml-20 2xl:-ml-32 hidden xl:inline-flex dark:hover:bg-default-300 transition-[margin-left] duration-300"
+                        className="absolute -ms-20 2xl:-ml-32 hidden xl:inline-flex dark:hover:bg-default-300 transition-[margin-left] duration-300 rtl:rotate-180"
                       />
                     </Tooltip>
                   )}
@@ -128,7 +130,7 @@ export default function DefaultLayout({
                             <Icon name={header.cta.icon} size="sm" />
                           )
                         }
-                        className="absolute right-0 shrink-0 dark:hover:bg-default-300"
+                        className="absolute end-0 shrink-0 dark:hover:bg-default-300"
                       >
                         {header.cta?.label}
                       </Button>
@@ -138,7 +140,7 @@ export default function DefaultLayout({
                         <DropdownTrigger>
                           <Button
                             variant="light"
-                            className="absolute right-0 shrink-0 dark:hover:bg-default-300"
+                            className="absolute end-0 shrink-0 dark:hover:bg-default-300"
                           >
                             <Icon name="MoreVert" size="sm" />
                           </Button>

@@ -65,6 +65,12 @@ metadata:
 
         style Note fill:transparent,stroke:none
   i18n:
+    ar:
+      name: نمط المنسق
+      title: تدفق عمل تنسيق سرب الوكلاء المتعدد
+      description: >
+        نمط تفاعل متقدم متعدد الوكلاء يدير "سرب" وكيل ذكاء اصطناعي عن طريق تمرير تصريحات
+        المستخدم إلى وكيل واحد أو أكثر من الوكلاء المتخصصين وتجميع استجاباتهم.
     de:
       name: Orchestrator-Muster
       title: Service-Orchestrator-Muster

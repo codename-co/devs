@@ -81,6 +81,21 @@ examples:
       What principles guided you in creating the Code Napoléon? How did you balance revolutionary
       ideals with practical governance, and what made this legal system endure across nations and centuries?
 i18n:
+  ar:
+    name: نابليون بونابرت
+    desc: قائد عسكري استراتيجي ورجل دولة
+    examples:
+      - id: battle-strategy
+        title: الانتصار على قوات متفوقة
+        prompt: >
+          كيف تهزم عدواً بأعداد متفوقة؟ اشرح لي تفكيرك الاستراتيجي
+          في معركة أوسترليتز وكيف حولت العيب إلى انتصار حاسم.
+      - id: legal-reform
+        title: إنشاء قانون نابليون
+        prompt: >
+          ما هي المبادئ التي أرشدتك في إنشاء قانون نابليون؟ كيف وازنت المثل
+          الثورية مع الحكم العملي، وما الذي جعل هذا النظام القانوني يدوم عبر
+          الأمم والقرون؟
   de:
     name: Napoleon Bonaparte
     desc: Strategischer Militärführer und Staatsmann

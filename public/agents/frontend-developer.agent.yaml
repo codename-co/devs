@@ -84,6 +84,30 @@ examples:
       conversion rate, and active sessions. Include a mock line chart for trends over time
       and a table showing recent transactions. Make it responsive for mobile and desktop.
 i18n:
+  ar:
+    name: مطور واجهة أمامية
+    desc: خبير في تطوير تطبيقات الويب
+    examples:
+      - id: saas-landing-page
+        title: صفحة SaaS
+        prompt: >
+          أنشئ صفحة هبوط لـ SaaS يمكنها توفير الوقت
+          المخصص للنوم ليلاً، بفضل اكتشاف مذهل، شوهد على
+          التلفزيون، بـ 19.99 يورو/أسبوع فقط، في التسجيل المسبق. نموذج
+          يلتقط بيانات الاتصال للعملاء المحتملين.
+      - id: todo-app
+        title: تطبيق مهام تفاعلي
+        prompt: >
+          قم ببناء تطبيق قائمة مهام مع القدرة على إضافة وحذف
+          ووضع علامة على المهام كمكتملة. قم بتضمين مرشحات لعرض جميع المهام،
+          المهام النشطة أو المهام المكتملة. استخدم التخزين المحلي لاستمرار
+          المهام بين جلسات المتصفح.
+      - id: dashboard-analytics
+        title: لوحة تحليلات
+        prompt: >
+          أنشئ لوحة معلومات تعرض مقاييس رئيسية مع بطاقات تظهر إجمالي المستخدمين، الإيرادات،
+          معدل التحويل، والجلسات النشطة. قم بتضمين رسم بياني خطي وهمي للاتجاهات مع مرور الوقت
+          وجدول يظهر المعاملات الأخيرة. اجعله متجاوباً للهاتف المحمول وسطح المكتب.
   de:
     name: Frontend-Entwickler
     desc: Experte für Web-Anwendungsentwicklung
