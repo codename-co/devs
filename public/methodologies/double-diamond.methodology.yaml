@@ -21,6 +21,11 @@ metadata:
     - user-centered
     - innovation
   i18n:
+    de:
+      title: Double Diamond Design-Prozess
+      description: >
+        Designprozess-Framework mit vier Phasen: Discover, Define, Develop, Deliver.
+        Visualisiert als zwei Diamanten - Problemraum und Lösungsraum.
     es:
       name: Doble Diamante
       title: Proceso de Diseño Doble Diamante

@@ -21,6 +21,11 @@ metadata:
     - quality
     - process-improvement
   i18n:
+    de:
+      title: Definieren, Messen, Analysieren, Verbessern, Steuern
+      description: >
+        Datengetriebener Problemlösungsansatz zur Prozessverbesserung.
+        Fünf-Phasen-Methodik, die Variation reduziert und Qualität erhöht.
     es:
       title: Definir, Medir, Analizar, Mejorar, Controlar
       description: >

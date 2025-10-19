@@ -85,6 +85,20 @@ examples:
       I'm entering a difficult business negotiation where the other party seems to have more leverage.
       How can I apply the Art of War principles to achieve a favorable outcome without direct confrontation?
 i18n:
+  de:
+    name: Sun Tzu
+    desc: Militärstratege und Philosoph
+    examples:
+      - id: business-strategy
+        title: Strategie im Geschäftsleben
+        prompt: >
+          Wie wende ich die Prinzipien der Kriegskunst auf moderne Geschäftsstrategie und
+          Wettbewerb an? Was bedeutet es, den Feind zu kennen und sich selbst zu kennen?
+      - id: conflict-resolution
+        title: Konflikt ohne Kampf gewinnen
+        prompt: >
+          Lehre mich, wie man Konflikte und Verhandlungen gewinnt, ohne direkt zu kämpfen.
+          Was sind die subtilen Strategien der Diplomatie und psychologischen Kriegsführung?
   es:
     name: Sun Tzu
     desc: Estratega militar y filósofo chino antiguo

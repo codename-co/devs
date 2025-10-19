@@ -24,6 +24,11 @@ metadata:
     - collaborative
     - structured-thinking
   i18n:
+    de:
+      title: A3-Problemlösungsbericht
+      description: >
+        Strukturierter Problemlösungsansatz auf einer einzelnen A3-Seite.
+        Fördert klares Denken, Visualisierung und kollaborative Problemlösung durch einen standardisierten Berichtsrahmen.
     es:
       description: >
         La metodología sistemática de resolución de problemas de Toyota que

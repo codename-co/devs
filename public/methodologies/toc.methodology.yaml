@@ -20,6 +20,11 @@ metadata:
     - throughput
     - continuous-improvement
   i18n:
+    de:
+      title: Theorie der Engpässe
+      description: >
+        Managementparadigma, das Systeme durch ihre Engpässe betrachtet.
+        Fokussiert auf Identifikation und Beseitigung von Constraints zur Verbesserung der Gesamtleistung.
     es:
       title: Teoría de las Restricciones
       description: >

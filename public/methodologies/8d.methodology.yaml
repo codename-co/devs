@@ -25,6 +25,11 @@ metadata:
     - preventive-action
     - ford
   i18n:
+    de:
+      title: 8D-Problemlösungsmethode
+      description: >
+        Strukturierter Teamansatz zur Problemlösung mit acht Disziplinen.
+        Wird häufig in der Fertigung und Qualitätskontrolle zur Identifizierung, Korrektur und Beseitigung wiederkehrender Probleme eingesetzt.
     es:
       title: Ocho Disciplinas
       description: >

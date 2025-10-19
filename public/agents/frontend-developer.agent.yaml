@@ -84,6 +84,30 @@ examples:
       conversion rate, and active sessions. Include a mock line chart for trends over time
       and a table showing recent transactions. Make it responsive for mobile and desktop.
 i18n:
+  de:
+    name: Frontend-Entwickler
+    desc: Experte für Web-Anwendungsentwicklung
+    examples:
+      - id: saas-landing-page
+        title: SaaS-Webseite
+        prompt: >
+          Erstelle eine Landing Page für eine SaaS, die Zeit beim nächtlichen Schlaf sparen kann,
+          dank einer unglaublichen Entdeckung, im Fernsehen gesehen, für nur 19,99€/Woche bei Voranmeldung.
+          Ein Formular erfasst die Kontaktdaten der Interessenten.
+      - id: todo-app
+        title: Interaktive Aufgaben-Anwendung
+        prompt: >
+          Erstelle eine Aufgabenlisten-Anwendung mit der Möglichkeit, Aufgaben hinzuzufügen, zu löschen
+          und als erledigt zu markieren. Füge Filter hinzu, um alle Aufgaben, aktive Aufgaben oder
+          erledigte Aufgaben anzuzeigen. Verwende lokalen Speicher, um die Aufgaben zwischen
+          Browser-Sitzungen zu persistieren.
+      - id: dashboard-analytics
+        title: Analytics-Dashboard
+        prompt: >
+          Erstelle ein Dashboard, das Schlüsselmetriken mit Karten anzeigt, die Gesamtbenutzer,
+          Umsatz, Conversion-Rate und aktive Sitzungen zeigen. Füge ein Mock-Liniendiagramm für
+          Trends im Zeitverlauf und eine Tabelle mit den letzten Transaktionen hinzu. Mache es
+          responsiv für Mobilgeräte und Desktop.
   es:
     name: Desarrollador Frontend
     desc: Experto en desarrollo de aplicaciones web

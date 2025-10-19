@@ -14,6 +14,27 @@ metadata:
     - lean
     - continuous-delivery
   complexity: simple
+  i18n:
+    de:
+      title: Kanban Flussmanagement
+      description: >
+        Visuelles Workflow-Management-System, das laufende Arbeit limitiert und Durchfluss optimiert.
+        Nutzt Boards und Karten zur Visualisierung von Arbeit und Identifikation von Engpässen.
+    es:
+      title: Gestión de Flujo Kanban
+      description: >
+        Método de gestión visual del flujo de trabajo que enfatiza la entrega continua y limita el trabajo en progreso.
+        Kanban ayuda a los equipos a visualizar el trabajo, maximizar la eficiencia y mejorar continuamente.
+    fr:
+      title: Gestion de Flux Kanban
+      description: >
+        Méthode de gestion visuelle du flux de travail qui met l'accent sur la livraison continue et la limitation du travail en cours.
+        Kanban aide les équipes à visualiser le travail, à maximiser l'efficacité et à s'améliorer continuellement.
+    ko:
+      title: 칸반 플로우 관리
+      description: >
+        지속적인 납품과 진행 중인 작업 제한을 강조하는 시각적 워크플로우 관리 방법입니다.
+        칸반은 팀이 작업을 시각화하고 효율성을 극대화하며 지속적으로 개선하는 데 도움을 줍니다.
   tags:
     - visualization
     - wip-limits

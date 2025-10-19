@@ -21,17 +21,26 @@ metadata:
     - testing
     - sequential
   i18n:
+    de:
+      name: V-Modell
+      title: V-Modell Softwareentwicklung
+      description: >
+        Sequenzieller Entwicklungsprozess mit entsprechenden Testphasen für jede Entwicklungsstufe.
+        Betont Verifizierung und Validierung in jeder Phase.
     es:
+      name: Modelo en V
       title: Desarrollo de Software Modelo V
       description: >
         Extensión del modelo en cascada que enfatiza la verificación y validación en cada etapa de desarrollo.
         El Modelo V representa las fases de desarrollo y prueba en forma de V, con niveles de prueba correspondientes para cada fase de desarrollo.
     fr:
+      name: Modèle en V
       title: Développement Logiciel Modèle en V
       description: >
         Extension du modèle en cascade mettant l'accent sur la vérification et la validation à chaque étape de développement.
         Le Modèle en V représente les phases de développement et de test en forme de V, avec des niveaux de test correspondants pour chaque phase de développement.
     ko:
+      name: V-모델
       title: V-모델 소프트웨어 개발
       description: >
         각 개발 단계에서 검증 및 확인을 강조하는 폭포수 모델의 확장.

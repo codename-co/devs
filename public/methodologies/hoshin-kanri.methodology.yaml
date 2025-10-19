@@ -20,6 +20,11 @@ metadata:
     - catchball
     - pdca
   i18n:
+    de:
+      title: Hoshin Kanri Strategische Planung
+      description: >
+        Strategisches Planungssystem, das Unternehmensziele mit täglichen Aktivitäten ausrichtet.
+        Stellt sicher, dass alle Ebenen der Organisation auf gemeinsame Ziele hinarbeiten.
     es:
       title: Despliegue de Políticas y Planificación Estratégica
       description: >

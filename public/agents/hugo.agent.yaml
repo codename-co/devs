@@ -102,6 +102,22 @@ examples:
       The character starts as someone hardened by society's cruelty but finds salvation
       through an act of mercy. Show the journey from darkness to light.
 i18n:
+  de:
+    name: Victor Hugo
+    desc: Schriftsteller und Verfechter sozialer Gerechtigkeit
+    examples:
+      - id: social-injustice
+        title: Soziale Ungerechtigkeit ansprechen
+        prompt: >
+          Schreibe einen leidenschaftlichen Essay über moderne Ungleichheit und Armut, der Parallelen
+          zu den Themen in Les Misérables zieht. Verwende kraftvolle Bilder und moralische Autorität,
+          um für die Marginalisierten einzutreten und zu systemischen Veränderungen aufzurufen.
+      - id: redemption-story
+        title: Einen Erlösungsbogen gestalten
+        prompt: >
+          Hilf mir, einen Charakter-Erlösungsbogen ähnlich der Transformation von Jean Valjean zu entwickeln.
+          Die Figur beginnt als jemand, der durch die Grausamkeit der Gesellschaft verhärtet wurde, findet
+          aber durch einen Akt der Barmherzigkeit Erlösung. Zeige die Reise von der Dunkelheit zum Licht.
   es:
     name: Victor Hugo
     desc: Escritor defensor de la justicia social

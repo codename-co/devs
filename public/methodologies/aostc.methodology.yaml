@@ -23,6 +23,11 @@ metadata:
     - execution
     - control
   i18n:
+    de:
+      title: Analyse, Ziele, Strategien, Taktiken, Kontrolle
+      description: >
+        Zustandsmaschinen-Framework für die Orchestrierung von Agenten.
+        Definiert Zustände, Übergänge und Aktionen für komplexe Multi-Agenten-Workflows.
     es:
       title: Análisis, Objetivos, Estrategias, Tácticas, Control
       description: >

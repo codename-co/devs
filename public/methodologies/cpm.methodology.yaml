@@ -14,6 +14,27 @@ metadata:
     - planning
     - construction
   complexity: moderate
+  i18n:
+    de:
+      title: Kritischer Pfad Methode
+      description: >
+        Projektmanagement-Technik zur Identifikation der längsten Sequenz abhängiger Aufgaben.
+        Ermöglicht Optimierung von Zeitplänen und Ressourcenzuweisung.
+    es:
+      title: Método del Camino Crítico
+      description: >
+        Técnica de programación de proyectos que identifica la secuencia más larga de actividades dependientes.
+        Ayuda a determinar la duración mínima del proyecto y las actividades críticas.
+    fr:
+      title: Méthode du Chemin Critique
+      description: >
+        Technique de planification de projet identifiant la plus longue séquence d'activités dépendantes.
+        Aide à déterminer la durée minimale du projet et les activités critiques.
+    ko:
+      title: 중요 경로법
+      description: >
+        종속 활동의 최장 시퀀스를 식별하는 프로젝트 일정 기법입니다.
+        CPM은 최소 프로젝트 기간과 중요한 활동을 결정하는 데 도움이 됩니다.
   tags:
     - scheduling
     - critical-path

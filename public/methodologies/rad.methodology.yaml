@@ -22,6 +22,11 @@ metadata:
     - user-feedback
     - rapid-delivery
   i18n:
+    de:
+      title: Schnelle Anwendungsentwicklung
+      description: >
+        Agile Softwareentwicklungsmethodik, die schnelle Prototypenentwicklung über ausführliche Planung priorisiert.
+        Betont iterative Entwicklung und Benutzerfeedback.
     es:
       title: Desarrollo Rápido de Aplicaciones
       description: >

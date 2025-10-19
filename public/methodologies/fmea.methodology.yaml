@@ -21,6 +21,11 @@ metadata:
     - quality
     - safety
   i18n:
+    de:
+      title: Fehlermöglichkeits- und Einflussanalyse
+      description: >
+        Systematische Methode zur Identifizierung und Verhinderung von Produkt- und Prozessfehlern.
+        Bewertet potenzielle Fehler nach Schweregrad, Auftreten und Erkennbarkeit.
     es:
       title: Análisis de Modos y Efectos de Fallas
       description: >

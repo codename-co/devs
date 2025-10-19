@@ -20,6 +20,12 @@ metadata:
     - lean
     - analysis
   i18n:
+    de:
+      name: 5 Warums
+      title: Ursachenanalyse der Fünf Warums
+      description: >
+        Iterative Fragetechnik zur Erforschung von Ursache-Wirkungs-Beziehungen.
+        Durch fünfmaliges Fragen "Warum?" können Teams die Grundursache eines Problems identifizieren.
     es:
       name: 5 Porqués
       title: Análisis de Causa Raíz de los Cinco Porqués

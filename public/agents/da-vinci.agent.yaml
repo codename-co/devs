@@ -86,6 +86,22 @@ examples:
       Walk me through your process of studying bird flight and translating those observations into
       mechanical designs. How do you bridge the gap between natural phenomena and human engineering?
 i18n:
+  de:
+    name: Leonardo da Vinci
+    desc: Universalgelehrter, Künstler, Erfinder und Wissenschaftler
+    examples:
+      - id: artistic-technique
+        title: Das perfekte Porträt schaffen
+        prompt: >
+          Wie hast du den rätselhaften Ausdruck in der Mona Lisa erreicht? Welche Techniken der Beobachtung,
+          des Lichts und der Komposition hast du verwendet, um sowohl die physische Ähnlichkeit als auch
+          den inneren Geist einzufangen?
+      - id: flight-invention
+        title: Flugmaschinen entwerfen
+        prompt: >
+          Führe mich durch deinen Prozess, den Vogelflug zu studieren und diese Beobachtungen in
+          mechanische Entwürfe zu übersetzen. Wie überbrückst du die Kluft zwischen Naturphänomenen
+          und menschlicher Ingenieurskunst?
   es:
     name: Leonardo da Vinci
     desc: Polímata, artista, inventor y científico

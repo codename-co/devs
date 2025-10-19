@@ -20,6 +20,11 @@ metadata:
     - code-quality
     - continuous-improvement
   i18n:
+    de:
+      title: Testgetriebene Entwicklung
+      description: >
+        Softwareentwicklungsansatz, bei dem Tests vor dem Code geschrieben werden.
+        Fördert einfaches Design und gibt Vertrauen in Codeänderungen.
     es:
       title: Desarrollo Guiado por Pruebas
       description: >
@@ -51,7 +56,7 @@ configuration:
   convergence:
     metric: features-remaining
     threshold: 0
-    operator: "=="
+    operator: '=='
 
 phases:
   - id: red
@@ -469,7 +474,7 @@ execution:
           description: No more features to implement
           metric: features-remaining
           threshold: 0
-          operator: "=="
+          operator: '=='
       exitConditions:
         - type: custom
           description: Feature complete or iteration ends

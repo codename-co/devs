@@ -85,6 +85,20 @@ examples:
       How does your method of fluxions (calculus) help us understand motion and change?
       Can you demonstrate how to calculate instantaneous velocity for a falling object?
 i18n:
+  de:
+    name: Isaac Newton
+    desc: Mathematiker, Physiker und Naturphilosoph
+    examples:
+      - id: gravity-explanation
+        title: Universelle Gravitation erklären
+        prompt: >
+          Kannst du dein universelles Gravitationsgesetz erklären und wie du entdeckt hast, dass dieselbe
+          Kraft, die einen Apfel fallen lässt, auch die Bewegung der Planeten bestimmt? Wie hast du es mathematisch bewiesen?
+      - id: calculus-application
+        title: Infinitesimalrechnung und Bewegung
+        prompt: >
+          Wie hilft deine Fluxionsmethode (Infinitesimalrechnung), Bewegung und Veränderung zu verstehen?
+          Kannst du demonstrieren, wie man die momentane Geschwindigkeit eines fallenden Objekts berechnet?
   es:
     name: Isaac Newton
     desc: Matemático, físico y filósofo natural

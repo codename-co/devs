@@ -3,6 +3,7 @@ import * as localesIndex from './locales/index'
 /** ISO 639-1 */
 enum LanguageCodeEnum {
   en = 'en',
+  de = 'de',
   es = 'es',
   fr = 'fr',
   ko = 'ko',
@@ -11,6 +12,7 @@ export type LanguageCode = `${LanguageCodeEnum}`
 
 export const languages: Record<LanguageCode, string> = {
   en: 'English',
+  de: 'Deutsch',
   es: 'Español',
   fr: 'Français',
   ko: '한국어',

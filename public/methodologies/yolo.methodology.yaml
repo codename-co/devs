@@ -8,6 +8,11 @@ metadata:
   version: 1.0.0
   complexity: simple
   i18n:
+    de:
+      title: You Only Live Once Ansatz
+      description: >
+        Schnell-und-schmutzig-Entwicklungsansatz für Rapid Prototyping und MVP-Erstellung.
+        Priorisiert Geschwindigkeit und Experimentation über Perfektion - geeignet für Proof-of-Concepts.
     es:
       title: Solo se vive una vez
       description: >

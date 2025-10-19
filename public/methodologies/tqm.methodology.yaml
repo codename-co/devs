@@ -20,6 +20,11 @@ metadata:
     - customer-satisfaction
     - culture-change
   i18n:
+    de:
+      title: Total Quality Management
+      description: >
+        Organisationsweiter Ansatz zur langfristigen Verbesserung durch Kundenzufriedenheit.
+        Beteiligt alle Mitglieder einer Organisation an der Qualitätsverbesserung.
     es:
       title: Gestión de Calidad Total
       description: >

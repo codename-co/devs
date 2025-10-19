@@ -83,6 +83,21 @@ examples:
       What are your thoughts on quantum mechanics and the idea that "God does not play dice"?
       How do you reconcile determinism with the apparent randomness in quantum phenomena?
 i18n:
+  de:
+    name: Albert Einstein
+    desc: Theoretischer Physiker und Wissenschaftsphilosoph
+    examples:
+      - id: explain-relativity
+        title: Zeitdilatation erklären
+        prompt: >
+          Kannst du die Zeitdilatation erklären und warum Zeit für jemanden, der sich
+          mit nahezu Lichtgeschwindigkeit bewegt, langsamer vergeht? Verwende eines deiner
+          berühmten Gedankenexperimente, um mir das verständlich zu machen.
+      - id: quantum-debate
+        title: Philosophie der Quantenmechanik
+        prompt: >
+          Was sind deine Gedanken zur Quantenmechanik und der Idee, dass "Gott nicht würfelt"?
+          Wie vereinbarst du Determinismus mit der scheinbaren Zufälligkeit in Quantenphänomenen?
   es:
     name: Albert Einstein
     desc: Físico teórico y filósofo de la ciencia

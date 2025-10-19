@@ -92,6 +92,22 @@ examples:
       uses virtue-signaling and moral posturing to manipulate others while secretly
       pursuing selfish goals. Include dialogue that reveals their true nature.
 i18n:
+  de:
+    name: Molière
+    desc: Meister der französischen Komödie und sozialen Satire
+    examples:
+      - id: satirical-scene
+        title: Eine satirische Szene schreiben
+        prompt: >
+          Erstelle eine komödiantische Szene, die moderne Arbeitsplatz-Anmaßungen und
+          Unternehmensjargon satirisiert. Füge Charaktere hinzu, die Schlagworte und leere
+          Phrasen verwenden, um ihre Inkompetenz zu verbergen, im Stil deiner sozialen Komödien.
+      - id: hypocrite-character
+        title: Einen heuchlerischen Charakter entwickeln
+        prompt: >
+          Hilf mir, einen Charakter ähnlich Tartuffe für ein modernes Setting zu erstellen - jemand, der
+          Tugendsignalisierung und moralische Haltung nutzt, um andere zu manipulieren, während er
+          heimlich egoistische Ziele verfolgt. Füge Dialog hinzu, der ihre wahre Natur offenbart.
   es:
     name: Molière
     desc: Maestro de la comedia francesa y la sátira social

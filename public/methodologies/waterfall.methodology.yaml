@@ -19,6 +19,12 @@ metadata:
     - traditional
     - phase-gate
   i18n:
+    de:
+      name: Wasserfall
+      title: Wasserfall-Modell
+      description: >
+        Sequentielles Softwareentwicklungsmodell mit kaskadierenden Phasen.
+        Jede Phase muss abgeschlossen sein, bevor die nächste beginnt - geeignet für gut definierte Projekte.
     es:
       name: Modelo en Cascada
       title: Desarrollo de Software en Cascada

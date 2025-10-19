@@ -20,6 +20,11 @@ metadata:
     - process-redesign
     - innovation
   i18n:
+    de:
+      title: Business Process Reengineering
+      description: >
+        Radikales Redesign von Geschäftsprozessen zur Erreichung dramatischer Verbesserungen.
+        Fokussiert sich auf grundlegende Neugestaltung statt inkrementeller Änderungen.
     es:
       title: Reingeniería de Procesos de Negocio
       description: >

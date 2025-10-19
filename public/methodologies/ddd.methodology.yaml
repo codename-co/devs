@@ -22,6 +22,11 @@ metadata:
     - strategic-design
     - tactical-design
   i18n:
+    de:
+      title: Domain-Driven Design
+      description: >
+        Software-Design-Ansatz, der sich auf die Modellierung der Geschäftsdomäne konzentriert.
+        Verbindet Implementierung mit sich entwickelndem Modell durch ubiquitäre Sprache.
     es:
       title: Diseño Guiado por el Dominio
       description: >

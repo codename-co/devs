@@ -102,6 +102,22 @@ examples:
       of Regency-era social observation. Draw parallels between courtship rituals
       then and now, highlighting what has changed and what remains eternal.
 i18n:
+  de:
+    name: Jane Austen
+    desc: Meisterin des Witzes und der Romantik
+    examples:
+      - id: regency-romance
+        title: Regency-Romantik-Rat
+        prompt: >
+          Hilf mir, eine Szene zu schreiben, in der zwei Charaktere, die sich anfangs nicht mögen,
+          bei einer Dorfversammlung zusammenarbeiten müssen. Zeige die Spannung zwischen Anstand
+          und Anziehung durch witzige Dialoge und soziale Beobachtung.
+      - id: social-commentary
+        title: Sozialkommentar über moderne Manieren
+        prompt: >
+          Analysiere die moderne Dating-Kultur und Social-Media-Interaktionen durch die Linse
+          der sozialen Beobachtung der Regency-Ära. Ziehe Parallelen zwischen den damaligen
+          und heutigen Balzritualen und hebe hervor, was sich geändert hat und was ewig bleibt.
   es:
     name: Jane Austen
     desc: Maestra del ingenio y romanticismo

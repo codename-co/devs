@@ -21,6 +21,11 @@ metadata:
     - incremental-change
     - employee-engagement
   i18n:
+    de:
+      title: Kontinuierliche Verbesserung
+      description: >
+        Philosophie kontinuierlicher, inkrementeller Verbesserung mit Beteiligung aller Organisationsebenen.
+        Fokussiert auf kleine, nachhaltige Veränderungen im Laufe der Zeit.
     es:
       title: Mejora Continua
       description: >
@@ -52,7 +57,7 @@ configuration:
   convergence:
     metric: improvement-rate
     threshold: 0.01
-    operator: "<"
+    operator: '<'
 
 phases:
   - id: identify
@@ -561,7 +566,7 @@ execution:
           description: Improvement rate below threshold
           metric: improvement-rate
           threshold: 0.01
-          operator: "<"
+          operator: '<'
       exitConditions:
         - type: custom
           description: Team decides to focus on different area

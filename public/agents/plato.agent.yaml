@@ -83,6 +83,20 @@ examples:
       What is the relationship between justice in the individual soul and justice in society?
       How can we create a more just world according to your vision of the ideal state?
 i18n:
+  de:
+    name: Platon
+    desc: Philosoph und Gründer der Akademie
+    examples:
+      - id: allegory-cave
+        title: Das Höhlengleichnis verstehen
+        prompt: >
+          Kannst du dein Höhlengleichnis erklären und was es uns über Realität, Wissen
+          und die Reise von der Unwissenheit zur Erleuchtung lehrt? Wie gilt dies für mein Leben heute?
+      - id: ideal-state
+        title: Gerechtigkeit in der Seele und der ideale Staat
+        prompt: >
+          Was ist die Beziehung zwischen Gerechtigkeit in der individuellen Seele und Gerechtigkeit in der Gesellschaft?
+          Wie können wir eine gerechtere Welt nach deiner Vision des idealen Staates schaffen?
   es:
     name: Platón
     desc: Filósofo y fundador de la Academia

@@ -93,6 +93,20 @@ examples:
       The current system has 500k lines of code, serves 50k users, and cannot afford significant downtime.
       Provide a phased approach with risk mitigation.
 i18n:
+  de:
+    name: Software-Architekt
+    desc: Experte für Systemdesign
+    examples:
+      - id: microservices-design
+        title: Microservices-Architektur entwerfen
+        prompt: >
+          Entwirf eine skalierbare Microservices-Architektur für eine E-Commerce-Plattform.
+          Füge Service-Grenzen, Kommunikationsmuster und Datenmanagement-Strategien hinzu.
+      - id: system-migration
+        title: Legacy-System-Migration planen
+        prompt: >
+          Ich muss eine monolithische Anwendung zu einer modernen Cloud-nativen Architektur migrieren.
+          Erstelle eine schrittweise Migrationsstrategie mit minimalem Risiko und Ausfallzeit.
   es:
     name: Arquitecto de Software
     desc: Experto en arquitectura de software empresarial

@@ -14,6 +14,27 @@ metadata:
     - defect-reduction
     - statistical-analysis
   complexity: complex
+  i18n:
+    de:
+      title: Six Sigma Qualitätsmanagement
+      description: >
+        Disziplinierter, datengetriebener Ansatz zur Prozessverbesserung durch Beseitigung von Defekten.
+        Zielt auf 3,4 Defekte pro Million Gelegenheiten ab.
+    es:
+      title: Gestión de Calidad Six Sigma
+      description: >
+        Metodología basada en datos para eliminar defectos y mejorar la calidad.
+        Six Sigma apunta a procesos casi perfectos con 3.4 defectos por millón de oportunidades.
+    fr:
+      title: Gestion de la Qualité Six Sigma
+      description: >
+        Méthodologie axée sur les données pour éliminer les défauts et améliorer la qualité.
+        Six Sigma vise des processus quasi parfaits avec 3,4 défauts par million d'opportunités.
+    ko:
+      title: 식스 시그마 품질 관리
+      description: >
+        결함을 제거하고 품질을 향상시키기 위한 데이터 기반 방법론.
+        식스 시그마는 백만 기회당 3.4개의 결함으로 거의 완벽한 프로세스를 목표로 합니다.
   tags:
     - quality
     - statistical-analysis

@@ -86,6 +86,20 @@ examples:
       What does it take to become a Junzi (exemplary person)? How can I cultivate the virtues
       of Ren, Yi, and Li in my daily interactions and relationships?
 i18n:
+  de:
+    name: Konfuzius
+    desc: Chinesischer Philosoph und Lehrer der Ethik und sozialen Harmonie
+    examples:
+      - id: filial-piety
+        title: Kindliche Pietät und familiäre Harmonie kultivieren
+        prompt: >
+          Wie kann ich kindliche Pietät in der modernen Welt praktizieren? Was bedeutet es, meine Eltern
+          und Familie zu ehren, während ich meine eigene Unabhängigkeit und persönliches Wachstum bewahre?
+      - id: becoming-junzi
+        title: Der Weg der vorbildlichen Person
+        prompt: >
+          Was braucht es, um ein Junzi (vorbildliche Person) zu werden? Wie kann ich die Tugenden
+          von Ren, Yi und Li in meinen täglichen Interaktionen und Beziehungen kultivieren?
   es:
     name: Confucio
     desc: Filósofo chino y maestro de ética y armonía social

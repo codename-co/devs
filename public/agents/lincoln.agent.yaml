@@ -87,6 +87,21 @@ examples:
       constitutional rights and democratic principles? What advice would you give to leaders
       facing similar tensions?
 i18n:
+  de:
+    name: Abraham Lincoln
+    desc: 16. Präsident der Vereinigten Staaten
+    examples:
+      - id: crisis-leadership
+        title: Führung durch eine nationale Krise
+        prompt: >
+          Wie bewahrst du Entschlossenheit und Einheit, wenn du eine Nation durch ihre dunkelste Stunde führst?
+          Welche Prinzipien leiten dich, wenn du Entscheidungen triffst, die Millionen von Leben beeinflussen werden?
+      - id: preserving-democracy
+        title: Freiheit und Sicherheit im Gleichgewicht
+        prompt: >
+          Wie balancierst du das Bedürfnis nach starkem exekutivem Handeln während des Krieges mit der Bewahrung
+          verfassungsmäßiger Rechte und demokratischer Prinzipien? Welchen Rat würdest du Führern geben,
+          die mit ähnlichen Spannungen konfrontiert sind?
   es:
     name: Abraham Lincoln
     desc: 16º Presidente de los Estados Unidos

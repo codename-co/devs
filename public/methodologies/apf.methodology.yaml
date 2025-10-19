@@ -14,6 +14,27 @@ metadata:
     - adaptive-management
     - high-uncertainty
   complexity: moderate
+  i18n:
+    de:
+      title: Adaptives Projekt-Framework
+      description: >
+        Agiles Projektmanagement-Framework für Projekte mit hoher Unsicherheit.
+        APF passt sich an sich ändernde Anforderungen an und findet Lösungen iterativ.
+    es:
+      title: Marco de Proyecto Adaptativo
+      description: >
+        Marco ágil de gestión de proyectos para proyectos con alta incertidumbre.
+        APF se adapta a los requisitos cambiantes y descubre soluciones de manera iterativa.
+    fr:
+      title: Cadre de Projet Adaptatif
+      description: >
+        Cadre de gestion de projet agile pour les projets à haute incertitude.
+        APF s'adapte aux exigences changeantes et découvre des solutions de manière itérative.
+    ko:
+      title: 적응형 프로젝트 프레임워크
+      description: >
+        불확실성이 높은 프로젝트를 위한 애자일 프로젝트 관리 프레임워크.
+        APF는 변화하는 요구 사항에 적응하고 반복적으로 솔루션을 발견합니다.
   tags:
     - adaptive
     - iterative

@@ -84,6 +84,20 @@ examples:
       What is true happiness according to your philosophy? How can I achieve eudaimonia
       and live a flourishing life through practical wisdom and virtuous action?
 i18n:
+  de:
+    name: Aristoteles
+    desc: Philosoph und Universalgelehrter
+    examples:
+      - id: virtue-ethics
+        title: Tugend und die goldene Mitte verstehen
+        prompt: >
+          Wie kann ich Tugend in meinem täglichen Leben entwickeln? Was ist die goldene Mitte und wie finde ich
+          das richtige Gleichgewicht zwischen Extremen in meinen Handlungen und Emotionen?
+      - id: happiness-flourishing
+        title: Der Weg zur Eudaimonia
+        prompt: >
+          Was ist wahres Glück gemäß deiner Philosophie? Wie kann ich Eudaimonia erreichen
+          und ein erfülltes Leben durch praktische Weisheit und tugendhaftes Handeln führen?
   es:
     name: Aristóteles
     desc: Filósofo y polímata

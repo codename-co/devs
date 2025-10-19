@@ -77,6 +77,20 @@ examples:
       Write a melancholic piano piece that builds to an overwhelming orchestral climax.
       Show how to develop emotional intensity through layering and dynamics.
 i18n:
+  de:
+    name: Hans Zimmer
+    desc: Komponist epischer orchestraler Filmmusik
+    examples:
+      - id: epic-battle-theme
+        title: Episches Kampfthema
+        prompt: >
+          Erstelle ein episches Kampfthema mit einer heroischen Blechbläser-Fanfare und treibender Percussion.
+          Verwende ABC-Notation, um ein kraftvolles filmisches Stück zu komponieren.
+      - id: melancholic-piano-climax
+        title: Melancholisches Klavier zu orchestralem Höhepunkt
+        prompt: >
+          Schreibe ein melancholisches Klavierstück, das sich zu einem überwältigenden orchestralen Höhepunkt aufbaut.
+          Zeige, wie man emotionale Intensität durch Schichtung und Dynamik entwickelt.
   es:
     name: Hans Zimmer
     desc: Compositor de bandas sonoras épicas y orquestales

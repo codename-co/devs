@@ -14,6 +14,27 @@ metadata:
     - team-based
     - lightweight-methodology
   complexity: simple
+  i18n:
+    de:
+      title: Crystal Methodenfamilie
+      description: >
+        Familie agiler Methodologien, angepasst an Teamgröße und Projektkritikalität.
+        Betont Menschen, Interaktion und Anpassung über starre Prozesse.
+    es:
+      title: Metodología Crystal
+      description: >
+        Familia de metodologías ágiles adaptadas al tamaño del equipo y la criticidad del proyecto.
+        Crystal enfatiza a las personas, la interacción y la comunicación sobre los procesos rígidos.
+    fr:
+      title: Méthodologie Crystal
+      description: >
+        Famille de méthodologies agiles adaptées à la taille de l'équipe et à la criticité du projet.
+        Crystal met l'accent sur les personnes, l'interaction et la communication plutôt que sur les processus rigides.
+    ko:
+      title: 크리스탈 방법론 패밀리
+      description: >
+        팀 규모와 프로젝트 중요도에 맞춘 애자일 방법론 패밀리.
+        Crystal은 엄격한 프로세스보다 사람, 상호작용 및 커뮤니케이션을 강조합니다.
   tags:
     - agile
     - lightweight

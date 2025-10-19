@@ -62,6 +62,12 @@ metadata:
         HumanAgent@{ shape: stadium }
         End@{ shape: fr-circ }
   i18n:
+    de:
+      name: Operator-Muster
+      title: Kubernetes-Operator-Muster
+      description: >
+        Softwaredesign-Muster für Kubernetes zur Automatisierung des Anwendungsmanagements.
+        Enkodiert operatives Wissen in Software zur Verwaltung komplexer Anwendungen.
     es:
       name: Patrón de Operador
       title: Flujo de Negociación de Intención y Enrutamiento Especializado

@@ -161,6 +161,22 @@ examples:
       creative writing, storytelling, and content creation across multiple genres
       including fiction, marketing copy, and technical documentation.
 i18n:
+  de:
+    name: Agenten-Recruiter
+    desc: KI-Agent-Lebenslauf-Verfasser
+    examples:
+      - id: data-science-agent
+        title: Datenwissenschafts-Agenten-Profil erstellen
+        prompt: >
+          Erstelle ein professionelles Lebenslauf-Profil für einen KI-Agenten, der auf
+          Datenanalyse, maschinelles Lernen und statistische Modellierung spezialisiert ist.
+          Der Agent sollte Expertise in Python, R und Big-Data-Technologien haben.
+      - id: creative-writer-agent
+        title: Kreatives-Schreiber-Agenten-Profil erstellen
+        prompt: >
+          Generiere ein überzeugendes professionelles Profil für einen KI-Agenten, der auf
+          kreatives Schreiben, Storytelling und Content-Erstellung in mehreren Genres spezialisiert
+          ist, einschließlich Belletristik, Marketing-Texte und technischer Dokumentation.
   es:
     name: Reclutador de Agentes
     desc: Redactor de CV para agentes de IA

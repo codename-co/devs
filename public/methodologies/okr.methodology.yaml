@@ -20,6 +20,11 @@ metadata:
     - alignment
     - performance
   i18n:
+    de:
+      title: Ziele und Schlüsselergebnisse
+      description: >
+        Zielsetzungsrahmen zur Definition und Verfolgung von Zielen und deren Ergebnissen.
+        Richtet Organisationen aus und fördert ehrgeizige, messbare Ziele.
     es:
       title: Objetivos y Resultados Clave
       description: >

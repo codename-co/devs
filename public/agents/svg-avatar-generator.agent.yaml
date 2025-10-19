@@ -186,6 +186,20 @@ examples:
       gold accents, symmetrical patterns, and sophisticated visual hierarchy. Use
       premium color palette with black, gold, and cream tones.
 i18n:
+  de:
+    name: SVG-Avatar-Generator
+    desc: Erstellt einzigartige SVG-Avatare
+    examples:
+      - id: minimal-avatar
+        title: Minimalistischer geometrischer Avatar
+        prompt: >
+          Erstelle einen minimalistischen geometrischen Avatar mit kräftigen Farben und einfachen Formen.
+          Verwende Kreise, Dreiecke und Rechtecke für ein modernes, abstraktes Design.
+      - id: character-avatar
+        title: Charakterbasierter Avatar
+        prompt: >
+          Generiere einen charakterbasierten Avatar mit freundlichen Gesichtszügen, rundem Design
+          und warmen Farben. Mache es zugänglich und einladend für ein Profil auf sozialen Medien.
   es:
     name: Generador de Avatares
     desc: Artista que crea diseños de avatares

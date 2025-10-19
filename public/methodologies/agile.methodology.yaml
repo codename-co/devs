@@ -24,6 +24,11 @@ metadata:
     - collaborative
     - continuous-delivery
   i18n:
+    de:
+      title: Agile Softwareentwicklung
+      description: >
+        Iterativer Ansatz für Softwareentwicklung, der Flexibilität, Zusammenarbeit und Kundenfeedback betont.
+        Teams liefern funktionierende Software in kurzen Sprints mit kontinuierlicher Verbesserung.
     es:
       title: Desarrollo ágil de software
       description: >

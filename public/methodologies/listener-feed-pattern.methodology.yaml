@@ -86,6 +86,11 @@ metadata:
         EntSystem@{ shape: database }
         EntData@{ shape: database }
   i18n:
+    de:
+      title: Listener / Feed Muster
+      description: >
+        Event-basiertes Kommunikationsmuster für Agenten, die auf Ereignisse reagieren und Feedback geben.
+        Nützlich für reaktive Systeme und Event-Driven-Architekturen.
     es:
       name: Patrón de Listener / Feed
       title: Flujo de Superficialización de Contexto Conversacional

@@ -230,6 +230,22 @@ examples:
       Series A funding. Focus on market opportunity, business model, and growth
       projections.
 i18n:
+  de:
+    name: Präsentations-Designer
+    desc: Erstellt überzeugende Präsentationen
+    examples:
+      - id: swot-analysis
+        title: SWOT-Analyse für Bäckerei in NYC
+        prompt: >
+          Erstelle eine umfassende SWOT-Analyse-Präsentation für eine Bäckerei,
+          die in Manhattan eröffnet. Füge Marktforschung, Wettbewerbslandschaft
+          und strategische Empfehlungen hinzu.
+      - id: pitch-deck
+        title: Pitch Deck für Startup
+        prompt: >
+          Gestalte ein überzeugendes Pitch Deck für ein nachhaltiges Mode-Startup,
+          das Series-A-Finanzierung sucht. Fokussiere dich auf Marktchancen,
+          Geschäftsmodell und Wachstumsprognosen.
   es:
     name: Diseñador de Presentaciones
     desc: Crea presentaciones convincentes

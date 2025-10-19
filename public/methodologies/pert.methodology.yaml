@@ -14,6 +14,27 @@ metadata:
     - planning
     - risk-management
   complexity: complex
+  i18n:
+    de:
+      title: Programm-Auswertungs- und Überprüfungstechnik
+      description: >
+        Projektmanagement-Tool zur Analyse und Darstellung von Aufgaben in einem Projekt.
+        Nutzt statistische Methoden zur Schätzung von Projektdauer.
+    es:
+      title: Técnica de Evaluación y Revisión de Programas
+      description: >
+        Técnica estadística de gestión de proyectos para analizar y representar las tareas del proyecto.
+        PERT utiliza estimaciones de tiempo probabilísticas para modelar la incertidumbre del proyecto.
+    fr:
+      title: Technique d'Évaluation et de Révision de Programme
+      description: >
+        Technique statistique de gestion de projet pour analyser et représenter les tâches du projet.
+        PERT utilise des estimations de temps probabilistes pour modéliser l'incertitude du projet.
+    ko:
+      title: 프로그램 평가 및 검토 기법
+      description: >
+        프로젝트 작업을 분석하고 표현하기 위한 통계적 프로젝트 관리 기법입니다.
+        PERT는 확률적 시간 추정을 사용하여 프로젝트 불확실성을 모델링합니다.
   tags:
     - scheduling
     - network-diagram

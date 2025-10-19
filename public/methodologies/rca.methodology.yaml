@@ -21,6 +21,11 @@ metadata:
     - root-cause
     - prevention
   i18n:
+    de:
+      title: Grundursachenanalyse
+      description: >
+        Systematischer Prozess zur Identifikation der grundlegenden Ursachen von Problemen.
+        Nutzt verschiedene Techniken wie 5 Whys, Fishbone-Diagramme und Fehlerbaumanalyse.
     es:
       title: Análisis de Causa Raíz
       description: >

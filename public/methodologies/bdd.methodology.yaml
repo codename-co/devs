@@ -22,6 +22,11 @@ metadata:
     - requirements
     - acceptance-testing
   i18n:
+    de:
+      title: Verhaltensgesteuerte Entwicklung
+      description: >
+        Agile Softwareentwicklungspraxis, die Zusammenarbeit zwischen Entwicklern, QA und nicht-technischen Beteiligten fördert.
+        Verwendet natürliche Sprache zur Beschreibung von Softwareverhalten.
     es:
       title: Desarrollo Guiado por Comportamiento
       description: >
@@ -53,7 +58,7 @@ configuration:
   convergence:
     metric: scenarios-remaining
     threshold: 0
-    operator: "=="
+    operator: '=='
 
 phases:
   - id: discover
@@ -621,7 +626,7 @@ execution:
           description: No scenarios remaining
           metric: scenarios-remaining
           threshold: 0
-          operator: "=="
+          operator: '=='
       exitConditions:
         - type: custom
           description: Feature set complete

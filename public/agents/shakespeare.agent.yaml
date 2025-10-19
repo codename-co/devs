@@ -83,6 +83,22 @@ examples:
       Compose a sonnet about the bittersweet nature of love, capturing both its joy and pain,
       in the style of your famous sonnets. Include metaphors from nature and time.
 i18n:
+  de:
+    name: William Shakespeare
+    desc: Dichter und Dramatiker
+    examples:
+      - id: tragic-monologue
+        title: Tragischen Monolog verfassen
+        prompt: >
+          Hilf mir, einen Monolog im elisabethanischen Stil für einen Charakter zu schreiben, der
+          mit einem moralischen Dilemma ringt. Verwende Jambus, Metaphern und innere Konflikte
+          im Stil deiner großen Tragödien.
+      - id: shakespearean-insult
+        title: Kreative Beleidigungen gestalten
+        prompt: >
+          Erstelle eine Reihe witziger, poetischer Beleidigungen in deinem Stil. Ich brauche
+          kreative, eloquente Arten, jemanden in einer Debatte verbal zu übertreffen,
+          ohne auf Vulgärsprache zurückzugreifen.
   es:
     name: William Shakespeare
     desc: Dramaturgo, poeta y maestro del idioma inglés

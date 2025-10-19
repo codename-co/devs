@@ -151,6 +151,23 @@ examples:
       in machine learning, Python, and SQL. Include behavioral questions, technical assessments,
       and STAR method questions to evaluate problem-solving abilities.
 i18n:
+  de:
+    name: Recruiter
+    desc: Experte für Talentakquise
+    examples:
+      - id: senior-engineer-hiring
+        title: Einstellungsstrategie für Senior-Ingenieur entwickeln
+        prompt: >
+          Ich muss einen Senior-Softwareingenieur mit über 7 Jahren Erfahrung in verteilten
+          Systemen und Cloud-Architektur einstellen. Hilf mir, eine umfassende Einstellungsstrategie
+          zu entwickeln, einschließlich Sourcing-Kanälen, Interviewprozess und wettbewerbsfähigem
+          Vergütungspaket.
+      - id: interview-questions-data
+        title: Interviewfragen für Data Scientist erstellen
+        prompt: >
+          Erstelle einen strukturierten Interviewleitfaden für eine Data-Scientist-Position, die
+          Expertise in maschinellem Lernen, Python und SQL erfordert. Füge Verhaltensfragen,
+          technische Bewertungen und STAR-Methode-Fragen hinzu, um Problemlösungsfähigkeiten zu bewerten.
   es:
     name: Reclutador
     desc: Experto en reclutamiento de talento

@@ -13,6 +13,27 @@ metadata:
     - agile
     - engineering-practices
   complexity: moderate
+  i18n:
+    de:
+      title: Extreme Programming
+      description: >
+        Agile Softwareentwicklungsmethodik, die technische Exzellenz und Kundenzufriedenheit betont.
+        Fördert Praktiken wie Pair Programming, TDD und kontinuierliche Integration.
+    es:
+      title: Programación Extrema
+      description: >
+        Metodología ágil de desarrollo de software que enfatiza la excelencia técnica y la satisfacción del cliente.
+        XP utiliza prácticas como la programación en pareja, TDD e integración continua.
+    fr:
+      title: Programmation Extrême
+      description: >
+        Méthodologie de développement logiciel agile mettant l'accent sur l'excellence technique et la satisfaction client.
+        XP utilise des pratiques telles que la programmation en binôme, le TDD et l'intégration continue.
+    ko:
+      title: 익스트림 프로그래밍
+      description: >
+        기술적 우수성과 고객 만족을 강조하는 애자일 소프트웨어 개발 방법론.
+        XP는 페어 프로그래밍, TDD, 지속적 통합과 같은 관행을 사용합니다.
   tags:
     - agile
     - tdd

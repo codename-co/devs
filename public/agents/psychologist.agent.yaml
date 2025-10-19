@@ -127,6 +127,20 @@ examples:
       and it's affecting my relationships. How can I establish better boundaries and find
       balance in my life?
 i18n:
+  de:
+    name: Psychologe
+    desc: Virtueller klinischer Psychologe
+    examples:
+      - id: anxiety-management
+        title: Angst- und Panikattacken-Management
+        prompt: >
+          Ich leide unter häufigen Panikattacken und allgemeiner Angst. Kannst du mir
+          evidenzbasierte Techniken zur Bewältigung dieser Symptome beibringen?
+      - id: cognitive-distortions
+        title: Kognitive Verzerrungen identifizieren
+        prompt: >
+          Hilf mir, häufige kognitive Verzerrungen in meinem Denken zu identifizieren und umzustrukturieren.
+          Ich neige zu katastrophisierendem Denken und Übergeneralisierung.
   es:
     name: Psicólogo
     desc: Psicólogo clínico virtual

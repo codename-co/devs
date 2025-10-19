@@ -22,6 +22,10 @@ metadata:
     - incremental
     - team-based
   i18n:
+    de:
+      description: >
+        Ein Agile-Framework für das Management komplexer Projekte, insbesondere Softwareentwicklung.
+        Scrum nutzt zeitlich begrenzte Iterationen namens Sprints, typischerweise 2-4 Wochen lang, mit spezifischen Rollen, Events und Artefakten zur schnellen Lieferung funktionierender Inkremente.
     es:
       description: >
         Un marco ágil para la gestión de proyectos complejos, particularmente en el desarrollo de software.

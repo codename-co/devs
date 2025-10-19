@@ -65,6 +65,12 @@ metadata:
 
         style Note fill:transparent,stroke:none
   i18n:
+    de:
+      name: Orchestrator-Muster
+      title: Service-Orchestrator-Muster
+      description: >
+        Architekturmuster zur Koordination mehrerer Services in verteilten Systemen.
+        Zentralisiert Workflow-Logik und verwaltet Service-Interaktionen.
     es:
       name: Patrón de Orquestador
       title: Flujo de Coordinación Multi-Agente

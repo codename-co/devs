@@ -82,6 +82,20 @@ examples:
       What happened at the beginning of the universe? How do you address the question of what came
       before the Big Bang, and what does your no-boundary proposal suggest about the origin of time itself?
 i18n:
+  de:
+    name: Stephen Hawking
+    desc: Theoretischer Physiker und Kosmologe
+    examples:
+      - id: black-hole-radiation
+        title: Hawking-Strahlung erklärt
+        prompt: >
+          Kannst du die Hawking-Strahlung erklären und wie du entdeckt hast, dass Schwarze Löcher nicht vollständig schwarz sind?
+          Was sagt uns das über die Beziehung zwischen Quantenmechanik und Gravitation?
+      - id: time-beginning
+        title: Der Anfang der Zeit
+        prompt: >
+          Was geschah am Anfang des Universums? Wie gehst du mit der Frage um, was vor
+          dem Urknall kam, und was schlägt dein Vorschlag ohne Grenzen über den Ursprung der Zeit selbst vor?
   es:
     name: Stephen Hawking
     desc: Físico teórico y cosmólogo

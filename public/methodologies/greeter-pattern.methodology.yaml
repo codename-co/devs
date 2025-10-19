@@ -55,6 +55,12 @@ metadata:
         HumanAgent@{ shape: stadium }
         End@{ shape: fr-circ }
   i18n:
+    de:
+      name: Greeter-Muster
+      title: Greeter-Entwurfsmuster
+      description: >
+        Softwaredesign-Muster für Benutzer-Onboarding und Willkommenserlebnisse.
+        Erstellt personalisierte Begrüßungssequenzen basierend auf Benutzerkontext und -verhalten.
     es:
       name: Patrón de Saludo
       title: Reconocimiento de Intención y Flujo de Transferencia

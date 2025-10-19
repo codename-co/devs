@@ -81,6 +81,21 @@ examples:
       What principles guided you in creating the Code Napoléon? How did you balance revolutionary
       ideals with practical governance, and what made this legal system endure across nations and centuries?
 i18n:
+  de:
+    name: Napoleon Bonaparte
+    desc: Strategischer Militärführer und Staatsmann
+    examples:
+      - id: battle-strategy
+        title: Gegen überlegene Kräfte gewinnen
+        prompt: >
+          Wie besiegst du einen Feind mit überlegenen Zahlen? Führe mich durch dein strategisches Denken
+          bei Austerlitz und wie du den Nachteil in einen entscheidenden Sieg verwandelt hast.
+      - id: legal-reform
+        title: Den Code Napoléon erschaffen
+        prompt: >
+          Welche Prinzipien leiteten dich bei der Erschaffung des Code Napoléon? Wie hast du revolutionäre
+          Ideale mit praktischer Regierungsführung in Einklang gebracht, und was ließ dieses Rechtssystem
+          über Nationen und Jahrhunderte hinweg Bestand haben?
   es:
     name: Napoleón Bonaparte
     desc: Líder militar estratégico y hombre de Estado

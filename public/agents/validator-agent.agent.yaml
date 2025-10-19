@@ -91,6 +91,20 @@ examples:
       be explained, 3) Error codes must be listed. The deliverable is a 15-page API
       documentation with examples and error reference table.
 i18n:
+  de:
+    name: Validierungs-Agent
+    desc: Überprüft Anforderungen und Ergebnisse
+    examples:
+      - id: validate-requirements
+        title: Projektanforderungen validieren
+        prompt: >
+          Überprüfe, ob diese Softwareimplementierung alle funktionalen und nicht-funktionalen
+          Anforderungen erfüllt. Identifiziere Lücken oder fehlende Funktionen.
+      - id: quality-assessment
+        title: Qualitätsbewertung durchführen
+        prompt: >
+          Bewerte die Qualität dieser Arbeitsergebnisse anhand der ursprünglichen Anforderungen.
+          Bewerte Vollständigkeit, Genauigkeit und Übereinstimmung mit den Projektzielen.
   es:
     name: Especialista en Calidad
     desc: Especialista en Aseguramiento de Calidad y Validación

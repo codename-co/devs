@@ -21,6 +21,11 @@ metadata:
     - design
     - new-product-development
   i18n:
+    de:
+      title: Definieren, Messen, Analysieren, Entwerfen, Verifizieren
+      description: >
+        Six Sigma-Methodik für das Design neuer Produkte oder Prozesse.
+        Fokussiert auf kundenorientiertes Design von Anfang an.
     es:
       title: Definir, Medir, Analizar, Diseñar, Verificar
       description: >

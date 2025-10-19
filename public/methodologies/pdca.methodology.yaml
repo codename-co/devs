@@ -23,6 +23,11 @@ metadata:
     - kaizen
     - lean
   i18n:
+    de:
+      title: Planen-Durchführen-Prüfen-Handeln
+      description: >
+        Iterativer vierstufiger Managementzyklus für kontinuierliche Verbesserung.
+        Auch bekannt als Deming-Zyklus oder Shewhart-Zyklus.
     es:
       title: Planificar-Hacer-Verificar-Actuar
       description: >

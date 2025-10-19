@@ -14,6 +14,27 @@ metadata:
     - portfolio-management
     - program-management
   complexity: expert
+  i18n:
+    de:
+      title: Skaliertes Agiles Framework
+      description: >
+        Framework zur Skalierung agiler Praktiken auf Unternehmensebene.
+        Integriert Agile, Lean und DevOps-Prinzipien für große Organisationen.
+    es:
+      title: Marco Ágil Escalado
+      description: >
+        Marco para escalar prácticas ágiles en grandes empresas.
+        SAFe combina prácticas Lean, Agile y DevOps para el desarrollo a escala empresarial.
+    fr:
+      title: Cadre Agile à Grande Échelle
+      description: >
+        Cadre pour étendre les pratiques agiles à l'échelle des grandes entreprises.
+        SAFe combine les pratiques Lean, Agile et DevOps pour le développement à l'échelle d'entreprise.
+    ko:
+      title: 확장형 애자일 프레임워크
+      description: >
+        대규모 기업 전반에 걸쳐 애자일 관행을 확장하기 위한 프레임워크입니다.
+        SAFe는 엔터프라이즈 규모 개발을 위해 Lean, Agile 및 DevOps 관행을 결합합니다.
   tags:
     - scaled-agile
     - enterprise
