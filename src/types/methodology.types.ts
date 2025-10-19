@@ -7,6 +7,8 @@ import { IconName } from '@/lib/types'
 
 export type MethodologyType =
   | 'sequential'
+  | 'parallel-sequential'
+  | 'event-driven'
   | 'iterative'
   | 'hierarchical'
   | 'time-boxed'
@@ -24,7 +26,12 @@ export type CommunicationType =
   | 'broadcast'
   | 'request-response'
   | 'publish-subscribe'
-export type ContextType = 'decision' | 'finding' | 'resource' | 'constraint'
+export type ContextType =
+  | 'decision'
+  | 'finding'
+  | 'resource'
+  | 'constraint'
+  | 'requirement'
 export type ExperienceLevel = 'junior' | 'mid' | 'senior' | 'expert'
 export type AuthorityLevel =
   | 'observer'
@@ -41,7 +48,7 @@ export type TaskType =
   | 'documentation'
   | 'testing'
   | 'planning'
-export type TaskComplexity = 'simple' | 'complex'
+export type TaskComplexity = 'simple' | 'moderate' | 'complex' | 'expert'
 export type RequirementType = 'functional' | 'non_functional' | 'constraint'
 export type RequirementPriority = 'must' | 'should' | 'could' | 'wont'
 export type ArtifactFormat =
@@ -58,7 +65,13 @@ export type CriterionType =
   | 'phase-completed'
   | 'custom'
 export type ComparisonOperator = '<' | '≤' | '>' | '≥' | '==' | '!='
-export type TimeUnit = 'minutes' | 'hours' | 'days' | 'weeks'
+export type TimeUnit =
+  | 'minutes'
+  | 'hours'
+  | 'days'
+  | 'weeks'
+  | 'months'
+  | 'years'
 export type CeremonyTiming =
   | 'phase-start'
   | 'phase-end'

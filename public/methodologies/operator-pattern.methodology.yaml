@@ -616,7 +616,7 @@ execution:
     escalationPath:
       - attempt: 1-2
         action: retry-intent-negotiation
-      - attempt: 3
+      - attempt: '3'
         action: escalate-to-general-specialist
 
 agentCoordination:

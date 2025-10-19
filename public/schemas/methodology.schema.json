@@ -35,6 +35,8 @@
           "type": "string",
           "enum": [
             "sequential",
+            "parallel-sequential",
+            "event-driven",
             "iterative",
             "hierarchical",
             "time-boxed",
@@ -132,7 +134,7 @@
             },
             "unit": {
               "type": "string",
-              "enum": ["minutes", "hours", "days", "weeks"],
+              "enum": ["minutes", "hours", "days", "weeks", "months", "years"],
               "description": "Time unit"
             },
             "strict": {
@@ -405,7 +407,13 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "enum": ["decision", "finding", "resource", "constraint"]
+                  "enum": [
+                    "decision",
+                    "finding",
+                    "resource",
+                    "constraint",
+                    "requirement"
+                  ]
                 },
                 "description": "Types of context shared"
               }
@@ -698,7 +706,7 @@
         },
         "complexity": {
           "type": "string",
-          "enum": ["simple", "complex"]
+          "enum": ["simple", "moderate", "complex", "expert"]
         },
         "dependencies": {
           "type": "array",
