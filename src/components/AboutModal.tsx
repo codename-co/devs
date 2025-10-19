@@ -1,7 +1,7 @@
 import { Modal, ModalContent, ModalHeader, ModalBody } from '@heroui/react'
 import { PRODUCT } from '@/config/product'
 import { AboutPage } from '@/pages/About'
-import { Icon } from './Icon'
+import { DevsIconXL } from './DevsIcon'
 
 interface AboutModalProps {
   isOpen: boolean
@@ -20,7 +20,7 @@ export const AboutModal = ({ isOpen, onClose }: AboutModalProps) => {
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">
           <div className="flex items-center gap-3">
-            <Icon name="DevsAnimated" size="xl" />
+            <DevsIconXL />
             {/* <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-br from-primary-500 to-secondary-500">
             </div> */}
             <div>

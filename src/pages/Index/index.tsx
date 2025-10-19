@@ -1,5 +1,6 @@
 import { useI18n } from '@/i18n'
 import { Container, Icon, PromptArea, Section, Title } from '@/components'
+import { DevsIcon } from '@/components/DevsIcon'
 import { EasySetupModal } from '@/components/EasySetup/EasySetupModal'
 import DefaultLayout from '@/layouts/Default'
 import { useEffect, useState } from 'react'
@@ -261,12 +262,7 @@ export const IndexPage = () => {
             {...motionVariants.container}
           >
             <motion.div {...motionVariants.icon}>
-              <Icon
-                size="4xl"
-                name="DevsAnimated"
-                animation="appear"
-                className="mb-4 sm:my-6 text-blue-300 dark:text-white devs-icon-blur-on-out"
-              />
+              <DevsIcon />
             </motion.div>
 
             <motion.div {...motionVariants.title}>

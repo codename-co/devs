@@ -19,12 +19,13 @@ import { Lang, languages, useI18n, useUrl } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
 
 import { Icon } from './Icon'
+import { DevsIconSmall } from './DevsIcon'
 import { Title } from './Title'
 import { ProgressIndicator } from './ProgressIndicator'
 import { AboutModal } from './AboutModal'
 import { PRODUCT } from '@/config/product'
 import clsx from 'clsx'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const AgentList = () => {
@@ -228,7 +229,7 @@ const BackDrop = () => (
   />
 )
 
-export const AppDrawer = () => {
+export const AppDrawer = memo(() => {
   const isCollapsed = userSettings((state) => state.isDrawerCollapsed)
 
   const [isMobile, setIsMobile] = useState(false)
@@ -288,7 +289,8 @@ export const AppDrawer = () => {
       </div>
     </aside>
   )
-}
+})
+AppDrawer.displayName = 'AppDrawer'
 
 const CollapsedDrawer = ({ className }: { className?: string }) => {
   const { t, url } = useI18n()
@@ -750,7 +752,7 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
             <DropdownSection showDivider>
               <DropdownItem
                 key="about"
-                startContent={<Icon name="Devs" size="sm" color="grey" />}
+                startContent={<DevsIconSmall />}
                 onClick={() => setShowAboutModal(true)}
               >
                 {t('About')}
