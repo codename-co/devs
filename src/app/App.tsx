@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom'
 import Router from '@/app/Router'
 import { Providers } from '@/app/Providers'
 import '@/styles/globals.css'
+import 'katex/dist/katex.min.css'
 
 const root = globalThis.document.getElementById('root')
 

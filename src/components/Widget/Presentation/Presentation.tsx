@@ -57,7 +57,7 @@ export const Presentation = ({ code }: { code: string }) => {
             //   base: '/resources/twemoji/',
             // },
           },
-          math: 'mathjax',
+          math: 'katex',
           minifyCSS: true,
           slug: true,
           markdown: {

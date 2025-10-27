@@ -1,4 +1,5 @@
 import { marked } from 'marked'
+import katex from 'katex'
 import React, { JSX, useEffect, useMemo, useState } from 'react'
 
 import {
@@ -28,6 +29,11 @@ interface ThinkBlock {
   processing: boolean
 }
 
+interface MathBlock {
+  id: string
+  latex: string
+}
+
 export const MarkdownRenderer = ({
   content,
   className = '',
@@ -37,9 +43,44 @@ export const MarkdownRenderer = ({
     html: string
     codeBlocks: CodeBlock[]
     thinkBlocks: ThinkBlock[]
-  }>({ html: '', codeBlocks: [], thinkBlocks: [] })
+    mathBlocks: MathBlock[]
+  }>({ html: '', codeBlocks: [], thinkBlocks: [], mathBlocks: [] })
 
   const { t } = useI18n()
+
+  // Helper function to configure marked with KaTeX support
+  const configureMarked = () => {
+    marked.setOptions({
+      gfm: true, // GitHub Flavored Markdown
+      breaks: true, // Line breaks
+    })
+
+    // Reset and configure marked extensions
+    marked.use({
+      renderer: {
+        code(token) {
+          if (!token.lang) {
+            // Check if the code block starts and ends with $$ for display math
+            if (token.text.match(/^\$\$[\s\S]*\$\$$/)) {
+              const expr = token.text.substring(2, token.text.length - 2)
+              return katex.renderToString(expr, { displayMode: true })
+            }
+          }
+          // Fallback to default renderer for other code blocks
+          return false
+        },
+        codespan(token) {
+          // Check if the codespan starts and ends with $$ for inline math (wrapped format)
+          if (token.text.match(/^\$\$[\s\S]*\$\$$/)) {
+            const expr = token.text.substring(2, token.text.length - 2)
+            return katex.renderToString(expr, { displayMode: false })
+          }
+          // Fallback to default renderer for other codespans
+          return false
+        },
+      },
+    })
+  }
 
   useEffect(() => {
     const renderMarkdown = async () => {
@@ -47,6 +88,27 @@ export const MarkdownRenderer = ({
         const codeBlocks: CodeBlock[] = []
         const thinkBlocks: ThinkBlock[] = []
         let processedMarkdown = content
+
+        // Preprocess display math: Convert $$...$$ to placeholders
+        const mathBlocks: { id: string; latex: string }[] = []
+        let mathBlockIndex = 0
+
+        // Match $$...$$ blocks (display math)
+        processedMarkdown = processedMarkdown.replace(
+          /\$\$([\s\S]*?)\$\$/g,
+          (_match, latex) => {
+            const id = `math-block-${mathBlockIndex++}`
+            mathBlocks.push({ id, latex: latex.trim() })
+            return `<div data-math-block-id="${id}"></div>`
+          },
+        )
+
+        // Preprocess inline math: Convert $...$ to `$...$` so marked treats it as code
+        // Use a more robust regex that handles special characters in LaTeX
+        processedMarkdown = processedMarkdown.replace(
+          /\$([^$\n]+?)\$/g,
+          (_match, expr) => `\`$$${expr}$$\``,
+        )
 
         // Process <think> tags first
         const thinkTagRegex = /<think>([\s\S]*?)<\/think>/g
@@ -168,10 +230,7 @@ export const MarkdownRenderer = ({
                 })
 
                 // Configure marked for better formatting
-                marked.setOptions({
-                  gfm: true, // GitHub Flavored Markdown
-                  breaks: true, // Line breaks
-                })
+                configureMarked()
 
                 const beforeHtml = await marked.parse(beforeIncomplete)
 
@@ -179,6 +238,7 @@ export const MarkdownRenderer = ({
                   html: beforeHtml + placeholder,
                   codeBlocks,
                   thinkBlocks,
+                  mathBlocks,
                 })
                 return
               }
@@ -186,10 +246,7 @@ export const MarkdownRenderer = ({
 
             // Fallback for non-specialized incomplete blocks
             // Configure marked for better formatting
-            marked.setOptions({
-              gfm: true, // GitHub Flavored Markdown
-              breaks: true, // Line breaks
-            })
+            configureMarked()
 
             const beforeHtml =
               codeBlocks.length > 0
@@ -207,6 +264,7 @@ export const MarkdownRenderer = ({
               html: beforeHtml + incompleteHtml,
               codeBlocks,
               thinkBlocks,
+              mathBlocks,
             })
             return
           }
@@ -220,10 +278,18 @@ export const MarkdownRenderer = ({
             const [fullMatch, language, code] = match
             const blockId = `code-block-${blockIndex++}`
 
+            // Check if this is a math block (KaTeX)
+            const isMathBlock =
+              !language && code.trim().match(/^\$\$[\s\S]*\$\$$/)
+
             // Detect if this is a specialized code block
             const specializedType = detectSpecializedCodeType(code, language)
 
-            if (specializedType) {
+            if (isMathBlock) {
+              // Leave math blocks in the markdown for KaTeX processing
+              // Don't extract them
+              continue
+            } else if (specializedType) {
               // Replace with a placeholder that we'll process later
               const placeholder = `<div data-code-block-id="${blockId}"></div>`
               processedMarkdown = processedMarkdown.replace(
@@ -251,14 +317,16 @@ export const MarkdownRenderer = ({
         }
 
         // Configure marked for better formatting
-        marked.setOptions({
-          gfm: true, // GitHub Flavored Markdown
-          breaks: true, // Line breaks
-        })
+        configureMarked()
 
+        console.log(
+          '📝 PROCESSED MARKDOWN BEFORE PARSE:',
+          processedMarkdown.substring(0, 500),
+        )
         const html = await marked.parse(processedMarkdown)
+        console.log('📄 HTML AFTER PARSE:', html.substring(0, 500))
 
-        setProcessedContent({ html, codeBlocks, thinkBlocks })
+        setProcessedContent({ html, codeBlocks, thinkBlocks, mathBlocks })
       } catch (error) {
         console.error('Error rendering markdown:', error)
         // Fallback to plain text if markdown parsing fails
@@ -266,6 +334,7 @@ export const MarkdownRenderer = ({
           html: content.replace(/\n/g, '<br>'),
           codeBlocks: [],
           thinkBlocks: [],
+          mathBlocks: [],
         })
       }
     }
@@ -284,14 +353,15 @@ export const MarkdownRenderer = ({
   } as React.CSSProperties
 
   const renderedContent = useMemo(() => {
-    const { html, codeBlocks, thinkBlocks } = processedContent
+    const { html, codeBlocks, thinkBlocks, mathBlocks } = processedContent
 
     if (
       (codeBlocks.length === 0 ||
         !codeBlocks.some((block) => block.type === 'specialized')) &&
-      thinkBlocks.length === 0
+      thinkBlocks.length === 0 &&
+      mathBlocks.length === 0
     ) {
-      // No specialized code blocks or think blocks, render normally
+      // No specialized code blocks, think blocks, or math blocks, render normally
       return (
         <div
           className={`markdown-content ${className}`}
@@ -315,6 +385,33 @@ export const MarkdownRenderer = ({
 
       if (node.nodeType === Node.ELEMENT_NODE) {
         const element = node as Element
+
+        // Check if this is a math block placeholder
+        const mathBlockId = element.getAttribute('data-math-block-id')
+        if (mathBlockId) {
+          const mathBlock = mathBlocks.find((block) => block.id === mathBlockId)
+          if (mathBlock) {
+            try {
+              const rendered = katex.renderToString(mathBlock.latex, {
+                displayMode: true,
+              })
+              return (
+                <div
+                  key={mathBlockId}
+                  className="my-4"
+                  dangerouslySetInnerHTML={{ __html: rendered }}
+                />
+              )
+            } catch (err) {
+              console.error('KaTeX render error:', err)
+              return (
+                <div key={mathBlockId} className="my-4 text-red-500">
+                  Error rendering math: {mathBlock.latex}
+                </div>
+              )
+            }
+          }
+        }
 
         // Check if this is a think block placeholder
         const thinkBlockId = element.getAttribute('data-think-block-id')
@@ -367,6 +464,20 @@ export const MarkdownRenderer = ({
         Array.from(element.attributes).forEach((attr) => {
           if (attr.name === 'class') {
             props.className = attr.value
+          } else if (attr.name === 'style') {
+            // Parse inline style string into React style object
+            const styleObj: Record<string, string> = {}
+            attr.value.split(';').forEach((style) => {
+              const [key, value] = style.split(':').map((s) => s.trim())
+              if (key && value) {
+                // Convert kebab-case to camelCase
+                const camelKey = key.replace(/-([a-z])/g, (g) =>
+                  g[1].toUpperCase(),
+                )
+                styleObj[camelKey] = value
+              }
+            })
+            props.style = styleObj
           } else {
             props[attr.name] = attr.value
           }
