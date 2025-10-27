@@ -4,6 +4,7 @@ import { LLMConfig } from '@/types'
 export class AnthropicProvider implements LLMProviderInterface {
   private baseUrl = 'https://api.anthropic.com/v1'
   public static readonly DEFAULT_MODEL = 'claude-sonnet-4-5-20250929'
+  public static readonly DEFAULT_MAX_TOKENS = 8192
 
   private convertMessageToAnthropicFormat(message: LLMMessage): any {
     if (!message.attachments || message.attachments.length === 0) {
@@ -88,7 +89,7 @@ export class AnthropicProvider implements LLMProviderInterface {
         system: systemMessage,
         messages: userMessages,
         temperature: config?.temperature || 0.7,
-        max_tokens: config?.maxTokens || 1024,
+        max_tokens: config?.maxTokens || AnthropicProvider.DEFAULT_MAX_TOKENS,
       }),
     })
 
@@ -141,7 +142,7 @@ export class AnthropicProvider implements LLMProviderInterface {
           system: systemMessage,
           messages: userMessages,
           temperature: config?.temperature || 0.7,
-          max_tokens: config?.maxTokens || 1024,
+          max_tokens: config?.maxTokens || AnthropicProvider.DEFAULT_MAX_TOKENS,
           stream: true,
         }),
       },
