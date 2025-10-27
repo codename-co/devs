@@ -425,7 +425,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                       <Button
                         type="submit"
                         data-testid="submit-agent-button"
-                        // isIconOnly
+                        isIconOnly={isSmallWidth()}
                         disabled={props.isSending}
                         color={!prompt.trim() ? 'default' : 'primary'}
                         className={cn(

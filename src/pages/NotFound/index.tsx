@@ -7,7 +7,7 @@ export const NotFoundPage = () => {
   const { t } = useI18n()
 
   useEffect(() => {
-    // redirect the the parent path after a short delay
+    // redirect to the parent path after a short delay
     setTimeout(() => {
       const parentPath = window.location.pathname
         .split('/')

@@ -27,6 +27,7 @@ import { PRODUCT } from '@/config/product'
 import clsx from 'clsx'
 import { useState, useEffect, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { cn, isCurrentPath } from '@/lib/utils'
 
 const AgentList = () => {
   const { t, url } = useI18n()
@@ -319,7 +320,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
             <Tooltip content={t('New chat')} placement="right">
               <Button
                 as={Link}
-                href={url('/')}
+                href={url('')}
                 isIconOnly
                 color="primary"
                 variant="light"
@@ -336,10 +337,29 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
                 isIconOnly
                 color="warning"
                 variant="light"
-                className="w-full"
+                className={cn(
+                  'w-full [.is-active]:bg-default-100',
+                  isCurrentPath('/agents') && 'is-active',
+                )}
                 aria-label={t('Agents')}
               >
                 <Icon name="Sparks" />
+              </Button>
+            </Tooltip>
+            <Tooltip content={t('Knowledge')} placement="right">
+              <Button
+                as={Link}
+                href={url('/knowledge')}
+                isIconOnly
+                color="danger"
+                variant="light"
+                className={cn(
+                  'w-full text-danger-600 [.is-active]:bg-default-100',
+                  isCurrentPath('/knowledge') && 'is-active',
+                )}
+                aria-label={t('Knowledge')}
+              >
+                <Icon name="Brain" />
               </Button>
             </Tooltip>
             <Tooltip content={t('Methodologies')} placement="right">
@@ -349,7 +369,10 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
                 isIconOnly
                 color="success"
                 variant="light"
-                className="w-full"
+                className={cn(
+                  'w-full [.is-active]:bg-default-100',
+                  isCurrentPath('/methodologies') && 'is-active',
+                )}
                 aria-label={t('Methodologies')}
               >
                 <Icon name="Strategy" />
@@ -362,23 +385,13 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
                 isIconOnly
                 color="secondary"
                 variant="light"
-                className="w-full dark:text-secondary-600"
+                className={cn(
+                  'w-full text-secondary-600 [.is-active]:bg-default-100',
+                  isCurrentPath('/tasks') && 'is-active',
+                )}
                 aria-label={t('Tasks')}
               >
                 <Icon name="TriangleFlagTwoStripes" />
-              </Button>
-            </Tooltip>
-            <Tooltip content={t('Knowledge')} placement="right">
-              <Button
-                as={Link}
-                href={url('/knowledge')}
-                isIconOnly
-                color="danger"
-                variant="light"
-                className="w-full dark:text-danger-600"
-                aria-label={t('Knowledge')}
-              >
-                <Icon name="Brain" />
               </Button>
             </Tooltip>
             {/* <Tooltip content={t('Teams')} placement="right">
@@ -400,7 +413,10 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
                 href={url('/conversations')}
                 isIconOnly
                 variant="light"
-                className="w-full text-gray-500  dark:text-gray-400"
+                className={cn(
+                  'w-full text-gray-500 dark:text-gray-400 [.is-active]:bg-default-100',
+                  isCurrentPath('/conversations') && 'is-active',
+                )}
                 aria-label={t('Conversations history')}
               >
                 <Icon name="ChatBubble" />
@@ -424,7 +440,10 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
                 href={url('/settings')}
                 isIconOnly
                 variant="light"
-                className="w-full text-gray-500 dark:text-gray-400"
+                className={cn(
+                  'w-full text-gray-500 dark:text-gray-400 [.is-active]:bg-default-100',
+                  isCurrentPath('/settings') && 'is-active',
+                )}
                 aria-label={t('Settings')}
               >
                 <Icon name="Settings" />
@@ -506,15 +525,17 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
             />
           </Button>
           {/* </Tooltip> */}
-          <Title
-            level={3}
-            as="div"
-            size="lg"
-            data-testid="platform-name"
-            aria-label={customPlatformName || PRODUCT.name}
-          >
-            {customPlatformName || PRODUCT.displayName}
-          </Title>
+          <Link href={url('')}>
+            <Title
+              level={3}
+              as="span"
+              size="lg"
+              data-testid="platform-name"
+              aria-label={customPlatformName || PRODUCT.name}
+            >
+              {customPlatformName || PRODUCT.displayName}
+            </Title>
+          </Link>
         </div>
 
         {/* Navigation */}
@@ -523,8 +544,9 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
             <ListboxSection showDivider>
               <ListboxItem
                 href={url('')}
+                variant="faded"
                 color="primary"
-                className="dark:text-gray-200 dark:hover:text-primary-500"
+                className="dark:text-gray-200 dark:hover:text-primary-500 [.is-active]:bg-primary-50"
                 startContent={
                   <Icon
                     name="ChatPlusIn"
@@ -539,8 +561,12 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
             <ListboxSection showDivider>
               <ListboxItem
                 href={url('/agents')}
+                variant="faded"
                 color="warning"
-                className="dark:text-gray-200 dark:hover:text-warning-500"
+                className={cn(
+                  'dark:text-gray-200 dark:hover:text-warning-500 [.is-active]:bg-default-100',
+                  isCurrentPath('/agents') && 'is-active',
+                )}
                 startContent={<Icon name="Sparks" className="text-warning" />}
                 // endContent={
                 //   <Tooltip content={t('New Agent')} placement="right">
@@ -571,8 +597,30 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                 {t('Agents')}
               </ListboxItem>
               <ListboxItem
+                href={url('/knowledge')}
+                variant="faded"
+                color="danger"
+                className={cn(
+                  'dark:text-gray-200 dark:hover:text-danger-500 [.is-active]:bg-default-100',
+                  isCurrentPath('/knowledge') && 'is-active',
+                )}
+                startContent={
+                  <Icon
+                    name="Brain"
+                    className="text-danger dark:text-danger-600"
+                  />
+                }
+              >
+                {t('Knowledge')}
+              </ListboxItem>
+              <ListboxItem
                 href={url('/methodologies')}
+                variant="faded"
                 color="success"
+                className={cn(
+                  'dark:text-gray-200 dark:hover:text-success-500 [.is-active]:bg-default-100',
+                  isCurrentPath('/methodologies') && 'is-active',
+                )}
                 startContent={<Icon name="Strategy" className="text-success" />}
                 // endContent={
                 //   <Tooltip content={t('New Methodology')} placement="right">
@@ -603,7 +651,12 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
               </ListboxItem>
               <ListboxItem
                 href={url('/tasks')}
+                variant="faded"
                 color="secondary"
+                className={cn(
+                  'dark:text-gray-200 dark:hover:text-secondary-500 [.is-active]:bg-default-100',
+                  isCurrentPath('/tasks') && 'is-active',
+                )}
                 startContent={
                   <Icon
                     name="TriangleFlagTwoStripes"
@@ -637,21 +690,10 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
               >
                 {t('Tasks')}
               </ListboxItem>
-              <ListboxItem
-                href={url('/knowledge')}
-                color="danger"
-                startContent={
-                  <Icon
-                    name="Brain"
-                    className="text-danger dark:text-danger-600"
-                  />
-                }
-              >
-                {t('Knowledge')}
-              </ListboxItem>
 
               {/* <ListboxItem
                   href={url('/teams')}
+                  variant="faded"
                   color="success"
                   startContent={<Icon name="Community" color="success" />}
                   endContent={
@@ -684,6 +726,11 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
               </ListboxItem> */}
             <ListboxItem
               href={url('/conversations')}
+              variant="faded"
+              className={cn(
+                '[.is-active]:bg-default-100',
+                isCurrentPath('/conversations') && 'is-active',
+              )}
               startContent={
                 <Icon
                   name="ChatBubble"

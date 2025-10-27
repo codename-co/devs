@@ -1,19 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <style>
     @media(prefers-color-scheme:dark){html:not(class="light") .devs-icon{fill:#fff;stroke:#fff}}
+    .devs-icon:not(:first-of-type){opacity:0}
     .devs-icon{animation:1s ease-in-out infinite;transform-origin:50%;transition:.3s}
-    @media(pointer:fine){html:not(:hover) .devs-icon-blur-on-out .devs-icon{filter:blur(4px)}}
+    @media(pointer:fine){html:not(:hover) .devs-icon{opacity:1!important}}
+    .devs-whole .devs-icon:not(:first-of-type){opacity:1!important}
     .anim-appear .devs-icon{animation-name:anim-appear;animation-iteration-count:1}
-    .anim-spin .devs-icon{animation-name:anim-spin;animation-timing-function:linear;animation-duration:4s}
-    .anim-loading .devs-icon{animation-name:anim-loading;animation-duration:2s}
+    .anim-spinning .devs-icon{animation-name:anim-spinning;animation-timing-function:linear;animation-duration:4s}
     .anim-thinking .devs-icon{animation-name:anim-thinking;animation-duration:2s}
     .anim-pulsating .devs-icon{animation-name:anim-pulsating;animation-duration:1.5s}
     /* @keyframes anim-appear{0%,40%{transform:scale(.85) rotate(-72deg)}to{transform:rotate(0)}} */
     @keyframes anim-appear{0%{transform:scale(.85)rotate(-72deg)}40%{transform:scale(1,1)rotate(4deg)}50%{transform:scale(.9,1.1)rotate(10deg)}60%{transform:scale(1.1,.9)rotate(6deg)}70%{transform:scale(.95,1.05)rotate(2deg)}to{transform:scale(1,1)rotate(0)}}
-    @keyframes anim-spin{to{transform:rotate(360deg)}}
-    @keyframes anim-loading{50%{transform:scale(.85);opacity:.8}}
-    @keyframes anim-thinking{50%{transform:scale(.85);opacity:.8;filter:blur(2px)}}
-    @keyframes anim-pulsating{25%,55%,85%{transform:scale(1);opacity:1}40%,70%{transform:scale(1.1);opacity:.8}}
+    @keyframes anim-spinning{to{transform:rotate(360deg)}}
+    @keyframes anim-thinking{50%{transform:scale(.85)}}
+    @keyframes anim-pulsating{40%,70%{transform:scale(1.1)}}
   </style>
-  <polygon class="devs-icon" points="12,26 46,17 37,51" stroke-width="12" stroke-linejoin="round" stroke="currentColor" fill="currentColor">
-</polygon></svg>
+  <g stroke-width="12" stroke-linejoin="round" stroke="currentColor" fill="currentColor">
+    <polygon class="devs-icon" points="12,26 46,17 37,51"></polygon>
+    <polygon class="devs-icon" points="26,12 17,46 51,37"></polygon>
+  </g>
+</svg>

@@ -1,9 +1,10 @@
-import { Container, Section, Widget } from '@/components'
+import { Container, Icon, MarkdownRenderer, Section, Title, Widget } from '@/components'
 import Layout from '@/layouts/Default'
 import ABC from './abc.mdx'
 import Code from './code.mdx'
 import Diagram from './diagram.mdx'
 import Html from './html.mdx'
+import markdown from './markdown.md?raw'
 import Presentation from './presentation.mdx'
 import Svg from './svg.mdx'
 
@@ -15,6 +16,65 @@ import Svg from './svg.mdx'
   }}>
   <Section>
     <Container>
+      <Title level={2}>Logo</Title>
+      <div className="grid grid-flow-col">
+        <div>
+          <Icon name="DevsAnimated" size="4xl" />
+          default
+        </div>
+        <div>
+          <Icon name="DevsAnimated" size="4xl" className="anim-appear" />
+          appear
+        </div>
+        <div>
+          <Icon name="DevsAnimated" size="4xl" className="anim-spinning" />
+          spinning
+        </div>
+        <div>
+          <Icon name="DevsAnimated" size="4xl" className="anim-thinking" />
+          thinking
+        </div>
+        <div>
+          <Icon name="DevsAnimated" size="4xl" className="anim-pulsating" />
+          pulsating
+        </div>
+      </div>
+      <div className="grid grid-flow-col devs-whole">
+        <div>
+          <Icon name="DevsAnimated" size="4xl" />
+          default
+        </div>
+        <div>
+          <Icon name="DevsAnimated" size="4xl" className="anim-appear" />
+          appear
+        </div>
+        <div>
+          <Icon name="DevsAnimated" size="4xl" className="anim-spinning" />
+          spinning
+        </div>
+        <div>
+          <Icon name="DevsAnimated" size="4xl" className="anim-thinking" />
+          thinking
+        </div>
+        <div>
+          <Icon name="DevsAnimated" size="4xl" className="anim-pulsating" />
+          pulsating
+        </div>
+      </div>
+    </Container>
+  </Section>
+  <Section>
+    <Container>
+      <Title level={2}>Markdown</Title>
+      <MarkdownRenderer
+        content={markdown}
+        className="prose dark:prose-invert prose-sm"
+      />
+    </Container>
+  </Section>
+  <Section>
+    <Container>
+      <Title level={2}>Widgets</Title>
       <Presentation />
       <ABC />
       <Diagram />

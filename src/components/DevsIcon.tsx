@@ -9,7 +9,7 @@ export const DevsIcon = memo(() => (
     size="4xl"
     name="DevsAnimated"
     animation="appear"
-    className="mb-4 sm:my-6 text-blue-300 dark:text-white devs-icon-blur-on-out"
+    className="mb-4 sm:my-6 text-blue-300 dark:text-white"
   />
 ))
 DevsIcon.displayName = 'DevsIcon'
@@ -19,7 +19,5 @@ export const DevsIconSmall = memo(() => (
 ))
 DevsIconSmall.displayName = 'DevsIconSmall'
 
-export const DevsIconXL = memo(() => (
-  <Icon name="DevsAnimated" size="xl" />
-))
+export const DevsIconXL = memo(() => <Icon name="DevsAnimated" size="xl" />)
 DevsIconXL.displayName = 'DevsIconXL'

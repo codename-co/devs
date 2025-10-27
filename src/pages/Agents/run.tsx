@@ -60,7 +60,7 @@ const MessageDisplay = memo(
         tabIndex={0}
         className="flex w-full gap-3"
       >
-        <div className="relative flex-none -mt-1">
+        {/* <div className="relative flex-none -mt-1">
           <div className="relative inline-flex shrink-0">
             {message.role === 'assistant' && (
               <div className="border-1 border-primary-300 dark:border-default-200 hidden md:flex h-8 w-8 items-center justify-center rounded-full">
@@ -71,7 +71,7 @@ const MessageDisplay = memo(
               </div>
             )}
           </div>
-        </div>
+        </div> */}
         <div
           className={`rounded-medium text-foreground group relative overflow-hidden font-medium ${
             message.role === 'user'
@@ -197,7 +197,7 @@ const ArtifactWidget = memo(({ artifact }: { artifact: Artifact }) => {
 ArtifactWidget.displayName = 'ArtifactWidget'
 
 export const AgentRunPage = () => {
-  const { t, lang } = useI18n()
+  const { t, lang, url } = useI18n()
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -256,6 +256,11 @@ export const AgentRunPage = () => {
         </>
       ),
       // subtitle: selectedAgent?.desc || t('AI Assistant'),
+      cta: {
+        label: t('New chat'),
+        href: url(`/agents/start#${selectedAgent?.id}`),
+        icon: 'Plus',
+      },
     }),
     [selectedAgent?.icon, selectedAgent?.name, showSystemPrompt],
   )
@@ -269,6 +274,11 @@ export const AgentRunPage = () => {
       conversationId: parts[1] || null,
     }
   }, [location.hash])
+
+  const isConversationPristine = useMemo(
+    () => !(Number(currentConversation?.messages.length) > 0),
+    [currentConversation],
+  )
 
   const { agentId, conversationId } = useMemo(() => parseHash(), [parseHash])
 
@@ -665,6 +675,56 @@ export const AgentRunPage = () => {
                 })
           }
         />
+
+        {isConversationPristine && (
+          <div className="flex gap-2 flex-wrap">
+            {selectedAgent?.examples?.map((example) => (
+              <Button
+                key={example.id}
+                variant="ghost"
+                size="md"
+                className="inline-flex justify-start"
+                // startContent={
+                //   selectedAgent.icon && (
+                //     <Icon
+                //       name={selectedAgent.icon}
+                //       size="lg"
+                //       className="text-default-500"
+                //     />
+                //   )
+                // }
+                endContent={
+                  <Icon
+                    name="NavArrowRight"
+                    size="md"
+                    className="text-default-500"
+                  />
+                }
+                onPress={() => {
+                  setPrompt(
+                    selectedAgent.i18n?.[lang]?.examples?.find(
+                      (ex) => ex.id === example.id,
+                    )?.prompt ?? example.prompt,
+                  )
+
+                  // submit
+                  setTimeout(() => {
+                    const submitButton = document.querySelector(
+                      '#prompt-area [type="submit"]',
+                    ) as HTMLButtonElement | null
+                    submitButton?.click()
+                  }, 150)
+                }}
+              >
+                <span className="font-semibold">
+                  {selectedAgent.i18n?.[lang]?.examples?.find(
+                    (ex) => ex.id === example.id,
+                  )?.title ?? example.title}
+                </span>
+              </Button>
+            ))}
+          </div>
+        )}
       </Section>
     </DefaultLayout>
   )

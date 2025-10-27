@@ -13,3 +13,7 @@ export function getFileIcon(mimeType: string): string {
   if (mimeType.includes('zip') || mimeType.includes('tar')) return 'Archive'
   return 'Page'
 }
+
+export const currentPath = () => location.pathname.replace(/^\/[^/]+/, '')
+export const currentBasePath = () => '/' + (currentPath().split('/')[1] ?? '')
+export const isCurrentPath = (path: string) => currentPath().startsWith(path)

@@ -1,5 +1,6 @@
 import { Container, Icon, Section, Title } from '@/components'
 import { AppDrawer } from '@/components/AppDrawer'
+import { Tabbar } from '@/components/Tabbar'
 import { languageDirection, useI18n } from '@/i18n'
 import type { HeaderProps, IconName } from '@/lib/types'
 import { userSettings } from '@/stores/userStore'
@@ -75,108 +76,112 @@ export default function DefaultLayout({
       navigate('/')
     }
   }
+
   return (
     <div className="flex-grow w-full" dir={direction}>
-      <div className="flex relative">
+      <div className="flex relative min-h-screen">
         <AppDrawer />
+        <div className="flex flex-col-reverse w-full relative">
+          <Tabbar />
 
-        <main
-          role="main"
-          className="flex-1 flex flex-col overflow-y-auto w-full @container/main"
-        >
-          <div className="space-y space-y-8 relative bg-transparent">
-            {(header || showBackButton) && (
-              <div
-                className={clsx(
-                  'pb-2 mb-0 bg-default-50 dark:bg-default-100',
-                  header?.color,
-                )}
-              >
-                <Section mainClassName="section-blank">
-                  {showBackButton && (
-                    <Tooltip content={t('Back')}>
-                      <Button
-                        variant="light"
-                        onPress={handleBack}
-                        startContent={
-                          <Icon
-                            name="ArrowRight"
-                            size="sm"
-                            className="rotate-180"
-                          />
-                        }
-                        className="absolute -ms-20 2xl:-ml-32 hidden xl:inline-flex dark:hover:bg-default-300 transition-[margin-left] duration-300 rtl:rotate-180"
-                      />
-                    </Tooltip>
+          <main
+            role="main"
+            className="flex-1 flex flex-col overflow-y-auto w-full @container/main"
+          >
+            <div className="space-y space-y-8 relative bg-transparent min-h-full">
+              {(header || showBackButton) && (
+                <div
+                  className={clsx(
+                    'pb-2 mb-0 bg-default-50 dark:bg-default-100',
+                    header?.color,
                   )}
-                  <Container className="relative">
-                    {header?.icon?.name && (
-                      <Icon
-                        size="3xl"
-                        name={header.icon.name as any}
-                        className={clsx(
-                          'mb-4 hidden xl:block',
-                          header.icon.color,
-                        )}
-                      />
-                    )}
-                    {header?.cta && (
-                      <Button
-                        variant="light"
-                        as={Link}
-                        href={header.cta?.href ?? ''}
-                        startContent={
-                          header.cta.icon && (
-                            <Icon name={header.cta.icon} size="sm" />
-                          )
-                        }
-                        className="absolute end-0 shrink-0 dark:hover:bg-default-300"
-                      >
-                        {header.cta?.label}
-                      </Button>
-                    )}
-                    {header?.moreActions && (
-                      <Dropdown>
-                        <DropdownTrigger>
-                          <Button
-                            variant="light"
-                            className="absolute end-0 shrink-0 dark:hover:bg-default-300"
-                          >
-                            <Icon name="MoreVert" size="sm" />
-                          </Button>
-                        </DropdownTrigger>
-                        <DropdownMenu>
-                          {header.moreActions.map((action) => (
-                            <DropdownItem
-                              key={action.label}
-                              onClick={action.onClick}
-                              startContent={
-                                <Icon name={action.icon as IconName} />
-                              }
-                              title={action.label}
+                >
+                  <Section mainClassName="section-blank">
+                    {showBackButton && (
+                      <Tooltip content={t('Back')}>
+                        <Button
+                          variant="light"
+                          onPress={handleBack}
+                          startContent={
+                            <Icon
+                              name="ArrowRight"
+                              size="sm"
+                              className="rotate-180"
                             />
-                          ))}
-                        </DropdownMenu>
-                      </Dropdown>
+                          }
+                          className="absolute -ms-20 2xl:-ml-32 hidden xl:inline-flex dark:hover:bg-default-300 transition-[margin-left] duration-300 rtl:rotate-180"
+                        />
+                      </Tooltip>
                     )}
-                    {header && (
-                      <Title
-                        id="title"
-                        subtitleId="subtitle"
-                        subtitle={header.subtitle}
-                      >
-                        {header.title}
-                      </Title>
-                    )}
-                  </Container>
-                </Section>
-              </div>
-            )}
-            <ToastProvider />
+                    <Container className="relative">
+                      {header?.icon?.name && (
+                        <Icon
+                          size="3xl"
+                          name={header.icon.name as any}
+                          className={clsx(
+                            'mb-4 hidden xl:block',
+                            header.icon.color,
+                          )}
+                        />
+                      )}
+                      {header?.cta && (
+                        <Button
+                          variant="light"
+                          as={Link}
+                          href={header.cta?.href ?? ''}
+                          startContent={
+                            header.cta.icon && (
+                              <Icon name={header.cta.icon} size="sm" />
+                            )
+                          }
+                          className="absolute end-0 shrink-0 dark:hover:bg-default-300"
+                        >
+                          {header.cta?.label}
+                        </Button>
+                      )}
+                      {header?.moreActions && (
+                        <Dropdown>
+                          <DropdownTrigger>
+                            <Button
+                              variant="light"
+                              className="absolute end-0 shrink-0 dark:hover:bg-default-300"
+                            >
+                              <Icon name="MoreVert" size="sm" />
+                            </Button>
+                          </DropdownTrigger>
+                          <DropdownMenu>
+                            {header.moreActions.map((action) => (
+                              <DropdownItem
+                                key={action.label}
+                                onClick={action.onClick}
+                                startContent={
+                                  <Icon name={action.icon as IconName} />
+                                }
+                                title={action.label}
+                              />
+                            ))}
+                          </DropdownMenu>
+                        </Dropdown>
+                      )}
+                      {header && (
+                        <Title
+                          id="title"
+                          subtitleId="subtitle"
+                          subtitle={header.subtitle}
+                        >
+                          {header.title}
+                        </Title>
+                      )}
+                    </Container>
+                  </Section>
+                </div>
+              )}
+              <ToastProvider />
 
-            {children}
-          </div>
-        </main>
+              {children}
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   )

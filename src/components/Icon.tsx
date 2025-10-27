@@ -195,6 +195,7 @@ export const Icons = {
   Upload: IconoirIcons.Upload,
   User: IconoirIcons.User,
   UserPlus: IconoirIcons.UserPlus,
+  Voice: IconoirIcons.Voice,
   WebWindow: IconoirIcons.WebWindow,
   X: IconoirIcons.X,
   Xmark: IconoirIcons.Xmark,
@@ -215,8 +216,8 @@ export const Icons = {
 
 export type IconProps = ComponentProps<'svg'> & {
   name: IconName
-  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl'
-  animation?: 'appear' | 'spin' | 'loading' | 'thinking' | 'pulsating'
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl'
+  animation?: 'appear' | 'spinning' | 'thinking' | 'pulsating'
 }
 
 const sizeMap = {
@@ -227,6 +228,7 @@ const sizeMap = {
   '2xl': 40,
   '3xl': 48,
   '4xl': 64,
+  '5xl': 80,
 }
 
 export function Icon({ name, size = 'md', animation, ...props }: IconProps) {
