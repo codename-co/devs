@@ -17,9 +17,10 @@ import {
 import clsx from 'clsx'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { PRODUCT } from '@/config/product'
 
 export default function DefaultLayout({
-  // title,
+  title,
   // description,
   // darkMode,
   header,
@@ -39,7 +40,7 @@ export default function DefaultLayout({
 
   const direction = languageDirection[lang]
 
-  const { theme } = userSettings()
+  const { platformName, theme } = userSettings()
   const [systemPrefersDark, setSystemPrefersDark] = useState(false)
 
   useEffect(() => {
@@ -77,8 +78,16 @@ export default function DefaultLayout({
     }
   }
 
+  const metaTitle = [
+    header?.title ?? title,
+    platformName || PRODUCT.displayName,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+
   return (
     <div className="flex-grow w-full" dir={direction}>
+      <title children={metaTitle} />
       <div className="flex relative min-h-screen">
         <AppDrawer />
         <div className="flex flex-col-reverse w-full relative">
