@@ -12,20 +12,19 @@ export const Tabbar = () => {
     <Tabs
       placement="bottom"
       size="lg"
-      variant="light"
+      variant="underlined"
       // color="primary"
       selectedKey={currentBasePath()}
-      className="fixed bottom-0 self-center z-1 backdrop-blur-xs backdrop-brightness-120 rounded-lg md:hidden"
+      className="md:hidden flex w-full justify-center fixed bottom-0 z-20 backdrop-blur-xs backdrop-brightness-120 border-t-1 border-default-200 dark:border-default-400 bg-white/80 dark:bg-default-50/80"
       classNames={{
-        // tab: 'p-6',
         tab: [
           'py-6 px-[4vw]',
           // first tab should be red, second tab should be blue, third tab should be green
-          'data-[color=primary]:*:*:text-primary-500',
-          'data-[color=secondary]:*:*:text-secondary-500',
-          'data-[color=danger]:*:*:text-danger-500',
-          'data-[color=success]:*:*:text-success-500',
-          'data-[color=warning]:*:*:text-warning-500',
+          // 'data-[color=primary]:*:*:text-primary-800',
+          // 'data-[color=secondary]:*:*:text-secondary-500',
+          // 'data-[color=danger]:*:*:text-danger-500',
+          // 'data-[color=success]:*:*:text-success-500',
+          // 'data-[color=warning]:*:*:text-warning-500',
           // 'bg-white/80 dark:bg-default-50/80',
           // 'data-[hover=true]:border-2 data-[hover=true]:border-red-500',
           'data-[selected=true]:zoom-in data-[selected=true]:scale-120 *:*bg-transparent',
@@ -34,7 +33,7 @@ export const Tabbar = () => {
     >
       <Tab
         key="/agents"
-        data-color="warning"
+        // data-color="warning"
         title={
           <Tooltip content={t('Agents')} placement="top">
             <Icon name="Sparks" />
@@ -45,7 +44,7 @@ export const Tabbar = () => {
       />
       <Tab
         key="/knowledge"
-        data-color="danger"
+        // data-color="danger"
         title={
           <Tooltip content={t('Knowledge')} placement="top">
             <Icon name="Brain" />
@@ -55,10 +54,10 @@ export const Tabbar = () => {
       />
       <Tab
         key="/"
-        data-color="primary"
+        // data-color="primary"
         title={
           <Tooltip content={t('New chat')} placement="top">
-            <Icon name="ChatPlusIn" />
+            <Icon name="ChatPlusIn" size="lg" />
           </Tooltip>
         }
         href={url('')}
@@ -66,7 +65,7 @@ export const Tabbar = () => {
       />
       <Tab
         key="/methodologies"
-        data-color="success"
+        // data-color="success"
         title={
           <Tooltip content={t('Methodologies')} placement="top">
             <Icon name="Strategy" />
@@ -76,7 +75,7 @@ export const Tabbar = () => {
       />
       <Tab
         key="/tasks"
-        data-color="secondary"
+        // data-color="secondary"
         title={
           <Tooltip content={t('Tasks')} placement="top">
             <Icon name="TriangleFlagTwoStripes" />
