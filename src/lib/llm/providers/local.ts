@@ -55,7 +55,7 @@ export class LocalLLMProvider implements LLMProviderInterface {
 
   // Default model, optimized for browser inference
   public static readonly DEFAULT_MODEL = isLowEndDevice()
-    ? 'onnx-community/SmolLM2-135M-ONNX'
+    ? 'onnx-community/granite-4.0-350m-ONNX-web'
     : 'onnx-community/granite-4.0-micro-ONNX-web'
 
   // Progress callback for model loading
