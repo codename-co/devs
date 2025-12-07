@@ -6,6 +6,9 @@
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "strict": true,
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "jsx": "react-jsx",
     "paths": {
       "@/*": ["./src/*"]
     }
@@ -13,7 +16,9 @@
   "include": [
     "vite.config.ts",
     "src/config/product.ts",
-    "src/i18n/index.ts",
-    "src/lib/cache-version-plugin.ts"
+    "src/i18n/**/*.ts",
+    "src/i18n/**/*.tsx",
+    "src/lib/cache-version-plugin.ts",
+    "src/stores/userStore.ts"
   ]
 }
