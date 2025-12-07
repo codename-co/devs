@@ -13,6 +13,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    "declaration": false,
 
     /* Linting */
     "strict": true,
@@ -27,11 +28,5 @@
     }
   },
   "include": ["src"],
-  "exclude": [
-    "src/config/product.ts",
-    "src/i18n/**/*",
-    "src/lib/cache-version-plugin.ts",
-    "src/stores/userStore.ts"
-  ],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "exclude": ["src/lib/cache-version-plugin.ts"]
 }
