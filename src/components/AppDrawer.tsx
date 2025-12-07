@@ -30,7 +30,8 @@ import { useNavigate } from 'react-router-dom'
 import { cn, isCurrentPath } from '@/lib/utils'
 
 const AgentList = () => {
-  const { t, url } = useI18n()
+  const { lang, t } = useI18n()
+  const url = useUrl(lang)
 
   // TODO: Fetch agents from store or API
   const agents: any[] = []
@@ -294,7 +295,8 @@ export const AppDrawer = memo(() => {
 AppDrawer.displayName = 'AppDrawer'
 
 const CollapsedDrawer = ({ className }: { className?: string }) => {
-  const { t, url } = useI18n()
+  const { lang, t } = useI18n()
+  const url = useUrl(lang)
 
   return (
     <div
@@ -477,7 +479,8 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
 }
 
 const ExpandedDrawer = ({ className }: { className?: string }) => {
-  const { lang, t, url } = useI18n()
+  const { lang, t } = useI18n()
+  const url = useUrl(lang)
   const navigate = useNavigate()
   const customPlatformName = userSettings((state) => state.platformName)
   const isDarkTheme = userSettings((state) => state.isDarkTheme())

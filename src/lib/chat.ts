@@ -9,6 +9,11 @@ import {
   getKnowledgeAttachments,
   buildAgentInstructions,
 } from '@/lib/agent-knowledge'
+import {
+  buildMemoryContextForChat,
+  learnFromConversation,
+  processPendingLearningEvents,
+} from '@/lib/memory-learning-service'
 import { Lang, languages } from '@/i18n'
 
 export interface ChatSubmitOptions {
@@ -28,6 +33,7 @@ export interface ChatSubmitOptions {
   onResponseUpdate: (response: string) => void
   onPromptClear: () => void
   onResponseClear?: () => void
+  onMemoryLearningComplete?: (conversationId: string, agentId: string) => void
 }
 
 export interface ChatSubmitResult {
@@ -50,6 +56,7 @@ export const submitChat = async (
     onResponseUpdate,
     onPromptClear,
     onResponseClear,
+    onMemoryLearningComplete,
   } = options
 
   if (!prompt.trim()) {
@@ -101,33 +108,33 @@ export const submitChat = async (
 
         const result = await WorkflowOrchestrator.orchestrateTask(prompt)
 
-        let orchestrationReport = `# Task Orchestration Complete\n\n`
-        orchestrationReport += `✅ **Status**: ${result.success ? 'Success' : 'Failed'}\n`
-        orchestrationReport += `🆔 **Workflow ID**: ${result.workflowId}\n`
-        orchestrationReport += `📋 **Main Task**: ${result.mainTaskId}\n`
-
-        if (result.subTaskIds.length > 0) {
-          orchestrationReport += `🔧 **Sub-tasks**: ${result.subTaskIds.length} tasks\n`
-        }
-
-        orchestrationReport += `📄 **Artifacts Generated**: ${result.artifacts.length}\n\n`
-
-        if (result.artifacts.length > 0) {
-          orchestrationReport += `## Generated Artifacts\n\n`
-          for (const artifact of result.artifacts) {
-            orchestrationReport += `### ${artifact.title}\n`
-            orchestrationReport += `**Type**: ${artifact.type} | **Status**: ${artifact.status}\n`
-            orchestrationReport += `**Description**: ${artifact.description}\n\n`
-            orchestrationReport += `\`\`\`${artifact.format}\n${artifact.content}\n\`\`\`\n\n`
-          }
-        }
-
-        if (result.errors && result.errors.length > 0) {
-          orchestrationReport += `## Issues Encountered\n\n`
-          result.errors.forEach((error) => {
-            orchestrationReport += `⚠️ ${error}\n`
-          })
-        }
+        const orchestrationReport = [
+          `# Task Orchestration Complete\n`,
+          `✅ **Status**: ${result.success ? 'Success' : 'Failed'}`,
+          `🆔 **Workflow ID**: ${result.workflowId}`,
+          `📋 **Main Task**: ${result.mainTaskId}`,
+          result.subTaskIds.length > 0
+            ? `🔧 **Sub-tasks**: ${result.subTaskIds.length} tasks`
+            : '',
+          `📄 **Artifacts Generated**: ${result.artifacts.length}\n`,
+          result.artifacts.length > 0
+            ? [
+                `## Generated Artifacts\n`,
+                ...result.artifacts.map(
+                  (artifact) =>
+                    `### ${artifact.title}\n**Type**: ${artifact.type} | **Status**: ${artifact.status}\n**Description**: ${artifact.description}\n\n\`\`\`${artifact.format}\n${artifact.content}\n\`\`\``,
+                ),
+              ].join('\n')
+            : '',
+          result.errors?.length
+            ? [
+                `## Issues Encountered\n`,
+                ...result.errors.map((error) => `⚠️ ${error}`),
+              ].join('\n')
+            : '',
+        ]
+          .filter(Boolean)
+          .join('\n')
 
         onResponseUpdate(orchestrationReport)
 
@@ -197,10 +204,17 @@ export const submitChat = async (
       agent.knowledgeItemIds,
     )
 
+    // Get relevant memories for this agent and prompt
+    const memoryContext = await buildMemoryContextForChat(agent.id, prompt)
+
     const instructions = [
       enhancedInstructions,
+      // Inject memory context if available
+      memoryContext,
       `ALWAYS respond in ${languages[lang]} as this is the user's language.`,
-    ].join('\n\n')
+    ]
+      .filter(Boolean)
+      .join('\n\n')
 
     // Prepare messages for the LLM
     const messages: LLMMessage[] = [
@@ -276,6 +290,17 @@ export const submitChat = async (
       onResponseClear()
     }
 
+    // Trigger memory learning in the background (don't await to not block UI)
+    // This extracts learnable information from the conversation for human review
+    triggerMemoryLearning(
+      conversation.id,
+      agent.id,
+      lang,
+      onMemoryLearningComplete,
+    ).catch((err) => {
+      console.warn('Memory learning failed (non-critical):', err)
+    })
+
     return { success: true }
   } catch (err) {
     console.error('Error calling LLM:', err)
@@ -284,5 +309,34 @@ export const submitChat = async (
       err,
     )
     return { success: false, error: 'LLM call failed' }
+  }
+}
+
+/**
+ * Trigger memory learning from a conversation in the background
+ * This is non-blocking and failures are logged but don't affect the user
+ */
+async function triggerMemoryLearning(
+  conversationId: string,
+  agentId: string,
+  lang: Lang,
+  onComplete?: (conversationId: string, agentId: string) => void,
+): Promise<void> {
+  try {
+    // Extract learnings from the conversation
+    await learnFromConversation(conversationId, agentId, lang)
+
+    // Process pending events into memories (pending human review)
+    await processPendingLearningEvents(agentId)
+
+    console.log(`Memory learning completed for conversation ${conversationId}`)
+
+    // Notify the UI that memory learning is complete
+    if (onComplete) {
+      onComplete(conversationId, agentId)
+    }
+  } catch (error) {
+    // Log but don't throw - memory learning is non-critical
+    console.error('Memory learning error:', error)
   }
 }

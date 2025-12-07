@@ -7,4 +7,5 @@ node_modules
 /public/agents/*.agent.json
 /public/methodologies/manifest.json
 /public/methodologies/*.methodology.json
+/public/sitemap.xml
 /test-results*

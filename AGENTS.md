@@ -214,6 +214,98 @@ Sophisticated orchestrator agent with:
 - Requirement-driven execution approach
 - Self-correcting workflow logic
 
+#### Agent Memory System
+
+**MemoryLearningService** ([src/lib/memory-learning-service.ts](src/lib/memory-learning-service.ts))
+
+Enables agents to learn and remember information from conversations:
+
+```mermaid
+graph LR
+    A[Conversation] --> B[Learning Extraction]
+    B --> C[Memory Creation]
+    C --> D{Human Review}
+    D -->|Approve| E[Approved Memory]
+    D -->|Reject| F[Discarded]
+    D -->|Edit| G[Edited & Approved]
+    E --> H[Context Injection]
+    H --> I[Future Conversations]
+```
+
+**Memory Categories:**
+
+- **Facts**: Concrete information about the user or domain
+- **Preferences**: User preferences and working styles
+- **Behaviors**: Observed patterns and habits
+- **Domain Knowledge**: Technical or specialized knowledge
+- **Relationships**: Connections between concepts or people
+- **Procedures**: Step-by-step processes
+- **Corrections**: Rectifications of previous misunderstandings
+
+**Confidence Levels:**
+
+- **High**: Explicitly stated, reliable information
+- **Medium**: Inferred with reasonable certainty
+- **Low**: Tentative conclusions requiring validation
+
+**Core Components:**
+
+1. **AgentMemoryStore** ([src/stores/agentMemoryStore.ts](src/stores/agentMemoryStore.ts))
+   - Memory CRUD operations with IndexedDB persistence
+   - Learning event tracking
+   - Memory document synthesis
+   - Bulk operations and cleanup
+
+2. **Memory Extraction**
+   - LLM-powered extraction from conversations
+   - Automatic categorization and confidence scoring
+   - Keyword extraction for relevance matching
+   - Robust JSON parsing with sanitization
+
+3. **Human Review System**
+   - Pending review queue for new memories
+   - Approve/reject/edit workflow
+   - Bulk operations support
+   - Review notes and audit trail
+
+4. **Context Injection**
+   - Relevant memories injected into new conversations
+   - Keyword-based relevance scoring
+   - Confidence and recency boosting
+   - Usage tracking for analytics
+
+**Memory Data Schema:**
+
+```typescript
+interface AgentMemoryEntry {
+  id: string
+  agentId: string
+  category: MemoryCategory
+  title: string
+  content: string
+  confidence: MemoryConfidence
+  source: 'conversation' | 'manual' | 'imported'
+  sourceConversationId?: string
+  keywords: string[]
+  tags: string[]
+  validationStatus: 'pending' | 'approved' | 'rejected' | 'auto_approved'
+  reviewedAt?: Date
+  reviewedBy?: string
+  reviewNotes?: string
+  usageCount: number
+  lastUsedAt?: Date
+  expiresAt?: Date
+  learnedAt: Date
+  version: number
+  createdAt: Date
+  updatedAt: Date
+}
+```
+
+**Memory Synthesis:**
+
+Generates a comprehensive markdown document summarizing all approved memories for an agent, organized by category with statistics.
+
 ### 6. Dynamic Team Formation (Future)
 
 - Mimics human organizational structures and dynamics
@@ -449,6 +541,13 @@ interface Checkpoint {
    - User preferences and settings
    - Drawer state persistence
    - Theme and language management
+
+7. **AgentMemoryStore** ([src/stores/agentMemoryStore.ts](src/stores/agentMemoryStore.ts))
+   - Agent memory CRUD operations
+   - Learning event management
+   - Human review workflow
+   - Memory retrieval with relevance scoring
+   - Memory synthesis documents
 
 **Store Patterns:**
 

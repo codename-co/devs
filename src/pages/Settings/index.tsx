@@ -26,7 +26,7 @@ import { useNavigate } from 'react-router-dom'
 import { useI18n, useUrl, languages, type Lang } from '@/i18n'
 import DefaultLayout from '@/layouts/Default'
 import type { HeaderProps, IconName } from '@/lib/types'
-import { LLMProvider, Credential, LangfuseConfig } from '@/types'
+import { LLMProvider, Credential, LangfuseConfig, LLMConfig } from '@/types'
 import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
 import {
@@ -67,7 +67,9 @@ interface ProviderConfig {
   apiKeyPlaceholder?: string
   apiKeyPage?: string
   noApiKey?: boolean
+  optionalApiKey?: boolean
   noServerUrl?: boolean
+  fetchModelsFromServer?: boolean
   moreDetails?: () => React.ReactNode
 }
 
@@ -209,9 +211,10 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     name: 'Anthropic',
     models: [
       AnthropicProvider.DEFAULT_MODEL,
-      'claude-3-7-sonnet-20250219',
       'claude-sonnet-4-20250514',
+      'claude-opus-4-5-20251101',
       'claude-opus-4-20250514',
+      'claude-haiku-4-5-20251001',
     ],
     icon: 'Anthropic',
     apiKeyPage: 'https://console.anthropic.com/settings/keys',
@@ -284,6 +287,29 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
       'google/flan-t5-xxl',
     ],
     icon: 'HuggingFace',
+  },
+  {
+    provider: 'openai-compatible',
+    name: 'OpenAI Compatible',
+    models: [],
+    icon: 'Internet',
+    requiresBaseUrl: true,
+    optionalApiKey: true,
+    fetchModelsFromServer: true,
+    apiKeyPlaceholder: 'sk-... (optional)',
+    moreDetails: () => (
+      <Alert variant="faded">
+        <div className="flex flex-col gap-2">
+          <p className="font-medium">Connect to any OpenAI-compatible API</p>
+          <p className="text-sm text-default-600">
+            Works with LM Studio, LocalAI, vLLM, Text Generation WebUI, Together
+            AI, Fireworks AI, and more.
+            <br />
+            API key is optional for local servers.
+          </p>
+        </div>
+      </Alert>
+    ),
   },
   {
     provider: 'custom',
@@ -433,6 +459,18 @@ export const SettingsPage = () => {
       fetchAvailableModels('ollama', apiKey)
     }
   }, [apiKey, selectedProvider])
+
+  // Re-fetch models when baseUrl changes for providers that fetch from server
+  useEffect(() => {
+    if (selectedProvider && baseUrl) {
+      const providerCfg = PROVIDERS(lang, t).find(
+        (p) => p.provider === selectedProvider,
+      )
+      if (providerCfg?.fetchModelsFromServer) {
+        fetchAvailableModels(selectedProvider, baseUrl, apiKey || undefined)
+      }
+    }
+  }, [baseUrl, selectedProvider, apiKey])
 
   const initializeSecurity = async () => {
     await SecureStorage.init()
@@ -619,11 +657,13 @@ export const SettingsPage = () => {
       (p) => p.provider === selectedProvider,
     )
 
-    // For Ollama and Local, API key is optional
+    // For Ollama, Local, and optionalApiKey providers, API key is optional
     if (
-      (!apiKey && !providerConfig?.noApiKey) ||
+      (!apiKey &&
+        !providerConfig?.noApiKey &&
+        !providerConfig?.optionalApiKey) ||
       !model ||
-      (selectedProvider === 'custom' && !baseUrl)
+      (providerConfig?.requiresBaseUrl && !baseUrl)
     ) {
       errorToast(t('Please fill in all required fields'))
       return
@@ -631,9 +671,12 @@ export const SettingsPage = () => {
 
     setIsValidating(true)
     try {
-      // For providers without API keys, use a dummy key
+      // For providers without API keys or with optional API keys, use a dummy key if not provided
       const keyToEncrypt =
-        apiKey || (providerConfig?.noApiKey ? `${selectedProvider}-no-key` : '')
+        apiKey ||
+        (providerConfig?.noApiKey || providerConfig?.optionalApiKey
+          ? `${selectedProvider}-no-key`
+          : '')
 
       const success = await addCredential(
         selectedProvider,
@@ -678,19 +721,30 @@ export const SettingsPage = () => {
   const fetchAvailableModels = async (
     provider: LLMProvider,
     baseUrl?: string,
+    fetchApiKey?: string,
   ) => {
-    if (provider !== 'ollama') {
-      const config = PROVIDERS(lang, t).find((p) => p.provider === provider)
-      const models = config?.models
+    const providerCfg = PROVIDERS(lang, t).find((p) => p.provider === provider)
+
+    // Check if this provider should fetch models from server
+    if (provider !== 'ollama' && !providerCfg?.fetchModelsFromServer) {
+      const models = providerCfg?.models
       // Handle Promise<string[]> for local provider
       const resolvedModels = models instanceof Promise ? await models : models
       setAvailableModels(resolvedModels || [])
       return
     }
 
+    // For providers that fetch from server, we need a baseUrl
+    if (providerCfg?.fetchModelsFromServer && !baseUrl) {
+      setAvailableModels([])
+      return
+    }
+
     setIsFetchingModels(true)
     try {
-      const config = baseUrl ? { baseUrl } : undefined
+      const config: Partial<LLMConfig> = {}
+      if (baseUrl) config.baseUrl = baseUrl
+      if (fetchApiKey) config.apiKey = fetchApiKey
       const models = await LLMService.getAvailableModels(provider, config)
       setAvailableModels(models)
       setUseManualModel(false)
@@ -1305,7 +1359,10 @@ export const SettingsPage = () => {
                             value={apiKey}
                             autoComplete="false"
                             onChange={(e) => setApiKey(e.target.value)}
-                            isRequired={!providerConfig?.noApiKey}
+                            isRequired={
+                              !providerConfig?.noApiKey &&
+                              !providerConfig?.optionalApiKey
+                            }
                             description={
                               <Link
                                 href={providerConfig?.apiKeyPage}
@@ -1325,10 +1382,19 @@ export const SettingsPage = () => {
                       {providerConfig?.requiresBaseUrl && (
                         <Input
                           label={t('Base URL')}
-                          placeholder="https://api.example.com/v1"
+                          placeholder={
+                            providerConfig?.provider === 'openai-compatible'
+                              ? 'http://localhost:4444'
+                              : 'https://api.example.com/v1'
+                          }
                           value={baseUrl}
                           onChange={(e) => setBaseUrl(e.target.value)}
                           isRequired
+                          description={
+                            providerConfig?.provider === 'openai-compatible'
+                              ? '/v1 will be added automatically if not present'
+                              : undefined
+                          }
                         />
                       )}
                       {/* Model Selection */}
@@ -1439,7 +1505,9 @@ export const SettingsPage = () => {
                     onPress={handleAddCredential}
                     isLoading={isValidating}
                     isDisabled={
-                      (!apiKey && !providerConfig?.noApiKey) ||
+                      (!apiKey &&
+                        !providerConfig?.noApiKey &&
+                        !providerConfig?.optionalApiKey) ||
                       !model ||
                       (providerConfig?.requiresBaseUrl && !baseUrl)
                     }

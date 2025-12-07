@@ -8,6 +8,9 @@ import {
   Accordion,
   AccordionItem,
   Button,
+  Textarea,
+  Input,
+  ButtonGroup,
 } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
@@ -22,11 +25,28 @@ import {
 import DefaultLayout from '@/layouts/Default'
 import type { HeaderProps } from '@/lib/types'
 import { getAgentById } from '@/stores/agentStore'
-import { Agent, Message, Artifact } from '@/types'
+import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
+import {
+  Agent,
+  Message,
+  Artifact,
+  AgentMemoryEntry,
+  MemoryCategory,
+} from '@/types'
 import { errorToast } from '@/lib/toast'
 import { submitChat } from '@/lib/chat'
+import {
+  learnFromConversation,
+  processPendingLearningEvents,
+} from '@/lib/memory-learning-service'
 import { useConversationStore } from '@/stores/conversationStore'
 import { useArtifactStore } from '@/stores/artifactStore'
+import { categoryLabels } from '../Knowledge'
+
+// Timeline item types for interleaving messages and memories
+type TimelineItem =
+  | { type: 'message'; data: Message; timestamp: Date }
+  | { type: 'memory'; data: AgentMemoryEntry; timestamp: Date }
 
 // Component to display a single message with proper agent context
 const MessageDisplay = memo(
@@ -196,6 +216,231 @@ const ArtifactWidget = memo(({ artifact }: { artifact: Artifact }) => {
 
 ArtifactWidget.displayName = 'ArtifactWidget'
 
+// Component to display a single inline memory with review actions
+const InlineMemoryDisplay = memo(
+  ({
+    memory,
+    onApprove,
+    onReject,
+    onEdit,
+    onRemoveFromList,
+  }: {
+    memory: AgentMemoryEntry
+    onApprove: (id: string) => Promise<void>
+    onReject: (id: string) => Promise<void>
+    onEdit: (id: string, newContent: string, newTitle?: string) => Promise<void>
+    onRemoveFromList: (id: string) => void
+  }) => {
+    const { t } = useI18n()
+    const [isEditing, setIsEditing] = useState(false)
+    const [editContent, setEditContent] = useState(memory.content)
+    const [editTitle, setEditTitle] = useState(memory.title)
+    const [isProcessing, setIsProcessing] = useState(false)
+
+    const getCategoryColor = (category: string) => {
+      switch (category) {
+        case 'fact':
+          return 'primary'
+        case 'preference':
+          return 'secondary'
+        case 'behavior':
+          return 'warning'
+        case 'domain_knowledge':
+          return 'success'
+        case 'relationship':
+          return 'danger'
+        case 'procedure':
+          return 'default'
+        case 'correction':
+          return 'warning'
+        default:
+          return 'default'
+      }
+    }
+
+    // const getConfidenceColor = (confidence: string) => {
+    //   switch (confidence) {
+    //     case 'high':
+    //       return 'success'
+    //     case 'medium':
+    //       return 'warning'
+    //     case 'low':
+    //       return 'danger'
+    //     default:
+    //       return 'default'
+    //   }
+    // }
+
+    const handleApprove = async () => {
+      setIsProcessing(true)
+      try {
+        await onApprove(memory.id)
+        onRemoveFromList(memory.id)
+      } finally {
+        setIsProcessing(false)
+      }
+    }
+
+    const handleReject = async () => {
+      setIsProcessing(true)
+      try {
+        await onReject(memory.id)
+        onRemoveFromList(memory.id)
+      } finally {
+        setIsProcessing(false)
+      }
+    }
+
+    const handleStartEdit = () => {
+      setIsEditing(true)
+      setEditContent(memory.content)
+      setEditTitle(memory.title)
+    }
+
+    const handleCancelEdit = () => {
+      setIsEditing(false)
+      setEditContent(memory.content)
+      setEditTitle(memory.title)
+    }
+
+    const handleSaveEdit = async () => {
+      setIsProcessing(true)
+      try {
+        await onEdit(memory.id, editContent, editTitle)
+        onRemoveFromList(memory.id)
+        setIsEditing(false)
+      } finally {
+        setIsProcessing(false)
+      }
+    }
+
+    // const formattedTime = new Date(memory.learnedAt).toLocaleTimeString([], {
+    //   hour: '2-digit',
+    //   minute: '2-digit',
+    // })
+
+    return (
+      <div className="flex w-full gap-3 animate-appearance-in">
+        <div className="w-full">
+          <div className="border-l-4 border-secondary-400 dark:border-secondary-600 pl-4 py-2 bg-secondary-50/50 dark:bg-secondary-900/20 rounded-r-lg">
+            {/* Header with icon and timestamp */}
+            <div className="flex items-center gap-2 mb-2">
+              <Icon name="Brain" className="w-4 h-4 text-secondary-500" />
+              <span className="text-tiny font-medium text-secondary-600 dark:text-secondary-400">
+                {t('Insight')}
+              </span>
+              <Chip
+                size="sm"
+                variant="flat"
+                color={getCategoryColor(memory.category)}
+                className="text-tiny"
+              >
+                {t(categoryLabels[memory.category as MemoryCategory] as any)}
+              </Chip>
+            </div>
+
+            {isEditing ? (
+              // Edit mode
+              <div className="space-y-3">
+                <Input
+                  label={t('Title')}
+                  value={editTitle}
+                  onValueChange={setEditTitle}
+                  size="sm"
+                  variant="bordered"
+                />
+                <Textarea
+                  label={t('Content')}
+                  value={editContent}
+                  onValueChange={setEditContent}
+                  minRows={2}
+                  size="sm"
+                  variant="bordered"
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button size="sm" variant="flat" onPress={handleCancelEdit}>
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    color="success"
+                    isLoading={isProcessing}
+                    onPress={handleSaveEdit}
+                  >
+                    {t('Save & Approve')}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              // View mode
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-medium text-sm">{memory.title}</span>
+                  {/* <Chip
+                    size="sm"
+                    variant="dot"
+                    color={getConfidenceColor(memory.confidence) as any}
+                    className="text-tiny"
+                  >
+                    {memory.confidence}
+                  </Chip> */}
+                </div>
+                <p className="text-sm text-default-600">{memory.content}</p>
+                {/* {memory.keywords.length > 0 && (
+                  <div className="flex gap-1 flex-wrap">
+                    {memory.keywords.slice(0, 5).map((keyword, idx) => (
+                      <Chip
+                        key={idx}
+                        size="sm"
+                        variant="bordered"
+                        className="text-tiny"
+                      >
+                        {keyword}
+                      </Chip>
+                    ))}
+                  </div>
+                )} */}
+
+                {/* Action buttons */}
+                <ButtonGroup size="sm" variant="flat">
+                  <Button
+                    color="danger"
+                    startContent={<Icon name="Xmark" className="w-3 h-3" />}
+                    isLoading={isProcessing}
+                    onPress={handleReject}
+                  >
+                    {t('Forget')}
+                  </Button>
+                  <Button
+                    color="default"
+                    startContent={
+                      <Icon name="EditPencil" className="w-3 h-3" />
+                    }
+                    onPress={handleStartEdit}
+                  >
+                    {t('Edit')}
+                  </Button>
+                  <Button
+                    variant="solid"
+                    color="success"
+                    startContent={<Icon name="Check" className="w-3 h-3" />}
+                    isLoading={isProcessing}
+                    onPress={handleApprove}
+                  >
+                    {t('Memorize')}
+                  </Button>
+                </ButtonGroup>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  },
+)
+
+InlineMemoryDisplay.displayName = 'InlineMemoryDisplay'
+
 export const AgentRunPage = () => {
   const { t, lang, url } = useI18n()
   const location = useLocation()
@@ -224,6 +469,61 @@ export const AgentRunPage = () => {
   const { artifacts, loadArtifacts } = useArtifactStore()
 
   const [showSystemPrompt, setShowSystemPrompt] = useState(false)
+  const [showMemories, setShowMemories] = useState(false)
+  const [agentMemories, setAgentMemories] = useState<AgentMemoryEntry[]>([])
+  const [isLearning, setIsLearning] = useState(false)
+  const [newlyLearnedMemories, setNewlyLearnedMemories] = useState<
+    AgentMemoryEntry[]
+  >([])
+
+  const isConversationPristine = useMemo(
+    () => !(Number(currentConversation?.messages.length) > 0),
+    [currentConversation],
+  )
+
+  // Load agent memories when agent changes
+  useEffect(() => {
+    const loadMemories = async () => {
+      if (selectedAgent) {
+        const { getRelevantMemoriesAsync } = useAgentMemoryStore.getState()
+        try {
+          const memories = await getRelevantMemoriesAsync(selectedAgent.id)
+          setAgentMemories(memories)
+        } catch (error) {
+          console.warn('Failed to load agent memories:', error)
+          setAgentMemories([])
+        }
+      }
+    }
+    loadMemories()
+  }, [selectedAgent?.id])
+
+  // Load pending review memories when agent/conversation loads
+  // Filter to only show memories from the current conversation
+  useEffect(() => {
+    const loadPendingMemories = async () => {
+      if (selectedAgent && currentConversation?.id) {
+        const { loadMemoriesForAgent, getPendingReviewMemories } =
+          useAgentMemoryStore.getState()
+        try {
+          // First ensure memories are loaded from DB
+          await loadMemoriesForAgent(selectedAgent.id)
+          // Then get pending review memories filtered by current conversation
+          const pendingMemories = getPendingReviewMemories(selectedAgent.id)
+          const conversationMemories = pendingMemories.filter((m) =>
+            m.sourceConversationIds?.includes(currentConversation.id),
+          )
+          setNewlyLearnedMemories(conversationMemories)
+        } catch (error) {
+          console.warn('Failed to load pending memories:', error)
+        }
+      } else {
+        // Clear memories if no conversation
+        setNewlyLearnedMemories([])
+      }
+    }
+    loadPendingMemories()
+  }, [selectedAgent?.id, currentConversation?.id])
 
   const header: HeaderProps = useMemo(
     () => ({
@@ -234,14 +534,29 @@ export const AgentRunPage = () => {
       title: selectedAgent?.i18n?.[lang]?.name ?? selectedAgent?.name ?? '…',
       subtitle: (
         <>
-          <Button
-            variant={showSystemPrompt ? 'solid' : 'light'}
-            size="sm"
-            startContent={<Icon name="Terminal" />}
-            onPress={() => setShowSystemPrompt((v) => !v)}
-          >
-            {t('System Prompt')}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant={showSystemPrompt ? 'solid' : 'light'}
+              size="sm"
+              startContent={<Icon name="Terminal" />}
+              onPress={() => setShowSystemPrompt((v) => !v)}
+            >
+              {t('System Prompt')}
+            </Button>
+            <Button
+              variant={showMemories ? 'solid' : 'light'}
+              size="sm"
+              startContent={<Icon name="Brain" />}
+              onPress={() => setShowMemories((v) => !v)}
+            >
+              {t('Knowledge')}
+              {agentMemories.length > 0 && (
+                <Chip size="sm" variant="flat">
+                  {agentMemories.length}
+                </Chip>
+              )}
+            </Button>
+          </div>
           {showSystemPrompt && (
             <div className="mt-4 max-h-96 overflow-y-auto">
               <MarkdownRenderer
@@ -253,6 +568,83 @@ export const AgentRunPage = () => {
               />
             </div>
           )}
+          {showMemories && (
+            <div className="mt-4 max-h-96 overflow-y-auto">
+              {agentMemories.length === 0 ? (
+                <p className="text-default-500 text-sm">
+                  {t(
+                    'No memories learned yet. Start conversations and use "Learn from conversation" to build agent memory.',
+                  )}
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {agentMemories.map((memory) => (
+                    <Card key={memory.id} className="p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-sm">
+                              {memory.title}
+                            </span>
+                            {memory.isGlobal && (
+                              <Chip size="sm" color="primary" variant="flat">
+                                {t('Global')}
+                              </Chip>
+                            )}
+                            <Chip size="sm" color="default" variant="flat">
+                              {memory.category}
+                            </Chip>
+                          </div>
+                          <p className="text-sm text-default-600 mt-1">
+                            {memory.content}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="light"
+                          color={memory.isGlobal ? 'danger' : 'primary'}
+                          startContent={
+                            <Icon
+                              size="sm"
+                              name={memory.isGlobal ? 'Xmark' : 'Share'}
+                            />
+                          }
+                          onPress={async () => {
+                            const { upgradeToGlobal, downgradeFromGlobal } =
+                              useAgentMemoryStore.getState()
+                            try {
+                              if (memory.isGlobal) {
+                                await downgradeFromGlobal(memory.id)
+                              } else {
+                                await upgradeToGlobal(memory.id)
+                              }
+                              // Reload memories
+                              const { getRelevantMemoriesAsync } =
+                                useAgentMemoryStore.getState()
+                              const newMemories =
+                                await getRelevantMemoriesAsync(
+                                  selectedAgent?.id || '',
+                                )
+                              setAgentMemories(newMemories)
+                            } catch (error) {
+                              console.error(
+                                'Failed to update memory global status:',
+                                error,
+                              )
+                            }
+                          }}
+                        >
+                          {memory.isGlobal
+                            ? t('Remove Global')
+                            : t('Make Global')}
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </>
       ),
       // subtitle: selectedAgent?.desc || t('AI Assistant'),
@@ -262,7 +654,17 @@ export const AgentRunPage = () => {
         icon: 'Plus',
       },
     }),
-    [selectedAgent?.icon, selectedAgent?.name, showSystemPrompt],
+    [
+      selectedAgent?.icon,
+      selectedAgent?.name,
+      showSystemPrompt,
+      showMemories,
+      agentMemories,
+      isConversationPristine,
+      isLearning,
+      currentConversation,
+      selectedAgent,
+    ],
   )
 
   // Parse the hash to get agentId and optional conversationId
@@ -274,11 +676,6 @@ export const AgentRunPage = () => {
       conversationId: parts[1] || null,
     }
   }, [location.hash])
-
-  const isConversationPristine = useMemo(
-    () => !(Number(currentConversation?.messages.length) > 0),
-    [currentConversation],
-  )
 
   const { agentId, conversationId } = useMemo(() => parseHash(), [parseHash])
 
@@ -363,6 +760,7 @@ export const AgentRunPage = () => {
           // Clear current conversation since we're starting with a specific agent
           clearCurrentConversation()
           setConversationMessages([])
+          setNewlyLearnedMemories([]) // Clear learned memories for new conversation
         }
 
         // Check for pending prompt from Index page
@@ -411,17 +809,19 @@ export const AgentRunPage = () => {
   }, [currentConversation])
 
   // Update URL hash when conversation ID becomes available
+  // Only update when there's no conversationId in the URL yet (new conversation created)
   useEffect(() => {
     if (currentConversation?.id && selectedAgent?.id) {
-      const expectedHash = `#${selectedAgent.id}/${currentConversation.id}`
-      const currentHash = location.hash
+      const { conversationId: urlConversationId } = parseHash()
 
-      // Only update if the hash doesn't already include the conversation ID
-      if (currentHash !== expectedHash) {
-        navigate(expectedHash, { replace: true })
+      // Only update hash if there's no conversation ID in the URL yet
+      // This prevents navigation loops when switching between existing conversations
+      if (!urlConversationId) {
+        const newHash = `#${selectedAgent.id}/${currentConversation.id}`
+        navigate(newHash, { replace: true })
       }
     }
-  }, [currentConversation?.id, selectedAgent?.id, location.hash, navigate])
+  }, [currentConversation?.id, selectedAgent?.id, parseHash, navigate])
 
   // Load artifacts on mount
   useEffect(() => {
@@ -445,6 +845,27 @@ export const AgentRunPage = () => {
 
     setConversationArtifacts(relatedArtifacts)
   }, [artifacts, currentConversation])
+
+  // Callback to refresh pending memories after memory learning completes
+  const handleMemoryLearningComplete = useCallback(
+    async (conversationId: string, agentId: string) => {
+      try {
+        const { loadMemoriesForAgent, getPendingReviewMemories } =
+          useAgentMemoryStore.getState()
+        // Reload memories from DB
+        await loadMemoriesForAgent(agentId)
+        // Get pending memories for this conversation
+        const pendingMemories = getPendingReviewMemories(agentId)
+        const conversationMemories = pendingMemories.filter((m) =>
+          m.sourceConversationIds?.includes(conversationId),
+        )
+        setNewlyLearnedMemories(conversationMemories)
+      } catch (error) {
+        console.warn('Failed to refresh pending memories:', error)
+      }
+    },
+    [],
+  )
 
   // Auto-submit handler for prompts from Index page
   const handleAutoSubmit = useCallback(
@@ -476,11 +897,12 @@ export const AgentRunPage = () => {
         onResponseUpdate: setResponse,
         onPromptClear: () => setPrompt(''),
         onResponseClear: () => setResponse(''),
+        onMemoryLearningComplete: handleMemoryLearningComplete,
       })
 
       setIsSending(false)
     },
-    [isSending, conversationMessages, lang, t],
+    [isSending, conversationMessages, lang, t, handleMemoryLearningComplete],
   )
 
   const onSubmit = useCallback(async () => {
@@ -501,10 +923,76 @@ export const AgentRunPage = () => {
       onResponseUpdate: setResponse,
       onPromptClear: () => setPrompt(''),
       onResponseClear: () => setResponse(''),
+      onMemoryLearningComplete: handleMemoryLearningComplete,
     })
 
     setIsSending(false)
-  }, [prompt, isSending, selectedAgent, conversationMessages, lang, t])
+  }, [
+    prompt,
+    isSending,
+    selectedAgent,
+    conversationMessages,
+    lang,
+    t,
+    handleMemoryLearningComplete,
+  ])
+
+  // Create memory action handlers to avoid repetition
+  const memoryActions = useMemo(
+    () => ({
+      onApprove: async (id: string) => {
+        const { approveMemory, getRelevantMemoriesAsync } =
+          useAgentMemoryStore.getState()
+        await approveMemory(id)
+        if (selectedAgent) {
+          const memories = await getRelevantMemoriesAsync(selectedAgent.id)
+          setAgentMemories(memories)
+        }
+      },
+      onReject: async (id: string) => {
+        const { rejectMemory } = useAgentMemoryStore.getState()
+        await rejectMemory(id)
+      },
+      onEdit: async (id: string, newContent: string, newTitle?: string) => {
+        const { updateMemory, approveMemory, getRelevantMemoriesAsync } =
+          useAgentMemoryStore.getState()
+        await updateMemory(id, {
+          content: newContent,
+          ...(newTitle && { title: newTitle }),
+        })
+        await approveMemory(id, 'Edited during review')
+        if (selectedAgent) {
+          const memories = await getRelevantMemoriesAsync(selectedAgent.id)
+          setAgentMemories(memories)
+        }
+      },
+      onRemoveFromList: (id: string) =>
+        setNewlyLearnedMemories((prev) => prev.filter((m) => m.id !== id)),
+    }),
+    [selectedAgent],
+  )
+
+  // Build timeline items: combine messages and memories, sorted by timestamp
+  const timelineItems = useMemo((): TimelineItem[] => {
+    const messageItems: TimelineItem[] = conversationMessages
+      .filter((msg) => msg.role !== 'system')
+      .map((message) => ({
+        type: 'message' as const,
+        data: message,
+        timestamp: new Date(message.timestamp),
+      }))
+
+    const memoryItems: TimelineItem[] = newlyLearnedMemories.map((memory) => ({
+      type: 'memory' as const,
+      data: memory,
+      timestamp: new Date(memory.learnedAt),
+    }))
+
+    // Combine and sort by timestamp
+    return [...messageItems, ...memoryItems].sort(
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+    )
+  }, [conversationMessages, newlyLearnedMemories])
 
   if (isLoading) {
     return (
@@ -531,20 +1019,29 @@ export const AgentRunPage = () => {
           // className="lg:col-span-3"
           >
             <Container>
-              {/* Display conversation history */}
-              {conversationMessages.length > 0 && (
+              {/* Display timeline: messages and memories interleaved by timestamp */}
+              {timelineItems.length > 0 && (
                 <div className="duration-600 relative flex flex-col gap-6">
-                  {conversationMessages
-                    .filter((msg) => msg.role !== 'system')
-                    .map((message) => (
+                  {timelineItems.map((item) =>
+                    item.type === 'message' ? (
                       <MessageDisplay
-                        key={message.id}
-                        message={message}
+                        key={item.data.id}
+                        message={item.data}
                         selectedAgent={selectedAgent}
                         getMessageAgent={getMessageAgent}
                         detectContentType={detectContentType}
                       />
-                    ))}
+                    ) : (
+                      <InlineMemoryDisplay
+                        key={item.data.id}
+                        memory={item.data}
+                        onApprove={memoryActions.onApprove}
+                        onReject={memoryActions.onReject}
+                        onEdit={memoryActions.onEdit}
+                        onRemoveFromList={memoryActions.onRemoveFromList}
+                      />
+                    ),
+                  )}
                   <span
                     aria-hidden="true"
                     className="w-px h-px block"
@@ -655,6 +1152,55 @@ export const AgentRunPage = () => {
             </div>
           )} */}
         </div>
+
+        {/* Memory Learning CTA */}
+        {conversationMessages.length > 0 &&
+          currentConversation &&
+          selectedAgent && (
+            <div className="max-w-4xl mx-auto mt-4 flex justify-end">
+              <Button
+                size="sm"
+                variant="flat"
+                color="secondary"
+                startContent={<Icon name="Brain" className="w-4 h-4" />}
+                isLoading={isLearning}
+                onPress={async () => {
+                  if (!currentConversation || !selectedAgent) return
+                  setIsLearning(true)
+                  try {
+                    await learnFromConversation(
+                      currentConversation.id,
+                      selectedAgent.id,
+                    )
+                    const learnedMemories = await processPendingLearningEvents(
+                      selectedAgent.id,
+                    )
+                    // Add newly learned memories to display inline
+                    if (learnedMemories.length > 0) {
+                      setNewlyLearnedMemories((prev) => [
+                        ...prev,
+                        ...learnedMemories,
+                      ])
+                    }
+                    // Reload agent memories list
+                    const { getRelevantMemoriesAsync } =
+                      useAgentMemoryStore.getState()
+                    const newMemories = await getRelevantMemoriesAsync(
+                      selectedAgent.id,
+                    )
+                    setAgentMemories(newMemories)
+                    console.log('Memory learning triggered successfully')
+                  } catch (error) {
+                    console.error('Memory learning failed:', error)
+                  } finally {
+                    setIsLearning(false)
+                  }
+                }}
+              >
+                {t('Learn from conversation')}
+              </Button>
+            </div>
+          )}
 
         <PromptArea
           lang={lang}

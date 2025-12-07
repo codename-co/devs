@@ -34,21 +34,31 @@ const pagesList = pageFiles
     title: (lang: Lang) =>
       e.index
         ? PRODUCT.displayName
-        : `${PRODUCT.displayName} · ${meta[lang]?.[e.page]?.title}`,
+        : `${PRODUCT.displayName} · ${meta[lang || defaultLang]?.[e.page]?.title}`,
   }))
 
 // Generate localized pages
 const pages = langs.reduce((acc, lang = defaultLang) => {
   pagesList.forEach(({ page, name, entry, filename, title }) => {
     const isIndex = page === 'Index'
+    const _title = title(lang)
+    const _description =
+      meta[lang || defaultLang]?.[page]?.description ?? PRODUCT.description
+    console.log(
+      `Adding page: [${lang}] /${isIndex ? '' : page.toLowerCase()}/`,
+      {
+        title: _title,
+        description: _description,
+      },
+    )
     acc.push({
       name: name(lang),
       filename: filename(lang),
       entry,
       data: {
         lang,
-        title: title(lang),
-        description: meta[lang]?.[page]?.description,
+        title: _title,
+        description: _description,
       },
     })
   })
@@ -64,7 +74,7 @@ export default defineConfig({
     createMpaPlugin({
       htmlMinify: true,
       pages,
-    }),
+    }) as any,
     cacheVersionPlugin(),
   ],
   resolve: {

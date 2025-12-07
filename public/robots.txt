@@ -1,0 +1,9 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://devs.new/sitemap.xml
+
+# Crawl-delay for rate limiting (optional, respected by some bots)
+Crawl-delay: 1

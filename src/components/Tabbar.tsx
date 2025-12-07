@@ -6,8 +6,6 @@ import { currentBasePath } from '@/lib/utils'
 export const Tabbar = () => {
   const { t, url } = useI18n()
 
-  console.log(JSON.stringify(currentBasePath()))
-
   return (
     <Tabs
       placement="bottom"

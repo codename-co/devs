@@ -76,8 +76,8 @@ export const fr: I18n = {
   Thoughts: 'Réflexions',
 
   // AgentsPage
-  'My Agents ({count})': 'Mes agents ({count})',
-  'Built-in Agents ({count})': 'Agents intégrés ({count})',
+  'My Agents': 'Mes agents',
+  'Built-in Agents': 'Agents intégrés',
   'Built-in agents are pre-configured agents that come with the platform. They showcase various capabilities and can serve as inspiration for your own custom agents.':
     'Les agents intégrés sont des agents préconfigurés qui accompagnent la plateforme. Ils démontrent diverses capacités et peuvent servir d’inspiration pour vos propres agents personnalisés.',
 
@@ -94,6 +94,12 @@ export const fr: I18n = {
   'this agent': 'cet agent',
   'System Prompt': 'Prompt système',
   'No system prompt defined.': 'Aucune invite système définie.',
+  Memories: 'Mémoires',
+  Global: 'Global',
+  'No memories learned yet. Start conversations and use "Learn from conversation" to build agent memory.':
+    "Aucune mémoire apprise pour le moment. Démarrez des conversations et utilisez « Apprendre de la conversation » pour construire la mémoire de l'agent.",
+  'Make Global': 'Rendre global',
+  'Remove Global': 'Retirer global',
 
   // Artifacts side panel
   Artifacts: 'Artefacts',
@@ -317,4 +323,92 @@ export const fr: I18n = {
 
   // Local LLM Loading Indicator
   'Initializing Local AI Model…': 'Initialisation du modèle IA local…',
+
+  // Agent Memory System
+  'Agent Memory': 'Mémoire Agent',
+  'Review and manage what agents have learned':
+    'Examiner et gérer ce que les agents ont appris',
+  'Select Agent': 'Sélectionner un agent',
+  'All agents': 'Tous les agents',
+  'Generate Synthesis': 'Générer la synthèse',
+  'Total Memories': 'Total des souvenirs',
+  'Pending Review': 'En attente de revue',
+  'High Confidence': 'Haute confiance',
+  'Low Confidence': 'Faible confiance',
+  Approved: 'Approuvés',
+  Synthesis: 'Synthèse',
+  'No memories pending review': 'Aucun souvenir en attente de revue',
+  'No memories pending review for this agent':
+    'Aucun souvenir en attente de revue pour cet agent',
+  'No approved memories yet': 'Aucun souvenir approuvé pour le moment',
+  'Select an agent to view their memory synthesis':
+    'Sélectionnez un agent pour voir sa synthèse de mémoire',
+  'Memory Synthesis for {agent}': 'Synthèse mémoire pour {agent}',
+  'Last updated: {date}': 'Dernière mise à jour : {date}',
+  'No synthesis generated yet': 'Aucune synthèse générée pour le moment',
+  'Delete Memory': 'Supprimer le souvenir',
+  'Are you sure you want to delete this memory? This action cannot be undone.':
+    'Êtes-vous sûr de vouloir supprimer ce souvenir ? Cette action est irréversible.',
+
+  // Memory Categories
+  Facts: 'Faits',
+  Preferences: 'Préférences',
+  Behaviors: 'Comportements',
+  'Domain Knowledge': 'Connaissances métier',
+  Relationships: 'Relations',
+  Procedures: 'Procédures',
+  Corrections: 'Corrections',
+  'All Categories': 'Toutes les catégories',
+  'Filter by category': 'Filtrer par catégorie',
+
+  // Memory Confidence
+  high: 'haute',
+  medium: 'moyenne',
+  low: 'faible',
+  High: 'Haute',
+  Medium: 'Moyenne',
+  Low: 'Faible',
+  'Confidence level: {level}': 'Niveau de confiance : {level}',
+  'Auto-approved': 'Auto-approuvé',
+
+  // Memory Review
+  'Review notes (optional)': 'Notes de revue (facultatif)',
+  'Add notes about this memory...': 'Ajouter des notes sur ce souvenir...',
+  Forget: 'Oublier',
+  Memorize: 'Mémoriser',
+  'Edit Memory': 'Modifier le souvenir',
+  'Memory content': 'Contenu du souvenir',
+  'Explain your changes...': 'Expliquez vos modifications...',
+  'Save & Approve': 'Sauvegarder et approuver',
+  'Select All': 'Tout sélectionner',
+  'Deselect All': 'Tout désélectionner',
+  '{count} selected': '{count} sélectionné(s)',
+  'Reject Selected': 'Rejeter la sélection',
+  'Approve Selected': 'Approuver la sélection',
+  'Learned: {date}': 'Appris le : {date}',
+  'Used {count} times': 'Utilisé {count} fois',
+  'Memory approved': 'Souvenir approuvé',
+  'Memory rejected': 'Souvenir rejeté',
+  'Memory edited and approved': 'Souvenir modifié et approuvé',
+  'Memory deleted': 'Souvenir supprimé',
+  'Learn from conversation': 'Apprendre de la conversation',
+  'Learning...': 'Apprentissage...',
+  'Memory learning failed': "Échec de l'apprentissage",
+  'New memories learned': 'Nouveaux souvenirs appris',
+  Insight: 'Aperçu',
+  'Review and approve to save': 'Réviser et approuver pour sauvegarder',
+  Dismiss: 'Fermer',
+  Fact: 'Fait',
+  Preference: 'Préférence',
+  Behavior: 'Comportement',
+  Relationship: 'Relation',
+  Procedure: 'Procédure',
+  Correction: 'Correction',
+  Title: 'Titre',
+  Content: 'Contenu',
+  Category: 'Catégorie',
+  Confidence: 'Confiance',
+  Keywords: 'Mots-clés',
+  'Comma-separated list of keywords':
+    'Liste de mots-clés séparés par des virgules',
 } as const

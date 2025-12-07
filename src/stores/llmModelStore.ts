@@ -180,7 +180,9 @@ export const useLLMModelStore = create<LLMModelStore>()(
             encryptedApiKey: encrypted,
             model,
             baseUrl:
-              provider === 'custom' || provider === 'ollama'
+              provider === 'custom' ||
+              provider === 'ollama' ||
+              provider === 'openai-compatible'
                 ? baseUrl
                 : undefined,
             timestamp: new Date(),

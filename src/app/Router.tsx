@@ -34,6 +34,8 @@ const routes = {
   'demo/diagram': DiagramPage,
   'demo/html': HTMLdemoPage,
   knowledge: KnowledgePage,
+  'knowledge/files': KnowledgePage,
+  'knowledge/memories': KnowledgePage,
   methodologies: MethodologiesPage,
   'methodologies/new': MethodologyNewPage,
   'methodologies/:methodologyId': MethodologyPage,

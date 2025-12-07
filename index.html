@@ -10,6 +10,57 @@
     />
     <title><%= title %></title>
     <meta name="description" content="<%= description %>" />
+
+    <!-- SEO Meta Tags -->
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="DEVS" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="canonical" href="https://devs.new" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="DEVS" />
+    <meta property="og:title" content="<%= title %>" />
+    <meta property="og:description" content="<%= description %>" />
+    <meta property="og:url" content="https://devs.new" />
+    <meta
+      property="og:image"
+      content="https://devs.new/screenshots/devs-desktop-home.webp"
+    />
+    <meta property="og:image:width" content="1644" />
+    <meta property="og:image:height" content="1558" />
+    <meta property="og:locale" content="<%= lang %>" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="<%= title %>" />
+    <meta name="twitter:description" content="<%= description %>" />
+    <meta
+      name="twitter:image"
+      content="https://devs.new/screenshots/devs-desktop-home.webp"
+    />
+
+    <!-- Structured Data for Rich Results -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "DEVS",
+        "description": "<%= description %>",
+        "url": "https://devs.new",
+        "applicationCategory": "ProductivityApplication",
+        "operatingSystem": "Web Browser",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "author": {
+          "@type": "Organization",
+          "name": "DEVS"
+        }
+      }
+    </script>
   </head>
   <body class="bg-background dark:bg-content1 text-foreground rtl:*">
     <div id="root"></div>

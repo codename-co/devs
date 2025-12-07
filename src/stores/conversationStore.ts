@@ -1,8 +1,9 @@
 import { create } from 'zustand'
 import { db } from '@/lib/db'
-import type { Conversation, Message } from '@/types'
+import type { Conversation, Message, AgentMemoryEntry } from '@/types'
 import { errorToast } from '@/lib/toast'
 import { getAgentById } from '@/stores/agentStore'
+import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
 import { ConversationTitleGenerator } from '@/lib/conversation-title-generator'
 
 interface ConversationStore {
@@ -91,7 +92,31 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
         throw new Error(`Agent with id ${agentId} not found`)
       }
 
-      // Create system message with agent's name, role, and instructions
+      // Fetch relevant memories (agent-specific + global)
+      const { getRelevantMemoriesAsync } = useAgentMemoryStore.getState()
+      let memories: AgentMemoryEntry[] = []
+      try {
+        memories = await getRelevantMemoriesAsync(agentId, [], [], 20)
+      } catch (error) {
+        console.warn('Failed to fetch memories for conversation:', error)
+      }
+
+      // Build memory context section if there are memories
+      let memoryContext = ''
+      if (memories.length > 0) {
+        const memoryItems = memories.map((m) => {
+          const globalTag = m.isGlobal ? ' [Global]' : ''
+          return `- **${m.title}**${globalTag}: ${m.content}`
+        })
+        memoryContext = `
+
+### Learned Context:
+The following information has been learned from previous conversations. Use this context to provide more personalized and relevant responses:
+
+${memoryItems.join('\n')}`
+      }
+
+      // Create system message with agent's name, role, instructions, and memories
       const systemMessage: Message = {
         id: crypto.randomUUID(),
         role: 'system',
@@ -101,7 +126,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
 ${agent.role}
 
 ### Instructions:
-${agent.instructions}`,
+${agent.instructions}${memoryContext}`,
         timestamp: new Date(),
       }
 

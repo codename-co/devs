@@ -110,6 +110,7 @@ export type LLMProvider =
   | 'deepseek'
   | 'grok'
   | 'huggingface'
+  | 'openai-compatible'
   | 'custom'
 
 export interface LLMConfig {
@@ -271,4 +272,161 @@ export interface LangfuseConfig {
   encryptedSecretKey: string
   enabled: boolean
   timestamp: Date
+}
+
+// ============================================================================
+// Agent Memory System - Learning from Conversations
+// ============================================================================
+
+/**
+ * Confidence level for a memory entry
+ * - high: Human validated or derived from explicit user statements
+ * - medium: Inferred with high certainty from conversation patterns
+ * - low: Tentatively inferred, needs validation
+ */
+export type MemoryConfidence = 'high' | 'medium' | 'low'
+
+/**
+ * Validation status for human review workflow
+ * - pending: Awaiting human review
+ * - approved: Human validated as correct
+ * - rejected: Human marked as incorrect/irrelevant
+ * - auto_approved: Auto-approved based on high confidence + time threshold
+ */
+export type MemoryValidationStatus =
+  | 'pending'
+  | 'approved'
+  | 'rejected'
+  | 'auto_approved'
+
+/**
+ * Category of memory for organization and retrieval
+ */
+export type MemoryCategory =
+  | 'fact' // Factual information about user/domain
+  | 'preference' // User preferences and choices
+  | 'behavior' // Learned behavioral patterns
+  | 'domain_knowledge' // Domain-specific knowledge
+  | 'relationship' // Relationships between entities
+  | 'procedure' // How to do specific tasks
+  | 'correction' // Corrections to previous assumptions
+
+/**
+ * A single memory entry learned from conversations
+ */
+export interface AgentMemoryEntry {
+  id: string
+  agentId: string
+  category: MemoryCategory
+  title: string // Short descriptive title
+  content: string // The actual learned information
+  confidence: MemoryConfidence
+  validationStatus: MemoryValidationStatus
+
+  // Provenance tracking
+  sourceConversationIds: string[] // Conversations this was learned from
+  sourceMessageIds: string[] // Specific messages that contributed
+  learnedAt: Date
+
+  // Human review
+  reviewedAt?: Date
+  reviewedBy?: string // 'human' or agent ID
+  reviewNotes?: string
+
+  // Versioning for progressive updates
+  version: number
+  previousVersionId?: string
+  supersededBy?: string // If this memory was replaced
+
+  // Usage tracking
+  lastUsedAt?: Date
+  usageCount: number
+
+  // Expiration (optional, for time-sensitive info)
+  expiresAt?: Date
+
+  // Tags for retrieval
+  tags: string[]
+  keywords: string[] // Auto-extracted for semantic matching
+
+  // Global memory (shared across all agents)
+  isGlobal?: boolean // If true, this memory applies to all agents
+
+  createdAt: Date
+  updatedAt: Date
+}
+
+/**
+ * A learning event captured from a conversation
+ * These are processed into AgentMemoryEntry after synthesis
+ */
+export interface MemoryLearningEvent {
+  id: string
+  agentId: string
+  conversationId: string
+  messageId?: string
+
+  // What was learned
+  rawExtraction: string // Direct extraction from conversation
+  suggestedCategory: MemoryCategory
+  suggestedConfidence: MemoryConfidence
+
+  // Processing status
+  processed: boolean
+  resultingMemoryId?: string // The AgentMemoryEntry created
+  discardedReason?: string // If not turned into memory
+
+  extractedAt: Date
+  processedAt?: Date
+}
+
+/**
+ * Agent memory document - the persistent "working document" for an agent
+ * Contains aggregated memories and synthesis
+ */
+export interface AgentMemoryDocument {
+  id: string
+  agentId: string
+
+  // Summary synthesis (regenerated periodically)
+  synthesis: string // Markdown summary of all memories
+  lastSynthesisAt: Date
+
+  // Statistics
+  totalMemories: number
+  memoriesByCategory: Record<MemoryCategory, number>
+  memoriesByConfidence: Record<MemoryConfidence, number>
+  pendingReviewCount: number
+
+  // Auto-learning settings per agent
+  autoLearnEnabled: boolean
+  autoApproveHighConfidence: boolean // Auto-approve high confidence after delay
+  autoApproveDelayHours: number // Hours before auto-approval (default: 24)
+
+  createdAt: Date
+  updatedAt: Date
+}
+
+/**
+ * Settings for memory learning behavior
+ */
+export interface AgentMemorySettings {
+  // Global toggle
+  enabled: boolean
+
+  // Learning triggers
+  learnAfterConversation: boolean // Learn when conversation ends
+  learnOnExplicitRequest: boolean // Learn when user says "remember this"
+
+  // Review settings
+  requireHumanReview: boolean // Require human approval for all memories
+  autoApproveThreshold: MemoryConfidence // Auto-approve at this confidence level
+
+  // Synthesis settings
+  dailySynthesis: boolean // Generate daily synthesis
+  synthesisTime: string // Time for daily synthesis (e.g., "23:00")
+
+  // Retention settings
+  maxMemoriesPerAgent: number // Limit memories per agent
+  retentionDays: number // Days to keep unused memories
 }

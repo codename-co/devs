@@ -9,6 +9,9 @@ import {
   Task,
   SharedContext,
   LangfuseConfig,
+  AgentMemoryEntry,
+  MemoryLearningEvent,
+  AgentMemoryDocument,
 } from '@/types'
 
 export interface DBStores {
@@ -22,6 +25,10 @@ export interface DBStores {
   tasks: Task
   contexts: SharedContext
   langfuse_config: LangfuseConfig
+  // Agent Memory System
+  agentMemories: AgentMemoryEntry
+  memoryLearningEvents: MemoryLearningEvent
+  agentMemoryDocuments: AgentMemoryDocument
 }
 
 export class Database {
@@ -29,7 +36,7 @@ export class Database {
   private initialized = false
 
   static DB_NAME = 'devs-ai-platform'
-  static DB_VERSION = 8
+  static DB_VERSION = 9
   static STORES: (keyof DBStores)[] = [
     'agents',
     'conversations',
@@ -40,6 +47,10 @@ export class Database {
     'tasks',
     'contexts',
     'langfuse_config',
+    // Agent Memory System
+    'agentMemories',
+    'memoryLearningEvents',
+    'agentMemoryDocuments',
   ]
 
   isInitialized(): boolean {
@@ -377,6 +388,92 @@ export class Database {
           langfuseConfigStore.createIndex('timestamp', 'timestamp', {
             unique: false,
           })
+        }
+
+        // Migration for version 9: Add Agent Memory System stores
+        if (event.oldVersion < 9) {
+          console.log(
+            'Database migrated to version 9: Added Agent Memory System stores',
+          )
+
+          // Create agentMemories store
+          if (!db.objectStoreNames.contains('agentMemories')) {
+            const agentMemoriesStore = db.createObjectStore('agentMemories', {
+              keyPath: 'id',
+            })
+            agentMemoriesStore.createIndex('agentId', 'agentId', {
+              unique: false,
+            })
+            agentMemoriesStore.createIndex('category', 'category', {
+              unique: false,
+            })
+            agentMemoriesStore.createIndex('confidence', 'confidence', {
+              unique: false,
+            })
+            agentMemoriesStore.createIndex(
+              'validationStatus',
+              'validationStatus',
+              { unique: false },
+            )
+            agentMemoriesStore.createIndex('learnedAt', 'learnedAt', {
+              unique: false,
+            })
+            agentMemoriesStore.createIndex('lastUsedAt', 'lastUsedAt', {
+              unique: false,
+            })
+            agentMemoriesStore.createIndex('tags', 'tags', {
+              unique: false,
+              multiEntry: true,
+            })
+            agentMemoriesStore.createIndex('keywords', 'keywords', {
+              unique: false,
+              multiEntry: true,
+            })
+            agentMemoriesStore.createIndex('createdAt', 'createdAt', {
+              unique: false,
+            })
+          }
+
+          // Create memoryLearningEvents store
+          if (!db.objectStoreNames.contains('memoryLearningEvents')) {
+            const learningEventsStore = db.createObjectStore(
+              'memoryLearningEvents',
+              {
+                keyPath: 'id',
+              },
+            )
+            learningEventsStore.createIndex('agentId', 'agentId', {
+              unique: false,
+            })
+            learningEventsStore.createIndex(
+              'conversationId',
+              'conversationId',
+              { unique: false },
+            )
+            learningEventsStore.createIndex('processed', 'processed', {
+              unique: false,
+            })
+            learningEventsStore.createIndex('extractedAt', 'extractedAt', {
+              unique: false,
+            })
+          }
+
+          // Create agentMemoryDocuments store
+          if (!db.objectStoreNames.contains('agentMemoryDocuments')) {
+            const memoryDocsStore = db.createObjectStore(
+              'agentMemoryDocuments',
+              {
+                keyPath: 'id',
+              },
+            )
+            memoryDocsStore.createIndex('agentId', 'agentId', { unique: true })
+            memoryDocsStore.createIndex('lastSynthesisAt', 'lastSynthesisAt', {
+              unique: false,
+            })
+            memoryDocsStore.createIndex('updatedAt', 'updatedAt', {
+              unique: false,
+            })
+          }
         }
       }
     })

@@ -16,6 +16,7 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
+  Chip,
 } from '@heroui/react'
 import { useEffect, useState } from 'react'
 
@@ -196,23 +197,47 @@ export const AgentsPage = () => {
           <Tabs
             selectedKey={activeTab}
             onSelectionChange={(key) => setActiveTab(key as any)}
-            className="w-full"
+            aria-label="Agents sections"
+            variant="underlined"
+            classNames={{
+              tabList: 'gap-6',
+              cursor: 'w-full',
+              tab: 'max-w-fit px-0 h-12',
+            }}
           >
             {userAgents.length > 0 && (
               <Tab
                 key="my-agents"
-                title={t(`My Agents ({count})`, {
-                  count: userAgents.length,
-                })}
+                title={
+                  <div className="flex items-center gap-2">
+                    <Icon name="Sparks" className="w-5 h-5" />
+                    <span>{t('My Agents')}</span>
+                    {userAgents.length > 0 && (
+                      <Chip size="sm" variant="flat">
+                        {userAgents.length}
+                      </Chip>
+                    )}
+                  </div>
+                }
+                aria-label={t('My Agents')}
               >
                 {renderAgentGrid(userAgents, false)}
               </Tab>
             )}
             <Tab
               key="global-agents"
-              title={t(`Built-in Agents ({count})`, {
-                count: globalAgents.length,
-              })}
+              title={
+                <div className="flex items-center gap-2">
+                  <Icon name="SparksSolid" className="w-5 h-5" />
+                  <span>{t('Built-in Agents')}</span>
+                  {globalAgents.length > 0 && (
+                    <Chip size="sm" variant="flat">
+                      {globalAgents.length}
+                    </Chip>
+                  )}
+                </div>
+              }
+              aria-label={t('Built-in Agents')}
             >
               <Alert
                 color="default"

@@ -7,14 +7,25 @@ import { Providers } from '@/app/Providers'
 import '@/styles/globals.css'
 import 'katex/dist/katex.min.css'
 
-const root = globalThis.document.getElementById('root')
+const container = globalThis.document.getElementById('root')
 
-ReactDOM.createRoot(root?.parentElement!).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <Providers>
-        <Router />
-      </Providers>
-    </BrowserRouter>
-  </React.StrictMode>,
-)
+if (container) {
+  const app = (
+    <React.StrictMode>
+      <BrowserRouter>
+        <Providers>
+          <Router />
+        </Providers>
+      </BrowserRouter>
+    </React.StrictMode>
+  )
+
+  // Check if the page has been prerendered (has content inside #root)
+  if (container.hasChildNodes()) {
+    // Hydrate the prerendered HTML
+    ReactDOM.hydrateRoot(container, app)
+  } else {
+    // Fresh render for non-prerendered pages
+    ReactDOM.createRoot(container).render(app)
+  }
+}
