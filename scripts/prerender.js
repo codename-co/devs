@@ -12,6 +12,7 @@ import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawn } from 'node:child_process'
 import puppeteer from 'puppeteer'
+import http from 'node:http'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const rootDir = resolve(__dirname, '..')
@@ -46,61 +47,83 @@ function generateUrls() {
   return urls
 }
 
+// Check if server is ready by making an HTTP request
+function checkServerReady() {
+  return new Promise((resolvePromise) => {
+    const req = http.get(`${BASE_URL}/`, (res) => {
+      let data = ''
+
+      res.on('data', (chunk) => {
+        data += chunk
+      })
+
+      res.on('end', () => {
+        // Check if we get a successful response and the HTML contains expected content
+        if (res.statusCode === 200 && data.includes('<div id="root">')) {
+          resolvePromise(true)
+        } else {
+          resolvePromise(false)
+        }
+      })
+    })
+
+    req.on('error', () => {
+      resolvePromise(false)
+    })
+
+    req.setTimeout(5000, () => {
+      req.destroy()
+      resolvePromise(false)
+    })
+  })
+}
+
 // Start the Vite preview server
 async function startPreviewServer() {
   console.log('🚀 Starting preview server…')
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolvePromise, reject) => {
     const server = spawn('npm', ['run', 'preview'], {
       cwd: rootDir,
       stdio: ['ignore', 'pipe', 'pipe'],
       shell: true,
+      detached: false,
     })
 
     let started = false
+    let checkCount = 0
+    const maxChecks = 30 // 15 seconds max wait
+
+    // Start checking if server is ready
+    const checkInterval = setInterval(async () => {
+      checkCount++
+      if (await checkServerReady()) {
+        clearInterval(checkInterval)
+        started = true
+        console.log('✓ Preview server ready')
+        // Give it a moment to stabilize
+        await new Promise((r) => setTimeout(r, 1000))
+        resolvePromise(server)
+      } else if (checkCount >= maxChecks) {
+        clearInterval(checkInterval)
+        server.kill()
+        reject(new Error('Preview server failed to start after 15 seconds'))
+      }
+    }, 500)
 
     server.stdout.on('data', (data) => {
       const output = data.toString()
-      // Detect when Vite preview is ready
-      if (
-        (output.includes('Local:') || output.includes('localhost')) &&
-        !started
-      ) {
-        started = true
-        console.log('✓ Preview server starting…')
-        // Give it more time to fully initialize and be ready to accept connections
-        setTimeout(() => {
-          console.log('✓ Preview server ready')
-          resolve(server)
-        }, 2000)
-      }
+      // Optional: Uncomment for debugging server output
+      // console.log('Server stdout:', output.trim())
     })
 
     server.stderr.on('data', (data) => {
       const output = data.toString()
-      // Vite sometimes outputs to stderr for info messages
-      if (
-        (output.includes('Local:') || output.includes('localhost')) &&
-        !started
-      ) {
-        started = true
-        console.log('✓ Preview server starting…')
-        setTimeout(() => {
-          console.log('✓ Preview server ready')
-          resolve(server)
-        }, 2000)
-      }
+      // Optional: Uncomment for debugging server output
+      // console.log('Server stderr:', output.trim())
     })
 
     server.on('error', reject)
-
-    // Timeout if server doesn't start
-    setTimeout(() => {
-      if (!started) {
-        server.kill()
-        reject(new Error('Preview server failed to start'))
-      }
-    }, RENDER_TIMEOUT)
   })
 }
 
