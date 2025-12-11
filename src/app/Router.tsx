@@ -36,6 +36,7 @@ const routes = {
   knowledge: KnowledgePage,
   'knowledge/files': KnowledgePage,
   'knowledge/memories': KnowledgePage,
+  'knowledge/pinned': KnowledgePage,
   methodologies: MethodologiesPage,
   'methodologies/new': MethodologyNewPage,
   'methodologies/:methodologyId': MethodologyPage,

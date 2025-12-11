@@ -2,6 +2,7 @@ import { LLMService, LLMMessage } from '@/lib/llm'
 import { CredentialService } from '@/lib/credential-service'
 import { useConversationStore } from '@/stores/conversationStore'
 import { getDefaultAgent } from '@/stores/agentStore'
+import { buildPinnedContextForChat } from '@/stores/pinnedMessageStore'
 import { WorkflowOrchestrator } from '@/lib/orchestrator'
 import { Agent, Message } from '@/types'
 import { errorToast } from '@/lib/toast'
@@ -207,10 +208,19 @@ export const submitChat = async (
     // Get relevant memories for this agent and prompt
     const memoryContext = await buildMemoryContextForChat(agent.id, prompt)
 
+    // Get relevant pinned messages from previous conversations
+    const pinnedContext = await buildPinnedContextForChat(
+      agent.id,
+      conversation.id,
+      prompt,
+    )
+
     const instructions = [
       enhancedInstructions,
       // Inject memory context if available
       memoryContext,
+      // Inject pinned messages context if available
+      pinnedContext,
       `ALWAYS respond in ${languages[lang]} as this is the user's language.`,
     ]
       .filter(Boolean)

@@ -24,6 +24,21 @@ export const es: I18n = {
   Methodologies: 'Metodologías',
   Conversations: 'Conversaciones',
   'Conversations history': 'Historial de conversaciones',
+  'Search conversations': 'Buscar conversaciones',
+  'Pin conversation': 'Fijar conversación',
+  'Unpin conversation': 'Desfijar conversación',
+  'Summarize conversation': 'RResumir conversación',
+  'Pin it': 'Fijar',
+  'Unpin it': 'Desfijar',
+  Pinned: 'Fijado',
+  'Message description': 'Descripción del mensaje',
+  'Edit description': 'Editar descripción',
+  'View full conversation': 'Ver conversación completa',
+  'Generating description...': 'Generando descripción...',
+  'Generating summary...': 'Generando resumen...',
+  'No pinned messages yet': 'Aún no hay mensajes fijados',
+  'Show pinned only': 'Mostrar solo fijados',
+  'Pinned conversations': 'Conversaciones fijadas',
   Knowledge: 'Conocimientos',
   Connectors: 'Conectores',
   'New chat': 'Nuevo intercambio',
@@ -82,8 +97,7 @@ export const es: I18n = {
     'Los agentes integrados son agentes preconfigurados que vienen con la plataforma. Muestran varias capacidades y pueden servir de inspiración para tus propios agentes personalizados.',
 
   // AgentRunPage
-  'View and manage your past conversations':
-    'Ver y gestionar tus conversaciones pasadas',
+  'Find your past conversations': 'Encuentra tus conversaciones pasadas',
   'Loading agent and conversation…': 'Cargando agente y conversación…',
   Back: 'Atrás',
   'Conversation ID:': 'ID de conversación:',
@@ -404,4 +418,27 @@ export const es: I18n = {
   Keywords: 'Palabras clave',
   'Comma-separated list of keywords':
     'Lista de palabras clave separadas por comas',
+
+  // Pinned Messages
+  'Pin message': 'Fijar mensaje',
+  'Unpin message': 'Desfijar mensaje',
+  'Message pinned successfully': 'Mensaje fijado con éxito',
+  'Add a description to help you remember why this message is important.':
+    'Agrega una descripción para ayudarte a recordar por qué este mensaje es importante.',
+  Description: 'Descripción',
+  'Brief description of why this is important...':
+    'Breve descripción de por qué esto es importante...',
+  'Pinned Messages': 'Mensajes fijados',
+  'No pinned messages': 'No hay mensajes fijados',
+  'Messages you pin will appear here for quick reference.':
+    'Los mensajes que fijas aparecerán aquí para una referencia rápida.',
+  'View conversation': 'Ver conversación',
+  'From conversation with {agentName}': 'De la conversación con {agentName}',
+  'Filter by agent': 'Filtrar por agente',
+  'No pinned conversations': 'No hay conversaciones fijadas',
+  'No conversations found': 'No se encontraron conversaciones',
+  'View summary': 'Ver resumen',
+  'No summary available': 'No hay resumen disponible',
+  'No pinned messages yet. Pin important messages from conversations to make them available here.':
+    'Aún no hay mensajes fijados. Fija mensajes importantes de las conversaciones para que estén disponibles aquí.',
 } as const

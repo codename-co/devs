@@ -24,6 +24,21 @@ export const de: I18n = {
   Methodologies: 'Methodiken',
   Conversations: 'Unterhaltungen',
   'Conversations history': 'Verlauf der Unterhaltungen',
+  'Search conversations': 'Unterhaltungen suchen',
+  'Pin conversation': 'Unterhaltung anheften',
+  'Unpin conversation': 'Unterhaltung lösen',
+  'Summarize conversation': 'Unterhaltung zusammenfassen',
+  'Pin it': 'Anheften',
+  'Unpin it': 'Lösen',
+  Pinned: 'Angeheftet',
+  'Message description': 'Nachrichtenbeschreibung',
+  'Edit description': 'Beschreibung bearbeiten',
+  'View full conversation': 'Gesamte Unterhaltung anzeigen',
+  'Generating description...': 'Beschreibung wird generiert...',
+  'Generating summary...': 'Zusammenfassung wird generiert...',
+  'No pinned messages yet': 'Noch keine angehefteten Nachrichten',
+  'Show pinned only': 'Nur angeheftete anzeigen',
+  'Pinned conversations': 'Angeheftete Unterhaltungen',
   Knowledge: 'Wissen',
   Connectors: 'Konnektoren',
   'New chat': 'Neuer Chat',
@@ -82,8 +97,7 @@ export const de: I18n = {
     'Integrierte Agenten sind vorkonfigurierte Agenten, die mit der Plattform geliefert werden. Sie zeigen verschiedene Fähigkeiten und können als Inspiration für Ihre eigenen benutzerdefinierten Agenten dienen.',
 
   // AgentRunPage
-  'View and manage your past conversations':
-    'Ihre vergangenen Unterhaltungen anzeigen und verwalten',
+  'Find your past conversations': 'Finden Sie Ihre vergangenen Unterhaltungen',
   'Loading agent and conversation…': 'Lade Agent und Unterhaltung…',
   Back: 'Zurück',
   'Conversation ID:': 'Unterhaltungs-ID:',
@@ -407,4 +421,27 @@ export const de: I18n = {
   Keywords: 'Schlüsselwörter',
   'Comma-separated list of keywords':
     'Kommagetrennte Liste von Schlüsselwörtern',
+
+  // Pinned Messages
+  'Pin message': 'Nachricht anheften',
+  'Unpin message': 'Nachricht lösen',
+  'Message pinned successfully': 'Nachricht erfolgreich angeheftet',
+  'Add a description to help you remember why this message is important.':
+    'Fügen Sie eine Beschreibung hinzu, um sich daran zu erinnern, warum diese Nachricht wichtig ist.',
+  Description: 'Beschreibung',
+  'Brief description of why this is important...':
+    'Kurze Beschreibung, warum dies wichtig ist...',
+  'Pinned Messages': 'Angeheftete Nachrichten',
+  'No pinned messages': 'Keine angehefteten Nachrichten',
+  'Messages you pin will appear here for quick reference.':
+    'Die Nachrichten, die Sie anheften, werden hier zur schnellen Referenz angezeigt.',
+  'View conversation': 'Konversation anzeigen',
+  'From conversation with {agentName}': 'Aus der Konversation mit {agentName}',
+  'Filter by agent': 'Nach Agent filtern',
+  'No pinned conversations': 'Keine angehefteten Konversationen',
+  'No conversations found': 'Keine Konversationen gefunden',
+  'View summary': 'Zusammenfassung anzeigen',
+  'No summary available': 'Keine Zusammenfassung verfügbar',
+  'No pinned messages yet. Pin important messages from conversations to make them available here.':
+    'Noch keine angehefteten Nachrichten. Heften Sie wichtige Nachrichten aus Konversationen an, um sie hier verfügbar zu machen.',
 } as const

@@ -12,6 +12,7 @@ import {
   AgentMemoryEntry,
   MemoryLearningEvent,
   AgentMemoryDocument,
+  PinnedMessage,
 } from '@/types'
 
 export interface DBStores {
@@ -29,6 +30,8 @@ export interface DBStores {
   agentMemories: AgentMemoryEntry
   memoryLearningEvents: MemoryLearningEvent
   agentMemoryDocuments: AgentMemoryDocument
+  // Pinned Messages System
+  pinnedMessages: PinnedMessage
 }
 
 export class Database {
@@ -36,7 +39,7 @@ export class Database {
   private initialized = false
 
   static DB_NAME = 'devs-ai-platform'
-  static DB_VERSION = 9
+  static DB_VERSION = 10
   static STORES: (keyof DBStores)[] = [
     'agents',
     'conversations',
@@ -51,6 +54,8 @@ export class Database {
     'agentMemories',
     'memoryLearningEvents',
     'agentMemoryDocuments',
+    // Pinned Messages System
+    'pinnedMessages',
   ]
 
   isInitialized(): boolean {
@@ -471,6 +476,39 @@ export class Database {
               unique: false,
             })
             memoryDocsStore.createIndex('updatedAt', 'updatedAt', {
+              unique: false,
+            })
+          }
+        }
+
+        // Migration for version 10: Add Pinned Messages System
+        if (event.oldVersion < 10) {
+          console.log(
+            'Database migrated to version 10: Added Pinned Messages System',
+          )
+
+          // Create pinnedMessages store
+          if (!db.objectStoreNames.contains('pinnedMessages')) {
+            const pinnedMessagesStore = db.createObjectStore('pinnedMessages', {
+              keyPath: 'id',
+            })
+            pinnedMessagesStore.createIndex('conversationId', 'conversationId', {
+              unique: false,
+            })
+            pinnedMessagesStore.createIndex('messageId', 'messageId', {
+              unique: false,
+            })
+            pinnedMessagesStore.createIndex('agentId', 'agentId', {
+              unique: false,
+            })
+            pinnedMessagesStore.createIndex('pinnedAt', 'pinnedAt', {
+              unique: false,
+            })
+            pinnedMessagesStore.createIndex('keywords', 'keywords', {
+              unique: false,
+              multiEntry: true,
+            })
+            pinnedMessagesStore.createIndex('createdAt', 'createdAt', {
               unique: false,
             })
           }

@@ -38,6 +38,9 @@ export interface Message {
   agentId?: string // Which agent sent this message (for assistant messages)
   content: string
   timestamp: Date
+  isPinned?: boolean // Whether this message is pinned
+  pinnedDescription?: string // Short AI-generated description when pinned
+  pinnedAt?: Date // When the message was pinned
 }
 
 export interface Conversation {
@@ -48,6 +51,9 @@ export interface Conversation {
   timestamp: Date
   messages: Message[]
   title?: string // Auto-generated title from LLM summarization
+  isPinned?: boolean // Whether this conversation is starred/pinned
+  summary?: string // AI-generated conversation summary
+  pinnedMessageIds?: string[] // Array of pinned message IDs for quick lookup
 }
 
 export interface KnowledgeItem {
@@ -429,4 +435,25 @@ export interface AgentMemorySettings {
   // Retention settings
   maxMemoriesPerAgent: number // Limit memories per agent
   retentionDays: number // Days to keep unused memories
+}
+
+// ============================================================================
+// Pinned Messages System - Important conversation moments
+// ============================================================================
+
+/**
+ * A pinned message from a conversation
+ * Represents an important moment that should be available to the agent in future conversations
+ */
+export interface PinnedMessage {
+  id: string
+  conversationId: string
+  messageId: string // Reference to the original message
+  agentId: string // The agent who generated this message
+  content: string // The message content
+  description: string // Short AI-generated description (5-10 words)
+  keywords: string[] // Keywords for relevance matching
+  pinnedAt: Date
+  createdAt: Date
+  updatedAt: Date
 }

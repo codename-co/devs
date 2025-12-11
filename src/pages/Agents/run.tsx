@@ -11,7 +11,15 @@ import {
   Textarea,
   Input,
   ButtonGroup,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
+  Tooltip,
 } from '@heroui/react'
+import { Pin, PinSlash } from 'iconoir-react'
 
 import { useI18n } from '@/i18n'
 import {
@@ -26,19 +34,22 @@ import DefaultLayout from '@/layouts/Default'
 import type { HeaderProps } from '@/lib/types'
 import { getAgentById } from '@/stores/agentStore'
 import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
+import { usePinnedMessageStore } from '@/stores/pinnedMessageStore'
 import {
   Agent,
   Message,
   Artifact,
   AgentMemoryEntry,
   MemoryCategory,
+  PinnedMessage,
 } from '@/types'
-import { errorToast } from '@/lib/toast'
+import { errorToast, successToast } from '@/lib/toast'
 import { submitChat } from '@/lib/chat'
 import {
   learnFromConversation,
   processPendingLearningEvents,
 } from '@/lib/memory-learning-service'
+import { MessageDescriptionGenerator } from '@/lib/message-description-generator'
 import { useConversationStore } from '@/stores/conversationStore'
 import { useArtifactStore } from '@/stores/artifactStore'
 import { categoryLabels } from '../Knowledge'
@@ -55,13 +66,21 @@ const MessageDisplay = memo(
     selectedAgent,
     getMessageAgent,
     detectContentType,
+    isPinned,
+    onPinClick,
+    conversationId,
   }: {
     message: Message
     selectedAgent: Agent | null
     getMessageAgent: (message: Message) => Promise<Agent | null>
     detectContentType: (content: string) => string
+    isPinned: boolean
+    onPinClick: (message: Message) => void
+    conversationId: string | undefined
   }) => {
+    const { t } = useI18n()
     const [messageAgent, setMessageAgent] = useState<Agent | null>(null)
+    const [isHovered, setIsHovered] = useState(false)
 
     useEffect(() => {
       if (message.role === 'assistant') {
@@ -73,32 +92,39 @@ const MessageDisplay = memo(
     const isFromDifferentAgent =
       messageAgent && messageAgent.id !== selectedAgent?.id
 
+    // Only show pin button for assistant messages in saved conversations
+    const showPinButton = message.role === 'assistant' && conversationId
+
     return (
       <div
         key={message.id}
         aria-hidden="false"
         tabIndex={0}
         className="flex w-full gap-3"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        {/* <div className="relative flex-none -mt-1">
-          <div className="relative inline-flex shrink-0">
-            {message.role === 'assistant' && (
-              <div className="border-1 border-primary-300 dark:border-default-200 hidden md:flex h-8 w-8 items-center justify-center rounded-full">
-                <Icon
-                  name={(displayAgent?.icon as any) || 'Sparks'}
-                  className="w-4 h-4 text-primary-600"
-                />
-              </div>
-            )}
-          </div>
-        </div> */}
         <div
           className={`rounded-medium text-foreground group relative overflow-hidden font-medium ${
             message.role === 'user'
               ? 'bg-default-100 px-4 py-3 ml-auto max-w-[80%]'
               : 'bg-transparent px-1 py-0'
-          }`}
+          } ${isPinned ? 'border-l-4 border-warning-400 pl-4' : ''}`}
         >
+          {/* Pinned indicator chip */}
+          {isPinned && (
+            <div className="mb-2">
+              <Chip
+                size="sm"
+                variant="flat"
+                color="warning"
+                startContent={<Pin className="w-3 h-3" />}
+                className="text-tiny"
+              >
+                {t('Pinned')}
+              </Chip>
+            </div>
+          )}
           {/* Show agent name if different from current agent */}
           {isFromDifferentAgent && displayAgent && (
             <div className="mb-2">
@@ -124,6 +150,28 @@ const MessageDisplay = memo(
               )}
             </div>
           </div>
+          {/* Pin button - show on hover for assistant messages */}
+          {showPinButton && (isHovered || isPinned) && (
+            <div className="mt-2 flex justify-end">
+              <Tooltip
+                content={isPinned ? t('Unpin message') : t('Pin message')}
+              >
+                <Button
+                  size="sm"
+                  variant={isPinned ? 'flat' : 'light'}
+                  color={isPinned ? 'warning' : 'default'}
+                  isIconOnly
+                  onPress={() => onPinClick(message)}
+                >
+                  {isPinned ? (
+                    <PinSlash className="w-4 h-4" />
+                  ) : (
+                    <Pin className="w-4 h-4" />
+                  )}
+                </Button>
+              </Tooltip>
+            </div>
+          )}
         </div>
       </div>
     )
@@ -468,13 +516,37 @@ export const AgentRunPage = () => {
 
   const { artifacts, loadArtifacts } = useArtifactStore()
 
+  // Pinned message state
+  const {
+    loadPinnedMessagesForConversation,
+    createPinnedMessage,
+    deletePinnedMessageByMessageId,
+    isPinned: checkIsPinned,
+    getRelevantPinnedMessagesAsync,
+  } = usePinnedMessageStore()
+
   const [showSystemPrompt, setShowSystemPrompt] = useState(false)
   const [showMemories, setShowMemories] = useState(false)
+  const [showPinnedMessages, setShowPinnedMessages] = useState(false)
   const [agentMemories, setAgentMemories] = useState<AgentMemoryEntry[]>([])
+  const [availablePinnedMessages, setAvailablePinnedMessages] = useState<
+    PinnedMessage[]
+  >([])
   const [isLearning, setIsLearning] = useState(false)
   const [newlyLearnedMemories, setNewlyLearnedMemories] = useState<
     AgentMemoryEntry[]
   >([])
+
+  // Pin modal state
+  const {
+    isOpen: isPinModalOpen,
+    onOpen: onPinModalOpen,
+    onClose: onPinModalClose,
+  } = useDisclosure()
+  const [messageToPin, setMessageToPin] = useState<Message | null>(null)
+  const [pinDescription, setPinDescription] = useState('')
+  const [isPinning, setIsPinning] = useState(false)
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false)
 
   const isConversationPristine = useMemo(
     () => !(Number(currentConversation?.messages.length) > 0),
@@ -497,6 +569,32 @@ export const AgentRunPage = () => {
     }
     loadMemories()
   }, [selectedAgent?.id])
+
+  // Load available pinned messages from other conversations when agent changes
+  useEffect(() => {
+    const loadPinnedMessages = async () => {
+      if (selectedAgent) {
+        try {
+          // Get pinned messages excluding current conversation
+          const pinnedMessages = await getRelevantPinnedMessagesAsync(
+            selectedAgent.id,
+            currentConversation?.id || '', // Exclude current conversation
+            [],
+            20, // Load up to 20 pinned messages
+          )
+          setAvailablePinnedMessages(pinnedMessages)
+        } catch (error) {
+          console.warn('Failed to load pinned messages:', error)
+          setAvailablePinnedMessages([])
+        }
+      }
+    }
+    loadPinnedMessages()
+  }, [
+    selectedAgent?.id,
+    currentConversation?.id,
+    getRelevantPinnedMessagesAsync,
+  ])
 
   // Load pending review memories when agent/conversation loads
   // Filter to only show memories from the current conversation
@@ -525,6 +623,104 @@ export const AgentRunPage = () => {
     loadPendingMemories()
   }, [selectedAgent?.id, currentConversation?.id])
 
+  // Load pinned messages when conversation changes
+  useEffect(() => {
+    if (currentConversation?.id) {
+      loadPinnedMessagesForConversation(currentConversation.id)
+    }
+  }, [currentConversation?.id, loadPinnedMessagesForConversation])
+
+  // Handle pin button click
+  const handlePinClick = useCallback(
+    async (message: Message) => {
+      if (!currentConversation?.id || !selectedAgent?.id) return
+
+      const isAlreadyPinned = checkIsPinned(message.id)
+
+      if (isAlreadyPinned) {
+        // Unpin the message
+        await deletePinnedMessageByMessageId(message.id)
+      } else {
+        // Open modal to pin with description
+        setMessageToPin(message)
+        setPinDescription('')
+        setIsGeneratingDescription(true)
+        onPinModalOpen()
+
+        // Generate description in background
+        try {
+          const result = await MessageDescriptionGenerator.generateDescription(
+            message.content,
+            conversationMessages.slice(-5),
+          )
+          setPinDescription(result.description)
+        } catch (error) {
+          console.warn('Failed to generate description:', error)
+          setPinDescription('')
+        } finally {
+          setIsGeneratingDescription(false)
+        }
+      }
+    },
+    [
+      currentConversation?.id,
+      selectedAgent?.id,
+      checkIsPinned,
+      deletePinnedMessageByMessageId,
+      conversationMessages,
+      onPinModalOpen,
+    ],
+  )
+
+  // Handle pin submission
+  const handlePinSubmit = useCallback(async () => {
+    if (!messageToPin || !currentConversation?.id || !selectedAgent?.id) return
+
+    setIsPinning(true)
+    try {
+      // Generate keywords
+      let keywords: string[] = []
+      try {
+        const result = await MessageDescriptionGenerator.generateDescription(
+          messageToPin.content,
+          conversationMessages.slice(-5),
+        )
+        keywords = result.keywords
+      } catch {
+        keywords = []
+      }
+
+      await createPinnedMessage({
+        conversationId: currentConversation.id,
+        messageId: messageToPin.id,
+        agentId: selectedAgent.id,
+        content: messageToPin.content,
+        description: pinDescription || 'Pinned message',
+        keywords,
+        pinnedAt: new Date(),
+      })
+
+      successToast(t('Message pinned successfully'))
+      onPinModalClose()
+      setMessageToPin(null)
+      setPinDescription('')
+    } catch (error) {
+      errorToast('Failed to pin message')
+      console.error('Pin error:', error)
+    } finally {
+      setIsPinning(false)
+    }
+  }, [
+    messageToPin,
+    currentConversation?.id,
+    selectedAgent?.id,
+    pinDescription,
+    conversationMessages,
+    createPinnedMessage,
+    onPinModalClose,
+    t,
+  ])
+
   const header: HeaderProps = useMemo(
     () => ({
       icon: {
@@ -549,10 +745,23 @@ export const AgentRunPage = () => {
               startContent={<Icon name="Brain" />}
               onPress={() => setShowMemories((v) => !v)}
             >
-              {t('Knowledge')}
+              {t('Memories')}
               {agentMemories.length > 0 && (
                 <Chip size="sm" variant="flat">
                   {agentMemories.length}
+                </Chip>
+              )}
+            </Button>
+            <Button
+              variant={showPinnedMessages ? 'solid' : 'light'}
+              size="sm"
+              startContent={<Pin className="w-4 h-4" />}
+              onPress={() => setShowPinnedMessages((v) => !v)}
+            >
+              {t('Pinned')}
+              {availablePinnedMessages.length > 0 && (
+                <Chip size="sm" variant="flat">
+                  {availablePinnedMessages.length}
                 </Chip>
               )}
             </Button>
@@ -645,6 +854,51 @@ export const AgentRunPage = () => {
               )}
             </div>
           )}
+          {showPinnedMessages && (
+            <div className="mt-4 max-h-96 overflow-y-auto">
+              {availablePinnedMessages.length === 0 ? (
+                <p className="text-default-500 text-sm">
+                  {t(
+                    'No pinned messages yet. Pin important messages from conversations to make them available here.',
+                  )}
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {availablePinnedMessages.map((pm) => (
+                    <Card key={pm.id} className="p-3">
+                      <div className="flex items-start gap-2">
+                        <Pin className="w-4 h-4 text-warning mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-medium text-sm">
+                              {pm.description}
+                            </span>
+                            <span className="text-xs text-default-400">
+                              {new Date(pm.pinnedAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-default-600 mt-1 line-clamp-2">
+                            {pm.content.length > 150
+                              ? pm.content.substring(0, 150) + '...'
+                              : pm.content}
+                          </p>
+                          {pm.keywords && pm.keywords.length > 0 && (
+                            <div className="flex gap-1 mt-1 flex-wrap">
+                              {pm.keywords.slice(0, 3).map((keyword, idx) => (
+                                <Chip key={idx} size="sm" variant="flat">
+                                  {keyword}
+                                </Chip>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </>
       ),
       // subtitle: selectedAgent?.desc || t('AI Assistant'),
@@ -659,7 +913,9 @@ export const AgentRunPage = () => {
       selectedAgent?.name,
       showSystemPrompt,
       showMemories,
+      showPinnedMessages,
       agentMemories,
+      availablePinnedMessages,
       isConversationPristine,
       isLearning,
       currentConversation,
@@ -1030,6 +1286,9 @@ export const AgentRunPage = () => {
                         selectedAgent={selectedAgent}
                         getMessageAgent={getMessageAgent}
                         detectContentType={detectContentType}
+                        isPinned={checkIsPinned(item.data.id)}
+                        onPinClick={handlePinClick}
+                        conversationId={currentConversation?.id}
                       />
                     ) : (
                       <InlineMemoryDisplay
@@ -1272,6 +1531,60 @@ export const AgentRunPage = () => {
           </div>
         )}
       </Section>
+
+      {/* Pin Message Modal */}
+      <Modal isOpen={isPinModalOpen} onClose={onPinModalClose} size="lg">
+        <ModalContent>
+          <ModalHeader className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <Pin className="w-5 h-5 text-warning-500" />
+              {t('Pin message')}
+            </div>
+          </ModalHeader>
+          <ModalBody>
+            <p className="text-small text-default-500 mb-4">
+              {t(
+                'Add a description to help you remember why this message is important.',
+              )}
+            </p>
+
+            {/* Message Preview */}
+            <div className="bg-default-100 rounded-lg p-3 mb-4 max-h-32 overflow-y-auto">
+              <p className="text-small text-default-700 line-clamp-4">
+                {messageToPin?.content?.slice(0, 300)}
+                {(messageToPin?.content?.length ?? 0) > 300 && '...'}
+              </p>
+            </div>
+
+            <Input
+              label={t('Description')}
+              placeholder={t('Brief description of why this is important...')}
+              value={pinDescription}
+              onValueChange={setPinDescription}
+              isDisabled={isGeneratingDescription}
+              description={
+                isGeneratingDescription
+                  ? t('Generating description...')
+                  : undefined
+              }
+              endContent={isGeneratingDescription && <Spinner size="sm" />}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="light" onPress={onPinModalClose}>
+              {t('Cancel')}
+            </Button>
+            <Button
+              color="warning"
+              onPress={handlePinSubmit}
+              isLoading={isPinning}
+              startContent={!isPinning && <Pin className="w-4 h-4" />}
+            >
+              {t('Pin it')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </DefaultLayout>
   )
 }

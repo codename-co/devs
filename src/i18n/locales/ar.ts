@@ -24,6 +24,21 @@ export const ar: I18n = {
   Methodologies: 'المنهجيات',
   Conversations: 'المحادثات',
   'Conversations history': 'سجل المحادثات',
+  'Search conversations': 'البحث في المحادثات',
+  'Pin conversation': 'تثبيت المحادثة',
+  'Unpin conversation': 'إلغاء تثبيت المحادثة',
+  'Summarize conversation': 'تلخيص المحادثة',
+  'Pin it': 'تثبيتها',
+  'Unpin it': 'إلغاء تثبيتها',
+  Pinned: 'مثبت',
+  'Message description': 'وصف الرسالة',
+  'Edit description': 'تحرير الوصف',
+  'View full conversation': 'عرض المحادثة كاملة',
+  'Generating description...': 'جارٍ إنشاء الوصف...',
+  'Generating summary...': 'جارٍ إنشاء الملخص...',
+  'No pinned messages yet': 'لا توجد رسائل مثبتة بعد',
+  'Show pinned only': 'عرض المثبت فقط',
+  'Pinned conversations': 'المحادثات المثبتة',
   Knowledge: 'المعرفة',
   Connectors: 'الموصلات',
   'New chat': 'محادثة جديدة',
@@ -82,7 +97,7 @@ export const ar: I18n = {
     'الوكلاء المدمجون هم وكلاء مُعدون مسبقاً ومتوفرون مع المنصة. يعرضون قدرات متنوعة ويمكن أن يكونوا مصدر إلهام لوكلائك المخصصين.',
 
   // AgentRunPage
-  'View and manage your past conversations': 'عرض وإدارة محادثاتك السابقة',
+  'Find your past conversations': 'اعثر على محادثاتك السابقة',
   'Loading agent and conversation…': 'جارٍ تحميل الوكيل والمحادثة…',
   Back: 'رجوع',
   'Conversation ID:': 'معرّف المحادثة:',
@@ -399,4 +414,27 @@ export const ar: I18n = {
   Confidence: 'الثقة',
   Keywords: 'الكلمات المفتاحية',
   'Comma-separated list of keywords': 'قائمة مفصولة بفواصل للكلمات المفتاحية',
+
+  // Pinned Messages
+  'Pin message': 'تثبيت الرسالة',
+  'Unpin message': 'إلغاء تثبيت الرسالة',
+  'Message pinned successfully': 'تم تثبيت الرسالة بنجاح',
+  'Add a description to help you remember why this message is important.':
+    'أضف وصفًا لمساعدتك على تذكر سبب أهمية هذه الرسالة.',
+  Description: 'الوصف',
+  'Brief description of why this is important...':
+    'وصف موجز لسبب أهمية هذه الرسالة...',
+  'Pinned Messages': 'الرسائل المثبتة',
+  'No pinned messages': 'لا توجد رسائل مثبتة',
+  'Messages you pin will appear here for quick reference.':
+    'الرسائل التي تقوم بتثبيتها ستظهر هنا للرجوع السريع.',
+  'View conversation': 'عرض المحادثة',
+  'From conversation with {agentName}': 'من المحادثة مع {agentName}',
+  'Filter by agent': 'تصفية حسب الوكيل',
+  'No pinned conversations': 'لا توجد محادثات مثبتة',
+  'No conversations found': 'لم يتم العثور على محادثات',
+  'View summary': 'عرض الملخص',
+  'No summary available': 'لا يوجد ملخص متاح',
+  'No pinned messages yet. Pin important messages from conversations to make them available here.':
+    'لا توجد رسائل مثبتة بعد. قم بتثبيت الرسائل المهمة من المحادثات لجعلها متاحة هنا.',
 } as const

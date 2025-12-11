@@ -24,6 +24,21 @@ export const ko: I18n = {
   Methodologies: '방법론',
   Conversations: '대화',
   'Conversations history': '대화 기록',
+  'Search conversations': '대화 검색',
+  'Pin conversation': '대화 고정',
+  'Unpin conversation': '대화 고정 해제',
+  'Summarize conversation': '대화 요약',
+  'Pin it': '고정하기',
+  'Unpin it': '고정 해제',
+  Pinned: '고정됨',
+  'Message description': '메시지 설명',
+  'Edit description': '설명 편집',
+  'View full conversation': '전체 대화 보기',
+  'Generating description...': '설명 생성 중...',
+  'Generating summary...': '요약 생성 중...',
+  'No pinned messages yet': '아직 고정된 메시지가 없습니다',
+  'Show pinned only': '고정된 메시지만 보기',
+  'Pinned conversations': '고정된 대화',
   Knowledge: '지식',
   Connectors: '커넥터',
   'New chat': '새로운 채팅',
@@ -82,7 +97,7 @@ export const ko: I18n = {
     '내장 에이전트는 플랫폼과 함께 제공되는 사전 구성된 에이전트입니다. 다양한 기능을 보여주며 나만의 맞춤형 에이전트에 영감을 줄 수 있습니다.',
 
   // AgentRunPage
-  'View and manage your past conversations': '이전 대화를 보고 관리하세요',
+  'Find your past conversations': '과거 대화를 찾아보세요',
   'Loading agent and conversation…': '에이전트 및 대화 로딩 중…',
   Back: '뒤로',
   'Conversation ID:': '대화 ID:',
@@ -399,4 +414,27 @@ export const ko: I18n = {
   Confidence: '신뢰도',
   Keywords: '키워드',
   'Comma-separated list of keywords': '쉼표로 구분된 키워드 목록',
+
+  // Pinned Messages
+  'Pin message': '메시지 고정',
+  'Unpin message': '메시지 고정 해제',
+  'Message pinned successfully': '메시지가 성공적으로 고정되었습니다',
+  'Add a description to help you remember why this message is important.':
+    '이 메시지가 중요한 이유를 기억하는 데 도움이 되는 설명을 추가하세요.',
+  Description: '설명',
+  'Brief description of why this is important...':
+    '이것이 중요한 이유에 대한 간략한 설명...',
+  'Pinned Messages': '고정된 메시지',
+  'No pinned messages': '고정된 메시지 없음',
+  'Messages you pin will appear here for quick reference.':
+    '고정한 메시지가 여기에 빠른 참조를 위해 표시됩니다.',
+  'View conversation': '대화 보기',
+  'From conversation with {agentName}': '{agentName}와의 대화에서',
+  'Filter by agent': '에이전트별 필터',
+  'No pinned conversations': '고정된 대화 없음',
+  'No conversations found': '대화를 찾을 수 없습니다',
+  'View summary': '요약 보기',
+  'No summary available': '요약을 사용할 수 없습니다',
+  'No pinned messages yet. Pin important messages from conversations to make them available here.':
+    '아직 고정된 메시지가 없습니다. 대화에서 중요한 메시지를 고정하여 여기에서 사용할 수 있게 하세요.',
 } as const

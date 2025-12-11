@@ -24,6 +24,7 @@ import {
   CardBody,
   CardHeader,
   Divider,
+  Checkbox,
 } from '@heroui/react'
 import {
   Upload,
@@ -35,6 +36,8 @@ import {
   MediaImage,
   SubmitDocument,
   RefreshDouble,
+  Pin,
+  PinSlash,
 } from 'iconoir-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
@@ -47,6 +50,7 @@ import type { HeaderProps } from '@/lib/types'
 
 // Agent Memory imports
 import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
+import { usePinnedMessageStore } from '@/stores/pinnedMessageStore'
 import { loadAllAgents } from '@/stores/agentStore'
 import { MemoryReviewList } from '@/components/MemoryReview'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
@@ -127,10 +131,12 @@ export const KnowledgePage: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
 
-  // Main tab state - derived from path: /knowledge/files or /knowledge/memories
+  // Main tab state - derived from path: /knowledge/files, /knowledge/memories, or /knowledge/pinned
   const mainTab = location.pathname.endsWith('/knowledge/memories')
     ? 'memories'
-    : 'files'
+    : location.pathname.endsWith('/knowledge/pinned')
+      ? 'pinned'
+      : 'files'
   const setMainTab = (tab: string) => {
     navigate(url(`/knowledge/${tab}`))
   }
@@ -172,6 +178,19 @@ export const KnowledgePage: React.FC = () => {
   )
   const [isGeneratingSynthesis, setIsGeneratingSynthesis] = useState(false)
 
+  // =========================================================================
+  // Pinned Messages Tab State
+  // =========================================================================
+  const {
+    pinnedMessages,
+    isLoading: isPinnedLoading,
+    loadPinnedMessages,
+    deletePinnedMessage,
+  } = usePinnedMessageStore()
+  const [pinnedAgentFilter, setPinnedAgentFilter] = useState<string | 'all'>(
+    'all',
+  )
+
   const {
     memories,
     memoryDocuments,
@@ -188,6 +207,7 @@ export const KnowledgePage: React.FC = () => {
     getMemoryStats,
     deleteMemory,
     updateMemory,
+    createMemory,
     upgradeToGlobal,
     downgradeFromGlobal,
   } = useAgentMemoryStore()
@@ -202,6 +222,11 @@ export const KnowledgePage: React.FC = () => {
     onOpen: onMemoryEditOpen,
     onClose: onMemoryEditClose,
   } = useDisclosure()
+  const {
+    isOpen: isMemoryCreateOpen,
+    onOpen: onMemoryCreateOpen,
+    onClose: onMemoryCreateClose,
+  } = useDisclosure()
   const [memoryToDelete, setMemoryToDelete] = useState<string | null>(null)
   const [memoryToEdit, setMemoryToEdit] = useState<AgentMemoryEntry | null>(
     null,
@@ -212,6 +237,15 @@ export const KnowledgePage: React.FC = () => {
     category: '' as MemoryCategory,
     confidence: '' as MemoryConfidence,
     keywords: '',
+  })
+  const [memoryCreateForm, setMemoryCreateForm] = useState({
+    title: '',
+    content: '',
+    category: 'fact' as MemoryCategory,
+    confidence: 'medium' as MemoryConfidence,
+    keywords: '',
+    tags: '',
+    isGlobal: false,
   })
 
   // =========================================================================
@@ -344,6 +378,32 @@ export const KnowledgePage: React.FC = () => {
     loadAllMemories,
     loadMemoryDocument,
   ])
+
+  // =========================================================================
+  // Pinned Messages Tab Effects
+  // =========================================================================
+  useEffect(() => {
+    if (mainTab === 'pinned') {
+      loadPinnedMessages()
+    }
+  }, [mainTab, loadPinnedMessages])
+
+  // Filtered pinned messages by agent
+  const filteredPinnedMessages = useMemo(() => {
+    if (pinnedAgentFilter === 'all') {
+      return pinnedMessages
+    }
+    return pinnedMessages.filter((pm) => pm.agentId === pinnedAgentFilter)
+  }, [pinnedMessages, pinnedAgentFilter])
+
+  // Get agent name helper
+  const getAgentName = useCallback(
+    (agentId: string) => {
+      const agent = agents.find((a) => a.id === agentId)
+      return agent?.name || agentId
+    },
+    [agents],
+  )
 
   // =========================================================================
   // Files Tab Functions
@@ -741,6 +801,43 @@ export const KnowledgePage: React.FC = () => {
     }
   }
 
+  const handleCreateMemory = async () => {
+    if (!selectedAgentId) return
+
+    await createMemory({
+      agentId: selectedAgentId,
+      title: memoryCreateForm.title,
+      content: memoryCreateForm.content,
+      category: memoryCreateForm.category,
+      confidence: memoryCreateForm.confidence,
+      keywords: memoryCreateForm.keywords
+        .split(',')
+        .map((k) => k.trim())
+        .filter(Boolean),
+      tags: memoryCreateForm.tags
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean),
+      isGlobal: memoryCreateForm.isGlobal,
+      validationStatus: 'approved',
+      learnedAt: new Date(),
+      sourceConversationIds: [],
+      sourceMessageIds: [],
+    })
+
+    // Reset form
+    setMemoryCreateForm({
+      title: '',
+      content: '',
+      category: 'fact',
+      confidence: 'medium',
+      keywords: '',
+      tags: '',
+      isGlobal: false,
+    })
+    onMemoryCreateClose()
+  }
+
   // =========================================================================
   // Render
   // =========================================================================
@@ -1127,6 +1224,14 @@ export const KnowledgePage: React.FC = () => {
                   {selectedAgentId && (
                     <div className="flex gap-2 items-end">
                       <Button
+                        color="secondary"
+                        variant="flat"
+                        startContent={<Icon name="Plus" className="w-4 h-4" />}
+                        onPress={onMemoryCreateOpen}
+                      >
+                        {t('Create Memory')}
+                      </Button>
+                      <Button
                         color="primary"
                         variant="flat"
                         startContent={
@@ -1417,6 +1522,151 @@ export const KnowledgePage: React.FC = () => {
                 </Tabs>
               </div>
             </Tab>
+
+            {/* Pinned Messages Tab */}
+            <Tab
+              key="pinned"
+              title={
+                <div className="flex items-center gap-2">
+                  <Pin className="w-5 h-5" />
+                  <span>{t('Pinned Messages')}</span>
+                  {pinnedMessages.length > 0 && (
+                    <Chip size="sm" variant="flat">
+                      {pinnedMessages.length}
+                    </Chip>
+                  )}
+                </div>
+              }
+            >
+              <div className="py-6">
+                {/* Agent Filter */}
+                <div className="flex gap-4 mb-6">
+                  <Select
+                    label={t('Filter by agent')}
+                    placeholder={t('All agents')}
+                    selectedKeys={
+                      pinnedAgentFilter === 'all' ? [] : [pinnedAgentFilter]
+                    }
+                    onSelectionChange={(keys) => {
+                      const selected = Array.from(keys)[0] as string
+                      setPinnedAgentFilter(selected || 'all')
+                    }}
+                    className="max-w-xs"
+                  >
+                    {agents.map((agent) => (
+                      <SelectItem key={agent.id}>{agent.name}</SelectItem>
+                    ))}
+                  </Select>
+                </div>
+
+                {/* Pinned Messages List */}
+                {isPinnedLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Spinner size="lg" />
+                  </div>
+                ) : filteredPinnedMessages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-default-400">
+                    <Pin className="w-12 h-12 mb-4 opacity-50" />
+                    <p className="text-lg font-medium mb-2">
+                      {t('No pinned messages')}
+                    </p>
+                    <p className="text-sm text-center max-w-md">
+                      {t(
+                        'Messages you pin will appear here for quick reference.',
+                      )}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {filteredPinnedMessages.map((pinnedMessage) => (
+                      <Card
+                        key={pinnedMessage.id}
+                        className="border-l-4 border-warning-400"
+                      >
+                        <CardHeader className="flex flex-row justify-between items-start gap-4 pb-2">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Chip size="sm" variant="flat" color="primary">
+                                {getAgentName(pinnedMessage.agentId)}
+                              </Chip>
+                              <span className="text-tiny text-default-400">
+                                {new Date(
+                                  pinnedMessage.pinnedAt,
+                                ).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <p className="font-medium text-sm">
+                              {pinnedMessage.description}
+                            </p>
+                          </div>
+                          <Dropdown>
+                            <DropdownTrigger>
+                              <Button isIconOnly variant="light" size="sm">
+                                <MoreVert className="w-4 h-4" />
+                              </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu>
+                              <DropdownItem
+                                key="view"
+                                startContent={
+                                  <Icon
+                                    name="OpenInBrowser"
+                                    className="w-4 h-4"
+                                  />
+                                }
+                                onPress={() => {
+                                  navigate(
+                                    url(
+                                      `/agents/run#${pinnedMessage.agentId}/${pinnedMessage.conversationId}`,
+                                    ),
+                                  )
+                                }}
+                              >
+                                {t('View conversation')}
+                              </DropdownItem>
+                              <DropdownItem
+                                key="unpin"
+                                startContent={<PinSlash className="w-4 h-4" />}
+                                className="text-danger"
+                                color="danger"
+                                onPress={() =>
+                                  deletePinnedMessage(pinnedMessage.id)
+                                }
+                              >
+                                {t('Unpin message')}
+                              </DropdownItem>
+                            </DropdownMenu>
+                          </Dropdown>
+                        </CardHeader>
+                        <CardBody className="pt-0">
+                          <div className="bg-default-100 rounded-lg p-3 max-h-48 overflow-y-auto">
+                            <MarkdownRenderer
+                              content={pinnedMessage.content}
+                              className="prose dark:prose-invert prose-sm"
+                            />
+                          </div>
+                          {/* {pinnedMessage.keywords &&
+                            pinnedMessage.keywords.length > 0 && (
+                              <div className="flex gap-1 mt-3 flex-wrap">
+                                {pinnedMessage.keywords.map((keyword, idx) => (
+                                  <Chip
+                                    key={idx}
+                                    size="sm"
+                                    variant="bordered"
+                                    className="text-tiny"
+                                  >
+                                    {keyword}
+                                  </Chip>
+                                ))}
+                              </div>
+                            )} */}
+                        </CardBody>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Tab>
           </Tabs>
         </Container>
       </Section>
@@ -1555,6 +1805,110 @@ export const KnowledgePage: React.FC = () => {
             </Button>
             <Button color="primary" onPress={handleEditMemory}>
               {t('Save')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Create Memory Modal */}
+      <Modal
+        isOpen={isMemoryCreateOpen}
+        onClose={onMemoryCreateClose}
+        size="2xl"
+      >
+        <ModalContent>
+          <ModalHeader>{t('Create Memory')}</ModalHeader>
+          <ModalBody className="gap-4">
+            <Input
+              label={t('Title')}
+              placeholder="Brief description of this memory"
+              value={memoryCreateForm.title}
+              onValueChange={(value) =>
+                setMemoryCreateForm((prev) => ({ ...prev, title: value }))
+              }
+              isRequired
+            />
+            <Textarea
+              label={t('Content')}
+              placeholder="Detailed information to remember"
+              value={memoryCreateForm.content}
+              onValueChange={(value) =>
+                setMemoryCreateForm((prev) => ({ ...prev, content: value }))
+              }
+              minRows={4}
+              isRequired
+            />
+            <div className="flex gap-4">
+              <Select
+                label={t('Category')}
+                selectedKeys={[memoryCreateForm.category]}
+                onSelectionChange={(keys) => {
+                  const selected = Array.from(keys)[0] as MemoryCategory
+                  setMemoryCreateForm((prev) => ({
+                    ...prev,
+                    category: selected,
+                  }))
+                }}
+                className="flex-1"
+              >
+                {Object.entries(categoryLabels).map(([key, label]) => (
+                  <SelectItem key={key}>{t(label as any)}</SelectItem>
+                ))}
+              </Select>
+              <Select
+                label={t('Confidence')}
+                selectedKeys={[memoryCreateForm.confidence]}
+                onSelectionChange={(keys) => {
+                  const selected = Array.from(keys)[0] as MemoryConfidence
+                  setMemoryCreateForm((prev) => ({
+                    ...prev,
+                    confidence: selected,
+                  }))
+                }}
+                className="flex-1"
+              >
+                <SelectItem key="high">{t('High')}</SelectItem>
+                <SelectItem key="medium">{t('Medium')}</SelectItem>
+                <SelectItem key="low">{t('Low')}</SelectItem>
+              </Select>
+            </div>
+            <Input
+              label={t('Keywords')}
+              placeholder="keyword1, keyword2, keyword3"
+              value={memoryCreateForm.keywords}
+              onValueChange={(value) =>
+                setMemoryCreateForm((prev) => ({ ...prev, keywords: value }))
+              }
+              description={t('Comma-separated list of keywords')}
+            />
+            <Input
+              label="Tags"
+              placeholder="tag1, tag2, tag3"
+              value={memoryCreateForm.tags}
+              onValueChange={(value) =>
+                setMemoryCreateForm((prev) => ({ ...prev, tags: value }))
+              }
+              description="Comma-separated list of tags (optional)"
+            />
+            <Checkbox
+              isSelected={memoryCreateForm.isGlobal}
+              onValueChange={(value) =>
+                setMemoryCreateForm((prev) => ({ ...prev, isGlobal: value }))
+              }
+            >
+              {t('Make Global')} - Share this memory with all agents
+            </Checkbox>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="light" onPress={onMemoryCreateClose}>
+              {t('Cancel')}
+            </Button>
+            <Button
+              color="primary"
+              onPress={handleCreateMemory}
+              isDisabled={!memoryCreateForm.title || !memoryCreateForm.content}
+            >
+              {t('Create Memory')}
             </Button>
           </ModalFooter>
         </ModalContent>
