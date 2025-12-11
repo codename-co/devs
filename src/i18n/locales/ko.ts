@@ -324,6 +324,7 @@ export const ko: I18n = {
     '에이전트가 학습한 내용 검토 및 관리',
   'Select Agent': '에이전트 선택',
   'All agents': '모든 에이전트',
+  'Create Memory': '기억 생성',
   'Generate Synthesis': '종합 생성',
   'Total Memories': '총 기억',
   'Pending Review': '검토 대기 중',

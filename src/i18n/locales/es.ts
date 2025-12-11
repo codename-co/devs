@@ -328,6 +328,7 @@ export const es: I18n = {
     'Revisar y gestionar lo que los agentes han aprendido',
   'Select Agent': 'Seleccionar agente',
   'All agents': 'Todos los agentes',
+  'Create Memory': 'Crear memoria',
   'Generate Synthesis': 'Generar síntesis',
   'Total Memories': 'Memorias totales',
   'Pending Review': 'Pendiente de revisión',

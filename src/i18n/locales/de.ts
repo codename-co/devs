@@ -330,6 +330,7 @@ export const de: I18n = {
     'Überprüfen und verwalten Sie, was Agenten gelernt haben',
   'Select Agent': 'Agent auswählen',
   'All agents': 'Alle Agenten',
+  'Create Memory': 'Erinnerung erstellen',
   'Generate Synthesis': 'Synthese generieren',
   'Total Memories': 'Gesamte Erinnerungen',
   'Pending Review': 'Ausstehende Überprüfung',

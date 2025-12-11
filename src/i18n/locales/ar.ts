@@ -324,6 +324,7 @@ export const ar: I18n = {
     'مراجعة وإدارة ما تعلمه الوكلاء',
   'Select Agent': 'اختر الوكيل',
   'All agents': 'جميع الوكلاء',
+  'Create Memory': 'إنشاء ذاكرة',
   'Generate Synthesis': 'توليد التوليف',
   'Total Memories': 'إجمالي الذكريات',
   'Pending Review': 'قيد المراجعة',

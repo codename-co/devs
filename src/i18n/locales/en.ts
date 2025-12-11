@@ -293,6 +293,7 @@ export const en = [
   'Review and manage what agents have learned',
   'Select Agent',
   'All agents',
+  'Create Memory',
   'Generate Synthesis',
   'Total Memories',
   'Pending Review',
