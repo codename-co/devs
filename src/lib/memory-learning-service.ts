@@ -824,8 +824,9 @@ Use this context to provide more personalized and contextually relevant response
 // Export convenience functions
 export const learnFromConversation =
   MemoryLearningService.learnFromConversation.bind(MemoryLearningService)
-export const learnFromMessage =
-  MemoryLearningService.learnFromMessage.bind(MemoryLearningService)
+export const learnFromMessage = MemoryLearningService.learnFromMessage.bind(
+  MemoryLearningService,
+)
 export const processPendingLearningEvents =
   MemoryLearningService.processPendingLearningEvents.bind(MemoryLearningService)
 export const generateMemorySynthesis =

@@ -800,7 +800,9 @@ export const AgentRunPage = () => {
           if (learnedMemories.length > 0) {
             setNewlyLearnedMemories((prev) => [...prev, ...learnedMemories])
             successToast(
-              t('{count} insights extracted', { count: learnedMemories.length }),
+              t('{count} insights extracted', {
+                count: learnedMemories.length,
+              }),
             )
           }
           // Reload agent memories list
