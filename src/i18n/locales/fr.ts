@@ -449,4 +449,10 @@ export const fr: I18n = {
   'No summary available': 'Aucun résumé disponible',
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     'Aucun message épinglé pour le moment. Épinglez des messages importants de vos conversations pour les rendre disponibles ici.',
+
+  // Memory Learning
+  'Learn from this message': 'Apprendre de ce message',
+  '{count} insights extracted': '{count} insights extraits',
+  'No new insights found in this message':
+    'Aucun nouvel insight trouvé dans ce message',
 } as const

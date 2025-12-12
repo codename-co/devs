@@ -437,4 +437,10 @@ export const ar: I18n = {
   'No summary available': 'لا يوجد ملخص متاح',
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     'لا توجد رسائل مثبتة بعد. قم بتثبيت الرسائل المهمة من المحادثات لجعلها متاحة هنا.',
+
+  // Memory Learning
+  'Learn from this message': 'تعلم من هذه الرسالة',
+  '{count} insights extracted': 'تم استخراج {count} رؤى',
+  'No new insights found in this message':
+    'لم يتم العثور على رؤى جديدة في هذه الرسالة',
 } as const

@@ -444,4 +444,10 @@ export const de: I18n = {
   'No summary available': 'Keine Zusammenfassung verfügbar',
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     'Noch keine angehefteten Nachrichten. Heften Sie wichtige Nachrichten aus Konversationen an, um sie hier verfügbar zu machen.',
+
+  // Memory Learning
+  'Learn from this message': 'Aus dieser Nachricht lernen',
+  '{count} insights extracted': '{count} Erkenntnisse extrahiert',
+  'No new insights found in this message':
+    'Keine neuen Erkenntnisse in dieser Nachricht gefunden',
 } as const

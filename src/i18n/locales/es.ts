@@ -441,4 +441,10 @@ export const es: I18n = {
   'No summary available': 'No hay resumen disponible',
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     'Aún no hay mensajes fijados. Fija mensajes importantes de las conversaciones para que estén disponibles aquí.',
+
+  // Memory Learning
+  'Learn from this message': 'Aprender de este mensaje',
+  '{count} insights extracted': '{count} insights extraídos',
+  'No new insights found in this message':
+    'No se encontraron nuevos insights en este mensaje',
 } as const

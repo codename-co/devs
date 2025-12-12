@@ -46,7 +46,7 @@ import {
 import { errorToast, successToast } from '@/lib/toast'
 import { submitChat } from '@/lib/chat'
 import {
-  learnFromConversation,
+  learnFromMessage,
   processPendingLearningEvents,
 } from '@/lib/memory-learning-service'
 import { MessageDescriptionGenerator } from '@/lib/message-description-generator'
@@ -68,6 +68,8 @@ const MessageDisplay = memo(
     detectContentType,
     isPinned,
     onPinClick,
+    onLearnClick,
+    isLearning,
     conversationId,
   }: {
     message: Message
@@ -76,6 +78,8 @@ const MessageDisplay = memo(
     detectContentType: (content: string) => string
     isPinned: boolean
     onPinClick: (message: Message) => void
+    onLearnClick: (message: Message) => void
+    isLearning: boolean
     conversationId: string | undefined
   }) => {
     const { t } = useI18n()
@@ -94,6 +98,8 @@ const MessageDisplay = memo(
 
     // Only show pin button for assistant messages in saved conversations
     const showPinButton = message.role === 'assistant' && conversationId
+    // Show learn button for assistant messages in saved conversations
+    const showLearnButton = message.role === 'assistant' && conversationId
 
     return (
       <div
@@ -150,24 +156,56 @@ const MessageDisplay = memo(
               )}
             </div>
           </div>
-          {/* Pin button - show on hover for assistant messages */}
-          {showPinButton && (isHovered || isPinned) && (
+          {/* Action buttons - show on hover for assistant messages */}
+          {(showPinButton || showLearnButton) && isHovered && (
+            <div className="mt-2 flex justify-end gap-1">
+              {showLearnButton && (
+                <Tooltip content={t('Learn from this message')}>
+                  <Button
+                    size="sm"
+                    variant="light"
+                    color="secondary"
+                    isIconOnly
+                    isLoading={isLearning}
+                    onPress={() => onLearnClick(message)}
+                  >
+                    <Icon name="Brain" className="w-4 h-4" />
+                  </Button>
+                </Tooltip>
+              )}
+              {showPinButton && (
+                <Tooltip
+                  content={isPinned ? t('Unpin message') : t('Pin message')}
+                >
+                  <Button
+                    size="sm"
+                    variant={isPinned ? 'flat' : 'light'}
+                    color={isPinned ? 'warning' : 'default'}
+                    isIconOnly
+                    onPress={() => onPinClick(message)}
+                  >
+                    {isPinned ? (
+                      <PinSlash className="w-4 h-4" />
+                    ) : (
+                      <Pin className="w-4 h-4" />
+                    )}
+                  </Button>
+                </Tooltip>
+              )}
+            </div>
+          )}
+          {/* Show pinned indicator when not hovered */}
+          {isPinned && !isHovered && (
             <div className="mt-2 flex justify-end">
-              <Tooltip
-                content={isPinned ? t('Unpin message') : t('Pin message')}
-              >
+              <Tooltip content={t('Unpin message')}>
                 <Button
                   size="sm"
-                  variant={isPinned ? 'flat' : 'light'}
-                  color={isPinned ? 'warning' : 'default'}
+                  variant="flat"
+                  color="warning"
                   isIconOnly
                   onPress={() => onPinClick(message)}
                 >
-                  {isPinned ? (
-                    <PinSlash className="w-4 h-4" />
-                  ) : (
-                    <Pin className="w-4 h-4" />
-                  )}
+                  <PinSlash className="w-4 h-4" />
                 </Button>
               </Tooltip>
             </div>
@@ -532,7 +570,9 @@ export const AgentRunPage = () => {
   const [availablePinnedMessages, setAvailablePinnedMessages] = useState<
     PinnedMessage[]
   >([])
-  const [isLearning, setIsLearning] = useState(false)
+  const [learningMessageId, setLearningMessageId] = useState<string | null>(
+    null,
+  )
   const [newlyLearnedMemories, setNewlyLearnedMemories] = useState<
     AgentMemoryEntry[]
   >([])
@@ -720,6 +760,72 @@ export const AgentRunPage = () => {
     onPinModalClose,
     t,
   ])
+
+  // Handle learn from message click
+  const handleLearnClick = useCallback(
+    async (message: Message) => {
+      if (!currentConversation?.id || !selectedAgent?.id) return
+      if (learningMessageId) return // Already learning from another message
+
+      // Find the user message that precedes this assistant message
+      const messageIndex = conversationMessages.findIndex(
+        (m) => m.id === message.id,
+      )
+      if (messageIndex < 1) {
+        errorToast('Cannot learn from this message - no preceding user message')
+        return
+      }
+
+      const userMessage = conversationMessages[messageIndex - 1]
+      if (userMessage.role !== 'user') {
+        errorToast('Cannot learn from this message - no preceding user message')
+        return
+      }
+
+      setLearningMessageId(message.id)
+      try {
+        const events = await learnFromMessage(
+          userMessage.content,
+          message.content,
+          selectedAgent.id,
+          currentConversation.id,
+          lang,
+        )
+
+        if (events.length > 0) {
+          const learnedMemories = await processPendingLearningEvents(
+            selectedAgent.id,
+          )
+          // Add newly learned memories to display inline
+          if (learnedMemories.length > 0) {
+            setNewlyLearnedMemories((prev) => [...prev, ...learnedMemories])
+            successToast(
+              t('{count} insights extracted', { count: learnedMemories.length }),
+            )
+          }
+          // Reload agent memories list
+          const { getRelevantMemoriesAsync } = useAgentMemoryStore.getState()
+          const newMemories = await getRelevantMemoriesAsync(selectedAgent.id)
+          setAgentMemories(newMemories)
+        } else {
+          successToast(t('No new insights found in this message'))
+        }
+      } catch (error) {
+        console.error('Memory learning failed:', error)
+        errorToast('Failed to learn from message')
+      } finally {
+        setLearningMessageId(null)
+      }
+    },
+    [
+      currentConversation?.id,
+      selectedAgent?.id,
+      conversationMessages,
+      learningMessageId,
+      lang,
+      t,
+    ],
+  )
 
   const header: HeaderProps = useMemo(
     () => ({
@@ -917,7 +1023,6 @@ export const AgentRunPage = () => {
       agentMemories,
       availablePinnedMessages,
       isConversationPristine,
-      isLearning,
       currentConversation,
       selectedAgent,
     ],
@@ -1288,6 +1393,8 @@ export const AgentRunPage = () => {
                         detectContentType={detectContentType}
                         isPinned={checkIsPinned(item.data.id)}
                         onPinClick={handlePinClick}
+                        onLearnClick={handleLearnClick}
+                        isLearning={learningMessageId === item.data.id}
                         conversationId={currentConversation?.id}
                       />
                     ) : (
@@ -1411,55 +1518,6 @@ export const AgentRunPage = () => {
             </div>
           )} */}
         </div>
-
-        {/* Memory Learning CTA */}
-        {conversationMessages.length > 0 &&
-          currentConversation &&
-          selectedAgent && (
-            <div className="max-w-4xl mx-auto mt-4 flex justify-end">
-              <Button
-                size="sm"
-                variant="flat"
-                color="secondary"
-                startContent={<Icon name="Brain" className="w-4 h-4" />}
-                isLoading={isLearning}
-                onPress={async () => {
-                  if (!currentConversation || !selectedAgent) return
-                  setIsLearning(true)
-                  try {
-                    await learnFromConversation(
-                      currentConversation.id,
-                      selectedAgent.id,
-                    )
-                    const learnedMemories = await processPendingLearningEvents(
-                      selectedAgent.id,
-                    )
-                    // Add newly learned memories to display inline
-                    if (learnedMemories.length > 0) {
-                      setNewlyLearnedMemories((prev) => [
-                        ...prev,
-                        ...learnedMemories,
-                      ])
-                    }
-                    // Reload agent memories list
-                    const { getRelevantMemoriesAsync } =
-                      useAgentMemoryStore.getState()
-                    const newMemories = await getRelevantMemoriesAsync(
-                      selectedAgent.id,
-                    )
-                    setAgentMemories(newMemories)
-                    console.log('Memory learning triggered successfully')
-                  } catch (error) {
-                    console.error('Memory learning failed:', error)
-                  } finally {
-                    setIsLearning(false)
-                  }
-                }}
-              >
-                {t('Learn from conversation')}
-              </Button>
-            </div>
-          )}
 
         <PromptArea
           lang={lang}

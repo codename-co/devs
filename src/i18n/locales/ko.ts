@@ -437,4 +437,10 @@ export const ko: I18n = {
   'No summary available': '요약을 사용할 수 없습니다',
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     '아직 고정된 메시지가 없습니다. 대화에서 중요한 메시지를 고정하여 여기에서 사용할 수 있게 하세요.',
+
+  // Memory Learning
+  'Learn from this message': '이 메시지에서 배우기',
+  '{count} insights extracted': '{count}개의 인사이트가 추출되었습니다',
+  'No new insights found in this message':
+    '이 메시지에서 새로운 인사이트를 찾을 수 없습니다',
 } as const

@@ -421,6 +421,82 @@ export class MemoryLearningService {
   }
 
   /**
+   * Extract learnable information from a single message turn (user message + assistant response)
+   */
+  static async learnFromMessage(
+    userMessage: string,
+    assistantMessage: string,
+    agentId: string,
+    conversationId: string,
+    lang?: Lang,
+  ): Promise<MemoryLearningEvent[]> {
+    const config = await CredentialService.getActiveConfig()
+    if (!config) {
+      console.warn('No LLM config available for memory extraction')
+      return []
+    }
+
+    // Build the turn text for analysis
+    const turnText = `[0] USER: ${userMessage.trim()}\n\n[1] ASSISTANT: ${assistantMessage.trim()}`
+
+    // Build system prompt with language instruction
+    const languageInstruction = lang
+      ? `\n\nIMPORTANT: Extract and write all learnings (title, content, summary) in ${languages[lang]} as this is the user's preferred language.`
+      : ''
+
+    const messages: LLMMessage[] = [
+      {
+        role: 'system',
+        content: EXTRACTION_SYSTEM_PROMPT + languageInstruction,
+      },
+      {
+        role: 'user',
+        content: `Analyze this conversation turn and extract learnable information:\n\n${turnText}`,
+      },
+    ]
+
+    try {
+      const response = await LLMService.chat(messages, {
+        ...config,
+        temperature: 0.3,
+        maxTokens: 2000,
+      })
+
+      const { learnings, summary } = this.parseExtractionResponse(
+        response.content,
+      )
+
+      if (learnings.length === 0) {
+        console.log(`No learnings extracted from message turn`)
+        return []
+      }
+
+      // Create learning events
+      const { createLearningEvent } = useAgentMemoryStore.getState()
+      const events: MemoryLearningEvent[] = []
+
+      for (const learning of learnings) {
+        const event = await createLearningEvent({
+          agentId,
+          conversationId,
+          rawExtraction: JSON.stringify(learning),
+          suggestedCategory: learning.category,
+          suggestedConfidence: learning.confidence,
+        })
+        events.push(event)
+      }
+
+      console.log(
+        `Created ${events.length} learning events from message turn. Summary: ${summary}`,
+      )
+      return events
+    } catch (error) {
+      console.error('Failed to learn from message:', error)
+      return []
+    }
+  }
+
+  /**
    * Check if a memory is a duplicate of an existing one
    * Compares title and content similarity
    */
@@ -748,6 +824,8 @@ Use this context to provide more personalized and contextually relevant response
 // Export convenience functions
 export const learnFromConversation =
   MemoryLearningService.learnFromConversation.bind(MemoryLearningService)
+export const learnFromMessage =
+  MemoryLearningService.learnFromMessage.bind(MemoryLearningService)
 export const processPendingLearningEvents =
   MemoryLearningService.processPendingLearningEvents.bind(MemoryLearningService)
 export const generateMemorySynthesis =

@@ -413,4 +413,9 @@ export const en = [
   'View summary',
   'No summary available',
   'No pinned messages yet. Pin important messages from conversations to make them available here.',
+
+  // Memory Learning
+  'Learn from this message',
+  '{count} insights extracted',
+  'No new insights found in this message',
 ] as const
