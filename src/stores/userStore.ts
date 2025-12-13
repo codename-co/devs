@@ -14,6 +14,7 @@ export interface UserSettings {
   theme: ThemeMode
   language: Lang
   isDrawerCollapsed: boolean
+  isContextualPanelCollapsed: boolean
   platformName?: string
   backgroundImage?: string
   speechToTextEnabled: boolean
@@ -24,6 +25,7 @@ const defaultSettings: UserSettings = {
   theme: 'system',
   language: 'en',
   isDrawerCollapsed: true,
+  isContextualPanelCollapsed: false,
   speechToTextEnabled: false,
   pwaInstallPromptDismissed: false,
 }
@@ -31,6 +33,7 @@ interface UserSettingsStore extends UserSettings {
   setTheme: (theme: ThemeMode) => void
   setLanguage: (language: Lang) => void
   toggleDrawer: () => void
+  toggleContextualPanel: () => void
   setPlatformName: (platformName: string) => void
   setBackgroundImage: (backgroundImage: string | undefined) => void
   setSpeechToTextEnabled: (enabled: boolean) => void
@@ -46,6 +49,10 @@ export const userSettings = create<UserSettingsStore>()(
       setLanguage: (language: Lang) => set({ language }),
       toggleDrawer: () =>
         set((state) => ({ isDrawerCollapsed: !state.isDrawerCollapsed })),
+      toggleContextualPanel: () =>
+        set((state) => ({
+          isContextualPanelCollapsed: !state.isContextualPanelCollapsed,
+        })),
       setPlatformName: (platformName: string) => set({ platformName }),
       setBackgroundImage: (backgroundImage: string | undefined) =>
         set({ backgroundImage }),
@@ -67,6 +74,7 @@ export const userSettings = create<UserSettingsStore>()(
         theme: state.theme,
         language: state.language,
         isDrawerCollapsed: state.isDrawerCollapsed,
+        isContextualPanelCollapsed: state.isContextualPanelCollapsed,
         platformName: state.platformName,
         backgroundImage: state.backgroundImage,
         speechToTextEnabled: state.speechToTextEnabled,

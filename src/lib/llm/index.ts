@@ -22,6 +22,75 @@ export interface LLMResponse {
   }
 }
 
+// LLM Progress tracking for ProgressIndicator
+export interface LLMProgressStats {
+  activeRequests: number
+  totalRequests: number
+  averageResponseTime: number
+  completedRequests: number
+}
+
+class LLMProgressTracker {
+  private activeRequests = new Map<string, { startTime: number }>()
+  private stats = {
+    totalRequests: 0,
+    completedRequests: 0,
+    responseTimes: [] as number[],
+    averageResponseTime: 0,
+  }
+
+  startRequest(requestId: string): void {
+    this.activeRequests.set(requestId, { startTime: Date.now() })
+    this.stats.totalRequests++
+    this.broadcastProgress()
+  }
+
+  endRequest(requestId: string): void {
+    const request = this.activeRequests.get(requestId)
+    if (request) {
+      const responseTime = Date.now() - request.startTime
+      this.stats.responseTimes.push(responseTime)
+      // Keep only last 100 response times for average calculation
+      if (this.stats.responseTimes.length > 100) {
+        this.stats.responseTimes.shift()
+      }
+      this.stats.averageResponseTime = Math.round(
+        this.stats.responseTimes.reduce((sum, time) => sum + time, 0) /
+          this.stats.responseTimes.length,
+      )
+      this.activeRequests.delete(requestId)
+      this.stats.completedRequests++
+    }
+    this.broadcastProgress()
+  }
+
+  getStats(): LLMProgressStats {
+    return {
+      activeRequests: this.activeRequests.size,
+      totalRequests: this.stats.totalRequests,
+      completedRequests: this.stats.completedRequests,
+      averageResponseTime: this.stats.averageResponseTime,
+    }
+  }
+
+  private broadcastProgress(): void {
+    const stats = this.getStats()
+
+    // Broadcast to service worker if available
+    if (navigator.serviceWorker?.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'LLM_PROGRESS_UPDATE_FROM_CLIENT',
+        stats,
+      })
+    }
+
+    // Also broadcast as a custom event for direct component subscription
+    window.dispatchEvent(
+      new CustomEvent('llm-progress-update', { detail: { stats } }),
+    )
+  }
+}
+
 /**
  * Interface for LLM provider implementations.
  * Defines methods for chat and streaming chat functionality.
@@ -45,6 +114,15 @@ export interface LLMProviderInterface {
   ): AsyncIterableIterator<string>
   validateApiKey(apiKey: string): Promise<boolean>
   getAvailableModels?(config?: Partial<LLMConfig>): Promise<string[]>
+}
+
+// Global progress tracker instance
+const progressTracker = new LLMProgressTracker()
+
+// Generate unique request IDs
+let requestCounter = 0
+function generateRequestId(): string {
+  return `llm-${Date.now()}-${++requestCounter}`
 }
 
 export class LLMService {
@@ -73,17 +151,29 @@ export class LLMService {
     messages: LLMMessage[],
     config: LLMConfig,
   ): Promise<LLMResponse> {
-    const provider = this.getProvider(config.provider)
-    return provider.chat(messages, config)
+    const requestId = generateRequestId()
+    progressTracker.startRequest(requestId)
+    try {
+      const provider = this.getProvider(config.provider)
+      return await provider.chat(messages, config)
+    } finally {
+      progressTracker.endRequest(requestId)
+    }
   }
 
   static async *streamChat(
     messages: LLMMessage[],
     config: LLMConfig,
   ): AsyncIterableIterator<string> {
-    const provider = this.getProvider(config.provider)
-    console.log('△', 'using:', config.provider, config.model, { config })
-    yield* provider.streamChat(messages, config)
+    const requestId = generateRequestId()
+    progressTracker.startRequest(requestId)
+    try {
+      const provider = this.getProvider(config.provider)
+      console.log('△', 'using:', config.provider, config.model, { config })
+      yield* provider.streamChat(messages, config)
+    } finally {
+      progressTracker.endRequest(requestId)
+    }
   }
 
   static async validateApiKey(
@@ -103,6 +193,11 @@ export class LLMService {
       return implementation.getAvailableModels(config)
     }
     return []
+  }
+
+  // Expose progress stats for components that need direct access
+  static getProgressStats(): LLMProgressStats {
+    return progressTracker.getStats()
   }
 }
 

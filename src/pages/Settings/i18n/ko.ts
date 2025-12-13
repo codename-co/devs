@@ -101,6 +101,9 @@ export const ko: I18n = {
   'Enable Speech-to-Text': '음성-텍스트 변환 활성화',
   'Allow voice input using your device microphone in the prompt area':
     '프롬프트 영역에서 기기 마이크를 사용한 음성 입력 허용',
+  'Show Context Panel': '컨텍스트 패널 표시',
+  'Display the contextual information panel on the right side of the screen':
+    '화면 오른쪽에 컨텍스트 정보 패널 표시',
   'Make the platform your own': '플랫폼을 개인화하세요',
   'Share the platform': '플랫폼 공유',
   'Export the platform settings to another device or share it with others':

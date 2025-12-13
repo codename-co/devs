@@ -21,6 +21,8 @@ export const fr: I18n = {
   Teams: 'Équipes',
   Settings: 'Paramètres',
   Agents: 'Agents',
+  'Create and manage your AI specialists':
+    'Créez et gérez vos agents spécialistes IA',
   Methodologies: 'Méthodologies',
   Conversations: 'Conversations',
   'Conversations history': 'Historique des conversations',
@@ -30,7 +32,7 @@ export const fr: I18n = {
   'Summarize conversation': 'Résumer la conversation',
   'Pin it': 'Épingler',
   'Unpin it': 'Désépingler',
-  Pinned: 'Épinglé',
+  Pinned: 'Épinglées',
   'Message description': 'Description du message',
   'Edit description': 'Modifier la description',
   'View full conversation': 'Voir la conversation complète',
@@ -70,6 +72,7 @@ export const fr: I18n = {
   'Speak to microphone': 'Dicter au microphone',
   'Send prompt': 'Envoyer le prompt',
   'Select an agent': 'Sélectionner un agent',
+  'No agents found': 'Aucun agent trouvé',
   'Select a model': 'Sélectionner un modèle',
   'Add a model': 'Ajouter un modèle',
 
@@ -108,12 +111,13 @@ export const fr: I18n = {
   'this agent': 'cet agent',
   'System Prompt': 'Prompt système',
   'No system prompt defined.': 'Aucune invite système définie.',
-  Memories: 'Mémoires',
+  Memories: 'Mémoire',
   Global: 'Global',
   'No memories learned yet. Start conversations and use "Learn from conversation" to build agent memory.':
     "Aucune mémoire apprise pour le moment. Démarrez des conversations et utilisez « Apprendre de la conversation » pour construire la mémoire de l'agent.",
   'Make Global': 'Rendre global',
   'Remove Global': 'Retirer global',
+  'Agent Context': "Contexte de l'agent",
 
   // Artifacts side panel
   Artifacts: 'Artefacts',

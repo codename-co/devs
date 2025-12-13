@@ -1,15 +1,7 @@
 import { create } from 'zustand'
 import { db } from '@/lib/db'
-import type {
-  Conversation,
-  Message,
-  AgentMemoryEntry,
-  PinnedMessage,
-} from '@/types'
+import type { Conversation, Message } from '@/types'
 import { errorToast } from '@/lib/toast'
-import { getAgentById } from '@/stores/agentStore'
-import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
-import { usePinnedMessageStore } from '@/stores/pinnedMessageStore'
 import { ConversationTitleGenerator } from '@/lib/conversation-title-generator'
 
 interface ConversationStore {
@@ -20,7 +12,7 @@ interface ConversationStore {
   showPinnedOnly: boolean
 
   loadConversations: () => Promise<void>
-  loadConversation: (id: string) => Promise<void>
+  loadConversation: (id: string) => Promise<Conversation | null>
   createConversation: (
     agentId: string,
     workflowId: string,
@@ -91,16 +83,19 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       const conversation = await db.get('conversations', id)
       if (conversation) {
         set({ currentConversation: conversation, isLoading: false })
+        return conversation
       } else {
         errorToast(
           'Conversation not found',
           'The requested conversation could not be found',
         )
         set({ isLoading: false })
+        return null
       }
     } catch (error) {
       errorToast('Failed to load conversations', error)
       set({ isLoading: false })
+      return null
     }
   },
 
@@ -112,94 +107,15 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
         await db.init()
       }
 
-      // Get agent information to create system prompt
-      const agent = await getAgentById(agentId)
-      if (!agent) {
-        throw new Error(`Agent with id ${agentId} not found`)
-      }
-
-      // Create a temporary conversation ID to exclude from pinned messages
-      const newConversationId = crypto.randomUUID()
-
-      // Fetch relevant memories (agent-specific + global)
-      const { getRelevantMemoriesAsync } = useAgentMemoryStore.getState()
-      let memories: AgentMemoryEntry[] = []
-      try {
-        memories = await getRelevantMemoriesAsync(agentId, [], [], 20)
-      } catch (error) {
-        console.warn('Failed to fetch memories for conversation:', error)
-      }
-
-      // Fetch relevant pinned messages from previous conversations
-      const { getRelevantPinnedMessagesAsync } =
-        usePinnedMessageStore.getState()
-      let pinnedMessages: PinnedMessage[] = []
-      try {
-        pinnedMessages = await getRelevantPinnedMessagesAsync(
-          agentId,
-          newConversationId, // Exclude current conversation (will be empty for new)
-          [],
-          10,
-        )
-      } catch (error) {
-        console.warn('Failed to fetch pinned messages for conversation:', error)
-      }
-
-      // Build memory context section if there are memories
-      let memoryContext = ''
-      if (memories.length > 0) {
-        const memoryItems = memories.map((m) => {
-          const globalTag = m.isGlobal ? ' [Global]' : ''
-          return `- **${m.title}**${globalTag}: ${m.content}`
-        })
-        memoryContext = `
-
-### Learned Context:
-The following information has been learned from previous conversations. Use this context to provide more personalized and relevant responses:
-
-${memoryItems.join('\n')}`
-      }
-
-      // Build pinned messages context section if there are pinned messages
-      let pinnedContext = ''
-      if (pinnedMessages.length > 0) {
-        const pinnedItems = pinnedMessages.map((pm) => {
-          const date = new Date(pm.pinnedAt).toLocaleDateString()
-          const snippet =
-            pm.content.length > 150
-              ? pm.content.substring(0, 150) + '...'
-              : pm.content
-          return `- **${pm.description}**: ${snippet} (from ${date})`
-        })
-        pinnedContext = `
-
-### Important Past Conversations:
-The following are key moments from your previous conversations with the user:
-
-${pinnedItems.join('\n')}`
-      }
-
-      // Create system message with agent's name, role, instructions, memories, and pinned messages
-      const systemMessage: Message = {
-        id: crypto.randomUUID(),
-        role: 'system',
-        content: `You are ${agent.name}.
-
-### Role:
-${agent.role}
-
-### Instructions:
-${agent.instructions}${memoryContext}${pinnedContext}`,
-        timestamp: new Date(),
-      }
-
+      // Create conversation without initial system message
+      // The system prompt will be dynamically built and added by chat.ts when messages are sent
       const conversation: Conversation = {
-        id: newConversationId,
+        id: crypto.randomUUID(),
         agentId,
         participatingAgents: [agentId],
         workflowId,
         timestamp: new Date(),
-        messages: [systemMessage],
+        messages: [],
       }
 
       await db.add('conversations', conversation)

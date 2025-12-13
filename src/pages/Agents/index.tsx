@@ -183,6 +183,7 @@ export const AgentsPage = () => {
       color: 'text-warning-500',
     },
     title: t('Agents'),
+    subtitle: t('Create and manage your AI specialists'),
     cta: {
       label: t('New Agent'),
       href: url('/agents/new'),

@@ -102,6 +102,9 @@ export const es: I18n = {
   'Enable Speech-to-Text': 'Habilitar voz a texto',
   'Allow voice input using your device microphone in the prompt area':
     'Permitir entrada de voz usando el micrófono de su dispositivo en el área de prompt',
+  'Show Context Panel': 'Mostrar panel de contexto',
+  'Display the contextual information panel on the right side of the screen':
+    'Mostrar el panel de información contextual en el lado derecho de la pantalla',
   'Make the platform your own': 'Personalice la plataforma',
   'Share the platform': 'Compartir la plataforma',
   'Export the platform settings to another device or share it with others':

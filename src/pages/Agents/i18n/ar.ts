@@ -39,4 +39,5 @@ export const ar: I18n = {
     'ستستخدم المحادثة تكوين النموذج الحالي الخاص بك',
   'Ask {agentName} something…': 'اسأل {agentName} شيئاً…',
   Send: 'إرسال',
+  Current: 'الحالية', // current conversation
 } as const

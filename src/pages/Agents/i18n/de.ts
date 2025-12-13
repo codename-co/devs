@@ -42,4 +42,5 @@ export const de: I18n = {
     'Der Chat verwendet Ihre aktuelle Formularkonfiguration',
   'Ask {agentName} something…': 'Fragen Sie {agentName} etwas…',
   Send: 'Senden',
+  Current: 'Aktuell', // current conversation
 } as const

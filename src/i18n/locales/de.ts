@@ -21,6 +21,8 @@ export const de: I18n = {
   Teams: 'Teams',
   Settings: 'Einstellungen',
   Agents: 'Agenten',
+  'Create and manage your AI specialists':
+    'Erstellen und verwalten Sie Ihre KI-Spezialisten',
   Methodologies: 'Methodiken',
   Conversations: 'Unterhaltungen',
   'Conversations history': 'Verlauf der Unterhaltungen',
@@ -30,7 +32,7 @@ export const de: I18n = {
   'Summarize conversation': 'Unterhaltung zusammenfassen',
   'Pin it': 'Anheften',
   'Unpin it': 'Lösen',
-  Pinned: 'Angeheftet',
+  Pinned: 'Angeheftete',
   'Message description': 'Nachrichtenbeschreibung',
   'Edit description': 'Beschreibung bearbeiten',
   'View full conversation': 'Gesamte Unterhaltung anzeigen',
@@ -70,6 +72,7 @@ export const de: I18n = {
   'Speak to microphone': 'Ins Mikrofon sprechen',
   'Send prompt': 'Prompt senden',
   'Select an agent': 'Agent auswählen',
+  'No agents found': 'Keine Agenten gefunden',
   'Select a model': 'Modell auswählen',
   'Add a model': 'Modell hinzufügen',
 
@@ -114,6 +117,7 @@ export const de: I18n = {
     'Noch keine Erinnerungen gelernt. Beginnen Sie Gespräche und verwenden Sie „Aus Gespräch lernen", um das Agentengedächtnis aufzubauen.',
   'Make Global': 'Global machen',
   'Remove Global': 'Global entfernen',
+  'Agent Context': 'Agentenkontext',
 
   // Artifacts side panel
   Artifacts: 'Artefakte',

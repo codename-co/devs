@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Icon, type IconProps } from './Icon'
+import { LLMService, type LLMProgressStats } from '@/lib/llm'
 
 export interface LLMRequest {
   requestId: string
@@ -8,12 +9,7 @@ export interface LLMRequest {
   startTime: number
 }
 
-export interface LLMProgressStats {
-  activeRequests: number
-  totalRequests: number
-  averageResponseTime: number
-  completedRequests: number
-}
+export { type LLMProgressStats }
 
 export const ProgressIndicator = () => {
   const [stats, setStats] = useState<LLMProgressStats>({
@@ -26,6 +22,17 @@ export const ProgressIndicator = () => {
   const [isInferring, setIsInfering] = useState(false)
 
   useEffect(() => {
+    // Handler for custom window events from LLMService
+    const handleLLMProgressUpdate = (
+      event: CustomEvent<{ stats: LLMProgressStats }>,
+    ) => {
+      const newStats = event.detail.stats
+      setStats(newStats)
+      setIsVisible(newStats.activeRequests > 0 || newStats.totalRequests > 0)
+      setIsInfering(newStats.activeRequests > 0)
+    }
+
+    // Handler for service worker messages (legacy support)
     const handleServiceWorkerMessage = (event: MessageEvent) => {
       if (event.data.type === 'LLM_PROGRESS_UPDATE') {
         const newStats = event.data.stats as LLMProgressStats
@@ -35,20 +42,26 @@ export const ProgressIndicator = () => {
       }
     }
 
-    // Listen for messages from service worker
+    // Listen for custom events from LLMService (primary method)
+    window.addEventListener(
+      'llm-progress-update',
+      handleLLMProgressUpdate as EventListener,
+    )
+
+    // Listen for messages from service worker (fallback)
     navigator.serviceWorker?.addEventListener(
       'message',
       handleServiceWorkerMessage,
     )
 
     // Request current stats on mount
-    if (navigator.serviceWorker?.controller) {
-      navigator.serviceWorker.controller.postMessage({
-        type: 'GET_LLM_PROGRESS_STATS',
-      })
-    }
+    setStats(LLMService.getProgressStats())
 
     return () => {
+      window.removeEventListener(
+        'llm-progress-update',
+        handleLLMProgressUpdate as EventListener,
+      )
       navigator.serviceWorker?.removeEventListener(
         'message',
         handleServiceWorkerMessage,

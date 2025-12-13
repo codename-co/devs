@@ -1,9 +1,14 @@
 import { LLMService, LLMMessage } from '@/lib/llm'
 import { CredentialService } from '@/lib/credential-service'
 import type { Message } from '@/types'
+import { userSettings } from '@/stores/userStore'
+import { languages, type LanguageCode } from '@/i18n/locales'
 
 export class MessageDescriptionGenerator {
-  private static readonly DESCRIPTION_GENERATION_PROMPT = `You are a message description generator. Create a concise, descriptive summary (5-10 words) for this conversation message that captures its key point or purpose.
+  private static getDescriptionPrompt(languageCode: LanguageCode): string {
+    const languageName = languages[languageCode] || languages.en
+
+    return `You are a message description generator. Create a concise, descriptive summary (5-10 words) for this conversation message that captures its key point or purpose.
 
 Rules:
 - Maximum 10 words, minimum 5 words
@@ -12,18 +17,25 @@ Rules:
 - Avoid generic phrases
 - Use sentence case
 - No quotes or special formatting
+- IMPORTANT: Respond in ${languageName} (language code: ${languageCode})
 
 Examples:
-- "explains how to optimize database queries"
-- "provides solution for TypeScript compilation error"
-- "outlines steps to build authentication system"
-- "recommends best practices for React hooks"
+- "Explains how to optimize database queries"
+- "Provides solution for TypeScript compilation error"
+- "Outlines steps to build authentication system"
+- "Recommends best practices for React hooks"
 
 Message Content: {messageContent}
 
-Respond with ONLY the description (5-10 words), nothing else.`
+Respond with ONLY the description (5-10 words) in ${languageName}, nothing else.`
+  }
 
-  private static readonly KEYWORD_EXTRACTION_PROMPT = `Extract 3-5 key technical terms or concepts from this message that would be useful for finding it later.
+  private static getKeywordExtractionPrompt(
+    languageCode: LanguageCode,
+  ): string {
+    const languageName = languages[languageCode] || languages.en
+
+    return `Extract 3-5 key technical terms or concepts from this message that would be useful for finding it later.
 
 Rules:
 - 3-5 keywords only
@@ -31,10 +43,12 @@ Rules:
 - No common words (the, is, how, etc.)
 - Comma-separated
 - Lowercase
+- IMPORTANT: Extract keywords in ${languageName} (language code: ${languageCode})
 
 Message: {messageContent}
 
-Respond with ONLY the comma-separated keywords, nothing else.`
+Respond with ONLY the comma-separated keywords in ${languageName}, nothing else.`
+  }
 
   /**
    * Generate a description and keywords for a pinned message
@@ -47,6 +61,9 @@ Respond with ONLY the comma-separated keywords, nothing else.`
     keywords: string[]
   }> {
     try {
+      // Get user's current language
+      const userLanguage = userSettings.getState().language
+
       // Get LLM config
       const config = await CredentialService.getActiveConfig()
       if (!config) {
@@ -70,7 +87,7 @@ Respond with ONLY the comma-separated keywords, nothing else.`
       const descriptionMessages: LLMMessage[] = [
         {
           role: 'system',
-          content: this.DESCRIPTION_GENERATION_PROMPT.replace(
+          content: this.getDescriptionPrompt(userLanguage).replace(
             '{messageContent}',
             messageContent + contextString,
           ),
@@ -110,7 +127,7 @@ Respond with ONLY the comma-separated keywords, nothing else.`
       const keywordMessages: LLMMessage[] = [
         {
           role: 'system',
-          content: this.KEYWORD_EXTRACTION_PROMPT.replace(
+          content: this.getKeywordExtractionPrompt(userLanguage).replace(
             '{messageContent}',
             messageContent,
           ),
@@ -152,9 +169,10 @@ Respond with ONLY the comma-separated keywords, nothing else.`
   /**
    * Create a fallback description from the message content
    */
-  private static createFallbackDescription(
-    content: string,
-  ): { description: string; keywords: string[] } {
+  private static createFallbackDescription(content: string): {
+    description: string
+    keywords: string[]
+  } {
     if (!content || content.trim().length === 0) {
       return {
         description: 'important conversation message',

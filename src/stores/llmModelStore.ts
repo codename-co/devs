@@ -63,6 +63,51 @@ export const useLLMModelStore = create<LLMModelStore>()(
         await db.init()
         const creds = await db.getAll('credentials')
 
+        // Clean up exact duplicate local providers (same provider AND same model)
+        // Group by provider + model combination
+        const providerModelGroups = new Map<string, Credential[]>()
+
+        creds.forEach((cred) => {
+          const key = `${cred.provider}:${cred.model || 'default'}`
+          if (!providerModelGroups.has(key)) {
+            providerModelGroups.set(key, [])
+          }
+          providerModelGroups.get(key)!.push(cred)
+        })
+
+        // Remove duplicates (keep the oldest one in each group)
+        let hasDuplicates = false
+        for (const [, group] of providerModelGroups) {
+          if (group.length > 1) {
+            hasDuplicates = true
+            // Sort by timestamp to keep the oldest one
+            const sorted = group.sort(
+              (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+            )
+
+            // Delete all but the first one
+            for (let i = 1; i < sorted.length; i++) {
+              const duplicateId = sorted[i].id
+              await db.delete('credentials', duplicateId)
+              localStorage.removeItem(`${duplicateId}-iv`)
+              localStorage.removeItem(`${duplicateId}-salt`)
+            }
+          }
+        }
+
+        // Reload after cleanup if duplicates were found
+        if (hasDuplicates) {
+          const cleanedCreds = await db.getAll('credentials')
+          const sortedCreds = cleanedCreds.sort((a, b) => {
+            if (a.order === undefined && b.order === undefined) return 0
+            if (a.order === undefined) return 1
+            if (b.order === undefined) return -1
+            return a.order - b.order
+          })
+          set({ credentials: sortedCreds })
+          return
+        }
+
         // Sort credentials by order
         const sortedCreds = creds.sort((a, b) => {
           if (a.order === undefined && b.order === undefined) return 0

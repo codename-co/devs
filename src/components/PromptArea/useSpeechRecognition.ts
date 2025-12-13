@@ -37,7 +37,19 @@ export function useSpeechRecognition({
   const recognitionRef = useRef<SpeechRecognition | null>(null)
   const finalTranscriptRef = useRef('')
 
-  // Initialize speech recognition
+  // Store callbacks in refs to avoid effect re-runs
+  const onTranscriptRef = useRef(onTranscript)
+  const onFinalTranscriptRef = useRef(onFinalTranscript)
+  const onErrorRef = useRef(onError)
+
+  // Update refs when callbacks change
+  useEffect(() => {
+    onTranscriptRef.current = onTranscript
+    onFinalTranscriptRef.current = onFinalTranscript
+    onErrorRef.current = onError
+  })
+
+  // Check support once on mount
   useEffect(() => {
     if (typeof window === 'undefined') return
 
@@ -46,6 +58,15 @@ export function useSpeechRecognition({
       (window as any).webkitSpeechRecognition
 
     setIsSupported(!!SpeechRecognition)
+  }, [])
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition
 
     if (!SpeechRecognition) {
       console.warn('Speech recognition not supported')
@@ -79,11 +100,11 @@ export function useSpeechRecognition({
       finalTranscriptRef.current = finalTranscript
       const newTranscript = finalTranscript + interimTranscript
 
-      onTranscript?.(newTranscript)
+      onTranscriptRef.current?.(newTranscript)
 
       if (finalTranscript) {
         recognition.stop()
-        onFinalTranscript?.()
+        onFinalTranscriptRef.current?.()
       }
     }
 
@@ -123,13 +144,13 @@ export function useSpeechRecognition({
           warningToast('Speech recognition error', errorCode)
       }
 
-      onError?.(errorCode)
+      onErrorRef.current?.(errorCode)
     }
 
     recognition.onend = () => {
       setIsRecording(false)
       if (finalTranscriptRef.current.trim()) {
-        onFinalTranscript?.()
+        onFinalTranscriptRef.current?.()
       }
     }
 
@@ -138,7 +159,7 @@ export function useSpeechRecognition({
     return () => {
       recognition.stop()
     }
-  }, [lang, onTranscript, onFinalTranscript, onError])
+  }, [lang])
 
   const startRecording = useCallback(() => {
     const recognition = recognitionRef.current

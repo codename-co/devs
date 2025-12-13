@@ -21,6 +21,8 @@ export const es: I18n = {
   Teams: 'Equipos',
   Settings: 'Configuraciones',
   Agents: 'Agentes',
+  'Create and manage your AI specialists':
+    'Crea y gestiona tus especialistas en IA',
   Methodologies: 'Metodologías',
   Conversations: 'Conversaciones',
   'Conversations history': 'Historial de conversaciones',
@@ -30,7 +32,7 @@ export const es: I18n = {
   'Summarize conversation': 'RResumir conversación',
   'Pin it': 'Fijar',
   'Unpin it': 'Desfijar',
-  Pinned: 'Fijado',
+  Pinned: 'Fijadas',
   'Message description': 'Descripción del mensaje',
   'Edit description': 'Editar descripción',
   'View full conversation': 'Ver conversación completa',
@@ -70,6 +72,7 @@ export const es: I18n = {
   'Speak to microphone': 'Hablar al micrófono',
   'Send prompt': 'Enviar prompt',
   'Select an agent': 'Seleccionar un agente',
+  'No agents found': 'No se encontraron agentes',
   'Select a model': 'Seleccionar un modelo',
   'Add a model': 'Agregar un modelo',
 
@@ -113,6 +116,7 @@ export const es: I18n = {
     'Aún no se han aprendido memorias. Inicia conversaciones y usa "Aprender de la conversación" para construir la memoria del agente.',
   'Make Global': 'Hacer global',
   'Remove Global': 'Quitar global',
+  'Agent Context': 'Contexto del agente',
 
   // Artifacts side panel
   Artifacts: 'Artefactos',

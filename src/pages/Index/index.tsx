@@ -137,16 +137,20 @@ export const IndexPage = () => {
     }
   }
 
-  const onSubmitToAgent = async () => {
-    if (!prompt.trim() || isSending) return
+  const onSubmitToAgent = async (
+    cleanedPrompt?: string,
+    mentionedAgent?: Agent,
+  ) => {
+    const promptToUse = cleanedPrompt ?? prompt
+    if (!promptToUse.trim() || isSending) return
 
     setIsSending(true)
 
-    // Determine which agent to use (default to 'devs' if none selected)
-    const agent = selectedAgent || { id: 'devs' }
+    // Use mentioned agent if provided, otherwise fall back to selected agent or 'devs'
+    const agent = mentionedAgent || selectedAgent || { id: 'devs' }
 
     // Store prompt, agent, and files in sessionStorage for AgentRunPage to pick up
-    sessionStorage.setItem('pendingPrompt', prompt)
+    sessionStorage.setItem('pendingPrompt', promptToUse)
     sessionStorage.setItem('pendingAgent', JSON.stringify(agent))
     if (selectedFiles.length > 0) {
       // Convert files to base64 for storage
@@ -170,14 +174,18 @@ export const IndexPage = () => {
     setIsSending(false)
   }
 
-  const onSubmitTask = async () => {
-    if (!prompt.trim() || isSending) return
+  const onSubmitTask = async (
+    cleanedPrompt?: string,
+    mentionedAgent?: Agent,
+  ) => {
+    const promptToUse = cleanedPrompt ?? prompt
+    if (!promptToUse.trim() || isSending) return
 
     setIsSending(true)
 
     try {
-      // Determine which agent to use (default to 'devs' if none selected)
-      const agent = selectedAgent || { id: 'devs' }
+      // Use mentioned agent if provided, otherwise fall back to selected agent or 'devs'
+      const agent = mentionedAgent || selectedAgent || { id: 'devs' }
 
       // Convert files to TaskAttachment format
       const attachments = await Promise.all(
@@ -193,8 +201,11 @@ export const IndexPage = () => {
       const task = await createTaskWithRequirements(
         {
           workflowId: crypto.randomUUID(), // Create a new workflow for this task
-          title: prompt.length > 50 ? prompt.substring(0, 50) + '...' : prompt,
-          description: prompt,
+          title:
+            promptToUse.length > 50
+              ? promptToUse.substring(0, 50) + '...'
+              : promptToUse,
+          description: promptToUse,
           attachments,
           complexity: 'complex', // Assume complex by default since it goes to orchestrator
           status: 'pending',
@@ -205,7 +216,7 @@ export const IndexPage = () => {
           estimatedPasses: 1,
           actualPasses: 0,
         },
-        prompt, // User requirement for extracting specific requirements
+        promptToUse, // User requirement for extracting specific requirements
       )
 
       // Clear the prompt and files

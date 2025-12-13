@@ -21,6 +21,8 @@ export const ar: I18n = {
   Teams: 'الفرق',
   Settings: 'الإعدادات',
   Agents: 'الوكلاء',
+  'Create and manage your AI specialists':
+    'قم بإنشاء وإدارة متخصصي الذكاء الاصطناعي الخاصين بك',
   Methodologies: 'المنهجيات',
   Conversations: 'المحادثات',
   'Conversations history': 'سجل المحادثات',
@@ -30,7 +32,7 @@ export const ar: I18n = {
   'Summarize conversation': 'تلخيص المحادثة',
   'Pin it': 'تثبيتها',
   'Unpin it': 'إلغاء تثبيتها',
-  Pinned: 'مثبت',
+  Pinned: 'مثبتة',
   'Message description': 'وصف الرسالة',
   'Edit description': 'تحرير الوصف',
   'View full conversation': 'عرض المحادثة كاملة',
@@ -70,6 +72,7 @@ export const ar: I18n = {
   'Speak to microphone': 'التحدث إلى الميكروفون',
   'Send prompt': 'إرسال الطلب',
   'Select an agent': 'اختر وكيلاً',
+  'No agents found': 'لم يتم العثور على وكلاء',
   'Select a model': 'اختر نموذجاً',
   'Add a model': 'إضافة نموذج',
 
@@ -113,6 +116,7 @@ export const ar: I18n = {
     'لم يتم تعلم أي ذكريات بعد. ابدأ المحادثات واستخدم "التعلم من المحادثة" لبناء ذاكرة الوكيل.',
   'Make Global': 'جعله عالمياً',
   'Remove Global': 'إزالة العالمي',
+  'Agent Context': 'سياق الوكيل',
 
   // Artifacts side panel
   Artifacts: 'القطع الأثرية',

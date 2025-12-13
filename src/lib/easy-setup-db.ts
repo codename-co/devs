@@ -21,6 +21,7 @@ export async function initializeEasySetup(
     agents: 0,
     credentials: 0,
   }
+  let firstImportedCredentialId: string | null = null
 
   console.log(decryptedData)
 
@@ -30,15 +31,21 @@ export async function initializeEasySetup(
       // Import SecureStorage for encrypting API keys
       const { SecureStorage } = await import('@/lib/crypto')
 
-      for (const credentialData of decryptedData.c) {
+      // Get existing credentials count to calculate order
+      const existingCredentials = await db.getAll('credentials')
+      const baseOrder = existingCredentials.length
+
+      for (let i = 0; i < decryptedData.c.length; i++) {
+        const credentialData = decryptedData.c[i]
+
         // Check if credential already exists for this provider
-        const existingCredentials = await db.query(
+        const existingCredentialsForProvider = await db.query(
           'credentials',
           'provider',
           credentialData.p,
         )
 
-        if (existingCredentials.length === 0) {
+        if (existingCredentialsForProvider.length === 0) {
           const credentialId = nanoid()
 
           // Encrypt the plaintext API key with master password
@@ -51,6 +58,7 @@ export async function initializeEasySetup(
           localStorage.setItem(`${credentialId}-salt`, salt)
 
           // Add new credential with encrypted API key
+          // First imported credential gets order 0 (becomes default)
           const credential: Credential = {
             provider: credentialData.p as LLMProvider,
             encryptedApiKey: encrypted,
@@ -58,10 +66,16 @@ export async function initializeEasySetup(
             ...(credentialData.b && { baseUrl: credentialData.b }),
             id: credentialId,
             timestamp: new Date(),
+            order: baseOrder + i,
           }
 
           await db.add('credentials', credential)
           importedCounts.credentials++
+
+          // Remember the first imported credential
+          if (firstImportedCredentialId === null) {
+            firstImportedCredentialId = credentialId
+          }
         }
       }
     }
@@ -95,6 +109,22 @@ export async function initializeEasySetup(
     // 3. Import platform name
     if (setupData.p.n) {
       setPlatformName(setupData.p.n)
+    }
+
+    // 4. Set the first imported credential as default and select it
+    if (firstImportedCredentialId) {
+      const { useLLMModelStore } = await import('@/stores/llmModelStore')
+      const { setAsDefault, setSelectedCredentialId, loadCredentials } =
+        useLLMModelStore.getState()
+
+      // Load credentials into the store first
+      await loadCredentials()
+
+      // Set as default (moves it to order 0)
+      await setAsDefault(firstImportedCredentialId)
+
+      // Select this credential
+      setSelectedCredentialId(firstImportedCredentialId)
     }
 
     // Show success message

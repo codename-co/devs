@@ -41,4 +41,5 @@ export const ko: I18n = {
     '채팅은 현재 양식 구성을 사용합니다',
   'Ask {agentName} something…': '{agentName}에게 무언가 물어보세요…',
   Send: '전송',
+  Current: '현재', // current conversation
 } as const

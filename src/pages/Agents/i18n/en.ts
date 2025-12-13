@@ -28,4 +28,5 @@ export const en = [
   'The chat will use your current form configuration',
   'Ask {agentName} something…',
   'Send',
+  'Current',
 ] as const

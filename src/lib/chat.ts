@@ -10,11 +10,7 @@ import {
   getKnowledgeAttachments,
   buildAgentInstructions,
 } from '@/lib/agent-knowledge'
-import {
-  buildMemoryContextForChat,
-  learnFromConversation,
-  processPendingLearningEvents,
-} from '@/lib/memory-learning-service'
+import { buildMemoryContextForChat } from '@/lib/memory-learning-service'
 import { Lang, languages } from '@/i18n'
 
 export interface ChatSubmitOptions {
@@ -34,7 +30,6 @@ export interface ChatSubmitOptions {
   onResponseUpdate: (response: string) => void
   onPromptClear: () => void
   onResponseClear?: () => void
-  onMemoryLearningComplete?: (conversationId: string, agentId: string) => void
 }
 
 export interface ChatSubmitResult {
@@ -57,7 +52,6 @@ export const submitChat = async (
     onResponseUpdate,
     onPromptClear,
     onResponseClear,
-    onMemoryLearningComplete,
   } = options
 
   if (!prompt.trim()) {
@@ -182,15 +176,14 @@ export const submitChat = async (
 
     // Create or continue conversation
     let conversation = currentConversation
+    let isNewConversation = false
     if (
       !conversation ||
       (selectedAgent && conversation.agentId !== selectedAgent.id)
     ) {
       conversation = await createConversation(agent.id, 'default')
+      isNewConversation = true
     }
-
-    // Save user message to conversation
-    await addMessage(conversation.id, { role: 'user', content: prompt })
 
     // Get knowledge attachments for the agent
     const knowledgeAttachments = await getKnowledgeAttachments(
@@ -225,6 +218,17 @@ export const submitChat = async (
     ]
       .filter(Boolean)
       .join('\n\n')
+
+    // Save the system prompt ONLY for new conversations (for transparency)
+    if (isNewConversation) {
+      await addMessage(conversation.id, {
+        role: 'system',
+        content: instructions,
+      })
+    }
+
+    // Save user message to conversation
+    await addMessage(conversation.id, { role: 'user', content: prompt })
 
     // Prepare messages for the LLM
     const messages: LLMMessage[] = [
@@ -300,16 +304,19 @@ export const submitChat = async (
       onResponseClear()
     }
 
-    // Trigger memory learning in the background (don't await to not block UI)
-    // This extracts learnable information from the conversation for human review
-    triggerMemoryLearning(
-      conversation.id,
-      agent.id,
-      lang,
-      onMemoryLearningComplete,
-    ).catch((err) => {
-      console.warn('Memory learning failed (non-critical):', err)
-    })
+    // NOTE: Automatic memory learning has been disabled
+    // Users can manually trigger learning from individual messages using the "Learn" button
+    // This gives users full control over what gets learned and when
+    //
+    // Previous auto-trigger code (now disabled):
+    // triggerMemoryLearning(
+    //   conversation.id,
+    //   agent.id,
+    //   lang,
+    //   onMemoryLearningComplete,
+    // ).catch((err) => {
+    //   console.warn('Memory learning failed (non-critical):', err)
+    // })
 
     return { success: true }
   } catch (err) {
@@ -322,31 +329,3 @@ export const submitChat = async (
   }
 }
 
-/**
- * Trigger memory learning from a conversation in the background
- * This is non-blocking and failures are logged but don't affect the user
- */
-async function triggerMemoryLearning(
-  conversationId: string,
-  agentId: string,
-  lang: Lang,
-  onComplete?: (conversationId: string, agentId: string) => void,
-): Promise<void> {
-  try {
-    // Extract learnings from the conversation
-    await learnFromConversation(conversationId, agentId, lang)
-
-    // Process pending events into memories (pending human review)
-    await processPendingLearningEvents(agentId)
-
-    console.log(`Memory learning completed for conversation ${conversationId}`)
-
-    // Notify the UI that memory learning is complete
-    if (onComplete) {
-      onComplete(conversationId, agentId)
-    }
-  } catch (error) {
-    // Log but don't throw - memory learning is non-critical
-    console.error('Memory learning error:', error)
-  }
-}

@@ -10,14 +10,14 @@ Rules:
 - Be specific and descriptive
 - Avoid generic phrases like "Help with" or "Question about"
 - Focus on the main topic or task
-- Use title case
+- Use natural casing (sentence case or as the user wrote it)
 - No quotes or special formatting
 
 Examples:
-- "Build React Dashboard Component" 
-- "Optimize Database Query Performance"
-- "Write Historical Fiction Story"
-- "Debug TypeScript Error in API"
+- "Build React dashboard component"
+- "Optimize database query performance"
+- "Write historical fiction story"
+- "Debug TypeScript error in API"
 
 User Message: {userMessage}
 
@@ -46,7 +46,9 @@ Respond with ONLY the title, nothing else.`
       // Get LLM config
       const config = await CredentialService.getActiveConfig()
       if (!config) {
-        console.warn('No LLM provider configured for title generation, using fallback')
+        console.warn(
+          'No LLM provider configured for title generation, using fallback',
+        )
         return this.createFallbackTitle(content)
       }
 
@@ -54,7 +56,10 @@ Respond with ONLY the title, nothing else.`
       const messages: LLMMessage[] = [
         {
           role: 'system',
-          content: this.TITLE_GENERATION_PROMPT.replace('{userMessage}', content),
+          content: this.TITLE_GENERATION_PROMPT.replace(
+            '{userMessage}',
+            content,
+          ),
         },
         {
           role: 'user',
@@ -74,7 +79,7 @@ Respond with ONLY the title, nothing else.`
       }
 
       const title = this.cleanTitle(response.trim())
-      
+
       // Validate the generated title
       if (title.length === 0 || title.length > 60) {
         return this.createFallbackTitle(content)
@@ -83,7 +88,9 @@ Respond with ONLY the title, nothing else.`
       return title
     } catch (error) {
       console.error('Error generating conversation title:', error)
-      return this.createFallbackTitle(conversation.messages[0]?.content || 'New Conversation')
+      return this.createFallbackTitle(
+        conversation.messages[0]?.content || 'New Conversation',
+      )
     }
   }
 
@@ -96,7 +103,7 @@ Respond with ONLY the title, nothing else.`
   ): Promise<string> {
     try {
       const content = firstUserMessage.trim()
-      
+
       // If message is short and clear, use it directly
       if (content.length <= 50 && this.isGoodTitle(content)) {
         return this.formatTitle(content)
@@ -112,7 +119,10 @@ Respond with ONLY the title, nothing else.`
       const messages: LLMMessage[] = [
         {
           role: 'system',
-          content: this.TITLE_GENERATION_PROMPT.replace('{userMessage}', content),
+          content: this.TITLE_GENERATION_PROMPT.replace(
+            '{userMessage}',
+            content,
+          ),
         },
         {
           role: 'user',
@@ -126,10 +136,9 @@ Respond with ONLY the title, nothing else.`
       }
 
       const title = this.cleanTitle(response.trim())
-      return title.length > 0 && title.length <= 60 
-        ? title 
+      return title.length > 0 && title.length <= 60
+        ? title
         : this.createFallbackTitle(content)
-        
     } catch (error) {
       console.error('Error generating title for new conversation:', error)
       return this.createFallbackTitle(firstUserMessage)
@@ -145,10 +154,10 @@ Respond with ONLY the title, nothing else.`
     }
 
     const cleaned = content.trim()
-    
+
     // Try to extract a meaningful title from the first sentence
     const firstSentence = cleaned.split(/[.!?]+/)[0]?.trim() || cleaned
-    
+
     if (firstSentence.length <= 50) {
       return this.formatTitle(firstSentence)
     }
@@ -156,7 +165,7 @@ Respond with ONLY the title, nothing else.`
     // Truncate at word boundary
     const words = firstSentence.split(' ')
     let title = ''
-    
+
     for (const word of words) {
       if ((title + ' ' + word).length > 50) {
         break
@@ -172,7 +181,7 @@ Respond with ONLY the title, nothing else.`
    */
   private static isGoodTitle(text: string): boolean {
     const lower = text.toLowerCase()
-    
+
     // Avoid very generic starts
     const genericStarts = [
       'help me',
@@ -184,17 +193,14 @@ Respond with ONLY the title, nothing else.`
       'explain',
     ]
 
-    return !genericStarts.some(start => lower.startsWith(start))
+    return !genericStarts.some((start) => lower.startsWith(start))
   }
 
   /**
-   * Format a title with proper capitalization
+   * Format a title - preserves original case
    */
   private static formatTitle(text: string): string {
-    return text
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ')
+    return text.trim()
   }
 
   /**

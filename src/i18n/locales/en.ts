@@ -19,6 +19,7 @@ export const en = [
   'Teams',
   'Settings',
   'Agents',
+  'Create and manage your AI specialists',
   'Methodologies',
   'Conversations',
   'Conversations history',
@@ -68,6 +69,7 @@ export const en = [
   'Speak to microphone',
   'Send prompt',
   'Select an agent',
+  'No agents found',
   'Select a model',
   'Add a model',
 
@@ -107,6 +109,8 @@ export const en = [
   'No memories learned yet. Start conversations and use "Learn from conversation" to build agent memory.',
   'Make Global',
   'Remove Global',
+  'Agent Context',
+  'Pinned Messages',
 
   // Artifacts side panel
   'Artifacts',

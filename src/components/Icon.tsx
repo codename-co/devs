@@ -170,6 +170,7 @@ export const Icons = {
   Pause: IconoirIcons.Pause,
   PcNoEntry: IconoirIcons.PcNoEntry,
   PiggyBank: IconoirIcons.PiggyBank,
+  Pin: IconoirIcons.Pin,
   Play: IconoirIcons.Play,
   Plus: IconoirIcons.Plus,
   Presentation: IconoirIcons.Presentation,

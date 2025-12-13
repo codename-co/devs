@@ -29,30 +29,34 @@ export const VoicePage = () => {
   return (
     <DefaultLayout showBackButton={false}>
       <Section
-        mainClassName="flex items-center min-h-full"
+        mainClassName="flex flex-col items-center justify-center min-h-full gap-8"
         className="self-end"
       >
-        {prompt}
+        <div className="text-center text-2xl font-medium min-h-16 px-4 max-w-4xl">
+          {prompt}
+        </div>
 
-        <Tooltip content={t('Speak to microphone')} placement="bottom">
-          <Button
-            isIconOnly
-            color={isRecording ? 'primary' : 'default'}
-            isDisabled={!isSpeechRecognitionSupported}
-            radius="full"
-            // variant={isRecording ? 'solid' : 'ghost'}
-            variant="ghost"
-            size="lg"
-            onPress={toggleRecording}
-            className="min-w-48 min-h-48"
-          >
-            {isRecording ? (
-              <Icon name="DevsAnimated" size="5xl" className="devs-whole" />
-            ) : (
-              <Icon name="Voice" size="4xl" />
-            )}
-          </Button>
-        </Tooltip>
+        <div className="flex justify-center w-full">
+          <Tooltip content={t('Speak to microphone')} placement="bottom">
+            <Button
+              isIconOnly
+              color={isRecording ? 'primary' : 'default'}
+              isDisabled={!isSpeechRecognitionSupported}
+              radius="full"
+              // variant={isRecording ? 'solid' : 'ghost'}
+              variant="ghost"
+              size="lg"
+              onPress={toggleRecording}
+              className="min-w-48 min-h-48"
+            >
+              {isRecording ? (
+                <Icon name="DevsAnimated" size="5xl" className="devs-whole" />
+              ) : (
+                <Icon name="Voice" size="4xl" />
+              )}
+            </Button>
+          </Tooltip>
+        </div>
       </Section>
     </DefaultLayout>
   )

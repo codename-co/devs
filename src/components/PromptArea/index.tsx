@@ -21,6 +21,8 @@ import { useUrlFragment } from './useUrlFragment'
 import { ModelSelector } from './ModelSelector'
 import { AgentSelector } from './AgentSelector'
 import { AttachmentSelector } from './AttachmentSelector'
+import { AgentMentionPopover } from './AgentMentionPopover'
+import { useAgentMention } from './useAgentMention'
 
 import { useI18n } from '@/i18n'
 import { type LanguageCode } from '@/i18n/locales'
@@ -39,13 +41,14 @@ import { userSettings } from '@/stores/userStore'
 interface PromptAreaProps
   extends Omit<TextAreaProps, 'onFocus' | 'onBlur' | 'onKeyDown'> {
   lang: LanguageCode
-  onSubmitToAgent?: () => void
-  onSubmitTask?: () => void
+  onSubmitToAgent?: (cleanedPrompt?: string, mentionedAgent?: Agent) => void
+  onSubmitTask?: (cleanedPrompt?: string, mentionedAgent?: Agent) => void
   isSending?: boolean
   onFilesChange?: (files: File[]) => void
   defaultPrompt?: string
   onAgentChange?: (agent: Agent | null) => void
   disabledAgentPicker?: boolean
+  disabledMention?: boolean
   selectedAgent?: Agent | null
   onFocus?: React.FocusEventHandler<HTMLTextAreaElement>
   onBlur?: React.FocusEventHandler<HTMLTextAreaElement>
@@ -64,6 +67,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       defaultPrompt = '',
       onAgentChange,
       disabledAgentPicker,
+      disabledMention,
       selectedAgent,
       onFocus,
       onBlur,
@@ -89,9 +93,44 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
     // Set default agent if none selected
     const currentAgent = selectedAgent || getDefaultAgent()
 
+    // Define handlePromptChange before useAgentMention to avoid circular dependency
+    const handlePromptChange = useCallback(
+      (value: string) => {
+        setPrompt(value)
+        if (onValueChange) {
+          onValueChange(value)
+        }
+      },
+      [onValueChange],
+    )
+
+    // Agent mention hook for @ autocomplete
+    const {
+      showMentionPopover,
+      filteredAgents,
+      selectedIndex,
+      handleMentionSelect,
+      handleKeyNavigation,
+      closeMentionPopover,
+      extractMentionedAgents,
+      removeMentionsFromPrompt,
+    } = useAgentMention({
+      lang,
+      prompt,
+      onPromptChange: handlePromptChange,
+    })
+
     useEffect(() => {
       setPrompt(defaultPrompt)
-    }, [defaultPrompt])
+      onValueChange?.(defaultPrompt)
+    }, [defaultPrompt, onValueChange])
+
+    // Sync internal state with controlled value prop
+    useEffect(() => {
+      if (props.value !== undefined && props.value !== prompt) {
+        setPrompt(props.value as string)
+      }
+    }, [props.value])
 
     // Set default agent in useEffect to avoid setState during render
     useEffect(() => {
@@ -133,25 +172,65 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       },
     })
 
-    const handlePromptChange = useCallback(
-      (value: string) => {
-        setPrompt(value)
-        if (onValueChange) {
-          onValueChange(value)
+    // Handle submission with @mention processing
+    const handleSubmitWithMentions = useCallback(
+      (submitFn?: (cleanedPrompt?: string, mentionedAgent?: Agent) => void) => {
+        if (!submitFn) return
+
+        // Extract mentioned agents
+        const mentionedAgents = extractMentionedAgents()
+
+        // If exactly one agent is mentioned, auto-select it
+        const mentionedAgent =
+          mentionedAgents.length === 1 ? mentionedAgents[0] : undefined
+        if (mentionedAgent) {
+          onAgentChange?.(mentionedAgent)
         }
+
+        // Remove @mentions from the prompt before submission
+        const cleanedPrompt = removeMentionsFromPrompt(prompt)
+
+        // Update local state (for UI consistency)
+        if (cleanedPrompt !== prompt) {
+          setPrompt(cleanedPrompt)
+          onValueChange?.(cleanedPrompt)
+        }
+
+        // Close mention popover if open
+        closeMentionPopover()
+
+        // Pass the cleaned prompt and mentioned agent directly to the submit function
+        submitFn(cleanedPrompt, mentionedAgent)
       },
-      [onValueChange],
+      [
+        prompt,
+        extractMentionedAgents,
+        removeMentionsFromPrompt,
+        onAgentChange,
+        onValueChange,
+        closeMentionPopover,
+      ],
     )
 
     const handleKeyDown = useCallback(
       (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        // Handle mention popover keyboard navigation first
+        if (handleKeyNavigation(event)) {
+          return
+        }
+
         if (event.key === 'Enter' && !event.shiftKey) {
           event.preventDefault()
-          onSubmitToAgent?.()
+          handleSubmitWithMentions(onSubmitToAgent)
         }
         onKeyDown?.(event)
       },
-      [onSubmitToAgent, onKeyDown],
+      [
+        handleKeyNavigation,
+        handleSubmitWithMentions,
+        onSubmitToAgent,
+        onKeyDown,
+      ],
     )
 
     const handleFileSelection = useCallback(
@@ -289,6 +368,17 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         onDrop={handleDrop}
       >
         <div className="relative rounded-lg">
+          {/* Agent mention autocomplete popover */}
+          {!disabledMention && showMentionPopover && (
+            <AgentMentionPopover
+              lang={lang}
+              agents={filteredAgents}
+              selectedIndex={selectedIndex}
+              onSelect={handleMentionSelect}
+              onClose={closeMentionPopover}
+            />
+          )}
+
           {/* Hidden file input */}
           <input
             ref={fileInputRef}
@@ -305,7 +395,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
             className="pb-20 bg-content2 rounded-lg"
             classNames={{
               input: 'p-1',
-              inputWrapper: `shadow-none -mb-20 pb-12 ${selectedFiles.length ? 'pb-20' : ''} bg-default-200`,
+              inputWrapper: `shadow-none -mb-20 pb-12 ${selectedFiles.length ? 'pb-20' : ''} bg-default-200 !ring-0 !ring-offset-0`,
             }}
             maxRows={7}
             minRows={
@@ -413,7 +503,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                         size="sm"
                         isDisabled={!canSubmit}
                         isLoading={props.isSending}
-                        onPress={onSubmitTask}
+                        onPress={() => handleSubmitWithMentions(onSubmitTask)}
                       >
                         <Icon name="ArrowRight" size="sm" />
                       </Button>
@@ -437,7 +527,9 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                         size="sm"
                         isDisabled={!canSubmit}
                         isLoading={props.isSending}
-                        onPress={onSubmitToAgent}
+                        onPress={() =>
+                          handleSubmitWithMentions(onSubmitToAgent)
+                        }
                       >
                         <Icon name="ArrowRight" size="sm" />
                       </Button>

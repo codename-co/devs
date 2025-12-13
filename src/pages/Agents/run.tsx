@@ -1,23 +1,23 @@
 import { useEffect, useState, useMemo, useCallback, memo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
-  Spinner,
-  Chip,
-  Card,
-  CardBody,
   Accordion,
   AccordionItem,
   Button,
-  Textarea,
-  Input,
   ButtonGroup,
+  Card,
+  CardBody,
+  Chip,
+  Input,
   Modal,
-  ModalContent,
-  ModalHeader,
   ModalBody,
+  ModalContent,
   ModalFooter,
-  useDisclosure,
+  ModalHeader,
+  Spinner,
+  Textarea,
   Tooltip,
+  useDisclosure,
 } from '@heroui/react'
 import { Pin, PinSlash } from 'iconoir-react'
 
@@ -41,7 +41,6 @@ import {
   Artifact,
   AgentMemoryEntry,
   MemoryCategory,
-  PinnedMessage,
 } from '@/types'
 import { errorToast, successToast } from '@/lib/toast'
 import { submitChat } from '@/lib/chat'
@@ -53,6 +52,8 @@ import { MessageDescriptionGenerator } from '@/lib/message-description-generator
 import { useConversationStore } from '@/stores/conversationStore'
 import { useArtifactStore } from '@/stores/artifactStore'
 import { categoryLabels } from '../Knowledge'
+import { useAgentContextPanel } from './useAgentContextPanel'
+import localI18n from './i18n'
 
 // Timeline item types for interleaving messages and memories
 type TimelineItem =
@@ -84,7 +85,6 @@ const MessageDisplay = memo(
   }) => {
     const { t } = useI18n()
     const [messageAgent, setMessageAgent] = useState<Agent | null>(null)
-    const [isHovered, setIsHovered] = useState(false)
 
     useEffect(() => {
       if (message.role === 'assistant') {
@@ -96,19 +96,16 @@ const MessageDisplay = memo(
     const isFromDifferentAgent =
       messageAgent && messageAgent.id !== selectedAgent?.id
 
-    // Only show pin button for assistant messages in saved conversations
     const showPinButton = message.role === 'assistant' && conversationId
-    // Show learn button for assistant messages in saved conversations
     const showLearnButton = message.role === 'assistant' && conversationId
 
     return (
       <div
         key={message.id}
+        data-message-id={message.id}
         aria-hidden="false"
         tabIndex={0}
         className="flex w-full gap-3"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
       >
         <div
           className={`rounded-medium text-foreground group relative overflow-hidden font-medium ${
@@ -156,9 +153,9 @@ const MessageDisplay = memo(
               )}
             </div>
           </div>
-          {/* Action buttons - show on hover for assistant messages */}
-          {(showPinButton || showLearnButton) && isHovered && (
-            <div className="mt-2 flex justify-end gap-1">
+          {/* Assistant message action buttons */}
+          {message.role === 'assistant' && (
+            <div className="mt-2 flex gap-1">
               {showLearnButton && (
                 <Tooltip content={t('Learn from this message')}>
                   <Button
@@ -192,22 +189,6 @@ const MessageDisplay = memo(
                   </Button>
                 </Tooltip>
               )}
-            </div>
-          )}
-          {/* Show pinned indicator when not hovered */}
-          {isPinned && !isHovered && (
-            <div className="mt-2 flex justify-end">
-              <Tooltip content={t('Unpin message')}>
-                <Button
-                  size="sm"
-                  variant="flat"
-                  color="warning"
-                  isIconOnly
-                  onPress={() => onPinClick(message)}
-                >
-                  <PinSlash className="w-4 h-4" />
-                </Button>
-              </Tooltip>
             </div>
           )}
         </div>
@@ -408,21 +389,53 @@ const InlineMemoryDisplay = memo(
     return (
       <div className="flex w-full gap-3 animate-appearance-in">
         <div className="w-full">
-          <div className="border-l-4 border-secondary-400 dark:border-secondary-600 pl-4 py-2 bg-secondary-50/50 dark:bg-secondary-900/20 rounded-r-lg">
-            {/* Header with icon and timestamp */}
-            <div className="flex items-center gap-2 mb-2">
-              <Icon name="Brain" className="w-4 h-4 text-secondary-500" />
-              <span className="text-tiny font-medium text-secondary-600 dark:text-secondary-400">
-                {t('Insight')}
-              </span>
-              <Chip
-                size="sm"
-                variant="flat"
-                color={getCategoryColor(memory.category)}
-                className="text-tiny"
-              >
-                {t(categoryLabels[memory.category as MemoryCategory] as any)}
-              </Chip>
+          <div className="border-l-4 border-secondary-400 dark:border-secondary-600 pl-4 py-2 bg-secondary-50/50 dark:bg-secondary-900/20 rounded-r-lg pr-2">
+            <div className="flex justify-between items-start">
+              {/* Header with icon and timestamp */}
+              <div className="flex items-center gap-2 mb-2">
+                <Icon name="Brain" className="w-4 h-4 text-secondary-500" />
+                <span className="text-tiny font-medium text-secondary-600 dark:text-secondary-400">
+                  {t('Insight')}
+                </span>
+                <Chip
+                  size="sm"
+                  variant="flat"
+                  color={getCategoryColor(memory.category)}
+                  className="text-tiny"
+                >
+                  {t(categoryLabels[memory.category as MemoryCategory] as any)}
+                </Chip>
+              </div>
+
+              {/* Action buttons */}
+              <ButtonGroup isIconOnly size="sm" variant="flat">
+                <Tooltip content={t('Edit')}>
+                  <Button
+                    color="default"
+                    startContent={
+                      <Icon name="EditPencil" className="w-3 h-3" />
+                    }
+                    onPress={handleStartEdit}
+                  />
+                </Tooltip>
+                <Tooltip content={t('Forget')}>
+                  <Button
+                    color="danger"
+                    startContent={<Icon name="Xmark" className="w-3 h-3" />}
+                    isLoading={isProcessing}
+                    onPress={handleReject}
+                  />
+                </Tooltip>
+                <Tooltip content={t('Memorize')}>
+                  <Button
+                    variant="solid"
+                    color="success"
+                    startContent={<Icon name="Check" className="w-3 h-3" />}
+                    isLoading={isProcessing}
+                    onPress={handleApprove}
+                  />
+                </Tooltip>
+              </ButtonGroup>
             </div>
 
             {isEditing ? (
@@ -459,63 +472,35 @@ const InlineMemoryDisplay = memo(
               </div>
             ) : (
               // View mode
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-medium text-sm">{memory.title}</span>
-                  {/* <Chip
-                    size="sm"
-                    variant="dot"
-                    color={getConfidenceColor(memory.confidence) as any}
-                    className="text-tiny"
-                  >
-                    {memory.confidence}
-                  </Chip> */}
-                </div>
-                <p className="text-sm text-default-600">{memory.content}</p>
-                {/* {memory.keywords.length > 0 && (
-                  <div className="flex gap-1 flex-wrap">
-                    {memory.keywords.slice(0, 5).map((keyword, idx) => (
-                      <Chip
-                        key={idx}
-                        size="sm"
-                        variant="bordered"
-                        className="text-tiny"
-                      >
-                        {keyword}
-                      </Chip>
-                    ))}
+              <div className="flex gap-3">
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-medium text-sm">{memory.title}</span>
+                    {/* <Chip
+                      size="sm"
+                      variant="dot"
+                      color={getConfidenceColor(memory.confidence) as any}
+                      className="text-tiny"
+                    >
+                      {memory.confidence}
+                    </Chip> */}
                   </div>
-                )} */}
-
-                {/* Action buttons */}
-                <ButtonGroup size="sm" variant="flat">
-                  <Button
-                    color="danger"
-                    startContent={<Icon name="Xmark" className="w-3 h-3" />}
-                    isLoading={isProcessing}
-                    onPress={handleReject}
-                  >
-                    {t('Forget')}
-                  </Button>
-                  <Button
-                    color="default"
-                    startContent={
-                      <Icon name="EditPencil" className="w-3 h-3" />
-                    }
-                    onPress={handleStartEdit}
-                  >
-                    {t('Edit')}
-                  </Button>
-                  <Button
-                    variant="solid"
-                    color="success"
-                    startContent={<Icon name="Check" className="w-3 h-3" />}
-                    isLoading={isProcessing}
-                    onPress={handleApprove}
-                  >
-                    {t('Memorize')}
-                  </Button>
-                </ButtonGroup>
+                  <p className="text-sm text-default-600">{memory.content}</p>
+                  {/* {memory.keywords.length > 0 && (
+                    <div className="flex gap-1 flex-wrap">
+                      {memory.keywords.slice(0, 5).map((keyword, idx) => (
+                        <Chip
+                          key={idx}
+                          size="sm"
+                          variant="bordered"
+                          className="text-tiny"
+                        >
+                          {keyword}
+                        </Chip>
+                      ))}
+                    </div>
+                  )} */}
+                </div>
               </div>
             )}
           </div>
@@ -528,7 +513,7 @@ const InlineMemoryDisplay = memo(
 InlineMemoryDisplay.displayName = 'InlineMemoryDisplay'
 
 export const AgentRunPage = () => {
-  const { t, lang, url } = useI18n()
+  const { t, lang, url } = useI18n(localI18n)
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -537,6 +522,7 @@ export const AgentRunPage = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
   const [response, setResponse] = useState<string>('')
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [conversationMessages, setConversationMessages] = useState<Message[]>(
     [],
   )
@@ -560,16 +546,11 @@ export const AgentRunPage = () => {
     createPinnedMessage,
     deletePinnedMessageByMessageId,
     isPinned: checkIsPinned,
-    getRelevantPinnedMessagesAsync,
   } = usePinnedMessageStore()
 
-  const [showSystemPrompt, setShowSystemPrompt] = useState(false)
-  const [showMemories, setShowMemories] = useState(false)
-  const [showPinnedMessages, setShowPinnedMessages] = useState(false)
-  const [agentMemories, setAgentMemories] = useState<AgentMemoryEntry[]>([])
-  const [availablePinnedMessages, setAvailablePinnedMessages] = useState<
-    PinnedMessage[]
-  >([])
+  // Setup contextual panel with agent context
+  useAgentContextPanel(selectedAgent, currentConversation?.id, t)
+
   const [learningMessageId, setLearningMessageId] = useState<string | null>(
     null,
   )
@@ -592,49 +573,6 @@ export const AgentRunPage = () => {
     () => !(Number(currentConversation?.messages.length) > 0),
     [currentConversation],
   )
-
-  // Load agent memories when agent changes
-  useEffect(() => {
-    const loadMemories = async () => {
-      if (selectedAgent) {
-        const { getRelevantMemoriesAsync } = useAgentMemoryStore.getState()
-        try {
-          const memories = await getRelevantMemoriesAsync(selectedAgent.id)
-          setAgentMemories(memories)
-        } catch (error) {
-          console.warn('Failed to load agent memories:', error)
-          setAgentMemories([])
-        }
-      }
-    }
-    loadMemories()
-  }, [selectedAgent?.id])
-
-  // Load available pinned messages from other conversations when agent changes
-  useEffect(() => {
-    const loadPinnedMessages = async () => {
-      if (selectedAgent) {
-        try {
-          // Get pinned messages excluding current conversation
-          const pinnedMessages = await getRelevantPinnedMessagesAsync(
-            selectedAgent.id,
-            currentConversation?.id || '', // Exclude current conversation
-            [],
-            20, // Load up to 20 pinned messages
-          )
-          setAvailablePinnedMessages(pinnedMessages)
-        } catch (error) {
-          console.warn('Failed to load pinned messages:', error)
-          setAvailablePinnedMessages([])
-        }
-      }
-    }
-    loadPinnedMessages()
-  }, [
-    selectedAgent?.id,
-    currentConversation?.id,
-    getRelevantPinnedMessagesAsync,
-  ])
 
   // Load pending review memories when agent/conversation loads
   // Filter to only show memories from the current conversation
@@ -805,10 +743,6 @@ export const AgentRunPage = () => {
               }),
             )
           }
-          // Reload agent memories list
-          const { getRelevantMemoriesAsync } = useAgentMemoryStore.getState()
-          const newMemories = await getRelevantMemoriesAsync(selectedAgent.id)
-          setAgentMemories(newMemories)
         } else {
           successToast(t('No new insights found in this message'))
         }
@@ -833,183 +767,16 @@ export const AgentRunPage = () => {
     () => ({
       icon: {
         name: (selectedAgent?.icon as any) || 'Sparks',
-        color: 'text-primary-300 dark:text-primary-600',
+        color:
+          selectedAgent?.id === 'devs'
+            ? ''
+            : 'text-warning-300 dark:text-warning-500',
       },
       title: selectedAgent?.i18n?.[lang]?.name ?? selectedAgent?.name ?? '…',
-      subtitle: (
-        <>
-          <div className="flex gap-2">
-            <Button
-              variant={showSystemPrompt ? 'solid' : 'light'}
-              size="sm"
-              startContent={<Icon name="Terminal" />}
-              onPress={() => setShowSystemPrompt((v) => !v)}
-            >
-              {t('System Prompt')}
-            </Button>
-            <Button
-              variant={showMemories ? 'solid' : 'light'}
-              size="sm"
-              startContent={<Icon name="Brain" />}
-              onPress={() => setShowMemories((v) => !v)}
-            >
-              {t('Memories')}
-              {agentMemories.length > 0 && (
-                <Chip size="sm" variant="flat">
-                  {agentMemories.length}
-                </Chip>
-              )}
-            </Button>
-            <Button
-              variant={showPinnedMessages ? 'solid' : 'light'}
-              size="sm"
-              startContent={<Pin className="w-4 h-4" />}
-              onPress={() => setShowPinnedMessages((v) => !v)}
-            >
-              {t('Pinned')}
-              {availablePinnedMessages.length > 0 && (
-                <Chip size="sm" variant="flat">
-                  {availablePinnedMessages.length}
-                </Chip>
-              )}
-            </Button>
-          </div>
-          {showSystemPrompt && (
-            <div className="mt-4 max-h-96 overflow-y-auto">
-              <MarkdownRenderer
-                content={
-                  selectedAgent?.instructions || t('No system prompt defined.')
-                }
-                className="prose dark:prose-invert prose-sm text-default-700"
-                renderWidgets={false}
-              />
-            </div>
-          )}
-          {showMemories && (
-            <div className="mt-4 max-h-96 overflow-y-auto">
-              {agentMemories.length === 0 ? (
-                <p className="text-default-500 text-sm">
-                  {t(
-                    'No memories learned yet. Start conversations and use "Learn from conversation" to build agent memory.',
-                  )}
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {agentMemories.map((memory) => (
-                    <Card key={memory.id} className="p-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-sm">
-                              {memory.title}
-                            </span>
-                            {memory.isGlobal && (
-                              <Chip size="sm" color="primary" variant="flat">
-                                {t('Global')}
-                              </Chip>
-                            )}
-                            <Chip size="sm" color="default" variant="flat">
-                              {memory.category}
-                            </Chip>
-                          </div>
-                          <p className="text-sm text-default-600 mt-1">
-                            {memory.content}
-                          </p>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="light"
-                          color={memory.isGlobal ? 'danger' : 'primary'}
-                          startContent={
-                            <Icon
-                              size="sm"
-                              name={memory.isGlobal ? 'Xmark' : 'Share'}
-                            />
-                          }
-                          onPress={async () => {
-                            const { upgradeToGlobal, downgradeFromGlobal } =
-                              useAgentMemoryStore.getState()
-                            try {
-                              if (memory.isGlobal) {
-                                await downgradeFromGlobal(memory.id)
-                              } else {
-                                await upgradeToGlobal(memory.id)
-                              }
-                              // Reload memories
-                              const { getRelevantMemoriesAsync } =
-                                useAgentMemoryStore.getState()
-                              const newMemories =
-                                await getRelevantMemoriesAsync(
-                                  selectedAgent?.id || '',
-                                )
-                              setAgentMemories(newMemories)
-                            } catch (error) {
-                              console.error(
-                                'Failed to update memory global status:',
-                                error,
-                              )
-                            }
-                          }}
-                        >
-                          {memory.isGlobal
-                            ? t('Remove Global')
-                            : t('Make Global')}
-                        </Button>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-          {showPinnedMessages && (
-            <div className="mt-4 max-h-96 overflow-y-auto">
-              {availablePinnedMessages.length === 0 ? (
-                <p className="text-default-500 text-sm">
-                  {t(
-                    'No pinned messages yet. Pin important messages from conversations to make them available here.',
-                  )}
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {availablePinnedMessages.map((pm) => (
-                    <Card key={pm.id} className="p-3">
-                      <div className="flex items-start gap-2">
-                        <Pin className="w-4 h-4 text-warning mt-0.5 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-medium text-sm">
-                              {pm.description}
-                            </span>
-                            <span className="text-xs text-default-400">
-                              {new Date(pm.pinnedAt).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <p className="text-sm text-default-600 mt-1 line-clamp-2">
-                            {pm.content.length > 150
-                              ? pm.content.substring(0, 150) + '...'
-                              : pm.content}
-                          </p>
-                          {pm.keywords && pm.keywords.length > 0 && (
-                            <div className="flex gap-1 mt-1 flex-wrap">
-                              {pm.keywords.slice(0, 3).map((keyword, idx) => (
-                                <Chip key={idx} size="sm" variant="flat">
-                                  {keyword}
-                                </Chip>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </>
-      ),
-      // subtitle: selectedAgent?.desc || t('AI Assistant'),
+      subtitle:
+        selectedAgent?.i18n?.[lang]?.desc ||
+        selectedAgent?.desc ||
+        selectedAgent?.role,
       cta: {
         label: t('New chat'),
         href: url(`/agents/start#${selectedAgent?.id}`),
@@ -1019,28 +786,35 @@ export const AgentRunPage = () => {
     [
       selectedAgent?.icon,
       selectedAgent?.name,
-      showSystemPrompt,
-      showMemories,
-      showPinnedMessages,
-      agentMemories,
-      availablePinnedMessages,
-      isConversationPristine,
-      currentConversation,
-      selectedAgent,
+      selectedAgent?.i18n,
+      t,
+      lang,
+      url,
     ],
   )
 
   // Parse the hash to get agentId and optional conversationId
   const parseHash = useCallback(() => {
     const hash = location.hash.replace('#', '')
-    const parts = hash.split('/')
+    // Check if there's a query string in the hash (e.g., #agentId/convId?message=msgId)
+    const [hashPart, queryPart] = hash.split('?')
+    const parts = hashPart.split('/')
+
+    // Parse query parameters
+    const queryParams = new URLSearchParams(queryPart || '')
+    const targetMessageId = queryParams.get('message')
+
     return {
       agentId: parts[0] || 'default',
       conversationId: parts[1] || null,
+      targetMessageId,
     }
   }, [location.hash])
 
-  const { agentId, conversationId } = useMemo(() => parseHash(), [parseHash])
+  const { agentId, conversationId, targetMessageId } = useMemo(
+    () => parseHash(),
+    [parseHash],
+  )
 
   // Helper function to detect content type
   const detectContentType = useCallback((content: string) => {
@@ -1094,6 +868,9 @@ export const AgentRunPage = () => {
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true)
+      // Clear previous conversation messages immediately to prevent showing stale data
+      setConversationMessages([])
+      setNewlyLearnedMemories([])
 
       try {
         // Load the specified agent
@@ -1108,10 +885,10 @@ export const AgentRunPage = () => {
         // If conversationId is provided, try to load that specific conversation
         if (conversationId) {
           try {
-            await loadConversation(conversationId)
-            // The conversation will be set in the store, but we also want to display its messages
-            if (currentConversation?.messages) {
-              setConversationMessages(currentConversation.messages)
+            const loadedConversation = await loadConversation(conversationId)
+            // Use the returned conversation directly instead of relying on store state
+            if (loadedConversation?.messages) {
+              setConversationMessages(loadedConversation.messages)
             }
           } catch (error) {
             console.warn(
@@ -1171,6 +948,38 @@ export const AgentRunPage = () => {
     }
   }, [currentConversation])
 
+  // Scroll to target message when navigating from pinned messages
+  useEffect(() => {
+    if (targetMessageId && conversationMessages.length > 0 && !isLoading) {
+      // Small delay to ensure DOM is rendered
+      const timeoutId = setTimeout(() => {
+        const messageElement = document.querySelector(
+          `[data-message-id="${targetMessageId}"]`,
+        )
+        if (messageElement) {
+          messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          // Add a highlight effect
+          messageElement.classList.add(
+            'ring-2',
+            'ring-warning-400',
+            'ring-offset-2',
+            'rounded-lg',
+          )
+          // Remove highlight after a few seconds
+          setTimeout(() => {
+            messageElement.classList.remove(
+              'ring-2',
+              'ring-warning-400',
+              'ring-offset-2',
+              'rounded-lg',
+            )
+          }, 3000)
+        }
+      }, 100)
+      return () => clearTimeout(timeoutId)
+    }
+  }, [targetMessageId, conversationMessages.length, isLoading])
+
   // Update URL hash when conversation ID becomes available
   // Only update when there's no conversationId in the URL yet (new conversation created)
   useEffect(() => {
@@ -1209,27 +1018,6 @@ export const AgentRunPage = () => {
     setConversationArtifacts(relatedArtifacts)
   }, [artifacts, currentConversation])
 
-  // Callback to refresh pending memories after memory learning completes
-  const handleMemoryLearningComplete = useCallback(
-    async (conversationId: string, agentId: string) => {
-      try {
-        const { loadMemoriesForAgent, getPendingReviewMemories } =
-          useAgentMemoryStore.getState()
-        // Reload memories from DB
-        await loadMemoriesForAgent(agentId)
-        // Get pending memories for this conversation
-        const pendingMemories = getPendingReviewMemories(agentId)
-        const conversationMemories = pendingMemories.filter((m) =>
-          m.sourceConversationIds?.includes(conversationId),
-        )
-        setNewlyLearnedMemories(conversationMemories)
-      } catch (error) {
-        console.warn('Failed to refresh pending memories:', error)
-      }
-    },
-    [],
-  )
-
   // Auto-submit handler for prompts from Index page
   const handleAutoSubmit = useCallback(
     async (
@@ -1260,85 +1048,108 @@ export const AgentRunPage = () => {
         onResponseUpdate: setResponse,
         onPromptClear: () => setPrompt(''),
         onResponseClear: () => setResponse(''),
-        onMemoryLearningComplete: handleMemoryLearningComplete,
       })
 
       setIsSending(false)
     },
-    [isSending, conversationMessages, lang, t, handleMemoryLearningComplete],
+    [isSending, conversationMessages, lang, t],
   )
 
-  const onSubmit = useCallback(async () => {
-    if (!prompt.trim() || isSending || !selectedAgent) return
+  // Helper function to convert File to base64
+  const fileToBase64 = useCallback((file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = () => {
+        const result = reader.result as string
+        // Remove the data URL prefix (data:mime/type;base64,)
+        resolve(result.split(',')[1])
+      }
+      reader.onerror = reject
+    })
+  }, [])
 
-    setIsSending(true)
-    setPrompt('')
-    setResponse('')
+  const onSubmit = useCallback(
+    async (cleanedPrompt?: string, mentionedAgent?: Agent) => {
+      const promptToUse = cleanedPrompt ?? prompt
+      // Use mentioned agent if provided, otherwise fall back to selected agent
+      const agentToUse = mentionedAgent || selectedAgent
+      if (!promptToUse.trim() || isSending || !agentToUse) return
 
-    await submitChat({
+      setIsSending(true)
+      setPrompt('')
+      setResponse('')
+
+      // Convert files to base64 for LLM processing
+      const filesData = await Promise.all(
+        selectedFiles.map(async (file) => ({
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          data: await fileToBase64(file),
+        })),
+      )
+
+      await submitChat({
+        prompt: promptToUse,
+        agent: agentToUse,
+        conversationMessages,
+        includeHistory: true,
+        clearResponseAfterSubmit: true,
+        attachments: filesData,
+        lang,
+        t,
+        onResponseUpdate: setResponse,
+        onPromptClear: () => setPrompt(''),
+        onResponseClear: () => setResponse(''),
+      })
+
+      // Clear files after submission
+      setSelectedFiles([])
+      setIsSending(false)
+    },
+    [
       prompt,
-      agent: selectedAgent,
+      isSending,
+      selectedAgent,
       conversationMessages,
-      includeHistory: true,
-      clearResponseAfterSubmit: true,
+      selectedFiles,
+      fileToBase64,
       lang,
       t,
-      onResponseUpdate: setResponse,
-      onPromptClear: () => setPrompt(''),
-      onResponseClear: () => setResponse(''),
-      onMemoryLearningComplete: handleMemoryLearningComplete,
-    })
-
-    setIsSending(false)
-  }, [
-    prompt,
-    isSending,
-    selectedAgent,
-    conversationMessages,
-    lang,
-    t,
-    handleMemoryLearningComplete,
-  ])
+    ],
+  )
 
   // Create memory action handlers to avoid repetition
   const memoryActions = useMemo(
     () => ({
       onApprove: async (id: string) => {
-        const { approveMemory, getRelevantMemoriesAsync } =
-          useAgentMemoryStore.getState()
+        const { approveMemory } = useAgentMemoryStore.getState()
         await approveMemory(id)
-        if (selectedAgent) {
-          const memories = await getRelevantMemoriesAsync(selectedAgent.id)
-          setAgentMemories(memories)
-        }
       },
       onReject: async (id: string) => {
         const { rejectMemory } = useAgentMemoryStore.getState()
         await rejectMemory(id)
       },
       onEdit: async (id: string, newContent: string, newTitle?: string) => {
-        const { updateMemory, approveMemory, getRelevantMemoriesAsync } =
-          useAgentMemoryStore.getState()
+        const { updateMemory, approveMemory } = useAgentMemoryStore.getState()
         await updateMemory(id, {
           content: newContent,
           ...(newTitle && { title: newTitle }),
         })
         await approveMemory(id, 'Edited during review')
-        if (selectedAgent) {
-          const memories = await getRelevantMemoriesAsync(selectedAgent.id)
-          setAgentMemories(memories)
-        }
       },
       onRemoveFromList: (id: string) =>
         setNewlyLearnedMemories((prev) => prev.filter((m) => m.id !== id)),
     }),
-    [selectedAgent],
+    [],
   )
 
   // Build timeline items: combine messages and memories, sorted by timestamp
+  // Filter out system messages as they are displayed in the context panel
   const timelineItems = useMemo((): TimelineItem[] => {
     const messageItems: TimelineItem[] = conversationMessages
-      .filter((msg) => msg.role !== 'system')
+      .filter((message) => message.role !== 'system')
       .map((message) => ({
         type: 'message' as const,
         data: message,
@@ -1374,164 +1185,136 @@ export const AgentRunPage = () => {
 
   return (
     <DefaultLayout title={selectedAgent?.name} header={header}>
-      <Section>
-        {/* <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-7xl mx-auto"> */}
-        <div className="gap-6 mx-auto">
-          {/* Main conversation area */}
-          <div
-          // className="lg:col-span-3"
-          >
-            <Container>
-              {/* Display timeline: messages and memories interleaved by timestamp */}
-              {timelineItems.length > 0 && (
-                <div className="duration-600 relative flex flex-col gap-6">
-                  {timelineItems.map((item) =>
-                    item.type === 'message' ? (
-                      <MessageDisplay
-                        key={item.data.id}
-                        message={item.data}
-                        selectedAgent={selectedAgent}
-                        getMessageAgent={getMessageAgent}
-                        detectContentType={detectContentType}
-                        isPinned={checkIsPinned(item.data.id)}
-                        onPinClick={handlePinClick}
-                        onLearnClick={handleLearnClick}
-                        isLearning={learningMessageId === item.data.id}
-                        conversationId={currentConversation?.id}
-                      />
-                    ) : (
-                      <InlineMemoryDisplay
-                        key={item.data.id}
-                        memory={item.data}
-                        onApprove={memoryActions.onApprove}
-                        onReject={memoryActions.onReject}
-                        onEdit={memoryActions.onEdit}
-                        onRemoveFromList={memoryActions.onRemoveFromList}
-                      />
-                    ),
-                  )}
-                  <span
-                    aria-hidden="true"
-                    className="w-px h-px block"
-                    style={{ marginLeft: '0.25rem', marginTop: '3rem' }}
-                  />
+      <div className="px-6 lg:px-8 pb-16">
+        <div className="max-w-4xl mx-auto py-6">
+          <Container>
+            {/* Display timeline: messages and memories interleaved by timestamp */}
+            {timelineItems.length > 0 && (
+              <div className="duration-600 relative flex flex-col gap-6">
+                {timelineItems.map((item) =>
+                  item.type === 'message' ? (
+                    <MessageDisplay
+                      key={item.data.id}
+                      message={item.data}
+                      selectedAgent={selectedAgent}
+                      getMessageAgent={getMessageAgent}
+                      detectContentType={detectContentType}
+                      isPinned={checkIsPinned(item.data.id)}
+                      onPinClick={handlePinClick}
+                      onLearnClick={handleLearnClick}
+                      isLearning={learningMessageId === item.data.id}
+                      conversationId={currentConversation?.id}
+                    />
+                  ) : (
+                    <InlineMemoryDisplay
+                      key={item.data.id}
+                      memory={item.data}
+                      onApprove={memoryActions.onApprove}
+                      onReject={memoryActions.onReject}
+                      onEdit={memoryActions.onEdit}
+                      onRemoveFromList={memoryActions.onRemoveFromList}
+                    />
+                  ),
+                )}
 
-                  {/* Display streaming response */}
-                  {response && (
-                    <>
-                      <div
-                        aria-hidden="false"
-                        tabIndex={0}
-                        className="flex w-full gap-3"
-                      >
-                        <div className="relative flex-none">
-                          <div className="border-1 border-default-300 dark:border-default-200 flex h-7 w-7 items-center justify-center rounded-full">
-                            <Icon
-                              name={(selectedAgent?.icon as any) || 'Sparks'}
-                              className="w-4 h-4 text-default-600"
+                {/* Display streaming response */}
+                {response && (
+                  <div
+                    aria-hidden="false"
+                    tabIndex={0}
+                    className="flex w-full gap-3"
+                  >
+                    <div className="relative flex-none">
+                      <div className="border-1 border-default-300 dark:border-default-200 flex h-7 w-7 items-center justify-center rounded-full">
+                        <Icon
+                          name={(selectedAgent?.icon as any) || 'Sparks'}
+                          className="w-4 h-4 text-default-600"
+                        />
+                      </div>
+                    </div>
+                    <div className="rounded-medium text-foreground group relative w-full overflow-hidden font-medium bg-transparent px-1 py-0">
+                      <div className="text-small">
+                        <div className="prose prose-neutral text-medium break-words">
+                          {detectContentType(response) ===
+                          'marpit-presentation' ? (
+                            <Widget
+                              type="marpit"
+                              language="yaml"
+                              code={response}
                             />
-                          </div>
-                        </div>
-                        <div className="rounded-medium text-foreground group relative w-full overflow-hidden font-medium bg-transparent px-1 py-0">
-                          <div className="text-small">
-                            <div className="prose prose-neutral text-medium break-words">
-                              {detectContentType(response) ===
-                              'marpit-presentation' ? (
-                                <Widget
-                                  type="marpit"
-                                  language="yaml"
-                                  code={response}
-                                />
-                              ) : (
-                                <MarkdownRenderer
-                                  content={response}
-                                  className="prose dark:prose-invert prose-sm"
-                                />
-                              )}
-                            </div>
-                          </div>
+                          ) : (
+                            <MarkdownRenderer
+                              content={response}
+                              className="prose dark:prose-invert prose-sm"
+                            />
+                          )}
                         </div>
                       </div>
-                      <span
-                        aria-hidden="true"
-                        className="w-px h-px block"
-                        style={{ marginLeft: '0.25rem', marginTop: '3rem' }}
-                      />
-                    </>
-                  )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Example prompts for new conversations */}
+            {isConversationPristine &&
+              selectedAgent?.examples &&
+              selectedAgent.examples.length > 0 && (
+                <div className="flex gap-2 flex-wrap">
+                  {selectedAgent.examples.map((example) => (
+                    <Button
+                      key={example.id}
+                      variant="ghost"
+                      size="md"
+                      className="inline-flex justify-start"
+                      endContent={
+                        <Icon
+                          name="NavArrowRight"
+                          size="md"
+                          className="text-default-500"
+                        />
+                      }
+                      onPress={() => {
+                        setPrompt(
+                          selectedAgent.i18n?.[lang]?.examples?.find(
+                            (ex) => ex.id === example.id,
+                          )?.prompt ?? example.prompt,
+                        )
+
+                        // submit
+                        setTimeout(() => {
+                          const submitButton = document.querySelector(
+                            '#prompt-area [type="submit"]',
+                          ) as HTMLButtonElement | null
+                          submitButton?.click()
+                        }, 150)
+                      }}
+                    >
+                      <span className="font-semibold">
+                        {selectedAgent.i18n?.[lang]?.examples?.find(
+                          (ex) => ex.id === example.id,
+                        )?.title ?? example.title}
+                      </span>
+                    </Button>
+                  ))}
                 </div>
               )}
-            </Container>
-          </div>
-
-          {/* Artifacts side panel */}
-          {/* {conversationArtifacts.length > 0 && (
-            <div className="lg:col-span-1 order-first lg:order-last">
-              <div className="sticky top-4">
-                <Card className="mb-4">
-                  <CardBody className="p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Icon
-                        name="PageSearch"
-                        className="w-5 h-5 text-primary"
-                      />
-                      <h3 className="text-medium font-semibold">
-                        {t('Artifacts')}
-                      </h3>
-                      <Chip
-                        size="sm"
-                        variant="flat"
-                        color="primary"
-                        className="text-tiny"
-                      >
-                        {conversationArtifacts.length}
-                      </Chip>
-                    </div>
-
-                    {conversationArtifacts.length > 0 ? (
-                      <div className="space-y-3">
-                        {conversationArtifacts
-                          .sort(
-                            (a, b) =>
-                              new Date(b.updatedAt).getTime() -
-                              new Date(a.updatedAt).getTime(),
-                          )
-                          .map((artifact) => (
-                            <ArtifactWidget
-                              key={artifact.id}
-                              artifact={artifact}
-                            />
-                          ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-6">
-                        <Icon
-                          name="PageSearch"
-                          className="w-8 h-8 text-default-300 mx-auto mb-2"
-                        />
-                        <p className="text-small text-default-500">
-                          {t('No artifacts created yet')}
-                        </p>
-                      </div>
-                    )}
-                  </CardBody>
-                </Card>
-              </div>
-            </div>
-          )} */}
+          </Container>
         </div>
 
         <PromptArea
           lang={lang}
-          autoFocus={!conversationId} // Only autofocus for new conversations
-          className="max-w-4xl mx-auto mt-6"
+          autoFocus={!conversationId}
+          className="max-w-4xl mx-auto sticky bottom-20 md:bottom-4"
           value={prompt}
           onValueChange={setPrompt}
           onSubmitToAgent={onSubmit}
+          onFilesChange={setSelectedFiles}
           isSending={isSending}
           selectedAgent={selectedAgent}
           onAgentChange={setSelectedAgent}
           disabledAgentPicker
+          disabledMention
           placeholder={
             conversationMessages.length > 0
               ? t('Continue the conversation…')
@@ -1540,57 +1323,7 @@ export const AgentRunPage = () => {
                 })
           }
         />
-
-        {isConversationPristine && (
-          <div className="flex gap-2 flex-wrap">
-            {selectedAgent?.examples?.map((example) => (
-              <Button
-                key={example.id}
-                variant="ghost"
-                size="md"
-                className="inline-flex justify-start"
-                // startContent={
-                //   selectedAgent.icon && (
-                //     <Icon
-                //       name={selectedAgent.icon}
-                //       size="lg"
-                //       className="text-default-500"
-                //     />
-                //   )
-                // }
-                endContent={
-                  <Icon
-                    name="NavArrowRight"
-                    size="md"
-                    className="text-default-500"
-                  />
-                }
-                onPress={() => {
-                  setPrompt(
-                    selectedAgent.i18n?.[lang]?.examples?.find(
-                      (ex) => ex.id === example.id,
-                    )?.prompt ?? example.prompt,
-                  )
-
-                  // submit
-                  setTimeout(() => {
-                    const submitButton = document.querySelector(
-                      '#prompt-area [type="submit"]',
-                    ) as HTMLButtonElement | null
-                    submitButton?.click()
-                  }, 150)
-                }}
-              >
-                <span className="font-semibold">
-                  {selectedAgent.i18n?.[lang]?.examples?.find(
-                    (ex) => ex.id === example.id,
-                  )?.title ?? example.title}
-                </span>
-              </Button>
-            ))}
-          </div>
-        )}
-      </Section>
+      </div>
 
       {/* Pin Message Modal */}
       <Modal isOpen={isPinModalOpen} onClose={onPinModalClose} size="lg">

@@ -82,6 +82,8 @@ export const en = [
   'Browser: {browser}',
   'Enable Speech-to-Text',
   'Allow voice input using your device microphone in the prompt area',
+  'Show Context Panel',
+  'Display the contextual information panel on the right side of the screen',
   'Make the platform your own',
   'Share the platform',
   'Export the platform settings to another device or share it with others',

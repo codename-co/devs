@@ -54,7 +54,7 @@ export const AgentCard = ({
   }
 
   const displayName = agent.i18n?.[lang]?.name || agent.name
-  const displayDesc = agent.i18n?.[lang]?.desc || agent.desc
+  const displayDesc = agent.i18n?.[lang]?.desc || agent.desc || agent.role
 
   return (
     <Card

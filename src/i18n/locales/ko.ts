@@ -21,6 +21,7 @@ export const ko: I18n = {
   Teams: '팀',
   Settings: '설정',
   Agents: '에이전트',
+  'Create and manage your AI specialists': 'AI 전문가를 생성하고 관리하세요',
   Methodologies: '방법론',
   Conversations: '대화',
   'Conversations history': '대화 기록',
@@ -70,6 +71,7 @@ export const ko: I18n = {
   'Speak to microphone': '마이크에 대고 말하기',
   'Send prompt': '프롬프트 전송',
   'Select an agent': '에이전트 선택',
+  'No agents found': '에이전트를 찾을 수 없습니다',
   'Select a model': '모델 선택',
   'Add a model': '모델 추가',
 
@@ -113,6 +115,7 @@ export const ko: I18n = {
     '아직 학습된 기억이 없습니다. 대화를 시작하고 "대화에서 학습"을 사용하여 에이전트 기억을 구축하세요.',
   'Make Global': '전역으로 설정',
   'Remove Global': '전역 해제',
+  'Agent Context': '에이전트 컨텍스트',
 
   // Artifacts side panel
   Artifacts: '아티팩트',

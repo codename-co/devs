@@ -42,4 +42,5 @@ export const es: I18n = {
     'El chat utilizará su configuración de formulario actual',
   'Ask {agentName} something…': 'Pregunte algo a {agentName}…',
   Send: 'Enviar',
+  Current: 'Actual', // current conversation
 } as const

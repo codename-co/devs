@@ -1,8 +1,9 @@
-import { Container, Icon, Section, Title } from '@/components'
+import { Container, ContextualPanel, Icon, Section, Title } from '@/components'
 import { AppDrawer } from '@/components/AppDrawer'
 import { Tabbar } from '@/components/Tabbar'
 import { languageDirection, useI18n } from '@/i18n'
 import type { HeaderProps, IconName } from '@/lib/types'
+import { useContextualPanelStore } from '@/stores/contextualPanelStore'
 import { userSettings } from '@/stores/userStore'
 import {
   Button,
@@ -37,8 +38,14 @@ export default function DefaultLayout({
   const { lang, t } = useI18n()
   const navigate = useNavigate()
   const location = useLocation()
+  const clearBlocks = useContextualPanelStore((s) => s.clearBlocks)
 
   const direction = languageDirection[lang]
+
+  // Clear contextual panel when navigating to a new page
+  useEffect(() => {
+    clearBlocks()
+  }, [location.pathname, clearBlocks])
 
   const { platformName, theme } = userSettings()
   const [systemPrefersDark, setSystemPrefersDark] = useState(false)
@@ -95,7 +102,7 @@ export default function DefaultLayout({
 
           <main
             role="main"
-            className="flex-1 flex flex-col overflow-y-auto w-full @container/main"
+            className="flex-1 flex flex-col w-full @container/main"
           >
             <div className="space-y space-y-8 relative bg-transparent min-h-full">
               {(header || showBackButton) && (
@@ -191,6 +198,7 @@ export default function DefaultLayout({
             </div>
           </main>
         </div>
+        <ContextualPanel />
       </div>
     </div>
   )
