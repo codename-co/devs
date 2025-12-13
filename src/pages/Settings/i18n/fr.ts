@@ -107,7 +107,7 @@ export const fr: I18n = {
     'Autoriser la saisie vocale en utilisant le microphone de votre appareil dans la zone de prompt',
   'Show Context Panel': 'Afficher le panneau contextuel',
   'Display the contextual information panel on the right side of the screen':
-    'Afficher le panneau d\'informations contextuelles sur le côté droit de l\'écran',
+    "Afficher le panneau d'informations contextuelles sur le côté droit de l'écran",
   'Make the platform your own': 'Personnalisez la plateforme',
   'Share the platform': 'Partager la plateforme',
   'Export the platform settings to another device or share it with others':
