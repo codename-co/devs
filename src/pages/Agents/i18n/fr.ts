@@ -43,4 +43,8 @@ export const fr: I18n = {
   'Ask {agentName} something…': 'Demandez quelque chose à {agentName}…',
   Send: 'Envoyer',
   Current: 'Actuelle', // current conversation
+  'No conversation history yet. Start chatting with this agent to build history.':
+    "Pas d'historique de conversation pour le moment. Commencez à discuter avec cet agent pour créer un historique.",
+  'No instructions defined.': 'Aucune instruction définie.',
+  '{count} messages': '{count} messages',
 } as const

@@ -151,13 +151,11 @@ const ExpandedPanel = ({ className }: { className?: string }) => {
           </div>
         </div>
 
-        {/* <div className="pointer-events-auto flex-1 overflow-y-auto no-scrollbar"> */}
         <Accordion
-          selectionMode="multiple"
+          // selectionMode="multiple"
           defaultExpandedKeys={blocks
             .filter((block) => block.defaultExpanded)
             .map((block) => block.id)}
-          className="px-0"
           itemClasses={{
             base: 'py-0 w-full',
             title: 'text-sm font-medium',
@@ -182,6 +180,7 @@ const ExpandedPanel = ({ className }: { className?: string }) => {
                 </div>
               }
             >
+              <div className="mb-2" />
               {block.content}
             </AccordionItem>
           ))}

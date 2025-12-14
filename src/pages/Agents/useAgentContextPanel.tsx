@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react'
-import { Button, Card, Chip, Link } from '@heroui/react'
+import { Card, Link } from '@heroui/react'
 
 import {
   useContextualPanelStore,
@@ -10,7 +10,8 @@ import { usePinnedMessageStore } from '@/stores/pinnedMessageStore'
 import { useConversationStore } from '@/stores/conversationStore'
 import { MarkdownRenderer, Icon } from '@/components'
 import type { Agent, AgentMemoryEntry } from '@/types'
-import { useI18n } from '@/i18n'
+import { useI18n, useUrl } from '@/i18n'
+import localI18n from './i18n'
 
 /**
  * Custom hook to manage contextual panel blocks for agent run page
@@ -19,13 +20,9 @@ export const useAgentContextPanel = (
   selectedAgent: Agent | null,
   currentConversationId: string | undefined,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  t: (key: any, options?: Record<string, unknown>) => string,
 ) => {
-  const { lang } = useI18n()
-
-  // Store values in refs to avoid them being dependencies
-  const tRef = useRef(t)
-  tRef.current = t
+  const { lang, t } = useI18n(localI18n)
+  const url = useUrl(lang)
 
   const selectedAgentRef = useRef(selectedAgent)
   selectedAgentRef.current = selectedAgent
@@ -37,7 +34,6 @@ export const useAgentContextPanel = (
   const buildBlocks = useCallback(async (): Promise<PanelBlock[]> => {
     const agent = selectedAgentRef.current
     const conversationId = currentConversationIdRef.current
-    const t = tRef.current
 
     if (!agent) return []
 
@@ -122,7 +118,7 @@ export const useAgentContextPanel = (
               )}
             </p>
           ) : (
-            <MemoriesContent memories={memories} t={t} />
+            <MemoriesContent memories={memories} />
           ),
       })
     } catch (error) {
@@ -158,7 +154,9 @@ export const useAgentContextPanel = (
               {pinnedMessages.map((pm) => (
                 <Link
                   key={pm.id}
-                  href={`/agents/run#${pm.agentId}/${pm.conversationId}?message=${pm.messageId}`}
+                  href={url(
+                    `/agents/run#${pm.agentId}/${pm.conversationId}?message=${pm.messageId}`,
+                  )}
                   className="block"
                 >
                   <Card className="p-3 hover:bg-default-100 transition-colors cursor-pointer">
@@ -236,14 +234,14 @@ export const useAgentContextPanel = (
                 const title =
                   conv.title ||
                   conv.messages?.[0]?.content?.substring(0, 50) ||
-                  t('Untitled conversation')
+                  '…'
                 const messageCount = conv.messages?.length || 0
                 const isCurrentConversation = conv.id === conversationId
 
                 return (
                   <Link
                     key={conv.id}
-                    href={`/agents/run#${agent.id}/${conv.id}`}
+                    href={url(`/agents/run#${agent.id}/${conv.id}`)}
                     className="block"
                   >
                     <Card
@@ -304,7 +302,17 @@ export const useAgentContextPanel = (
     return blocks
   }, [])
 
-  // Main effect - only depends on agent ID and conversation ID
+  // Subscribe to conversation store to detect when system prompt becomes available
+  const currentConversation = useConversationStore(
+    (state) => state.currentConversation,
+  )
+
+  // Track if the current conversation has a system message
+  const hasSystemMessage = currentConversation?.messages?.some(
+    (m) => m.role === 'system',
+  )
+
+  // Main effect - depends on agent ID, conversation ID, and system message availability
   useEffect(() => {
     const { setBlocks, clearBlocks } = useContextualPanelStore.getState()
     let isCancelled = false
@@ -326,7 +334,7 @@ export const useAgentContextPanel = (
     return () => {
       isCancelled = true
     }
-  }, [selectedAgent?.id, currentConversationId, buildBlocks])
+  }, [selectedAgent?.id, currentConversationId, hasSystemMessage, buildBlocks])
 
   // Cleanup effect - only runs on unmount
   useEffect(() => {
@@ -337,61 +345,62 @@ export const useAgentContextPanel = (
 }
 
 // Separate component for memories to handle the reload action
-const MemoriesContent = ({
-  memories,
-  t,
-}: {
-  memories: AgentMemoryEntry[]
-  t: (key: string, options?: Record<string, unknown>) => string
-}) => {
-  const handleToggleGlobal = async (memory: AgentMemoryEntry) => {
-    const { upgradeToGlobal, downgradeFromGlobal } =
-      useAgentMemoryStore.getState()
-    try {
-      if (memory.isGlobal) {
-        await downgradeFromGlobal(memory.id)
-      } else {
-        await upgradeToGlobal(memory.id)
-      }
-      // Note: This won't automatically refresh the panel
-      // User needs to navigate away and back, or we'd need a more complex refresh mechanism
-    } catch (error) {
-      console.error('Failed to update memory global status:', error)
-    }
-  }
+const MemoriesContent = ({ memories }: { memories: AgentMemoryEntry[] }) => {
+  const { url } = useI18n()
+
+  // const handleToggleGlobal = async (memory: AgentMemoryEntry) => {
+  //   const { upgradeToGlobal, downgradeFromGlobal } =
+  //     useAgentMemoryStore.getState()
+  //   try {
+  //     if (memory.isGlobal) {
+  //       await downgradeFromGlobal(memory.id)
+  //     } else {
+  //       await upgradeToGlobal(memory.id)
+  //     }
+  //     // Note: This won't automatically refresh the panel
+  //     // User needs to navigate away and back, or we'd need a more complex refresh mechanism
+  //   } catch (error) {
+  //     console.error('Failed to update memory global status:', error)
+  //   }
+  // }
 
   return (
     <div className="space-y-2">
       {memories.map((memory) => (
-        <Card key={memory.id} className="p-3">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-sm">{memory.title}</span>
-                {memory.isGlobal && (
-                  <Chip size="sm" color="primary" variant="flat">
-                    {t('Global')}
-                  </Chip>
-                )}
-                <Chip size="sm" color="default" variant="flat">
-                  {memory.category}
+        <Link
+          key={memory.id}
+          href={url(`/knowledge/memories`)}
+          className="block"
+        >
+          <Card className="p-3 hover:bg-default-100 transition-colors cursor-pointer">
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-sm">{memory.title}</span>
+              {/* <span className="pulled-right">
+              {memory.isGlobal && (
+                <Chip size="sm" color="primary" variant="flat">
+                  {t('Global')}
                 </Chip>
-              </div>
-              <p className="text-sm text-default-600 mt-1">{memory.content}</p>
-            </div>
-            <Button
+              )}
+              {memory.category.split('|').map((cat, idx) => (
+                <Chip key={idx} size="sm" color="default" variant="flat">
+                  {t(titleize(cat.replace(/_/g, ' ')) as any)}
+                </Chip>
+              ))}
+            </span> */}
+              {/* <Button
               size="sm"
               variant="light"
               color={memory.isGlobal ? 'danger' : 'primary'}
-              startContent={
-                <Icon size="sm" name={memory.isGlobal ? 'Xmark' : 'Share'} />
-              }
+              isIconOnly
+              title={memory.isGlobal ? t('Remove Global') : t('Make Global')}
               onPress={() => handleToggleGlobal(memory)}
             >
-              {memory.isGlobal ? t('Remove Global') : t('Make Global')}
-            </Button>
-          </div>
-        </Card>
+              <Icon size="sm" name={memory.isGlobal ? 'Xmark' : 'Share'} />
+            </Button> */}
+            </div>
+            <p className="text-sm text-default-600 mt-1">{memory.content}</p>
+          </Card>
+        </Link>
       ))}
     </div>
   )

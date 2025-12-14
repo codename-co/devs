@@ -51,7 +51,7 @@ import {
 import { MessageDescriptionGenerator } from '@/lib/message-description-generator'
 import { useConversationStore } from '@/stores/conversationStore'
 import { useArtifactStore } from '@/stores/artifactStore'
-import { categoryLabels } from '../Knowledge'
+import { categoryLabels } from '../Knowledge/AgentMemories'
 import { useAgentContextPanel } from './useAgentContextPanel'
 import localI18n from './i18n'
 
@@ -549,7 +549,7 @@ export const AgentRunPage = () => {
   } = usePinnedMessageStore()
 
   // Setup contextual panel with agent context
-  useAgentContextPanel(selectedAgent, currentConversation?.id, t)
+  useAgentContextPanel(selectedAgent, currentConversation?.id)
 
   const [learningMessageId, setLearningMessageId] = useState<string | null>(
     null,

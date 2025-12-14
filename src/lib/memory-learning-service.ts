@@ -755,7 +755,7 @@ export class MemoryLearningService {
 
     // Build context string
     const memoryContext = relevantMemories
-      .map((m) => `• [${m.category}] ${m.title}: ${m.content}`)
+      .map((m) => `• ${m.title}: ${m.content}`)
       .join('\n')
 
     return /* md */ `## Remembered Context about the User

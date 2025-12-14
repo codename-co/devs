@@ -29,4 +29,7 @@ export const en = [
   'Ask {agentName} something…',
   'Send',
   'Current',
+  'No conversation history yet. Start chatting with this agent to build history.',
+  'No instructions defined.',
+  '{count} messages',
 ] as const

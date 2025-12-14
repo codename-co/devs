@@ -42,4 +42,8 @@ export const ko: I18n = {
   'Ask {agentName} something…': '{agentName}에게 무언가 물어보세요…',
   Send: '전송',
   Current: '현재', // current conversation
+  'No conversation history yet. Start chatting with this agent to build history.':
+    '아직 대화 기록이 없습니다. 이 에이전트와 대화를 시작하여 기록을 만드세요.',
+  'No instructions defined.': '정의된 지침이 없습니다.',
+  '{count} messages': '{count}개의 메시지',
 } as const

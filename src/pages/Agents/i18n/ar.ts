@@ -40,4 +40,8 @@ export const ar: I18n = {
   'Ask {agentName} something…': 'اسأل {agentName} شيئاً…',
   Send: 'إرسال',
   Current: 'الحالية', // current conversation
+  'No conversation history yet. Start chatting with this agent to build history.':
+    'لا يوجد سجل محادثات حتى الآن. ابدأ الدردشة مع هذا الوكيل لبناء السجل.',
+  'No instructions defined.': 'لم يتم تعريف أي تعليمات.',
+  '{count} messages': '{count} رسائل',
 } as const
