@@ -162,7 +162,7 @@
 /* Markdown Content Styles */
 @layer components {
   .markdown-content {
-    @apply text-sm leading-relaxed;
+    @apply leading-relaxed;
   }
 
   .markdown-content h1 {

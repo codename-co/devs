@@ -141,14 +141,14 @@ const MessageDisplay = memo(
               </Chip>
             </div>
           )}
-          <div className="text-small text-left">
+          <div className="text-left">
             <div className="prose prose-neutral text-medium break-words">
               {detectContentType(message.content) === 'marpit-presentation' ? (
                 <Widget type="marpit" language="yaml" code={message.content} />
               ) : (
                 <MarkdownRenderer
                   content={message.content}
-                  className="prose dark:prose-invert prose-sm"
+                  className="prose dark:prose-invert"
                 />
               )}
             </div>
