@@ -47,4 +47,12 @@ export const es: I18n = {
     "Pas d'historique de conversation pour le moment. Commencez à discuter avec cet agent pour créer un historique.",
   'No instructions defined.': 'No se han definido instrucciones.',
   '{count} messages': '{count} mensajes',
+  Edit: 'Editar',
+  Save: 'Guardar',
+  Cancel: 'Cancelar',
+  'Edit System Prompt': 'Editar prompt del sistema',
+  'System prompt updated successfully':
+    'Prompt del sistema actualizado con éxito',
+  'Enter agent role...': 'Introducir rol del agente...',
+  'Enter agent instructions...': 'Introducir instrucciones del agente...',
 } as const

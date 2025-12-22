@@ -32,4 +32,11 @@ export const en = [
   'No conversation history yet. Start chatting with this agent to build history.',
   'No instructions defined.',
   '{count} messages',
+  'Edit',
+  'Save',
+  'Cancel',
+  'Edit System Prompt',
+  'System prompt updated successfully',
+  'Enter agent role...',
+  'Enter agent instructions...',
 ] as const

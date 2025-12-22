@@ -454,4 +454,12 @@ export const de: I18n = {
   '{count} insights extracted': '{count} Erkenntnisse extrahiert',
   'No new insights found in this message':
     'Keine neuen Erkenntnisse in dieser Nachricht gefunden',
+
+  // Agent Management
+  'Edit Knowledge': 'Wissen bearbeiten',
+  'Edit Knowledge for {name}': 'Wissen bearbeiten für {name}',
+  'Save Changes': 'Änderungen speichern',
+  'Delete Agent': 'Agent löschen',
+  'Are you sure you want to delete "{name}"? This action cannot be undone.':
+    'Sind Sie sicher, dass Sie "{name}" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
 } as const

@@ -447,4 +447,12 @@ export const ar: I18n = {
   '{count} insights extracted': 'تم استخراج {count} رؤى',
   'No new insights found in this message':
     'لم يتم العثور على رؤى جديدة في هذه الرسالة',
+
+  // Agent Management
+  'Edit Knowledge': 'تعديل المعرفة',
+  'Edit Knowledge for {name}': 'تعديل المعرفة لـ {name}',
+  'Save Changes': 'حفظ التغييرات',
+  'Delete Agent': 'حذف الوكيل',
+  'Are you sure you want to delete "{name}"? This action cannot be undone.':
+    'هل أنت متأكد أنك تريد حذف "{name}"؟ لا يمكن التراجع عن هذا الإجراء.',
 } as const

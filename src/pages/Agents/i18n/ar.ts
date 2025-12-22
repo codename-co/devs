@@ -44,4 +44,11 @@ export const ar: I18n = {
     'لا يوجد سجل محادثات حتى الآن. ابدأ الدردشة مع هذا الوكيل لبناء السجل.',
   'No instructions defined.': 'لم يتم تعريف أي تعليمات.',
   '{count} messages': '{count} رسائل',
+  Edit: 'تعديل',
+  Save: 'حفظ',
+  Cancel: 'إلغاء',
+  'Edit System Prompt': 'تعديل طلب النظام',
+  'System prompt updated successfully': 'تم تحديث طلب النظام بنجاح',
+  'Enter agent role...': 'أدخل دور الوكيل...',
+  'Enter agent instructions...': 'أدخل تعليمات الوكيل...',
 } as const

@@ -46,4 +46,12 @@ export const ko: I18n = {
     '아직 대화 기록이 없습니다. 이 에이전트와 대화를 시작하여 기록을 만드세요.',
   'No instructions defined.': '정의된 지침이 없습니다.',
   '{count} messages': '{count}개의 메시지',
+  Edit: '편집',
+  Save: '저장',
+  Cancel: '취소',
+  'Edit System Prompt': '시스템 프롬프트 편집',
+  'System prompt updated successfully':
+    '시스템 프롬프트가 성공적으로 업데이트되었습니다',
+  'Enter agent role...': '에이전트 역할 입력...',
+  'Enter agent instructions...': '에이전트 지침 입력...',
 } as const

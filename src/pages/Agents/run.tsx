@@ -549,7 +549,7 @@ export const AgentRunPage = () => {
   } = usePinnedMessageStore()
 
   // Setup contextual panel with agent context
-  useAgentContextPanel(selectedAgent, currentConversation?.id)
+  useAgentContextPanel(selectedAgent, currentConversation?.id, setSelectedAgent)
 
   const [learningMessageId, setLearningMessageId] = useState<string | null>(
     null,

@@ -446,4 +446,12 @@ export const ko: I18n = {
   '{count} insights extracted': '{count}개의 인사이트가 추출되었습니다',
   'No new insights found in this message':
     '이 메시지에서 새로운 인사이트를 찾을 수 없습니다',
+
+  // Agent Management
+  'Edit Knowledge': '지식 편집',
+  'Edit Knowledge for {name}': '{name}의 지식 편집',
+  'Save Changes': '변경 사항 저장',
+  'Delete Agent': '에이전트 삭제',
+  'Are you sure you want to delete "{name}"? This action cannot be undone.':
+    '"{name}"을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.',
 } as const

@@ -47,4 +47,12 @@ export const de: I18n = {
     'Noch kein Gesprächsverlauf. Beginnen Sie ein Gespräch mit diesem Agenten, um einen Verlauf aufzubauen.',
   'No instructions defined.': 'Keine Anweisungen definiert.',
   '{count} messages': '{count} Nachrichten',
+  Edit: 'Bearbeiten',
+  Save: 'Speichern',
+  Cancel: 'Abbrechen',
+  'Edit System Prompt': 'System-Prompt bearbeiten',
+  'System prompt updated successfully':
+    'System-Prompt erfolgreich aktualisiert',
+  'Enter agent role...': 'Agentenrolle eingeben...',
+  'Enter agent instructions...': 'Agentenanweisungen eingeben...',
 } as const

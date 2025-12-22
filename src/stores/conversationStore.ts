@@ -47,6 +47,13 @@ interface ConversationStore {
   pinMessage: (conversationId: string, messageId: string) => Promise<void>
   unpinMessage: (conversationId: string, messageId: string) => Promise<void>
 
+  // Update message
+  updateMessage: (
+    conversationId: string,
+    messageId: string,
+    content: string,
+  ) => Promise<void>
+
   // Summarization
   summarizeConversation: (conversationId: string) => Promise<string>
 }
@@ -596,6 +603,57 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       })
     } catch (error) {
       errorToast('Failed to unpin message', error)
+    }
+  },
+
+  // =========================================================================
+  // Update Message
+  // =========================================================================
+
+  updateMessage: async (
+    conversationId: string,
+    messageId: string,
+    content: string,
+  ) => {
+    try {
+      if (!db.isInitialized()) {
+        await db.init()
+      }
+
+      const conversation = await db.get('conversations', conversationId)
+      if (!conversation) {
+        throw new Error('Conversation not found')
+      }
+
+      // Find and update the message
+      const messageIndex = conversation.messages.findIndex(
+        (m) => m.id === messageId,
+      )
+      if (messageIndex === -1) {
+        throw new Error('Message not found')
+      }
+
+      conversation.messages[messageIndex] = {
+        ...conversation.messages[messageIndex],
+        content,
+      }
+
+      await db.update('conversations', conversation)
+
+      const { conversations, currentConversation } = get()
+      const updatedConversations = conversations.map((c) =>
+        c.id === conversationId ? conversation : c,
+      )
+
+      set({
+        conversations: updatedConversations,
+        currentConversation:
+          currentConversation?.id === conversationId
+            ? conversation
+            : currentConversation,
+      })
+    } catch (error) {
+      errorToast('Failed to update message', error)
     }
   },
 

@@ -16,6 +16,7 @@ export interface Agent {
   updatedAt?: Date
   version?: string
   examples?: Example[]
+  deletedAt?: Date // When the agent was soft deleted (presence indicates deleted)
   i18n?: {
     [K in LanguageCode]?: {
       name?: string

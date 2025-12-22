@@ -21,14 +21,18 @@ import {
 import { useEffect, useState } from 'react'
 
 import { useI18n } from '@/i18n'
-import { getAgentsSeparated, updateAgent } from '@/stores/agentStore'
+import {
+  getAgentsSeparated,
+  updateAgent,
+  softDeleteAgent,
+} from '@/stores/agentStore'
 import { type Agent } from '@/types'
 import { Container, Section, AgentKnowledgePicker, Icon } from '@/components'
 import { AgentCard } from '@/components/AgentCard'
 import DefaultLayout from '@/layouts/Default'
 import { HeaderProps } from '@/lib/types'
 import { useNavigate } from 'react-router-dom'
-import { EditPencil, MoreVert } from 'iconoir-react'
+import { EditPencil, MoreVert, Trash } from 'iconoir-react'
 
 export const AgentsPage = () => {
   const [userAgents, setUserAgents] = useState<Agent[]>([])
@@ -38,12 +42,23 @@ export const AgentsPage = () => {
     'global-agents' | 'my-agents' | undefined
   >(undefined)
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null)
+  const [deletingAgent, setDeletingAgent] = useState<Agent | null>(null)
   const [selectedKnowledgeIds, setSelectedKnowledgeIds] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const { t, url } = useI18n()
   const navigate = useNavigate()
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const {
+    isOpen: isKnowledgeModalOpen,
+    onOpen: onKnowledgeModalOpen,
+    onClose: onKnowledgeModalClose,
+  } = useDisclosure()
+  const {
+    isOpen: isDeleteModalOpen,
+    onOpen: onDeleteModalOpen,
+    onClose: onDeleteModalClose,
+  } = useDisclosure()
 
   const fetchAgents = async () => {
     setLoading(true)
@@ -85,7 +100,7 @@ export const AgentsPage = () => {
   const handleEditKnowledge = (agent: Agent) => {
     setEditingAgent(agent)
     setSelectedKnowledgeIds(agent.knowledgeItemIds || [])
-    onOpen()
+    onKnowledgeModalOpen()
   }
 
   const handleSaveKnowledge = async () => {
@@ -99,11 +114,33 @@ export const AgentsPage = () => {
 
       // Refresh agents list
       await fetchAgents()
-      onClose()
+      onKnowledgeModalClose()
     } catch (error) {
       console.error('Error updating agent knowledge:', error)
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleDeleteAgent = (agent: Agent) => {
+    setDeletingAgent(agent)
+    onDeleteModalOpen()
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deletingAgent) return
+
+    setDeleting(true)
+    try {
+      await softDeleteAgent(deletingAgent.id)
+      // Refresh agents list
+      await fetchAgents()
+      onDeleteModalClose()
+      setDeletingAgent(null)
+    } catch (error) {
+      console.error('Error deleting agent:', error)
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -152,7 +189,16 @@ export const AgentsPage = () => {
                           startContent={<EditPencil className="w-4 h-4" />}
                           onPress={() => handleEditKnowledge(agent)}
                         >
-                          Edit Knowledge
+                          {t('Edit Knowledge')}
+                        </DropdownItem>
+                        <DropdownItem
+                          key="delete"
+                          className="text-danger"
+                          color="danger"
+                          startContent={<Trash className="w-4 h-4" />}
+                          onPress={() => handleDeleteAgent(agent)}
+                        >
+                          {t('Delete')}
                         </DropdownItem>
                       </DropdownMenu>
                     </Dropdown>
@@ -258,15 +304,15 @@ export const AgentsPage = () => {
 
       {/* Edit Knowledge Modal */}
       <Modal
-        isOpen={isOpen}
-        onClose={onClose}
+        isOpen={isKnowledgeModalOpen}
+        onClose={onKnowledgeModalClose}
         size="3xl"
         scrollBehavior="inside"
       >
         <ModalContent>
           <ModalHeader>
             <div className="flex items-center gap-2">
-              Edit Knowledge for {editingAgent?.name}
+              {t('Edit Knowledge for {name}', { name: editingAgent?.name })}
             </div>
           </ModalHeader>
           <ModalBody>
@@ -276,15 +322,52 @@ export const AgentsPage = () => {
             />
           </ModalBody>
           <ModalFooter>
-            <Button variant="light" onPress={onClose} isDisabled={saving}>
-              Cancel
+            <Button
+              variant="light"
+              onPress={onKnowledgeModalClose}
+              isDisabled={saving}
+            >
+              {t('Cancel')}
             </Button>
             <Button
               color="primary"
               onPress={handleSaveKnowledge}
               isLoading={saving}
             >
-              Save Changes
+              {t('Save Changes')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal isOpen={isDeleteModalOpen} onClose={onDeleteModalClose} size="md">
+        <ModalContent>
+          <ModalHeader>
+            <div className="flex items-center gap-2">{t('Delete Agent')}</div>
+          </ModalHeader>
+          <ModalBody>
+            <p>
+              {t(
+                'Are you sure you want to delete "{name}"? This action cannot be undone.',
+                { name: deletingAgent?.name },
+              )}
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="light"
+              onPress={onDeleteModalClose}
+              isDisabled={deleting}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              color="danger"
+              onPress={handleConfirmDelete}
+              isLoading={deleting}
+            >
+              {t('Delete')}
             </Button>
           </ModalFooter>
         </ModalContent>

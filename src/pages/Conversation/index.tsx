@@ -259,15 +259,6 @@ export function ConversationPage() {
                     ? t('No pinned conversations')
                     : t('No conversations found')}
                 </p>
-                {searchQuery && (
-                  <Button
-                    variant="flat"
-                    className="mt-4"
-                    onPress={() => setSearchQuery('')}
-                  >
-                    Clear search
-                  </Button>
-                )}
               </CardBody>
             </Card>
           ) : (

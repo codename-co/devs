@@ -26,7 +26,7 @@ export const fr: I18n = {
   Methodologies: 'Méthodologies',
   Conversations: 'Conversations',
   'Conversations history': 'Historique des conversations',
-  'Search conversations': 'Rechercher des conversations',
+  'Search conversations': 'Rechercher une conversation',
   'Pin conversation': 'Épingler la conversation',
   'Unpin conversation': 'Désépingler la conversation',
   'Summarize conversation': 'Résumer la conversation',
@@ -459,4 +459,12 @@ export const fr: I18n = {
   '{count} insights extracted': '{count} insights extraits',
   'No new insights found in this message':
     'Aucun nouvel insight trouvé dans ce message',
+
+  // Agent Management
+  'Edit Knowledge': 'Modifier les connaissances',
+  'Edit Knowledge for {name}': 'Modifier les connaissances pour {name}',
+  'Save Changes': 'Enregistrer les modifications',
+  'Delete Agent': 'Supprimer l’agent',
+  'Are you sure you want to delete "{name}"? This action cannot be undone.':
+    'Êtes-vous sûr de vouloir supprimer l’agent "{name}" ? Cette action est irréversible.',
 } as const

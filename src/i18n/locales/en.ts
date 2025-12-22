@@ -422,4 +422,11 @@ export const en = [
   'Learn from this message',
   '{count} insights extracted',
   'No new insights found in this message',
+
+  // Agent Management
+  'Edit Knowledge',
+  'Edit Knowledge for {name}',
+  'Save Changes',
+  'Delete Agent',
+  'Are you sure you want to delete "{name}"? This action cannot be undone.',
 ] as const

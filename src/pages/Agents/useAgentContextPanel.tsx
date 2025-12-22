@@ -1,5 +1,5 @@
-import { useEffect, useRef, useCallback } from 'react'
-import { Card, Link } from '@heroui/react'
+import { useEffect, useRef, useCallback, useState } from 'react'
+import { Card, Link, Button, Textarea } from '@heroui/react'
 
 import {
   useContextualPanelStore,
@@ -9,8 +9,9 @@ import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
 import { usePinnedMessageStore } from '@/stores/pinnedMessageStore'
 import { useConversationStore } from '@/stores/conversationStore'
 import { MarkdownRenderer, Icon } from '@/components'
-import type { Agent, AgentMemoryEntry } from '@/types'
+import type { Agent, AgentMemoryEntry, Message } from '@/types'
 import { useI18n, useUrl } from '@/i18n'
+import { successToast } from '@/lib/toast'
 import localI18n from './i18n'
 
 /**
@@ -19,13 +20,16 @@ import localI18n from './i18n'
 export const useAgentContextPanel = (
   selectedAgent: Agent | null,
   currentConversationId: string | undefined,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onAgentUpdate?: (agent: Agent) => void,
 ) => {
   const { lang, t } = useI18n(localI18n)
   const url = useUrl(lang)
 
   const selectedAgentRef = useRef(selectedAgent)
   selectedAgentRef.current = selectedAgent
+
+  const onAgentUpdateRef = useRef(onAgentUpdate)
+  onAgentUpdateRef.current = onAgentUpdate
 
   const currentConversationIdRef = useRef(currentConversationId)
   currentConversationIdRef.current = currentConversationId
@@ -47,26 +51,10 @@ export const useAgentContextPanel = (
       priority: 1,
       defaultExpanded: false,
       content: (
-        <div className="space-y-4">
-          {agent.role && (
-            <div>
-              <h4 className="text-sm font-semibold text-default-700 mb-1">
-                {t('Role')}
-              </h4>
-              <p className="text-sm text-default-600">{agent.role}</p>
-            </div>
-          )}
-          <div>
-            <h4 className="text-sm font-semibold text-default-700 mb-1">
-              {t('Instructions')}
-            </h4>
-            <MarkdownRenderer
-              content={agent.instructions || t('No instructions defined.')}
-              className="prose dark:prose-invert prose-sm text-default-700"
-              renderWidgets={false}
-            />
-          </div>
-        </div>
+        <EditableAgentProfile
+          agent={agent}
+          onAgentUpdate={onAgentUpdateRef.current}
+        />
       ),
     })
 
@@ -86,10 +74,9 @@ export const useAgentContextPanel = (
             priority: 1.5,
             defaultExpanded: false,
             content: (
-              <MarkdownRenderer
-                content={systemMessage.content}
-                className="prose dark:prose-invert prose-sm text-default-700"
-                renderWidgets={false}
+              <EditableSystemPrompt
+                conversationId={conversationId}
+                systemMessage={systemMessage}
               />
             ),
           })
@@ -334,7 +321,7 @@ export const useAgentContextPanel = (
     return () => {
       isCancelled = true
     }
-  }, [selectedAgent?.id, currentConversationId, hasSystemMessage, buildBlocks])
+  }, [selectedAgent, currentConversationId, hasSystemMessage, buildBlocks])
 
   // Cleanup effect - only runs on unmount
   useEffect(() => {
@@ -342,6 +329,231 @@ export const useAgentContextPanel = (
       useContextualPanelStore.getState().clearBlocks()
     }
   }, [])
+}
+
+// Separate component for editable agent profile
+const EditableAgentProfile = ({
+  agent,
+  onAgentUpdate,
+}: {
+  agent: Agent
+  onAgentUpdate?: (agent: Agent) => void
+}) => {
+  const { t } = useI18n(localI18n)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editedRole, setEditedRole] = useState(agent.role || '')
+  const [editedInstructions, setEditedInstructions] = useState(
+    agent.instructions || '',
+  )
+  const [isSaving, setIsSaving] = useState(false)
+
+  // Sync edited values when agent prop changes (e.g., after save)
+  useEffect(() => {
+    if (!isEditing) {
+      setEditedRole(agent.role || '')
+      setEditedInstructions(agent.instructions || '')
+    }
+  }, [agent.role, agent.instructions, isEditing])
+
+  const handleSave = async () => {
+    setIsSaving(true)
+    try {
+      const { updateAgent } = await import('@/stores/agentStore')
+      const updatedAgent = await updateAgent(agent.id, {
+        role: editedRole,
+        instructions: editedInstructions,
+      })
+      // Notify parent to update the agent state
+      onAgentUpdate?.(updatedAgent)
+      setIsEditing(false)
+    } catch (error) {
+      console.error('Failed to update agent profile:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setEditedRole(agent.role || '')
+    setEditedInstructions(agent.instructions || '')
+    setIsEditing(false)
+  }
+
+  if (isEditing) {
+    return (
+      <div className="space-y-4">
+        <div>
+          <h4 className="text-sm font-semibold text-default-700 mb-1">
+            {t('Role')}
+          </h4>
+          <Textarea
+            value={editedRole}
+            onValueChange={setEditedRole}
+            minRows={1}
+            maxRows={3}
+            placeholder={t('Enter agent role...')}
+            classNames={{
+              input: 'text-sm',
+            }}
+          />
+        </div>
+        <div>
+          <h4 className="text-sm font-semibold text-default-700 mb-1">
+            {t('Instructions')}
+          </h4>
+          <Textarea
+            value={editedInstructions}
+            onValueChange={setEditedInstructions}
+            minRows={10}
+            maxRows={20}
+            placeholder={t('Enter agent instructions...')}
+            classNames={{
+              input: 'text-sm font-mono',
+            }}
+          />
+        </div>
+        <div className="flex gap-2 justify-end">
+          <Button
+            size="sm"
+            variant="flat"
+            onPress={handleCancel}
+            isDisabled={isSaving}
+          >
+            {t('Cancel')}
+          </Button>
+          <Button
+            size="sm"
+            color="primary"
+            onPress={handleSave}
+            isLoading={isSaving}
+          >
+            {t('Save')}
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative group">
+      <div className="space-y-4">
+        {agent.role && (
+          <div>
+            <h4 className="text-sm font-semibold text-default-700 mb-1">
+              {t('Role')}
+            </h4>
+            <p className="text-sm text-default-600">{agent.role}</p>
+          </div>
+        )}
+        <div>
+          <h4 className="text-sm font-semibold text-default-700 mb-1">
+            {t('Instructions')}
+          </h4>
+          <MarkdownRenderer
+            content={agent.instructions || t('No instructions defined.')}
+            className="text-sm prose dark:prose-invert prose-sm text-default-500"
+            renderWidgets={false}
+          />
+        </div>
+      </div>
+      <Button
+        size="sm"
+        variant="light"
+        className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        onPress={() => setIsEditing(true)}
+        startContent={<Icon name="EditPencil" className="w-4 h-4" />}
+      >
+        {t('Edit')}
+      </Button>
+    </div>
+  )
+}
+
+// Separate component for editable system prompt
+const EditableSystemPrompt = ({
+  conversationId,
+  systemMessage,
+}: {
+  conversationId: string
+  systemMessage: Message
+}) => {
+  const { t } = useI18n(localI18n)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editedContent, setEditedContent] = useState(systemMessage.content)
+  const [isSaving, setIsSaving] = useState(false)
+
+  const handleSave = async () => {
+    setIsSaving(true)
+    try {
+      await useConversationStore
+        .getState()
+        .updateMessage(conversationId, systemMessage.id, editedContent)
+      successToast(t('System prompt updated successfully'))
+      setIsEditing(false)
+    } catch (error) {
+      console.error('Failed to update system prompt:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setEditedContent(systemMessage.content)
+    setIsEditing(false)
+  }
+
+  if (isEditing) {
+    return (
+      <div className="space-y-3">
+        <Textarea
+          value={editedContent}
+          onValueChange={setEditedContent}
+          minRows={10}
+          maxRows={20}
+          classNames={{
+            input: 'text-sm font-mono',
+          }}
+        />
+        <div className="flex gap-2 justify-end">
+          <Button
+            size="sm"
+            variant="flat"
+            onPress={handleCancel}
+            isDisabled={isSaving}
+          >
+            {t('Cancel')}
+          </Button>
+          <Button
+            size="sm"
+            color="primary"
+            onPress={handleSave}
+            isLoading={isSaving}
+          >
+            {t('Save')}
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative group">
+      <MarkdownRenderer
+        content={systemMessage.content}
+        className="prose dark:prose-invert prose-sm text-default-700"
+        renderWidgets={false}
+      />
+      <Button
+        size="sm"
+        variant="light"
+        className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        onPress={() => setIsEditing(true)}
+        startContent={<Icon name="EditPencil" className="w-4 h-4" />}
+      >
+        {t('Edit')}
+      </Button>
+    </div>
+  )
 }
 
 // Separate component for memories to handle the reload action

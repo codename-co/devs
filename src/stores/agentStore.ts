@@ -412,6 +412,56 @@ export async function deleteAgent(agentId: string): Promise<void> {
   }
 }
 
+export async function softDeleteAgent(agentId: string): Promise<void> {
+  try {
+    // Prevent deletion of default agent
+    if (agentId === 'devs') {
+      throw new Error('Cannot delete the default agent')
+    }
+
+    // Prevent deletion of built-in agents
+    if (!agentId.startsWith('custom-')) {
+      throw new Error('Cannot delete built-in agents')
+    }
+
+    // Ensure database is initialized
+    if (!db.isInitialized()) {
+      await db.init()
+    }
+
+    // Get current agent
+    const currentAgent = await getAgentById(agentId)
+    if (!currentAgent) {
+      throw new Error(`Agent with id ${agentId} not found`)
+    }
+
+    // Mark agent as deleted by setting deletedAt
+    const updatedAgent: Agent = {
+      ...currentAgent,
+      deletedAt: new Date(),
+      updatedAt: new Date(),
+    }
+
+    // Save to IndexedDB
+    await db.update('agents', updatedAgent)
+
+    // Remove from cache (so it won't appear in lists)
+    agentCache.delete(agentId)
+
+    // Invalidate the agents list cache
+    agentsList = null
+
+    successToast('Agent deleted successfully!')
+  } catch (error) {
+    console.error('Error deleting agent:', error)
+    errorToast(
+      'Failed to delete agent',
+      error instanceof Error ? error.message : 'Unknown error',
+    )
+    throw error
+  }
+}
+
 export async function loadCustomAgents(): Promise<Agent[]> {
   try {
     // Ensure database is initialized
@@ -422,12 +472,15 @@ export async function loadCustomAgents(): Promise<Agent[]> {
     // Get all agents from IndexedDB
     const customAgents = await db.getAll('agents')
 
+    // Filter out soft-deleted agents (inferred from deletedAt)
+    const activeAgents = customAgents.filter((agent) => !agent.deletedAt)
+
     // Add to cache
-    customAgents.forEach((agent) => {
+    activeAgents.forEach((agent) => {
       agentCache.set(agent.id, agent)
     })
 
-    return customAgents
+    return activeAgents
   } catch (error) {
     console.error('Error loading custom agents:', error)
     return []
