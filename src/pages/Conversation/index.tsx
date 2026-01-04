@@ -48,6 +48,7 @@ export function ConversationPage() {
     pinConversation,
     unpinConversation,
     summarizeConversation,
+    renameConversation,
   } = useConversationStore()
   const [agents, setAgents] = useState<Agent[]>([])
   const [selectedConversation, setSelectedConversation] = useState<
@@ -57,12 +58,20 @@ export function ConversationPage() {
   const [isSummarizing, setIsSummarizing] = useState(false)
   const [summaryConversation, setSummaryConversation] =
     useState<Conversation | null>(null)
+  const [renameTarget, setRenameTarget] = useState<Conversation | null>(null)
+  const [newTitle, setNewTitle] = useState('')
   const itemsPerPage = 50
 
   const {
     isOpen: isSummaryOpen,
     onOpen: onSummaryOpen,
     onClose: onSummaryClose,
+  } = useDisclosure()
+
+  const {
+    isOpen: isRenameOpen,
+    onOpen: onRenameOpen,
+    onClose: onRenameClose,
   } = useDisclosure()
 
   const header: HeaderProps = {
@@ -126,6 +135,25 @@ export function ConversationPage() {
       console.error('Failed to summarize:', error)
     } finally {
       setIsSummarizing(false)
+    }
+  }
+
+  const handleOpenRename = (conversation: Conversation) => {
+    setRenameTarget(conversation)
+    setNewTitle(getConversationTitle(conversation))
+    onRenameOpen()
+  }
+
+  const handleRename = async () => {
+    if (!renameTarget || !newTitle.trim()) return
+    try {
+      await renameConversation(renameTarget.id, newTitle.trim())
+      successToast(t('Conversation renamed successfully'))
+      onRenameClose()
+      setRenameTarget(null)
+      setNewTitle('')
+    } catch (error) {
+      console.error('Failed to rename conversation:', error)
     }
   }
 
@@ -342,6 +370,14 @@ export function ConversationPage() {
                                   </DropdownTrigger>
                                   <DropdownMenu>
                                     <DropdownItem
+                                      key="rename"
+                                      onPress={() =>
+                                        handleOpenRename(conversation)
+                                      }
+                                    >
+                                      {t('Rename conversation')}
+                                    </DropdownItem>
+                                    <DropdownItem
                                       key="summarize"
                                       onPress={() =>
                                         handleSummarize(conversation)
@@ -426,6 +462,34 @@ export function ConversationPage() {
                     {t('View full conversation')}
                   </Button>
                 )}
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
+
+          {/* Rename Modal */}
+          <Modal isOpen={isRenameOpen} onClose={onRenameClose} size="md">
+            <ModalContent>
+              <ModalHeader>{t('Rename conversation')}</ModalHeader>
+              <ModalBody>
+                <Input
+                  label={t('Conversation title')}
+                  placeholder={t('Enter a new title')}
+                  value={newTitle}
+                  onValueChange={setNewTitle}
+                  autoFocus
+                />
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="light" onPress={onRenameClose}>
+                  {t('Cancel')}
+                </Button>
+                <Button
+                  color="primary"
+                  onPress={handleRename}
+                  isDisabled={!newTitle.trim()}
+                >
+                  {t('Save')}
+                </Button>
               </ModalFooter>
             </ModalContent>
           </Modal>

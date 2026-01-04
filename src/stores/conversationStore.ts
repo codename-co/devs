@@ -56,6 +56,12 @@ interface ConversationStore {
 
   // Summarization
   summarizeConversation: (conversationId: string) => Promise<string>
+
+  // Rename conversation
+  renameConversation: (
+    conversationId: string,
+    newTitle: string,
+  ) => Promise<void>
 }
 
 export const useConversationStore = create<ConversationStore>((set, get) => ({
@@ -700,6 +706,43 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       return summary
     } catch (error) {
       errorToast('Failed to summarize conversation', error)
+      throw error
+    }
+  },
+
+  // =========================================================================
+  // Rename conversation
+  // =========================================================================
+
+  renameConversation: async (conversationId: string, newTitle: string) => {
+    try {
+      if (!db.isInitialized()) {
+        await db.init()
+      }
+
+      const conversation = await db.get('conversations', conversationId)
+      if (!conversation) {
+        throw new Error('Conversation not found')
+      }
+
+      // Update conversation with new title
+      const updatedConversation = { ...conversation, title: newTitle.trim() }
+      await db.update('conversations', updatedConversation)
+
+      const { conversations, currentConversation } = get()
+      const updatedConversations = conversations.map((c) =>
+        c.id === conversationId ? updatedConversation : c,
+      )
+
+      set({
+        conversations: updatedConversations,
+        currentConversation:
+          currentConversation?.id === conversationId
+            ? updatedConversation
+            : currentConversation,
+      })
+    } catch (error) {
+      errorToast('Failed to rename conversation', error)
       throw error
     }
   },

@@ -1489,6 +1489,88 @@ describe('conversationStore', () => {
   })
 
   // ============================================
+  // renameConversation Tests
+  // ============================================
+  describe('renameConversation', () => {
+    it('should rename a conversation', async () => {
+      const conversation = createTestConversation({
+        id: 'conv-1',
+        title: 'Old Title',
+      })
+      mockDb.get.mockResolvedValueOnce(conversation)
+      getStore().setState({ conversations: [conversation] })
+
+      await getStore().getState().renameConversation('conv-1', 'New Title')
+
+      expect(mockDb.update).toHaveBeenCalledWith(
+        'conversations',
+        expect.objectContaining({
+          id: 'conv-1',
+          title: 'New Title',
+        }),
+      )
+    })
+
+    it('should update conversations state with new title', async () => {
+      const conversation = createTestConversation({
+        id: 'conv-1',
+        title: 'Old Title',
+      })
+      mockDb.get.mockResolvedValueOnce(conversation)
+      getStore().setState({ conversations: [conversation] })
+
+      await getStore().getState().renameConversation('conv-1', 'New Title')
+
+      expect(getStore().getState().conversations[0].title).toBe('New Title')
+    })
+
+    it('should update currentConversation if it is the renamed one', async () => {
+      const conversation = createTestConversation({
+        id: 'conv-1',
+        title: 'Old Title',
+      })
+      mockDb.get.mockResolvedValueOnce(conversation)
+      getStore().setState({
+        conversations: [conversation],
+        currentConversation: conversation,
+      })
+
+      await getStore().getState().renameConversation('conv-1', 'New Title')
+
+      expect(getStore().getState().currentConversation?.title).toBe('New Title')
+    })
+
+    it('should trim whitespace from title', async () => {
+      const conversation = createTestConversation({ id: 'conv-1' })
+      mockDb.get.mockResolvedValueOnce(conversation)
+      getStore().setState({ conversations: [conversation] })
+
+      await getStore()
+        .getState()
+        .renameConversation('conv-1', '  Trimmed Title  ')
+
+      expect(mockDb.update).toHaveBeenCalledWith(
+        'conversations',
+        expect.objectContaining({
+          title: 'Trimmed Title',
+        }),
+      )
+    })
+
+    it('should throw error for non-existent conversation', async () => {
+      mockDb.get.mockResolvedValueOnce(null)
+
+      await expect(
+        getStore().getState().renameConversation('invalid-id', 'New Title'),
+      ).rejects.toThrow('Conversation not found')
+      expect(mockToast.errorToast).toHaveBeenCalledWith(
+        'Failed to rename conversation',
+        expect.any(Error),
+      )
+    })
+  })
+
+  // ============================================
   // isLoading State Tests
   // ============================================
   describe('isLoading management', () => {

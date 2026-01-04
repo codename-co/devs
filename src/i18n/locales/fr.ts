@@ -98,7 +98,8 @@ export const fr: I18n = {
   'Built-in Agents': 'Agents intégrés',
   'Built-in agents are pre-configured agents that come with the platform. They showcase various capabilities and can serve as inspiration for your own custom agents.':
     'Les agents intégrés sont des agents préconfigurés qui accompagnent la plateforme. Ils démontrent diverses capacités et peuvent servir d’inspiration pour vos propres agents personnalisés.',
-
+  'Default agents are currently hidden. You can enable them in':
+    'Les agents par défaut sont actuellement masqués. Vous pouvez les activer dans',
   // AgentRunPage
   'Find your past conversations': 'Retrouvez vos conversations passées',
   'Loading agent and conversation…':
@@ -451,6 +452,10 @@ export const fr: I18n = {
   'No conversations found': 'Aucune conversation trouvée',
   'View summary': 'Voir le résumé',
   'No summary available': 'Aucun résumé disponible',
+  'Rename conversation': 'Renommer la conversation',
+  'Conversation title': 'Titre de la conversation',
+  'Enter a new title': 'Entrez un nouveau titre',
+  'Conversation renamed successfully': 'Conversation renommée avec succès',
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     'Aucun message épinglé pour le moment. Épinglez des messages importants de vos conversations pour les rendre disponibles ici.',
 

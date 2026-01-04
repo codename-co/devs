@@ -82,6 +82,8 @@ export const en = [
   'Browser: {browser}',
   'Enable Speech-to-Text',
   'Allow voice input using your device microphone in the prompt area',
+  'Hide Default Agents',
+  'Only show your custom agents in the agent picker and agents page',
   'Show Context Panel',
   'Display the contextual information panel on the right side of the screen',
   'Make the platform your own',

@@ -19,6 +19,7 @@ export interface UserSettings {
   backgroundImage?: string
   speechToTextEnabled: boolean
   pwaInstallPromptDismissed: boolean
+  hideDefaultAgents: boolean
 }
 
 const defaultSettings: UserSettings = {
@@ -28,6 +29,7 @@ const defaultSettings: UserSettings = {
   isContextualPanelCollapsed: false,
   speechToTextEnabled: false,
   pwaInstallPromptDismissed: false,
+  hideDefaultAgents: false,
 }
 interface UserSettingsStore extends UserSettings {
   setTheme: (theme: ThemeMode) => void
@@ -38,6 +40,7 @@ interface UserSettingsStore extends UserSettings {
   setBackgroundImage: (backgroundImage: string | undefined) => void
   setSpeechToTextEnabled: (enabled: boolean) => void
   setPwaInstallPromptDismissed: (dismissed: boolean) => void
+  setHideDefaultAgents: (hide: boolean) => void
   isDarkTheme: () => boolean
 }
 
@@ -60,6 +63,7 @@ export const userSettings = create<UserSettingsStore>()(
         set({ speechToTextEnabled: enabled }),
       setPwaInstallPromptDismissed: (dismissed: boolean) =>
         set({ pwaInstallPromptDismissed: dismissed }),
+      setHideDefaultAgents: (hide: boolean) => set({ hideDefaultAgents: hide }),
       isDarkTheme: () => {
         const { theme } = get()
         if (theme === 'dark') return true
@@ -79,6 +83,7 @@ export const userSettings = create<UserSettingsStore>()(
         backgroundImage: state.backgroundImage,
         speechToTextEnabled: state.speechToTextEnabled,
         pwaInstallPromptDismissed: state.pwaInstallPromptDismissed,
+        hideDefaultAgents: state.hideDefaultAgents,
       }),
     },
   ),

@@ -26,6 +26,7 @@ import {
   updateAgent,
   softDeleteAgent,
 } from '@/stores/agentStore'
+import { userSettings } from '@/stores/userStore'
 import { type Agent } from '@/types'
 import { Container, Section, AgentKnowledgePicker, Icon } from '@/components'
 import { AgentCard } from '@/components/AgentCard'
@@ -60,12 +61,14 @@ export const AgentsPage = () => {
     onClose: onDeleteModalClose,
   } = useDisclosure()
 
+  const hideDefaultAgents = userSettings((state) => state.hideDefaultAgents)
+
   const fetchAgents = async () => {
     setLoading(true)
     try {
       const { customAgents, builtInAgents } = await getAgentsSeparated()
 
-      if (customAgents.length === 0) {
+      if (customAgents.length === 0 && builtInAgents.length > 0) {
         setActiveTab('global-agents')
       } else {
         setActiveTab('my-agents')
@@ -81,7 +84,7 @@ export const AgentsPage = () => {
 
   useEffect(() => {
     fetchAgents()
-  }, [])
+  }, [hideDefaultAgents])
 
   // Refresh agents when component becomes visible (for when user navigates back from creating an agent)
   useEffect(() => {

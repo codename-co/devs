@@ -373,6 +373,10 @@ export const SettingsPage = () => {
   const setSpeechToTextEnabled = userSettings(
     (state) => state.setSpeechToTextEnabled,
   )
+  const hideDefaultAgents = userSettings((state) => state.hideDefaultAgents)
+  const setHideDefaultAgents = userSettings(
+    (state) => state.setHideDefaultAgents,
+  )
 
   const handleLanguageChange = (newLanguage: Lang) => {
     // Update the language setting in the store
@@ -950,6 +954,21 @@ export const SettingsPage = () => {
                   <p className="text-xs text-default-500 mt-1 ml-7">
                     {t(
                       'Allow voice input using your device microphone in the prompt area',
+                    )}
+                  </p>
+                </div>
+
+                <div className="max-w-xs mr-3">
+                  <Switch
+                    isSelected={hideDefaultAgents}
+                    onChange={(e) => setHideDefaultAgents(e.target.checked)}
+                    size="sm"
+                  >
+                    {t('Hide Default Agents')}
+                  </Switch>
+                  <p className="text-xs text-default-500 mt-1 ml-7">
+                    {t(
+                      'Only show your custom agents in the agent picker and agents page',
                     )}
                   </p>
                 </div>

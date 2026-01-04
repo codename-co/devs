@@ -102,6 +102,9 @@ export const ar: I18n = {
   'Enable Speech-to-Text': 'تفعيل تحويل الكلام إلى نص',
   'Allow voice input using your device microphone in the prompt area':
     'السماح بإدخال الصوت باستخدام ميكروفون جهازك في منطقة الطلب',
+  'Hide Default Agents': 'إخفاء الوكلاء الافتراضيين',
+  'Only show your custom agents in the agent picker and agents page':
+    'إظهار الوكلاء المخصصين فقط في منتقي الوكلاء وصفحة الوكلاء',
   'Show Context Panel': 'إظهار لوحة السياق',
   'Display the contextual information panel on the right side of the screen':
     'عرض لوحة المعلومات السياقية على الجانب الأيمن من الشاشة',

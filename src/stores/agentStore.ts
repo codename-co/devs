@@ -3,6 +3,7 @@ import { errorToast, successToast } from '@/lib/toast'
 import { db } from '@/lib/db'
 import { type Agent } from '@/types'
 import { Lang } from '@/i18n'
+import { userSettings } from '@/stores/userStore'
 
 type AgentJSON = Omit<Agent, 'createdAt' | 'updatedAt' | 'version' | 'tools'>
 
@@ -162,17 +163,26 @@ export async function getAvailableAgents(): Promise<string[]> {
   }
 }
 
-export async function loadAllAgents(): Promise<Agent[]> {
-  // Load built-in agents from JSON files
-  const agentIds = await getAvailableAgents()
-  const builtInAgents = await Promise.all(
-    agentIds.map((id) =>
-      id === 'devs' ? Promise.resolve(defaultDevsTeam) : loadAgent(id),
-    ),
-  )
-  const validBuiltInAgents = builtInAgents.filter(
-    (agent): agent is Agent => agent !== null,
-  )
+export async function loadAllAgents(options?: {
+  includeDefaultAgents?: boolean
+}): Promise<Agent[]> {
+  // Check user setting for hiding default agents
+  const hideDefaultAgents = userSettings.getState().hideDefaultAgents
+  const includeDefaults = options?.includeDefaultAgents ?? !hideDefaultAgents
+
+  // Load built-in agents from JSON files (if not hidden)
+  let validBuiltInAgents: Agent[] = []
+  if (includeDefaults) {
+    const agentIds = await getAvailableAgents()
+    const builtInAgents = await Promise.all(
+      agentIds.map((id) =>
+        id === 'devs' ? Promise.resolve(defaultDevsTeam) : loadAgent(id),
+      ),
+    )
+    validBuiltInAgents = builtInAgents.filter(
+      (agent): agent is Agent => agent !== null,
+    )
+  }
 
   // Load custom agents from IndexedDB
   const customAgents = await loadCustomAgents()
@@ -502,9 +512,10 @@ export async function getAgentsSeparated(): Promise<{
   customAgents: Agent[]
   builtInAgents: Agent[]
 }> {
+  const hideDefaultAgents = userSettings.getState().hideDefaultAgents
   const [customAgents, builtInAgents] = await Promise.all([
     loadCustomAgents(),
-    loadBuiltInAgents(),
+    hideDefaultAgents ? Promise.resolve([]) : loadBuiltInAgents(),
   ])
 
   return {

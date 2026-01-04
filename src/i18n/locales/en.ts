@@ -92,6 +92,7 @@ export const en = [
   'My Agents',
   'Built-in Agents',
   'Built-in agents are pre-configured agents that come with the platform. They showcase various capabilities and can serve as inspiration for your own custom agents.',
+  'Default agents are currently hidden. You can enable them in',
 
   // AgentRunPage
   'Find your past conversations',
@@ -416,6 +417,10 @@ export const en = [
   'No conversations found',
   'View summary',
   'No summary available',
+  'Rename conversation',
+  'Conversation title',
+  'Enter a new title',
+  'Conversation renamed successfully',
   'No pinned messages yet. Pin important messages from conversations to make them available here.',
 
   // Knowledge Base - Folder Watching

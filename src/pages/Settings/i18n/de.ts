@@ -105,6 +105,9 @@ export const de: I18n = {
   'Enable Speech-to-Text': 'Sprache-zu-Text aktivieren',
   'Allow voice input using your device microphone in the prompt area':
     'Spracheingabe über das Mikrofon Ihres Geräts im Prompt-Bereich zulassen',
+  'Hide Default Agents': 'Standard-Agenten ausblenden',
+  'Only show your custom agents in the agent picker and agents page':
+    'Nur Ihre benutzerdefinierten Agenten im Agenten-Auswahl und auf der Agentenseite anzeigen',
   'Show Context Panel': 'Kontextfenster anzeigen',
   'Display the contextual information panel on the right side of the screen':
     'Das kontextbezogene Informationsfenster auf der rechten Seite des Bildschirms anzeigen',

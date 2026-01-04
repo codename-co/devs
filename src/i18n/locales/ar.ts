@@ -98,6 +98,8 @@ export const ar: I18n = {
   'Built-in Agents': 'الوكلاء المدمجون',
   'Built-in agents are pre-configured agents that come with the platform. They showcase various capabilities and can serve as inspiration for your own custom agents.':
     'الوكلاء المدمجون هم وكلاء مُعدون مسبقاً ومتوفرون مع المنصة. يعرضون قدرات متنوعة ويمكن أن يكونوا مصدر إلهام لوكلائك المخصصين.',
+  'Default agents are currently hidden. You can enable them in':
+    'الوكلاء الافتراضيون مخفيون حالياً. يمكنك تفعيلهم في',
 
   // AgentRunPage
   'Find your past conversations': 'اعثر على محادثاتك السابقة',
@@ -439,6 +441,10 @@ export const ar: I18n = {
   'No conversations found': 'لم يتم العثور على محادثات',
   'View summary': 'عرض الملخص',
   'No summary available': 'لا يوجد ملخص متاح',
+  'Rename conversation': 'إعادة تسمية المحادثة',
+  'Conversation title': 'عنوان المحادثة',
+  'Enter a new title': 'أدخل عنوانًا جديدًا',
+  'Conversation renamed successfully': 'تم إعادة تسمية المحادثة بنجاح',
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     'لا توجد رسائل مثبتة بعد. قم بتثبيت الرسائل المهمة من المحادثات لجعلها متاحة هنا.',
 

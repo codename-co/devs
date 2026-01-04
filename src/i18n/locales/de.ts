@@ -98,6 +98,8 @@ export const de: I18n = {
   'Built-in Agents': 'Integrierte Agenten',
   'Built-in agents are pre-configured agents that come with the platform. They showcase various capabilities and can serve as inspiration for your own custom agents.':
     'Integrierte Agenten sind vorkonfigurierte Agenten, die mit der Plattform geliefert werden. Sie zeigen verschiedene Fähigkeiten und können als Inspiration für Ihre eigenen benutzerdefinierten Agenten dienen.',
+  'Default agents are currently hidden. You can enable them in':
+    'Standardagenten sind derzeit ausgeblendet. Sie können sie aktivieren in',
 
   // AgentRunPage
   'Find your past conversations': 'Finden Sie Ihre vergangenen Unterhaltungen',
@@ -446,6 +448,10 @@ export const de: I18n = {
   'No conversations found': 'Keine Konversationen gefunden',
   'View summary': 'Zusammenfassung anzeigen',
   'No summary available': 'Keine Zusammenfassung verfügbar',
+  'Rename conversation': 'Unterhaltung umbenennen',
+  'Conversation title': 'Unterhaltungstitel',
+  'Enter a new title': 'Neuen Titel eingeben',
+  'Conversation renamed successfully': 'Unterhaltung erfolgreich umbenannt',
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     'Noch keine angehefteten Nachrichten. Heften Sie wichtige Nachrichten aus Konversationen an, um sie hier verfügbar zu machen.',
   // Knowledge Base - Folder Watching

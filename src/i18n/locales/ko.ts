@@ -97,6 +97,8 @@ export const ko: I18n = {
   'Built-in Agents': '내장 에이전트',
   'Built-in agents are pre-configured agents that come with the platform. They showcase various capabilities and can serve as inspiration for your own custom agents.':
     '내장 에이전트는 플랫폼과 함께 제공되는 사전 구성된 에이전트입니다. 다양한 기능을 보여주며 나만의 맞춤형 에이전트에 영감을 줄 수 있습니다.',
+  'Default agents are currently hidden. You can enable them in':
+    '기본 에이전트가 현재 숨겨져 있습니다. 다음에서 활성화할 수 있습니다',
 
   // AgentRunPage
   'Find your past conversations': '과거 대화를 찾아보세요',
@@ -438,6 +440,10 @@ export const ko: I18n = {
   'No conversations found': '대화를 찾을 수 없습니다',
   'View summary': '요약 보기',
   'No summary available': '요약을 사용할 수 없습니다',
+  'Rename conversation': '대화 이름 변경',
+  'Conversation title': '대화 제목',
+  'Enter a new title': '새 제목을 입력하세요',
+  'Conversation renamed successfully': '대화 이름이 변경되었습니다',
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     '아직 고정된 메시지가 없습니다. 대화에서 중요한 메시지를 고정하여 여기에서 사용할 수 있게 하세요.',
 
