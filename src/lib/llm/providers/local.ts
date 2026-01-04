@@ -54,9 +54,11 @@ export class LocalLLMProvider implements LLMProviderInterface {
   private static loadingPromise: Promise<TextGenerationPipeline> | null = null
 
   // Default model, optimized for browser inference
-  public static readonly DEFAULT_MODEL = isLowEndDevice()
-    ? 'onnx-community/granite-4.0-350m-ONNX-web'
-    : 'onnx-community/granite-4.0-micro-ONNX-web'
+  public static readonly DEFAULT_MODEL =
+    'onnx-community/granite-4.0-350m-ONNX-web'
+  // isLowEndDevice()
+  //   ? 'onnx-community/granite-4.0-350m-ONNX-web'
+  //   : 'onnx-community/granite-4.0-micro-ONNX-web'
 
   // Progress callback for model loading
   private static progressCallback:
