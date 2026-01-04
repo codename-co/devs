@@ -30,11 +30,16 @@ import {
   Section,
   Widget,
 } from '@/components'
+import { CollaboratorAvatars, type Collaborator, TypingIndicator } from '@/components/Collaboration'
+import { useTypingUsers } from '@/hooks/useTypingUsers'
 import DefaultLayout from '@/layouts/Default'
 import type { HeaderProps } from '@/lib/types'
 import { getAgentById } from '@/stores/agentStore'
 import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
 import { usePinnedMessageStore } from '@/stores/pinnedMessageStore'
+import { useActiveWorkspace } from '@/stores/workspaceStore'
+import { useSyncStore } from '@/stores/syncStore'
+import type { AwarenessState } from '@/types'
 import {
   Agent,
   Message,
@@ -55,7 +60,89 @@ import { categoryLabels } from '../Knowledge/AgentMemories'
 import { useAgentContextPanel } from './useAgentContextPanel'
 import localI18n from './i18n'
 
+// ============================================================================
+// Hook for getting collaborators viewing current conversation
+// ============================================================================
+
+function useConversationCollaborators(conversationId: string | undefined): Collaborator[] {
+  const [collaborators, setCollaborators] = useState<Collaborator[]>([])
+  const activeWorkspace = useActiveWorkspace()
+  const syncStore = useSyncStore()
+  
+  useEffect(() => {
+    if (!conversationId || !activeWorkspace || !syncStore.isEnabled) {
+      setCollaborators([])
+      return
+    }
+    
+    // Get awareness from P2P provider if available
+    const p2pProvider = syncStore.getProvider('p2p')
+    if (!p2pProvider) {
+      setCollaborators([])
+      return
+    }
+    
+    // Try to get awareness from the provider
+    const getAwareness = (p2pProvider as any).getAwareness
+    if (typeof getAwareness !== 'function') {
+      setCollaborators([])
+      return
+    }
+    
+    const awareness = getAwareness.call(p2pProvider, activeWorkspace.id)
+    if (!awareness) {
+      setCollaborators([])
+      return
+    }
+    
+    // Convert awareness states to collaborators
+    const updateCollaborators = () => {
+      const states = awareness.getStates() as Map<number, AwarenessState>
+      const localClientId = awareness.clientID
+      const collabs: Collaborator[] = []
+      
+      states.forEach((state, clientId) => {
+        // Skip local user
+        if (clientId === localClientId) return
+        
+        // Check if user is viewing this conversation
+        const isViewingThisConversation = 
+          state.cursor?.conversationId === conversationId ||
+          state.viewingAgent === conversationId
+        
+        if (state.user && isViewingThisConversation) {
+          collabs.push({
+            id: state.user.id,
+            name: state.user.name,
+            avatar: undefined, // Could be extended to include avatar URL
+            color: state.user.color,
+            status: state.presence?.status ?? 'online',
+            currentView: 'viewing this conversation',
+          })
+        }
+      })
+      
+      setCollaborators(collabs)
+    }
+    
+    // Initial update
+    updateCollaborators()
+    
+    // Subscribe to changes
+    const handleChange = () => updateCollaborators()
+    awareness.on('change', handleChange)
+    
+    return () => {
+      awareness.off('change', handleChange)
+    }
+  }, [conversationId, activeWorkspace, syncStore.isEnabled, syncStore])
+  
+  return collaborators
+}
+
+// ============================================================================
 // Timeline item types for interleaving messages and memories
+// ============================================================================
 type TimelineItem =
   | { type: 'message'; data: Message; timestamp: Date }
   | { type: 'memory'; data: AgentMemoryEntry; timestamp: Date }
@@ -539,6 +626,19 @@ export const AgentRunPage = () => {
   } = useConversationStore()
 
   const { artifacts, loadArtifacts } = useArtifactStore()
+
+  // Workspace and collaboration state
+  const activeWorkspace = useActiveWorkspace()
+  const syncEnabled = useSyncStore((s) => s.isEnabled)
+  const collaborators = useConversationCollaborators(currentConversation?.id)
+  const { typingUsers } = useTypingUsers({ conversationId: currentConversation?.id })
+  
+  // Show collaborator avatars only in shared workspaces with other users online
+  const showCollaborators = Boolean(
+    activeWorkspace && 
+    syncEnabled && 
+    collaborators.length > 0
+  )
 
   // Pinned message state
   const {
@@ -1188,6 +1288,22 @@ export const AgentRunPage = () => {
       <div className="px-6 lg:px-8 pb-16">
         <div className="max-w-4xl mx-auto py-6">
           <Container>
+            {/* Collaborator avatars - shows who else is viewing this conversation */}
+            {showCollaborators && (
+              <div className="flex justify-end mb-4 -mt-2">
+                <CollaboratorAvatars
+                  collaborators={collaborators}
+                  size="sm"
+                  maxDisplay={5}
+                  showTooltip
+                  onCollaboratorClick={(collaborator) => {
+                    // Show info about the collaborator
+                    successToast(`${collaborator.name} is also here`)
+                  }}
+                />
+              </div>
+            )}
+            
             {/* Display timeline: messages and memories interleaved by timestamp */}
             {timelineItems.length > 0 && (
               <div className="duration-600 relative flex flex-col gap-6">
@@ -1301,6 +1417,12 @@ export const AgentRunPage = () => {
               )}
           </Container>
         </div>
+
+        {/* Typing indicator - shows when other users are typing */}
+        <TypingIndicator
+          users={typingUsers}
+          className="max-w-4xl mx-auto px-4 py-2"
+        />
 
         <PromptArea
           lang={lang}

@@ -484,3 +484,6 @@ export interface PinnedMessage {
   createdAt: Date
   updatedAt: Date
 }
+
+// Re-export collaboration types
+export * from './collaboration'

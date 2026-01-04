@@ -7,6 +7,8 @@ import { SecureStorage } from '@/lib/crypto'
 import { userSettings } from '@/stores/userStore'
 import { useArtifactStore } from '@/stores/artifactStore'
 import { useLLMModelStore } from '@/stores/llmModelStore'
+import { useIdentityStore } from '@/stores/identityStore'
+import { useWorkspaceStore } from '@/stores/workspaceStore'
 import { ServiceWorkerUpdatePrompt } from '@/components/ServiceWorkerUpdatePrompt'
 import { I18nProvider } from '@/i18n'
 
@@ -15,6 +17,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const theme = userSettings((state) => state.theme)
   const loadArtifacts = useArtifactStore((state) => state.loadArtifacts)
   const loadCredentials = useLLMModelStore((state) => state.loadCredentials)
+  
+  // Identity and workspace stores for auto-initialization
+  const userIdentity = useIdentityStore((state) => state.user)
+  const createIdentity = useIdentityStore((state) => state.createIdentity)
+  const initializeIdentity = useIdentityStore((state) => state.initialize)
+  const workspaces = useWorkspaceStore((state) => state.workspaces)
+  const createWorkspace = useWorkspaceStore((state) => state.createWorkspace)
+  const setActiveWorkspace = useWorkspaceStore((state) => state.setActiveWorkspace)
 
   useEffect(() => {
     // Initialize platform services
@@ -34,6 +44,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
         // Load artifacts into store
         await loadArtifacts()
+        
+        // Initialize identity store
+        await initializeIdentity()
 
         console.log('Platform initialized successfully')
       } catch (error) {
@@ -44,6 +57,30 @@ export function Providers({ children }: { children: React.ReactNode }) {
     initializePlatform()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+  
+  // Auto-create identity and default workspace for collaboration features
+  useEffect(() => {
+    const setupCollaboration = async () => {
+      try {
+        // Create identity if not exists
+        if (!userIdentity) {
+          await createIdentity()
+        }
+      } catch (error) {
+        console.error('Failed to setup collaboration:', error)
+      }
+    }
+    
+    setupCollaboration()
+  }, [userIdentity, createIdentity])
+  
+  // Create default workspace once identity is ready
+  useEffect(() => {
+    if (userIdentity && workspaces.length === 0) {
+      const workspace = createWorkspace('Personal', userIdentity.id)
+      setActiveWorkspace(workspace.id)
+    }
+  }, [userIdentity, workspaces.length, createWorkspace, setActiveWorkspace])
 
   // Apply theme to document
   useEffect(() => {

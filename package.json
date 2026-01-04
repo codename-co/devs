@@ -42,6 +42,7 @@
     "iconoir-react": "^7.11.0",
     "katex": "^0.16.25",
     "langfuse": "^3.38.4",
+    "lib0": "^0.2.117",
     "marked": "^16.1.1",
     "mermaid": "^11.11.0",
     "monaco-mermaid": "^1.1.0",
@@ -51,8 +52,12 @@
     "qrcode": "^1.5.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-qr-code": "^2.0.18",
     "react-router-dom": "^7.7.1",
     "simple-icons": "^15.8.0",
+    "y-indexeddb": "^9.0.12",
+    "y-webrtc": "^10.3.0",
+    "yjs": "^13.6.29",
     "zustand": "^5.0.7"
   },
   "devDependencies": {

@@ -1,12 +1,12 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
+import { webcrypto } from 'node:crypto'
 
-// Mock crypto.randomUUID for tests
-Object.defineProperty(global, 'crypto', {
-  value: {
-    randomUUID: () => 'test-uuid-' + Math.random().toString(36).substr(2, 9),
-  },
+// Use Node.js Web Crypto API for tests
+Object.defineProperty(globalThis, 'crypto', {
+  value: webcrypto,
   writable: true,
+  configurable: true,
 })
 
 // Mock browser APIs

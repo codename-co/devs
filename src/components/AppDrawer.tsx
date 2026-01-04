@@ -17,15 +17,19 @@ import {
 
 import { Lang, languages, useI18n, useUrl } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
+import { useWorkspaceStore } from '@/stores/workspaceStore'
+import { useIdentityStore } from '@/stores/identityStore'
+import { useSyncStore } from '@/stores/syncStore'
 
 import { Icon } from './Icon'
+import { WorkspaceSwitcher, SyncStatusIndicator, ShareDialog, ActivityFeed, type ActivityItem } from '@/components/Collaboration'
 import { DevsIconSmall } from './DevsIcon'
 import { Title } from './Title'
 import { ProgressIndicator } from './ProgressIndicator'
 import { AboutModal } from './AboutModal'
 import { PRODUCT } from '@/config/product'
 import clsx from 'clsx'
-import { useState, useEffect, memo } from 'react'
+import { useState, useEffect, useMemo, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { cn, isCurrentPath } from '@/lib/utils'
 
@@ -490,6 +494,193 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
 
   const setLanguage = userSettings((state) => state.setLanguage)
 
+  // Workspace and collaboration stores
+  const { 
+    workspaces, 
+    activeWorkspaceId, 
+    setActiveWorkspace,
+    updateMemberRole,
+    removeMember,
+    createInviteLink,
+    deleteInviteLink,
+    getUserRole,
+    getActiveWorkspace,
+  } = useWorkspaceStore()
+  const userIdentity = useIdentityStore((state) => state.user)
+  const syncStoreState = useSyncStore()
+  
+  // Share dialog state
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
+  
+  // Activity feed state
+  const [isActivityExpanded, setIsActivityExpanded] = useState(true)
+  
+  // Get current user ID from identity store or use placeholder
+  const currentUserId = userIdentity?.id ?? 'local-user'
+  
+  // Get active workspace and user role
+  const activeWorkspace = getActiveWorkspace()
+  const currentUserRole = activeWorkspaceId 
+    ? getUserRole(activeWorkspaceId, currentUserId) 
+    : null
+  
+  // Check if user can share (must be in a workspace with appropriate role)
+  const canShare = activeWorkspace !== null && 
+    (currentUserRole === 'owner' || currentUserRole === 'admin' || currentUserRole === 'editor')
+  
+  // Check if collaboration features should be shown
+  const showWorkspaceSwitcher = userIdentity !== null && workspaces.length > 0
+  
+  // Mock activities for demonstration - in the future, this will be populated from collaboration events
+  const mockActivities: ActivityItem[] = useMemo(() => {
+    if (!activeWorkspace) return []
+    
+    const now = new Date()
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
+    const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000)
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    
+    return [
+      {
+        id: '1',
+        type: 'join' as const,
+        userId: 'user-1',
+        userName: 'Alice',
+        userColor: '#3B82F6',
+        timestamp: oneHourAgo,
+      },
+      {
+        id: '2',
+        type: 'create' as const,
+        userId: 'user-2',
+        userName: 'Bob',
+        userColor: '#10B981',
+        timestamp: twoHoursAgo,
+        data: {
+          entityType: 'agent',
+          entityName: 'Research Assistant',
+        },
+      },
+      {
+        id: '3',
+        type: 'edit' as const,
+        userId: 'user-1',
+        userName: 'Alice',
+        userColor: '#3B82F6',
+        timestamp: yesterday,
+        data: {
+          entityType: 'knowledge',
+          entityName: 'Product Documentation',
+        },
+      },
+    ]
+  }, [activeWorkspace])
+  
+  // Only show activity feed when in a shared workspace or there are activities
+  const showActivityFeed = activeWorkspace !== null && (activeWorkspace.members.length > 1 || mockActivities.length > 0)
+  
+  // Handle activity click - navigate to relevant entity
+  const handleActivityClick = (activity: ActivityItem) => {
+    if (!activity.data?.entityType) return
+    
+    switch (activity.data.entityType) {
+      case 'agent':
+        navigate(url('/agents'))
+        break
+      case 'knowledge':
+        navigate(url('/knowledge'))
+        break
+      case 'conversation':
+        navigate(url('/conversations'))
+        break
+      default:
+        break
+    }
+  }
+  
+  // Build sync status array from sync store
+  const syncStatus = Array.from(syncStoreState.workspaceSyncStates.entries()).map(([workspaceId, workspaceSyncState]) => ({
+    workspaceId,
+    status: workspaceSyncState.status.state,
+    pendingChanges: workspaceSyncState.status.pendingChanges,
+  }))
+
+  // Build SyncStatus object for SyncStatusIndicator
+  const activeSyncState = activeWorkspaceId 
+    ? syncStoreState.workspaceSyncStates.get(activeWorkspaceId)
+    : undefined
+  
+  const currentSyncStatus = {
+    state: activeSyncState?.status.state ?? syncStoreState.globalStatus,
+    pendingChanges: activeSyncState?.status.pendingChanges ?? 0,
+    lastSyncTime: activeSyncState?.status.lastSyncTime,
+    connectedPeers: Array.from(syncStoreState.providers.values()).filter(p => p.isConnected?.()).length,
+    error: activeSyncState?.lastError ?? undefined,
+  }
+  
+  // Check if sync features should be shown (has enabled sync or active providers)
+  const showSyncIndicator = syncStoreState.isEnabled || syncStoreState.providers.size > 0
+
+  // Sync callbacks
+  const handleRetrySync = () => {
+    if (activeWorkspaceId) {
+      syncStoreState.syncWorkspace(activeWorkspaceId)
+    } else {
+      // Try to re-enable sync if disabled
+      syncStoreState.enableSync()
+    }
+  }
+
+  const handleForceSync = () => {
+    if (activeWorkspaceId) {
+      syncStoreState.syncWorkspace(activeWorkspaceId)
+    }
+  }
+
+  // Share dialog handlers
+  const handleUpdateMemberRole = async (userId: string, newRole: any) => {
+    if (activeWorkspaceId) {
+      updateMemberRole(activeWorkspaceId, userId, newRole)
+    }
+  }
+
+  const handleRemoveMember = async (userId: string) => {
+    if (activeWorkspaceId) {
+      removeMember(activeWorkspaceId, userId)
+    }
+  }
+
+  const handleCreateInviteLink = async (config: {
+    role: any
+    expiresIn?: number
+    maxUses?: number
+  }) => {
+    if (!activeWorkspaceId) {
+      throw new Error('No active workspace')
+    }
+    const expiresAt = config.expiresIn 
+      ? new Date(Date.now() + config.expiresIn * 1000)
+      : undefined
+    return createInviteLink(activeWorkspaceId, config.role, {
+      expiresAt,
+      maxUses: config.maxUses,
+    })
+  }
+
+  const handleDeleteInviteLink = async (linkId: string) => {
+    if (activeWorkspaceId) {
+      deleteInviteLink(activeWorkspaceId, linkId)
+    }
+  }
+
+  const handleLeaveWorkspace = async () => {
+    if (activeWorkspaceId) {
+      removeMember(activeWorkspaceId, currentUserId)
+      setActiveWorkspace(null)
+      setIsShareDialogOpen(false)
+    }
+  }
+
   const handleLanguageChange = (newLanguage: Lang) => {
     // Update the language setting in the store
     setLanguage(newLanguage)
@@ -561,6 +752,32 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                 {t('New chat')}
               </ListboxItem>
             </ListboxSection>
+          </Listbox>
+          
+          {/* Workspace Switcher - shown when user has identity and workspaces */}
+          {showWorkspaceSwitcher && (
+            <div className="my-3">
+              <WorkspaceSwitcher
+                workspaces={workspaces}
+                activeWorkspaceId={activeWorkspaceId ?? ''}
+                currentUserId={currentUserId}
+                onWorkspaceSelect={(workspaceId) => setActiveWorkspace(workspaceId)}
+                onCreateWorkspace={() => {
+                  console.log('Create workspace clicked')
+                  // TODO: Navigate to create workspace page or open modal
+                  // navigate(url('/workspaces/new'))
+                }}
+                onWorkspaceSettings={(workspaceId) => {
+                  console.log('Workspace settings clicked:', workspaceId)
+                  // TODO: Navigate to workspace settings
+                  // navigate(url(`/workspaces/${workspaceId}/settings`))
+                }}
+                syncStatus={syncStatus}
+              />
+            </div>
+          )}
+
+          <Listbox aria-label={t('Main navigation')} variant="flat">
             <ListboxSection showDivider>
               <ListboxItem
                 href={url('/agents')}
@@ -748,6 +965,37 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
           <AgentList />
           {/* <TaskList /> */}
           {/* <ConversationList /> */}
+          
+          {/* Activity Feed - shown when in a shared workspace */}
+          {showActivityFeed && (
+            <div className="mt-4">
+              {/* Collapsible header */}
+              <button
+                onClick={() => setIsActivityExpanded(!isActivityExpanded)}
+                className="flex items-center justify-between w-full px-2 py-1.5 text-xs font-semibold text-default-500 uppercase tracking-wider hover:bg-default-100 rounded-md transition-colors"
+              >
+                <span>{t('Recent Activity')}</span>
+                <Icon 
+                  name={isActivityExpanded ? 'NavArrowDown' : 'NavArrowRight'} 
+                  className="w-3 h-3 opacity-60" 
+                />
+              </button>
+              
+              {/* Activity feed content */}
+              {isActivityExpanded && (
+                <div className="mt-1 max-h-48 overflow-y-auto">
+                  <ActivityFeed
+                    activities={mockActivities}
+                    maxItems={5}
+                    showTimestamps
+                    groupByTime={false}
+                    onActivityClick={handleActivityClick}
+                    className="text-sm"
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </nav>
 
         {/* Upgrade Action - Desktop */}
@@ -763,12 +1011,42 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
       </ScrollShadow>
 
       {/* Bottom navigation */}
-      <nav className="pointer-events-auto w-full flex flex-row mt-4 items-center">
+      <nav className="pointer-events-auto w-full flex flex-row mt-4 items-center gap-2">
         {/* Progress indicator and Organization/Product name at bottom */}
         <AboutModal
           isOpen={showAboutModal}
           onClose={() => setShowAboutModal(false)}
         />
+        
+        {/* Share Dialog */}
+        {activeWorkspace && currentUserRole && (
+          <ShareDialog
+            isOpen={isShareDialogOpen}
+            onClose={() => setIsShareDialogOpen(false)}
+            workspaceId={activeWorkspace.id}
+            workspaceName={activeWorkspace.name}
+            currentUserId={currentUserId}
+            currentUserRole={currentUserRole}
+            members={activeWorkspace.members}
+            inviteLinks={activeWorkspace.inviteLinks}
+            onUpdateMemberRole={handleUpdateMemberRole}
+            onRemoveMember={handleRemoveMember}
+            onCreateInviteLink={handleCreateInviteLink}
+            onDeleteInviteLink={handleDeleteInviteLink}
+            onLeaveWorkspace={handleLeaveWorkspace}
+          />
+        )}
+        
+        {/* Sync Status Indicator - shown when sync is enabled or has providers */}
+        {showSyncIndicator && (
+          <SyncStatusIndicator
+            status={currentSyncStatus}
+            variant="compact"
+            showPeerCount
+            onRetry={handleRetrySync}
+            onForceSync={handleForceSync}
+          />
+        )}
 
         {/* Quick Actions Menu */}
         <Dropdown placement="top" aria-label={PRODUCT.name}>
@@ -798,12 +1076,27 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
               </Title>
             </Button>
           </DropdownTrigger>
-          <DropdownMenu aria-label={t('Quick Actions')}>
+          <DropdownMenu 
+            aria-label={t('Quick Actions')}
+            onAction={(key) => {
+              if (key === 'share') {
+                setIsShareDialogOpen(true)
+              } else if (key === 'about') {
+                setShowAboutModal(true)
+              }
+            }}
+          >
             <DropdownSection showDivider>
+              <DropdownItem
+                key="share"
+                className={canShare ? '' : 'hidden'}
+                startContent={<Icon name="Share" size="sm" />}
+              >
+                {t('Share the platform')}
+              </DropdownItem>
               <DropdownItem
                 key="about"
                 startContent={<DevsIconSmall />}
-                onClick={() => setShowAboutModal(true)}
               >
                 {t('About')}
               </DropdownItem>
