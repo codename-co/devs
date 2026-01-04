@@ -227,8 +227,31 @@ export const submitChat = async (
       })
     }
 
-    // Save user message to conversation
-    await addMessage(conversation.id, { role: 'user', content: prompt })
+    // Convert user-provided attachments to MessageAttachment format
+    const userMessageAttachments = attachments.map((file) => {
+      let type: 'image' | 'document' | 'text' = 'document'
+      if (file.type.startsWith('image/')) {
+        type = 'image'
+      } else if (file.type.startsWith('text/')) {
+        type = 'text'
+      }
+
+      return {
+        type,
+        name: file.name,
+        data: file.data,
+        mimeType: file.type,
+        size: file.size,
+      }
+    })
+
+    // Save user message to conversation (with attachments for persistence)
+    await addMessage(conversation.id, {
+      role: 'user',
+      content: prompt,
+      attachments:
+        userMessageAttachments.length > 0 ? userMessageAttachments : undefined,
+    })
 
     // Prepare messages for the LLM
     const messages: LLMMessage[] = [
@@ -244,26 +267,21 @@ export const submitChat = async (
         ...conversationMessages.map((msg) => ({
           role: msg.role,
           content: msg.content,
+          // Include attachments from previous messages so LLM maintains context
+          attachments: msg.attachments?.map((att) => ({
+            type: att.type,
+            name: att.name,
+            data: att.data,
+            mimeType: att.mimeType,
+          })),
         })),
       )
     }
 
-    // Convert user-provided attachments to LLMMessageAttachment format
-    const userAttachments = attachments.map((file) => {
-      let type: 'image' | 'document' | 'text' = 'document'
-      if (file.type.startsWith('image/')) {
-        type = 'image'
-      } else if (file.type.startsWith('text/')) {
-        type = 'text'
-      }
-
-      return {
-        type,
-        name: file.name,
-        data: file.data,
-        mimeType: file.type,
-      }
-    })
+    // Convert attachments to LLMMessageAttachment format (without size field)
+    const userAttachments = userMessageAttachments.map(
+      ({ size: _, ...rest }) => rest,
+    )
 
     // Merge knowledge attachments with user-provided attachments
     const allAttachments = [...knowledgeAttachments, ...userAttachments]
@@ -328,4 +346,3 @@ export const submitChat = async (
     return { success: false, error: 'LLM call failed' }
   }
 }
-

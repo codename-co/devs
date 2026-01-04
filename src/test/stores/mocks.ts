@@ -127,6 +127,13 @@ export function createTestMessage(
     agentId: string
     isPinned: boolean
     pinnedAt: Date
+    attachments: Array<{
+      type: 'image' | 'document' | 'text'
+      name: string
+      data: string
+      mimeType: string
+      size?: number
+    }>
   }> = {},
 ) {
   return {
@@ -137,6 +144,7 @@ export function createTestMessage(
     agentId: overrides.agentId,
     isPinned: overrides.isPinned,
     pinnedAt: overrides.pinnedAt,
+    attachments: overrides.attachments,
   }
 }
 

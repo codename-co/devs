@@ -33,6 +33,23 @@ export interface Example {
   prompt: string
 }
 
+/**
+ * Attachment metadata for messages
+ * Used for persisting file references in conversation history
+ */
+export interface MessageAttachment {
+  /** Type classification for LLM processing */
+  type: 'image' | 'document' | 'text'
+  /** Original filename */
+  name: string
+  /** Base64-encoded file content */
+  data: string
+  /** MIME type of the file */
+  mimeType: string
+  /** File size in bytes (for display purposes) */
+  size?: number
+}
+
 export interface Message {
   id: string
   role: 'user' | 'assistant' | 'system'
@@ -42,6 +59,7 @@ export interface Message {
   isPinned?: boolean // Whether this message is pinned
   pinnedDescription?: string // Short AI-generated description when pinned
   pinnedAt?: Date // When the message was pinned
+  attachments?: MessageAttachment[] // File attachments for this message
 }
 
 export interface Conversation {

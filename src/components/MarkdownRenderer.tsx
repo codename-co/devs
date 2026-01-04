@@ -319,12 +319,12 @@ export const MarkdownRenderer = ({
         // Configure marked for better formatting
         configureMarked()
 
-        console.log(
+        console.debug(
           '📝 PROCESSED MARKDOWN BEFORE PARSE:',
           processedMarkdown.substring(0, 500),
         )
         const html = await marked.parse(processedMarkdown)
-        console.log('📄 HTML AFTER PARSE:', html.substring(0, 500))
+        console.debug('📄 HTML AFTER PARSE:', html.substring(0, 500))
 
         setProcessedContent({ html, codeBlocks, thinkBlocks, mathBlocks })
       } catch (error) {

@@ -14,17 +14,11 @@ export class OpenAIProvider implements LLMProviderInterface {
     }
 
     // For messages with attachments, create a content array
+    // Using Chat Completions API format: 'text' and 'image_url' types
+    // For PDFs/documents, OpenAI Chat Completions uses 'file' type with base64 data
     const content = []
 
-    // Add text content first
-    if (message.content.trim()) {
-      content.push({
-        type: 'text',
-        text: message.content,
-      })
-    }
-
-    // Add attachments
+    // Add attachments first (files before text per OpenAI best practices)
     message.attachments.forEach((attachment) => {
       if (attachment.type === 'image') {
         content.push({
@@ -33,19 +27,43 @@ export class OpenAIProvider implements LLMProviderInterface {
             url: `data:${attachment.mimeType};base64,${attachment.data}`,
           },
         })
-      } else {
-        // For documents, include them as text with description
-        const fileContent =
-          attachment.type === 'text'
-            ? atob(attachment.data) // Decode base64 text files
-            : `[File: ${attachment.name} (${attachment.mimeType})]`
-
+      } else if (attachment.type === 'document') {
+        // OpenAI Chat Completions API supports 'file' type for documents (PDFs, etc.)
         content.push({
-          type: 'text',
-          text: `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`,
+          type: 'file',
+          file: {
+            filename: attachment.name,
+            file_data: `data:${attachment.mimeType};base64,${attachment.data}`,
+          },
         })
+      } else if (attachment.type === 'text') {
+        // For text files, decode and include as text content
+        try {
+          const fileContent = atob(attachment.data)
+          content.push({
+            type: 'text',
+            text: `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`,
+          })
+        } catch {
+          // If decoding fails, include as file
+          content.push({
+            type: 'file',
+            file: {
+              filename: attachment.name,
+              file_data: `data:${attachment.mimeType};base64,${attachment.data}`,
+            },
+          })
+        }
       }
     })
+
+    // Add text content after attachments
+    if (message.content.trim()) {
+      content.push({
+        type: 'text',
+        text: message.content,
+      })
+    }
 
     return {
       role: message.role,

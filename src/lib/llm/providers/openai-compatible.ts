@@ -44,43 +44,81 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
       }
     }
 
-    // For messages with attachments, create a content array
-    const content = []
+    // For messages with attachments, we need to handle different scenarios:
+    // 1. If there are images -> use content array with image_url (requires multimodal model)
+    // 2. If only documents/text -> flatten to string content for max compatibility
 
-    // Add text content first
-    if (message.content.trim()) {
-      content.push({
-        type: 'text',
-        text: message.content,
+    const hasImages = message.attachments.some((a) => a.type === 'image')
+
+    if (hasImages) {
+      // Use content array format for multimodal models
+      const content: any[] = []
+
+      message.attachments.forEach((attachment) => {
+        if (attachment.type === 'image') {
+          content.push({
+            type: 'image_url',
+            image_url: {
+              url: `data:${attachment.mimeType};base64,${attachment.data}`,
+            },
+          })
+        } else if (attachment.type === 'text') {
+          try {
+            const fileContent = atob(attachment.data)
+            content.push({
+              type: 'text',
+              text: `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`,
+            })
+          } catch {
+            content.push({
+              type: 'text',
+              text: `\n\n[File: ${attachment.name} - could not decode]\n\n`,
+            })
+          }
+        } else if (attachment.type === 'document') {
+          content.push({
+            type: 'text',
+            text: `\n\n[Document: ${attachment.name} (${attachment.mimeType}) - PDF/document files require a multimodal model]\n\n`,
+          })
+        }
       })
-    }
 
-    // Add attachments
-    message.attachments.forEach((attachment) => {
-      if (attachment.type === 'image') {
-        content.push({
-          type: 'image_url',
-          image_url: {
-            url: `data:${attachment.mimeType};base64,${attachment.data}`,
-          },
-        })
-      } else {
-        // For documents, include them as text with description
-        const fileContent =
-          attachment.type === 'text'
-            ? atob(attachment.data) // Decode base64 text files
-            : `[File: ${attachment.name} (${attachment.mimeType})]`
-
+      if (message.content.trim()) {
         content.push({
           type: 'text',
-          text: `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`,
+          text: message.content,
         })
       }
-    })
 
-    return {
-      role: message.role,
-      content: content,
+      return {
+        role: message.role,
+        content: content,
+      }
+    } else {
+      // No images - use simple string content for maximum compatibility
+      // This works with text-only models like Mistral, Llama, etc.
+      let textContent = ''
+
+      message.attachments.forEach((attachment) => {
+        if (attachment.type === 'text') {
+          try {
+            const fileContent = atob(attachment.data)
+            textContent += `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`
+          } catch {
+            textContent += `\n\n[File: ${attachment.name} - could not decode]\n\n`
+          }
+        } else if (attachment.type === 'document') {
+          // For PDFs/documents without a multimodal model, we can't process them
+          textContent += `\n\n[Document: ${attachment.name} (${attachment.mimeType}) - PDF/document content cannot be read by text-only models. Please copy-paste the text content or use a multimodal model.]\n\n`
+        }
+      })
+
+      textContent += message.content
+
+      return {
+        role: message.role,
+        content: textContent.trim(),
+      }
     }
   }
 

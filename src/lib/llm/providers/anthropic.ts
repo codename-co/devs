@@ -17,15 +17,7 @@ export class AnthropicProvider implements LLMProviderInterface {
     // For messages with attachments, create a content array
     const content = []
 
-    // Add text content first
-    if (message.content.trim()) {
-      content.push({
-        type: 'text',
-        text: message.content,
-      })
-    }
-
-    // Add attachments
+    // Add attachments first
     message.attachments.forEach((attachment) => {
       if (attachment.type === 'image') {
         content.push({
@@ -36,19 +28,45 @@ export class AnthropicProvider implements LLMProviderInterface {
             data: attachment.data,
           },
         })
-      } else {
-        // For documents, include them as text with description
-        const fileContent =
-          attachment.type === 'text'
-            ? atob(attachment.data) // Decode base64 text files
-            : `[File: ${attachment.name} (${attachment.mimeType})]`
-
+      } else if (attachment.type === 'document') {
+        // Use Anthropic's document type with base64 source for PDFs and other documents
         content.push({
-          type: 'text',
-          text: `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`,
+          type: 'document',
+          source: {
+            type: 'base64',
+            media_type: attachment.mimeType,
+            data: attachment.data,
+          },
         })
+      } else if (attachment.type === 'text') {
+        // For text files, decode and include as text content
+        try {
+          const fileContent = atob(attachment.data)
+          content.push({
+            type: 'text',
+            text: `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`,
+          })
+        } catch {
+          // If decoding fails, treat as document
+          content.push({
+            type: 'document',
+            source: {
+              type: 'base64',
+              media_type: attachment.mimeType,
+              data: attachment.data,
+            },
+          })
+        }
       }
     })
+
+    // Add text content after attachments
+    if (message.content.trim()) {
+      content.push({
+        type: 'text',
+        text: message.content,
+      })
+    }
 
     return {
       role: message.role,

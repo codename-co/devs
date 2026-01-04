@@ -8,30 +8,41 @@ export class OllamaProvider implements LLMProviderInterface {
 
   private convertMessageToOllamaFormat(message: LLMMessage): any {
     let content = message.content
+    const images: string[] = []
 
-    // If there are attachments, append them to the content
+    // If there are attachments, handle them appropriately
     if (message.attachments && message.attachments.length > 0) {
       message.attachments.forEach((attachment) => {
         if (attachment.type === 'image') {
-          // For images, we'll include them as base64 with description
-          // Note: Ollama's support for images depends on the model
-          content += `\n\n--- Image: ${attachment.name} ---\n[Image data: ${attachment.mimeType}]\ndata:${attachment.mimeType};base64,${attachment.data}\n--- End of ${attachment.name} ---\n\n`
+          // Ollama supports images array for multimodal models (e.g., llava, bakllava)
+          images.push(attachment.data) // Raw base64 without data URL prefix
         } else if (attachment.type === 'text') {
           // For text files, decode and include the content
-          const fileContent = atob(attachment.data) // Decode base64 text files
-          content += `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`
-        } else {
-          // For document files, include them with description
-          const fileContent = `[Document: ${attachment.name} (${attachment.mimeType})]`
-          content += `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`
+          try {
+            const fileContent = atob(attachment.data)
+            content += `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`
+          } catch {
+            content += `\n\n[File: ${attachment.name} (${attachment.mimeType}) - could not decode]\n\n`
+          }
+        } else if (attachment.type === 'document') {
+          // For documents like PDFs, Ollama doesn't have native support
+          // Include as a note - user should use a multimodal model or external tool
+          content += `\n\n[Document attached: ${attachment.name} (${attachment.mimeType}) - Note: Ollama does not natively support PDF parsing. Consider using a vision model with document images or extracting text first.]\n\n`
         }
       })
     }
 
-    return {
+    const result: any = {
       role: message.role,
       content: content,
     }
+
+    // Add images array if we have image attachments
+    if (images.length > 0) {
+      result.images = images
+    }
+
+    return result
   }
 
   async chat(
