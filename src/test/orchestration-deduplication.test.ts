@@ -128,12 +128,19 @@ describe('Orchestration Deduplication', () => {
     )
 
     // Act - Start two orchestrations simultaneously for the same prompt
+    // Catch the second one immediately to prevent unhandled rejection
     const orchestration1Promise = WorkflowOrchestrator.orchestrateTask(prompt)
-    const orchestration2Promise = WorkflowOrchestrator.orchestrateTask(prompt)
+    const orchestration2Promise = WorkflowOrchestrator.orchestrateTask(
+      prompt,
+    ).catch((e) => e)
 
-    // Assert - First orchestration should succeed, second should be rejected with duplicate error
+    // Assert - First orchestration should succeed
     await expect(orchestration1Promise).resolves.toBeDefined()
-    await expect(orchestration2Promise).rejects.toThrow(
+
+    // Second should have thrown duplicate error (caught as error object)
+    const error = await orchestration2Promise
+    expect(error).toBeInstanceOf(Error)
+    expect(error.message).toBe(
       'Orchestration already in progress for this task',
     )
   })

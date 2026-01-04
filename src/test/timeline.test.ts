@@ -117,9 +117,11 @@ describe('Timeline Event Ordering', () => {
     )
 
     // Assert - Events should be in chronological order
+    // Note: requirement_detected occurs at task.createdAt (same as task_created)
     const eventTypes = events.map((e) => e.type)
     const expectedOrder = [
       'task_created', // 10:00
+      'requirement_detected', // 10:00 (same as task_created, but added after)
       'agent_assigned', // 10:00:30 (should come BEFORE messages, not at the end)
       'message', // 10:01 (user message)
       'artifact_created', // 10:02

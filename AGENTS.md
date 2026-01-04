@@ -385,10 +385,35 @@ The whole architecture is described in [ARCHITECTURE.md](ARCHITECTURE.md). @ARCH
 
 - **Test Runner:** [Vitest](https://vitest.dev/) with jsdom environment
 - **Testing Library:** [@testing-library/react](https://testing-library.com/docs/react-testing-library/intro/)
+- **E2E Testing:** [Playwright](https://playwright.dev/) for end-to-end browser testing
 - **Test Structure:** Unit tests for business logic, component tests for UI, integration tests for flows
 - **TDD Approach:** Write failing tests first, implement features to pass tests, refactor while maintaining green tests
-- **Test Organization:** Tests co-located with source code in `src/test/` directory
-- **Coverage:** High test coverage on critical business logic and user flows
+- **Test Organization:** Unit tests in `src/test/`, E2E tests in `tests/e2e/`
+- **Coverage Tool:** `@vitest/coverage-v8` for code coverage reporting
+
+#### Coverage Requirements
+
+| Category                           | Target   | Priority    |
+| ---------------------------------- | -------- | ----------- |
+| `src/lib/**` (utilities)           | **60%+** | 🔴 Critical |
+| `src/stores/**` (state management) | **60%+** | 🔴 Critical |
+| `src/components/**`                | 30%+     | 🟡 Medium   |
+| `src/pages/**`                     | 20%+     | 🟢 Low      |
+
+#### TDD Mandate for New Features
+
+**All new features and important enhancements in `src/lib/` and `src/stores/` MUST follow TDD:**
+
+1. **Write tests first** - Create failing tests that describe the expected behavior
+2. **Implement minimally** - Write just enough code to make tests pass
+3. **Refactor safely** - Improve code quality while keeping tests green
+4. **Verify coverage** - Run `npm run test:coverage` before committing
+
+This ensures:
+
+- LLMs can safely enhance features without causing regressions
+- Critical business logic is always verified
+- Refactoring is safe and confident
 
 ### Data Storage
 
@@ -662,22 +687,55 @@ Sophisticated knowledge management system for personal knowledge base maintenanc
 ### Running Tests
 
 ```bash
-# Run all tests once
+# Run all unit tests once
 npm run test:run
 
-# Run tests in watch mode
+# Run tests in watch mode (recommended during development)
 npm run test:watch
 
-# Run tests for specific files
-npm run test:run src/test/navigation.test.tsx
+# Run tests with coverage report
+npm run test:coverage
+
+# Run E2E tests
+npm run test:e2e
+
+# Run E2E tests with UI (interactive debugging)
+npm run test:e2e:ui
 ```
 
-### TDD Workflow
+### TDD Workflow (Mandatory for lib/ and stores/)
+
+When adding or modifying code in `src/lib/` or `src/stores/`:
 
 1. **Red:** Write a failing test that describes the desired functionality
+   ```bash
+   npm run test:watch  # Start test watcher
+   ```
 2. **Green:** Write the minimum code necessary to make the test pass
 3. **Refactor:** Improve the code while keeping tests green
-4. **Repeat:** Continue with the next feature or improvement
+4. **Verify:** Check coverage before committing
+   ```bash
+   npm run test:coverage
+   ```
+
+#### Example: Adding a new utility function
+
+```typescript
+// 1. First, write the test in src/test/my-feature.test.ts
+import { describe, it, expect } from 'vitest'
+import { myNewFunction } from '@/lib/my-feature'
+
+describe('myNewFunction', () => {
+  it('should return expected result', () => {
+    expect(myNewFunction('input')).toBe('expected output')
+  })
+})
+
+// 2. Then implement in src/lib/my-feature.ts
+export function myNewFunction(input: string): string {
+  return 'expected output'
+}
+```
 
 ### Development Commands
 

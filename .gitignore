@@ -1,7 +1,7 @@
 .DS_Store
 dist
 node_modules
-
+/coverage
 /playwright-report
 /public/agents/manifest.json
 /public/agents/*.agent.json
