@@ -7,7 +7,6 @@ import {
   TextStreamer,
 } from '@huggingface/transformers'
 import { inspectAllCaches, startCacheMonitoring } from '../cache-debug'
-import { isLowEndDevice } from '@/lib/device'
 
 // Configure transformers.js for browser environment with persistent caching
 env.allowLocalModels = false
