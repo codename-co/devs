@@ -23,11 +23,14 @@ import { AgentSelector } from './AgentSelector'
 import { AttachmentSelector } from './AttachmentSelector'
 import { AgentMentionPopover } from './AgentMentionPopover'
 import { useAgentMention } from './useAgentMention'
+import { MethodologyMentionPopover } from './MethodologyMentionPopover'
+import { useMethodologyMention } from './useMethodologyMention'
 
 import { useI18n } from '@/i18n'
 import { type LanguageCode } from '@/i18n/locales'
 import { cn, getFileIcon } from '@/lib/utils'
 import { type Agent, type KnowledgeItem } from '@/types'
+import type { Methodology } from '@/types/methodology.types'
 import { getDefaultAgent } from '@/stores/agentStore'
 import {
   isLandscape,
@@ -41,15 +44,25 @@ import { userSettings } from '@/stores/userStore'
 interface PromptAreaProps
   extends Omit<TextAreaProps, 'onFocus' | 'onBlur' | 'onKeyDown'> {
   lang: LanguageCode
-  onSubmitToAgent?: (cleanedPrompt?: string, mentionedAgent?: Agent) => void
-  onSubmitTask?: (cleanedPrompt?: string, mentionedAgent?: Agent) => void
+  onSubmitToAgent?: (
+    cleanedPrompt?: string,
+    mentionedAgent?: Agent,
+    mentionedMethodology?: Methodology,
+  ) => void
+  onSubmitTask?: (
+    cleanedPrompt?: string,
+    mentionedAgent?: Agent,
+    mentionedMethodology?: Methodology,
+  ) => void
   isSending?: boolean
   onFilesChange?: (files: File[]) => void
   defaultPrompt?: string
   onAgentChange?: (agent: Agent | null) => void
+  onMethodologyChange?: (methodology: Methodology | null) => void
   disabledAgentPicker?: boolean
   disabledMention?: boolean
   selectedAgent?: Agent | null
+  selectedMethodology?: Methodology | null
   onFocus?: React.FocusEventHandler<HTMLTextAreaElement>
   onBlur?: React.FocusEventHandler<HTMLTextAreaElement>
   onKeyDown?: React.KeyboardEventHandler<HTMLTextAreaElement>
@@ -66,9 +79,11 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       onFilesChange,
       defaultPrompt = '',
       onAgentChange,
+      onMethodologyChange,
       disabledAgentPicker,
       disabledMention,
       selectedAgent,
+      selectedMethodology,
       onFocus,
       onBlur,
       onKeyDown,
@@ -106,15 +121,31 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
 
     // Agent mention hook for @ autocomplete
     const {
-      showMentionPopover,
+      showMentionPopover: showAgentMentionPopover,
       filteredAgents,
-      selectedIndex,
-      handleMentionSelect,
-      handleKeyNavigation,
-      closeMentionPopover,
+      selectedIndex: agentSelectedIndex,
+      handleMentionSelect: handleAgentMentionSelect,
+      handleKeyNavigation: handleAgentKeyNavigation,
+      closeMentionPopover: closeAgentMentionPopover,
       extractMentionedAgents,
-      removeMentionsFromPrompt,
+      removeMentionsFromPrompt: removeAgentMentionsFromPrompt,
     } = useAgentMention({
+      lang,
+      prompt,
+      onPromptChange: handlePromptChange,
+    })
+
+    // Methodology mention hook for # autocomplete
+    const {
+      showMentionPopover: showMethodologyMentionPopover,
+      filteredMethodologies,
+      selectedIndex: methodologySelectedIndex,
+      handleMentionSelect: handleMethodologyMentionSelect,
+      handleKeyNavigation: handleMethodologyKeyNavigation,
+      closeMentionPopover: closeMethodologyMentionPopover,
+      extractMentionedMethodologies,
+      removeMentionsFromPrompt: removeMethodologyMentionsFromPrompt,
+    } = useMethodologyMention({
       lang,
       prompt,
       onPromptChange: handlePromptChange,
@@ -172,9 +203,15 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       },
     })
 
-    // Handle submission with @mention processing
+    // Handle submission with @mention and #mention processing
     const handleSubmitWithMentions = useCallback(
-      (submitFn?: (cleanedPrompt?: string, mentionedAgent?: Agent) => void) => {
+      (
+        submitFn?: (
+          cleanedPrompt?: string,
+          mentionedAgent?: Agent,
+          mentionedMethodology?: Methodology,
+        ) => void,
+      ) => {
         if (!submitFn) return
 
         // Extract mentioned agents
@@ -187,8 +224,21 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
           onAgentChange?.(mentionedAgent)
         }
 
-        // Remove @mentions from the prompt before submission
-        const cleanedPrompt = removeMentionsFromPrompt(prompt)
+        // Extract mentioned methodologies
+        const mentionedMethodologies = extractMentionedMethodologies()
+
+        // If exactly one methodology is mentioned, auto-select it
+        const mentionedMethodology =
+          mentionedMethodologies.length === 1
+            ? mentionedMethodologies[0]
+            : undefined
+        if (mentionedMethodology) {
+          onMethodologyChange?.(mentionedMethodology)
+        }
+
+        // Remove @mentions and #mentions from the prompt before submission
+        let cleanedPrompt = removeAgentMentionsFromPrompt(prompt)
+        cleanedPrompt = removeMethodologyMentionsFromPrompt(cleanedPrompt)
 
         // Update local state (for UI consistency)
         if (cleanedPrompt !== prompt) {
@@ -196,26 +246,36 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
           onValueChange?.(cleanedPrompt)
         }
 
-        // Close mention popover if open
-        closeMentionPopover()
+        // Close mention popovers if open
+        closeAgentMentionPopover()
+        closeMethodologyMentionPopover()
 
-        // Pass the cleaned prompt and mentioned agent directly to the submit function
-        submitFn(cleanedPrompt, mentionedAgent)
+        // Pass the cleaned prompt and mentioned agent/methodology directly to the submit function
+        submitFn(cleanedPrompt, mentionedAgent, mentionedMethodology)
       },
       [
         prompt,
         extractMentionedAgents,
-        removeMentionsFromPrompt,
+        extractMentionedMethodologies,
+        removeAgentMentionsFromPrompt,
+        removeMethodologyMentionsFromPrompt,
         onAgentChange,
+        onMethodologyChange,
         onValueChange,
-        closeMentionPopover,
+        closeAgentMentionPopover,
+        closeMethodologyMentionPopover,
       ],
     )
 
     const handleKeyDown = useCallback(
       (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        // Handle mention popover keyboard navigation first
-        if (handleKeyNavigation(event)) {
+        // Handle agent mention popover keyboard navigation first
+        if (handleAgentKeyNavigation(event)) {
+          return
+        }
+
+        // Handle methodology mention popover keyboard navigation
+        if (handleMethodologyKeyNavigation(event)) {
           return
         }
 
@@ -226,7 +286,8 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         onKeyDown?.(event)
       },
       [
-        handleKeyNavigation,
+        handleAgentKeyNavigation,
+        handleMethodologyKeyNavigation,
         handleSubmitWithMentions,
         onSubmitToAgent,
         onKeyDown,
@@ -369,13 +430,24 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       >
         <div className="relative rounded-lg">
           {/* Agent mention autocomplete popover */}
-          {!disabledMention && showMentionPopover && (
+          {!disabledMention && showAgentMentionPopover && (
             <AgentMentionPopover
               lang={lang}
               agents={filteredAgents}
-              selectedIndex={selectedIndex}
-              onSelect={handleMentionSelect}
-              onClose={closeMentionPopover}
+              selectedIndex={agentSelectedIndex}
+              onSelect={handleAgentMentionSelect}
+              onClose={closeAgentMentionPopover}
+            />
+          )}
+
+          {/* Methodology mention autocomplete popover */}
+          {!disabledMention && showMethodologyMentionPopover && (
+            <MethodologyMentionPopover
+              lang={lang}
+              methodologies={filteredMethodologies}
+              selectedIndex={methodologySelectedIndex}
+              onSelect={handleMethodologyMentionSelect}
+              onClose={closeMethodologyMentionPopover}
             />
           )}
 

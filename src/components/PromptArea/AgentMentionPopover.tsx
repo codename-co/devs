@@ -160,6 +160,7 @@ export function AgentMentionPopover({
                   startContent={<Icon name={agent.icon ?? 'User'} size="md" />}
                   className={isSelected ? 'bg-default-100' : ''}
                   textValue={agent.i18n?.[lang]?.name ?? agent.name}
+                  onPress={() => onSelect(agent)}
                 >
                   {agent.i18n?.[lang]?.name ?? agent.name}
                 </ListboxItem>
