@@ -103,7 +103,15 @@ export interface PersistedFolderWatcher {
   lastSync: Date
   isActive: boolean
   createdAt: Date
-  // Note: FileSystemDirectoryHandle cannot be serialized, so we'll need to re-request permission
+  // Handle is stored separately in fileHandles store (IndexedDB supports FileSystemHandle)
+  hasStoredHandle?: boolean
+}
+
+// FileSystemDirectoryHandle can be stored directly in IndexedDB
+export interface FileHandleEntry {
+  id: string // Same as the watcher ID
+  handle: FileSystemDirectoryHandle
+  createdAt: Date
 }
 
 export interface Knowledge {

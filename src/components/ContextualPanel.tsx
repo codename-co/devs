@@ -95,7 +95,7 @@ const CollapsedPanel = ({ className }: { className?: string }) => {
 
   return (
     <div
-      className={`w-18 p-2 lg:p-4 h-full z-50 flex flex-col transition-all duration-200 ${className} pointer-events-auto`}
+      className={`w-18 p-2 lg:p-4 h-full z-50 flex flex-col transition-all duration-200 ${className} pointer-events-none`}
     >
       <div className="flex flex-col items-center">
         <Tooltip content={t('Expand sidebar')} placement="left">
@@ -104,7 +104,7 @@ const CollapsedPanel = ({ className }: { className?: string }) => {
             isIconOnly
             variant="light"
             onPress={toggleCollapsed}
-            className="backdrop-blur-xs backdrop-brightness-120"
+            className="backdrop-blur-xs backdrop-brightness-120 pointer-events-auto"
             aria-label={t('Expand sidebar')}
           >
             <Icon

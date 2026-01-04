@@ -454,6 +454,13 @@ export const fr: I18n = {
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     'Aucun message épinglé pour le moment. Épinglez des messages importants de vos conversations pour les rendre disponibles ici.',
 
+  // Knowledge Base - Folder Watching
+  'Stop syncing': 'Arrêter la synchronisation',
+  Reconnect: 'Reconnecter',
+  'Grant Access': "Autoriser l'accès",
+  Disconnected: 'Déconnecté',
+  'Last sync: {time}': 'Dernière synchro: {time}',
+
   // Memory Learning
   'Learn from this message': 'Apprendre de ce message',
   '{count} insights extracted': '{count} insights extraits',

@@ -442,7 +442,29 @@ export const Files: React.FC = () => {
     }
   }
 
-  const handleReconnectFolder = async (watchId: string) => {
+  const handleReconnectFolder = async (
+    watchId: string,
+    hasStoredHandle: boolean = false,
+  ) => {
+    // If we have a stored handle, try to request permission without picker
+    if (hasStoredHandle) {
+      try {
+        const success = await reconnectFolder(watchId)
+        if (success) {
+          loadWatchedFolders()
+          loadKnowledgeItems()
+          successToast('Folder has been reconnected and is now syncing.')
+          return
+        }
+        // If permission request failed, fall through to directory picker
+      } catch (error) {
+        console.log(
+          'Permission request failed, falling back to directory picker',
+        )
+      }
+    }
+
+    // Use directory picker (either no stored handle or permission was denied)
     if (!window.showDirectoryPicker) {
       warningToast('Directory picker is not supported in this browser.')
       return
@@ -610,9 +632,16 @@ export const Files: React.FC = () => {
                               size="sm"
                               variant="light"
                               color="primary"
-                              onPress={() => handleReconnectFolder(watcher.id)}
+                              onPress={() =>
+                                handleReconnectFolder(
+                                  watcher.id,
+                                  !!watcher.directoryHandle,
+                                )
+                              }
                             >
-                              {t('Reconnect')}
+                              {watcher.directoryHandle
+                                ? t('Grant Access')
+                                : t('Reconnect')}
                             </Button>
                             <Button
                               size="sm"

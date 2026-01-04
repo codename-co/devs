@@ -4,6 +4,7 @@ import {
   Knowledge,
   KnowledgeItem,
   PersistedFolderWatcher,
+  FileHandleEntry,
   Credential,
   Artifact,
   Task,
@@ -21,6 +22,7 @@ export interface DBStores {
   knowledge: Knowledge
   knowledgeItems: KnowledgeItem
   folderWatchers: PersistedFolderWatcher
+  fileHandles: FileHandleEntry
   credentials: Credential
   artifacts: Artifact
   tasks: Task
@@ -39,12 +41,13 @@ export class Database {
   private initialized = false
 
   static DB_NAME = 'devs-ai-platform'
-  static DB_VERSION = 10
+  static DB_VERSION = 11
   static STORES: (keyof DBStores)[] = [
     'agents',
     'conversations',
     'knowledgeItems',
     'folderWatchers',
+    'fileHandles',
     'credentials',
     'artifacts',
     'tasks',
@@ -492,9 +495,13 @@ export class Database {
             const pinnedMessagesStore = db.createObjectStore('pinnedMessages', {
               keyPath: 'id',
             })
-            pinnedMessagesStore.createIndex('conversationId', 'conversationId', {
-              unique: false,
-            })
+            pinnedMessagesStore.createIndex(
+              'conversationId',
+              'conversationId',
+              {
+                unique: false,
+              },
+            )
             pinnedMessagesStore.createIndex('messageId', 'messageId', {
               unique: false,
             })
@@ -509,6 +516,24 @@ export class Database {
               multiEntry: true,
             })
             pinnedMessagesStore.createIndex('createdAt', 'createdAt', {
+              unique: false,
+            })
+          }
+        }
+
+        // Migration for version 11: Add File Handles store for Native File System API
+        if (event.oldVersion < 11) {
+          console.log(
+            'Database migrated to version 11: Added File Handles store for persistent folder watching',
+          )
+
+          // Create fileHandles store - stores FileSystemDirectoryHandle objects directly
+          // Modern browsers (Chrome 86+) support storing FileSystemHandle in IndexedDB
+          if (!db.objectStoreNames.contains('fileHandles')) {
+            const fileHandlesStore = db.createObjectStore('fileHandles', {
+              keyPath: 'id',
+            })
+            fileHandlesStore.createIndex('createdAt', 'createdAt', {
               unique: false,
             })
           }

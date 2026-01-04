@@ -448,7 +448,12 @@ export const de: I18n = {
   'No summary available': 'Keine Zusammenfassung verfügbar',
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     'Noch keine angehefteten Nachrichten. Heften Sie wichtige Nachrichten aus Konversationen an, um sie hier verfügbar zu machen.',
-
+  // Knowledge Base - Folder Watching
+  'Stop syncing': 'Synchronisierung beenden',
+  Reconnect: 'Wiederverbinden',
+  'Grant Access': 'Zugriff gewähren',
+  Disconnected: 'Getrennt',
+  'Last sync: {time}': 'Letzte Synchronisierung: {time}',
   // Memory Learning
   'Learn from this message': 'Aus dieser Nachricht lernen',
   '{count} insights extracted': '{count} Erkenntnisse extrahiert',

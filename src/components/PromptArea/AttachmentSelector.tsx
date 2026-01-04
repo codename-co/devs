@@ -5,9 +5,10 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
+  DropdownSection,
   Image,
 } from '@heroui/react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { Icon } from '../Icon'
 
@@ -79,77 +80,6 @@ export function AttachmentSelector({
     return <Icon name={getFileIcon(item.mimeType || '') as any} size="sm" />
   }, [])
 
-  const getDropdownItems = useMemo(() => {
-    const items = [
-      <DropdownItem
-        key="upload"
-        startContent={<Icon name="Attachment" size="sm" />}
-      >
-        {t('Upload new file')}
-      </DropdownItem>,
-      <DropdownItem
-        key="knowledge"
-        startContent={<Icon name="Brain" size="sm" />}
-        onPress={loadKnowledgeItems}
-      >
-        {t('Choose from knowledge base')}
-      </DropdownItem>,
-    ]
-
-    if (loadingKnowledge) {
-      items.push(
-        <DropdownItem key="loading" isDisabled>
-          <div className="flex items-center gap-2 pl-4">
-            <Icon name="Settings" className="animate-spin" size="sm" />
-            Loading knowledge base...
-          </div>
-        </DropdownItem>,
-      )
-    } else if (knowledgeItems.length === 0) {
-      items.push(
-        <DropdownItem key="empty" isDisabled>
-          <div className="flex items-center gap-2 text-default-500 pl-4">
-            No files in knowledge base
-          </div>
-        </DropdownItem>,
-      )
-    } else {
-      knowledgeItems.slice(0, 10).forEach((item) => {
-        items.push(
-          <DropdownItem
-            key={`knowledge-${item.id}`}
-            startContent={
-              <div className="pl-4">{renderKnowledgePreview(item)}</div>
-            }
-            endContent={
-              <Chip size="sm" variant="flat" className="text-xs">
-                {formatBytes(item.size || 0, lang)}
-              </Chip>
-            }
-            description={
-              <div className="text-xs text-default-500 truncate max-w-32">
-                {item.path.replace(/^\//, '')}
-              </div>
-            }
-            textValue={item.name}
-            className="py-1"
-          >
-            <div className="font-medium truncate max-w-32">{item.name}</div>
-          </DropdownItem>,
-        )
-      })
-    }
-
-    return items
-  }, [
-    t,
-    loadingKnowledge,
-    knowledgeItems,
-    loadKnowledgeItems,
-    renderKnowledgePreview,
-    lang,
-  ])
-
   const handleAction = useCallback(
     (key: React.Key) => {
       if (key === 'upload') {
@@ -169,6 +99,11 @@ export function AttachmentSelector({
     <Dropdown
       placement="bottom-start"
       className="bg-white dark:bg-default-50 dark:text-white"
+      onOpenChange={(isOpen) => {
+        if (isOpen) {
+          loadKnowledgeItems()
+        }
+      }}
     >
       <DropdownTrigger>
         <Button isIconOnly radius="md" variant="bordered" size="sm">
@@ -179,7 +114,54 @@ export function AttachmentSelector({
         aria-label="File attachment options"
         onAction={handleAction}
       >
-        {getDropdownItems}
+        <DropdownSection aria-label="Actions" showDivider>
+          <DropdownItem
+            key="upload"
+            startContent={<Icon name="Attachment" size="sm" />}
+          >
+            {t('Upload new file')}
+          </DropdownItem>
+        </DropdownSection>
+        <DropdownSection
+          title={t('Choose from knowledge base')}
+          aria-label={t('Choose from knowledge base')}
+        >
+          {loadingKnowledge ? (
+            <DropdownItem key="loading" isDisabled>
+              <div className="flex items-center gap-2">
+                <Icon name="Settings" className="animate-spin" size="sm" />
+                Loading knowledge base...
+              </div>
+            </DropdownItem>
+          ) : knowledgeItems.length === 0 ? (
+            <DropdownItem key="empty" isDisabled>
+              <div className="flex items-center gap-2 text-default-500">
+                No files in knowledge base
+              </div>
+            </DropdownItem>
+          ) : (
+            knowledgeItems.slice(0, 10).map((item) => (
+              <DropdownItem
+                key={`knowledge-${item.id}`}
+                startContent={renderKnowledgePreview(item)}
+                endContent={
+                  <Chip size="sm" variant="flat" className="text-xs">
+                    {formatBytes(item.size || 0, lang)}
+                  </Chip>
+                }
+                description={
+                  <div className="text-xs text-default-500 truncate max-w-32">
+                    {item.path.replace(/^\//, '')}
+                  </div>
+                }
+                textValue={item.name}
+                className="py-1"
+              >
+                <div className="font-medium truncate max-w-32">{item.name}</div>
+              </DropdownItem>
+            ))
+          )}
+        </DropdownSection>
       </DropdownMenu>
     </Dropdown>
   )

@@ -442,6 +442,13 @@ export const ar: I18n = {
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     'لا توجد رسائل مثبتة بعد. قم بتثبيت الرسائل المهمة من المحادثات لجعلها متاحة هنا.',
 
+  // Knowledge Base - Folder Watching
+  'Stop syncing': 'إيقاف المزامنة',
+  Reconnect: 'إعادة الاتصال',
+  'Grant Access': 'منح الوصول',
+  Disconnected: 'غير متصل',
+  'Last sync: {time}': 'آخر مزامنة: {time}',
+
   // Memory Learning
   'Learn from this message': 'تعلم من هذه الرسالة',
   '{count} insights extracted': 'تم استخراج {count} رؤى',

@@ -1,5 +1,5 @@
 import { db } from './db'
-import { KnowledgeItem, PersistedFolderWatcher } from '@/types'
+import { KnowledgeItem, PersistedFolderWatcher, FileHandleEntry } from '@/types'
 
 export interface FolderWatcher {
   id: string
@@ -651,10 +651,36 @@ class KnowledgeSyncService {
         lastSync: watcher.lastSync,
         isActive: watcher.isActive,
         createdAt: new Date(),
+        hasStoredHandle: true,
       }
 
       await db.add('folderWatchers', persistedWatcher)
-      console.log(`Persisted folder watcher: ${watcher.basePath}`)
+
+      // Store the FileSystemDirectoryHandle separately in IndexedDB
+      // Modern browsers (Chrome 86+) support storing FileSystemHandle objects directly
+      if (watcher.directoryHandle) {
+        try {
+          const handleEntry: FileHandleEntry = {
+            id: watcher.id,
+            handle: watcher.directoryHandle,
+            createdAt: new Date(),
+          }
+          await db.add('fileHandles', handleEntry)
+          console.log(
+            `Persisted folder watcher with handle: ${watcher.basePath}`,
+          )
+        } catch (handleError) {
+          console.warn(
+            'Could not persist file handle (browser may not support it):',
+            handleError,
+          )
+          // Update the watcher to indicate no stored handle
+          await db.update('folderWatchers', {
+            ...persistedWatcher,
+            hasStoredHandle: false,
+          })
+        }
+      }
     } catch (error) {
       console.error('Error persisting folder watcher:', error)
     }
@@ -668,6 +694,16 @@ class KnowledgeSyncService {
       }
 
       await db.delete('folderWatchers', watchId)
+
+      // Also remove the stored handle
+      try {
+        if (db.hasStore('fileHandles')) {
+          await db.delete('fileHandles', watchId)
+        }
+      } catch {
+        // Handle store might not exist or handle might not be stored
+      }
+
       console.log(`Removed persistent folder watcher: ${watchId}`)
     } catch (error) {
       console.error('Error removing persistent folder watcher:', error)
@@ -697,7 +733,7 @@ class KnowledgeSyncService {
           `Found ${persistedWatchers.length} persisted folder watchers`,
         )
 
-        // For each persisted watcher, we need to re-request folder access
+        // For each persisted watcher, try to restore the handle from IndexedDB
         for (const persistedWatcher of persistedWatchers) {
           if (persistedWatcher.isActive) {
             await this.requestFolderReaccess(persistedWatcher)
@@ -717,42 +753,140 @@ class KnowledgeSyncService {
     persistedWatcher: PersistedFolderWatcher,
   ): Promise<void> {
     try {
-      // We can't automatically restore folder access due to security restrictions
-      // Instead, we'll create a "pending" watcher that prompts the user to re-select the folder
+      console.log(`Attempting to restore folder: ${persistedWatcher.basePath}`)
+
+      // Try to retrieve the stored FileSystemDirectoryHandle from IndexedDB
+      let storedHandle: FileSystemDirectoryHandle | null = null
+
+      if (persistedWatcher.hasStoredHandle && db.hasStore('fileHandles')) {
+        try {
+          const handleEntry = (await db.get(
+            'fileHandles',
+            persistedWatcher.id,
+          )) as FileHandleEntry | undefined
+          if (handleEntry?.handle) {
+            storedHandle = handleEntry.handle
+          }
+        } catch (error) {
+          console.warn('Could not retrieve stored handle:', error)
+        }
+      }
+
+      if (storedHandle) {
+        // We have a stored handle! Try to query/request permission
+        try {
+          // First, check if we still have permission (no user interaction needed)
+          const queryResult = await (storedHandle as any).queryPermission({
+            mode: 'read',
+          })
+
+          if (queryResult === 'granted') {
+            // Permission still granted! Auto-reconnect silently
+            console.log(
+              `Auto-reconnecting to folder: ${persistedWatcher.basePath}`,
+            )
+
+            const watcher: FolderWatcher = {
+              id: persistedWatcher.id,
+              directoryHandle: storedHandle,
+              basePath: persistedWatcher.basePath,
+              lastSync: persistedWatcher.lastSync,
+              isActive: true,
+            }
+
+            this.watchers.set(persistedWatcher.id, watcher)
+
+            // Start syncing in the background
+            this.syncFolder(watcher).catch(console.error)
+            return
+          }
+
+          // Permission not granted, but we have the handle
+          // Create a watcher that can request permission when user interacts
+          console.log(
+            `Folder ${persistedWatcher.basePath} needs permission re-grant`,
+          )
+
+          const placeholderWatcher: FolderWatcher = {
+            id: persistedWatcher.id,
+            directoryHandle: storedHandle, // Keep the handle for requestPermission later
+            basePath: persistedWatcher.basePath,
+            lastSync: persistedWatcher.lastSync,
+            isActive: false, // Mark as inactive until permission granted
+          }
+
+          this.watchers.set(persistedWatcher.id, placeholderWatcher)
+          return
+        } catch (permError) {
+          console.warn(
+            'Error checking permission for stored handle:',
+            permError,
+          )
+        }
+      }
+
+      // No stored handle or handle is invalid - create placeholder for manual reconnection
       console.log(
-        `Found previously watched folder: ${persistedWatcher.basePath}`,
+        `No valid handle for folder: ${persistedWatcher.basePath}, manual reconnection required`,
       )
 
-      // Create a placeholder watcher that shows in the UI
       const placeholderWatcher: FolderWatcher = {
         id: persistedWatcher.id,
-        directoryHandle: null, // No handle until user re-selects
+        directoryHandle: null,
         basePath: persistedWatcher.basePath,
         lastSync: persistedWatcher.lastSync,
-        isActive: false, // Mark as inactive until reconnected
+        isActive: false,
       }
 
       this.watchers.set(persistedWatcher.id, placeholderWatcher)
     } catch (error) {
       console.error(
-        `Error creating placeholder for folder ${persistedWatcher.basePath}:`,
+        `Error restoring folder ${persistedWatcher.basePath}:`,
         error,
       )
     }
   }
 
-  // Reconnect to a previously watched folder
-  async reconnectFolder(watchId: string, directoryHandle: any): Promise<void> {
+  // Reconnect to a previously watched folder (can be called with or without a new handle)
+  async reconnectFolder(
+    watchId: string,
+    directoryHandle?: any,
+  ): Promise<boolean> {
     try {
       const watcher = this.watchers.get(watchId)
       if (!watcher) {
         console.error('Watcher not found for reconnection')
-        return
+        return false
       }
 
-      // Update the watcher with the new directory handle
-      watcher.directoryHandle = directoryHandle
-      watcher.basePath = directoryHandle.name
+      // If no new handle provided, try to use existing handle and request permission
+      let handleToUse = directoryHandle || watcher.directoryHandle
+
+      if (!handleToUse) {
+        console.error('No directory handle available for reconnection')
+        return false
+      }
+
+      // If we have an existing handle but no new one, try to request permission
+      if (!directoryHandle && watcher.directoryHandle) {
+        try {
+          const permissionResult = await (
+            watcher.directoryHandle as any
+          ).requestPermission({ mode: 'read' })
+          if (permissionResult !== 'granted') {
+            console.log('Permission denied for folder reconnection')
+            return false
+          }
+          handleToUse = watcher.directoryHandle
+        } catch (permError) {
+          console.error('Error requesting permission:', permError)
+          return false
+        }
+      }
+
+      // Update the watcher with the directory handle
+      watcher.directoryHandle = handleToUse
+      watcher.basePath = handleToUse.name
       watcher.isActive = true
       watcher.lastSync = new Date()
 
@@ -763,16 +897,41 @@ class KnowledgeSyncService {
         lastSync: watcher.lastSync,
         isActive: true,
         createdAt: new Date(),
+        hasStoredHandle: true,
       }
 
       await db.update('folderWatchers', persistedWatcher)
 
+      // Update stored handle
+      try {
+        if (db.hasStore('fileHandles')) {
+          const handleEntry: FileHandleEntry = {
+            id: watchId,
+            handle: handleToUse,
+            createdAt: new Date(),
+          }
+          // Try update first, then add if it doesn't exist
+          try {
+            await db.update('fileHandles', handleEntry)
+          } catch {
+            await db.add('fileHandles', handleEntry)
+          }
+        }
+      } catch (handleError) {
+        console.warn('Could not update stored file handle:', handleError)
+      }
+
       // Perform initial sync
       await this.syncFolder(watcher)
 
+      // Notify listeners
+      this.notifyWatchersChanged()
+
       console.log(`Reconnected folder watcher: ${watcher.basePath}`)
+      return true
     } catch (error) {
       console.error('Error reconnecting folder:', error)
+      return false
     }
   }
 }
@@ -789,7 +948,7 @@ export const unwatchFolder = (watchId: string) =>
   knowledgeSync.unregisterFolderWatch(watchId)
 export const getWatchers = () => knowledgeSync.getActiveWatchers()
 export const getAllWatchers = () => knowledgeSync.getAllWatchers()
-export const reconnectFolder = (watchId: string, dirHandle: any) =>
+export const reconnectFolder = (watchId: string, dirHandle?: any) =>
   knowledgeSync.reconnectFolder(watchId, dirHandle)
 export const onWatchersChanged = (callback: () => void) =>
   knowledgeSync.onWatchersChanged(callback)

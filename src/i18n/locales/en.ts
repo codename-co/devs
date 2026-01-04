@@ -418,6 +418,13 @@ export const en = [
   'No summary available',
   'No pinned messages yet. Pin important messages from conversations to make them available here.',
 
+  // Knowledge Base - Folder Watching
+  'Stop syncing',
+  'Reconnect',
+  'Grant Access',
+  'Disconnected',
+  'Last sync: {time}',
+
   // Memory Learning
   'Learn from this message',
   '{count} insights extracted',

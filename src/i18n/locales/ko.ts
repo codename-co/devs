@@ -441,6 +441,13 @@ export const ko: I18n = {
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     '아직 고정된 메시지가 없습니다. 대화에서 중요한 메시지를 고정하여 여기에서 사용할 수 있게 하세요.',
 
+  // Knowledge Base - Folder Watching
+  'Stop syncing': '동기화 중지',
+  Reconnect: '다시 연결',
+  'Grant Access': '접근 허용',
+  Disconnected: '연결 끊김',
+  'Last sync: {time}': '마지막 동기화: {time}',
+
   // Memory Learning
   'Learn from this message': '이 메시지에서 배우기',
   '{count} insights extracted': '{count}개의 인사이트가 추출되었습니다',
