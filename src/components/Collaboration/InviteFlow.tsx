@@ -35,7 +35,7 @@ export interface InviteFlowProps {
   workspaceName: string
   inviterName: string
   onGenerateLink: (
-    role: WorkspaceRole
+    role: WorkspaceRole,
   ) => Promise<{ link: string; token: string; expiresAt?: Date }>
   onSendEmailInvite?: (email: string, role: WorkspaceRole) => Promise<void>
   defaultRole?: WorkspaceRole
@@ -46,8 +46,16 @@ export interface InviteFlowProps {
 // ============================================================================
 
 const ROLES: { value: WorkspaceRole; label: string; description: string }[] = [
-  { value: 'admin', label: 'Admin', description: 'Can manage members and settings' },
-  { value: 'member', label: 'Member', description: 'Can create and edit content' },
+  {
+    value: 'admin',
+    label: 'Admin',
+    description: 'Can manage members and settings',
+  },
+  {
+    value: 'member',
+    label: 'Member',
+    description: 'Can create and edit content',
+  },
   { value: 'viewer', label: 'Viewer', description: 'Read-only access' },
 ]
 
@@ -98,7 +106,13 @@ interface MethodCardProps {
   onPress: () => void
 }
 
-function MethodCard({ icon, title, description, isDisabled, onPress }: MethodCardProps) {
+function MethodCard({
+  icon,
+  title,
+  description,
+  isDisabled,
+  onPress,
+}: MethodCardProps) {
   return (
     <Card
       isPressable={!isDisabled}
@@ -253,8 +267,7 @@ function LinkStep({ inviteLink, expiresAt, onBack }: LinkStepProps) {
         />
         {expiresAt && (
           <p className="text-sm text-default-500">
-            {t('Expires in')}{' '}
-            {formatExpirationDate(expiresAt)}
+            {t('Expires in')} {formatExpirationDate(expiresAt)}
           </p>
         )}
       </div>
@@ -263,15 +276,11 @@ function LinkStep({ inviteLink, expiresAt, onBack }: LinkStepProps) {
         size="lg"
         color="primary"
         className="w-full"
-        startContent={
-          <Icon name={copied ? 'Check' : 'Copy'} size="sm" />
-        }
+        startContent={<Icon name={copied ? 'Check' : 'Copy'} size="sm" />}
         onPress={handleCopy}
         aria-live="polite"
       >
-        {copied
-          ? t('Link Copied!')
-          : t('Copy Link')}
+        {copied ? t('Link Copied!') : t('Copy Link')}
       </Button>
 
       <Button
@@ -376,8 +385,7 @@ function QRStep({ inviteLink, workspaceName, expiresAt, onBack }: QRStepProps) {
 
       {expiresAt && (
         <p className="text-sm text-default-500">
-          {t('Expires in')}{' '}
-          {formatExpirationDate(expiresAt)}
+          {t('Expires in')} {formatExpirationDate(expiresAt)}
         </p>
       )}
 
@@ -398,9 +406,7 @@ function QRStep({ inviteLink, workspaceName, expiresAt, onBack }: QRStepProps) {
           startContent={<Icon name={copied ? 'Check' : 'Copy'} size="sm" />}
           onPress={handleCopy}
         >
-          {copied
-            ? t('Link Copied!')
-            : t('Copy Link')}
+          {copied ? t('Link Copied!') : t('Copy Link')}
         </Button>
       </div>
 
@@ -443,12 +449,12 @@ function EmailStep({ onSendInvite, onBack }: EmailStepProps) {
       await onSendInvite(email)
       setSentEmail(email)
       setEmail('')
-      successToast(`${t('Invitation sent to {email}').replace('{email}', email)}`)
+      successToast(
+        `${t('Invitation sent to {email}').replace('{email}', email)}`,
+      )
     } catch (err) {
       const message =
-        err instanceof Error
-          ? err.message
-          : t('Failed to send invitation')
+        err instanceof Error ? err.message : t('Failed to send invitation')
       setError(message)
       errorToast(message)
     } finally {
@@ -480,8 +486,7 @@ function EmailStep({ onSendInvite, onBack }: EmailStepProps) {
             {t('Invitation Sent!')}
           </p>
           <p className="text-default-500">
-            {t('An invitation has been sent to')}{' '}
-            <strong>{sentEmail}</strong>
+            {t('An invitation has been sent to')} <strong>{sentEmail}</strong>
           </p>
         </div>
 
@@ -631,7 +636,7 @@ export function InviteFlow({
         setStep(method)
       }
     },
-    [generateLink]
+    [generateLink],
   )
 
   const handleBack = useCallback(() => {
@@ -646,7 +651,7 @@ export function InviteFlow({
       }
       await onSendEmailInvite(email, role)
     },
-    [onSendEmailInvite, role]
+    [onSendEmailInvite, role],
   )
 
   const getStepTitle = (): string => {
@@ -690,7 +695,12 @@ export function InviteFlow({
           {isGenerating && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">
               <div className="flex flex-col items-center gap-2">
-                <Icon name="RefreshDouble" size="lg" animation="spinning" className="text-primary" />
+                <Icon
+                  name="RefreshDouble"
+                  size="lg"
+                  animation="spinning"
+                  className="text-primary"
+                />
                 <p className="text-sm text-default-500">
                   {t('Generating invite...')}
                 </p>

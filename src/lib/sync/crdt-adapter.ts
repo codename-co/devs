@@ -65,7 +65,7 @@ export class CRDTDocumentManager {
       // Set up IndexedDB persistence
       const persistence = new IndexeddbPersistence(
         `devs-sync-${workspaceId}`,
-        doc
+        doc,
       )
       this.persistence.set(workspaceId, persistence)
 
@@ -81,7 +81,7 @@ export class CRDTDocumentManager {
    */
   getEntityMap<T>(
     workspaceId: string,
-    entityType: SyncableEntityType
+    entityType: SyncableEntityType,
   ): Y.Map<T> {
     const doc = this.getDocument(workspaceId)
     return doc.getMap(entityType) as Y.Map<T>
@@ -94,7 +94,7 @@ export class CRDTDocumentManager {
     workspaceId: string,
     entityType: SyncableEntityType,
     id: string,
-    data: T
+    data: T,
   ): void {
     const map = this.getEntityMap<T>(workspaceId, entityType)
     const doc = this.getDocument(workspaceId)
@@ -123,7 +123,7 @@ export class CRDTDocumentManager {
   getEntity<T>(
     workspaceId: string,
     entityType: SyncableEntityType,
-    id: string
+    id: string,
   ): (T & SyncMetadata) | undefined {
     const map = this.getEntityMap<T & SyncMetadata>(workspaceId, entityType)
     const entity = map.get(id)
@@ -141,7 +141,7 @@ export class CRDTDocumentManager {
    */
   getAllEntities<T>(
     workspaceId: string,
-    entityType: SyncableEntityType
+    entityType: SyncableEntityType,
   ): (T & SyncMetadata)[] {
     const map = this.getEntityMap<T & SyncMetadata>(workspaceId, entityType)
     const entities: (T & SyncMetadata)[] = []
@@ -161,7 +161,7 @@ export class CRDTDocumentManager {
   deleteEntity(
     workspaceId: string,
     entityType: SyncableEntityType,
-    id: string
+    id: string,
   ): void {
     const map = this.getEntityMap<SyncMetadata>(workspaceId, entityType)
     const existing = map.get(id)
@@ -184,7 +184,7 @@ export class CRDTDocumentManager {
    */
   subscribe(
     workspaceId: string,
-    callback: (changes: EntityChange[]) => void
+    callback: (changes: EntityChange[]) => void,
   ): () => void {
     if (!this.observers.has(workspaceId)) {
       this.observers.set(workspaceId, new Set())

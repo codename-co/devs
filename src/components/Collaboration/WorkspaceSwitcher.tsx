@@ -65,14 +65,20 @@ function SyncStatusIndicator({
         'rounded-full inline-block',
         sizeClass,
         config.color,
-        config.animate && 'animate-pulse'
+        config.animate && 'animate-pulse',
       )}
       title={config.title}
     />
   )
 }
 
-function WorkspaceIcon({ icon, isPersonal }: { icon?: string; isPersonal?: boolean }) {
+function WorkspaceIcon({
+  icon,
+  isPersonal,
+}: {
+  icon?: string
+  isPersonal?: boolean
+}) {
   // If there's a custom icon (emoji), display it
   if (icon) {
     return <span className="text-base">{icon}</span>
@@ -98,7 +104,9 @@ export function WorkspaceSwitcher({
 }: WorkspaceSwitcherProps) {
   const { t } = useI18n()
   const [isOpen, setIsOpen] = useState(false)
-  const [hoveredWorkspaceId, setHoveredWorkspaceId] = useState<string | null>(null)
+  const [hoveredWorkspaceId, setHoveredWorkspaceId] = useState<string | null>(
+    null,
+  )
 
   // Get sync status for a workspace
   const getSyncStatus = useCallback(
@@ -106,17 +114,17 @@ export function WorkspaceSwitcher({
       const status = syncStatus.find((s) => s.workspaceId === workspaceId)
       return status?.status ?? 'offline'
     },
-    [syncStatus]
+    [syncStatus],
   )
 
   // Separate personal and shared workspaces
   const { personalWorkspace, sharedWorkspaces } = useMemo(() => {
     const extended = workspaces as ExtendedWorkspace[]
     const personal = extended.find(
-      (w) => w.isPersonal || w.ownerId === currentUserId
+      (w) => w.isPersonal || w.ownerId === currentUserId,
     )
     const shared = extended.filter(
-      (w) => !w.isPersonal && w.ownerId !== currentUserId
+      (w) => !w.isPersonal && w.ownerId !== currentUserId,
     )
     return { personalWorkspace: personal, sharedWorkspaces: shared }
   }, [workspaces, currentUserId])
@@ -124,7 +132,7 @@ export function WorkspaceSwitcher({
   // Get active workspace
   const activeWorkspace = useMemo(
     () => workspaces.find((w) => w.id === activeWorkspaceId),
-    [workspaces, activeWorkspaceId]
+    [workspaces, activeWorkspaceId],
   ) as ExtendedWorkspace | undefined
 
   // Handle workspace selection
@@ -133,7 +141,7 @@ export function WorkspaceSwitcher({
       onWorkspaceSelect(workspaceId)
       setIsOpen(false)
     },
-    [onWorkspaceSelect]
+    [onWorkspaceSelect],
   )
 
   // Handle settings click
@@ -143,7 +151,7 @@ export function WorkspaceSwitcher({
       onWorkspaceSettings(workspaceId)
       setIsOpen(false)
     },
-    [onWorkspaceSettings]
+    [onWorkspaceSettings],
   )
 
   // Handle create workspace
@@ -153,7 +161,10 @@ export function WorkspaceSwitcher({
   }, [onCreateWorkspace])
 
   // Render workspace item content
-  const renderWorkspaceItem = (workspace: ExtendedWorkspace, isPersonal: boolean) => {
+  const renderWorkspaceItem = (
+    workspace: ExtendedWorkspace,
+    isPersonal: boolean,
+  ) => {
     const isActive = workspace.id === activeWorkspaceId
     const isHovered = workspace.id === hoveredWorkspaceId
     const status = getSyncStatus(workspace.id)
@@ -172,13 +183,17 @@ export function WorkspaceSwitcher({
         {/* Name and member count */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="truncate text-sm font-medium">{workspace.name}</span>
-            {!isPersonal && workspace.memberCount && workspace.memberCount > 1 && (
-              <span className="flex items-center gap-0.5 text-xs text-default-400">
-                <Icon name="Group" size="sm" />
-                {workspace.memberCount}
-              </span>
-            )}
+            <span className="truncate text-sm font-medium">
+              {workspace.name}
+            </span>
+            {!isPersonal &&
+              workspace.memberCount &&
+              workspace.memberCount > 1 && (
+                <span className="flex items-center gap-0.5 text-xs text-default-400">
+                  <Icon name="Group" size="sm" />
+                  {workspace.memberCount}
+                </span>
+              )}
           </div>
         </div>
 
@@ -197,7 +212,11 @@ export function WorkspaceSwitcher({
               className="p-0.5 rounded hover:bg-default-200 transition-colors"
               aria-label="Workspace settings"
             >
-              <Icon name="Settings" size="sm" className="text-default-400 hover:text-default-600" />
+              <Icon
+                name="Settings"
+                size="sm"
+                className="text-default-400 hover:text-default-600"
+              />
             </button>
           ) : null}
         </div>
@@ -215,16 +234,16 @@ export function WorkspaceSwitcher({
       <PopoverTrigger>
         <Button
           variant="light"
-          className={twMerge(
-            'h-9 px-3 gap-2 min-w-0',
-            className
-          )}
+          className={twMerge('h-9 px-3 gap-2 min-w-0', className)}
           aria-label="Switch workspace"
         >
           {/* Workspace icon */}
           <WorkspaceIcon
             icon={activeWorkspace?.icon}
-            isPersonal={activeWorkspace?.isPersonal || activeWorkspace?.ownerId === currentUserId}
+            isPersonal={
+              activeWorkspace?.isPersonal ||
+              activeWorkspace?.ownerId === currentUserId
+            }
           />
 
           {/* Workspace name */}
@@ -246,7 +265,7 @@ export function WorkspaceSwitcher({
             size="sm"
             className={twMerge(
               'text-default-400 transition-transform',
-              isOpen && 'rotate-180'
+              isOpen && 'rotate-180',
             )}
           />
         </Button>
@@ -299,7 +318,8 @@ export function WorkspaceSwitcher({
             <ListboxSection
               title={t('Shared Workspaces')}
               classNames={{
-                heading: 'text-xs font-semibold text-default-500 px-3 py-1.5 mt-2',
+                heading:
+                  'text-xs font-semibold text-default-500 px-3 py-1.5 mt-2',
                 group: 'px-1',
               }}
             >
@@ -322,7 +342,9 @@ export function WorkspaceSwitcher({
                 >
                   <div className="flex flex-col items-center gap-1 py-2">
                     <Icon name="Group" size="lg" className="text-default-300" />
-                    <span className="text-center">{t('No shared workspaces yet')}</span>
+                    <span className="text-center">
+                      {t('No shared workspaces yet')}
+                    </span>
                     <span className="text-xs text-default-300 text-center">
                       {t('Create a workspace to collaborate with others')}
                     </span>

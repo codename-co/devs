@@ -9,13 +9,10 @@ export {
   importIdentity,
   serializeIdentity,
   signData,
-  verifySignature
+  verifySignature,
 } from './user-identity'
 
-export {
-  generateDeviceIdentity,
-  updateDeviceLastSeen
-} from './device-identity'
+export { generateDeviceIdentity, updateDeviceLastSeen } from './device-identity'
 
 export {
   generateKeyExchangeKeyPair,
@@ -24,5 +21,5 @@ export {
   decryptKeyFromSender,
   generateWorkspaceKey,
   importPublicKeyForExchange,
-  exportPublicKeyForExchange
+  exportPublicKeyForExchange,
 } from './key-exchange'

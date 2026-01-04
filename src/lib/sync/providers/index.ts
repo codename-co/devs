@@ -10,7 +10,7 @@ export type {
   SyncProviderConfig,
   P2PProviderConfig,
   CloudProviderConfig,
-  SyncProviderFactory
+  SyncProviderFactory,
 } from './provider-interface'
 
 export { P2PProvider, createP2PProvider } from './p2p-provider'

@@ -28,7 +28,7 @@ export interface UseCollaboratorCursorsReturn {
  */
 function awarenessStateToRemoteCursor(
   state: AwarenessState,
-  conversationId: string
+  conversationId: string,
 ): RemoteCursor | null {
   // Skip if no user or cursor info
   if (!state.user || !state.cursor) {
@@ -60,7 +60,7 @@ function awarenessStateToRemoteCursor(
  */
 function processAwarenessStates(
   states: Map<number, AwarenessState>,
-  conversationId: string
+  conversationId: string,
 ): RemoteCursor[] {
   const cursors: RemoteCursor[] = []
 
@@ -80,22 +80,22 @@ function processAwarenessStates(
 
 /**
  * Hook to manage collaborator cursors in a conversation.
- * 
+ *
  * Subscribes to awareness changes from other users and provides
  * methods to update the local user's cursor position.
- * 
+ *
  * @example
  * ```tsx
  * const { cursors, updateMyCursor, clearMyCursor } = useCollaboratorCursors({
  *   conversationId: 'conv-123',
  *   awarenessManager,
  * })
- * 
+ *
  * // Update cursor when user focuses a message
  * const handleMessageFocus = (messageId: string) => {
  *   updateMyCursor(messageId)
  * }
- * 
+ *
  * // Clear cursor when user leaves conversation
  * useEffect(() => {
  *   return () => clearMyCursor()
@@ -130,7 +130,7 @@ export function useCollaboratorCursors({
         if (cursor) {
           // Track last activity time
           const existingActivity = lastActivityMap.current.get(cursor.userId)
-          
+
           // Update activity time if cursor position changed
           if (!existingActivity) {
             lastActivityMap.current.set(cursor.userId, now)
@@ -146,8 +146,10 @@ export function useCollaboratorCursors({
       // Update activity timestamps for cursors that changed
       setCursors((prevCursors) => {
         return newCursors.map((newCursor) => {
-          const prevCursor = prevCursors.find((c) => c.userId === newCursor.userId)
-          
+          const prevCursor = prevCursors.find(
+            (c) => c.userId === newCursor.userId,
+          )
+
           // Check if cursor position changed
           const positionChanged =
             !prevCursor ||
@@ -185,7 +187,7 @@ export function useCollaboratorCursors({
         position,
       })
     },
-    [awarenessManager, conversationId]
+    [awarenessManager, conversationId],
   )
 
   // Update local selection
@@ -195,7 +197,7 @@ export function useCollaboratorCursors({
 
       awarenessManager.updateSelection({ start, end })
     },
-    [awarenessManager]
+    [awarenessManager],
   )
 
   // Clear local cursor
@@ -208,7 +210,7 @@ export function useCollaboratorCursors({
   // Filter cursors to current conversation
   const filteredCursors = useMemo(() => {
     return cursors.filter(
-      (cursor) => cursor.cursor.conversationId === conversationId
+      (cursor) => cursor.cursor.conversationId === conversationId,
     )
   }, [cursors, conversationId])
 

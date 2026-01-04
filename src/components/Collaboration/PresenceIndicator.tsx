@@ -79,7 +79,7 @@ export function PresenceIndicator({
         className={twMerge(
           'inline-flex items-center gap-1.5',
           labelSizeClasses[size],
-          className
+          className,
         )}
       >
         {dot}

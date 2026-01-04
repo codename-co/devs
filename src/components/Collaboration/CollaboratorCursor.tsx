@@ -49,16 +49,21 @@ const CLEANUP_TIMEOUT_MS = 5000
 /**
  * Check if a cursor was recently active (within threshold)
  */
-function isRecentlyActive(lastActive: Date, thresholdMs: number = RECENT_ACTIVITY_MS): boolean {
+function isRecentlyActive(
+  lastActive: Date,
+  thresholdMs: number = RECENT_ACTIVITY_MS,
+): boolean {
   return Date.now() - lastActive.getTime() < thresholdMs
 }
 
 /**
  * Group cursors by message ID
  */
-function groupCursorsByMessage(cursors: RemoteCursor[]): Map<string, RemoteCursor[]> {
+function groupCursorsByMessage(
+  cursors: RemoteCursor[],
+): Map<string, RemoteCursor[]> {
   const grouped = new Map<string, RemoteCursor[]>()
-  
+
   for (const cursor of cursors) {
     if (cursor.cursor.messageId) {
       const messageId = cursor.cursor.messageId
@@ -67,7 +72,7 @@ function groupCursorsByMessage(cursors: RemoteCursor[]): Map<string, RemoteCurso
       grouped.set(messageId, existing)
     }
   }
-  
+
   return grouped
 }
 
@@ -97,7 +102,7 @@ function CursorLabel({ userName, color, offsetIndex }: CursorLabelProps) {
       <span
         className={twMerge(
           'px-1.5 py-0.5 text-xs font-medium rounded-full',
-          'text-white shadow-sm'
+          'text-white shadow-sm',
         )}
         style={{
           backgroundColor: `${color}e6`, // Semi-transparent
@@ -115,8 +120,16 @@ interface CursorIndicatorProps {
   messageElement: HTMLElement
 }
 
-function CursorIndicator({ cursor, offsetIndex, messageElement }: CursorIndicatorProps) {
-  const [position, setPosition] = useState<{ top: number; left: number; height: number } | null>(null)
+function CursorIndicator({
+  cursor,
+  offsetIndex,
+  messageElement,
+}: CursorIndicatorProps) {
+  const [position, setPosition] = useState<{
+    top: number
+    left: number
+    height: number
+  } | null>(null)
   const isRecent = isRecentlyActive(cursor.lastActive)
 
   // Calculate position based on message element
@@ -126,7 +139,12 @@ function CursorIndicator({ cursor, offsetIndex, messageElement }: CursorIndicato
     const rect = messageElement.getBoundingClientRect()
     setPosition({
       top: rect.top + window.scrollY,
-      left: rect.left + window.scrollX - INDICATOR_WIDTH - 4 + (offsetIndex * INDICATOR_OFFSET),
+      left:
+        rect.left +
+        window.scrollX -
+        INDICATOR_WIDTH -
+        4 +
+        offsetIndex * INDICATOR_OFFSET,
       height: rect.height,
     })
   }, [messageElement, offsetIndex])
@@ -209,7 +227,10 @@ interface MessageCursorsProps {
 function MessageCursors({ cursors, messageElement }: MessageCursorsProps) {
   const visibleCursors = cursors.slice(0, MAX_VISIBLE_INDICATORS)
   const hiddenCount = cursors.length - MAX_VISIBLE_INDICATORS
-  const [position, setPosition] = useState<{ top: number; left: number } | null>(null)
+  const [position, setPosition] = useState<{
+    top: number
+    left: number
+  } | null>(null)
 
   // Calculate position for overflow indicator
   const updatePosition = useCallback(() => {
@@ -218,7 +239,12 @@ function MessageCursors({ cursors, messageElement }: MessageCursorsProps) {
     const rect = messageElement.getBoundingClientRect()
     setPosition({
       top: rect.top + window.scrollY - 24,
-      left: rect.left + window.scrollX - INDICATOR_WIDTH - 4 + (MAX_VISIBLE_INDICATORS * INDICATOR_OFFSET),
+      left:
+        rect.left +
+        window.scrollX -
+        INDICATOR_WIDTH -
+        4 +
+        MAX_VISIBLE_INDICATORS * INDICATOR_OFFSET,
     })
   }, [messageElement])
 
@@ -287,7 +313,7 @@ export function CollaboratorCursor({
   // Filter cursors to current conversation only
   const filteredCursors = useMemo(() => {
     return cursors.filter(
-      (cursor) => cursor.cursor.conversationId === currentConversationId
+      (cursor) => cursor.cursor.conversationId === currentConversationId,
     )
   }, [cursors, currentConversationId])
 
@@ -296,7 +322,9 @@ export function CollaboratorCursor({
     const interval = setInterval(() => {
       const now = Date.now()
       setActiveCursors((prev) =>
-        prev.filter((cursor) => now - cursor.lastActive.getTime() < CLEANUP_TIMEOUT_MS)
+        prev.filter(
+          (cursor) => now - cursor.lastActive.getTime() < CLEANUP_TIMEOUT_MS,
+        ),
       )
     }, 1000)
 
@@ -321,18 +349,20 @@ export function CollaboratorCursor({
   // Render cursors as portal overlay
   const portalContent = (
     <div className={twMerge('collaborator-cursors', className)}>
-      {Array.from(cursorsByMessage.entries()).map(([messageId, messageCursors]) => {
-        const messageElement = messageRefs.get(messageId)
-        if (!messageElement) return null
+      {Array.from(cursorsByMessage.entries()).map(
+        ([messageId, messageCursors]) => {
+          const messageElement = messageRefs.get(messageId)
+          if (!messageElement) return null
 
-        return (
-          <MessageCursors
-            key={messageId}
-            cursors={messageCursors}
-            messageElement={messageElement}
-          />
-        )
-      })}
+          return (
+            <MessageCursors
+              key={messageId}
+              cursors={messageCursors}
+              messageElement={messageElement}
+            />
+          )
+        },
+      )}
     </div>
   )
 

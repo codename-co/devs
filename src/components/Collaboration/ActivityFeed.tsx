@@ -39,20 +39,20 @@ const localI18n = {
     'knowledge',
   ] as const,
   fr: [
-    '{user} a rejoint l\'espace de travail',
-    '{user} a quitté l\'espace de travail',
+    "{user} a rejoint l'espace de travail",
+    "{user} a quitté l'espace de travail",
     '{user} a envoyé un message dans {entity}',
     '{user} a modifié {entity}',
     '{user} a créé {entity}',
     '{user} a supprimé {entity}',
     '{user} a partagé {entity}',
     '{user} a exécuté {agent}',
-    'Aujourd\'hui',
+    "Aujourd'hui",
     'Hier',
     'Cette semaine',
     'Plus ancien',
     'Aucune activité récente',
-    'à l\'instant',
+    "à l'instant",
     'il y a {count} min',
     'il y a {count} mins',
     'il y a {count} heure',
@@ -157,7 +157,15 @@ const localI18n = {
 
 export interface ActivityItem {
   id: string
-  type: 'join' | 'leave' | 'message' | 'edit' | 'create' | 'delete' | 'share' | 'agent_run'
+  type:
+    | 'join'
+    | 'leave'
+    | 'message'
+    | 'edit'
+    | 'create'
+    | 'delete'
+    | 'share'
+    | 'agent_run'
   userId: string
   userName: string
   userColor: string
@@ -223,7 +231,10 @@ function getTimeGroup(date: Date): TimeGroup {
 
 function getRelativeTime(
   date: Date,
-  t: (key: (typeof localI18n.en)[number], params?: Record<string, string | number>) => string
+  t: (
+    key: (typeof localI18n.en)[number],
+    params?: Record<string, string | number>,
+  ) => string,
 ): string {
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
@@ -247,7 +258,10 @@ function getRelativeTime(
 
 interface ActivityTextProps {
   activity: ActivityItem
-  t: (key: (typeof localI18n.en)[number], params?: Record<string, string | number>) => string
+  t: (
+    key: (typeof localI18n.en)[number],
+    params?: Record<string, string | number>,
+  ) => string
 }
 
 function ActivityText({ activity, t }: ActivityTextProps) {
@@ -401,7 +415,10 @@ interface ActivityItemComponentProps {
   activity: ActivityItem
   showTimestamp: boolean
   onClick?: (activity: ActivityItem) => void
-  t: (key: (typeof localI18n.en)[number], params?: Record<string, string | number>) => string
+  t: (
+    key: (typeof localI18n.en)[number],
+    params?: Record<string, string | number>,
+  ) => string
 }
 
 function ActivityItemComponent({
@@ -422,7 +439,7 @@ function ActivityItemComponent({
       className={twMerge(
         'flex items-start gap-3 p-2 rounded-lg',
         'hover:bg-default-100 transition-colors duration-150',
-        onClick && 'cursor-pointer'
+        onClick && 'cursor-pointer',
       )}
       onClick={() => onClick?.(activity)}
     >
@@ -466,7 +483,10 @@ interface TimeGroupSectionProps {
   activities: ActivityItem[]
   showTimestamps: boolean
   onActivityClick?: (activity: ActivityItem) => void
-  t: (key: (typeof localI18n.en)[number], params?: Record<string, string | number>) => string
+  t: (
+    key: (typeof localI18n.en)[number],
+    params?: Record<string, string | number>,
+  ) => string
 }
 
 function TimeGroupSection({
@@ -532,7 +552,7 @@ export function ActivityFeed({
       <div
         className={twMerge(
           'flex flex-col items-center justify-center py-8 px-4',
-          className
+          className,
         )}
       >
         <div className="w-12 h-12 rounded-full bg-default-100 flex items-center justify-center mb-3">
@@ -563,7 +583,7 @@ export function ActivityFeed({
                 onActivityClick={onActivityClick}
                 t={t}
               />
-            )
+            ),
           )}
         </div>
       ) : (

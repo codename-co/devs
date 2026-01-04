@@ -66,9 +66,7 @@ function formatTypingText(users: TypingUser[]): React.ReactNode {
   }
 
   return (
-    <span className="text-default-500">
-      {users.length} people are typing
-    </span>
+    <span className="text-default-500">{users.length} people are typing</span>
   )
 }
 
@@ -80,10 +78,7 @@ export function TypingIndicator({ users, className }: TypingIndicatorProps) {
   return (
     <AnimatePresence>
       <motion.div
-        className={twMerge(
-          'flex items-center text-sm',
-          className
-        )}
+        className={twMerge('flex items-center text-sm', className)}
         initial={{ opacity: 0, y: 5 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -5 }}

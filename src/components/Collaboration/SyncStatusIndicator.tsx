@@ -137,7 +137,10 @@ function getStateIcon(state: SyncState, className?: string) {
   }
 }
 
-function useRelativeTime(date: Date | undefined, t: ReturnType<typeof useI18n<typeof localI18n>>['t']) {
+function useRelativeTime(
+  date: Date | undefined,
+  t: ReturnType<typeof useI18n<typeof localI18n>>['t'],
+) {
   const [relativeTime, setRelativeTime] = useState('')
 
   const formatRelativeTime = useCallback(() => {
@@ -211,7 +214,7 @@ function MinimalIndicator({
       <motion.span
         className={twMerge(
           'relative inline-block w-2.5 h-2.5 rounded-full cursor-default',
-          className
+          className,
         )}
         style={{ backgroundColor: config.color }}
         initial={{ scale: 0.8, opacity: 0 }}
@@ -275,7 +278,7 @@ function DetailedContent({
         <motion.div
           className={twMerge(
             'flex items-center justify-center w-10 h-10 rounded-full',
-            config.bgColor
+            config.bgColor,
           )}
           animate={status.state === 'syncing' ? { rotate: 360 } : {}}
           transition={
@@ -411,7 +414,7 @@ function CompactIndicator({
             'inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-sm',
             'hover:bg-default-100 transition-colors cursor-pointer',
             'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-            className
+            className,
           )}
           aria-label={t('Sync Status')}
           aria-expanded={isOpen}
@@ -441,7 +444,7 @@ function CompactIndicator({
                 exit={{ scale: 0, opacity: 0 }}
                 className={twMerge(
                   'inline-flex items-center px-1.5 py-0.5 text-xs rounded-full',
-                  'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-400'
+                  'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-400',
                 )}
               >
                 <motion.span
@@ -530,7 +533,9 @@ export function SyncStatusIndicator({
         case 'synced':
           return t('All changes synced')
         case 'syncing':
-          return t('Syncing {count} changes...', { count: status.pendingChanges })
+          return t('Syncing {count} changes...', {
+            count: status.pendingChanges,
+          })
         case 'offline':
           return t("You're offline. Changes saved locally.")
         case 'error':

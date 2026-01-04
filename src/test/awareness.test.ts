@@ -310,12 +310,12 @@ describe('Awareness System', () => {
         const localState = states.get(localClientId)
 
         expect(localState?.presence?.lastActive).toBeDefined()
-        expect(new Date(localState!.presence!.lastActive).getTime()).toBeGreaterThanOrEqual(
-          before.getTime()
-        )
-        expect(new Date(localState!.presence!.lastActive).getTime()).toBeLessThanOrEqual(
-          after.getTime()
-        )
+        expect(
+          new Date(localState!.presence!.lastActive).getTime(),
+        ).toBeGreaterThanOrEqual(before.getTime())
+        expect(
+          new Date(localState!.presence!.lastActive).getTime(),
+        ).toBeLessThanOrEqual(after.getTime())
       })
     })
 

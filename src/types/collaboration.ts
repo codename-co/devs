@@ -287,7 +287,13 @@ export interface AwarenessState {
  * - manage: Manage permissions and settings
  * - execute: Run agents and workflows
  */
-export type Permission = 'read' | 'write' | 'delete' | 'share' | 'manage' | 'execute'
+export type Permission =
+  | 'read'
+  | 'write'
+  | 'delete'
+  | 'share'
+  | 'manage'
+  | 'execute'
 
 /**
  * Defines the scope of a share action.

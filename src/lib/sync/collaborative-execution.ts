@@ -28,7 +28,14 @@ export interface ApprovalRequest {
 export interface ExecutionAction {
   id: string
   executionId: string
-  type: 'start' | 'pause' | 'resume' | 'stop' | 'approve' | 'reject' | 'intervene'
+  type:
+    | 'start'
+    | 'pause'
+    | 'resume'
+    | 'stop'
+    | 'approve'
+    | 'reject'
+    | 'intervene'
   userId: string
   timestamp: Date
   data?: Record<string, unknown>
@@ -74,7 +81,9 @@ export class CollaborativeExecutionManager {
     this.doc = crdtDoc
 
     // Initialize CRDT structures
-    this.executionsMap = this.doc.getMap<CollaborativeExecution>('collaborative-executions')
+    this.executionsMap = this.doc.getMap<CollaborativeExecution>(
+      'collaborative-executions',
+    )
     this.actionsArray = this.doc.getArray<ExecutionAction>('execution-actions')
     this.approvalsMap = this.doc.getMap<ApprovalRequest>('approval-requests')
 
@@ -243,7 +252,9 @@ export class CollaborativeExecutionManager {
     const execution = this.getExecutionOrThrow(executionId)
 
     if (execution.status !== 'running') {
-      throw new Error(`Cannot complete execution in '${execution.status}' status`)
+      throw new Error(
+        `Cannot complete execution in '${execution.status}' status`,
+      )
     }
 
     this.updateExecution(executionId, {
@@ -287,7 +298,9 @@ export class CollaborativeExecutionManager {
     }
 
     if (request.executionId !== executionId) {
-      throw new Error(`Request '${requestId}' does not belong to execution '${executionId}'`)
+      throw new Error(
+        `Request '${requestId}' does not belong to execution '${executionId}'`,
+      )
     }
 
     if (request.status !== 'pending') {
@@ -317,7 +330,9 @@ export class CollaborativeExecutionManager {
     }
 
     if (request.executionId !== executionId) {
-      throw new Error(`Request '${requestId}' does not belong to execution '${executionId}'`)
+      throw new Error(
+        `Request '${requestId}' does not belong to execution '${executionId}'`,
+      )
     }
 
     if (request.status !== 'pending') {
@@ -362,7 +377,9 @@ export class CollaborativeExecutionManager {
     const execution = this.getExecutionOrThrow(executionId)
 
     if (!['running', 'paused'].includes(execution.status)) {
-      throw new Error(`Cannot intervene in execution with '${execution.status}' status`)
+      throw new Error(
+        `Cannot intervene in execution with '${execution.status}' status`,
+      )
     }
 
     // Pause the execution
@@ -425,7 +442,9 @@ export class CollaborativeExecutionManager {
   // ============================================================================
 
   getActionHistory(executionId: string): ExecutionAction[] {
-    return this.actionsArray.toArray().filter((action) => action.executionId === executionId)
+    return this.actionsArray
+      .toArray()
+      .filter((action) => action.executionId === executionId)
   }
 
   // ============================================================================
@@ -457,25 +476,31 @@ export class CollaborativeExecutionManager {
 
   private checkParticipant(executionId: string): void {
     if (!this.isParticipant(executionId, this.currentUserId)) {
-      throw new Error(`User '${this.currentUserId}' is not a participant in execution '${executionId}'`)
+      throw new Error(
+        `User '${this.currentUserId}' is not a participant in execution '${executionId}'`,
+      )
     }
   }
 
   private checkIntervenePermission(executionId: string): void {
     if (!this.canUserIntervene(executionId, this.currentUserId)) {
-      throw new Error(`User '${this.currentUserId}' cannot intervene in execution '${executionId}'`)
+      throw new Error(
+        `User '${this.currentUserId}' cannot intervene in execution '${executionId}'`,
+      )
     }
   }
 
   private checkApprovePermission(executionId: string): void {
     if (!this.canUserApprove(executionId, this.currentUserId)) {
-      throw new Error(`User '${this.currentUserId}' cannot approve in execution '${executionId}'`)
+      throw new Error(
+        `User '${this.currentUserId}' cannot approve in execution '${executionId}'`,
+      )
     }
   }
 
   private updateExecution(
     executionId: string,
-    updates: Partial<CollaborativeExecution>
+    updates: Partial<CollaborativeExecution>,
   ): void {
     const execution = this.getExecutionOrThrow(executionId)
     const updated = { ...execution, ...updates }
@@ -488,7 +513,7 @@ export class CollaborativeExecutionManager {
   private logAction(
     executionId: string,
     type: ExecutionAction['type'],
-    data?: Record<string, unknown>
+    data?: Record<string, unknown>,
   ): void {
     const action: ExecutionAction = {
       id: nanoid(),
@@ -512,7 +537,7 @@ export class CollaborativeExecutionManager {
 export function createCollaborativeExecutionManager(
   workspaceId: string,
   currentUserId: string,
-  crdtDoc: Y.Doc
+  crdtDoc: Y.Doc,
 ): CollaborativeExecutionManager {
   return new CollaborativeExecutionManager(workspaceId, currentUserId, crdtDoc)
 }

@@ -38,7 +38,7 @@ describe('Collaborative Execution Manager', () => {
       const testManager = createCollaborativeExecutionManager(
         'ws-1',
         'user-1',
-        testDoc
+        testDoc,
       )
 
       expect(testManager).toBeInstanceOf(CollaborativeExecutionManager)
@@ -186,10 +186,10 @@ describe('Collaborative Execution Manager', () => {
       const updated = manager.getExecution(execution.executionId)
       expect(updated?.startedAt).toBeDefined()
       expect(new Date(updated!.startedAt!).getTime()).toBeGreaterThanOrEqual(
-        before.getTime()
+        before.getTime(),
       )
       expect(new Date(updated!.startedAt!).getTime()).toBeLessThanOrEqual(
-        after.getTime()
+        after.getTime(),
       )
     })
 
@@ -198,7 +198,7 @@ describe('Collaborative Execution Manager', () => {
       manager.start(execution.executionId)
 
       expect(() => manager.start(execution.executionId)).toThrow(
-        /Cannot start execution in 'running' status/
+        /Cannot start execution in 'running' status/,
       )
     })
   })
@@ -217,7 +217,7 @@ describe('Collaborative Execution Manager', () => {
       const execution = manager.createExecution({ conversationId: 'conv-1' })
 
       expect(() => manager.pause(execution.executionId)).toThrow(
-        /Cannot pause execution in 'pending' status/
+        /Cannot pause execution in 'pending' status/,
       )
     })
   })
@@ -238,7 +238,7 @@ describe('Collaborative Execution Manager', () => {
       manager.start(execution.executionId)
 
       expect(() => manager.resume(execution.executionId)).toThrow(
-        /Cannot resume execution in 'running' status/
+        /Cannot resume execution in 'running' status/,
       )
     })
   })
@@ -264,10 +264,10 @@ describe('Collaborative Execution Manager', () => {
       const updated = manager.getExecution(execution.executionId)
       expect(updated?.completedAt).toBeDefined()
       expect(new Date(updated!.completedAt!).getTime()).toBeGreaterThanOrEqual(
-        before.getTime()
+        before.getTime(),
       )
       expect(new Date(updated!.completedAt!).getTime()).toBeLessThanOrEqual(
-        after.getTime()
+        after.getTime(),
       )
     })
 
@@ -277,7 +277,7 @@ describe('Collaborative Execution Manager', () => {
       manager.stop(execution.executionId)
 
       expect(() => manager.stop(execution.executionId)).toThrow(
-        /Cannot stop execution in 'cancelled' status/
+        /Cannot stop execution in 'cancelled' status/,
       )
     })
 
@@ -310,7 +310,7 @@ describe('Collaborative Execution Manager', () => {
       const otherManager = new CollaborativeExecutionManager(
         workspaceId,
         'user-2',
-        doc
+        doc,
       )
 
       const execution = manager.createExecution({
@@ -319,7 +319,7 @@ describe('Collaborative Execution Manager', () => {
       })
 
       expect(() => otherManager.start(execution.executionId)).toThrow(
-        /not a participant/
+        /not a participant/,
       )
 
       otherManager.destroy()
@@ -329,7 +329,7 @@ describe('Collaborative Execution Manager', () => {
       const otherManager = new CollaborativeExecutionManager(
         workspaceId,
         'user-2',
-        doc
+        doc,
       )
 
       const execution = manager.createExecution({
@@ -341,7 +341,7 @@ describe('Collaborative Execution Manager', () => {
       manager.start(execution.executionId)
 
       expect(() => otherManager.pause(execution.executionId)).toThrow(
-        /cannot intervene/
+        /cannot intervene/,
       )
 
       otherManager.destroy()
@@ -354,8 +354,12 @@ describe('Collaborative Execution Manager', () => {
         canIntervene: ['user-1'],
       })
 
-      expect(manager.canUserIntervene(execution.executionId, 'user-1')).toBe(true)
-      expect(manager.canUserIntervene(execution.executionId, 'user-2')).toBe(false)
+      expect(manager.canUserIntervene(execution.executionId, 'user-1')).toBe(
+        true,
+      )
+      expect(manager.canUserIntervene(execution.executionId, 'user-2')).toBe(
+        false,
+      )
     })
 
     it('canUserApprove returns correct value', () => {
@@ -365,7 +369,9 @@ describe('Collaborative Execution Manager', () => {
         canApprove: ['user-2'],
       })
 
-      expect(manager.canUserApprove(execution.executionId, 'user-1')).toBe(false)
+      expect(manager.canUserApprove(execution.executionId, 'user-1')).toBe(
+        false,
+      )
       expect(manager.canUserApprove(execution.executionId, 'user-2')).toBe(true)
     })
 
@@ -396,7 +402,7 @@ describe('Collaborative Execution Manager', () => {
       const requestId = manager.requestApproval(
         execution.executionId,
         'tool-call',
-        { tool: 'readFile' }
+        { tool: 'readFile' },
       )
 
       const request = manager.getApprovalRequest(requestId)
@@ -414,7 +420,7 @@ describe('Collaborative Execution Manager', () => {
       const execution = manager.createExecution({ conversationId: 'conv-1' })
       const requestId = manager.requestApproval(
         execution.executionId,
-        'tool-call'
+        'tool-call',
       )
 
       manager.approve(execution.executionId, requestId)
@@ -429,7 +435,7 @@ describe('Collaborative Execution Manager', () => {
       const execution = manager.createExecution({ conversationId: 'conv-1' })
       const requestId = manager.requestApproval(
         execution.executionId,
-        'tool-call'
+        'tool-call',
       )
 
       manager.reject(execution.executionId, requestId, 'Not allowed')
@@ -444,28 +450,28 @@ describe('Collaborative Execution Manager', () => {
       const execution = manager.createExecution({ conversationId: 'conv-1' })
       const requestId = manager.requestApproval(
         execution.executionId,
-        'tool-call'
+        'tool-call',
       )
 
       manager.approve(execution.executionId, requestId)
 
-      expect(() =>
-        manager.approve(execution.executionId, requestId)
-      ).toThrow(/already approved/)
+      expect(() => manager.approve(execution.executionId, requestId)).toThrow(
+        /already approved/,
+      )
     })
 
     it('cannot reject non-pending request', () => {
       const execution = manager.createExecution({ conversationId: 'conv-1' })
       const requestId = manager.requestApproval(
         execution.executionId,
-        'tool-call'
+        'tool-call',
       )
 
       manager.reject(execution.executionId, requestId)
 
-      expect(() =>
-        manager.reject(execution.executionId, requestId)
-      ).toThrow(/already rejected/)
+      expect(() => manager.reject(execution.executionId, requestId)).toThrow(
+        /already rejected/,
+      )
     })
 
     it('getPendingApprovals returns only pending requests', () => {
@@ -487,7 +493,7 @@ describe('Collaborative Execution Manager', () => {
       const otherManager = new CollaborativeExecutionManager(
         workspaceId,
         'user-2',
-        doc
+        doc,
       )
 
       const execution = manager.createExecution({
@@ -498,11 +504,11 @@ describe('Collaborative Execution Manager', () => {
 
       const requestId = manager.requestApproval(
         execution.executionId,
-        'tool-call'
+        'tool-call',
       )
 
       expect(() =>
-        otherManager.approve(execution.executionId, requestId)
+        otherManager.approve(execution.executionId, requestId),
       ).toThrow(/cannot approve/)
 
       otherManager.destroy()
@@ -546,7 +552,7 @@ describe('Collaborative Execution Manager', () => {
       manager.stop(execution.executionId)
 
       expect(() =>
-        manager.intervene(execution.executionId, 'Too late')
+        manager.intervene(execution.executionId, 'Too late'),
       ).toThrow(/Cannot intervene/)
     })
   })
@@ -565,7 +571,7 @@ describe('Collaborative Execution Manager', () => {
       expect(callback).toHaveBeenCalledWith(
         expect.objectContaining({
           executionId: execution.executionId,
-        })
+        }),
       )
     })
 
@@ -594,7 +600,7 @@ describe('Collaborative Execution Manager', () => {
         expect.objectContaining({
           action: 'test-action',
           status: 'pending',
-        })
+        }),
       )
     })
 
@@ -627,9 +633,9 @@ describe('Collaborative Execution Manager', () => {
 
       // Should have: start (from create), start, pause, resume
       expect(history.length).toBeGreaterThanOrEqual(3)
-      expect(history.every((a) => a.executionId === execution.executionId)).toBe(
-        true
-      )
+      expect(
+        history.every((a) => a.executionId === execution.executionId),
+      ).toBe(true)
     })
 
     it('returns empty array for execution with no actions after destroy', () => {
@@ -651,8 +657,12 @@ describe('Collaborative Execution Manager', () => {
       const history1 = manager.getActionHistory(exec1.executionId)
       const history2 = manager.getActionHistory(exec2.executionId)
 
-      expect(history1.every((a) => a.executionId === exec1.executionId)).toBe(true)
-      expect(history2.every((a) => a.executionId === exec2.executionId)).toBe(true)
+      expect(history1.every((a) => a.executionId === exec1.executionId)).toBe(
+        true,
+      )
+      expect(history2.every((a) => a.executionId === exec2.executionId)).toBe(
+        true,
+      )
     })
   })
 
@@ -696,7 +706,7 @@ describe('Collaborative Execution Manager', () => {
       const manager2 = new CollaborativeExecutionManager(
         workspaceId,
         'user-2',
-        doc
+        doc,
       )
 
       const execution = manager.createExecution({

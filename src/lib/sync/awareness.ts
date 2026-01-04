@@ -52,7 +52,7 @@ export function generateUserColor(userId: string): string {
   let hash = 0
   for (let i = 0; i < userId.length; i++) {
     const char = userId.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
+    hash = (hash << 5) - hash + char
     hash = hash & hash // Convert to 32bit integer
   }
 
@@ -323,7 +323,7 @@ export class AwarenessManager {
    * @returns Unsubscribe function
    */
   onRemoteChange(
-    callback: (states: Map<number, AwarenessState>) => void
+    callback: (states: Map<number, AwarenessState>) => void,
   ): () => void {
     this.changeCallbacks.add(callback)
 

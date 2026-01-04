@@ -55,14 +55,20 @@ interface ConfirmationModalProps {
   isLoading?: boolean
 }
 
-const roleColors: Record<WorkspaceRole, 'secondary' | 'primary' | 'success' | 'default'> = {
+const roleColors: Record<
+  WorkspaceRole,
+  'secondary' | 'primary' | 'success' | 'default'
+> = {
   owner: 'secondary',
   admin: 'primary',
   editor: 'success',
   viewer: 'default',
 }
 
-const roleLabels: Record<WorkspaceRole, 'Owner' | 'Admin' | 'Editor' | 'Viewer'> = {
+const roleLabels: Record<
+  WorkspaceRole,
+  'Owner' | 'Admin' | 'Editor' | 'Viewer'
+> = {
   owner: 'Owner',
   admin: 'Admin',
   editor: 'Editor',
@@ -97,11 +103,7 @@ function ConfirmationModal({
           <Button variant="flat" onPress={onClose} isDisabled={isLoading}>
             Cancel
           </Button>
-          <Button
-            color="danger"
-            onPress={onConfirm}
-            isLoading={isLoading}
-          >
+          <Button color="danger" onPress={onConfirm} isLoading={isLoading}>
             {confirmLabel}
           </Button>
         </ModalFooter>
@@ -170,8 +172,10 @@ export function ShareDialog({
   const [newLinkMaxUses, setNewLinkMaxUses] = useState<string>('')
   const [isCreatingLink, setIsCreatingLink] = useState(false)
 
-  const canManageMembers = currentUserRole === 'owner' || currentUserRole === 'admin'
-  const canManageLinks = currentUserRole === 'owner' || currentUserRole === 'admin'
+  const canManageMembers =
+    currentUserRole === 'owner' || currentUserRole === 'admin'
+  const canManageLinks =
+    currentUserRole === 'owner' || currentUserRole === 'admin'
   const isOwner = currentUserRole === 'owner'
 
   // Sort members: owner first, then by role, then alphabetically
@@ -196,7 +200,9 @@ export function ShareDialog({
 
   // Find who invited a member
   const getInviterName = (invitedBy: string): string => {
-    const inviter = members.find((m) => m.userId === invitedBy) as ExtendedWorkspaceMember | undefined
+    const inviter = members.find((m) => m.userId === invitedBy) as
+      | ExtendedWorkspaceMember
+      | undefined
     return inviter?.displayName || invitedBy
   }
 
@@ -298,21 +304,28 @@ export function ShareDialog({
       case 'remove':
         return {
           title: t('Remove Member'),
-          message: t('Are you sure you want to remove {name} from this workspace?', {
-            name: confirmModal.targetName || '',
-          }),
+          message: t(
+            'Are you sure you want to remove {name} from this workspace?',
+            {
+              name: confirmModal.targetName || '',
+            },
+          ),
           confirmLabel: t('Remove'),
         }
       case 'leave':
         return {
           title: t('Leave Workspace'),
-          message: t('Are you sure you want to leave this workspace? You will need a new invite to rejoin.'),
+          message: t(
+            'Are you sure you want to leave this workspace? You will need a new invite to rejoin.',
+          ),
           confirmLabel: t('Leave'),
         }
       case 'deleteLink':
         return {
           title: t('Delete Invite Link'),
-          message: t('Are you sure you want to delete this invite link? Anyone with this link will no longer be able to join.'),
+          message: t(
+            'Are you sure you want to delete this invite link? Anyone with this link will no longer be able to join.',
+          ),
           confirmLabel: t('Delete'),
         }
     }
@@ -322,7 +335,12 @@ export function ShareDialog({
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} size="2xl" scrollBehavior="inside">
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        size="2xl"
+        scrollBehavior="inside"
+      >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
@@ -334,10 +352,13 @@ export function ShareDialog({
           <ModalBody className="gap-4">
             <Tabs
               selectedKey={activeTab}
-              onSelectionChange={(key) => setActiveTab(key as 'members' | 'invites')}
+              onSelectionChange={(key) =>
+                setActiveTab(key as 'members' | 'invites')
+              }
               variant="underlined"
               classNames={{
-                tabList: 'gap-6 w-full relative rounded-none py-0 border-b border-divider',
+                tabList:
+                  'gap-6 w-full relative rounded-none py-0 border-b border-divider',
                 tab: 'py-4',
               }}
             >
@@ -361,7 +382,8 @@ export function ShareDialog({
                     const isMemberOwner = member.role === 'owner'
                     const canEditRole =
                       canManageMembers && !isMemberOwner && !isCurrentUser
-                    const canRemove = canManageMembers && !isMemberOwner && !isCurrentUser
+                    const canRemove =
+                      canManageMembers && !isMemberOwner && !isCurrentUser
 
                     return (
                       <div
@@ -372,7 +394,7 @@ export function ShareDialog({
                           <Avatar
                             src={extMember.avatar}
                             name={getInitials(
-                              extMember.displayName || member.userId
+                              extMember.displayName || member.userId,
                             )}
                             size="sm"
                             className="shrink-0"
@@ -411,7 +433,7 @@ export function ShareDialog({
                               onChange={(e) =>
                                 handleRoleChange(
                                   member.userId,
-                                  e.target.value as WorkspaceRole
+                                  e.target.value as WorkspaceRole,
                                 )
                               }
                               isDisabled={isUpdating === member.userId}
@@ -419,8 +441,12 @@ export function ShareDialog({
                               aria-label={t('Member role')}
                             >
                               <SelectItem key="admin">{t('Admin')}</SelectItem>
-                              <SelectItem key="editor">{t('Editor')}</SelectItem>
-                              <SelectItem key="viewer">{t('Viewer')}</SelectItem>
+                              <SelectItem key="editor">
+                                {t('Editor')}
+                              </SelectItem>
+                              <SelectItem key="viewer">
+                                {t('Viewer')}
+                              </SelectItem>
                             </Select>
                           ) : (
                             <Chip
@@ -502,14 +528,24 @@ export function ShareDialog({
                           >
                             {isOwner ? (
                               <>
-                                <SelectItem key="admin">{t('Admin')}</SelectItem>
-                                <SelectItem key="editor">{t('Editor')}</SelectItem>
-                                <SelectItem key="viewer">{t('Viewer')}</SelectItem>
+                                <SelectItem key="admin">
+                                  {t('Admin')}
+                                </SelectItem>
+                                <SelectItem key="editor">
+                                  {t('Editor')}
+                                </SelectItem>
+                                <SelectItem key="viewer">
+                                  {t('Viewer')}
+                                </SelectItem>
                               </>
                             ) : (
                               <>
-                                <SelectItem key="editor">{t('Editor')}</SelectItem>
-                                <SelectItem key="viewer">{t('Viewer')}</SelectItem>
+                                <SelectItem key="editor">
+                                  {t('Editor')}
+                                </SelectItem>
+                                <SelectItem key="viewer">
+                                  {t('Viewer')}
+                                </SelectItem>
                               </>
                             )}
                           </Select>
@@ -518,7 +554,9 @@ export function ShareDialog({
                             size="sm"
                             label={t('Expires')}
                             selectedKeys={[newLinkExpiration]}
-                            onChange={(e) => setNewLinkExpiration(e.target.value)}
+                            onChange={(e) =>
+                              setNewLinkExpiration(e.target.value)
+                            }
                             className="w-32"
                           >
                             {EXPIRATION_OPTIONS.map((opt) => (
@@ -558,7 +596,11 @@ export function ShareDialog({
                   {/* Existing invite links */}
                   {inviteLinks.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 text-default-500">
-                      <Icon name="Share" size="xl" className="mb-2 opacity-50" />
+                      <Icon
+                        name="Share"
+                        size="xl"
+                        className="mb-2 opacity-50"
+                      />
                       <span>{t('No invite links')}</span>
                       {canManageLinks && (
                         <span className="text-small">
@@ -570,7 +612,8 @@ export function ShareDialog({
                     <div className="flex flex-col gap-3">
                       {inviteLinks.map((link) => {
                         const isExpired =
-                          link.expiresAt && new Date(link.expiresAt) < new Date()
+                          link.expiresAt &&
+                          new Date(link.expiresAt) < new Date()
                         const isMaxedOut =
                           link.maxUses && link.usedCount >= link.maxUses
 
@@ -595,13 +638,21 @@ export function ShareDialog({
                                   </Chip>
 
                                   {isExpired && (
-                                    <Chip size="sm" color="danger" variant="flat">
+                                    <Chip
+                                      size="sm"
+                                      color="danger"
+                                      variant="flat"
+                                    >
                                       {t('Expired')}
                                     </Chip>
                                   )}
 
                                   {isMaxedOut && !isExpired && (
-                                    <Chip size="sm" color="warning" variant="flat">
+                                    <Chip
+                                      size="sm"
+                                      color="warning"
+                                      variant="flat"
+                                    >
                                       {t('Max uses reached')}
                                     </Chip>
                                   )}
@@ -612,7 +663,9 @@ export function ShareDialog({
                                     <span className="flex items-center gap-1">
                                       <Icon name="Clock" size="sm" />
                                       {t('Expires in {time}', {
-                                        time: formatRelativeTime(new Date(link.expiresAt)),
+                                        time: formatRelativeTime(
+                                          new Date(link.expiresAt),
+                                        ),
                                       })}
                                     </span>
                                   )}
@@ -628,7 +681,9 @@ export function ShareDialog({
 
                                   {!link.maxUses && (
                                     <span>
-                                      {t('{count} uses', { count: link.usedCount })}
+                                      {t('{count} uses', {
+                                        count: link.usedCount,
+                                      })}
                                     </span>
                                   )}
                                 </div>

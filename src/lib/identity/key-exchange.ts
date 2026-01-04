@@ -11,11 +11,7 @@ const AES_ALGORITHM = { name: 'AES-GCM', length: 256 }
  * Generate an ECDH keypair for key exchange
  */
 export async function generateKeyExchangeKeyPair(): Promise<CryptoKeyPair> {
-  return crypto.subtle.generateKey(
-    ECDH_ALGORITHM,
-    true,
-    ['deriveBits']
-  )
+  return crypto.subtle.generateKey(ECDH_ALGORITHM, true, ['deriveBits'])
 }
 
 /**
@@ -23,23 +19,20 @@ export async function generateKeyExchangeKeyPair(): Promise<CryptoKeyPair> {
  */
 export async function deriveSharedSecret(
   privateKey: CryptoKey,
-  publicKey: CryptoKey
+  publicKey: CryptoKey,
 ): Promise<CryptoKey> {
   // Derive bits using ECDH
   const sharedBits = await crypto.subtle.deriveBits(
     { name: 'ECDH', public: publicKey },
     privateKey,
-    256
+    256,
   )
-  
+
   // Import as AES key
-  return crypto.subtle.importKey(
-    'raw',
-    sharedBits,
-    AES_ALGORITHM,
-    false,
-    ['encrypt', 'decrypt']
-  )
+  return crypto.subtle.importKey('raw', sharedBits, AES_ALGORITHM, false, [
+    'encrypt',
+    'decrypt',
+  ])
 }
 
 /**
@@ -48,25 +41,28 @@ export async function deriveSharedSecret(
 export async function encryptKeyForRecipient(
   workspaceKey: CryptoKey,
   recipientPublicKey: CryptoKey,
-  senderPrivateKey: CryptoKey
+  senderPrivateKey: CryptoKey,
 ): Promise<{ encryptedKey: string; iv: string }> {
   // Derive shared secret
-  const sharedSecret = await deriveSharedSecret(senderPrivateKey, recipientPublicKey)
-  
+  const sharedSecret = await deriveSharedSecret(
+    senderPrivateKey,
+    recipientPublicKey,
+  )
+
   // Export workspace key
   const workspaceKeyBuffer = await crypto.subtle.exportKey('raw', workspaceKey)
-  
+
   // Encrypt with shared secret
   const iv = crypto.getRandomValues(new Uint8Array(12))
   const encryptedKey = await crypto.subtle.encrypt(
     { name: 'AES-GCM', iv },
     sharedSecret,
-    workspaceKeyBuffer
+    workspaceKeyBuffer,
   )
-  
+
   return {
     encryptedKey: bufferToBase64(encryptedKey),
-    iv: bufferToBase64(iv.buffer as ArrayBuffer)
+    iv: bufferToBase64(iv.buffer as ArrayBuffer),
   }
 }
 
@@ -77,25 +73,28 @@ export async function decryptKeyFromSender(
   encryptedKey: string,
   iv: string,
   senderPublicKey: CryptoKey,
-  recipientPrivateKey: CryptoKey
+  recipientPrivateKey: CryptoKey,
 ): Promise<CryptoKey> {
   // Derive shared secret
-  const sharedSecret = await deriveSharedSecret(recipientPrivateKey, senderPublicKey)
-  
+  const sharedSecret = await deriveSharedSecret(
+    recipientPrivateKey,
+    senderPublicKey,
+  )
+
   // Decrypt workspace key
   const decryptedKeyBuffer = await crypto.subtle.decrypt(
     { name: 'AES-GCM', iv: base64ToBuffer(iv) },
     sharedSecret,
-    base64ToBuffer(encryptedKey)
+    base64ToBuffer(encryptedKey),
   )
-  
+
   // Import as AES key
   return crypto.subtle.importKey(
     'raw',
     decryptedKeyBuffer,
     AES_ALGORITHM,
     true,
-    ['encrypt', 'decrypt']
+    ['encrypt', 'decrypt'],
   )
 }
 
@@ -106,28 +105,26 @@ export async function generateWorkspaceKey(): Promise<CryptoKey> {
   return crypto.subtle.generateKey(
     AES_ALGORITHM,
     true, // extractable for sharing
-    ['encrypt', 'decrypt']
+    ['encrypt', 'decrypt'],
   )
 }
 
 /**
  * Import a public key from base64 string for key exchange
  */
-export async function importPublicKeyForExchange(publicKeyBase64: string): Promise<CryptoKey> {
+export async function importPublicKeyForExchange(
+  publicKeyBase64: string,
+): Promise<CryptoKey> {
   const keyBuffer = base64ToBuffer(publicKeyBase64)
-  return crypto.subtle.importKey(
-    'spki',
-    keyBuffer,
-    ECDH_ALGORITHM,
-    true,
-    []
-  )
+  return crypto.subtle.importKey('spki', keyBuffer, ECDH_ALGORITHM, true, [])
 }
 
 /**
  * Export public key to base64 for sharing
  */
-export async function exportPublicKeyForExchange(publicKey: CryptoKey): Promise<string> {
+export async function exportPublicKeyForExchange(
+  publicKey: CryptoKey,
+): Promise<string> {
   const keyBuffer = await crypto.subtle.exportKey('spki', publicKey)
   return bufferToBase64(keyBuffer)
 }

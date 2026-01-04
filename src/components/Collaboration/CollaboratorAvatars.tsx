@@ -50,7 +50,7 @@ function getInitials(name: string): string {
 function sortByStatus(collaborators: Collaborator[]): Collaborator[] {
   const statusOrder = { online: 0, away: 1, offline: 2 }
   return [...collaborators].sort(
-    (a, b) => statusOrder[a.status] - statusOrder[b.status]
+    (a, b) => statusOrder[a.status] - statusOrder[b.status],
   )
 }
 
@@ -79,16 +79,11 @@ function CollaboratorAvatar({
         }}
         className={twMerge(
           'ring-2 ring-background',
-          onClick && 'cursor-pointer hover:scale-105 transition-transform'
+          onClick && 'cursor-pointer hover:scale-105 transition-transform',
         )}
         onClick={() => onClick?.(collaborator)}
       />
-      <span
-        className={twMerge(
-          'absolute z-10',
-          presencePositionMap[size]
-        )}
-      >
+      <span className={twMerge('absolute z-10', presencePositionMap[size])}>
         <PresenceIndicator
           status={collaborator.status}
           size={presenceSizeMap[size]}
@@ -158,11 +153,7 @@ export function CollaboratorAvatars({
             }
             placement="bottom"
           >
-            <Chip
-              size={size}
-              variant="flat"
-              className="ml-1 cursor-default"
-            >
+            <Chip size={size} variant="flat" className="ml-1 cursor-default">
               +{count}
             </Chip>
           </Tooltip>
@@ -192,11 +183,7 @@ export function CollaboratorAvatars({
           }
           placement="bottom"
         >
-          <Chip
-            size={size}
-            variant="flat"
-            className="ml-1 cursor-default"
-          >
+          <Chip size={size} variant="flat" className="ml-1 cursor-default">
             +{overflow}
           </Chip>
         </Tooltip>

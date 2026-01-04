@@ -14,7 +14,7 @@ export {
   generateKeyId,
   hash,
   encryptBlob,
-  decryptToBlob
+  decryptToBlob,
 } from './encryption'
 
 export {
@@ -22,14 +22,14 @@ export {
   getCRDTManager,
   resetCRDTManager,
   type SyncableEntityType,
-  type EntityChange
+  type EntityChange,
 } from './crdt-adapter'
 
 export {
   AwarenessManager,
   createAwarenessManager,
   generateUserColor,
-  formatPresenceStatus
+  formatPresenceStatus,
 } from './awareness'
 
 export {
@@ -37,7 +37,7 @@ export {
   createCollaborativeExecutionManager,
   type ApprovalRequest,
   type ExecutionAction,
-  type CreateExecutionConfig
+  type CreateExecutionConfig,
 } from './collaborative-execution'
 
 export * from './providers'
