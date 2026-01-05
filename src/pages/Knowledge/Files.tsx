@@ -477,8 +477,9 @@ export const Files: React.FC = () => {
     }
   }
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
+  const formatDate = (date: Date | string) => {
+    const d = date instanceof Date ? date : new Date(date)
+    return d.toLocaleDateString() + ' ' + d.toLocaleTimeString()
   }
 
   const getFileIcon = (item: KnowledgeItem) => {
