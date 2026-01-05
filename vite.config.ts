@@ -72,7 +72,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     mdx(),
-    basicSsl(),
+    // basicSsl(),
     createMpaPlugin({
       htmlMinify: true,
       pages,
