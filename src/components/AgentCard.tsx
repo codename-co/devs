@@ -56,32 +56,12 @@ export const AgentCard = ({
   const displayName = agent.i18n?.[lang]?.name || agent.name
   const displayDesc = agent.i18n?.[lang]?.desc || agent.desc || agent.role
 
-  const handleCardClick = (e: React.MouseEvent | React.KeyboardEvent) => {
-    // Prevent triggering if clicking on interactive elements (buttons, dropdowns, etc.)
-    if (
-      e.target instanceof Element &&
-      (e.target.closest('button') || e.target.closest('[role="button"]'))
-    ) {
-      return
-    }
-    onPress?.(agent.id)
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      handleCardClick(e)
-    }
-  }
-
   return (
     <Card
       data-testid="agent-card"
       className={`${className} cursor-pointer hover:scale-105 transition-transform dark:border-1 dark:border-default-400`}
-      tabIndex={0}
-      role="button"
-      onClick={handleCardClick}
-      onKeyDown={handleKeyDown}
+      isPressable
+      onPress={() => onPress?.(agent.id)}
     >
       <CardHeader className="pb-2 pt-2 px-4 flex-col items-start relative">
         {children}
