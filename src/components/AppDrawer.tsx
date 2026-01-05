@@ -28,6 +28,7 @@ import clsx from 'clsx'
 import { useState, useEffect, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { cn, isCurrentPath } from '@/lib/utils'
+import { useSyncStore } from '@/stores/syncStore'
 
 const AgentList = () => {
   const { lang, t } = useI18n()
@@ -470,8 +471,8 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
         </div>
       </div>
 
-      {/* Progress indicator and Product name at bottom */}
-      <div className="mt-auto pt-4 hidden lg:block">
+      {/* Progress indicator at bottom */}
+      <div className="mt-auto pt-4 hidden lg:flex flex-col items-center gap-2">
         <ProgressIndicator />
       </div>
     </div>
@@ -487,6 +488,15 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
   const setTheme = userSettings((state) => state.setTheme)
   const theme = userSettings((state) => state.theme)
   const [showAboutModal, setShowAboutModal] = useState(false)
+
+  // Sync state for identity display
+  const {
+    enabled: syncEnabled,
+    status: syncStatus,
+    peerCount,
+    roomId,
+    disableSync,
+  } = useSyncStore()
 
   const setLanguage = userSettings((state) => state.setLanguage)
 
@@ -787,15 +797,30 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
               className="w-full justify-between"
               aria-label={t('Quick Actions')}
             >
-              <Title
-                as="div"
-                size="lg"
+              <span
                 className="text-default-400 dark:text-default-500 flex items-center gap-2 -ml-3"
                 aria-label={PRODUCT.name}
               >
                 <ProgressIndicator />
-                {PRODUCT.displayName}
-              </Title>
+                <span>
+                  {t('Guest')},{' '}
+                  <span
+                    className={
+                      syncEnabled && syncStatus === 'connected'
+                        ? 'text-success'
+                        : ''
+                    }
+                  >
+                    {syncEnabled
+                      ? syncStatus === 'connected'
+                        ? peerCount > 0
+                          ? t('synced')
+                          : t('online')
+                        : `${t('connecting')}…`
+                      : t('offline')}
+                  </span>
+                </span>
+              </span>
             </Button>
           </DropdownTrigger>
           <DropdownMenu aria-label={t('Quick Actions')}>
@@ -868,6 +893,40 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
             >
               {t('Theme')}
             </DropdownItem>
+            <DropdownSection>
+              <DropdownItem
+                key="sync-status"
+                className={`opacity-50${syncEnabled ? '' : ' hidden'}`}
+                startContent={
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      syncStatus === 'connected'
+                        ? peerCount > 0
+                          ? 'bg-success'
+                          : 'bg-warning'
+                        : 'bg-default-400'
+                    }`}
+                  />
+                }
+                endContent={
+                  roomId ? (
+                    <code className="text-tiny text-default-400">
+                      {roomId.slice(0, 8)}
+                    </code>
+                  ) : null
+                }
+                onPress={disableSync}
+              >
+                {syncStatus === 'connected'
+                  ? peerCount > 0
+                    ? t('Synced with {count} peer(s)').replace(
+                        '{count}',
+                        String(peerCount),
+                      )
+                    : t('Synced, waiting for peers')
+                  : null}
+              </DropdownItem>
+            </DropdownSection>
           </DropdownMenu>
         </Dropdown>
       </nav>

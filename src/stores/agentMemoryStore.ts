@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { db } from '@/lib/db'
+import { deleteFromYjs, syncToYjs } from '@/lib/sync'
 
 // Feature toggles
 const ENABLE_KEYWORD_MATCHING = false
@@ -179,6 +180,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
       }
 
       await db.add('agentMemories', memory)
+      syncToYjs('agentMemories', memory)
 
       const updatedMemories = [...get().memories, memory]
       set({ memories: updatedMemories, isLoading: false })
@@ -212,6 +214,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
       }
 
       await db.update('agentMemories', updatedMemory)
+      syncToYjs('agentMemories', updatedMemory)
 
       const { memories } = get()
       const updatedMemories = memories.map((m) =>
@@ -233,6 +236,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
       }
 
       await db.delete('agentMemories', id)
+      deleteFromYjs('agentMemories', id)
 
       const { memories } = get()
       const updatedMemories = memories.filter((m) => m.id !== id)

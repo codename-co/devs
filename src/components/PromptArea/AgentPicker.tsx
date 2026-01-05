@@ -5,10 +5,10 @@ import {
   type DropdownMenuProps,
 } from '@heroui/react'
 import { type Agent } from '@/types'
-import { loadAllAgents, getAgentsByCategory } from '@/stores/agentStore'
+import { getAgentsByCategory } from '@/stores/agentStore'
 import { Icon } from '../Icon'
 import { useI18n } from '@/i18n'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { agentCategoryNames } from '@/lib/agents'
 
 interface AgentPickerProps extends Omit<DropdownMenuProps, 'children'> {
@@ -24,34 +24,36 @@ export function AgentPicker({
   ...props
 }: AgentPickerProps) {
   const { lang, t } = useI18n()
-  const [availableAgents, setAvailableAgents] = useState<Agent[]>([])
   const [agentsByCategory, setAgentsByCategory] = useState<
     Record<string, Agent[]>
   >({})
   const [orderedCategories, setOrderedCategories] = useState<string[]>([])
 
+  // Update categories when language changes
   useEffect(() => {
-    const loadAgents = async () => {
-      const agents = await loadAllAgents()
-      setAvailableAgents(agents)
-
+    const updateCategories = async () => {
       const { agentsByCategory: categorized, orderedCategories: ordered } =
         await getAgentsByCategory(lang)
       setAgentsByCategory(categorized)
       setOrderedCategories(ordered)
     }
-    loadAgents()
+    updateCategories()
   }, [lang])
+
+  // Flatten all agents from categories for lookup
+  const allAgents = useMemo(() => {
+    return Object.values(agentsByCategory).flat()
+  }, [agentsByCategory])
 
   const handleSelectionChange = useCallback(
     (keys: 'all' | Set<React.Key>) => {
       if (keys === 'all') return
 
       const selectedKey = Array.from(keys)[0] as string
-      const agent = availableAgents.find((a) => a.id === selectedKey) || null
+      const agent = allAgents.find((a) => a.id === selectedKey) || null
       onAgentChange?.(agent)
     },
-    [availableAgents, onAgentChange],
+    [allAgents, onAgentChange],
   )
 
   // Define category displ

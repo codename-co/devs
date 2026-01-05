@@ -1,11 +1,28 @@
+/**
+ * Check if SubtleCrypto API is available
+ * It may be undefined in insecure contexts or some private browsing modes
+ */
+export function isCryptoAvailable(): boolean {
+  return typeof crypto !== 'undefined' && crypto.subtle !== undefined
+}
+
 export class CryptoService {
   private static encoder = new TextEncoder()
   private static decoder = new TextDecoder()
+
+  private static assertCryptoAvailable(): void {
+    if (!isCryptoAvailable()) {
+      throw new Error(
+        'Web Crypto API is not available. This may be due to an insecure context (non-HTTPS) or private browsing mode restrictions.',
+      )
+    }
+  }
 
   private static async deriveKey(
     password: string,
     salt: Uint8Array,
   ): Promise<CryptoKey> {
+    this.assertCryptoAvailable()
     const passwordKey = await crypto.subtle.importKey(
       'raw',
       this.encoder.encode(password),
@@ -36,6 +53,7 @@ export class CryptoService {
     iv: string
     salt: string
   }> {
+    this.assertCryptoAvailable()
     const salt = crypto.getRandomValues(new Uint8Array(16))
     const iv = crypto.getRandomValues(new Uint8Array(12))
     const key = await this.deriveKey(password, salt)
@@ -59,6 +77,7 @@ export class CryptoService {
     iv: string,
     salt: string,
   ): Promise<string> {
+    this.assertCryptoAvailable()
     const saltArray = new Uint8Array(
       atob(salt)
         .split('')
@@ -93,6 +112,7 @@ export class CryptoService {
   }
 
   static async hashPassword(password: string): Promise<string> {
+    this.assertCryptoAvailable()
     const msgBuffer = this.encoder.encode(password)
     const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer)
     const hashArray = Array.from(new Uint8Array(hashBuffer))

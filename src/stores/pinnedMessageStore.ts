@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { db } from '@/lib/db'
+import { deleteFromYjs, syncToYjs } from '@/lib/sync'
 import type { PinnedMessage } from '@/types'
 import { errorToast, successToast } from '@/lib/toast'
 
@@ -120,6 +121,7 @@ export const usePinnedMessageStore = create<PinnedMessageStore>((set, get) => ({
       }
 
       await db.add('pinnedMessages', pinnedMessage)
+      syncToYjs('pinnedMessages', pinnedMessage)
 
       const updatedPinnedMessages = [...get().pinnedMessages, pinnedMessage]
       set({ pinnedMessages: updatedPinnedMessages, isLoading: false })
@@ -153,6 +155,7 @@ export const usePinnedMessageStore = create<PinnedMessageStore>((set, get) => ({
       }
 
       await db.update('pinnedMessages', updatedPinnedMessage)
+      syncToYjs('pinnedMessages', updatedPinnedMessage)
 
       const { pinnedMessages } = get()
       const updatedPinnedMessages = pinnedMessages.map((pm) =>
@@ -176,6 +179,7 @@ export const usePinnedMessageStore = create<PinnedMessageStore>((set, get) => ({
       }
 
       await db.delete('pinnedMessages', id)
+      deleteFromYjs('pinnedMessages', id)
 
       const { pinnedMessages } = get()
       const updatedPinnedMessages = pinnedMessages.filter((pm) => pm.id !== id)
@@ -203,6 +207,7 @@ export const usePinnedMessageStore = create<PinnedMessageStore>((set, get) => ({
 
       if (pinnedMessage) {
         await db.delete('pinnedMessages', pinnedMessage.id)
+        deleteFromYjs('pinnedMessages', pinnedMessage.id)
 
         const updatedPinnedMessages = pinnedMessages.filter(
           (pm) => pm.id !== pinnedMessage.id,

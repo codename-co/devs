@@ -476,4 +476,22 @@ export const ko: I18n = {
   'Delete Agent': '에이전트 삭제',
   'Are you sure you want to delete "{name}"? This action cannot be undone.':
     '"{name}"을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.',
+
+  // Sync Status Indicator
+  'Sync status': '동기화 상태',
+  'Synced with {count} peer(s)': '{count}개의 피어와 동기화됨',
+  'Synced, waiting for peers': '동기화됨, 피어 대기 중',
+  'Connecting...': '연결 중...',
+  'Sync error': '동기화 오류',
+  Room: '룸',
+  'Last sync': '마지막 동기화',
+  'Manage sync in Settings': '설정에서 동기화 관리',
+
+  // Identity & State
+  Guest: '게스트',
+  offline: '오프라인',
+  online: '온라인',
+  synced: '동기화됨',
+  connecting: '연결 중',
+  'P2P Sync': 'P2P 동기화',
 } as const

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Button,
   Chip,
@@ -31,6 +31,7 @@ import {
 
 import { db } from '@/lib/db'
 import { KnowledgeItem } from '@/types'
+import { useKnowledge, useSyncReady } from '@/hooks'
 import { Title } from '@/components'
 import { useI18n } from '@/i18n'
 import {
@@ -83,8 +84,20 @@ declare global {
 export const Files: React.FC = () => {
   const { lang, t } = useI18n(localI18n)
 
-  const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([])
-  const [loading, setLoading] = useState(true)
+  // Use reactive hook for instant updates (no async loading needed)
+  const rawKnowledgeItems = useKnowledge()
+  const isSyncReady = useSyncReady()
+
+  // Sort items by creation date (newest first)
+  const knowledgeItems = useMemo(
+    () =>
+      [...rawKnowledgeItems].sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      ),
+    [rawKnowledgeItems],
+  )
+
   const [uploading, setUploading] = useState(false)
   const [dragActive, setDragActive] = useState(false)
   const [selectedItem, setSelectedItem] = useState<KnowledgeItem | null>(null)
@@ -107,14 +120,13 @@ export const Files: React.FC = () => {
   >(new Map())
 
   useEffect(() => {
-    loadKnowledgeItems()
     loadWatchedFolders()
 
     // Subscribe to watcher changes
     const unsubscribeWatchers = onWatchersChanged(() => {
       console.log('Watchers changed, refreshing UI…')
       loadWatchedFolders()
-      loadKnowledgeItems()
+      // Knowledge items update automatically via reactive hooks
     })
 
     // Subscribe to sync events
@@ -129,7 +141,7 @@ export const Files: React.FC = () => {
         case 'sync_complete':
           setSyncStatus('idle')
           if (event.fileCount && event.fileCount > 0) {
-            loadKnowledgeItems()
+            // Knowledge items update automatically via reactive hooks
             successToast(
               `Synced ${event.fileCount} changes from ${event.watcherPath}`,
             )
@@ -139,7 +151,7 @@ export const Files: React.FC = () => {
         case 'file_added':
         case 'file_updated':
         case 'file_deleted':
-          loadKnowledgeItems()
+          // Knowledge items update automatically via reactive hooks
           break
 
         case 'sync_error':
@@ -183,7 +195,7 @@ export const Files: React.FC = () => {
 
             case 'job_completed':
               next.delete(event.jobId)
-              loadKnowledgeItems()
+              // Knowledge items update automatically via reactive hooks
               successToast('Document processing completed')
               break
 
@@ -207,28 +219,6 @@ export const Files: React.FC = () => {
 
   const loadWatchedFolders = () => {
     setWatchedFolders(getAllWatchers())
-  }
-
-  const loadKnowledgeItems = async () => {
-    try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      if (!db.hasStore('knowledgeItems')) {
-        console.log('knowledgeItems store missing, resetting database…')
-        await (db as any).resetDatabase()
-      }
-
-      const items = await db.getAll('knowledgeItems')
-      setKnowledgeItems(
-        items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
-      )
-    } catch (error) {
-      console.error('Failed to load knowledge items:', error)
-    } finally {
-      setLoading(false)
-    }
   }
 
   const handleFileUpload = async (files: FileList) => {
@@ -265,7 +255,7 @@ export const Files: React.FC = () => {
         }
       }
 
-      await loadKnowledgeItems()
+      // Knowledge items update automatically via reactive hooks
       setSyncStatus('idle')
 
       if (addedCount > 0 || duplicateCount > 0) {
@@ -337,7 +327,7 @@ export const Files: React.FC = () => {
 
       await watchFolder(dirHandle as any)
 
-      await loadKnowledgeItems()
+      // Knowledge items update automatically via reactive hooks
       loadWatchedFolders()
       setSyncStatus('idle')
 
@@ -379,7 +369,7 @@ export const Files: React.FC = () => {
         await db.init()
       }
       await db.delete('knowledgeItems', id)
-      await loadKnowledgeItems()
+      // Knowledge items update automatically via reactive hooks
     } catch (error) {
       console.error('Failed to delete item:', error)
     }
@@ -415,7 +405,7 @@ export const Files: React.FC = () => {
       }
 
       await db.update('knowledgeItems', updatedItem)
-      await loadKnowledgeItems()
+      // Knowledge items update automatically via reactive hooks
       onEditModalClose()
     } catch (error) {
       console.error('Failed to update item:', error)
@@ -436,7 +426,7 @@ export const Files: React.FC = () => {
     try {
       await unwatchFolder(watchId)
       loadWatchedFolders()
-      loadKnowledgeItems()
+      // Knowledge items update automatically via reactive hooks
     } catch (error) {
       console.error('Error unwatching folder:', error)
     }
@@ -452,7 +442,7 @@ export const Files: React.FC = () => {
         const success = await reconnectFolder(watchId)
         if (success) {
           loadWatchedFolders()
-          loadKnowledgeItems()
+          // Knowledge items update automatically via reactive hooks
           successToast('Folder has been reconnected and is now syncing.')
           return
         }
@@ -474,7 +464,7 @@ export const Files: React.FC = () => {
       const dirHandle = await window.showDirectoryPicker()
       await reconnectFolder(watchId, dirHandle)
       loadWatchedFolders()
-      loadKnowledgeItems()
+      // Knowledge items update automatically via reactive hooks
       successToast(
         `Folder "${dirHandle.name}" has been reconnected and is now syncing.`,
       )
@@ -669,7 +659,7 @@ export const Files: React.FC = () => {
                     ({knowledgeItems.length})
                   </span>
                 </Title>
-                {loading ? (
+                {!isSyncReady ? (
                   <div className="flex justify-center p-8">
                     <Spinner size="lg" />
                   </div>

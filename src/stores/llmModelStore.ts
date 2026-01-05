@@ -2,9 +2,10 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Credential } from '@/types'
 import { db } from '@/lib/db'
-import { SecureStorage } from '@/lib/crypto'
+import { SecureStorage, isCryptoAvailable } from '@/lib/crypto'
 import { LLMService, LocalLLMProvider } from '@/lib/llm'
 import { successToast, errorToast } from '@/lib/toast'
+import { syncToYjs, deleteFromYjs } from '@/lib/sync'
 
 interface LLMModelStore {
   // Credential state
@@ -81,8 +82,11 @@ export const useLLMModelStore = create<LLMModelStore>()(
           if (group.length > 1) {
             hasDuplicates = true
             // Sort by timestamp to keep the oldest one
+            // Note: timestamps may be strings when loaded from IndexedDB
             const sorted = group.sort(
-              (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+              (a, b) =>
+                new Date(a.timestamp).getTime() -
+                new Date(b.timestamp).getTime(),
             )
 
             // Delete all but the first one
@@ -117,7 +121,8 @@ export const useLLMModelStore = create<LLMModelStore>()(
         })
 
         // If no credentials exist, create a default local provider
-        if (sortedCreds.length === 0) {
+        // Skip if crypto is unavailable (e.g., insecure context or private browsing)
+        if (sortedCreds.length === 0 && isCryptoAvailable()) {
           try {
             const defaultModel = LocalLLMProvider.DEFAULT_MODEL
             const keyToEncrypt = 'local-no-key'
@@ -138,6 +143,8 @@ export const useLLMModelStore = create<LLMModelStore>()(
             localStorage.setItem(`${credential.id}-salt`, salt)
 
             await db.add('credentials', credential)
+            // Sync to Yjs for P2P synchronization
+            syncToYjs('credentials', credential)
 
             // Reload credentials
             const updatedCreds = await db.getAll('credentials')
@@ -163,6 +170,8 @@ export const useLLMModelStore = create<LLMModelStore>()(
           if (credential) {
             const updatedCredential = { ...credential, order: newOrder }
             await db.update('credentials', updatedCredential)
+            // Sync to Yjs for P2P synchronization
+            syncToYjs('credentials', updatedCredential)
           }
         } catch (error) {
           console.error('Failed to update credential order:', error)
@@ -246,6 +255,8 @@ export const useLLMModelStore = create<LLMModelStore>()(
           }
 
           await db.add('credentials', credential)
+          // Sync to Yjs for P2P synchronization
+          syncToYjs('credentials', credential)
           await get().loadCredentials()
 
           successToast('Credential added successfully')
@@ -260,6 +271,8 @@ export const useLLMModelStore = create<LLMModelStore>()(
       deleteCredential: async (id: string) => {
         try {
           await db.delete('credentials', id)
+          // Sync deletion to Yjs for P2P synchronization
+          deleteFromYjs('credentials', id)
           localStorage.removeItem(`${id}-iv`)
           localStorage.removeItem(`${id}-salt`)
           await get().loadCredentials()

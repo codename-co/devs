@@ -482,4 +482,22 @@ export const de: I18n = {
   'Delete Agent': 'Agent löschen',
   'Are you sure you want to delete "{name}"? This action cannot be undone.':
     'Sind Sie sicher, dass Sie "{name}" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
+
+  // Sync Status Indicator
+  'Sync status': 'Synchronisierungsstatus',
+  'Synced with {count} peer(s)': 'Synchronisiert mit {count} Peer(s)',
+  'Synced, waiting for peers': 'Synchronisiert, wartet auf Peers',
+  'Connecting...': 'Verbinden...',
+  'Sync error': 'Synchronisierungsfehler',
+  Room: 'Raum',
+  'Last sync': 'Letzte Synchronisierung',
+  'Manage sync in Settings': 'Synchronisierung in den Einstellungen verwalten',
+
+  // Identity & State
+  Guest: 'Gast',
+  offline: 'offline',
+  online: 'online',
+  synced: 'synchronisiert',
+  connecting: 'verbinden',
+  'P2P Sync': 'P2P-Sync',
 } as const

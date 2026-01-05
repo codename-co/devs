@@ -23,9 +23,9 @@ import {
 import { Search, Star, StarSolid, MoreVert } from 'iconoir-react'
 
 import { useConversationStore } from '@/stores/conversationStore'
-import { loadAllAgents } from '@/stores/agentStore'
+import { useConversations, useAgents, useSyncReady } from '@/hooks'
 import DefaultLayout from '@/layouts/Default'
-import type { Agent, Conversation } from '@/types'
+import type { Conversation } from '@/types'
 import { useI18n } from '@/i18n'
 import { HeaderProps } from '@/lib/types'
 import { Container, Section, MarkdownRenderer } from '@/components'
@@ -35,14 +35,16 @@ import { formatConversationDate, formatDate } from '@/lib/format'
 export function ConversationPage() {
   const { t, url, lang } = useI18n()
   const navigate = useNavigate()
+
+  // Use reactive hook for instant updates (no async loading needed)
+  const conversations = useConversations()
+  const agents = useAgents()
+  const isSyncReady = useSyncReady()
+
   const {
-    conversations,
-    isLoading,
-    loadConversations,
     getConversationTitle,
     searchQuery,
     setSearchQuery,
-    searchConversations,
     showPinnedOnly,
     setShowPinnedOnly,
     pinConversation,
@@ -50,7 +52,6 @@ export function ConversationPage() {
     summarizeConversation,
     renameConversation,
   } = useConversationStore()
-  const [agents, setAgents] = useState<Agent[]>([])
   const [selectedConversation, setSelectedConversation] = useState<
     string | null
   >(null)
@@ -83,10 +84,7 @@ export function ConversationPage() {
     subtitle: t('Find your past conversations'),
   }
 
-  useEffect(() => {
-    loadConversations()
-    loadAllAgents().then(setAgents)
-  }, [loadConversations])
+  // Agents load automatically via reactive hook
 
   // Reset to page 1 when search query or filter changes
   useEffect(() => {
@@ -157,7 +155,7 @@ export function ConversationPage() {
     }
   }
 
-  // Sort, filter, and search conversations
+  // Sort, filter, and search conversations using reactive Yjs data
   const filteredConversations = useMemo(() => {
     let filtered = conversations
 
@@ -166,21 +164,43 @@ export function ConversationPage() {
       filtered = filtered.filter((c) => c.isPinned === true)
     }
 
-    // Apply search
+    // Apply search (inline implementation using reactive data)
     if (searchQuery && searchQuery.trim() !== '') {
-      filtered = searchConversations(searchQuery)
+      const lowerQuery = searchQuery.toLowerCase()
+      filtered = filtered.filter((conversation) => {
+        // Search in title
+        if (conversation.title?.toLowerCase().includes(lowerQuery)) {
+          return true
+        }
+        // Search in summary
+        if (conversation.summary?.toLowerCase().includes(lowerQuery)) {
+          return true
+        }
+        // Search in message content
+        return conversation.messages.some((message) =>
+          message.content.toLowerCase().includes(lowerQuery),
+        )
+      })
     }
 
     // Sort by pinned first, then by timestamp
-    return filtered.sort((a: Conversation, b: Conversation) => {
+    return [...filtered].sort((a: Conversation, b: Conversation) => {
       // Pinned conversations come first
       if (a.isPinned && !b.isPinned) return -1
       if (!a.isPinned && b.isPinned) return 1
 
-      // Then sort by timestamp
-      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      // Compare timestamps (handles both Date objects and ISO strings)
+      const timeA =
+        a.timestamp instanceof Date
+          ? a.timestamp.getTime()
+          : new Date(a.timestamp).getTime()
+      const timeB =
+        b.timestamp instanceof Date
+          ? b.timestamp.getTime()
+          : new Date(b.timestamp).getTime()
+      return timeB - timeA
     })
-  }, [conversations, showPinnedOnly, searchQuery, searchConversations])
+  }, [conversations, showPinnedOnly, searchQuery])
 
   const totalPages = Math.ceil(filteredConversations.length / itemsPerPage)
 
@@ -260,7 +280,7 @@ export function ConversationPage() {
             </ButtonGroup>
           </div>
 
-          {isLoading ? (
+          {!isSyncReady ? (
             <div className="flex justify-center items-center py-12">
               <Spinner size="lg" />
             </div>
@@ -435,7 +455,7 @@ export function ConversationPage() {
                   </h3>
                   <p className="text-sm text-default-500 font-normal">
                     {summaryConversation &&
-                      formatDate(summaryConversation.timestamp)}
+                      formatDate(new Date(summaryConversation.timestamp))}
                   </p>
                 </div>
               </ModalHeader>

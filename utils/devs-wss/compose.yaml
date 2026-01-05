@@ -1,0 +1,16 @@
+services:
+  wss:
+    build:
+      context: .
+    restart: unless-stopped
+    labels:
+      # project: devs
+      traefik.http.routers.wss.rule: Host(`signal.devs.new`)
+      traefik.http.routers.wss.entrypoints: web
+      traefik.http.services.wss.loadbalancer.server.port: 4444
+    networks:
+      - external
+
+networks:
+  external:
+    external: true

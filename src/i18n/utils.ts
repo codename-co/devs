@@ -91,11 +91,21 @@ export const useTranslations = <MoreLocales>(
     vars?: Record<string, any>,
     options?: { allowJSX?: boolean },
   ) {
+    // Handle undefined or null keys gracefully
+    if (key === undefined || key === null) {
+      return ''
+    }
+
     let tmpl =
       locales[lang]?.[key] ??
       moreLocales?.[key] ??
       locales[defaultLang][key] ??
       key
+
+    // Ensure tmpl is a string before proceeding
+    if (typeof tmpl !== 'string') {
+      return String(key)
+    }
 
     for (const v in vars) {
       tmpl = tmpl.replaceAll(`{${v}}`, vars[v])

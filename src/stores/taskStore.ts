@@ -1,8 +1,12 @@
 import { create } from 'zustand'
 import { db } from '@/lib/db'
+import { deleteFromYjs, syncToYjs } from '@/lib/sync'
 import type { Task, Requirement, TaskStep } from '@/types'
 import { errorToast, successToast } from '@/lib/toast'
-import { requirementValidator, ValidationResult } from '@/lib/requirement-validator'
+import {
+  requirementValidator,
+  ValidationResult,
+} from '@/lib/requirement-validator'
 
 interface TaskStore {
   tasks: Task[]
@@ -25,10 +29,7 @@ interface TaskStore {
     requirementId: string,
     updates: Partial<Requirement>,
   ) => Promise<void>
-  addStep: (
-    taskId: string,
-    step: Omit<TaskStep, 'id'>,
-  ) => Promise<void>
+  addStep: (taskId: string, step: Omit<TaskStep, 'id'>) => Promise<void>
   startStep: (taskId: string, stepId: string) => Promise<void>
   completeStep: (taskId: string, stepId: string) => Promise<void>
   updateStep: (
@@ -41,7 +42,7 @@ interface TaskStore {
   getTasksByStatus: (status: Task['status']) => Task[]
   getTasksByAgent: (agentId: string) => Task[]
   getSubTasks: (parentTaskId: string) => Task[]
-  getTaskHierarchy: (taskId: string) => Promise<{ 
+  getTaskHierarchy: (taskId: string) => Promise<{
     task: Task
     children: Task[]
     parent?: Task
@@ -54,10 +55,14 @@ interface TaskStore {
     results: ValidationResult[]
     satisfactionRate: number
   }>
-  markRequirementSatisfied: (taskId: string, requirementId: string, evidence?: string[]) => Promise<void>
+  markRequirementSatisfied: (
+    taskId: string,
+    requirementId: string,
+    evidence?: string[],
+  ) => Promise<void>
   createTaskWithRequirements: (
     taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'requirements'>,
-    userRequirement: string
+    userRequirement: string,
   ) => Promise<Task>
 }
 
@@ -115,6 +120,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       }
 
       await db.add('tasks', task)
+      syncToYjs('tasks', task)
 
       const updatedTasks = [...get().tasks, task]
       set({
@@ -151,6 +157,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       }
 
       await db.update('tasks', updatedTask)
+      syncToYjs('tasks', updatedTask)
 
       const { tasks, currentTask } = get()
       const updatedTasks = tasks.map((t) => (t.id === id ? updatedTask : t))
@@ -173,6 +180,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         await db.init()
       }
       await db.delete('tasks', id)
+      deleteFromYjs('tasks', id)
 
       const { tasks, currentTask } = get()
       const updatedTasks = tasks.filter((t) => t.id !== id)
@@ -305,7 +313,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
       const currentTasks = get().tasks
       const task = currentTasks.find((t) => t.id === taskId)
-      
+
       if (!task) {
         // Try loading from database
         const taskFromDb = await db.get('tasks', taskId)
@@ -315,28 +323,35 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         return {
           task: taskFromDb,
           children: currentTasks.filter((t) => t.parentTaskId === taskId),
-          parent: taskFromDb.parentTaskId 
-            ? currentTasks.find((t) => t.id === taskFromDb.parentTaskId) || await db.get('tasks', taskFromDb.parentTaskId!)
+          parent: taskFromDb.parentTaskId
+            ? currentTasks.find((t) => t.id === taskFromDb.parentTaskId) ||
+              (await db.get('tasks', taskFromDb.parentTaskId!))
             : undefined,
-          siblings: taskFromDb.parentTaskId 
-            ? currentTasks.filter((t) => t.parentTaskId === taskFromDb.parentTaskId && t.id !== taskId)
-            : []
+          siblings: taskFromDb.parentTaskId
+            ? currentTasks.filter(
+                (t) =>
+                  t.parentTaskId === taskFromDb.parentTaskId && t.id !== taskId,
+              )
+            : [],
         }
       }
 
       const children = currentTasks.filter((t) => t.parentTaskId === taskId)
-      const parent = task.parentTaskId 
-        ? currentTasks.find((t) => t.id === task.parentTaskId) || await db.get('tasks', task.parentTaskId!)
+      const parent = task.parentTaskId
+        ? currentTasks.find((t) => t.id === task.parentTaskId) ||
+          (await db.get('tasks', task.parentTaskId!))
         : undefined
-      const siblings = task.parentTaskId 
-        ? currentTasks.filter((t) => t.parentTaskId === task.parentTaskId && t.id !== taskId)
+      const siblings = task.parentTaskId
+        ? currentTasks.filter(
+            (t) => t.parentTaskId === task.parentTaskId && t.id !== taskId,
+          )
         : []
 
       return {
         task,
         children,
         parent,
-        siblings
+        siblings,
       }
     } catch (error) {
       console.error('Error getting task hierarchy:', error)
@@ -357,7 +372,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       if (!db.isInitialized()) {
         await db.init()
       }
-      
+
       const taskFromDb = await db.get('tasks', id)
       return taskFromDb || null
     } catch (error) {
@@ -420,9 +435,9 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
       const startTime = new Date()
       const updatedSteps = task.steps.map((step) =>
-        step.id === stepId 
+        step.id === stepId
           ? { ...step, status: 'in_progress' as const, startedAt: startTime }
-          : step
+          : step,
       )
 
       const updatedTask: Task = {
@@ -462,14 +477,14 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       const endTime = new Date()
       const updatedSteps = task.steps.map((step) => {
         if (step.id === stepId) {
-          const duration = step.startedAt 
+          const duration = step.startedAt
             ? endTime.getTime() - step.startedAt.getTime()
             : undefined
-          return { 
-            ...step, 
-            status: 'completed' as const, 
+          return {
+            ...step,
+            status: 'completed' as const,
             completedAt: endTime,
-            duration
+            duration,
           }
         }
         return step
@@ -555,7 +570,10 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       }
 
       const artifacts = await db.query('artifacts', 'taskId', taskId)
-      const results = await requirementValidator.validateAllRequirements(task, artifacts)
+      const results = await requirementValidator.validateAllRequirements(
+        task,
+        artifacts,
+      )
 
       return results
     } catch (error) {
@@ -577,12 +595,15 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       }
 
       const artifacts = await db.query('artifacts', 'taskId', taskId)
-      const results = await requirementValidator.validateAllRequirements(task, artifacts)
+      const results = await requirementValidator.validateAllRequirements(
+        task,
+        artifacts,
+      )
 
       // Update requirement statuses based on validation results
       const validationTimestamp = new Date()
-      const updatedRequirements = task.requirements.map(req => {
-        const result = results.find(r => r.requirementId === req.id)
+      const updatedRequirements = task.requirements.map((req) => {
+        const result = results.find((r) => r.requirementId === req.id)
         if (result) {
           return {
             ...req,
@@ -590,7 +611,9 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
             validationCriteria: result.evidence || req.validationCriteria,
             validatedAt: validationTimestamp,
             validationResult: result.message || 'Validation completed',
-            ...(result.status === 'satisfied' && { satisfiedAt: validationTimestamp })
+            ...(result.status === 'satisfied' && {
+              satisfiedAt: validationTimestamp,
+            }),
           }
         }
         return req
@@ -600,27 +623,29 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       const updatedTask = {
         ...task,
         requirements: updatedRequirements,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       }
 
       await db.update('tasks', updatedTask)
 
       // Update in memory state
       const { tasks, currentTask } = get()
-      const updatedTasks = tasks.map(t => t.id === taskId ? updatedTask : t)
-      
+      const updatedTasks = tasks.map((t) => (t.id === taskId ? updatedTask : t))
+
       set({
         tasks: updatedTasks,
         currentTask: currentTask?.id === taskId ? updatedTask : currentTask,
       })
 
-      const allSatisfied = requirementValidator.areAllRequirementsSatisfied(updatedTask)
-      const satisfactionRate = requirementValidator.getRequirementSatisfactionRate(updatedTask)
+      const allSatisfied =
+        requirementValidator.areAllRequirementsSatisfied(updatedTask)
+      const satisfactionRate =
+        requirementValidator.getRequirementSatisfactionRate(updatedTask)
 
       return {
         allSatisfied,
         results,
-        satisfactionRate
+        satisfactionRate,
       }
     } catch (error) {
       console.error('Error validating and updating requirements:', error)
@@ -628,17 +653,21 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       return {
         allSatisfied: false,
         results: [],
-        satisfactionRate: 0
+        satisfactionRate: 0,
       }
     }
   },
 
-  markRequirementSatisfied: async (taskId: string, requirementId: string, evidence?: string[]) => {
+  markRequirementSatisfied: async (
+    taskId: string,
+    requirementId: string,
+    evidence?: string[],
+  ) => {
     try {
       await get().updateRequirement(taskId, requirementId, {
         status: 'satisfied',
         validationCriteria: evidence || [],
-        satisfiedAt: new Date()
+        satisfiedAt: new Date(),
       })
       successToast('Requirement marked as satisfied')
     } catch (error) {
@@ -655,11 +684,12 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       const taskId = crypto.randomUUID()
 
       // Extract requirements from the user requirement
-      const extractedRequirements = await requirementValidator.extractAndCreateRequirements(
-        taskId,
-        taskData.description,
-        userRequirement
-      )
+      const extractedRequirements =
+        await requirementValidator.extractAndCreateRequirements(
+          taskId,
+          taskData.description,
+          userRequirement,
+        )
 
       const task: Task = {
         ...taskData,

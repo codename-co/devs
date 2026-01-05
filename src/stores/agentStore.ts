@@ -1,6 +1,7 @@
 import { PRODUCT } from '@/config/product'
 import { errorToast, successToast } from '@/lib/toast'
 import { db } from '@/lib/db'
+import { deleteFromYjs, syncToYjs } from '@/lib/sync'
 import { type Agent } from '@/types'
 import { Lang } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
@@ -328,6 +329,9 @@ export async function createAgent(agentData: {
     // Save to IndexedDB
     await db.add('agents', agent)
 
+    // Sync to Yjs for P2P sync
+    syncToYjs('agents', agent)
+
     // Add to cache
     agentCache.set(agent.id, agent)
 
@@ -374,6 +378,9 @@ export async function updateAgent(
     // Save to IndexedDB
     await db.update('agents', updatedAgent)
 
+    // Sync to Yjs for P2P sync
+    syncToYjs('agents', updatedAgent)
+
     // Update cache
     agentCache.set(agentId, updatedAgent)
 
@@ -404,6 +411,9 @@ export async function deleteAgent(agentId: string): Promise<void> {
 
     // Delete from IndexedDB
     await db.delete('agents', agentId)
+
+    // Sync deletion to Yjs
+    deleteFromYjs('agents', agentId)
 
     // Remove from cache
     agentCache.delete(agentId)

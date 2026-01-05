@@ -86,16 +86,6 @@ export const AgentsPage = () => {
     fetchAgents()
   }, [hideDefaultAgents])
 
-  // Refresh agents when component becomes visible (for when user navigates back from creating an agent)
-  useEffect(() => {
-    const handleFocus = () => {
-      fetchAgents()
-    }
-
-    window.addEventListener('focus', handleFocus)
-    return () => window.removeEventListener('focus', handleFocus)
-  }, [])
-
   const handleAgentClick = (agentId: string) => {
     navigate(url(`/agents/run#${agentId}`))
   }

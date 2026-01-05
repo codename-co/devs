@@ -17,9 +17,8 @@ import { Pin, MoreVert, PinSlash } from 'iconoir-react'
 import { useNavigate } from 'react-router-dom'
 
 import { usePinnedMessageStore } from '@/stores/pinnedMessageStore'
-import { loadAllAgents } from '@/stores/agentStore'
+import { useAgents } from '@/hooks'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
-import type { Agent } from '@/types'
 import { useI18n, useUrl } from '@/i18n'
 import { Icon } from '@/components'
 
@@ -28,7 +27,8 @@ export const PinnedMessages: React.FC = () => {
   const url = useUrl(lang)
   const navigate = useNavigate()
 
-  const [agents, setAgents] = useState<Agent[]>([])
+  // Use reactive hook for instant updates
+  const agents = useAgents()
   const [pinnedAgentFilter, setPinnedAgentFilter] = useState<string | 'all'>(
     'all',
   )
@@ -41,7 +41,6 @@ export const PinnedMessages: React.FC = () => {
   } = usePinnedMessageStore()
 
   useEffect(() => {
-    loadAllAgents().then(setAgents)
     loadPinnedMessages()
   }, [loadPinnedMessages])
 

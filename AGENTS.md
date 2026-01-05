@@ -796,4 +796,19 @@ A world where AI augmentation isn't a luxury for the few, but a fundamental tool
 
 When working with translation strings, apostrophes must be used with the "'" character instead of "'". This ensures consistent formatting across all localization files.
 
+---
+
+## AI Agent Guidelines
+
+### Context7 MCP for Documentation
+
+Always use Context7 MCP automatically when working on tasks that involve:
+
+- Library or framework API documentation
+- Code generation with external dependencies
+- Setup or configuration steps for tools/packages
+- Implementation patterns for React, Vite, Zustand, Playwright, HeroUI, or other project dependencies
+
+This ensures accurate, up-to-date documentation is referenced without requiring explicit requests.
+
 --

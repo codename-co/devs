@@ -1,0 +1,17 @@
+{
+  "name": "devs-wss",
+  "private": true,
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "./sync-server.mjs"
+  },
+  "dependencies": {
+    "winston": "^3.19.0",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1"
+  }
+}

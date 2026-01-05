@@ -38,6 +38,7 @@ import {
 } from '@/lib/llm'
 import { Container, Icon, Section, Title } from '@/components'
 import { EasySetupExport } from '@/components/EasySetup/EasySetupExport'
+import { SyncSettings } from '@/components/SyncSettings'
 import { errorToast, successToast } from '@/lib/toast'
 import { userSettings } from '@/stores/userStore'
 import { useLLMModelStore } from '@/stores/llmModelStore'
@@ -1280,6 +1281,30 @@ export const SettingsPage = () => {
             {t('Advanced Settings')}
           </Title>
           <Accordion selectionMode="single" variant="bordered">
+            <AccordionItem
+              key="sync"
+              data-testid="sync-settings"
+              title={
+                <>
+                  {t('P2P Sync')}
+                  <Chip
+                    size="sm"
+                    // color="warning"
+                    variant="flat"
+                    className="ml-2 align-middle"
+                  >
+                    Beta
+                  </Chip>
+                </>
+              }
+              subtitle={t(
+                'Sync your data across devices using peer-to-peer connection',
+              )}
+              startContent={<Icon name="RefreshDouble" className="h-5 w-7" />}
+              classNames={{ content: 'pl-8 mb-4' }}
+            >
+              <SyncSettings />
+            </AccordionItem>
             <AccordionItem
               key="easysetup"
               data-testid="easy-setup"

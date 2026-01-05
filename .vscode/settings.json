@@ -7,5 +7,10 @@
     // "https://devs.new/schemas/methodology.schema.json": "*.methodology.yaml",
     "./public/schemas/agent.schema.json": "*.agent.yaml"
     // "https://devs.new/schemas/agent.schema.json": "*.agent.yaml",
+  },
+  "chat.mcp.serverSampling": {
+    "devs/.vscode/mcp.json: io.github.upstash/context7": {
+      "allowedModels": ["copilot/claude-sonnet-4.5"]
+    }
   }
 }

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { db } from '@/lib/db'
+import { deleteFromYjs, syncToYjs } from '@/lib/sync'
 import type { Conversation, Message } from '@/types'
 import { errorToast } from '@/lib/toast'
 import { ConversationTitleGenerator } from '@/lib/conversation-title-generator'
@@ -133,6 +134,9 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
 
       await db.add('conversations', conversation)
 
+      // Sync to Yjs for P2P sync
+      syncToYjs('conversations', conversation)
+
       const updatedConversations = [...get().conversations, conversation]
       set({
         conversations: updatedConversations,
@@ -183,6 +187,9 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       conversation.messages.push(newMessage)
       await db.update('conversations', conversation)
 
+      // Sync to Yjs for P2P sync
+      syncToYjs('conversations', conversation)
+
       const { conversations, currentConversation } = get()
 
       const updatedConversations = conversations.map((c) =>
@@ -230,6 +237,9 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       }
       await db.delete('conversations', id)
 
+      // Sync deletion to Yjs
+      deleteFromYjs('conversations', id)
+
       const { conversations, currentConversation } = get()
       const updatedConversations = conversations.filter((c) => c.id !== id)
 
@@ -269,6 +279,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       if (!conversation.participatingAgents.includes(agentId)) {
         conversation.participatingAgents.push(agentId)
         await db.update('conversations', conversation)
+        syncToYjs('conversations', conversation)
 
         const { conversations, currentConversation } = get()
         const updatedConversations = conversations.map((c) =>
@@ -338,6 +349,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
         await db.init()
       }
       await db.update('conversations', updatedConversation)
+      syncToYjs('conversations', updatedConversation)
 
       // Update in store
       const { conversations, currentConversation } = get()
@@ -389,6 +401,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
         await db.init()
       }
       await db.update('conversations', updatedConversation)
+      syncToYjs('conversations', updatedConversation)
 
       // Update in store
       const { conversations, currentConversation } = get()
@@ -463,6 +476,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
 
       const updatedConversation = { ...conversation, isPinned: true }
       await db.update('conversations', updatedConversation)
+      syncToYjs('conversations', updatedConversation)
 
       const { conversations, currentConversation } = get()
       const updatedConversations = conversations.map((c) =>
@@ -494,6 +508,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
 
       const updatedConversation = { ...conversation, isPinned: false }
       await db.update('conversations', updatedConversation)
+      syncToYjs('conversations', updatedConversation)
 
       const { conversations, currentConversation } = get()
       const updatedConversations = conversations.map((c) =>
@@ -546,6 +561,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       }
 
       await db.update('conversations', conversation)
+      syncToYjs('conversations', conversation)
 
       const { conversations, currentConversation } = get()
       const updatedConversations = conversations.map((c) =>
@@ -594,6 +610,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       }
 
       await db.update('conversations', conversation)
+      syncToYjs('conversations', conversation)
 
       const { conversations, currentConversation } = get()
       const updatedConversations = conversations.map((c) =>
@@ -645,6 +662,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       }
 
       await db.update('conversations', conversation)
+      syncToYjs('conversations', conversation)
 
       const { conversations, currentConversation } = get()
       const updatedConversations = conversations.map((c) =>
@@ -689,6 +707,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       // Update conversation with summary
       const updatedConversation = { ...conversation, summary }
       await db.update('conversations', updatedConversation)
+      syncToYjs('conversations', updatedConversation)
 
       const { conversations, currentConversation } = get()
       const updatedConversations = conversations.map((c) =>
@@ -728,6 +747,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       // Update conversation with new title
       const updatedConversation = { ...conversation, title: newTitle.trim() }
       await db.update('conversations', updatedConversation)
+      syncToYjs('conversations', updatedConversation)
 
       const { conversations, currentConversation } = get()
       const updatedConversations = conversations.map((c) =>

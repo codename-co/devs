@@ -477,4 +477,22 @@ export const ar: I18n = {
   'Delete Agent': 'حذف الوكيل',
   'Are you sure you want to delete "{name}"? This action cannot be undone.':
     'هل أنت متأكد أنك تريد حذف "{name}"؟ لا يمكن التراجع عن هذا الإجراء.',
+
+  // Sync Status Indicator
+  'Sync status': 'حالة المزامنة',
+  'Synced with {count} peer(s)': 'تمت المزامنة مع {count} نظير(أنظار)',
+  'Synced, waiting for peers': 'تمت المزامنة، في انتظار الأنظار',
+  'Connecting...': 'جاري الاتصال...',
+  'Sync error': 'خطأ في المزامنة',
+  Room: 'غرفة',
+  'Last sync': 'آخر مزامنة',
+  'Manage sync in Settings': 'إدارة المزامنة في الإعدادات',
+
+  // Identity & State
+  Guest: 'ضيف',
+  offline: 'غير متصل',
+  online: 'متصل',
+  synced: 'متزامن',
+  connecting: 'جاري الاتصال',
+  'P2P Sync': 'مزامنة P2P',
 } as const

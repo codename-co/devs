@@ -35,19 +35,16 @@ export function useAgentMention({
   prompt,
   onPromptChange,
 }: UseAgentMentionOptions): AgentMentionResult {
+  // Load agents from store (includes both built-in and custom agents)
   const [availableAgents, setAvailableAgents] = useState<Agent[]>([])
   const [showMentionPopover, setShowMentionPopover] = useState(false)
   const [mentionQuery, setMentionQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [mentionStartIndex, setMentionStartIndex] = useState(-1)
 
-  // Load all available agents
+  // Load all agents on mount
   useEffect(() => {
-    const loadAgents = async () => {
-      const agents = await loadAllAgents()
-      setAvailableAgents(agents)
-    }
-    loadAgents()
+    loadAllAgents().then(setAvailableAgents)
   }, [])
 
   // Filter agents based on mention query

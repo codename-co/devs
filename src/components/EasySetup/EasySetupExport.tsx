@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Input, Switch, Alert, Divider, Snippet, Spinner } from '@heroui/react'
 import { Icon } from '@/components'
-import { generateSetupQRData, generateSetupQRCode } from '@/lib/easy-qr'
+import { generateSetupQRData } from '@/lib/easy-qr'
 import { errorToast } from '@/lib/toast'
 import { useI18n } from '@/i18n'
 import { loadCustomAgents } from '@/stores/agentStore'
 import { userSettings } from '@/stores/userStore'
+import { generateSetupQRCode } from '@/lib/qr-code'
 
 export const EasySetupExport = () => {
   const { lang, t } = useI18n()

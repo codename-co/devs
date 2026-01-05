@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Spinner, Chip, Progress, CheckboxGroup, Checkbox } from '@heroui/react'
 
@@ -14,8 +14,13 @@ import DefaultLayout from '@/layouts/Default'
 import type { HeaderProps } from '@/lib/types'
 import { getAgentById } from '@/stores/agentStore'
 import { useTaskStore } from '@/stores/taskStore'
-import { useArtifactStore } from '@/stores/artifactStore'
-import { useConversationStore } from '@/stores/conversationStore'
+import {
+  useTask,
+  useTasks,
+  useArtifacts,
+  useConversations,
+  useSyncReady,
+} from '@/hooks'
 import {
   Agent,
   Task,
@@ -33,10 +38,25 @@ export const TaskPage = () => {
   const navigate = useNavigate()
   const params = useParams()
 
-  const [isLoading, setIsLoading] = useState(true)
-  const [task, setTask] = useState<Task | null>(null)
-  const [artifacts, setArtifacts] = useState<IArtifact[]>([])
-  const [, setConversations] = useState<Conversation[]>([])
+  // Get task ID from URL params or query string
+  const taskId =
+    params.taskId ||
+    location.search.replace('?id=', '') ||
+    location.pathname.split('/tasks/')[1]
+
+  // Use reactive hooks for instant updates
+  const task = useTask(taskId)
+  const allTasks = useTasks()
+  const allArtifacts = useArtifacts()
+  const allConversations = useConversations()
+  const isSyncReady = useSyncReady()
+
+  // Filter artifacts related to this task
+  const taskArtifacts = useMemo(
+    () => allArtifacts.filter((a) => a.taskId === taskId),
+    [allArtifacts, taskId],
+  )
+
   const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([])
   const [agentCache, setAgentCache] = useState<Record<string, Agent>>({})
   const [hasTriggeredOrchestration, setHasTriggeredOrchestration] = useState<
@@ -88,16 +108,19 @@ export const TaskPage = () => {
     }
   }
 
-  // Get task ID from URL params or query string
-  const taskId =
-    params.taskId ||
-    location.search.replace('?id=', '') ||
-    location.pathname.split('/tasks/')[1]
+  const { getTaskHierarchy } = useTaskStore()
 
-  const { getTaskById, getTaskHierarchy, tasks, loadTasks } = useTaskStore()
-  const { getArtifactsByTask, loadArtifacts } = useArtifactStore()
-  const { /* conversations: allConversations, */ loadConversations } =
-    useConversationStore()
+  // Loading state derived from sync readiness and task availability
+  const isLoading = !isSyncReady || (!task && !!taskId)
+
+  // Filter conversations related to this task's workflow
+  const relatedConversations = useMemo(
+    () =>
+      task
+        ? allConversations.filter((conv) => conv.workflowId === task.workflowId)
+        : [],
+    [allConversations, task?.workflowId],
+  )
 
   const header: HeaderProps = {
     icon: {
@@ -216,289 +239,119 @@ export const TaskPage = () => {
     })) as TimelineEvent[]
   }
 
-  // Load task data
+  // Handle navigation when task ID is missing
   useEffect(() => {
-    const loadTaskData = async () => {
-      if (!taskId) {
-        errorToast(t('No task ID provided'))
-        navigate(url('/'))
+    if (!taskId) {
+      errorToast(t('No task ID provided'))
+      navigate(url('/'))
+    }
+  }, [taskId, navigate, url, t])
+
+  // Handle navigation when task not found (after sync ready)
+  useEffect(() => {
+    if (isSyncReady && taskId && !task) {
+      // Give a small delay in case task is being loaded
+      const timeout = setTimeout(() => {
+        if (!task) {
+          errorToast(t('Task not found'))
+          navigate(url('/'))
+        }
+      }, 1000)
+      return () => clearTimeout(timeout)
+    }
+  }, [isSyncReady, taskId, task, navigate, url, t])
+
+  // Load task hierarchy and agent cache when task changes
+  useEffect(() => {
+    const loadTaskMetadata = async () => {
+      if (!task) return
+
+      // Load assigned agent into cache if available
+      if (task.assignedAgentId) {
+        await getAndCacheAgent(task.assignedAgentId)
+      }
+
+      // Load task hierarchy
+      try {
+        const hierarchy = await getTaskHierarchy(task.id)
+        setTaskHierarchy(hierarchy)
+      } catch (error) {
+        console.warn('Failed to load task hierarchy:', error)
+      }
+    }
+
+    loadTaskMetadata()
+  }, [task?.id, task?.assignedAgentId, getTaskHierarchy])
+
+  // Build timeline events when data changes (reactive)
+  useEffect(() => {
+    const updateTimeline = async () => {
+      if (!task) return
+
+      const events = await buildTimelineEventsWithTranslation(
+        task,
+        taskArtifacts,
+        relatedConversations,
+        taskHierarchy?.children || [],
+      )
+      setTimelineEvents(events)
+    }
+
+    updateTimeline()
+  }, [task, taskArtifacts, relatedConversations, taskHierarchy])
+
+  // Trigger orchestration for pending tasks
+  useEffect(() => {
+    const orchestrateTask = async () => {
+      if (
+        !task ||
+        task.status !== 'pending' ||
+        !task.description ||
+        hasTriggeredOrchestration.has(task.id)
+      ) {
         return
       }
 
-      setIsLoading(true)
+      console.log('🚀 Starting orchestration for pending task:', task.id)
+
+      // Mark this task as having orchestration triggered
+      setHasTriggeredOrchestration((prev) => new Set(prev).add(task.id))
+      setIsOrchestrating(true)
 
       try {
-        // Ensure conversations, artifacts, and tasks are loaded first
-        await Promise.all([loadConversations(), loadArtifacts(), loadTasks()])
+        const result = await WorkflowOrchestrator.orchestrateTask(
+          task.description,
+          task.id,
+        )
+        console.log('✅ Task orchestration completed:', result)
+      } catch (error) {
+        console.error('❌ Task orchestration failed:', error)
 
-        // Load task
-        const taskData = await getTaskById(taskId)
-        if (!taskData) {
-          errorToast(t('Task not found'))
-          navigate(url('/'))
-          return
-        }
-        setTask(taskData)
-
-        // Load assigned agent into cache if available
-        if (taskData.assignedAgentId) {
-          await getAndCacheAgent(taskData.assignedAgentId)
-        }
-
-        // Load task hierarchy
-        try {
-          const hierarchy = await getTaskHierarchy(taskData.id)
-          setTaskHierarchy(hierarchy)
-        } catch (error) {
-          console.warn('Failed to load task hierarchy:', error)
-        }
-
-        // Get fresh conversations after loading
-        const freshConversations = useConversationStore.getState().conversations
-
-        // If task is pending and we have a description, trigger orchestration (but only once per task)
+        // Don't show error for already in progress tasks
         if (
-          taskData.status === 'pending' &&
-          taskData.description &&
-          !hasTriggeredOrchestration.has(taskData.id)
+          error instanceof Error &&
+          error.message.includes('already in progress')
         ) {
           console.log(
-            '🚀 Starting orchestration for pending task:',
-            taskData.id,
+            '⏭️ Orchestration already in progress, continuing with existing execution',
           )
-
-          // Mark this task as having orchestration triggered
-          setHasTriggeredOrchestration((prev) => new Set(prev).add(taskData.id))
-          setIsOrchestrating(true)
-
-          // Set up periodic refresh during orchestration
-          let refreshInterval: NodeJS.Timeout | null = null
-
-          try {
-            refreshInterval = setInterval(async () => {
-              try {
-                // Reload fresh data from IndexedDB
-                await Promise.all([
-                  loadConversations(),
-                  loadArtifacts(),
-                  loadTasks(),
-                ])
-
-                const currentTaskData = await getTaskById(taskId)
-                if (currentTaskData) {
-                  const currentArtifacts = await getArtifactsByTask(taskId)
-                  // Get fresh conversations from store AFTER loading
-                  const freshConversations =
-                    useConversationStore.getState().conversations
-                  const currentConversations = freshConversations.filter(
-                    (conv) => conv.workflowId === currentTaskData.workflowId,
-                  )
-
-                  // Refresh task hierarchy if needed
-                  let currentHierarchy = taskHierarchy
-                  try {
-                    currentHierarchy = await getTaskHierarchy(
-                      currentTaskData.id,
-                    )
-                    if (
-                      JSON.stringify(currentHierarchy) !==
-                      JSON.stringify(taskHierarchy)
-                    ) {
-                      setTaskHierarchy(currentHierarchy)
-                    }
-                  } catch (error) {
-                    // Keep existing hierarchy if refresh fails
-                  }
-
-                  // Update timeline with fresh data
-                  const refreshedEvents =
-                    await buildTimelineEventsWithTranslation(
-                      currentTaskData,
-                      currentArtifacts,
-                      currentConversations,
-                      currentHierarchy?.children || [],
-                    )
-                  setTimelineEvents(refreshedEvents)
-                  setArtifacts(currentArtifacts)
-                  setConversations(currentConversations)
-
-                  // Update task if it changed
-                  if (
-                    JSON.stringify(currentTaskData) !== JSON.stringify(task)
-                  ) {
-                    setTask(currentTaskData)
-                  }
-                }
-              } catch (error) {
-                console.warn('Timeline refresh failed:', error)
-              }
-            }, 2000) // Refresh every 2 seconds during orchestration
-
-            const result = await WorkflowOrchestrator.orchestrateTask(
-              taskData.description,
-              taskData.id,
-            )
-            console.log('✅ Task orchestration completed:', result)
-
-            // Clear the refresh interval
-            if (refreshInterval) clearInterval(refreshInterval)
-
-            // Perform final comprehensive reload with multiple attempts to ensure all data is captured
-            const performFinalReload = async (attempt = 1, maxAttempts = 3) => {
-              try {
-                console.log(
-                  `📊 Final timeline reload attempt ${attempt}/${maxAttempts}`,
-                )
-
-                // Add a delay to ensure all data is persisted
-                if (attempt === 1) {
-                  await new Promise((resolve) => setTimeout(resolve, 1000))
-                }
-
-                // Force reload all data stores
-                await Promise.all([
-                  loadConversations(),
-                  loadArtifacts(),
-                  loadTasks(),
-                ])
-
-                // Reload task data after orchestration
-                const updatedTaskData = await getTaskById(taskId)
-                if (updatedTaskData) {
-                  setTask(updatedTaskData)
-
-                  // Reload task hierarchy
-                  try {
-                    const updatedHierarchy = await getTaskHierarchy(
-                      updatedTaskData.id,
-                    )
-                    setTaskHierarchy(updatedHierarchy)
-                  } catch (error) {
-                    console.warn('Failed to reload task hierarchy:', error)
-                  }
-
-                  // Get fresh data from stores
-                  const updatedArtifacts = await getArtifactsByTask(taskId)
-                  const latestConversations =
-                    useConversationStore.getState().conversations
-                  const updatedConversations = latestConversations.filter(
-                    (conv) => conv.workflowId === updatedTaskData.workflowId,
-                  )
-
-                  console.log(
-                    `📈 Final reload stats: ${updatedConversations.length} conversations, ${updatedArtifacts.length} artifacts, ${updatedTaskData.requirements.length} requirements`,
-                  )
-
-                  setArtifacts(updatedArtifacts)
-                  setConversations(updatedConversations)
-
-                  // Rebuild timeline with all fresh data
-                  const updatedEvents =
-                    await buildTimelineEventsWithTranslation(
-                      updatedTaskData,
-                      updatedArtifacts,
-                      updatedConversations,
-                      taskHierarchy?.children || [],
-                    )
-
-                  console.log(
-                    `🎯 Final timeline has ${updatedEvents.length} events`,
-                  )
-                  setTimelineEvents(updatedEvents)
-
-                  // If we have fewer events than expected and haven't reached max attempts, try again
-                  const hasMinimalEvents = updatedEvents.length < 5 // Expect at least task created, agent assigned, messages, artifacts
-                  if (hasMinimalEvents && attempt < maxAttempts) {
-                    console.log(
-                      `⚠️ Timeline seems incomplete (${updatedEvents.length} events), retrying...`,
-                    )
-                    await new Promise((resolve) => setTimeout(resolve, 2000))
-                    return performFinalReload(attempt + 1, maxAttempts)
-                  }
-                }
-              } catch (error) {
-                console.error(
-                  `❌ Final reload attempt ${attempt} failed:`,
-                  error,
-                )
-                if (attempt < maxAttempts) {
-                  await new Promise((resolve) => setTimeout(resolve, 2000))
-                  return performFinalReload(attempt + 1, maxAttempts)
-                }
-              }
-            }
-
-            await performFinalReload()
-            setIsOrchestrating(false)
-
-            // Return early after orchestration completes - data is already loaded in performFinalReload
-            setIsLoading(false)
-            return
-          } catch (error) {
-            // Clear the refresh interval on error
-            if (refreshInterval) clearInterval(refreshInterval)
-            setIsOrchestrating(false)
-            console.error('❌ Task orchestration failed:', error)
-
-            // Don't show error for already in progress tasks - it's expected behavior
-            if (
-              error instanceof Error &&
-              error.message.includes('already in progress')
-            ) {
-              console.log(
-                '⏭️ Orchestration already in progress, continuing with existing execution',
-              )
-            } else {
-              errorToast('Task orchestration failed', error)
-            }
-
-            // After error, still return early - don't load stale data
-            setIsLoading(false)
-            return
-          }
+        } else {
+          errorToast('Task orchestration failed', error)
         }
-
-        // Load artifacts for this task
-        const taskArtifacts = await getArtifactsByTask(taskId)
-        setArtifacts(taskArtifacts)
-
-        // Auto-select first artifact if none is selected
-        if (taskArtifacts.length > 0 && !selectedArtifactId) {
-          setSelectedArtifactId(taskArtifacts[0].id)
-        }
-
-        // Find conversations related to this task's workflow
-        const relatedConversations = freshConversations.filter(
-          (conv) => conv.workflowId === taskData.workflowId,
-        )
-        setConversations(relatedConversations)
-
-        // Build timeline events
-        const events = await buildTimelineEventsWithTranslation(
-          taskData,
-          taskArtifacts,
-          relatedConversations,
-          taskHierarchy?.children || [],
-        )
-        setTimelineEvents(events)
-      } catch (error) {
-        console.error('Error loading task data:', error)
-        errorToast(t('Failed to load task data'))
-        navigate(url('/'))
       } finally {
-        setIsLoading(false)
+        setIsOrchestrating(false)
       }
     }
 
-    loadTaskData()
-  }, [taskId])
+    orchestrateTask()
+  }, [task?.id, task?.status, task?.description, hasTriggeredOrchestration])
 
   // Auto-select first artifact when artifacts change
   useEffect(() => {
-    if (artifacts.length > 0 && !selectedArtifactId) {
-      setSelectedArtifactId(artifacts[0].id)
+    if (taskArtifacts.length > 0 && !selectedArtifactId) {
+      setSelectedArtifactId(taskArtifacts[0].id)
     }
-  }, [artifacts, selectedArtifactId])
+  }, [taskArtifacts, selectedArtifactId])
 
   // Component to render a timeline event
   const TimelineEventDisplay = ({
@@ -1087,7 +940,7 @@ export const TaskPage = () => {
                       children={taskHierarchy.children}
                       parent={taskHierarchy.parent}
                       siblings={taskHierarchy.siblings}
-                      allTasks={tasks}
+                      allTasks={allTasks}
                     />
                   </div>
                 )}

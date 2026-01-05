@@ -115,4 +115,7 @@ export const de: I18n = {
   'Share the platform': 'Plattform teilen',
   'Export the platform settings to another device or share it with others':
     'Exportieren Sie die Plattformeinstellungen auf ein anderes Gerät oder teilen Sie sie mit anderen',
+  'P2P Sync': 'P2P-Synchronisation',
+  'Sync your data across devices using peer-to-peer connection':
+    'Synchronisieren Sie Ihre Daten über Peer-to-Peer-Verbindung zwischen Geräten',
 } as const

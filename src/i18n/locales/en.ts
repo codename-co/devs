@@ -450,4 +450,22 @@ export const en = [
   'Save Changes',
   'Delete Agent',
   'Are you sure you want to delete "{name}"? This action cannot be undone.',
+
+  // Sync Status Indicator
+  'Sync status',
+  'Synced with {count} peer(s)',
+  'Synced, waiting for peers',
+  'Connecting...',
+  'Sync error',
+  'Room',
+  'Last sync',
+  'Manage sync in Settings',
+
+  // Identity & State
+  'Guest',
+  'offline',
+  'online',
+  'synced',
+  'connecting',
+  'P2P Sync',
 ] as const

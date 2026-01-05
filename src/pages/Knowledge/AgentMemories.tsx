@@ -23,12 +23,11 @@ import {
 } from '@heroui/react'
 
 import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
-import { loadAllAgents } from '@/stores/agentStore'
 import { MemoryReviewList } from '@/components/MemoryReview'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import { generateMemorySynthesis } from '@/lib/memory-learning-service'
+import { useAgentMemories, useAgents, useMemories } from '@/hooks'
 import type {
-  Agent,
   AgentMemoryEntry,
   MemoryCategory,
   MemoryConfidence,
@@ -55,7 +54,9 @@ const confidenceColors: Record<MemoryConfidence, string> = {
 export const AgentMemories: React.FC = () => {
   const { t } = useI18n()
 
-  const [agents, setAgents] = useState<Agent[]>([])
+  // Use reactive hooks for instant updates
+  const allMemories = useMemories()
+  const agents = useAgents()
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null)
   const [memoryTab, setMemoryTab] = useState<string>('review')
   const [filterCategory, setFilterCategory] = useState<MemoryCategory | 'all'>(
@@ -63,20 +64,21 @@ export const AgentMemories: React.FC = () => {
   )
   const [isGeneratingSynthesis, setIsGeneratingSynthesis] = useState(false)
 
+  // Get memories for selected agent using reactive hook
+  const agentMemories = useAgentMemories(selectedAgentId || undefined)
+
+  // Decide which memories to use based on selection
+  const memories = selectedAgentId ? agentMemories : allMemories
+
   const {
-    memories,
     memoryDocuments,
     isLoading: isMemoryLoading,
-    loadMemoriesForAgent,
-    loadAllMemories,
     loadMemoryDocument,
-    getPendingReviewMemories,
     approveMemory,
     rejectMemory,
     editAndApproveMemory,
     bulkApproveMemories,
     bulkRejectMemories,
-    getMemoryStats,
     deleteMemory,
     updateMemory,
     createMemory,
@@ -120,23 +122,12 @@ export const AgentMemories: React.FC = () => {
     isGlobal: false,
   })
 
-  useEffect(() => {
-    loadAllAgents().then(setAgents)
-  }, [])
-
+  // Only load memory document when agent changes (data loads automatically via reactive hooks)
   useEffect(() => {
     if (selectedAgentId) {
-      loadMemoriesForAgent(selectedAgentId)
       loadMemoryDocument(selectedAgentId)
-    } else {
-      loadAllMemories()
     }
-  }, [
-    selectedAgentId,
-    loadMemoriesForAgent,
-    loadAllMemories,
-    loadMemoryDocument,
-  ])
+  }, [selectedAgentId, loadMemoryDocument])
 
   const selectedAgent = useMemo(
     () => agents.find((a) => a.id === selectedAgentId),
@@ -148,14 +139,47 @@ export const AgentMemories: React.FC = () => {
     [memoryDocuments, selectedAgentId],
   )
 
-  const stats = useMemo(
-    () => (selectedAgentId ? getMemoryStats(selectedAgentId) : null),
-    [selectedAgentId, getMemoryStats, memories],
-  )
+  // Compute stats from reactive memories
+  const stats = useMemo(() => {
+    if (!selectedAgentId) return null
+    const agentMems = memories.filter((m) => m.agentId === selectedAgentId)
+    return {
+      total: agentMems.length,
+      byCategory: agentMems.reduce(
+        (acc, m) => {
+          acc[m.category] = (acc[m.category] || 0) + 1
+          return acc
+        },
+        {} as Record<MemoryCategory, number>,
+      ),
+      byConfidence: agentMems.reduce(
+        (acc, m) => {
+          acc[m.confidence] = (acc[m.confidence] || 0) + 1
+          return acc
+        },
+        {} as Record<MemoryConfidence, number>,
+      ),
+      byValidation: agentMems.reduce(
+        (acc, m) => {
+          acc[m.validationStatus] = (acc[m.validationStatus] || 0) + 1
+          return acc
+        },
+        {} as Record<string, number>,
+      ),
+      pendingReview: agentMems.filter((m) => m.validationStatus === 'pending')
+        .length,
+    }
+  }, [selectedAgentId, memories])
 
+  // Compute pending memories from reactive data
   const pendingMemories = useMemo(
-    () => getPendingReviewMemories(selectedAgentId || undefined),
-    [getPendingReviewMemories, selectedAgentId, memories],
+    () =>
+      memories.filter(
+        (m) =>
+          m.validationStatus === 'pending' &&
+          (!selectedAgentId || m.agentId === selectedAgentId),
+      ),
+    [selectedAgentId, memories],
   )
 
   const approvedMemories = useMemo(() => {

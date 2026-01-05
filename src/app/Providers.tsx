@@ -1,20 +1,58 @@
 import { HeroUIProvider } from '@heroui/react'
-import { useHref, useNavigate } from 'react-router-dom'
+import { useHref, useNavigate, useSearchParams } from 'react-router-dom'
 import { useEffect } from 'react'
+import * as SyncModule from '@/lib/sync'
 import { ServiceWorkerManager } from '@/lib/service-worker'
 import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
 import { userSettings } from '@/stores/userStore'
-import { useArtifactStore } from '@/stores/artifactStore'
 import { useLLMModelStore } from '@/stores/llmModelStore'
+import { useSyncStore } from '@/stores/syncStore'
 import { ServiceWorkerUpdatePrompt } from '@/components/ServiceWorkerUpdatePrompt'
 import { I18nProvider } from '@/i18n'
 
+// Expose sync debug tools in browser console
+;(window as unknown as Record<string, unknown>).devsSync = {
+  getDebugInfo: SyncModule.getSyncDebugInfo,
+  getWebrtcDebugInfo: SyncModule.getWebrtcDebugInfo,
+  requestSync: SyncModule.requestSync,
+  getYDoc: SyncModule.getYDoc,
+  getAgentsMap: SyncModule.getAgentsMap,
+  getConversationsMap: SyncModule.getConversationsMap,
+}
+console.log('[Dev] Sync debug tools available at window.devsSync')
+
 export function Providers({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const theme = userSettings((state) => state.theme)
-  const loadArtifacts = useArtifactStore((state) => state.loadArtifacts)
   const loadCredentials = useLLMModelStore((state) => state.loadCredentials)
+  const initializeSync = useSyncStore((state) => state.initialize)
+  const enableSync = useSyncStore((state) => state.enableSync)
+
+  // Handle ?join= parameter for P2P sync
+  useEffect(() => {
+    const joinRoomId = searchParams.get('join')
+    if (joinRoomId) {
+      // Remove the join parameter from URL
+      const newSearchParams = new URLSearchParams(searchParams)
+      newSearchParams.delete('join')
+      setSearchParams(newSearchParams, { replace: true })
+
+      // Initialize and connect to the sync room
+      const joinSyncRoom = async () => {
+        try {
+          console.log('[Providers] Joining sync room:', joinRoomId)
+          await initializeSync()
+          await enableSync(joinRoomId, undefined, 'join')
+          console.log('[Providers] Successfully joined sync room')
+        } catch (error) {
+          console.error('[Providers] Failed to join sync room:', error)
+        }
+      }
+      joinSyncRoom()
+    }
+  }, [searchParams, setSearchParams, initializeSync, enableSync])
 
   useEffect(() => {
     // Initialize platform services
@@ -29,11 +67,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
         // Load credentials (will create default local provider if none exist)
         await loadCredentials()
 
+        // Initialize sync (Yjs + P2P if enabled)
+        // This initializes persistence and makes data available to reactive hooks
+        await initializeSync()
+
         // Register service worker
         await ServiceWorkerManager.register()
 
-        // Load artifacts into store
-        await loadArtifacts()
+        // Note: Artifacts and other data load automatically via reactive hooks
+        // No manual loading required - data syncs from Yjs to components instantly
 
         console.log('Platform initialized successfully')
       } catch (error) {
