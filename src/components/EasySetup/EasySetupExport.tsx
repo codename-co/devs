@@ -114,6 +114,7 @@ export const EasySetupExport = () => {
             copyIcon={<Icon name="Copy" />}
             tooltipProps={{ content: t('Copy to clipboard') }}
             classNames={{
+              base: 'bg-default-50 border-default-200 w-full',
               pre: 'whitespace-pre-wrap break-all max-h-16 overflow-y-hidden',
             }}
           >

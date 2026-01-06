@@ -1,5 +1,6 @@
 import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
 import { LLMConfig } from '@/types'
+import { convertMessagesToOpenAIFormat } from '../attachment-processor'
 
 export class CustomProvider implements LLMProviderInterface {
   async chat(
@@ -10,6 +11,9 @@ export class CustomProvider implements LLMProviderInterface {
       throw new Error('Custom provider requires a base URL')
     }
 
+    // Convert messages with attachment handling (OpenAI-compatible format)
+    const convertedMessages = await convertMessagesToOpenAIFormat(messages)
+
     const response = await fetch(`${config.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -18,7 +22,7 @@ export class CustomProvider implements LLMProviderInterface {
       },
       body: JSON.stringify({
         model: config.model || 'default',
-        messages,
+        messages: convertedMessages,
         temperature: config.temperature || 0.7,
         max_tokens: config.maxTokens,
       }),
@@ -50,6 +54,9 @@ export class CustomProvider implements LLMProviderInterface {
       throw new Error('Custom provider requires a base URL')
     }
 
+    // Convert messages with attachment handling (OpenAI-compatible format)
+    const convertedMessages = await convertMessagesToOpenAIFormat(messages)
+
     const response = await fetch(`${config.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -58,7 +65,7 @@ export class CustomProvider implements LLMProviderInterface {
       },
       body: JSON.stringify({
         model: config.model || 'default',
-        messages,
+        messages: convertedMessages,
         temperature: config.temperature || 0.7,
         max_tokens: config.maxTokens,
         stream: true,

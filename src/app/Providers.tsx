@@ -1,14 +1,14 @@
 import { HeroUIProvider } from '@heroui/react'
 import { useHref, useNavigate, useSearchParams } from 'react-router-dom'
 import { useEffect } from 'react'
-import * as SyncModule from '@/lib/sync'
+import * as SyncModule from '@/features/sync'
 import { ServiceWorkerManager } from '@/lib/service-worker'
 import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
 import { successToast } from '@/lib/toast'
 import { userSettings } from '@/stores/userStore'
 import { useLLMModelStore } from '@/stores/llmModelStore'
-import { useSyncStore } from '@/stores/syncStore'
+import { useSyncStore } from '@/features/sync'
 import { ServiceWorkerUpdatePrompt } from '@/components/ServiceWorkerUpdatePrompt'
 import { I18nProvider, useI18n } from '@/i18n'
 import localI18n from './i18n'
@@ -24,8 +24,8 @@ import localI18n from './i18n'
 }
 console.log('[Dev] Sync debug tools available at window.devsSync')
 
-export function Providers({ children }: { children: React.ReactNode }) {
-  const navigate = useNavigate()
+/** Inner component that uses i18n hooks - must be rendered inside I18nProvider */
+function ProvidersInner({ children }: { children: React.ReactNode }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const theme = userSettings((state) => state.theme)
   const loadCredentials = useLLMModelStore((state) => state.loadCredentials)
@@ -56,7 +56,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       }
       joinSyncRoom()
     }
-  }, [searchParams, setSearchParams, initializeSync, enableSync])
+  }, [searchParams, setSearchParams, initializeSync, enableSync, t])
 
   useEffect(() => {
     // Initialize platform services
@@ -120,12 +120,22 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, [theme])
 
   return (
+    <>
+      <main className="text-foreground bg-background min-h-full">
+        {children}
+      </main>
+      <ServiceWorkerUpdatePrompt />
+    </>
+  )
+}
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate()
+
+  return (
     <HeroUIProvider navigate={navigate} useHref={useHref}>
       <I18nProvider>
-        <main className="text-foreground bg-background min-h-full">
-          {children}
-        </main>
-        <ServiceWorkerUpdatePrompt />
+        <ProvidersInner>{children}</ProvidersInner>
       </I18nProvider>
     </HeroUIProvider>
   )

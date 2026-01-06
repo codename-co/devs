@@ -112,7 +112,6 @@ export const ar: I18n = {
   'Share the platform': 'مشاركة المنصة',
   'Export the platform settings to another device or share it with others':
     'تصدير إعدادات المنصة إلى جهاز آخر أو مشاركتها مع الآخرين',
-  'P2P Sync': 'مزامنة نظير إلى نظير',
   'Sync your data across devices using peer-to-peer connection':
     'مزامنة بياناتك عبر الأجهزة باستخدام اتصال نظير إلى نظير',
 } as const

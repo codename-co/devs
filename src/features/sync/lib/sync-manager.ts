@@ -28,12 +28,31 @@ export interface SyncConfig {
 
 export type SyncStatus = 'disabled' | 'connecting' | 'connected'
 
+export interface PeerInfo {
+  clientId: number
+  isLocal: boolean
+}
+
+export interface SyncActivity {
+  type: 'sent' | 'received'
+  bytes: number
+  timestamp: Date
+}
+
 type SyncEventCallback = (status: {
   connected: boolean
   peerCount: number
+  peers: PeerInfo[]
 }) => void
 
+type SyncActivityCallback = (activity: SyncActivity) => void
+
 let statusCallback: SyncEventCallback | null = null
+let activityCallback: SyncActivityCallback | null = null
+
+// Track recent sync activity for visualization
+const recentActivity: SyncActivity[] = []
+const MAX_ACTIVITY_ENTRIES = 50
 
 /**
  * Enable sync with the given configuration
@@ -50,15 +69,6 @@ export function enableSync(config: SyncConfig): void {
   console.log('[Sync] Server URL:', serverUrl)
   console.log('[Sync] Y.Doc clientID:', ydoc.clientID)
 
-  // Log current state of maps BEFORE connecting
-  const agentsMap = ydoc.getMap('agents')
-  const conversationsMap = ydoc.getMap('conversations')
-  console.log('[Sync] Before connect - agents map size:', agentsMap.size)
-  console.log(
-    '[Sync] Before connect - conversations map size:',
-    conversationsMap.size,
-  )
-
   wsProvider = new WebsocketProvider(serverUrl, config.roomId, ydoc)
 
   // Connection status events
@@ -69,27 +79,41 @@ export function enableSync(config: SyncConfig): void {
 
   wsProvider.on('sync', (isSynced: boolean) => {
     console.log('[Sync] Synced:', isSynced)
-    // Log state AFTER sync
-    console.log('[Sync] After sync - agents map size:', agentsMap.size)
-    console.log(
-      '[Sync] After sync - conversations map size:',
-      conversationsMap.size,
-    )
-    if (agentsMap.size > 0) {
-      console.log('[Sync] Agent IDs:', Array.from(agentsMap.keys()))
-    }
     notifyStatus()
   })
 
-  // Debug: observe ALL changes to the doc
+  // Track awareness changes (peers joining/leaving)
+  wsProvider.awareness.on('change', () => {
+    notifyStatus()
+  })
+
+  // Debug: observe ALL changes to the doc and track activity
   ydoc.on('update', (update: Uint8Array, origin: unknown) => {
-    console.log(
+    console.debug(
       '[Sync] Y.Doc update, origin:',
       origin,
       'size:',
       update.length,
       'bytes',
     )
+
+    // Track sync activity
+    const isRemote = origin === wsProvider
+    const activity: SyncActivity = {
+      type: isRemote ? 'received' : 'sent',
+      bytes: update.length,
+      timestamp: new Date(),
+    }
+
+    recentActivity.unshift(activity)
+    if (recentActivity.length > MAX_ACTIVITY_ENTRIES) {
+      recentActivity.pop()
+    }
+
+    // Notify activity listeners
+    if (activityCallback) {
+      activityCallback(activity)
+    }
   })
 }
 
@@ -201,6 +225,49 @@ export function getPeerCount(): number {
 }
 
 /**
+ * Get detailed information about connected peers
+ */
+export function getPeers(): PeerInfo[] {
+  if (!wsProvider) return []
+
+  const localClientId = wsProvider.awareness.clientID
+  const peers: PeerInfo[] = []
+
+  wsProvider.awareness.getStates().forEach((_, clientId) => {
+    peers.push({
+      clientId,
+      isLocal: clientId === localClientId,
+    })
+  })
+
+  return peers
+}
+
+/**
+ * Get local client ID
+ */
+export function getLocalClientId(): number | null {
+  return wsProvider?.awareness.clientID ?? null
+}
+
+/**
+ * Get recent sync activity
+ */
+export function getRecentActivity(): SyncActivity[] {
+  return [...recentActivity]
+}
+
+/**
+ * Subscribe to sync activity events
+ */
+export function onSyncActivity(callback: SyncActivityCallback): () => void {
+  activityCallback = callback
+  return () => {
+    activityCallback = null
+  }
+}
+
+/**
  * Check if sync is enabled
  */
 export function isSyncEnabled(): boolean {
@@ -222,6 +289,7 @@ function notifyStatus(): void {
     statusCallback({
       connected: getSyncStatus() === 'connected',
       peerCount: getPeerCount(),
+      peers: getPeers(),
     })
   }
 }

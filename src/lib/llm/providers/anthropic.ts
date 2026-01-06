@@ -1,12 +1,19 @@
 import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
 import { LLMConfig } from '@/types'
+import {
+  processAttachments,
+  formatTextAttachmentContent,
+  getUnsupportedDocumentMessage,
+} from '../attachment-processor'
 
 export class AnthropicProvider implements LLMProviderInterface {
   private baseUrl = 'https://api.anthropic.com/v1'
   public static readonly DEFAULT_MODEL = 'claude-sonnet-4-5-20250929'
   public static readonly DEFAULT_MAX_TOKENS = 8192
 
-  private convertMessageToAnthropicFormat(message: LLMMessage): any {
+  private async convertMessageToAnthropicFormat(
+    message: LLMMessage,
+  ): Promise<any> {
     if (!message.attachments || message.attachments.length === 0) {
       return {
         role: message.role,
@@ -14,11 +21,14 @@ export class AnthropicProvider implements LLMProviderInterface {
       }
     }
 
+    // Process attachments (converts Word docs to text)
+    const processedAttachments = await processAttachments(message.attachments)
+
     // For messages with attachments, create a content array
-    const content = []
+    const content: any[] = []
 
     // Add attachments first
-    message.attachments.forEach((attachment) => {
+    for (const attachment of processedAttachments) {
       if (attachment.type === 'image') {
         content.push({
           type: 'image',
@@ -29,25 +39,8 @@ export class AnthropicProvider implements LLMProviderInterface {
           },
         })
       } else if (attachment.type === 'document') {
-        // Use Anthropic's document type with base64 source for PDFs and other documents
-        content.push({
-          type: 'document',
-          source: {
-            type: 'base64',
-            media_type: attachment.mimeType,
-            data: attachment.data,
-          },
-        })
-      } else if (attachment.type === 'text') {
-        // For text files, decode and include as text content
-        try {
-          const fileContent = atob(attachment.data)
-          content.push({
-            type: 'text',
-            text: `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`,
-          })
-        } catch {
-          // If decoding fails, treat as document
+        // Anthropic supports PDFs natively via document type
+        if (attachment.mimeType === 'application/pdf') {
           content.push({
             type: 'document',
             source: {
@@ -56,9 +49,21 @@ export class AnthropicProvider implements LLMProviderInterface {
               data: attachment.data,
             },
           })
+        } else {
+          // Unsupported document format
+          content.push({
+            type: 'text',
+            text: getUnsupportedDocumentMessage(attachment),
+          })
         }
+      } else if (attachment.type === 'text') {
+        // For text files (including converted docs), decode and include as text content
+        content.push({
+          type: 'text',
+          text: formatTextAttachmentContent(attachment),
+        })
       }
-    })
+    }
 
     // Add text content after attachments
     if (message.content.trim()) {
@@ -81,9 +86,11 @@ export class AnthropicProvider implements LLMProviderInterface {
     // Convert messages to Anthropic format
     const systemMessage =
       messages.find((m) => m.role === 'system')?.content || ''
-    const userMessages = messages
-      .filter((m) => m.role !== 'system')
-      .map((msg) => this.convertMessageToAnthropicFormat(msg))
+    const userMessages = await Promise.all(
+      messages
+        .filter((m) => m.role !== 'system')
+        .map((msg) => this.convertMessageToAnthropicFormat(msg)),
+    )
 
     const endpoint = `${config?.baseUrl || this.baseUrl}/messages`
     console.log('[ANTHROPIC-PROVIDER] 🚀 Making LLM request:', {
@@ -141,9 +148,11 @@ export class AnthropicProvider implements LLMProviderInterface {
   ): AsyncIterableIterator<string> {
     const systemMessage =
       messages.find((m) => m.role === 'system')?.content || ''
-    const userMessages = messages
-      .filter((m) => m.role !== 'system')
-      .map((msg) => this.convertMessageToAnthropicFormat(msg))
+    const userMessages = await Promise.all(
+      messages
+        .filter((m) => m.role !== 'system')
+        .map((msg) => this.convertMessageToAnthropicFormat(msg)),
+    )
 
     const response = await fetch(
       `${config?.baseUrl || this.baseUrl}/messages`,

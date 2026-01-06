@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { db } from '@/lib/db'
-import { deleteFromYjs, syncToYjs } from '@/lib/sync'
+import { deleteFromYjs, syncToYjs } from '@/features/sync'
 import type { PinnedMessage } from '@/types'
 import { errorToast, successToast } from '@/lib/toast'
 

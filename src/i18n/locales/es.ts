@@ -438,6 +438,8 @@ export const es: I18n = {
   'Pin message': 'Fijar mensaje',
   'Unpin message': 'Desfijar mensaje',
   'Message pinned successfully': 'Mensaje fijado con éxito',
+  'Copy the answer': 'Copiar la respuesta',
+  'Answer copied to clipboard': 'Respuesta copiada al portapapeles',
   'Add a description to help you remember why this message is important.':
     'Agrega una descripción para ayudarte a recordar por qué este mensaje es importante.',
   Description: 'Descripción',
@@ -494,9 +496,7 @@ export const es: I18n = {
 
   // Identity & State
   Guest: 'Invitado',
-  offline: 'sin conexión',
-  online: 'en línea',
-  synced: 'sincronizado',
-  connecting: 'conectando',
-  'P2P Sync': 'Sincronización P2P',
+  Sync: 'Sincronización',
+  Syncing: 'Sincronizando',
+  Offline: 'Sin conexión',
 } as const

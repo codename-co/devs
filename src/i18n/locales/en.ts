@@ -413,6 +413,8 @@ export const en = [
   'Pin message',
   'Unpin message',
   'Message pinned successfully',
+  'Copy the answer',
+  'Answer copied to clipboard',
   'Add a description to help you remember why this message is important.',
   'Description',
   'Brief description of why this is important...',
@@ -463,9 +465,7 @@ export const en = [
 
   // Identity & State
   'Guest',
-  'offline',
-  'online',
-  'synced',
-  'connecting',
-  'P2P Sync',
+  'Sync',
+  'Syncing',
+  'Offline',
 ] as const

@@ -445,6 +445,8 @@ export const fr: I18n = {
   'Pin message': 'Épingler le message',
   'Unpin message': 'Désépingler le message',
   'Message pinned successfully': 'Message épinglé avec succès',
+  'Copy the answer': 'Copier la réponse',
+  'Answer copied to clipboard': 'Réponse copiée dans le presse-papiers',
   'Add a description to help you remember why this message is important.':
     'Ajoutez une description pour vous aider à vous souvenir pourquoi ce message est important.',
   Description: 'Description',
@@ -500,9 +502,7 @@ export const fr: I18n = {
 
   // Identity & State
   Guest: 'Invité',
-  offline: 'hors ligne',
-  online: 'en ligne',
-  synced: 'synchronisé',
-  connecting: 'connexion',
-  'P2P Sync': 'Sync P2P',
+  Sync: 'Synchronisation',
+  Syncing: 'Synchronisation',
+  Offline: 'Hors ligne',
 } as const

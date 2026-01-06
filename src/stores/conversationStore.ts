@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { db } from '@/lib/db'
-import { deleteFromYjs, syncToYjs } from '@/lib/sync'
+import { deleteFromYjs, syncToYjs } from '@/features/sync'
 import type { Conversation, Message } from '@/types'
 import { errorToast } from '@/lib/toast'
 import { ConversationTitleGenerator } from '@/lib/conversation-title-generator'

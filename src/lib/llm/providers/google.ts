@@ -1,17 +1,52 @@
 import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
 import { LLMConfig } from '@/types'
+import {
+  processAttachments,
+  formatTextAttachmentContent,
+  getUnsupportedDocumentMessage,
+} from '../attachment-processor'
 
 /**
  * Google Gemini Provider
  *
  * Uses Google's OpenAI-compatible API endpoint with proper file handling.
  * Google uses 'inline_data' for files instead of OpenAI's 'file' type.
+ *
+ * Supported MIME types:
+ * - Images: image/png, image/jpeg, image/webp, image/heic, image/heif
+ * - Documents: application/pdf only
+ * - Text files: Converted to text content automatically
+ *
+ * Unsupported formats (like .docx, .xlsx) are converted to text via mammoth.
  */
 export class GoogleProvider implements LLMProviderInterface {
   protected baseUrl = 'https://generativelanguage.googleapis.com/v1beta/openai'
   public static readonly DEFAULT_MODEL = 'gemini-2.0-flash'
 
-  private convertMessageToGoogleFormat(message: LLMMessage): any {
+  // MIME types that Google Gemini supports for binary/vision processing
+  private static readonly SUPPORTED_IMAGE_TYPES = [
+    'image/png',
+    'image/jpeg',
+    'image/webp',
+    'image/heic',
+    'image/heif',
+  ]
+
+  private static readonly SUPPORTED_DOCUMENT_TYPES = ['application/pdf']
+
+  /**
+   * Check if a MIME type is supported by Google Gemini for binary upload
+   */
+  private isSupportedBinaryType(mimeType: string): boolean {
+    return (
+      GoogleProvider.SUPPORTED_IMAGE_TYPES.includes(mimeType) ||
+      GoogleProvider.SUPPORTED_DOCUMENT_TYPES.includes(mimeType)
+    )
+  }
+
+  private async convertMessageToGoogleFormat(
+    message: LLMMessage,
+  ): Promise<any> {
     if (!message.attachments || message.attachments.length === 0) {
       return {
         role: message.role,
@@ -19,44 +54,53 @@ export class GoogleProvider implements LLMProviderInterface {
       }
     }
 
+    // Process attachments (converts Word docs to text automatically)
+    const processedAttachments = await processAttachments(message.attachments)
+
     // For messages with attachments, create a content array
     // Google's OpenAI-compatible API uses 'inline_data' for files
     const content: any[] = []
 
-    // Add attachments first
-    message.attachments.forEach((attachment) => {
+    for (const attachment of processedAttachments) {
       if (attachment.type === 'image') {
-        // Google supports image_url format
+        // Check if this image type is supported
+        if (this.isSupportedBinaryType(attachment.mimeType)) {
+          content.push({
+            type: 'image_url',
+            image_url: {
+              url: `data:${attachment.mimeType};base64,${attachment.data}`,
+            },
+          })
+        } else {
+          content.push({
+            type: 'text',
+            text: `\n\n[Image: ${attachment.name} (${attachment.mimeType}) - Format not supported by Google Gemini. Supported formats: PNG, JPEG, WEBP, HEIC, HEIF]\n\n`,
+          })
+        }
+      } else if (attachment.type === 'text') {
+        // Text content (including converted Word docs)
         content.push({
-          type: 'image_url',
-          image_url: {
-            url: `data:${attachment.mimeType};base64,${attachment.data}`,
-          },
+          type: 'text',
+          text: formatTextAttachmentContent(attachment),
         })
       } else if (attachment.type === 'document') {
-        // Google uses inline_data for documents (PDFs, etc.)
-        content.push({
-          type: 'image_url',
-          image_url: {
-            url: `data:${attachment.mimeType};base64,${attachment.data}`,
-          },
-        })
-      } else if (attachment.type === 'text') {
-        // For text files, decode and include as text content
-        try {
-          const fileContent = atob(attachment.data)
+        // Check if this document type is natively supported (only PDF)
+        if (this.isSupportedBinaryType(attachment.mimeType)) {
           content.push({
-            type: 'text',
-            text: `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`,
+            type: 'image_url',
+            image_url: {
+              url: `data:${attachment.mimeType};base64,${attachment.data}`,
+            },
           })
-        } catch {
+        } else {
+          // Unsupported document format
           content.push({
             type: 'text',
-            text: `\n\n[File: ${attachment.name} - could not decode]\n\n`,
+            text: getUnsupportedDocumentMessage(attachment),
           })
         }
       }
-    })
+    }
 
     // Add text content after attachments
     if (message.content.trim()) {
@@ -84,6 +128,11 @@ export class GoogleProvider implements LLMProviderInterface {
       temperature: config?.temperature || 0.7,
     })
 
+    // Convert messages (may involve async document conversion)
+    const convertedMessages = await Promise.all(
+      messages.map((msg) => this.convertMessageToGoogleFormat(msg)),
+    )
+
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
@@ -92,7 +141,7 @@ export class GoogleProvider implements LLMProviderInterface {
       },
       body: JSON.stringify({
         model: config?.model || GoogleProvider.DEFAULT_MODEL,
-        messages: messages.map((msg) => this.convertMessageToGoogleFormat(msg)),
+        messages: convertedMessages,
         temperature: config?.temperature || 0.7,
         max_tokens: config?.maxTokens,
       }),
@@ -126,6 +175,11 @@ export class GoogleProvider implements LLMProviderInterface {
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
   ): AsyncIterableIterator<string> {
+    // Convert messages (may involve async document conversion)
+    const convertedMessages = await Promise.all(
+      messages.map((msg) => this.convertMessageToGoogleFormat(msg)),
+    )
+
     const response = await fetch(
       `${config?.baseUrl || this.baseUrl}/chat/completions`,
       {
@@ -136,9 +190,7 @@ export class GoogleProvider implements LLMProviderInterface {
         },
         body: JSON.stringify({
           model: config?.model || GoogleProvider.DEFAULT_MODEL,
-          messages: messages.map((msg) =>
-            this.convertMessageToGoogleFormat(msg),
-          ),
+          messages: convertedMessages,
           temperature: config?.temperature || 0.7,
           max_tokens: config?.maxTokens,
           stream: true,

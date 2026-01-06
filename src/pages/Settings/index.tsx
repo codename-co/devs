@@ -38,7 +38,7 @@ import {
 } from '@/lib/llm'
 import { Container, Icon, Section, Title } from '@/components'
 import { EasySetupExport } from '@/components/EasySetup/EasySetupExport'
-import { SyncSettings } from '@/components/SyncSettings'
+import { SyncSettings } from '@/features/sync'
 import { errorToast, successToast } from '@/lib/toast'
 import { userSettings } from '@/stores/userStore'
 import { useLLMModelStore } from '@/stores/llmModelStore'
@@ -1286,7 +1286,7 @@ export const SettingsPage = () => {
               data-testid="sync-settings"
               title={
                 <>
-                  {t('P2P Sync')}
+                  {t('Sync')}
                   <Chip
                     size="sm"
                     // color="warning"

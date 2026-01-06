@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { db } from '@/lib/db'
-import { deleteFromYjs, syncToYjs } from '@/lib/sync'
+import { deleteFromYjs, syncToYjs } from '@/features/sync'
 
 // Feature toggles
 const ENABLE_KEYWORD_MATCHING = false

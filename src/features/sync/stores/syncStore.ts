@@ -10,13 +10,16 @@ import { persist } from 'zustand/middleware'
 import {
   disableSync as disableSyncManager,
   enableSync as enableSyncManager,
-  forceLoadDataToYjs,
+  getLocalClientId,
   getPeerCount,
+  getPeers,
+  getRecentActivity,
   getSyncStatus,
-  initSyncBridge,
+  onSyncActivity,
   onSyncStatusChange,
-} from '@/lib/sync'
-import type { SyncStatus } from '@/lib/sync'
+} from '../lib/sync-manager'
+import { forceLoadDataToYjs, initSyncBridge } from '../lib/sync-bridge'
+import type { PeerInfo, SyncActivity, SyncStatus } from '../lib/sync-manager'
 
 export type SyncMode = 'share' | 'join'
 
@@ -29,6 +32,9 @@ interface SyncState {
   // Runtime state
   status: SyncStatus
   peerCount: number
+  peers: PeerInfo[]
+  localClientId: number | null
+  recentActivity: SyncActivity[]
   initialized: boolean
   lastSyncAt: Date | null
 
@@ -64,6 +70,9 @@ export const useSyncStore = create<SyncState>()(
       // Runtime
       status: 'disabled',
       peerCount: 0,
+      peers: [],
+      localClientId: null,
+      recentActivity: [],
       initialized: false,
       lastSyncAt: null,
 
@@ -76,12 +85,21 @@ export const useSyncStore = create<SyncState>()(
         await initSyncBridge()
 
         // Subscribe to sync status changes
-        onSyncStatusChange(({ connected, peerCount }) => {
+        onSyncStatusChange(({ connected, peerCount, peers }) => {
           set({
             status: connected ? 'connected' : 'connecting',
             peerCount,
+            peers,
+            localClientId: getLocalClientId(),
             lastSyncAt: connected ? new Date() : get().lastSyncAt,
           })
+        })
+
+        // Subscribe to sync activity events
+        onSyncActivity((activity) => {
+          set((state) => ({
+            recentActivity: [activity, ...state.recentActivity].slice(0, 50),
+          }))
         })
 
         // Auto-reconnect if sync was previously enabled
@@ -91,7 +109,13 @@ export const useSyncStore = create<SyncState>()(
           // Force load data before reconnecting
           await forceLoadDataToYjs()
           enableSyncManager({ roomId })
-          set({ status: getSyncStatus(), peerCount: getPeerCount() })
+          set({
+            status: getSyncStatus(),
+            peerCount: getPeerCount(),
+            peers: getPeers(),
+            localClientId: getLocalClientId(),
+            recentActivity: getRecentActivity(),
+          })
         }
 
         set({ initialized: true })
@@ -118,6 +142,8 @@ export const useSyncStore = create<SyncState>()(
           mode: mode || get().mode || 'share',
           status: getSyncStatus(),
           peerCount: getPeerCount(),
+          peers: getPeers(),
+          localClientId: getLocalClientId(),
         })
       },
 
@@ -129,6 +155,9 @@ export const useSyncStore = create<SyncState>()(
           mode: null,
           status: 'disabled',
           peerCount: 0,
+          peers: [],
+          localClientId: null,
+          recentActivity: [],
         })
       },
 

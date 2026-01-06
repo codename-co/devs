@@ -434,6 +434,8 @@ export const ar: I18n = {
   'Pin message': 'تثبيت الرسالة',
   'Unpin message': 'إلغاء تثبيت الرسالة',
   'Message pinned successfully': 'تم تثبيت الرسالة بنجاح',
+  'Copy the answer': 'نسخ الإجابة',
+  'Answer copied to clipboard': 'تم نسخ الإجابة إلى الحافظة',
   'Add a description to help you remember why this message is important.':
     'أضف وصفًا لمساعدتك على تذكر سبب أهمية هذه الرسالة.',
   Description: 'الوصف',
@@ -490,9 +492,7 @@ export const ar: I18n = {
 
   // Identity & State
   Guest: 'ضيف',
-  offline: 'غير متصل',
-  online: 'متصل',
-  synced: 'متزامن',
-  connecting: 'جاري الاتصال',
-  'P2P Sync': 'مزامنة P2P',
+  Sync: 'المزامنة',
+  Syncing: 'جارٍ المزامنة',
+  Offline: 'غير متصل',
 } as const

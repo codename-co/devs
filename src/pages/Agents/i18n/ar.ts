@@ -51,4 +51,22 @@ export const ar: I18n = {
   'System prompt updated successfully': 'تم تحديث طلب النظام بنجاح',
   'Enter agent role...': 'أدخل دور الوكيل...',
   'Enter agent instructions...': 'أدخل تعليمات الوكيل...',
+  // Agent Context panel (unified Knowledge, Memories, Pinned)
+  'Agent Context': 'سياق الوكيل',
+  Files: 'الملفات',
+  Memories: 'الذكريات',
+  Messages: 'الرسائل',
+  'Knowledge items updated successfully': 'تم تحديث عناصر المعرفة بنجاح',
+  'Failed to update knowledge items': 'فشل في تحديث عناصر المعرفة',
+  'Search knowledge items…': 'البحث في عناصر المعرفة…',
+  'No knowledge items found.': 'لم يتم العثور على عناصر معرفة.',
+  'Add files to your knowledge base': 'أضف ملفات إلى قاعدة المعرفة الخاصة بك',
+  '{count} selected': '{count} محدد',
+  'No knowledge items associated with this agent.':
+    'لا توجد عناصر معرفة مرتبطة بهذا الوكيل.',
+  'Add knowledge': 'إضافة معرفة',
+  'No memories learned yet. Start conversations and use "Learn from conversation" to build agent memory.':
+    'لم يتم تعلم أي ذكريات بعد. ابدأ محادثات واستخدم "التعلم من المحادثة" لبناء ذاكرة الوكيل.',
+  'No pinned messages yet. Pin important messages from conversations to make them available here.':
+    'لا توجد رسائل مثبتة بعد. ثبت الرسائل المهمة من المحادثات لجعلها متاحة هنا.',
 } as const

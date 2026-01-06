@@ -1,5 +1,17 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
-import { Card, Link, Button, Textarea } from '@heroui/react'
+import {
+  Card,
+  Link,
+  Button,
+  Textarea,
+  Chip,
+  Spinner,
+  Checkbox,
+  CheckboxGroup,
+  Input,
+  Tabs,
+  Tab,
+} from '@heroui/react'
 
 import {
   useContextualPanelStore,
@@ -9,9 +21,18 @@ import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
 import { usePinnedMessageStore } from '@/stores/pinnedMessageStore'
 import { useConversationStore } from '@/stores/conversationStore'
 import { MarkdownRenderer, Icon } from '@/components'
-import type { Agent, AgentMemoryEntry, Message } from '@/types'
+import type {
+  Agent,
+  AgentMemoryEntry,
+  KnowledgeItem,
+  Message,
+  PinnedMessage,
+} from '@/types'
 import { useI18n, useUrl } from '@/i18n'
-import { successToast } from '@/lib/toast'
+import { successToast, errorToast } from '@/lib/toast'
+import { db } from '@/lib/db'
+import { formatBytes } from '@/lib/format'
+import { updateAgent } from '@/stores/agentStore'
 import localI18n from './i18n'
 
 /**
@@ -86,97 +107,21 @@ export const useAgentContextPanel = (
       }
     }
 
-    // Load memories (async)
-    try {
-      const { getRelevantMemoriesAsync } = useAgentMemoryStore.getState()
-      const memories = await getRelevantMemoriesAsync(agent.id)
-
-      blocks.push({
-        id: 'agent-memories',
-        title: t('Memories'),
-        icon: 'Brain',
-        priority: 3,
-        defaultExpanded: false,
-        content:
-          memories.length === 0 ? (
-            <p className="text-default-500 text-sm">
-              {t(
-                'No memories learned yet. Start conversations and use "Learn from conversation" to build agent memory.',
-              )}
-            </p>
-          ) : (
-            <MemoriesContent memories={memories} />
-          ),
-      })
-    } catch (error) {
-      console.warn('Failed to load agent memories:', error)
-    }
-
-    // Load pinned messages (async)
-    try {
-      const { getRelevantPinnedMessagesAsync } =
-        usePinnedMessageStore.getState()
-      const pinnedMessages = await getRelevantPinnedMessagesAsync(
-        agent.id,
-        conversationId || '',
-        [],
-        20,
-      )
-
-      blocks.push({
-        id: 'pinned-messages',
-        title: t('Pinned'),
-        icon: 'Pin',
-        priority: 4,
-        defaultExpanded: false,
-        content:
-          pinnedMessages.length === 0 ? (
-            <p className="text-default-500 text-sm">
-              {t(
-                'No pinned messages yet. Pin important messages from conversations to make them available here.',
-              )}
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {pinnedMessages.map((pm) => (
-                <Link
-                  key={pm.id}
-                  href={url(
-                    `/agents/run#${pm.agentId}/${pm.conversationId}?message=${pm.messageId}`,
-                  )}
-                  className="block"
-                >
-                  <Card className="p-3 hover:bg-default-100 transition-colors cursor-pointer">
-                    <div className="flex items-start gap-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-medium text-sm">
-                            {pm.description}
-                          </span>
-                          <span className="text-xs text-default-400">
-                            {new Date(pm.pinnedAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <p className="text-sm text-default-600 mt-1 line-clamp-2">
-                          {pm.content.length > 150
-                            ? pm.content.substring(0, 150) + '…'
-                            : pm.content}
-                        </p>
-                      </div>
-                      <Icon
-                        name="NavArrowRight"
-                        className="w-4 h-4 text-default-400 mt-0.5 flex-shrink-0"
-                      />
-                    </div>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          ),
-      })
-    } catch (error) {
-      console.warn('Failed to load pinned messages:', error)
-    }
+    // Unified Agent Context block (Knowledge, Memories, Pinned)
+    blocks.push({
+      id: 'agent-context',
+      title: t('Agent Context'),
+      icon: 'Brain',
+      priority: 2,
+      defaultExpanded: false,
+      content: (
+        <AgentContextTabs
+          agent={agent}
+          conversationId={conversationId}
+          onAgentUpdate={onAgentUpdateRef.current}
+        />
+      ),
+    })
 
     // Load conversation history (async)
     try {
@@ -614,6 +559,452 @@ const MemoriesContent = ({ memories }: { memories: AgentMemoryEntry[] }) => {
           </Card>
         </Link>
       ))}
+    </div>
+  )
+}
+
+// Separate component for agent knowledge items
+const AgentKnowledgeContent = ({
+  agent,
+  onAgentUpdate,
+}: {
+  agent: Agent
+  onAgentUpdate?: (agent: Agent) => void
+}) => {
+  const { t, lang } = useI18n(localI18n)
+  const { url } = useI18n()
+  const [isEditing, setIsEditing] = useState(false)
+  const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([])
+  const [allKnowledgeItems, setAllKnowledgeItems] = useState<KnowledgeItem[]>(
+    [],
+  )
+  const [selectedIds, setSelectedIds] = useState<string[]>(
+    agent.knowledgeItemIds || [],
+  )
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+
+  // Load knowledge items
+  useEffect(() => {
+    const loadKnowledgeItems = async () => {
+      setIsLoading(true)
+      try {
+        if (!db.isInitialized()) {
+          await db.init()
+        }
+
+        if (!db.hasStore('knowledgeItems')) {
+          setKnowledgeItems([])
+          setAllKnowledgeItems([])
+          setIsLoading(false)
+          return
+        }
+
+        const items = await db.getAll('knowledgeItems')
+        // Only show files, not folders
+        const fileItems = items.filter((item) => item.type === 'file')
+        fileItems.sort(
+          (a, b) =>
+            new Date(b.lastModified).getTime() -
+            new Date(a.lastModified).getTime(),
+        )
+        setAllKnowledgeItems(fileItems)
+
+        // Filter to only show associated knowledge items initially
+        const associatedItems = fileItems.filter((item) =>
+          agent.knowledgeItemIds?.includes(item.id),
+        )
+        setKnowledgeItems(associatedItems)
+      } catch (error) {
+        console.error('Error loading knowledge items:', error)
+        setKnowledgeItems([])
+        setAllKnowledgeItems([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadKnowledgeItems()
+  }, [agent.knowledgeItemIds])
+
+  // Sync selectedIds when agent prop changes
+  useEffect(() => {
+    if (!isEditing) {
+      setSelectedIds(agent.knowledgeItemIds || [])
+    }
+  }, [agent.knowledgeItemIds, isEditing])
+
+  // Filter all knowledge items based on search term
+  const filteredItems = allKnowledgeItems.filter((item) => {
+    if (!searchTerm.trim()) return true
+    const term = searchTerm.toLowerCase()
+    return (
+      item.name.toLowerCase().includes(term) ||
+      item.description?.toLowerCase().includes(term) ||
+      item.tags?.some((tag) => tag.toLowerCase().includes(term))
+    )
+  })
+
+  const handleSave = async () => {
+    setIsSaving(true)
+    try {
+      const updatedAgent = await updateAgent(agent.id, {
+        knowledgeItemIds: selectedIds,
+      })
+      onAgentUpdate?.(updatedAgent)
+      // Update displayed items to reflect new selection
+      const newAssociatedItems = allKnowledgeItems.filter((item) =>
+        selectedIds.includes(item.id),
+      )
+      setKnowledgeItems(newAssociatedItems)
+      setIsEditing(false)
+      successToast(t('Knowledge items updated successfully'))
+    } catch (error) {
+      console.error('Failed to update agent knowledge:', error)
+      errorToast(t('Failed to update knowledge items'))
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setSelectedIds(agent.knowledgeItemIds || [])
+    setSearchTerm('')
+    setIsEditing(false)
+  }
+
+  const handleSelectionChange = (values: string[]) => {
+    setSelectedIds(values)
+  }
+
+  const getFileIcon = (item: KnowledgeItem) => {
+    switch (item.fileType) {
+      case 'image':
+        return <Icon name="Page" className="w-4 h-4 text-success" />
+      case 'document':
+        return <Icon name="Document" className="w-4 h-4 text-warning" />
+      case 'text':
+      default:
+        return <Icon name="Page" className="w-4 h-4 text-primary" />
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-4">
+        <Spinner size="sm" />
+      </div>
+    )
+  }
+
+  if (isEditing) {
+    return (
+      <div className="space-y-3 overflow-hidden">
+        <Input
+          placeholder={t('Search knowledge items…')}
+          value={searchTerm}
+          onValueChange={setSearchTerm}
+          size="sm"
+          startContent={
+            <Icon name="PageSearch" className="w-4 h-4 text-default-400" />
+          }
+        />
+
+        {allKnowledgeItems.length === 0 ? (
+          <div className="text-center text-default-500 py-4">
+            <Icon name="Book" className="w-8 h-8 mx-auto mb-2 opacity-50" />
+            <p className="text-sm">{t('No knowledge items found.')}</p>
+            <Link
+              href={url('/knowledge')}
+              className="text-sm text-primary mt-1 block"
+            >
+              {t('Add files to your knowledge base')}
+            </Link>
+          </div>
+        ) : (
+          <div className="max-h-64 overflow-y-auto overflow-x-hidden">
+            <CheckboxGroup
+              value={selectedIds}
+              onValueChange={handleSelectionChange}
+              className="gap-1"
+            >
+              {filteredItems.map((item) => {
+                const isSelected = selectedIds.includes(item.id)
+                const toggleSelection = () => {
+                  if (isSelected) {
+                    handleSelectionChange(
+                      selectedIds.filter((id) => id !== item.id),
+                    )
+                  } else {
+                    handleSelectionChange([...selectedIds, item.id])
+                  }
+                }
+                return (
+                  <div
+                    key={item.id}
+                    className={`flex items-center gap-2 p-2 rounded-lg hover:bg-default-100 cursor-pointer transition-colors min-w-0 w-full ${
+                      isSelected ? 'bg-primary-50 dark:bg-primary-900/20' : ''
+                    }`}
+                    onClick={toggleSelection}
+                    role="checkbox"
+                    aria-checked={isSelected}
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        toggleSelection()
+                      }
+                    }}
+                  >
+                    <Checkbox
+                      value={item.id}
+                      size="sm"
+                      isSelected={isSelected}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex-shrink-0"
+                    />
+                    <span className="flex-shrink-0">{getFileIcon(item)}</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm truncate">{item.name}</p>
+                      <span className="text-xs text-default-400 block">
+                        {formatBytes(item.size || 0, lang)}
+                      </span>
+                    </div>
+                  </div>
+                )
+              })}
+            </CheckboxGroup>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between pt-2">
+          <Chip size="sm" variant="flat" color="primary">
+            {t('{count} selected', { count: selectedIds.length })}
+          </Chip>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="flat"
+              onPress={handleCancel}
+              isDisabled={isSaving}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              size="sm"
+              color="primary"
+              onPress={handleSave}
+              isLoading={isSaving}
+            >
+              {t('Save')}
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Display mode
+  if (knowledgeItems.length === 0) {
+    return (
+      <div className="relative group">
+        <p className="text-default-500 text-sm">
+          {t('No knowledge items associated with this agent.')}
+        </p>
+        <Button
+          size="sm"
+          variant="light"
+          className="mt-2"
+          onPress={() => setIsEditing(true)}
+          startContent={<Icon name="Plus" className="w-4 h-4" />}
+        >
+          {t('Add knowledge')}
+        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative group">
+      <div className="space-y-2">
+        {knowledgeItems.map((item) => (
+          <Card key={item.id} className="p-2">
+            <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+              <span className="flex-shrink-0">{getFileIcon(item)}</span>
+              <div className="flex-1 min-w-0 overflow-hidden">
+                <span className="text-sm font-medium truncate block">
+                  {item.name}
+                </span>
+                <span className="text-xs text-default-400">
+                  {formatBytes(item.size || 0, lang)}
+                </span>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+      <Button
+        size="sm"
+        variant="light"
+        className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        onPress={() => setIsEditing(true)}
+        startContent={<Icon name="EditPencil" className="w-4 h-4" />}
+      >
+        {t('Edit')}
+      </Button>
+    </div>
+  )
+}
+
+// Unified Agent Context component with tabs for Knowledge, Memories, and Pinned
+const AgentContextTabs = ({
+  agent,
+  conversationId,
+  onAgentUpdate,
+}: {
+  agent: Agent
+  conversationId: string | undefined
+  onAgentUpdate?: (agent: Agent) => void
+}) => {
+  const { t, lang } = useI18n(localI18n)
+  const url = useUrl(lang)
+  const [selectedTab, setSelectedTab] = useState<string>('knowledge')
+  const [memories, setMemories] = useState<AgentMemoryEntry[]>([])
+  const [pinnedMessages, setPinnedMessages] = useState<PinnedMessage[]>([])
+  const [isLoadingMemories, setIsLoadingMemories] = useState(true)
+  const [isLoadingPinned, setIsLoadingPinned] = useState(true)
+
+  // Load memories
+  useEffect(() => {
+    const loadMemories = async () => {
+      setIsLoadingMemories(true)
+      try {
+        const { getRelevantMemoriesAsync } = useAgentMemoryStore.getState()
+        const loadedMemories = await getRelevantMemoriesAsync(agent.id)
+        setMemories(loadedMemories)
+      } catch (error) {
+        console.warn('Failed to load agent memories:', error)
+        setMemories([])
+      } finally {
+        setIsLoadingMemories(false)
+      }
+    }
+    loadMemories()
+  }, [agent.id])
+
+  // Load pinned messages
+  useEffect(() => {
+    const loadPinned = async () => {
+      setIsLoadingPinned(true)
+      try {
+        const { getRelevantPinnedMessagesAsync } =
+          usePinnedMessageStore.getState()
+        const loadedPinned = await getRelevantPinnedMessagesAsync(
+          agent.id,
+          conversationId || '',
+          [],
+          20,
+        )
+        setPinnedMessages(loadedPinned)
+      } catch (error) {
+        console.warn('Failed to load pinned messages:', error)
+        setPinnedMessages([])
+      } finally {
+        setIsLoadingPinned(false)
+      }
+    }
+    loadPinned()
+  }, [agent.id, conversationId])
+
+  return (
+    <div className="space-y-3">
+      <Tabs
+        selectedKey={selectedTab}
+        onSelectionChange={(key) => setSelectedTab(key as string)}
+        size="sm"
+        variant="light"
+      >
+        <Tab key="knowledge" title={t('Files')} />
+        <Tab key="memories" title={t('Memories')} />
+        <Tab key="pinned" title={t('Messages')} />
+      </Tabs>
+
+      <div className="pt-1">
+        {selectedTab === 'knowledge' && (
+          <AgentKnowledgeContent agent={agent} onAgentUpdate={onAgentUpdate} />
+        )}
+
+        {selectedTab === 'memories' && (
+          <>
+            {isLoadingMemories ? (
+              <div className="flex justify-center py-4">
+                <Spinner size="sm" />
+              </div>
+            ) : memories.length === 0 ? (
+              <p className="text-default-500 text-sm">
+                {t(
+                  'No memories learned yet. Start conversations and use "Learn from conversation" to build agent memory.',
+                )}
+              </p>
+            ) : (
+              <MemoriesContent memories={memories} />
+            )}
+          </>
+        )}
+
+        {selectedTab === 'pinned' && (
+          <>
+            {isLoadingPinned ? (
+              <div className="flex justify-center py-4">
+                <Spinner size="sm" />
+              </div>
+            ) : pinnedMessages.length === 0 ? (
+              <p className="text-default-500 text-sm">
+                {t(
+                  'No pinned messages yet. Pin important messages from conversations to make them available here.',
+                )}
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {pinnedMessages.map((pm) => (
+                  <Link
+                    key={pm.id}
+                    href={url(
+                      `/agents/run#${pm.agentId}/${pm.conversationId}?message=${pm.messageId}`,
+                    )}
+                    className="block"
+                  >
+                    <Card className="p-3 hover:bg-default-100 transition-colors cursor-pointer">
+                      <div className="flex items-start gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-medium text-sm">
+                              {pm.description}
+                            </span>
+                            <span className="text-xs text-default-400">
+                              {new Date(pm.pinnedAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-default-600 mt-1 line-clamp-2">
+                            {pm.content.length > 150
+                              ? pm.content.substring(0, 150) + '…'
+                              : pm.content}
+                          </p>
+                        </div>
+                        <Icon
+                          name="NavArrowRight"
+                          className="w-4 h-4 text-default-400 mt-0.5 flex-shrink-0"
+                        />
+                      </div>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   )
 }

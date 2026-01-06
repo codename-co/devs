@@ -1,5 +1,10 @@
 import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
 import { LLMConfig } from '@/types'
+import {
+  processAttachments,
+  formatTextAttachmentContent,
+  getUnsupportedDocumentMessage,
+} from '../attachment-processor'
 
 /**
  * OpenAI-Compatible Provider
@@ -36,7 +41,9 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
     return url
   }
 
-  private convertMessageToOpenAIFormat(message: LLMMessage): any {
+  private async convertMessageToOpenAIFormat(
+    message: LLMMessage,
+  ): Promise<any> {
     if (!message.attachments || message.attachments.length === 0) {
       return {
         role: message.role,
@@ -44,17 +51,20 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
       }
     }
 
+    // Process attachments (converts Word docs to text)
+    const processedAttachments = await processAttachments(message.attachments)
+
     // For messages with attachments, we need to handle different scenarios:
     // 1. If there are images -> use content array with image_url (requires multimodal model)
     // 2. If only documents/text -> flatten to string content for max compatibility
 
-    const hasImages = message.attachments.some((a) => a.type === 'image')
+    const hasImages = processedAttachments.some((a) => a.type === 'image')
 
     if (hasImages) {
       // Use content array format for multimodal models
       const content: any[] = []
 
-      message.attachments.forEach((attachment) => {
+      for (const attachment of processedAttachments) {
         if (attachment.type === 'image') {
           content.push({
             type: 'image_url',
@@ -63,25 +73,17 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
             },
           })
         } else if (attachment.type === 'text') {
-          try {
-            const fileContent = atob(attachment.data)
-            content.push({
-              type: 'text',
-              text: `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`,
-            })
-          } catch {
-            content.push({
-              type: 'text',
-              text: `\n\n[File: ${attachment.name} - could not decode]\n\n`,
-            })
-          }
+          content.push({
+            type: 'text',
+            text: formatTextAttachmentContent(attachment),
+          })
         } else if (attachment.type === 'document') {
           content.push({
             type: 'text',
-            text: `\n\n[Document: ${attachment.name} (${attachment.mimeType}) - PDF/document files require a multimodal model]\n\n`,
+            text: getUnsupportedDocumentMessage(attachment),
           })
         }
-      })
+      }
 
       if (message.content.trim()) {
         content.push({
@@ -99,19 +101,13 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
       // This works with text-only models like Mistral, Llama, etc.
       let textContent = ''
 
-      message.attachments.forEach((attachment) => {
+      for (const attachment of processedAttachments) {
         if (attachment.type === 'text') {
-          try {
-            const fileContent = atob(attachment.data)
-            textContent += `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`
-          } catch {
-            textContent += `\n\n[File: ${attachment.name} - could not decode]\n\n`
-          }
+          textContent += formatTextAttachmentContent(attachment)
         } else if (attachment.type === 'document') {
-          // For PDFs/documents without a multimodal model, we can't process them
-          textContent += `\n\n[Document: ${attachment.name} (${attachment.mimeType}) - PDF/document content cannot be read by text-only models. Please copy-paste the text content or use a multimodal model.]\n\n`
+          textContent += getUnsupportedDocumentMessage(attachment)
         }
-      })
+      }
 
       textContent += message.content
 
@@ -153,7 +149,9 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
       headers,
       body: JSON.stringify({
         model: config?.model || OpenAICompatibleProvider.DEFAULT_MODEL,
-        messages: messages.map((msg) => this.convertMessageToOpenAIFormat(msg)),
+        messages: await Promise.all(
+          messages.map((msg) => this.convertMessageToOpenAIFormat(msg)),
+        ),
         temperature: config?.temperature || 0.7,
         max_tokens: config?.maxTokens,
       }),
@@ -208,7 +206,9 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
       headers,
       body: JSON.stringify({
         model: config?.model || OpenAICompatibleProvider.DEFAULT_MODEL,
-        messages: messages.map((msg) => this.convertMessageToOpenAIFormat(msg)),
+        messages: await Promise.all(
+          messages.map((msg) => this.convertMessageToOpenAIFormat(msg)),
+        ),
         temperature: config?.temperature || 0.7,
         max_tokens: config?.maxTokens,
         stream: true,

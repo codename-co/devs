@@ -111,7 +111,6 @@ export const ko: I18n = {
   'Share the platform': '플랫폼 공유',
   'Export the platform settings to another device or share it with others':
     '플랫폼 설정을 다른 기기로 내보내거나 다른 사용자와 공유',
-  'P2P Sync': 'P2P 동기화',
   'Sync your data across devices using peer-to-peer connection':
     '피어 투 피어 연결을 사용하여 기기 간 데이터 동기화',
 } as const

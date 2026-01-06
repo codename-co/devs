@@ -1,21 +1,26 @@
 import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
 import { LLMConfig } from '@/types'
+import { convertMessagesToTextOnlyFormat } from '../attachment-processor'
 
 export class HuggingFaceProvider implements LLMProviderInterface {
   private baseUrl = 'https://api-inference.huggingface.co/models'
 
-  private formatMessages(messages: LLMMessage[]): string {
+  /**
+   * Format messages as a single prompt for HuggingFace models
+   * Uses text-only conversion for attachment handling
+   */
+  private async formatMessages(messages: LLMMessage[]): Promise<string> {
+    // Convert to text-only format (handles attachments)
+    const textMessages = await convertMessagesToTextOnlyFormat(messages)
+
     // Convert chat messages to a single prompt for HF models
-    return (
-      messages
-        .map((msg) => {
-          if (msg.role === 'system') return `System: ${msg.content}`
-          if (msg.role === 'user') return `User: ${msg.content}`
-          if (msg.role === 'assistant') return `Assistant: ${msg.content}`
-          return msg.content
-        })
-        .join('\n') + '\nAssistant:'
-    )
+    const formattedMessages = textMessages.map((msg) => {
+      if (msg.role === 'system') return `System: ${msg.content}`
+      if (msg.role === 'user') return `User: ${msg.content}`
+      if (msg.role === 'assistant') return `Assistant: ${msg.content}`
+      return msg.content
+    })
+    return formattedMessages.join('\n') + '\nAssistant:'
   }
 
   async chat(
@@ -25,6 +30,8 @@ export class HuggingFaceProvider implements LLMProviderInterface {
     const model = config?.model || 'meta-llama/Llama-2-7b-chat-hf'
     const endpoint = config?.baseUrl || `${this.baseUrl}/${model}`
 
+    const formattedInput = await this.formatMessages(messages)
+
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
@@ -32,7 +39,7 @@ export class HuggingFaceProvider implements LLMProviderInterface {
         Authorization: `Bearer ${config?.apiKey}`,
       },
       body: JSON.stringify({
-        inputs: this.formatMessages(messages),
+        inputs: formattedInput,
         parameters: {
           temperature: config?.temperature || 0.7,
           max_new_tokens: config?.maxTokens || 512,
@@ -74,6 +81,8 @@ export class HuggingFaceProvider implements LLMProviderInterface {
     const model = config?.model || 'meta-llama/Llama-2-7b-chat-hf'
     const endpoint = config?.baseUrl || `${this.baseUrl}/${model}`
 
+    const formattedInput = await this.formatMessages(messages)
+
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
@@ -81,7 +90,7 @@ export class HuggingFaceProvider implements LLMProviderInterface {
         Authorization: `Bearer ${config?.apiKey}`,
       },
       body: JSON.stringify({
-        inputs: this.formatMessages(messages),
+        inputs: formattedInput,
         parameters: {
           temperature: config?.temperature || 0.7,
           max_new_tokens: config?.maxTokens || 512,

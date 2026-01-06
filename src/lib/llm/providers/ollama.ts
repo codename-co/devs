@@ -1,35 +1,39 @@
 import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
 import { LLMConfig } from '@/types'
+import {
+  processAttachments,
+  formatTextAttachmentContent,
+  getUnsupportedDocumentMessage,
+} from '../attachment-processor'
 
 export class OllamaProvider implements LLMProviderInterface {
   private getBaseUrl(config?: Partial<LLMConfig>): string {
     return config?.baseUrl || 'http://localhost:11434'
   }
 
-  private convertMessageToOllamaFormat(message: LLMMessage): any {
+  private async convertMessageToOllamaFormat(
+    message: LLMMessage,
+  ): Promise<any> {
     let content = message.content
     const images: string[] = []
 
     // If there are attachments, handle them appropriately
     if (message.attachments && message.attachments.length > 0) {
-      message.attachments.forEach((attachment) => {
+      // Process attachments (converts Word docs to text)
+      const processedAttachments = await processAttachments(message.attachments)
+
+      for (const attachment of processedAttachments) {
         if (attachment.type === 'image') {
           // Ollama supports images array for multimodal models (e.g., llava, bakllava)
           images.push(attachment.data) // Raw base64 without data URL prefix
         } else if (attachment.type === 'text') {
-          // For text files, decode and include the content
-          try {
-            const fileContent = atob(attachment.data)
-            content += `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`
-          } catch {
-            content += `\n\n[File: ${attachment.name} (${attachment.mimeType}) - could not decode]\n\n`
-          }
+          // For text files (including converted docs), decode and include the content
+          content += formatTextAttachmentContent(attachment)
         } else if (attachment.type === 'document') {
           // For documents like PDFs, Ollama doesn't have native support
-          // Include as a note - user should use a multimodal model or external tool
-          content += `\n\n[Document attached: ${attachment.name} (${attachment.mimeType}) - Note: Ollama does not natively support PDF parsing. Consider using a vision model with document images or extracting text first.]\n\n`
+          content += getUnsupportedDocumentMessage(attachment)
         }
-      })
+      }
     }
 
     const result: any = {
@@ -51,6 +55,11 @@ export class OllamaProvider implements LLMProviderInterface {
   ): Promise<LLMResponse> {
     const baseUrl = this.getBaseUrl(config)
 
+    // Convert messages (may involve async document conversion)
+    const convertedMessages = await Promise.all(
+      messages.map((msg) => this.convertMessageToOllamaFormat(msg)),
+    )
+
     const response = await fetch(`${baseUrl}/api/chat`, {
       method: 'POST',
       headers: {
@@ -58,7 +67,7 @@ export class OllamaProvider implements LLMProviderInterface {
       },
       body: JSON.stringify({
         model: config?.model || 'llama2',
-        messages: messages.map((msg) => this.convertMessageToOllamaFormat(msg)),
+        messages: convertedMessages,
         stream: false,
         options: {
           temperature: config?.temperature || 0.7,
@@ -93,6 +102,11 @@ export class OllamaProvider implements LLMProviderInterface {
   ): AsyncIterableIterator<string> {
     const baseUrl = this.getBaseUrl(config)
 
+    // Convert messages (may involve async document conversion)
+    const convertedMessages = await Promise.all(
+      messages.map((msg) => this.convertMessageToOllamaFormat(msg)),
+    )
+
     const response = await fetch(`${baseUrl}/api/chat`, {
       method: 'POST',
       headers: {
@@ -100,7 +114,7 @@ export class OllamaProvider implements LLMProviderInterface {
       },
       body: JSON.stringify({
         model: config?.model || 'llama2',
-        messages: messages.map((msg) => this.convertMessageToOllamaFormat(msg)),
+        messages: convertedMessages,
         stream: true,
         options: {
           temperature: config?.temperature || 0.7,

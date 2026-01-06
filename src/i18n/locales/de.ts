@@ -441,6 +441,8 @@ export const de: I18n = {
   'Pin message': 'Nachricht anheften',
   'Unpin message': 'Nachricht lösen',
   'Message pinned successfully': 'Nachricht erfolgreich angeheftet',
+  'Copy the answer': 'Antwort kopieren',
+  'Answer copied to clipboard': 'Antwort in Zwischenablage kopiert',
   'Add a description to help you remember why this message is important.':
     'Fügen Sie eine Beschreibung hinzu, um sich daran zu erinnern, warum diese Nachricht wichtig ist.',
   Description: 'Beschreibung',
@@ -495,9 +497,7 @@ export const de: I18n = {
 
   // Identity & State
   Guest: 'Gast',
-  offline: 'offline',
-  online: 'online',
-  synced: 'synchronisiert',
-  connecting: 'verbinden',
-  'P2P Sync': 'P2P-Sync',
+  Sync: 'Synchronisation',
+  Syncing: 'Synchronisierung',
+  Offline: 'Offline',
 } as const

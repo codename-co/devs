@@ -1,1 +1,7 @@
-export const de = ['Erfolgreich dem Sync-Raum beigetreten'] as const
+import { en } from './en'
+
+type I18n = Record<(typeof en)[number], string>
+
+export const de: I18n = {
+  'Successfully joined sync room': 'Erfolgreich dem Sync-Raum beigetreten',
+}

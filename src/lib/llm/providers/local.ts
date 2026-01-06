@@ -7,6 +7,7 @@ import {
   TextStreamer,
 } from '@huggingface/transformers'
 import { inspectAllCaches, startCacheMonitoring } from '../cache-debug'
+import { convertMessagesToTextOnlyFormat } from '../attachment-processor'
 
 // Configure transformers.js for browser environment with persistent caching
 env.allowLocalModels = false
@@ -156,11 +157,18 @@ export class LocalLLMProvider implements LLMProviderInterface {
 
   /**
    * Format messages using the tokenizer's chat template or a fallback template
+   * Uses text-only conversion for attachment handling
    */
-  private formatMessages(messages: LLMMessage[], tokenizer: any): string {
+  private async formatMessages(
+    messages: LLMMessage[],
+    tokenizer: any,
+  ): Promise<string> {
+    // Convert to text-only format (handles attachments)
+    const textMessages = await convertMessagesToTextOnlyFormat(messages)
+
     try {
       // Try to use the tokenizer's built-in chat template
-      const formatted = tokenizer.apply_chat_template(messages, {
+      const formatted = tokenizer.apply_chat_template(textMessages, {
         tokenize: false,
         add_generation_prompt: true,
       })
@@ -177,7 +185,7 @@ export class LocalLLMProvider implements LLMProviderInterface {
 {% endif %}{% endfor %}{% if add_generation_prompt %}<|assistant|>
 {% endif %}`
 
-      return tokenizer.apply_chat_template(messages, {
+      return tokenizer.apply_chat_template(textMessages, {
         tokenize: false,
         add_generation_prompt: true,
         chat_template: chatTemplate,
@@ -191,8 +199,8 @@ export class LocalLLMProvider implements LLMProviderInterface {
   ): Promise<LLMResponse> {
     const generator = await this.getPipeline(config?.model)
 
-    // Format messages using the tokenizer's chat template
-    const prompt = this.formatMessages(messages, generator.tokenizer)
+    // Format messages using the tokenizer's chat template (with attachment processing)
+    const prompt = await this.formatMessages(messages, generator.tokenizer)
 
     const result = await generator(prompt, {
       max_new_tokens: config?.maxTokens || 512,
@@ -229,8 +237,8 @@ export class LocalLLMProvider implements LLMProviderInterface {
   ): AsyncIterableIterator<string> {
     const generator = await this.getPipeline(config?.model)
 
-    // Format messages using the tokenizer's chat template
-    const prompt = this.formatMessages(messages, generator.tokenizer)
+    // Format messages using the tokenizer's chat template (with attachment processing)
+    const prompt = await this.formatMessages(messages, generator.tokenizer)
 
     // Collect chunks from the streamer
     const chunks: string[] = []

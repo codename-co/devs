@@ -1,5 +1,6 @@
 import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
 import { LLMConfig } from '@/types'
+import { convertMessagesToOpenAIFormat } from '../attachment-processor'
 
 export class GrokProvider implements LLMProviderInterface {
   private baseUrl = 'https://api.x.ai/v1'
@@ -8,6 +9,9 @@ export class GrokProvider implements LLMProviderInterface {
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
   ): Promise<LLMResponse> {
+    // Convert messages with attachment handling (OpenAI-compatible format)
+    const convertedMessages = await convertMessagesToOpenAIFormat(messages)
+
     const response = await fetch(
       `${config?.baseUrl || this.baseUrl}/chat/completions`,
       {
@@ -18,7 +22,7 @@ export class GrokProvider implements LLMProviderInterface {
         },
         body: JSON.stringify({
           model: config?.model || 'grok-beta',
-          messages,
+          messages: convertedMessages,
           temperature: config?.temperature || 0.7,
           max_tokens: config?.maxTokens,
         }),
@@ -48,6 +52,9 @@ export class GrokProvider implements LLMProviderInterface {
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
   ): AsyncIterableIterator<string> {
+    // Convert messages with attachment handling (OpenAI-compatible format)
+    const convertedMessages = await convertMessagesToOpenAIFormat(messages)
+
     const response = await fetch(
       `${config?.baseUrl || this.baseUrl}/chat/completions`,
       {
@@ -58,7 +65,7 @@ export class GrokProvider implements LLMProviderInterface {
         },
         body: JSON.stringify({
           model: config?.model || 'grok-beta',
-          messages,
+          messages: convertedMessages,
           temperature: config?.temperature || 0.7,
           max_tokens: config?.maxTokens,
           stream: true,

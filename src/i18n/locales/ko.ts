@@ -433,6 +433,8 @@ export const ko: I18n = {
   'Pin message': '메시지 고정',
   'Unpin message': '메시지 고정 해제',
   'Message pinned successfully': '메시지가 성공적으로 고정되었습니다',
+  'Copy the answer': '답변 복사',
+  'Answer copied to clipboard': '답변이 클립보드에 복사되었습니다',
   'Add a description to help you remember why this message is important.':
     '이 메시지가 중요한 이유를 기억하는 데 도움이 되는 설명을 추가하세요.',
   Description: '설명',
@@ -489,9 +491,7 @@ export const ko: I18n = {
 
   // Identity & State
   Guest: '게스트',
-  offline: '오프라인',
-  online: '온라인',
-  synced: '동기화됨',
-  connecting: '연결 중',
-  'P2P Sync': 'P2P 동기화',
+  Sync: '동기화',
+  Syncing: '동기화 중',
+  Offline: '오프라인',
 } as const

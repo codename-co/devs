@@ -156,12 +156,26 @@ const MessageDisplay = memo(
           {/* Assistant message action buttons */}
           {message.role === 'assistant' && (
             <div className="mt-2 flex gap-1">
+              <Tooltip content={t('Copy the answer')}>
+                <Button
+                  size="sm"
+                  variant="light"
+                  color="default"
+                  isIconOnly
+                  onPress={() => {
+                    navigator.clipboard.writeText(message.content)
+                    successToast(t('Answer copied to clipboard'))
+                  }}
+                >
+                  <Icon name="Copy" className="w-4 h-4" />
+                </Button>
+              </Tooltip>
               {showLearnButton && (
                 <Tooltip content={t('Learn from this message')}>
                   <Button
                     size="sm"
                     variant="light"
-                    color="secondary"
+                    // color="secondary"
                     isIconOnly
                     isLoading={isLearning}
                     onPress={() => onLearnClick(message)}

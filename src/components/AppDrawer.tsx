@@ -13,6 +13,10 @@ import {
   Select,
   SelectItem,
   DropdownSection,
+  Modal,
+  ModalContent,
+  ModalBody,
+  ModalHeader,
 } from '@heroui/react'
 
 import { Lang, languages, useI18n, useUrl } from '@/i18n'
@@ -23,12 +27,13 @@ import { DevsIconSmall } from './DevsIcon'
 import { Title } from './Title'
 import { ProgressIndicator } from './ProgressIndicator'
 import { AboutModal } from './AboutModal'
+import { SyncSettings } from '@/features/sync'
 import { PRODUCT } from '@/config/product'
 import clsx from 'clsx'
 import { useState, useEffect, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { cn, isCurrentPath } from '@/lib/utils'
-import { useSyncStore } from '@/stores/syncStore'
+import { useSyncStore } from '@/features/sync'
 
 const AgentList = () => {
   const { lang, t } = useI18n()
@@ -257,7 +262,7 @@ export const AppDrawer = memo(() => {
   return (
     <aside
       className={clsx(
-        'pointer-events-none flex-0 h-full md:h-screen z-200 fixed md:relative dark:bg-default-50',
+        'pointer-events-none flex-0 h-full md:h-screen z-50 fixed md:relative dark:bg-default-50',
       )}
     >
       <div
@@ -354,15 +359,15 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
                 as={Link}
                 href={url('/knowledge')}
                 isIconOnly
-                color="danger"
+                color="primary"
                 variant="light"
                 className={cn(
-                  'w-full text-danger-600 [.is-active]:bg-default-100',
+                  'w-full text-primary-600 [.is-active]:bg-default-100',
                   isCurrentPath('/knowledge') && 'is-active',
                 )}
                 aria-label={t('Knowledge')}
               >
-                <Icon name="Brain" />
+                <Icon name="Book" />
               </Button>
             </Tooltip>
             <Tooltip content={t('Methodologies')} placement="right">
@@ -488,15 +493,10 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
   const setTheme = userSettings((state) => state.setTheme)
   const theme = userSettings((state) => state.theme)
   const [showAboutModal, setShowAboutModal] = useState(false)
+  const [showSyncModal, setShowSyncModal] = useState(false)
 
   // Sync state for identity display
-  const {
-    enabled: syncEnabled,
-    status: syncStatus,
-    peerCount,
-    roomId,
-    disableSync,
-  } = useSyncStore()
+  const { enabled: syncEnabled, status: syncStatus, peerCount } = useSyncStore()
 
   const setLanguage = userSettings((state) => state.setLanguage)
 
@@ -612,15 +612,15 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
               <ListboxItem
                 href={url('/knowledge')}
                 variant="faded"
-                color="danger"
+                color="primary"
                 className={cn(
-                  'dark:text-gray-200 dark:hover:text-danger-500 [.is-active]:bg-default-100',
+                  'dark:text-gray-200 dark:hover:text-primary-600 [.is-active]:bg-default-100',
                   isCurrentPath('/knowledge') && 'is-active',
                 )}
                 startContent={
                   <Icon
-                    name="Brain"
-                    className="text-danger dark:text-danger-600"
+                    name="Book"
+                    className="text-primary dark:text-primary-600"
                   />
                 }
               >
@@ -667,7 +667,7 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                 variant="faded"
                 color="secondary"
                 className={cn(
-                  'dark:text-gray-200 dark:hover:text-secondary-500 [.is-active]:bg-default-100',
+                  'dark:text-gray-200 dark:hover:text-secondary-600 [.is-active]:bg-default-100',
                   isCurrentPath('/tasks') && 'is-active',
                 )}
                 startContent={
@@ -773,12 +773,68 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
       </ScrollShadow>
 
       {/* Bottom navigation */}
-      <nav className="pointer-events-auto w-full flex flex-row mt-4 items-center">
+      <nav className="pointer-events-auto w-full flex flex-col mt-4 gap-2">
         {/* Progress indicator and Organization/Product name at bottom */}
         <AboutModal
           isOpen={showAboutModal}
           onClose={() => setShowAboutModal(false)}
         />
+
+        {/* Sync Modal */}
+        <Modal
+          size="3xl"
+          scrollBehavior="inside"
+          placement="bottom-center"
+          isOpen={showSyncModal}
+          onClose={() => setShowSyncModal(false)}
+          backdrop="blur"
+        >
+          <ModalContent>
+            <ModalHeader>{t('Sync')}</ModalHeader>
+            <ModalBody className="pb-6">
+              <SyncSettings />
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+
+        {/* Share/Sync Button */}
+        <Listbox aria-label={t('Sync')}>
+          <ListboxItem
+            key="sync"
+            variant="faded"
+            startContent={
+              <span className="relative">
+                {syncEnabled && (
+                  <span
+                    className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full ${
+                      syncStatus === 'connected'
+                        ? peerCount > 0
+                          ? 'bg-success'
+                          : 'bg-warning'
+                        : 'bg-default-400'
+                    }`}
+                  />
+                )}
+                <Icon
+                  name={syncEnabled ? 'CloudSync' : 'CloudXmark'}
+                  className="text-gray-500 dark:text-gray-400"
+                />
+              </span>
+            }
+            onPress={() => {
+              setShowSyncModal(true)
+            }}
+            className={
+              !syncEnabled ? 'text-gray-500 dark:text-gray-400' : undefined
+            }
+          >
+            {syncEnabled
+              ? syncStatus === 'connected'
+                ? t('Syncing')
+                : t('Connecting...')
+              : t('Offline')}
+          </ListboxItem>
+        </Listbox>
 
         {/* Quick Actions Menu */}
         <Dropdown placement="top" aria-label={PRODUCT.name}>
@@ -792,34 +848,16 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                   />
                 </Tooltip>
               }
-              size="lg"
               variant="light"
               className="w-full justify-between"
               aria-label={t('Quick Actions')}
             >
               <span
-                className="text-default-400 dark:text-default-500 flex items-center gap-2 -ml-3"
+                className="flex items-center gap-2 -ml-2"
                 aria-label={PRODUCT.name}
               >
                 <ProgressIndicator />
-                <span>
-                  {t('Guest')},{' '}
-                  <span
-                    className={
-                      syncEnabled && syncStatus === 'connected'
-                        ? 'text-success'
-                        : ''
-                    }
-                  >
-                    {syncEnabled
-                      ? syncStatus === 'connected'
-                        ? peerCount > 0
-                          ? t('synced')
-                          : t('online')
-                        : `${t('connecting')}…`
-                      : t('offline')}
-                  </span>
-                </span>
+                <span>{t('Guest')}</span>
               </span>
             </Button>
           </DropdownTrigger>
@@ -828,7 +866,9 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
               <DropdownItem
                 key="about"
                 startContent={<DevsIconSmall />}
-                onClick={() => setShowAboutModal(true)}
+                onClick={() => {
+                  setShowAboutModal(true)
+                }}
               >
                 {t('About')}
               </DropdownItem>
@@ -893,40 +933,6 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
             >
               {t('Theme')}
             </DropdownItem>
-            <DropdownSection>
-              <DropdownItem
-                key="sync-status"
-                className={`opacity-50${syncEnabled ? '' : ' hidden'}`}
-                startContent={
-                  <span
-                    className={`w-2 h-2 rounded-full ${
-                      syncStatus === 'connected'
-                        ? peerCount > 0
-                          ? 'bg-success'
-                          : 'bg-warning'
-                        : 'bg-default-400'
-                    }`}
-                  />
-                }
-                endContent={
-                  roomId ? (
-                    <code className="text-tiny text-default-400">
-                      {roomId.slice(0, 8)}
-                    </code>
-                  ) : null
-                }
-                onPress={disableSync}
-              >
-                {syncStatus === 'connected'
-                  ? peerCount > 0
-                    ? t('Synced with {count} peer(s)').replace(
-                        '{count}',
-                        String(peerCount),
-                      )
-                    : t('Synced, waiting for peers')
-                  : null}
-              </DropdownItem>
-            </DropdownSection>
           </DropdownMenu>
         </Dropdown>
       </nav>

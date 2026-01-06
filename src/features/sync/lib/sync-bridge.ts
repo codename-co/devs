@@ -18,11 +18,13 @@ import {
   getConversationsMap,
   getKnowledgeMap,
   getMemoriesMap,
+  getPreferencesMap,
   getTasksMap,
   getYDoc,
-  initPersistence,
-  isPersistenceReady,
-} from './index'
+} from './yjs-doc'
+import { initPersistence, isPersistenceReady } from './yjs-persistence'
+import { userSettings, type UserSettings } from '@/stores/userStore'
+import type { Lang } from '@/i18n/utils'
 
 // Stores that are synced via Yjs
 // Using string type to allow flexibility with DB store names
@@ -34,6 +36,7 @@ type SyncedStoreName =
   | 'tasks'
   | 'pinnedMessages'
   | 'credentials'
+  | 'preferences'
 
 // Map store names to Yjs map getters
 // Uses type assertion because this function handles generic operations
@@ -55,10 +58,12 @@ function getYjsMapForStore(storeName: SyncedStoreName): Y.Map<any> {
       return ydoc.getMap('pinnedMessages')
     case 'credentials':
       return ydoc.getMap('credentials')
+    case 'preferences':
+      return getPreferencesMap()
   }
 }
 
-// All synced stores
+// All synced stores (IndexedDB-based)
 const SYNCED_STORES: SyncedStoreName[] = [
   'agents',
   'conversations',
@@ -67,6 +72,13 @@ const SYNCED_STORES: SyncedStoreName[] = [
   'tasks',
   'pinnedMessages',
   'credentials',
+]
+
+// Keys from userSettings that should be synced via P2P
+const SYNCED_PREFERENCE_KEYS: (keyof UserSettings)[] = [
+  'platformName',
+  'language',
+  'hideDefaultAgents',
 ]
 
 // Track if we're applying remote changes to prevent loops
@@ -93,7 +105,7 @@ function processPendingOps(): void {
   pendingOpsProcessed = true
 
   if (pendingSyncOps.length > 0) {
-    console.log(
+    console.debug(
       `[SyncBridge] Processing ${pendingSyncOps.length} pending sync operations`,
     )
     const ydoc = getYDoc()
@@ -108,7 +120,7 @@ function processPendingOps(): void {
       }
     })
     pendingSyncOps.length = 0
-    console.log('[SyncBridge] Pending sync operations processed')
+    console.debug('[SyncBridge] Pending sync operations processed')
   }
 }
 
@@ -131,8 +143,17 @@ export async function initSyncBridge(): Promise<void> {
   // Load existing data into Yjs (only if Yjs is empty - first time setup)
   await loadExistingDataToYjs()
 
+  // Load user preferences to Yjs
+  loadPreferencesToYjs()
+
   // Set up Yjs observers for remote changes
   setupYjsObservers()
+
+  // Set up observer for remote preference changes
+  setupPreferencesObserver()
+
+  // Subscribe to local preference changes
+  subscribeToPreferenceChanges()
 
   console.log('[SyncBridge] Initialized')
 }
@@ -142,7 +163,7 @@ export async function initSyncBridge(): Promise<void> {
  * Call this when sync is enabled to ensure data is pushed to peers
  */
 export async function forceLoadDataToYjs(): Promise<void> {
-  console.log('[SyncBridge] Force loading data to Yjs...')
+  console.debug('[SyncBridge] Force loading data to Yjs...')
 
   const ydoc = getYDoc()
 
@@ -150,7 +171,7 @@ export async function forceLoadDataToYjs(): Promise<void> {
     try {
       // Check if store exists in DB
       if (!db.hasStore(storeName)) {
-        console.log(
+        console.debug(
           `[SyncBridge] Store ${storeName} does not exist in DB, skipping`,
         )
         continue
@@ -161,7 +182,7 @@ export async function forceLoadDataToYjs(): Promise<void> {
       )
       const yjsMap = getYjsMapForStore(storeName)
 
-      console.log(
+      console.debug(
         `[SyncBridge] Loading ${items.length} ${storeName} items to Yjs`,
       )
 
@@ -173,13 +194,40 @@ export async function forceLoadDataToYjs(): Promise<void> {
         }
       })
 
-      console.log(`[SyncBridge] ${storeName} map now has ${yjsMap.size} items`)
+      console.debug(
+        `[SyncBridge] ${storeName} map now has ${yjsMap.size} items`,
+      )
     } catch (error) {
       console.warn(`[SyncBridge] Error loading ${storeName}:`, error)
     }
   }
 
-  console.log('[SyncBridge] Force load complete')
+  // Also force load user preferences
+  forceLoadPreferencesToYjs()
+
+  console.debug('[SyncBridge] Force load complete')
+}
+
+/**
+ * Force load user preferences from localStorage to Yjs
+ * Called when sync is explicitly enabled to push local preferences to peers
+ */
+function forceLoadPreferencesToYjs(): void {
+  console.debug('[SyncBridge] Force loading preferences to Yjs...')
+  const prefsMap = getPreferencesMap()
+  const currentSettings = userSettings.getState()
+  const ydoc = getYDoc()
+
+  ydoc.transact(() => {
+    for (const key of SYNCED_PREFERENCE_KEYS) {
+      const value = currentSettings[key]
+      if (value !== undefined) {
+        prefsMap.set(key, value)
+      }
+    }
+  })
+
+  console.debug(`[SyncBridge] Loaded ${prefsMap.size} preferences to Yjs`)
 }
 
 /**
@@ -199,7 +247,9 @@ async function loadExistingDataToYjs(): Promise<void> {
       if (yjsMap.size === 0) {
         // Yjs is empty, load from IndexedDB
         const items = await db.getAll(storeName as any)
-        console.log(`[SyncBridge] Loading ${items.length} ${storeName} to Yjs`)
+        console.debug(
+          `[SyncBridge] Loading ${items.length} ${storeName} to Yjs`,
+        )
         for (const item of items) {
           if (item && typeof item === 'object' && 'id' in item) {
             yjsMap.set((item as { id: string }).id, serializeForYjs(item))
@@ -207,7 +257,7 @@ async function loadExistingDataToYjs(): Promise<void> {
         }
       } else {
         // Yjs has data, sync it back to IndexedDB
-        console.log(
+        console.debug(
           `[SyncBridge] Yjs has ${yjsMap.size} ${storeName}, syncing to IndexedDB`,
         )
         await syncYjsToIndexedDB(storeName)
@@ -255,7 +305,7 @@ async function syncYjsToIndexedDB(storeName: SyncedStoreName): Promise<void> {
  * Set up Yjs observers to detect remote changes
  */
 function setupYjsObservers(): void {
-  console.log('[SyncBridge] Setting up Yjs observers')
+  console.debug('[SyncBridge] Setting up Yjs observers')
 
   for (const storeName of SYNCED_STORES) {
     const yjsMap = getYjsMapForStore(storeName)
@@ -265,13 +315,13 @@ function setupYjsObservers(): void {
         return
       }
       if (!event.transaction.local) {
-        console.log(`[SyncBridge] Remote ${storeName} change detected`)
+        console.debug(`[SyncBridge] Remote ${storeName} change detected`)
         handleRemoteChange(storeName, event)
       }
     })
   }
 
-  console.log('[SyncBridge] Observers set up complete')
+  console.debug('[SyncBridge] Observers set up complete')
 }
 
 /**
@@ -332,7 +382,7 @@ export function syncToYjs<T extends { id: string }>(
   if (!isPersistenceReady()) {
     // Queue the operation for when persistence is ready
     pendingSyncOps.push({ type: 'set', storeName, id: item.id, item })
-    console.log(
+    console.debug(
       `[SyncBridge] Queued sync for ${storeName}/${item.id} (persistence not ready)`,
     )
     return
@@ -350,7 +400,7 @@ export function deleteFromYjs(storeName: SyncedStoreName, id: string): void {
   if (!isPersistenceReady()) {
     // Queue the operation for when persistence is ready
     pendingSyncOps.push({ type: 'delete', storeName, id })
-    console.log(
+    console.debug(
       `[SyncBridge] Queued delete for ${storeName}/${id} (persistence not ready)`,
     )
     return
@@ -410,4 +460,136 @@ function deserializeFromYjs<T>(data: unknown): T {
     }
     return value
   }) as T
+}
+
+// ============================================================================
+// User Preferences Sync (localStorage-based)
+// ============================================================================
+
+// Track if we're applying remote preference changes to prevent loops
+let isApplyingRemotePreference = false
+
+// Store the unsubscribe function for zustand subscription
+let preferencesUnsubscribe: (() => void) | null = null
+
+/**
+ * Load user preferences from localStorage to Yjs
+ */
+function loadPreferencesToYjs(): void {
+  const prefsMap = getPreferencesMap()
+  const currentSettings = userSettings.getState()
+
+  // Only load local preferences to Yjs if the Yjs map is empty
+  // (meaning this is the first sync or no peer has shared preferences yet)
+  if (prefsMap.size === 0) {
+    console.debug('[SyncBridge] Loading local preferences to Yjs')
+    const ydoc = getYDoc()
+    ydoc.transact(() => {
+      for (const key of SYNCED_PREFERENCE_KEYS) {
+        const value = currentSettings[key]
+        if (value !== undefined) {
+          prefsMap.set(key, value)
+        }
+      }
+    })
+    console.debug(`[SyncBridge] Loaded ${prefsMap.size} preferences to Yjs`)
+  } else {
+    // Yjs has preferences from peers, apply them locally
+    console.debug('[SyncBridge] Applying remote preferences from Yjs')
+    applyRemotePreferences()
+  }
+}
+
+/**
+ * Apply remote preferences from Yjs to local userSettings store
+ */
+function applyRemotePreferences(): void {
+  const prefsMap = getPreferencesMap()
+  isApplyingRemotePreference = true
+
+  try {
+    for (const key of SYNCED_PREFERENCE_KEYS) {
+      const remoteValue = prefsMap.get(key)
+      if (remoteValue !== undefined) {
+        const currentSettings = userSettings.getState()
+        const currentValue = currentSettings[key]
+
+        // Only update if different
+        if (JSON.stringify(remoteValue) !== JSON.stringify(currentValue)) {
+          console.debug(
+            `[SyncBridge] Applying remote preference: ${key} = ${remoteValue}`,
+          )
+          switch (key) {
+            case 'platformName':
+              userSettings.getState().setPlatformName(remoteValue as string)
+              break
+            case 'language':
+              userSettings.getState().setLanguage(remoteValue as Lang)
+              break
+            case 'hideDefaultAgents':
+              userSettings
+                .getState()
+                .setHideDefaultAgents(remoteValue as boolean)
+              break
+          }
+        }
+      }
+    }
+  } finally {
+    isApplyingRemotePreference = false
+  }
+}
+
+/**
+ * Set up Yjs observer for remote preference changes
+ */
+function setupPreferencesObserver(): void {
+  const prefsMap = getPreferencesMap()
+
+  prefsMap.observe((event) => {
+    if (isApplyingRemotePreference) return
+    if (!event.transaction.local) {
+      console.debug('[SyncBridge] Remote preferences change detected')
+      applyRemotePreferences()
+    }
+  })
+
+  console.debug('[SyncBridge] Preferences observer set up')
+}
+
+/**
+ * Subscribe to local preference changes and sync to Yjs
+ */
+function subscribeToPreferenceChanges(): void {
+  // Unsubscribe from previous subscription if any
+  if (preferencesUnsubscribe) {
+    preferencesUnsubscribe()
+  }
+
+  // Subscribe to userSettings changes
+  preferencesUnsubscribe = userSettings.subscribe((state, prevState) => {
+    if (isApplyingRemotePreference) return
+    if (!isPersistenceReady()) return
+
+    const prefsMap = getPreferencesMap()
+
+    // Check each synced preference key for changes
+    for (const key of SYNCED_PREFERENCE_KEYS) {
+      const currentValue = state[key]
+      const prevValue = prevState[key]
+
+      if (JSON.stringify(currentValue) !== JSON.stringify(prevValue)) {
+        console.debug(
+          `[SyncBridge] Local preference changed: ${key} = ${currentValue}`,
+        )
+        if (currentValue !== undefined) {
+          prefsMap.set(key, currentValue)
+        } else {
+          prefsMap.delete(key)
+        }
+      }
+    }
+  })
+
+  console.debug('[SyncBridge] Subscribed to local preference changes')
 }

@@ -41,8 +41,8 @@ export const KnowledgePage: React.FC = () => {
 
   const header: HeaderProps = {
     icon: {
-      name: 'Brain',
-      color: 'text-danger-300 dark:text-danger-600',
+      name: 'Book',
+      color: 'text-primary-300 dark:text-primary-600',
     },
     title: t('Knowledge Base'),
     subtitle: t('Manage your files and agents memories'),

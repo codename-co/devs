@@ -1,5 +1,11 @@
 import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
 import { LLMConfig } from '@/types'
+import {
+  processAttachments,
+  formatTextAttachmentContent,
+  getUnsupportedDocumentMessage,
+} from '../attachment-processor'
+import { isPdf } from '../../document-converter'
 
 export class VertexAIProvider implements LLMProviderInterface {
   public static readonly DEFAULT_MODEL = 'gemini-2.5-flash'
@@ -29,6 +35,62 @@ export class VertexAIProvider implements LLMProviderInterface {
     return parts[parts.length - 1] || ''
   }
 
+  /**
+   * Convert message to Vertex AI format with attachment handling
+   * Vertex AI (Gemini models) supports images and PDFs natively; Word docs are converted to text
+   */
+  private async convertMessageToVertexFormat(
+    message: LLMMessage,
+  ): Promise<any> {
+    const parts: any[] = []
+
+    if (message.attachments && message.attachments.length > 0) {
+      // Process attachments (converts Word docs to text)
+      const processedAttachments = await processAttachments(message.attachments)
+
+      for (const attachment of processedAttachments) {
+        if (attachment.type === 'image') {
+          parts.push({
+            inlineData: {
+              mimeType: attachment.mimeType,
+              data: attachment.data,
+            },
+          })
+        } else if (
+          attachment.type === 'document' &&
+          isPdf(attachment.mimeType)
+        ) {
+          // PDFs are supported natively by Vertex AI (Gemini)
+          parts.push({
+            inlineData: {
+              mimeType: attachment.mimeType,
+              data: attachment.data,
+            },
+          })
+        } else if (attachment.type === 'text') {
+          // Text content from converted documents
+          parts.push({
+            text: formatTextAttachmentContent(attachment),
+          })
+        } else if (attachment.type === 'document') {
+          // Unsupported document formats
+          parts.push({
+            text: getUnsupportedDocumentMessage(attachment),
+          })
+        }
+      }
+    }
+
+    if (message.content.trim()) {
+      parts.push({ text: message.content })
+    }
+
+    return {
+      role: message.role === 'assistant' ? 'model' : message.role,
+      parts: parts.length > 0 ? parts : [{ text: '' }],
+    }
+  }
+
   async chat(
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
@@ -37,11 +99,10 @@ export class VertexAIProvider implements LLMProviderInterface {
     const apiKey = this.getApiKey(config)
     const model = config?.model || VertexAIProvider.DEFAULT_MODEL
 
-    // Convert messages to Vertex AI format
-    const contents = messages.map((msg) => ({
-      role: msg.role === 'assistant' ? 'model' : msg.role,
-      parts: [{ text: msg.content }],
-    }))
+    // Convert messages to Vertex AI format (may involve async document conversion)
+    const contents = await Promise.all(
+      messages.map((msg) => this.convertMessageToVertexFormat(msg)),
+    )
 
     const response = await fetch(
       `${endpoint}/publishers/google/models/${model}:generateContent`,
@@ -111,11 +172,10 @@ export class VertexAIProvider implements LLMProviderInterface {
     const apiKey = this.getApiKey(config)
     const model = config?.model || VertexAIProvider.DEFAULT_MODEL
 
-    // Convert messages to Vertex AI format
-    const contents = messages.map((msg) => ({
-      role: msg.role === 'assistant' ? 'model' : msg.role,
-      parts: [{ text: msg.content }],
-    }))
+    // Convert messages to Vertex AI format (may involve async document conversion)
+    const contents = await Promise.all(
+      messages.map((msg) => this.convertMessageToVertexFormat(msg)),
+    )
 
     const response = await fetch(
       `${endpoint}/publishers/google/models/${model}:streamGenerateContent?alt=sse`,

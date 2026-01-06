@@ -5,7 +5,7 @@ import { db } from '@/lib/db'
 import { SecureStorage, isCryptoAvailable } from '@/lib/crypto'
 import { LLMService, LocalLLMProvider } from '@/lib/llm'
 import { successToast, errorToast } from '@/lib/toast'
-import { syncToYjs, deleteFromYjs } from '@/lib/sync'
+import { syncToYjs, deleteFromYjs } from '@/features/sync'
 
 interface LLMModelStore {
   // Credential state

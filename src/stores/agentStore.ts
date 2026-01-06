@@ -1,7 +1,7 @@
 import { PRODUCT } from '@/config/product'
 import { errorToast, successToast } from '@/lib/toast'
 import { db } from '@/lib/db'
-import { deleteFromYjs, syncToYjs } from '@/lib/sync'
+import { deleteFromYjs, syncToYjs } from '@/features/sync'
 import { type Agent } from '@/types'
 import { Lang } from '@/i18n'
 import { userSettings } from '@/stores/userStore'

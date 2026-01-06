@@ -89,6 +89,5 @@ export const en = [
   'Make the platform your own',
   'Share the platform',
   'Export the platform settings to another device or share it with others',
-  'P2P Sync',
   'Sync your data across devices using peer-to-peer connection',
 ] as const

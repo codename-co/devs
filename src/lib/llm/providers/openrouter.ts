@@ -1,5 +1,6 @@
 import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
 import { LLMConfig } from '@/types'
+import { convertMessagesToOpenAIFormat } from '../attachment-processor'
 
 export class OpenRouterProvider implements LLMProviderInterface {
   private baseUrl = 'https://openrouter.ai/api/v1'
@@ -8,6 +9,9 @@ export class OpenRouterProvider implements LLMProviderInterface {
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
   ): Promise<LLMResponse> {
+    // Convert messages with attachment handling (OpenAI-compatible format)
+    const convertedMessages = await convertMessagesToOpenAIFormat(messages)
+
     const response = await fetch(
       `${config?.baseUrl || this.baseUrl}/chat/completions`,
       {
@@ -21,7 +25,7 @@ export class OpenRouterProvider implements LLMProviderInterface {
         },
         body: JSON.stringify({
           model: config?.model || 'openai/gpt-3.5-turbo',
-          messages,
+          messages: convertedMessages,
           temperature: config?.temperature || 0.7,
           max_tokens: config?.maxTokens,
         }),
@@ -51,6 +55,9 @@ export class OpenRouterProvider implements LLMProviderInterface {
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
   ): AsyncIterableIterator<string> {
+    // Convert messages with attachment handling (OpenAI-compatible format)
+    const convertedMessages = await convertMessagesToOpenAIFormat(messages)
+
     const response = await fetch(
       `${config?.baseUrl || this.baseUrl}/chat/completions`,
       {
@@ -64,7 +71,7 @@ export class OpenRouterProvider implements LLMProviderInterface {
         },
         body: JSON.stringify({
           model: config?.model || 'openai/gpt-3.5-turbo',
-          messages,
+          messages: convertedMessages,
           temperature: config?.temperature || 0.7,
           max_tokens: config?.maxTokens,
           stream: true,

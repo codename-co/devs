@@ -1,11 +1,18 @@
 import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
 import { LLMConfig } from '@/types'
+import {
+  processAttachments,
+  formatTextAttachmentContent,
+  getUnsupportedDocumentMessage,
+} from '../attachment-processor'
 
 export class OpenAIProvider implements LLMProviderInterface {
   protected baseUrl = 'https://api.openai.com/v1'
   public static readonly DEFAULT_MODEL = 'gpt-5-2025-08-07'
 
-  private convertMessageToOpenAIFormat(message: LLMMessage): any {
+  private async convertMessageToOpenAIFormat(
+    message: LLMMessage,
+  ): Promise<any> {
     if (!message.attachments || message.attachments.length === 0) {
       return {
         role: message.role,
@@ -13,13 +20,16 @@ export class OpenAIProvider implements LLMProviderInterface {
       }
     }
 
+    // Process attachments (converts Word docs to text)
+    const processedAttachments = await processAttachments(message.attachments)
+
     // For messages with attachments, create a content array
     // Using Chat Completions API format: 'text' and 'image_url' types
     // For PDFs/documents, OpenAI Chat Completions uses 'file' type with base64 data
-    const content = []
+    const content: any[] = []
 
     // Add attachments first (files before text per OpenAI best practices)
-    message.attachments.forEach((attachment) => {
+    for (const attachment of processedAttachments) {
       if (attachment.type === 'image') {
         content.push({
           type: 'image_url',
@@ -28,24 +38,8 @@ export class OpenAIProvider implements LLMProviderInterface {
           },
         })
       } else if (attachment.type === 'document') {
-        // OpenAI Chat Completions API supports 'file' type for documents (PDFs, etc.)
-        content.push({
-          type: 'file',
-          file: {
-            filename: attachment.name,
-            file_data: `data:${attachment.mimeType};base64,${attachment.data}`,
-          },
-        })
-      } else if (attachment.type === 'text') {
-        // For text files, decode and include as text content
-        try {
-          const fileContent = atob(attachment.data)
-          content.push({
-            type: 'text',
-            text: `\n\n--- File: ${attachment.name} ---\n${fileContent}\n--- End of ${attachment.name} ---\n\n`,
-          })
-        } catch {
-          // If decoding fails, include as file
+        // OpenAI supports PDFs natively via 'file' type
+        if (attachment.mimeType === 'application/pdf') {
           content.push({
             type: 'file',
             file: {
@@ -53,9 +47,21 @@ export class OpenAIProvider implements LLMProviderInterface {
               file_data: `data:${attachment.mimeType};base64,${attachment.data}`,
             },
           })
+        } else {
+          // Unsupported document format
+          content.push({
+            type: 'text',
+            text: getUnsupportedDocumentMessage(attachment),
+          })
         }
+      } else if (attachment.type === 'text') {
+        // For text files (including converted docs), decode and include as text content
+        content.push({
+          type: 'text',
+          text: formatTextAttachmentContent(attachment),
+        })
       }
-    })
+    }
 
     // Add text content after attachments
     if (message.content.trim()) {
@@ -83,6 +89,11 @@ export class OpenAIProvider implements LLMProviderInterface {
       temperature: config?.temperature || 0.7,
     })
 
+    // Convert messages (may involve async document conversion)
+    const convertedMessages = await Promise.all(
+      messages.map((msg) => this.convertMessageToOpenAIFormat(msg)),
+    )
+
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
@@ -91,7 +102,7 @@ export class OpenAIProvider implements LLMProviderInterface {
       },
       body: JSON.stringify({
         model: config?.model || OpenAIProvider.DEFAULT_MODEL,
-        messages: messages.map((msg) => this.convertMessageToOpenAIFormat(msg)),
+        messages: convertedMessages,
         temperature: config?.temperature || 0.7,
         max_tokens: config?.maxTokens,
       }),
@@ -125,6 +136,11 @@ export class OpenAIProvider implements LLMProviderInterface {
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
   ): AsyncIterableIterator<string> {
+    // Convert messages (may involve async document conversion)
+    const convertedMessages = await Promise.all(
+      messages.map((msg) => this.convertMessageToOpenAIFormat(msg)),
+    )
+
     const response = await fetch(
       `${config?.baseUrl || this.baseUrl}/chat/completions`,
       {
@@ -135,9 +151,7 @@ export class OpenAIProvider implements LLMProviderInterface {
         },
         body: JSON.stringify({
           model: config?.model || OpenAIProvider.DEFAULT_MODEL,
-          messages: messages.map((msg) =>
-            this.convertMessageToOpenAIFormat(msg),
-          ),
+          messages: convertedMessages,
           temperature: config?.temperature || 0.7,
           max_tokens: config?.maxTokens,
           stream: true,

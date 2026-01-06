@@ -54,4 +54,23 @@ export const ko: I18n = {
     '시스템 프롬프트가 성공적으로 업데이트되었습니다',
   'Enter agent role...': '에이전트 역할 입력...',
   'Enter agent instructions...': '에이전트 지침 입력...',
+  // Agent Context panel (unified Knowledge, Memories, Pinned)
+  'Agent Context': '에이전트 컨텍스트',
+  Files: '파일',
+  Memories: '기억',
+  Messages: '메시지',
+  'Knowledge items updated successfully':
+    '지식 항목이 성공적으로 업데이트되었습니다',
+  'Failed to update knowledge items': '지식 항목 업데이트 실패',
+  'Search knowledge items…': '지식 항목 검색…',
+  'No knowledge items found.': '지식 항목을 찾을 수 없습니다.',
+  'Add files to your knowledge base': '지식 베이스에 파일 추가',
+  '{count} selected': '{count}개 선택됨',
+  'No knowledge items associated with this agent.':
+    '이 에이전트와 연결된 지식 항목이 없습니다.',
+  'Add knowledge': '지식 추가',
+  'No memories learned yet. Start conversations and use "Learn from conversation" to build agent memory.':
+    '아직 학습된 기억이 없습니다. 대화를 시작하고 "대화에서 학습"을 사용하여 에이전트 기억을 구축하세요.',
+  'No pinned messages yet. Pin important messages from conversations to make them available here.':
+    '아직 고정된 메시지가 없습니다. 대화에서 중요한 메시지를 고정하여 여기에서 사용할 수 있게 하세요.',
 } as const

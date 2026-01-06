@@ -25,7 +25,8 @@ import {
   getTasksMap,
   getArtifactsMap,
   getSecretsMap,
-} from '@/lib/sync'
+  isPersistenceReady,
+} from '@/features/sync'
 import type {
   Agent,
   AgentMemoryEntry,
@@ -35,7 +36,6 @@ import type {
   KnowledgeItem,
   Task,
 } from '@/types'
-import { isPersistenceReady } from '@/lib/sync'
 
 // ============================================================================
 // Core Hook: useLiveMap

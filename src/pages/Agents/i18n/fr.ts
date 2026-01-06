@@ -54,4 +54,25 @@ export const fr: I18n = {
   'System prompt updated successfully': 'Prompt système mis à jour avec succès',
   'Enter agent role...': "Entrez le rôle de l'agent...",
   'Enter agent instructions...': "Entrez les instructions de l'agent...",
+  // Agent Context panel (unified Knowledge, Memories, Pinned)
+  'Agent Context': "Contexte de l'agent",
+  Files: 'Fichiers',
+  Memories: 'Mémoires',
+  Messages: 'Messages',
+  'Knowledge items updated successfully':
+    'Éléments de connaissances mis à jour avec succès',
+  'Failed to update knowledge items':
+    'Échec de la mise à jour des éléments de connaissances',
+  'Search knowledge items…': 'Rechercher des éléments de connaissances…',
+  'No knowledge items found.': 'Aucun élément de connaissance trouvé.',
+  'Add files to your knowledge base':
+    'Ajouter des fichiers à votre base de connaissances',
+  '{count} selected': '{count} sélectionné(s)',
+  'No knowledge items associated with this agent.':
+    'Aucun élément de connaissance associé à cet agent.',
+  'Add knowledge': 'Ajouter des connaissances',
+  'No memories learned yet. Start conversations and use "Learn from conversation" to build agent memory.':
+    'Aucune mémoire apprise. Commencez des conversations et utilisez "Apprendre de la conversation" pour construire la mémoire de l\'agent.',
+  'No pinned messages yet. Pin important messages from conversations to make them available here.':
+    'Épinglez des messages importants des conversations pour les rendre disponibles ici.',
 } as const
