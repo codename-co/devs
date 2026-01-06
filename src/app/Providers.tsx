@@ -5,11 +5,13 @@ import * as SyncModule from '@/lib/sync'
 import { ServiceWorkerManager } from '@/lib/service-worker'
 import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
+import { successToast } from '@/lib/toast'
 import { userSettings } from '@/stores/userStore'
 import { useLLMModelStore } from '@/stores/llmModelStore'
 import { useSyncStore } from '@/stores/syncStore'
 import { ServiceWorkerUpdatePrompt } from '@/components/ServiceWorkerUpdatePrompt'
-import { I18nProvider } from '@/i18n'
+import { I18nProvider, useI18n } from '@/i18n'
+import localI18n from './i18n'
 
 // Expose sync debug tools in browser console
 ;(window as unknown as Record<string, unknown>).devsSync = {
@@ -29,6 +31,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const loadCredentials = useLLMModelStore((state) => state.loadCredentials)
   const initializeSync = useSyncStore((state) => state.initialize)
   const enableSync = useSyncStore((state) => state.enableSync)
+  const { t } = useI18n(localI18n)
 
   // Handle ?join= parameter for P2P sync
   useEffect(() => {
@@ -46,6 +49,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           await initializeSync()
           await enableSync(joinRoomId, undefined, 'join')
           console.log('[Providers] Successfully joined sync room')
+          successToast(t('Successfully joined sync room'))
         } catch (error) {
           console.error('[Providers] Failed to join sync room:', error)
         }

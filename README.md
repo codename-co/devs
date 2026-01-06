@@ -52,7 +52,7 @@ through a universally accessible, privacy-first platform.
 - [x] ⚙️ **Open-source**: Community-driven development and transparency.
 - [x] 🐳 **Docker-ready**: One-command self-hosting with an image of ~10MB ([registry](https://hub.docker.com/r/codename/devs)).
 - [x] 📱 **QR Code support**: Easily share and access your platform configuration.
-- [ ] 🤝 **Team collaboration**: Peer-to-peer networking and sharing.
+- [x] 🤝 **Team collaboration**: Peer-to-peer networking and sharing.
 
 ## Self-Hosting
 
