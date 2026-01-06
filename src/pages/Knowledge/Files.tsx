@@ -143,7 +143,7 @@ export const Files: React.FC = () => {
           if (event.fileCount && event.fileCount > 0) {
             // Knowledge items update automatically via reactive hooks
             successToast(
-              `Synced ${event.fileCount} changes from ${event.watcherPath}`,
+              `Synced ${event.fileCount} files from ${event.watcherPath}`,
             )
           }
           break

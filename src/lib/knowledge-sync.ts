@@ -1,4 +1,5 @@
 import { db } from './db'
+import { syncToYjs, deleteFromYjs } from '@/features/sync'
 import { KnowledgeItem, PersistedFolderWatcher, FileHandleEntry } from '@/types'
 
 export interface FolderWatcher {
@@ -182,6 +183,8 @@ class KnowledgeSyncService {
       }
 
       await db.add('knowledgeItems', item)
+      // Sync to Yjs for reactive UI updates
+      syncToYjs('knowledgeItems', item)
       console.log(`Added new file: ${file.name}`)
       return item
     } catch (error) {
@@ -278,7 +281,7 @@ class KnowledgeSyncService {
       // Track existing files before processing
       const existingFiles = await this.getFilesByWatchId(watcher.id)
       const processedPaths = new Set<string>()
-      const syncStats = { added: 0, updated: 0, deleted: 0 }
+      const syncStats = { added: 0, updated: 0, deleted: 0, unchanged: 0 }
 
       await this.processDirectoryRecursive(
         watcher.directoryHandle,
@@ -298,12 +301,18 @@ class KnowledgeSyncService {
 
       watcher.lastSync = new Date()
 
+      const totalFileCount =
+        syncStats.added +
+        syncStats.updated +
+        syncStats.deleted +
+        syncStats.unchanged
+
       // Emit sync complete event
       this.emitSyncEvent({
         type: 'sync_complete',
         watcherId: watcher.id,
         watcherPath: watcher.basePath,
-        fileCount: syncStats.added + syncStats.updated + syncStats.deleted,
+        fileCount: totalFileCount,
         timestamp: new Date(),
       })
 
@@ -343,10 +352,20 @@ class KnowledgeSyncService {
     basePath: string,
     watchId: string,
     processedPaths?: Set<string>,
-    syncStats?: { added: number; updated: number; deleted: number },
+    syncStats?: {
+      added: number
+      updated: number
+      deleted: number
+      unchanged: number
+    },
   ): Promise<void> {
     try {
       for await (const [name, handle] of dirHandle.entries()) {
+        // Skip dot files and dot directories (e.g., .git, .DS_Store, .env)
+        if (name.startsWith('.')) {
+          continue
+        }
+
         const fullPath = `/${basePath}/${name}`
 
         // Track this path as processed
@@ -368,6 +387,8 @@ class KnowledgeSyncService {
               ...existingItem,
               lastSyncCheck: new Date(),
             })
+            // Track unchanged files in statistics
+            if (syncStats) syncStats.unchanged++
             continue // File hasn't changed
           }
 
@@ -389,6 +410,8 @@ class KnowledgeSyncService {
             }
 
             await db.update('knowledgeItems', updatedItem)
+            // Sync to Yjs for reactive UI updates
+            syncToYjs('knowledgeItems', updatedItem)
             console.log(`Updated existing file: ${file.name}`)
 
             // Track statistics and emit event
@@ -414,6 +437,8 @@ class KnowledgeSyncService {
                 watchId,
               }
               await db.update('knowledgeItems', updatedItem)
+              // Sync to Yjs for reactive UI updates
+              syncToYjs('knowledgeItems', updatedItem)
               console.log(`Added new file from filesystem: ${file.name}`)
 
               // Track statistics and emit event
@@ -443,6 +468,8 @@ class KnowledgeSyncService {
               lastSyncCheck: new Date(),
             }
             await db.add('knowledgeItems', folderItem)
+            // Sync to Yjs for reactive UI updates
+            syncToYjs('knowledgeItems', folderItem)
           }
 
           // Recursively process subdirectory
@@ -495,6 +522,8 @@ class KnowledgeSyncService {
         // File was not found during sync - it was deleted
         try {
           await db.delete('knowledgeItems', item.id)
+          // Sync deletion to Yjs for reactive UI updates
+          deleteFromYjs('knowledgeItems', item.id)
           deletedCount++
           console.log(`Removed deleted file from sync: ${item.name}`)
 
