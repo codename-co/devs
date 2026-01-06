@@ -3,8 +3,17 @@
  *
  * UI for enabling/disabling P2P sync with Share/Join modes.
  */
-import { Button, Card, CardBody, Chip, Input, Tab, Tabs } from '@heroui/react'
-import { useState, useEffect } from 'react'
+import {
+  Button,
+  Card,
+  CardBody,
+  Chip,
+  Input,
+  Snippet,
+  Tab,
+  Tabs,
+} from '@heroui/react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useSyncStore, type SyncMode } from '@/stores/syncStore'
@@ -40,6 +49,13 @@ const localI18n = {
     'Click "Start Sharing" to generate a sync link that other devices can use to connect.',
     'Joined a sync session. Your data is syncing with the host.',
     'Enter the Room ID from the host device, or use a sync link directly.',
+    'Scan QR Code',
+    'Scan a QR code to join',
+    'Point your camera at a sync QR code',
+    'Camera access denied',
+    'Unable to access camera. Please grant camera permissions.',
+    'Stop Scanner',
+    'or',
   ] as const,
   fr: {
     Share: 'Partager',
@@ -74,6 +90,15 @@ const localI18n = {
       "Vous avez rejoint une session de synchronisation. Vos données se synchronisent avec l'hôte.",
     'Enter the Room ID from the host device, or use a sync link directly.':
       "Entrez l'ID de salle de l'appareil hôte, ou utilisez directement un lien de synchronisation.",
+    'Scan QR Code': 'Scanner un QR Code',
+    'Scan a QR code to join': 'Scannez un QR code pour rejoindre',
+    'Point your camera at a sync QR code':
+      'Pointez votre caméra vers un QR code de synchronisation',
+    'Camera access denied': 'Accès à la caméra refusé',
+    'Unable to access camera. Please grant camera permissions.':
+      "Impossible d'accéder à la caméra. Veuillez autoriser l'accès à la caméra.",
+    'Stop Scanner': 'Arrêter le scanner',
+    or: 'ou',
   },
   es: {
     Share: 'Compartir',
@@ -108,6 +133,15 @@ const localI18n = {
       'Te has unido a una sesión de sincronización. Tus datos se están sincronizando con el host.',
     'Enter the Room ID from the host device, or use a sync link directly.':
       'Ingresa el ID de sala del dispositivo host, o usa un enlace de sincronización directamente.',
+    'Scan QR Code': 'Escanear código QR',
+    'Scan a QR code to join': 'Escanea un código QR para unirte',
+    'Point your camera at a sync QR code':
+      'Apunta tu cámara a un código QR de sincronización',
+    'Camera access denied': 'Acceso a la cámara denegado',
+    'Unable to access camera. Please grant camera permissions.':
+      'No se puede acceder a la cámara. Por favor, otorga permisos de cámara.',
+    'Stop Scanner': 'Detener escáner',
+    or: 'o',
   },
   de: {
     Share: 'Teilen',
@@ -142,6 +176,15 @@ const localI18n = {
       'Sie sind einer Sync-Sitzung beigetreten. Ihre Daten werden mit dem Host synchronisiert.',
     'Enter the Room ID from the host device, or use a sync link directly.':
       'Geben Sie die Raum-ID vom Host-Gerät ein oder verwenden Sie direkt einen Sync-Link.',
+    'Scan QR Code': 'QR-Code scannen',
+    'Scan a QR code to join': 'Scannen Sie einen QR-Code zum Beitreten',
+    'Point your camera at a sync QR code':
+      'Richten Sie Ihre Kamera auf einen Sync-QR-Code',
+    'Camera access denied': 'Kamerazugriff verweigert',
+    'Unable to access camera. Please grant camera permissions.':
+      'Kamera nicht zugänglich. Bitte erteilen Sie Kameraberechtigungen.',
+    'Stop Scanner': 'Scanner stoppen',
+    or: 'oder',
   },
   ar: {
     Share: 'مشاركة',
@@ -174,6 +217,14 @@ const localI18n = {
       'انضممت إلى جلسة مزامنة. يتم مزامنة بياناتك مع المضيف.',
     'Enter the Room ID from the host device, or use a sync link directly.':
       'أدخل معرف الغرفة من الجهاز المضيف، أو استخدم رابط مزامنة مباشرة.',
+    'Scan QR Code': 'مسح رمز QR',
+    'Scan a QR code to join': 'امسح رمز QR للانضمام',
+    'Point your camera at a sync QR code': 'وجّه الكاميرا نحو رمز QR للمزامنة',
+    'Camera access denied': 'تم رفض الوصول إلى الكاميرا',
+    'Unable to access camera. Please grant camera permissions.':
+      'تعذر الوصول إلى الكاميرا. يرجى منح أذونات الكاميرا.',
+    'Stop Scanner': 'إيقاف الماسح',
+    or: 'أو',
   },
   ko: {
     Share: '공유',
@@ -206,6 +257,14 @@ const localI18n = {
       '동기화 세션에 참가했습니다. 데이터가 호스트와 동기화 중입니다.',
     'Enter the Room ID from the host device, or use a sync link directly.':
       '호스트 기기의 방 ID를 입력하거나 동기화 링크를 직접 사용하세요.',
+    'Scan QR Code': 'QR 코드 스캔',
+    'Scan a QR code to join': 'QR 코드를 스캔하여 참가',
+    'Point your camera at a sync QR code': '동기화 QR 코드에 카메라를 맞추세요',
+    'Camera access denied': '카메라 접근 거부됨',
+    'Unable to access camera. Please grant camera permissions.':
+      '카메라에 접근할 수 없습니다. 카메라 권한을 허용해 주세요.',
+    'Stop Scanner': '스캐너 중지',
+    or: '또는',
   },
 }
 
@@ -229,7 +288,10 @@ export function SyncSettings() {
   const [isEnabling, setIsEnabling] = useState(false)
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null)
   const [qrCodeError, setQrCodeError] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [isScannerOpen, setIsScannerOpen] = useState(false)
+  const [scannerError, setScannerError] = useState<string | null>(null)
+  const scannerRef = useRef<HTMLDivElement>(null)
+  const html5QrCodeRef = useRef<any>(null)
 
   // Generate sync link URL
   const getSyncLink = (roomIdToUse: string) => {
@@ -284,25 +346,79 @@ export function SyncSettings() {
     }
   }
 
-  // Handle copy link
-  const handleCopyLink = async () => {
-    if (!roomId) return
-    try {
-      await navigator.clipboard.writeText(getSyncLink(roomId))
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea')
-      textArea.value = getSyncLink(roomId)
-      document.body.appendChild(textArea)
-      textArea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textArea)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+  // Stop QR scanner
+  const stopScanner = useCallback(async () => {
+    if (html5QrCodeRef.current) {
+      try {
+        await html5QrCodeRef.current.stop()
+        html5QrCodeRef.current.clear()
+      } catch {
+        // Scanner might already be stopped
+      }
+      html5QrCodeRef.current = null
     }
-  }
+    setIsScannerOpen(false)
+    setScannerError(null)
+  }, [])
+
+  // Start QR scanner
+  const startScanner = useCallback(async () => {
+    setIsScannerOpen(true)
+    setScannerError(null)
+
+    // Wait for the DOM element to be available
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    if (!scannerRef.current) return
+
+    try {
+      const { Html5Qrcode } = await import('html5-qrcode')
+      const html5QrCode = new Html5Qrcode(scannerRef.current.id)
+      html5QrCodeRef.current = html5QrCode
+
+      const onScanSuccess = (decodedText: string) => {
+        // Extract room ID from the scanned URL
+        try {
+          const scannedUrl = new URL(decodedText)
+          const joinParam = scannedUrl.searchParams.get('join')
+          if (joinParam) {
+            stopScanner()
+            navigate(url(`?join=${joinParam}`))
+          }
+        } catch {
+          // If it's not a valid URL, try using it as a room ID directly
+          if (decodedText.trim()) {
+            stopScanner()
+            navigate(url(`?join=${decodedText.trim()}`))
+          }
+        }
+      }
+
+      await html5QrCode.start(
+        { facingMode: 'environment' },
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+        },
+        onScanSuccess,
+        () => {}, // Ignore scan errors (they happen continuously until a valid code is found)
+      )
+    } catch (err) {
+      console.error('Failed to start QR scanner:', err)
+      setScannerError(
+        t('Unable to access camera. Please grant camera permissions.'),
+      )
+    }
+  }, [navigate, url, stopScanner, t])
+
+  // Cleanup scanner on unmount
+  useEffect(() => {
+    return () => {
+      if (html5QrCodeRef.current) {
+        html5QrCodeRef.current.stop().catch(() => {})
+      }
+    }
+  }, [])
 
   const getStatusColor = () => {
     switch (status) {
@@ -358,28 +474,16 @@ export function SyncSettings() {
             <>
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium">{t('Sync Link')}</label>
-                <div className="flex gap-2">
-                  <Input
-                    value={getSyncLink(roomId)}
-                    isReadOnly
-                    size="sm"
-                    className="flex-1"
-                  />
-                  <Button
-                    size="sm"
-                    variant="flat"
-                    color={copied ? 'success' : 'default'}
-                    onPress={handleCopyLink}
-                    startContent={
-                      <Icon
-                        name={copied ? 'Check' : 'Copy'}
-                        className="h-4 w-4"
-                      />
-                    }
-                  >
-                    {copied ? t('Copied!') : t('Copy Link')}
-                  </Button>
-                </div>
+                <Snippet
+                  symbol={false}
+                  copyIcon={<Icon name="Copy" className="h-4 w-4" />}
+                  tooltipProps={{ content: t('Copy Link') }}
+                  classNames={{
+                    pre: 'whitespace-pre-wrap break-all max-h-16 overflow-y-hidden',
+                  }}
+                >
+                  {getSyncLink(roomId)}
+                </Snippet>
               </div>
 
               <div className="flex flex-col items-center gap-2">
@@ -491,6 +595,65 @@ export function SyncSettings() {
             <p className="text-sm text-default-500">
               {t('Join an existing sync session')}
             </p>
+
+            {/* QR Scanner Section */}
+            {isScannerOpen ? (
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium">
+                    {t('Scan QR Code')}
+                  </label>
+                  <Button
+                    size="sm"
+                    variant="flat"
+                    color="danger"
+                    onPress={stopScanner}
+                    startContent={<Icon name="Xmark" className="h-4 w-4" />}
+                  >
+                    {t('Stop Scanner')}
+                  </Button>
+                </div>
+                {scannerError ? (
+                  <div className="flex flex-col items-center gap-2 p-4 bg-danger-50 rounded-lg">
+                    <Icon
+                      name="WarningTriangle"
+                      className="h-8 w-8 text-danger"
+                    />
+                    <p className="text-sm text-danger text-center">
+                      {scannerError}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <div
+                      id="qr-scanner-container"
+                      ref={scannerRef}
+                      className="w-full max-w-[300px] aspect-square rounded-lg overflow-hidden bg-black"
+                    />
+                    <p className="text-xs text-default-400">
+                      {t('Point your camera at a sync QR code')}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Button
+                variant="bordered"
+                onPress={startScanner}
+                startContent={<Icon name="Camera" className="h-4 w-4" />}
+                className="w-full"
+              >
+                {t('Scan QR Code')}
+              </Button>
+            )}
+
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-default-200" />
+              <span className="text-xs text-default-400">{t('or')}</span>
+              <div className="flex-1 h-px bg-default-200" />
+            </div>
+
+            {/* Manual Room ID Entry */}
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium">{t('Room ID')}</label>
               <div className="flex gap-2">

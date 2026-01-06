@@ -97,6 +97,7 @@ export const Icons = {
   Book: IconoirIcons.Book,
   Brain: IconoirIcons.Brain,
   Calendar: IconoirIcons.Calendar,
+  Camera: IconoirIcons.Camera,
   ChatBubble: IconoirIcons.ChatBubble,
   ChatLines: IconoirIcons.ChatLines,
   ChatPlusIn: IconoirIcons.ChatPlusIn,
