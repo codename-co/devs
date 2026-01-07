@@ -46,6 +46,11 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build:prerender
+        env:
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+          VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.VITE_GOOGLE_CLIENT_SECRET }}
+          VITE_NOTION_CLIENT_ID: ${{ secrets.VITE_NOTION_CLIENT_ID }}
+          VITE_NOTION_CLIENT_SECRET: ${{ secrets.VITE_NOTION_CLIENT_SECRET }}
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
