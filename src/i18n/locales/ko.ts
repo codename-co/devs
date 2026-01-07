@@ -40,8 +40,12 @@ export const ko: I18n = {
   'No pinned messages yet': '아직 고정된 메시지가 없습니다',
   'Show pinned only': '고정된 메시지만 보기',
   'Pinned conversations': '고정된 대화',
+  'All conversations': '모든 대화',
+  'Pinned only': '고정된 대화만',
+  'Filter conversations': '대화 필터링',
   Knowledge: '지식',
   Connectors: '커넥터',
+  'Add connectors': '커넥터 추가',
   'New chat': '새로운 채팅',
   AGENTS: '에이전트',
   CONVERSATIONS: '대화',
@@ -60,6 +64,9 @@ export const ko: I18n = {
   Dark: '다크',
   About: '정보',
   Language: '언어',
+  More: '더 보기',
+  Privacy: '개인정보 보호',
+  Terms: '이용약관',
 
   // PromptArea
   'Need something done?': '무언가 필요하신가요?',
@@ -67,6 +74,7 @@ export const ko: I18n = {
   'Attach a file or image': '파일이나 이미지를 첨부하세요',
   'Upload new file': '새 파일 업로드',
   'Choose from knowledge base': '지식 베이스에서 선택',
+  'No files found in knowledge base': '지식 베이스에 파일이 없습니다',
   'Drop files here…': '여기에 파일을 드롭하세요…',
   'Speak to microphone': '마이크에 대고 말하기',
   'Send prompt': '프롬프트 전송',
@@ -491,7 +499,8 @@ export const ko: I18n = {
 
   // Identity & State
   Guest: '게스트',
-  Sync: '동기화',
+  Synchronization: '동기화 모드',
+  Sync: '모드',
   Syncing: '동기화 중',
   Offline: '오프라인',
 } as const

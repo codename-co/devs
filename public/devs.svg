@@ -1,10 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <style>
     @media(prefers-color-scheme:dark){html:not(class="light") .devs-icon{fill:#fff;stroke:#fff}}
-    .devs-icon:not(:first-of-type){opacity:0}
     .devs-icon{animation:1s ease-in-out infinite;transform-origin:50%;transition:.3s}
-    @media(pointer:fine){html:not(:hover) .devs-icon{opacity:1!important}}
-    .devs-whole .devs-icon:not(:first-of-type){opacity:1!important}
+    @media(pointer:fine){html:not(:hover) .devs-icon{animation-name:anim-spinning}}
     .anim-appear .devs-icon{animation-name:anim-appear;animation-iteration-count:1}
     .anim-spinning .devs-icon{animation-name:anim-spinning;animation-timing-function:linear;animation-duration:4s}
     .anim-thinking .devs-icon{animation-name:anim-thinking;animation-duration:2s}
@@ -17,6 +15,5 @@
   </style>
   <g stroke-width="12" stroke-linejoin="round" stroke="currentColor" fill="currentColor">
     <polygon class="devs-icon" points="12,26 46,17 37,51"></polygon>
-    <polygon class="devs-icon" points="27,12 18,46 52,37"></polygon>
   </g>
 </svg>

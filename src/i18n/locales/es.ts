@@ -41,8 +41,12 @@ export const es: I18n = {
   'No pinned messages yet': 'Aún no hay mensajes fijados',
   'Show pinned only': 'Mostrar solo fijados',
   'Pinned conversations': 'Conversaciones fijadas',
+  'All conversations': 'Todas las conversaciones',
+  'Pinned only': 'Solo fijadas',
+  'Filter conversations': 'Filtrar conversaciones',
   Knowledge: 'Conocimientos',
   Connectors: 'Conectores',
+  'Add connectors': 'Agregar conectores',
   'New chat': 'Nuevo intercambio',
   AGENTS: 'AGENTES',
   CONVERSATIONS: 'CONVERSACIONES',
@@ -61,6 +65,9 @@ export const es: I18n = {
   Dark: 'Oscuro',
   About: 'Acerca de',
   Language: 'Idioma',
+  More: 'Más',
+  Privacy: 'Privacidad',
+  Terms: 'Términos',
 
   // PromptArea
   'Need something done?': '¿Necesitas que se haga algo?',
@@ -68,6 +75,8 @@ export const es: I18n = {
   'Attach a file or image': 'Adjuntar un archivo o imagen',
   'Upload new file': 'Subir nuevo archivo',
   'Choose from knowledge base': 'Elegir de la base de conocimientos',
+  'No files found in knowledge base':
+    'No se encontraron archivos en la base de conocimientos',
   'Drop files here…': 'Suelta archivos aquí…',
   'Speak to microphone': 'Hablar al micrófono',
   'Send prompt': 'Enviar prompt',
@@ -496,7 +505,8 @@ export const es: I18n = {
 
   // Identity & State
   Guest: 'Invitado',
-  Sync: 'Sincronización',
+  Synchronization: 'Modo de sincronización',
+  Sync: 'Modo',
   Syncing: 'Sincronizando',
   Offline: 'Sin conexión',
 } as const

@@ -114,4 +114,10 @@ export const ar: I18n = {
     'تصدير إعدادات المنصة إلى جهاز آخر أو مشاركتها مع الآخرين',
   'Sync your data across devices using peer-to-peer connection':
     'مزامنة بياناتك عبر الأجهزة باستخدام اتصال نظير إلى نظير',
+  'Server URL': 'عنوان URL للخادم',
+  'URL of your Ollama server': 'عنوان URL لخادم Ollama الخاص بك',
+  'Get your API key from': 'احصل على مفتاح API من',
+  'Enter model name manually': 'أدخل اسم النموذج يدوياً',
+  'Fetching available models...': 'جاري جلب النماذج المتاحة...',
+  'Enter the model name manually': 'أدخل اسم النموذج يدوياً',
 } as const

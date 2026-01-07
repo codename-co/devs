@@ -37,3 +37,7 @@ export { usePWAInstallPrompt } from './usePWAInstallPrompt'
 // UI hooks
 export { useBackgroundImage } from './useBackgroundImage'
 export { useEasySetup } from './useEasySetup'
+
+// OAuth hooks
+export { useOAuth } from './useOAuth'
+export type { OAuthStatus, OAuthState, UseOAuthReturn } from './useOAuth'

@@ -10,4 +10,6 @@ export const en = [
   'simple',
   'complex',
   'requirements',
+  'Filter by status',
+  'In Progress',
 ] as const

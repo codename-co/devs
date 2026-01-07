@@ -306,14 +306,54 @@ interface AgentMemoryEntry {
 
 Generates a comprehensive markdown document summarizing all approved memories for an agent, organized by category with statistics.
 
-### 6. Dynamic Team Formation (Future)
+### 6. Connectors - External Services Integration
+
+Connectors enable DEVS to integrate with external services, importing content into the Knowledge Base. See [docs/CONNECTORS.md](docs/CONNECTORS.md) for full documentation.
+
+**Connector Categories:**
+
+| Category | Auth Method      | Examples                              | Status         |
+| -------- | ---------------- | ------------------------------------- | -------------- |
+| **Apps** | OAuth 2.0 PKCE   | Google Drive, Gmail, Calendar, Notion | ✅ Implemented |
+| **APIs** | API Key / Bearer | Custom REST/GraphQL endpoints         | 🔜 Planned     |
+| **MCPs** | MCP Protocol     | Local/Remote MCP servers              | 🔜 Planned     |
+
+**Implemented App Connectors:**
+
+- **Google Drive** - Import files and documents with delta sync
+- **Gmail** - Import emails with label filtering
+- **Google Calendar** - Import events as markdown documents
+- **Notion** - Import pages and databases with block-to-markdown conversion
+
+**Key Features:**
+
+- OAuth 2.0 with PKCE for secure browser-based authentication
+- Delta sync with cursor-based change tracking
+- Content normalization to KnowledgeItem format
+- Background sync via Service Worker
+- Encrypted token storage using Web Crypto API
+
+**Architecture:**
+
+```
+src/features/connectors/
+├── oauth-gateway.ts        # OAuth 2.0 PKCE flow
+├── provider-registry.ts    # Lazy-loaded provider management
+├── sync-engine.ts          # Delta sync orchestration
+├── normalizer.ts           # Content → KnowledgeItem
+├── providers/apps/         # Provider implementations
+├── components/             # UI components
+└── hooks/                  # React hooks
+```
+
+### 7. Dynamic Team Formation (Future)
 
 - Mimics human organizational structures and dynamics
 - Agents with defined roles, responsibilities, and communication patterns
 - Hierarchical and flat organization structures
 - Inter-agent collaboration protocols
 
-### 7. Web Grounding (Future)
+### 8. Web Grounding (Future)
 
 - Agents can interact with web content
 - Sandboxed iframe execution for safety

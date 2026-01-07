@@ -6,7 +6,7 @@ export interface HeaderProps {
   color?: string
   icon?: {
     name: IconName
-    color: string
+    color?: string
   }
   title?: string | React.ReactNode
   subtitle?: string | React.ReactNode

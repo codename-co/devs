@@ -6,6 +6,8 @@ export const es: I18n = {
   'Knowledge Base': 'Base de conocimientos',
   'Manage your files and agents memories':
     'Gestiona tus archivos y las memorias de los agentes',
+  'Manage your files, sync sources, and agent memories':
+    'Gestiona tus archivos, fuentes de sincronización y memorias de agentes',
   'Upload files and synchronize local folders to build your knowledge base':
     'Sube archivos y sincroniza carpetas locales para construir tu base de conocimientos',
   'Uploading files…': 'Subiendo archivos…',
@@ -22,7 +24,50 @@ export const es: I18n = {
   'Knowledge Item': 'Elemento de conocimiento',
   Reprocess: 'Reprocesar',
   Files: 'Archivos',
+  'My Files': 'Mis archivos',
   'Agent Memory': 'Memoria de agentes',
+  // Sources tab
+  'Sync Sources': 'Fuentes de sincronización',
+  Saved: 'Guardado',
+  'Local Folders': 'Carpetas locales',
+  'Connected Apps': 'Aplicaciones conectadas',
+  'Add Folder': 'Añadir carpeta',
+  'Add App': 'Añadir aplicación',
+  'No local folders synced yet.': 'Aún no hay carpetas locales sincronizadas.',
+  'No apps connected yet.': 'Aún no hay aplicaciones conectadas.',
+  'Connect an app': 'Conectar una aplicación',
+  'No sync sources yet': 'Aún no hay fuentes de sincronización',
+  'Add local folders or connect apps like Google Drive and Notion to automatically sync content to your knowledge base.':
+    'Añade carpetas locales o conecta aplicaciones como Google Drive y Notion para sincronizar automáticamente el contenido con tu base de conocimientos.',
+  'Manage synced folders and connected apps that import content into your knowledge base.':
+    'Gestiona las carpetas sincronizadas y las aplicaciones conectadas que importan contenido a tu base de conocimientos.',
+  'Folder "{name}" is now being synced.':
+    'La carpeta "{name}" se está sincronizando.',
+  'Folder sync stopped': 'Sincronización de carpeta detenida',
+  'Failed to stop watching folder':
+    'Error al detener la vigilancia de la carpeta',
+  'Folder reconnected': 'Carpeta reconectada',
+  'Failed to reconnect folder': 'Error al reconectar la carpeta',
+  'Connector disconnected': 'Conector desconectado',
+  'Synced {n} files': '{n} archivos sincronizados',
+  'Sync error: {error}': 'Error de sincronización: {error}',
+  'Syncing…': 'Sincronizando…',
+  'Sync Error': 'Error de sincronización',
+  'Sync completed': 'Sincronización completada',
+  '{n} items synced': '{n} elementos sincronizados',
+  'Sync failed': 'Sincronización fallida',
+  'Unknown error': 'Error desconocido',
+  'Directory picker is not supported in this browser. Please use a modern browser like Chrome or Edge.':
+    'El selector de directorios no es compatible con este navegador. Por favor, utiliza un navegador moderno como Chrome o Edge.',
+  Cancel: 'Cancelar',
+  // Connector integration
+  'All Sources': 'Todas las fuentes',
+  'Local Files': 'Archivos locales',
+  'Filter by source': 'Filtrar por fuente',
+  'Open in {provider}': 'Abrir en {provider}',
+  'Synced from {provider}': 'Sincronizado desde {provider}',
+  'Synced {time}': 'Sincronizado {time}',
+  'View original': 'Ver original',
   'Select Agent': 'Seleccionar agente',
   'All agents': 'Todos los agentes',
   'Generate Synthesis': 'Generar síntesis',
@@ -79,4 +124,33 @@ export const es: I18n = {
   'Grant Access': 'Conceder acceso',
   Remove: 'Eliminar',
   'Pinned Messages': 'Mensajes fijados',
+  // Connectors tab
+  Connectors: 'Conectores',
+  'No connectors yet': 'Aún no hay conectores',
+  'Connect external services like Google Drive, Gmail, or Notion to import content into your knowledge base.':
+    'Conecta servicios externos como Google Drive, Gmail o Notion para importar contenido a tu base de conocimientos.',
+  'Add Connector': 'Añadir conector',
+  'Manage your connected external services':
+    'Gestiona tus servicios externos conectados',
+  'Connector removed': 'Conector eliminado',
+  'Failed to remove connector': 'Error al eliminar el conector',
+  'API Connectors': 'Conectores API',
+  'Connect to custom REST or GraphQL APIs':
+    'Conecta con APIs REST o GraphQL personalizadas',
+  'MCP Servers': 'Servidores MCP',
+  'Connect to Model Context Protocol servers':
+    'Conecta con servidores de Model Context Protocol',
+  'Coming soon': 'Próximamente',
+  // Filter options
+  'All Types': 'Todos los tipos',
+  Documents: 'Documentos',
+  Images: 'Imágenes',
+  'Text Files': 'Archivos de texto',
+  Other: 'Otro',
+  'Manual Upload': 'Subida manual',
+  'Synced Folders': 'Carpetas sincronizadas',
+  'File Type': 'Tipo de archivo',
+  Source: 'Fuente',
+  'No items match the selected filters':
+    'No hay elementos que coincidan con los filtros seleccionados',
 } as const

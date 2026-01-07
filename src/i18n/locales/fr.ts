@@ -41,8 +41,12 @@ export const fr: I18n = {
   'No pinned messages yet': 'Aucun message épinglé pour le moment',
   'Show pinned only': 'Afficher uniquement les épinglés',
   'Pinned conversations': 'Conversations épinglées',
+  'All conversations': 'Toutes les conversations',
+  'Pinned only': 'Épinglées uniquement',
+  'Filter conversations': 'Filtrer les conversations',
   Knowledge: 'Connaissances',
   Connectors: 'Connecteurs',
+  'Add connectors': 'Ajouter des connecteurs',
   'New chat': 'Nouvel échange',
   AGENTS: 'AGENTS',
   CONVERSATIONS: 'CONVERSATIONS',
@@ -61,6 +65,9 @@ export const fr: I18n = {
   Dark: 'Sombre',
   About: 'À propos',
   Language: 'Langue',
+  More: 'Plus',
+  Privacy: 'Confidentialité',
+  Terms: 'Conditions',
 
   // PromptArea
   'Need something done?': 'Besoin de quelque chose ?',
@@ -68,6 +75,8 @@ export const fr: I18n = {
   'Attach a file or image': 'Joindre un fichier ou une image',
   'Upload new file': 'Télécharger un nouveau fichier',
   'Choose from knowledge base': 'Choisir dans la base de connaissances',
+  'No files found in knowledge base':
+    'Aucun fichier dans la base de connaissances',
   'Drop files here…': 'Déposez des fichiers ici…',
   'Speak to microphone': 'Dicter au microphone',
   'Send prompt': 'Envoyer le prompt',
@@ -502,7 +511,8 @@ export const fr: I18n = {
 
   // Identity & State
   Guest: 'Invité',
-  Sync: 'Synchronisation',
-  Syncing: 'Synchronisation',
+  Synchronization: 'Mode de synchronisation',
+  Sync: 'Synchro',
+  Syncing: 'Synchronisé',
   Offline: 'Hors ligne',
 } as const

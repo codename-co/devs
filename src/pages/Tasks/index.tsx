@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, CardBody, Chip, Button, Spinner } from '@heroui/react'
+import { Card, CardBody, Chip, Spinner } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
-import { Section, Container } from '@/components'
+import { Section, Container, Filter, FilterOption } from '@/components'
 import DefaultLayout from '@/layouts/Default'
 import { useTaskStore } from '@/stores/taskStore'
 import { Task } from '@/types'
@@ -45,6 +45,34 @@ export const TasksPage = () => {
       setFilteredTasks(tasks.filter((task) => task.status === statusFilter))
     }
   }, [tasks, statusFilter])
+
+  // Filter options with counts
+  const filterOptions: FilterOption<Task['status'] | 'all'>[] = useMemo(
+    () => [
+      { key: 'all', label: t('All'), count: tasks.length },
+      {
+        key: 'in_progress',
+        label: t('In Progress'),
+        count: tasks.filter((t) => t.status === 'in_progress').length,
+      },
+      {
+        key: 'completed',
+        label: t('Completed'),
+        count: tasks.filter((t) => t.status === 'completed').length,
+      },
+      {
+        key: 'pending',
+        label: t('Pending'),
+        count: tasks.filter((t) => t.status === 'pending').length,
+      },
+      {
+        key: 'failed',
+        label: t('Failed'),
+        count: tasks.filter((t) => t.status === 'failed').length,
+      },
+    ],
+    [tasks, t],
+  )
 
   const getStatusColor = (status: Task['status']) => {
     switch (status) {
@@ -97,51 +125,13 @@ export const TasksPage = () => {
       <Section>
         <Container>
           {/* Status Filter */}
-          <div className="flex gap-2 mb-6 flex-wrap">
-            <Button
-              size="sm"
-              variant={statusFilter === 'all' ? 'ghost' : 'flat'}
-              color="default"
-              onPress={() => setStatusFilter('all')}
-            >
-              {t('All')} ({tasks.length})
-            </Button>
-            <Button
-              size="sm"
-              variant={statusFilter === 'in_progress' ? 'ghost' : 'flat'}
-              color="primary"
-              onPress={() => setStatusFilter('in_progress')}
-            >
-              {t('In Progress')} (
-              {tasks.filter((t) => t.status === 'in_progress').length})
-            </Button>
-            <Button
-              size="sm"
-              variant={statusFilter === 'completed' ? 'ghost' : 'flat'}
-              color="success"
-              onPress={() => setStatusFilter('completed')}
-            >
-              {t('Completed')} (
-              {tasks.filter((t) => t.status === 'completed').length})
-            </Button>
-            <Button
-              size="sm"
-              variant={statusFilter === 'pending' ? 'ghost' : 'flat'}
-              color="default"
-              onPress={() => setStatusFilter('pending')}
-            >
-              {t('Pending')} (
-              {tasks.filter((t) => t.status === 'pending').length})
-            </Button>
-            <Button
-              size="sm"
-              variant={statusFilter === 'failed' ? 'ghost' : 'flat'}
-              color="danger"
-              onPress={() => setStatusFilter('failed')}
-            >
-              {t('Failed')} ({tasks.filter((t) => t.status === 'failed').length}
-              )
-            </Button>
+          <div className="flex gap-2 mb-6">
+            <Filter
+              label={t('Filter by status')}
+              options={filterOptions}
+              selectedKey={statusFilter}
+              onSelectionChange={setStatusFilter}
+            />
           </div>
 
           {/* Tasks List */}

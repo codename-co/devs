@@ -38,8 +38,12 @@ export const en = [
   'No pinned messages yet',
   'Show pinned only',
   'Pinned conversations',
+  'All conversations',
+  'Pinned only',
+  'Filter conversations',
   'Knowledge',
   'Connectors',
+  'Add connectors',
   'New chat',
   'AGENTS',
   'CONVERSATIONS',
@@ -58,6 +62,9 @@ export const en = [
   'Dark',
   'About',
   'Language',
+  'More',
+  'Privacy',
+  'Terms',
 
   // PromptArea
   'Need something done?',
@@ -65,6 +72,7 @@ export const en = [
   'Attach a file or image',
   'Upload new file',
   'Choose from knowledge base',
+  'No files found in knowledge base',
   'Drop files here…',
   'Speak to microphone',
   'Send prompt',
@@ -465,6 +473,7 @@ export const en = [
 
   // Identity & State
   'Guest',
+  'Synchronization',
   'Sync',
   'Syncing',
   'Offline',

@@ -265,7 +265,10 @@ class KnowledgeSyncService {
 
   // Sync a single folder
   private async syncFolder(watcher: FolderWatcher): Promise<void> {
-    if (!watcher.isActive) return
+    if (!watcher.isActive) {
+      console.log(`Skipping sync for inactive watcher: ${watcher.basePath}`)
+      return
+    }
 
     try {
       console.log(`Syncing folder: ${watcher.basePath}`)
@@ -327,21 +330,33 @@ class KnowledgeSyncService {
     } catch (error) {
       console.error(`Error syncing folder ${watcher.basePath}:`, error)
 
-      // Emit sync error event
-      this.emitSyncEvent({
-        type: 'sync_error',
-        watcherId: watcher.id,
-        watcherPath: watcher.basePath,
-        error: error instanceof Error ? error.message : String(error),
-        timestamp: new Date(),
-      })
+      // Only emit sync error if the watcher is still active
+      // (Inactive watchers are expected to fail)
+      if (watcher.isActive) {
+        this.emitSyncEvent({
+          type: 'sync_error',
+          watcherId: watcher.id,
+          watcherPath: watcher.basePath,
+          error: error instanceof Error ? error.message : String(error),
+          timestamp: new Date(),
+        })
+      }
 
-      // If we get a permission error, the folder might have been moved/deleted
+      // If we get a permission error, mark as inactive instead of removing
       if (error instanceof DOMException && error.name === 'NotAllowedError') {
         console.warn(
-          `Lost access to folder ${watcher.basePath}, removing watcher`,
+          `Lost access to folder ${watcher.basePath}, marking as inactive`,
         )
-        await this.unregisterFolderWatch(watcher.id)
+        watcher.isActive = false
+        // Update persistent storage
+        const persistedWatcher = await db.get('folderWatchers', watcher.id)
+        if (persistedWatcher) {
+          await db.update('folderWatchers', {
+            ...persistedWatcher,
+            isActive: false,
+          })
+        }
+        this.notifyWatchersChanged()
       }
     }
   }
@@ -802,7 +817,7 @@ class KnowledgeSyncService {
       }
 
       if (storedHandle) {
-        // We have a stored handle! Try to query/request permission
+        // We have a stored handle! Try to query permission (no user interaction)
         try {
           // First, check if we still have permission (no user interaction needed)
           const queryResult = await (storedHandle as any).queryPermission({
@@ -830,10 +845,10 @@ class KnowledgeSyncService {
             return
           }
 
-          // Permission not granted, but we have the handle
-          // Create a watcher that can request permission when user interacts
+          // Permission query returned 'prompt' or 'denied' - don't request yet
+          // Create a watcher that can request permission when user manually interacts
           console.log(
-            `Folder ${persistedWatcher.basePath} needs permission re-grant`,
+            `Folder ${persistedWatcher.basePath} needs manual permission re-grant (status: ${queryResult})`,
           )
 
           const placeholderWatcher: FolderWatcher = {
@@ -851,6 +866,7 @@ class KnowledgeSyncService {
             'Error checking permission for stored handle:',
             permError,
           )
+          // If queryPermission failed, fall through to create inactive placeholder
         }
       }
 
@@ -873,6 +889,15 @@ class KnowledgeSyncService {
         `Error restoring folder ${persistedWatcher.basePath}:`,
         error,
       )
+      // Don't throw - just create an inactive placeholder so user can reconnect manually
+      const placeholderWatcher: FolderWatcher = {
+        id: persistedWatcher.id,
+        directoryHandle: null,
+        basePath: persistedWatcher.basePath,
+        lastSync: persistedWatcher.lastSync,
+        isActive: false,
+      }
+      this.watchers.set(persistedWatcher.id, placeholderWatcher)
     }
   }
 

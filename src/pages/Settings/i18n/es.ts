@@ -114,4 +114,11 @@ export const es: I18n = {
     'Exporte la configuración de la plataforma a otro dispositivo o compártala con otros',
   'Sync your data across devices using peer-to-peer connection':
     'Sincronice sus datos entre dispositivos mediante conexión punto a punto',
+  'Server URL': 'URL del servidor',
+  'URL of your Ollama server': 'URL de su servidor Ollama',
+  'Get your API key from': 'Obtenga su clave API de',
+  'Enter model name manually': 'Introducir nombre del modelo manualmente',
+  'Fetching available models...': 'Obteniendo modelos disponibles...',
+  'Enter the model name manually':
+    'Introduzca el nombre del modelo manualmente',
 } as const

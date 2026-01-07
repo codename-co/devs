@@ -8,7 +8,6 @@ import {
   Spinner,
   Input,
   Chip,
-  ButtonGroup,
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
@@ -28,7 +27,13 @@ import DefaultLayout from '@/layouts/Default'
 import type { Conversation } from '@/types'
 import { useI18n } from '@/i18n'
 import { HeaderProps } from '@/lib/types'
-import { Container, Section, MarkdownRenderer } from '@/components'
+import {
+  Container,
+  Section,
+  MarkdownRenderer,
+  Filter,
+  FilterOption,
+} from '@/components'
 import { successToast } from '@/lib/toast'
 import { formatConversationDate, formatDate } from '@/lib/format'
 
@@ -155,6 +160,25 @@ export function ConversationPage() {
     }
   }
 
+  // Filter options
+  const filterOptions: FilterOption<'all' | 'pinned'>[] = useMemo(
+    () => [
+      {
+        key: 'all',
+        label: t('All conversations'),
+        count: conversations.length,
+      },
+      {
+        key: 'pinned',
+        label: t('Pinned only'),
+        count: conversations.filter((c) => c.isPinned).length,
+      },
+    ],
+    [conversations, t],
+  )
+
+  const displayFilter: 'all' | 'pinned' = showPinnedOnly ? 'pinned' : 'all'
+
   // Sort, filter, and search conversations using reactive Yjs data
   const filteredConversations = useMemo(() => {
     let filtered = conversations
@@ -263,21 +287,13 @@ export function ConversationPage() {
               isClearable
               onClear={() => setSearchQuery('')}
             />
-            <ButtonGroup variant="flat">
-              <Button
-                color={showPinnedOnly ? 'primary' : 'default'}
-                onPress={() => setShowPinnedOnly(!showPinnedOnly)}
-                startContent={
-                  showPinnedOnly ? (
-                    <StarSolid className="w-4 h-4" />
-                  ) : (
-                    <Star className="w-4 h-4" />
-                  )
-                }
-              >
-                {t('Show pinned only')}
-              </Button>
-            </ButtonGroup>
+            <Filter
+              label={t('Filter conversations')}
+              options={filterOptions}
+              selectedKey={displayFilter}
+              onSelectionChange={(key) => setShowPinnedOnly(key === 'pinned')}
+              showCounts="options-only"
+            />
           </div>
 
           {!isSyncReady ? (

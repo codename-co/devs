@@ -91,10 +91,15 @@ export interface KnowledgeItem {
   tags?: string[]
   description?: string
   // Sync-related fields
-  syncSource?: 'manual' | 'filesystem_api' // How this item was added
+  syncSource?: 'manual' | 'filesystem_api' | 'connector' // How this item was added
   fileSystemHandle?: string // Serialized handle for File System API items
   watchId?: string // ID for file watcher
   lastSyncCheck?: Date // When we last checked for updates
+  // Connector-related fields (when syncSource is 'connector')
+  connectorId?: string // ID of the connector that synced this item
+  externalId?: string // ID in the external system (e.g., Google Drive file ID)
+  externalUrl?: string // URL to view the item in the external system
+  syncedAt?: Date // When this item was last synced from the connector
 }
 
 export interface PersistedFolderWatcher {

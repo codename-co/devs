@@ -117,4 +117,10 @@ export const fr: I18n = {
     'Exportez les paramètres de la plateforme vers un autre appareil ou partagez-les avec d’autres',
   'Sync your data across devices using peer-to-peer connection':
     'Synchronisez vos données entre appareils via une connexion pair-à-pair',
+  'Server URL': 'URL du serveur',
+  'URL of your Ollama server': 'URL de votre serveur Ollama',
+  'Get your API key from': 'Obtenez votre clé API depuis',
+  'Enter model name manually': 'Entrez le nom du modèle manuellement',
+  'Fetching available models...': 'Récupération des modèles disponibles...',
+  'Enter the model name manually': 'Entrez le nom du modèle manuellement',
 } as const

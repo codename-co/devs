@@ -14,4 +14,6 @@ export const ko: I18n = {
   simple: '단순함',
   complex: '복잡함',
   requirements: '요구사항',
+  'Filter by status': '상태별 필터링',
+  'In Progress': '진행 중',
 } as const

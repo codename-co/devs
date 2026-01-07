@@ -20,6 +20,7 @@ export interface TitleProps {
     | '6xl'
   weight?: 'normal' | 'medium' | 'semibold' | 'bold' | 'extrabold'
   className?: string
+  subtitleClassName?: string
   style?: React.CSSProperties
   as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'div' | 'span'
 }
@@ -85,6 +86,7 @@ export const Title = ({
   size,
   weight = 'bold',
   className,
+  subtitleClassName,
   style,
   as,
   ...props
@@ -123,7 +125,13 @@ export const Title = ({
     return (
       <div>
         <_Title {...props}>{children}</_Title>
-        <div id={subtitleId} className="text-muted-foreground">
+        <div
+          id={subtitleId}
+          className={cn(
+            'text-muted-foreground text-default-500 mb-4',
+            subtitleClassName,
+          )}
+        >
           {subtitle}
         </div>
       </div>

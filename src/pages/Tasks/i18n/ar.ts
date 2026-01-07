@@ -14,4 +14,6 @@ export const ar: I18n = {
   simple: 'بسيط',
   complex: 'معقد',
   requirements: 'متطلبات',
+  'Filter by status': 'تصفية حسب الحالة',
+  'In Progress': 'قيد التنفيذ',
 } as const

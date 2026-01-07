@@ -90,4 +90,10 @@ export const en = [
   'Share the platform',
   'Export the platform settings to another device or share it with others',
   'Sync your data across devices using peer-to-peer connection',
+  'Server URL',
+  'URL of your Ollama server',
+  'Get your API key from',
+  'Enter model name manually',
+  'Fetching available models...',
+  'Enter the model name manually',
 ] as const

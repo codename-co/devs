@@ -45,7 +45,7 @@ export const Tabbar = () => {
         // data-color="danger"
         title={
           <Tooltip content={t('Knowledge')} placement="top">
-            <Icon name="Brain" />
+            <Icon name="Book" />
           </Tooltip>
         }
         href={url('/knowledge')}

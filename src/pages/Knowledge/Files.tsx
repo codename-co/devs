@@ -12,6 +12,7 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  Pagination,
   Progress,
   Spinner,
   Textarea,
@@ -20,11 +21,9 @@ import {
 import {
   Upload,
   Folder,
-  Page,
   Trash,
   EditPencil,
   MoreVert,
-  MediaImage,
   SubmitDocument,
   RefreshDouble,
 } from 'iconoir-react'
@@ -32,7 +31,7 @@ import {
 import { db } from '@/lib/db'
 import { KnowledgeItem } from '@/types'
 import { useKnowledge, useSyncReady } from '@/hooks'
-import { Title } from '@/components'
+import { Title, Filter, FilterOption, Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import {
   knowledgeSync,
@@ -52,6 +51,8 @@ import {
   documentProcessor,
   type ProcessingEvent,
 } from '@/lib/document-processor'
+import { useConnectorStore } from '@/stores/connectorStore'
+import { PROVIDER_CONFIG } from '@/features/connectors/providers/apps'
 import localI18n from './i18n'
 
 interface FileSystemFileHandle {
@@ -88,16 +89,177 @@ export const Files: React.FC = () => {
   // Use reactive hook for instant updates (no async loading needed)
   const rawKnowledgeItems = useKnowledge()
   const isSyncReady = useSyncReady()
+  const { connectors, initialize: initializeConnectors } = useConnectorStore()
 
-  // Sort items by creation date (newest first)
-  const knowledgeItems = useMemo(
-    () =>
-      [...rawKnowledgeItems].sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      ),
-    [rawKnowledgeItems],
-  )
+  // Initialize connector store
+  useEffect(() => {
+    initializeConnectors()
+  }, [initializeConnectors])
+
+  // Filter state
+  const [fileTypeFilter, setFileTypeFilter] = useState<string>('all')
+  const [syncSourceFilter, setSyncSourceFilter] = useState<string>('all')
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 50
+
+  // Calculate filter options with counts
+  const fileTypeOptions = useMemo<FilterOption[]>(() => {
+    const counts = rawKnowledgeItems.reduce(
+      (acc, item) => {
+        const type = item.fileType || 'other'
+        acc[type] = (acc[type] || 0) + 1
+        return acc
+      },
+      {} as Record<string, number>,
+    )
+
+    return [
+      {
+        key: 'all',
+        label: t('All Types'),
+        count: rawKnowledgeItems.length,
+      },
+      {
+        key: 'document',
+        label: t('Documents'),
+        count: counts.document || 0,
+        icon: 'Document' as const,
+      },
+      {
+        key: 'image',
+        label: t('Images'),
+        count: counts.image || 0,
+        icon: 'MediaImage' as const,
+      },
+      {
+        key: 'text',
+        label: t('Text Files'),
+        count: counts.text || 0,
+        icon: 'Page' as const,
+      },
+      {
+        key: 'other',
+        label: t('Other'),
+        count: counts.other || 0,
+        icon: 'Page' as const,
+      },
+    ]
+  }, [rawKnowledgeItems, t])
+
+  const syncSourceOptions = useMemo<FilterOption[]>(() => {
+    const counts = rawKnowledgeItems.reduce(
+      (acc, item) => {
+        const source = item.syncSource || 'unknown'
+        acc[source] = (acc[source] || 0) + 1
+        return acc
+      },
+      {} as Record<string, number>,
+    )
+
+    // Count items per connector
+    const connectorCounts = rawKnowledgeItems.reduce(
+      (acc, item) => {
+        if (item.connectorId) {
+          acc[item.connectorId] = (acc[item.connectorId] || 0) + 1
+        }
+        return acc
+      },
+      {} as Record<string, number>,
+    )
+
+    const options: FilterOption[] = [
+      {
+        key: 'all',
+        label: t('All Sources'),
+        count: rawKnowledgeItems.length,
+      },
+      {
+        key: 'manual',
+        label: t('Manual Upload'),
+        count: counts.manual || 0,
+        icon: 'Upload' as const,
+      },
+      {
+        key: 'filesystem_api',
+        label: t('Synced Folders'),
+        count: counts.filesystem_api || 0,
+        icon: 'Folder' as const,
+      },
+    ]
+
+    // Add individual connectors
+    connectors.forEach((connector) => {
+      const count = connectorCounts[connector.id] || 0
+      if (count > 0) {
+        // Get icon from PROVIDER_CONFIG if available (for app connectors)
+        const providerConfig =
+          connector.category === 'app'
+            ? PROVIDER_CONFIG[
+                connector.provider as keyof typeof PROVIDER_CONFIG
+              ]
+            : null
+
+        options.push({
+          key: `connector:${connector.id}`,
+          label: connector.name,
+          count,
+          icon: providerConfig?.icon || ('OpenNewWindow' as const),
+        })
+      }
+    })
+
+    return options
+  }, [rawKnowledgeItems, connectors, t])
+
+  // Filter and sort items
+  const knowledgeItems = useMemo(() => {
+    let filtered = [...rawKnowledgeItems]
+
+    // Apply file type filter
+    if (fileTypeFilter !== 'all') {
+      filtered = filtered.filter((item) => {
+        if (fileTypeFilter === 'other') {
+          return !item.fileType
+        }
+        return item.fileType === fileTypeFilter
+      })
+    }
+
+    // Apply sync source filter
+    if (syncSourceFilter !== 'all') {
+      // Check if it's a connector-specific filter
+      if (syncSourceFilter.startsWith('connector:')) {
+        const connectorId = syncSourceFilter.replace('connector:', '')
+        filtered = filtered.filter((item) => item.connectorId === connectorId)
+      } else {
+        // Regular sync source filter
+        filtered = filtered.filter(
+          (item) => item.syncSource === syncSourceFilter,
+        )
+      }
+    }
+
+    // Sort by creation date (newest first)
+    return filtered.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )
+  }, [rawKnowledgeItems, fileTypeFilter, syncSourceFilter])
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [fileTypeFilter, syncSourceFilter])
+
+  // Calculate pagination
+  const totalPages = Math.ceil(knowledgeItems.length / itemsPerPage)
+  const paginatedItems = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return knowledgeItems.slice(startIndex, endIndex)
+  }, [knowledgeItems, currentPage, itemsPerPage])
 
   const [uploading, setUploading] = useState(false)
   const [dragActive, setDragActive] = useState(false)
@@ -127,6 +289,7 @@ export const Files: React.FC = () => {
   const [unwatchingFolderId, setUnwatchingFolderId] = useState<string | null>(
     null,
   )
+  const [isPickerActive, setIsPickerActive] = useState(false)
 
   useEffect(() => {
     loadWatchedFolders()
@@ -164,8 +327,13 @@ export const Files: React.FC = () => {
           break
 
         case 'sync_error':
-          setSyncStatus('error')
-          errorToast(`Sync error in ${event.watcherPath}: ${event.error}`)
+          // Only show error status if the watcher is still active
+          // (Inactive watchers are expected to fail)
+          const watcher = watchedFolders.find((w) => w.id === event.watcherId)
+          if (watcher?.isActive) {
+            setSyncStatus('error')
+            errorToast(`Sync error in ${event.watcherPath}: ${event.error}`)
+          }
           break
       }
     })
@@ -330,7 +498,14 @@ export const Files: React.FC = () => {
       return
     }
 
+    // Prevent concurrent picker calls
+    if (isPickerActive) {
+      console.log('Directory picker already active, ignoring request')
+      return
+    }
+
     try {
+      setIsPickerActive(true)
       setSyncStatus('syncing')
       const dirHandle = await window.showDirectoryPicker()
 
@@ -345,10 +520,13 @@ export const Files: React.FC = () => {
       )
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
+        setSyncStatus('idle')
         return
       }
       console.error('Directory picker error:', error)
       setSyncStatus('error')
+    } finally {
+      setIsPickerActive(false)
     }
   }
 
@@ -467,11 +645,18 @@ export const Files: React.FC = () => {
           successToast('Folder has been reconnected and is now syncing.')
           return
         }
-        // If permission request failed, fall through to directory picker
-      } catch (error) {
-        console.log(
-          'Permission request failed, falling back to directory picker',
+        // If permission request failed, show error and don't fall through
+        // User needs to use "Reconnect" instead which will prompt for folder
+        warningToast(
+          'Permission denied. Please use "Reconnect" to select the folder again.',
         )
+        return
+      } catch (error) {
+        console.error('Permission request failed:', error)
+        errorToast(
+          'Failed to request permission. Please use "Reconnect" to select the folder again.',
+        )
+        return
       }
     }
 
@@ -481,7 +666,14 @@ export const Files: React.FC = () => {
       return
     }
 
+    // Prevent concurrent picker calls
+    if (isPickerActive) {
+      console.log('Directory picker already active, ignoring reconnect request')
+      return
+    }
+
     try {
+      setIsPickerActive(true)
       const dirHandle = await window.showDirectoryPicker()
       await reconnectFolder(watchId, dirHandle)
       loadWatchedFolders()
@@ -495,6 +687,8 @@ export const Files: React.FC = () => {
       }
       console.error('Error reconnecting folder:', error)
       errorToast('Failed to reconnect folder. Please try again.')
+    } finally {
+      setIsPickerActive(false)
     }
   }
 
@@ -505,17 +699,17 @@ export const Files: React.FC = () => {
 
   const getFileIcon = (item: KnowledgeItem) => {
     if (item.type === 'folder') {
-      return <Folder className="w-6 h-6 text-warning" />
+      return <Icon name="Folder" size="lg" className="text-warning" />
     }
 
     switch (item.fileType) {
       case 'image':
-        return <MediaImage className="w-6 h-6 text-success" />
+        return <Icon name="MediaImage" size="lg" className="text-success" />
       case 'document':
-        return <Page className="w-6 h-6 text-secondary" />
+        return <Icon name="Page" size="lg" className="text-secondary" />
       case 'text':
       default:
-        return <Page className="w-6 h-6 text-primary" />
+        return <Icon name="Page" size="lg" className="text-primary" />
     }
   }
 
@@ -577,7 +771,7 @@ export const Files: React.FC = () => {
             {/* Watched Folders Section */}
             {watchedFolders.length > 0 && (
               <div className="mt-8">
-                <Title level={2}>
+                <Title level={3}>
                   {t('Synced folders')}
                   <span className="ml-2 text-lg text-default-500">
                     ({watchedFolders.length})
@@ -673,135 +867,172 @@ export const Files: React.FC = () => {
             )}
 
             {/* Knowledge Items List */}
-            {knowledgeItems.length > 0 && (
+            {rawKnowledgeItems.length > 0 && (
               <div className="mt-8">
-                <Title level={2}>
-                  {t('My Knowledge')}
-                  <span className="ml-2 text-lg text-default-500">
-                    ({knowledgeItems.length})
-                  </span>
-                </Title>
+                <div className="flex items-center justify-between mb-4">
+                  <Title level={3}>
+                    {t('My Knowledge')}
+                    <span className="ml-2 text-lg text-default-500">
+                      ({knowledgeItems.length})
+                    </span>
+                  </Title>
+                  <div className="flex gap-2">
+                    <Filter
+                      label={t('File Type')}
+                      options={fileTypeOptions}
+                      selectedKey={fileTypeFilter}
+                      onSelectionChange={setFileTypeFilter}
+                      size="sm"
+                    />
+                    <Filter
+                      label={t('Source')}
+                      options={syncSourceOptions}
+                      selectedKey={syncSourceFilter}
+                      onSelectionChange={setSyncSourceFilter}
+                      size="sm"
+                    />
+                  </div>
+                </div>
                 {!isSyncReady ? (
                   <div className="flex justify-center p-8">
                     <Spinner size="lg" />
                   </div>
-                ) : (
-                  <div
-                    data-testid="knowledge-items"
-                    className="divide-y divide-default-100 mt-4"
-                  >
-                    {knowledgeItems.map((item) => {
-                      const processingJob = Array.from(
-                        processingJobs.values(),
-                      ).find((job) => job.itemId === item.id)
-
-                      return (
-                        <div
-                          key={item.id}
-                          className="p-4 flex items-center justify-between hover:bg-default-50"
-                        >
-                          <div className="flex items-center space-x-4 flex-1">
-                            <div className="flex-shrink-0">
-                              {getFileIcon(item)}
-                            </div>
-
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-medium truncate">
-                                {item.name}
-                              </h3>
-                              <div className="flex items-center space-x-4 text-sm text-default-500 mt-1">
-                                <span>{item.path}</span>
-                                {item.fileType && (
-                                  <span className="capitalize">
-                                    {item.fileType}
-                                  </span>
-                                )}
-                                {item.size && (
-                                  <span>{formatBytes(item.size, lang)}</span>
-                                )}
-                                <span>{formatDate(item.createdAt)}</span>
-                              </div>
-                              {processingJob && (
-                                <div className="mt-2">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <Spinner size="sm" />
-                                    <span className="text-xs text-primary">
-                                      Processing document...
-                                    </span>
-                                  </div>
-                                  <Progress
-                                    size="sm"
-                                    value={processingJob.progress}
-                                    color="primary"
-                                    className="max-w-md"
-                                    aria-label="Document processing progress"
-                                  />
-                                </div>
-                              )}
-                              {item.description && (
-                                <p className="text-sm text-default-600 mt-1 truncate">
-                                  {item.description}
-                                </p>
-                              )}
-                              {item.tags && item.tags.length > 0 && (
-                                <div className="flex gap-1 mt-2">
-                                  {item.tags.map((tag) => (
-                                    <Chip
-                                      key={tag}
-                                      size="sm"
-                                      variant="flat"
-                                      color="primary"
-                                    >
-                                      {tag}
-                                    </Chip>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex items-center space-x-2">
-                            <Dropdown>
-                              <DropdownTrigger>
-                                <Button isIconOnly variant="light" size="sm">
-                                  <MoreVert className="w-4 h-4" />
-                                </Button>
-                              </DropdownTrigger>
-                              <DropdownMenu>
-                                <DropdownItem
-                                  key="edit"
-                                  startContent={
-                                    <EditPencil className="w-4 h-4" />
-                                  }
-                                  onPress={() => openEditModal(item)}
-                                >
-                                  {t('Edit')}
-                                </DropdownItem>
-                                <DropdownItem
-                                  key="reprocess"
-                                  startContent={
-                                    <RefreshDouble className="w-4 h-4" />
-                                  }
-                                  onPress={() => reprocessItem(item)}
-                                >
-                                  {t('Reprocess')}
-                                </DropdownItem>
-                                <DropdownItem
-                                  key="delete"
-                                  startContent={<Trash className="w-4 h-4" />}
-                                  className="text-danger"
-                                  color="danger"
-                                  onPress={() => deleteItem(item.id)}
-                                >
-                                  {t('Delete')}
-                                </DropdownItem>
-                              </DropdownMenu>
-                            </Dropdown>
-                          </div>
-                        </div>
-                      )
-                    })}
+                ) : knowledgeItems.length === 0 ? (
+                  <div className="text-center p-8 text-default-500">
+                    {t('No items match the selected filters')}
                   </div>
+                ) : (
+                  <>
+                    <div
+                      data-testid="knowledge-items"
+                      className="divide-y divide-default-100 mt-4"
+                    >
+                      {paginatedItems.map((item) => {
+                        const processingJob = Array.from(
+                          processingJobs.values(),
+                        ).find((job) => job.itemId === item.id)
+
+                        return (
+                          <div
+                            key={item.id}
+                            className="p-4 flex items-center justify-between hover:bg-default-50"
+                          >
+                            <div className="flex items-center space-x-4 flex-1">
+                              <div className="flex-shrink-0">
+                                {getFileIcon(item)}
+                              </div>
+
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-medium truncate">
+                                  {item.name}
+                                </h3>
+                                <div className="flex items-center space-x-4 text-sm text-default-500 mt-1">
+                                  <span>{item.path}</span>
+                                  {item.fileType && (
+                                    <span className="capitalize">
+                                      {item.fileType}
+                                    </span>
+                                  )}
+                                  {item.size && (
+                                    <span>{formatBytes(item.size, lang)}</span>
+                                  )}
+                                  <span>{formatDate(item.createdAt)}</span>
+                                </div>
+                                {processingJob && (
+                                  <div className="mt-2">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <Spinner size="sm" />
+                                      <span className="text-xs text-primary">
+                                        Processing document...
+                                      </span>
+                                    </div>
+                                    <Progress
+                                      size="sm"
+                                      value={processingJob.progress}
+                                      color="primary"
+                                      className="max-w-md"
+                                      aria-label="Document processing progress"
+                                    />
+                                  </div>
+                                )}
+                                {item.description && (
+                                  <p className="text-sm text-default-600 mt-1 truncate">
+                                    {item.description}
+                                  </p>
+                                )}
+                                {item.tags && item.tags.length > 0 && (
+                                  <div className="flex gap-1 mt-2">
+                                    {item.tags.map((tag) => (
+                                      <Chip
+                                        key={tag}
+                                        size="sm"
+                                        variant="flat"
+                                        color="primary"
+                                      >
+                                        {tag}
+                                      </Chip>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center space-x-2">
+                              <Dropdown>
+                                <DropdownTrigger>
+                                  <Button isIconOnly variant="light" size="sm">
+                                    <MoreVert className="w-4 h-4" />
+                                  </Button>
+                                </DropdownTrigger>
+                                <DropdownMenu>
+                                  <DropdownItem
+                                    key="edit"
+                                    startContent={
+                                      <EditPencil className="w-4 h-4" />
+                                    }
+                                    onPress={() => openEditModal(item)}
+                                  >
+                                    {t('Edit')}
+                                  </DropdownItem>
+                                  <DropdownItem
+                                    key="reprocess"
+                                    startContent={
+                                      <RefreshDouble className="w-4 h-4" />
+                                    }
+                                    onPress={() => reprocessItem(item)}
+                                  >
+                                    {t('Reprocess')}
+                                  </DropdownItem>
+                                  <DropdownItem
+                                    key="delete"
+                                    startContent={<Trash className="w-4 h-4" />}
+                                    className="text-danger"
+                                    color="danger"
+                                    onPress={() => deleteItem(item.id)}
+                                  >
+                                    {t('Delete')}
+                                  </DropdownItem>
+                                </DropdownMenu>
+                              </Dropdown>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                      <div className="flex justify-center mt-6">
+                        <Pagination
+                          total={totalPages}
+                          page={currentPage}
+                          onChange={setCurrentPage}
+                          showControls
+                          size="lg"
+                        />
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}

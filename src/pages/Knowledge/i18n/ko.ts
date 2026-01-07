@@ -6,6 +6,8 @@ export const ko: I18n = {
   'Knowledge Base': '지식 베이스',
   'Manage your files and agents memories':
     '파일과 에이전트 메모리를 관리하세요',
+  'Manage your files, sync sources, and agent memories':
+    '파일, 동기화 소스 및 에이전트 메모리를 관리하세요',
   'Upload files and synchronize local folders to build your knowledge base':
     '파일을 업로드하고 로컬 폴더를 동기화하여 지식 베이스를 구축하세요',
   'Uploading files…': '파일 업로드 중…',
@@ -22,7 +24,49 @@ export const ko: I18n = {
   'Knowledge Item': '지식 항목',
   Reprocess: '재처리',
   Files: '파일',
+  'My Files': '내 파일',
   'Agent Memory': '에이전트 메모리',
+  // Sources tab
+  'Sync Sources': '동기화 소스',
+  Saved: '저장됨',
+  'Local Folders': '로컬 폴더',
+  'Connected Apps': '연결된 앱',
+  'Add Folder': '폴더 추가',
+  'Add App': '앱 추가',
+  'No local folders synced yet.': '아직 동기화된 로컬 폴더가 없습니다.',
+  'No apps connected yet.': '아직 연결된 앱이 없습니다.',
+  'Connect an app': '앱 연결',
+  'No sync sources yet': '아직 동기화 소스가 없습니다',
+  'Add local folders or connect apps like Google Drive and Notion to automatically sync content to your knowledge base.':
+    '로컬 폴더를 추가하거나 Google Drive, Notion과 같은 앱을 연결하여 콘텐츠를 지식 베이스에 자동으로 동기화하세요.',
+  'Manage synced folders and connected apps that import content into your knowledge base.':
+    '동기화된 폴더와 지식 베이스에 콘텐츠를 가져오는 연결된 앱을 관리하세요.',
+  'Folder "{name}" is now being synced.':
+    '"{name}" 폴더가 현재 동기화 중입니다.',
+  'Folder sync stopped': '폴더 동기화가 중단되었습니다',
+  'Failed to stop watching folder': '폴더 감시 중단에 실패했습니다',
+  'Folder reconnected': '폴더가 다시 연결되었습니다',
+  'Failed to reconnect folder': '폴더 재연결에 실패했습니다',
+  'Connector disconnected': '커넥터 연결이 해제되었습니다',
+  'Synced {n} files': '{n}개 파일 동기화됨',
+  'Sync error: {error}': '동기화 오류: {error}',
+  'Syncing…': '동기화 중…',
+  'Sync Error': '동기화 오류',
+  'Sync completed': '동기화 완료',
+  '{n} items synced': '{n}개 항목 동기화됨',
+  'Sync failed': '동기화 실패',
+  'Unknown error': '알 수 없는 오류',
+  'Directory picker is not supported in this browser. Please use a modern browser like Chrome or Edge.':
+    '이 브라우저에서는 디렉토리 선택기가 지원되지 않습니다. Chrome 또는 Edge와 같은 최신 브라우저를 사용하세요.',
+  Cancel: '취소',
+  // Connector integration
+  'All Sources': '모든 소스',
+  'Local Files': '로컬 파일',
+  'Filter by source': '소스로 필터',
+  'Open in {provider}': '{provider}에서 열기',
+  'Synced from {provider}': '{provider}에서 동기화됨',
+  'Synced {time}': '{time}에 동기화됨',
+  'View original': '원본 보기',
   'Select Agent': '에이전트 선택',
   'All agents': '모든 에이전트',
   'Generate Synthesis': '요약 생성',
@@ -78,4 +122,32 @@ export const ko: I18n = {
   'Grant Access': '접근 권한 부여',
   Remove: '제거',
   'Pinned Messages': '고정된 메시지',
+  // Connectors tab
+  Connectors: '커넥터',
+  'No connectors yet': '아직 커넥터가 없습니다',
+  'Connect external services like Google Drive, Gmail, or Notion to import content into your knowledge base.':
+    'Google Drive, Gmail 또는 Notion과 같은 외부 서비스를 연결하여 지식 베이스로 콘텐츠를 가져오세요.',
+  'Add Connector': '커넥터 추가',
+  'Manage your connected external services': '연결된 외부 서비스 관리',
+  'Connector removed': '커넥터가 제거되었습니다',
+  'Failed to remove connector': '커넥터 제거 실패',
+  'API Connectors': 'API 커넥터',
+  'Connect to custom REST or GraphQL APIs':
+    '사용자 정의 REST 또는 GraphQL API에 연결',
+  'MCP Servers': 'MCP 서버',
+  'Connect to Model Context Protocol servers':
+    'Model Context Protocol 서버에 연결',
+  'Coming soon': '곧 출시 예정',
+  // Filter options
+  'All Types': '모든 유형',
+  Documents: '문서',
+  Images: '이미지',
+  'Text Files': '텍스트 파일',
+  Other: '기타',
+  'Manual Upload': '수동 업로드',
+  'Synced Folders': '동기화된 폴더',
+  'File Type': '파일 유형',
+  Source: '소스',
+  'No items match the selected filters':
+    '선택한 필터와 일치하는 항목이 없습니다',
 } as const

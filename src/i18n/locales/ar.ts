@@ -41,8 +41,12 @@ export const ar: I18n = {
   'No pinned messages yet': 'لا توجد رسائل مثبتة بعد',
   'Show pinned only': 'عرض المثبت فقط',
   'Pinned conversations': 'المحادثات المثبتة',
+  'All conversations': 'جميع المحادثات',
+  'Pinned only': 'المثبتة فقط',
+  'Filter conversations': 'تصفية المحادثات',
   Knowledge: 'المعرفة',
   Connectors: 'الموصلات',
+  'Add connectors': 'إضافة موصلات',
   'New chat': 'محادثة جديدة',
   AGENTS: 'الوكلاء',
   CONVERSATIONS: 'المحادثات',
@@ -61,6 +65,9 @@ export const ar: I18n = {
   Dark: 'داكن',
   About: 'حول',
   Language: 'اللغة',
+  More: 'المزيد',
+  Privacy: 'الخصوصية',
+  Terms: 'الشروط',
 
   // PromptArea
   'Need something done?': 'هل تحتاج إلى إنجاز شيء؟',
@@ -68,6 +75,8 @@ export const ar: I18n = {
   'Attach a file or image': 'إرفاق ملف أو صورة',
   'Upload new file': 'رفع ملف جديد',
   'Choose from knowledge base': 'اختر من قاعدة المعرفة',
+  'No files found in knowledge base':
+    'لم يتم العثور على ملفات في قاعدة المعرفة',
   'Drop files here…': 'أسقط الملفات هنا…',
   'Speak to microphone': 'التحدث إلى الميكروفون',
   'Send prompt': 'إرسال الطلب',
@@ -492,6 +501,7 @@ export const ar: I18n = {
 
   // Identity & State
   Guest: 'ضيف',
+  Synchronization: 'وضع المزامنة',
   Sync: 'المزامنة',
   Syncing: 'جارٍ المزامنة',
   Offline: 'غير متصل',

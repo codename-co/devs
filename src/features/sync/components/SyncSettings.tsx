@@ -71,7 +71,6 @@ const localI18n = {
     'Sent',
     'Received',
     'Activity Details',
-    'Sync',
     'Your Data Stays Local',
     'Everything runs in your browser. Your conversations, agents, and data are stored locally on your device and never sent to any server.',
     'Complete Privacy',

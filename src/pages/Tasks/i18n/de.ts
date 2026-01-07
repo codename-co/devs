@@ -14,4 +14,6 @@ export const de: I18n = {
   simple: 'einfach',
   complex: 'komplex',
   requirements: 'Anforderungen',
+  'Filter by status': 'Nach Status filtern',
+  'In Progress': 'In Arbeit',
 } as const

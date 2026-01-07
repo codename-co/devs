@@ -15,6 +15,7 @@ import {
   AgentMemoryDocument,
   PinnedMessage,
 } from '@/types'
+import { Connector, ConnectorSyncState } from '@/features/connectors/types'
 
 export interface DBStores {
   agents: Agent
@@ -34,6 +35,9 @@ export interface DBStores {
   agentMemoryDocuments: AgentMemoryDocument
   // Pinned Messages System
   pinnedMessages: PinnedMessage
+  // Connectors System
+  connectors: Connector
+  connectorSyncStates: ConnectorSyncState
 }
 
 export class Database {
@@ -41,7 +45,7 @@ export class Database {
   private initialized = false
 
   static DB_NAME = 'devs-ai-platform'
-  static DB_VERSION = 11
+  static DB_VERSION = 12
   static STORES: (keyof DBStores)[] = [
     'agents',
     'conversations',
@@ -59,6 +63,9 @@ export class Database {
     'agentMemoryDocuments',
     // Pinned Messages System
     'pinnedMessages',
+    // Connectors System
+    'connectors',
+    'connectorSyncStates',
   ]
 
   isInitialized(): boolean {
@@ -535,6 +542,42 @@ export class Database {
             })
             fileHandlesStore.createIndex('createdAt', 'createdAt', {
               unique: false,
+            })
+          }
+        }
+
+        // Migration for version 12: Add Connectors System stores
+        if (event.oldVersion < 12) {
+          console.log(
+            'Database migrated to version 12: Added Connectors System stores',
+          )
+
+          // Create connectors store
+          if (!db.objectStoreNames.contains('connectors')) {
+            const connectorsStore = db.createObjectStore('connectors', {
+              keyPath: 'id',
+            })
+            connectorsStore.createIndex('category', 'category', {
+              unique: false,
+            })
+            connectorsStore.createIndex('provider', 'provider', {
+              unique: false,
+            })
+            connectorsStore.createIndex('status', 'status', {
+              unique: false,
+            })
+          }
+
+          // Create connectorSyncStates store
+          if (!db.objectStoreNames.contains('connectorSyncStates')) {
+            const connectorSyncStatesStore = db.createObjectStore(
+              'connectorSyncStates',
+              {
+                keyPath: 'id',
+              },
+            )
+            connectorSyncStatesStore.createIndex('connectorId', 'connectorId', {
+              unique: true,
             })
           }
         }

@@ -10,30 +10,31 @@ import {
   DropdownItem,
   DropdownTrigger,
   Dropdown,
-  Select,
-  SelectItem,
   DropdownSection,
   Modal,
   ModalContent,
   ModalBody,
   ModalHeader,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
 } from '@heroui/react'
 
-import { Lang, languages, useI18n, useUrl } from '@/i18n'
+import { languages, type LanguageCode, useI18n, useUrl } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
 
 import { Icon } from './Icon'
-import { DevsIconSmall } from './DevsIcon'
 import { Title } from './Title'
 import { ProgressIndicator } from './ProgressIndicator'
 import { AboutModal } from './AboutModal'
+import { SettingsModal } from './SettingsModal'
 import { SyncSettings } from '@/features/sync'
 import { PRODUCT } from '@/config/product'
 import clsx from 'clsx'
 import { useState, useEffect, memo } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { cn, isCurrentPath } from '@/lib/utils'
 import { useSyncStore } from '@/features/sync'
+import { useNavigate } from 'react-router-dom'
 
 const AgentList = () => {
   const { lang, t } = useI18n()
@@ -239,6 +240,7 @@ const BackDrop = () => (
 
 export const AppDrawer = memo(() => {
   const isCollapsed = userSettings((state) => state.isDrawerCollapsed)
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
 
   const [isMobile, setIsMobile] = useState(false)
 
@@ -271,9 +273,21 @@ export const AppDrawer = memo(() => {
         className={clsx('h-full', isCollapsed && 'fixed')}
         data-state={isCollapsed ? 'collapsed' : 'expanded'}
       >
-        <CollapsedDrawer className="drawer-collapsed" />
-        <ExpandedDrawer className="drawer-expanded" />
+        <CollapsedDrawer
+          className="drawer-collapsed"
+          onOpenSettings={() => setShowSettingsModal(true)}
+        />
+        <ExpandedDrawer
+          className="drawer-expanded"
+          onOpenSettings={() => setShowSettingsModal(true)}
+        />
         {!isCollapsed && isMobile && <BackDrop />}
+
+        {/* Settings Modal - rendered at AppDrawer level */}
+        <SettingsModal
+          isOpen={showSettingsModal}
+          onClose={() => setShowSettingsModal(false)}
+        />
 
         <style>{
           /* CSS */ `
@@ -300,7 +314,13 @@ export const AppDrawer = memo(() => {
 })
 AppDrawer.displayName = 'AppDrawer'
 
-const CollapsedDrawer = ({ className }: { className?: string }) => {
+const CollapsedDrawer = ({
+  className,
+  onOpenSettings,
+}: {
+  className?: string
+  onOpenSettings: () => void
+}) => {
   const { lang, t } = useI18n()
   const url = useUrl(lang)
 
@@ -430,22 +450,8 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
                 <Icon name="ChatBubble" />
               </Button>
             </Tooltip>
-            {/* <Tooltip content={t('Connectors')} placement="right">
-                <Button
-                  as={Link}
-                  href={url('/connectors')}
-                  isIconOnly
-                  variant="light"
-                  className="w-full"
-                  aria-label={t('Connectors')}
-                >
-                  <Icon name="Puzzle" />
-                </Button>
-              </Tooltip> */}
             <Tooltip content={t('Settings')} placement="right">
               <Button
-                as={Link}
-                href={url('/settings')}
                 isIconOnly
                 variant="light"
                 className={cn(
@@ -453,6 +459,7 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
                   isCurrentPath('/settings') && 'is-active',
                 )}
                 aria-label={t('Settings')}
+                onPress={onOpenSettings}
               >
                 <Icon name="Settings" />
               </Button>
@@ -484,36 +491,26 @@ const CollapsedDrawer = ({ className }: { className?: string }) => {
   )
 }
 
-const ExpandedDrawer = ({ className }: { className?: string }) => {
+const ExpandedDrawer = ({
+  className,
+  onOpenSettings,
+}: {
+  className?: string
+  onOpenSettings: () => void
+}) => {
   const { lang, t } = useI18n()
   const url = useUrl(lang)
   const navigate = useNavigate()
   const customPlatformName = userSettings((state) => state.platformName)
   const isDarkTheme = userSettings((state) => state.isDarkTheme())
   const setTheme = userSettings((state) => state.setTheme)
-  const theme = userSettings((state) => state.theme)
+  const setLanguage = userSettings((state) => state.setLanguage)
   const [showAboutModal, setShowAboutModal] = useState(false)
   const [showSyncModal, setShowSyncModal] = useState(false)
+  const [isLanguagePopoverOpen, setIsLanguagePopoverOpen] = useState(false)
 
-  // Sync state for identity display
+  // Sync state for indicator
   const { enabled: syncEnabled, status: syncStatus, peerCount } = useSyncStore()
-
-  const setLanguage = userSettings((state) => state.setLanguage)
-
-  const handleLanguageChange = (newLanguage: Lang) => {
-    // Update the language setting in the store
-    setLanguage(newLanguage)
-
-    // Generate the URL for the new language using useUrl from that language context
-    const newUrl = useUrl(newLanguage)
-    const currentPath =
-      window.location.pathname + window.location.search + window.location.hash
-    const path = currentPath.replace(`/${lang}`, '')
-    const newPath = newUrl(path)
-
-    // Navigate to the new URL
-    navigate(newPath)
-  }
 
   return (
     <div
@@ -731,12 +728,6 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
                   {t('Teams')}
                 </ListboxItem> */}
             </ListboxSection>
-            {/* <ListboxItem
-                href={url('/connectors')}
-                startContent={<Icon name="Puzzle" />}
-              >
-                {t('Connectors')}
-              </ListboxItem> */}
             <ListboxItem
               href={url('/conversations')}
               variant="faded"
@@ -790,151 +781,228 @@ const ExpandedDrawer = ({ className }: { className?: string }) => {
           backdrop="blur"
         >
           <ModalContent>
-            <ModalHeader>{t('Sync')}</ModalHeader>
+            <ModalHeader>{t('Synchronization')}</ModalHeader>
             <ModalBody className="pb-6">
               <SyncSettings />
             </ModalBody>
           </ModalContent>
         </Modal>
 
-        {/* Share/Sync Button */}
-        <Listbox aria-label={t('Sync')}>
-          <ListboxItem
-            key="sync"
-            variant="faded"
-            startContent={
-              <span className="relative">
-                {syncEnabled && (
-                  <span
-                    className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full ${
-                      syncStatus === 'connected'
-                        ? peerCount > 0
-                          ? 'bg-success'
-                          : 'bg-warning'
-                        : 'bg-default-400'
-                    }`}
-                  />
-                )}
-                <Icon
-                  name={syncEnabled ? 'CloudSync' : 'CloudXmark'}
-                  className="text-gray-500 dark:text-gray-400"
-                />
-              </span>
-            }
-            onPress={() => {
-              setShowSyncModal(true)
-            }}
-            className={
-              !syncEnabled ? 'text-gray-500 dark:text-gray-400' : undefined
-            }
-          >
-            {syncEnabled
-              ? syncStatus === 'connected'
-                ? t('Syncing')
-                : t('Connecting...')
-              : t('Offline')}
-          </ListboxItem>
-        </Listbox>
-
-        {/* Quick Actions Menu */}
-        <Dropdown placement="top" aria-label={PRODUCT.name}>
-          <DropdownTrigger>
-            <Button
-              endContent={
-                <Tooltip content={t('Quick Actions')} placement="top-end">
-                  <Icon
-                    name="NavArrowDown"
-                    className="opacity-40 dark:opacity-60 -mr-3"
-                  />
-                </Tooltip>
-              }
-              variant="light"
-              className="w-full justify-between"
-              aria-label={t('Quick Actions')}
-            >
-              <span
-                className="flex items-center gap-2 -ml-2"
-                aria-label={PRODUCT.name}
-              >
-                <ProgressIndicator />
-                <span>{t('Guest')}</span>
-              </span>
-            </Button>
-          </DropdownTrigger>
-          <DropdownMenu aria-label={t('Quick Actions')}>
-            <DropdownSection showDivider>
-              <DropdownItem
-                key="about"
-                startContent={<DevsIconSmall />}
-                onClick={() => {
-                  setShowAboutModal(true)
-                }}
-              >
-                {t('About')}
-              </DropdownItem>
-              <DropdownItem
-                key="settings"
-                href={url('/settings')}
-                startContent={<Icon name="Settings" size="sm" />}
-              >
-                {t('Settings')}
-              </DropdownItem>
-              <DropdownItem
-                key="open"
-                startContent={<Icon name="GitHub" size="sm" />}
-                endContent={<Icon name="ArrowRight" size="sm" color="grey" />}
-                href="https://github.com/codename-co/devs"
-                hrefLang="en"
-                target="_blank"
-                onClick={() => {
-                  window.open('https://github.com/codename-co/devs', '_blank')
-                }}
-              >
-                {t('Open Source')}
-              </DropdownItem>
-            </DropdownSection>
-            <DropdownItem
-              key="lang"
-              closeOnSelect={false}
-              // startContent={<Icon name="Language" />}
-              onPress={() => {
-                setLanguage(lang === 'en' ? 'es' : 'en')
+        {/* Language Selector Popover */}
+        <Popover
+          isOpen={isLanguagePopoverOpen}
+          onOpenChange={setIsLanguagePopoverOpen}
+          placement="top-end"
+          offset={10}
+        >
+          <PopoverTrigger>
+            <span className="absolute bottom-16 right-4 w-0 h-0" />
+          </PopoverTrigger>
+          <PopoverContent className="p-1">
+            <Listbox
+              aria-label={t('Language')}
+              selectionMode="single"
+              selectedKeys={new Set([lang])}
+              onSelectionChange={(keys) => {
+                const selectedLang = Array.from(keys)[0] as LanguageCode
+                if (selectedLang) {
+                  setLanguage(selectedLang)
+                  setIsLanguagePopoverOpen(false)
+                  // Navigate to the same path in the new language
+                  const currentPath = window.location.pathname
+                  const pathWithoutLang = currentPath
+                    .replace(/^\/(en|ar|de|es|fr|ko)/, '')
+                    .replace(/^\/$/, '')
+                  const newPath =
+                    selectedLang === 'en'
+                      ? pathWithoutLang || '/'
+                      : `/${selectedLang}${pathWithoutLang || ''}`
+                  navigate(newPath)
+                }
               }}
             >
-              <Select
-                selectedKeys={[lang]}
-                onSelectionChange={(keys) => {
-                  const selectedLang = Array.from(keys)[0] as Lang
-                  if (selectedLang && selectedLang !== lang) {
-                    handleLanguageChange(selectedLang)
-                  }
-                }}
-                classNames={{
-                  mainWrapper: '-ml-0.5',
-                }}
-                size="sm"
-                variant="underlined"
-              >
-                {Object.entries(languages).map(([key, name]) => (
-                  <SelectItem key={key} textValue={name}>
+              {(Object.entries(languages) as [LanguageCode, string][]).map(
+                ([code, name]) => (
+                  <ListboxItem
+                    key={code}
+                    textValue={name}
+                    className={lang === code ? 'bg-primary-50' : ''}
+                  >
                     {name}
-                  </SelectItem>
-                ))}
-              </Select>
-            </DropdownItem>
-            <DropdownItem
-              key="theme"
-              closeOnSelect={false}
-              // startContent={<Icon name="LightBulbOn" />}
-              shortcut={theme === 'light' ? t('Light') : t('Dark')}
-              onPress={() => {
-                setTheme(isDarkTheme ? 'light' : 'dark')
-              }}
+                  </ListboxItem>
+                ),
+              )}
+            </Listbox>
+          </PopoverContent>
+        </Popover>
+
+        {/* Quick Actions Bar */}
+        <div className="flex items-center justify-between gap-1 px-1 pt-2 border-t border-default-200">
+          {/* About */}
+          <Tooltip content={t('About')} placement="top">
+            <Button
+              isIconOnly
+              variant="light"
+              size="sm"
+              onPress={() => setShowAboutModal(true)}
+              aria-label={t('About')}
             >
-              {t('Theme')}
-            </DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
+              <ProgressIndicator />
+            </Button>
+          </Tooltip>
+
+          {/* Theme Toggle */}
+          <Tooltip
+            content={isDarkTheme ? t('Light') : t('Dark')}
+            placement="top"
+          >
+            <Button
+              isIconOnly
+              variant="light"
+              size="sm"
+              onPress={() => setTheme(isDarkTheme ? 'light' : 'dark')}
+              aria-label={t('Theme')}
+            >
+              <Icon
+                name={isDarkTheme ? 'SunLight' : 'HalfMoon'}
+                className="text-gray-500 dark:text-gray-400"
+                size="sm"
+              />
+            </Button>
+          </Tooltip>
+
+          {/* Settings */}
+          <Tooltip content={t('Settings')} placement="top">
+            <Button
+              isIconOnly
+              variant="light"
+              size="sm"
+              onPress={onOpenSettings}
+              aria-label={t('Settings')}
+            >
+              <Icon
+                name="Settings"
+                className="text-gray-500 dark:text-gray-400"
+                size="sm"
+              />
+            </Button>
+          </Tooltip>
+
+          {/* More Menu */}
+          <Dropdown placement="top-end">
+            <DropdownTrigger>
+              <Button
+                isIconOnly
+                variant="light"
+                size="sm"
+                aria-label={t('More')}
+              >
+                <Icon
+                  name="Menu"
+                  className="text-gray-500 dark:text-gray-400"
+                  size="sm"
+                />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu aria-label={t('More')}>
+              <DropdownSection showDivider>
+                <DropdownItem
+                  key="sync"
+                  startContent={
+                    <span className="relative">
+                      {syncEnabled && (
+                        <span
+                          className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full ${
+                            syncStatus === 'connected'
+                              ? peerCount > 0
+                                ? 'bg-success'
+                                : 'bg-warning'
+                              : 'bg-default-400'
+                          }`}
+                        />
+                      )}
+                      <Icon
+                        name={syncEnabled ? 'CloudSync' : 'CloudXmark'}
+                        size="sm"
+                      />
+                    </span>
+                  }
+                  endContent={
+                    <span className="text-tiny text-default-400 flex items-center gap-1">
+                      {syncEnabled
+                        ? syncStatus === 'connected'
+                          ? t('Syncing')
+                          : t('Connecting...')
+                        : t('Offline')}
+                      <Icon
+                        name="NavArrowRight"
+                        size="sm"
+                        className="w-3 h-3"
+                      />
+                    </span>
+                  }
+                  onPress={() => setShowSyncModal(true)}
+                >
+                  {t('Sync')}
+                </DropdownItem>
+                <DropdownItem
+                  key="language"
+                  startContent={<Icon name="Language" size="sm" />}
+                  endContent={
+                    <span className="text-tiny text-default-400 flex items-center gap-1">
+                      {languages[lang]}
+                      <Icon
+                        name="NavArrowRight"
+                        size="sm"
+                        className="w-3 h-3"
+                      />
+                    </span>
+                  }
+                  onPress={() => setIsLanguagePopoverOpen(true)}
+                  closeOnSelect={false}
+                >
+                  {t('Language')}
+                </DropdownItem>
+              </DropdownSection>
+              <DropdownSection showDivider>
+                <DropdownItem
+                  key="github"
+                  startContent={<Icon name="GitHub" size="sm" />}
+                  endContent={
+                    <Icon
+                      name="OpenNewWindow"
+                      size="sm"
+                      className="text-gray-400"
+                    />
+                  }
+                  onPress={() =>
+                    window.open(
+                      'https://github.com/codename-co/devs',
+                      '_blank',
+                      'noopener,noreferrer',
+                    )
+                  }
+                >
+                  {t('Open Source')}
+                </DropdownItem>
+              </DropdownSection>
+              <DropdownItem
+                key="privacy"
+                href={url('/privacy')}
+                startContent={<Icon name="Lock" size="sm" />}
+              >
+                {t('Privacy')}
+              </DropdownItem>
+              <DropdownItem
+                key="terms"
+                href={url('/terms')}
+                startContent={<Icon name="Page" size="sm" />}
+              >
+                {t('Terms')}
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+        </div>
       </nav>
     </div>
   )

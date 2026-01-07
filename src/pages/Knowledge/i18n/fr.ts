@@ -6,6 +6,8 @@ export const fr: I18n = {
   'Knowledge Base': 'Base de connaissances',
   'Manage your files and agents memories':
     'Gérez vos fichiers et la mémoire des agents',
+  'Manage your files, sync sources, and agent memories':
+    'Gérez vos fichiers, sources de synchronisation et mémoires des agents',
   'Upload files and synchronize local folders to build your knowledge base':
     'Ajoutez des fichiers et synchronisez des dossiers locaux pour construire votre base de connaissances',
   'Uploading files…': 'Téléchargement en cours…',
@@ -22,7 +24,51 @@ export const fr: I18n = {
   'Knowledge Item': 'Élément de connaissance',
   Reprocess: 'Reprocesser',
   Files: 'Fichiers',
+  'My Files': 'Mes fichiers',
   'Agent Memory': 'Mémoire des agents',
+  // Sources tab
+  'Sync Sources': 'Sources de synchronisation',
+  Saved: 'Enregistré',
+  'Local Folders': 'Dossiers locaux',
+  'Connected Apps': 'Applications connectées',
+  'Add Folder': 'Ajouter un dossier',
+  'Add App': 'Ajouter une application',
+  'No local folders synced yet.':
+    'Aucun dossier local synchronisé pour le moment.',
+  'No apps connected yet.': 'Aucune application connectée pour le moment.',
+  'Connect an app': 'Connecter une application',
+  'No sync sources yet': 'Aucune source de synchronisation pour le moment',
+  'Add local folders or connect apps like Google Drive and Notion to automatically sync content to your knowledge base.':
+    'Ajoutez des dossiers locaux ou connectez des applications comme Google Drive et Notion pour synchroniser automatiquement le contenu vers votre base de connaissances.',
+  'Manage synced folders and connected apps that import content into your knowledge base.':
+    'Gérez les dossiers synchronisés et les applications connectées qui importent du contenu dans votre base de connaissances.',
+  'Folder "{name}" is now being synced.':
+    'Le dossier "{name}" est en cours de synchronisation.',
+  'Folder sync stopped': 'Synchronisation du dossier arrêtée',
+  'Failed to stop watching folder':
+    "Échec de l'arrêt de la surveillance du dossier",
+  'Folder reconnected': 'Dossier reconnecté',
+  'Failed to reconnect folder': 'Échec de la reconnexion du dossier',
+  'Connector disconnected': 'Connecteur déconnecté',
+  'Synced {n} files': '{n} fichiers synchronisés',
+  'Sync error: {error}': 'Erreur de synchronisation : {error}',
+  'Syncing…': 'Synchronisation en cours…',
+  'Sync Error': 'Erreur de synchronisation',
+  'Sync completed': 'Synchronisation terminée',
+  '{n} items synced': '{n} éléments synchronisés',
+  'Sync failed': 'Échec de la synchronisation',
+  'Unknown error': 'Erreur inconnue',
+  'Directory picker is not supported in this browser. Please use a modern browser like Chrome or Edge.':
+    "Le sélecteur de dossiers n'est pas pris en charge dans ce navigateur. Veuillez utiliser un navigateur moderne comme Chrome ou Edge.",
+  Cancel: 'Annuler',
+  // Connector integration
+  'All Sources': 'Toutes les sources',
+  'Local Files': 'Fichiers locaux',
+  'Filter by source': 'Filtrer par source',
+  'Open in {provider}': 'Ouvrir dans {provider}',
+  'Synced from {provider}': 'Synchronisé depuis {provider}',
+  'Synced {time}': 'Synchronisé {time}',
+  'View original': "Voir l'original",
   'Select Agent': 'Sélectionner un agent',
   'All agents': 'Tous les agents',
   'Generate Synthesis': 'Générer la synthèse',
@@ -78,5 +124,33 @@ export const fr: I18n = {
   'Delete Files': 'Supprimer les fichiers',
   'Grant Access': 'Accorder l’accès',
   Remove: 'Supprimer',
-  'Pinned Messages': 'Messages épinglés',
+  'Pinned Messages': 'Messages épinglés', // Connectors tab
+  Connectors: 'Connecteurs',
+  'No connectors yet': 'Aucun connecteur pour le moment',
+  'Connect external services like Google Drive, Gmail, or Notion to import content into your knowledge base.':
+    'Connectez des services externes comme Google Drive, Gmail ou Notion pour importer du contenu dans votre base de connaissances.',
+  'Add Connector': 'Ajouter un connecteur',
+  'Manage your connected external services':
+    'Gérez vos services externes connectés',
+  'Connector removed': 'Connecteur supprimé',
+  'Failed to remove connector': 'Échec de la suppression du connecteur',
+  'API Connectors': 'Connecteurs API',
+  'Connect to custom REST or GraphQL APIs':
+    'Connectez-vous à des API REST ou GraphQL personnalisées',
+  'MCP Servers': 'Serveurs MCP',
+  'Connect to Model Context Protocol servers':
+    'Connectez-vous à des serveurs Model Context Protocol',
+  'Coming soon': 'Bientôt disponible',
+  // Filter options
+  'All Types': 'Tous les types',
+  Documents: 'Documents',
+  Images: 'Images',
+  'Text Files': 'Fichiers texte',
+  Other: 'Autre',
+  'Manual Upload': 'Téléchargement manuel',
+  'Synced Folders': 'Dossiers synchronisés',
+  'File Type': 'Type de fichier',
+  Source: 'Source',
+  'No items match the selected filters':
+    'Aucun élément ne correspond aux filtres sélectionnés',
 } as const

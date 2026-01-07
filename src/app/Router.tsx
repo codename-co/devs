@@ -1,4 +1,4 @@
-import { Outlet, Route, Routes, useParams } from 'react-router-dom'
+import { Navigate, Outlet, Route, Routes, useParams } from 'react-router-dom'
 
 import { LocalLLMLoadingIndicator } from '@/components'
 import { defaultLang, I18nProvider, Lang, langs } from '@/i18n'
@@ -12,15 +12,23 @@ import { ConversationPage } from '@/pages/Conversation'
 import DemoPage from '@/pages/Demo/index.mdx'
 import HTMLdemoPage from '@/pages/Demo/html.mdx'
 import DiagramPage from '@/pages/Demo/diagram.mdx'
+import { PrivacyPage } from '@/pages/Privacy'
+import { TermsPage } from '@/pages/Terms'
 import { KnowledgePage } from '@/pages/Knowledge'
 import { MethodologiesPage } from '@/pages/Methodologies/index'
 import { MethodologyNewPage } from '@/pages/Methodologies/new'
 import { MethodologyPage } from '@/pages/Methodologies/show'
 import { NotFoundPage } from '@/pages/NotFound'
+import { OAuthCallbackPage } from '@/pages/OAuth'
 import { SettingsPage } from '@/pages/Settings'
 import { TaskPage } from '@/pages/Tasks/show'
 import { TasksPage } from '@/pages/Tasks'
 import { VoicePage } from '@/pages/Voice'
+
+/**
+ * Redirect component for /connectors -> /knowledge/connectors
+ */
+const ConnectorsRedirect = () => <Navigate to="/knowledge/connectors" replace />
 
 const routes = {
   index: IndexPage,
@@ -29,21 +37,30 @@ const routes = {
   'agents/run': AgentRunPage,
   'agents/new': AgentsNewPage,
   'agents/start': AgentsStartPage,
+  // Redirect /connectors to /knowledge/connectors
+  connectors: ConnectorsRedirect,
   conversations: ConversationPage,
   demo: DemoPage,
   'demo/diagram': DiagramPage,
   'demo/html': HTMLdemoPage,
   knowledge: KnowledgePage,
   'knowledge/files': KnowledgePage,
+  'knowledge/connectors': KnowledgePage,
   'knowledge/memories': KnowledgePage,
-  'knowledge/pinned': KnowledgePage,
+  'knowledge/saved': KnowledgePage,
+  // Legacy route redirects
+  'knowledge/pinned': () => <Navigate to="/knowledge/saved" replace />,
+  'knowledge/sources': () => <Navigate to="/knowledge/connectors" replace />,
   methodologies: MethodologiesPage,
   'methodologies/new': MethodologyNewPage,
   'methodologies/:methodologyId': MethodologyPage,
+  'oauth/callback': OAuthCallbackPage,
+  privacy: PrivacyPage,
   settings: SettingsPage,
   task: TaskPage,
   tasks: TasksPage,
   'tasks/:taskId': TaskPage,
+  terms: TermsPage,
   voice: VoicePage,
   '*': NotFoundPage,
 }

@@ -1286,7 +1286,7 @@ export const SettingsPage = () => {
               data-testid="sync-settings"
               title={
                 <>
-                  {t('Sync')}
+                  {t('Synchronization')}
                   <Chip
                     size="sm"
                     // color="warning"

@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 import basicSsl from '@vitejs/plugin-basic-ssl'
 import { resolve } from 'node:path'
 import { globSync } from 'glob'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import { createMpaPlugin, type Page } from 'vite-plugin-virtual-mpa'
 
 import { PRODUCT } from './src/config/product'
@@ -67,53 +67,79 @@ const pages = langs.reduce((acc, lang = defaultLang) => {
 }, [] as Page[])
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-    mdx(),
-    // basicSsl(),
-    createMpaPlugin({
-      htmlMinify: true,
-      pages,
-    }) as any,
-    cacheVersionPlugin(),
-  ],
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, './src'),
+export default defineConfig(({ mode }) => {
+  // Load env file based on `mode` in the current working directory.
+  const env = loadEnv(mode, process.cwd(), '')
+
+  return {
+    plugins: [
+      react(),
+      tailwindcss(),
+      mdx(),
+      // basicSsl(),
+      createMpaPlugin({
+        htmlMinify: true,
+        pages,
+      }) as any,
+      cacheVersionPlugin(),
+    ],
+    resolve: {
+      alias: {
+        '@': resolve(__dirname, './src'),
+      },
     },
-  },
-  build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
-    sourcemap: false,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          ui: ['@heroui/react'],
-          i18n: ['@/i18n'],
-          // ...Object.fromEntries(
-          //   langs.map((lang) => [`i18n-${lang}`, [`@/i18n/locales/${lang}`]]),
-          // ),
-          icons: ['@/components/Icon'],
-          editor: [
-            '@/components/MonacoEditor',
-            '@monaco-editor/react',
-            'monaco-mermaid',
-            'monaco-yaml',
-          ],
+    build: {
+      outDir: 'dist',
+      assetsDir: 'assets',
+      sourcemap: false,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom'],
+            ui: ['@heroui/react'],
+            i18n: ['@/i18n'],
+            // ...Object.fromEntries(
+            //   langs.map((lang) => [`i18n-${lang}`, [`@/i18n/locales/${lang}`]]),
+            // ),
+            icons: ['@/components/Icon'],
+            editor: [
+              '@/components/MonacoEditor',
+              '@monaco-editor/react',
+              'monaco-mermaid',
+              'monaco-yaml',
+            ],
+          },
         },
       },
     },
-  },
-  server: {
-    port: 3000,
-    host: true,
-  },
-  preview: {
-    port: 3000,
-    host: true,
-  },
+    server: {
+      port: 3000,
+      host: true,
+      proxy: {
+        // Proxy all Notion API requests to avoid CORS issues
+        '/api/notion': {
+          target: 'https://api.notion.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/notion/, '/v1'),
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq, req) => {
+              // For OAuth token endpoint, add Basic Auth
+              if (req.url?.includes('/oauth/token')) {
+                const clientId = env.VITE_NOTION_CLIENT_ID || ''
+                const clientSecret = env.VITE_NOTION_CLIENT_SECRET || ''
+                const credentials = Buffer.from(
+                  `${clientId}:${clientSecret}`,
+                ).toString('base64')
+                proxyReq.setHeader('Authorization', `Basic ${credentials}`)
+              }
+            })
+          },
+        },
+      },
+    },
+    preview: {
+      port: 3000,
+      host: true,
+    },
+  }
 })

@@ -1,0 +1,163 @@
+import { en } from './en'
+
+type I18n = Record<(typeof en)[number], string>
+
+export const ar: I18n = {
+  // Page
+  Connectors: 'الموصلات',
+  'Connect external services to your knowledge base':
+    'قم بتوصيل خدمات خارجية بقاعدة معرفتك',
+  'Sync files and data from your favorite apps and services.':
+    'قم بمزامنة الملفات والبيانات من تطبيقاتك وخدماتك المفضلة.',
+  'Add Connector': 'إضافة موصل',
+
+  // Tabs
+  Apps: 'التطبيقات',
+  APIs: 'واجهات برمجة التطبيقات',
+  MCPs: 'MCPs',
+  'Coming soon': 'قريباً',
+
+  // ConnectorCard
+  Connected: 'متصل',
+  Error: 'خطأ',
+  Expired: 'منتهي الصلاحية',
+  'Syncing...': 'جارٍ المزامنة...',
+  'Never synced': 'لم تتم المزامنة مطلقاً',
+  'Just now': 'الآن',
+  '{n} minutes ago': 'منذ {n} دقائق',
+  '{n} hours ago': 'منذ {n} ساعات',
+  '{n} days ago': 'منذ {n} أيام',
+  'Last sync:': 'آخر مزامنة:',
+  '{n} folders syncing': '{n} مجلدات قيد المزامنة',
+  'Sync Now': 'مزامنة الآن',
+  'More options': 'خيارات إضافية',
+  'Connector actions': 'إجراءات الموصل',
+  Settings: 'الإعدادات',
+  Disconnect: 'قطع الاتصال',
+
+  // Empty state
+  'No app connectors yet': 'لا توجد موصلات تطبيقات بعد',
+  'Connect your Google Drive, Notion, Gmail and more to sync files to your knowledge base.':
+    'قم بتوصيل Google Drive و Notion و Gmail والمزيد لمزامنة الملفات مع قاعدة معرفتك.',
+  'No API connectors yet': 'لا توجد موصلات API بعد',
+  'Connect custom REST or GraphQL APIs to integrate external data sources.':
+    'قم بتوصيل واجهات REST أو GraphQL المخصصة لدمج مصادر البيانات الخارجية.',
+  'No MCP connectors yet': 'لا توجد موصلات MCP بعد',
+  'Connect Model Context Protocol servers to extend agent capabilities.':
+    'قم بتوصيل خوادم Model Context Protocol لتوسيع قدرات الوكلاء.',
+  'Add your first connector': 'أضف موصلك الأول',
+
+  // Wizard - Provider Selection
+  'Choose a service to connect to your knowledge base:':
+    'اختر خدمة لتوصيلها بقاعدة معرفتك:',
+  'Choose a service to connect to your knowledge base':
+    'اختر خدمة لتوصيلها بقاعدة معرفتك',
+  'Select a Service': 'اختر خدمة',
+
+  // Wizard - OAuth Step
+  'Connecting...': 'جارٍ الاتصال...',
+  'Connecting to {name}...': 'جارٍ الاتصال بـ {name}...',
+  'Connect {name}': 'توصيل {name}',
+  'Connect to {name}': 'الاتصال بـ {name}',
+  'A new window will open for you to authorize access. Please complete the authorization to continue.':
+    'ستفتح نافذة جديدة للسماح بالوصول. يرجى إكمال التفويض للمتابعة.',
+  'You will be redirected to {name} to authorize DEVS to access your data. Your credentials are never stored on our servers.':
+    'ستتم إعادة توجيهك إلى {name} لتفويض DEVS للوصول إلى بياناتك. لن يتم تخزين بيانات اعتمادك على خوادمنا أبداً.',
+  'This connector will be able to:': 'سيتمكن هذا الموصل من:',
+  'Read your files and content': 'قراءة ملفاتك ومحتواك',
+  'Search your content': 'البحث في محتواك',
+  'Sync changes automatically': 'مزامنة التغييرات تلقائياً',
+  'Authenticating...': 'جارٍ المصادقة...',
+  'Connection Failed': 'فشل الاتصال',
+  'Connection failed': 'فشل الاتصال',
+  'Something went wrong while connecting. Please try again.':
+    'حدث خطأ أثناء الاتصال. يرجى المحاولة مرة أخرى.',
+  'Successfully authenticated': 'تمت المصادقة بنجاح',
+  'Authentication failed': 'فشلت المصادقة',
+  'Authentication successful': 'نجحت المصادقة',
+  Authenticate: 'مصادقة',
+
+  // Wizard - Folder Selection
+  'Select Folders': 'اختر المجلدات',
+  'Select folders to sync': 'اختر المجلدات للمزامنة',
+  'Choose which folders you want to sync from {name}, or sync everything.':
+    'اختر المجلدات التي تريد مزامنتها من {name}، أو قم بمزامنة كل شيء.',
+  'Sync everything': 'مزامنة كل شيء',
+  'All files and folders will be synced automatically':
+    'سيتم مزامنة جميع الملفات والمجلدات تلقائياً',
+  'Loading folders...': 'جارٍ تحميل المجلدات...',
+  'No folders found': 'لم يتم العثور على مجلدات',
+  '{n} folders selected': 'تم اختيار {n} مجلدات',
+  Skip: 'تخطي',
+  Continue: 'متابعة',
+
+  // Wizard - Success
+  'Connected!': 'تم الاتصال!',
+  'Successfully connected!': 'تم الاتصال بنجاح!',
+  '{name} has been connected to your knowledge base.':
+    'تم توصيل {name} بقاعدة معرفتك.',
+  '{name} has been connected to your knowledge base. Files will begin syncing shortly.':
+    'تم توصيل {name} بقاعدة معرفتك. ستبدأ مزامنة الملفات قريباً.',
+  '{name} has been successfully connected': 'تم توصيل {name} بنجاح',
+  '{name} connected successfully': 'تم توصيل {name} بنجاح',
+  'Connected and authorized': 'متصل ومصرح به',
+  'Connected as {email}': 'متصل باسم {email}',
+  'Syncing all files': 'مزامنة جميع الملفات',
+  'Auto-sync enabled': 'المزامنة التلقائية مفعلة',
+  'Automatic sync will begin shortly': 'ستبدأ المزامنة التلقائية قريباً',
+  'Start Sync Now': 'بدء المزامنة الآن',
+  'Connector Added': 'تمت إضافة الموصل',
+
+  // Wizard - Progress
+  'Step {current} of {total}': 'الخطوة {current} من {total}',
+  'Wizard progress': 'تقدم المعالج',
+
+  // Sync Status
+  'Sync completed': 'اكتملت المزامنة',
+  '{n} items synced': 'تمت مزامنة {n} عناصر',
+  'Sync failed': 'فشلت المزامنة',
+  'Unknown error': 'خطأ غير معروف',
+
+  // Settings Modal
+  '{name} Settings': 'إعدادات {name}',
+  'Connected Account': 'الحساب المتصل',
+  'Enable Sync': 'تفعيل المزامنة',
+  'Enable Automatic Sync': 'تفعيل المزامنة التلقائية',
+  'Automatically sync content from this connector':
+    'مزامنة المحتوى تلقائياً من هذا الموصل',
+  'Automatically sync new and updated content':
+    'مزامنة المحتوى الجديد والمحدث تلقائياً',
+  'Sync Settings': 'إعدادات المزامنة',
+  'Sync Interval (minutes)': 'فترة المزامنة (بالدقائق)',
+  'How often to check for changes': 'عدد مرات التحقق من التغييرات',
+  'Choose which folders to sync or sync everything':
+    'اختر المجلدات للمزامنة أو قم بمزامنة كل شيء',
+  'Settings saved': 'تم حفظ الإعدادات',
+  'Connector settings have been updated': 'تم تحديث إعدادات الموصل',
+  'Failed to load folders': 'فشل تحميل المجلدات',
+  'Failed to save': 'فشل الحفظ',
+  'Failed to save connector': 'فشل حفظ الموصل',
+
+  // Configuration
+  'Configure Connector': 'تكوين الموصل',
+  'Connector Name': 'اسم الموصل',
+  'Give this connector a memorable name': 'أعطِ هذا الموصل اسماً لا يُنسى',
+  'Complete Setup': 'إكمال الإعداد',
+  Complete: 'إكمال',
+  'Saving...': 'جارٍ الحفظ...',
+
+  // Token refresh
+  'Refreshing access token...': 'جارٍ تحديث رمز الوصول...',
+  'Please wait': 'يرجى الانتظار',
+  'Token refreshed': 'تم تحديث الرمز',
+  'Connection restored successfully': 'تمت استعادة الاتصال بنجاح',
+  'Your access token has expired. Please reconnect.':
+    'انتهت صلاحية رمز الوصول الخاص بك. يرجى إعادة الاتصال.',
+
+  // Common
+  Cancel: 'إلغاء',
+  Done: 'تم',
+  'Try Again': 'حاول مرة أخرى',
+  Back: 'رجوع',
+  Save: 'حفظ',
+}
