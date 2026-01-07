@@ -60,4 +60,11 @@ export const en = [
   'Used {count} times',
   'Remove Global',
   'Make Global',
+  'Stop Syncing Folder',
+  'Do you want to keep the synced files in your knowledge base?',
+  'Keep Files',
+  'Delete Files',
+  'Grant Access',
+  'Remove',
+  'Pinned Messages',
 ] as const

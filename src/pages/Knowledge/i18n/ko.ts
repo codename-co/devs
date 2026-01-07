@@ -70,4 +70,12 @@ export const ko: I18n = {
   'Used {count} times': '{count}회 사용됨',
   'Remove Global': '전역 해제',
   'Make Global': '전역으로 설정',
+  'Stop Syncing Folder': '폴더 동기화 중단',
+  'Do you want to keep the synced files in your knowledge base?':
+    '동기화된 파일을 지식 베이스에 유지하시겠습니까?',
+  'Keep Files': '파일 유지',
+  'Delete Files': '파일 삭제',
+  'Grant Access': '접근 권한 부여',
+  Remove: '제거',
+  'Pinned Messages': '고정된 메시지',
 } as const

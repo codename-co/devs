@@ -42,6 +42,7 @@ import {
   reconnectFolder,
   onWatchersChanged,
   onSyncEvent,
+  deleteFilesByWatchId,
   type FolderWatcher,
   type SyncEvent,
 } from '@/lib/knowledge-sync'
@@ -118,6 +119,14 @@ export const Files: React.FC = () => {
   const [processingJobs, setProcessingJobs] = useState<
     Map<string, { itemId: string; progress: number; status: string }>
   >(new Map())
+  const {
+    isOpen: isUnwatchModalOpen,
+    onOpen: onUnwatchModalOpen,
+    onClose: onUnwatchModalClose,
+  } = useDisclosure()
+  const [unwatchingFolderId, setUnwatchingFolderId] = useState<string | null>(
+    null,
+  )
 
   useEffect(() => {
     loadWatchedFolders()
@@ -422,13 +431,25 @@ export const Files: React.FC = () => {
     }
   }
 
-  const handleUnwatchFolder = async (watchId: string) => {
+  const promptUnwatchFolder = (watchId: string) => {
+    setUnwatchingFolderId(watchId)
+    onUnwatchModalOpen()
+  }
+
+  const handleUnwatchFolder = async (keepFiles: boolean) => {
+    if (!unwatchingFolderId) return
     try {
-      await unwatchFolder(watchId)
+      if (!keepFiles) {
+        await deleteFilesByWatchId(unwatchingFolderId)
+      }
+      await unwatchFolder(unwatchingFolderId)
       loadWatchedFolders()
       // Knowledge items update automatically via reactive hooks
     } catch (error) {
       console.error('Error unwatching folder:', error)
+    } finally {
+      onUnwatchModalClose()
+      setUnwatchingFolderId(null)
     }
   }
 
@@ -613,7 +634,7 @@ export const Files: React.FC = () => {
                             size="sm"
                             variant="light"
                             color="danger"
-                            onPress={() => handleUnwatchFolder(watcher.id)}
+                            onPress={() => promptUnwatchFolder(watcher.id)}
                           >
                             {t('Stop syncing')}
                           </Button>
@@ -638,7 +659,7 @@ export const Files: React.FC = () => {
                               size="sm"
                               variant="light"
                               color="danger"
-                              onPress={() => handleUnwatchFolder(watcher.id)}
+                              onPress={() => promptUnwatchFolder(watcher.id)}
                             >
                               {t('Remove')}
                             </Button>
@@ -825,6 +846,38 @@ export const Files: React.FC = () => {
             </Button>
             <Button color="primary" onPress={saveItemChanges}>
               {t('Save')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Unwatch Folder Confirmation Modal */}
+      <Modal
+        isOpen={isUnwatchModalOpen}
+        onClose={() => {
+          onUnwatchModalClose()
+          setUnwatchingFolderId(null)
+        }}
+      >
+        <ModalContent>
+          <ModalHeader>{t('Stop Syncing Folder')}</ModalHeader>
+          <ModalBody>
+            <p>
+              {t(
+                'Do you want to keep the synced files in your knowledge base?',
+              )}
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="danger"
+              variant="light"
+              onPress={() => handleUnwatchFolder(false)}
+            >
+              {t('Delete Files')}
+            </Button>
+            <Button color="primary" onPress={() => handleUnwatchFolder(true)}>
+              {t('Keep Files')}
             </Button>
           </ModalFooter>
         </ModalContent>

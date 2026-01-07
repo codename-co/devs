@@ -71,4 +71,12 @@ export const es: I18n = {
   'Used {count} times': 'Usado {count} veces',
   'Remove Global': 'Quitar global',
   'Make Global': 'Hacer global',
+  'Stop Syncing Folder': 'Detener sincronización de carpeta',
+  'Do you want to keep the synced files in your knowledge base?':
+    '¿Quieres mantener los archivos sincronizados en tu base de conocimientos?',
+  'Keep Files': 'Conservar archivos',
+  'Delete Files': 'Eliminar archivos',
+  'Grant Access': 'Conceder acceso',
+  Remove: 'Eliminar',
+  'Pinned Messages': 'Mensajes fijados',
 } as const

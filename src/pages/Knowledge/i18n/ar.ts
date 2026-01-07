@@ -69,4 +69,12 @@ export const ar: I18n = {
   'Used {count} times': 'استُخدم {count} مرات',
   'Remove Global': 'إزالة العام',
   'Make Global': 'جعله عاماً',
+  'Stop Syncing Folder': 'إيقاف مزامنة المجلد',
+  'Do you want to keep the synced files in your knowledge base?':
+    'هل تريد الاحتفاظ بالملفات المتزامنة في قاعدة معرفتك؟',
+  'Keep Files': 'الاحتفاظ بالملفات',
+  'Delete Files': 'حذف الملفات',
+  'Grant Access': 'منح الوصول',
+  Remove: 'إزالة',
+  'Pinned Messages': 'الرسائل المثبتة',
 } as const

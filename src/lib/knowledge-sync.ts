@@ -983,3 +983,21 @@ export const onWatchersChanged = (callback: () => void) =>
   knowledgeSync.onWatchersChanged(callback)
 export const onSyncEvent = (callback: (event: SyncEvent) => void) =>
   knowledgeSync.onSyncEvent(callback)
+export const deleteFilesByWatchId = async (
+  watchId: string,
+): Promise<number> => {
+  try {
+    const allItems = await db.getAll('knowledgeItems')
+    const itemsToDelete = allItems.filter((item) => item.watchId === watchId)
+    let deletedCount = 0
+    for (const item of itemsToDelete) {
+      await db.delete('knowledgeItems', item.id)
+      deleteFromYjs('knowledgeItems', item.id)
+      deletedCount++
+    }
+    return deletedCount
+  } catch (error) {
+    console.error('Error deleting files by watch ID:', error)
+    return 0
+  }
+}
