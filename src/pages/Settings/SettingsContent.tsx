@@ -43,7 +43,7 @@ import {
 } from '@/lib/llm/cache-manager'
 import localI18n from './i18n'
 import { formatBytes } from '@/lib/format'
-import { PROVIDERS } from './index'
+import { PROVIDERS } from './providers'
 
 interface SettingsContentProps {
   isModal?: boolean
@@ -567,7 +567,82 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
       )}
 
       <Container className={isModal ? 'px-4' : ''}>
+        {/* LLM Providers - Most important, users need this first */}
         <Accordion selectionMode="single" variant="bordered">
+          <AccordionItem
+            key="providers"
+            data-testid="llm-providers"
+            title={t('LLM Providers')}
+            subtitle={t(
+              'Choose your LLM provider, manage your API credentials',
+            )}
+            startContent={<Icon name="Brain" className="h-5 w-7" />}
+            classNames={{ content: 'pl-8 mb-4' }}
+          >
+            <div className="space-y-4 p-2">
+              <div className="flex justify-end">
+                <Button
+                  color="primary"
+                  size="sm"
+                  startContent={<Icon name="Plus" className="h-4 w-4" />}
+                  onPress={handleModalOpen}
+                  isDisabled={SecureStorage.isLocked()}
+                >
+                  {t('Add Provider')}
+                </Button>
+              </div>
+              <div className="space-y-3">
+                {credentials.length === 0 ? (
+                  <p className="text-center text-default-500 py-8">
+                    {t('No providers configured. Add one to get started.')}
+                  </p>
+                ) : (
+                  credentials.map((cred, index) => (
+                    <CredentialCard
+                      key={cred.id}
+                      credential={cred}
+                      index={index}
+                    />
+                  ))
+                )}
+              </div>
+
+              {cacheInfo && cacheInfo.size > 0 && (
+                <div className="mt-6 pt-6 border-t border-default-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <p className="text-sm font-medium">
+                        {t('Local models cache')}
+                      </p>
+                      <p className="text-xs text-default-500">
+                        {t('{files} files cached ({size})', {
+                          files: cacheInfo.itemCount,
+                          size: formatBytes(cacheInfo.size, lang),
+                        })}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="flat"
+                      color="danger"
+                      onPress={handleClearCache}
+                      isLoading={isClearingCache}
+                      startContent={<Icon name="Trash" className="h-4 w-4" />}
+                    >
+                      {t('Clear cache')}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-default-500">
+                    {t(
+                      'Downloaded models are cached for 1 year to avoid re-downloading.',
+                    )}
+                  </p>
+                </div>
+              )}
+            </div>
+          </AccordionItem>
+
+          {/* Appearance - Personalization options */}
           <AccordionItem
             key="general"
             data-testid="general-settings"
@@ -711,79 +786,116 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
             </div>
           </AccordionItem>
 
+          {/* Security - Secure Storage */}
           <AccordionItem
-            key="providers"
-            data-testid="llm-providers"
-            title={t('LLM Providers')}
-            subtitle={t(
-              'Choose your LLM provider, manage your API credentials',
-            )}
-            startContent={<Icon name="Brain" className="h-5 w-7" />}
+            key="security"
+            data-testid="security-settings"
+            title={t('Secure Storage')}
+            subtitle={t('Manage your encryption keys and secure storage')}
+            startContent={<Icon name="Lock" className="h-5 w-7" />}
             classNames={{ content: 'pl-8 mb-4' }}
           >
             <div className="space-y-4 p-2">
-              <div className="flex justify-end">
-                <Button
-                  color="primary"
-                  size="sm"
-                  startContent={<Icon name="Plus" className="h-4 w-4" />}
-                  onPress={handleModalOpen}
-                  isDisabled={SecureStorage.isLocked()}
-                >
-                  {t('Add Provider')}
-                </Button>
-              </div>
-              <div className="space-y-3">
-                {credentials.length === 0 ? (
-                  <p className="text-center text-default-500 py-8">
-                    {t('No providers configured. Add one to get started.')}
-                  </p>
-                ) : (
-                  credentials.map((cred, index) => (
-                    <CredentialCard
-                      key={cred.id}
-                      credential={cred}
-                      index={index}
-                    />
-                  ))
+              <p className="text-sm text-default-500 mb-3">
+                {t(
+                  'Your master key is used to encrypt all sensitive data stored locally. Keep it safe and secure.',
                 )}
-              </div>
+              </p>
 
-              {cacheInfo && cacheInfo.size > 0 && (
-                <div className="mt-6 pt-6 border-t border-default-200">
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <p className="text-sm font-medium">
-                        {t('Local models cache')}
-                      </p>
-                      <p className="text-xs text-default-500">
-                        {t('{files} files cached ({size})', {
-                          files: cacheInfo.itemCount,
-                          size: formatBytes(cacheInfo.size, lang),
-                        })}
-                      </p>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="flat"
-                      color="danger"
-                      onPress={handleClearCache}
-                      isLoading={isClearingCache}
-                      startContent={<Icon name="Trash" className="h-4 w-4" />}
-                    >
-                      {t('Clear cache')}
-                    </Button>
-                  </div>
-                  <p className="text-xs text-default-500">
-                    {t(
-                      'Downloaded models are cached for 1 year to avoid re-downloading.',
-                    )}
-                  </p>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <Input
+                    label={t('Master Key')}
+                    value={masterKey || ''}
+                    readOnly
+                    type="password"
+                    className="flex-1"
+                    endContent={
+                      <div className="flex gap-1">
+                        <Tooltip content={t('Copy to clipboard')}>
+                          <Button
+                            isIconOnly
+                            size="sm"
+                            variant="light"
+                            onPress={handleCopyMasterKey}
+                            isDisabled={!masterKey}
+                          >
+                            <Icon name="Copy" className="h-4 w-4" />
+                          </Button>
+                        </Tooltip>
+                      </div>
+                    }
+                  />
                 </div>
-              )}
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="flat"
+                    color="warning"
+                    onPress={handleRegenerateMasterKey}
+                    isLoading={isRegeneratingKey}
+                    isDisabled={!masterKey}
+                    startContent={
+                      <Icon name="RefreshDouble" className="h-4 w-4" />
+                    }
+                  >
+                    {t('Regenerate Master Key')}
+                  </Button>
+                </div>
+              </div>
             </div>
           </AccordionItem>
+        </Accordion>
 
+        {/* Advanced Settings Section */}
+        <Title size="xl" className="text-gray-500 mt-6">
+          {t('Advanced Settings')}
+        </Title>
+
+        <Accordion selectionMode="single" variant="bordered">
+          {/* Data & Sync */}
+          <AccordionItem
+            key="sync"
+            data-testid="sync-settings"
+            title={
+              <>
+                {t('Synchronization')}
+                <Chip size="sm" variant="flat" className="ml-2 align-middle">
+                  Beta
+                </Chip>
+              </>
+            }
+            subtitle={t(
+              'Sync your data across devices using peer-to-peer connection',
+            )}
+            startContent={<Icon name="RefreshDouble" className="h-5 w-7" />}
+            classNames={{ content: 'pl-8 mb-4' }}
+          >
+            <SyncSettings />
+          </AccordionItem>
+          <AccordionItem
+            key="easysetup"
+            data-testid="easy-setup"
+            title={t('Share the platform')}
+            subtitle={t(
+              'Export the platform settings to another device or share it with others',
+            )}
+            startContent={<Icon name="Share" className="h-5 w-7" />}
+            classNames={{ content: 'pl-8 mb-4' }}
+          >
+            <EasySetupExport />
+          </AccordionItem>
+          <AccordionItem
+            key="database"
+            data-testid="database-management"
+            title={t('Database Management')}
+            subtitle={t('Export, import, or clear your local database')}
+            startContent={<Icon name="Database" className="h-5 w-7" />}
+            indicator={<Icon name="ArrowRight" className="h-4 w-4" />}
+            onPress={() => navigate(url('/admin/database'))}
+          />
+
+          {/* Integrations - Langfuse */}
           <AccordionItem
             key="langfuse"
             data-testid="langfuse-integration"
@@ -890,110 +1002,6 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
             </div>
           </AccordionItem>
 
-          <AccordionItem
-            key="security"
-            data-testid="security-settings"
-            title={t('Secure Storage')}
-            subtitle={t('Manage your encryption keys and secure storage')}
-            startContent={<Icon name="Lock" className="h-5 w-7" />}
-            classNames={{ content: 'pl-8 mb-4' }}
-          >
-            <div className="space-y-4 p-2">
-              <p className="text-sm text-default-500 mb-3">
-                {t(
-                  'Your master key is used to encrypt all sensitive data stored locally. Keep it safe and secure.',
-                )}
-              </p>
-
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-2">
-                  <Input
-                    label={t('Master Key')}
-                    value={masterKey || ''}
-                    readOnly
-                    type="password"
-                    className="flex-1"
-                    endContent={
-                      <div className="flex gap-1">
-                        <Tooltip content={t('Copy to clipboard')}>
-                          <Button
-                            isIconOnly
-                            size="sm"
-                            variant="light"
-                            onPress={handleCopyMasterKey}
-                            isDisabled={!masterKey}
-                          >
-                            <Icon name="Copy" className="h-4 w-4" />
-                          </Button>
-                        </Tooltip>
-                      </div>
-                    }
-                  />
-                </div>
-
-                <div className="flex gap-2">
-                  <Button
-                    variant="flat"
-                    color="warning"
-                    onPress={handleRegenerateMasterKey}
-                    isLoading={isRegeneratingKey}
-                    isDisabled={!masterKey}
-                    startContent={
-                      <Icon name="RefreshDouble" className="h-4 w-4" />
-                    }
-                  >
-                    {t('Regenerate Master Key')}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </AccordionItem>
-        </Accordion>
-
-        <Title size="xl" className="text-gray-500 mt-6">
-          {t('Advanced Settings')}
-        </Title>
-        <Accordion selectionMode="single" variant="bordered">
-          <AccordionItem
-            key="sync"
-            data-testid="sync-settings"
-            title={
-              <>
-                {t('Synchronization')}
-                <Chip size="sm" variant="flat" className="ml-2 align-middle">
-                  Beta
-                </Chip>
-              </>
-            }
-            subtitle={t(
-              'Sync your data across devices using peer-to-peer connection',
-            )}
-            startContent={<Icon name="RefreshDouble" className="h-5 w-7" />}
-            classNames={{ content: 'pl-8 mb-4' }}
-          >
-            <SyncSettings />
-          </AccordionItem>
-          <AccordionItem
-            key="easysetup"
-            data-testid="easy-setup"
-            title={t('Share the platform')}
-            subtitle={t(
-              'Export the platform settings to another device or share it with others',
-            )}
-            startContent={<Icon name="Share" className="h-5 w-7" />}
-            classNames={{ content: 'pl-8 mb-4' }}
-          >
-            <EasySetupExport />
-          </AccordionItem>
-          <AccordionItem
-            key="database"
-            data-testid="database-management"
-            title={t('Database Management')}
-            subtitle={t('Export, import, or clear your local database')}
-            startContent={<Icon name="Database" className="h-5 w-7" />}
-            indicator={<Icon name="ArrowRight" className="h-4 w-4" />}
-            onPress={() => navigate(url('/admin/database'))}
-          />
         </Accordion>
       </Container>
 
