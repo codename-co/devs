@@ -1,4 +1,6 @@
 import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
+import type { ToolChatOptions, ToolCall } from '../tool-types'
+import { toOpenAIToolFormat, parseOpenAIToolCalls } from '../tool-types'
 import { LLMConfig } from '@/types'
 import {
   processAttachments,
@@ -9,10 +11,36 @@ import {
 export class OpenAIProvider implements LLMProviderInterface {
   protected baseUrl = 'https://api.openai.com/v1'
   public static readonly DEFAULT_MODEL = 'gpt-5-2025-08-07'
+  public readonly supportsTools = true
 
   private async convertMessageToOpenAIFormat(
     message: LLMMessage,
   ): Promise<any> {
+    // Handle tool result messages
+    if (message.role === 'tool') {
+      return {
+        role: 'tool',
+        tool_call_id: message.toolCallId,
+        content: message.content,
+      }
+    }
+
+    // Handle assistant messages with tool calls
+    if (message.role === 'assistant' && message.toolCalls?.length) {
+      return {
+        role: 'assistant',
+        content: message.content || null,
+        tool_calls: message.toolCalls.map((tc) => ({
+          id: tc.id,
+          type: 'function',
+          function: {
+            name: tc.name,
+            arguments: JSON.stringify(tc.arguments),
+          },
+        })),
+      }
+    }
+
     if (!message.attachments || message.attachments.length === 0) {
       return {
         role: message.role,
@@ -80,6 +108,7 @@ export class OpenAIProvider implements LLMProviderInterface {
   async chat(
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
+    options?: ToolChatOptions,
   ): Promise<LLMResponse> {
     const endpoint = `${config?.baseUrl || this.baseUrl}/chat/completions`
     console.log('[OPENAI-PROVIDER] 🚀 Making LLM request:', {
@@ -87,6 +116,7 @@ export class OpenAIProvider implements LLMProviderInterface {
       model: config?.model || OpenAIProvider.DEFAULT_MODEL,
       messagesCount: messages.length,
       temperature: config?.temperature || 0.7,
+      hasTools: !!options?.tools?.length,
     })
 
     // Convert messages (may involve async document conversion)
@@ -94,18 +124,36 @@ export class OpenAIProvider implements LLMProviderInterface {
       messages.map((msg) => this.convertMessageToOpenAIFormat(msg)),
     )
 
+    // Build request body
+    const body: Record<string, unknown> = {
+      model: config?.model || OpenAIProvider.DEFAULT_MODEL,
+      messages: convertedMessages,
+      temperature: config?.temperature || 0.7,
+      max_tokens: config?.maxTokens,
+    }
+
+    // Add tools if provided
+    if (options?.tools?.length) {
+      body.tools = options.tools.map(toOpenAIToolFormat)
+      if (options.toolChoice) {
+        if (typeof options.toolChoice === 'string') {
+          body.tool_choice = options.toolChoice
+        } else {
+          body.tool_choice = {
+            type: 'function',
+            function: { name: options.toolChoice.name },
+          }
+        }
+      }
+    }
+
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${config?.apiKey}`,
       },
-      body: JSON.stringify({
-        model: config?.model || OpenAIProvider.DEFAULT_MODEL,
-        messages: convertedMessages,
-        temperature: config?.temperature || 0.7,
-        max_tokens: config?.maxTokens,
-      }),
+      body: JSON.stringify(body),
     })
 
     console.log('[OPENAI-PROVIDER] 📡 Response received:', {
@@ -119,9 +167,47 @@ export class OpenAIProvider implements LLMProviderInterface {
     }
 
     const data = await response.json()
+    const message = data.choices[0].message
+    const finishReason = data.choices[0].finish_reason
+
+    // Check for Gemini's function call filter (malformed tool calls)
+    if (finishReason?.includes('function_call_filter')) {
+      console.warn(
+        '[OPENAI-PROVIDER] ⚠️ Gemini filtered malformed function call:',
+        finishReason,
+      )
+      // Return content-only response, letting the agent continue without tools
+      return {
+        content:
+          message.content ||
+          'I encountered an issue processing my response. Let me try a different approach.',
+        toolCalls: undefined,
+        stopReason: 'content',
+        usage: data.usage
+          ? {
+              promptTokens: data.usage.prompt_tokens,
+              completionTokens: data.usage.completion_tokens,
+              totalTokens: data.usage.total_tokens,
+            }
+          : undefined,
+      }
+    }
+
+    // Parse tool calls if present
+    let toolCalls: ToolCall[] | undefined
+    if (message.tool_calls?.length) {
+      toolCalls = parseOpenAIToolCalls(message.tool_calls)
+    }
 
     return {
-      content: data.choices[0].message.content,
+      content: message.content || '',
+      toolCalls,
+      stopReason:
+        finishReason === 'tool_calls'
+          ? 'tool_calls'
+          : finishReason === 'length'
+            ? 'length'
+            : 'content',
       usage: data.usage
         ? {
             promptTokens: data.usage.prompt_tokens,

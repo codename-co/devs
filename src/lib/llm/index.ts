@@ -1,4 +1,14 @@
 import { LLMProvider, LLMConfig } from '@/types'
+import type {
+  ToolDefinition,
+  ToolCall,
+  ToolChatOptions,
+  LLMResponseWithTools,
+} from './tool-types'
+
+// Re-export tool types for convenience
+export type { ToolDefinition, ToolCall, ToolChatOptions, LLMResponseWithTools }
+export * from './tool-types'
 
 export interface LLMMessageAttachment {
   type: 'image' | 'document' | 'text'
@@ -8,13 +18,22 @@ export interface LLMMessageAttachment {
 }
 
 export interface LLMMessage {
-  role: 'system' | 'user' | 'assistant'
+  role: 'system' | 'user' | 'assistant' | 'tool'
   content: string
   attachments?: LLMMessageAttachment[]
+  /** For assistant messages that include tool calls */
+  toolCalls?: ToolCall[]
+  /** For tool result messages */
+  toolCallId?: string
+  toolName?: string
 }
 
 export interface LLMResponse {
   content: string
+  /** Tool calls requested by the LLM */
+  toolCalls?: ToolCall[]
+  /** Reason for stopping */
+  stopReason?: 'content' | 'tool_calls' | 'length' | 'stop'
   usage?: {
     promptTokens: number
     completionTokens: number
@@ -107,13 +126,17 @@ export interface LLMProviderInterface {
   chat(
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
+    options?: ToolChatOptions,
   ): Promise<LLMResponse>
   streamChat(
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
+    options?: ToolChatOptions,
   ): AsyncIterableIterator<string>
   validateApiKey(apiKey: string): Promise<boolean>
   getAvailableModels?(config?: Partial<LLMConfig>): Promise<string[]>
+  /** Whether this provider supports tool calling */
+  supportsTools?: boolean
 }
 
 // Global progress tracker instance
@@ -150,12 +173,13 @@ export class LLMService {
   static async chat(
     messages: LLMMessage[],
     config: LLMConfig,
+    options?: ToolChatOptions,
   ): Promise<LLMResponse> {
     const requestId = generateRequestId()
     progressTracker.startRequest(requestId)
     try {
       const provider = this.getProvider(config.provider)
-      return await provider.chat(messages, config)
+      return await provider.chat(messages, config, options)
     } finally {
       progressTracker.endRequest(requestId)
     }
@@ -164,16 +188,25 @@ export class LLMService {
   static async *streamChat(
     messages: LLMMessage[],
     config: LLMConfig,
+    options?: ToolChatOptions,
   ): AsyncIterableIterator<string> {
     const requestId = generateRequestId()
     progressTracker.startRequest(requestId)
     try {
       const provider = this.getProvider(config.provider)
       console.log('△', 'using:', config.provider, config.model, { config })
-      yield* provider.streamChat(messages, config)
+      yield* provider.streamChat(messages, config, options)
     } finally {
       progressTracker.endRequest(requestId)
     }
+  }
+
+  /**
+   * Check if the current provider supports tool calling
+   */
+  static supportsTools(provider: LLMProvider): boolean {
+    const implementation = this.providers.get(provider)
+    return implementation?.supportsTools ?? false
   }
 
   static async validateApiKey(

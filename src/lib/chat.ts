@@ -12,6 +12,13 @@ import {
 } from '@/lib/agent-knowledge'
 import { buildMemoryContextForChat } from '@/lib/memory-learning-service'
 import { Lang, languages } from '@/i18n'
+import {
+  AgentLoop,
+  shouldUseAgentLoop,
+  type AgentLoopState,
+} from '@/lib/agent-loop'
+import { toolRegistry } from '@/lib/tools'
+// TaskAnalyzer reserved for future use in agent loop complexity detection
 
 export interface ChatSubmitOptions {
   prompt: string
@@ -30,6 +37,10 @@ export interface ChatSubmitOptions {
   onResponseUpdate: (response: string) => void
   onPromptClear: () => void
   onResponseClear?: () => void
+  /** Enable agentic loop for complex queries with tool calling (default: true) */
+  enableAgentLoop?: boolean
+  /** Callback for agent loop state updates */
+  onAgentLoopUpdate?: (state: AgentLoopState) => void
 }
 
 export interface ChatSubmitResult {
@@ -52,6 +63,8 @@ export const submitChat = async (
     onResponseUpdate,
     onPromptClear,
     onResponseClear,
+    enableAgentLoop = true,
+    onAgentLoopUpdate,
   } = options
 
   if (!prompt.trim()) {
@@ -169,6 +182,34 @@ export const submitChat = async (
 
         return { success: false, error: 'Orchestration failed' }
       }
+    }
+
+    // Check if we should use the agent loop for this query
+    const tools = toolRegistry.getToolDefinitions()
+    console.log('▶', 'Available tools for agent loop:', tools)
+
+    // Use fast local heuristic to determine if agent loop should be used
+    const hasTools = tools.length > 0
+    const useAgentLoopForQuery =
+      enableAgentLoop && shouldUseAgentLoop(prompt, hasTools)
+    console.log(
+      '▶',
+      'Agent loop decision:',
+      useAgentLoopForQuery
+        ? 'complex (use agent loop)'
+        : 'simple (direct chat)',
+    )
+
+    if (useAgentLoopForQuery) {
+      return executeAgentLoopChat({
+        prompt,
+        agent,
+        lang,
+        t,
+        onResponseUpdate,
+        onPromptClear,
+        onAgentLoopUpdate,
+      })
     }
 
     const { currentConversation, createConversation, addMessage } =
@@ -345,4 +386,181 @@ export const submitChat = async (
     )
     return { success: false, error: 'LLM call failed' }
   }
+}
+
+// =============================================================================
+// Agent Loop Chat Execution
+// =============================================================================
+
+interface AgentLoopChatOptions {
+  prompt: string
+  agent: Agent
+  lang: Lang
+  t: unknown
+  onResponseUpdate: (response: string) => void
+  onPromptClear: () => void
+  onAgentLoopUpdate?: (state: AgentLoopState) => void
+}
+
+/**
+ * Execute chat using the agent loop for complex queries with tool calling
+ */
+async function executeAgentLoopChat(
+  options: AgentLoopChatOptions,
+): Promise<ChatSubmitResult> {
+  const {
+    prompt,
+    agent,
+    // lang and t reserved for future i18n support in agent loop
+    onResponseUpdate,
+    onPromptClear,
+    onAgentLoopUpdate,
+  } = options
+
+  try {
+    const { currentConversation, createConversation, addMessage } =
+      useConversationStore.getState()
+
+    // Create or continue conversation
+    let conversation = currentConversation
+    if (!conversation || conversation.agentId !== agent.id) {
+      conversation = await createConversation(agent.id, 'agent-loop')
+    }
+
+    // Save user message
+    await addMessage(conversation.id, { role: 'user', content: prompt })
+
+    // Get available tools
+    const tools = toolRegistry.getToolDefinitions()
+
+    // Create the tool executor
+    const toolExecutor = toolRegistry.createExecutor({
+      agentId: agent.id,
+      conversationId: conversation.id,
+    })
+
+    // Create and run the agent loop
+    const loop = new AgentLoop(agent, prompt, {
+      maxSteps: 10,
+      tools,
+      toolExecutor,
+      showReasoning: true,
+      onUpdate: (state) => {
+        onAgentLoopUpdate?.(state)
+        // Stream reasoning to the user
+        if (state.steps.length > 0) {
+          const output = formatAgentLoopProgress(state)
+          onResponseUpdate(output)
+        }
+      },
+      onStepComplete: (step) => {
+        console.log(
+          `[AgentLoop] Step ${step.stepNumber} complete:`,
+          step.plan.decision.type,
+        )
+      },
+    })
+
+    // Run the loop
+    const finalState = await loop.run()
+
+    // Format final response
+    let finalResponse = ''
+    if (finalState.result?.type === 'answer' && finalState.result.answer) {
+      finalResponse = finalState.result.answer
+    } else if (finalState.error) {
+      finalResponse = `❌ **Agent Loop Error**\n\n${finalState.error}`
+    } else {
+      finalResponse = formatAgentLoopProgress(finalState)
+    }
+
+    onResponseUpdate(finalResponse)
+
+    // Save assistant response
+    await addMessage(conversation.id, {
+      role: 'assistant',
+      content: finalResponse,
+      agentId: agent.id,
+    })
+
+    onPromptClear()
+
+    return { success: finalState.status === 'completed' }
+  } catch (error) {
+    console.error('Agent loop execution failed:', error)
+    const errorMessage = `❌ **Agent Loop Failed**\n\n${error instanceof Error ? error.message : 'Unknown error'}`
+    onResponseUpdate(errorMessage)
+    return { success: false, error: 'Agent loop failed' }
+  }
+}
+
+/**
+ * Format agent loop progress for display
+ */
+function formatAgentLoopProgress(state: AgentLoopState): string {
+  const lines: string[] = []
+
+  lines.push(`## Agent Loop Progress`)
+  lines.push(`**Status:** ${state.status}`)
+  lines.push(`**Steps:** ${state.currentStep}/${state.maxSteps}`)
+
+  // Show usage info if available
+  if (state.usage.llmCalls > 0) {
+    lines.push(
+      `**LLM Calls:** ${state.usage.llmCalls} | **Tokens:** ${state.usage.totalTokens} | **Est. Cost:** $${state.usage.estimatedCost.toFixed(4)}`,
+    )
+  }
+  lines.push('')
+
+  for (const step of state.steps) {
+    const { plan, actions, observations, synthesis } = step
+
+    // Show plan phase
+    lines.push(`### Step ${step.stepNumber}: ${plan.decision.type}`)
+    if (plan.reasoning) {
+      const reasoningPreview =
+        plan.reasoning.length > 200
+          ? `${plan.reasoning.substring(0, 200)}...`
+          : plan.reasoning
+      lines.push(`> ${reasoningPreview}`)
+    }
+
+    // Show actions (tool calls)
+    if (actions?.toolCalls?.length) {
+      lines.push(`**Tools called:**`)
+      for (const tc of actions.toolCalls) {
+        lines.push(`- \`${tc.name}\``)
+      }
+    }
+
+    // Show observations
+    if (observations?.length) {
+      for (const obs of observations) {
+        const icon = obs.success ? '✓' : '✗'
+        const contentPreview =
+          obs.content.length > 100
+            ? `${obs.content.substring(0, 100)}...`
+            : obs.content
+        lines.push(`${icon} **${obs.source}:** ${contentPreview}`)
+        if (obs.duration) {
+          lines.push(`  _(${obs.duration}ms)_`)
+        }
+      }
+    }
+
+    // Show synthesis hint
+    if (synthesis?.nextStepHint) {
+      lines.push(`_Next: ${synthesis.nextStepHint}_`)
+    }
+
+    lines.push('')
+  }
+
+  if (state.result?.type === 'answer' && state.result.answer) {
+    lines.push('---')
+    lines.push('## Final Answer')
+    lines.push(state.result.answer)
+  }
+
+  return lines.join('\n')
 }

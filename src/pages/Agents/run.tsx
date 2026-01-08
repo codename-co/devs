@@ -23,11 +23,13 @@ import { Pin, PinSlash } from 'iconoir-react'
 
 import { useI18n } from '@/i18n'
 import {
+  AgentLoopTimeline,
   Container,
   Icon,
   MarkdownRenderer,
   PromptArea,
   Section,
+  StreamingIndicator,
   Widget,
 } from '@/components'
 import DefaultLayout from '@/layouts/Default'
@@ -42,6 +44,7 @@ import {
   AgentMemoryEntry,
   MemoryCategory,
 } from '@/types'
+import type { AgentLoopState } from '@/lib/agent-loop'
 import { errorToast, successToast } from '@/lib/toast'
 import { submitChat } from '@/lib/chat'
 import { copyRichText } from '@/lib/clipboard'
@@ -545,6 +548,11 @@ export const AgentRunPage = () => {
   const [_conversationArtifacts, setConversationArtifacts] = useState<
     Artifact[]
   >([])
+
+  // Agent loop state for real-time visual feedback
+  const [agentLoopState, setAgentLoopState] = useState<AgentLoopState | null>(
+    null,
+  )
 
   const {
     currentConversation,
@@ -1050,6 +1058,7 @@ export const AgentRunPage = () => {
       setIsSending(true)
       setResponse('')
       setPrompt('')
+      setAgentLoopState(null) // Reset agent loop state
 
       await submitChat({
         prompt: promptText,
@@ -1063,9 +1072,11 @@ export const AgentRunPage = () => {
         onResponseUpdate: setResponse,
         onPromptClear: () => setPrompt(''),
         onResponseClear: () => setResponse(''),
+        onAgentLoopUpdate: setAgentLoopState, // Add agent loop callback
       })
 
       setIsSending(false)
+      setAgentLoopState(null) // Clear when complete
     },
     [isSending, conversationMessages, lang, t],
   )
@@ -1094,6 +1105,7 @@ export const AgentRunPage = () => {
       setIsSending(true)
       setPrompt('')
       setResponse('')
+      setAgentLoopState(null) // Reset agent loop state
 
       // Convert files to base64 for LLM processing
       const filesData = await Promise.all(
@@ -1117,11 +1129,13 @@ export const AgentRunPage = () => {
         onResponseUpdate: setResponse,
         onPromptClear: () => setPrompt(''),
         onResponseClear: () => setResponse(''),
+        onAgentLoopUpdate: setAgentLoopState, // Add agent loop callback
       })
 
       // Clear files after submission
       setSelectedFiles([])
       setIsSending(false)
+      setAgentLoopState(null) // Clear when complete
     },
     [
       prompt,
@@ -1232,8 +1246,28 @@ export const AgentRunPage = () => {
                   ),
                 )}
 
-                {/* Display streaming response */}
-                {response && (
+                {/* Agent Loop Timeline - Real-time visual feedback */}
+                {agentLoopState && (
+                  <AgentLoopTimeline
+                    state={agentLoopState}
+                    isStreaming={
+                      isSending && agentLoopState.status === 'running'
+                    }
+                    className="max-h-[400px]"
+                  />
+                )}
+
+                {/* Streaming indicator (when sending but no response yet and no agent loop) */}
+                {isSending && !response && !agentLoopState && (
+                  <StreamingIndicator
+                    agentIcon={(selectedAgent?.icon as any) || 'Sparks'}
+                    agentName={selectedAgent?.name || 'Agent'}
+                    message={t('Thinking')}
+                  />
+                )}
+
+                {/* Display streaming response (when not using agent loop) */}
+                {response && !agentLoopState && (
                   <div
                     aria-hidden="false"
                     tabIndex={0}

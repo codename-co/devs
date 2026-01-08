@@ -1,4 +1,6 @@
 import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
+import type { ToolChatOptions, ToolCall } from '../tool-types'
+import { toAnthropicToolFormat, parseAnthropicToolCalls } from '../tool-types'
 import { LLMConfig } from '@/types'
 import {
   processAttachments,
@@ -10,10 +12,45 @@ export class AnthropicProvider implements LLMProviderInterface {
   private baseUrl = 'https://api.anthropic.com/v1'
   public static readonly DEFAULT_MODEL = 'claude-sonnet-4-5-20250929'
   public static readonly DEFAULT_MAX_TOKENS = 8192
+  public readonly supportsTools = true
 
   private async convertMessageToAnthropicFormat(
     message: LLMMessage,
   ): Promise<any> {
+    // Handle tool result messages
+    if (message.role === 'tool') {
+      return {
+        role: 'user',
+        content: [
+          {
+            type: 'tool_result',
+            tool_use_id: message.toolCallId,
+            content: message.content,
+          },
+        ],
+      }
+    }
+
+    // Handle assistant messages with tool calls
+    if (message.role === 'assistant' && message.toolCalls?.length) {
+      const content: any[] = []
+      if (message.content) {
+        content.push({ type: 'text', text: message.content })
+      }
+      for (const tc of message.toolCalls) {
+        content.push({
+          type: 'tool_use',
+          id: tc.id,
+          name: tc.name,
+          input: tc.arguments,
+        })
+      }
+      return {
+        role: 'assistant',
+        content,
+      }
+    }
+
     if (!message.attachments || message.attachments.length === 0) {
       return {
         role: message.role,
@@ -82,6 +119,7 @@ export class AnthropicProvider implements LLMProviderInterface {
   async chat(
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
+    options?: ToolChatOptions,
   ): Promise<LLMResponse> {
     // Convert messages to Anthropic format
     const systemMessage =
@@ -99,7 +137,34 @@ export class AnthropicProvider implements LLMProviderInterface {
       messagesCount: userMessages.length,
       hasSystemMessage: !!systemMessage,
       temperature: config?.temperature || 0.7,
+      hasTools: !!options?.tools?.length,
     })
+
+    // Build request body
+    const body: Record<string, unknown> = {
+      model: config?.model || AnthropicProvider.DEFAULT_MODEL,
+      system: systemMessage,
+      messages: userMessages,
+      temperature: config?.temperature || 0.7,
+      max_tokens: config?.maxTokens || AnthropicProvider.DEFAULT_MAX_TOKENS,
+    }
+
+    // Add tools if provided
+    if (options?.tools?.length) {
+      body.tools = options.tools.map(toAnthropicToolFormat)
+      if (options.toolChoice) {
+        if (options.toolChoice === 'auto') {
+          body.tool_choice = { type: 'auto' }
+        } else if (options.toolChoice === 'required') {
+          body.tool_choice = { type: 'any' }
+        } else if (options.toolChoice === 'none') {
+          // Don't send tools at all for 'none'
+          delete body.tools
+        } else {
+          body.tool_choice = { type: 'tool', name: options.toolChoice.name }
+        }
+      }
+    }
 
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -109,13 +174,7 @@ export class AnthropicProvider implements LLMProviderInterface {
         'anthropic-version': '2023-06-01',
         'anthropic-dangerous-direct-browser-access': 'true',
       },
-      body: JSON.stringify({
-        model: config?.model || AnthropicProvider.DEFAULT_MODEL,
-        system: systemMessage,
-        messages: userMessages,
-        temperature: config?.temperature || 0.7,
-        max_tokens: config?.maxTokens || AnthropicProvider.DEFAULT_MAX_TOKENS,
-      }),
+      body: JSON.stringify(body),
     })
 
     console.log('[ANTHROPIC-PROVIDER] 📡 Response received:', {
@@ -130,8 +189,35 @@ export class AnthropicProvider implements LLMProviderInterface {
 
     const data = await response.json()
 
+    // Extract text content and tool calls from response
+    let textContent = ''
+    let toolCalls: ToolCall[] | undefined
+
+    if (Array.isArray(data.content)) {
+      // Extract text blocks
+      const textBlocks = data.content.filter(
+        (block: any) => block.type === 'text',
+      )
+      textContent = textBlocks.map((block: any) => block.text).join('')
+
+      // Extract tool use blocks
+      toolCalls = parseAnthropicToolCalls(data.content)
+      if (toolCalls.length === 0) {
+        toolCalls = undefined
+      }
+    } else {
+      textContent = data.content[0]?.text || ''
+    }
+
     return {
-      content: data.content[0].text,
+      content: textContent,
+      toolCalls,
+      stopReason:
+        data.stop_reason === 'tool_use'
+          ? 'tool_calls'
+          : data.stop_reason === 'max_tokens'
+            ? 'length'
+            : 'content',
       usage: data.usage
         ? {
             promptTokens: data.usage.input_tokens,
