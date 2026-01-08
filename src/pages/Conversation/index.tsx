@@ -207,19 +207,26 @@ export function ConversationPage() {
       })
     }
 
-    // Sort by pinned first, then by timestamp
+    // Sort by pinned first, then by updatedAt (most recently active first)
     return [...filtered].sort((a: Conversation, b: Conversation) => {
       // Pinned conversations come first
       if (a.isPinned && !b.isPinned) return -1
       if (!a.isPinned && b.isPinned) return 1
 
-      // Compare timestamps (handles both Date objects and ISO strings)
-      const timeA =
-        a.timestamp instanceof Date
+      // Compare updatedAt timestamps (handles both Date objects and ISO strings)
+      // Fall back to timestamp for backward compatibility with older conversations
+      const timeA = a.updatedAt
+        ? a.updatedAt instanceof Date
+          ? a.updatedAt.getTime()
+          : new Date(a.updatedAt).getTime()
+        : a.timestamp instanceof Date
           ? a.timestamp.getTime()
           : new Date(a.timestamp).getTime()
-      const timeB =
-        b.timestamp instanceof Date
+      const timeB = b.updatedAt
+        ? b.updatedAt instanceof Date
+          ? b.updatedAt.getTime()
+          : new Date(b.updatedAt).getTime()
+        : b.timestamp instanceof Date
           ? b.timestamp.getTime()
           : new Date(b.timestamp).getTime()
       return timeB - timeA

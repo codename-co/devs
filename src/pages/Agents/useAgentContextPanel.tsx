@@ -141,10 +141,16 @@ export const useAgentContextPanel = (
             conv.agentId === agent.id ||
             conv.participatingAgents?.includes(agent.id),
         )
-        .sort(
-          (a, b) =>
-            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
-        )
+        .sort((a, b) => {
+          // Sort by updatedAt (most recently active first), fallback to timestamp
+          const timeA = a.updatedAt
+            ? new Date(a.updatedAt).getTime()
+            : new Date(a.timestamp).getTime()
+          const timeB = b.updatedAt
+            ? new Date(b.updatedAt).getTime()
+            : new Date(b.timestamp).getTime()
+          return timeB - timeA
+        })
         .slice(0, 10)
 
       blocks.push({

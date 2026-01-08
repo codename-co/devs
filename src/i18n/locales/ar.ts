@@ -329,6 +329,7 @@ export const ar: I18n = {
   encryptedApiKey: 'مفتاح API المشفر',
   baseUrl: 'الرابط الأساسي',
   timestamp: 'الطابع الزمني',
+  updatedAt: 'آخر تحديث',
   order: 'الترتيب',
   mimeType: 'نوع MIME',
   lastModified: 'آخر تعديل',
@@ -451,6 +452,7 @@ export const ar: I18n = {
   'Brief description of why this is important...':
     'وصف موجز لسبب أهمية هذه الرسالة...',
   'Pinned Messages': 'الرسائل المثبتة',
+  Thinking: 'يفكر',
   'No pinned messages': 'لا توجد رسائل مثبتة',
   'Messages you pin will appear here for quick reference.':
     'الرسائل التي تقوم بتثبيتها ستظهر هنا للرجوع السريع.',

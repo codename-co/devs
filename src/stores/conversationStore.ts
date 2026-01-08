@@ -123,12 +123,14 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
 
       // Create conversation without initial system message
       // The system prompt will be dynamically built and added by chat.ts when messages are sent
+      const now = new Date()
       const conversation: Conversation = {
         id: crypto.randomUUID(),
         agentId,
         participatingAgents: [agentId],
         workflowId,
-        timestamp: new Date(),
+        timestamp: now,
+        updatedAt: now,
         messages: [],
       }
 
@@ -185,6 +187,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       }
 
       conversation.messages.push(newMessage)
+      conversation.updatedAt = new Date() // Update timestamp when message is added
       await db.update('conversations', conversation)
 
       // Sync to Yjs for P2P sync
@@ -474,7 +477,11 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
         throw new Error('Conversation not found')
       }
 
-      const updatedConversation = { ...conversation, isPinned: true }
+      const updatedConversation = {
+        ...conversation,
+        isPinned: true,
+        updatedAt: new Date(),
+      }
       await db.update('conversations', updatedConversation)
       syncToYjs('conversations', updatedConversation)
 
@@ -506,7 +513,11 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
         throw new Error('Conversation not found')
       }
 
-      const updatedConversation = { ...conversation, isPinned: false }
+      const updatedConversation = {
+        ...conversation,
+        isPinned: false,
+        updatedAt: new Date(),
+      }
       await db.update('conversations', updatedConversation)
       syncToYjs('conversations', updatedConversation)
 
@@ -560,6 +571,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
         conversation.pinnedMessageIds.push(messageId)
       }
 
+      conversation.updatedAt = new Date()
       await db.update('conversations', conversation)
       syncToYjs('conversations', conversation)
 
@@ -609,6 +621,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
         )
       }
 
+      conversation.updatedAt = new Date()
       await db.update('conversations', conversation)
       syncToYjs('conversations', conversation)
 
@@ -661,6 +674,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
         content,
       }
 
+      conversation.updatedAt = new Date()
       await db.update('conversations', conversation)
       syncToYjs('conversations', conversation)
 
@@ -705,7 +719,11 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
         await ConversationSummarizer.summarizeConversation(conversation)
 
       // Update conversation with summary
-      const updatedConversation = { ...conversation, summary }
+      const updatedConversation = {
+        ...conversation,
+        summary,
+        updatedAt: new Date(),
+      }
       await db.update('conversations', updatedConversation)
       syncToYjs('conversations', updatedConversation)
 
@@ -745,7 +763,11 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       }
 
       // Update conversation with new title
-      const updatedConversation = { ...conversation, title: newTitle.trim() }
+      const updatedConversation = {
+        ...conversation,
+        title: newTitle.trim(),
+        updatedAt: new Date(),
+      }
       await db.update('conversations', updatedConversation)
       syncToYjs('conversations', updatedConversation)
 

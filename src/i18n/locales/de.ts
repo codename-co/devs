@@ -334,6 +334,7 @@ export const de: I18n = {
   encryptedApiKey: 'verschlüsselter API-Schlüssel',
   baseUrl: 'Basis-URL',
   timestamp: 'Zeitstempel',
+  updatedAt: 'letzte Aktualisierung',
   order: 'Reihenfolge',
   mimeType: 'MIME-Typ',
   lastModified: 'Zuletzt geändert',
@@ -458,6 +459,7 @@ export const de: I18n = {
   'Brief description of why this is important...':
     'Kurze Beschreibung, warum dies wichtig ist...',
   'Pinned Messages': 'Angeheftete Nachrichten',
+  Thinking: 'Denkt nach',
   'No pinned messages': 'Keine angehefteten Nachrichten',
   'Messages you pin will appear here for quick reference.':
     'Die Nachrichten, die Sie anheften, werden hier zur schnellen Referenz angezeigt.',

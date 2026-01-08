@@ -332,6 +332,7 @@ export const es: I18n = {
   encryptedApiKey: 'clave API cifrada',
   baseUrl: 'URL base',
   timestamp: 'marca de tiempo',
+  updatedAt: 'última actualización',
   order: 'orden',
   mimeType: 'tipo MIME',
   lastModified: 'última modificación',
@@ -455,6 +456,7 @@ export const es: I18n = {
   'Brief description of why this is important...':
     'Breve descripción de por qué esto es importante...',
   'Pinned Messages': 'Mensajes fijados',
+  Thinking: 'Pensando',
   'No pinned messages': 'No hay mensajes fijados',
   'Messages you pin will appear here for quick reference.':
     'Los mensajes que fijas aparecerán aquí para una referencia rápida.',

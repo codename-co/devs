@@ -333,6 +333,7 @@ export const fr: I18n = {
   encryptedApiKey: 'clé API chiffrée',
   baseUrl: 'URL de base',
   timestamp: 'horodatage',
+  updatedAt: 'dernière mise à jour',
   order: 'ordre',
   mimeType: 'type MIME',
   lastModified: 'dernière modification',
@@ -462,6 +463,7 @@ export const fr: I18n = {
   'Brief description of why this is important...':
     'Brève description de l’importance de ce message...',
   'Pinned Messages': 'Messages épinglés',
+  Thinking: 'Réflexion',
   'No pinned messages': 'Aucun message épinglé',
   'Messages you pin will appear here for quick reference.':
     'Les messages que vous épinglez apparaîtront ici pour un accès rapide.',

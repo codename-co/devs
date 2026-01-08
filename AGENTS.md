@@ -519,8 +519,15 @@ interface Workflow {
 interface Conversation {
   id: string
   agentId: string
+  participatingAgents: string[]
   workflowId: string
-  timestamp: Date
+  timestamp: Date // Creation timestamp
+  updatedAt: Date // Last modification timestamp, used for sorting
+  messages: Message[]
+  title?: string
+  isPinned?: boolean
+  summary?: string
+  pinnedMessageIds?: string[]
 }
 
 interface KnowledgeItem {

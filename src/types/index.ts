@@ -67,7 +67,8 @@ export interface Conversation {
   agentId: string // Primary agent ID (for backward compatibility)
   participatingAgents: string[] // All agents that have participated in this conversation
   workflowId: string
-  timestamp: Date
+  timestamp: Date // Creation timestamp (createdAt)
+  updatedAt: Date // Last modification timestamp, used for sorting
   messages: Message[]
   title?: string // Auto-generated title from LLM summarization
   isPinned?: boolean // Whether this conversation is starred/pinned

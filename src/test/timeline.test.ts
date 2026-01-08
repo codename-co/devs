@@ -86,6 +86,7 @@ describe('Timeline Event Ordering', () => {
         participatingAgents: ['agent-1'],
         workflowId: 'workflow-1',
         timestamp: new Date(baseDate.getTime() + 60 * 1000), // 10:01
+        updatedAt: new Date(baseDate.getTime() + 3 * 60 * 1000), // 10:03 (last message)
         messages: [
           {
             id: 'msg-1',

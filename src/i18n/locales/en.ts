@@ -129,6 +129,7 @@ export const en = [
   'Remove Global',
   'Agent Context',
   'Pinned Messages',
+  'Thinking',
 
   // Artifacts side panel
   'Artifacts',
@@ -301,6 +302,7 @@ export const en = [
   'encryptedApiKey',
   'baseUrl',
   'timestamp',
+  'updatedAt',
   'order',
   'mimeType',
   'lastModified',

@@ -99,8 +99,10 @@ export function createTestConversation(
     isPinned: boolean
     pinnedMessageIds: string[]
     timestamp: Date
+    updatedAt: Date
   }> = {},
 ) {
+  const now = new Date()
   return {
     id: overrides.id ?? `conv-${Date.now()}`,
     agentId: overrides.agentId ?? 'devs',
@@ -111,7 +113,8 @@ export function createTestConversation(
     summary: overrides.summary,
     isPinned: overrides.isPinned ?? false,
     pinnedMessageIds: overrides.pinnedMessageIds ?? [],
-    timestamp: overrides.timestamp ?? new Date(),
+    timestamp: overrides.timestamp ?? now,
+    updatedAt: overrides.updatedAt ?? overrides.timestamp ?? now,
   }
 }
 
