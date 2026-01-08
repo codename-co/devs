@@ -3,6 +3,7 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import basicSsl from '@vitejs/plugin-basic-ssl'
 import { resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
 import { globSync } from 'glob'
 import { defineConfig, loadEnv } from 'vite'
 import { createMpaPlugin, type Page } from 'vite-plugin-virtual-mpa'
@@ -10,6 +11,10 @@ import { createMpaPlugin, type Page } from 'vite-plugin-virtual-mpa'
 import { PRODUCT } from './src/config/product'
 import { defaultLang, type Lang, langs, meta } from './src/i18n'
 import { cacheVersionPlugin } from './src/lib/cache-version-plugin'
+
+// Read version from package.json
+const packageJson = JSON.parse(readFileSync('./package.json', 'utf-8'))
+const APP_VERSION = packageJson.version
 
 // Dynamically list all pages with their full paths
 const pageFiles = globSync('*/index.{tsx,mdx}', { cwd: './src/pages' })
@@ -72,6 +77,10 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
+    define: {
+      __APP_VERSION__: JSON.stringify(APP_VERSION),
+      __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+    },
     plugins: [
       react(),
       tailwindcss(),

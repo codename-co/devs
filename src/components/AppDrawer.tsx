@@ -1000,6 +1000,29 @@ const ExpandedDrawer = ({
               >
                 {t('Terms')}
               </DropdownItem>
+              {/* Version and Build Info */}
+              <DropdownItem
+                key="metadata"
+                isDisabled
+                classNames={{
+                  title: 'text-xs text-center',
+                }}
+              >
+                v{__APP_VERSION__}
+                <span className="mx-1">·</span>
+                <time
+                  dateTime={new Date(__BUILD_TIME__).toISOString()}
+                  title={new Date(__BUILD_TIME__).toLocaleString(lang, {
+                    dateStyle: 'full',
+                    timeStyle: 'long',
+                  })}
+                >
+                  {new Date(__BUILD_TIME__).toLocaleString(lang, {
+                    dateStyle: 'short',
+                    timeStyle: 'short',
+                  })}
+                </time>
+              </DropdownItem>
             </DropdownMenu>
           </Dropdown>
         </div>
