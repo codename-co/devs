@@ -44,6 +44,7 @@ import {
 } from '@/types'
 import { errorToast, successToast } from '@/lib/toast'
 import { submitChat } from '@/lib/chat'
+import { copyRichText } from '@/lib/clipboard'
 import {
   learnFromMessage,
   processPendingLearningEvents,
@@ -162,8 +163,8 @@ const MessageDisplay = memo(
                   variant="light"
                   color="default"
                   isIconOnly
-                  onPress={() => {
-                    navigator.clipboard.writeText(message.content)
+                  onPress={async () => {
+                    await copyRichText(message.content)
                     successToast(t('Answer copied to clipboard'))
                   }}
                 >
