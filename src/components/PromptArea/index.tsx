@@ -1,7 +1,6 @@
 import {
   Button,
   ButtonGroup,
-  Chip,
   Textarea,
   type TextAreaProps,
   Tooltip,
@@ -21,6 +20,7 @@ import { useUrlFragment } from './useUrlFragment'
 import { ModelSelector } from './ModelSelector'
 import { AgentSelector } from './AgentSelector'
 import { AttachmentSelector } from './AttachmentSelector'
+import { FileAttachment } from './FileAttachment'
 import { AgentMentionPopover } from './AgentMentionPopover'
 import { useAgentMention } from './useAgentMention'
 import { MethodologyMentionPopover } from './MethodologyMentionPopover'
@@ -28,7 +28,7 @@ import { useMethodologyMention } from './useMethodologyMention'
 
 import { useI18n } from '@/i18n'
 import { type LanguageCode } from '@/i18n/locales'
-import { cn, getFileIcon } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { type Agent, type KnowledgeItem } from '@/types'
 import type { Methodology } from '@/types/methodology.types'
 import { getDefaultAgent } from '@/stores/agentStore'
@@ -38,7 +38,6 @@ import {
   isSmallHeight,
   isSmallWidth,
 } from '@/lib/device'
-import { formatBytes } from '@/lib/format'
 import { userSettings } from '@/stores/userStore'
 
 interface PromptAreaProps
@@ -485,29 +484,13 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
             endContent={
               // Selected files display
               selectedFiles.length > 0 && (
-                <div className="mb-2 flex flex-wrap gap-2 p-2 absolute start-0 bottom-8">
+                <div className="mb-2 flex flex-wrap gap-2 p-2 absolute start-0 bottom-8 end-0 max-h-24 overflow-y-auto">
                   {selectedFiles.map((file, index) => (
-                    <Chip
+                    <FileAttachment
                       key={index}
-                      variant="bordered"
-                      onClose={() => handleRemoveFile(index)}
-                    >
-                      <span
-                        className="text-xs flex flex-row items-center gap-1 max-w-64 pr-16 overflow-hidden"
-                        title={file.name}
-                      >
-                        <Icon
-                          className="w-4"
-                          name={getFileIcon(file.type) as any}
-                        />
-                        <span className="whitespace-nowrap overflow-hidden text-ellipsis">
-                          {file.name.substring(0, 48)}
-                        </span>
-                        <span className="absolute end-2 pl-2 pr-4">
-                          ({formatBytes(file.size, lang)})
-                        </span>
-                      </span>
-                    </Chip>
+                      file={file}
+                      onRemove={() => handleRemoveFile(index)}
+                    />
                   ))}
                 </div>
               )
