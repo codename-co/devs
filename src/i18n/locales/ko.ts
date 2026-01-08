@@ -327,6 +327,7 @@ export const ko: I18n = {
   encryptedApiKey: '암호화된 API 키',
   baseUrl: '기본 URL',
   timestamp: '타임스탬프',
+  updatedAt: '최종 업데이트',
   order: '순서',
   mimeType: 'MIME 유형',
   lastModified: '마지막 수정',
@@ -449,6 +450,7 @@ export const ko: I18n = {
   'Brief description of why this is important...':
     '이것이 중요한 이유에 대한 간략한 설명...',
   'Pinned Messages': '고정된 메시지',
+  Thinking: '생각 중',
   'No pinned messages': '고정된 메시지 없음',
   'Messages you pin will appear here for quick reference.':
     '고정한 메시지가 여기에 빠른 참조를 위해 표시됩니다.',
