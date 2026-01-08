@@ -486,6 +486,12 @@ export const fr: I18n = {
   Disconnected: 'Déconnecté',
   'Last sync: {time}': 'Dernière synchro: {time}',
 
+  // Document Processing
+  'Document queued for processing':
+    "Document mis en file d'attente pour traitement",
+  'Failed to queue document for processing':
+    "Échec de la mise en file d'attente du document",
+
   // Memory Learning
   'Learn from this message': 'Apprendre de ce message',
   '{count} insights extracted': '{count} insights extraits',

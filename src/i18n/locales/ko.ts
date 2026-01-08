@@ -473,6 +473,11 @@ export const ko: I18n = {
   Disconnected: '연결 끊김',
   'Last sync: {time}': '마지막 동기화: {time}',
 
+  // Document Processing
+  'Document queued for processing': '문서가 처리 대기열에 추가되었습니다',
+  'Failed to queue document for processing':
+    '문서를 처리 대기열에 추가하지 못했습니다',
+
   // Memory Learning
   'Learn from this message': '이 메시지에서 배우기',
   '{count} insights extracted': '{count}개의 인사이트가 추출되었습니다',

@@ -479,6 +479,11 @@ export const es: I18n = {
   Disconnected: 'Desconectado',
   'Last sync: {time}': 'Última sincronización: {time}',
 
+  // Document Processing
+  'Document queued for processing': 'Documento en cola para procesamiento',
+  'Failed to queue document for processing':
+    'Error al poner el documento en cola para procesamiento',
+
   // Memory Learning
   'Learn from this message': 'Aprender de este mensaje',
   '{count} insights extracted': '{count} insights extraídos',

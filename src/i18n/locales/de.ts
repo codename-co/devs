@@ -480,6 +480,12 @@ export const de: I18n = {
   'Grant Access': 'Zugriff gewähren',
   Disconnected: 'Getrennt',
   'Last sync: {time}': 'Letzte Synchronisierung: {time}',
+
+  // Document Processing
+  'Document queued for processing': 'Dokument zur Verarbeitung eingereiht',
+  'Failed to queue document for processing':
+    'Dokument konnte nicht zur Verarbeitung eingereiht werden',
+
   // Memory Learning
   'Learn from this message': 'Aus dieser Nachricht lernen',
   '{count} insights extracted': '{count} Erkenntnisse extrahiert',

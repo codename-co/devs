@@ -475,6 +475,11 @@ export const ar: I18n = {
   Disconnected: 'غير متصل',
   'Last sync: {time}': 'آخر مزامنة: {time}',
 
+  // Document Processing
+  'Document queued for processing': 'تم وضع المستند في قائمة الانتظار للمعالجة',
+  'Failed to queue document for processing':
+    'فشل في وضع المستند في قائمة انتظار المعالجة',
+
   // Memory Learning
   'Learn from this message': 'تعلم من هذه الرسالة',
   '{count} insights extracted': 'تم استخراج {count} رؤى',

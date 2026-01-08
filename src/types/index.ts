@@ -100,6 +100,11 @@ export interface KnowledgeItem {
   externalId?: string // ID in the external system (e.g., Google Drive file ID)
   externalUrl?: string // URL to view the item in the external system
   syncedAt?: Date // When this item was last synced from the connector
+  // Document processing fields
+  transcript?: string // Extracted text content from document processing
+  processingStatus?: 'pending' | 'processing' | 'completed' | 'failed' // Current processing state
+  processingError?: string // Error message if processing failed
+  processedAt?: Date // When the document was last processed
 }
 
 export interface PersistedFolderWatcher {

@@ -147,6 +147,15 @@ class DocumentProcessorService {
       progress: 0,
     }
 
+    // Update knowledge item status to pending
+    const item = await db.get('knowledgeItems', knowledgeItemId)
+    if (item) {
+      await db.update('knowledgeItems', {
+        ...item,
+        processingStatus: 'pending',
+      })
+    }
+
     this.processingQueue.push(job)
     console.log(`Queued processing job ${jobId} for item ${knowledgeItemId}`)
 
@@ -177,6 +186,17 @@ class DocumentProcessorService {
         job.status = 'failed'
         job.error = error instanceof Error ? error.message : String(error)
         job.completedAt = new Date()
+
+        // Update knowledge item with failed status
+        const item = await db.get('knowledgeItems', job.knowledgeItemId)
+        if (item) {
+          await db.update('knowledgeItems', {
+            ...item,
+            processingStatus: 'failed',
+            processingError: job.error,
+          })
+        }
+
         this.emitEvent({
           type: 'job_failed',
           jobId: job.id,
@@ -217,6 +237,12 @@ class DocumentProcessorService {
       throw new Error('Knowledge item not found')
     }
 
+    // Update status to processing
+    await db.update('knowledgeItems', {
+      ...item,
+      processingStatus: 'processing',
+    })
+
     job.progress = 30
     this.emitEvent({
       type: 'job_progress',
@@ -234,10 +260,12 @@ class DocumentProcessorService {
       progress: 90,
     })
 
-    // Update knowledge item with processed content
+    // Update knowledge item with processed transcript (keep original content intact)
     const updatedItem: KnowledgeItem = {
       ...item,
-      content: result.extractedText,
+      transcript: result.extractedText,
+      processingStatus: 'completed',
+      processedAt: new Date(),
       description: result.structuredContent?.title || item.description,
     }
 

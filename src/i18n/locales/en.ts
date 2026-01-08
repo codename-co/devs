@@ -449,6 +449,10 @@ export const en = [
   'Disconnected',
   'Last sync: {time}',
 
+  // Document Processing
+  'Document queued for processing',
+  'Failed to queue document for processing',
+
   // Memory Learning
   'Learn from this message',
   '{count} insights extracted',
