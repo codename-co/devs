@@ -11,4 +11,12 @@ export const ko: I18n = {
     '데이터베이스 가져오기에 실패했습니다 - 잘못된 파일 형식',
   'Backup database': '데이터베이스 백업',
   'Restore database': '데이터베이스 복원',
+  Edit: '수정',
+  Save: '저장',
+  Cancel: '취소',
+  'Field updated': '필드가 업데이트되었습니다',
+  'Failed to update field': '필드 업데이트에 실패했습니다',
+  'Invalid number value': '잘못된 숫자 값',
+  'Invalid date value': '잘못된 날짜 값',
+  'Invalid JSON value': '잘못된 JSON 값',
 } as const

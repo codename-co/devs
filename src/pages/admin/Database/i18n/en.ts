@@ -5,4 +5,12 @@ export const en = [
   'Failed to import database - invalid file format',
   'Backup database',
   'Restore database',
+  'Edit',
+  'Save',
+  'Cancel',
+  'Field updated',
+  'Failed to update field',
+  'Invalid number value',
+  'Invalid date value',
+  'Invalid JSON value',
 ] as const

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   Button,
   Chip,
@@ -10,6 +10,7 @@ import {
   Tooltip,
   Pagination,
   Input,
+  Textarea,
 } from '@heroui/react'
 import { db, Database } from '@/lib/db'
 import { useI18n } from '@/i18n'
@@ -45,6 +46,9 @@ export const DatabasePage: React.FC = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState<Record<string, number>>({})
   const [searchTerm, setSearchTerm] = useState<Record<string, string>>({})
+  const [editingField, setEditingField] = useState<string | null>(null)
+  const [editingValue, setEditingValue] = useState<string>('')
+  const [currentStoreName, setCurrentStoreName] = useState<string>('')
   const ITEMS_PER_PAGE = 10
 
   function formatValue(value: any, shortened = true): string {
@@ -196,15 +200,97 @@ export const DatabasePage: React.FC = () => {
     }
   }
 
-  const viewRecord = (record: any) => {
+  const viewRecord = (record: any, storeName: string) => {
     setSelectedRecord(record)
+    setCurrentStoreName(storeName)
     setIsDrawerOpen(true)
+    setEditingField(null)
   }
 
   const closeDrawer = () => {
     setIsDrawerOpen(false)
     setSelectedRecord(null)
+    setEditingField(null)
+    setCurrentStoreName('')
   }
+
+  const startEditing = (key: string, value: any) => {
+    setEditingField(key)
+    // Convert value to string for editing
+    if (value === null || value === undefined) {
+      setEditingValue('')
+    } else if (typeof value === 'object') {
+      setEditingValue(JSON.stringify(value, null, 2))
+    } else {
+      setEditingValue(String(value))
+    }
+  }
+
+  const cancelEditing = () => {
+    setEditingField(null)
+    setEditingValue('')
+  }
+
+  const saveFieldValue = useCallback(
+    async (key: string, originalValue: any) => {
+      if (!selectedRecord || !currentStoreName) return
+
+      try {
+        let newValue: any = editingValue
+
+        // Try to parse the value back to its original type
+        if (originalValue === null && editingValue === '') {
+          newValue = null
+        } else if (typeof originalValue === 'number') {
+          newValue = Number(editingValue)
+          if (isNaN(newValue)) {
+            errorToast(t('Invalid number value'))
+            return
+          }
+        } else if (typeof originalValue === 'boolean') {
+          newValue = editingValue.toLowerCase() === 'true'
+        } else if (originalValue instanceof Date) {
+          newValue = new Date(editingValue)
+          if (isNaN(newValue.getTime())) {
+            errorToast(t('Invalid date value'))
+            return
+          }
+        } else if (
+          Array.isArray(originalValue) ||
+          (typeof originalValue === 'object' && originalValue !== null)
+        ) {
+          try {
+            newValue = JSON.parse(editingValue)
+          } catch {
+            errorToast(t('Invalid JSON value'))
+            return
+          }
+        }
+
+        // Create updated record
+        const updatedRecord = { ...selectedRecord, [key]: newValue }
+        delete updatedRecord._index // Remove internal index field
+
+        // Update in database
+        await db.update(currentStoreName as any, updatedRecord)
+
+        // Update local state
+        setSelectedRecord(updatedRecord)
+
+        // Refresh the store data
+        await loadDatabaseStats()
+
+        successToast(t('Field updated'))
+      } catch (error) {
+        console.error('Error updating field:', error)
+        errorToast(t('Failed to update field'))
+      } finally {
+        setEditingField(null)
+        setEditingValue('')
+      }
+    },
+    [selectedRecord, currentStoreName, editingValue, t],
+  )
 
   const getPaginatedData = (store: StoreInfo) => {
     const page = currentPage[store.name] || 1
@@ -564,24 +650,127 @@ export const DatabasePage: React.FC = () => {
                                     </Code>
                                   </div>
                                   <div className="p-4">
-                                    {Object.entries(selectedRecord).map(
-                                      ([key, value]) => (
-                                        <dl
-                                          key={key}
-                                          className="text-sm font-mono mb-2"
-                                        >
-                                          <dt className="font-semibold break-words">
-                                            {t(key as any)}
-                                          </dt>
-                                          <dd className="break-words whitespace-pre-wrap">
-                                            {formatValue(
-                                              value as string,
-                                              false,
-                                            )}
-                                          </dd>
-                                        </dl>
-                                      ),
-                                    )}
+                                    {Object.entries(selectedRecord)
+                                      .filter(([key]) => key !== '_index')
+                                      .map(([key, value]) => {
+                                        const isEditing = editingField === key
+                                        const isIdField = key === 'id'
+                                        const isLongValue =
+                                          typeof value === 'object' ||
+                                          (typeof value === 'string' &&
+                                            value.length > 100)
+
+                                        return (
+                                          <dl
+                                            key={key}
+                                            className="text-sm font-mono mb-3"
+                                          >
+                                            <dt className="font-semibold break-words flex items-center gap-2 mb-1">
+                                              {t(key as any)}
+                                              {!isIdField && !isEditing && (
+                                                <Button
+                                                  isIconOnly
+                                                  size="sm"
+                                                  variant="light"
+                                                  className="h-5 w-5 min-w-5"
+                                                  onPress={() =>
+                                                    startEditing(key, value)
+                                                  }
+                                                  aria-label={t('Edit')}
+                                                >
+                                                  <Icon
+                                                    name="EditPencil"
+                                                    size="sm"
+                                                    className="text-default-400"
+                                                  />
+                                                </Button>
+                                              )}
+                                            </dt>
+                                            <dd className="break-words whitespace-pre-wrap">
+                                              {isEditing ? (
+                                                <div className="flex flex-col gap-2">
+                                                  {isLongValue ? (
+                                                    <Textarea
+                                                      value={editingValue}
+                                                      onValueChange={
+                                                        setEditingValue
+                                                      }
+                                                      autoFocus
+                                                      minRows={3}
+                                                      maxRows={10}
+                                                      classNames={{
+                                                        input:
+                                                          'font-mono text-xs',
+                                                      }}
+                                                    />
+                                                  ) : (
+                                                    <Input
+                                                      value={editingValue}
+                                                      onValueChange={
+                                                        setEditingValue
+                                                      }
+                                                      autoFocus
+                                                      size="sm"
+                                                      classNames={{
+                                                        input: 'font-mono',
+                                                      }}
+                                                      onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                          saveFieldValue(
+                                                            key,
+                                                            value,
+                                                          )
+                                                        } else if (
+                                                          e.key === 'Escape'
+                                                        ) {
+                                                          cancelEditing()
+                                                        }
+                                                      }}
+                                                    />
+                                                  )}
+                                                  <div className="flex gap-2">
+                                                    <Button
+                                                      size="sm"
+                                                      color="primary"
+                                                      onPress={() =>
+                                                        saveFieldValue(
+                                                          key,
+                                                          value,
+                                                        )
+                                                      }
+                                                    >
+                                                      {t('Save')}
+                                                    </Button>
+                                                    <Button
+                                                      size="sm"
+                                                      variant="flat"
+                                                      onPress={cancelEditing}
+                                                    >
+                                                      {t('Cancel')}
+                                                    </Button>
+                                                  </div>
+                                                </div>
+                                              ) : (
+                                                <span
+                                                  className={clsx(
+                                                    !isIdField &&
+                                                      'cursor-pointer hover:bg-default-100 rounded px-1 -mx-1',
+                                                  )}
+                                                  onClick={() =>
+                                                    !isIdField &&
+                                                    startEditing(key, value)
+                                                  }
+                                                >
+                                                  {formatValue(
+                                                    value as string,
+                                                    false,
+                                                  )}
+                                                </span>
+                                              )}
+                                            </dd>
+                                          </dl>
+                                        )
+                                      })}
                                     <Code className="text-xs whitespace-pre-wrap w-full mt-4 break-words">
                                       {JSON.stringify(selectedRecord, null, 2)}
                                     </Code>
@@ -619,7 +808,9 @@ export const DatabasePage: React.FC = () => {
                                       return (
                                         <div
                                           key={record.id || globalIndex}
-                                          onClick={() => viewRecord(record)}
+                                          onClick={() =>
+                                            viewRecord(record, store.name)
+                                          }
                                           className={clsx(
                                             'p-4 flex items-center justify-between hover:bg-default-50 cursor-pointer group',
                                             {
@@ -658,7 +849,9 @@ export const DatabasePage: React.FC = () => {
                                                 className="text-default-400"
                                               />
                                             }
-                                            onPress={() => viewRecord(record)}
+                                            onPress={() =>
+                                              viewRecord(record, store.name)
+                                            }
                                           />
                                         </div>
                                       )

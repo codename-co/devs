@@ -11,4 +11,12 @@ export const de: I18n = {
     'Datenbankimport fehlgeschlagen - ungültiges Dateiformat',
   'Backup database': 'Datenbank exportieren',
   'Restore database': 'Datenbank wiederherstellen',
+  Edit: 'Bearbeiten',
+  Save: 'Speichern',
+  Cancel: 'Abbrechen',
+  'Field updated': 'Feld aktualisiert',
+  'Failed to update field': 'Feld konnte nicht aktualisiert werden',
+  'Invalid number value': 'Ungültiger Zahlenwert',
+  'Invalid date value': 'Ungültiger Datumswert',
+  'Invalid JSON value': 'Ungültiger JSON-Wert',
 } as const

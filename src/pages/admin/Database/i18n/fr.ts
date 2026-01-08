@@ -11,4 +11,12 @@ export const fr: I18n = {
     'Échec de l’importation de la base de données - format de fichier invalide',
   'Backup database': 'Exporter la base de données',
   'Restore database': 'Restaurer la base de données',
+  Edit: 'Modifier',
+  Save: 'Enregistrer',
+  Cancel: 'Annuler',
+  'Field updated': 'Champ mis à jour',
+  'Failed to update field': 'Échec de la mise à jour du champ',
+  'Invalid number value': 'Valeur numérique invalide',
+  'Invalid date value': 'Valeur de date invalide',
+  'Invalid JSON value': 'Valeur JSON invalide',
 } as const
