@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Button,
+  Checkbox,
   Chip,
   Dropdown,
   DropdownTrigger,
@@ -26,12 +27,20 @@ import {
   MoreVert,
   SubmitDocument,
   RefreshDouble,
+  CheckCircle,
+  Xmark,
 } from 'iconoir-react'
 
 import { db } from '@/lib/db'
 import { KnowledgeItem } from '@/types'
 import { useKnowledge, useSyncReady } from '@/hooks'
-import { Title, Filter, FilterOption, Icon } from '@/components'
+import {
+  Title,
+  Filter,
+  FilterOption,
+  Icon,
+  ContentPreviewModal,
+} from '@/components'
 import { useI18n } from '@/i18n'
 import {
   knowledgeSync,
@@ -248,9 +257,10 @@ export const Files: React.FC = () => {
     )
   }, [rawKnowledgeItems, fileTypeFilter, syncSourceFilter])
 
-  // Reset to page 1 when filters change
+  // Reset to page 1 and clear selection when filters change
   useEffect(() => {
     setCurrentPage(1)
+    setSelectedItems(new Set())
   }, [fileTypeFilter, syncSourceFilter])
 
   // Calculate pagination
@@ -264,10 +274,16 @@ export const Files: React.FC = () => {
   const [uploading, setUploading] = useState(false)
   const [dragActive, setDragActive] = useState(false)
   const [selectedItem, setSelectedItem] = useState<KnowledgeItem | null>(null)
+  const [previewItem, setPreviewItem] = useState<KnowledgeItem | null>(null)
   const {
     isOpen: isEditModalOpen,
     onOpen: onEditModalOpen,
     onClose: onEditModalClose,
+  } = useDisclosure()
+  const {
+    isOpen: isPreviewOpen,
+    onOpen: onPreviewOpen,
+    onClose: onPreviewClose,
   } = useDisclosure()
   const [editForm, setEditForm] = useState({
     name: '',
@@ -290,6 +306,12 @@ export const Files: React.FC = () => {
     null,
   )
   const [isPickerActive, setIsPickerActive] = useState(false)
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
+  const {
+    isOpen: isBulkDeleteModalOpen,
+    onOpen: onBulkDeleteModalOpen,
+    onClose: onBulkDeleteModalClose,
+  } = useDisclosure()
 
   useEffect(() => {
     loadWatchedFolders()
@@ -556,10 +578,57 @@ export const Files: React.FC = () => {
         await db.init()
       }
       await db.delete('knowledgeItems', id)
+      // Remove from selection if selected
+      setSelectedItems((prev) => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
       // Knowledge items update automatically via reactive hooks
     } catch (error) {
       console.error('Failed to delete item:', error)
     }
+  }
+
+  const deleteSelectedItems = async () => {
+    try {
+      if (!db.isInitialized()) {
+        await db.init()
+      }
+      const itemsToDelete = Array.from(selectedItems)
+      for (const id of itemsToDelete) {
+        await db.delete('knowledgeItems', id)
+      }
+      setSelectedItems(new Set())
+      onBulkDeleteModalClose()
+      successToast(
+        t('{count} item(s) deleted', { count: itemsToDelete.length }),
+      )
+    } catch (error) {
+      console.error('Failed to delete items:', error)
+      errorToast(t('Failed to delete some items'))
+    }
+  }
+
+  const toggleItemSelection = (id: string) => {
+    setSelectedItems((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+
+  const selectAllItems = () => {
+    const allIds = knowledgeItems.map((item) => item.id)
+    setSelectedItems(new Set(allIds))
+  }
+
+  const unselectAllItems = () => {
+    setSelectedItems(new Set())
   }
 
   const openEditModal = (item: KnowledgeItem) => {
@@ -870,13 +939,49 @@ export const Files: React.FC = () => {
             {rawKnowledgeItems.length > 0 && (
               <div className="mt-8">
                 <div className="flex items-center justify-between mb-4">
-                  <Title level={3}>
-                    {t('My Knowledge')}
-                    <span className="ml-2 text-lg text-default-500">
-                      ({knowledgeItems.length})
-                    </span>
-                  </Title>
+                  <div className="flex items-center gap-4">
+                    <Title level={3}>
+                      {t('My Knowledge')}
+                      <span className="ml-2 text-lg text-default-500">
+                        ({knowledgeItems.length})
+                      </span>
+                    </Title>
+                  </div>
                   <div className="flex gap-2">
+                    {knowledgeItems.length > 0 && (
+                      <>
+                        {selectedItems.size > 0 ? (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="flat"
+                              startContent={<Xmark className="w-4 h-4" />}
+                              onPress={unselectAllItems}
+                            >
+                              {t('Unselect all')}
+                            </Button>
+                            <Button
+                              size="sm"
+                              color="danger"
+                              variant="flat"
+                              startContent={<Trash className="w-4 h-4" />}
+                              onPress={onBulkDeleteModalOpen}
+                            >
+                              {t('Delete selected')}
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="flat"
+                            startContent={<CheckCircle className="w-4 h-4" />}
+                            onPress={selectAllItems}
+                          >
+                            {t('Select all')}
+                          </Button>
+                        )}
+                      </>
+                    )}
                     <Filter
                       label={t('File Type')}
                       options={fileTypeOptions}
@@ -915,14 +1020,35 @@ export const Files: React.FC = () => {
                         return (
                           <div
                             key={item.id}
-                            className="p-4 flex items-center justify-between hover:bg-default-50"
+                            className={`p-4 flex items-center justify-between hover:bg-default-50 ${selectedItems.has(item.id) ? 'bg-primary-50' : ''}`}
                           >
                             <div className="flex items-center space-x-4 flex-1">
-                              <div className="flex-shrink-0">
+                              <Checkbox
+                                isSelected={selectedItems.has(item.id)}
+                                onValueChange={() =>
+                                  toggleItemSelection(item.id)
+                                }
+                                aria-label={t('Select {name}', {
+                                  name: item.name,
+                                })}
+                              />
+                              <div
+                                className="flex-shrink-0 cursor-pointer"
+                                onClick={() => {
+                                  setPreviewItem(item)
+                                  onPreviewOpen()
+                                }}
+                              >
                                 {getFileIcon(item)}
                               </div>
 
-                              <div className="flex-1 min-w-0">
+                              <div
+                                className="flex-1 min-w-0 cursor-pointer"
+                                onClick={() => {
+                                  setPreviewItem(item)
+                                  onPreviewOpen()
+                                }}
+                              >
                                 <h3 className="font-medium truncate">
                                   {item.name}
                                 </h3>
@@ -1113,6 +1239,56 @@ export const Files: React.FC = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* Bulk Delete Confirmation Modal */}
+      <Modal isOpen={isBulkDeleteModalOpen} onClose={onBulkDeleteModalClose}>
+        <ModalContent>
+          <ModalHeader>{t('Delete Selected Items')}</ModalHeader>
+          <ModalBody>
+            <p>
+              {t(
+                'Are you sure you want to delete {count} item(s)? This action cannot be undone.',
+                { count: selectedItems.size },
+              )}
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="light" onPress={onBulkDeleteModalClose}>
+              {t('Cancel')}
+            </Button>
+            <Button color="danger" onPress={deleteSelectedItems}>
+              {t('Delete')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Content Preview Modal */}
+      {previewItem && (
+        <ContentPreviewModal
+          isOpen={isPreviewOpen}
+          onClose={() => {
+            onPreviewClose()
+            setPreviewItem(null)
+          }}
+          type="knowledge"
+          item={previewItem}
+          onRequestProcessing={async (itemId) => {
+            try {
+              await documentProcessor.queueProcessing(itemId)
+              successToast(t('Document queued for processing'))
+              // Refresh the preview item to show updated status
+              const updatedItem = await db.get('knowledgeItems', itemId)
+              if (updatedItem) {
+                setPreviewItem(updatedItem)
+              }
+            } catch (error) {
+              errorToast(t('Failed to queue document for processing'))
+              console.error('Processing error:', error)
+            }
+          }}
+        />
+      )}
     </>
   )
 }

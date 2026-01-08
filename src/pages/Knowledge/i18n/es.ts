@@ -22,6 +22,7 @@ export const es: I18n = {
   Reconnect: 'Reconectar',
   'My Knowledge': 'Mis conocimientos',
   'Knowledge Item': 'Elemento de conocimiento',
+  Preview: 'Vista previa',
   Reprocess: 'Reprocesar',
   Files: 'Archivos',
   'My Files': 'Mis archivos',
@@ -153,4 +154,14 @@ export const es: I18n = {
   Source: 'Fuente',
   'No items match the selected filters':
     'No hay elementos que coincidan con los filtros seleccionados',
+  // Bulk selection
+  '{count} item(s) deleted': '{count} elemento(s) eliminado(s)',
+  'Failed to delete some items': 'Error al eliminar algunos elementos',
+  'Select all': 'Seleccionar todo',
+  'Unselect all': 'Deseleccionar todo',
+  'Delete selected': 'Eliminar selección',
+  'Select {name}': 'Seleccionar {name}',
+  'Delete Selected Items': 'Eliminar elementos seleccionados',
+  'Are you sure you want to delete {count} item(s)? This action cannot be undone.':
+    '¿Está seguro de que desea eliminar {count} elemento(s)? Esta acción no se puede deshacer.',
 } as const

@@ -21,6 +21,7 @@ export const ar: I18n = {
   Reconnect: 'إعادة الاتصال',
   'My Knowledge': 'معرفتي',
   'Knowledge Item': 'عنصر المعرفة',
+  Preview: 'معاينة',
   Reprocess: 'إعادة المعالجة',
   Files: 'الملفات',
   'My Files': 'ملفاتي',
@@ -147,4 +148,14 @@ export const ar: I18n = {
   'File Type': 'نوع الملف',
   Source: 'المصدر',
   'No items match the selected filters': 'لا توجد عناصر تطابق الفلاتر المحددة',
+  // Bulk selection
+  '{count} item(s) deleted': 'تم حذف {count} عنصر(عناصر)',
+  'Failed to delete some items': 'فشل في حذف بعض العناصر',
+  'Select all': 'تحديد الكل',
+  'Unselect all': 'إلغاء تحديد الكل',
+  'Delete selected': 'حذف المحدد',
+  'Select {name}': 'تحديد {name}',
+  'Delete Selected Items': 'حذف العناصر المحددة',
+  'Are you sure you want to delete {count} item(s)? This action cannot be undone.':
+    'هل أنت متأكد من رغبتك في حذف {count} عنصر(عناصر)؟ لا يمكن التراجع عن هذا الإجراء.',
 } as const

@@ -125,7 +125,7 @@ const ExpandedPanel = ({ className }: { className?: string }) => {
 
   return (
     <div
-      className={`fixed w-96 bg-background dark:bg-content1 p-3 border-l border-default-200 dark:border-default-300 h-full flex flex-col overflow-y-auto ${className}`}
+      className={`fixed w-96 bg-background dark:bg-content1 p-3 border-l border-default-200 dark:border-default-200 h-full flex flex-col overflow-y-auto ${className}`}
     >
       <ScrollShadow
         hideScrollBar

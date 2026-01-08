@@ -22,6 +22,7 @@ export const de: I18n = {
   Reconnect: 'Neu verbinden',
   'My Knowledge': 'Mein Wissen',
   'Knowledge Item': 'Wissenselement',
+  Preview: 'Vorschau',
   Reprocess: 'Neu verarbeiten',
   Files: 'Dateien',
   'My Files': 'Meine Dateien',
@@ -153,4 +154,15 @@ export const de: I18n = {
   Source: 'Quelle',
   'No items match the selected filters':
     'Keine Elemente entsprechen den ausgewählten Filtern',
+  // Bulk selection
+  '{count} item(s) deleted': '{count} Element(e) gelöscht',
+  'Failed to delete some items':
+    'Einige Elemente konnten nicht gelöscht werden',
+  'Select all': 'Alle auswählen',
+  'Unselect all': 'Auswahl aufheben',
+  'Delete selected': 'Ausgewählte löschen',
+  'Select {name}': '{name} auswählen',
+  'Delete Selected Items': 'Ausgewählte Elemente löschen',
+  'Are you sure you want to delete {count} item(s)? This action cannot be undone.':
+    'Möchten Sie wirklich {count} Element(e) löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
 } as const

@@ -514,7 +514,7 @@ const ExpandedDrawer = ({
 
   return (
     <div
-      className={`fixed w-64 bg-gray-50 dark:bg-content1 p-3 border-r border-default-200 dark:border-default-300 h-full flex flex-col ${className}`}
+      className={`fixed w-64 bg-gray-50 dark:bg-content1 p-3 border-r border-default-200 dark:border-default-200 h-full flex flex-col ${className}`}
     >
       <ScrollShadow
         hideScrollBar
@@ -837,7 +837,7 @@ const ExpandedDrawer = ({
         </Popover>
 
         {/* Quick Actions Bar */}
-        <div className="flex items-center justify-between gap-1 px-1 pt-2 border-t border-default-200">
+        <div className="flex items-center justify-between gap-1 px-1">
           {/* About */}
           <Tooltip content={t('About')} placement="top">
             <Button
@@ -1010,13 +1010,7 @@ const ExpandedDrawer = ({
               >
                 v{__APP_VERSION__}
                 <span className="mx-1">·</span>
-                <time
-                  dateTime={new Date(__BUILD_TIME__).toISOString()}
-                  title={new Date(__BUILD_TIME__).toLocaleString(lang, {
-                    dateStyle: 'full',
-                    timeStyle: 'long',
-                  })}
-                >
+                <time dateTime={new Date(__BUILD_TIME__).toISOString()}>
                   {new Date(__BUILD_TIME__).toLocaleString(lang, {
                     dateStyle: 'short',
                     timeStyle: 'short',

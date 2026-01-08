@@ -90,7 +90,7 @@ export const Connectors: React.FC = () => {
   const EmptyState = () => (
     <div className="flex flex-col items-center justify-center py-16 text-center">
       <div className="w-16 h-16 mb-4 rounded-full bg-default-100 flex items-center justify-center">
-        <Icon name="CloudSync" className="w-8 h-8 text-default-400" />
+        <Icon name="Puzzle" className="w-8 h-8 text-default-400" />
       </div>
       <Title
         level={3}

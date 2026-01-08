@@ -22,6 +22,7 @@ export const ko: I18n = {
   Reconnect: '다시 연결',
   'My Knowledge': '내 지식',
   'Knowledge Item': '지식 항목',
+  Preview: '미리보기',
   Reprocess: '재처리',
   Files: '파일',
   'My Files': '내 파일',
@@ -150,4 +151,14 @@ export const ko: I18n = {
   Source: '소스',
   'No items match the selected filters':
     '선택한 필터와 일치하는 항목이 없습니다',
+  // Bulk selection
+  '{count} item(s) deleted': '{count}개 항목 삭제됨',
+  'Failed to delete some items': '일부 항목 삭제 실패',
+  'Select all': '모두 선택',
+  'Unselect all': '선택 해제',
+  'Delete selected': '선택 항목 삭제',
+  'Select {name}': '{name} 선택',
+  'Delete Selected Items': '선택한 항목 삭제',
+  'Are you sure you want to delete {count} item(s)? This action cannot be undone.':
+    '{count}개 항목을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.',
 } as const

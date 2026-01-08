@@ -14,6 +14,7 @@ export const en = [
   'Reconnect',
   'My Knowledge',
   'Knowledge Item',
+  'Preview',
   'Reprocess',
   'Files',
   'My Files',
@@ -131,4 +132,13 @@ export const en = [
   'File Type',
   'Source',
   'No items match the selected filters',
+  // Bulk selection
+  '{count} item(s) deleted',
+  'Failed to delete some items',
+  'Select all',
+  'Unselect all',
+  'Delete selected',
+  'Select {name}',
+  'Delete Selected Items',
+  'Are you sure you want to delete {count} item(s)? This action cannot be undone.',
 ] as const
