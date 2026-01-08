@@ -387,7 +387,6 @@ export const Sources: React.FC = () => {
           isOpen={showWizard}
           onClose={() => setShowWizard(false)}
           category="app"
-          initialProvider={null}
         />
       )}
 
