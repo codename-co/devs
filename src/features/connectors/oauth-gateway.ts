@@ -189,7 +189,7 @@ export class OAuthGateway {
     }
     if (!config.clientId) {
       throw new Error(
-        `Missing client ID for provider: ${provider}. Check environment variables.`
+        `Missing client ID for provider: ${provider}. Check environment variables.`,
       )
     }
     return config
@@ -222,7 +222,7 @@ export class OAuthGateway {
   static buildAuthUrl(
     provider: AppConnectorProvider,
     state: string,
-    codeChallenge: string
+    codeChallenge: string,
   ): string {
     const config = this.getProviderOAuthConfig(provider)
     const params = new URLSearchParams()
@@ -271,7 +271,9 @@ export class OAuthGateway {
    * @returns Promise resolving to OAuth tokens
    * @throws Error if authentication fails or is cancelled
    */
-  static async authenticate(provider: AppConnectorProvider): Promise<OAuthResult> {
+  static async authenticate(
+    provider: AppConnectorProvider,
+  ): Promise<OAuthResult> {
     // Generate PKCE values
     const codeVerifier = this.generateCodeVerifier()
     const codeChallenge = await this.generateCodeChallenge(codeVerifier)
@@ -293,7 +295,7 @@ export class OAuthGateway {
     if (!popup) {
       this.pendingAuth.delete(state)
       throw new Error(
-        'Failed to open authentication popup. Please allow popups for this site.'
+        'Failed to open authentication popup. Please allow popups for this site.',
       )
     }
 
@@ -328,7 +330,7 @@ export class OAuthGateway {
    */
   static async handleCallback(
     code: string,
-    state: string
+    state: string,
   ): Promise<OAuthResult> {
     const pendingState = this.pendingAuth.get(state)
     if (!pendingState) {
@@ -345,7 +347,7 @@ export class OAuthGateway {
       return await this.exchangeCodeForTokens(
         pendingState.provider,
         code,
-        pendingState.codeVerifier
+        pendingState.codeVerifier,
       )
     } finally {
       this.pendingAuth.delete(state)
@@ -417,7 +419,7 @@ export class OAuthGateway {
    */
   private static waitForCallback(
     popup: Window,
-    _expectedState: string
+    _expectedState: string,
   ): Promise<{ code: string; receivedState: string }> {
     return new Promise((resolve, reject) => {
       const startTime = Date.now()
@@ -439,8 +441,8 @@ export class OAuthGateway {
         if (event.data.error) {
           reject(
             new Error(
-              event.data.error_description || event.data.error || 'OAuth error'
-            )
+              event.data.error_description || event.data.error || 'OAuth error',
+            ),
           )
           return
         }
@@ -496,7 +498,7 @@ export class OAuthGateway {
   private static async exchangeCodeForTokens(
     provider: AppConnectorProvider,
     code: string,
-    codeVerifier: string
+    codeVerifier: string,
   ): Promise<OAuthResult> {
     const config = this.getProviderOAuthConfig(provider)
 
@@ -552,7 +554,7 @@ export class OAuthGateway {
         throw new Error(
           errorData.error_description ||
             errorData.error ||
-            `Token exchange failed: ${response.status}`
+            `Token exchange failed: ${response.status}`,
         )
       }
 
@@ -578,7 +580,7 @@ export class OAuthGateway {
    */
   private static normalizeTokenResponse(
     data: Record<string, unknown>,
-    provider: AppConnectorProvider
+    provider: AppConnectorProvider,
   ): OAuthResult {
     // Handle Notion's different response format
     if (provider === 'notion') {
@@ -587,7 +589,7 @@ export class OAuthGateway {
         refreshToken: undefined, // Notion tokens don't expire
         expiresIn: undefined,
         scope: '', // Notion doesn't return scope
-        tokenType: data.token_type as string || 'bearer',
+        tokenType: (data.token_type as string) || 'bearer',
       }
     }
 
@@ -596,8 +598,8 @@ export class OAuthGateway {
       accessToken: data.access_token as string,
       refreshToken: data.refresh_token as string | undefined,
       expiresIn: data.expires_in as number | undefined,
-      scope: data.scope as string || '',
-      tokenType: data.token_type as string || 'Bearer',
+      scope: (data.scope as string) || '',
+      tokenType: (data.token_type as string) || 'Bearer',
     }
   }
 
