@@ -1,5 +1,6 @@
 import { Container, ContextualPanel, Icon, Section, Title } from '@/components'
 import { AppDrawer } from '@/components/AppDrawer'
+import { PageMenu } from '@/components/PageMenu'
 import { Tabbar } from '@/components/Tabbar'
 import { languageDirection, useI18n } from '@/i18n'
 import type { HeaderProps, IconName } from '@/lib/types'
@@ -140,45 +141,48 @@ export default function DefaultLayout({
                           )}
                         />
                       )}
-                      {header?.cta && (
-                        <Button
-                          variant="light"
-                          as={Link}
-                          href={header.cta?.href ?? ''}
-                          startContent={
-                            header.cta.icon && (
-                              <Icon name={header.cta.icon} size="sm" />
-                            )
-                          }
-                          className="absolute end-0 shrink-0 dark:hover:bg-default-300"
-                        >
-                          {header.cta?.label}
-                        </Button>
-                      )}
-                      {header?.moreActions && (
-                        <Dropdown>
-                          <DropdownTrigger>
-                            <Button
-                              variant="light"
-                              className="absolute end-0 shrink-0 dark:hover:bg-default-300"
-                            >
-                              <Icon name="MoreVert" size="sm" />
-                            </Button>
-                          </DropdownTrigger>
-                          <DropdownMenu>
-                            {header.moreActions.map((action) => (
-                              <DropdownItem
-                                key={action.label}
-                                onClick={action.onClick}
-                                startContent={
-                                  <Icon name={action.icon as IconName} />
-                                }
-                                title={action.label}
-                              />
-                            ))}
-                          </DropdownMenu>
-                        </Dropdown>
-                      )}
+                      {/* Header action buttons */}
+                      <div className="absolute end-0 flex items-center gap-1">
+                        {header?.cta && (
+                          <Button
+                            variant="light"
+                            as={Link}
+                            href={header.cta?.href ?? ''}
+                            startContent={
+                              header.cta.icon && (
+                                <Icon name={header.cta.icon} size="sm" />
+                              )
+                            }
+                            className="shrink-0 dark:hover:bg-default-300"
+                          >
+                            {header.cta?.label}
+                          </Button>
+                        )}
+                        {header?.moreActions && (
+                          <Dropdown>
+                            <DropdownTrigger>
+                              <Button
+                                variant="light"
+                                className="shrink-0 dark:hover:bg-default-300"
+                              >
+                                <Icon name="MoreVert" size="sm" />
+                              </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu>
+                              {header.moreActions.map((action) => (
+                                <DropdownItem
+                                  key={action.label}
+                                  onClick={action.onClick}
+                                  startContent={
+                                    <Icon name={action.icon as IconName} />
+                                  }
+                                  title={action.label}
+                                />
+                              ))}
+                            </DropdownMenu>
+                          </Dropdown>
+                        )}
+                      </div>
                       {header && (
                         <Title
                           id="title"
@@ -193,6 +197,7 @@ export default function DefaultLayout({
                 </div>
               )}
               <ToastProvider />
+              <PageMenu />
 
               {children}
             </div>

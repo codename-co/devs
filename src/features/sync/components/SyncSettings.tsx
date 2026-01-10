@@ -88,6 +88,8 @@ const localI18n = {
     'You',
     'Peer',
     'No activity',
+    'Local Backup',
+    'Automatically backup your data to a folder on your device',
   ] as const,
   fr: {
     Create: 'Créer',
@@ -166,6 +168,9 @@ const localI18n = {
     You: 'Vous',
     Peer: 'Pair',
     'No activity': 'Aucune activité',
+    'Local Backup': 'Sauvegarde locale',
+    'Automatically backup your data to a folder on your device':
+      'Sauvegardez automatiquement vos données dans un dossier sur votre appareil',
   },
   es: {
     Create: 'Crear',
@@ -244,6 +249,9 @@ const localI18n = {
     You: 'Tú',
     Peer: 'Par',
     'No activity': 'Sin actividad',
+    'Local Backup': 'Copia de seguridad local',
+    'Automatically backup your data to a folder on your device':
+      'Guarda automáticamente tus datos en una carpeta de tu dispositivo',
   },
   de: {
     Create: 'Erstellen',
@@ -290,6 +298,9 @@ const localI18n = {
     You: 'Sie',
     Peer: 'Peer',
     'No activity': 'Keine Aktivität',
+    'Local Backup': 'Lokale Sicherung',
+    'Automatically backup your data to a folder on your device':
+      'Sichern Sie Ihre Daten automatisch in einem Ordner auf Ihrem Gerät',
     'Sync active! Share the link or QR code with other devices to connect.':
       'Sync aktiv! Teilen Sie den Link oder QR-Code mit anderen Geräten.',
     'Click "Synchronize with devices" to start syncing.':
@@ -399,6 +410,9 @@ const localI18n = {
     You: 'أنت',
     Peer: 'نظير',
     'No activity': 'لا يوجد نشاط',
+    'Local Backup': 'نسخ احتياطي محلي',
+    'Automatically backup your data to a folder on your device':
+      'احفظ بياناتك تلقائياً في مجلد على جهازك',
   },
   ko: {
     Create: '생성',
@@ -474,6 +488,9 @@ const localI18n = {
     You: '나',
     Peer: '피어',
     'No activity': '활동 없음',
+    'Local Backup': '로컬 백업',
+    'Automatically backup your data to a folder on your device':
+      '기기의 폴더에 데이터를 자동으로 백업합니다',
   },
 }
 

@@ -2,6 +2,7 @@ import { HeroUIProvider } from '@heroui/react'
 import { useHref, useNavigate, useSearchParams } from 'react-router-dom'
 import { useEffect } from 'react'
 import * as SyncModule from '@/features/sync'
+import { useAutoBackup } from '@/features/local-backup'
 import { ServiceWorkerManager } from '@/lib/service-worker'
 import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
@@ -118,6 +119,9 @@ function ProvidersInner({ children }: { children: React.ReactNode }) {
       return () => mediaQuery.removeEventListener('change', applyTheme)
     }
   }, [theme])
+
+  // Auto-backup: automatically sync to local folder when data changes
+  useAutoBackup()
 
   return (
     <>

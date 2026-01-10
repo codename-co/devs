@@ -64,17 +64,21 @@ import { useConnectorStore } from '@/stores/connectorStore'
 import { PROVIDER_CONFIG } from '@/features/connectors/providers/apps'
 import localI18n from './i18n'
 
-interface FileSystemFileHandle {
+// Import to ensure File System API types are available
+import '@/features/local-backup/types/file-system.d'
+
+interface LocalFileSystemFileHandle {
   readonly kind: 'file'
   readonly name: string
   getFile(): Promise<File>
 }
 
-interface FileSystemDirectoryHandle {
+// @ts-expect-error Interface is used in LocalFileSystemFileHandle.entries() return type
+interface LocalFileSystemDirectoryHandle {
   readonly kind: 'directory'
   readonly name: string
   entries(): AsyncIterable<
-    [string, FileSystemFileHandle | FileSystemDirectoryHandle]
+    [string, LocalFileSystemFileHandle | LocalFileSystemDirectoryHandle]
   >
 }
 
@@ -86,9 +90,7 @@ declare global {
         accept: Record<string, string[]>
       }>
       multiple?: boolean
-    }) => Promise<FileSystemFileHandle[]>
-
-    showDirectoryPicker?: () => Promise<FileSystemDirectoryHandle>
+    }) => Promise<LocalFileSystemFileHandle[]>
   }
 }
 

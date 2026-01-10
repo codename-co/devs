@@ -69,7 +69,7 @@ test.describe('Knowledge Base Management', () => {
     const syncButton = page
       .locator('text="Sync Folder"')
       .or(page.locator('text="Watch Folder"'))
-      .or(page.locator('[data-testid="folder-sync"]'))
+      .or(page.locator('[data-testid="local-backup"]'))
       .or(page.locator('text="Connect Folder"'))
 
     if (await syncButton.isVisible()) {

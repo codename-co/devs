@@ -149,6 +149,7 @@ export const Icons = {
   EvPlugXmark: IconoirIcons.EvPlugXmark,
   Expand: IconoirIcons.Expand,
   Filter: IconoirIcons.Filter,
+  FloppyDisk: IconoirIcons.FloppyDisk,
   Folder: IconoirIcons.Folder,
   GraduationCap: IconoirIcons.GraduationCap,
   HalfMoon: IconoirIcons.HalfMoon,
