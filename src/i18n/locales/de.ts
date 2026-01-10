@@ -26,6 +26,7 @@ export const de: I18n = {
   Methodologies: 'Methodiken',
   Conversations: 'Unterhaltungen',
   'Conversations history': 'Verlauf der Unterhaltungen',
+  Search: 'Suchen',
   'Search conversations': 'Unterhaltungen suchen',
   'Pin conversation': 'Unterhaltung anheften',
   'Unpin conversation': 'Unterhaltung lösen',
@@ -143,6 +144,7 @@ export const de: I18n = {
   'System Prompt': 'System-Prompt',
   'No system prompt defined.': 'Kein System-Prompt definiert.',
   Memories: 'Erinnerungen',
+  Messages: 'Nachrichten',
   Global: 'Global',
   'No memories learned yet. Start conversations and use "Learn from conversation" to build agent memory.':
     'Noch keine Erinnerungen gelernt. Beginnen Sie Gespräche und verwenden Sie „Aus Gespräch lernen", um das Agentengedächtnis aufzubauen.',

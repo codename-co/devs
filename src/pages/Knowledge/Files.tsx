@@ -60,6 +60,10 @@ import {
 import { errorToast, successToast, warningToast } from '@/lib/toast'
 import { formatBytes } from '@/lib/format'
 import {
+  getKnowledgeItemIcon,
+  getKnowledgeItemColor,
+} from '@/lib/knowledge-utils'
+import {
   documentProcessor,
   type ProcessingEvent,
 } from '@/lib/document-processor'
@@ -786,19 +790,9 @@ export const Files: React.FC = () => {
   }
 
   const getFileIcon = (item: KnowledgeItem) => {
-    if (item.type === 'folder') {
-      return <Icon name="Folder" size="lg" className="text-warning" />
-    }
-
-    switch (item.fileType) {
-      case 'image':
-        return <Icon name="MediaImage" size="lg" className="text-success" />
-      case 'document':
-        return <Icon name="Page" size="lg" className="text-secondary" />
-      case 'text':
-      default:
-        return <Icon name="Page" size="lg" className="text-primary" />
-    }
+    const iconName = getKnowledgeItemIcon(item)
+    const color = getKnowledgeItemColor(item)
+    return <Icon name={iconName} size="lg" className={`text-${color}`} />
   }
 
   return (

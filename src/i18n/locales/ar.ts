@@ -26,6 +26,7 @@ export const ar: I18n = {
   Methodologies: 'المنهجيات',
   Conversations: 'المحادثات',
   'Conversations history': 'سجل المحادثات',
+  Search: 'بحث',
   'Search conversations': 'البحث في المحادثات',
   'Pin conversation': 'تثبيت المحادثة',
   'Unpin conversation': 'إلغاء تثبيت المحادثة',
@@ -142,6 +143,7 @@ export const ar: I18n = {
   'System Prompt': 'طلب النظام',
   'No system prompt defined.': 'لم يتم تعريف طلب نظام.',
   Memories: 'الذكريات',
+  Messages: 'الرسائل',
   Global: 'عالمي',
   'No memories learned yet. Start conversations and use "Learn from conversation" to build agent memory.':
     'لم يتم تعلم أي ذكريات بعد. ابدأ المحادثات واستخدم "التعلم من المحادثة" لبناء ذاكرة الوكيل.',

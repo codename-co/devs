@@ -25,6 +25,7 @@ export const ko: I18n = {
   Methodologies: '방법론',
   Conversations: '대화',
   'Conversations history': '대화 기록',
+  Search: '검색',
   'Search conversations': '대화 검색',
   'Pin conversation': '대화 고정',
   'Unpin conversation': '대화 고정 해제',
@@ -140,6 +141,7 @@ export const ko: I18n = {
   'System Prompt': '시스템 프롬프트',
   'No system prompt defined.': '정의된 시스템 프롬프트가 없습니다.',
   Memories: '기억',
+  Messages: '메시지',
   Global: '전역',
   'No memories learned yet. Start conversations and use "Learn from conversation" to build agent memory.':
     '아직 학습된 기억이 없습니다. 대화를 시작하고 "대화에서 학습"을 사용하여 에이전트 기억을 구축하세요.',

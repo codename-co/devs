@@ -26,13 +26,14 @@ export const fr: I18n = {
   Methodologies: 'Méthodologies',
   Conversations: 'Conversations',
   'Conversations history': 'Historique des conversations',
+  Search: 'Rechercher',
   'Search conversations': 'Rechercher une conversation',
   'Pin conversation': 'Épingler la conversation',
   'Unpin conversation': 'Désépingler la conversation',
   'Summarize conversation': 'Résumer la conversation',
   'Pin it': 'Épingler',
   'Unpin it': 'Désépingler',
-  Pinned: 'Épinglées',
+  Pinned: 'Épinglé',
   'Message description': 'Description du message',
   'Edit description': 'Modifier la description',
   'View full conversation': 'Voir la conversation complète',
@@ -73,10 +74,10 @@ export const fr: I18n = {
   Voice: 'Voix',
   'Voice input mode': 'Mode de saisie vocale',
   'Connect external services': 'Connecter des services externes',
-  'Agent learned knowledge': "Connaissances apprises par l'agent",
+  'Agent learned knowledge': 'Connaissances apprises par l’agent',
   Files: 'Fichiers',
   'Manage your files': 'Gérer vos fichiers',
-  'App configuration': "Configuration de l'application",
+  'App configuration': 'Configuration de l’application',
   'Database management': 'Gestion de la base de données',
   Admin: 'Admin',
 
@@ -142,12 +143,13 @@ export const fr: I18n = {
   'System Prompt': 'Prompt système',
   'No system prompt defined.': 'Aucune invite système définie.',
   Memories: 'Mémoire',
+  Messages: 'Messages',
   Global: 'Global',
   'No memories learned yet. Start conversations and use "Learn from conversation" to build agent memory.':
-    "Aucune mémoire apprise pour le moment. Démarrez des conversations et utilisez « Apprendre de la conversation » pour construire la mémoire de l'agent.",
+    'Aucune mémoire apprise pour le moment. Démarrez des conversations et utilisez « Apprendre de la conversation » pour construire la mémoire de l’agent.',
   'Make Global': 'Rendre global',
   'Remove Global': 'Retirer global',
-  'Agent Context': "Contexte de l'agent",
+  'Agent Context': 'Contexte de l’agent',
 
   // Artifacts side panel
   Artifacts: 'Artefacts',
@@ -443,7 +445,7 @@ export const fr: I18n = {
   'Memory deleted': 'Souvenir supprimé',
   'Learn from conversation': 'Apprendre de la conversation',
   'Learning...': 'Apprentissage...',
-  'Memory learning failed': "Échec de l'apprentissage",
+  'Memory learning failed': 'Échec de l’apprentissage',
   'New memories learned': 'Nouveaux souvenirs appris',
   Insight: 'Aperçu',
   'Review and approve to save': 'Réviser et approuver pour sauvegarder',
@@ -495,15 +497,15 @@ export const fr: I18n = {
   // Knowledge Base - Folder Watching
   'Stop syncing': 'Arrêter la synchronisation',
   Reconnect: 'Reconnecter',
-  'Grant Access': "Autoriser l'accès",
+  'Grant Access': 'Autoriser l’accès',
   Disconnected: 'Déconnecté',
   'Last sync: {time}': 'Dernière synchro: {time}',
 
   // Document Processing
   'Document queued for processing':
-    "Document mis en file d'attente pour traitement",
+    'Document mis en file d’attente pour traitement',
   'Failed to queue document for processing':
-    "Échec de la mise en file d'attente du document",
+    'Échec de la mise en file d’attente du document',
 
   // Memory Learning
   'Learn from this message': 'Apprendre de ce message',

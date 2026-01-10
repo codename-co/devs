@@ -161,6 +161,7 @@ export const Icons = {
   Language: IconoirIcons.Language,
   LightBulbOn: IconoirIcons.LightBulbOn,
   Lock: IconoirIcons.Lock,
+  Mail: IconoirIcons.Mail,
   MathBook: IconoirIcons.MathBook,
   MediaImage: IconoirIcons.MediaImage,
   Menu: IconoirIcons.Menu,

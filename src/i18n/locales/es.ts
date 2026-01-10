@@ -26,6 +26,7 @@ export const es: I18n = {
   Methodologies: 'Metodologías',
   Conversations: 'Conversaciones',
   'Conversations history': 'Historial de conversaciones',
+  Search: 'Buscar',
   'Search conversations': 'Buscar conversaciones',
   'Pin conversation': 'Fijar conversación',
   'Unpin conversation': 'Desfijar conversación',
@@ -142,6 +143,7 @@ export const es: I18n = {
   'System Prompt': 'Prompt del sistema',
   'No system prompt defined.': 'Ningún prompt del sistema definido.',
   Memories: 'Memorias',
+  Messages: 'Mensajes',
   Global: 'Global',
   'No memories learned yet. Start conversations and use "Learn from conversation" to build agent memory.':
     'Aún no se han aprendido memorias. Inicia conversaciones y usa "Aprender de la conversación" para construir la memoria del agente.',

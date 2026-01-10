@@ -120,8 +120,9 @@ export function LocalBackupButton() {
       }
     }
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    // Use capture phase to ensure shortcut works even when focus is in form fields
+    window.addEventListener('keydown', handleKeyDown, true)
+    return () => window.removeEventListener('keydown', handleKeyDown, true)
   }, [isEnabled, needsPermission, triggerSync, handleSelectFolder])
 
   // Handle permission grant

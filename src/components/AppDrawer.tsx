@@ -1,5 +1,6 @@
 import {
   Button,
+  Kbd,
   Link,
   Listbox,
   ListboxItem,
@@ -28,6 +29,11 @@ import { Title } from './Title'
 import { ProgressIndicator } from './ProgressIndicator'
 import { AboutModal } from './AboutModal'
 import { SettingsModal } from './SettingsModal'
+import {
+  GlobalSearch,
+  useGlobalSearchShortcut,
+  useSearchStore,
+} from '@/features/search'
 import { SyncSettings } from '@/features/sync'
 import { PRODUCT } from '@/config/product'
 import clsx from 'clsx'
@@ -242,7 +248,12 @@ export const AppDrawer = memo(() => {
   const isCollapsed = userSettings((state) => state.isDrawerCollapsed)
   const [showSettingsModal, setShowSettingsModal] = useState(false)
 
+  const openSearch = useSearchStore((state) => state.open)
+
   const [isMobile, setIsMobile] = useState(false)
+
+  // Register Cmd+K shortcut for global search
+  useGlobalSearchShortcut()
 
   useEffect(() => {
     const checkViewport = () => {
@@ -276,10 +287,12 @@ export const AppDrawer = memo(() => {
         <CollapsedDrawer
           className="drawer-collapsed"
           onOpenSettings={() => setShowSettingsModal(true)}
+          onOpenSearch={openSearch}
         />
         <ExpandedDrawer
           className="drawer-expanded"
           onOpenSettings={() => setShowSettingsModal(true)}
+          onOpenSearch={openSearch}
         />
         {!isCollapsed && isMobile && <BackDrop />}
 
@@ -288,6 +301,9 @@ export const AppDrawer = memo(() => {
           isOpen={showSettingsModal}
           onClose={() => setShowSettingsModal(false)}
         />
+
+        {/* Global Search Modal - rendered at AppDrawer level */}
+        <GlobalSearch />
 
         <style>{
           /* CSS */ `
@@ -316,10 +332,12 @@ AppDrawer.displayName = 'AppDrawer'
 
 const CollapsedDrawer = ({
   className,
-  onOpenSettings,
+  onOpenSettings: _onOpenSettings,
+  onOpenSearch,
 }: {
   className?: string
   onOpenSettings: () => void
+  onOpenSearch: () => void
 }) => {
   const { lang, t } = useI18n()
   const url = useUrl(lang)
@@ -356,6 +374,25 @@ const CollapsedDrawer = ({
                 aria-label={t('Chat')}
               >
                 <Icon name="ChatPlusIn" />
+              </Button>
+            </Tooltip>
+            <Tooltip
+              content={
+                <span className="flex items-center gap-2">
+                  {t('Search')}
+                  <Kbd keys={['command']}>K</Kbd>
+                </span>
+              }
+              placement="right"
+            >
+              <Button
+                isIconOnly
+                variant="light"
+                className="w-full text-default-500"
+                aria-label={t('Search')}
+                onPress={onOpenSearch}
+              >
+                <Icon name="Search" />
               </Button>
             </Tooltip>
             <Tooltip content={t('Agents')} placement="right">
@@ -450,20 +487,6 @@ const CollapsedDrawer = ({
                 <Icon name="ChatBubble" />
               </Button>
             </Tooltip>
-            <Tooltip content={t('Settings')} placement="right">
-              <Button
-                isIconOnly
-                variant="light"
-                className={cn(
-                  'w-full text-gray-500 dark:text-gray-400 [.is-active]:bg-default-100',
-                  isCurrentPath('/settings') && 'is-active',
-                )}
-                aria-label={t('Settings')}
-                onPress={onOpenSettings}
-              >
-                <Icon name="Settings" />
-              </Button>
-            </Tooltip>
           </nav>
 
           {/* <div className="mt-4 pt-4 border-t border-default-200 float-end">
@@ -494,9 +517,11 @@ const CollapsedDrawer = ({
 const ExpandedDrawer = ({
   className,
   onOpenSettings,
+  onOpenSearch,
 }: {
   className?: string
   onOpenSettings: () => void
+  onOpenSearch: () => void
 }) => {
   const { lang, t } = useI18n()
   const url = useUrl(lang)
@@ -566,6 +591,23 @@ const ExpandedDrawer = ({
                 textValue={t('New chat')}
               >
                 {t('New chat')}
+              </ListboxItem>
+
+              {/* Search Button */}
+              <ListboxItem
+                variant="faded"
+                className="dark:text-gray-200 dark:hover:text-primary-500 [.is-active]:bg-primary-50"
+                startContent={
+                  <Icon name="Search" className="text-default-700" />
+                }
+                endContent={
+                  <Kbd keys={['command']} className="ml-auto text-xs">
+                    K
+                  </Kbd>
+                }
+                onPress={onOpenSearch}
+              >
+                {t('Search')}
               </ListboxItem>
             </ListboxSection>
             <ListboxSection showDivider>

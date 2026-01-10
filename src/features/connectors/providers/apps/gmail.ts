@@ -180,9 +180,79 @@ function decodeBase64Url(str: string): string {
 }
 
 /**
+ * Decode MIME encoded-word syntax (RFC 2047).
+ *
+ * Handles formats like:
+ * - `=?UTF-8?Q?Hello_World?=` (Quoted-Printable)
+ * - `=?UTF-8?B?SGVsbG8gV29ybGQ=?=` (Base64)
+ *
+ * @param text - Text potentially containing encoded-word sequences
+ * @returns Decoded text
+ */
+function decodeMimeEncodedWord(text: string): string {
+  // RFC 2047 section 6.2: Remove whitespace between adjacent encoded words
+  // This must happen BEFORE decoding so that split words are joined correctly
+  const normalizedText = text.replace(/\?=\s+=\?/g, '?==?')
+
+  // Pattern matches: =?charset?encoding?encoded_text?=
+  const encodedWordPattern = /=\?([^?]+)\?([BQ])\?([^?]*)\?=/gi
+
+  return normalizedText.replace(
+    encodedWordPattern,
+    (match, charset, encoding, encodedText) => {
+      try {
+        const upperEncoding = encoding.toUpperCase()
+
+        let decoded: Uint8Array
+
+        if (upperEncoding === 'B') {
+          // Base64 encoding
+          const binaryString = atob(encodedText)
+          decoded = new Uint8Array(binaryString.length)
+          for (let i = 0; i < binaryString.length; i++) {
+            decoded[i] = binaryString.charCodeAt(i)
+          }
+        } else if (upperEncoding === 'Q') {
+          // Quoted-Printable encoding
+          // In Q encoding, underscores represent spaces
+          const qpText = encodedText.replace(/_/g, ' ')
+          // Decode =XX hex sequences
+          const bytes: number[] = []
+          let i = 0
+          while (i < qpText.length) {
+            if (qpText[i] === '=' && i + 2 < qpText.length) {
+              const hex = qpText.substring(i + 1, i + 3)
+              const byte = parseInt(hex, 16)
+              if (!isNaN(byte)) {
+                bytes.push(byte)
+                i += 3
+                continue
+              }
+            }
+            bytes.push(qpText.charCodeAt(i))
+            i++
+          }
+          decoded = new Uint8Array(bytes)
+        } else {
+          return match // Unknown encoding, return as-is
+        }
+
+        // Decode using the specified charset
+        const decoder = new TextDecoder(charset.toLowerCase())
+        return decoder.decode(decoded)
+      } catch {
+        // If decoding fails, return original text
+        return match
+      }
+    },
+  )
+}
+
+/**
  * Extract a header value from raw RFC 822 email content.
  *
- * Handles multi-line (folded) headers per RFC 5322.
+ * Handles multi-line (folded) headers per RFC 5322 and
+ * decodes MIME encoded-word syntax per RFC 2047.
  *
  * @param headerSection - The header section of the email (before the blank line)
  * @param name - Header name to find (case-insensitive)
@@ -199,7 +269,10 @@ function extractRawHeader(
   const regex = new RegExp(`^${name}:\\s*(.*)$`, 'im')
   const match = unfoldedHeaders.match(regex)
 
-  return match ? match[1].trim() : undefined
+  if (!match) return undefined
+
+  // Decode MIME encoded-word syntax (RFC 2047)
+  return decodeMimeEncodedWord(match[1].trim())
 }
 
 /**

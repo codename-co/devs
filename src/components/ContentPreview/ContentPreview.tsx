@@ -15,6 +15,10 @@ import { useI18n } from '@/i18n'
 import { Icon } from '@/components/Icon'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import { formatBytes } from '@/lib/format'
+import {
+  getKnowledgeItemIcon,
+  getKnowledgeItemColor,
+} from '@/lib/knowledge-utils'
 import type { KnowledgeItem, Artifact } from '@/types'
 import localI18n from './i18n'
 
@@ -134,21 +138,7 @@ const getFileTypeIcon = (
     }
   }
 
-  const knowledgeItem = item as KnowledgeItem
-  if (knowledgeItem.type === 'folder') {
-    return 'Folder'
-  }
-
-  switch (knowledgeItem.fileType) {
-    case 'image':
-      return 'MediaImage'
-    case 'document':
-      return 'Page'
-    case 'text':
-      return 'Page'
-    default:
-      return 'Page'
-  }
+  return getKnowledgeItemIcon(item as KnowledgeItem)
 }
 
 /**
@@ -178,17 +168,7 @@ const getFileTypeColor = (
     }
   }
 
-  const knowledgeItem = item as KnowledgeItem
-  switch (knowledgeItem.fileType) {
-    case 'image':
-      return 'success'
-    case 'document':
-      return 'secondary'
-    case 'text':
-      return 'primary'
-    default:
-      return 'default'
-  }
+  return getKnowledgeItemColor(item as KnowledgeItem)
 }
 
 /**
@@ -1196,7 +1176,7 @@ export const ContentPreview = (
           <div className="flex-shrink-0">
             <Icon
               name={getFileTypeIcon(item, contentType) as any}
-              className="w-8 h-8 text-primary"
+              className={`w-8 h-8 text-${getFileTypeColor(item, contentType)}`}
             />
           </div>
           <div className="flex-1 min-w-0">
@@ -1236,7 +1216,7 @@ export const ContentPreview = (
         <div className="flex items-center gap-3">
           <Icon
             name={getFileTypeIcon(item, contentType) as any}
-            className="w-8 h-8 text-primary"
+            className={`w-8 h-8 text-${getFileTypeColor(item, contentType)}`}
           />
           <div>
             <h3 className="font-semibold text-lg">{name}</h3>

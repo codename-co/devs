@@ -7,7 +7,6 @@ import {
   Pagination,
   Spinner,
   Input,
-  Chip,
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
@@ -363,15 +362,6 @@ export function ConversationPage() {
                                   <h3 className="text-base font-medium truncate">
                                     {getConversationTitle(conversation)}
                                   </h3>
-                                  {conversation.isPinned && (
-                                    <Chip
-                                      size="sm"
-                                      variant="flat"
-                                      color="warning"
-                                    >
-                                      {t('Pinned')}
-                                    </Chip>
-                                  )}
                                 </div>
                                 <p className="text-sm text-default-500 mt-0.5">
                                   {getAgentName(conversation.agentId)}
