@@ -151,7 +151,7 @@ export function SyncPanel({ onClose }: SyncPanelProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const html5QrCodeRef = useRef<any>(null)
 
-  const syncUrl = `${window.location.origin}${url('')}?room=${roomId}`
+  const syncUrl = `${window.location.origin}${url('')}?join=${roomId}`
 
   // Generate QR code when sync is enabled
   useEffect(() => {
