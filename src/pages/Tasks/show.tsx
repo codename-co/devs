@@ -243,7 +243,7 @@ export const TaskPage = () => {
   useEffect(() => {
     if (!taskId) {
       errorToast(t('No task ID provided'))
-      navigate(url('/'))
+      navigate(url(''))
     }
   }, [taskId, navigate, url, t])
 
@@ -254,7 +254,7 @@ export const TaskPage = () => {
       const timeout = setTimeout(() => {
         if (!task) {
           errorToast(t('Task not found'))
-          navigate(url('/'))
+          navigate(url(''))
         }
       }, 1000)
       return () => clearTimeout(timeout)

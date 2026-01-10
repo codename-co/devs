@@ -238,7 +238,7 @@ export function GlobalSearch() {
 
         setIsSearching(true)
         try {
-          const searchResults = await globalSearch(searchQuery)
+          const searchResults = await globalSearch(searchQuery, lang)
           setResults(searchResults)
         } catch (error) {
           console.error('Search error:', error)
@@ -247,7 +247,7 @@ export function GlobalSearch() {
           setIsSearching(false)
         }
       }, 200),
-    [setResults, setIsSearching],
+    [setResults, setIsSearching, lang],
   )
 
   // Handle query changes
@@ -371,7 +371,7 @@ export function GlobalSearch() {
           conv.messages?.[0]?.content?.substring(0, 50) ||
           'Untitled',
         subtitle: conv.summary?.substring(0, 100),
-        href: `/agents/${conv.agentId}/conversations/${conv.id}`,
+        href: `/agents/run#${conv.agentSlug || conv.agentId}/${conv.id}`,
         date: new Date(conv.updatedAt || conv.timestamp),
       })),
     ]
@@ -401,7 +401,7 @@ export function GlobalSearch() {
   // Handle new task action
   const handleNewTask = useCallback(() => {
     close()
-    navigate(url('/'))
+    navigate(url(''))
   }, [close, navigate, url])
 
   return (
@@ -462,9 +462,7 @@ export function GlobalSearch() {
                   <ListboxItem
                     key="new-task"
                     textValue={t('New task')}
-                    startContent={
-                      <Icon name="Plus" size="md" className="text-primary" />
-                    }
+                    startContent={<Icon name="Plus" className="text-primary" />}
                     onPress={handleNewTask}
                   >
                     <span className="text-sm font-medium">{t('New task')}</span>
@@ -483,8 +481,7 @@ export function GlobalSearch() {
                         key={group.label}
                         title={group.label}
                         classNames={{
-                          heading:
-                            'text-xs font-semibold text-default-500 px-2',
+                          heading: 'font-semibold text-default-500 px-2',
                         }}
                       >
                         {group.items.map((item) => (
@@ -498,7 +495,6 @@ export function GlobalSearch() {
                                     ? 'TriangleFlagTwoStripes'
                                     : 'ChatBubble'
                                 }
-                                size="md"
                                 className={
                                   item.type === 'task'
                                     ? 'text-secondary'
@@ -512,11 +508,11 @@ export function GlobalSearch() {
                             }}
                           >
                             <div className="flex flex-col gap-0.5">
-                              <span className="text-sm font-medium truncate">
+                              <span className="text-md font-medium truncate">
                                 {item.title}
                               </span>
                               {item.subtitle && (
-                                <span className="text-xs text-default-400 truncate">
+                                <span className="text-sm text-default-400 truncate">
                                   {item.subtitle}
                                 </span>
                               )}
@@ -567,7 +563,6 @@ export function GlobalSearch() {
                             startContent={
                               <Icon
                                 name={result.icon as any}
-                                size="md"
                                 className={getIconColorClass(result.type)}
                               />
                             }

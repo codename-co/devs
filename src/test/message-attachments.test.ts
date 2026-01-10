@@ -239,6 +239,7 @@ describe('Conversation attachment persistence', () => {
     const testConversation = {
       id: 'test-conv-1',
       agentId: 'test-agent',
+      agentSlug: 'test-agent', // Include agentSlug to avoid migration
       workflowId: 'test-workflow',
       participatingAgents: ['test-agent'],
       messages: [],

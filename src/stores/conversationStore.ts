@@ -4,6 +4,7 @@ import { deleteFromYjs, syncToYjs } from '@/features/sync'
 import type { Conversation, Message } from '@/types'
 import { errorToast } from '@/lib/toast'
 import { ConversationTitleGenerator } from '@/lib/conversation-title-generator'
+import { getAgentById } from '@/stores/agentStore'
 
 interface ConversationStore {
   conversations: Conversation[]
@@ -96,6 +97,16 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       }
       const conversation = await db.get('conversations', id)
       if (conversation) {
+        // Migrate legacy conversations: backfill agentSlug if missing
+        if (!conversation.agentSlug && conversation.agentId) {
+          const agent = await getAgentById(conversation.agentId)
+          if (agent?.slug) {
+            conversation.agentSlug = agent.slug
+            // Persist the migration
+            await db.update('conversations', conversation)
+          }
+        }
+
         set({ currentConversation: conversation, isLoading: false })
         return conversation
       } else {
@@ -121,12 +132,17 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
         await db.init()
       }
 
+      // Get agent to retrieve slug
+      const agent = await getAgentById(agentId)
+      const agentSlug = agent?.slug
+
       // Create conversation without initial system message
       // The system prompt will be dynamically built and added by chat.ts when messages are sent
       const now = new Date()
       const conversation: Conversation = {
         id: crypto.randomUUID(),
         agentId,
+        agentSlug,
         participatingAgents: [agentId],
         workflowId,
         timestamp: now,

@@ -218,16 +218,18 @@ async function searchConversations(query: string): Promise<SearchResult[]> {
     for (const conv of conversations) {
       const texts = [conv.title || '', conv.summary || '']
       if (matchesQuery(query, texts)) {
-        // Get agent slug for the URL
-        const agent = await getAgentById(conv.agentId)
-        const agentSlug = agent?.slug || conv.agentId
+        // Use stored agentSlug, fallback to looking up agent, then to agentId
+        let agentSlug = conv.agentSlug
+        if (!agentSlug) {
+          const agent = await getAgentById(conv.agentId)
+          agentSlug = agent?.slug || conv.agentId
+        }
 
         results.push({
           id: conv.id,
           type: 'conversation',
           title: conv.title || 'Untitled conversation',
-          subtitle:
-            conv.summary?.slice(0, 100) || `${conv.messages.length} messages`,
+          subtitle: conv.summary?.slice(0, 100),
           icon: TYPE_ICONS.conversation,
           color: TYPE_COLORS.conversation,
           href: `/agents/run#${agentSlug}/${conv.id}`,
@@ -255,9 +257,12 @@ async function searchMessages(query: string): Promise<SearchResult[]> {
 
     const conversations = await db.getAll('conversations')
     for (const conv of conversations) {
-      // Get agent slug for the URL (do it once per conversation)
-      const agent = await getAgentById(conv.agentId)
-      const agentSlug = agent?.slug || conv.agentId
+      // Use stored agentSlug, fallback to looking up agent, then to agentId
+      let agentSlug = conv.agentSlug
+      if (!agentSlug) {
+        const agent = await getAgentById(conv.agentId)
+        agentSlug = agent?.slug || conv.agentId
+      }
 
       for (const msg of conv.messages) {
         if (msg.role === 'system') continue // Skip system messages
@@ -400,9 +405,13 @@ async function searchMemories(query: string): Promise<SearchResult[]> {
 }
 
 /**
- * Index and search methodologies
+ * Index and search methodologies (i18n-aware)
+ * Searches across all localizations but displays in user's locale
  */
-async function searchMethodologies(query: string): Promise<SearchResult[]> {
+async function searchMethodologies(
+  query: string,
+  lang: string = 'en',
+): Promise<SearchResult[]> {
   const results: SearchResult[] = []
 
   try {
@@ -411,20 +420,41 @@ async function searchMethodologies(query: string): Promise<SearchResult[]> {
       const methodology = await getMethodologyById(id)
       if (!methodology) continue
 
+      const { metadata } = methodology
+      const i18n = metadata.i18n || {}
+
+      // Build searchable text array including all relevant fields AND all localizations
       const texts = [
-        methodology.metadata.name,
-        methodology.metadata.description || '',
-        ...(methodology.metadata.tags || []),
+        // Base (English) content
+        metadata.name,
+        metadata.title || '',
+        metadata.description || '',
+        metadata.origin || '',
+        ...(metadata.tags || []),
+        ...(metadata.domains || []),
+        // All localized content (search in all languages)
+        ...Object.values(i18n).flatMap((loc) => [
+          loc.name || '',
+          loc.title || '',
+          loc.description || '',
+        ]),
       ]
+
       if (matchesQuery(query, texts)) {
+        // Get localized display values (fallback to base)
+        const localized = i18n[lang] || {}
+        const displayTitle =
+          localized.title || localized.name || metadata.title || metadata.name
+        const displayDescription = localized.description || metadata.description
+
         results.push({
-          id: methodology.metadata.id,
+          id: metadata.id,
           type: 'methodology',
-          title: methodology.metadata.name,
-          subtitle: methodology.metadata.description?.slice(0, 100),
+          title: displayTitle,
+          subtitle: displayDescription?.slice(0, 100),
           icon: TYPE_ICONS.methodology,
           color: TYPE_COLORS.methodology,
-          href: `/methodologies/${methodology.metadata.id}`,
+          href: `/methodologies/${metadata.id}`,
           score: calculateScore(query, texts, 3),
         })
       }
@@ -472,8 +502,13 @@ async function searchConnectors(query: string): Promise<SearchResult[]> {
 
 /**
  * Main search function that searches across all indexed entities
+ * @param query - The search query
+ * @param lang - The user's current language for localized display (default: 'en')
  */
-export async function globalSearch(query: string): Promise<SearchResult[]> {
+export async function globalSearch(
+  query: string,
+  lang: string = 'en',
+): Promise<SearchResult[]> {
   if (!query || query.length < SEARCH_CONFIG.MIN_QUERY_LENGTH) {
     return []
   }
@@ -495,7 +530,7 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
     searchTasks(query),
     searchFiles(query),
     searchMemories(query),
-    searchMethodologies(query),
+    searchMethodologies(query, lang),
     searchConnectors(query),
   ])
 

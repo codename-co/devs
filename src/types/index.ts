@@ -66,6 +66,7 @@ export interface Message {
 export interface Conversation {
   id: string
   agentId: string // Primary agent ID (for backward compatibility)
+  agentSlug?: string // Primary agent slug (for URL generation)
   participatingAgents: string[] // All agents that have participated in this conversation
   workflowId: string
   timestamp: Date // Creation timestamp (createdAt)
