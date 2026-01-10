@@ -206,7 +206,7 @@ export function LocalBackupButton() {
 
   return (
     <Popover
-      placement="bottom-end"
+      placement="bottom"
       isOpen={isPopoverOpen}
       onOpenChange={setIsPopoverOpen}
     >
