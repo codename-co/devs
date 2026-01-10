@@ -22,6 +22,7 @@ describe('Timeline Event Ordering', () => {
 
     mockAgent = {
       id: 'agent-1',
+      slug: 'test-agent',
       name: 'Test Agent',
       role: 'Developer',
       instructions: 'Test instructions',

@@ -69,6 +69,17 @@ export const de: I18n = {
   Privacy: 'Datenschutz',
   Terms: 'Nutzungsbedingungen',
 
+  // PageMenu
+  Voice: 'Stimme',
+  'Voice input mode': 'Spracheingabemodus',
+  'Connect external services': 'Externe Dienste verbinden',
+  'Agent learned knowledge': 'Vom Agenten gelernte Kenntnisse',
+  Files: 'Dateien',
+  'Manage your files': 'Verwalten Sie Ihre Dateien',
+  'App configuration': 'App-Konfiguration',
+  'Database management': 'Datenbankverwaltung',
+  Admin: 'Admin',
+
   // PromptArea
   'Need something done?': 'Benötigen Sie etwas?',
   'More actions': 'Weitere Aktionen',

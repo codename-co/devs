@@ -43,6 +43,7 @@ export function FolderSyncSettings() {
     syncMemories,
     syncKnowledge,
     syncTasks,
+    syncFullExport,
     enableSync,
     disableSync,
     triggerSync,
@@ -143,6 +144,7 @@ export function FolderSyncSettings() {
   if (syncMemories) syncOptionsValue.push('memories')
   if (syncKnowledge) syncOptionsValue.push('knowledge')
   if (syncTasks) syncOptionsValue.push('tasks')
+  if (syncFullExport) syncOptionsValue.push('fullExport')
 
   // Build label for selected options
   const getSelectedLabel = () => {
@@ -152,6 +154,7 @@ export function FolderSyncSettings() {
     if (syncMemories) items.push(t('Memories'))
     if (syncKnowledge) items.push(t('Knowledge'))
     if (syncTasks) items.push(t('Tasks'))
+    if (syncFullExport) items.push(t('Full Export'))
     if (items.length === 0) return '—'
     return items.join(', ')
   }
@@ -165,6 +168,7 @@ export function FolderSyncSettings() {
         syncMemories: true,
         syncKnowledge: true,
         syncTasks: true,
+        syncFullExport: true,
       })
     } else {
       const selected = Array.from(keys)
@@ -174,6 +178,7 @@ export function FolderSyncSettings() {
         syncMemories: selected.includes('memories'),
         syncKnowledge: selected.includes('knowledge'),
         syncTasks: selected.includes('tasks'),
+        syncFullExport: selected.includes('fullExport'),
       })
     }
   }
@@ -255,6 +260,7 @@ export function FolderSyncSettings() {
                 <DropdownItem key="memories">{t('Memories')}</DropdownItem>
                 <DropdownItem key="knowledge">{t('Knowledge')}</DropdownItem>
                 <DropdownItem key="tasks">{t('Tasks')}</DropdownItem>
+                <DropdownItem key="fullExport">{t('Full Export')}</DropdownItem>
               </DropdownMenu>
             </Dropdown>
             <Button
@@ -322,6 +328,7 @@ export function FolderSyncSettings() {
                 <DropdownItem key="memories">{t('Memories')}</DropdownItem>
                 <DropdownItem key="knowledge">{t('Knowledge')}</DropdownItem>
                 <DropdownItem key="tasks">{t('Tasks')}</DropdownItem>
+                <DropdownItem key="fullExport">{t('Full Export')}</DropdownItem>
               </DropdownMenu>
             </Dropdown>
             <Tooltip content={t('Backup Now')}>

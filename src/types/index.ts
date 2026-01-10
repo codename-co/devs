@@ -3,6 +3,7 @@ import { IconName } from '@/lib/types'
 
 export interface Agent {
   id: string
+  slug: string // URL-friendly identifier, auto-generated from name, unique across all agents
   name: string
   icon?: IconName
   desc?: string

@@ -11,22 +11,19 @@ import {
   Divider,
   Input,
   Progress,
-  Radio,
   RadioGroup,
-  RadioProps,
   Snippet,
 } from '@heroui/react'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { CustomRadio } from './CustomRadio'
 import { useSyncStore } from '../stores/syncStore'
 import { generateSetupQRCode } from '@/lib/qr-code'
 import { Icon } from '@/components/Icon'
 import { SyncActivityDetails } from './SyncActivityDetails'
 import { PeerNetworkGraph } from './PeerNetworkGraph'
 import { useI18n, useUrl } from '@/i18n'
-import { cn } from '@/lib/utils'
-
 const localI18n = {
   en: [
     'Create',
@@ -492,26 +489,6 @@ const localI18n = {
     'Automatically backup your data to a folder on your device':
       '기기의 폴더에 데이터를 자동으로 백업합니다',
   },
-}
-
-export const CustomRadio = (props: RadioProps) => {
-  const { children, ...otherProps } = props
-
-  return (
-    <Radio
-      {...otherProps}
-      classNames={{
-        base: cn(
-          'flex m-0 bg-content1 items-center justify-between',
-          'flex-row-reverse cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent',
-          'data-[selected=true]:border-primary',
-          'w-full max-w-none',
-        ),
-      }}
-    >
-      {children}
-    </Radio>
-  )
 }
 
 export function SyncSettings() {

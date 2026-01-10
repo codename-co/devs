@@ -147,6 +147,7 @@ export const ar: I18n = {
   'Synced Folders': 'مجلدات متزامنة',
   'File Type': 'نوع الملف',
   Source: 'المصدر',
+  Filters: 'الفلاتر',
   'No items match the selected filters': 'لا توجد عناصر تطابق الفلاتر المحددة',
   // Bulk selection
   '{count} item(s) deleted': 'تم حذف {count} عنصر(عناصر)',

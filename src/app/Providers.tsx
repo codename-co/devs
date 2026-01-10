@@ -2,7 +2,7 @@ import { HeroUIProvider } from '@heroui/react'
 import { useHref, useNavigate, useSearchParams } from 'react-router-dom'
 import { useEffect } from 'react'
 import * as SyncModule from '@/features/sync'
-import { useAutoBackup } from '@/features/local-backup'
+import { useAutoBackup, tryReconnectLocalBackup } from '@/features/local-backup'
 import { ServiceWorkerManager } from '@/lib/service-worker'
 import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
@@ -75,6 +75,12 @@ function ProvidersInner({ children }: { children: React.ReactNode }) {
         // Initialize sync (Yjs + P2P if enabled)
         // This initializes persistence and makes data available to reactive hooks
         await initializeSync()
+
+        // Try to reconnect local backup if previously enabled
+        const localBackupReconnected = await tryReconnectLocalBackup()
+        if (localBackupReconnected) {
+          console.log('Local backup reconnected successfully')
+        }
 
         // Register service worker
         await ServiceWorkerManager.register()

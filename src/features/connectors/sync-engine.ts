@@ -20,6 +20,7 @@ import {
 import { SecureStorage } from '@/lib/crypto'
 import { useConnectorStore } from '@/stores/connectorStore'
 import { db } from '@/lib/db'
+import { syncToYjs, deleteFromYjs } from '@/features/sync'
 import type { KnowledgeItem } from '@/types'
 import type {
   Connector,
@@ -638,6 +639,7 @@ export class SyncEngine {
             // Update existing item
             const mergedItem = mergeWithExisting(item, existing, connector)
             await db.update('knowledgeItems', mergedItem)
+            syncToYjs('knowledgeItems', mergedItem)
             counts.modified++
           }
           // If content unchanged, skip
@@ -653,6 +655,7 @@ export class SyncEngine {
           }
 
           await db.add('knowledgeItems', knowledgeItem)
+          syncToYjs('knowledgeItems', knowledgeItem)
           counts.added++
         }
       } catch (error) {
@@ -686,6 +689,7 @@ export class SyncEngine {
             }
 
             await db.update('knowledgeItems', mergedItem)
+            syncToYjs('knowledgeItems', mergedItem)
             counts.modified++
           }
         } else {
@@ -699,6 +703,7 @@ export class SyncEngine {
           }
 
           await db.add('knowledgeItems', knowledgeItem)
+          syncToYjs('knowledgeItems', knowledgeItem)
           counts.added++
         }
       } catch (error) {
@@ -713,6 +718,7 @@ export class SyncEngine {
 
         if (existing) {
           await db.delete('knowledgeItems', existing.id)
+          deleteFromYjs('knowledgeItems', existing.id)
           counts.deleted++
         }
       } catch (error) {

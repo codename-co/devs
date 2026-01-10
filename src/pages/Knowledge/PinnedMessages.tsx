@@ -59,6 +59,14 @@ export const PinnedMessages: React.FC = () => {
     [agents],
   )
 
+  const getAgentSlug = useCallback(
+    (agentId: string) => {
+      const agent = agents.find((a) => a.id === agentId)
+      return agent?.slug || agentId // fallback to id for backward compatibility
+    },
+    [agents],
+  )
+
   return (
     <div className="py-6">
       {/* Agent Filter */}
@@ -128,7 +136,7 @@ export const PinnedMessages: React.FC = () => {
                       onPress={() => {
                         navigate(
                           url(
-                            `/agents/run#${pinnedMessage.agentId}/${pinnedMessage.conversationId}`,
+                            `/agents/run#${getAgentSlug(pinnedMessage.agentId)}/${pinnedMessage.conversationId}`,
                           ),
                         )
                       }}

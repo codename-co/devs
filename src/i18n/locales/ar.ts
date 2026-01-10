@@ -69,6 +69,17 @@ export const ar: I18n = {
   Privacy: 'الخصوصية',
   Terms: 'الشروط',
 
+  // PageMenu
+  Voice: 'الصوت',
+  'Voice input mode': 'وضع الإدخال الصوتي',
+  'Connect external services': 'ربط الخدمات الخارجية',
+  'Agent learned knowledge': 'المعرفة التي تعلمها الوكيل',
+  Files: 'الملفات',
+  'Manage your files': 'إدارة ملفاتك',
+  'App configuration': 'تكوين التطبيق',
+  'Database management': 'إدارة قاعدة البيانات',
+  Admin: 'المسؤول',
+
   // PromptArea
   'Need something done?': 'هل تحتاج إلى إنجاز شيء؟',
   'More actions': 'المزيد من الإجراءات',

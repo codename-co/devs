@@ -879,4 +879,177 @@ describe('agentStore', () => {
       expect(agent.instructions).toBe('Instruções em português 🚀')
     })
   })
+
+  // ============================================
+  // Slug Tests
+  // ============================================
+  describe('slug functionality', () => {
+    it('should have slug on default devs agent', () => {
+      const agent = agentStore.getDefaultAgent()
+
+      expect(agent.slug).toBe('devs')
+    })
+
+    it('should auto-generate slug from agent name on create', async () => {
+      const agent = await agentStore.createAgent({
+        name: 'My Custom Agent',
+        role: 'Test Role',
+      })
+
+      expect(agent.slug).toBe('my-custom-agent')
+    })
+
+    it('should generate unique slugs for duplicate names', async () => {
+      // First agent with name "Test Agent"
+      mockDb.getAll.mockResolvedValue([])
+      const agent1 = await agentStore.createAgent({
+        name: 'Test Agent',
+        role: 'Role 1',
+      })
+
+      // Mock existing agents to include first agent
+      mockDb.getAll.mockResolvedValue([agent1])
+
+      // Second agent with same name
+      const agent2 = await agentStore.createAgent({
+        name: 'Test Agent',
+        role: 'Role 2',
+      })
+
+      expect(agent1.slug).toBe('test-agent')
+      expect(agent2.slug).toBe('test-agent-2')
+    })
+
+    it('should handle special characters in slug generation', async () => {
+      const agent = await agentStore.createAgent({
+        name: 'Café Résumé Agent!',
+        role: 'Test',
+      })
+
+      expect(agent.slug).toBe('cafe-resume-agent')
+    })
+
+    it('should get agent by slug', async () => {
+      const customAgent = createTestAgent({
+        id: 'custom-123',
+        slug: 'my-agent-slug',
+        name: 'My Agent',
+      })
+
+      mockDb.getAll.mockResolvedValue([customAgent])
+
+      const agent = await agentStore.getAgentBySlug('my-agent-slug')
+
+      expect(agent).toBeDefined()
+      expect(agent?.slug).toBe('my-agent-slug')
+    })
+
+    it('should return devs agent for "devs" slug', async () => {
+      const agent = await agentStore.getAgentBySlug('devs')
+
+      expect(agent).toBeDefined()
+      expect(agent?.id).toBe('devs')
+      expect(agent?.slug).toBe('devs')
+    })
+
+    it('should fall back to ID lookup if slug not found', async () => {
+      const customAgent = createTestAgent({
+        id: 'custom-123',
+        slug: 'agent-slug',
+        name: 'Test Agent',
+      })
+
+      mockDb.get.mockResolvedValue(customAgent)
+      mockDb.getAll.mockResolvedValue([])
+
+      // Lookup by ID should still work
+      const agent = await agentStore.getAgentBySlug('custom-123')
+
+      expect(agent).toBeDefined()
+      expect(agent?.id).toBe('custom-123')
+    })
+
+    it('should update slug when name changes', async () => {
+      const customAgent = createTestAgent({
+        id: 'custom-123',
+        slug: 'old-name',
+        name: 'Old Name',
+      })
+
+      mockDb.get.mockResolvedValue(customAgent)
+      mockDb.getAll.mockResolvedValue([customAgent])
+
+      const updatedAgent = await agentStore.updateAgent('custom-123', {
+        name: 'New Name',
+      })
+
+      expect(updatedAgent.slug).toBe('new-name')
+    })
+
+    it('should preserve slug when updating non-name fields', async () => {
+      const customAgent = createTestAgent({
+        id: 'custom-123',
+        slug: 'original-slug',
+        name: 'Original Name',
+      })
+
+      mockDb.get.mockResolvedValue(customAgent)
+
+      const updatedAgent = await agentStore.updateAgent('custom-123', {
+        role: 'New Role',
+      })
+
+      expect(updatedAgent.slug).toBe('original-slug')
+      expect(updatedAgent.name).toBe('Original Name')
+    })
+
+    it('should migrate agents without slugs when loading custom agents', async () => {
+      // Agent without slug (pre-migration data)
+      const legacyAgent = {
+        id: 'custom-legacy',
+        name: 'Legacy Agent',
+        role: 'Test Role',
+        instructions: 'Test instructions',
+        tags: ['test'],
+        createdAt: new Date(),
+      }
+
+      mockDb.getAll.mockResolvedValue([legacyAgent])
+
+      const agents = await agentStore.loadCustomAgents()
+
+      expect(agents).toHaveLength(1)
+      expect(agents[0].slug).toBe('legacy-agent')
+      // Should persist the generated slug
+      expect(mockDb.update).toHaveBeenCalledWith(
+        'agents',
+        expect.objectContaining({ slug: 'legacy-agent' }),
+      )
+    })
+
+    it('should migrate agent without slug when getting by ID', async () => {
+      // Agent without slug (pre-migration data)
+      const legacyAgent = {
+        id: 'custom-legacy-id',
+        name: 'Legacy By ID',
+        role: 'Test Role',
+        instructions: 'Test instructions',
+        tags: ['test'],
+        createdAt: new Date(),
+      }
+
+      mockDb.get.mockResolvedValue(legacyAgent)
+      mockDb.getAll.mockResolvedValue([])
+
+      const agent = await agentStore.getAgentById('custom-legacy-id')
+
+      expect(agent).toBeDefined()
+      expect(agent?.slug).toBe('legacy-by-id')
+      // Should persist the generated slug
+      expect(mockDb.update).toHaveBeenCalledWith(
+        'agents',
+        expect.objectContaining({ slug: 'legacy-by-id' }),
+      )
+    })
+  })
 })

@@ -180,122 +180,26 @@ function decodeBase64Url(str: string): string {
 }
 
 /**
- * Get header value from Gmail message headers.
+ * Extract a header value from raw RFC 822 email content.
  *
- * @param headers - Array of Gmail headers
+ * Handles multi-line (folded) headers per RFC 5322.
+ *
+ * @param headerSection - The header section of the email (before the blank line)
  * @param name - Header name to find (case-insensitive)
  * @returns Header value or undefined if not found
  */
-function getHeader(
-  headers: GmailHeader[] | undefined,
+function extractRawHeader(
+  headerSection: string,
   name: string,
 ): string | undefined {
-  if (!headers) return undefined
-  const header = headers.find(
-    (h) => h.name.toLowerCase() === name.toLowerCase(),
-  )
-  return header?.value
-}
+  // Unfold headers (RFC 5322: lines starting with whitespace are continuations)
+  const unfoldedHeaders = headerSection.replace(/\r?\n[ \t]+/g, ' ')
 
-/**
- * Extract plain text or HTML body from Gmail message payload.
- *
- * Handles multipart MIME messages by recursively searching for text content.
- *
- * @param payload - Gmail message payload
- * @returns Decoded message body (preferring plain text)
- */
-function extractMessageBody(payload: GmailMessagePart | undefined): string {
-  if (!payload) return ''
+  // Find the header (case-insensitive)
+  const regex = new RegExp(`^${name}:\\s*(.*)$`, 'im')
+  const match = unfoldedHeaders.match(regex)
 
-  // Direct body content
-  if (payload.body?.data) {
-    const mimeType = payload.mimeType || ''
-    if (mimeType === 'text/plain' || mimeType === 'text/html') {
-      return decodeBase64Url(payload.body.data)
-    }
-  }
-
-  // Multipart message - search for text content
-  if (payload.parts) {
-    // First, try to find plain text
-    const plainTextPart = findPartByMimeType(payload.parts, 'text/plain')
-    if (plainTextPart?.body?.data) {
-      return decodeBase64Url(plainTextPart.body.data)
-    }
-
-    // Fall back to HTML
-    const htmlPart = findPartByMimeType(payload.parts, 'text/html')
-    if (htmlPart?.body?.data) {
-      return stripHtmlTags(decodeBase64Url(htmlPart.body.data))
-    }
-
-    // Recursively search nested parts
-    for (const part of payload.parts) {
-      const content = extractMessageBody(part)
-      if (content) return content
-    }
-  }
-
-  return ''
-}
-
-/**
- * Find a MIME part by type recursively.
- *
- * @param parts - Array of message parts
- * @param mimeType - MIME type to find
- * @returns Matching part or undefined
- */
-function findPartByMimeType(
-  parts: GmailMessagePart[],
-  mimeType: string,
-): GmailMessagePart | undefined {
-  for (const part of parts) {
-    if (part.mimeType === mimeType) {
-      return part
-    }
-    if (part.parts) {
-      const found = findPartByMimeType(part.parts, mimeType)
-      if (found) return found
-    }
-  }
-  return undefined
-}
-
-/**
- * Strip HTML tags from content, keeping text.
- *
- * @param html - HTML string
- * @returns Plain text without HTML tags
- */
-function stripHtmlTags(html: string): string {
-  // Remove script and style elements entirely
-  let text = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-  text = text.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-
-  // Replace common block elements with newlines
-  text = text.replace(/<\/(p|div|h[1-6]|li|br|tr)>/gi, '\n')
-  text = text.replace(/<br\s*\/?>/gi, '\n')
-
-  // Remove remaining tags
-  text = text.replace(/<[^>]+>/g, '')
-
-  // Decode HTML entities
-  text = text.replace(/&nbsp;/g, ' ')
-  text = text.replace(/&amp;/g, '&')
-  text = text.replace(/&lt;/g, '<')
-  text = text.replace(/&gt;/g, '>')
-  text = text.replace(/&quot;/g, '"')
-  text = text.replace(/&#(\d+);/g, (_, code) =>
-    String.fromCharCode(parseInt(code, 10)),
-  )
-
-  // Normalize whitespace
-  text = text.replace(/\n\s*\n/g, '\n\n')
-  text = text.trim()
-
-  return text
+  return match ? match[1].trim() : undefined
 }
 
 /**
@@ -676,11 +580,11 @@ export class GmailProvider extends BaseAppConnectorProvider {
     for (let i = 0; i < messageIds.length; i += BATCH_SIZE) {
       const batchIds = messageIds.slice(i, i + BATCH_SIZE)
 
-      // Fetch messages in parallel
+      // Fetch messages in parallel using raw format to get original RFC 822 content
       const batchPromises = batchIds.map((id) =>
         this.fetchJson<GmailMessage>(
           connector,
-          `${GMAIL_API_BASE}/messages/${encodeURIComponent(id)}?format=full`,
+          `${GMAIL_API_BASE}/messages/${encodeURIComponent(id)}?format=raw`,
         ).catch((error) => {
           console.warn(`Failed to fetch message ${id}:`, error)
           return null
@@ -697,38 +601,22 @@ export class GmailProvider extends BaseAppConnectorProvider {
   /**
    * Read the content of a specific message from Gmail.
    *
+   * Returns the raw RFC 822 formatted email content.
+   *
    * @param connector - The connector to read from
    * @param externalId - The Gmail message ID
    * @returns The message content and metadata
    */
   async read(connector: Connector, externalId: string): Promise<ContentResult> {
-    const url = `${GMAIL_API_BASE}/messages/${encodeURIComponent(externalId)}?format=full`
+    const url = `${GMAIL_API_BASE}/messages/${encodeURIComponent(externalId)}?format=raw`
     const message = await this.fetchJson<GmailMessage>(connector, url)
 
-    const headers = message.payload?.headers || []
-    const subject = getHeader(headers, 'Subject') || '(No Subject)'
-    const from = getHeader(headers, 'From') || ''
-    const to = getHeader(headers, 'To') || ''
-    const date = getHeader(headers, 'Date') || ''
-
-    // Extract message body
-    const body = extractMessageBody(message.payload)
-
-    // Format the content with headers
-    const content = [
-      `Subject: ${subject}`,
-      `From: ${from}`,
-      `To: ${to}`,
-      `Date: ${date}`,
-      '',
-      '---',
-      '',
-      body,
-    ].join('\n')
+    // Decode the raw RFC 822 email content
+    const rawContent = message.raw ? decodeBase64Url(message.raw) : ''
 
     return {
-      content,
-      mimeType: 'text/plain',
+      content: rawContent,
+      mimeType: 'message/rfc822',
       metadata: {
         id: message.id,
         threadId: message.threadId,
@@ -737,10 +625,6 @@ export class GmailProvider extends BaseAppConnectorProvider {
         historyId: message.historyId,
         internalDate: message.internalDate,
         sizeEstimate: message.sizeEstimate,
-        subject,
-        from,
-        to,
-        date,
       },
     }
   }
@@ -938,10 +822,14 @@ export class GmailProvider extends BaseAppConnectorProvider {
   normalizeItem(rawItem: unknown): ConnectorItem {
     const message = rawItem as GmailMessage
 
-    const headers = message.payload?.headers || []
-    const subject = getHeader(headers, 'Subject') || '(No Subject)'
-    const from = getHeader(headers, 'From') || ''
-    const date = getHeader(headers, 'Date')
+    // Decode the raw RFC 822 email content
+    const rawContent = message.raw ? decodeBase64Url(message.raw) : ''
+
+    // Extract headers from the raw content for metadata
+    const headerSection = rawContent.split(/\r?\n\r?\n/)[0] || ''
+    const subject = extractRawHeader(headerSection, 'Subject') || '(No Subject)'
+    const from = extractRawHeader(headerSection, 'From') || ''
+    const date = extractRawHeader(headerSection, 'Date')
 
     // Parse the internal date (Unix timestamp in milliseconds)
     const lastModified = message.internalDate
@@ -952,9 +840,6 @@ export class GmailProvider extends BaseAppConnectorProvider {
 
     // Get primary label for path
     const primaryLabel = getPrimaryLabel(message.labelIds)
-
-    // Extract the message body for content preview
-    const body = extractMessageBody(message.payload)
 
     // Build external URL
     const externalUrl = `https://mail.google.com/mail/u/0/#inbox/${message.id}`
@@ -969,7 +854,7 @@ export class GmailProvider extends BaseAppConnectorProvider {
       path: `/gmail/${primaryLabel}`,
       lastModified,
       externalUrl,
-      content: body,
+      content: rawContent,
       description: `From: ${from}`,
       tags: message.labelIds?.map((l) => l.toLowerCase()),
       metadata: {

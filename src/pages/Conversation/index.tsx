@@ -105,8 +105,12 @@ export function ConversationPage() {
         throw new Error('Conversation not found')
       }
 
+      // Find the agent to get its slug for the URL
+      const agent = agents.find((a) => a.id === conversation.agentId)
+      const agentSlug = agent?.slug || conversation.agentId // fallback to id
+
       // Navigate to the agent run page with the conversation
-      navigate(url(`/agents/run#${conversation.agentId}/${conversationId}`))
+      navigate(url(`/agents/run#${agentSlug}/${conversationId}`))
     } catch (error) {
       console.error('Failed to load conversation:', error)
       setSelectedConversation(null)

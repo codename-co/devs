@@ -8,6 +8,7 @@
  * ---
  * id: mem-xyz789
  * agentId: einstein
+ * agentSlug: einstein
  * category: preference
  * title: Visualization preferences
  * confidence: high
@@ -19,7 +20,12 @@
  * ```
  */
 import type { AgentMemoryEntry } from '@/types'
-import type { FileMetadata, SerializedFile, Serializer } from './types'
+import type {
+  FileMetadata,
+  SerializedFile,
+  SerializeContext,
+  Serializer,
+} from './types'
 import {
   parseFrontmatter,
   stringifyFrontmatter,
@@ -38,6 +44,7 @@ const EXTENSION = '.memory.md'
 interface MemoryFileFrontmatter {
   id: string
   agentId: string
+  agentSlug?: string
   category: string
   title: string
   confidence: string
@@ -64,10 +71,17 @@ interface MemoryFileFrontmatter {
 /**
  * Serialize an AgentMemoryEntry to Markdown with YAML frontmatter
  */
-function serialize(memory: AgentMemoryEntry): SerializedFile {
+function serialize(
+  memory: AgentMemoryEntry,
+  context?: SerializeContext,
+): SerializedFile {
+  // Resolve agent slug for directory naming
+  const agentSlug = context?.getAgentSlug?.(memory.agentId) ?? memory.agentId
+
   const frontmatter: MemoryFileFrontmatter = {
     id: memory.id,
     agentId: memory.agentId,
+    agentSlug,
     category: memory.category,
     title: memory.title,
     confidence: memory.confidence,
@@ -96,11 +110,11 @@ function serialize(memory: AgentMemoryEntry): SerializedFile {
   const body = memory.content
   const content = stringifyFrontmatter(frontmatter, body)
 
-  // Organize by agent in subdirectories
+  // Organize by agent slug in subdirectories
   return {
     filename: getFilename(memory),
     content,
-    directory: `${DIRECTORY}/${sanitizeFilename(memory.agentId)}`,
+    directory: `${DIRECTORY}/${sanitizeFilename(agentSlug)}`,
   }
 }
 
@@ -112,6 +126,7 @@ function deserialize(
   content: string,
   filename: string,
   fileMetadata?: FileMetadata,
+  _binaryContent?: string,
 ): AgentMemoryEntry | null {
   const parsed = parseFrontmatter<MemoryFileFrontmatter>(content)
   if (!parsed) {
@@ -124,13 +139,13 @@ function deserialize(
   // Use file metadata as fallback for timestamps
   const learnedAt = frontmatter.learnedAt
     ? parseDate(frontmatter.learnedAt)
-    : fileMetadata?.lastModified ?? new Date()
+    : (fileMetadata?.lastModified ?? new Date())
   const createdAt = frontmatter.createdAt
     ? parseDate(frontmatter.createdAt)
-    : fileMetadata?.lastModified ?? new Date()
+    : (fileMetadata?.lastModified ?? new Date())
   const updatedAt = frontmatter.updatedAt
     ? parseDate(frontmatter.updatedAt)
-    : fileMetadata?.lastModified ?? new Date()
+    : (fileMetadata?.lastModified ?? new Date())
 
   const memory: AgentMemoryEntry = {
     id: frontmatter.id,
@@ -160,7 +175,9 @@ function deserialize(
     ...(frontmatter.lastUsedAt && {
       lastUsedAt: parseDate(frontmatter.lastUsedAt),
     }),
-    ...(frontmatter.expiresAt && { expiresAt: parseDate(frontmatter.expiresAt) }),
+    ...(frontmatter.expiresAt && {
+      expiresAt: parseDate(frontmatter.expiresAt),
+    }),
     ...(frontmatter.isGlobal && { isGlobal: frontmatter.isGlobal }),
     createdAt,
     updatedAt,

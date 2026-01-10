@@ -873,27 +873,6 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
           >
             <SyncSettings />
           </AccordionItem>
-          <AccordionItem
-            key="easysetup"
-            data-testid="easy-setup"
-            title={t('Share the platform')}
-            subtitle={t(
-              'Export the platform settings to another device or share it with others',
-            )}
-            startContent={<Icon name="Share" className="h-5 w-7" />}
-            classNames={{ content: 'pl-8 mb-4' }}
-          >
-            <EasySetupExport />
-          </AccordionItem>
-          <AccordionItem
-            key="database"
-            data-testid="database-management"
-            title={t('Database Management')}
-            subtitle={t('Export, import, or clear your local database')}
-            startContent={<Icon name="Database" className="h-5 w-7" />}
-            indicator={<Icon name="ArrowRight" className="h-4 w-4" />}
-            onPress={() => navigate(url('/admin/database'))}
-          />
 
           {/* Integrations - Langfuse */}
           <AccordionItem
@@ -1002,6 +981,28 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
             </div>
           </AccordionItem>
 
+          <AccordionItem
+            key="easysetup"
+            data-testid="easy-setup"
+            title={t('Share the platform')}
+            subtitle={t(
+              'Export the platform settings to another device or share it with others',
+            )}
+            startContent={<Icon name="Share" className="h-5 w-7" />}
+            classNames={{ content: 'pl-8 mb-4' }}
+          >
+            <EasySetupExport />
+          </AccordionItem>
+
+          <AccordionItem
+            key="database"
+            data-testid="database-management"
+            title={t('Database Management')}
+            subtitle={t('Export, import, or clear your local database')}
+            startContent={<Icon name="Database" className="h-5 w-7" />}
+            indicator={<Icon name="ArrowRight" className="h-4 w-4" />}
+            onPress={() => navigate(url('/admin/database'))}
+          />
         </Accordion>
       </Container>
 

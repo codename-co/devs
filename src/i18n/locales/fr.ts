@@ -69,6 +69,17 @@ export const fr: I18n = {
   Privacy: 'Confidentialité',
   Terms: 'Conditions',
 
+  // PageMenu
+  Voice: 'Voix',
+  'Voice input mode': 'Mode de saisie vocale',
+  'Connect external services': 'Connecter des services externes',
+  'Agent learned knowledge': "Connaissances apprises par l'agent",
+  Files: 'Fichiers',
+  'Manage your files': 'Gérer vos fichiers',
+  'App configuration': "Configuration de l'application",
+  'Database management': 'Gestion de la base de données',
+  Admin: 'Admin',
+
   // PromptArea
   'Need something done?': 'Besoin de quelque chose ?',
   'More actions': 'Plus d’actions',

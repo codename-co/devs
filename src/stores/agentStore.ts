@@ -2,6 +2,7 @@ import { PRODUCT } from '@/config/product'
 import { errorToast, successToast } from '@/lib/toast'
 import { db } from '@/lib/db'
 import { deleteFromYjs, syncToYjs } from '@/features/sync'
+import { slugify, generateUniqueSlug } from '@/lib/slugify'
 import { type Agent } from '@/types'
 import { Lang } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
@@ -9,10 +10,12 @@ import { userSettings } from '@/stores/userStore'
 type AgentJSON = Omit<Agent, 'createdAt' | 'updatedAt' | 'version' | 'tools'>
 
 const agentCache = new Map<string, Agent>()
+const slugToIdMap = new Map<string, string>() // Maps slug to agent id for fast lookups
 let agentsList: string[] | null = null
 
 const defaultDevsTeam: Agent = {
   id: 'devs',
+  slug: 'devs',
   name: PRODUCT.displayName,
   icon: 'Devs',
   desc: 'Autonomous multi-agent orchestrator for complex task delegation',
@@ -110,6 +113,38 @@ Your success is measured by delivering complete, high-quality solutions that mee
 }
 
 agentCache.set('devs', defaultDevsTeam)
+slugToIdMap.set('devs', 'devs')
+
+/**
+ * Get all existing slugs from cache and database
+ */
+async function getAllExistingSlugs(): Promise<Set<string>> {
+  const slugs = new Set<string>()
+
+  // Add slugs from cache
+  for (const agent of agentCache.values()) {
+    if (agent.slug) {
+      slugs.add(agent.slug)
+    }
+  }
+
+  // Add slugs from database (custom agents)
+  try {
+    if (!db.isInitialized()) {
+      await db.init()
+    }
+    const customAgents = await db.getAll('agents')
+    for (const agent of customAgents) {
+      if (agent.slug) {
+        slugs.add(agent.slug)
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching existing slugs:', error)
+  }
+
+  return slugs
+}
 
 async function loadAgent(agentId: string): Promise<Agent | null> {
   if (!agentId) return null
@@ -131,12 +166,15 @@ async function loadAgent(agentId: string): Promise<Agent | null> {
     }
 
     const agentData: AgentJSON = await response.json()
+    // Use existing slug from JSON or fallback to id (built-in agents use id as slug)
     const agent: Agent = {
       ...agentData,
+      slug: agentData.slug || agentData.id,
       createdAt: new Date(),
     }
 
     agentCache.set(agentId, agent)
+    slugToIdMap.set(agent.slug, agent.id)
     return agent
   } catch (error) {
     console.error(`Error loading agent ${agentId}:`, error)
@@ -215,7 +253,20 @@ export async function getAgentById(id: string): Promise<Agent | null> {
     }
     const customAgent = await db.get('agents', id)
     if (customAgent) {
+      // Migrate agent without slug
+      if (!customAgent.slug) {
+        const existingSlugs = await getAllExistingSlugs()
+        const baseSlug = slugify(customAgent.name)
+        customAgent.slug = generateUniqueSlug(baseSlug, existingSlugs)
+        // Persist the generated slug
+        try {
+          await db.update('agents', customAgent)
+        } catch (updateError) {
+          console.warn(`Failed to persist slug for agent ${id}:`, updateError)
+        }
+      }
       agentCache.set(id, customAgent)
+      slugToIdMap.set(customAgent.slug, customAgent.id)
       return customAgent
     }
   } catch (error) {
@@ -223,6 +274,56 @@ export async function getAgentById(id: string): Promise<Agent | null> {
   }
 
   return null
+}
+
+/**
+ * Get an agent by its slug
+ * Falls back to ID-based lookup if slug not found
+ *
+ * @param slug - The agent's slug
+ * @returns The agent or null if not found
+ */
+export async function getAgentBySlug(slug: string): Promise<Agent | null> {
+  if (!slug) return null
+
+  // Check slug map cache first
+  if (slugToIdMap.has(slug)) {
+    const id = slugToIdMap.get(slug)!
+    return getAgentById(id)
+  }
+
+  // For 'devs' slug, return default agent
+  if (slug === 'devs') {
+    return defaultDevsTeam
+  }
+
+  // Search in cache
+  for (const agent of agentCache.values()) {
+    if (agent.slug === slug) {
+      slugToIdMap.set(slug, agent.id)
+      return agent
+    }
+  }
+
+  // Search in database for custom agents
+  try {
+    if (!db.isInitialized()) {
+      await db.init()
+    }
+    const customAgents = await db.getAll('agents')
+    for (const agent of customAgents) {
+      if (agent.slug === slug) {
+        agentCache.set(agent.id, agent)
+        slugToIdMap.set(slug, agent.id)
+        return agent
+      }
+    }
+  } catch (error) {
+    console.error(`Error searching for agent by slug ${slug}:`, error)
+  }
+
+  // Fall back to ID-based lookup (for backward compatibility)
+  return getAgentById(slug)
 }
 
 export function getDefaultAgent(): Agent {
@@ -312,9 +413,15 @@ export async function createAgent(agentData: {
       await db.init()
     }
 
+    // Generate a unique slug from the name
+    const existingSlugs = await getAllExistingSlugs()
+    const baseSlug = slugify(agentData.name)
+    const uniqueSlug = generateUniqueSlug(baseSlug, existingSlugs)
+
     // Create the agent object with required fields
     const agent: Agent = {
       id: `custom-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+      slug: uniqueSlug,
       name: agentData.name,
       role: agentData.role,
       instructions: agentData.instructions || '',
@@ -334,6 +441,7 @@ export async function createAgent(agentData: {
 
     // Add to cache
     agentCache.set(agent.id, agent)
+    slugToIdMap.set(agent.slug, agent.id)
 
     // Invalidate the agents list cache so it will be refreshed next time
     agentsList = null
@@ -367,11 +475,21 @@ export async function updateAgent(
       throw new Error(`Agent with id ${agentId} not found`)
     }
 
+    // Handle slug update if name changed
+    let newSlug = currentAgent.slug
+    if (updates.name && updates.name !== currentAgent.name) {
+      const existingSlugs = await getAllExistingSlugs()
+      const baseSlug = slugify(updates.name)
+      // Exclude current slug so we can keep it if the new base slug matches
+      newSlug = generateUniqueSlug(baseSlug, existingSlugs, currentAgent.slug)
+    }
+
     // Create updated agent
     const updatedAgent: Agent = {
       ...currentAgent,
       ...updates,
       id: agentId, // Ensure ID doesn't change
+      slug: updates.slug ?? newSlug, // Allow explicit slug override or use computed one
       updatedAt: new Date(),
     }
 
@@ -381,8 +499,12 @@ export async function updateAgent(
     // Sync to Yjs for P2P sync
     syncToYjs('agents', updatedAgent)
 
-    // Update cache
+    // Update caches
+    if (currentAgent.slug !== updatedAgent.slug) {
+      slugToIdMap.delete(currentAgent.slug)
+    }
     agentCache.set(agentId, updatedAgent)
+    slugToIdMap.set(updatedAgent.slug, agentId)
 
     successToast('Agent updated successfully!')
 
@@ -407,6 +529,12 @@ export async function deleteAgent(agentId: string): Promise<void> {
     // Ensure database is initialized
     if (!db.isInitialized()) {
       await db.init()
+    }
+
+    // Get agent to clean up slug mapping
+    const agent = agentCache.get(agentId)
+    if (agent?.slug) {
+      slugToIdMap.delete(agent.slug)
     }
 
     // Delete from IndexedDB
@@ -465,7 +593,10 @@ export async function softDeleteAgent(agentId: string): Promise<void> {
     // Save to IndexedDB
     await db.update('agents', updatedAgent)
 
-    // Remove from cache (so it won't appear in lists)
+    // Remove from cache and slug map (so it won't appear in lists)
+    if (currentAgent.slug) {
+      slugToIdMap.delete(currentAgent.slug)
+    }
     agentCache.delete(agentId)
 
     // Invalidate the agents list cache
@@ -495,9 +626,40 @@ export async function loadCustomAgents(): Promise<Agent[]> {
     // Filter out soft-deleted agents (inferred from deletedAt)
     const activeAgents = customAgents.filter((agent) => !agent.deletedAt)
 
-    // Add to cache
+    // Migrate agents without slugs
+    const existingSlugs = new Set<string>()
+    // Collect existing slugs first
+    activeAgents.forEach((agent) => {
+      if (agent.slug) {
+        existingSlugs.add(agent.slug)
+      }
+    })
+
+    // Generate and persist slugs for agents without them
+    for (const agent of activeAgents) {
+      if (!agent.slug) {
+        const baseSlug = slugify(agent.name)
+        const uniqueSlug = generateUniqueSlug(baseSlug, existingSlugs)
+        agent.slug = uniqueSlug
+        existingSlugs.add(uniqueSlug)
+        // Persist the generated slug to the database
+        try {
+          await db.update('agents', agent)
+        } catch (updateError) {
+          console.warn(
+            `Failed to persist slug for agent ${agent.id}:`,
+            updateError,
+          )
+        }
+      }
+    }
+
+    // Add to cache and slug map
     activeAgents.forEach((agent) => {
       agentCache.set(agent.id, agent)
+      if (agent.slug) {
+        slugToIdMap.set(agent.slug, agent.id)
+      }
     })
 
     return activeAgents

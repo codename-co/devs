@@ -179,7 +179,7 @@ export const useAgentContextPanel = (
                 return (
                   <Link
                     key={conv.id}
-                    href={url(`/agents/run#${agent.id}/${conv.id}`)}
+                    href={url(`/agents/run#${agent.slug}/${conv.id}`)}
                     className="block"
                   >
                     <Card
@@ -977,7 +977,7 @@ const AgentContextTabs = ({
                   <Link
                     key={pm.id}
                     href={url(
-                      `/agents/run#${pm.agentId}/${pm.conversationId}?message=${pm.messageId}`,
+                      `/agents/run#${agent.slug}/${pm.conversationId}?message=${pm.messageId}`,
                     )}
                     className="block"
                   >

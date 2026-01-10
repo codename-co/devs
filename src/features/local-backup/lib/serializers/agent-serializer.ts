@@ -4,7 +4,12 @@
  * Serialize/deserialize Agent entities to Markdown with YAML frontmatter
  */
 import type { Agent, Example } from '@/types'
-import type { AgentFrontmatter, FileMetadata, SerializedFile, Serializer } from './types'
+import type {
+  AgentFrontmatter,
+  FileMetadata,
+  SerializedFile,
+  Serializer,
+} from './types'
 import {
   parseFrontmatter,
   stringifyFrontmatter,
@@ -39,6 +44,7 @@ const EXTENSION = '.agent.md'
 function serialize(agent: Agent): SerializedFile {
   const frontmatter: AgentFrontmatter = {
     id: agent.id,
+    slug: agent.slug,
     name: agent.name,
     ...(agent.icon && { icon: agent.icon }),
     ...(agent.desc && { desc: agent.desc }),
@@ -52,7 +58,8 @@ function serialize(agent: Agent): SerializedFile {
     ...(agent.updatedAt && { updatedAt: formatDate(agent.updatedAt) }),
     ...(agent.version && { version: agent.version }),
     ...(agent.deletedAt && { deletedAt: formatDate(agent.deletedAt) }),
-    ...(agent.i18n && Object.keys(agent.i18n).length > 0 && { i18n: agent.i18n }),
+    ...(agent.i18n &&
+      Object.keys(agent.i18n).length > 0 && { i18n: agent.i18n }),
   }
 
   // Build body content
@@ -80,7 +87,12 @@ function serialize(agent: Agent): SerializedFile {
  * Deserialize Markdown with YAML frontmatter to an Agent
  * If file metadata is provided and frontmatter lacks timestamps, use file metadata
  */
-function deserialize(content: string, filename: string, fileMetadata?: FileMetadata): Agent | null {
+function deserialize(
+  content: string,
+  filename: string,
+  fileMetadata?: FileMetadata,
+  _binaryContent?: string,
+): Agent | null {
   const parsed = parseFrontmatter<AgentFrontmatter>(content)
   if (!parsed) {
     console.warn(`Failed to parse agent file: ${filename}`)
@@ -92,10 +104,10 @@ function deserialize(content: string, filename: string, fileMetadata?: FileMetad
   // Use file metadata as fallback for timestamps
   const createdAt = frontmatter.createdAt
     ? parseDate(frontmatter.createdAt)
-    : fileMetadata?.lastModified ?? new Date()
+    : (fileMetadata?.lastModified ?? new Date())
   const updatedAt = frontmatter.updatedAt
     ? parseDate(frontmatter.updatedAt)
-    : fileMetadata?.lastModified ?? new Date()
+    : (fileMetadata?.lastModified ?? new Date())
 
   // Parse examples from body
   const examples: Example[] = []
@@ -121,6 +133,7 @@ function deserialize(content: string, filename: string, fileMetadata?: FileMetad
 
   const agent: Agent = {
     id: frontmatter.id,
+    slug: frontmatter.slug || frontmatter.id, // Fallback to id for backward compatibility
     name: frontmatter.name,
     ...(frontmatter.icon && { icon: frontmatter.icon as Agent['icon'] }),
     ...(frontmatter.desc && { desc: frontmatter.desc }),
@@ -147,8 +160,8 @@ function deserialize(content: string, filename: string, fileMetadata?: FileMetad
 }
 
 function getFilename(agent: Agent): string {
-  // Use agent ID as filename, sanitized
-  const safeName = sanitizeFilename(agent.id || agent.name)
+  // Use agent slug as filename, sanitized (slug is the stable, URL-friendly identifier)
+  const safeName = sanitizeFilename(agent.slug || agent.id || agent.name)
   return `${safeName}${EXTENSION}`
 }
 

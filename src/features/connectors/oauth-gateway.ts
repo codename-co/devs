@@ -304,8 +304,13 @@ export class OAuthGateway {
       const { code, receivedState } = await this.waitForCallback(popup, state)
 
       // Verify state matches
-      if (receivedState !== state) {
-        throw new Error('OAuth state mismatch. Possible CSRF attack.')
+      if (!receivedState || receivedState !== state) {
+        console.error('[OAuthGateway] State mismatch:', {
+          expected: state,
+          received: receivedState,
+          hasReceived: !!receivedState,
+        })
+        throw new Error('OAuth state mismatch. Please try again.')
       }
 
       // Exchange code for tokens
@@ -419,7 +424,7 @@ export class OAuthGateway {
    */
   private static waitForCallback(
     popup: Window,
-    _expectedState: string,
+    expectedState: string,
   ): Promise<{ code: string; receivedState: string }> {
     return new Promise((resolve, reject) => {
       const startTime = Date.now()
@@ -435,6 +440,24 @@ export class OAuthGateway {
         if (event.data?.type !== 'oauth_callback') {
           return
         }
+
+        // IMPORTANT: Only process messages for OUR state
+        // This prevents issues when multiple OAuth flows are started (e.g., React Strict Mode)
+        if (event.data.state && event.data.state !== expectedState) {
+          console.log('[OAuthGateway] Ignoring callback for different state:', {
+            receivedState: event.data.state,
+            expectedState,
+          })
+          return
+        }
+
+        console.log('[OAuthGateway] Received callback message:', {
+          hasCode: !!event.data.code,
+          hasState: !!event.data.state,
+          receivedState: event.data.state,
+          expectedState,
+          statesMatch: event.data.state === expectedState,
+        })
 
         cleanup()
 

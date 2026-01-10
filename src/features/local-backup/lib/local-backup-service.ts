@@ -10,7 +10,7 @@
  * - Conflict resolution (last-write-wins)
  * - Debounced writes to prevent thrashing
  */
-import { db } from '@/lib/db'
+import { db, Database } from '@/lib/db'
 import type { Agent, Conversation } from '@/types'
 import {
   agentSerializer,
@@ -19,7 +19,7 @@ import {
   knowledgeSerializer,
   taskSerializer,
 } from './serializers'
-import type { Serializer } from './serializers/types'
+import type { Serializer, SerializeContext } from './serializers/types'
 
 // Debounce delay for writes (ms)
 const WRITE_DEBOUNCE_MS = 1000
@@ -40,6 +40,7 @@ export interface FolderSyncConfig {
   syncMemories: boolean
   syncKnowledge: boolean
   syncTasks: boolean
+  syncFullExport: boolean
 }
 
 export interface FolderSyncEvent {
@@ -67,6 +68,25 @@ class FolderSyncService {
   private eventListeners: Set<SyncEventCallback> = new Set()
   private fileHashes: Map<string, string> = new Map()
   private isSyncing = false
+  private agentSlugCache: Map<string, string> = new Map() // agentId -> slug
+
+  /**
+   * Build agent slug lookup context for serialization
+   */
+  private async buildSerializeContext(): Promise<SerializeContext> {
+    // Refresh agent slug cache
+    const agents = await db.getAll('agents')
+    this.agentSlugCache.clear()
+    for (const agent of agents) {
+      if (agent.slug) {
+        this.agentSlugCache.set(agent.id, agent.slug)
+      }
+    }
+
+    return {
+      getAgentSlug: (agentId: string) => this.agentSlugCache.get(agentId),
+    }
+  }
 
   /**
    * Initialize folder sync with a directory handle
@@ -79,6 +99,7 @@ class FolderSyncService {
       syncMemories?: boolean
       syncKnowledge?: boolean
       syncTasks?: boolean
+      syncFullExport?: boolean
     } = {},
   ): Promise<FolderSyncConfig> {
     // Verify we have write permission
@@ -101,12 +122,11 @@ class FolderSyncService {
       syncMemories: options.syncMemories ?? true,
       syncKnowledge: options.syncKnowledge ?? true,
       syncTasks: options.syncTasks ?? true,
+      syncFullExport: options.syncFullExport ?? true,
     }
 
-    // Create directory structure
-    await this.ensureDirectoryStructure()
-
     // Perform initial sync (DB -> Files)
+    // Note: Directories are created on-demand when writing files
     await this.syncToFiles()
 
     // Start watching for changes
@@ -143,6 +163,33 @@ class FolderSyncService {
   }
 
   /**
+   * Update sync configuration options
+   */
+  updateConfig(options: {
+    syncAgents?: boolean
+    syncConversations?: boolean
+    syncMemories?: boolean
+    syncKnowledge?: boolean
+    syncTasks?: boolean
+    syncFullExport?: boolean
+  }): void {
+    if (!this.config) return
+
+    if (options.syncAgents !== undefined)
+      this.config.syncAgents = options.syncAgents
+    if (options.syncConversations !== undefined)
+      this.config.syncConversations = options.syncConversations
+    if (options.syncMemories !== undefined)
+      this.config.syncMemories = options.syncMemories
+    if (options.syncKnowledge !== undefined)
+      this.config.syncKnowledge = options.syncKnowledge
+    if (options.syncTasks !== undefined)
+      this.config.syncTasks = options.syncTasks
+    if (options.syncFullExport !== undefined)
+      this.config.syncFullExport = options.syncFullExport
+  }
+
+  /**
    * Check if sync is active
    */
   isActive(): boolean {
@@ -175,25 +222,6 @@ class FolderSyncService {
   }
 
   /**
-   * Ensure the directory structure exists
-   */
-  private async ensureDirectoryStructure(): Promise<void> {
-    if (!this.config) return
-
-    const dirs = ['agents', 'conversations', 'memories', 'knowledge', 'tasks']
-
-    for (const dir of dirs) {
-      try {
-        await this.config.directoryHandle.getDirectoryHandle(dir, {
-          create: true,
-        })
-      } catch (error) {
-        console.error(`Failed to create directory ${dir}:`, error)
-      }
-    }
-  }
-
-  /**
    * Start the periodic sync interval
    */
   private startSyncInterval(): void {
@@ -218,6 +246,9 @@ class FolderSyncService {
     this.emitEvent({ type: 'sync_start' })
 
     try {
+      // Build context with agent slug lookups
+      const context = await this.buildSerializeContext()
+
       // Sync agents
       if (this.config.syncAgents) {
         const agents = await db.getAll('agents')
@@ -232,7 +263,11 @@ class FolderSyncService {
       if (this.config.syncConversations) {
         const conversations = await db.getAll('conversations')
         for (const conversation of conversations) {
-          await this.writeEntityToFile(conversation, conversationSerializer)
+          await this.writeEntityToFile(
+            conversation,
+            conversationSerializer,
+            context,
+          )
         }
       }
 
@@ -240,7 +275,7 @@ class FolderSyncService {
       if (this.config.syncMemories) {
         const memories = await db.getAll('agentMemories')
         for (const memory of memories) {
-          await this.writeEntityToFile(memory, memorySerializer)
+          await this.writeEntityToFile(memory, memorySerializer, context)
         }
       }
 
@@ -248,9 +283,9 @@ class FolderSyncService {
       if (this.config.syncKnowledge) {
         const knowledgeItems = await db.getAll('knowledgeItems')
         for (const item of knowledgeItems) {
-          // Only sync file-type items with text content
+          // Only sync file-type items with content or transcript
           if (item.type === 'file' && (item.content || item.transcript)) {
-            await this.writeEntityToFile(item, knowledgeSerializer)
+            await this.writeKnowledgeItemToFiles(item)
           }
         }
       }
@@ -261,6 +296,11 @@ class FolderSyncService {
         for (const task of tasks) {
           await this.writeEntityToFile(task, taskSerializer)
         }
+      }
+
+      // Export full database to root
+      if (this.config.syncFullExport) {
+        await this.writeFullDatabaseExport()
       }
 
       this.config.lastSync = new Date()
@@ -355,10 +395,11 @@ class FolderSyncService {
   private async writeEntityToFile<T extends { id: string }>(
     entity: T,
     serializer: Serializer<T>,
+    context?: SerializeContext,
   ): Promise<void> {
     if (!this.config) return
 
-    const serialized = serializer.serialize(entity)
+    const serialized = serializer.serialize(entity, context)
     const filePath = `${serialized.directory}/${serialized.filename}`
 
     // Check if content has changed
@@ -395,6 +436,187 @@ class FolderSyncService {
   }
 
   /**
+   * Write a knowledge item to files (metadata + binary content)
+   */
+  private async writeKnowledgeItemToFiles(
+    item: import('@/types').KnowledgeItem,
+  ): Promise<void> {
+    if (!this.config) return
+
+    const fileSet = knowledgeSerializer.serializeKnowledgeFileSet(item)
+    const metadataPath = `${fileSet.directory}/${fileSet.metadataFilename}`
+
+    // Check if metadata content has changed
+    const metadataHash = await this.hashContent(fileSet.metadataContent)
+    const metadataChanged = this.fileHashes.get(metadataPath) !== metadataHash
+
+    // Check if binary content has changed (if present)
+    let binaryChanged = false
+    let binaryPath: string | undefined
+    if (fileSet.binaryFilename && fileSet.binaryContent) {
+      binaryPath = `${fileSet.directory}/${fileSet.binaryFilename}`
+      const binaryHash = await this.hashContent(fileSet.binaryContent)
+      binaryChanged = this.fileHashes.get(binaryPath) !== binaryHash
+    }
+
+    if (!metadataChanged && !binaryChanged) {
+      return // No changes
+    }
+
+    try {
+      // Get or create the directory
+      const dirHandle = await this.getOrCreateDirectory(fileSet.directory)
+
+      // Write metadata file if changed
+      if (metadataChanged) {
+        const metadataHandle = await dirHandle.getFileHandle(
+          fileSet.metadataFilename,
+          { create: true },
+        )
+        const metadataWritable = await metadataHandle.createWritable()
+        await metadataWritable.write(fileSet.metadataContent)
+        await metadataWritable.close()
+        this.fileHashes.set(metadataPath, metadataHash)
+      }
+
+      // Write binary file if present and changed
+      if (
+        binaryChanged &&
+        fileSet.binaryFilename &&
+        fileSet.binaryContent &&
+        binaryPath
+      ) {
+        const binaryHandle = await dirHandle.getFileHandle(
+          fileSet.binaryFilename,
+          { create: true },
+        )
+        const binaryWritable = await binaryHandle.createWritable()
+
+        if (fileSet.isBinaryBase64) {
+          // Decode base64 and write as binary
+          const binaryData = this.base64ToArrayBuffer(fileSet.binaryContent)
+          await binaryWritable.write(binaryData)
+        } else {
+          // Write as text
+          await binaryWritable.write(fileSet.binaryContent)
+        }
+
+        await binaryWritable.close()
+        const binaryHash = await this.hashContent(fileSet.binaryContent)
+        this.fileHashes.set(binaryPath, binaryHash)
+      }
+
+      this.emitEvent({
+        type: 'file_written',
+        entityType: 'knowledge',
+        entityId: item.id,
+        filename: fileSet.metadataFilename,
+      })
+    } catch (error) {
+      console.error(`Failed to write knowledge files ${metadataPath}:`, error)
+      throw error
+    }
+  }
+
+  /**
+   * Convert base64 string to ArrayBuffer
+   */
+  private base64ToArrayBuffer(base64: string): ArrayBuffer {
+    // Handle data URLs (e.g., "data:image/png;base64,...")
+    const base64Data = base64.includes(',') ? base64.split(',')[1] : base64
+
+    try {
+      const binaryString = atob(base64Data)
+      const bytes = new Uint8Array(binaryString.length)
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i)
+      }
+      return bytes.buffer
+    } catch (error) {
+      // If atob fails, the content isn't valid base64 - encode as UTF-8 text
+      console.warn('Content is not valid base64, encoding as UTF-8 text')
+      const encoder = new TextEncoder()
+      return encoder.encode(base64).buffer as ArrayBuffer
+    }
+  }
+
+  /**
+   * Convert ArrayBuffer to base64 string
+   */
+  private arrayBufferToBase64(buffer: ArrayBuffer): string {
+    const bytes = new Uint8Array(buffer)
+    let binary = ''
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i])
+    }
+    return btoa(binary)
+  }
+
+  /**
+   * Write full database export to root level as JSON
+   */
+  private async writeFullDatabaseExport(): Promise<void> {
+    if (!this.config) return
+
+    const filename = 'devs-database-export.json'
+    const filePath = filename
+
+    try {
+      // Collect all database data
+      const dbData: Record<string, unknown[]> = {}
+      const stores = Database.STORES
+
+      for (const store of stores) {
+        try {
+          dbData[store] = await db.getAll(store as any)
+        } catch (error) {
+          console.warn(`Failed to export store ${store}:`, error)
+          dbData[store] = []
+        }
+      }
+
+      // Add metadata
+      const exportData = {
+        _meta: {
+          exportedAt: new Date().toISOString(),
+          dbName: Database.DB_NAME,
+          dbVersion: Database.DB_VERSION,
+          stores: stores.length,
+        },
+        ...dbData,
+      }
+
+      const content = JSON.stringify(exportData, null, 2)
+
+      // Check if content has changed
+      const contentHash = await this.hashContent(content)
+      if (this.fileHashes.get(filePath) === contentHash) {
+        return // No changes
+      }
+
+      // Write the file at root level
+      const fileHandle = await this.config.directoryHandle.getFileHandle(
+        filename,
+        { create: true },
+      )
+      const writable = await fileHandle.createWritable()
+      await writable.write(content)
+      await writable.close()
+
+      // Update hash cache
+      this.fileHashes.set(filePath, contentHash)
+
+      this.emitEvent({
+        type: 'file_written',
+        filename,
+      })
+    } catch (error) {
+      console.error(`Failed to write full database export:`, error)
+      throw error
+    }
+  }
+
+  /**
    * Read entities from files in a directory
    */
   private async readEntitiesFromFiles<T extends { id: string }>(
@@ -426,7 +648,11 @@ class FolderSyncService {
               size: file.size,
             }
 
-            const entity = serializer.deserialize(content, entry.name, fileMetadata)
+            const entity = serializer.deserialize(
+              content,
+              entry.name,
+              fileMetadata,
+            )
             if (entity) {
               await onEntity(entity)
               this.emitEvent({
@@ -509,7 +735,10 @@ class FolderSyncService {
                   })
                 }
               } catch (error) {
-                console.error(`Failed to read memory file ${fileEntry.name}:`, error)
+                console.error(
+                  `Failed to read memory file ${fileEntry.name}:`,
+                  error,
+                )
               }
             }
           }
@@ -549,50 +778,126 @@ class FolderSyncService {
   private async readKnowledgeDirectory(
     dirHandle: FileSystemDirectoryHandle,
   ): Promise<void> {
+    // First, collect all files in this directory for binary file lookup
+    const filesInDir = new Map<string, FileSystemFileHandle>()
+    const metadataFiles: FileSystemFileHandle[] = []
+
     for await (const entry of dirHandle.values()) {
       if (entry.kind === 'directory') {
         const subDirHandle = await dirHandle.getDirectoryHandle(entry.name)
         await this.readKnowledgeDirectory(subDirHandle)
-      } else if (
-        entry.kind === 'file' &&
-        entry.name.endsWith(knowledgeSerializer.getExtension())
-      ) {
-        try {
-          const fileHandle = await dirHandle.getFileHandle(entry.name)
-          const file = await fileHandle.getFile()
-          const content = await file.text()
-
-          const fileMetadata = {
-            lastModified: new Date(file.lastModified),
-            size: file.size,
-          }
-
-          const item = knowledgeSerializer.deserialize(
-            content,
-            entry.name,
-            fileMetadata,
-          )
-          if (item) {
-            const existing = await db.get('knowledgeItems', item.id)
-            if (!existing) {
-              await db.add('knowledgeItems', item)
-            } else if (
-              new Date(item.lastModified) > new Date(existing.lastModified)
-            ) {
-              await db.update('knowledgeItems', item)
-            }
-
-            this.emitEvent({
-              type: 'file_read',
-              entityType: 'knowledge',
-              entityId: item.id,
-              filename: entry.name,
-            })
-          }
-        } catch (error) {
-          console.error(`Failed to read knowledge file ${entry.name}:`, error)
+      } else if (entry.kind === 'file') {
+        const fileHandle = await dirHandle.getFileHandle(entry.name)
+        filesInDir.set(entry.name, fileHandle)
+        if (entry.name.endsWith(knowledgeSerializer.getExtension())) {
+          metadataFiles.push(fileHandle)
         }
       }
+    }
+
+    // Process each metadata file
+    for (const metadataHandle of metadataFiles) {
+      try {
+        const metadataFile = await metadataHandle.getFile()
+        const content = await metadataFile.text()
+
+        const fileMetadata = {
+          lastModified: new Date(metadataFile.lastModified),
+          size: metadataFile.size,
+        }
+
+        // Parse the frontmatter to get the binaryFile reference
+        const parsed =
+          await this.parseKnowledgeFrontmatter<
+            import('./serializers/types').KnowledgeItemFrontmatter
+          >(content)
+        let binaryContent: string | undefined
+
+        if (parsed?.frontmatter.binaryFile) {
+          // Try to read the binary file
+          const binaryHandle = filesInDir.get(parsed.frontmatter.binaryFile)
+          if (binaryHandle) {
+            const binaryFile = await binaryHandle.getFile()
+            const isBinary = knowledgeSerializer.isBinaryContent(
+              parsed.frontmatter.fileType,
+              parsed.frontmatter.mimeType,
+            )
+
+            if (isBinary) {
+              // Read as binary and convert to base64
+              const buffer = await binaryFile.arrayBuffer()
+              binaryContent = this.arrayBufferToBase64(buffer)
+            } else {
+              // Read as text
+              binaryContent = await binaryFile.text()
+            }
+          }
+        }
+
+        const item = knowledgeSerializer.deserialize(
+          content,
+          metadataFile.name,
+          fileMetadata,
+          binaryContent,
+        )
+        if (item) {
+          const existing = await db.get('knowledgeItems', item.id)
+          if (!existing) {
+            await db.add('knowledgeItems', item)
+          } else if (
+            new Date(item.lastModified) > new Date(existing.lastModified)
+          ) {
+            await db.update('knowledgeItems', item)
+          }
+
+          this.emitEvent({
+            type: 'file_read',
+            entityType: 'knowledge',
+            entityId: item.id,
+            filename: metadataFile.name,
+          })
+        }
+      } catch (error) {
+        console.error(
+          `Failed to read knowledge file ${metadataHandle.name}:`,
+          error,
+        )
+      }
+    }
+  }
+
+  /**
+   * Parse YAML frontmatter from content
+   */
+  private parseKnowledgeFrontmatter<T>(
+    content: string,
+  ): { frontmatter: T; body: string } | null {
+    const frontmatterRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/
+    const match = content.match(frontmatterRegex)
+    if (!match) return null
+
+    try {
+      // Use dynamic import to parse YAML
+      const yaml = (window as unknown as { yaml?: { parse: (s: string) => T } })
+        .yaml
+      if (yaml) {
+        return { frontmatter: yaml.parse(match[1]), body: match[2].trim() }
+      }
+      // Fallback: simple YAML parsing for the binaryFile field
+      const frontmatter: Record<string, unknown> = {}
+      const lines = match[1].split('\n')
+      for (const line of lines) {
+        const colonIndex = line.indexOf(':')
+        if (colonIndex > 0) {
+          const key = line.slice(0, colonIndex).trim()
+          const value = line.slice(colonIndex + 1).trim()
+          // Remove quotes if present
+          frontmatter[key] = value.replace(/^["']|["']$/g, '')
+        }
+      }
+      return { frontmatter: frontmatter as T, body: match[2].trim() }
+    } catch {
+      return null
     }
   }
 
@@ -655,7 +960,10 @@ class FolderSyncService {
                   })
                 }
               } catch (error) {
-                console.error(`Failed to read task file ${fileEntry.name}:`, error)
+                console.error(
+                  `Failed to read task file ${fileEntry.name}:`,
+                  error,
+                )
               }
             }
           }
@@ -733,7 +1041,8 @@ class FolderSyncService {
     const timer = setTimeout(async () => {
       this.writeDebounceTimers.delete(key)
       try {
-        await this.writeEntityToFile(entity, serializer)
+        const context = await this.buildSerializeContext()
+        await this.writeEntityToFile(entity, serializer, context)
       } catch (error) {
         console.error(`Failed to write ${key}:`, error)
       }

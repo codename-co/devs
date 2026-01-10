@@ -3,7 +3,11 @@
  *
  * Serialize/deserialize KnowledgeItem entities to Markdown with YAML frontmatter
  *
- * Format:
+ * Knowledge items are saved as two files:
+ * 1. .metadata.knowledge.md - Hidden metadata file with YAML frontmatter + transcript
+ * 2. Original file (e.g., document.pdf, image.png) - Contains the binary/text content
+ *
+ * Format for metadata file:
  * ```
  * ---
  * id: doc-xyz789
@@ -13,12 +17,13 @@
  * mimeType: text/markdown
  * size: 1234
  * path: /documents/project
+ * binaryFile: project-readme-xyz789.md
  * ...
  * ---
  *
- * # Project README
+ * ## Transcript
  *
- * This is the content of the knowledge item...
+ * Extracted text content from document processing...
  * ```
  */
 import type { KnowledgeItem } from '@/types'
@@ -26,6 +31,7 @@ import type {
   FileMetadata,
   KnowledgeItemFrontmatter,
   SerializedFile,
+  SerializedKnowledgeFileSet,
   Serializer,
 } from './types'
 import {
@@ -38,12 +44,89 @@ import {
 } from '../utils'
 
 const DIRECTORY = 'knowledge'
-const EXTENSION = '.knowledge.md'
+// Metadata files are prefixed with a dot to make them hidden on Unix-like systems
+const METADATA_EXTENSION = '.metadata.knowledge.md'
+const METADATA_PREFIX = '.'
 
 /**
- * Serialize a KnowledgeItem to Markdown with YAML frontmatter
+ * Get the file extension from a filename or mime type
  */
-function serialize(item: KnowledgeItem): SerializedFile {
+function getFileExtension(name: string, mimeType?: string): string {
+  // Try to get extension from name first
+  const nameMatch = name.match(/\.([^.]+)$/)
+  if (nameMatch) {
+    return `.${nameMatch[1].toLowerCase()}`
+  }
+
+  // Fall back to mime type mapping
+  if (mimeType) {
+    const mimeExtensions: Record<string, string> = {
+      'application/pdf': '.pdf',
+      'image/png': '.png',
+      'image/jpeg': '.jpg',
+      'image/gif': '.gif',
+      'image/webp': '.webp',
+      'image/svg+xml': '.svg',
+      'text/plain': '.txt',
+      'text/markdown': '.md',
+      'text/html': '.html',
+      'text/css': '.css',
+      'text/javascript': '.js',
+      'application/javascript': '.js',
+      'application/json': '.json',
+      'application/xml': '.xml',
+      'text/xml': '.xml',
+      'text/csv': '.csv',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+        '.docx',
+      'application/msword': '.doc',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+        '.xlsx',
+      'application/vnd.ms-excel': '.xls',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+        '.pptx',
+      'application/vnd.ms-powerpoint': '.ppt',
+      'message/rfc822': '.eml',
+    }
+    const ext = mimeExtensions[mimeType]
+    if (ext) return ext
+  }
+
+  // Default to .txt for unknown content types
+  return '.txt'
+}
+
+/**
+ * Determine if content should be stored as binary (base64)
+ */
+function isBinaryContent(fileType?: string, mimeType?: string): boolean {
+  // Text files can be stored as-is
+  if (fileType === 'text') return false
+
+  // Check mime type
+  if (mimeType) {
+    if (mimeType.startsWith('text/')) return false
+    if (mimeType.startsWith('message/')) return false // RFC 822 emails, etc.
+    if (mimeType === 'application/json') return false
+    if (mimeType === 'application/xml') return false
+    if (mimeType === 'application/javascript') return false
+  }
+
+  // Everything else (images, documents) is binary
+  return true
+}
+
+/**
+ * Serialize a KnowledgeItem to metadata file + binary file
+ */
+function serializeKnowledgeFileSet(
+  item: KnowledgeItem,
+): SerializedKnowledgeFileSet {
+  const hash = shortHash(item.id)
+  const nameSlug = sanitizeFilename(item.name, 40)
+  const extension = getFileExtension(item.name, item.mimeType)
+  const binaryFilename = `${nameSlug}-${hash}${extension}`
+
   const frontmatter: KnowledgeItemFrontmatter = {
     id: item.id,
     name: item.name,
@@ -66,21 +149,17 @@ function serialize(item: KnowledgeItem): SerializedFile {
     ...(item.transcript && { hasTranscript: true }),
     ...(item.processingStatus && { processingStatus: item.processingStatus }),
     ...(item.processedAt && { processedAt: formatDate(item.processedAt) }),
+    // Reference to the binary file
+    ...(item.content && { binaryFile: binaryFilename }),
   }
 
-  // Body is the content (for text files) or transcript (for documents)
+  // Body contains only transcript if present
   let body = ''
-  if (item.content) {
-    body = item.content
-  }
   if (item.transcript) {
-    if (body) {
-      body += '\n\n---\n\n## Transcript\n\n'
-    }
-    body += item.transcript
+    body = `## Transcript\n\n${item.transcript}`
   }
 
-  const content = stringifyFrontmatter(frontmatter, body)
+  const metadataContent = stringifyFrontmatter(frontmatter, body)
 
   // Organize by path - use sanitized path for directory structure
   const pathDir = item.path
@@ -89,21 +168,45 @@ function serialize(item: KnowledgeItem): SerializedFile {
     .map((p) => sanitizeFilename(p))
     .join('/')
 
-  return {
-    filename: getFilename(item),
-    content,
+  const result: SerializedKnowledgeFileSet = {
+    metadataFilename: `${METADATA_PREFIX}${nameSlug}-${hash}${METADATA_EXTENSION}`,
+    metadataContent,
     directory: pathDir ? `${DIRECTORY}/${pathDir}` : DIRECTORY,
+  }
+
+  // Add binary content if present
+  if (item.content) {
+    const isBinary = isBinaryContent(item.fileType, item.mimeType)
+    result.binaryFilename = binaryFilename
+    result.binaryContent = item.content
+    result.isBinaryBase64 = isBinary
+  }
+
+  return result
+}
+
+/**
+ * Serialize a KnowledgeItem to Markdown with YAML frontmatter (legacy format for Serializer interface)
+ */
+function serialize(item: KnowledgeItem): SerializedFile {
+  const fileSet = serializeKnowledgeFileSet(item)
+  return {
+    filename: fileSet.metadataFilename,
+    content: fileSet.metadataContent,
+    directory: fileSet.directory,
   }
 }
 
 /**
  * Deserialize Markdown with YAML frontmatter to a KnowledgeItem
  * If file metadata is provided and frontmatter lacks timestamps, use file metadata
+ * Binary content should be provided separately via binaryContent parameter
  */
 function deserialize(
   content: string,
   filename: string,
   fileMetadata?: FileMetadata,
+  binaryContent?: string,
 ): KnowledgeItem | null {
   const parsed = parseFrontmatter<KnowledgeItemFrontmatter>(content)
   if (!parsed) {
@@ -121,13 +224,15 @@ function deserialize(
     ? parseDate(frontmatter.createdAt)
     : (fileMetadata?.lastModified ?? new Date())
 
-  // Parse content and transcript from body
-  let itemContent = body
+  // Parse transcript from body (new format: body only contains transcript)
   let transcript: string | undefined
 
-  const transcriptIndex = body.indexOf('---\n\n## Transcript\n\n')
-  if (transcriptIndex !== -1) {
-    itemContent = body.slice(0, transcriptIndex).trim()
+  // Check for new format (body starts with ## Transcript)
+  if (body.startsWith('## Transcript\n\n')) {
+    transcript = body.slice('## Transcript\n\n'.length).trim()
+  } else if (body.includes('---\n\n## Transcript\n\n')) {
+    // Legacy format with content + transcript separator
+    const transcriptIndex = body.indexOf('---\n\n## Transcript\n\n')
     transcript = body
       .slice(transcriptIndex + '---\n\n## Transcript\n\n'.length)
       .trim()
@@ -140,7 +245,8 @@ function deserialize(
     ...(frontmatter.fileType && {
       fileType: frontmatter.fileType as KnowledgeItem['fileType'],
     }),
-    ...(itemContent && { content: itemContent }),
+    // Use binary content if provided, otherwise empty (will be loaded separately)
+    ...(binaryContent && { content: binaryContent }),
     ...(frontmatter.contentHash && { contentHash: frontmatter.contentHash }),
     ...(frontmatter.mimeType && { mimeType: frontmatter.mimeType }),
     ...(frontmatter.size !== undefined && { size: frontmatter.size }),
@@ -173,21 +279,39 @@ function deserialize(
 function getFilename(item: KnowledgeItem): string {
   const nameSlug = sanitizeFilename(item.name, 40)
   const hash = shortHash(item.id)
-  return `${nameSlug}-${hash}${EXTENSION}`
+  return `${METADATA_PREFIX}${nameSlug}-${hash}${METADATA_EXTENSION}`
 }
 
 function getExtension(): string {
-  return EXTENSION
+  return METADATA_EXTENSION
 }
 
 function getDirectory(): string {
   return DIRECTORY
 }
 
-export const knowledgeSerializer: Serializer<KnowledgeItem> = {
+/**
+ * Get the binary filename for a knowledge item
+ */
+function getBinaryFilename(item: KnowledgeItem): string {
+  const nameSlug = sanitizeFilename(item.name, 40)
+  const hash = shortHash(item.id)
+  const extension = getFileExtension(item.name, item.mimeType)
+  return `${nameSlug}-${hash}${extension}`
+}
+
+export const knowledgeSerializer: Serializer<KnowledgeItem> & {
+  serializeKnowledgeFileSet: typeof serializeKnowledgeFileSet
+  getBinaryFilename: typeof getBinaryFilename
+  isBinaryContent: typeof isBinaryContent
+} = {
   serialize,
   deserialize,
   getFilename,
   getExtension,
   getDirectory,
+  // Extended methods for knowledge items
+  serializeKnowledgeFileSet,
+  getBinaryFilename,
+  isBinaryContent,
 }

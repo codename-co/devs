@@ -82,6 +82,13 @@ const isHTMLContent = (mimeType?: string): boolean => {
 }
 
 /**
+ * Detect if content is an EML (email) file
+ */
+const isEMLContent = (mimeType?: string): boolean => {
+  return mimeType === 'message/rfc822'
+}
+
+/**
  * Detect if content is a document that might have extracted text
  */
 const isExtractableDocument = (mimeType?: string): boolean => {
@@ -366,6 +373,318 @@ const HTMLPreview = ({ content, name }: { content: string; name: string }) => {
         sandbox="allow-same-origin"
         referrerPolicy="no-referrer"
       />
+    </div>
+  )
+}
+
+/**
+ * Parse RFC 822 email headers from raw content
+ */
+const parseEMLHeaders = (rawContent: string): Record<string, string> => {
+  const headers: Record<string, string> = {}
+  const headerSection = rawContent.split(/\r?\n\r?\n/)[0] || ''
+  const lines = headerSection.split(/\r?\n/)
+
+  let currentHeader = ''
+  let currentValue = ''
+
+  for (const line of lines) {
+    // Continuation line (starts with whitespace)
+    if (/^[ \t]/.test(line) && currentHeader) {
+      currentValue += ' ' + line.trim()
+    } else {
+      // Save previous header
+      if (currentHeader) {
+        headers[currentHeader.toLowerCase()] = currentValue
+      }
+      // Parse new header
+      const match = line.match(/^([^:]+):\s*(.*)$/)
+      if (match) {
+        currentHeader = match[1]
+        currentValue = match[2]
+      }
+    }
+  }
+
+  // Save last header
+  if (currentHeader) {
+    headers[currentHeader.toLowerCase()] = currentValue
+  }
+
+  return headers
+}
+
+/**
+ * Decode quoted-printable or base64 encoded content
+ */
+const decodeEmailContent = (content: string, encoding?: string): string => {
+  if (!encoding) return content
+
+  const lowerEncoding = encoding.toLowerCase()
+
+  if (lowerEncoding === 'quoted-printable') {
+    return content
+      .replace(/=([0-9A-Fa-f]{2})/g, (_, hex) =>
+        String.fromCharCode(parseInt(hex, 16)),
+      )
+      .replace(/=\r?\n/g, '')
+  }
+
+  if (lowerEncoding === 'base64') {
+    try {
+      return atob(content.replace(/\s/g, ''))
+    } catch {
+      return content
+    }
+  }
+
+  return content
+}
+
+/**
+ * Extract email body from raw RFC 822 content
+ */
+const extractEMLBody = (rawContent: string): { text: string; html: string } => {
+  const parts = rawContent.split(/\r?\n\r?\n/)
+  const bodyContent = parts.slice(1).join('\n\n')
+
+  const headers = parseEMLHeaders(rawContent)
+  const contentType = headers['content-type'] || 'text/plain'
+  const contentEncoding = headers['content-transfer-encoding']
+
+  // Handle multipart messages
+  const boundaryMatch = contentType.match(/boundary=["']?([^"';\s]+)["']?/i)
+  if (boundaryMatch) {
+    const boundary = boundaryMatch[1]
+    const partSeparator = '--' + boundary
+    const bodyParts = bodyContent.split(partSeparator)
+
+    let textPart = ''
+    let htmlPart = ''
+
+    for (const part of bodyParts) {
+      if (part.trim() === '' || part.trim() === '--') continue
+
+      const partParts = part.split(/\r?\n\r?\n/)
+      const partHeaders = partParts[0] || ''
+      const partBody = partParts.slice(1).join('\n\n')
+
+      const partContentType =
+        partHeaders.match(/content-type:\s*([^;\r\n]+)/i)?.[1]?.toLowerCase() ||
+        ''
+      const partEncoding =
+        partHeaders.match(/content-transfer-encoding:\s*([^\r\n]+)/i)?.[1] || ''
+
+      const decodedBody = decodeEmailContent(partBody.trim(), partEncoding)
+
+      if (partContentType.includes('text/html')) {
+        htmlPart = decodedBody
+      } else if (partContentType.includes('text/plain')) {
+        textPart = decodedBody
+      }
+    }
+
+    return { text: textPart, html: htmlPart }
+  }
+
+  // Single-part message
+  const decodedBody = decodeEmailContent(bodyContent, contentEncoding)
+
+  if (contentType.includes('text/html')) {
+    return { text: '', html: decodedBody }
+  }
+
+  return { text: decodedBody, html: '' }
+}
+
+/**
+ * Decode MIME encoded words (e.g., =?UTF-8?B?...?= or =?UTF-8?Q?...?=)
+ */
+const decodeMimeWords = (text: string): string => {
+  return text.replace(
+    /=\?([^?]+)\?([BQ])\?([^?]*)\?=/gi,
+    (_match: string, charset: string, encoding: string, encoded: string) => {
+      try {
+        if (encoding.toUpperCase() === 'B') {
+          // Base64
+          const decoded = atob(encoded)
+          // Handle UTF-8
+          return new TextDecoder(charset).decode(
+            Uint8Array.from(decoded, (c: string) => c.charCodeAt(0)),
+          )
+        } else {
+          // Quoted-printable
+          const decoded = encoded
+            .replace(/_/g, ' ')
+            .replace(/=([0-9A-Fa-f]{2})/g, (_m: string, hex: string) =>
+              String.fromCharCode(parseInt(hex, 16)),
+            )
+          return new TextDecoder(charset).decode(
+            Uint8Array.from(decoded, (c: string) => c.charCodeAt(0)),
+          )
+        }
+      } catch {
+        return encoded
+      }
+    },
+  )
+}
+
+/**
+ * Format email address for display
+ */
+const formatEmailAddress = (
+  address: string,
+): { name: string; email: string } => {
+  const match = address.match(/^"?([^"<]*)"?\s*<?([^>]*)>?$/)
+  if (match) {
+    const name = decodeMimeWords(match[1].trim())
+    const email = match[2].trim() || match[1].trim()
+    return { name: name || email, email }
+  }
+  return { name: address, email: address }
+}
+
+/**
+ * EML (Email) preview component
+ */
+const EMLPreview = ({ content, name }: { content: string; name: string }) => {
+  const { t } = useI18n(localI18n)
+  const [showHtml, setShowHtml] = useState(true)
+
+  const parsedEmail = useMemo(() => {
+    // Decode base64 if content is encoded
+    let rawContent = content
+    if (!content.includes(':') && !content.includes('\n')) {
+      try {
+        rawContent = atob(content)
+      } catch {
+        // Not base64, use as-is
+      }
+    }
+
+    const headers = parseEMLHeaders(rawContent)
+    const body = extractEMLBody(rawContent)
+
+    return {
+      from: formatEmailAddress(decodeMimeWords(headers['from'] || '')),
+      to: (headers['to'] || '')
+        .split(',')
+        .map((addr) => formatEmailAddress(decodeMimeWords(addr.trim())))
+        .filter((addr) => addr.email),
+      cc: (headers['cc'] || '')
+        .split(',')
+        .map((addr) => formatEmailAddress(decodeMimeWords(addr.trim())))
+        .filter((addr) => addr.email),
+      subject: decodeMimeWords(headers['subject'] || '(No Subject)'),
+      date: headers['date'] ? new Date(headers['date']) : null,
+      textBody: body.text,
+      htmlBody: body.html,
+    }
+  }, [content])
+
+  const hasHtmlBody = !!parsedEmail.htmlBody
+  const hasTextBody = !!parsedEmail.textBody
+  const showHtmlContent = showHtml && hasHtmlBody
+
+  return (
+    <div className="space-y-4">
+      {/* Email Header */}
+      <div className="bg-default-50 rounded-lg p-4 space-y-3">
+        {/* Subject */}
+        <div className="flex items-start gap-2">
+          <Icon name="Gmail" className="w-5 h-5 text-primary mt-0.5" />
+          <div className="flex-1">
+            <h4 className="font-semibold text-lg">{parsedEmail.subject}</h4>
+          </div>
+        </div>
+
+        {/* From */}
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-default-500 w-12">{t('From')}:</span>
+          <span className="font-medium">{parsedEmail.from.name}</span>
+          {parsedEmail.from.name !== parsedEmail.from.email && (
+            <span className="text-default-500">
+              &lt;{parsedEmail.from.email}&gt;
+            </span>
+          )}
+        </div>
+
+        {/* To */}
+        {parsedEmail.to.length > 0 && (
+          <div className="flex items-start gap-2 text-sm">
+            <span className="text-default-500 w-12">{t('To')}:</span>
+            <div className="flex-1 flex flex-wrap gap-1">
+              {parsedEmail.to.map((addr, i) => (
+                <Chip key={i} size="sm" variant="flat">
+                  {addr.name}
+                </Chip>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* CC */}
+        {parsedEmail.cc.length > 0 && (
+          <div className="flex items-start gap-2 text-sm">
+            <span className="text-default-500 w-12">{t('CC')}:</span>
+            <div className="flex-1 flex flex-wrap gap-1">
+              {parsedEmail.cc.map((addr, i) => (
+                <Chip key={i} size="sm" variant="bordered">
+                  {addr.name}
+                </Chip>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Date */}
+        {parsedEmail.date && (
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-default-500 w-12">{t('Date')}:</span>
+            <span>{parsedEmail.date.toLocaleString()}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Toggle between HTML and Plain Text */}
+      {hasHtmlBody && hasTextBody && (
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant={showHtml ? 'solid' : 'flat'}
+            color="primary"
+            onPress={() => setShowHtml(true)}
+            startContent={<Icon name="Code" className="w-4 h-4" />}
+          >
+            HTML
+          </Button>
+          <Button
+            size="sm"
+            variant={!showHtml ? 'solid' : 'flat'}
+            color="primary"
+            onPress={() => setShowHtml(false)}
+            startContent={<Icon name="Document" className="w-4 h-4" />}
+          >
+            {t('Plain Text')}
+          </Button>
+        </div>
+      )}
+
+      {/* Email Body */}
+      <Divider />
+      {showHtmlContent ? (
+        <HTMLPreview content={parsedEmail.htmlBody} name={name} />
+      ) : parsedEmail.textBody ? (
+        <div className="bg-default-50 rounded-lg p-4 text-sm whitespace-pre-wrap font-mono">
+          {parsedEmail.textBody}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-8 text-center text-default-500">
+          <Icon name="Document" className="w-12 h-12 mb-3 opacity-50" />
+          <p>{t('No email body available')}</p>
+        </div>
+      )}
     </div>
   )
 }
@@ -810,6 +1129,7 @@ export const ContentPreview = (
   const hasAudioPreview = isKnowledge && isAudioContent(mimeType)
   const hasPDFPreview = isKnowledge && isPDFContent(mimeType) && !!content
   const hasHTMLPreview = isKnowledge && isHTMLContent(mimeType) && !!content
+  const hasEMLPreview = isKnowledge && isEMLContent(mimeType) && !!content
   const isExtractable = isKnowledge && isExtractableDocument(mimeType)
 
   // For text content: show if it's readable text (not base64 binary)
@@ -819,6 +1139,7 @@ export const ContentPreview = (
     !hasVideoPreview &&
     !hasAudioPreview &&
     !hasHTMLPreview &&
+    !hasEMLPreview &&
     !isExtractable
 
   // For artifacts, always show text content
@@ -835,6 +1156,7 @@ export const ContentPreview = (
       hasAudioPreview ||
       hasPDFPreview ||
       hasHTMLPreview ||
+      hasEMLPreview ||
       showTextContent
     ) {
       tabs.push({ key: 'preview', label: t('Preview'), icon: 'MediaImage' })
@@ -855,6 +1177,7 @@ export const ContentPreview = (
     hasAudioPreview,
     hasPDFPreview,
     hasHTMLPreview,
+    hasEMLPreview,
     showTextContent,
     isExtractable,
     t,
@@ -1007,11 +1330,14 @@ export const ContentPreview = (
 
             {hasHTMLPreview && <HTMLPreview content={content} name={name} />}
 
+            {hasEMLPreview && <EMLPreview content={content} name={name} />}
+
             {!hasImagePreview &&
               !hasVideoPreview &&
               !hasAudioPreview &&
               !hasPDFPreview &&
               !hasHTMLPreview &&
+              !hasEMLPreview &&
               showTextContent && (
                 <TextPreview
                   content={content}

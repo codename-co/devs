@@ -39,6 +39,7 @@ through a universally accessible, privacy-first platform.
 - [x] 🌐 **Browser-native**: The browser is the <abbr title="Operating System">OS</abbr>. Runs entirely in your browser, no server dependencies.
 - [x] 🛡️ **Privacy-first**: All data stays on your device, no tracking, no cookies.
 - [x] 🥷 **Offline capable**: Works without internet after initial load.
+- [x] 💾 **[Local Backup](docs/LOCAL-BACKUP.md)**: Bidirectional sync to a local folder with human-readable Markdown files.
 
 ### User Experience
 

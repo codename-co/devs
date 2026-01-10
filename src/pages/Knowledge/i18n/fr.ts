@@ -152,6 +152,7 @@ export const fr: I18n = {
   'Synced Folders': 'Dossiers synchronisés',
   'File Type': 'Type de fichier',
   Source: 'Source',
+  Filters: 'Filtres',
   'No items match the selected filters':
     'Aucun élément ne correspond aux filtres sélectionnés',
   // Bulk selection

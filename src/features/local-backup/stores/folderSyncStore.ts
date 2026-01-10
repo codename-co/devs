@@ -13,12 +13,22 @@ import {
 } from '../lib/local-backup-service'
 import { db } from '@/lib/db'
 
+export interface SyncStats {
+  agents: number
+  conversations: number
+  memories: number
+  knowledge: number
+  tasks: number
+  fullExport: boolean
+}
+
 interface FolderSyncState {
   // Sync state
   isEnabled: boolean
   isInitializing: boolean
   isSyncing: boolean
   lastSync: Date | null
+  syncStats: SyncStats | null
   error: string | null
 
   // Config (persisted reference, actual handle stored separately)
@@ -28,6 +38,7 @@ interface FolderSyncState {
   syncMemories: boolean
   syncKnowledge: boolean
   syncTasks: boolean
+  syncFullExport: boolean
 
   // Activity
   recentEvents: FolderSyncEvent[]
@@ -41,6 +52,7 @@ interface FolderSyncState {
       syncMemories?: boolean
       syncKnowledge?: boolean
       syncTasks?: boolean
+      syncFullExport?: boolean
     },
   ) => Promise<void>
   disableSync: () => void
@@ -51,7 +63,8 @@ interface FolderSyncState {
     syncMemories?: boolean
     syncKnowledge?: boolean
     syncTasks?: boolean
-  }) => void
+    syncFullExport?: boolean
+  }) => Promise<void>
   reconnect: (directoryHandle: FileSystemDirectoryHandle) => Promise<void>
   clearError: () => void
 }
@@ -111,9 +124,9 @@ export const useFolderSyncStore = create<FolderSyncState>()(
   persist(
     (set, get) => {
       // Set up event listener for sync service
-      folderSyncService.onSyncEvent((event) => {
+      folderSyncService.onSyncEvent(async (event) => {
         const recentEvents = [event, ...get().recentEvents].slice(0, 50)
-        set({
+        const updates: Partial<FolderSyncState> = {
           recentEvents,
           isSyncing:
             event.type === 'sync_start'
@@ -124,7 +137,37 @@ export const useFolderSyncStore = create<FolderSyncState>()(
           lastSync:
             event.type === 'sync_complete' ? new Date() : get().lastSync,
           error: event.type === 'sync_error' ? event.error : get().error,
-        })
+        }
+
+        // Update stats on sync complete
+        if (event.type === 'sync_complete') {
+          try {
+            const state = get()
+            const stats: SyncStats = {
+              agents: state.syncAgents
+                ? (await db.getAll('agents')).filter((a) => !a.deletedAt).length
+                : 0,
+              conversations: state.syncConversations
+                ? (await db.getAll('conversations')).length
+                : 0,
+              memories: state.syncMemories
+                ? (await db.getAll('agentMemories')).length
+                : 0,
+              knowledge: state.syncKnowledge
+                ? (await db.getAll('knowledgeItems')).filter(
+                    (k) => k.type === 'file',
+                  ).length
+                : 0,
+              tasks: state.syncTasks ? (await db.getAll('tasks')).length : 0,
+              fullExport: state.syncFullExport,
+            }
+            updates.syncStats = stats
+          } catch (err) {
+            console.error('Failed to fetch sync stats:', err)
+          }
+        }
+
+        set(updates)
       })
 
       return {
@@ -133,6 +176,7 @@ export const useFolderSyncStore = create<FolderSyncState>()(
         isInitializing: false,
         isSyncing: false,
         lastSync: null,
+        syncStats: null,
         error: null,
         basePath: null,
         syncAgents: true,
@@ -140,6 +184,7 @@ export const useFolderSyncStore = create<FolderSyncState>()(
         syncMemories: true,
         syncKnowledge: true,
         syncTasks: true,
+        syncFullExport: true,
         recentEvents: [],
 
         // Actions
@@ -154,6 +199,7 @@ export const useFolderSyncStore = create<FolderSyncState>()(
               syncMemories: options.syncMemories ?? get().syncMemories,
               syncKnowledge: options.syncKnowledge ?? get().syncKnowledge,
               syncTasks: options.syncTasks ?? get().syncTasks,
+              syncFullExport: options.syncFullExport ?? get().syncFullExport,
             })
 
             // Store handle for reconnection
@@ -169,6 +215,7 @@ export const useFolderSyncStore = create<FolderSyncState>()(
               syncMemories: config.syncMemories,
               syncKnowledge: config.syncKnowledge,
               syncTasks: config.syncTasks,
+              syncFullExport: config.syncFullExport,
             })
           } catch (error) {
             set({
@@ -185,6 +232,7 @@ export const useFolderSyncStore = create<FolderSyncState>()(
           set({
             isEnabled: false,
             basePath: null,
+            syncStats: null,
             error: null,
           })
         },
@@ -204,7 +252,8 @@ export const useFolderSyncStore = create<FolderSyncState>()(
           }
         },
 
-        updateSyncOptions: (options) => {
+        updateSyncOptions: async (options) => {
+          // Update local state
           set({
             syncAgents: options.syncAgents ?? get().syncAgents,
             syncConversations:
@@ -212,7 +261,25 @@ export const useFolderSyncStore = create<FolderSyncState>()(
             syncMemories: options.syncMemories ?? get().syncMemories,
             syncKnowledge: options.syncKnowledge ?? get().syncKnowledge,
             syncTasks: options.syncTasks ?? get().syncTasks,
+            syncFullExport: options.syncFullExport ?? get().syncFullExport,
           })
+
+          // Update service config
+          folderSyncService.updateConfig(options)
+
+          // Trigger sync if enabled to apply new options
+          if (get().isEnabled) {
+            set({ isSyncing: true })
+            try {
+              await folderSyncService.syncToFiles()
+            } catch (error) {
+              set({
+                error: error instanceof Error ? error.message : String(error),
+              })
+            } finally {
+              set({ isSyncing: false })
+            }
+          }
         },
 
         reconnect: async (directoryHandle) => {
@@ -228,6 +295,7 @@ export const useFolderSyncStore = create<FolderSyncState>()(
               syncMemories: state.syncMemories,
               syncKnowledge: state.syncKnowledge,
               syncTasks: state.syncTasks,
+              syncFullExport: state.syncFullExport,
             })
 
             await storeDirectoryHandle(directoryHandle)
@@ -257,6 +325,7 @@ export const useFolderSyncStore = create<FolderSyncState>()(
         syncMemories: state.syncMemories,
         syncKnowledge: state.syncKnowledge,
         syncTasks: state.syncTasks,
+        syncFullExport: state.syncFullExport,
       }),
     },
   ),

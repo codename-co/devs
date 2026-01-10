@@ -13,6 +13,7 @@ import DemoPage from '@/pages/Demo/index.mdx'
 import HTMLdemoPage from '@/pages/Demo/html.mdx'
 import DiagramPage from '@/pages/Demo/diagram.mdx'
 import { PrivacyPage } from '@/pages/Privacy'
+import { SyncPage } from '@/pages/Sync'
 import { TermsPage } from '@/pages/Terms'
 import { KnowledgePage } from '@/pages/Knowledge'
 import { MethodologiesPage } from '@/pages/Methodologies/index'
@@ -57,6 +58,7 @@ const routes = {
   'oauth/callback': OAuthCallbackPage,
   privacy: PrivacyPage,
   settings: SettingsPage,
+  sync: SyncPage,
   task: TaskPage,
   tasks: TasksPage,
   'tasks/:taskId': TaskPage,

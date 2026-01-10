@@ -69,6 +69,17 @@ export const es: I18n = {
   Privacy: 'Privacidad',
   Terms: 'Términos',
 
+  // PageMenu
+  Voice: 'Voz',
+  'Voice input mode': 'Modo de entrada de voz',
+  'Connect external services': 'Conectar servicios externos',
+  'Agent learned knowledge': 'Conocimientos aprendidos por el agente',
+  Files: 'Archivos',
+  'Manage your files': 'Gestionar tus archivos',
+  'App configuration': 'Configuración de la aplicación',
+  'Database management': 'Gestión de base de datos',
+  Admin: 'Admin',
+
   // PromptArea
   'Need something done?': '¿Necesitas que se haga algo?',
   'More actions': 'Más acciones',

@@ -8,8 +8,10 @@ export const localI18n = {
     'Local Backup',
     'Local Backup Active',
     'Active',
+    'Disabled',
+    'Offline',
     'Backup to local folder',
-    'Backup your data to a local folder on your device.',
+    'Your conversations are yours. Keep them safe on your device—no cloud surprises, no vanishing chats.',
     'Automatically backup your data to a folder on your device',
     'Select Folder',
     'Change Folder',
@@ -31,6 +33,8 @@ export const localI18n = {
     'Knowledge base files',
     'Tasks',
     'Workflow tasks',
+    'Full Export',
+    'Complete database JSON export',
     'Connected to:',
     'Reconnect',
     'Local backup enabled',
@@ -58,9 +62,11 @@ export const localI18n = {
     'Local Backup': 'Sauvegarde locale',
     'Local Backup Active': 'Sauvegarde locale active',
     Active: 'Active',
+    Disabled: 'Désactivé',
+    Offline: 'Hors ligne',
     'Backup to local folder': 'Sauvegarder vers un dossier local',
-    'Backup your data to a local folder on your device.':
-      'Sauvegardez vos données dans un dossier local sur votre appareil.',
+    'Your conversations are yours. Keep them safe on your device—no cloud surprises, no vanishing chats.':
+      'Vos conversations vous appartiennent. Gardez-les en sécurité sur votre appareil—pas de surprises cloud, pas de discussions qui disparaissent.',
     'Automatically backup your data to a folder on your device':
       'Sauvegardez automatiquement vos données dans un dossier sur votre appareil',
     'Select Folder': 'Sélectionner un dossier',
@@ -84,6 +90,9 @@ export const localI18n = {
     'Knowledge base files': 'Fichiers de la base de connaissances',
     Tasks: 'Tâches',
     'Workflow tasks': 'Tâches de workflow',
+    'Full Export': 'Export complet',
+    'Complete database JSON export':
+      'Export JSON complet de la base de données',
     'Connected to:': 'Connecté à :',
     Reconnect: 'Reconnecter',
     'Local backup enabled': 'Sauvegarde locale activée',
@@ -116,9 +125,11 @@ export const localI18n = {
     'Local Backup': 'Copia de seguridad local',
     'Local Backup Active': 'Copia de seguridad activa',
     Active: 'Activa',
+    Disabled: 'Deshabilitado',
+    Offline: 'Sin conexión',
     'Backup to local folder': 'Hacer copia a carpeta local',
-    'Backup your data to a local folder on your device.':
-      'Haz una copia de tus datos en una carpeta local de tu dispositivo.',
+    'Your conversations are yours. Keep them safe on your device—no cloud surprises, no vanishing chats.':
+      'Tus conversaciones son tuyas. Mantenlas seguras en tu dispositivo—sin sorpresas de la nube, sin chats que desaparecen.',
     'Automatically backup your data to a folder on your device':
       'Haz copias de seguridad automáticas de tus datos en una carpeta de tu dispositivo',
     'Select Folder': 'Seleccionar carpeta',
@@ -141,6 +152,9 @@ export const localI18n = {
     'Knowledge base files': 'Archivos de la base de conocimiento',
     Tasks: 'Tareas',
     'Workflow tasks': 'Tareas de flujo de trabajo',
+    'Full Export': 'Exportación completa',
+    'Complete database JSON export':
+      'Exportación JSON completa de la base de datos',
     'Connected to:': 'Conectado a:',
     Reconnect: 'Reconectar',
     'Local backup enabled': 'Copia de seguridad activada',
@@ -173,9 +187,11 @@ export const localI18n = {
     'Local Backup': 'Lokale Sicherung',
     'Local Backup Active': 'Lokale Sicherung aktiv',
     Active: 'Aktiv',
+    Disabled: 'Deaktiviert',
+    Offline: 'Offline',
     'Backup to local folder': 'In lokalen Ordner sichern',
-    'Backup your data to a local folder on your device.':
-      'Sichern Sie Ihre Daten in einem lokalen Ordner auf Ihrem Gerät.',
+    'Your conversations are yours. Keep them safe on your device—no cloud surprises, no vanishing chats.':
+      'Ihre Unterhaltungen gehören Ihnen. Bewahren Sie sie sicher auf Ihrem Gerät auf—keine Cloud-Überraschungen, keine verschwundenen Chats.',
     'Automatically backup your data to a folder on your device':
       'Sichern Sie Ihre Daten automatisch in einem Ordner auf Ihrem Gerät',
     'Select Folder': 'Ordner auswählen',
@@ -199,6 +215,8 @@ export const localI18n = {
     'Knowledge base files': 'Wissensdatenbank-Dateien',
     Tasks: 'Aufgaben',
     'Workflow tasks': 'Workflow-Aufgaben',
+    'Full Export': 'Vollständiger Export',
+    'Complete database JSON export': 'Vollständiger JSON-Datenbankexport',
     'Connected to:': 'Verbunden mit:',
     Reconnect: 'Neu verbinden',
     'Local backup enabled': 'Lokale Sicherung aktiviert',
@@ -231,9 +249,11 @@ export const localI18n = {
     'Local Backup': 'نسخ احتياطي محلي',
     'Local Backup Active': 'النسخ الاحتياطي المحلي نشط',
     Active: 'نشط',
+    Disabled: 'معطل',
+    Offline: 'غير متصل',
     'Backup to local folder': 'نسخ احتياطي إلى مجلد محلي',
-    'Backup your data to a local folder on your device.':
-      'انسخ بياناتك احتياطياً إلى مجلد محلي على جهازك.',
+    'Your conversations are yours. Keep them safe on your device—no cloud surprises, no vanishing chats.':
+      'محادثاتك ملكك. احتفظ بها آمنة على جهازك—لا مفاجآت سحابية، لا محادثات تختفي.',
     'Automatically backup your data to a folder on your device':
       'نسخ بياناتك احتياطياً تلقائياً إلى مجلد على جهازك',
     'Select Folder': 'اختر مجلد',
@@ -256,6 +276,8 @@ export const localI18n = {
     'Knowledge base files': 'ملفات قاعدة المعرفة',
     Tasks: 'المهام',
     'Workflow tasks': 'مهام سير العمل',
+    'Full Export': 'تصدير كامل',
+    'Complete database JSON export': 'تصدير JSON كامل لقاعدة البيانات',
     'Connected to:': 'متصل بـ:',
     Reconnect: 'إعادة الاتصال',
     'Local backup enabled': 'النسخ الاحتياطي مفعل',
@@ -288,9 +310,11 @@ export const localI18n = {
     'Local Backup': '로컬 백업',
     'Local Backup Active': '로컬 백업 활성화됨',
     Active: '활성',
+    Disabled: '비활성화',
+    Offline: '오프라인',
     'Backup to local folder': '로컬 폴더에 백업',
-    'Backup your data to a local folder on your device.':
-      '기기의 로컬 폴더에 데이터를 백업합니다.',
+    'Your conversations are yours. Keep them safe on your device—no cloud surprises, no vanishing chats.':
+      '대화는 당신의 것입니다. 기기에 안전하게 보관하세요—클라우드 서프라이즈도, 사라지는 채팅도 없습니다.',
     'Automatically backup your data to a folder on your device':
       '기기의 폴더에 데이터를 자동으로 백업합니다',
     'Select Folder': '폴더 선택',
@@ -313,6 +337,8 @@ export const localI18n = {
     'Knowledge base files': '지식 베이스 파일',
     Tasks: '작업',
     'Workflow tasks': '워크플로우 작업',
+    'Full Export': '전체 내보내기',
+    'Complete database JSON export': '전체 데이터베이스 JSON 내보내기',
     'Connected to:': '연결됨:',
     Reconnect: '다시 연결',
     'Local backup enabled': '로컬 백업 활성화됨',

@@ -91,8 +91,17 @@ export async function initializeEasySetup(
         )
 
         if (!isDuplicate) {
+          const slug = agentData.n
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '')
+            .slice(0, 50)
+
           const agent: Agent = {
             name: agentData.n,
+            slug,
             role: agentData.r,
             instructions: agentData.i,
             temperature: agentData.t,

@@ -51,15 +51,23 @@ export function stringifyFrontmatter<T extends object>(
  * - Remove special characters
  * - Lowercase
  * - Truncate to reasonable length
+ * - Ensure non-empty result
  */
 export function sanitizeFilename(str: string, maxLength = 50): string {
-  return str
+  const sanitized = str
     .toLowerCase()
     .replace(/[^\w\s-]/g, '') // Remove special chars
     .replace(/\s+/g, '-') // Spaces to hyphens
     .replace(/-+/g, '-') // Multiple hyphens to single
     .replace(/^-|-$/g, '') // Trim hyphens
     .slice(0, maxLength)
+
+  // Ensure we never return an empty string or reserved names
+  if (!sanitized || sanitized === '.' || sanitized === '..') {
+    return 'unnamed'
+  }
+
+  return sanitized
 }
 
 /**
@@ -74,7 +82,9 @@ export function formatDate(date: Date | string | undefined | null): string {
 /**
  * Format a date for filename (YYYY-MM-DD)
  */
-export function formatDateForFilename(date: Date | string | undefined | null): string {
+export function formatDateForFilename(
+  date: Date | string | undefined | null,
+): string {
   if (!date) return new Date().toISOString().split('T')[0]
   const d = typeof date === 'string' ? new Date(date) : date
   return d.toISOString().split('T')[0]

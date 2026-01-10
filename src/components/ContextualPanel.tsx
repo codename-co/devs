@@ -95,7 +95,7 @@ const CollapsedPanel = ({ className }: { className?: string }) => {
 
   return (
     <div
-      className={`w-18 p-2 lg:p-4 h-full z-50 flex flex-col transition-all duration-200 ${className} pointer-events-none`}
+      className={`w-18 mt-24 p-4 h-full z-50 flex flex-col transition-all duration-200 ${className} pointer-events-none`}
     >
       <div className="flex flex-col items-center">
         <Tooltip content={t('Expand sidebar')} placement="left">
@@ -132,7 +132,7 @@ const ExpandedPanel = ({ className }: { className?: string }) => {
         className="pointer-events-auto flex flex-col overflow-y-auto flex-1 p-0.5"
       >
         <div className="sticky top-0 bg-background dark:bg-content1 z-10 pb-3 mb-2">
-          <div className="flex items-center justify-end">
+          <div className="flex items-center">
             <Tooltip content={t('Collapse sidebar')} placement="left">
               <Button
                 data-testid="panel-collapse-button"

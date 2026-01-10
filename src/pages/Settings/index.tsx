@@ -13,6 +13,10 @@ export const SettingsPage = () => {
 
   const header: HeaderProps = {
     title: t('Platform Settings'),
+    icon: {
+      name: 'Settings',
+      color: 'text-default-300 dark:text-default-600',
+    },
     subtitle: t(
       'Configure LLM providers, models and platform defaults for your organization',
     ),

@@ -131,6 +131,7 @@ export const en = [
   'Synced Folders',
   'File Type',
   'Source',
+  'Filters',
   'No items match the selected filters',
   // Bulk selection
   '{count} item(s) deleted',

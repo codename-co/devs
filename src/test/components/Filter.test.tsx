@@ -58,7 +58,7 @@ describe('Filter Component', () => {
       expect(screen.getByText(/\(10\)/)).toBeInTheDocument()
     })
 
-    it('should show counts when showCounts is "options-only"', () => {
+    it('should show counts when showCounts is "options-only" (in dropdown only)', async () => {
       const onSelectionChange = vi.fn()
       render(
         <Filter
@@ -70,7 +70,17 @@ describe('Filter Component', () => {
         />,
       )
 
-      expect(screen.getByText(/\(10\)/)).toBeInTheDocument()
+      // In options-only mode, button should NOT show count
+      expect(screen.queryByText(/\(10\)/)).not.toBeInTheDocument()
+
+      // Open the dropdown to verify counts are shown there
+      const button = screen.getByRole('button')
+      fireEvent.click(button)
+
+      await waitFor(() => {
+        // Counts should be shown in dropdown items
+        expect(screen.getByText(/10/)).toBeInTheDocument()
+      })
     })
 
     it('should not show counts when showCounts is "none"', () => {
@@ -254,7 +264,7 @@ describe('Filter Component', () => {
   })
 
   describe('ShowCounts Mode: options-only', () => {
-    it('should show count in button for selected item', () => {
+    it('should NOT show count in button for selected item', () => {
       const onSelectionChange = vi.fn()
       render(
         <Filter
@@ -266,9 +276,9 @@ describe('Filter Component', () => {
         />,
       )
 
-      // Should show count for selected item in button
+      // In options-only mode, button should NOT show count
       expect(screen.getByText(/Active/)).toBeInTheDocument()
-      expect(screen.getByText(/\(5\)/)).toBeInTheDocument()
+      expect(screen.queryByText(/\(5\)/)).not.toBeInTheDocument()
     })
 
     it('should show counts in dropdown for non-selected items', async () => {
@@ -286,13 +296,13 @@ describe('Filter Component', () => {
       const button = screen.getByRole('button')
       fireEvent.click(button)
 
-      // In options-only mode, non-selected items should show counts
+      // In options-only mode, counts should appear in dropdown only
       await waitFor(() => {
-        // The button shows count for selected item
-        expect(screen.getByText(/\(10\)/)).toBeInTheDocument()
-        // Dropdown shows counts for non-selected items
+        // Dropdown shows counts for items
         const menu = screen.getByRole('menu')
         expect(menu).toBeInTheDocument()
+        // Should find count "10" somewhere in dropdown
+        expect(screen.getByText(/10/)).toBeInTheDocument()
       })
     })
   })

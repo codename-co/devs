@@ -149,6 +149,7 @@ export const ko: I18n = {
   'Synced Folders': '동기화된 폴더',
   'File Type': '파일 유형',
   Source: '소스',
+  Filters: '필터',
   'No items match the selected filters':
     '선택한 필터와 일치하는 항목이 없습니다',
   // Bulk selection

@@ -92,6 +92,7 @@ const SimpleIconToComponent = (icon: any) => {
 
 export const Icons = {
   // Iconoir icons
+  AppWindow: IconoirIcons.AppWindow,
   ArrowRight: IconoirIcons.ArrowRight,
   Attachment: IconoirIcons.Attachment,
   Book: IconoirIcons.Book,
@@ -111,6 +112,7 @@ export const Icons = {
   CloudXmark: IconoirIcons.CloudXmark,
   Code: IconoirIcons.Code,
   CoffeeCup: IconoirIcons.CoffeeCup,
+  ControlSlider: IconoirIcons.ControlSlider,
   Copy: IconoirIcons.Copy,
   Crown: IconoirIcons.Crown,
   CubeScan: IconoirIcons.CubeScan,
@@ -153,6 +155,7 @@ export const Icons = {
   Folder: IconoirIcons.Folder,
   GraduationCap: IconoirIcons.GraduationCap,
   HalfMoon: IconoirIcons.HalfMoon,
+  HardDrive: IconoirIcons.HardDrive,
   Html5: IconoirIcons.Html5,
   Internet: IconoirIcons.Internet,
   Language: IconoirIcons.Language,

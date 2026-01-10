@@ -25,6 +25,7 @@ export interface ParsedFile<T> {
  */
 export interface AgentFrontmatter {
   id: string
+  slug: string
   name: string
   icon?: string
   desc?: string
@@ -40,11 +41,20 @@ export interface AgentFrontmatter {
 }
 
 /**
+ * Context for serialization, providing additional metadata
+ */
+export interface SerializeContext {
+  /** Agent slug lookup function - returns slug for an agentId */
+  getAgentSlug?: (agentId: string) => string | undefined
+}
+
+/**
  * Frontmatter for conversation files
  */
 export interface ConversationFrontmatter {
   id: string
   agentId: string
+  agentSlug?: string
   participatingAgents: string[]
   workflowId: string
   title?: string
@@ -105,6 +115,27 @@ export interface KnowledgeItemFrontmatter {
   hasTranscript?: boolean
   processingStatus?: string
   processedAt?: string
+  /** Reference to the binary content file (relative to same directory) */
+  binaryFile?: string
+}
+
+/**
+ * Represents a serialized file set for knowledge items
+ * Knowledge items output both a metadata file and optionally a binary content file
+ */
+export interface SerializedKnowledgeFileSet {
+  /** Metadata filename (e.g., ".readme-abc123.metadata.knowledge.md") - prefixed with dot for hidden files */
+  metadataFilename: string
+  /** Metadata file content with YAML frontmatter */
+  metadataContent: string
+  /** Subdirectory path (e.g., "knowledge/documents") */
+  directory: string
+  /** Binary filename (e.g., "readme-abc123.pdf") - present only for binary files */
+  binaryFilename?: string
+  /** Binary content as base64 or raw string - present only for binary files */
+  binaryContent?: string
+  /** Whether binary content is base64 encoded */
+  isBinaryBase64?: boolean
 }
 
 /**
@@ -147,13 +178,14 @@ export interface FileMetadata {
  * Serializer interface for all entity types
  */
 export interface Serializer<T> {
-  /** Serialize entity to file content */
-  serialize(entity: T): SerializedFile
-  /** Deserialize file content to entity, optionally using file metadata */
+  /** Serialize entity to file content, with optional context */
+  serialize(entity: T, context?: SerializeContext): SerializedFile
+  /** Deserialize file content to entity, optionally using file metadata and binary content */
   deserialize(
     content: string,
     filename: string,
     fileMetadata?: FileMetadata,
+    binaryContent?: string,
   ): T | null
   /** Get the file extension for this entity type */
   getExtension(): string

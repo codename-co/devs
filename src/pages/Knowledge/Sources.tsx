@@ -5,9 +5,11 @@ import { Folder, Plus, RefreshDouble } from 'iconoir-react'
 import { Title, Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { useConnectorStore } from '@/stores/connectorStore'
-import { ConnectorCard } from '@/features/connectors/components/ConnectorCard'
-import { ConnectorWizard } from '@/features/connectors/components/ConnectorWizard'
-import { ConnectorSettingsModal } from '@/features/connectors/components/ConnectorSettingsModal'
+import {
+  ConnectorCard,
+  ConnectorWizard,
+  ConnectorSettingsModal,
+} from '@/features/connectors/components'
 import { SyncEngine } from '@/features/connectors/sync-engine'
 import { successToast, errorToast, warningToast } from '@/lib/toast'
 import {

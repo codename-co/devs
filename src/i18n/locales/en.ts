@@ -66,6 +66,17 @@ export const en = [
   'Privacy',
   'Terms',
 
+  // PageMenu
+  'Voice',
+  'Voice input mode',
+  'Connect external services',
+  'Agent learned knowledge',
+  'Files',
+  'Manage your files',
+  'App configuration',
+  'Database management',
+  'Admin',
+
   // PromptArea
   'Need something done?',
   'More actions',

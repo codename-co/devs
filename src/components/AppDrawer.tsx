@@ -58,7 +58,7 @@ const AgentList = () => {
               <ListboxItem
                 key={agent.id}
                 className="dark:text-gray-200 dark:hover:text-grey-500"
-                href={`/agents/run#${agent.id}`}
+                href={`/agents/run#${agent.slug}`}
                 textValue={agent.name}
               >
                 <div className="flex items-center gap-2">

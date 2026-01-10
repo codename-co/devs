@@ -152,6 +152,7 @@ export const es: I18n = {
   'Synced Folders': 'Carpetas sincronizadas',
   'File Type': 'Tipo de archivo',
   Source: 'Fuente',
+  Filters: 'Filtros',
   'No items match the selected filters':
     'No hay elementos que coincidan con los filtros seleccionados',
   // Bulk selection

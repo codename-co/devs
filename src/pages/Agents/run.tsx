@@ -32,7 +32,7 @@ import {
 } from '@/components'
 import DefaultLayout from '@/layouts/Default'
 import type { HeaderProps } from '@/lib/types'
-import { getAgentById } from '@/stores/agentStore'
+import { getAgentById, getAgentBySlug } from '@/stores/agentStore'
 import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
 import { usePinnedMessageStore } from '@/stores/pinnedMessageStore'
 import {
@@ -794,7 +794,7 @@ export const AgentRunPage = () => {
         selectedAgent?.role,
       cta: {
         label: t('New chat'),
-        href: url(`/agents/start#${selectedAgent?.id}`),
+        href: url(`/agents/start#${selectedAgent?.slug}`),
         icon: 'Plus',
       },
     }),
@@ -808,10 +808,10 @@ export const AgentRunPage = () => {
     ],
   )
 
-  // Parse the hash to get agentId and optional conversationId
+  // Parse the hash to get agentSlug and optional conversationId
   const parseHash = useCallback(() => {
     const hash = location.hash.replace('#', '')
-    // Check if there's a query string in the hash (e.g., #agentId/convId?message=msgId)
+    // Check if there's a query string in the hash (e.g., #agentSlug/convId?message=msgId)
     const [hashPart, queryPart] = hash.split('?')
     const parts = hashPart.split('/')
 
@@ -820,13 +820,13 @@ export const AgentRunPage = () => {
     const targetMessageId = queryParams.get('message')
 
     return {
-      agentId: parts[0] || 'default',
+      agentSlug: parts[0] || 'devs',
       conversationId: parts[1] || null,
       targetMessageId,
     }
   }, [location.hash])
 
-  const { agentId, conversationId, targetMessageId } = useMemo(
+  const { agentSlug, conversationId, targetMessageId } = useMemo(
     () => parseHash(),
     [parseHash],
   )
@@ -888,10 +888,10 @@ export const AgentRunPage = () => {
       setNewlyLearnedMemories([])
 
       try {
-        // Load the specified agent
-        const agent = await getAgentById(agentId)
+        // Load the specified agent by slug
+        const agent = await getAgentBySlug(agentSlug)
         if (!agent) {
-          errorToast(`Agent "${agentId}" not found`)
+          errorToast(`Agent "${agentSlug}" not found`)
           navigate('/')
           return
         }
@@ -954,7 +954,13 @@ export const AgentRunPage = () => {
     }
 
     loadData()
-  }, [agentId, conversationId, loadConversation, createConversation, navigate])
+  }, [
+    agentSlug,
+    conversationId,
+    loadConversation,
+    createConversation,
+    navigate,
+  ])
 
   // Update conversation messages when currentConversation changes
   useEffect(() => {
@@ -998,17 +1004,17 @@ export const AgentRunPage = () => {
   // Update URL hash when conversation ID becomes available
   // Only update when there's no conversationId in the URL yet (new conversation created)
   useEffect(() => {
-    if (currentConversation?.id && selectedAgent?.id) {
+    if (currentConversation?.id && selectedAgent?.slug) {
       const { conversationId: urlConversationId } = parseHash()
 
       // Only update hash if there's no conversation ID in the URL yet
       // This prevents navigation loops when switching between existing conversations
       if (!urlConversationId) {
-        const newHash = `#${selectedAgent.id}/${currentConversation.id}`
+        const newHash = `#${selectedAgent.slug}/${currentConversation.id}`
         navigate(newHash, { replace: true })
       }
     }
-  }, [currentConversation?.id, selectedAgent?.id, parseHash, navigate])
+  }, [currentConversation?.id, selectedAgent?.slug, parseHash, navigate])
 
   // Load artifacts on mount
   useEffect(() => {

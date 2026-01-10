@@ -68,6 +68,17 @@ export const ko: I18n = {
   Privacy: '개인정보 보호',
   Terms: '이용약관',
 
+  // PageMenu
+  Voice: '음성',
+  'Voice input mode': '음성 입력 모드',
+  'Connect external services': '외부 서비스 연결',
+  'Agent learned knowledge': '에이전트가 학습한 지식',
+  Files: '파일',
+  'Manage your files': '파일 관리',
+  'App configuration': '앱 설정',
+  'Database management': '데이터베이스 관리',
+  Admin: '관리자',
+
   // PromptArea
   'Need something done?': '무언가 필요하신가요?',
   'More actions': '추가 작업',

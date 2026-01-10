@@ -9,16 +9,12 @@
  */
 import {
   Button,
-  Chip,
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
   Popover,
-  PopoverTrigger,
   PopoverContent,
-  Tooltip,
-  Kbd,
 } from '@heroui/react'
 import { useState, useEffect, useCallback } from 'react'
 
@@ -28,6 +24,8 @@ import {
   tryReconnectFolderSync,
 } from '../stores/folderSyncStore'
 import { Icon } from '@/components/Icon'
+import { PageMenuButton } from '@/components/PageMenuButton'
+import { PageMenuPanel } from '@/components/PageMenuPanel'
 import { useI18n } from '@/i18n'
 import { localI18n } from '../i18n'
 
@@ -39,18 +37,21 @@ function isFileSystemAccessSupported(): boolean {
 }
 
 export function LocalBackupButton() {
-  const { t } = useI18n(localI18n)
+  const { t, lang } = useI18n(localI18n)
   const {
     isEnabled,
     isInitializing,
     isSyncing,
     error,
     basePath,
+    lastSync,
+    syncStats,
     syncAgents,
     syncConversations,
     syncMemories,
     syncKnowledge,
     syncTasks,
+    syncFullExport,
     enableSync,
     disableSync,
     triggerSync,
@@ -85,9 +86,6 @@ export function LocalBackupButton() {
         mode: 'readwrite',
         startIn: 'documents',
       })
-
-      // Close popover immediately after folder is chosen
-      setIsPopoverOpen(false)
 
       // Check permission
       const permission = await directoryHandle.queryPermission({
@@ -154,18 +152,7 @@ export function LocalBackupButton() {
   if (syncMemories) syncOptionsValue.push('memories')
   if (syncKnowledge) syncOptionsValue.push('knowledge')
   if (syncTasks) syncOptionsValue.push('tasks')
-
-  // Build label for selected options
-  const getSelectedLabel = () => {
-    const items = []
-    if (syncAgents) items.push(t('Agents'))
-    if (syncConversations) items.push(t('Conversations'))
-    if (syncMemories) items.push(t('Memories'))
-    if (syncKnowledge) items.push(t('Knowledge'))
-    if (syncTasks) items.push(t('Tasks'))
-    if (items.length === 0) return '—'
-    return items.join(', ')
-  }
+  if (syncFullExport) syncOptionsValue.push('fullExport')
 
   // Handle dropdown selection
   const handleSelectionChange = (keys: Set<string> | 'all') => {
@@ -174,6 +161,9 @@ export function LocalBackupButton() {
         syncAgents: true,
         syncConversations: true,
         syncMemories: true,
+        syncKnowledge: true,
+        syncTasks: true,
+        syncFullExport: true,
       })
     } else {
       const selected = Array.from(keys)
@@ -181,13 +171,11 @@ export function LocalBackupButton() {
         syncAgents: selected.includes('agents'),
         syncConversations: selected.includes('conversations'),
         syncMemories: selected.includes('memories'),
+        syncKnowledge: selected.includes('knowledge'),
+        syncTasks: selected.includes('tasks'),
+        syncFullExport: selected.includes('fullExport'),
       })
     }
-  }
-
-  // Determine icon based on state
-  const getIconName = () => {
-    return isEnabled || isSyncing ? 'RefreshDouble' : 'FloppyDisk'
   }
 
   // Determine tooltip text
@@ -195,6 +183,19 @@ export function LocalBackupButton() {
     if (isSyncing) return t('Backing up...')
     if (isEnabled) return t('Local Backup Active')
     return t('Local Backup')
+  }
+
+  // Get status text
+  const getStatusText = () => {
+    // if (isSyncing) return t('Backing up...')
+    if (isEnabled) return t('Active')
+    return t('Disabled')
+  }
+
+  // Get status color
+  const getStatusColor = () => {
+    if (isEnabled) return 'success'
+    return 'default'
   }
 
   // Don't render if File System Access API is not supported
@@ -208,39 +209,197 @@ export function LocalBackupButton() {
       isOpen={isPopoverOpen}
       onOpenChange={setIsPopoverOpen}
     >
-      <Tooltip
-        content={
-          <span className="flex items-center gap-2">
-            {getTooltipText()}
-            <Kbd keys={['command']}>S</Kbd>
-          </span>
-        }
-        isDisabled={isPopoverOpen}
-      >
-        <span className="inline-flex">
-          <PopoverTrigger>
-            <Button
-              variant="light"
-              isIconOnly
-              aria-label={t('Local Backup')}
-              className="dark:hover:bg-default-300"
-            >
-              <Icon
-                name={getIconName()}
-                className={
-                  'size-4 lg:size-5 opacity-40 ' +
-                  (isSyncing ? 'animate-spin' : undefined)
+      <PageMenuButton
+        icon="FloppyDisk"
+        tooltip={getTooltipText()}
+        ariaLabel={t('Local Backup')}
+        showBadge={isEnabled}
+        badgePulsing={isSyncing}
+        tooltipDisabled={isPopoverOpen}
+        shortcutKeys={['command']}
+        shortcutKey="S"
+      />
+      <PopoverContent>
+        <PageMenuPanel
+          title={t('Local Backup')}
+          actions={
+            <>
+              <Dropdown>
+                <DropdownTrigger>
+                  <Button
+                    size="sm"
+                    variant="light"
+                    isIconOnly
+                    aria-label={t('What to backup:')}
+                  >
+                    <Icon name="ControlSlider" className="h-4 w-4" />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  aria-label={t('What to backup:')}
+                  selectionMode="multiple"
+                  selectedKeys={new Set(syncOptionsValue)}
+                  onSelectionChange={(keys) =>
+                    handleSelectionChange(keys as Set<string>)
+                  }
+                  closeOnSelect={false}
+                >
+                  <DropdownItem isDisabled key="what">
+                    {t('What to backup:')}
+                  </DropdownItem>
+                  <DropdownItem
+                    key="agents"
+                    startContent={<Icon name="Sparks" className="h-4 w-4" />}
+                  >
+                    {t('Agents')}
+                  </DropdownItem>
+                  <DropdownItem
+                    key="conversations"
+                    startContent={
+                      <Icon name="ChatBubble" className="h-4 w-4" />
+                    }
+                  >
+                    {t('Conversations')}
+                  </DropdownItem>
+                  <DropdownItem
+                    key="memories"
+                    startContent={<Icon name="Brain" className="h-4 w-4" />}
+                  >
+                    {t('Memories')}
+                  </DropdownItem>
+                  <DropdownItem
+                    key="knowledge"
+                    startContent={<Icon name="Book" className="h-4 w-4" />}
+                  >
+                    {t('Knowledge')}
+                  </DropdownItem>
+                  <DropdownItem
+                    key="tasks"
+                    startContent={
+                      <Icon name="TriangleFlagTwoStripes" className="h-4 w-4" />
+                    }
+                  >
+                    {t('Tasks')}
+                  </DropdownItem>
+                  <DropdownItem
+                    key="fullExport"
+                    startContent={
+                      <Icon name="DatabaseExport" className="h-4 w-4" />
+                    }
+                  >
+                    {t('Full Export')}
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+              {/* {isEnabled && !needsPermission && (
+                <Tooltip content={t('Backup Now')}>
+                  <Button
+                    size="sm"
+                    variant="light"
+                    isIconOnly
+                    onPress={() => triggerSync()}
+                    isLoading={isSyncing}
+                    aria-label={t('Backup Now')}
+                  >
+                    {!isSyncing && (
+                      <Icon name="RefreshDouble" className="h-4 w-4" />
+                    )}
+                  </Button>
+                </Tooltip>
+              )} */}
+            </>
+          }
+          status={
+            isEnabled
+              ? {
+                  text: getStatusText(),
+                  color: getStatusColor(),
+                  tooltip: basePath || undefined,
+                  onClose: disableSync,
+                  closeLabel: t('Stop Backup'),
                 }
-              />
-            </Button>
-          </PopoverTrigger>
-        </span>
-      </Tooltip>
-      <PopoverContent className="max-w-84">
-        <div className="flex flex-col gap-3 p-3">
-          <div className="flex items-center gap-2">
-            <span className="font-medium">{t('Local Backup')}</span>
-          </div>
+              : undefined
+          }
+          description={
+            !isEnabled && !needsPermission
+              ? t(
+                  'Your conversations are yours. Keep them safe on your device—no cloud surprises, no vanishing chats.',
+                )
+              : undefined
+          }
+        >
+          {/* Backup status when enabled */}
+          {isEnabled && !needsPermission && (
+            <div className="flex flex-col gap-2">
+              {/* Last backup time */}
+              {lastSync && (
+                <div className="text-xs text-default-500">
+                  {t('Last backup:')}{' '}
+                  <span className="text-default-700 font-medium">
+                    {new Date(lastSync).toLocaleString(lang, {
+                      dateStyle: 'long',
+                      timeStyle: 'medium',
+                    })}
+                  </span>
+                </div>
+              )}
+
+              {/* Sync stats */}
+              {syncStats && (
+                <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-default-500">
+                  {syncAgents && syncStats.agents > 0 && (
+                    <span>
+                      <span className="font-medium text-default-700">
+                        {syncStats.agents}
+                      </span>{' '}
+                      {t('Agents').toLowerCase()}
+                    </span>
+                  )}
+                  {syncConversations && syncStats.conversations > 0 && (
+                    <span>
+                      <span className="font-medium text-default-700">
+                        {syncStats.conversations}
+                      </span>{' '}
+                      {t('Conversations').toLowerCase()}
+                    </span>
+                  )}
+                  {syncMemories && syncStats.memories > 0 && (
+                    <span>
+                      <span className="font-medium text-default-700">
+                        {syncStats.memories}
+                      </span>{' '}
+                      {t('Memories').toLowerCase()}
+                    </span>
+                  )}
+                  {syncKnowledge && syncStats.knowledge > 0 && (
+                    <span>
+                      <span className="font-medium text-default-700">
+                        {syncStats.knowledge}
+                      </span>{' '}
+                      {t('Knowledge').toLowerCase()}
+                    </span>
+                  )}
+                  {syncTasks && syncStats.tasks > 0 && (
+                    <span>
+                      <span className="font-medium text-default-700">
+                        {syncStats.tasks}
+                      </span>{' '}
+                      {t('Tasks').toLowerCase()}
+                    </span>
+                  )}
+                  {syncFullExport && syncStats.fullExport && (
+                    <span>
+                      <Icon
+                        name="DatabaseExport"
+                        className="h-3 w-3 inline mr-1"
+                      />
+                      {t('Full Export')}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Error display */}
           {error && (
@@ -281,112 +440,21 @@ export function LocalBackupButton() {
 
           {/* Not enabled state */}
           {!isEnabled && !needsPermission && (
-            <div className="flex flex-col gap-3">
-              <p className="text-sm text-default-500">
-                {t('Backup your data to a local folder on your device.')}
-              </p>
-
-              {/* Type selector dropdown */}
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-default-600">
-                  {t('What to backup:')}
-                </span>
-                <Dropdown>
-                  <DropdownTrigger>
-                    <Button
-                      size="sm"
-                      variant="flat"
-                      endContent={
-                        <Icon name="NavArrowDown" className="h-3 w-3" />
-                      }
-                    >
-                      <span className="truncate max-w-[120px]">
-                        {getSelectedLabel()}
-                      </span>
-                    </Button>
-                  </DropdownTrigger>
-                  <DropdownMenu
-                    aria-label={t('What to backup:')}
-                    selectionMode="multiple"
-                    selectedKeys={new Set(syncOptionsValue)}
-                    onSelectionChange={(keys) =>
-                      handleSelectionChange(keys as Set<string>)
-                    }
-                    closeOnSelect={false}
-                  >
-                    <DropdownItem key="agents">{t('Agents')}</DropdownItem>
-                    <DropdownItem key="conversations">
-                      {t('Conversations')}
-                    </DropdownItem>
-                    <DropdownItem key="memories">{t('Memories')}</DropdownItem>
-                    <DropdownItem key="knowledge">
-                      {t('Knowledge')}
-                    </DropdownItem>
-                    <DropdownItem key="tasks">{t('Tasks')}</DropdownItem>
-                  </DropdownMenu>
-                </Dropdown>
-              </div>
-
-              <Button
-                color="primary"
-                onPress={handleSelectFolder}
-                isLoading={isInitializing}
-                isDisabled={syncOptionsValue.length === 0}
-                startContent={
-                  !isInitializing && <Icon name="Folder" className="h-4 w-4" />
-                }
-              >
-                {t('Select Folder')}
-              </Button>
-            </div>
+            <Button
+              color="primary"
+              variant="flat"
+              size="sm"
+              onPress={handleSelectFolder}
+              isLoading={isInitializing}
+              isDisabled={syncOptionsValue.length === 0}
+              startContent={
+                !isInitializing && <Icon name="Folder" className="h-4 w-4" />
+              }
+            >
+              {t('Select Folder')}
+            </Button>
           )}
-
-          {/* Enabled state */}
-          {isEnabled && !needsPermission && (
-            <div className="flex items-center justify-between gap-3">
-              <Tooltip content={basePath || 'Unknown'}>
-                <Chip
-                  size="sm"
-                  variant="flat"
-                  color="success"
-                  classNames={{
-                    content: 'max-w-[120px] truncate',
-                  }}
-                >
-                  {basePath || 'Unknown'}
-                </Chip>
-              </Tooltip>
-              <div className="flex items-center gap-1">
-                <Tooltip content={t('Backup Now')}>
-                  <Button
-                    size="sm"
-                    variant="light"
-                    isIconOnly
-                    onPress={() => triggerSync()}
-                    isLoading={isSyncing}
-                    aria-label={t('Backup Now')}
-                  >
-                    {!isSyncing && (
-                      <Icon name="RefreshDouble" className="h-4 w-4" />
-                    )}
-                  </Button>
-                </Tooltip>
-                <Tooltip content={t('Stop Backup')}>
-                  <Button
-                    size="sm"
-                    variant="light"
-                    isIconOnly
-                    color="danger"
-                    onPress={disableSync}
-                    aria-label={t('Stop Backup')}
-                  >
-                    <Icon name="Xmark" className="h-4 w-4" />
-                  </Button>
-                </Tooltip>
-              </div>
-            </div>
-          )}
-        </div>
+        </PageMenuPanel>
       </PopoverContent>
     </Popover>
   )

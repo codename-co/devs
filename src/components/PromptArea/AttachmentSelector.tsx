@@ -24,7 +24,7 @@ import { getFileIcon } from '@/lib/utils'
 import { formatBytes } from '@/lib/format'
 import { useI18n } from '@/i18n'
 import { PROVIDER_CONFIG } from '@/features/connectors'
-import { ConnectorWizard } from '@/features/connectors/components/ConnectorWizard'
+import { ConnectorWizard } from '@/features/connectors/components'
 
 interface AttachmentSelectorProps {
   lang: LanguageCode

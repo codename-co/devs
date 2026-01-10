@@ -61,7 +61,7 @@ export const AgentCard = ({
       data-testid="agent-card"
       className={`${className} cursor-pointer hover:scale-105 transition-transform dark:border-1 dark:border-default-400`}
       isPressable
-      onPress={() => onPress?.(agent.id)}
+      onPress={() => onPress?.(agent.slug)}
     >
       <CardHeader className="pb-2 pt-2 px-4 flex-col items-start relative">
         {children}

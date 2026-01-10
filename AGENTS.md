@@ -346,21 +346,50 @@ src/features/connectors/
 └── hooks/                  # React hooks
 ```
 
-### 7. Dynamic Team Formation (Future)
+### 7. Local Backup - Bidirectional File Sync
+
+Local Backup provides automatic, bidirectional synchronization between DEVS's IndexedDB database and a local file system folder. See [docs/LOCAL-BACKUP.md](docs/LOCAL-BACKUP.md) for full documentation.
+
+**Key Features:**
+
+- **Bidirectional Sync** - Changes flow both ways—edit files locally or in DEVS
+- **Live Sync on Changes** - Automatic backup when data changes (2-second debounce)
+- **Human-Readable Format** - Markdown files with YAML frontmatter
+- **Full Database Export** - Complete JSON backup for disaster recovery
+- **Privacy-First** - All data stays on your device—no cloud services
+
+**Supported Entity Types:**
+
+| Entity        | Directory             | Format       |
+| ------------- | --------------------- | ------------ |
+| Agents        | `agents/`             | `.agent.md`  |
+| Conversations | `conversations/`      | `.md`        |
+| Memories      | `memories/{agentId}/` | `.md`        |
+| Knowledge     | `knowledge/{path}/`   | `.md` + file |
+| Tasks         | `tasks/`              | `.md`        |
+
+**Use Cases:**
+
+- Version control integration (Git repositories)
+- External editing with favorite text editors
+- Cross-device sync via cloud storage folders
+- Disaster recovery and data portability
+
+### 8. Dynamic Team Formation (Future)
 
 - Mimics human organizational structures and dynamics
 - Agents with defined roles, responsibilities, and communication patterns
 - Hierarchical and flat organization structures
 - Inter-agent collaboration protocols
 
-### 8. Web Grounding (Future)
+### 9. Web Grounding (Future)
 
 - Agents can interact with web content
 - Sandboxed iframe execution for safety
 - Content extraction and parsing
 - API integrations through browser-safe methods
 
-### 8. P2P Collaboration (Future)
+### 10. P2P Collaboration (Future)
 
 - WebRTC-based peer-to-peer connections
 - Distributed agent orchestration across multiple users
@@ -466,6 +495,7 @@ Data types are defined in [src/types/index.ts](src/types/index.ts).
 ```typescript
 interface Agent {
   id: string
+  slug: string // URL-friendly identifier, auto-generated from name, unique across all agents
   name: string
   icon?: IconName
   role: string

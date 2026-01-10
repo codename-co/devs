@@ -139,6 +139,7 @@ function deserialize(
   content: string,
   filename: string,
   fileMetadata?: FileMetadata,
+  _binaryContent?: string,
 ): Task | null {
   const parsed = parseFrontmatter<TaskFrontmatter>(content)
   if (!parsed) {

@@ -22,6 +22,13 @@ export const en = [
   'Version',
   'Dependencies',
   'Validates Requirements',
+  // Email fields
+  'From',
+  'To',
+  'CC',
+  'Date',
+  'Plain Text',
+  'No email body available',
   // Processing status
   'Document Processing',
   'Processed',

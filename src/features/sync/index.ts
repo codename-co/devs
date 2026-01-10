@@ -95,4 +95,6 @@ export type { SyncMode } from './stores/syncStore'
 // ============================================================================
 
 export { PeerNetworkGraph } from './components/PeerNetworkGraph'
+export { SyncButton } from './components/SyncButton'
+export { SyncPanel } from './components/SyncPanel'
 export { SyncSettings } from './components/SyncSettings'

@@ -56,6 +56,7 @@ export function createMockFetch() {
 export function createTestAgent(
   overrides: Partial<{
     id: string
+    slug: string
     name: string
     role: string
     instructions: string
@@ -65,8 +66,10 @@ export function createTestAgent(
     deletedAt: Date
   }> = {},
 ) {
+  const id = overrides.id ?? `custom-${Date.now()}`
   return {
-    id: overrides.id ?? `custom-${Date.now()}`,
+    id,
+    slug: overrides.slug ?? id.replace(/^custom-/, '').toLowerCase(),
     name: overrides.name ?? 'Test Agent',
     role: overrides.role ?? 'Test Role',
     instructions: overrides.instructions ?? 'Test instructions',

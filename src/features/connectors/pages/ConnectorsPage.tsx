@@ -4,9 +4,11 @@ import DefaultLayout from '@/layouts/Default'
 import { Container, Icon, Section } from '@/components'
 import { useI18n } from '@/i18n'
 import { useConnectorStore } from '@/stores/connectorStore'
-import { ConnectorCard } from '../components/ConnectorCard'
-import { ConnectorWizard } from '../components/ConnectorWizard'
-import { ConnectorSettingsModal } from '../components/ConnectorSettingsModal'
+import {
+  ConnectorCard,
+  ConnectorWizard,
+  ConnectorSettingsModal,
+} from '../components'
 import { SyncEngine } from '../sync-engine'
 import { successToast, errorToast } from '@/lib/toast'
 import type {
@@ -28,7 +30,7 @@ export function ConnectorsPage() {
   const [selectedTab, setSelectedTab] = useState<ConnectorCategory>('app')
   const [showWizard, setShowWizard] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  const [_selectedProvider, setSelectedProvider] =
+  const [selectedProvider, setSelectedProvider] =
     useState<AppConnectorProvider | null>(null)
   const [selectedConnector, setSelectedConnector] = useState<Connector | null>(
     null,
@@ -223,7 +225,7 @@ export function ConnectorsPage() {
             setSelectedProvider(null)
           }}
           category={selectedTab}
-          // initialProvider={selectedProvider}
+          initialProvider={selectedProvider}
         />
       )}
 

@@ -21,8 +21,13 @@ export const de = [
   'Status',
   'Version',
   'Abhängigkeiten',
-  'Validiert Anforderungen',
-  // Processing status
+  'Validiert Anforderungen', // Email fields
+  'Von',
+  'An',
+  'CC',
+  'Datum',
+  'Nur Text',
+  'Kein E-Mail-Inhalt verfügbar', // Processing status
   'Dokumentverarbeitung',
   'Verarbeitet',
   'Verarbeitung...',

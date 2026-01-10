@@ -86,8 +86,8 @@ export const AgentsPage = () => {
     fetchAgents()
   }, [hideDefaultAgents])
 
-  const handleAgentClick = (agentId: string) => {
-    navigate(url(`/agents/run#${agentId}`))
+  const handleAgentClick = (agentSlug: string) => {
+    navigate(url(`/agents/run#${agentSlug}`))
   }
 
   const handleEditKnowledge = (agent: Agent) => {

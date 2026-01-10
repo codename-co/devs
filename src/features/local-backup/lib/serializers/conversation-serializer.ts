@@ -24,7 +24,13 @@
  * ```
  */
 import type { Conversation, Message } from '@/types'
-import type { ConversationFrontmatter, FileMetadata, SerializedFile, Serializer } from './types'
+import type {
+  ConversationFrontmatter,
+  FileMetadata,
+  SerializedFile,
+  SerializeContext,
+  Serializer,
+} from './types'
 import {
   parseFrontmatter,
   stringifyFrontmatter,
@@ -49,10 +55,17 @@ const ROLE_EMOJI: Record<string, string> = {
 /**
  * Serialize a Conversation to Markdown with YAML frontmatter
  */
-function serialize(conversation: Conversation): SerializedFile {
+function serialize(
+  conversation: Conversation,
+  context?: SerializeContext,
+): SerializedFile {
+  // Resolve agent slug for frontmatter
+  const agentSlug = context?.getAgentSlug?.(conversation.agentId)
+
   const frontmatter: ConversationFrontmatter = {
     id: conversation.id,
     agentId: conversation.agentId,
+    ...(agentSlug && { agentSlug }),
     participatingAgents: conversation.participatingAgents,
     workflowId: conversation.workflowId,
     ...(conversation.title && { title: conversation.title }),
@@ -106,7 +119,12 @@ function formatBytes(bytes: number): string {
  * Deserialize Markdown with YAML frontmatter to a Conversation
  * If file metadata is provided and frontmatter lacks timestamps, use file metadata
  */
-function deserialize(content: string, filename: string, fileMetadata?: FileMetadata): Conversation | null {
+function deserialize(
+  content: string,
+  filename: string,
+  fileMetadata?: FileMetadata,
+  _binaryContent?: string,
+): Conversation | null {
   const parsed = parseFrontmatter<ConversationFrontmatter>(content)
   if (!parsed) {
     console.warn(`Failed to parse conversation file: ${filename}`)
@@ -118,10 +136,10 @@ function deserialize(content: string, filename: string, fileMetadata?: FileMetad
   // Use file metadata as fallback for timestamps
   const createdAt = frontmatter.createdAt
     ? parseDate(frontmatter.createdAt)
-    : fileMetadata?.lastModified ?? new Date()
+    : (fileMetadata?.lastModified ?? new Date())
   const updatedAt = frontmatter.updatedAt
     ? parseDate(frontmatter.updatedAt)
-    : fileMetadata?.lastModified ?? new Date()
+    : (fileMetadata?.lastModified ?? new Date())
 
   // Parse messages from body
   const messages: Message[] = []

@@ -32,12 +32,15 @@ import {
 } from 'iconoir-react'
 
 import { db } from '@/lib/db'
+import { deleteFromYjs } from '@/features/sync'
 import { KnowledgeItem } from '@/types'
 import { useKnowledge, useSyncReady } from '@/hooks'
 import {
   Title,
-  Filter,
+  MultiFilter,
+  FilterSection,
   FilterOption,
+  MultiFilterSelection,
   Icon,
   ContentPreviewModal,
 } from '@/components'
@@ -108,16 +111,19 @@ export const Files: React.FC = () => {
   }, [initializeConnectors])
 
   // Filter state
-  const [fileTypeFilter, setFileTypeFilter] = useState<string>('all')
-  const [syncSourceFilter, setSyncSourceFilter] = useState<string>('all')
+  const [filterSelection, setFilterSelection] = useState<MultiFilterSelection>({
+    type: 'all',
+    source: 'all',
+  })
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 50
 
-  // Calculate filter options with counts
-  const fileTypeOptions = useMemo<FilterOption[]>(() => {
-    const counts = rawKnowledgeItems.reduce(
+  // Calculate filter sections with counts
+  const filterSections = useMemo<FilterSection[]>(() => {
+    // File type counts
+    const typeCounts = rawKnowledgeItems.reduce(
       (acc, item) => {
         const type = item.fileType || 'other'
         acc[type] = (acc[type] || 0) + 1
@@ -126,41 +132,8 @@ export const Files: React.FC = () => {
       {} as Record<string, number>,
     )
 
-    return [
-      {
-        key: 'all',
-        label: t('All Types'),
-        count: rawKnowledgeItems.length,
-      },
-      {
-        key: 'document',
-        label: t('Documents'),
-        count: counts.document || 0,
-        icon: 'Document' as const,
-      },
-      {
-        key: 'image',
-        label: t('Images'),
-        count: counts.image || 0,
-        icon: 'MediaImage' as const,
-      },
-      {
-        key: 'text',
-        label: t('Text Files'),
-        count: counts.text || 0,
-        icon: 'Page' as const,
-      },
-      {
-        key: 'other',
-        label: t('Other'),
-        count: counts.other || 0,
-        icon: 'Page' as const,
-      },
-    ]
-  }, [rawKnowledgeItems, t])
-
-  const syncSourceOptions = useMemo<FilterOption[]>(() => {
-    const counts = rawKnowledgeItems.reduce(
+    // Source counts
+    const sourceCounts = rawKnowledgeItems.reduce(
       (acc, item) => {
         const source = item.syncSource || 'unknown'
         acc[source] = (acc[source] || 0) + 1
@@ -180,7 +153,8 @@ export const Files: React.FC = () => {
       {} as Record<string, number>,
     )
 
-    const options: FilterOption[] = [
+    // Build source options
+    const sourceOptions: FilterOption[] = [
       {
         key: 'all',
         label: t('All Sources'),
@@ -189,22 +163,21 @@ export const Files: React.FC = () => {
       {
         key: 'manual',
         label: t('Manual Upload'),
-        count: counts.manual || 0,
-        icon: 'Upload' as const,
+        count: sourceCounts.manual || 0,
+        icon: 'Upload',
       },
       {
         key: 'filesystem_api',
         label: t('Synced Folders'),
-        count: counts.filesystem_api || 0,
-        icon: 'Folder' as const,
+        count: sourceCounts.filesystem_api || 0,
+        icon: 'Folder',
       },
     ]
 
-    // Add individual connectors
+    // Add individual connectors with items
     connectors.forEach((connector) => {
       const count = connectorCounts[connector.id] || 0
       if (count > 0) {
-        // Get icon from PROVIDER_CONFIG if available (for app connectors)
         const providerConfig =
           connector.category === 'app'
             ? PROVIDER_CONFIG[
@@ -212,43 +185,85 @@ export const Files: React.FC = () => {
               ]
             : null
 
-        options.push({
+        sourceOptions.push({
           key: `connector:${connector.id}`,
           label: connector.name,
           count,
-          icon: providerConfig?.icon || ('OpenNewWindow' as const),
+          icon: providerConfig?.icon || 'OpenNewWindow',
         })
       }
     })
 
-    return options
+    return [
+      {
+        key: 'type',
+        title: t('File Type'),
+        options: [
+          {
+            key: 'all',
+            label: t('All Types'),
+            count: rawKnowledgeItems.length,
+          },
+          {
+            key: 'document',
+            label: t('Documents'),
+            count: typeCounts.document || 0,
+            icon: 'Document',
+          },
+          {
+            key: 'image',
+            label: t('Images'),
+            count: typeCounts.image || 0,
+            icon: 'MediaImage',
+          },
+          {
+            key: 'text',
+            label: t('Text Files'),
+            count: typeCounts.text || 0,
+            icon: 'Page',
+          },
+          {
+            key: 'other',
+            label: t('Other'),
+            count: typeCounts.other || 0,
+            icon: 'Page',
+          },
+        ] as FilterOption[],
+      },
+      {
+        key: 'source',
+        title: t('Source'),
+        options: sourceOptions,
+      },
+    ]
   }, [rawKnowledgeItems, connectors, t])
 
   // Filter and sort items
   const knowledgeItems = useMemo(() => {
     let filtered = [...rawKnowledgeItems]
 
+    const typeFilter = filterSelection.type
+    const sourceFilter = filterSelection.source
+
     // Apply file type filter
-    if (fileTypeFilter !== 'all') {
+    if (typeFilter !== 'all') {
       filtered = filtered.filter((item) => {
-        if (fileTypeFilter === 'other') {
+        if (typeFilter === 'other') {
           return !item.fileType
         }
-        return item.fileType === fileTypeFilter
+        return item.fileType === typeFilter
       })
     }
 
     // Apply sync source filter
-    if (syncSourceFilter !== 'all') {
+    if (sourceFilter !== 'all') {
       // Check if it's a connector-specific filter
-      if (syncSourceFilter.startsWith('connector:')) {
-        const connectorId = syncSourceFilter.replace('connector:', '')
+      if (sourceFilter.startsWith('connector:')) {
+        const connectorId = sourceFilter.replace('connector:', '')
         filtered = filtered.filter((item) => item.connectorId === connectorId)
       } else {
         // Regular sync source filter
-        filtered = filtered.filter(
-          (item) => item.syncSource === syncSourceFilter,
-        )
+        filtered = filtered.filter((item) => item.syncSource === sourceFilter)
       }
     }
 
@@ -257,13 +272,13 @@ export const Files: React.FC = () => {
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     )
-  }, [rawKnowledgeItems, fileTypeFilter, syncSourceFilter])
+  }, [rawKnowledgeItems, filterSelection])
 
   // Reset to page 1 and clear selection when filters change
   useEffect(() => {
     setCurrentPage(1)
     setSelectedItems(new Set())
-  }, [fileTypeFilter, syncSourceFilter])
+  }, [filterSelection])
 
   // Calculate pagination
   const totalPages = Math.ceil(knowledgeItems.length / itemsPerPage)
@@ -580,6 +595,7 @@ export const Files: React.FC = () => {
         await db.init()
       }
       await db.delete('knowledgeItems', id)
+      deleteFromYjs('knowledgeItems', id)
       // Remove from selection if selected
       setSelectedItems((prev) => {
         const next = new Set(prev)
@@ -600,6 +616,7 @@ export const Files: React.FC = () => {
       const itemsToDelete = Array.from(selectedItems)
       for (const id of itemsToDelete) {
         await db.delete('knowledgeItems', id)
+        deleteFromYjs('knowledgeItems', id)
       }
       setSelectedItems(new Set())
       onBulkDeleteModalClose()
@@ -984,18 +1001,11 @@ export const Files: React.FC = () => {
                         )}
                       </>
                     )}
-                    <Filter
-                      label={t('File Type')}
-                      options={fileTypeOptions}
-                      selectedKey={fileTypeFilter}
-                      onSelectionChange={setFileTypeFilter}
-                      size="sm"
-                    />
-                    <Filter
-                      label={t('Source')}
-                      options={syncSourceOptions}
-                      selectedKey={syncSourceFilter}
-                      onSelectionChange={setSyncSourceFilter}
+                    <MultiFilter
+                      label={t('Filters')}
+                      sections={filterSections}
+                      selectedKeys={filterSelection}
+                      onSelectionChange={setFilterSelection}
                       size="sm"
                     />
                   </div>

@@ -147,7 +147,8 @@ export const IndexPage = () => {
     setIsSending(true)
 
     // Use mentioned agent if provided, otherwise fall back to selected agent or 'devs'
-    const agent = mentionedAgent || selectedAgent || { id: 'devs' }
+    const agent = mentionedAgent ||
+      selectedAgent || { id: 'devs', slug: 'devs' }
 
     // Store prompt, agent, and files in sessionStorage for AgentRunPage to pick up
     sessionStorage.setItem('pendingPrompt', promptToUse)
@@ -165,8 +166,8 @@ export const IndexPage = () => {
       sessionStorage.setItem('pendingFiles', JSON.stringify(filesData))
     }
 
-    // Navigate to the agent run page
-    navigate(url(`/agents/run#${agent.id}`))
+    // Navigate to the agent run page using slug
+    navigate(url(`/agents/run#${agent.slug}`))
 
     // Clear the prompt and files
     setPrompt('')
