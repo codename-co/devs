@@ -10,6 +10,7 @@ export const TermsPage = () => {
       header={{
         icon: {
           name: 'Document',
+          color: 'text-default-400',
         },
         color: 'bg-default-50',
         title: t('Terms of Service'),

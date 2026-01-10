@@ -10,6 +10,7 @@ export const PrivacyPage = () => {
       header={{
         icon: {
           name: 'Lock',
+          color: 'text-default-400',
         },
         color: 'bg-default-50',
         title: t('Privacy Policy'),
