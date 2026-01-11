@@ -38,7 +38,8 @@ const BracketNode = ({
   lang,
 }: BracketNodeProps) => {
   const agent = agents.find((a) => a.id === agentId)
-  const displayName = agent?.i18n?.[lang as LanguageCode]?.name || agent?.name || 'Unknown'
+  const displayName =
+    agent?.i18n?.[lang as LanguageCode]?.name || agent?.name || 'Unknown'
 
   return (
     <div
@@ -185,7 +186,8 @@ export const BattleBracket = ({ battle, onMatchClick }: BattleBracketProps) => {
                 <Icon name={championAgent.icon} className="w-6 h-6" />
               )}
               <span className="text-xl font-bold">
-                {championAgent.i18n?.[lang as LanguageCode]?.name || championAgent.name}
+                {championAgent.i18n?.[lang as LanguageCode]?.name ||
+                  championAgent.name}
               </span>
             </div>
           </CardBody>
@@ -210,7 +212,10 @@ export const BattleBracket = ({ battle, onMatchClick }: BattleBracketProps) => {
                   : t('Round') + ' ' + round.roundNumber}
               </span>
               {round.status === 'completed' && (
-                <Icon name="CheckCircle" className="w-4 h-4 text-success ml-auto" />
+                <Icon
+                  name="CheckCircle"
+                  className="w-4 h-4 text-success ml-auto"
+                />
               )}
               {round.status === 'in_progress' && (
                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse ml-auto" />
@@ -225,7 +230,9 @@ export const BattleBracket = ({ battle, onMatchClick }: BattleBracketProps) => {
                     match={match}
                     roundNumber={round.roundNumber}
                     isCurrentRound={roundIndex === currentRoundIndex}
-                    onClick={onMatchClick ? () => onMatchClick(match.id) : undefined}
+                    onClick={
+                      onMatchClick ? () => onMatchClick(match.id) : undefined
+                    }
                     agents={agents}
                     lang={lang}
                     t={t as unknown as (key: string) => string}

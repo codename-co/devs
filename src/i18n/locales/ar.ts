@@ -563,10 +563,12 @@ export const ar: I18n = {
   'Negative Prompt': 'الطلب السلبي',
   'What to avoid in the image...': 'ما يجب تجنبه في الصورة...',
   'Guidance Scale': 'مقياس التوجيه',
-  'Higher values follow prompt more closely': 'القيم الأعلى تتبع الطلب بشكل أدق',
+  'Higher values follow prompt more closely':
+    'القيم الأعلى تتبع الطلب بشكل أدق',
   'Seed (optional)': 'البذرة (اختياري)',
   Random: 'عشوائي',
-  'Use same seed to reproduce results': 'استخدم نفس البذرة لإعادة إنتاج النتائج',
+  'Use same seed to reproduce results':
+    'استخدم نفس البذرة لإعادة إنتاج النتائج',
   'View full size': 'عرض بالحجم الكامل',
   Favorite: 'مفضل',
   Unfavorite: 'إزالة من المفضلة',

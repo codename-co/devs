@@ -19,7 +19,7 @@ graph LR
     C --> D[Puppeteer]
     D --> E[Google Meet]
     E --> F[Meeting Participants]
-    
+
     style A fill:#e1f5fe
     style C fill:#fff3e0
     style E fill:#e8f5e9
@@ -45,11 +45,11 @@ src/features/meeting-bot/
 
 ### External Dependencies
 
-| Component | Purpose |
-|-----------|---------|
-| **devs-meet** | Node.js server running Puppeteer to control a Chrome browser that joins meetings |
-| **Google Calendar API** | Fetches upcoming meetings with Google Meet links |
-| **Google OAuth** | Authenticates the user for seamless meeting joins |
+| Component               | Purpose                                                                          |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| **devs-meet**           | Node.js server running Puppeteer to control a Chrome browser that joins meetings |
+| **Google Calendar API** | Fetches upcoming meetings with Google Meet links                                 |
+| **Google OAuth**        | Authenticates the user for seamless meeting joins                                |
 
 ## Setup
 
@@ -152,9 +152,7 @@ function MyMeetingComponent() {
   return (
     <div>
       <p>Status: {status}</p>
-      <button onClick={() => sendChat('Hello everyone!')}>
-        Say Hello
-      </button>
+      <button onClick={() => sendChat('Hello everyone!')}>Say Hello</button>
     </div>
   )
 }
@@ -168,14 +166,14 @@ function MyMeetingComponent() {
 
 ```typescript
 type MeetingBotStatus =
-  | 'disconnected'  // Not connected to devs-meet server
-  | 'connecting'    // Establishing WebSocket connection
-  | 'connected'     // Connected, ready to join meetings
-  | 'joining'       // Bot is joining the meeting
-  | 'waiting'       // Waiting to be admitted (lobby)
-  | 'joined'        // Successfully in the meeting
-  | 'leaving'       // Leaving the meeting
-  | 'error'         // An error occurred
+  | 'disconnected' // Not connected to devs-meet server
+  | 'connecting' // Establishing WebSocket connection
+  | 'connected' // Connected, ready to join meetings
+  | 'joining' // Bot is joining the meeting
+  | 'waiting' // Waiting to be admitted (lobby)
+  | 'joined' // Successfully in the meeting
+  | 'leaving' // Leaving the meeting
+  | 'error' // An error occurred
 ```
 
 #### TranscriptEntry
@@ -183,10 +181,10 @@ type MeetingBotStatus =
 ```typescript
 interface TranscriptEntry {
   id: string
-  speaker: string     // Name of the speaker
-  text: string        // What was said
-  timestamp: Date     // When it was said
-  isAgent?: boolean   // True if this was the AI agent speaking
+  speaker: string // Name of the speaker
+  text: string // What was said
+  timestamp: Date // When it was said
+  isAgent?: boolean // True if this was the AI agent speaking
 }
 ```
 
@@ -197,7 +195,7 @@ interface MeetingParticipant {
   id: string
   name: string
   joinedAt: Date
-  leftAt?: Date       // Set when participant leaves
+  leftAt?: Date // Set when participant leaves
 }
 ```
 
@@ -209,8 +207,8 @@ interface MeetMeetingInfo {
   title: string
   startTime?: Date
   endTime?: Date
-  meetUrl: string            // The meet.google.com URL
-  calendarEventId?: string   // Associated calendar event
+  meetUrl: string // The meet.google.com URL
+  calendarEventId?: string // Associated calendar event
 }
 ```
 
@@ -218,34 +216,34 @@ interface MeetMeetingInfo {
 
 #### Options
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `agentId` | `string` | Required. ID of the agent joining the meeting |
-| `agentName` | `string` | Required. Display name for the bot in the meeting |
-| `serverUrl` | `string` | Optional. devs-meet server URL (default: `ws://localhost:4445`) |
-| `onTranscript` | `(entry: TranscriptEntry) => void` | Optional. Callback for each transcript entry |
-| `onAgentShouldRespond` | `(entry: TranscriptEntry) => Promise<string \| null>` | Optional. Return a string to have the agent respond |
+| Option                 | Type                                                  | Description                                                     |
+| ---------------------- | ----------------------------------------------------- | --------------------------------------------------------------- |
+| `agentId`              | `string`                                              | Required. ID of the agent joining the meeting                   |
+| `agentName`            | `string`                                              | Required. Display name for the bot in the meeting               |
+| `serverUrl`            | `string`                                              | Optional. devs-meet server URL (default: `ws://localhost:4445`) |
+| `onTranscript`         | `(entry: TranscriptEntry) => void`                    | Optional. Callback for each transcript entry                    |
+| `onAgentShouldRespond` | `(entry: TranscriptEntry) => Promise<string \| null>` | Optional. Return a string to have the agent respond             |
 
 #### Return Values
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `status` | `MeetingBotStatus` | Current connection/meeting status |
-| `transcript` | `TranscriptEntry[]` | Full transcript of the meeting |
-| `participants` | `MeetingParticipant[]` | Current and past participants |
-| `errorMessage` | `string \| null` | Error message if status is 'error' |
-| `upcomingMeetings` | `MeetMeetingInfo[]` | Upcoming meetings from calendar |
-| `loadingMeetings` | `boolean` | True while loading meetings |
-| `connectorConnected` | `boolean` | True if Google Meet connector is set up |
-| `connect` | `() => Promise<void>` | Connect to the devs-meet server |
-| `disconnect` | `() => void` | Disconnect from the server |
-| `joinMeeting` | `(url: string) => Promise<void>` | Join a meeting by URL (guest mode) |
-| `joinMeetingWithAuth` | `(meeting: MeetMeetingInfo) => Promise<void>` | Join with Google authentication |
-| `leaveMeeting` | `() => void` | Leave the current meeting |
-| `speak` | `(text: string) => void` | Speak via text-to-speech (if supported) |
-| `sendChat` | `(text: string) => void` | Send a chat message |
-| `react` | `(emoji: string) => void` | React with an emoji |
-| `refreshMeetings` | `() => Promise<void>` | Refresh upcoming meetings list |
+| Property              | Type                                          | Description                             |
+| --------------------- | --------------------------------------------- | --------------------------------------- |
+| `status`              | `MeetingBotStatus`                            | Current connection/meeting status       |
+| `transcript`          | `TranscriptEntry[]`                           | Full transcript of the meeting          |
+| `participants`        | `MeetingParticipant[]`                        | Current and past participants           |
+| `errorMessage`        | `string \| null`                              | Error message if status is 'error'      |
+| `upcomingMeetings`    | `MeetMeetingInfo[]`                           | Upcoming meetings from calendar         |
+| `loadingMeetings`     | `boolean`                                     | True while loading meetings             |
+| `connectorConnected`  | `boolean`                                     | True if Google Meet connector is set up |
+| `connect`             | `() => Promise<void>`                         | Connect to the devs-meet server         |
+| `disconnect`          | `() => void`                                  | Disconnect from the server              |
+| `joinMeeting`         | `(url: string) => Promise<void>`              | Join a meeting by URL (guest mode)      |
+| `joinMeetingWithAuth` | `(meeting: MeetMeetingInfo) => Promise<void>` | Join with Google authentication         |
+| `leaveMeeting`        | `() => void`                                  | Leave the current meeting               |
+| `speak`               | `(text: string) => void`                      | Speak via text-to-speech (if supported) |
+| `sendChat`            | `(text: string) => void`                      | Send a chat message                     |
+| `react`               | `(emoji: string) => void`                     | React with an emoji                     |
+| `refreshMeetings`     | `() => Promise<void>`                         | Refresh upcoming meetings list          |
 
 ## WebSocket Protocol
 
@@ -311,27 +309,27 @@ sequenceDiagram
     U->>D: Click "Join Meeting"
     D->>M: WebSocket: connect()
     M-->>D: { type: 'connected', sessionId }
-    
+
     D->>M: { type: 'join', meetingUrl, botName }
     M->>G: Puppeteer: Navigate to Meet
     G-->>M: Page loaded
     M->>G: Enter meeting (click Join)
-    
+
     Note over M,G: Meeting host admits bot
-    
+
     M-->>D: { type: 'joined', sessionId, meetingUrl }
-    
+
     loop During Meeting
         G-->>M: Participant speaks
         M-->>D: { type: 'transcript', speaker, text }
         D-->>U: Update transcript UI
-        
+
         opt Agent responds
             D->>M: { type: 'chat', text }
             M->>G: Send chat message
         end
     end
-    
+
     U->>D: Click "Leave"
     D->>M: { type: 'leave' }
     M->>G: Leave meeting
@@ -356,11 +354,11 @@ sequenceDiagram
 
 The Google Meet connector requests these OAuth scopes:
 
-| Scope | Purpose |
-|-------|---------|
+| Scope               | Purpose                                |
+| ------------------- | -------------------------------------- |
 | `calendar.readonly` | Read upcoming meetings with Meet links |
-| `userinfo.email` | Get user's email for display |
-| `userinfo.profile` | Get user's name for display |
+| `userinfo.email`    | Get user's email for display           |
+| `userinfo.profile`  | Get user's name for display            |
 
 ## Troubleshooting
 

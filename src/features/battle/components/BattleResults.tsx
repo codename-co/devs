@@ -67,10 +67,7 @@ export const BattleResults = ({
 
   // Calculate standings
   const standings = useMemo((): Standing[] => {
-    const allAgentIds = [
-      ...battle.teamA.agentIds,
-      ...battle.teamB.agentIds,
-    ]
+    const allAgentIds = [...battle.teamA.agentIds, ...battle.teamB.agentIds]
 
     const standingsMap = new Map<string, Standing>()
 
@@ -113,7 +110,9 @@ export const BattleResults = ({
           loserStanding.losses++
           loserStanding.roundEliminated = round.roundNumber
           if (match.judgment) {
-            const score = match.judgment.scores.find((s) => s.agentId === loserId)
+            const score = match.judgment.scores.find(
+              (s) => s.agentId === loserId,
+            )
             if (score) loserStanding.totalScore += score.total
           }
         }
@@ -167,7 +166,11 @@ export const BattleResults = ({
     }
     if (position === 2) {
       return (
-        <Chip color="default" variant="flat" className="bg-gray-200 text-gray-700">
+        <Chip
+          color="default"
+          variant="flat"
+          className="bg-gray-200 text-gray-700"
+        >
           2nd
         </Chip>
       )
@@ -198,10 +201,16 @@ export const BattleResults = ({
           <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0wIDBoNDB2NDBIMHoiLz48cGF0aCBkPSJNMjAgMjBsLTgtOC0yIDItOC04IDIgMiA4IDggOC04IDIgMi04IDggOCA4LTIgMiA4LTgtMi0yLTgtOC04IDgtMi0yIDgtOHoiIGZpbGw9IiNmYmJmMjQiIGZpbGwtb3BhY2l0eT0iLjEiLz48L2c+PC9zdmc+')] opacity-30" />
           <CardBody className="items-center py-8 relative">
             <div className="absolute top-4 left-4">
-              <Icon name="SparksSolid" className="w-8 h-8 text-amber-400 animate-pulse" />
+              <Icon
+                name="SparksSolid"
+                className="w-8 h-8 text-amber-400 animate-pulse"
+              />
             </div>
             <div className="absolute top-4 right-4">
-              <Icon name="SparksSolid" className="w-8 h-8 text-amber-400 animate-pulse" />
+              <Icon
+                name="SparksSolid"
+                className="w-8 h-8 text-amber-400 animate-pulse"
+              />
             </div>
 
             <Icon name="Crown" className="w-16 h-16 text-amber-500 mb-4" />
@@ -295,7 +304,10 @@ export const BattleResults = ({
               const winner = getAgent(match.winnerId || '')
 
               return (
-                <Card key={match.id} className="bg-default-50 dark:bg-default-100">
+                <Card
+                  key={match.id}
+                  className="bg-default-50 dark:bg-default-100"
+                >
                   <CardBody className="flex-row items-center justify-between gap-4 py-3">
                     <div className="flex items-center gap-4 flex-1">
                       <Chip size="sm" variant="flat">
@@ -341,7 +353,9 @@ export const BattleResults = ({
                           size="sm"
                           color="success"
                           variant="flat"
-                          startContent={<Icon name="Crown" className="w-3 h-3" />}
+                          startContent={
+                            <Icon name="Crown" className="w-3 h-3" />
+                          }
                         >
                           {getAgentDisplayName(match.winnerId!)}
                         </Chip>
@@ -351,8 +365,12 @@ export const BattleResults = ({
                         <Button
                           size="sm"
                           variant="light"
-                          startContent={<Icon name="ChatBubble" className="w-4 h-4" />}
-                          onPress={() => onViewConversation(match.conversationId!)}
+                          startContent={
+                            <Icon name="ChatBubble" className="w-4 h-4" />
+                          }
+                          onPress={() =>
+                            onViewConversation(match.conversationId!)
+                          }
                         >
                           {t('View')}
                         </Button>

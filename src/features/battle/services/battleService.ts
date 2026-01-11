@@ -135,11 +135,20 @@ export const battleService = {
     match: BattleMatch,
     topic: string,
     turnsPerConversation: number,
-    onTurnComplete?: (turn: number, totalTurns: number, message: { agentId: string; content: string }) => void,
-    onStreamChunk?: (turn: number, totalTurns: number, agentId: string, chunk: string, fullContent: string) => void,
+    onTurnComplete?: (
+      turn: number,
+      totalTurns: number,
+      message: { agentId: string; content: string },
+    ) => void,
+    onStreamChunk?: (
+      turn: number,
+      totalTurns: number,
+      agentId: string,
+      chunk: string,
+      fullContent: string,
+    ) => void,
   ): Promise<string> {
-    const { createConversation, addMessage } =
-      useConversationStore.getState()
+    const { createConversation, addMessage } = useConversationStore.getState()
 
     // Get agent information
     const agentA = await getAgentById(match.agentAId)
@@ -187,7 +196,8 @@ export const battleService = {
         turnContext =
           'This is your final turn. Make your closing argument and summarize your key points.'
       } else {
-        turnContext = 'Continue building your argument and respond to your opponent.'
+        turnContext =
+          'Continue building your argument and respond to your opponent.'
       }
 
       // Build previous message context
@@ -235,10 +245,16 @@ export const battleService = {
         chunkCount++
         // Notify listener of each streaming chunk for live updates
         if (onStreamChunk) {
-          onStreamChunk(turn + 1, turnsPerConversation, currentAgent.id, chunk, response)
+          onStreamChunk(
+            turn + 1,
+            turnsPerConversation,
+            currentAgent.id,
+            chunk,
+            response,
+          )
           // Yield to browser every few chunks to allow rendering
           if (chunkCount % 3 === 0) {
-            await new Promise(resolve => setTimeout(resolve, 0))
+            await new Promise((resolve) => setTimeout(resolve, 0))
           }
         }
       }
@@ -306,9 +322,12 @@ export const battleService = {
     }
 
     // Extract agent IDs from the conversation
-    const agentIds = conversation.participatingAgents?.filter(
-      (id) => id !== conversation.agentId || conversation.participatingAgents!.length === 1,
-    ) || []
+    const agentIds =
+      conversation.participatingAgents?.filter(
+        (id) =>
+          id !== conversation.agentId ||
+          conversation.participatingAgents!.length === 1,
+      ) || []
 
     // Get agent names for the transcript
     const agentMap = new Map<string, string>()
@@ -323,7 +342,9 @@ export const battleService = {
     const transcript = conversation.messages
       .filter((msg) => msg.role === 'assistant')
       .map((msg) => {
-        const agentName = msg.agentId ? agentMap.get(msg.agentId) || 'Unknown Agent' : 'Unknown'
+        const agentName = msg.agentId
+          ? agentMap.get(msg.agentId) || 'Unknown Agent'
+          : 'Unknown'
         return `**${agentName}** (${msg.agentId}):\n${msg.content}`
       })
       .join('\n\n---\n\n')

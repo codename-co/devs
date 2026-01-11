@@ -54,9 +54,11 @@ export const de: I18n = {
   'Connecting to {provider}...': 'Verbinde mit {provider}...',
   'Select folders to sync': 'Ordner zum Synchronisieren auswählen',
   'Sync all content': 'Alle Inhalte synchronisieren',
-  'Successfully connected!': 'Erfolgreich verbunden!',  '{name} has been connected to your knowledge base.':
+  'Successfully connected!': 'Erfolgreich verbunden!',
+  '{name} has been connected to your knowledge base.':
     '{name} wurde mit Ihrer Wissensdatenbank verbunden.',
-  '{name} has been connected.': '{name} wurde verbunden.',  'Start Sync Now': 'Synchronisierung starten',
+  '{name} has been connected.': '{name} wurde verbunden.',
+  'Start Sync Now': 'Synchronisierung starten',
   Done: 'Fertig',
   'Try Again': 'Erneut versuchen',
 

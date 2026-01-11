@@ -38,7 +38,10 @@ export class MeetingBotBridge {
   private pingInterval: ReturnType<typeof setInterval> | null = null
   private reconnectTimeout: ReturnType<typeof setTimeout> | null = null
 
-  constructor(config: Partial<MeetingBotConfig> & Pick<MeetingBotConfig, 'agentId' | 'agentName'>) {
+  constructor(
+    config: Partial<MeetingBotConfig> &
+      Pick<MeetingBotConfig, 'agentId' | 'agentName'>,
+  ) {
     this.config = {
       serverUrl: DEFAULT_SERVER_URL,
       ...config,
@@ -147,7 +150,10 @@ export class MeetingBotBridge {
   /**
    * Join a Google Meet meeting
    */
-  async joinMeeting(meetingUrl: string, googleAuthToken?: unknown): Promise<void> {
+  async joinMeeting(
+    meetingUrl: string,
+    googleAuthToken?: unknown,
+  ): Promise<void> {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       await this.connect()
     }
@@ -234,8 +240,12 @@ export class MeetingBotBridge {
         const participant: MeetingParticipant = {
           id: message.id,
           name: message.name,
-          joinedAt: message.action === 'joined' ? new Date(message.timestamp) : new Date(),
-          leftAt: message.action === 'left' ? new Date(message.timestamp) : undefined,
+          joinedAt:
+            message.action === 'joined'
+              ? new Date(message.timestamp)
+              : new Date(),
+          leftAt:
+            message.action === 'left' ? new Date(message.timestamp) : undefined,
         }
         this.config.onParticipantChange?.(participant, message.action)
         break
@@ -324,7 +334,9 @@ export class MeetingBotBridge {
     this.clearReconnectTimeout()
 
     this.reconnectTimeout = setTimeout(() => {
-      console.log(`Attempting reconnect (${this.reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`)
+      console.log(
+        `Attempting reconnect (${this.reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`,
+      )
       this.connect().catch(() => {
         // Reconnect will be attempted again in onclose
       })

@@ -50,7 +50,8 @@ const AgentFaceOff = ({
   teamColor,
   lang,
 }: AgentFaceOffProps) => {
-  const displayName = agent?.i18n?.[lang as LanguageCode]?.name || agent?.name || 'Unknown'
+  const displayName =
+    agent?.i18n?.[lang as LanguageCode]?.name || agent?.name || 'Unknown'
 
   return (
     <div
@@ -94,7 +95,10 @@ const StatusChip = ({
   status: BattleMatchType['status']
   t: (key: string) => string
 }) => {
-  const colorMap: Record<BattleMatchType['status'], 'default' | 'primary' | 'warning' | 'success'> = {
+  const colorMap: Record<
+    BattleMatchType['status'],
+    'default' | 'primary' | 'warning' | 'success'
+  > = {
     pending: 'default',
     in_progress: 'primary',
     judging: 'warning',
@@ -119,25 +123,33 @@ const StatusChip = ({
   )
 }
 
-export const BattleMatch = ({ battle, match, messages: propMessages = [] }: BattleMatchProps) => {
+export const BattleMatch = ({
+  battle,
+  match,
+  messages: propMessages = [],
+}: BattleMatchProps) => {
   const { t, lang } = useI18n(battleI18n)
   const agents = useAgents()
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  
+
   // Hook for running the match - provides live messages during battle
-  const { 
-    isRunning, 
-    progress: matchProgress, 
+  const {
+    isRunning,
+    progress: matchProgress,
     messages: liveMessages,
     currentTurn,
     totalTurns,
     streamingContent,
     streamingAgentId,
-    runMatch 
+    runMatch,
   } = useBattleMatch(battle.id, match.id)
 
   // Use live messages when running, otherwise use prop messages
-  const messages = isRunning ? liveMessages : (propMessages.length > 0 ? propMessages : liveMessages)
+  const messages = isRunning
+    ? liveMessages
+    : propMessages.length > 0
+      ? propMessages
+      : liveMessages
 
   const agentA = useMemo(
     () => agents.find((a) => a.id === match.agentAId),
@@ -159,7 +171,13 @@ export const BattleMatch = ({ battle, match, messages: propMessages = [] }: Batt
     const totalTurns = battle.turnsPerConversation
     const currentTurns = messages.length
     return Math.min(80, (currentTurns / totalTurns) * 80)
-  }, [match.status, messages.length, battle.turnsPerConversation, isRunning, matchProgress])
+  }, [
+    match.status,
+    messages.length,
+    battle.turnsPerConversation,
+    isRunning,
+    matchProgress,
+  ])
 
   // Auto-scroll to latest message or streaming content
   useEffect(() => {
@@ -186,7 +204,10 @@ export const BattleMatch = ({ battle, match, messages: propMessages = [] }: Batt
 
           <div className="flex flex-col items-center gap-2">
             <span className="text-2xl font-bold text-default-400">VS</span>
-            <StatusChip status={match.status} t={t as unknown as (key: string) => string} />
+            <StatusChip
+              status={match.status}
+              t={t as unknown as (key: string) => string}
+            />
           </div>
 
           <AgentFaceOff
@@ -199,12 +220,13 @@ export const BattleMatch = ({ battle, match, messages: propMessages = [] }: Batt
         </div>
 
         {/* Progress - show during running or in_progress */}
-        {(isRunning || (match.status !== 'pending' && match.status !== 'completed')) && (
+        {(isRunning ||
+          (match.status !== 'pending' && match.status !== 'completed')) && (
           <div className="w-full space-y-2">
             <div className="flex justify-between text-xs text-default-500">
               <span>
-                {t('Turn')} {isRunning ? currentTurn : messages.length} {t('of')}{' '}
-                {isRunning ? totalTurns : battle.turnsPerConversation}
+                {t('Turn')} {isRunning ? currentTurn : messages.length}{' '}
+                {t('of')} {isRunning ? totalTurns : battle.turnsPerConversation}
               </span>
               <span>{Math.round(progress)}%</span>
             </div>
@@ -317,7 +339,8 @@ export const BattleMatch = ({ battle, match, messages: propMessages = [] }: Batt
                       >
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs font-semibold">
-                            {agent?.i18n?.[lang as LanguageCode]?.name || agent?.name}
+                            {agent?.i18n?.[lang as LanguageCode]?.name ||
+                              agent?.name}
                           </span>
                           <span className="text-xs text-default-400">
                             {t('Turn')} {idx + 1}
@@ -330,7 +353,7 @@ export const BattleMatch = ({ battle, match, messages: propMessages = [] }: Batt
                     </div>
                   )
                 })}
-                
+
                 {/* Live Streaming Message */}
                 {isRunning && streamingContent && streamingAgentId && (
                   <div
@@ -344,8 +367,16 @@ export const BattleMatch = ({ battle, match, messages: propMessages = [] }: Batt
                           : 'bg-red-100 text-red-600'
                       }
                       icon={
-                        (streamingAgentId === match.agentAId ? agentA : agentB)?.icon ? (
-                          <Icon name={(streamingAgentId === match.agentAId ? agentA : agentB)!.icon!} className="w-4 h-4" />
+                        (streamingAgentId === match.agentAId ? agentA : agentB)
+                          ?.icon ? (
+                          <Icon
+                            name={
+                              (streamingAgentId === match.agentAId
+                                ? agentA
+                                : agentB)!.icon!
+                            }
+                            className="w-4 h-4"
+                          />
                         ) : undefined
                       }
                     />
@@ -358,13 +389,21 @@ export const BattleMatch = ({ battle, match, messages: propMessages = [] }: Batt
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs font-semibold">
-                          {(streamingAgentId === match.agentAId ? agentA : agentB)?.i18n?.[lang as LanguageCode]?.name || 
-                           (streamingAgentId === match.agentAId ? agentA : agentB)?.name}
+                          {(streamingAgentId === match.agentAId
+                            ? agentA
+                            : agentB
+                          )?.i18n?.[lang as LanguageCode]?.name ||
+                            (streamingAgentId === match.agentAId
+                              ? agentA
+                              : agentB
+                            )?.name}
                         </span>
                         <span className="text-xs text-default-400">
                           {t('Turn')} {currentTurn}
                         </span>
-                        <span className="text-xs text-primary animate-pulse">●</span>
+                        <span className="text-xs text-primary animate-pulse">
+                          ●
+                        </span>
                       </div>
                       <p className="text-sm whitespace-pre-wrap">
                         {streamingContent}
@@ -372,7 +411,7 @@ export const BattleMatch = ({ battle, match, messages: propMessages = [] }: Batt
                     </div>
                   </div>
                 )}
-                
+
                 <div ref={messagesEndRef} />
               </div>
             )}
@@ -402,7 +441,8 @@ export const BattleMatch = ({ battle, match, messages: propMessages = [] }: Batt
                           <Icon name={agent.icon} className="w-4 h-4" />
                         )}
                         <span className="font-medium">
-                          {agent?.i18n?.[lang as LanguageCode]?.name || agent?.name}
+                          {agent?.i18n?.[lang as LanguageCode]?.name ||
+                            agent?.name}
                         </span>
                         {isWinner && (
                           <Chip size="sm" color="success" variant="flat">

@@ -536,7 +536,8 @@ export const de: I18n = {
 
   // Image Generation Feature
   'Drop reference image here…': 'Referenzbild hier ablegen…',
-  'Describe the image you want to create…': 'Beschreiben Sie das Bild, das Sie erstellen möchten…',
+  'Describe the image you want to create…':
+    'Beschreiben Sie das Bild, das Sie erstellen möchten…',
   'Image presets': 'Bildvoreinstellungen',
   'Image settings': 'Bildeinstellungen',
   'Add reference image': 'Referenzbild hinzufügen',
@@ -569,17 +570,20 @@ export const de: I18n = {
   'Negative Prompt': 'Negativer Prompt',
   'What to avoid in the image...': 'Was im Bild vermieden werden soll...',
   'Guidance Scale': 'Führungsskala',
-  'Higher values follow prompt more closely': 'Höhere Werte folgen dem Prompt genauer',
+  'Higher values follow prompt more closely':
+    'Höhere Werte folgen dem Prompt genauer',
   'Seed (optional)': 'Seed (optional)',
   Random: 'Zufällig',
-  'Use same seed to reproduce results': 'Verwenden Sie denselben Seed, um Ergebnisse zu reproduzieren',
+  'Use same seed to reproduce results':
+    'Verwenden Sie denselben Seed, um Ergebnisse zu reproduzieren',
   'View full size': 'In voller Größe anzeigen',
   Favorite: 'Favorit',
   Unfavorite: 'Aus Favoriten entfernen',
   'Copy revised prompt': 'Überarbeiteten Prompt kopieren',
   'Use as reference': 'Als Referenz verwenden',
   'No images yet': 'Noch keine Bilder',
-  'Generate your first image to see it here': 'Generieren Sie Ihr erstes Bild, um es hier zu sehen',
+  'Generate your first image to see it here':
+    'Generieren Sie Ihr erstes Bild, um es hier zu sehen',
   Current: 'Aktuell',
   History: 'Verlauf',
   Clear: 'Löschen',

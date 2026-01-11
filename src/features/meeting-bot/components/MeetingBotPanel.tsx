@@ -90,7 +90,7 @@ export function MeetingBotPanel({
         console.error('Failed to join scheduled meeting:', error)
       }
     },
-    [connect, joinMeetingWithAuth]
+    [connect, joinMeetingWithAuth],
   )
 
   const getStatusColor = () => {
@@ -187,10 +187,7 @@ export function MeetingBotPanel({
 
             <Divider />
 
-            <MeetingTranscript
-              transcript={transcript}
-              agentName={agentName}
-            />
+            <MeetingTranscript transcript={transcript} agentName={agentName} />
           </>
         ) : (
           <>
@@ -203,7 +200,13 @@ export function MeetingBotPanel({
                   value={meetingUrl}
                   onChange={(e) => setMeetingUrl(e.target.value)}
                   isDisabled={isConnecting}
-                  startContent={<Icon name="Internet" size="sm" className="text-default-400" />}
+                  startContent={
+                    <Icon
+                      name="Internet"
+                      size="sm"
+                      className="text-default-400"
+                    />
+                  }
                 />
                 <Button
                   color="primary"
@@ -262,7 +265,9 @@ export function MeetingBotPanel({
                           className="flex items-center justify-between p-3 bg-default-100 rounded-lg"
                         >
                           <div>
-                            <p className="font-medium text-sm">{meeting.title}</p>
+                            <p className="font-medium text-sm">
+                              {meeting.title}
+                            </p>
                             {meeting.startTime && (
                               <p className="text-xs text-default-500">
                                 {meeting.startTime.toLocaleString()}

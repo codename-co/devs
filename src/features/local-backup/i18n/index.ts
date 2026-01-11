@@ -93,7 +93,7 @@ export const localI18n = {
     Tasks: 'Tâches',
     'Workflow tasks': 'Tâches de workflow',
     Studio: 'Studio',
-    'Studio image generations': 'Générations d\'images du studio',
+    'Studio image generations': "Générations d'images du studio",
     'Full Export': 'Export complet',
     'Complete database JSON export':
       'Export JSON complet de la base de données',

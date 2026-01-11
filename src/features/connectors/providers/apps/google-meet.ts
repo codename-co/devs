@@ -390,7 +390,9 @@ export class GoogleMeetProvider extends BaseAppConnectorProvider {
    */
   normalizeItem(_rawItem: unknown): ConnectorItem {
     // Meet connector doesn't sync items, but we need to implement this
-    throw new Error('Item normalization not supported for Google Meet connector')
+    throw new Error(
+      'Item normalization not supported for Google Meet connector',
+    )
   }
 
   // ===========================================================================

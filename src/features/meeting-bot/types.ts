@@ -56,7 +56,12 @@ export interface MeetingSession {
  * Messages sent to the meeting bot server
  */
 export type MeetingBotClientMessage =
-  | { type: 'join'; meetingUrl: string; botName: string; googleAuthToken?: unknown }
+  | {
+      type: 'join'
+      meetingUrl: string
+      botName: string
+      googleAuthToken?: unknown
+    }
   | { type: 'leave' }
   | { type: 'speak'; text?: string; audioBase64?: string }
   | { type: 'chat'; text: string }
@@ -70,10 +75,23 @@ export type MeetingBotServerMessage =
   | { type: 'connected'; sessionId: string }
   | { type: 'joined'; sessionId: string; meetingUrl: string }
   | { type: 'left'; sessionId: string }
-  | { type: 'transcript'; speaker: string; text: string; timestamp: number; sessionId: string }
+  | {
+      type: 'transcript'
+      speaker: string
+      text: string
+      timestamp: number
+      sessionId: string
+    }
   | { type: 'chat_message'; sender: string; text: string; timestamp: number }
   | { type: 'chat_sent'; text: string }
-  | { type: 'participant'; action: 'joined' | 'left'; name: string; id: string; timestamp: number; sessionId: string }
+  | {
+      type: 'participant'
+      action: 'joined' | 'left'
+      name: string
+      id: string
+      timestamp: number
+      sessionId: string
+    }
   | { type: 'status'; status: string; message: string }
   | { type: 'spoke'; text: string }
   | { type: 'reacted'; emoji: string }
@@ -88,7 +106,10 @@ export interface MeetingBotConfig {
   agentId: string
   agentName: string
   onTranscript?: (entry: TranscriptEntry) => void
-  onParticipantChange?: (participant: MeetingParticipant, action: 'joined' | 'left') => void
+  onParticipantChange?: (
+    participant: MeetingParticipant,
+    action: 'joined' | 'left',
+  ) => void
   onStatusChange?: (status: MeetingBotStatus, message?: string) => void
   onError?: (error: string) => void
 }

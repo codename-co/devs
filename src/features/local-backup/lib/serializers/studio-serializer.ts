@@ -35,7 +35,11 @@
  * ![Image 1](./studio-1704067200000-abc123-1.png)
  * ```
  */
-import type { StudioEntry, GeneratedImage, ImageGenerationSettings } from '@/features/studio/types'
+import type {
+  StudioEntry,
+  GeneratedImage,
+  ImageGenerationSettings,
+} from '@/features/studio/types'
 import type {
   FileMetadata,
   StudioEntryFrontmatter,
@@ -58,7 +62,9 @@ const EXTENSION = '.studio.md'
 /**
  * Convert ImageGenerationSettings to serializable frontmatter format
  */
-function settingsToFrontmatter(settings: ImageGenerationSettings): Record<string, unknown> {
+function settingsToFrontmatter(
+  settings: ImageGenerationSettings,
+): Record<string, unknown> {
   return {
     aspectRatio: settings.aspectRatio,
     quality: settings.quality,
@@ -69,7 +75,9 @@ function settingsToFrontmatter(settings: ImageGenerationSettings): Record<string
     count: settings.count,
     ...(settings.negativePrompt && { negativePrompt: settings.negativePrompt }),
     ...(settings.seed !== undefined && { seed: settings.seed }),
-    ...(settings.guidanceScale !== undefined && { guidanceScale: settings.guidanceScale }),
+    ...(settings.guidanceScale !== undefined && {
+      guidanceScale: settings.guidanceScale,
+    }),
     ...(settings.width !== undefined && { width: settings.width }),
     ...(settings.height !== undefined && { height: settings.height }),
   }
@@ -78,14 +86,19 @@ function settingsToFrontmatter(settings: ImageGenerationSettings): Record<string
 /**
  * Convert frontmatter to ImageGenerationSettings
  */
-function frontmatterToSettings(fm: Record<string, unknown>): ImageGenerationSettings {
+function frontmatterToSettings(
+  fm: Record<string, unknown>,
+): ImageGenerationSettings {
   return {
-    aspectRatio: (fm.aspectRatio as ImageGenerationSettings['aspectRatio']) || '1:1',
+    aspectRatio:
+      (fm.aspectRatio as ImageGenerationSettings['aspectRatio']) || '1:1',
     quality: (fm.quality as ImageGenerationSettings['quality']) || 'standard',
     style: (fm.style as ImageGenerationSettings['style']) || 'natural',
     lighting: (fm.lighting as ImageGenerationSettings['lighting']) || 'none',
-    colorPalette: (fm.colorPalette as ImageGenerationSettings['colorPalette']) || 'none',
-    composition: (fm.composition as ImageGenerationSettings['composition']) || 'none',
+    colorPalette:
+      (fm.colorPalette as ImageGenerationSettings['colorPalette']) || 'none',
+    composition:
+      (fm.composition as ImageGenerationSettings['composition']) || 'none',
     count: (fm.count as number) || 1,
     negativePrompt: fm.negativePrompt as string | undefined,
     seed: fm.seed as number | undefined,
@@ -114,7 +127,10 @@ function imageToFrontmatter(image: GeneratedImage): Record<string, unknown> {
 /**
  * Convert frontmatter to GeneratedImage
  */
-function frontmatterToImage(fm: Record<string, unknown>, requestId: string): GeneratedImage {
+function frontmatterToImage(
+  fm: Record<string, unknown>,
+  requestId: string,
+): GeneratedImage {
   return {
     id: fm.id as string,
     requestId,
@@ -173,17 +189,19 @@ function serialize(entry: StudioEntry): SerializedFile {
  */
 function serializeStudioFileSet(entry: StudioEntry): SerializedStudioFileSet {
   const serialized = serialize(entry)
-  
+
   // Prepare image files
-  const imageFiles: { filename: string; content: string; isBase64: boolean }[] = []
-  
+  const imageFiles: { filename: string; content: string; isBase64: boolean }[] =
+    []
+
   entry.images.forEach((image, index) => {
     // Get image data from base64 or URL
     const imageData = image.base64 || image.url
     if (imageData) {
       const filename = `${sanitizeFilename(entry.id)}-${index + 1}.${image.format}`
       // Check if it's a base64 data URL or raw base64
-      const isBase64 = imageData.startsWith('data:') || !imageData.startsWith('http')
+      const isBase64 =
+        imageData.startsWith('data:') || !imageData.startsWith('http')
       imageFiles.push({
         filename,
         content: imageData,
@@ -203,7 +221,7 @@ function serializeStudioFileSet(entry: StudioEntry): SerializedStudioFileSet {
 /**
  * Deserialize Markdown with YAML frontmatter to a StudioEntry
  * If file metadata is provided and frontmatter lacks timestamps, use file metadata
- * 
+ *
  * Note: For studio entries, binaryContent parameter is not used directly.
  * Instead, use the deserializeWithImages method for full image reconstruction.
  */
@@ -225,7 +243,7 @@ function deserialize(
   const images: GeneratedImage[] = (frontmatter.images || []).map(
     (imgFm: Record<string, unknown>) => {
       return frontmatterToImage(imgFm, frontmatter.id)
-    }
+    },
   )
 
   // Determine timestamps
@@ -240,7 +258,9 @@ function deserialize(
   const entry: StudioEntry = {
     id: frontmatter.id,
     prompt: frontmatter.prompt,
-    settings: frontmatterToSettings(frontmatter.settings as Record<string, unknown>),
+    settings: frontmatterToSettings(
+      frontmatter.settings as Record<string, unknown>,
+    ),
     images,
     isFavorite: frontmatter.isFavorite,
     tags: frontmatter.tags,
@@ -266,15 +286,15 @@ function deserializeWithImages(
   entry.images = entry.images.map((image, index) => {
     const imageFilename = `${sanitizeFilename(entry.id)}-${index + 1}.${image.format}`
     const imageContent = imageContents.get(imageFilename)
-    
+
     if (imageContent) {
       image.base64 = imageContent
       // Create a data URL for display
-      image.url = imageContent.startsWith('data:') 
-        ? imageContent 
+      image.url = imageContent.startsWith('data:')
+        ? imageContent
         : `data:image/${image.format};base64,${imageContent}`
     }
-    
+
     return image
   })
 

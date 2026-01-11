@@ -59,7 +59,8 @@ export function MeetingControls({
       <div className="flex items-center gap-2 flex-wrap">
         <Icon name="User" size="sm" className="text-default-500" />
         <span className="text-sm text-default-500">
-          {activeParticipants.length} participant{activeParticipants.length !== 1 ? 's' : ''}
+          {activeParticipants.length} participant
+          {activeParticipants.length !== 1 ? 's' : ''}
         </span>
         {activeParticipants.slice(0, 5).map((p) => (
           <Chip key={p.id} size="sm" variant="flat">
@@ -80,7 +81,9 @@ export function MeetingControls({
           value={chatMessage}
           onChange={(e) => setChatMessage(e.target.value)}
           onKeyDown={handleKeyDown}
-          startContent={<Icon name="ChatBubble" size="sm" className="text-default-400" />}
+          startContent={
+            <Icon name="ChatBubble" size="sm" className="text-default-400" />
+          }
         />
         <Button
           color="primary"
@@ -97,7 +100,10 @@ export function MeetingControls({
           {/* Reactions */}
           <Popover placement="top">
             <PopoverTrigger>
-              <Button variant="flat" startContent={<Icon name="Emoji" size="sm" />}>
+              <Button
+                variant="flat"
+                startContent={<Icon name="Emoji" size="sm" />}
+              >
                 React
               </Button>
             </PopoverTrigger>
@@ -132,8 +138,8 @@ export function MeetingControls({
             <PopoverContent>
               <div className="p-3 space-y-2 w-64">
                 <p className="text-xs text-default-500">
-                  ⚠️ TTS requires audio routing setup on the server.
-                  Chat is more reliable.
+                  ⚠️ TTS requires audio routing setup on the server. Chat is
+                  more reliable.
                 </p>
                 <Input
                   placeholder="Text to speak..."

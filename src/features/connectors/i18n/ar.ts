@@ -28,7 +28,8 @@ export const ar: I18n = {
 
   // Providers - Google Meet
   'Google Meet': 'Google Meet',
-  'Join meetings with AI agents': 'انضم إلى الاجتماعات مع وكلاء الذكاء الاصطناعي',
+  'Join meetings with AI agents':
+    'انضم إلى الاجتماعات مع وكلاء الذكاء الاصطناعي',
 
   // Providers - Notion
   Notion: 'Notion',

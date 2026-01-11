@@ -104,7 +104,7 @@ export function SuccessStep({
             <>
               <div className="flex items-center gap-2 text-default-600">
                 <Icon name="Folder" className="w-4 h-4 text-warning" />
-                    <span>
+                <span>
                   {selectedFolders === null
                     ? t('Syncing all files')
                     : t('{n} folders selected', { n: selectedFolders.length })}

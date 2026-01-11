@@ -561,7 +561,8 @@ export const ko: I18n = {
   'Negative Prompt': '네거티브 프롬프트',
   'What to avoid in the image...': '이미지에서 피해야 할 것...',
   'Guidance Scale': '가이던스 스케일',
-  'Higher values follow prompt more closely': '높은 값은 프롬프트를 더 정확하게 따릅니다',
+  'Higher values follow prompt more closely':
+    '높은 값은 프롬프트를 더 정확하게 따릅니다',
   'Seed (optional)': '시드 (선택사항)',
   Random: '랜덤',
   'Use same seed to reproduce results': '동일한 시드를 사용하여 결과 재현',
@@ -571,7 +572,8 @@ export const ko: I18n = {
   'Copy revised prompt': '수정된 프롬프트 복사',
   'Use as reference': '참조로 사용',
   'No images yet': '아직 이미지가 없습니다',
-  'Generate your first image to see it here': '첫 번째 이미지를 생성하여 여기에서 확인하세요',
+  'Generate your first image to see it here':
+    '첫 번째 이미지를 생성하여 여기에서 확인하세요',
   Current: '현재',
   History: '기록',
   Clear: '지우기',

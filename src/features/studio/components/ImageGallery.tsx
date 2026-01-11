@@ -4,13 +4,7 @@
  * Gallery view for displaying generated images.
  */
 
-import {
-  Button,
-  Tabs,
-  Tab,
-  Chip,
-  Spinner,
-} from '@heroui/react'
+import { Button, Tabs, Tab, Chip, Spinner } from '@heroui/react'
 import { useMemo } from 'react'
 
 import { Icon } from '@/components/Icon'
@@ -76,7 +70,9 @@ export function ImageGallery({
       <div className="flex flex-col items-center justify-center py-12 text-default-400">
         <Icon name="MediaImage" size="xl" className="mb-4 opacity-30" />
         <p className="text-lg">{t('No images yet')}</p>
-        <p className="text-sm mt-1">{t('Generate your first image to see it here')}</p>
+        <p className="text-sm mt-1">
+          {t('Generate your first image to see it here')}
+        </p>
       </div>
     )
   }
@@ -85,11 +81,7 @@ export function ImageGallery({
     <div className="flex flex-col h-full">
       {/* Header with tabs and actions */}
       <div className="flex items-center justify-between mb-4">
-        <Tabs
-          size="sm"
-          variant="underlined"
-          aria-label="Gallery tabs"
-        >
+        <Tabs size="sm" variant="underlined" aria-label="Gallery tabs">
           <Tab
             key="current"
             title={

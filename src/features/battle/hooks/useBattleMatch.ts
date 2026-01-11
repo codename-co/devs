@@ -32,7 +32,7 @@ export function useBattleMatch(battleId: string, matchId: string) {
   const [currentTurn, setCurrentTurn] = useState(0)
   const [streamingContent, setStreamingContent] = useState<string>('') // Current streaming message
   const [streamingAgentId, setStreamingAgentId] = useState<string | null>(null)
-  
+
   // Use ref to accumulate messages and force re-renders
   const messagesRef = useRef<Message[]>([])
 
@@ -45,10 +45,14 @@ export function useBattleMatch(battleId: string, matchId: string) {
   useEffect(() => {
     const loadMessages = async () => {
       if (match?.conversationId && !isRunning) {
-        const conversation = await conversationStore.loadConversation(match.conversationId)
+        const conversation = await conversationStore.loadConversation(
+          match.conversationId,
+        )
         if (conversation) {
           // Filter out system messages for display
-          const displayMessages = conversation.messages.filter(m => m.role !== 'system')
+          const displayMessages = conversation.messages.filter(
+            (m) => m.role !== 'system',
+          )
           setMessages(displayMessages)
           messagesRef.current = displayMessages
         }
@@ -84,14 +88,14 @@ export function useBattleMatch(battleId: string, matchId: string) {
           // Use flushSync to force immediate DOM update
           flushSync(() => {
             // Update progress based on turn completion (5% to 70%)
-            const turnProgress = 5 + ((turn / total) * 65)
+            const turnProgress = 5 + (turn / total) * 65
             setProgress(turnProgress)
             setCurrentTurn(turn)
-            
+
             // Clear streaming state
             setStreamingContent('')
             setStreamingAgentId(null)
-            
+
             // Add completed message to ref and trigger re-render
             const newMessage: Message = {
               id: `turn-${turn}-${Date.now()}`,
@@ -111,9 +115,9 @@ export function useBattleMatch(battleId: string, matchId: string) {
           setCurrentTurn(turn)
           setStreamingAgentId(agentId)
           setStreamingContent(fullContent)
-        }
+        },
       )
-      
+
       await store.setMatchConversation(battleId, matchId, conversationId)
       setProgress(75)
 
@@ -125,7 +129,7 @@ export function useBattleMatch(battleId: string, matchId: string) {
         conversationId,
         store.currentBattle.judgeAgentId,
         store.currentBattle.topic,
-        store.currentBattle.customJudgingCriteria
+        store.currentBattle.customJudgingCriteria,
       )
       setProgress(95)
 

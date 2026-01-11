@@ -80,7 +80,10 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
       if (battle) {
         set({ currentBattle: battle, isLoading: false })
       } else {
-        errorToast('Battle not found', 'The requested battle could not be found')
+        errorToast(
+          'Battle not found',
+          'The requested battle could not be found',
+        )
         set({ isLoading: false })
       }
     } catch (error) {

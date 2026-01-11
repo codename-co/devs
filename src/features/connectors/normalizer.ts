@@ -214,7 +214,7 @@ const TEXT_EXTENSIONS = new Set([
  */
 export function detectFileType(
   mimeType?: string,
-  name?: string
+  name?: string,
 ): 'document' | 'image' | 'text' | undefined {
   // Try MIME type detection first
   if (mimeType) {
@@ -228,7 +228,7 @@ export function detectFileType(
     // Check document patterns
     if (
       DOCUMENT_MIME_PATTERNS.some(
-        (pattern) => lowerMime === pattern || lowerMime.startsWith(pattern)
+        (pattern) => lowerMime === pattern || lowerMime.startsWith(pattern),
       )
     ) {
       return 'document'
@@ -274,7 +274,7 @@ export function detectFileType(
 export function detectFileTypeForProvider(
   provider: AppConnectorProvider,
   mimeType?: string,
-  name?: string
+  name?: string,
 ): 'document' | 'image' | 'text' | undefined {
   // Check provider-specific mappings first
   if (mimeType && provider in PROVIDER_FILE_TYPES) {
@@ -338,7 +338,7 @@ export async function generateContentHash(content: string): Promise<string> {
  */
 export function hasContentChanged(
   newHash: string | undefined,
-  existingHash: string | undefined
+  existingHash: string | undefined,
 ): boolean {
   // If either hash is missing, assume content has changed
   if (!newHash || !existingHash) {
@@ -370,7 +370,7 @@ export function hasContentChanged(
  */
 export function normalizeToKnowledgeItem(
   item: ConnectorItem,
-  connector: Connector
+  connector: Connector,
 ): KnowledgeItem {
   const now = new Date()
 
@@ -381,7 +381,7 @@ export function normalizeToKnowledgeItem(
       ? detectFileTypeForProvider(
           connector.provider as AppConnectorProvider,
           item.mimeType,
-          item.name
+          item.name,
         )
       : detectFileType(item.mimeType, item.name))
 
@@ -442,7 +442,7 @@ export function normalizeToKnowledgeItem(
 export function mergeWithExisting(
   newItem: ConnectorItem,
   existing: KnowledgeItem,
-  connector: Connector
+  connector: Connector,
 ): KnowledgeItem {
   const now = new Date()
 
@@ -453,7 +453,7 @@ export function mergeWithExisting(
       ? detectFileTypeForProvider(
           connector.provider as AppConnectorProvider,
           newItem.mimeType,
-          newItem.name
+          newItem.name,
         )
       : detectFileType(newItem.mimeType, newItem.name))
 
@@ -511,7 +511,7 @@ export function mergeWithExisting(
  */
 export function shouldUpdateItem(
   newItem: ConnectorItem,
-  existing: KnowledgeItem
+  existing: KnowledgeItem,
 ): boolean {
   // Always update if hashes differ
   if (hasContentChanged(newItem.contentHash, existing.contentHash)) {

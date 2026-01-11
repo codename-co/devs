@@ -39,7 +39,9 @@ export interface UseMeetingBotReturn {
 /**
  * Hook for managing meeting bot connection and interactions
  */
-export function useMeetingBot(options: UseMeetingBotOptions): UseMeetingBotReturn {
+export function useMeetingBot(
+  options: UseMeetingBotOptions,
+): UseMeetingBotReturn {
   const [status, setStatus] = useState<MeetingBotStatus>('disconnected')
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([])
   const [participants, setParticipants] = useState<MeetingParticipant[]>([])
@@ -88,17 +90,15 @@ export function useMeetingBot(options: UseMeetingBotOptions): UseMeetingBotRetur
             prev.map((p) =>
               p.id === participant.id
                 ? { ...p, leftAt: participant.leftAt }
-                : p
-            )
+                : p,
+            ),
           )
         }
       },
       onStatusChange: (newStatus, message) => {
         setStatus(newStatus)
         if (message) {
-          setSession((prev) =>
-            prev ? { ...prev, status: newStatus } : null
-          )
+          setSession((prev) => (prev ? { ...prev, status: newStatus } : null))
         }
         if (newStatus === 'error') {
           setErrorMessage(message || 'Unknown error')
@@ -151,7 +151,7 @@ export function useMeetingBot(options: UseMeetingBotOptions): UseMeetingBotRetur
 
       await bridgeRef.current.joinMeeting(meetingUrl, googleAuthToken)
     },
-    [options.agentId, options.agentName]
+    [options.agentId, options.agentName],
   )
 
   const leaveMeeting = useCallback(() => {

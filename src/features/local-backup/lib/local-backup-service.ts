@@ -60,7 +60,13 @@ export interface FolderSyncEvent {
     | 'file_read'
     | 'file_deleted'
     | 'sync_error'
-  entityType?: 'agent' | 'conversation' | 'memory' | 'knowledge' | 'task' | 'studio'
+  entityType?:
+    | 'agent'
+    | 'conversation'
+    | 'memory'
+    | 'knowledge'
+    | 'task'
+    | 'studio'
   entityId?: string
   filename?: string
   error?: string
@@ -1231,13 +1237,13 @@ class FolderSyncService {
           if (basicEntry) {
             // Collect image contents
             const imageContents = new Map<string, string>()
-            
+
             for (let i = 0; i < basicEntry.images.length; i++) {
               const image = basicEntry.images[i]
               // Construct the expected image filename
               const imageFilename = `${this.sanitizeFilename(basicEntry.id)}-${i + 1}.${image.format}`
               const imageHandle = filesInDir.get(imageFilename)
-              
+
               if (imageHandle) {
                 const imageFile = await imageHandle.getFile()
                 const buffer = await imageFile.arrayBuffer()

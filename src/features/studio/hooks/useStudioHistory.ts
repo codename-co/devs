@@ -7,11 +7,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { db } from '@/lib/db'
-import {
-  StudioEntry,
-  GeneratedImage,
-  ImageGenerationSettings,
-} from '../types'
+import { StudioEntry, GeneratedImage, ImageGenerationSettings } from '../types'
 
 const MAX_HISTORY_ENTRIES = 100
 
@@ -126,7 +122,8 @@ export function useStudioHistory(): UseStudioHistoryReturn {
         if (newHistory.length > MAX_HISTORY_ENTRIES) {
           // Remove oldest non-favorite entries
           const sorted = newHistory.sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
           )
           const toRemove = sorted
             .filter((e) => !e.isFavorite)
@@ -149,7 +146,9 @@ export function useStudioHistory(): UseStudioHistoryReturn {
   const toggleFavorite = useCallback(async (entryId: string) => {
     setHistory((prev) => {
       const updated = prev.map((entry) =>
-        entry.id === entryId ? { ...entry, isFavorite: !entry.isFavorite } : entry,
+        entry.id === entryId
+          ? { ...entry, isFavorite: !entry.isFavorite }
+          : entry,
       )
 
       // Save to DB
@@ -202,7 +201,9 @@ export function useStudioHistory(): UseStudioHistoryReturn {
       return history.filter(
         (entry) =>
           entry.prompt.toLowerCase().includes(lowerQuery) ||
-          entry.tags?.some((tag: string) => tag.toLowerCase().includes(lowerQuery)),
+          entry.tags?.some((tag: string) =>
+            tag.toLowerCase().includes(lowerQuery),
+          ),
       )
     },
     [history],

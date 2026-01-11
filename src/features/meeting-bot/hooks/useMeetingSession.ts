@@ -9,12 +9,14 @@ import { useConnectorStore } from '@/stores/connectorStore'
 import { useMeetingBot, type UseMeetingBotOptions } from './useMeetingBot'
 import type { MeetMeetingInfo } from '@/features/connectors/providers/apps/google-meet'
 
-export interface UseMeetingSessionOptions extends Omit<UseMeetingBotOptions, 'agentId' | 'agentName'> {
+export interface UseMeetingSessionOptions
+  extends Omit<UseMeetingBotOptions, 'agentId' | 'agentName'> {
   agentId: string
   agentName: string
 }
 
-export interface UseMeetingSessionReturn extends ReturnType<typeof useMeetingBot> {
+export interface UseMeetingSessionReturn
+  extends ReturnType<typeof useMeetingBot> {
   upcomingMeetings: MeetMeetingInfo[]
   loadingMeetings: boolean
   connectorConnected: boolean
@@ -25,14 +27,20 @@ export interface UseMeetingSessionReturn extends ReturnType<typeof useMeetingBot
 /**
  * Hook for managing meeting sessions with full Google Meet connector integration
  */
-export function useMeetingSession(options: UseMeetingSessionOptions): UseMeetingSessionReturn {
-  const [upcomingMeetings, setUpcomingMeetings] = useState<MeetMeetingInfo[]>([])
+export function useMeetingSession(
+  options: UseMeetingSessionOptions,
+): UseMeetingSessionReturn {
+  const [upcomingMeetings, setUpcomingMeetings] = useState<MeetMeetingInfo[]>(
+    [],
+  )
   const [loadingMeetings, setLoadingMeetings] = useState(false)
 
   const { connectors } = useConnectorStore()
 
   // Find Google Meet connector
-  const meetConnector = connectors.find((c) => c.provider === 'google-meet' && c.status === 'connected')
+  const meetConnector = connectors.find(
+    (c) => c.provider === 'google-meet' && c.status === 'connected',
+  )
   const connectorConnected = !!meetConnector
 
   // Initialize meeting bot hook
@@ -49,7 +57,9 @@ export function useMeetingSession(options: UseMeetingSessionOptions): UseMeeting
 
     try {
       // Dynamically import the provider
-      const { GoogleMeetProvider } = await import('@/features/connectors/providers/apps/google-meet')
+      const { GoogleMeetProvider } = await import(
+        '@/features/connectors/providers/apps/google-meet'
+      )
       const provider = new GoogleMeetProvider()
 
       const meetings = await provider.listUpcomingMeetings(meetConnector, 10)
@@ -78,7 +88,9 @@ export function useMeetingSession(options: UseMeetingSessionOptions): UseMeeting
 
       try {
         // Get auth data from connector
-        const { GoogleMeetProvider } = await import('@/features/connectors/providers/apps/google-meet')
+        const { GoogleMeetProvider } = await import(
+          '@/features/connectors/providers/apps/google-meet'
+        )
         const provider = new GoogleMeetProvider()
 
         const authData = await provider.getMeetAuthData(meetConnector)
@@ -91,7 +103,7 @@ export function useMeetingSession(options: UseMeetingSessionOptions): UseMeeting
         await meetingBot.joinMeeting(meeting.meetUrl)
       }
     },
-    [meetConnector, meetingBot]
+    [meetConnector, meetingBot],
   )
 
   return {

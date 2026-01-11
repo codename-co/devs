@@ -172,7 +172,10 @@ export function GeneratedImageCard({
         {showActions && (
           <CardFooter className="p-2 justify-between gap-2">
             {/* Prompt */}
-            <span className="text-xs text-default-500 line-clamp-2 flex-1" title={prompt || image.revisedPrompt}>
+            <span
+              className="text-xs text-default-500 line-clamp-2 flex-1"
+              title={prompt || image.revisedPrompt}
+            >
               {prompt || image.revisedPrompt || '—'}
             </span>
 
