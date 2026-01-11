@@ -16,6 +16,8 @@ import {
   PinnedMessage,
 } from '@/types'
 import { Connector, ConnectorSyncState } from '@/features/connectors/types'
+import { Battle } from '@/features/battle/types'
+import { StudioEntry } from '@/features/studio/types'
 
 export interface DBStores {
   agents: Agent
@@ -38,6 +40,10 @@ export interface DBStores {
   // Connectors System
   connectors: Connector
   connectorSyncStates: ConnectorSyncState
+  // Battle System
+  battles: Battle
+  // Studio Entries
+  studioEntries: StudioEntry
 }
 
 export class Database {
@@ -45,7 +51,7 @@ export class Database {
   private initialized = false
 
   static DB_NAME = 'devs-ai-platform'
-  static DB_VERSION = 12
+  static DB_VERSION = 14
   static STORES: (keyof DBStores)[] = [
     'agents',
     'conversations',
@@ -66,6 +72,10 @@ export class Database {
     // Connectors System
     'connectors',
     'connectorSyncStates',
+    // Battle System
+    'battles',
+    // Studio Entries
+    'studioEntries',
   ]
 
   isInitialized(): boolean {
@@ -581,6 +591,49 @@ export class Database {
             })
           }
         }
+
+        // Migration for version 13: Add Battle System store
+        if (event.oldVersion < 13) {
+          console.log(
+            'Database migrated to version 13: Added Battle System store',
+          )
+
+          // Create battles store
+          if (!db.objectStoreNames.contains('battles')) {
+            const battlesStore = db.createObjectStore('battles', {
+              keyPath: 'id',
+            })
+            battlesStore.createIndex('status', 'status', {
+              unique: false,
+            })
+            battlesStore.createIndex('judgeAgentId', 'judgeAgentId', {
+              unique: false,
+            })
+            battlesStore.createIndex('createdAt', 'createdAt', {
+              unique: false,
+            })
+          }
+        }
+
+        // Migration for version 14: Add Studio Entries store
+        if (event.oldVersion < 14) {
+          console.log(
+            'Database migrated to version 14: Added Studio Entries store',
+          )
+
+          // Create studioEntries store
+          if (!db.objectStoreNames.contains('studioEntries')) {
+            const studioEntriesStore = db.createObjectStore('studioEntries', {
+              keyPath: 'id',
+            })
+            studioEntriesStore.createIndex('createdAt', 'createdAt', {
+              unique: false,
+            })
+            studioEntriesStore.createIndex('isFavorite', 'isFavorite', {
+              unique: false,
+            })
+          }
+        }
       }
     })
   }
@@ -716,6 +769,19 @@ export class Database {
       } catch (error) {
         reject(error)
       }
+    })
+  }
+
+  async clear<T extends keyof DBStores>(storeName: T): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized')
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([storeName], 'readwrite')
+      const store = transaction.objectStore(storeName)
+      const request = store.clear()
+
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
     })
   }
 

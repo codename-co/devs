@@ -1,0 +1,23 @@
+{
+  "name": "devs-meet",
+  "private": true,
+  "version": "0.1.0",
+  "description": "DEVS Meeting Bot - Browser-controlled Google Meet agent",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0",
+    "winston": "^3.19.0",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

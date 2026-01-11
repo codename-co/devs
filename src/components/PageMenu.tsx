@@ -6,21 +6,20 @@
 import { Icon } from '@/components'
 import { LocalBackupButton } from '@/features/local-backup'
 import { SyncButton } from '@/features/sync'
-import { useI18n } from '@/i18n'
+import { useI18n, useUrl } from '@/i18n'
 import {
   Button,
-  Chip,
   Dropdown,
   DropdownItem,
   DropdownMenu,
-  DropdownSection,
   DropdownTrigger,
   Tooltip,
 } from '@heroui/react'
 import { useNavigate } from 'react-router-dom'
 
 export function PageMenu() {
-  const { t, url } = useI18n()
+  const { lang, t } = useI18n()
+  const url = useUrl(lang)
   const navigate = useNavigate()
 
   return (
@@ -45,66 +44,21 @@ export function PageMenu() {
           </span>
         </Tooltip>
         <DropdownMenu aria-label={t('More actions')}>
-          {/* Main Features */}
-          <DropdownSection showDivider>
-            <DropdownItem
-              key="voice"
-              startContent={<Icon name="Voice" size="sm" />}
-              description={t('Voice input mode')}
-              endContent={
-                <Chip size="sm" variant="flat" className="ml-2 align-middle">
-                  Beta
-                </Chip>
-              }
-              onPress={() => navigate(url('/voice'))}
-            >
-              {t('Voice')}
-            </DropdownItem>
-            <DropdownItem
-              key="connectors"
-              startContent={<Icon name="Puzzle" size="sm" />}
-              description={t('Connect external services')}
-              onPress={() => navigate(url('/knowledge/connectors'))}
-            >
-              {t('Connectors')}
-            </DropdownItem>
-            <DropdownItem
-              key="memories"
-              startContent={<Icon name="Brain" size="sm" />}
-              description={t('Agent learned knowledge')}
-              onPress={() => navigate(url('/knowledge/memories'))}
-            >
-              {t('Memories')}
-            </DropdownItem>
-            <DropdownItem
-              key="files"
-              startContent={<Icon name="Folder" size="sm" />}
-              description={t('Manage your files')}
-              onPress={() => navigate(url('/knowledge/files'))}
-            >
-              {t('Files')}
-            </DropdownItem>
-          </DropdownSection>
-
-          {/* Settings & Admin */}
-          <DropdownSection>
-            <DropdownItem
-              key="settings"
-              startContent={<Icon name="Settings" size="sm" />}
-              description={t('App configuration')}
-              onPress={() => navigate(url('/settings'))}
-            >
-              {t('Settings')}
-            </DropdownItem>
-            <DropdownItem
-              key="admin"
-              startContent={<Icon name="Server" size="sm" />}
-              description={t('Database management')}
-              onPress={() => navigate(url('/admin/database'))}
-            >
-              {t('Admin')}
-            </DropdownItem>
-          </DropdownSection>
+          <DropdownItem
+            key="settings"
+            startContent={<Icon name="Settings" size="sm" />}
+            // description={t('App configuration')}
+            onPress={() => navigate(url('/settings'))}
+          >
+            {t('App configuration')}
+          </DropdownItem>
+          <DropdownItem
+            key="admin"
+            startContent={<Icon name="Database" size="sm" />}
+            onPress={() => navigate(url('/admin/database'))}
+          >
+            {t('Database management')}
+          </DropdownItem>
         </DropdownMenu>
       </Dropdown>
     </div>

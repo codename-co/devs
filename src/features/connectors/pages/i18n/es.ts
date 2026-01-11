@@ -96,6 +96,7 @@ export const es: I18n = {
   'Successfully connected!': '¡Conectado exitosamente!',
   '{name} has been connected to your knowledge base.':
     '{name} ha sido conectado a tu base de conocimientos.',
+  '{name} has been connected.': '{name} ha sido conectado.',
   '{name} has been connected to your knowledge base. Files will begin syncing shortly.':
     '{name} ha sido conectado a tu base de conocimientos. Los archivos comenzarán a sincronizarse pronto.',
   '{name} has been successfully connected':

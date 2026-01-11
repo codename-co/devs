@@ -26,6 +26,10 @@ export const fr: I18n = {
   'Google Calendar': 'Google Calendar',
   'Import events and schedules': 'Importer des événements et calendriers',
 
+  // Providers - Google Meet
+  'Google Meet': 'Google Meet',
+  'Join meetings with AI agents': 'Rejoindre des réunions avec des agents IA',
+
   // Providers - Notion
   Notion: 'Notion',
   'Import pages and databases from Notion':
@@ -51,6 +55,9 @@ export const fr: I18n = {
   'Select folders to sync': 'Sélectionnez les dossiers à synchroniser',
   'Sync all content': 'Synchroniser tout le contenu',
   'Successfully connected!': 'Connexion réussie !',
+  '{name} has been connected to your knowledge base.':
+    '{name} a été connecté à votre base de connaissances.',
+  '{name} has been connected.': '{name} a été connecté.',
   'Start Sync Now': 'Démarrer la synchronisation',
   Done: 'Terminé',
   'Try Again': 'Réessayer',

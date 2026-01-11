@@ -26,6 +26,10 @@ export const ar: I18n = {
   'Google Calendar': 'تقويم Google',
   'Import events and schedules': 'استيراد الأحداث والجداول',
 
+  // Providers - Google Meet
+  'Google Meet': 'Google Meet',
+  'Join meetings with AI agents': 'انضم إلى الاجتماعات مع وكلاء الذكاء الاصطناعي',
+
   // Providers - Notion
   Notion: 'Notion',
   'Import pages and databases from Notion':
@@ -51,6 +55,9 @@ export const ar: I18n = {
   'Select folders to sync': 'حدد المجلدات للمزامنة',
   'Sync all content': 'مزامنة جميع المحتوى',
   'Successfully connected!': 'تم الاتصال بنجاح!',
+  '{name} has been connected to your knowledge base.':
+    'تم توصيل {name} بقاعدة معارفك.',
+  '{name} has been connected.': 'تم توصيل {name}.',
   'Start Sync Now': 'بدء المزامنة الآن',
   Done: 'تم',
   'Try Again': 'حاول مرة أخرى',

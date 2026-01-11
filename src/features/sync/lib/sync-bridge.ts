@@ -15,6 +15,7 @@ import { db } from '@/lib/db'
 
 import {
   getAgentsMap,
+  getBattlesMap,
   getConversationsMap,
   getKnowledgeMap,
   getMemoriesMap,
@@ -30,6 +31,7 @@ import type { Lang } from '@/i18n/utils'
 // Using string type to allow flexibility with DB store names
 type SyncedStoreName =
   | 'agents'
+  | 'battles'
   | 'conversations'
   | 'knowledgeItems'
   | 'agentMemories'
@@ -46,6 +48,8 @@ function getYjsMapForStore(storeName: SyncedStoreName): Y.Map<any> {
   switch (storeName) {
     case 'agents':
       return getAgentsMap()
+    case 'battles':
+      return getBattlesMap()
     case 'conversations':
       return getConversationsMap()
     case 'knowledgeItems':
@@ -66,6 +70,7 @@ function getYjsMapForStore(storeName: SyncedStoreName): Y.Map<any> {
 // All synced stores (IndexedDB-based)
 const SYNCED_STORES: SyncedStoreName[] = [
   'agents',
+  'battles',
   'conversations',
   'knowledgeItems',
   'agentMemories',

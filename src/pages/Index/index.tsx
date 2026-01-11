@@ -308,6 +308,34 @@ export const IndexPage = () => {
             {!isLoadingAgents && (
               <Container size={7} className="mt-0 sm:-mt-8">
                 <div className="flex gap-2 flex-wrap justify-center">
+                  <motion.div
+                    {...motionVariants.usecase}
+                    transition={{
+                      ...motionVariants.usecase.transition,
+                      delay: 0.6,
+                    }}
+                    key="studio"
+                  >
+                    <Button
+                      variant="ghost"
+                      // color="danger"
+                      size="md"
+                      className="inline-flex justify-start"
+                      startContent={
+                        <Icon
+                          name="MediaImagePlus"
+                          size="lg"
+                          className="text-default-500"
+                        />
+                      }
+                      onClick={() => {
+                        navigate('/studio')
+                      }}
+                    >
+                      <span className="font-semibold">{t('Studio')}</span>
+                    </Button>
+                  </motion.div>
+
                   {useCasesByThemes(agents).map(
                     ({ theme, usecases }, index) => (
                       <motion.div

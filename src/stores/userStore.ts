@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Lang } from '@/i18n/utils'
+import type { ImageProvider, ImageModel } from '@/features/studio/types'
 
 // type User = {
 //   firstname: string
@@ -20,6 +21,9 @@ export interface UserSettings {
   speechToTextEnabled: boolean
   pwaInstallPromptDismissed: boolean
   hideDefaultAgents: boolean
+  // Image Generation defaults
+  defaultImageProvider?: ImageProvider
+  defaultImageModel?: ImageModel
 }
 
 const defaultSettings: UserSettings = {
@@ -41,6 +45,8 @@ interface UserSettingsStore extends UserSettings {
   setSpeechToTextEnabled: (enabled: boolean) => void
   setPwaInstallPromptDismissed: (dismissed: boolean) => void
   setHideDefaultAgents: (hide: boolean) => void
+  setDefaultImageProvider: (provider: ImageProvider | undefined) => void
+  setDefaultImageModel: (model: ImageModel | undefined) => void
   isDarkTheme: () => boolean
 }
 
@@ -64,6 +70,10 @@ export const userSettings = create<UserSettingsStore>()(
       setPwaInstallPromptDismissed: (dismissed: boolean) =>
         set({ pwaInstallPromptDismissed: dismissed }),
       setHideDefaultAgents: (hide: boolean) => set({ hideDefaultAgents: hide }),
+      setDefaultImageProvider: (provider: ImageProvider | undefined) =>
+        set({ defaultImageProvider: provider }),
+      setDefaultImageModel: (model: ImageModel | undefined) =>
+        set({ defaultImageModel: model }),
       isDarkTheme: () => {
         const { theme } = get()
         if (theme === 'dark') return true
@@ -84,6 +94,8 @@ export const userSettings = create<UserSettingsStore>()(
         speechToTextEnabled: state.speechToTextEnabled,
         pwaInstallPromptDismissed: state.pwaInstallPromptDismissed,
         hideDefaultAgents: state.hideDefaultAgents,
+        defaultImageProvider: state.defaultImageProvider,
+        defaultImageModel: state.defaultImageModel,
       }),
     },
   ),

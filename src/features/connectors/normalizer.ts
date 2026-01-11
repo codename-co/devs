@@ -31,6 +31,10 @@ export const PROVIDER_FILE_TYPES: Record<
     'text/calendar': 'document',
     'application/vnd.google-apps.calendar': 'document',
   },
+  'google-meet': {
+    // Google Meet doesn't sync content, but we need an entry
+    'text/plain': 'text',
+  },
   notion: {
     'text/markdown': 'text',
     'application/vnd.notion.page': 'document',

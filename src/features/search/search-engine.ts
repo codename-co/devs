@@ -14,6 +14,7 @@ export type SearchResultType =
   | 'message'
   | 'methodology'
   | 'connector'
+  | 'media'
 
 export interface SearchResult {
   id: string
@@ -57,6 +58,7 @@ const TYPE_COLORS: Record<SearchResultType, string> = {
   message: 'default',
   methodology: 'success',
   connector: 'primary',
+  media: 'secondary',
 }
 
 /**
@@ -71,6 +73,7 @@ const TYPE_ICONS: Record<SearchResultType, string> = {
   message: 'ChatLines',
   methodology: 'Strategy',
   connector: 'Puzzle',
+  media: 'MediaImage',
 }
 
 /**
@@ -501,6 +504,52 @@ async function searchConnectors(query: string): Promise<SearchResult[]> {
 }
 
 /**
+ * Index and search studio media (generated images)
+ */
+async function searchMedia(query: string): Promise<SearchResult[]> {
+  const results: SearchResult[] = []
+
+  try {
+    if (!db.isInitialized()) await db.init()
+    if (!db.hasStore('studioEntries')) return results
+
+    const entries = await db.getAll('studioEntries')
+    for (const entry of entries) {
+      const texts = [
+        entry.prompt,
+        ...(entry.tags || []),
+        entry.settings?.style || '',
+      ]
+      if (matchesQuery(query, texts)) {
+        // Truncate prompt for display
+        const displayPrompt =
+          entry.prompt.length > 60
+            ? entry.prompt.slice(0, 60) + '...'
+            : entry.prompt
+        const imageCount = entry.images?.length || 0
+        const subtitle = `${imageCount} image${imageCount !== 1 ? 's' : ''}${entry.settings?.style && entry.settings.style !== 'none' ? ` · ${entry.settings.style}` : ''}`
+
+        results.push({
+          id: entry.id,
+          type: 'media',
+          title: displayPrompt,
+          subtitle,
+          icon: TYPE_ICONS.media,
+          color: TYPE_COLORS.media,
+          href: `/studio#${entry.id}`,
+          score: calculateScore(query, texts, 2),
+          timestamp: entry.createdAt,
+        })
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to search media:', error)
+  }
+
+  return results
+}
+
+/**
  * Main search function that searches across all indexed entities
  * @param query - The search query
  * @param lang - The user's current language for localized display (default: 'en')
@@ -523,6 +572,7 @@ export async function globalSearch(
     memories,
     methodologies,
     connectors,
+    media,
   ] = await Promise.all([
     searchAgents(query),
     searchConversations(query),
@@ -532,6 +582,7 @@ export async function globalSearch(
     searchMemories(query),
     searchMethodologies(query, lang),
     searchConnectors(query),
+    searchMedia(query),
   ])
 
   // Combine and sort by score
@@ -544,6 +595,7 @@ export async function globalSearch(
     ...memories,
     ...methodologies,
     ...connectors,
+    ...media,
   ]
 
   // Sort by score descending, then by recency

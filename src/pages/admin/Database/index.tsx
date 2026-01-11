@@ -370,14 +370,29 @@ export const DatabasePage: React.FC = () => {
         }
       }
 
-      const dataBlob = new Blob([JSON.stringify(dbData, null, 2)], {
-        type: 'application/json',
-      })
+      // Add metadata
+      const exportData = {
+        _meta: {
+          exportedAt: new Date().toISOString(),
+          dbName: Database.DB_NAME,
+          dbVersion: Database.DB_VERSION,
+          stores: stores.length,
+          compressed: true,
+        },
+        ...dbData,
+      }
 
-      const url = URL.createObjectURL(dataBlob)
+      const jsonString = JSON.stringify(exportData)
+
+      // Compress using native CompressionStream (gzip)
+      const stream = new Blob([jsonString]).stream()
+      const compressedStream = stream.pipeThrough(new CompressionStream('gzip'))
+      const compressedBlob = await new Response(compressedStream).blob()
+
+      const url = URL.createObjectURL(compressedBlob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `devs-database-export-${new Date().toISOString().split('T')[0]}.json`
+      a.download = `devs-database-export-${new Date().toISOString().split('T')[0]}.json.gz`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -406,7 +421,21 @@ export const DatabasePage: React.FC = () => {
     if (!file) return
 
     try {
-      const text = await file.text()
+      let text: string
+
+      // Handle both compressed (.json.gz) and uncompressed (.json) files
+      if (file.name.endsWith('.gz')) {
+        // Decompress using native DecompressionStream (gzip)
+        const stream = file.stream()
+        const decompressedStream = stream.pipeThrough(
+          new DecompressionStream('gzip'),
+        )
+        const decompressedBlob = await new Response(decompressedStream).blob()
+        text = await decompressedBlob.text()
+      } else {
+        text = await file.text()
+      }
+
       const dbData = JSON.parse(text)
 
       await db.init()
@@ -444,7 +473,7 @@ export const DatabasePage: React.FC = () => {
   const header: HeaderProps = {
     icon: {
       name: 'Database',
-      color: 'text-default-300 dark:text-default-600',
+      color: 'text-default-300 dark:text-default-400',
     },
     title: t('Database Administration'),
     subtitle:
@@ -521,7 +550,7 @@ export const DatabasePage: React.FC = () => {
     <DefaultLayout header={header}>
       <input
         type="file"
-        accept=".json"
+        accept=".json,.json.gz,.gz"
         onChange={handleImportDatabase}
         style={{ display: 'none' }}
         id="import-file-input"

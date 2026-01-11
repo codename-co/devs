@@ -14,7 +14,14 @@
  * - Automatic cleanup on unmount
  * - Works with React's concurrent rendering
  */
-import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react'
 import * as Y from 'yjs'
 
 import {
@@ -27,6 +34,7 @@ import {
   getSecretsMap,
   isPersistenceReady,
 } from '@/features/sync'
+import { loadBuiltInAgents } from '@/stores/agentStore'
 import type {
   Agent,
   AgentMemoryEntry,
@@ -247,10 +255,34 @@ export function useConversation(
 }
 
 /**
- * Subscribe to all agents with instant reactivity.
+ * Subscribe to all custom agents with instant reactivity.
+ * Note: This only returns agents stored in IndexedDB (custom agents).
+ * For all agents including built-in ones, use useAllAgents.
  */
 export function useAgents(): Agent[] {
   return useLiveMap(getAgentsMap)
+}
+
+/**
+ * Subscribe to all agents (built-in + custom) with instant reactivity.
+ * Built-in agents are loaded once and cached, custom agents update in real-time.
+ */
+export function useAllAgents(): Agent[] {
+  const customAgents = useLiveMap(getAgentsMap)
+  const [builtInAgents, setBuiltInAgents] = useState<Agent[]>([])
+
+  useEffect(() => {
+    loadBuiltInAgents().then(setBuiltInAgents)
+  }, [])
+
+  return useMemo(() => {
+    // Combine built-in and custom agents, with custom agents taking precedence
+    const customAgentIds = new Set(customAgents.map((a) => a.id))
+    const filteredBuiltIn = builtInAgents.filter(
+      (a) => !customAgentIds.has(a.id) && !a.deletedAt,
+    )
+    return [...filteredBuiltIn, ...customAgents.filter((a) => !a.deletedAt)]
+  }, [builtInAgents, customAgents])
 }
 
 /**

@@ -119,38 +119,24 @@ export function ConnectorWizard({
     setStep('auth')
   }, [])
 
-  // Handle OAuth success
-  const handleOAuthSuccess = useCallback(
-    (result: OAuthResult, info: AccountInfo | null) => {
-      setOauthResult(result)
-      setAccountInfo(info)
-      setStep('folders')
-    },
-    []
-  )
-
   // Handle OAuth retry
   const handleOAuthRetry = useCallback(() => {
     oauth.reset()
   }, [oauth])
 
-  // Handle folder selection and create connector
-  const handleFolderSelect = useCallback(
-    async (folderIds: string[] | null) => {
-      if (!selectedProvider || !oauthResult) {
-        console.error('[ConnectorWizard] Missing data:', { 
-          selectedProvider, 
-          oauthResult,
-          hasAccessToken: !!oauthResult?.accessToken 
-        })
-        return
-      }
-
+  // Create connector with encrypted tokens
+  const createConnector = useCallback(
+    async (
+      provider: AppConnectorProvider,
+      result: OAuthResult,
+      info: AccountInfo | null,
+      folderIds: string[] | null
+    ) => {
       console.log('[ConnectorWizard] Creating connector with:', {
-        provider: selectedProvider,
-        hasAccessToken: !!oauthResult.accessToken,
-        hasRefreshToken: !!oauthResult.refreshToken,
-        expiresIn: oauthResult.expiresIn,
+        provider,
+        hasAccessToken: !!result.accessToken,
+        hasRefreshToken: !!result.refreshToken,
+        expiresIn: result.expiresIn,
       })
 
       try {
@@ -159,7 +145,7 @@ export function ConnectorWizard({
 
         // Encrypt the access token
         const { encrypted: encryptedToken, iv, salt } = 
-          await SecureStorage.encryptCredential(oauthResult.accessToken)
+          await SecureStorage.encryptCredential(result.accessToken)
 
         console.log('[ConnectorWizard] Token encrypted:', {
           encryptedLength: encryptedToken.length,
@@ -171,30 +157,33 @@ export function ConnectorWizard({
         let encryptedRefreshToken: string | undefined
         let refreshIv: string | undefined
         let refreshSalt: string | undefined
-        if (oauthResult.refreshToken) {
-          const refreshResult = await SecureStorage.encryptCredential(oauthResult.refreshToken)
+        if (result.refreshToken) {
+          const refreshResult = await SecureStorage.encryptCredential(result.refreshToken)
           encryptedRefreshToken = refreshResult.encrypted
           refreshIv = refreshResult.iv
           refreshSalt = refreshResult.salt
         }
 
         // Calculate token expiry time
-        const tokenExpiresAt = oauthResult.expiresIn 
-          ? new Date(Date.now() + oauthResult.expiresIn * 1000)
+        const tokenExpiresAt = result.expiresIn 
+          ? new Date(Date.now() + result.expiresIn * 1000)
           : undefined
+
+        // Check if provider supports sync
+        const providerSyncSupported = PROVIDER_CONFIG[provider]?.syncSupported !== false
 
         // Create the connector in the store
         const id = await addConnector({
           category: 'app',
-          provider: selectedProvider,
-          name: PROVIDER_CONFIG[selectedProvider]?.name || selectedProvider,
+          provider,
+          name: PROVIDER_CONFIG[provider]?.name || provider,
           encryptedToken,
           encryptedRefreshToken,
           tokenExpiresAt,
-          scopes: oauthResult.scope?.split(' ') || [],
-          accountId: accountInfo?.id,
-          accountEmail: accountInfo?.email,
-          syncEnabled: true,
+          scopes: result.scope?.split(' ') || [],
+          accountId: info?.id,
+          accountEmail: info?.email,
+          syncEnabled: providerSyncSupported,
           syncFolders: folderIds || undefined,
           status: 'connected',
         })
@@ -213,15 +202,69 @@ export function ConnectorWizard({
           hasRefreshToken: !!encryptedRefreshToken,
         })
 
+        return id
+      } catch (error) {
+        console.error('Failed to create connector:', error)
+        throw error
+      }
+    },
+    [addConnector]
+  )
+
+  // Handle OAuth success
+  const handleOAuthSuccess = useCallback(
+    async (result: OAuthResult, info: AccountInfo | null) => {
+      setOauthResult(result)
+      setAccountInfo(info)
+      
+      // Check if provider supports sync - skip folders step if not
+      const providerConfig = selectedProvider ? PROVIDER_CONFIG[selectedProvider] : null
+      const providerSyncSupported = providerConfig?.syncSupported !== false
+      
+      if (providerSyncSupported) {
+        setStep('folders')
+      } else {
+        // For non-sync providers (like Google Meet, Google Calendar), 
+        // create the connector directly without folder selection
+        if (selectedProvider) {
+          try {
+            const id = await createConnector(selectedProvider, result, info, null)
+            setSelectedFolders(null)
+            setConnectorId(id)
+            setStep('success')
+          } catch (error) {
+            // Error already logged in createConnector
+            // TODO: Show error toast
+          }
+        }
+      }
+    },
+    [selectedProvider, createConnector]
+  )
+
+  // Handle folder selection and create connector
+  const handleFolderSelect = useCallback(
+    async (folderIds: string[] | null) => {
+      if (!selectedProvider || !oauthResult) {
+        console.error('[ConnectorWizard] Missing data:', { 
+          selectedProvider, 
+          oauthResult,
+          hasAccessToken: !!oauthResult?.accessToken 
+        })
+        return
+      }
+
+      try {
+        const id = await createConnector(selectedProvider, oauthResult, accountInfo, folderIds)
         setSelectedFolders(folderIds)
         setConnectorId(id)
         setStep('success')
       } catch (error) {
-        console.error('Failed to create connector:', error)
+        // Error already logged in createConnector
         // TODO: Show error toast
       }
     },
-    [selectedProvider, oauthResult, accountInfo, addConnector]
+    [selectedProvider, oauthResult, accountInfo, createConnector]
   )
 
   // Handle folder skip (sync everything)

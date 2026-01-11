@@ -79,6 +79,7 @@ export const en = [
   'Connected!',
   'Successfully connected!',
   '{name} has been connected to your knowledge base.',
+  '{name} has been connected.',
   '{name} has been connected to your knowledge base. Files will begin syncing shortly.',
   '{name} has been successfully connected',
   '{name} connected successfully',

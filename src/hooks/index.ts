@@ -10,6 +10,7 @@ export {
   useConversations,
   useConversation,
   useAgents,
+  useAllAgents,
   useAgent,
   useKnowledge,
   useKnowledgeItem,

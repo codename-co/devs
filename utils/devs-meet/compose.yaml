@@ -1,0 +1,28 @@
+# Docker Compose for DEVS Meeting Bot
+#
+# Usage:
+#   docker compose up -d
+#
+# This runs the meeting bot server that DEVS browser connects to.
+
+services:
+  devs-meet:
+    build: .
+    container_name: devs-meet
+    ports:
+      - '4445:4445'
+    environment:
+      - HOST=0.0.0.0
+      - PORT=4445
+      - LOG_LEVEL=info
+    restart: unless-stopped
+    # Increase shared memory for Playwright
+    shm_size: 2gb
+    # Security options for running browsers
+    security_opt:
+      - seccomp:unconfined
+    # For audio support (optional, requires pulseaudio on host)
+    # volumes:
+    #   - /run/user/1000/pulse:/run/user/1000/pulse
+    # environment:
+    #   - PULSE_SERVER=unix:/run/user/1000/pulse/native

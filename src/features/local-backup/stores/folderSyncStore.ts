@@ -19,6 +19,7 @@ export interface SyncStats {
   memories: number
   knowledge: number
   tasks: number
+  studio: number
   fullExport: boolean
 }
 
@@ -38,6 +39,7 @@ interface FolderSyncState {
   syncMemories: boolean
   syncKnowledge: boolean
   syncTasks: boolean
+  syncStudio: boolean
   syncFullExport: boolean
 
   // Activity
@@ -52,6 +54,7 @@ interface FolderSyncState {
       syncMemories?: boolean
       syncKnowledge?: boolean
       syncTasks?: boolean
+      syncStudio?: boolean
       syncFullExport?: boolean
     },
   ) => Promise<void>
@@ -63,6 +66,7 @@ interface FolderSyncState {
     syncMemories?: boolean
     syncKnowledge?: boolean
     syncTasks?: boolean
+    syncStudio?: boolean
     syncFullExport?: boolean
   }) => Promise<void>
   reconnect: (directoryHandle: FileSystemDirectoryHandle) => Promise<void>
@@ -159,6 +163,9 @@ export const useFolderSyncStore = create<FolderSyncState>()(
                   ).length
                 : 0,
               tasks: state.syncTasks ? (await db.getAll('tasks')).length : 0,
+              studio: state.syncStudio
+                ? (await db.getAll('studioEntries')).length
+                : 0,
               fullExport: state.syncFullExport,
             }
             updates.syncStats = stats
@@ -184,6 +191,7 @@ export const useFolderSyncStore = create<FolderSyncState>()(
         syncMemories: true,
         syncKnowledge: true,
         syncTasks: true,
+        syncStudio: true,
         syncFullExport: true,
         recentEvents: [],
 
@@ -199,6 +207,7 @@ export const useFolderSyncStore = create<FolderSyncState>()(
               syncMemories: options.syncMemories ?? get().syncMemories,
               syncKnowledge: options.syncKnowledge ?? get().syncKnowledge,
               syncTasks: options.syncTasks ?? get().syncTasks,
+              syncStudio: options.syncStudio ?? get().syncStudio,
               syncFullExport: options.syncFullExport ?? get().syncFullExport,
             })
 
@@ -215,6 +224,7 @@ export const useFolderSyncStore = create<FolderSyncState>()(
               syncMemories: config.syncMemories,
               syncKnowledge: config.syncKnowledge,
               syncTasks: config.syncTasks,
+              syncStudio: config.syncStudio,
               syncFullExport: config.syncFullExport,
             })
           } catch (error) {
@@ -261,6 +271,7 @@ export const useFolderSyncStore = create<FolderSyncState>()(
             syncMemories: options.syncMemories ?? get().syncMemories,
             syncKnowledge: options.syncKnowledge ?? get().syncKnowledge,
             syncTasks: options.syncTasks ?? get().syncTasks,
+            syncStudio: options.syncStudio ?? get().syncStudio,
             syncFullExport: options.syncFullExport ?? get().syncFullExport,
           })
 
@@ -295,6 +306,7 @@ export const useFolderSyncStore = create<FolderSyncState>()(
               syncMemories: state.syncMemories,
               syncKnowledge: state.syncKnowledge,
               syncTasks: state.syncTasks,
+              syncStudio: state.syncStudio,
               syncFullExport: state.syncFullExport,
             })
 
@@ -325,6 +337,7 @@ export const useFolderSyncStore = create<FolderSyncState>()(
         syncMemories: state.syncMemories,
         syncKnowledge: state.syncKnowledge,
         syncTasks: state.syncTasks,
+        syncStudio: state.syncStudio,
         syncFullExport: state.syncFullExport,
       }),
     },

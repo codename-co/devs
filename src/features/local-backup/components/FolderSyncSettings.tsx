@@ -43,6 +43,7 @@ export function FolderSyncSettings() {
     syncMemories,
     syncKnowledge,
     syncTasks,
+    syncStudio,
     syncFullExport,
     enableSync,
     disableSync,
@@ -144,6 +145,7 @@ export function FolderSyncSettings() {
   if (syncMemories) syncOptionsValue.push('memories')
   if (syncKnowledge) syncOptionsValue.push('knowledge')
   if (syncTasks) syncOptionsValue.push('tasks')
+  if (syncStudio) syncOptionsValue.push('studio')
   if (syncFullExport) syncOptionsValue.push('fullExport')
 
   // Build label for selected options
@@ -154,6 +156,7 @@ export function FolderSyncSettings() {
     if (syncMemories) items.push(t('Memories'))
     if (syncKnowledge) items.push(t('Knowledge'))
     if (syncTasks) items.push(t('Tasks'))
+    if (syncStudio) items.push(t('Studio'))
     if (syncFullExport) items.push(t('Full Export'))
     if (items.length === 0) return '—'
     return items.join(', ')
@@ -168,6 +171,7 @@ export function FolderSyncSettings() {
         syncMemories: true,
         syncKnowledge: true,
         syncTasks: true,
+        syncStudio: true,
         syncFullExport: true,
       })
     } else {
@@ -178,6 +182,7 @@ export function FolderSyncSettings() {
         syncMemories: selected.includes('memories'),
         syncKnowledge: selected.includes('knowledge'),
         syncTasks: selected.includes('tasks'),
+        syncStudio: selected.includes('studio'),
         syncFullExport: selected.includes('fullExport'),
       })
     }
@@ -260,6 +265,7 @@ export function FolderSyncSettings() {
                 <DropdownItem key="memories">{t('Memories')}</DropdownItem>
                 <DropdownItem key="knowledge">{t('Knowledge')}</DropdownItem>
                 <DropdownItem key="tasks">{t('Tasks')}</DropdownItem>
+                <DropdownItem key="studio">{t('Studio')}</DropdownItem>
                 <DropdownItem key="fullExport">{t('Full Export')}</DropdownItem>
               </DropdownMenu>
             </Dropdown>
@@ -328,6 +334,7 @@ export function FolderSyncSettings() {
                 <DropdownItem key="memories">{t('Memories')}</DropdownItem>
                 <DropdownItem key="knowledge">{t('Knowledge')}</DropdownItem>
                 <DropdownItem key="tasks">{t('Tasks')}</DropdownItem>
+                <DropdownItem key="studio">{t('Studio')}</DropdownItem>
                 <DropdownItem key="fullExport">{t('Full Export')}</DropdownItem>
               </DropdownMenu>
             </Dropdown>

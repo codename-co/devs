@@ -16,6 +16,11 @@ const PROVIDER_ICONS: Record<string, IconName> = {
   grok: 'X',
   huggingface: 'HuggingFace',
   custom: 'Server',
+  // Image generation providers
+  stability: 'SparksSolid',
+  together: 'Puzzle',
+  fal: 'LightBulbOn',
+  replicate: 'RefreshDouble',
 }
 
 interface UseModelPickerOptions {

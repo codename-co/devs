@@ -175,6 +175,38 @@ export interface FileMetadata {
 }
 
 /**
+ * Frontmatter for studio entry files
+ */
+export interface StudioEntryFrontmatter {
+  id: string
+  prompt: string
+  isFavorite?: boolean
+  tags?: string[]
+  createdAt: string
+  settings: Record<string, unknown>
+  images: Record<string, unknown>[]
+}
+
+/**
+ * Represents a serialized file set for studio entries
+ * Studio entries output both a metadata file and optionally image files
+ */
+export interface SerializedStudioFileSet {
+  /** Metadata filename (e.g., "mountain-sunset-abc123.studio.md") */
+  metadataFilename: string
+  /** Metadata file content with YAML frontmatter */
+  metadataContent: string
+  /** Subdirectory path (e.g., "studio") */
+  directory: string
+  /** Image files to write */
+  imageFiles: {
+    filename: string
+    content: string
+    isBase64: boolean
+  }[]
+}
+
+/**
  * Serializer interface for all entity types
  */
 export interface Serializer<T> {

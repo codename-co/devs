@@ -2,6 +2,7 @@ import { Navigate, Outlet, Route, Routes, useParams } from 'react-router-dom'
 
 import { LocalLLMLoadingIndicator } from '@/components'
 import { defaultLang, I18nProvider, Lang, langs } from '@/i18n'
+import { StudioPage } from '@/features/studio/pages/StudioPage'
 import { IndexPage } from '@/pages/Index'
 import { DatabasePage } from '@/pages/admin/Database'
 import { AgentsNewPage } from '@/pages/Agents/new'
@@ -25,6 +26,7 @@ import { SettingsPage } from '@/pages/Settings'
 import { TaskPage } from '@/pages/Tasks/show'
 import { TasksPage } from '@/pages/Tasks'
 import { VoicePage } from '@/pages/Voice'
+import { ArenaPage } from '@/pages/Arena'
 
 /**
  * Redirect component for /connectors -> /knowledge/connectors
@@ -38,12 +40,15 @@ const routes = {
   'agents/run': AgentRunPage,
   'agents/new': AgentsNewPage,
   'agents/start': AgentsStartPage,
+  arena: ArenaPage,
+  'arena/match/:battleId': ArenaPage,
   // Redirect /connectors to /knowledge/connectors
   connectors: ConnectorsRedirect,
   conversations: ConversationPage,
   demo: DemoPage,
   'demo/diagram': DiagramPage,
   'demo/html': HTMLdemoPage,
+  studio: StudioPage,
   knowledge: KnowledgePage,
   'knowledge/files': KnowledgePage,
   'knowledge/connectors': KnowledgePage,

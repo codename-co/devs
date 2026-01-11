@@ -284,4 +284,85 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     icon: 'Server',
     requiresBaseUrl: true,
   },
+  // Image generation providers
+  {
+    provider: 'stability',
+    name: 'Stability AI',
+    models: [
+      'stable-image-ultra',
+      'stable-image-core',
+      'stable-diffusion-xl-1024-v1-0',
+      'stable-diffusion-v1-6',
+    ],
+    icon: 'SparksSolid',
+    apiKeyPage: 'https://platform.stability.ai/account/keys',
+    moreDetails: () => (
+      <Alert variant="faded">
+        <div className="flex flex-col gap-2">
+          <p className="font-medium">Image Generation Provider</p>
+          <p className="text-sm text-default-600">
+            Stability AI provides Stable Diffusion models for high-quality image
+            generation.
+          </p>
+        </div>
+      </Alert>
+    ),
+  },
+  {
+    provider: 'together',
+    name: 'Together AI',
+    models: [
+      'black-forest-labs/FLUX.1.1-pro',
+      'black-forest-labs/FLUX.1-dev',
+      'black-forest-labs/FLUX.1-schnell',
+      'stabilityai/stable-diffusion-xl-base-1.0',
+    ],
+    icon: 'Puzzle',
+    apiKeyPage: 'https://api.together.xyz/settings/api-keys',
+    moreDetails: () => (
+      <Alert variant="faded">
+        <div className="flex flex-col gap-2">
+          <p className="font-medium">Image Generation Provider</p>
+          <p className="text-sm text-default-600">
+            Together AI provides FLUX and Stable Diffusion models for image
+            generation.
+          </p>
+        </div>
+      </Alert>
+    ),
+  },
+  {
+    provider: 'fal',
+    name: 'Fal.ai',
+    models: ['fal-ai/flux-pro', 'fal-ai/flux/dev', 'fal-ai/flux/schnell'],
+    icon: 'LightBulbOn',
+    apiKeyPage: 'https://fal.ai/dashboard/keys',
+    moreDetails: () => (
+      <Alert variant="faded">
+        <div className="flex flex-col gap-2">
+          <p className="font-medium">Image Generation Provider</p>
+          <p className="text-sm text-default-600">
+            Fal.ai provides fast FLUX models for image generation.
+          </p>
+        </div>
+      </Alert>
+    ),
+  },
+  {
+    provider: 'replicate',
+    name: 'Replicate',
+    models: ['stability-ai/sdxl', 'bytedance/sdxl-lightning-4step'],
+    icon: 'RefreshDouble',
+    apiKeyPage: 'https://replicate.com/account/api-tokens',
+    moreDetails: () => (
+      <Alert variant="faded">
+        <div className="flex flex-col gap-2">
+          <p className="font-medium">Image Generation Provider</p>
+          <p className="text-sm text-default-600">
+            Replicate provides various image generation models including SDXL.
+          </p>
+        </div>
+      </Alert>
+    ),
+  },
 ]

@@ -39,6 +39,11 @@ const PROVIDER_SCOPES: Record<AppConnectorProvider, string[]> = {
   'google-drive': ['https://www.googleapis.com/auth/drive.readonly'],
   gmail: ['https://www.googleapis.com/auth/gmail.readonly'],
   'google-calendar': ['https://www.googleapis.com/auth/calendar.readonly'],
+  'google-meet': [
+    'https://www.googleapis.com/auth/calendar.readonly',
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+  ],
   notion: [], // Notion handles scopes differently via their OAuth integration settings
   dropbox: ['files.content.read', 'files.metadata.read'],
   github: ['repo', 'read:user'],
@@ -49,7 +54,7 @@ const PROVIDER_SCOPES: Record<AppConnectorProvider, string[]> = {
  * Providers in the same group can potentially reuse account information
  */
 const SHARED_ACCOUNT_GROUPS: AppConnectorProvider[][] = [
-  ['google-drive', 'gmail', 'google-calendar'], // Google services share account
+  ['google-drive', 'gmail', 'google-calendar', 'google-meet'], // Google services share account
 ]
 
 // =============================================================================

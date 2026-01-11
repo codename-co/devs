@@ -24,6 +24,7 @@ export type AppConnectorProvider =
   | 'google-drive'
   | 'gmail'
   | 'google-calendar'
+  | 'google-meet'
   | 'notion'
   | 'dropbox'
   | 'github'
@@ -525,6 +526,17 @@ export const APP_CONNECTOR_CONFIGS: Record<
     supportedTypes: ['event'],
     maxFileSize: 1024 * 1024,
     rateLimit: { requests: 500, windowSeconds: 100 },
+  },
+  'google-meet': {
+    id: 'google-meet',
+    category: 'app',
+    name: 'Google Meet',
+    icon: 'google-meet',
+    color: '#00897B',
+    capabilities: ['read'],
+    supportedTypes: ['meeting'],
+    maxFileSize: 0,
+    rateLimit: { requests: 100, windowSeconds: 60 },
   },
   notion: {
     id: 'notion',

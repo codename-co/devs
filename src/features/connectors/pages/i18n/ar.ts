@@ -95,8 +95,7 @@ export const ar: I18n = {
   'Connected!': 'تم الاتصال!',
   'Successfully connected!': 'تم الاتصال بنجاح!',
   '{name} has been connected to your knowledge base.':
-    'تم توصيل {name} بقاعدة معرفتك.',
-  '{name} has been connected to your knowledge base. Files will begin syncing shortly.':
+    'تم توصيل {name} بقاعدة معرفتك.',  '{name} has been connected.': 'تم توصيل {name}.',  '{name} has been connected to your knowledge base. Files will begin syncing shortly.':
     'تم توصيل {name} بقاعدة معرفتك. ستبدأ مزامنة الملفات قريباً.',
   '{name} has been successfully connected': 'تم توصيل {name} بنجاح',
   '{name} connected successfully': 'تم توصيل {name} بنجاح',

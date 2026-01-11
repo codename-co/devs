@@ -158,6 +158,11 @@ export type LLMProvider =
   | 'huggingface'
   | 'openai-compatible'
   | 'custom'
+  // Image generation providers
+  | 'stability'
+  | 'replicate'
+  | 'together'
+  | 'fal'
 
 export interface LLMConfig {
   provider: LLMProvider

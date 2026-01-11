@@ -83,6 +83,18 @@ const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
     ],
     pkceRequired: true,
   },
+  'google-meet': {
+    authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+    tokenUrl: 'https://oauth2.googleapis.com/token',
+    clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
+    clientSecret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET || '',
+    scopes: [
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'https://www.googleapis.com/auth/calendar.readonly',
+    ],
+    pkceRequired: true,
+  },
   notion: {
     authUrl: 'https://api.notion.com/v1/oauth/authorize',
     // Use proxy in development to avoid CORS, direct URL in production (requires backend proxy)

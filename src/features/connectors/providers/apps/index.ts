@@ -24,6 +24,8 @@ export const PROVIDER_CONFIG: Partial<
       icon: IconName
       color: string
       description: string
+      /** Whether this provider supports syncing content to the Knowledge Base */
+      syncSupported?: boolean
     }
   >
 > = {
@@ -32,24 +34,35 @@ export const PROVIDER_CONFIG: Partial<
     icon: 'GoogleDrive',
     color: '#4285f4',
     description: 'Sync files and folders from Google Drive',
+    syncSupported: true,
   },
   gmail: {
     name: 'Gmail',
     icon: 'Gmail',
     color: '#ea4335',
     description: 'Sync emails from Gmail',
+    syncSupported: true,
   },
   'google-calendar': {
     name: 'Google Calendar',
     icon: 'GoogleCalendar',
     color: '#34a853',
     description: 'Sync calendar events',
+    syncSupported: false,
   },
   notion: {
     name: 'Notion',
     icon: 'Notion',
     color: 'currentColor',
     description: 'Sync pages and databases from Notion',
+    syncSupported: true,
+  },
+  'google-meet': {
+    name: 'Google Meet',
+    icon: 'GoogleMeet',
+    color: '#00897B',
+    description: 'Join meetings with AI agents',
+    syncSupported: false,
   },
   // dropbox: {
   //   name: 'Dropbox',
@@ -73,6 +86,7 @@ export const AVAILABLE_PROVIDERS: AppConnectorProvider[] = [
   'google-drive',
   'gmail',
   'google-calendar',
+  'google-meet',
   'notion',
 ]
 
@@ -100,6 +114,11 @@ export const googleCalendar = () => import('./google-calendar')
  */
 export const notion = () => import('./notion')
 
+/**
+ * Lazy-load Google Meet provider
+ */
+export const googleMeet = () => import('./google-meet')
+
 // =============================================================================
 // Default Export
 // =============================================================================
@@ -108,6 +127,7 @@ export default {
   googleDrive,
   gmail,
   googleCalendar,
+  googleMeet,
   notion,
   PROVIDER_CONFIG,
   AVAILABLE_PROVIDERS,

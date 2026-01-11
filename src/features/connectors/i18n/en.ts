@@ -20,6 +20,10 @@ export const en = [
   'Google Calendar',
   'Import events and schedules',
 
+  // Providers - Google Meet
+  'Google Meet',
+  'Join meetings with AI agents',
+
   // Providers - Notion
   'Notion',
   'Import pages and databases from Notion',
@@ -44,6 +48,8 @@ export const en = [
   'Select folders to sync',
   'Sync all content',
   'Successfully connected!',
+  '{name} has been connected to your knowledge base.',
+  '{name} has been connected.',
   'Start Sync Now',
   'Done',
   'Try Again',

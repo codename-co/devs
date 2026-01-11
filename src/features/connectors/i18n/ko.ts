@@ -26,6 +26,10 @@ export const ko: I18n = {
   'Google Calendar': 'Google 캘린더',
   'Import events and schedules': '일정과 스케줄 가져오기',
 
+  // Providers - Google Meet
+  'Google Meet': 'Google Meet',
+  'Join meetings with AI agents': 'AI 에이전트와 함께 회의 참여',
+
   // Providers - Notion
   Notion: 'Notion',
   'Import pages and databases from Notion':
@@ -50,8 +54,9 @@ export const ko: I18n = {
   'Connecting to {provider}...': '{provider}에 연결 중...',
   'Select folders to sync': '동기화할 폴더 선택',
   'Sync all content': '모든 콘텐츠 동기화',
-  'Successfully connected!': '연결 성공!',
-  'Start Sync Now': '동기화 시작',
+  'Successfully connected!': '연결 성공!',  '{name} has been connected to your knowledge base.':
+    '{name}이(가) 지식 베이스에 연결되었습니다.',
+  '{name} has been connected.': '{name}이(가) 연결되었습니다.',  'Start Sync Now': '동기화 시작',
   Done: '완료',
   'Try Again': '다시 시도',
 

@@ -12,10 +12,6 @@ import {
   DropdownTrigger,
   Dropdown,
   DropdownSection,
-  Modal,
-  ModalContent,
-  ModalBody,
-  ModalHeader,
   Popover,
   PopoverTrigger,
   PopoverContent,
@@ -28,18 +24,15 @@ import { Icon } from './Icon'
 import { Title } from './Title'
 import { ProgressIndicator } from './ProgressIndicator'
 import { AboutModal } from './AboutModal'
-import { SettingsModal } from './SettingsModal'
 import {
   GlobalSearch,
   useGlobalSearchShortcut,
   useSearchStore,
 } from '@/features/search'
-import { SyncSettings } from '@/features/sync'
 import { PRODUCT } from '@/config/product'
 import clsx from 'clsx'
 import { useState, useEffect, memo } from 'react'
 import { cn, isCurrentPath } from '@/lib/utils'
-import { useSyncStore } from '@/features/sync'
 import { useNavigate } from 'react-router-dom'
 
 const AgentList = () => {
@@ -246,7 +239,6 @@ const BackDrop = () => (
 
 export const AppDrawer = memo(() => {
   const isCollapsed = userSettings((state) => state.isDrawerCollapsed)
-  const [showSettingsModal, setShowSettingsModal] = useState(false)
 
   const openSearch = useSearchStore((state) => state.open)
 
@@ -286,21 +278,10 @@ export const AppDrawer = memo(() => {
       >
         <CollapsedDrawer
           className="drawer-collapsed"
-          onOpenSettings={() => setShowSettingsModal(true)}
           onOpenSearch={openSearch}
         />
-        <ExpandedDrawer
-          className="drawer-expanded"
-          onOpenSettings={() => setShowSettingsModal(true)}
-          onOpenSearch={openSearch}
-        />
+        <ExpandedDrawer className="drawer-expanded" onOpenSearch={openSearch} />
         {!isCollapsed && isMobile && <BackDrop />}
-
-        {/* Settings Modal - rendered at AppDrawer level */}
-        <SettingsModal
-          isOpen={showSettingsModal}
-          onClose={() => setShowSettingsModal(false)}
-        />
 
         {/* Global Search Modal - rendered at AppDrawer level */}
         <GlobalSearch />
@@ -332,11 +313,9 @@ AppDrawer.displayName = 'AppDrawer'
 
 const CollapsedDrawer = ({
   className,
-  onOpenSettings: _onOpenSettings,
   onOpenSearch,
 }: {
   className?: string
-  onOpenSettings: () => void
   onOpenSearch: () => void
 }) => {
   const { lang, t } = useI18n()
@@ -411,6 +390,52 @@ const CollapsedDrawer = ({
                 <Icon name="Sparks" />
               </Button>
             </Tooltip>
+            <Tooltip content={t('Studio')} placement="right">
+              <Button
+                as={Link}
+                href={url('/studio')}
+                isIconOnly
+                variant="light"
+                className={cn(
+                  'w-full text-pink-500 dark:text-pink-400 [.is-active]:bg-default-100',
+                  isCurrentPath('/studio') && 'is-active',
+                )}
+                aria-label={t('Studio')}
+              >
+                <Icon name="MediaImagePlus" />
+              </Button>
+            </Tooltip>
+            <Tooltip content={t('Voice')} placement="right">
+              <Button
+                as={Link}
+                href={url('/voice')}
+                isIconOnly
+                variant="light"
+                className={cn(
+                  'w-full text-cyan-500 dark:text-cyan-400 [.is-active]:bg-default-100',
+                  isCurrentPath('/voice') && 'is-active',
+                )}
+                aria-label={t('Voice')}
+              >
+                <Icon name="Voice" />
+              </Button>
+            </Tooltip>
+            <Tooltip content={t('Tasks')} placement="right">
+              <Button
+                as={Link}
+                href={url('/tasks')}
+                isIconOnly
+                color="secondary"
+                variant="light"
+                className={cn(
+                  'w-full text-secondary-600 [.is-active]:bg-default-100',
+                  isCurrentPath('/tasks') && 'is-active',
+                )}
+                aria-label={t('Tasks')}
+              >
+                <Icon name="TriangleFlagTwoStripes" />
+              </Button>
+            </Tooltip>
             <Tooltip content={t('Knowledge')} placement="right">
               <Button
                 as={Link}
@@ -443,20 +468,20 @@ const CollapsedDrawer = ({
                 <Icon name="Strategy" />
               </Button>
             </Tooltip>
-            <Tooltip content={t('Tasks')} placement="right">
+            <Tooltip content={t('Arena')} placement="right">
               <Button
                 as={Link}
-                href={url('/tasks')}
+                href={url('/arena')}
                 isIconOnly
-                color="secondary"
+                color="warning"
                 variant="light"
                 className={cn(
-                  'w-full text-secondary-600 [.is-active]:bg-default-100',
-                  isCurrentPath('/tasks') && 'is-active',
+                  'w-full text-amber-500 [.is-active]:bg-default-100',
+                  isCurrentPath('/arena') && 'is-active',
                 )}
-                aria-label={t('Tasks')}
+                aria-label={t('Arena')}
               >
-                <Icon name="TriangleFlagTwoStripes" />
+                <Icon name="Crown" />
               </Button>
             </Tooltip>
             {/* <Tooltip content={t('Teams')} placement="right">
@@ -516,11 +541,9 @@ const CollapsedDrawer = ({
 
 const ExpandedDrawer = ({
   className,
-  onOpenSettings,
   onOpenSearch,
 }: {
   className?: string
-  onOpenSettings: () => void
   onOpenSearch: () => void
 }) => {
   const { lang, t } = useI18n()
@@ -531,11 +554,7 @@ const ExpandedDrawer = ({
   const setTheme = userSettings((state) => state.setTheme)
   const setLanguage = userSettings((state) => state.setLanguage)
   const [showAboutModal, setShowAboutModal] = useState(false)
-  const [showSyncModal, setShowSyncModal] = useState(false)
   const [isLanguagePopoverOpen, setIsLanguagePopoverOpen] = useState(false)
-
-  // Sync state for indicator
-  const { enabled: syncEnabled, status: syncStatus, peerCount } = useSyncStore()
 
   return (
     <div
@@ -649,6 +668,82 @@ const ExpandedDrawer = ({
                 {t('Agents')}
               </ListboxItem>
               <ListboxItem
+                href={url('/studio')}
+                variant="faded"
+                className={cn(
+                  '[.is-active]:bg-default-100',
+                  isCurrentPath('/studio') && 'is-active',
+                )}
+                startContent={
+                  <Icon
+                    name="MediaImagePlus"
+                    className="text-pink-500 dark:text-pink-400"
+                  />
+                }
+              >
+                {t('Studio')}
+              </ListboxItem>
+              <ListboxItem
+                href={url('/voice')}
+                variant="faded"
+                className={cn(
+                  '[.is-active]:bg-default-100',
+                  isCurrentPath('/voice') && 'is-active',
+                )}
+                startContent={
+                  <Icon
+                    name="Voice"
+                    className="text-cyan-500 dark:text-cyan-400"
+                  />
+                }
+              >
+                {t('Voice')}
+              </ListboxItem>
+              <ListboxItem
+                href={url('/tasks')}
+                variant="faded"
+                color="secondary"
+                className={cn(
+                  'dark:text-gray-200 dark:hover:text-secondary-600 [.is-active]:bg-default-100',
+                  isCurrentPath('/tasks') && 'is-active',
+                )}
+                startContent={
+                  <Icon
+                    name="TriangleFlagTwoStripes"
+                    className="text-secondary dark:text-secondary-600"
+                  />
+                }
+                // endContent={
+                //   <Tooltip content={t('New Task')} placement="right">
+                //     <span
+                //       role="button"
+                //       tabIndex={0}
+                //       className="inline-flex items-center justify-center w-6 h-6 rounded-small bg-secondary/20 text-secondary hover:bg-secondary/30 cursor-pointer transition-colors"
+                //       aria-label={t('New Task')}
+                //       onClick={(e) => {
+                //         e.preventDefault()
+                //         e.stopPropagation()
+                //         navigate(url(''))
+                //       }}
+                //       onKeyDown={(e) => {
+                //         if (e.key === 'Enter' || e.key === ' ') {
+                //           e.preventDefault()
+                //           e.stopPropagation()
+                //           navigate(url(''))
+                //         }
+                //       }}
+                //     >
+                //       <Icon name="Plus" />
+                //     </span>
+                //   </Tooltip>
+                // }
+              >
+                {t('Tasks')}
+              </ListboxItem>
+            </ListboxSection>
+
+            <ListboxSection showDivider>
+              <ListboxItem
                 href={url('/knowledge')}
                 variant="faded"
                 color="primary"
@@ -702,45 +797,16 @@ const ExpandedDrawer = ({
                 {t('Methodologies')}
               </ListboxItem>
               <ListboxItem
-                href={url('/tasks')}
+                href={url('/arena')}
                 variant="faded"
-                color="secondary"
+                color="warning"
                 className={cn(
-                  'dark:text-gray-200 dark:hover:text-secondary-600 [.is-active]:bg-default-100',
-                  isCurrentPath('/tasks') && 'is-active',
+                  'dark:text-gray-200 dark:hover:text-amber-500 [.is-active]:bg-default-100',
+                  isCurrentPath('/arena') && 'is-active',
                 )}
-                startContent={
-                  <Icon
-                    name="TriangleFlagTwoStripes"
-                    className="text-secondary dark:text-secondary-600"
-                  />
-                }
-                // endContent={
-                //   <Tooltip content={t('New Task')} placement="right">
-                //     <span
-                //       role="button"
-                //       tabIndex={0}
-                //       className="inline-flex items-center justify-center w-6 h-6 rounded-small bg-secondary/20 text-secondary hover:bg-secondary/30 cursor-pointer transition-colors"
-                //       aria-label={t('New Task')}
-                //       onClick={(e) => {
-                //         e.preventDefault()
-                //         e.stopPropagation()
-                //         navigate(url(''))
-                //       }}
-                //       onKeyDown={(e) => {
-                //         if (e.key === 'Enter' || e.key === ' ') {
-                //           e.preventDefault()
-                //           e.stopPropagation()
-                //           navigate(url(''))
-                //         }
-                //       }}
-                //     >
-                //       <Icon name="Plus" />
-                //     </span>
-                //   </Tooltip>
-                // }
+                startContent={<Icon name="Crown" className="text-amber-500" />}
               >
-                {t('Tasks')}
+                {t('Arena')}
               </ListboxItem>
 
               {/* <ListboxItem
@@ -812,23 +878,6 @@ const ExpandedDrawer = ({
           isOpen={showAboutModal}
           onClose={() => setShowAboutModal(false)}
         />
-
-        {/* Sync Modal */}
-        <Modal
-          size="3xl"
-          scrollBehavior="inside"
-          placement="bottom-center"
-          isOpen={showSyncModal}
-          onClose={() => setShowSyncModal(false)}
-          backdrop="blur"
-        >
-          <ModalContent>
-            <ModalHeader>{t('Synchronization')}</ModalHeader>
-            <ModalBody className="pb-6">
-              <SyncSettings />
-            </ModalBody>
-          </ModalContent>
-        </Modal>
 
         {/* Language Selector Popover */}
         <Popover
@@ -913,23 +962,6 @@ const ExpandedDrawer = ({
             </Button>
           </Tooltip>
 
-          {/* Settings */}
-          <Tooltip content={t('Settings')} placement="top">
-            <Button
-              isIconOnly
-              variant="light"
-              size="sm"
-              onPress={onOpenSettings}
-              aria-label={t('Settings')}
-            >
-              <Icon
-                name="Settings"
-                className="text-gray-500 dark:text-gray-400"
-                size="sm"
-              />
-            </Button>
-          </Tooltip>
-
           {/* More Menu */}
           <Dropdown placement="top-end">
             <DropdownTrigger>
@@ -948,45 +980,6 @@ const ExpandedDrawer = ({
             </DropdownTrigger>
             <DropdownMenu aria-label={t('More')}>
               <DropdownSection showDivider>
-                <DropdownItem
-                  key="sync"
-                  startContent={
-                    <span className="relative">
-                      {syncEnabled && (
-                        <span
-                          className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full ${
-                            syncStatus === 'connected'
-                              ? peerCount > 0
-                                ? 'bg-success'
-                                : 'bg-warning'
-                              : 'bg-default-400'
-                          }`}
-                        />
-                      )}
-                      <Icon
-                        name={syncEnabled ? 'CloudSync' : 'CloudXmark'}
-                        size="sm"
-                      />
-                    </span>
-                  }
-                  endContent={
-                    <span className="text-tiny text-default-400 flex items-center gap-1">
-                      {syncEnabled
-                        ? syncStatus === 'connected'
-                          ? t('Syncing')
-                          : t('Connecting...')
-                        : t('Offline')}
-                      <Icon
-                        name="NavArrowRight"
-                        size="sm"
-                        className="w-3 h-3"
-                      />
-                    </span>
-                  }
-                  onPress={() => setShowSyncModal(true)}
-                >
-                  {t('Sync')}
-                </DropdownItem>
                 <DropdownItem
                   key="language"
                   startContent={<Icon name="Language" size="sm" />}

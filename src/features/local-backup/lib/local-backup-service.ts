@@ -12,12 +12,14 @@
  */
 import { db, Database } from '@/lib/db'
 import type { Agent, Conversation } from '@/types'
+import type { StudioEntry } from '@/features/studio/types'
 import {
   agentSerializer,
   conversationSerializer,
   memorySerializer,
   knowledgeSerializer,
   taskSerializer,
+  studioSerializer,
 } from './serializers'
 import type { Serializer, SerializeContext } from './serializers/types'
 
@@ -26,6 +28,12 @@ const WRITE_DEBOUNCE_MS = 1000
 
 // Sync interval for checking file changes (ms)
 const SYNC_INTERVAL_MS = 30000
+
+// Maximum concurrent file operations for parallel processing
+const MAX_CONCURRENT_WRITES = 10
+
+// LocalStorage key for persisting file hashes across sessions
+const HASH_CACHE_KEY = 'devs-local-backup-hashes'
 
 export interface FolderSyncConfig {
   id: string
@@ -40,6 +48,7 @@ export interface FolderSyncConfig {
   syncMemories: boolean
   syncKnowledge: boolean
   syncTasks: boolean
+  syncStudio: boolean
   syncFullExport: boolean
 }
 
@@ -51,7 +60,7 @@ export interface FolderSyncEvent {
     | 'file_read'
     | 'file_deleted'
     | 'sync_error'
-  entityType?: 'agent' | 'conversation' | 'memory' | 'knowledge' | 'task'
+  entityType?: 'agent' | 'conversation' | 'memory' | 'knowledge' | 'task' | 'studio'
   entityId?: string
   filename?: string
   error?: string
@@ -69,6 +78,65 @@ class FolderSyncService {
   private fileHashes: Map<string, string> = new Map()
   private isSyncing = false
   private agentSlugCache: Map<string, string> = new Map() // agentId -> slug
+  private dirtyEntities: Set<string> = new Set() // Track entities that need sync
+  private hashCacheLoaded = false
+
+  /**
+   * Load persisted hash cache from localStorage
+   */
+  private loadHashCache(): void {
+    if (this.hashCacheLoaded) return
+    try {
+      const cached = localStorage.getItem(HASH_CACHE_KEY)
+      if (cached) {
+        const parsed = JSON.parse(cached) as Record<string, string>
+        this.fileHashes = new Map(Object.entries(parsed))
+      }
+      this.hashCacheLoaded = true
+    } catch (error) {
+      console.warn('Failed to load hash cache:', error)
+    }
+  }
+
+  /**
+   * Persist hash cache to localStorage (debounced)
+   */
+  private persistHashCacheDebounced = this.debounce(() => {
+    try {
+      const obj = Object.fromEntries(this.fileHashes)
+      localStorage.setItem(HASH_CACHE_KEY, JSON.stringify(obj))
+    } catch (error) {
+      console.warn('Failed to persist hash cache:', error)
+    }
+  }, 5000)
+
+  /**
+   * Simple debounce utility
+   */
+  private debounce<T extends (...args: unknown[]) => void>(
+    fn: T,
+    delay: number,
+  ): T {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+    return ((...args: unknown[]) => {
+      if (timeoutId) clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => fn(...args), delay)
+    }) as T
+  }
+
+  /**
+   * Mark an entity as dirty (needs sync)
+   */
+  markDirty(entityType: string, entityId: string): void {
+    this.dirtyEntities.add(`${entityType}:${entityId}`)
+  }
+
+  /**
+   * Clear dirty flag for an entity
+   */
+  private clearDirty(entityType: string, entityId: string): void {
+    this.dirtyEntities.delete(`${entityType}:${entityId}`)
+  }
 
   /**
    * Build agent slug lookup context for serialization
@@ -99,6 +167,7 @@ class FolderSyncService {
       syncMemories?: boolean
       syncKnowledge?: boolean
       syncTasks?: boolean
+      syncStudio?: boolean
       syncFullExport?: boolean
     } = {},
   ): Promise<FolderSyncConfig> {
@@ -122,6 +191,7 @@ class FolderSyncService {
       syncMemories: options.syncMemories ?? true,
       syncKnowledge: options.syncKnowledge ?? true,
       syncTasks: options.syncTasks ?? true,
+      syncStudio: options.syncStudio ?? true,
       syncFullExport: options.syncFullExport ?? true,
     }
 
@@ -171,6 +241,7 @@ class FolderSyncService {
     syncMemories?: boolean
     syncKnowledge?: boolean
     syncTasks?: boolean
+    syncStudio?: boolean
     syncFullExport?: boolean
   }): void {
     if (!this.config) return
@@ -185,6 +256,8 @@ class FolderSyncService {
       this.config.syncKnowledge = options.syncKnowledge
     if (options.syncTasks !== undefined)
       this.config.syncTasks = options.syncTasks
+    if (options.syncStudio !== undefined)
+      this.config.syncStudio = options.syncStudio
     if (options.syncFullExport !== undefined)
       this.config.syncFullExport = options.syncFullExport
   }
@@ -237,6 +310,20 @@ class FolderSyncService {
   }
 
   /**
+   * Process items in parallel batches
+   */
+  private async processInParallelBatches<T>(
+    items: T[],
+    processor: (item: T) => Promise<void>,
+    batchSize: number = MAX_CONCURRENT_WRITES,
+  ): Promise<void> {
+    for (let i = 0; i < items.length; i += batchSize) {
+      const batch = items.slice(i, i + batchSize)
+      await Promise.all(batch.map(processor))
+    }
+  }
+
+  /**
    * Sync database to files (export)
    */
   async syncToFiles(): Promise<void> {
@@ -245,63 +332,85 @@ class FolderSyncService {
     this.isSyncing = true
     this.emitEvent({ type: 'sync_start' })
 
+    // Load persisted hashes to avoid re-writing unchanged files
+    this.loadHashCache()
+
     try {
       // Build context with agent slug lookups
       const context = await this.buildSerializeContext()
 
-      // Sync agents
+      // Sync agents in parallel batches
       if (this.config.syncAgents) {
         const agents = await db.getAll('agents')
-        for (const agent of agents) {
-          if (!agent.deletedAt) {
-            await this.writeEntityToFile(agent, agentSerializer)
-          }
-        }
+        const activeAgents = agents.filter((a) => !a.deletedAt)
+        await this.processInParallelBatches(activeAgents, async (agent) => {
+          await this.writeEntityToFile(agent, agentSerializer)
+          this.clearDirty('agent', agent.id)
+        })
       }
 
-      // Sync conversations
+      // Sync conversations in parallel batches
       if (this.config.syncConversations) {
         const conversations = await db.getAll('conversations')
-        for (const conversation of conversations) {
-          await this.writeEntityToFile(
-            conversation,
-            conversationSerializer,
-            context,
-          )
-        }
+        await this.processInParallelBatches(
+          conversations,
+          async (conversation) => {
+            await this.writeEntityToFile(
+              conversation,
+              conversationSerializer,
+              context,
+            )
+            this.clearDirty('conversation', conversation.id)
+          },
+        )
       }
 
-      // Sync memories
+      // Sync memories in parallel batches
       if (this.config.syncMemories) {
         const memories = await db.getAll('agentMemories')
-        for (const memory of memories) {
+        await this.processInParallelBatches(memories, async (memory) => {
           await this.writeEntityToFile(memory, memorySerializer, context)
-        }
+          this.clearDirty('memory', memory.id)
+        })
       }
 
-      // Sync knowledge items
+      // Sync knowledge items in parallel batches
       if (this.config.syncKnowledge) {
         const knowledgeItems = await db.getAll('knowledgeItems')
-        for (const item of knowledgeItems) {
-          // Only sync file-type items with content or transcript
-          if (item.type === 'file' && (item.content || item.transcript)) {
-            await this.writeKnowledgeItemToFiles(item)
-          }
-        }
+        const fileItems = knowledgeItems.filter(
+          (item) => item.type === 'file' && (item.content || item.transcript),
+        )
+        await this.processInParallelBatches(fileItems, async (item) => {
+          await this.writeKnowledgeItemToFiles(item)
+          this.clearDirty('knowledge', item.id)
+        })
       }
 
-      // Sync tasks
+      // Sync tasks in parallel batches
       if (this.config.syncTasks) {
         const tasks = await db.getAll('tasks')
-        for (const task of tasks) {
+        await this.processInParallelBatches(tasks, async (task) => {
           await this.writeEntityToFile(task, taskSerializer)
-        }
+          this.clearDirty('task', task.id)
+        })
+      }
+
+      // Sync studio entries in parallel batches
+      if (this.config.syncStudio) {
+        const studioEntries = await db.getAll('studioEntries')
+        await this.processInParallelBatches(studioEntries, async (entry) => {
+          await this.writeStudioEntryToFiles(entry)
+          this.clearDirty('studio', entry.id)
+        })
       }
 
       // Export full database to root
       if (this.config.syncFullExport) {
         await this.writeFullDatabaseExport()
       }
+
+      // Persist hash cache for future sessions
+      this.persistHashCacheDebounced()
 
       this.config.lastSync = new Date()
       this.emitEvent({ type: 'sync_complete' })
@@ -377,6 +486,11 @@ class FolderSyncService {
         await this.readTasksFromFiles()
       }
 
+      // Read studio entries
+      if (this.config.syncStudio) {
+        await this.readStudioEntriesFromFiles()
+      }
+
       this.config.lastSync = new Date()
       this.emitEvent({ type: 'sync_complete' })
     } catch (error) {
@@ -420,8 +534,9 @@ class FolderSyncService {
       await writable.write(serialized.content)
       await writable.close()
 
-      // Update hash cache
+      // Update hash cache and trigger debounced persistence
       this.fileHashes.set(filePath, contentHash)
+      this.persistHashCacheDebounced()
 
       this.emitEvent({
         type: 'file_written',
@@ -519,6 +634,83 @@ class FolderSyncService {
   }
 
   /**
+   * Write a studio entry to files (metadata + image files)
+   */
+  private async writeStudioEntryToFiles(entry: StudioEntry): Promise<void> {
+    if (!this.config) return
+
+    const fileSet = studioSerializer.serializeStudioFileSet(entry)
+    const metadataPath = `${fileSet.directory}/${fileSet.metadataFilename}`
+
+    // Check if metadata content has changed
+    const metadataHash = await this.hashContent(fileSet.metadataContent)
+    const metadataChanged = this.fileHashes.get(metadataPath) !== metadataHash
+
+    // Check which images have changed
+    const changedImages: typeof fileSet.imageFiles = []
+    for (const imageFile of fileSet.imageFiles) {
+      const imagePath = `${fileSet.directory}/${imageFile.filename}`
+      const imageHash = await this.hashContent(imageFile.content)
+      if (this.fileHashes.get(imagePath) !== imageHash) {
+        changedImages.push(imageFile)
+      }
+    }
+
+    if (!metadataChanged && changedImages.length === 0) {
+      return // No changes
+    }
+
+    try {
+      // Get or create the directory
+      const dirHandle = await this.getOrCreateDirectory(fileSet.directory)
+
+      // Write metadata file if changed
+      if (metadataChanged) {
+        const metadataHandle = await dirHandle.getFileHandle(
+          fileSet.metadataFilename,
+          { create: true },
+        )
+        const metadataWritable = await metadataHandle.createWritable()
+        await metadataWritable.write(fileSet.metadataContent)
+        await metadataWritable.close()
+        this.fileHashes.set(metadataPath, metadataHash)
+      }
+
+      // Write changed image files
+      for (const imageFile of changedImages) {
+        const imagePath = `${fileSet.directory}/${imageFile.filename}`
+        const imageHandle = await dirHandle.getFileHandle(imageFile.filename, {
+          create: true,
+        })
+        const imageWritable = await imageHandle.createWritable()
+
+        if (imageFile.isBase64) {
+          // Decode base64 and write as binary
+          const binaryData = this.base64ToArrayBuffer(imageFile.content)
+          await imageWritable.write(binaryData)
+        } else {
+          // Write as text (shouldn't happen for images)
+          await imageWritable.write(imageFile.content)
+        }
+
+        await imageWritable.close()
+        const imageHash = await this.hashContent(imageFile.content)
+        this.fileHashes.set(imagePath, imageHash)
+      }
+
+      this.emitEvent({
+        type: 'file_written',
+        entityType: 'studio',
+        entityId: entry.id,
+        filename: fileSet.metadataFilename,
+      })
+    } catch (error) {
+      console.error(`Failed to write studio files ${metadataPath}:`, error)
+      throw error
+    }
+  }
+
+  /**
    * Convert base64 string to ArrayBuffer
    */
   private base64ToArrayBuffer(base64: string): ArrayBuffer {
@@ -553,12 +745,24 @@ class FolderSyncService {
   }
 
   /**
-   * Write full database export to root level as JSON
+   * Compress data using native CompressionStream API (gzip)
+   */
+  private async compressGzip(data: string): Promise<ArrayBuffer> {
+    const encoder = new TextEncoder()
+    const inputBytes = encoder.encode(data)
+
+    const stream = new Blob([inputBytes]).stream()
+    const compressedStream = stream.pipeThrough(new CompressionStream('gzip'))
+    return await new Response(compressedStream).arrayBuffer()
+  }
+
+  /**
+   * Write full database export to root level as compressed gzip JSON
    */
   private async writeFullDatabaseExport(): Promise<void> {
     if (!this.config) return
 
-    const filename = 'devs-database-export.json'
+    const filename = 'devs-database-export.json.gz'
     const filePath = filename
 
     try {
@@ -582,11 +786,12 @@ class FolderSyncService {
           dbName: Database.DB_NAME,
           dbVersion: Database.DB_VERSION,
           stores: stores.length,
+          compressed: true,
         },
         ...dbData,
       }
 
-      const content = JSON.stringify(exportData, null, 2)
+      const content = JSON.stringify(exportData)
 
       // Check if content has changed
       const contentHash = await this.hashContent(content)
@@ -594,13 +799,16 @@ class FolderSyncService {
         return // No changes
       }
 
-      // Write the file at root level
+      // Compress using native CompressionStream
+      const compressedData = await this.compressGzip(content)
+
+      // Write the compressed file at root level
       const fileHandle = await this.config.directoryHandle.getFileHandle(
         filename,
         { create: true },
       )
       const writable = await fileHandle.createWritable()
-      await writable.write(content)
+      await writable.write(compressedData)
       await writable.close()
 
       // Update hash cache
@@ -977,6 +1185,127 @@ class FolderSyncService {
   }
 
   /**
+   * Read studio entries from directory with image files
+   */
+  private async readStudioEntriesFromFiles(): Promise<void> {
+    if (!this.config) return
+
+    try {
+      const studioDir = await this.config.directoryHandle.getDirectoryHandle(
+        'studio',
+        { create: false },
+      )
+
+      // Collect all files in the studio directory
+      const filesInDir = new Map<string, FileSystemFileHandle>()
+      const metadataFiles: FileSystemFileHandle[] = []
+
+      for await (const entry of studioDir.values()) {
+        if (entry.kind === 'file') {
+          const fileHandle = await studioDir.getFileHandle(entry.name)
+          filesInDir.set(entry.name, fileHandle)
+          if (entry.name.endsWith(studioSerializer.getExtension())) {
+            metadataFiles.push(fileHandle)
+          }
+        }
+      }
+
+      // Process each metadata file
+      for (const metadataHandle of metadataFiles) {
+        try {
+          const metadataFile = await metadataHandle.getFile()
+          const content = await metadataFile.text()
+
+          const fileMetadata = {
+            lastModified: new Date(metadataFile.lastModified),
+            size: metadataFile.size,
+          }
+
+          // First pass: get entry ID and image format info
+          const basicEntry = studioSerializer.deserialize(
+            content,
+            metadataFile.name,
+            fileMetadata,
+          )
+
+          if (basicEntry) {
+            // Collect image contents
+            const imageContents = new Map<string, string>()
+            
+            for (let i = 0; i < basicEntry.images.length; i++) {
+              const image = basicEntry.images[i]
+              // Construct the expected image filename
+              const imageFilename = `${this.sanitizeFilename(basicEntry.id)}-${i + 1}.${image.format}`
+              const imageHandle = filesInDir.get(imageFilename)
+              
+              if (imageHandle) {
+                const imageFile = await imageHandle.getFile()
+                const buffer = await imageFile.arrayBuffer()
+                const base64 = this.arrayBufferToBase64(buffer)
+                imageContents.set(imageFilename, base64)
+              }
+            }
+
+            // Deserialize with images
+            const entry = studioSerializer.deserializeWithImages(
+              content,
+              metadataFile.name,
+              fileMetadata,
+              imageContents,
+            )
+
+            if (entry) {
+              const existing = await db.get('studioEntries', entry.id)
+              if (!existing) {
+                await db.add('studioEntries', entry)
+              } else if (
+                new Date(entry.createdAt) > new Date(existing.createdAt)
+              ) {
+                await db.update('studioEntries', entry)
+              }
+
+              this.emitEvent({
+                type: 'file_read',
+                entityType: 'studio',
+                entityId: entry.id,
+                filename: metadataFile.name,
+              })
+            }
+          }
+        } catch (error) {
+          console.error(
+            `Failed to read studio file ${metadataHandle.name}:`,
+            error,
+          )
+        }
+      }
+    } catch (error) {
+      if ((error as DOMException).name !== 'NotFoundError') {
+        console.error('Failed to read studio directory:', error)
+      }
+    }
+  }
+
+  /**
+   * Sanitize filename for studio entry images
+   */
+  private sanitizeFilename(str: string, maxLength = 50): string {
+    const sanitized = str
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+      .slice(0, maxLength)
+
+    if (!sanitized || sanitized === '.' || sanitized === '..') {
+      return 'unnamed'
+    }
+
+    return sanitized
+  }
+
+  /**
    * Get or create a nested directory
    */
   private async getOrCreateDirectory(
@@ -1010,12 +1339,13 @@ class FolderSyncService {
    */
   private getEntityType(
     serializer: Serializer<unknown>,
-  ): 'agent' | 'conversation' | 'memory' | 'knowledge' | 'task' {
+  ): 'agent' | 'conversation' | 'memory' | 'knowledge' | 'task' | 'studio' {
     const dir = serializer.getDirectory()
     if (dir === 'agents') return 'agent'
     if (dir === 'conversations') return 'conversation'
     if (dir === 'knowledge') return 'knowledge'
     if (dir === 'tasks') return 'task'
+    if (dir === 'studio') return 'studio'
     return 'memory'
   }
 
@@ -1108,4 +1438,5 @@ export {
   memorySerializer,
   knowledgeSerializer,
   taskSerializer,
+  studioSerializer,
 }

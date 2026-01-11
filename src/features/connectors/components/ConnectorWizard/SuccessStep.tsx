@@ -47,6 +47,7 @@ export function SuccessStep({
   const { t } = useI18n(localI18n)
 
   const config = PROVIDER_CONFIG[provider]
+  const syncSupported = config?.syncSupported !== false
 
   return (
     <div className="flex flex-col items-center justify-center py-8">
@@ -62,9 +63,13 @@ export function SuccessStep({
 
       {/* Description */}
       <p className="text-default-500 text-center max-w-md mb-6">
-        {t('{name} has been connected to your knowledge base.', {
-          name: config?.name || provider,
-        })}
+        {syncSupported
+          ? t('{name} has been connected to your knowledge base.', {
+              name: config?.name || provider,
+            })
+          : t('{name} has been connected.', {
+              name: config?.name || provider,
+            })}
       </p>
 
       {/* Summary Card */}
@@ -95,18 +100,22 @@ export function SuccessStep({
             <Icon name="Check" className="w-4 h-4 text-success" />
             <span>{t('Connected and authorized')}</span>
           </div>
-          <div className="flex items-center gap-2 text-default-600">
-            <Icon name="Folder" className="w-4 h-4 text-warning" />
-            <span>
-              {selectedFolders === null
-                ? t('Syncing all files')
-                : t('{n} folders selected', { n: selectedFolders.length })}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-default-600">
-            <Icon name="RefreshDouble" className="w-4 h-4 text-primary" />
-            <span>{t('Auto-sync enabled')}</span>
-          </div>
+          {syncSupported && (
+            <>
+              <div className="flex items-center gap-2 text-default-600">
+                <Icon name="Folder" className="w-4 h-4 text-warning" />
+                    <span>
+                  {selectedFolders === null
+                    ? t('Syncing all files')
+                    : t('{n} folders selected', { n: selectedFolders.length })}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-default-600">
+                <Icon name="RefreshDouble" className="w-4 h-4 text-primary" />
+                <span>{t('Auto-sync enabled')}</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -115,10 +124,12 @@ export function SuccessStep({
         <Button variant="flat" onPress={onDone}>
           {t('Done')}
         </Button>
-        <Button color="primary" onPress={onStartSync}>
-          <Icon name="RefreshDouble" className="w-4 h-4 mr-1" />
-          {t('Start Sync Now')}
-        </Button>
+        {syncSupported && (
+          <Button color="primary" onPress={onStartSync}>
+            <Icon name="RefreshDouble" className="w-4 h-4 mr-1" />
+            {t('Start Sync Now')}
+          </Button>
+        )}
       </div>
     </div>
   )

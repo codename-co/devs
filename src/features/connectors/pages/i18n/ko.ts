@@ -96,6 +96,7 @@ export const ko: I18n = {
   'Successfully connected!': '성공적으로 연결되었습니다!',
   '{name} has been connected to your knowledge base.':
     '{name}이(가) 지식 베이스에 연결되었습니다.',
+  '{name} has been connected.': '{name}이(가) 연결되었습니다.',
   '{name} has been connected to your knowledge base. Files will begin syncing shortly.':
     '{name}이(가) 지식 베이스에 연결되었습니다. 곧 파일 동기화가 시작됩니다.',
   '{name} has been successfully connected':

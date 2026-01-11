@@ -97,6 +97,7 @@ export const fr: I18n = {
   'Successfully connected!': 'Connecté avec succès !',
   '{name} has been connected to your knowledge base.':
     '{name} a été connecté à votre base de connaissances.',
+  '{name} has been connected.': '{name} a été connecté.',
   '{name} has been connected to your knowledge base. Files will begin syncing shortly.':
     '{name} a été connecté à votre base de connaissances. La synchronisation des fichiers commencera bientôt.',
   '{name} has been successfully connected': '{name} a été connecté avec succès',
