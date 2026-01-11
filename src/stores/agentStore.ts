@@ -345,11 +345,14 @@ export interface AgentsByCategory {
   [category: string]: Agent[]
 }
 
-export async function getAgentsByCategory(lang: string = 'en'): Promise<{
+export async function getAgentsByCategory(
+  lang: string = 'en',
+  options?: { includeDefaultAgents?: boolean },
+): Promise<{
   agentsByCategory: AgentsByCategory
   orderedCategories: string[]
 }> {
-  const agents = await loadAllAgents()
+  const agents = await loadAllAgents(options)
 
   // Group agents by their first tag
   const agentsByCategory = agents.reduce((acc, agent) => {

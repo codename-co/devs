@@ -58,8 +58,9 @@ export const IndexPage = () => {
     const loadData = async () => {
       try {
         setIsLoadingAgents(true)
+        // Always include default agents on the Index page for use cases
         const { agentsByCategory, orderedCategories } =
-          await getAgentsByCategory(lang)
+          await getAgentsByCategory(lang, { includeDefaultAgents: true })
         // Flatten all agents from all categories
         const allAgents = orderedCategories.flatMap(
           (category) => agentsByCategory[category] || [],
