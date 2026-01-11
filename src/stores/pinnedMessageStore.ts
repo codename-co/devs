@@ -380,13 +380,7 @@ export async function buildPinnedContextForChat(
 
   // Build context string
   const pinnedContext = relevantPinnedMessages
-    .map((pm) => {
-      const snippet =
-        pm.content.length > 200
-          ? pm.content.substring(0, 200) + '...'
-          : pm.content
-      return `• **${pm.description}**: ${snippet}`
-    })
+    .map((pm) => `• **${pm.description}**: ${pm.content}`)
     .join('\n')
 
   return /* md */ `## Important Past Conversations

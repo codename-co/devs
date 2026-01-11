@@ -10,6 +10,8 @@ interface WaveLayer {
   color: string
   frequency: number // Wave frequency multiplier
   speed: number // Animation speed multiplier
+  horizontalDrift: number // Random horizontal drift factor
+  driftSpeed: number // Speed of horizontal drift animation
 }
 
 interface VoiceWaveformProps {
@@ -56,6 +58,8 @@ const generateWaveLayers = (): WaveLayer[] => {
       color,
       frequency: 0.8 + progress * 0.4, // Varied frequencies
       speed: 0.8 + Math.random() * 0.4, // Slightly varied speeds
+      horizontalDrift: (Math.random() - 0.5) * 40, // Random drift range (-20 to 20 pixels)
+      driftSpeed: 0.3 + Math.random() * 0.5, // Varied drift animation speeds
     })
   }
 
@@ -145,11 +149,16 @@ export function VoiceWaveform({
 
         const points: { x: number; y: number }[] = []
 
+        // Calculate horizontal drift for this layer
+        const horizontalOffset =
+          Math.sin(time * 0.0006 * layer.driftSpeed + layer.phaseOffset) *
+          layer.horizontalDrift
+
         // Generate smooth wave points
         const numPoints = 100
         for (let i = 0; i <= numPoints; i++) {
           const progress = i / numPoints
-          const x = progress * canvasWidth
+          const x = progress * canvasWidth + horizontalOffset
 
           const dataIndex = Math.floor(progress * (smoothedData.length - 1))
           const audioValue = smoothedData[dataIndex] || 128
@@ -283,7 +292,7 @@ export function VoiceWaveform({
     timeRef.current += 16
 
     // Get raw audio data
-    analyser.getByteTimeDomainData(dataArray)
+    analyser.getByteTimeDomainData(dataArray as Uint8Array<ArrayBuffer>)
 
     // Smooth the audio data
     const smoothed = smoothArray(dataArray, 12)

@@ -27,7 +27,9 @@ interface TraceStore {
   // Actions
   loadTraces: (filter?: TraceFilter) => Promise<void>
   loadTrace: (traceId: string) => Promise<void>
-  loadMetrics: (period?: 'hour' | 'day' | 'week' | 'month' | 'all') => Promise<void>
+  loadMetrics: (
+    period?: 'hour' | 'day' | 'week' | 'month' | 'all',
+  ) => Promise<void>
   loadDailyMetrics: (days?: number) => Promise<void>
   loadConfig: () => Promise<void>
   updateConfig: (config: Partial<TracingConfig>) => Promise<void>

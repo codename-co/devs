@@ -80,7 +80,7 @@ export const ko: I18n = {
   'Manage your files': '파일 관리',
   'App configuration': '앱 설정',
   'Database management': '데이터베이스 관리',
-  Traces: '트레이스',
+  'Traces and Metrics': '추적 및 메트릭',
   Admin: '관리자',
 
   // PromptArea

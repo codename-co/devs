@@ -904,7 +904,7 @@ export class ImageGenerationService {
       conversationId: context?.conversationId,
       taskId: context?.taskId,
       sessionId: context?.sessionId,
-      input: compiledPrompt.substring(0, 200),
+      input: compiledPrompt,
     })
 
     const span = TraceService.startSpan({
@@ -1052,7 +1052,7 @@ export class ImageGenerationService {
       conversationId: context?.conversationId,
       taskId: context?.taskId,
       sessionId: context?.sessionId,
-      input: compiledPrompt.substring(0, 200),
+      input: compiledPrompt,
     })
 
     const span = TraceService.startSpan({

@@ -1,5 +1,8 @@
 import { LLMProvider, LLMConfig } from '@/types'
-import { TraceService, estimateTokenUsage } from '@/features/traces/trace-service'
+import {
+  TraceService,
+  estimateTokenUsage,
+} from '@/features/traces/trace-service'
 
 export interface LLMMessageAttachment {
   type: 'image' | 'document' | 'text'
@@ -168,7 +171,7 @@ export class LLMService {
       conversationId: context?.conversationId,
       taskId: context?.taskId,
       sessionId: context?.sessionId,
-      input: messages[messages.length - 1]?.content?.substring(0, 200),
+      input: messages[messages.length - 1]?.content,
     })
 
     const span = TraceService.startSpan({
@@ -203,7 +206,7 @@ export class LLMService {
       })
       await TraceService.endTrace(trace.id, {
         status: 'completed',
-        output: response.content?.substring(0, 200),
+        output: response.content,
       })
 
       return response
@@ -243,7 +246,7 @@ export class LLMService {
       conversationId: context?.conversationId,
       taskId: context?.taskId,
       sessionId: context?.sessionId,
-      input: messages[messages.length - 1]?.content?.substring(0, 200),
+      input: messages[messages.length - 1]?.content,
     })
 
     const span = TraceService.startSpan({
@@ -291,7 +294,7 @@ export class LLMService {
       })
       await TraceService.endTrace(trace.id, {
         status: 'completed',
-        output: fullResponse.substring(0, 200),
+        output: fullResponse,
       })
     } catch (error) {
       // End span and trace with error

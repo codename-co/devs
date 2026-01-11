@@ -5,3 +5,4 @@
  */
 export { useBattle } from './useBattle'
 export { useBattleMatch } from './useBattleMatch'
+export { useCardBattle } from './useCardBattle'

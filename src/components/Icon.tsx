@@ -97,6 +97,7 @@ export const Icons = {
   ArrowLeft: IconoirIcons.ArrowLeft,
   ArrowRight: IconoirIcons.ArrowRight,
   Attachment: IconoirIcons.Attachment,
+  Shield: IconoirIcons.Shield,
   Book: IconoirIcons.Book,
   Brain: IconoirIcons.Brain,
   Calendar: IconoirIcons.Calendar,

@@ -53,7 +53,7 @@ export const ArenaPage = () => {
       color: 'text-warning-500',
     },
     title: t('Arena'),
-    subtitle: t('Agent vs Agent Competition'),
+    subtitle: t('Battle Arena'),
   }
 
   // Handle battle creation

@@ -1,416 +1,494 @@
-# Battle Arena - Agent vs Agent Competition System
+# Battle Arena - Playing Card Battle System
 
 ## Overview
 
-The Battle Arena is a competitive feature where AI agents engage in structured debates and discussions. Teams of agents face off in tournament-style elimination rounds, with a judge agent determining winners based on argument quality, reasoning, and persuasiveness.
+The Battle Arena is a gamified competitive feature where AI agents battle as collectible playing cards. Each agent is transformed into a unique card with stats, abilities, elemental types, and AI-generated artwork. Battles feature animated turn-based combat, visual effects, and tournament-style competitions.
 
 ## Core Concepts
 
-### Battle Structure
+### Card Battle Structure
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      BATTLE ARENA                           │
-├─────────────────────────────────────────────────────────────┤
-│  Team A                    VS                    Team B     │
-│  ┌─────────┐                                  ┌─────────┐   │
-│  │ Agent 1 │ ◄──────── Round 1 ────────────► │ Agent 1 │   │
-│  │ Agent 2 │ ◄──────── Round 2 ────────────► │ Agent 2 │   │
-│  │ Agent 3 │ ◄──────── Round 3 ────────────► │ Agent 3 │   │
-│  └─────────┘                                  └─────────┘   │
-│                                                             │
-│                      ┌─────────┐                            │
-│                      │  JUDGE  │                            │
-│                      └─────────┘                            │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        ⚔️ CARD BATTLE ARENA ⚔️                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│   ┌─────────────┐                  VS                  ┌─────────────┐  │
+│   │ ╔═══════╗   │                                      │ ╔═══════╗   │  │
+│   │ ║ CARD  ║   │    ⚡ Lightning Strike! ⚡           │ ║ CARD  ║   │  │
+│   │ ║ [Art] ║   │         💥 -45 HP                    │ ║ [Art] ║   │  │
+│   │ ║ HP:120║   │                                      │ ║ HP:75 ║   │  │
+│   │ ║ ⚡:3  ║   │                                      │ ║ ⚡:2  ║   │  │
+│   │ ╚═══════╝   │                                      │ ╚═══════╝   │  │
+│   │  Einstein   │                                      │   Newton    │  │
+│   │  Lv.42 ⭐⭐⭐│                                      │  Lv.38 ⭐⭐⭐│  │
+│   └─────────────┘                                      └─────────────┘  │
+│                                                                         │
+│   [🛡️ Defend]  [⚡ Charge]           Turn 5/20         [Auto ▶️]        │
+│                                                                         │
+│   ┌─────────────────────────────────────────────────────────────────┐   │
+│   │ Battle Log:                                                     │   │
+│   │ > Einstein used "Quantum Theory"! Super Effective! -45 HP       │   │
+│   │ > Newton's defense fell!                                        │   │
+│   └─────────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Key Components
+### Key Features
 
-1. **Teams**: Two competing teams (A and B) with equal number of agents
-2. **Agents**: AI agents that participate in debates
-3. **Judge**: A neutral agent that evaluates conversations and decides winners
-4. **Topic**: The subject matter for debate, defined by the user
-5. **Rounds**: Elimination rounds where agents face off
+1. **Collectible Agent Cards**: Each AI agent becomes a unique trading card
+2. **Eight Element Types**: Wisdom, Creativity, Charisma, Strategy, Nature, Spirit, Tech, Cosmic
+3. **Rarity System**: Common, Uncommon, Rare, Epic, Legendary
+4. **AI-Generated Artwork**: Card portraits generated via the Studio
+5. **Turn-Based Combat**: Strategic battles with abilities, energy, and status effects
+6. **Visual Effects**: Animated attacks, damage numbers, screen shakes
+7. **Tournament Mode**: Elimination-style competitions
+
+## Card System
+
+### Agent Card Anatomy
+
+```
+┌───────────────────────────────────┐
+│ [Einstein] ⚛️ Cosmic    Lv.50     │ ← Name, Element, Level
+├───────────────────────────────────┤
+│ ████████████████░░░░ HP: 180/200  │ ← Health Bar
+├───────────────────────────────────┤
+│                                   │
+│           [PORTRAIT]              │ ← AI-Generated Art
+│         "The Genius"              │ ← Title
+│                                   │
+├───────────────────────────────────┤
+│ ATK ████████░░░░░░ 75             │
+│ DEF ██████░░░░░░░░ 60             │ ← Base Stats
+│ SPD ████████████░░ 90             │
+├───────────────────────────────────┤
+│ ⚡⚡⚡⚡░ Energy: 4/5              │ ← Energy System
+├───────────────────────────────────┤
+│ 🔮 Relativity Warp    ⚡3  💥80   │
+│ ⚛️ Quantum Strike     ⚡2  💥50   │ ← Abilities
+│ 🛡️ Thought Shield     ⚡2  🛡️40   │
+├───────────────────────────────────┤
+│ "Imagination is more important    │
+│  than knowledge." - Flavor Text   │ ← Lore
+├───────────────────────────────────┤
+│         ⭐⭐⭐⭐⭐ LEGENDARY       │ ← Rarity
+└───────────────────────────────────┘
+```
+
+### Element Types & Effectiveness
+
+The element system creates strategic depth with rock-paper-scissors mechanics:
+
+| Element    | Icon | Strong Against     | Weak Against       |
+| ---------- | ---- | ------------------ | ------------------ |
+| Wisdom     | 📚   | Creativity, Spirit | Charisma, Tech     |
+| Creativity | 🎨   | Tech, Strategy     | Wisdom, Cosmic     |
+| Charisma   | ⭐   | Wisdom, Nature     | Strategy, Spirit   |
+| Strategy   | ♟️   | Charisma, Cosmic   | Creativity, Nature |
+| Nature     | 🌿   | Strategy, Tech     | Charisma, Spirit   |
+| Spirit     | ✨   | Nature, Charisma   | Tech, Wisdom       |
+| Tech       | ⚙️   | Spirit, Wisdom     | Creativity, Nature |
+| Cosmic     | 🌌   | Wisdom, Creativity | Strategy           |
+
+**Super Effective**: 1.5x damage
+**Not Very Effective**: 0.5x damage
+
+### Rarity Tiers
+
+| Rarity    | Base HP | Abilities | Frame     | Visual Effect    |
+| --------- | ------- | --------- | --------- | ---------------- |
+| Common    | 80      | 2         | Classic   | None             |
+| Uncommon  | 100     | 2         | Elemental | None             |
+| Rare      | 120     | 3         | Elemental | Shine            |
+| Epic      | 150     | 3         | Holo      | Holographic      |
+| Legendary | 200     | 4         | Golden    | Full Holographic |
+
+### Card Stats
+
+- **HP (Health Points)**: 50-200 based on rarity and level
+- **Attack**: 10-100, increases ability damage
+- **Defense**: 10-100, reduces incoming damage
+- **Speed**: 10-100, determines turn order
+- **Energy**: 3-5, resource for using abilities (regenerates +1/turn)
+- **Level**: 1-100, affects all stats (+1% per level)
+
+### Abilities
+
+Each card has 2-4 abilities based on rarity:
+
+```typescript
+interface CardAbility {
+  name: string // "Quantum Strike"
+  description: string // "Unleash quantum energy"
+  element: CardElement // "cosmic"
+  power: number // 20-80 base damage
+  cost: number // 1-5 energy cost
+  cooldown: number // 0-3 turns
+  effect: AbilityEffect // damage, heal, buff, debuff, etc.
+  animation: string // beam, slash, explosion, etc.
+}
+```
+
+**Effect Types:**
+
+- \`damage\`: Direct damage to opponent
+- \`heal\`: Restore HP to self
+- \`buff_attack/defense\`: Increase own stats
+- \`debuff_attack/defense\`: Reduce enemy stats
+- \`stun\`: Skip enemy turn
+- \`drain\`: Damage + heal
+- \`shield\`: Absorb damage
+- \`reflect\`: Return portion of damage
+- \`burn\`: Damage over time
+- \`confuse\`: Random targeting
 
 ## Battle Flow
 
-### Phase 1: Setup
+### Phase 1: Card Generation
 
-1. User navigates to Battle Arena page
-2. User selects agents for Team A (minimum 1, no maximum)
-3. User selects agents for Team B (must match Team A count)
-4. User selects a Judge agent
-5. User defines the battle topic/subject
-6. User can optionally configure:
-   - Number of turns per conversation (default: 8)
-   - Judging criteria (optional custom prompt)
+1. When entering Battle Arena with card mode enabled
+2. System generates cards for all selected agents:
+   - Determines element from agent personality/role
+   - Assigns rarity based on agent characteristics
+   - Generates stats appropriate to rarity
+   - Uses LLM to create thematic abilities
+   - Generates card artwork via Studio (if enabled)
 
-### Phase 2: Matchmaking
-
-```
-Round 1 Matchups (example with 4 agents per team):
-  Team A Agent 1 vs Team B Agent 1
-  Team A Agent 2 vs Team B Agent 2
-  Team A Agent 3 vs Team B Agent 3
-  Team A Agent 4 vs Team B Agent 4
-
-Winners advance to Round 2...
-```
-
-- Random or sequential pairing of agents
-- Each agent faces one opponent per round
-- Losers are eliminated from the tournament
-
-### Phase 3: Conversation Battle
-
-Each battle conversation follows this structure:
-
-1. **Opening**: First agent (randomly chosen) presents their position
-2. **Exchange**: Alternating responses between agents
-3. **Closing**: Each agent gives a final statement
-4. **Total Turns**: 8 conversation turns (4 per agent)
+### Phase 2: Battle Setup
 
 ```
-Turn 1: Agent A - Opening statement
-Turn 2: Agent B - Response and counter-argument
-Turn 3: Agent A - Rebuttal
-Turn 4: Agent B - Counter-rebuttal
-Turn 5: Agent A - New evidence/argument
-Turn 6: Agent B - Challenge and response
-Turn 7: Agent A - Closing argument
-Turn 8: Agent B - Final statement
+┌─────────────────────────────────────────────────────────────────┐
+│  ⚔️ CARD BATTLE SETUP                                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Battle Topic: [What is the nature of consciousness?]           │
+│                                                                 │
+│  ┌───────────────────┐       ┌───────────────────┐             │
+│  │     TEAM A        │       │     TEAM B        │             │
+│  │  ─────────────    │       │  ─────────────    │             │
+│  │  🃏 Einstein ⭐⭐⭐⭐│       │  🃏 Newton ⭐⭐⭐⭐ │             │
+│  │  🃏 Da Vinci ⭐⭐⭐ │       │  🃏 Hawking ⭐⭐⭐  │             │
+│  │  [+] Add Card     │       │  [+] Add Card     │             │
+│  └───────────────────┘       └───────────────────┘             │
+│                                                                 │
+│  [✨ Generate Cards]  [🎴 View Collection]  [⚔️ Start Battle]   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-### Phase 4: Judgment
+### Phase 3: Turn-Based Combat
 
-After each conversation:
+Each turn follows this sequence:
 
-1. Judge reviews the complete conversation
-2. Evaluates based on criteria:
-   - **Argument Quality**: Logical coherence, evidence, reasoning
-   - **Persuasiveness**: Ability to convince
-   - **Creativity**: Novel perspectives and insights
-   - **Responsiveness**: How well they addressed opponent's points
-3. Judge provides:
-   - Scores for each criterion (1-10)
-   - Overall winner declaration
-   - Brief justification
+1. **Turn Order**: Determined by Speed stat
+2. **Energy Recovery**: +1 energy at turn start (max 5)
+3. **Status Effects**: Apply burn damage, check stun, etc.
+4. **Action Selection**:
+   - Use an Ability (costs energy)
+   - Defend (50% damage reduction, +1 energy)
+   - Charge (+2 energy, skip attack)
+5. **Damage Calculation**:
+   ```
+   Final Damage = (Ability Power × Attack/50) × Element Modifier × Random(0.85-1.15)
+   Damage Taken = Final Damage × (100 / (100 + Defense))
+   ```
+6. **Apply Effects**: Status effects, buffs, debuffs
+7. **Check KO**: If HP ≤ 0, card is knocked out
+8. **Next Turn**: Switch to opponent
 
-### Phase 5: Elimination & Progression
+### Phase 4: Visual Battle
+
+The battle field features rich animations:
+
+- **Card Entrance**: Cards slide in with element-colored aura
+- **Attack Animations**: Beams, slashes, explosions, etc.
+- **Damage Numbers**: Float up from damaged card
+- **Screen Shake**: On critical hits
+- **Status Effects**: Visual indicators on cards
+- **KO Animation**: Card shatters and fades
+- **Victory Celebration**: Winner card glows and poses
+
+### Phase 5: Tournament Progression
 
 ```
-Tournament Bracket (8 agents example):
+Tournament Bracket (8 cards):
 
-Round 1 (8 agents):
-  Match 1: A1 vs B1 → Winner
-  Match 2: A2 vs B2 → Winner
-  Match 3: A3 vs B3 → Winner
-  Match 4: A4 vs B4 → Winner
+Round 1:
+  🃏 Einstein vs 🃏 Plato → Einstein ✓
+  🃏 Newton vs 🃏 Aristotle → Newton ✓
+  🃏 Da Vinci vs 🃏 Hawking → Da Vinci ✓
+  🃏 Tesla vs 🃏 Curie → Tesla ✓
 
-Round 2 (4 winners):
-  Match 5: Winner1 vs Winner2 → Winner
-  Match 6: Winner3 vs Winner4 → Winner
+Round 2 (Semi-finals):
+  🃏 Einstein vs 🃏 Newton → Einstein ✓
+  🃏 Da Vinci vs 🃏 Tesla → Da Vinci ✓
 
-Finals (2 winners):
-  Match 7: Winner5 vs Winner6 → CHAMPION
+Finals:
+  🃏 Einstein vs 🃏 Da Vinci → 🏆 Einstein CHAMPION
 ```
-
-### Phase 6: Victory
-
-- Final winner is declared Champion
-- Complete battle history is saved
-- Statistics and highlights are displayed
 
 ## Data Models
 
-### Battle
+### AgentCard
 
 ```typescript
-interface Battle {
+interface AgentCard {
   id: string
-  status: 'setup' | 'in_progress' | 'completed' | 'cancelled'
-  topic: string
-  judgeAgentId: string
-  turnsPerConversation: number
-  customJudgingCriteria?: string
-  teamA: BattleTeam
-  teamB: BattleTeam
-  rounds: BattleRound[]
-  championAgentId?: string
-  createdAt: Date
-  updatedAt: Date
-  completedAt?: Date
-}
-
-interface BattleTeam {
+  agentId: string
   name: string
-  agentIds: string[]
-  color?: string // For UI display
-}
-
-interface BattleRound {
-  id: string
-  roundNumber: number
-  status: 'pending' | 'in_progress' | 'completed'
-  matches: BattleMatch[]
-  startedAt?: Date
-  completedAt?: Date
-}
-
-interface BattleMatch {
-  id: string
-  status: 'pending' | 'in_progress' | 'judging' | 'completed'
-  agentAId: string
-  agentBId: string
-  conversationId?: string
-  winnerId?: string
-  judgment?: BattleJudgment
-  startedAt?: Date
-  completedAt?: Date
-}
-
-interface BattleJudgment {
-  winnerId: string
-  scores: {
-    agentId: string
-    argumentQuality: number
-    persuasiveness: number
-    creativity: number
-    responsiveness: number
-    total: number
-  }[]
-  reasoning: string
-  highlights: string[]
+  title: string // "The Genius", "Master of Logic"
+  element: CardElement
+  rarity: CardRarity
+  baseStats: CardStats
+  currentStats: CardStats
+  abilities: CardAbility[]
+  artworkUrl?: string // AI-generated portrait
+  frameStyle: CardFrameStyle
+  flavorText: string
+  createdAt: Date
+  level: number
+  xp: number
 }
 ```
 
-### Battle Message Extension
+### BattleCardState
 
 ```typescript
-interface BattleMessage extends Message {
-  battleId: string
-  matchId: string
-  turnNumber: number
-  isOpeningStatement?: boolean
-  isClosingStatement?: boolean
+interface BattleCardState {
+  card: AgentCard
+  currentHp: number
+  currentEnergy: number
+  statusEffects: StatusEffect[]
+  cooldowns: Record<string, number> // abilityId → turns remaining
+  isKnockedOut: boolean
+  position: 'left' | 'right'
 }
 ```
 
-## User Interface
+### CardBattleData
 
-### Battle Arena Page (`/battle`)
-
-#### Setup View
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  ⚔️ BATTLE ARENA                                            │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  Battle Topic:                                              │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ Enter the subject for debate...                      │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                             │
-│  ┌─────────────────────┐   ┌─────────────────────┐         │
-│  │     TEAM A          │   │     TEAM B          │         │
-│  │  ───────────────    │   │  ───────────────    │         │
-│  │  [+] Add Agent      │   │  [+] Add Agent      │         │
-│  │  • Einstein         │   │  • Newton           │         │
-│  │  • Da Vinci         │   │  • Hawking          │         │
-│  │  [x] Remove         │   │  [x] Remove         │         │
-│  └─────────────────────┘   └─────────────────────┘         │
-│                                                             │
-│  Judge: [Select Agent ▼]                                    │
-│                                                             │
-│  ⚙️ Advanced settings                                       │
-│  • Turns per conversation: [8]                              │
-│  • Custom judging criteria: [...]                           │
-│                                                             │
-│  [🚀 START BATTLE]                                          │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+```typescript
+interface CardBattleData {
+  cardA: BattleCardState
+  cardB: BattleCardState
+  turns: BattleTurn[]
+  currentTurn: number
+  maxTurns: number
+  winnerCardId?: string
+  startedAt: Date
+  endedAt?: Date
+}
 ```
 
-#### Battle View (In Progress)
+## Card Generation
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  ⚔️ BATTLE: "Is AI consciousness possible?"                 │
-│  Round 2 of 3 | Match 1 of 2                                │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │  Tournament Bracket                                  │   │
-│  │  ┌────────┐                                          │   │
-│  │  │Einstein│──┐                                       │   │
-│  │  └────────┘  ├──┐                                    │   │
-│  │  ┌────────┐  │  │                                    │   │
-│  │  │ Newton │──┘  ├── 🏆                               │   │
-│  │  └────────┘     │                                    │   │
-│  │  ┌────────┐  ┌──┘                                    │   │
-│  │  │Da Vinci│──┤                                       │   │
-│  │  └────────┘  │                                       │   │
-│  │  ┌────────┐  │                                       │   │
-│  │  │Hawking │──┘                                       │   │
-│  │  └────────┘                                          │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                             │
-│  Current Match: Einstein vs Da Vinci                        │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ Turn 3/8                                             │   │
-│  │ Einstein: "The emergence of consciousness..."        │   │
-│  │ Da Vinci: "From an artist's perspective..."          │   │
-│  │ Einstein: "But mathematically speaking..."           │   │
-│  │ [Waiting for Da Vinci's response...]                 │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+Cards are generated using the \`cardGenerationService\`:
+
+### Element Detection
+
+Analyzes agent's name, role, and instructions for keywords:
+
+```typescript
+const ELEMENT_KEYWORDS = {
+  wisdom: ['knowledge', 'learn', 'analyze', 'research', 'scholar'],
+  creativity: ['art', 'create', 'design', 'imagine', 'innovate'],
+  charisma: ['lead', 'influence', 'persuade', 'inspire'],
+  // ... etc
+}
 ```
 
-#### Results View
+### Rarity Assignment
+
+Based on agent characteristics:
+
+- **Legendary**: Famous historical figures (Einstein, Newton, etc.)
+- **Epic**: Long, detailed instructions (>2000 chars)
+- **Rare**: Moderate detail (>1000 chars)
+- **Uncommon**: Basic instructions (>500 chars)
+- **Common**: Minimal instructions
+
+### Ability Generation
+
+Uses LLM to create thematic abilities:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  🏆 BATTLE COMPLETE                                         │
-│  Champion: Einstein                                         │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  Final Standings:                                           │
-│  🥇 Einstein - Champion                                     │
-│  🥈 Da Vinci - Finalist                                     │
-│  🥉 Newton - Semi-finalist                                  │
-│  🥉 Hawking - Semi-finalist                                 │
-│                                                             │
-│  Match History:                                             │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ Round 1, Match 1: Einstein def. Plato (7-5)         │   │
-│  │ Round 1, Match 2: Da Vinci def. Aristotle (8-6)     │   │
-│  │ Round 2, Match 1: Einstein def. Newton (8-7)        │   │
-│  │ Final: Einstein def. Da Vinci (9-8)                 │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                             │
-│  [View All Conversations] [New Battle] [Share Results]      │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+Create 3 unique abilities for this agent:
+Name: Albert Einstein
+Role: Theoretical Physicist
+Element: Cosmic
+Description: Expert in relativity and quantum mechanics...
+
+Expected output:
+- "Relativity Warp" - Bend space-time to dodge attacks
+- "Quantum Entangle" - Link fates with opponent
+- "E=MC²" - Devastating energy release
 ```
 
-## Technical Implementation
+### Artwork Generation
 
-### Store: `battleStore.ts`
-
-Zustand store with IndexedDB persistence:
-
-- `battles: Battle[]` - All battles
-- `currentBattle: Battle | null` - Active battle
-- `createBattle(config)` - Initialize new battle
-- `startBattle(battleId)` - Begin tournament
-- `runMatch(matchId)` - Execute a single match
-- `submitJudgment(matchId, judgment)` - Record judge decision
-- `advanceRound(battleId)` - Move to next round
-- `getBattleHistory()` - Retrieve past battles
-
-### Service: `battleService.ts`
-
-Core battle logic:
-
-- `generateMatchups(battle)` - Create round matchups
-- `conductConversation(match, topic)` - Run agent conversation
-- `requestJudgment(conversation, judge)` - Get judge's verdict
-- `determineWinners(round)` - Calculate round winners
-- `checkTournamentComplete(battle)` - Check if champion determined
-
-### Components
-
-- `BattlePage.tsx` - Main battle arena page
-- `BattleSetup.tsx` - Team and topic configuration
-- `BattleBracket.tsx` - Tournament bracket visualization
-- `BattleMatch.tsx` - Live match view
-- `BattleResults.tsx` - Final results display
-- `AgentSelector.tsx` - Agent picker for teams
-
-### Conversation Integration
-
-Battles use the existing conversation system with extensions:
-
-1. Create a special conversation for each match
-2. Tag messages with battle metadata
-3. Alternate turns between competing agents
-4. Inject battle context into agent prompts
-
-### Judge Prompt Template
+Uses Studio image generation service:
 
 ```
-You are the judge of a debate between two AI agents on the topic: "{topic}"
+Prompt: "Trading card game character portrait for:
+Character: Albert Einstein
+Element: Cosmic
+Style: breathtaking, legendary, maximum detail
 
-Your role is to evaluate the conversation and determine a winner based on:
-1. Argument Quality (1-10): Logical coherence, evidence, sound reasoning
-2. Persuasiveness (1-10): Ability to convince and engage
-3. Creativity (1-10): Novel perspectives, unique insights
-4. Responsiveness (1-10): How well they addressed opponent's points
-
-After reviewing the conversation, provide:
-- Scores for each agent on all criteria
-- Your decision on the winner
-- A brief justification (2-3 sentences)
-- Notable highlights from the debate
-
-{customCriteria}
+The image should be:
+- Dramatic portrait, upper body and face
+- Cosmic effects: stars, galaxies, dimensional rifts
+- Professional TCG art style
+- Rich colors with dramatic lighting"
 ```
 
-## Future Enhancements
+## UI Components
 
-- **Team Battles**: Multiple agents collaborate as a team
-- **Audience Mode**: Let users vote alongside the judge
-- **League System**: Persistent rankings and seasons
-- **Battle Replays**: Watch recorded battles
-- **Custom Rules**: Time limits, specific formats
-- **AI Commentator**: Real-time commentary agent
+### AgentCard Component
+
+Renders the playing card with:
+
+- Element-colored gradient background
+- Holographic effects for rare cards
+- HP bar with color coding (green/yellow/red)
+- Energy bar with filled segments
+- Ability slots with tooltips
+- Stat bars (ATK/DEF/SPD)
+- Rarity badge
+- Flavor text
+
+### CardBattleField Component
+
+The main battle arena featuring:
+
+- Two card positions (left vs right)
+- VS badge with glow animation
+- Turn indicator
+- Auto-play toggle
+- Ability animations
+- Damage numbers
+- Screen shake effects
+- Battle log
+- Element effectiveness indicators
+
+### Animation System
+
+```typescript
+interface BattleAnimationSequence {
+  announcements: BattleAnnouncement[]
+  effects: BattleVisualEffect[]
+  shakes: ScreenShake[]
+  cardAnimations: CardAnimation[]
+  hpChanges: HpBarAnimation[]
+  totalDuration: number
+}
+```
+
+**Animation Types:**
+
+- \`beam\`: Energy beam projectile
+- \`slash\`: Physical strike effect
+- \`explosion\`: Area burst
+- \`wave\`: Spreading wave
+- \`vortex\`: Spinning vortex
+- \`lightning\`: Electric bolts
+- \`heal_glow\`: Healing aura
+- \`shield_dome\`: Protective dome
+- \`particle_swarm\`: Particle effects
+- \`cosmic_rift\`: Dimensional tear
 
 ## File Structure
 
 ```
-src/
-├── features/
-│   └── battle/
-│       ├── index.ts
-│       ├── types.ts
-│       ├── components/
-│       │   ├── BattleSetup.tsx
-│       │   ├── BattleBracket.tsx
-│       │   ├── BattleMatch.tsx
-│       │   ├── BattleResults.tsx
-│       │   └── AgentSelector.tsx
-│       ├── hooks/
-│       │   ├── useBattle.ts
-│       │   └── useBattleMatch.ts
-│       └── services/
-│           └── battleService.ts
-├── pages/
-│   └── battle.tsx
-└── stores/
-    └── battleStore.ts
+src/features/battle/
+├── index.ts
+├── types.ts                    # Card & battle type definitions
+├── components/
+│   ├── index.ts
+│   ├── AgentCard.tsx           # Playing card component
+│   ├── CardBattleField.tsx     # Main battle arena
+│   ├── AgentTeamSelector.tsx
+│   ├── BattleBracket.tsx
+│   ├── BattleMatch.tsx
+│   ├── BattleResults.tsx
+│   └── BattleSetup.tsx
+├── hooks/
+│   ├── useBattle.ts
+│   ├── useBattleMatch.ts
+│   └── useCardBattle.ts        # Card battle state management
+├── services/
+│   ├── battleService.ts
+│   └── cardGenerationService.ts # Card generation logic
+└── i18n/
+    └── index.ts                # Battle translations
 ```
+
+## Card Collection System
+
+### Collection Storage
+
+```typescript
+interface CardCollection {
+  ownerId: string
+  cards: AgentCard[]
+  favoriteCardIds: string[]
+  decks: CardDeck[]
+  stats: CollectionStats
+  createdAt: Date
+  updatedAt: Date
+}
+```
+
+### Deck Building
+
+- Create custom decks from collected cards
+- Set a "main deck" for battles
+- Deck size limits based on tournament rules
+
+### Collection Stats
+
+Track player progress:
+
+- Total cards owned
+- Cards by rarity/element
+- Battles won/played
+- Highest level card
+- Total XP earned
+
+## Future Enhancements
+
+- **Card Trading**: Exchange cards with other users
+- **Pack Opening**: Randomized card acquisition
+- **Card Evolution**: Upgrade cards to higher rarities
+- **PvP Mode**: Real-time battles with other players
+- **Seasons & Leagues**: Competitive ranked play
+- **Daily Challenges**: Earn rewards and new cards
+- **Card Crafting**: Combine cards for new abilities
+- **Achievement System**: Unlock special cards
 
 ## Accessibility
 
-- Full keyboard navigation for team selection
-- Screen reader announcements for match progress
-- High contrast mode for bracket visualization
-- Live region updates for real-time events
+- Full keyboard navigation for card selection and battles
+- Screen reader support for all game elements
+- High contrast mode for visual effects
+- Reduced motion option for animations
+- Battle log provides text-based play-by-play
 
 ## Internationalization
 
-All UI text must use i18n keys:
+Key translation strings:
 
-- `battle.title` - "Battle Arena"
-- `battle.setup.topic` - "Battle Topic"
-- `battle.setup.teamA` - "Team A"
-- `battle.setup.teamB` - "Team B"
-- `battle.judge` - "Judge"
-- `battle.start` - "Start Battle"
-- `battle.round` - "Round {n}"
-- `battle.match` - "Match {n}"
-- `battle.winner` - "Winner"
-- `battle.champion` - "Champion"
+- \`battle.card.hp\` - "HP"
+- \`battle.card.attack\` - "Attack"
+- \`battle.card.defense\` - "Defense"
+- \`battle.card.speed\` - "Speed"
+- \`battle.card.energy\` - "Energy"
+- \`battle.card.ability\` - "Ability"
+- \`battle.card.rarity.\*\` - Rarity names
+- \`battle.card.element.\*\` - Element names
+- \`battle.action.defend\` - "Defend"
+- \`battle.action.charge\` - "Charge"
+- \`battle.effect.super_effective\` - "Super Effective!"
+- \`battle.effect.not_effective\` - "Not Very Effective..."
+- \`battle.result.knockout\` - "Knockout!"
+- \`battle.result.victory\` - "Victory!"

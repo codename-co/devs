@@ -3,6 +3,7 @@ import { Navigate, Outlet, Route, Routes, useParams } from 'react-router-dom'
 import { LocalLLMLoadingIndicator } from '@/components'
 import { defaultLang, I18nProvider, Lang, langs } from '@/i18n'
 import { StudioPage } from '@/features/studio/pages/StudioPage'
+import { CardBattlePage } from '@/features/battle'
 import { IndexPage } from '@/pages/Index'
 import { DatabasePage } from '@/pages/admin/Database'
 import { AgentsNewPage } from '@/pages/Agents/new'
@@ -41,7 +42,8 @@ const routes = {
   'agents/run': AgentRunPage,
   'agents/new': AgentsNewPage,
   'agents/start': AgentsStartPage,
-  arena: ArenaPage,
+  arena: CardBattlePage,
+  'arena/classic': ArenaPage,
   'arena/match/:battleId': ArenaPage,
   // Redirect /connectors to /knowledge/connectors
   connectors: ConnectorsRedirect,

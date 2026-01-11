@@ -56,7 +56,9 @@ export function useLiveTraces(
       }
     } catch (err) {
       if (mountedRef.current) {
-        setError(err instanceof Error ? err : new Error('Failed to load traces'))
+        setError(
+          err instanceof Error ? err : new Error('Failed to load traces'),
+        )
       }
     } finally {
       if (mountedRef.current) {
@@ -137,7 +139,9 @@ export function useLiveMetrics(
       }
     } catch (err) {
       if (mountedRef.current) {
-        setError(err instanceof Error ? err : new Error('Failed to load metrics'))
+        setError(
+          err instanceof Error ? err : new Error('Failed to load metrics'),
+        )
       }
     } finally {
       if (mountedRef.current) {
@@ -218,7 +222,11 @@ export function useLiveDailyMetrics(
       }
     } catch (err) {
       if (mountedRef.current) {
-        setError(err instanceof Error ? err : new Error('Failed to load daily metrics'))
+        setError(
+          err instanceof Error
+            ? err
+            : new Error('Failed to load daily metrics'),
+        )
       }
     } finally {
       if (mountedRef.current) {
@@ -259,12 +267,14 @@ export function useLiveDailyMetrics(
 /**
  * Combined hook for all dashboard data with synchronized polling.
  */
-export function useLiveTraceDashboard(options: {
-  period?: 'hour' | 'day' | 'week' | 'month' | 'all'
-  days?: number
-  pollInterval?: number
-  enabled?: boolean
-} = {}) {
+export function useLiveTraceDashboard(
+  options: {
+    period?: 'hour' | 'day' | 'week' | 'month' | 'all'
+    days?: number
+    pollInterval?: number
+    enabled?: boolean
+  } = {},
+) {
   const {
     period = 'day',
     days = 14,
@@ -296,7 +306,11 @@ export function useLiveTraceDashboard(options: {
       }
     } catch (err) {
       if (mountedRef.current) {
-        setError(err instanceof Error ? err : new Error('Failed to load dashboard data'))
+        setError(
+          err instanceof Error
+            ? err
+            : new Error('Failed to load dashboard data'),
+        )
       }
     } finally {
       if (mountedRef.current) {

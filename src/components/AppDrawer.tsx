@@ -339,7 +339,6 @@ const CollapsedDrawer = ({
   className,
   onOpenSearch,
   hasConversations,
-  hasSearchable,
 }: {
   className?: string
   onOpenSearch: () => void
@@ -573,7 +572,6 @@ const ExpandedDrawer = ({
   className,
   onOpenSearch,
   hasConversations,
-  hasSearchable,
 }: {
   className?: string
   onOpenSearch: () => void

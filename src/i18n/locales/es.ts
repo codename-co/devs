@@ -81,7 +81,7 @@ export const es: I18n = {
   'Manage your files': 'Gestionar tus archivos',
   'App configuration': 'Configuración de la aplicación',
   'Database management': 'Gestión de base de datos',
-  Traces: 'Trazas',
+  'Traces and Metrics': 'Rastros y métricas',
   Admin: 'Admin',
 
   // PromptArea

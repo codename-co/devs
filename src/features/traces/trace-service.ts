@@ -643,7 +643,7 @@ export class TraceService {
     const trace = this.startTrace({
       name: `${config.provider}/${config.model}`,
       ...context,
-      input: messages[messages.length - 1]?.content?.substring(0, 200),
+      input: messages[messages.length - 1]?.content,
     })
 
     // Start span
@@ -683,8 +683,8 @@ export class TraceService {
         status: 'completed',
         output:
           typeof result === 'string'
-            ? result?.substring(0, 200)
-            : (result as { content?: string })?.content?.substring(0, 200),
+            ? result
+            : (result as { content?: string })?.content,
       })
 
       return { result, traceId: trace.id, spanId: span.id }
@@ -738,7 +738,7 @@ export class TraceService {
     const trace = this.startTrace({
       name: `${config.provider}/${config.model} (stream)`,
       ...context,
-      input: messages[messages.length - 1]?.content?.substring(0, 200),
+      input: messages[messages.length - 1]?.content,
     })
 
     // Start span
@@ -776,7 +776,7 @@ export class TraceService {
         })
         await this.endTrace(trace.id, {
           status: 'completed',
-          output: fullResponse.substring(0, 200),
+          output: fullResponse,
         })
       },
       onError: async (error: Error) => {

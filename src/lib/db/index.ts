@@ -657,7 +657,9 @@ export class Database {
             })
             tracesStore.createIndex('status', 'status', { unique: false })
             tracesStore.createIndex('agentId', 'agentId', { unique: false })
-            tracesStore.createIndex('conversationId', 'conversationId', { unique: false })
+            tracesStore.createIndex('conversationId', 'conversationId', {
+              unique: false,
+            })
             tracesStore.createIndex('taskId', 'taskId', { unique: false })
             tracesStore.createIndex('sessionId', 'sessionId', { unique: false })
             tracesStore.createIndex('startTime', 'startTime', { unique: false })
@@ -670,7 +672,9 @@ export class Database {
               keyPath: 'id',
             })
             spansStore.createIndex('traceId', 'traceId', { unique: false })
-            spansStore.createIndex('parentSpanId', 'parentSpanId', { unique: false })
+            spansStore.createIndex('parentSpanId', 'parentSpanId', {
+              unique: false,
+            })
             spansStore.createIndex('type', 'type', { unique: false })
             spansStore.createIndex('status', 'status', { unique: false })
             spansStore.createIndex('agentId', 'agentId', { unique: false })
@@ -683,7 +687,9 @@ export class Database {
             const tracingConfigStore = db.createObjectStore('tracingConfig', {
               keyPath: 'id',
             })
-            tracingConfigStore.createIndex('enabled', 'enabled', { unique: false })
+            tracingConfigStore.createIndex('enabled', 'enabled', {
+              unique: false,
+            })
           }
         }
       }

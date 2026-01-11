@@ -23,7 +23,6 @@ import {
 import { useConversations, useTasks } from '@/hooks'
 import { formatConversationDate } from '@/lib/format'
 import type { Conversation, Task } from '@/types'
-import { cn } from '@/lib/utils'
 
 const localI18n = {
   en: [

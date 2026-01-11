@@ -81,6 +81,7 @@ export const ar: I18n = {
   'Manage your files': 'إدارة ملفاتك',
   'App configuration': 'تكوين التطبيق',
   'Database management': 'إدارة قاعدة البيانات',
+  'Traces and Metrics': 'التتبعات والقياسات',
   Admin: 'المسؤول',
 
   // PromptArea
