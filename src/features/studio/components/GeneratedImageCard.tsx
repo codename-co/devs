@@ -98,6 +98,10 @@ export function GeneratedImageCard({
               src={imageUrl}
               alt="Generated image"
               className="w-full h-full object-cover"
+              classNames={{
+                wrapper: 'w-full h-full !max-w-full',
+                img: 'w-full h-full object-cover',
+              }}
               onLoad={handleImageLoad}
               radius="none"
             />

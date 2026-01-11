@@ -24,10 +24,10 @@ import {
 import type { Serializer, SerializeContext } from './serializers/types'
 
 // Debounce delay for writes (ms)
-const WRITE_DEBOUNCE_MS = 1000
+const WRITE_DEBOUNCE_MS = 1_000
 
 // Sync interval for checking file changes (ms)
-const SYNC_INTERVAL_MS = 30000
+const SYNC_INTERVAL_MS = 30_000
 
 // Maximum concurrent file operations for parallel processing
 const MAX_CONCURRENT_WRITES = 10
@@ -201,6 +201,14 @@ class FolderSyncService {
       syncFullExport: options.syncFullExport ?? true,
     }
 
+    // Clear hash cache when initializing with a new directory
+    // This ensures files are written even if they existed before
+    this.fileHashes.clear()
+    this.hashCacheLoaded = false
+    localStorage.removeItem(HASH_CACHE_KEY)
+
+    console.info('[LocalBackup] Initialized with folder:', directoryHandle.name)
+
     // Perform initial sync (DB -> Files)
     // Note: Directories are created on-demand when writing files
     await this.syncToFiles()
@@ -228,6 +236,7 @@ class FolderSyncService {
 
     if (this.config) {
       this.config.isActive = false
+      console.info('[LocalBackup] Stopped')
     }
   }
 
@@ -337,9 +346,21 @@ class FolderSyncService {
 
     this.isSyncing = true
     this.emitEvent({ type: 'sync_start' })
+    console.info('[LocalBackup] Sync to files started')
 
     // Load persisted hashes to avoid re-writing unchanged files
     this.loadHashCache()
+
+    // Track sync stats
+    const stats = {
+      agents: 0,
+      conversations: 0,
+      memories: 0,
+      knowledge: 0,
+      tasks: 0,
+      studio: 0,
+      fullExport: false,
+    }
 
     try {
       // Build context with agent slug lookups
@@ -349,6 +370,7 @@ class FolderSyncService {
       if (this.config.syncAgents) {
         const agents = await db.getAll('agents')
         const activeAgents = agents.filter((a) => !a.deletedAt)
+        stats.agents = activeAgents.length
         await this.processInParallelBatches(activeAgents, async (agent) => {
           await this.writeEntityToFile(agent, agentSerializer)
           this.clearDirty('agent', agent.id)
@@ -358,6 +380,7 @@ class FolderSyncService {
       // Sync conversations in parallel batches
       if (this.config.syncConversations) {
         const conversations = await db.getAll('conversations')
+        stats.conversations = conversations.length
         await this.processInParallelBatches(
           conversations,
           async (conversation) => {
@@ -374,6 +397,7 @@ class FolderSyncService {
       // Sync memories in parallel batches
       if (this.config.syncMemories) {
         const memories = await db.getAll('agentMemories')
+        stats.memories = memories.length
         await this.processInParallelBatches(memories, async (memory) => {
           await this.writeEntityToFile(memory, memorySerializer, context)
           this.clearDirty('memory', memory.id)
@@ -386,6 +410,7 @@ class FolderSyncService {
         const fileItems = knowledgeItems.filter(
           (item) => item.type === 'file' && (item.content || item.transcript),
         )
+        stats.knowledge = fileItems.length
         await this.processInParallelBatches(fileItems, async (item) => {
           await this.writeKnowledgeItemToFiles(item)
           this.clearDirty('knowledge', item.id)
@@ -395,6 +420,7 @@ class FolderSyncService {
       // Sync tasks in parallel batches
       if (this.config.syncTasks) {
         const tasks = await db.getAll('tasks')
+        stats.tasks = tasks.length
         await this.processInParallelBatches(tasks, async (task) => {
           await this.writeEntityToFile(task, taskSerializer)
           this.clearDirty('task', task.id)
@@ -404,6 +430,7 @@ class FolderSyncService {
       // Sync studio entries in parallel batches
       if (this.config.syncStudio) {
         const studioEntries = await db.getAll('studioEntries')
+        stats.studio = studioEntries.length
         await this.processInParallelBatches(studioEntries, async (entry) => {
           await this.writeStudioEntryToFiles(entry)
           this.clearDirty('studio', entry.id)
@@ -413,6 +440,7 @@ class FolderSyncService {
       // Export full database to root
       if (this.config.syncFullExport) {
         await this.writeFullDatabaseExport()
+        stats.fullExport = true
       }
 
       // Persist hash cache for future sessions
@@ -420,7 +448,21 @@ class FolderSyncService {
 
       this.config.lastSync = new Date()
       this.emitEvent({ type: 'sync_complete' })
+
+      // Build stats string
+      const statParts: string[] = []
+      if (stats.agents > 0) statParts.push(`${stats.agents} agents`)
+      if (stats.conversations > 0)
+        statParts.push(`${stats.conversations} conversations`)
+      if (stats.memories > 0) statParts.push(`${stats.memories} memories`)
+      if (stats.knowledge > 0) statParts.push(`${stats.knowledge} knowledge`)
+      if (stats.tasks > 0) statParts.push(`${stats.tasks} tasks`)
+      if (stats.studio > 0) statParts.push(`${stats.studio} studio`)
+      if (stats.fullExport) statParts.push('full export')
+      const statsStr = statParts.length > 0 ? ` (${statParts.join(', ')})` : ''
+      console.info(`[LocalBackup] Sync to files completed${statsStr}`)
     } catch (error) {
+      console.error('[LocalBackup] Sync to files failed:', error)
       this.emitEvent({
         type: 'sync_error',
         error: error instanceof Error ? error.message : String(error),
@@ -438,6 +480,7 @@ class FolderSyncService {
 
     this.isSyncing = true
     this.emitEvent({ type: 'sync_start' })
+    console.info('[LocalBackup] Sync from files started')
 
     try {
       // Read agents
@@ -499,7 +542,9 @@ class FolderSyncService {
 
       this.config.lastSync = new Date()
       this.emitEvent({ type: 'sync_complete' })
+      console.info('[LocalBackup] Sync from files completed')
     } catch (error) {
+      console.error('[LocalBackup] Sync from files failed:', error)
       this.emitEvent({
         type: 'sync_error',
         error: error instanceof Error ? error.message : String(error),
@@ -831,7 +876,7 @@ class FolderSyncService {
   }
 
   /**
-   * Read entities from files in a directory
+   * Read entities from files in a directory (batched processing)
    */
   private async readEntitiesFromFiles<T extends { id: string }>(
     directory: string,
@@ -846,14 +891,24 @@ class FolderSyncService {
         { create: false },
       )
 
+      // Collect all file entries first
+      const fileEntries: { entry: FileSystemFileHandle; name: string }[] = []
       for await (const entry of dirHandle.values()) {
         if (
           entry.kind === 'file' &&
           entry.name.endsWith(serializer.getExtension())
         ) {
+          const fileHandle = await dirHandle.getFileHandle(entry.name)
+          fileEntries.push({ entry: fileHandle, name: entry.name })
+        }
+      }
+
+      // Process in batches
+      await this.processInParallelBatches(
+        fileEntries,
+        async ({ entry, name }) => {
           try {
-            const fileHandle = await dirHandle.getFileHandle(entry.name)
-            const file = await fileHandle.getFile()
+            const file = await entry.getFile()
             const content = await file.text()
 
             // Pass file metadata to deserializer
@@ -862,25 +917,21 @@ class FolderSyncService {
               size: file.size,
             }
 
-            const entity = serializer.deserialize(
-              content,
-              entry.name,
-              fileMetadata,
-            )
+            const entity = serializer.deserialize(content, name, fileMetadata)
             if (entity) {
               await onEntity(entity)
               this.emitEvent({
                 type: 'file_read',
                 entityType: this.getEntityType(serializer),
                 entityId: entity.id,
-                filename: entry.name,
+                filename: name,
               })
             }
           } catch (error) {
-            console.error(`Failed to read file ${entry.name}:`, error)
+            console.error(`Failed to read file ${name}:`, error)
           }
-        }
-      }
+        },
+      )
     } catch (error) {
       // Directory might not exist yet
       if ((error as DOMException).name !== 'NotFoundError') {
@@ -890,7 +941,7 @@ class FolderSyncService {
   }
 
   /**
-   * Read memories from nested agent directories
+   * Read memories from nested agent directories (batched processing)
    */
   private async readMemoriesFromFiles(): Promise<void> {
     if (!this.config) return
@@ -901,7 +952,13 @@ class FolderSyncService {
         { create: false },
       )
 
-      // Iterate through agent subdirectories
+      // Collect all memory files from all agent directories
+      const memoryFiles: {
+        handle: FileSystemFileHandle
+        name: string
+        agentDirHandle: FileSystemDirectoryHandle
+      }[] = []
+
       for await (const agentEntry of memoriesDir.values()) {
         if (agentEntry.kind === 'directory') {
           const agentDirHandle = await memoriesDir.getDirectoryHandle(
@@ -913,51 +970,60 @@ class FolderSyncService {
               fileEntry.kind === 'file' &&
               fileEntry.name.endsWith(memorySerializer.getExtension())
             ) {
-              try {
-                const fileHandle = await agentDirHandle.getFileHandle(
-                  fileEntry.name,
-                )
-                const file = await fileHandle.getFile()
-                const content = await file.text()
-
-                // Pass file metadata to deserializer
-                const fileMetadata = {
-                  lastModified: new Date(file.lastModified),
-                  size: file.size,
-                }
-
-                const memory = memorySerializer.deserialize(
-                  content,
-                  fileEntry.name,
-                  fileMetadata,
-                )
-                if (memory) {
-                  const existing = await db.get('agentMemories', memory.id)
-                  if (!existing) {
-                    await db.add('agentMemories', memory)
-                  } else if (
-                    new Date(memory.updatedAt) > new Date(existing.updatedAt)
-                  ) {
-                    await db.update('agentMemories', memory)
-                  }
-
-                  this.emitEvent({
-                    type: 'file_read',
-                    entityType: 'memory',
-                    entityId: memory.id,
-                    filename: fileEntry.name,
-                  })
-                }
-              } catch (error) {
-                console.error(
-                  `Failed to read memory file ${fileEntry.name}:`,
-                  error,
-                )
-              }
+              const fileHandle = await agentDirHandle.getFileHandle(
+                fileEntry.name,
+              )
+              memoryFiles.push({
+                handle: fileHandle,
+                name: fileEntry.name,
+                agentDirHandle,
+              })
             }
           }
         }
       }
+
+      // Process in batches
+      await this.processInParallelBatches(
+        memoryFiles,
+        async ({ handle, name }) => {
+          try {
+            const file = await handle.getFile()
+            const content = await file.text()
+
+            // Pass file metadata to deserializer
+            const fileMetadata = {
+              lastModified: new Date(file.lastModified),
+              size: file.size,
+            }
+
+            const memory = memorySerializer.deserialize(
+              content,
+              name,
+              fileMetadata,
+            )
+            if (memory) {
+              const existing = await db.get('agentMemories', memory.id)
+              if (!existing) {
+                await db.add('agentMemories', memory)
+              } else if (
+                new Date(memory.updatedAt) > new Date(existing.updatedAt)
+              ) {
+                await db.update('agentMemories', memory)
+              }
+
+              this.emitEvent({
+                type: 'file_read',
+                entityType: 'memory',
+                entityId: memory.id,
+                filename: name,
+              })
+            }
+          } catch (error) {
+            console.error(`Failed to read memory file ${name}:`, error)
+          }
+        },
+      )
     } catch (error) {
       if ((error as DOMException).name !== 'NotFoundError') {
         console.error('Failed to read memories directory:', error)
@@ -1009,75 +1075,78 @@ class FolderSyncService {
       }
     }
 
-    // Process each metadata file
-    for (const metadataHandle of metadataFiles) {
-      try {
-        const metadataFile = await metadataHandle.getFile()
-        const content = await metadataFile.text()
+    // Process metadata files in batches
+    await this.processInParallelBatches(
+      metadataFiles,
+      async (metadataHandle) => {
+        try {
+          const metadataFile = await metadataHandle.getFile()
+          const content = await metadataFile.text()
 
-        const fileMetadata = {
-          lastModified: new Date(metadataFile.lastModified),
-          size: metadataFile.size,
-        }
+          const fileMetadata = {
+            lastModified: new Date(metadataFile.lastModified),
+            size: metadataFile.size,
+          }
 
-        // Parse the frontmatter to get the binaryFile reference
-        const parsed =
-          await this.parseKnowledgeFrontmatter<
-            import('./serializers/types').KnowledgeItemFrontmatter
-          >(content)
-        let binaryContent: string | undefined
+          // Parse the frontmatter to get the binaryFile reference
+          const parsed =
+            await this.parseKnowledgeFrontmatter<
+              import('./serializers/types').KnowledgeItemFrontmatter
+            >(content)
+          let binaryContent: string | undefined
 
-        if (parsed?.frontmatter.binaryFile) {
-          // Try to read the binary file
-          const binaryHandle = filesInDir.get(parsed.frontmatter.binaryFile)
-          if (binaryHandle) {
-            const binaryFile = await binaryHandle.getFile()
-            const isBinary = knowledgeSerializer.isBinaryContent(
-              parsed.frontmatter.fileType,
-              parsed.frontmatter.mimeType,
-            )
+          if (parsed?.frontmatter.binaryFile) {
+            // Try to read the binary file
+            const binaryHandle = filesInDir.get(parsed.frontmatter.binaryFile)
+            if (binaryHandle) {
+              const binaryFile = await binaryHandle.getFile()
+              const isBinary = knowledgeSerializer.isBinaryContent(
+                parsed.frontmatter.fileType,
+                parsed.frontmatter.mimeType,
+              )
 
-            if (isBinary) {
-              // Read as binary and convert to base64
-              const buffer = await binaryFile.arrayBuffer()
-              binaryContent = this.arrayBufferToBase64(buffer)
-            } else {
-              // Read as text
-              binaryContent = await binaryFile.text()
+              if (isBinary) {
+                // Read as binary and convert to base64
+                const buffer = await binaryFile.arrayBuffer()
+                binaryContent = this.arrayBufferToBase64(buffer)
+              } else {
+                // Read as text
+                binaryContent = await binaryFile.text()
+              }
             }
           }
-        }
 
-        const item = knowledgeSerializer.deserialize(
-          content,
-          metadataFile.name,
-          fileMetadata,
-          binaryContent,
-        )
-        if (item) {
-          const existing = await db.get('knowledgeItems', item.id)
-          if (!existing) {
-            await db.add('knowledgeItems', item)
-          } else if (
-            new Date(item.lastModified) > new Date(existing.lastModified)
-          ) {
-            await db.update('knowledgeItems', item)
+          const item = knowledgeSerializer.deserialize(
+            content,
+            metadataFile.name,
+            fileMetadata,
+            binaryContent,
+          )
+          if (item) {
+            const existing = await db.get('knowledgeItems', item.id)
+            if (!existing) {
+              await db.add('knowledgeItems', item)
+            } else if (
+              new Date(item.lastModified) > new Date(existing.lastModified)
+            ) {
+              await db.update('knowledgeItems', item)
+            }
+
+            this.emitEvent({
+              type: 'file_read',
+              entityType: 'knowledge',
+              entityId: item.id,
+              filename: metadataFile.name,
+            })
           }
-
-          this.emitEvent({
-            type: 'file_read',
-            entityType: 'knowledge',
-            entityId: item.id,
-            filename: metadataFile.name,
-          })
+        } catch (error) {
+          console.error(
+            `Failed to read knowledge file ${metadataHandle.name}:`,
+            error,
+          )
         }
-      } catch (error) {
-        console.error(
-          `Failed to read knowledge file ${metadataHandle.name}:`,
-          error,
-        )
-      }
-    }
+      },
+    )
   }
 
   /**
@@ -1116,7 +1185,7 @@ class FolderSyncService {
   }
 
   /**
-   * Read tasks from nested workflow directories
+   * Read tasks from nested workflow directories (batched processing)
    */
   private async readTasksFromFiles(): Promise<void> {
     if (!this.config) return
@@ -1127,7 +1196,9 @@ class FolderSyncService {
         { create: false },
       )
 
-      // Iterate through workflow subdirectories
+      // Collect all task files from all workflow directories
+      const taskFiles: { handle: FileSystemFileHandle; name: string }[] = []
+
       for await (const workflowEntry of tasksDir.values()) {
         if (workflowEntry.kind === 'directory') {
           const workflowDirHandle = await tasksDir.getDirectoryHandle(
@@ -1139,50 +1210,51 @@ class FolderSyncService {
               fileEntry.kind === 'file' &&
               fileEntry.name.endsWith(taskSerializer.getExtension())
             ) {
-              try {
-                const fileHandle = await workflowDirHandle.getFileHandle(
-                  fileEntry.name,
-                )
-                const file = await fileHandle.getFile()
-                const content = await file.text()
-
-                const fileMetadata = {
-                  lastModified: new Date(file.lastModified),
-                  size: file.size,
-                }
-
-                const task = taskSerializer.deserialize(
-                  content,
-                  fileEntry.name,
-                  fileMetadata,
-                )
-                if (task) {
-                  const existing = await db.get('tasks', task.id)
-                  if (!existing) {
-                    await db.add('tasks', task)
-                  } else if (
-                    new Date(task.updatedAt) > new Date(existing.updatedAt)
-                  ) {
-                    await db.update('tasks', task)
-                  }
-
-                  this.emitEvent({
-                    type: 'file_read',
-                    entityType: 'task',
-                    entityId: task.id,
-                    filename: fileEntry.name,
-                  })
-                }
-              } catch (error) {
-                console.error(
-                  `Failed to read task file ${fileEntry.name}:`,
-                  error,
-                )
-              }
+              const fileHandle = await workflowDirHandle.getFileHandle(
+                fileEntry.name,
+              )
+              taskFiles.push({ handle: fileHandle, name: fileEntry.name })
             }
           }
         }
       }
+
+      // Process in batches
+      await this.processInParallelBatches(
+        taskFiles,
+        async ({ handle, name }) => {
+          try {
+            const file = await handle.getFile()
+            const content = await file.text()
+
+            const fileMetadata = {
+              lastModified: new Date(file.lastModified),
+              size: file.size,
+            }
+
+            const task = taskSerializer.deserialize(content, name, fileMetadata)
+            if (task) {
+              const existing = await db.get('tasks', task.id)
+              if (!existing) {
+                await db.add('tasks', task)
+              } else if (
+                new Date(task.updatedAt) > new Date(existing.updatedAt)
+              ) {
+                await db.update('tasks', task)
+              }
+
+              this.emitEvent({
+                type: 'file_read',
+                entityType: 'task',
+                entityId: task.id,
+                filename: name,
+              })
+            }
+          } catch (error) {
+            console.error(`Failed to read task file ${name}:`, error)
+          }
+        },
+      )
     } catch (error) {
       if ((error as DOMException).name !== 'NotFoundError') {
         console.error('Failed to read tasks directory:', error)
@@ -1216,75 +1288,78 @@ class FolderSyncService {
         }
       }
 
-      // Process each metadata file
-      for (const metadataHandle of metadataFiles) {
-        try {
-          const metadataFile = await metadataHandle.getFile()
-          const content = await metadataFile.text()
+      // Process metadata files in batches
+      await this.processInParallelBatches(
+        metadataFiles,
+        async (metadataHandle) => {
+          try {
+            const metadataFile = await metadataHandle.getFile()
+            const content = await metadataFile.text()
 
-          const fileMetadata = {
-            lastModified: new Date(metadataFile.lastModified),
-            size: metadataFile.size,
-          }
-
-          // First pass: get entry ID and image format info
-          const basicEntry = studioSerializer.deserialize(
-            content,
-            metadataFile.name,
-            fileMetadata,
-          )
-
-          if (basicEntry) {
-            // Collect image contents
-            const imageContents = new Map<string, string>()
-
-            for (let i = 0; i < basicEntry.images.length; i++) {
-              const image = basicEntry.images[i]
-              // Construct the expected image filename
-              const imageFilename = `${this.sanitizeFilename(basicEntry.id)}-${i + 1}.${image.format}`
-              const imageHandle = filesInDir.get(imageFilename)
-
-              if (imageHandle) {
-                const imageFile = await imageHandle.getFile()
-                const buffer = await imageFile.arrayBuffer()
-                const base64 = this.arrayBufferToBase64(buffer)
-                imageContents.set(imageFilename, base64)
-              }
+            const fileMetadata = {
+              lastModified: new Date(metadataFile.lastModified),
+              size: metadataFile.size,
             }
 
-            // Deserialize with images
-            const entry = studioSerializer.deserializeWithImages(
+            // First pass: get entry ID and image format info
+            const basicEntry = studioSerializer.deserialize(
               content,
               metadataFile.name,
               fileMetadata,
-              imageContents,
             )
 
-            if (entry) {
-              const existing = await db.get('studioEntries', entry.id)
-              if (!existing) {
-                await db.add('studioEntries', entry)
-              } else if (
-                new Date(entry.createdAt) > new Date(existing.createdAt)
-              ) {
-                await db.update('studioEntries', entry)
+            if (basicEntry) {
+              // Collect image contents
+              const imageContents = new Map<string, string>()
+
+              for (let i = 0; i < basicEntry.images.length; i++) {
+                const image = basicEntry.images[i]
+                // Construct the expected image filename
+                const imageFilename = `${this.sanitizeFilename(basicEntry.id)}-${i + 1}.${image.format}`
+                const imageHandle = filesInDir.get(imageFilename)
+
+                if (imageHandle) {
+                  const imageFile = await imageHandle.getFile()
+                  const buffer = await imageFile.arrayBuffer()
+                  const base64 = this.arrayBufferToBase64(buffer)
+                  imageContents.set(imageFilename, base64)
+                }
               }
 
-              this.emitEvent({
-                type: 'file_read',
-                entityType: 'studio',
-                entityId: entry.id,
-                filename: metadataFile.name,
-              })
+              // Deserialize with images
+              const entry = studioSerializer.deserializeWithImages(
+                content,
+                metadataFile.name,
+                fileMetadata,
+                imageContents,
+              )
+
+              if (entry) {
+                const existing = await db.get('studioEntries', entry.id)
+                if (!existing) {
+                  await db.add('studioEntries', entry)
+                } else if (
+                  new Date(entry.createdAt) > new Date(existing.createdAt)
+                ) {
+                  await db.update('studioEntries', entry)
+                }
+
+                this.emitEvent({
+                  type: 'file_read',
+                  entityType: 'studio',
+                  entityId: entry.id,
+                  filename: metadataFile.name,
+                })
+              }
             }
+          } catch (error) {
+            console.error(
+              `Failed to read studio file ${metadataHandle.name}:`,
+              error,
+            )
           }
-        } catch (error) {
-          console.error(
-            `Failed to read studio file ${metadataHandle.name}:`,
-            error,
-          )
-        }
-      }
+        },
+      )
     } catch (error) {
       if ((error as DOMException).name !== 'NotFoundError') {
         console.error('Failed to read studio directory:', error)

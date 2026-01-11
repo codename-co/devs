@@ -302,6 +302,10 @@ export interface ImageGenerationSettings {
   width?: number
   /** Custom height override */
   height?: number
+  /** Reference image for image-to-image generation (base64 data) */
+  referenceImageBase64?: string
+  /** Reference image MIME type */
+  referenceImageMimeType?: string
 }
 
 /**

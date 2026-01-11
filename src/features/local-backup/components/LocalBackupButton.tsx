@@ -51,6 +51,7 @@ export function LocalBackupButton() {
     syncMemories,
     syncKnowledge,
     syncTasks,
+    syncStudio,
     syncFullExport,
     enableSync,
     disableSync,
@@ -153,6 +154,7 @@ export function LocalBackupButton() {
   if (syncMemories) syncOptionsValue.push('memories')
   if (syncKnowledge) syncOptionsValue.push('knowledge')
   if (syncTasks) syncOptionsValue.push('tasks')
+  if (syncStudio) syncOptionsValue.push('studio')
   if (syncFullExport) syncOptionsValue.push('fullExport')
 
   // Handle dropdown selection
@@ -164,6 +166,7 @@ export function LocalBackupButton() {
         syncMemories: true,
         syncKnowledge: true,
         syncTasks: true,
+        syncStudio: true,
         syncFullExport: true,
       })
     } else {
@@ -174,6 +177,7 @@ export function LocalBackupButton() {
         syncMemories: selected.includes('memories'),
         syncKnowledge: selected.includes('knowledge'),
         syncTasks: selected.includes('tasks'),
+        syncStudio: selected.includes('studio'),
         syncFullExport: selected.includes('fullExport'),
       })
     }
@@ -283,6 +287,12 @@ export function LocalBackupButton() {
                     {t('Tasks')}
                   </DropdownItem>
                   <DropdownItem
+                    key="studio"
+                    startContent={<Icon name="MediaImage" className="h-4 w-4" />}
+                  >
+                    {t('Studio')}
+                  </DropdownItem>
+                  <DropdownItem
                     key="fullExport"
                     startContent={
                       <Icon name="DatabaseExport" className="h-4 w-4" />
@@ -386,6 +396,14 @@ export function LocalBackupButton() {
                         {syncStats.tasks}
                       </span>{' '}
                       {t('Tasks').toLowerCase()}
+                    </span>
+                  )}
+                  {syncStudio && syncStats.studio > 0 && (
+                    <span>
+                      <span className="font-medium text-default-700">
+                        {syncStats.studio}
+                      </span>{' '}
+                      {t('Studio').toLowerCase()}
                     </span>
                   )}
                   {syncFullExport && syncStats.fullExport && (

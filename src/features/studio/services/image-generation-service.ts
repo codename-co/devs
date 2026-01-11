@@ -35,9 +35,24 @@ export interface ImageProviderInterface {
     config: ImageProviderConfig,
   ): Promise<GeneratedImage[]>
 
+  /**
+   * Stream images as they are generated (optional)
+   * Providers that support streaming should implement this method
+   */
+  streamGenerate?(
+    prompt: string,
+    settings: ImageGenerationSettings,
+    config: ImageProviderConfig,
+  ): AsyncIterable<GeneratedImage>
+
   validateApiKey(apiKey: string): Promise<boolean>
 
   getAvailableModels?(): Promise<string[]>
+
+  /**
+   * Whether this provider supports streaming
+   */
+  supportsStreaming?: boolean
 }
 
 // =============================================================================
@@ -431,10 +446,26 @@ class GoogleImageProvider implements ImageProviderInterface {
 
   async generate(
     prompt: string,
-    _settings: ImageGenerationSettings,
+    settings: ImageGenerationSettings,
     config: ImageProviderConfig,
   ): Promise<GeneratedImage[]> {
     const model = config.model || 'gemini-2.5-flash-image'
+
+    // Build parts array with optional reference image
+    const parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }> = []
+
+    // Add reference image first if provided (Gemini expects image before text for image-to-image)
+    if (settings.referenceImageBase64 && settings.referenceImageMimeType) {
+      parts.push({
+        inlineData: {
+          mimeType: settings.referenceImageMimeType,
+          data: settings.referenceImageBase64,
+        },
+      })
+    }
+
+    // Add the text prompt
+    parts.push({ text: prompt })
 
     const response = await fetch(
       `${config.baseUrl || this.baseUrl}/models/${model}:generateContent`,
@@ -447,11 +478,7 @@ class GoogleImageProvider implements ImageProviderInterface {
         body: JSON.stringify({
           contents: [
             {
-              parts: [
-                {
-                  text: prompt,
-                },
-              ],
+              parts,
             },
           ],
         }),
@@ -497,6 +524,112 @@ class GoogleImageProvider implements ImageProviderInterface {
 
     return images
   }
+
+  /**
+   * Stream images as they are generated using Gemini's streaming API
+   */
+  async *streamGenerate(
+    prompt: string,
+    settings: ImageGenerationSettings,
+    config: ImageProviderConfig,
+  ): AsyncIterable<GeneratedImage> {
+    const model = config.model || 'gemini-2.5-flash-image'
+
+    // Build parts array with optional reference image
+    const parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }> = []
+
+    // Add reference image first if provided (Gemini expects image before text for image-to-image)
+    if (settings.referenceImageBase64 && settings.referenceImageMimeType) {
+      parts.push({
+        inlineData: {
+          mimeType: settings.referenceImageMimeType,
+          data: settings.referenceImageBase64,
+        },
+      })
+    }
+
+    // Add the text prompt
+    parts.push({ text: prompt })
+
+    const response = await fetch(
+      `${config.baseUrl || this.baseUrl}/models/${model}:streamGenerateContent?alt=sse`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': config.apiKey,
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts,
+            },
+          ],
+        }),
+      },
+    )
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}))
+      throw new Error(error.error?.message || `Google API error: ${response.statusText}`)
+    }
+
+    const reader = response.body?.getReader()
+    if (!reader) throw new Error('No response body')
+
+    const decoder = new TextDecoder()
+    let buffer = ''
+    let imageCount = 0
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop() || ''
+
+      for (const line of lines) {
+        if (line.trim().startsWith('data: ')) {
+          const data = line.slice(6).trim()
+          if (data === '[DONE]' || !data) continue
+
+          try {
+            const parsed = JSON.parse(data)
+
+            // Extract images from streaming response
+            for (const candidate of parsed.candidates || []) {
+              for (const part of candidate.content?.parts || []) {
+                if (part.inlineData?.mimeType?.startsWith('image/')) {
+                  const mimeType = part.inlineData.mimeType
+                  const format = mimeType.includes('png')
+                    ? 'png'
+                    : mimeType.includes('jpeg')
+                      ? 'jpg'
+                      : 'png'
+
+                  yield {
+                    id: `google-stream-${Date.now()}-${imageCount++}`,
+                    requestId: '',
+                    url: `data:${mimeType};base64,${part.inlineData.data}`,
+                    base64: part.inlineData.data,
+                    width: 1024,
+                    height: 1024,
+                    format: format as 'png' | 'jpg' | 'webp',
+                    createdAt: new Date(),
+                  }
+                }
+              }
+            }
+          } catch {
+            // Skip invalid JSON chunks
+          }
+        }
+      }
+    }
+  }
+
+  supportsStreaming = true
 
   async validateApiKey(apiKey: string): Promise<boolean> {
     try {
@@ -621,6 +754,53 @@ export class ImageGenerationService {
           error: error instanceof Error ? error.message : 'Unknown error',
         },
         images: [],
+      }
+    }
+  }
+
+  /**
+   * Check if a provider supports streaming
+   */
+  static supportsStreaming(provider: ImageProvider): boolean {
+    const impl = this.getProvider(provider)
+    return impl.supportsStreaming === true && typeof impl.streamGenerate === 'function'
+  }
+
+  /**
+   * Stream images as they are generated (for providers that support it)
+   * Falls back to regular generate for providers that don't support streaming
+   */
+  static async *streamGenerate(
+    prompt: string,
+    settings: Partial<ImageGenerationSettings> = {},
+    config: ImageProviderConfig,
+    onImageReceived?: (image: GeneratedImage) => void,
+  ): AsyncIterable<GeneratedImage> {
+    const fullSettings: ImageGenerationSettings = {
+      ...DEFAULT_IMAGE_SETTINGS,
+      ...settings,
+    }
+
+    const normalizedPrompt = normalizePrompt(prompt)
+    const compiledPrompt = compilePrompt(normalizedPrompt, fullSettings)
+    const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+
+    const provider = this.getProvider(config.provider)
+
+    // If provider supports streaming, use it
+    if (provider.supportsStreaming && provider.streamGenerate) {
+      for await (const image of provider.streamGenerate(compiledPrompt, fullSettings, config)) {
+        image.requestId = requestId
+        onImageReceived?.(image)
+        yield image
+      }
+    } else {
+      // Fall back to regular generation
+      const images = await provider.generate(compiledPrompt, fullSettings, config)
+      for (const image of images) {
+        image.requestId = requestId
+        onImageReceived?.(image)
+        yield image
       }
     }
   }

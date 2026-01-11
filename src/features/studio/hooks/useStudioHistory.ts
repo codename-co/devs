@@ -7,6 +7,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { db } from '@/lib/db'
+import { useFolderSyncStore } from '@/features/local-backup/stores/folderSyncStore'
 import { StudioEntry, GeneratedImage, ImageGenerationSettings } from '../types'
 
 const MAX_HISTORY_ENTRIES = 100
@@ -77,6 +78,16 @@ export interface UseStudioHistoryReturn {
 export function useStudioHistory(): UseStudioHistoryReturn {
   const [history, setHistory] = useState<StudioEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  
+  // Get backup sync function
+  const { triggerSync, isEnabled: isBackupEnabled, syncStudio } = useFolderSyncStore()
+  
+  // Trigger backup sync if enabled
+  const triggerBackupSync = useCallback(() => {
+    if (isBackupEnabled && syncStudio) {
+      triggerSync()
+    }
+  }, [isBackupEnabled, syncStudio, triggerSync])
 
   // Load history on mount
   useEffect(() => {
@@ -114,6 +125,9 @@ export function useStudioHistory(): UseStudioHistoryReturn {
       }
 
       await saveEntry(entry)
+      
+      // Trigger local backup sync
+      triggerBackupSync()
 
       // Update state
       setHistory((prev) => {
@@ -139,7 +153,7 @@ export function useStudioHistory(): UseStudioHistoryReturn {
 
       return entry
     },
-    [],
+    [triggerBackupSync],
   )
 
   // Toggle favorite
@@ -154,12 +168,14 @@ export function useStudioHistory(): UseStudioHistoryReturn {
       // Save to DB
       const entry = updated.find((e) => e.id === entryId)
       if (entry) {
-        saveEntry(entry).catch(console.error)
+        saveEntry(entry)
+          .then(() => triggerBackupSync())
+          .catch(console.error)
       }
 
       return updated
     })
-  }, [])
+  }, [triggerBackupSync])
 
   // Add tags
   const addTags = useCallback(async (entryId: string, tags: string[]) => {
@@ -173,24 +189,28 @@ export function useStudioHistory(): UseStudioHistoryReturn {
       // Save to DB
       const entry = updated.find((e) => e.id === entryId)
       if (entry) {
-        saveEntry(entry).catch(console.error)
+        saveEntry(entry)
+          .then(() => triggerBackupSync())
+          .catch(console.error)
       }
 
       return updated
     })
-  }, [])
+  }, [triggerBackupSync])
 
   // Remove entry
   const removeEntry = useCallback(async (entryId: string) => {
     await deleteEntry(entryId)
     setHistory((prev) => prev.filter((e) => e.id !== entryId))
-  }, [])
+    triggerBackupSync()
+  }, [triggerBackupSync])
 
   // Clear history
   const clearHistory = useCallback(async () => {
     await clearAllHistory()
     setHistory([])
-  }, [])
+    triggerBackupSync()
+  }, [triggerBackupSync])
 
   // Search history
   const searchHistory = useCallback(

@@ -2,6 +2,7 @@
  * useImageGeneration Hook
  *
  * React hook for managing image generation state and actions.
+ * Supports streaming - images appear as they're generated.
  */
 
 import { useState, useCallback, useRef } from 'react'
@@ -20,6 +21,8 @@ export interface UseImageGenerationOptions {
   defaultConfig?: Partial<ImageProviderConfig>
   /** Callback when generation starts */
   onGenerationStart?: () => void
+  /** Callback when each image is received (for streaming) */
+  onImageReceived?: (image: GeneratedImage) => void
   /** Callback when generation completes */
   onGenerationComplete?: (response: ImageGenerationResponse) => void
   /** Callback when generation fails */
@@ -95,10 +98,18 @@ export function useImageGeneration(
 
       options.onGenerationStart?.()
 
-      // Simulate progress (since most APIs don't provide real progress)
-      const progressInterval = setInterval(() => {
-        setProgress((prev) => Math.min(prev + 10, 90))
-      }, 500)
+      // Check if provider supports streaming
+      const supportsStreaming = ImageGenerationService.supportsStreaming(
+        providerConfig.provider as ImageProvider,
+      )
+
+      // Progress simulation for non-streaming providers
+      let progressInterval: ReturnType<typeof setInterval> | null = null
+      if (!supportsStreaming) {
+        progressInterval = setInterval(() => {
+          setProgress((prev) => Math.min(prev + 10, 90))
+        }, 500)
+      }
 
       try {
         const fullSettings: ImageGenerationSettings = {
@@ -106,27 +117,80 @@ export function useImageGeneration(
           ...settings,
         }
 
-        const response = await ImageGenerationService.generate(
-          prompt,
-          fullSettings,
-          providerConfig as ImageProviderConfig,
-        )
+        const generatedImages: GeneratedImage[] = []
+        const startTime = Date.now()
 
-        clearInterval(progressInterval)
+        if (supportsStreaming) {
+          // Use streaming - images appear as they're generated
+          let imageCount = 0
+          for await (const image of ImageGenerationService.streamGenerate(
+            prompt,
+            fullSettings,
+            providerConfig as ImageProviderConfig,
+            (image) => {
+              // Call the streaming callback for each image
+              options.onImageReceived?.(image)
+            },
+          )) {
+            generatedImages.push(image)
+            imageCount++
+            // Update progress based on received images (estimate)
+            setProgress(Math.min(30 + imageCount * 20, 90))
+          }
+          // Add all streaming images to state at the end
+          setImages((prev) => [...generatedImages, ...prev])
+        } else {
+          // Non-streaming: wait for all images
+          const response = await ImageGenerationService.generate(
+            prompt,
+            fullSettings,
+            providerConfig as ImageProviderConfig,
+          )
+
+          if (response.request.status === 'failed') {
+            throw new Error(response.request.error || 'Generation failed')
+          }
+
+          generatedImages.push(...response.images)
+          // Add all images at once for non-streaming
+          setImages((prev) => [...response.images, ...prev])
+        }
+
+        if (progressInterval) {
+          clearInterval(progressInterval)
+        }
         setProgress(100)
 
-        if (response.request.status === 'failed') {
-          throw new Error(response.request.error || 'Generation failed')
+        const generationTimeMs = Date.now() - startTime
+
+        // Build the response object
+        const response: ImageGenerationResponse = {
+          request: {
+            id: `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            prompt,
+            compiledPrompt: prompt,
+            settings: fullSettings,
+            providerConfig: { ...providerConfig, apiKey: '[REDACTED]' } as ImageProviderConfig,
+            status: 'completed',
+            createdAt: new Date(startTime),
+            startedAt: new Date(startTime),
+            completedAt: new Date(),
+          },
+          images: generatedImages,
+          generationTimeMs,
+          usage: {
+            imagesGenerated: generatedImages.length,
+          },
         }
 
         setLastResponse(response)
-        setImages((prev) => [...response.images, ...prev])
-
         options.onGenerationComplete?.(response)
 
         return response
       } catch (err) {
-        clearInterval(progressInterval)
+        if (progressInterval) {
+          clearInterval(progressInterval)
+        }
         const errorMessage = err instanceof Error ? err.message : 'Generation failed'
         setError(errorMessage)
         options.onGenerationError?.(err instanceof Error ? err : new Error(errorMessage))

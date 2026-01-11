@@ -192,7 +192,7 @@ export interface StudioEntryFrontmatter {
  * Studio entries output both a metadata file and optionally image files
  */
 export interface SerializedStudioFileSet {
-  /** Metadata filename (e.g., "mountain-sunset-abc123.studio.md") */
+  /** Metadata filename (e.g., ".mountain-sunset-abc123.studio.md") - hidden by default */
   metadataFilename: string
   /** Metadata file content with YAML frontmatter */
   metadataContent: string

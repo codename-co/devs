@@ -5,7 +5,7 @@
  * Centered prompt area with generated images gallery below.
  */
 
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Button,
@@ -156,17 +156,37 @@ export function StudioPage() {
   const navigate = useNavigate()
   const url = useUrl(lang)
 
+  // Track streaming images separately from history
+  const [streamingImages, setStreamingImages] = useState<GeneratedImage[]>([])
+  const [currentGenerationPrompt, setCurrentGenerationPrompt] =
+    useState<string>('')
+  // Use a ref to avoid stale closure in callbacks
+  const currentGenerationPromptRef = useRef<string>('')
+
   // Hooks
   const { isGenerating, progress, error, generate, downloadImage } =
     useImageGeneration({
+      onImageReceived: (image) => {
+        // Add each streaming image as it arrives
+        setStreamingImages((prev) => [image, ...prev])
+      },
       onGenerationComplete: (response) => {
         if (response.images.length > 0) {
-          addToHistory(prompt, currentSettings, response.images)
+          // Use ref to get current prompt value (avoids stale closure)
+          addToHistory(
+            currentGenerationPromptRef.current,
+            currentSettings,
+            response.images,
+          )
           addToast({
             title: t('Image generated successfully'),
             color: 'success',
           })
         }
+        // Clear streaming images - they're now in history
+        setStreamingImages([])
+        setCurrentGenerationPrompt('')
+        currentGenerationPromptRef.current = ''
       },
       onGenerationError: () => {
         addToast({
@@ -174,6 +194,10 @@ export function StudioPage() {
           description: error || undefined,
           color: 'danger',
         })
+        // Clear streaming state on error
+        setStreamingImages([])
+        setCurrentGenerationPrompt('')
+        currentGenerationPromptRef.current = ''
       },
     })
 
@@ -370,9 +394,38 @@ export function StudioPage() {
       }
 
       setPrompt(promptText)
-      await generate(promptText, currentSettings, config)
+      setCurrentGenerationPrompt(promptText)
+      currentGenerationPromptRef.current = promptText
+      setStreamingImages([]) // Clear any previous streaming images
+
+      // Build settings with reference image if present
+      let settingsWithReference = { ...currentSettings }
+      if (referenceImage) {
+        try {
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => {
+              const result = reader.result as string
+              // Extract base64 data without the data URL prefix
+              const base64Data = result.split(',')[1]
+              resolve(base64Data)
+            }
+            reader.onerror = reject
+            reader.readAsDataURL(referenceImage)
+          })
+          settingsWithReference = {
+            ...settingsWithReference,
+            referenceImageBase64: base64,
+            referenceImageMimeType: referenceImage.type,
+          }
+        } catch (err) {
+          console.error('Failed to convert reference image to base64:', err)
+        }
+      }
+
+      await generate(promptText, settingsWithReference, config)
     },
-    [generate, currentSettings, getProviderConfig, t, navigate, url],
+    [generate, currentSettings, referenceImage, getProviderConfig, t, navigate, url],
   )
 
   // Handle preset selection from grid
@@ -501,9 +554,11 @@ export function StudioPage() {
             />
           </div>
 
-          {/* Gallery content - shows all history with optional favorites filter */}
+          {/* Gallery content - shows streaming images first, then history */}
           <div className="min-h-[300px]">
-            {history.length === 0 ? (
+            {history.length === 0 &&
+            streamingImages.length === 0 &&
+            !isGenerating ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="w-16 h-16 rounded-full bg-default-100 flex items-center justify-center mb-4">
                   <Icon
@@ -530,6 +585,32 @@ export function StudioPage() {
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {/* Skeleton placeholder while generating and no images yet */}
+                {isGenerating &&
+                  streamingImages.length === 0 &&
+                  !showFavoritesOnly && (
+                    <div className="aspect-square rounded-lg bg-default-100 animate-pulse flex items-center justify-center">
+                      <Icon
+                        name="MediaImage"
+                        size="lg"
+                        className="text-default-300"
+                      />
+                    </div>
+                  )}
+                {/* Streaming images appear first (inline with history) */}
+                {!showFavoritesOnly &&
+                  streamingImages.map((image) => (
+                    <GeneratedImageCard
+                      key={image.id}
+                      lang={lang}
+                      image={image}
+                      prompt={currentGenerationPrompt}
+                      onDownload={() => downloadImage(image)}
+                      onUseAsReference={() => handleUseAsReference(image)}
+                      showActions={true}
+                    />
+                  ))}
+                {/* History images */}
                 {showFavoritesOnly
                   ? favoriteImages.map(({ image, entryId, prompt }) => (
                       <GeneratedImageCard
