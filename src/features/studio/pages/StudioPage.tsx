@@ -425,7 +425,15 @@ export function StudioPage() {
 
       await generate(promptText, settingsWithReference, config)
     },
-    [generate, currentSettings, referenceImage, getProviderConfig, t, navigate, url],
+    [
+      generate,
+      currentSettings,
+      referenceImage,
+      getProviderConfig,
+      t,
+      navigate,
+      url,
+    ],
   )
 
   // Handle preset selection from grid

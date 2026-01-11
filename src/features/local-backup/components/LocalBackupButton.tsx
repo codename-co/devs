@@ -288,7 +288,9 @@ export function LocalBackupButton() {
                   </DropdownItem>
                   <DropdownItem
                     key="studio"
-                    startContent={<Icon name="MediaImage" className="h-4 w-4" />}
+                    startContent={
+                      <Icon name="MediaImage" className="h-4 w-4" />
+                    }
                   >
                     {t('Studio')}
                   </DropdownItem>

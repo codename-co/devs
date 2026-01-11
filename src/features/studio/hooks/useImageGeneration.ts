@@ -62,7 +62,8 @@ export function useImageGeneration(
   const [isGenerating, setIsGenerating] = useState(false)
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState<string | null>(null)
-  const [lastResponse, setLastResponse] = useState<ImageGenerationResponse | null>(null)
+  const [lastResponse, setLastResponse] =
+    useState<ImageGenerationResponse | null>(null)
   const [images, setImages] = useState<GeneratedImage[]>([])
 
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -79,7 +80,8 @@ export function useImageGeneration(
       }
 
       const providerConfig = config || {
-        provider: (options.defaultConfig?.provider || 'openai') as ImageProvider,
+        provider: (options.defaultConfig?.provider ||
+          'openai') as ImageProvider,
         apiKey: options.defaultConfig?.apiKey || '',
         ...options.defaultConfig,
       }
@@ -170,7 +172,10 @@ export function useImageGeneration(
             prompt,
             compiledPrompt: prompt,
             settings: fullSettings,
-            providerConfig: { ...providerConfig, apiKey: '[REDACTED]' } as ImageProviderConfig,
+            providerConfig: {
+              ...providerConfig,
+              apiKey: '[REDACTED]',
+            } as ImageProviderConfig,
             status: 'completed',
             createdAt: new Date(startTime),
             startedAt: new Date(startTime),
@@ -191,9 +196,12 @@ export function useImageGeneration(
         if (progressInterval) {
           clearInterval(progressInterval)
         }
-        const errorMessage = err instanceof Error ? err.message : 'Generation failed'
+        const errorMessage =
+          err instanceof Error ? err.message : 'Generation failed'
         setError(errorMessage)
-        options.onGenerationError?.(err instanceof Error ? err : new Error(errorMessage))
+        options.onGenerationError?.(
+          err instanceof Error ? err : new Error(errorMessage),
+        )
         return null
       } finally {
         setIsGenerating(false)
@@ -238,7 +246,8 @@ export function useImageGeneration(
         const url = URL.createObjectURL(blob)
         const link = document.createElement('a')
         link.href = url
-        link.download = filename || `generated-image-${image.id}.${image.format}`
+        link.download =
+          filename || `generated-image-${image.id}.${image.format}`
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)

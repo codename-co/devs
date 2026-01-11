@@ -75,27 +75,37 @@ class OpenAIImageProvider implements ImageProviderInterface {
     // DALL-E 3 supported sizes
     const size = this.getNearestDalleSize(dimensions.width, dimensions.height)
 
-    const response = await fetch(`${config.baseUrl || this.baseUrl}/images/generations`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${config.apiKey}`,
-        ...(config.organizationId && { 'OpenAI-Organization': config.organizationId }),
+    const response = await fetch(
+      `${config.baseUrl || this.baseUrl}/images/generations`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${config.apiKey}`,
+          ...(config.organizationId && {
+            'OpenAI-Organization': config.organizationId,
+          }),
+        },
+        body: JSON.stringify({
+          model: config.model || 'dall-e-3',
+          prompt: prompt,
+          n: Math.min(settings.count, 1), // DALL-E 3 only supports n=1
+          size,
+          quality:
+            settings.quality === 'hd' || settings.quality === 'ultra'
+              ? 'hd'
+              : 'standard',
+          style: settings.style === 'vivid' ? 'vivid' : 'natural',
+          response_format: 'b64_json',
+        }),
       },
-      body: JSON.stringify({
-        model: config.model || 'dall-e-3',
-        prompt: prompt,
-        n: Math.min(settings.count, 1), // DALL-E 3 only supports n=1
-        size,
-        quality: settings.quality === 'hd' || settings.quality === 'ultra' ? 'hd' : 'standard',
-        style: settings.style === 'vivid' ? 'vivid' : 'natural',
-        response_format: 'b64_json',
-      }),
-    })
+    )
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}))
-      throw new Error(error.error?.message || `OpenAI API error: ${response.statusText}`)
+      throw new Error(
+        error.error?.message || `OpenAI API error: ${response.statusText}`,
+      )
     }
 
     const data = await response.json()
@@ -146,7 +156,10 @@ class StabilityImageProvider implements ImageProviderInterface {
     config: ImageProviderConfig,
   ): Promise<GeneratedImage[]> {
     const dimensions = getDimensionsFromSettings(settings)
-    const negativePrompt = generateNegativePrompt(settings.negativePrompt, settings)
+    const negativePrompt = generateNegativePrompt(
+      settings.negativePrompt,
+      settings,
+    )
 
     const response = await fetch(
       `${config.baseUrl || this.baseUrl}/generation/${config.model || 'stable-diffusion-xl-1024-v1-0'}/text-to-image`,
@@ -166,7 +179,12 @@ class StabilityImageProvider implements ImageProviderInterface {
           width: this.roundToMultiple(dimensions.width, 64),
           height: this.roundToMultiple(dimensions.height, 64),
           samples: settings.count,
-          steps: settings.quality === 'draft' ? 20 : settings.quality === 'ultra' ? 50 : 30,
+          steps:
+            settings.quality === 'draft'
+              ? 20
+              : settings.quality === 'ultra'
+                ? 50
+                : 30,
           seed: settings.seed,
         }),
       },
@@ -174,7 +192,9 @@ class StabilityImageProvider implements ImageProviderInterface {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}))
-      throw new Error(error.message || `Stability API error: ${response.statusText}`)
+      throw new Error(
+        error.message || `Stability API error: ${response.statusText}`,
+      )
     }
 
     const data = await response.json()
@@ -220,32 +240,40 @@ class ReplicateImageProvider implements ImageProviderInterface {
     config: ImageProviderConfig,
   ): Promise<GeneratedImage[]> {
     const dimensions = getDimensionsFromSettings(settings)
-    const negativePrompt = generateNegativePrompt(settings.negativePrompt, settings)
+    const negativePrompt = generateNegativePrompt(
+      settings.negativePrompt,
+      settings,
+    )
 
     // Start prediction
-    const createResponse = await fetch(`${config.baseUrl || this.baseUrl}/predictions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Token ${config.apiKey}`,
-      },
-      body: JSON.stringify({
-        version: config.model || 'stability-ai/sdxl:latest',
-        input: {
-          prompt,
-          negative_prompt: negativePrompt,
-          width: dimensions.width,
-          height: dimensions.height,
-          num_outputs: settings.count,
-          guidance_scale: settings.guidanceScale || 7.5,
-          seed: settings.seed,
+    const createResponse = await fetch(
+      `${config.baseUrl || this.baseUrl}/predictions`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Token ${config.apiKey}`,
         },
-      }),
-    })
+        body: JSON.stringify({
+          version: config.model || 'stability-ai/sdxl:latest',
+          input: {
+            prompt,
+            negative_prompt: negativePrompt,
+            width: dimensions.width,
+            height: dimensions.height,
+            num_outputs: settings.count,
+            guidance_scale: settings.guidanceScale || 7.5,
+            seed: settings.seed,
+          },
+        }),
+      },
+    )
 
     if (!createResponse.ok) {
       const error = await createResponse.json().catch(() => ({}))
-      throw new Error(error.detail || `Replicate API error: ${createResponse.statusText}`)
+      throw new Error(
+        error.detail || `Replicate API error: ${createResponse.statusText}`,
+      )
     }
 
     const prediction = await createResponse.json()
@@ -257,7 +285,9 @@ class ReplicateImageProvider implements ImageProviderInterface {
       throw new Error(result.error || 'Image generation failed')
     }
 
-    const outputs = Array.isArray(result.output) ? result.output : [result.output]
+    const outputs = Array.isArray(result.output)
+      ? result.output
+      : [result.output]
 
     return outputs.map((url: string, index: number) => ({
       id: `replicate-${Date.now()}-${index}`,
@@ -281,7 +311,11 @@ class ReplicateImageProvider implements ImageProviderInterface {
     }
   }
 
-  private async pollPrediction(id: string, apiKey: string, maxAttempts = 60): Promise<any> {
+  private async pollPrediction(
+    id: string,
+    apiKey: string,
+    maxAttempts = 60,
+  ): Promise<any> {
     for (let i = 0; i < maxAttempts; i++) {
       const response = await fetch(`${this.baseUrl}/predictions/${id}`, {
         headers: { Authorization: `Token ${apiKey}` },
@@ -312,29 +346,42 @@ class TogetherImageProvider implements ImageProviderInterface {
     config: ImageProviderConfig,
   ): Promise<GeneratedImage[]> {
     const dimensions = getDimensionsFromSettings(settings)
-    const negativePrompt = generateNegativePrompt(settings.negativePrompt, settings)
+    const negativePrompt = generateNegativePrompt(
+      settings.negativePrompt,
+      settings,
+    )
 
-    const response = await fetch(`${config.baseUrl || this.baseUrl}/images/generations`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${config.apiKey}`,
+    const response = await fetch(
+      `${config.baseUrl || this.baseUrl}/images/generations`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${config.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: config.model || 'stabilityai/stable-diffusion-xl-base-1.0',
+          prompt,
+          negative_prompt: negativePrompt,
+          width: dimensions.width,
+          height: dimensions.height,
+          n: settings.count,
+          steps:
+            settings.quality === 'draft'
+              ? 20
+              : settings.quality === 'ultra'
+                ? 50
+                : 30,
+          seed: settings.seed,
+        }),
       },
-      body: JSON.stringify({
-        model: config.model || 'stabilityai/stable-diffusion-xl-base-1.0',
-        prompt,
-        negative_prompt: negativePrompt,
-        width: dimensions.width,
-        height: dimensions.height,
-        n: settings.count,
-        steps: settings.quality === 'draft' ? 20 : settings.quality === 'ultra' ? 50 : 30,
-        seed: settings.seed,
-      }),
-    })
+    )
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}))
-      throw new Error(error.error?.message || `Together API error: ${response.statusText}`)
+      throw new Error(
+        error.error?.message || `Together API error: ${response.statusText}`,
+      )
     }
 
     const data = await response.json()
@@ -375,7 +422,10 @@ class FalImageProvider implements ImageProviderInterface {
     config: ImageProviderConfig,
   ): Promise<GeneratedImage[]> {
     const dimensions = getDimensionsFromSettings(settings)
-    const negativePrompt = generateNegativePrompt(settings.negativePrompt, settings)
+    const negativePrompt = generateNegativePrompt(
+      settings.negativePrompt,
+      settings,
+    )
 
     const model = config.model || 'fal-ai/flux/schnell'
 
@@ -395,7 +445,12 @@ class FalImageProvider implements ImageProviderInterface {
         num_images: settings.count,
         guidance_scale: settings.guidanceScale || 7.5,
         seed: settings.seed,
-        num_inference_steps: settings.quality === 'draft' ? 4 : settings.quality === 'ultra' ? 50 : 28,
+        num_inference_steps:
+          settings.quality === 'draft'
+            ? 4
+            : settings.quality === 'ultra'
+              ? 50
+              : 28,
       }),
     })
 
@@ -446,26 +501,10 @@ class GoogleImageProvider implements ImageProviderInterface {
 
   async generate(
     prompt: string,
-    settings: ImageGenerationSettings,
+    _settings: ImageGenerationSettings,
     config: ImageProviderConfig,
   ): Promise<GeneratedImage[]> {
     const model = config.model || 'gemini-2.5-flash-image'
-
-    // Build parts array with optional reference image
-    const parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }> = []
-
-    // Add reference image first if provided (Gemini expects image before text for image-to-image)
-    if (settings.referenceImageBase64 && settings.referenceImageMimeType) {
-      parts.push({
-        inlineData: {
-          mimeType: settings.referenceImageMimeType,
-          data: settings.referenceImageBase64,
-        },
-      })
-    }
-
-    // Add the text prompt
-    parts.push({ text: prompt })
 
     const response = await fetch(
       `${config.baseUrl || this.baseUrl}/models/${model}:generateContent`,
@@ -478,7 +517,11 @@ class GoogleImageProvider implements ImageProviderInterface {
         body: JSON.stringify({
           contents: [
             {
-              parts,
+              parts: [
+                {
+                  text: prompt,
+                },
+              ],
             },
           ],
         }),
@@ -487,7 +530,9 @@ class GoogleImageProvider implements ImageProviderInterface {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}))
-      throw new Error(error.error?.message || `Google API error: ${response.statusText}`)
+      throw new Error(
+        error.error?.message || `Google API error: ${response.statusText}`,
+      )
     }
 
     const data = await response.json()
@@ -498,7 +543,11 @@ class GoogleImageProvider implements ImageProviderInterface {
       for (const part of candidate.content?.parts || []) {
         if (part.inlineData?.mimeType?.startsWith('image/')) {
           const mimeType = part.inlineData.mimeType
-          const format = mimeType.includes('png') ? 'png' : mimeType.includes('jpeg') ? 'jpg' : 'png'
+          const format = mimeType.includes('png')
+            ? 'png'
+            : mimeType.includes('jpeg')
+              ? 'jpg'
+              : 'png'
           images.push({
             id: `google-${Date.now()}-${images.length}`,
             requestId: '',
@@ -515,11 +564,17 @@ class GoogleImageProvider implements ImageProviderInterface {
 
     if (images.length === 0) {
       // Check if we got text response instead
-      const textParts = data.candidates?.[0]?.content?.parts?.filter((p: any) => p.text)
+      const textParts = data.candidates?.[0]?.content?.parts?.filter(
+        (p: any) => p.text,
+      )
       if (textParts?.length > 0) {
-        throw new Error(`Model returned text instead of image. The model "${model}" may not support image generation. Try using "gemini-2.0-flash-preview-image-generation".`)
+        throw new Error(
+          `Model returned text instead of image. The model "${model}" may not support image generation. Try using "gemini-2.0-flash-preview-image-generation".`,
+        )
       }
-      throw new Error('No images were generated. Ensure you are using a model that supports image generation.')
+      throw new Error(
+        'No images were generated. Ensure you are using a model that supports image generation.',
+      )
     }
 
     return images
@@ -530,26 +585,10 @@ class GoogleImageProvider implements ImageProviderInterface {
    */
   async *streamGenerate(
     prompt: string,
-    settings: ImageGenerationSettings,
+    _settings: ImageGenerationSettings,
     config: ImageProviderConfig,
   ): AsyncIterable<GeneratedImage> {
     const model = config.model || 'gemini-2.5-flash-image'
-
-    // Build parts array with optional reference image
-    const parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }> = []
-
-    // Add reference image first if provided (Gemini expects image before text for image-to-image)
-    if (settings.referenceImageBase64 && settings.referenceImageMimeType) {
-      parts.push({
-        inlineData: {
-          mimeType: settings.referenceImageMimeType,
-          data: settings.referenceImageBase64,
-        },
-      })
-    }
-
-    // Add the text prompt
-    parts.push({ text: prompt })
 
     const response = await fetch(
       `${config.baseUrl || this.baseUrl}/models/${model}:streamGenerateContent?alt=sse`,
@@ -562,7 +601,11 @@ class GoogleImageProvider implements ImageProviderInterface {
         body: JSON.stringify({
           contents: [
             {
-              parts,
+              parts: [
+                {
+                  text: prompt,
+                },
+              ],
             },
           ],
         }),
@@ -571,7 +614,9 @@ class GoogleImageProvider implements ImageProviderInterface {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}))
-      throw new Error(error.error?.message || `Google API error: ${response.statusText}`)
+      throw new Error(
+        error.error?.message || `Google API error: ${response.statusText}`,
+      )
     }
 
     const reader = response.body?.getReader()
@@ -633,14 +678,11 @@ class GoogleImageProvider implements ImageProviderInterface {
 
   async validateApiKey(apiKey: string): Promise<boolean> {
     try {
-      const response = await fetch(
-        `${this.baseUrl}/models`,
-        {
-          headers: {
-            'x-goog-api-key': apiKey,
-          },
+      const response = await fetch(`${this.baseUrl}/models`, {
+        headers: {
+          'x-goog-api-key': apiKey,
         },
-      )
+      })
       return response.ok
     } catch {
       return false
@@ -671,7 +713,10 @@ export class ImageGenerationService {
   /**
    * Register a custom provider
    */
-  static registerProvider(name: ImageProvider, provider: ImageProviderInterface): void {
+  static registerProvider(
+    name: ImageProvider,
+    provider: ImageProviderInterface,
+  ): void {
     this.providers.set(name, provider)
   }
 
@@ -714,7 +759,10 @@ export class ImageGenerationService {
       prompt: normalizedPrompt,
       compiledPrompt,
       settings: fullSettings,
-      providerConfig: { ...config, apiKey: '[REDACTED]' } as ImageProviderConfig,
+      providerConfig: {
+        ...config,
+        apiKey: '[REDACTED]',
+      } as ImageProviderConfig,
       status: 'generating',
       createdAt: new Date(),
       startedAt: new Date(),
@@ -724,7 +772,11 @@ export class ImageGenerationService {
       const provider = this.getProvider(config.provider)
       const startTime = Date.now()
 
-      const images = await provider.generate(compiledPrompt, fullSettings, config)
+      const images = await provider.generate(
+        compiledPrompt,
+        fullSettings,
+        config,
+      )
 
       // Set requestId on all images
       images.forEach((img) => {
@@ -763,7 +815,10 @@ export class ImageGenerationService {
    */
   static supportsStreaming(provider: ImageProvider): boolean {
     const impl = this.getProvider(provider)
-    return impl.supportsStreaming === true && typeof impl.streamGenerate === 'function'
+    return (
+      impl.supportsStreaming === true &&
+      typeof impl.streamGenerate === 'function'
+    )
   }
 
   /**
@@ -789,14 +844,22 @@ export class ImageGenerationService {
 
     // If provider supports streaming, use it
     if (provider.supportsStreaming && provider.streamGenerate) {
-      for await (const image of provider.streamGenerate(compiledPrompt, fullSettings, config)) {
+      for await (const image of provider.streamGenerate(
+        compiledPrompt,
+        fullSettings,
+        config,
+      )) {
         image.requestId = requestId
         onImageReceived?.(image)
         yield image
       }
     } else {
       // Fall back to regular generation
-      const images = await provider.generate(compiledPrompt, fullSettings, config)
+      const images = await provider.generate(
+        compiledPrompt,
+        fullSettings,
+        config,
+      )
       for (const image of images) {
         image.requestId = requestId
         onImageReceived?.(image)
@@ -808,7 +871,10 @@ export class ImageGenerationService {
   /**
    * Validate an API key for a provider
    */
-  static async validateApiKey(provider: ImageProvider, apiKey: string): Promise<boolean> {
+  static async validateApiKey(
+    provider: ImageProvider,
+    apiKey: string,
+  ): Promise<boolean> {
     const impl = this.getProvider(provider)
     return impl.validateApiKey(apiKey)
   }

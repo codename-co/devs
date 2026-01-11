@@ -78,10 +78,14 @@ export interface UseStudioHistoryReturn {
 export function useStudioHistory(): UseStudioHistoryReturn {
   const [history, setHistory] = useState<StudioEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  
+
   // Get backup sync function
-  const { triggerSync, isEnabled: isBackupEnabled, syncStudio } = useFolderSyncStore()
-  
+  const {
+    triggerSync,
+    isEnabled: isBackupEnabled,
+    syncStudio,
+  } = useFolderSyncStore()
+
   // Trigger backup sync if enabled
   const triggerBackupSync = useCallback(() => {
     if (isBackupEnabled && syncStudio) {
@@ -125,7 +129,7 @@ export function useStudioHistory(): UseStudioHistoryReturn {
       }
 
       await saveEntry(entry)
-      
+
       // Trigger local backup sync
       triggerBackupSync()
 
@@ -157,53 +161,62 @@ export function useStudioHistory(): UseStudioHistoryReturn {
   )
 
   // Toggle favorite
-  const toggleFavorite = useCallback(async (entryId: string) => {
-    setHistory((prev) => {
-      const updated = prev.map((entry) =>
-        entry.id === entryId
-          ? { ...entry, isFavorite: !entry.isFavorite }
-          : entry,
-      )
+  const toggleFavorite = useCallback(
+    async (entryId: string) => {
+      setHistory((prev) => {
+        const updated = prev.map((entry) =>
+          entry.id === entryId
+            ? { ...entry, isFavorite: !entry.isFavorite }
+            : entry,
+        )
 
-      // Save to DB
-      const entry = updated.find((e) => e.id === entryId)
-      if (entry) {
-        saveEntry(entry)
-          .then(() => triggerBackupSync())
-          .catch(console.error)
-      }
+        // Save to DB
+        const entry = updated.find((e) => e.id === entryId)
+        if (entry) {
+          saveEntry(entry)
+            .then(() => triggerBackupSync())
+            .catch(console.error)
+        }
 
-      return updated
-    })
-  }, [triggerBackupSync])
+        return updated
+      })
+    },
+    [triggerBackupSync],
+  )
 
   // Add tags
-  const addTags = useCallback(async (entryId: string, tags: string[]) => {
-    setHistory((prev) => {
-      const updated = prev.map((entry) =>
-        entry.id === entryId
-          ? { ...entry, tags: [...new Set([...(entry.tags || []), ...tags])] }
-          : entry,
-      )
+  const addTags = useCallback(
+    async (entryId: string, tags: string[]) => {
+      setHistory((prev) => {
+        const updated = prev.map((entry) =>
+          entry.id === entryId
+            ? { ...entry, tags: [...new Set([...(entry.tags || []), ...tags])] }
+            : entry,
+        )
 
-      // Save to DB
-      const entry = updated.find((e) => e.id === entryId)
-      if (entry) {
-        saveEntry(entry)
-          .then(() => triggerBackupSync())
-          .catch(console.error)
-      }
+        // Save to DB
+        const entry = updated.find((e) => e.id === entryId)
+        if (entry) {
+          saveEntry(entry)
+            .then(() => triggerBackupSync())
+            .catch(console.error)
+        }
 
-      return updated
-    })
-  }, [triggerBackupSync])
+        return updated
+      })
+    },
+    [triggerBackupSync],
+  )
 
   // Remove entry
-  const removeEntry = useCallback(async (entryId: string) => {
-    await deleteEntry(entryId)
-    setHistory((prev) => prev.filter((e) => e.id !== entryId))
-    triggerBackupSync()
-  }, [triggerBackupSync])
+  const removeEntry = useCallback(
+    async (entryId: string) => {
+      await deleteEntry(entryId)
+      setHistory((prev) => prev.filter((e) => e.id !== entryId))
+      triggerBackupSync()
+    },
+    [triggerBackupSync],
+  )
 
   // Clear history
   const clearHistory = useCallback(async () => {
