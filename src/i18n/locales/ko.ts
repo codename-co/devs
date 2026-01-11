@@ -80,6 +80,7 @@ export const ko: I18n = {
   'Manage your files': '파일 관리',
   'App configuration': '앱 설정',
   'Database management': '데이터베이스 관리',
+  Traces: '트레이스',
   Admin: '관리자',
 
   // PromptArea
@@ -571,7 +572,6 @@ export const ko: I18n = {
   Unfavorite: '즐겨찾기 해제',
   'Copy revised prompt': '수정된 프롬프트 복사',
   'Use as reference': '참조로 사용',
-  'No images yet': '아직 이미지가 없습니다',
   'Generate your first image to see it here':
     '첫 번째 이미지를 생성하여 여기에서 확인하세요',
   Current: '현재',

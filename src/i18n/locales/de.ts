@@ -81,6 +81,7 @@ export const de: I18n = {
   'Manage your files': 'Verwalten Sie Ihre Dateien',
   'App configuration': 'App-Konfiguration',
   'Database management': 'Datenbankverwaltung',
+  'Traces and Metrics': 'Traces und Metriken',
   Admin: 'Admin',
 
   // PromptArea
@@ -581,7 +582,6 @@ export const de: I18n = {
   Unfavorite: 'Aus Favoriten entfernen',
   'Copy revised prompt': 'Überarbeiteten Prompt kopieren',
   'Use as reference': 'Als Referenz verwenden',
-  'No images yet': 'Noch keine Bilder',
   'Generate your first image to see it here':
     'Generieren Sie Ihr erstes Bild, um es hier zu sehen',
   Current: 'Aktuell',

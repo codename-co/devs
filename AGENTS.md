@@ -396,6 +396,66 @@ Local Backup provides automatic, bidirectional synchronization between DEVS's In
 - CRDT (Conflict-free Replicated Data Types) for shared state
 - Privacy-preserving collaboration protocols
 
+### 11. Battle Arena - Agent vs Agent Competition
+
+The Battle Arena is a competitive feature where AI agents engage in structured debates and discussions. See [docs/ARENA.md](docs/ARENA.md) for full documentation.
+
+**Key Features:**
+
+- Team-based agent competitions with configurable team sizes
+- Tournament-style elimination rounds
+- Neutral judge agent for fair evaluation
+- User-defined debate topics and judging criteria
+- Real-time conversation visualization
+
+### 12. Global Search
+
+The Global Search feature provides a unified, fast search experience across all DEVS entities. See [docs/SEARCH.md](docs/SEARCH.md) for full documentation.
+
+**Key Features:**
+
+- Keyboard shortcut access (`Cmd/Ctrl + K`)
+- Parallel search across agents, conversations, tasks, files, memories, and more
+- Score-based relevance ranking
+- Grouped results by category
+- Recent searches and quick navigation
+
+### 13. Meeting Bot - Google Meet Integration
+
+DEVS enables AI agents to join Google Meet meetings as real participants. See [docs/MEET-BOT.md](docs/MEET-BOT.md) for full documentation.
+
+**Key Features:**
+
+- Join Google Meet meetings as authenticated participants
+- Live transcription and note-taking
+- Interactive AI assistance during calls
+- Emoji reactions and chat responses
+- Meeting summarization
+
+### 14. Traces - LLM Observability & Analytics
+
+DEVS includes a comprehensive tracing system for monitoring, analyzing, and debugging all LLM interactions. See [docs/TRACES.md](docs/TRACES.md) for full documentation.
+
+**Key Features:**
+
+- Request/response data capture for all LLM calls
+- Token usage and real-time cost tracking
+- Performance metrics (latency, P50, P95, P99 percentiles)
+- Error tracking and debugging
+- Analytics dashboard with charts
+
+### 15. P2P Sync - Cross-Device Synchronization
+
+DEVS uses Yjs P2P for optional data synchronization across devices and users. See [docs/SYNC.md](docs/SYNC.md) for full documentation.
+
+**Key Features:**
+
+- Offline-first with full local copy in IndexedDB
+- Privacy-preserving (no central server sees user data)
+- CRDT-based automatic conflict resolution
+- WebSocket-based sync with auto-reconnect
+- Firebase-like reactive hooks for instant UI updates
+
 ---
 
 ## User Experience

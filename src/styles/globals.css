@@ -81,81 +81,9 @@
   } */
 }
 
-/* View Transitions */
-@view-transition {
-  navigation: auto;
-}
 @layer utilities {
   .no-scrollbar {
     @apply [scrollbar-width:none] [&::-webkit-scrollbar]:hidden;
-  }
-
-  /* Default smooth slide transition */
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation-duration: 0.3s;
-    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Slide out animation */
-  ::view-transition-old(root) {
-    animation-name: slide-out;
-  }
-
-  /* Slide in animation */
-  ::view-transition-new(root) {
-    animation-name: slide-in;
-  }
-
-  /* Keyframe animations */
-  @keyframes slide-out {
-    to {
-      transform: translateX(-30px);
-      opacity: 0;
-    }
-  }
-
-  @keyframes slide-in {
-    from {
-      transform: translateX(30px);
-      opacity: 0;
-    }
-  }
-
-  /* Alternative fade animation */
-  @keyframes fade-out {
-    to {
-      opacity: 0;
-      transform: scale(0.98);
-    }
-  }
-
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: scale(0.98);
-    }
-  }
-
-  /* Respect user preferences */
-  @media (prefers-reduced-motion: reduce) {
-    @view-transition {
-      navigation: none;
-    }
-
-    ::view-transition-old(*),
-    ::view-transition-new(*) {
-      animation: none !important;
-    }
-  }
-
-  /* Optional: Smooth transitions for specific page types */
-  .page-fade ::view-transition-old(root) {
-    animation-name: fade-out;
-  }
-
-  .page-fade ::view-transition-new(root) {
-    animation-name: fade-in;
   }
 }
 

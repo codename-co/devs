@@ -18,6 +18,7 @@ import {
 import { Connector, ConnectorSyncState } from '@/features/connectors/types'
 import { Battle } from '@/features/battle/types'
 import { StudioEntry } from '@/features/studio/types'
+import { Trace, Span, TracingConfig } from '@/features/traces/types'
 
 export interface DBStores {
   agents: Agent
@@ -44,6 +45,10 @@ export interface DBStores {
   battles: Battle
   // Studio Entries
   studioEntries: StudioEntry
+  // Traces/Observability System
+  traces: Trace
+  spans: Span
+  tracingConfig: TracingConfig
 }
 
 export class Database {
@@ -51,7 +56,7 @@ export class Database {
   private initialized = false
 
   static DB_NAME = 'devs-ai-platform'
-  static DB_VERSION = 14
+  static DB_VERSION = 15
   static STORES: (keyof DBStores)[] = [
     'agents',
     'conversations',
@@ -76,6 +81,10 @@ export class Database {
     'battles',
     // Studio Entries
     'studioEntries',
+    // Traces/Observability System
+    'traces',
+    'spans',
+    'tracingConfig',
   ]
 
   isInitialized(): boolean {
@@ -632,6 +641,49 @@ export class Database {
             studioEntriesStore.createIndex('isFavorite', 'isFavorite', {
               unique: false,
             })
+          }
+        }
+
+        // Migration for version 15: Add Traces/Observability System stores
+        if (event.oldVersion < 15) {
+          console.log(
+            'Database migrated to version 15: Added Traces/Observability System stores',
+          )
+
+          // Create traces store
+          if (!db.objectStoreNames.contains('traces')) {
+            const tracesStore = db.createObjectStore('traces', {
+              keyPath: 'id',
+            })
+            tracesStore.createIndex('status', 'status', { unique: false })
+            tracesStore.createIndex('agentId', 'agentId', { unique: false })
+            tracesStore.createIndex('conversationId', 'conversationId', { unique: false })
+            tracesStore.createIndex('taskId', 'taskId', { unique: false })
+            tracesStore.createIndex('sessionId', 'sessionId', { unique: false })
+            tracesStore.createIndex('startTime', 'startTime', { unique: false })
+            tracesStore.createIndex('createdAt', 'createdAt', { unique: false })
+          }
+
+          // Create spans store
+          if (!db.objectStoreNames.contains('spans')) {
+            const spansStore = db.createObjectStore('spans', {
+              keyPath: 'id',
+            })
+            spansStore.createIndex('traceId', 'traceId', { unique: false })
+            spansStore.createIndex('parentSpanId', 'parentSpanId', { unique: false })
+            spansStore.createIndex('type', 'type', { unique: false })
+            spansStore.createIndex('status', 'status', { unique: false })
+            spansStore.createIndex('agentId', 'agentId', { unique: false })
+            spansStore.createIndex('startTime', 'startTime', { unique: false })
+            spansStore.createIndex('createdAt', 'createdAt', { unique: false })
+          }
+
+          // Create tracingConfig store
+          if (!db.objectStoreNames.contains('tracingConfig')) {
+            const tracingConfigStore = db.createObjectStore('tracingConfig', {
+              keyPath: 'id',
+            })
+            tracingConfigStore.createIndex('enabled', 'enabled', { unique: false })
           }
         }
       }

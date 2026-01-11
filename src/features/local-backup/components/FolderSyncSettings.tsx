@@ -208,7 +208,6 @@ export function FolderSyncSettings() {
           </Button>
         </div>
       )}
-
       {/* Permission needed */}
       {needsPermission && (
         <div className="flex items-center justify-between gap-2 p-2 bg-warning-50 rounded-lg">
@@ -226,7 +225,6 @@ export function FolderSyncSettings() {
           </Button>
         </div>
       )}
-
       {/* Not enabled state - compact row */}
       {!isEnabled && !needsPermission && (
         <div className="flex items-center justify-between gap-3">
@@ -283,7 +281,6 @@ export function FolderSyncSettings() {
           </div>
         </div>
       )}
-
       {/* Enabled state - compact inline status */}
       {isEnabled && !needsPermission && (
         <div className="flex items-center justify-between gap-3">

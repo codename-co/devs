@@ -123,8 +123,12 @@ describe('Navigation Flow', () => {
 
     // Mock document.startViewTransition
     Object.defineProperty(document, 'startViewTransition', {
-      value: vi.fn((callback) => callback()),
+      value: vi.fn((callback) => {
+        callback()
+        return { finished: Promise.resolve() }
+      }),
       writable: true,
+      configurable: true,
     })
   })
 

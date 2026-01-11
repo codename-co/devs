@@ -507,7 +507,9 @@ export class WorkflowOrchestrator {
       ]
 
       let response = ''
-      for await (const chunk of LLMService.streamChat(messages, config)) {
+      for await (const chunk of LLMService.streamChat(messages, config, {
+        agentId: recruiter.id,
+      })) {
         response += chunk
       }
 
@@ -659,7 +661,11 @@ export class WorkflowOrchestrator {
       ]
 
       let response = ''
-      for await (const chunk of LLMService.streamChat(messages, config)) {
+      for await (const chunk of LLMService.streamChat(messages, config, {
+        agentId: agent.id,
+        conversationId: conversation.id,
+        taskId: task.id,
+      })) {
         response += chunk
       }
 
@@ -761,7 +767,10 @@ Please validate if all requirements are met by the deliverables.
       ]
 
       let response = ''
-      for await (const chunk of LLMService.streamChat(messages, config)) {
+      for await (const chunk of LLMService.streamChat(messages, config, {
+        agentId: validator.id,
+        taskId: task.id,
+      })) {
         response += chunk
       }
 

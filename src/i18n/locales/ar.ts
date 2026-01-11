@@ -574,7 +574,6 @@ export const ar: I18n = {
   Unfavorite: 'إزالة من المفضلة',
   'Copy revised prompt': 'نسخ الطلب المعدل',
   'Use as reference': 'استخدام كمرجع',
-  'No images yet': 'لا توجد صور بعد',
   'Generate your first image to see it here': 'أنشئ صورتك الأولى لتراها هنا',
   Current: 'الحالي',
   History: 'السجل',

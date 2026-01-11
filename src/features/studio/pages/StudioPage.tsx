@@ -25,6 +25,13 @@ import {
 import { Container, Filter, Icon, Section, Title } from '@/components'
 import DefaultLayout from '@/layouts/Default'
 import { useI18n, useUrl } from '@/i18n'
+import { motion } from 'framer-motion'
+import {
+  createTransition,
+  fadeInUp,
+  scaleIn,
+  SPRING_CONFIG,
+} from '@/lib/motion'
 import { useLLMModelStore } from '@/stores/llmModelStore'
 import { userSettings } from '@/stores/userStore'
 import { CredentialService } from '@/lib/credential-service'
@@ -33,6 +40,7 @@ import { ImagePromptArea } from '../components/ImagePromptArea'
 import { PresetGrid } from '../components/PresetGrid'
 import { SettingsPanel } from '../components/SettingsPanel'
 import { GeneratedImageCard } from '../components/GeneratedImageCard'
+import { StudioBackground } from '../components/StudioBackground'
 import { useImageGeneration } from '../hooks/useImageGeneration'
 import { useImagePresets } from '../hooks/useImagePresets'
 import { useStudioHistory } from '../hooks/useStudioHistory'
@@ -55,10 +63,9 @@ const pageI18n = {
     'Describe the image you want to create…',
     'Drop reference image here…',
     'No images yet',
-    'Start by describing what you want to create',
     'All',
     'Favorites only',
-    'Generated visuals history',
+    'Generated visuals',
     'Clear all',
     'Download',
     'Delete',
@@ -496,21 +503,47 @@ export function StudioPage() {
 
   return (
     <DefaultLayout showBackButton={false}>
-      <Section className="min-h-screen">
-        <Container className="py-6 md:py-10 max-w-5xl">
+      {/* Studio branded background */}
+      <StudioBackground />
+      <Section className="min-h-screen relative">
+        <Container className="py-6 md:py-10 max-w-5xl relative z-10">
           {/* Hero section with prompt */}
-          <div className="text-center mb-8">
-            <Title
-              subtitle={t('Create stunning visuals with AI')}
-              className="text-2xl md:text-3xl font-bold mb-2 flex items-center justify-center gap-2"
+          <motion.div
+            className="text-center mb-8"
+            {...fadeInUp(20)}
+            transition={createTransition(0, {
+              ...SPRING_CONFIG,
+              duration: 0.8,
+            })}
+          >
+            <motion.div
+              {...scaleIn}
+              transition={createTransition(0.1, {
+                type: 'spring',
+                damping: 20,
+                stiffness: 100,
+              })}
             >
-              <Icon name="MediaImagePlus" size="3xl" className="text-danger" />
-              {t('Studio')}
-            </Title>
-          </div>
+              <Title
+                subtitle={t('Create stunning visuals with AI')}
+                className="text-2xl md:text-3xl font-bold mb-2 flex items-center justify-center gap-2"
+              >
+                <Icon
+                  name="MediaImagePlus"
+                  size="3xl"
+                  className="text-danger"
+                />
+                {t('Studio')}
+              </Title>
+            </motion.div>
+          </motion.div>
 
           {/* Centered prompt area - the star of the show */}
-          <div className="mb-10">
+          <motion.div
+            className="mb-10"
+            {...fadeInUp(30)}
+            transition={createTransition(0.3, { duration: 0.7 })}
+          >
             <ImagePromptArea
               lang={lang}
               value={prompt}
@@ -529,60 +562,53 @@ export function StudioPage() {
               availableProviders={availableProviders}
               onModelChange={handleModelChange}
             />
-          </div>
+          </motion.div>
 
           {/* History section header with title and filter */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <h2 className="text-lg font-semibold">
-                {t('Generated visuals history')}
-              </h2>
-              {historyImagesCount > 0 && (
+          {historyImagesCount > 0 && (
+            <motion.div
+              className="flex items-center justify-between mb-6"
+              {...fadeInUp(30)}
+              transition={createTransition(0.4, { duration: 0.7 })}
+            >
+              <div className="flex items-center gap-3">
+                <h2 className="text-lg font-semibold">
+                  {t('Generated visuals')}
+                </h2>
                 <Chip size="sm" variant="flat">
                   {historyImagesCount}
                 </Chip>
-              )}
-            </div>
-            <Filter
-              label={t('All')}
-              options={[
-                { key: 'all', label: t('All'), count: historyImagesCount },
-                {
-                  key: 'favorites',
-                  label: t('Favorites only'),
-                  count: favoriteImages.length,
-                  icon: 'HeartSolid',
-                },
-              ]}
-              selectedKey={showFavoritesOnly ? 'favorites' : 'all'}
-              onSelectionChange={(key) =>
-                setShowFavoritesOnly(key === 'favorites')
-              }
-              showCounts="all"
-            />
-          </div>
+              </div>
+              <Filter
+                label={t('All')}
+                options={[
+                  { key: 'all', label: t('All'), count: historyImagesCount },
+                  {
+                    key: 'favorites',
+                    label: t('Favorites only'),
+                    count: favoriteImages.length,
+                    icon: 'HeartSolid',
+                  },
+                ]}
+                selectedKey={showFavoritesOnly ? 'favorites' : 'all'}
+                onSelectionChange={(key) =>
+                  setShowFavoritesOnly(key === 'favorites')
+                }
+                showCounts="all"
+              />
+            </motion.div>
+          )}
 
           {/* Gallery content - shows streaming images first, then history */}
-          <div className="min-h-[300px]">
+          <motion.div
+            className="min-h-[300px]"
+            {...fadeInUp(30)}
+            transition={createTransition(0.5, { duration: 0.7 })}
+          >
             {history.length === 0 &&
             streamingImages.length === 0 &&
-            !isGenerating ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="w-16 h-16 rounded-full bg-default-100 flex items-center justify-center mb-4">
-                  <Icon
-                    name="MediaImage"
-                    size="lg"
-                    className="text-default-300"
-                  />
-                </div>
-                <p className="text-default-500 text-lg mb-1">
-                  {t('No images yet')}
-                </p>
-                <p className="text-default-400 text-sm">
-                  {t('Start by describing what you want to create')}
-                </p>
-              </div>
-            ) : showFavoritesOnly && favoriteImages.length === 0 ? (
+            !isGenerating ? null : showFavoritesOnly &&
+              favoriteImages.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="w-16 h-16 rounded-full bg-default-100 flex items-center justify-center mb-4">
                   <Icon name="Heart" size="lg" className="text-default-300" />
@@ -648,10 +674,9 @@ export function StudioPage() {
                     )}
               </div>
             )}
-          </div>
+          </motion.div>
         </Container>
       </Section>
-
       {/* Presets Modal */}
       <Modal
         isOpen={isPresetsOpen}
@@ -673,7 +698,6 @@ export function StudioPage() {
           </ModalBody>
         </ModalContent>
       </Modal>
-
       {/* Settings Drawer */}
       <Drawer
         isOpen={isSettingsOpen}
@@ -694,7 +718,6 @@ export function StudioPage() {
           </DrawerBody>
         </DrawerContent>
       </Drawer>
-
       {/* Save Preset Modal */}
       <Modal isOpen={isSavePresetOpen} onClose={onCloseSavePreset} size="md">
         <ModalContent>

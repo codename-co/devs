@@ -7,6 +7,9 @@ import type { HeaderProps, IconName } from '@/lib/types'
 import { useContextualPanelStore } from '@/stores/contextualPanelStore'
 import { userSettings } from '@/stores/userStore'
 import {
+  useNavigate,
+} from 'react-router-dom'
+import {
   Button,
   Dropdown,
   DropdownItem,
@@ -17,7 +20,7 @@ import {
   Tooltip,
 } from '@heroui/react'
 import clsx from 'clsx'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { PRODUCT } from '@/config/product'
 
@@ -82,7 +85,7 @@ export default function DefaultLayout({
       const parentPath = '/' + pathSegments.join('/')
       navigate(parentPath)
     } else {
-      navigate('/')
+      navigate(-1)
     }
   }
 
@@ -142,7 +145,7 @@ export default function DefaultLayout({
                         />
                       )}
                       {/* Header action buttons */}
-                      <div className="absolute end-0 flex items-center gap-1">
+                      <div className="absolute end-0 flex items-center gap-1 z-1">
                         {header?.cta && (
                           <Button
                             variant="light"

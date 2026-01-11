@@ -240,7 +240,10 @@ export const battleService = {
       // Generate agent's response with live streaming
       let response = ''
       let chunkCount = 0
-      for await (const chunk of LLMService.streamChat(llmMessages, config)) {
+      for await (const chunk of LLMService.streamChat(llmMessages, config, {
+        agentId: currentAgent.id,
+        conversationId: conversation.id,
+      })) {
         response += chunk
         chunkCount++
         // Notify listener of each streaming chunk for live updates
@@ -373,10 +376,16 @@ export const battleService = {
 
     // Get judge's evaluation
     let response = ''
-    for await (const chunk of LLMService.streamChat(llmMessages, {
-      ...config,
-      temperature: 0.3, // Lower temperature for more consistent judging
-    })) {
+    for await (const chunk of LLMService.streamChat(
+      llmMessages,
+      {
+        ...config,
+        temperature: 0.3, // Lower temperature for more consistent judging
+      },
+      {
+        agentId: judgeAgent.id,
+      },
+    )) {
       response += chunk
     }
 

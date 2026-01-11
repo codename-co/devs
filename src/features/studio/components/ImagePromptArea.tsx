@@ -182,14 +182,62 @@ export const ImagePromptArea = forwardRef<
   }, [])
 
   const handleDrop = useCallback(
-    (event: React.DragEvent) => {
+    async (event: React.DragEvent) => {
       event.preventDefault()
       event.stopPropagation()
       setIsDragOver(false)
 
+      // First, try to get a file from the drop (e.g., from file system)
       const file = event.dataTransfer.files?.[0]
       if (file && file.type.startsWith('image/')) {
         onReferenceImageChange?.(file)
+        return
+      }
+
+      // Try to get image URL from drag data (for images dragged from the same page)
+      // Check for data URL first (from canvas or blob URLs)
+      const htmlData = event.dataTransfer.getData('text/html')
+      const urlData = event.dataTransfer.getData('text/uri-list') || event.dataTransfer.getData('text/plain')
+
+      let imageUrl: string | null = null
+
+      // Extract image src from HTML if present
+      if (htmlData) {
+        const imgMatch = htmlData.match(/<img[^>]+src=["']([^"']+)["']/i)
+        if (imgMatch) {
+          imageUrl = imgMatch[1]
+        }
+      }
+
+      // Fall back to URL data
+      if (!imageUrl && urlData) {
+        // Check if it looks like an image URL
+        if (urlData.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?|$)/i) ||
+            urlData.startsWith('data:image/') ||
+            urlData.startsWith('blob:')) {
+          imageUrl = urlData
+        }
+      }
+
+      // If we found an image URL, fetch it and convert to File
+      if (imageUrl) {
+        try {
+          const response = await fetch(imageUrl)
+          const blob = await response.blob()
+          
+          if (blob.type.startsWith('image/')) {
+            // Generate a filename from the URL or use a default
+            const urlParts = imageUrl.split('/')
+            const filename = urlParts[urlParts.length - 1]?.split('?')[0] || 'dropped-image'
+            const extension = blob.type.split('/')[1] || 'png'
+            const finalFilename = filename.includes('.') ? filename : `${filename}.${extension}`
+            
+            const imageFile = new File([blob], finalFilename, { type: blob.type })
+            onReferenceImageChange?.(imageFile)
+          }
+        } catch (error) {
+          console.warn('Failed to load dropped image:', error)
+        }
       }
     },
     [onReferenceImageChange],

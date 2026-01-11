@@ -59,6 +59,8 @@ export const localI18n = {
     'minutes',
     'hours',
     'Stop',
+    'Download Backup',
+    'Your browser does not support automatic folder sync. You can download a backup file instead.',
   ] as const,
   fr: {
     'Local Backup': 'Sauvegarde locale',
@@ -93,7 +95,7 @@ export const localI18n = {
     Tasks: 'Tâches',
     'Workflow tasks': 'Tâches de workflow',
     Studio: 'Studio',
-    'Studio image generations': "Générations d'images du studio",
+    'Studio image generations': 'Générations d\'images du studio',
     'Full Export': 'Export complet',
     'Complete database JSON export':
       'Export JSON complet de la base de données',
@@ -124,6 +126,9 @@ export const localI18n = {
     minutes: 'minutes',
     hours: 'heures',
     Stop: 'Arrêter',
+    'Download Backup': 'Télécharger la sauvegarde',
+    'Your browser does not support automatic folder sync. You can download a backup file instead.':
+      'Votre navigateur ne prend pas en charge la synchronisation automatique des dossiers. Vous pouvez télécharger un fichier de sauvegarde à la place.',
   },
   es: {
     'Local Backup': 'Copia de seguridad local',
@@ -188,6 +193,9 @@ export const localI18n = {
     minutes: 'minutos',
     hours: 'horas',
     Stop: 'Detener',
+    'Download Backup': 'Descargar copia',
+    'Your browser does not support automatic folder sync. You can download a backup file instead.':
+      'Tu navegador no admite la sincronización automática de carpetas. Puedes descargar un archivo de copia de seguridad en su lugar.',
   },
   de: {
     'Local Backup': 'Lokale Sicherung',
@@ -252,6 +260,9 @@ export const localI18n = {
     minutes: 'Minuten',
     hours: 'Stunden',
     Stop: 'Stoppen',
+    'Download Backup': 'Sicherung herunterladen',
+    'Your browser does not support automatic folder sync. You can download a backup file instead.':
+      'Ihr Browser unterstützt keine automatische Ordnersynchronisation. Sie können stattdessen eine Sicherungsdatei herunterladen.',
   },
   ar: {
     'Local Backup': 'نسخ احتياطي محلي',
@@ -315,6 +326,9 @@ export const localI18n = {
     minutes: 'دقائق',
     hours: 'ساعات',
     Stop: 'إيقاف',
+    'Download Backup': 'تحميل النسخة الاحتياطية',
+    'Your browser does not support automatic folder sync. You can download a backup file instead.':
+      'متصفحك لا يدعم المزامنة التلقائية للمجلدات. يمكنك تحميل ملف النسخ الاحتياطي بدلاً من ذلك.',
   },
   ko: {
     'Local Backup': '로컬 백업',
@@ -378,5 +392,8 @@ export const localI18n = {
     minutes: '분',
     hours: '시간',
     Stop: '중지',
+    'Download Backup': '백업 다운로드',
+    'Your browser does not support automatic folder sync. You can download a backup file instead.':
+      '브라우저가 자동 폴더 동기화를 지원하지 않습니다. 대신 백업 파일을 다운로드할 수 있습니다.',
   },
 }

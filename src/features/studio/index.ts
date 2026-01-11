@@ -21,6 +21,7 @@ export { PresetGrid } from './components/PresetGrid'
 export { SettingsPanel } from './components/SettingsPanel'
 export { ImageGallery } from './components/ImageGallery'
 export { GeneratedImageCard } from './components/GeneratedImageCard'
+export { StudioBackground } from './components/StudioBackground'
 
 // Pages
 export { StudioPage } from './pages/StudioPage'

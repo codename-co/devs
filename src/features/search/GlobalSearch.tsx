@@ -23,6 +23,7 @@ import {
 import { useConversations, useTasks } from '@/hooks'
 import { formatConversationDate } from '@/lib/format'
 import type { Conversation, Task } from '@/types'
+import { cn } from '@/lib/utils'
 
 const localI18n = {
   en: [
@@ -39,6 +40,7 @@ const localI18n = {
     'methodology',
     'connector',
     'media',
+    'page',
     'Agents',
     'Conversations',
     'Tasks',
@@ -48,6 +50,7 @@ const localI18n = {
     'Methodologies',
     'Connectors',
     'Media',
+    'Pages',
     'Recent',
   ] as const,
   ar: {
@@ -65,6 +68,7 @@ const localI18n = {
     methodology: 'منهجية',
     connector: 'موصل',
     media: 'وسائط',
+    page: 'صفحة',
     Agents: 'الوكلاء',
     Conversations: 'المحادثات',
     Tasks: 'المهام',
@@ -74,6 +78,7 @@ const localI18n = {
     Methodologies: 'المنهجيات',
     Connectors: 'الموصلات',
     Media: 'الوسائط',
+    Pages: 'الصفحات',
     Recent: 'الأخيرة',
   },
   de: {
@@ -91,6 +96,7 @@ const localI18n = {
     methodology: 'Methodik',
     connector: 'Konnektor',
     media: 'Medien',
+    page: 'Seite',
     Agents: 'Agenten',
     Conversations: 'Konversationen',
     Tasks: 'Aufgaben',
@@ -100,6 +106,7 @@ const localI18n = {
     Methodologies: 'Methoden',
     Connectors: 'Konnektoren',
     Media: 'Medien',
+    Pages: 'Seiten',
     Recent: 'Kürzlich',
   },
   es: {
@@ -117,6 +124,7 @@ const localI18n = {
     methodology: 'metodología',
     connector: 'conector',
     media: 'medios',
+    page: 'página',
     Agents: 'Agentes',
     Conversations: 'Conversaciones',
     Tasks: 'Tareas',
@@ -126,6 +134,7 @@ const localI18n = {
     Methodologies: 'Metodologías',
     Connectors: 'Conectores',
     Media: 'Medios',
+    Pages: 'Páginas',
     Recent: 'Reciente',
   },
   fr: {
@@ -143,6 +152,7 @@ const localI18n = {
     methodology: 'méthodologie',
     connector: 'connecteur',
     media: 'médias',
+    page: 'page',
     Agents: 'Agents',
     Conversations: 'Conversations',
     Tasks: 'Tâches',
@@ -152,6 +162,7 @@ const localI18n = {
     Methodologies: 'Méthodologies',
     Connectors: 'Connecteurs',
     Media: 'Médias',
+    Pages: 'Pages',
     Recent: 'Récent',
   },
   ko: {
@@ -168,6 +179,7 @@ const localI18n = {
     methodology: '방법론',
     connector: '커넥터',
     media: '미디어',
+    page: '페이지',
     Agents: '에이전트',
     Conversations: '대화',
     Tasks: '작업',
@@ -177,6 +189,7 @@ const localI18n = {
     Methodologies: '방법론',
     Connectors: '커넥터',
     Media: '미디어',
+    Pages: '페이지',
     Recent: '최근',
   },
 }
@@ -194,6 +207,7 @@ const SECTION_TITLE_KEYS: Record<SearchResultType, string> = {
   methodology: 'Methodologies',
   connector: 'Connectors',
   media: 'Media',
+  page: 'Pages',
 }
 
 /**
@@ -210,6 +224,7 @@ function getIconColorClass(type: SearchResultType): string {
     methodology: 'text-success',
     connector: 'text-primary',
     media: 'text-secondary',
+    page: 'text-default-600',
   }
   return colors[type]
 }
@@ -577,7 +592,11 @@ export function GlobalSearch() {
                             startContent={
                               <Icon
                                 name={result.icon as any}
-                                className={getIconColorClass(result.type)}
+                                className={
+                                  result.color
+                                    ? `text-${result.color}-500`
+                                    : getIconColorClass(result.type)
+                                }
                               />
                             }
                           >

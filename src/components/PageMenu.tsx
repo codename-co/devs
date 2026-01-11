@@ -45,6 +45,13 @@ export function PageMenu() {
         </Tooltip>
         <DropdownMenu aria-label={t('More actions')}>
           <DropdownItem
+            key="traces"
+            startContent={<Icon name="Activity" size="sm" />}
+            onPress={() => navigate(url('/traces'))}
+          >
+            {t('Traces and Metrics')}
+          </DropdownItem>
+          <DropdownItem
             key="settings"
             startContent={<Icon name="Settings" size="sm" />}
             // description={t('App configuration')}

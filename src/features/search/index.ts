@@ -6,6 +6,7 @@ export {
   createDebouncedSearch,
   getResultIcon,
   getResultColor,
+  hasSearchableItems,
   type SearchResult,
   type SearchResultType,
 } from './search-engine'

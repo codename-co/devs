@@ -4,6 +4,8 @@ import {
   getMethodologyById,
 } from '@/stores/methodologiesStore'
 import { getAvailableAgents, getAgentById } from '@/stores/agentStore'
+import { locales } from '@/i18n'
+import { IconName } from '@/lib/types'
 
 export type SearchResultType =
   | 'agent'
@@ -15,6 +17,7 @@ export type SearchResultType =
   | 'methodology'
   | 'connector'
   | 'media'
+  | 'page'
 
 export interface SearchResult {
   id: string
@@ -59,6 +62,7 @@ const TYPE_COLORS: Record<SearchResultType, string> = {
   methodology: 'success',
   connector: 'primary',
   media: 'secondary',
+  page: 'default',
 }
 
 /**
@@ -73,6 +77,7 @@ const TYPE_ICONS: Record<SearchResultType, string> = {
   message: 'ChatLines',
   methodology: 'Strategy',
   connector: 'Puzzle',
+  page: 'OpenNewWindow',
   media: 'MediaImage',
 }
 
@@ -550,6 +555,231 @@ async function searchMedia(query: string): Promise<SearchResult[]> {
 }
 
 /**
+ * Page definitions for search
+ * Each page has localized titles and descriptions that are searched across all languages
+ */
+interface PageDefinition {
+  id: string
+  href: string
+  icon: IconName
+  /** Color class for the icon */
+  color: string
+  /** i18n keys for name in each locale */
+  nameKey: string
+  /** i18n keys for description in each locale */
+  descriptionKey?: string
+  /** Additional keywords for matching */
+  keywords?: string[]
+}
+
+const SEARCHABLE_PAGES: PageDefinition[] = [
+  {
+    id: 'new-conversation',
+    href: '',
+    icon: 'ChatPlusIn',
+    color: 'primary',
+    nameKey: 'Chat',
+    keywords: ['chat', 'start', 'begin', 'create', 'new', 'conversation'],
+  },
+  {
+    id: 'page-agents',
+    href: '/agents',
+    icon: 'Sparks',
+    color: 'warning',
+    nameKey: 'Agents',
+    descriptionKey: 'Create and manage your AI specialists',
+    keywords: ['ai', 'bot', 'assistant', 'specialist'],
+  },
+  {
+    id: 'page-studio',
+    href: '/studio',
+    icon: 'MediaImagePlus',
+    color: 'danger',
+    nameKey: 'Studio',
+    keywords: ['image', 'generate', 'create', 'art', 'picture', 'photo'],
+  },
+  {
+    id: 'page-voice',
+    href: '/voice',
+    icon: 'Voice',
+    color: 'primary',
+    nameKey: 'Voice',
+    descriptionKey: 'Voice input mode',
+    keywords: ['speak', 'talk', 'audio', 'microphone', 'dictate'],
+  },
+  {
+    id: 'page-tasks',
+    href: '/tasks',
+    icon: 'TriangleFlagTwoStripes',
+    color: 'secondary',
+    nameKey: 'Tasks',
+    keywords: ['todo', 'work', 'project', 'assignment'],
+  },
+  {
+    id: 'page-knowledge',
+    href: '/knowledge',
+    icon: 'Book',
+    color: 'primary',
+    nameKey: 'Knowledge',
+    descriptionKey: 'Files',
+    keywords: ['file', 'document', 'upload', 'storage', 'data'],
+  },
+  {
+    id: 'page-methodologies',
+    href: '/methodologies',
+    icon: 'Strategy',
+    color: 'success',
+    nameKey: 'Methodologies',
+    keywords: ['workflow', 'process', 'framework', 'method'],
+  },
+  {
+    id: 'page-arena',
+    href: '/arena',
+    icon: 'Crown',
+    color: 'warning',
+    nameKey: 'Arena',
+    descriptionKey: 'Battle Arena',
+    keywords: ['battle', 'competition', 'debate', 'versus', 'vs'],
+  },
+  {
+    id: 'page-conversations',
+    href: '/conversations',
+    icon: 'ChatBubble',
+    color: 'default',
+    nameKey: 'Conversations',
+    descriptionKey: 'Conversations history',
+    keywords: ['chat', 'history', 'messages'],
+  },
+  {
+    id: 'page-settings',
+    href: '/settings',
+    icon: 'Settings',
+    color: 'default',
+    nameKey: 'Settings',
+    descriptionKey: 'App configuration',
+    keywords: ['config', 'preferences', 'options', 'llm', 'api', 'key'],
+  },
+  {
+    id: 'page-traces',
+    href: '/traces',
+    icon: 'Activity',
+    color: 'default',
+    nameKey: 'Traces and Metrics',
+    keywords: ['logs', 'analytics', 'monitoring', 'debug', 'performance'],
+  },
+  {
+    id: 'page-connectors',
+    href: '/knowledge/connectors',
+    icon: 'Puzzle',
+    color: 'primary',
+    nameKey: 'Connectors',
+    descriptionKey: 'Connect external services',
+    keywords: ['google', 'drive', 'gmail', 'notion', 'integration', 'sync'],
+  },
+  {
+    id: 'page-privacy',
+    href: '/privacy',
+    icon: 'Lock',
+    color: 'default',
+    nameKey: 'Privacy',
+    keywords: ['policy', 'data', 'security'],
+  },
+  {
+    id: 'page-terms',
+    href: '/terms',
+    icon: 'Page',
+    color: 'default',
+    nameKey: 'Terms',
+    keywords: ['conditions', 'legal', 'agreement', 'tos'],
+  },
+  {
+    id: 'page-sync',
+    href: '/sync',
+    icon: 'RefreshDouble',
+    color: 'success',
+    nameKey: 'Sync',
+    keywords: ['backup', 'p2p', 'synchronization', 'devices'],
+  },
+]
+
+/**
+ * Index and search pages (i18n-aware)
+ * Searches across all localizations but displays in user's locale
+ */
+async function searchPages(
+  query: string,
+  lang: string = 'en',
+): Promise<SearchResult[]> {
+  const results: SearchResult[] = []
+
+  try {
+    for (const page of SEARCHABLE_PAGES) {
+      // Collect searchable text from all locales
+      const texts: string[] = []
+
+      // Add keywords (ensure they're strings)
+      if (page.keywords) {
+        for (const kw of page.keywords) {
+          if (typeof kw === 'string') texts.push(kw)
+        }
+      }
+
+      // Always add English keys directly (these are the i18n keys themselves)
+      texts.push(page.nameKey)
+      if (page.descriptionKey) texts.push(page.descriptionKey)
+
+      // Add translations from all locales
+      for (const localeKey of Object.keys(locales)) {
+        const locale = locales[localeKey as keyof typeof locales]
+        // English locale is an array, other locales are objects
+        if (locale && typeof locale === 'object' && !Array.isArray(locale)) {
+          // Get the name in this locale
+          const name = (locale as Record<string, string>)[page.nameKey]
+          if (typeof name === 'string') texts.push(name)
+
+          // Get the description in this locale
+          if (page.descriptionKey) {
+            const desc = (locale as Record<string, string>)[page.descriptionKey]
+            if (typeof desc === 'string') texts.push(desc)
+          }
+        }
+      }
+
+      if (matchesQuery(query, texts)) {
+        // Get localized display values
+        const locale = locales[lang as keyof typeof locales]
+        const displayTitle =
+          locale && typeof locale === 'object' && !Array.isArray(locale)
+            ? (locale as Record<string, string>)[page.nameKey] || page.nameKey
+            : page.nameKey
+        const displayDescription =
+          page.descriptionKey &&
+          locale &&
+          typeof locale === 'object' &&
+          !Array.isArray(locale)
+            ? (locale as Record<string, string>)[page.descriptionKey]
+            : page.descriptionKey
+
+        results.push({
+          id: page.id,
+          type: 'page',
+          title: displayTitle,
+          subtitle: displayDescription,
+          icon: page.icon,
+          color: page.color,
+          href: page.href,
+          score: calculateScore(query, texts, 8), // Higher base score for pages
+        })
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to search pages:', error)
+  }
+
+  return results
+}
+
+/**
  * Main search function that searches across all indexed entities
  * @param query - The search query
  * @param lang - The user's current language for localized display (default: 'en')
@@ -573,6 +803,7 @@ export async function globalSearch(
     methodologies,
     connectors,
     media,
+    pages,
   ] = await Promise.all([
     searchAgents(query),
     searchConversations(query),
@@ -583,10 +814,12 @@ export async function globalSearch(
     searchMethodologies(query, lang),
     searchConnectors(query),
     searchMedia(query),
+    searchPages(query, lang),
   ])
 
   // Combine and sort by score
   const allResults = [
+    ...pages, // Pages first for quick navigation
     ...agents,
     ...conversations,
     ...messages,
@@ -644,5 +877,40 @@ export function createDebouncedSearch(
     timeoutId = setTimeout(() => {
       callback(query)
     }, delay)
+  }
+}
+
+/**
+ * Check if there are any searchable items (user-generated content)
+ * Returns true if there are conversations, tasks, files, memories, connectors, or media
+ */
+export async function hasSearchableItems(): Promise<boolean> {
+  try {
+    if (!db.isInitialized()) await db.init()
+
+    // Check for any user-generated content
+    const stores = [
+      'conversations',
+      'tasks',
+      'knowledgeItems',
+      'agentMemories',
+      'connectors',
+      'studioEntries',
+      'agents', // Custom agents
+    ] as const
+
+    for (const store of stores) {
+      if (db.hasStore(store)) {
+        const items = await db.getAll(store)
+        if (items.length > 0) {
+          return true
+        }
+      }
+    }
+
+    return false
+  } catch (error) {
+    console.warn('Failed to check for searchable items:', error)
+    return false
   }
 }

@@ -298,7 +298,10 @@ export const submitChat = async (
     // Call the LLM service with streaming
     let response = ''
 
-    for await (const chunk of LLMService.streamChat(messages, config)) {
+    for await (const chunk of LLMService.streamChat(messages, config, {
+      agentId: agent.id,
+      conversationId: conversation.id,
+    })) {
       console.debug('◁', chunk)
       response += chunk
       onResponseUpdate(response)

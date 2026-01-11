@@ -66,15 +66,7 @@ export function ImageGallery({
   const hasImages = images.length > 0 || history.length > 0
 
   if (!hasImages) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 text-default-400">
-        <Icon name="MediaImage" size="xl" className="mb-4 opacity-30" />
-        <p className="text-lg">{t('No images yet')}</p>
-        <p className="text-sm mt-1">
-          {t('Generate your first image to see it here')}
-        </p>
-      </div>
-    )
+    return null
   }
 
   return (

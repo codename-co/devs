@@ -28,6 +28,7 @@ import { PageMenuButton } from '@/components/PageMenuButton'
 import { PageMenuPanel } from '@/components/PageMenuPanel'
 import { useI18n } from '@/i18n'
 import { localI18n } from '../i18n'
+import { db, Database } from '@/lib/db'
 
 /**
  * Check if File System Access API is supported
@@ -64,6 +65,10 @@ export function LocalBackupButton() {
   const [pendingHandle, setPendingHandle] =
     useState<FileSystemDirectoryHandle | null>(null)
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false)
+
+  // Check if we need to use the download fallback (Safari, Firefox, etc.)
+  const useFallbackDownload = !isFileSystemAccessSupported()
 
   // Try to reconnect on mount
   useEffect(() => {
@@ -147,6 +152,58 @@ export function LocalBackupButton() {
     }
   }, [pendingHandle, isEnabled, enableSync, handleSelectFolder])
 
+  // Handle download fallback for browsers without File System Access API
+  const handleDownloadBackup = useCallback(async () => {
+    setIsDownloading(true)
+    try {
+      await db.init()
+
+      const dbData: Record<string, unknown[]> = {}
+      const stores = Database.STORES
+
+      for (const store of stores) {
+        try {
+          dbData[store] = await db.getAll(store as any)
+        } catch (error) {
+          console.warn(`Failed to export store ${store}:`, error)
+          dbData[store] = []
+        }
+      }
+
+      // Add metadata
+      const exportData = {
+        _meta: {
+          exportedAt: new Date().toISOString(),
+          dbName: Database.DB_NAME,
+          dbVersion: Database.DB_VERSION,
+          stores: stores.length,
+          compressed: true,
+        },
+        ...dbData,
+      }
+
+      const jsonString = JSON.stringify(exportData)
+
+      // Compress using native CompressionStream (gzip)
+      const stream = new Blob([jsonString]).stream()
+      const compressedStream = stream.pipeThrough(new CompressionStream('gzip'))
+      const compressedBlob = await new Response(compressedStream).blob()
+
+      const url = URL.createObjectURL(compressedBlob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `devs-backup-${new Date().toISOString().split('T')[0]}.json.gz`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Failed to download backup:', error)
+    } finally {
+      setIsDownloading(false)
+    }
+  }, [])
+
   // Build sync options value
   const syncOptionsValue: string[] = []
   if (syncAgents) syncOptionsValue.push('agents')
@@ -203,11 +260,6 @@ export function LocalBackupButton() {
     return 'default'
   }
 
-  // Don't render if File System Access API is not supported
-  if (!isFileSystemAccessSupported()) {
-    return null
-  }
-
   return (
     <Popover
       placement="bottom"
@@ -218,7 +270,7 @@ export function LocalBackupButton() {
         icon="FloppyDisk"
         tooltip={getTooltipText()}
         ariaLabel={t('Local Backup')}
-        showBadge={isEnabled}
+        showBadge={isEnabled && !useFallbackDownload}
         badgePulsing={isSyncing}
         tooltipDisabled={isPopoverOpen}
         shortcutKeys={['command']}
@@ -228,7 +280,7 @@ export function LocalBackupButton() {
         <PageMenuPanel
           title={t('Local Backup')}
           actions={
-            <>
+            !useFallbackDownload ? (
               <Dropdown>
                 <DropdownTrigger>
                   <Button
@@ -304,26 +356,10 @@ export function LocalBackupButton() {
                   </DropdownItem>
                 </DropdownMenu>
               </Dropdown>
-              {/* {isEnabled && !needsPermission && (
-                <Tooltip content={t('Backup Now')}>
-                  <Button
-                    size="sm"
-                    variant="light"
-                    isIconOnly
-                    onPress={() => triggerSync()}
-                    isLoading={isSyncing}
-                    aria-label={t('Backup Now')}
-                  >
-                    {!isSyncing && (
-                      <Icon name="RefreshDouble" className="h-4 w-4" />
-                    )}
-                  </Button>
-                </Tooltip>
-              )} */}
-            </>
+            ) : undefined
           }
           status={
-            isEnabled
+            isEnabled && !useFallbackDownload
               ? {
                   text: getStatusText(),
                   color: getStatusColor(),
@@ -334,15 +370,19 @@ export function LocalBackupButton() {
               : undefined
           }
           description={
-            !isEnabled && !needsPermission
+            useFallbackDownload
               ? t(
-                  'Your conversations are yours. Keep them safe on your device—no cloud surprises, no vanishing chats.',
+                  'Your browser does not support automatic folder sync. You can download a backup file instead.',
                 )
-              : undefined
+              : !isEnabled && !needsPermission
+                ? t(
+                    'Your conversations are yours. Keep them safe on your device—no cloud surprises, no vanishing chats.',
+                  )
+                : undefined
           }
         >
-          {/* Backup status when enabled */}
-          {isEnabled && !needsPermission && (
+          {/* Backup status when enabled - only for browsers with File System Access API */}
+          {isEnabled && !needsPermission && !useFallbackDownload && (
             <div className="flex flex-col gap-2">
               {/* Last backup time */}
               {lastSync && (
@@ -442,7 +482,7 @@ export function LocalBackupButton() {
           )}
 
           {/* Permission needed */}
-          {needsPermission && (
+          {needsPermission && !useFallbackDownload && (
             <div className="flex items-center justify-between gap-2 p-2 bg-warning-50 rounded-lg">
               <div className="flex items-center gap-2 text-warning-700">
                 <Icon name="Lock" className="h-4 w-4" />
@@ -459,8 +499,8 @@ export function LocalBackupButton() {
             </div>
           )}
 
-          {/* Not enabled state */}
-          {!isEnabled && !needsPermission && (
+          {/* Not enabled state - folder selection for supported browsers */}
+          {!isEnabled && !needsPermission && !useFallbackDownload && (
             <Button
               color="primary"
               variant="flat"
@@ -473,6 +513,22 @@ export function LocalBackupButton() {
               }
             >
               {t('Select Folder')}
+            </Button>
+          )}
+
+          {/* Download fallback for Safari and other browsers without File System Access API */}
+          {useFallbackDownload && (
+            <Button
+              color="primary"
+              variant="flat"
+              size="sm"
+              onPress={handleDownloadBackup}
+              isLoading={isDownloading}
+              startContent={
+                !isDownloading && <Icon name="Download" className="h-4 w-4" />
+              }
+            >
+              {t('Download Backup')}
             </Button>
           )}
         </PageMenuPanel>

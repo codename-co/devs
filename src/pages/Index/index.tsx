@@ -1,4 +1,4 @@
-import { useI18n } from '@/i18n'
+import { useI18n, useUrl } from '@/i18n'
 import { Container, Icon, PromptArea, Section, Title } from '@/components'
 import { DevsIcon } from '@/components/DevsIcon'
 import { EasySetupModal } from '@/components/EasySetup/EasySetupModal'
@@ -29,7 +29,8 @@ import { agentThemeIcon, useCasesByThemes } from '@/lib/agents'
 import { PRODUCT } from '@/config/product'
 
 export const IndexPage = () => {
-  const { lang, url, t } = useI18n(localeI18n)
+  const { lang, t } = useI18n(localeI18n)
+  const url = useUrl(lang)
   const navigate = useNavigate()
   const [prompt, setPrompt] = useState('')
   const [isSending, setIsSending] = useState(false)

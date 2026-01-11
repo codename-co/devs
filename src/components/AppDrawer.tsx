@@ -28,12 +28,14 @@ import {
   GlobalSearch,
   useGlobalSearchShortcut,
   useSearchStore,
+  hasSearchableItems,
 } from '@/features/search'
 import { PRODUCT } from '@/config/product'
 import clsx from 'clsx'
 import { useState, useEffect, memo } from 'react'
 import { cn, isCurrentPath } from '@/lib/utils'
 import { useNavigate } from 'react-router-dom'
+import { useConversationStore } from '@/stores/conversationStore'
 
 const AgentList = () => {
   const { lang, t } = useI18n()
@@ -243,6 +245,15 @@ export const AppDrawer = memo(() => {
   const openSearch = useSearchStore((state) => state.open)
 
   const [isMobile, setIsMobile] = useState(false)
+  const [hasSearchable, setHasSearchable] = useState(false)
+
+  // Load conversations count
+  const conversationsCount = useConversationStore(
+    (state) => state.conversations.length,
+  )
+  const loadConversations = useConversationStore(
+    (state) => state.loadConversations,
+  )
 
   // Register Cmd+K shortcut for global search
   useGlobalSearchShortcut()
@@ -264,6 +275,12 @@ export const AppDrawer = memo(() => {
     }
   }, [isMobile])
 
+  // Load conversations and check searchable items on mount
+  useEffect(() => {
+    loadConversations()
+    hasSearchableItems().then(setHasSearchable)
+  }, [loadConversations])
+
   return (
     <aside
       className={clsx(
@@ -279,8 +296,15 @@ export const AppDrawer = memo(() => {
         <CollapsedDrawer
           className="drawer-collapsed"
           onOpenSearch={openSearch}
+          hasConversations={conversationsCount > 0}
+          hasSearchable={hasSearchable}
         />
-        <ExpandedDrawer className="drawer-expanded" onOpenSearch={openSearch} />
+        <ExpandedDrawer
+          className="drawer-expanded"
+          onOpenSearch={openSearch}
+          hasConversations={conversationsCount > 0}
+          hasSearchable={hasSearchable}
+        />
         {!isCollapsed && isMobile && <BackDrop />}
 
         {/* Global Search Modal - rendered at AppDrawer level */}
@@ -314,9 +338,13 @@ AppDrawer.displayName = 'AppDrawer'
 const CollapsedDrawer = ({
   className,
   onOpenSearch,
+  hasConversations,
+  hasSearchable,
 }: {
   className?: string
   onOpenSearch: () => void
+  hasConversations: boolean
+  hasSearchable: boolean
 }) => {
   const { lang, t } = useI18n()
   const url = useUrl(lang)
@@ -497,21 +525,23 @@ const CollapsedDrawer = ({
                   <Icon name="Community" />
                 </Button>
               </Tooltip> */}
-            <Tooltip content={t('Conversations history')} placement="right">
-              <Button
-                as={Link}
-                href={url('/conversations')}
-                isIconOnly
-                variant="light"
-                className={cn(
-                  'w-full text-gray-500 dark:text-gray-400 [.is-active]:bg-default-100',
-                  isCurrentPath('/conversations') && 'is-active',
-                )}
-                aria-label={t('Conversations history')}
-              >
-                <Icon name="ChatBubble" />
-              </Button>
-            </Tooltip>
+            {hasConversations && (
+              <Tooltip content={t('Conversations history')} placement="right">
+                <Button
+                  as={Link}
+                  href={url('/conversations')}
+                  isIconOnly
+                  variant="light"
+                  className={cn(
+                    'w-full text-gray-500 dark:text-gray-400 [.is-active]:bg-default-100',
+                    isCurrentPath('/conversations') && 'is-active',
+                  )}
+                  aria-label={t('Conversations history')}
+                >
+                  <Icon name="ChatBubble" />
+                </Button>
+              </Tooltip>
+            )}
           </nav>
 
           {/* <div className="mt-4 pt-4 border-t border-default-200 float-end">
@@ -542,9 +572,13 @@ const CollapsedDrawer = ({
 const ExpandedDrawer = ({
   className,
   onOpenSearch,
+  hasConversations,
+  hasSearchable,
 }: {
   className?: string
   onOpenSearch: () => void
+  hasConversations: boolean
+  hasSearchable: boolean
 }) => {
   const { lang, t } = useI18n()
   const url = useUrl(lang)
@@ -612,7 +646,7 @@ const ExpandedDrawer = ({
                 {t('New chat')}
               </ListboxItem>
 
-              {/* Search Button */}
+              {/* Search Button - conditionally rendered */}
               <ListboxItem
                 variant="faded"
                 className="dark:text-gray-200 dark:hover:text-primary-500 [.is-active]:bg-primary-50"
@@ -842,6 +876,7 @@ const ExpandedDrawer = ({
               className={cn(
                 '[.is-active]:bg-default-100',
                 isCurrentPath('/conversations') && 'is-active',
+                !hasConversations && 'hidden',
               )}
               startContent={
                 <Icon

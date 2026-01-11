@@ -27,6 +27,7 @@ import { TaskPage } from '@/pages/Tasks/show'
 import { TasksPage } from '@/pages/Tasks'
 import { VoicePage } from '@/pages/Voice'
 import { ArenaPage } from '@/pages/Arena'
+import { TracesPage, TraceShowPage } from '@/features/traces'
 
 /**
  * Redirect component for /connectors -> /knowledge/connectors
@@ -68,6 +69,10 @@ const routes = {
   tasks: TasksPage,
   'tasks/:taskId': TaskPage,
   terms: TermsPage,
+  traces: TracesPage,
+  'traces/logs': TracesPage,
+  'traces/sessions': TracesPage,
+  'traces/logs/:traceId': TraceShowPage,
   voice: VoicePage,
   '*': NotFoundPage,
 }

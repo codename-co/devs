@@ -81,6 +81,7 @@ export const en = [
   'Manage your files',
   'App configuration',
   'Database management',
+  'Traces and Metrics',
   'Admin',
 
   // PromptArea
@@ -546,7 +547,6 @@ export const en = [
   'Unfavorite',
   'Copy revised prompt',
   'Use as reference',
-  'No images yet',
   'Generate your first image to see it here',
   'Current',
   'History',

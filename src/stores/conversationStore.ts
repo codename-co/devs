@@ -496,7 +496,6 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       const updatedConversation = {
         ...conversation,
         isPinned: true,
-        updatedAt: new Date(),
       }
       await db.update('conversations', updatedConversation)
       syncToYjs('conversations', updatedConversation)
@@ -532,7 +531,6 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       const updatedConversation = {
         ...conversation,
         isPinned: false,
-        updatedAt: new Date(),
       }
       await db.update('conversations', updatedConversation)
       syncToYjs('conversations', updatedConversation)

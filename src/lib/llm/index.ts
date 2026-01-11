@@ -1,4 +1,5 @@
 import { LLMProvider, LLMConfig } from '@/types'
+import { TraceService, estimateTokenUsage } from '@/features/traces/trace-service'
 
 export interface LLMMessageAttachment {
   type: 'image' | 'document' | 'text'
@@ -150,12 +151,73 @@ export class LLMService {
   static async chat(
     messages: LLMMessage[],
     config: LLMConfig,
+    context?: {
+      agentId?: string
+      conversationId?: string
+      taskId?: string
+      sessionId?: string
+    },
   ): Promise<LLMResponse> {
     const requestId = generateRequestId()
     progressTracker.startRequest(requestId)
+
+    // Start tracing
+    const trace = TraceService.startTrace({
+      name: `${config.provider}/${config.model}`,
+      agentId: context?.agentId,
+      conversationId: context?.conversationId,
+      taskId: context?.taskId,
+      sessionId: context?.sessionId,
+      input: messages[messages.length - 1]?.content?.substring(0, 200),
+    })
+
+    const span = TraceService.startSpan({
+      traceId: trace.id,
+      name: `LLM Call: ${config.model}`,
+      type: 'llm',
+      model: {
+        provider: config.provider,
+        model: config.model,
+        temperature: config.temperature,
+        maxTokens: config.maxTokens,
+      },
+      io: {
+        input: {
+          messages: messages.map((m) => ({ role: m.role, content: m.content })),
+        },
+      },
+      agentId: context?.agentId,
+      conversationId: context?.conversationId,
+      taskId: context?.taskId,
+    })
+
     try {
       const provider = this.getProvider(config.provider)
-      return await provider.chat(messages, config)
+      const response = await provider.chat(messages, config)
+
+      // End span and trace with success
+      await TraceService.endSpan(span.id, {
+        status: 'completed',
+        usage: response.usage,
+        output: { content: response.content },
+      })
+      await TraceService.endTrace(trace.id, {
+        status: 'completed',
+        output: response.content?.substring(0, 200),
+      })
+
+      return response
+    } catch (error) {
+      // End span and trace with error
+      await TraceService.endSpan(span.id, {
+        status: 'error',
+        statusMessage: error instanceof Error ? error.message : String(error),
+      })
+      await TraceService.endTrace(trace.id, {
+        status: 'error',
+        statusMessage: error instanceof Error ? error.message : String(error),
+      })
+      throw error
     } finally {
       progressTracker.endRequest(requestId)
     }
@@ -164,13 +226,84 @@ export class LLMService {
   static async *streamChat(
     messages: LLMMessage[],
     config: LLMConfig,
+    context?: {
+      agentId?: string
+      conversationId?: string
+      taskId?: string
+      sessionId?: string
+    },
   ): AsyncIterableIterator<string> {
     const requestId = generateRequestId()
     progressTracker.startRequest(requestId)
+
+    // Start tracing
+    const trace = TraceService.startTrace({
+      name: `${config.provider}/${config.model} (stream)`,
+      agentId: context?.agentId,
+      conversationId: context?.conversationId,
+      taskId: context?.taskId,
+      sessionId: context?.sessionId,
+      input: messages[messages.length - 1]?.content?.substring(0, 200),
+    })
+
+    const span = TraceService.startSpan({
+      traceId: trace.id,
+      name: `LLM Stream: ${config.model}`,
+      type: 'llm',
+      model: {
+        provider: config.provider,
+        model: config.model,
+        temperature: config.temperature,
+        maxTokens: config.maxTokens,
+      },
+      io: {
+        input: {
+          messages: messages.map((m) => ({ role: m.role, content: m.content })),
+        },
+      },
+      agentId: context?.agentId,
+      conversationId: context?.conversationId,
+      taskId: context?.taskId,
+    })
+
+    let fullResponse = ''
+
     try {
       const provider = this.getProvider(config.provider)
       console.log('△', 'using:', config.provider, config.model, { config })
-      yield* provider.streamChat(messages, config)
+
+      for await (const chunk of provider.streamChat(messages, config)) {
+        fullResponse += chunk
+        yield chunk
+      }
+
+      // End span and trace with success
+      // Note: Streaming doesn't provide token usage from the provider,
+      // so we estimate based on input/output text length
+      const estimatedUsage = estimateTokenUsage(
+        messages.map((m) => ({ role: m.role, content: m.content })),
+        fullResponse,
+      )
+      await TraceService.endSpan(span.id, {
+        status: 'completed',
+        usage: estimatedUsage,
+        output: { content: fullResponse },
+      })
+      await TraceService.endTrace(trace.id, {
+        status: 'completed',
+        output: fullResponse.substring(0, 200),
+      })
+    } catch (error) {
+      // End span and trace with error
+      await TraceService.endSpan(span.id, {
+        status: 'error',
+        statusMessage: error instanceof Error ? error.message : String(error),
+      })
+      await TraceService.endTrace(trace.id, {
+        status: 'error',
+        statusMessage: error instanceof Error ? error.message : String(error),
+      })
+      throw error
     } finally {
       progressTracker.endRequest(requestId)
     }

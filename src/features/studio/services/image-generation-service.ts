@@ -20,6 +20,75 @@ import {
   getDimensionsFromSettings,
   normalizePrompt,
 } from './prompt-compiler'
+import { TraceService } from '@/features/traces/trace-service'
+import { CostEstimate } from '@/features/traces/types'
+
+// =============================================================================
+// Image Generation Pricing (USD per image)
+// =============================================================================
+
+/**
+ * Estimated cost per image for different providers/models
+ * These are approximate costs as of January 2026
+ */
+const IMAGE_PRICING: Record<string, number> = {
+  // OpenAI DALL-E
+  'dall-e-3': 0.04, // $0.04 per image (1024x1024)
+  'dall-e-3-hd': 0.08, // $0.08 per image (HD quality)
+  'dall-e-2': 0.02, // $0.02 per image
+  // Google Gemini
+  'gemini-image': 0.02,
+  'imagen-3': 0.03,
+  // Stability AI
+  'stable-diffusion-xl': 0.002,
+  sd3: 0.035,
+  'sd3-turbo': 0.004,
+  // Replicate (varies by model)
+  'replicate-default': 0.01,
+  // Together AI
+  'together-default': 0.005,
+  // Fal.ai
+  'fal-default': 0.01,
+  // Default fallback
+  default: 0.02,
+}
+
+/**
+ * Get estimated cost for image generation
+ */
+function getImageCost(
+  provider: ImageProvider,
+  model: string | undefined,
+  imagesGenerated: number,
+  quality?: string,
+): CostEstimate {
+  // Try exact model match first
+  let costPerImage = IMAGE_PRICING[model || ''] || 0
+
+  // Try provider-specific default
+  if (!costPerImage) {
+    costPerImage = IMAGE_PRICING[`${provider}-default`] || 0
+  }
+
+  // Fallback to global default
+  if (!costPerImage) {
+    costPerImage = IMAGE_PRICING['default']
+  }
+
+  // Adjust for HD quality (DALL-E specific)
+  if (quality === 'hd' || quality === 'ultra') {
+    costPerImage *= 2
+  }
+
+  const totalCost = costPerImage * imagesGenerated
+
+  return {
+    inputCost: 0, // Image generation doesn't have input/output split
+    outputCost: totalCost,
+    totalCost,
+    currency: 'USD',
+  }
+}
 
 // =============================================================================
 // Provider Interface
@@ -501,10 +570,40 @@ class GoogleImageProvider implements ImageProviderInterface {
 
   async generate(
     prompt: string,
-    _settings: ImageGenerationSettings,
+    settings: ImageGenerationSettings,
     config: ImageProviderConfig,
   ): Promise<GeneratedImage[]> {
     const model = config.model || 'gemini-2.5-flash-image'
+
+    // Build parts array with text prompt and optional reference image(s)
+    const parts: Array<
+      { text: string } | { inline_data: { mime_type: string; data: string } }
+    > = []
+
+    // Add text prompt
+    parts.push({ text: prompt })
+
+    // Add reference image if provided
+    if (settings.referenceImageBase64 && settings.referenceImageMimeType) {
+      parts.push({
+        inline_data: {
+          mime_type: settings.referenceImageMimeType,
+          data: settings.referenceImageBase64,
+        },
+      })
+    }
+
+    // Build generation config
+    const generationConfig: Record<string, any> = {
+      responseModalities: ['TEXT', 'IMAGE'],
+    }
+
+    // Add aspect ratio if not default
+    if (settings.aspectRatio && settings.aspectRatio !== '1:1') {
+      generationConfig.imageConfig = {
+        aspectRatio: settings.aspectRatio,
+      }
+    }
 
     const response = await fetch(
       `${config.baseUrl || this.baseUrl}/models/${model}:generateContent`,
@@ -517,13 +616,10 @@ class GoogleImageProvider implements ImageProviderInterface {
         body: JSON.stringify({
           contents: [
             {
-              parts: [
-                {
-                  text: prompt,
-                },
-              ],
+              parts,
             },
           ],
+          generationConfig,
         }),
       },
     )
@@ -585,10 +681,40 @@ class GoogleImageProvider implements ImageProviderInterface {
    */
   async *streamGenerate(
     prompt: string,
-    _settings: ImageGenerationSettings,
+    settings: ImageGenerationSettings,
     config: ImageProviderConfig,
   ): AsyncIterable<GeneratedImage> {
     const model = config.model || 'gemini-2.5-flash-image'
+
+    // Build parts array with text prompt and optional reference image(s)
+    const parts: Array<
+      { text: string } | { inline_data: { mime_type: string; data: string } }
+    > = []
+
+    // Add text prompt
+    parts.push({ text: prompt })
+
+    // Add reference image if provided
+    if (settings.referenceImageBase64 && settings.referenceImageMimeType) {
+      parts.push({
+        inline_data: {
+          mime_type: settings.referenceImageMimeType,
+          data: settings.referenceImageBase64,
+        },
+      })
+    }
+
+    // Build generation config
+    const generationConfig: Record<string, any> = {
+      responseModalities: ['TEXT', 'IMAGE'],
+    }
+
+    // Add aspect ratio if not default
+    if (settings.aspectRatio && settings.aspectRatio !== '1:1') {
+      generationConfig.imageConfig = {
+        aspectRatio: settings.aspectRatio,
+      }
+    }
 
     const response = await fetch(
       `${config.baseUrl || this.baseUrl}/models/${model}:streamGenerateContent?alt=sse`,
@@ -601,13 +727,10 @@ class GoogleImageProvider implements ImageProviderInterface {
         body: JSON.stringify({
           contents: [
             {
-              parts: [
-                {
-                  text: prompt,
-                },
-              ],
+              parts,
             },
           ],
+          generationConfig,
         }),
       },
     )
@@ -745,6 +868,12 @@ export class ImageGenerationService {
     prompt: string,
     settings: Partial<ImageGenerationSettings> = {},
     config: ImageProviderConfig,
+    context?: {
+      agentId?: string
+      conversationId?: string
+      taskId?: string
+      sessionId?: string
+    },
   ): Promise<ImageGenerationResponse> {
     const fullSettings: ImageGenerationSettings = {
       ...DEFAULT_IMAGE_SETTINGS,
@@ -768,6 +897,40 @@ export class ImageGenerationService {
       startedAt: new Date(),
     }
 
+    // Start tracing
+    const trace = TraceService.startTrace({
+      name: `${config.provider}/${config.model || 'default'} (image)`,
+      agentId: context?.agentId,
+      conversationId: context?.conversationId,
+      taskId: context?.taskId,
+      sessionId: context?.sessionId,
+      input: compiledPrompt.substring(0, 200),
+    })
+
+    const span = TraceService.startSpan({
+      traceId: trace.id,
+      name: `Image Generation: ${config.model || config.provider}`,
+      type: 'image',
+      model: {
+        provider: config.provider as any,
+        model: config.model || `${config.provider}-default`,
+      },
+      io: {
+        input: {
+          prompt: compiledPrompt,
+          variables: {
+            style: fullSettings.style,
+            aspectRatio: fullSettings.aspectRatio,
+            quality: fullSettings.quality,
+            count: fullSettings.count,
+          },
+        },
+      },
+      agentId: context?.agentId,
+      conversationId: context?.conversationId,
+      taskId: context?.taskId,
+    })
+
     try {
       const provider = this.getProvider(config.provider)
       const startTime = Date.now()
@@ -785,6 +948,30 @@ export class ImageGenerationService {
 
       const generationTimeMs = Date.now() - startTime
 
+      // Calculate cost for tracing
+      const cost = getImageCost(
+        config.provider,
+        config.model,
+        images.length,
+        fullSettings.quality,
+      )
+
+      // End span and trace with success
+      await TraceService.endSpan(span.id, {
+        status: 'completed',
+        cost,
+        output: {
+          response: {
+            imagesGenerated: images.length,
+            generationTimeMs,
+          },
+        },
+      })
+      await TraceService.endTrace(trace.id, {
+        status: 'completed',
+        output: `Generated ${images.length} image(s)`,
+      })
+
       return {
         request: {
           ...request,
@@ -798,6 +985,16 @@ export class ImageGenerationService {
         },
       }
     } catch (error) {
+      // End span and trace with error
+      await TraceService.endSpan(span.id, {
+        status: 'error',
+        statusMessage: error instanceof Error ? error.message : String(error),
+      })
+      await TraceService.endTrace(trace.id, {
+        status: 'error',
+        statusMessage: error instanceof Error ? error.message : String(error),
+      })
+
       return {
         request: {
           ...request,
@@ -830,6 +1027,12 @@ export class ImageGenerationService {
     settings: Partial<ImageGenerationSettings> = {},
     config: ImageProviderConfig,
     onImageReceived?: (image: GeneratedImage) => void,
+    context?: {
+      agentId?: string
+      conversationId?: string
+      taskId?: string
+      sessionId?: string
+    },
   ): AsyncIterable<GeneratedImage> {
     const fullSettings: ImageGenerationSettings = {
       ...DEFAULT_IMAGE_SETTINGS,
@@ -842,29 +1045,108 @@ export class ImageGenerationService {
 
     const provider = this.getProvider(config.provider)
 
-    // If provider supports streaming, use it
-    if (provider.supportsStreaming && provider.streamGenerate) {
-      for await (const image of provider.streamGenerate(
-        compiledPrompt,
-        fullSettings,
-        config,
-      )) {
-        image.requestId = requestId
-        onImageReceived?.(image)
-        yield image
+    // Start tracing
+    const trace = TraceService.startTrace({
+      name: `${config.provider}/${config.model || 'default'} (image stream)`,
+      agentId: context?.agentId,
+      conversationId: context?.conversationId,
+      taskId: context?.taskId,
+      sessionId: context?.sessionId,
+      input: compiledPrompt.substring(0, 200),
+    })
+
+    const span = TraceService.startSpan({
+      traceId: trace.id,
+      name: `Image Generation Stream: ${config.model || config.provider}`,
+      type: 'image',
+      model: {
+        provider: config.provider as any,
+        model: config.model || `${config.provider}-default`,
+      },
+      io: {
+        input: {
+          prompt: compiledPrompt,
+          variables: {
+            style: fullSettings.style,
+            aspectRatio: fullSettings.aspectRatio,
+            quality: fullSettings.quality,
+            count: fullSettings.count,
+            streaming: true,
+          },
+        },
+      },
+      agentId: context?.agentId,
+      conversationId: context?.conversationId,
+      taskId: context?.taskId,
+    })
+
+    let imagesGenerated = 0
+    const startTime = Date.now()
+
+    try {
+      // If provider supports streaming, use it
+      if (provider.supportsStreaming && provider.streamGenerate) {
+        for await (const image of provider.streamGenerate(
+          compiledPrompt,
+          fullSettings,
+          config,
+        )) {
+          image.requestId = requestId
+          imagesGenerated++
+          onImageReceived?.(image)
+          yield image
+        }
+      } else {
+        // Fall back to regular generation
+        const images = await provider.generate(
+          compiledPrompt,
+          fullSettings,
+          config,
+        )
+        for (const image of images) {
+          image.requestId = requestId
+          imagesGenerated++
+          onImageReceived?.(image)
+          yield image
+        }
       }
-    } else {
-      // Fall back to regular generation
-      const images = await provider.generate(
-        compiledPrompt,
-        fullSettings,
-        config,
+
+      const generationTimeMs = Date.now() - startTime
+
+      // Calculate cost for tracing
+      const cost = getImageCost(
+        config.provider,
+        config.model,
+        imagesGenerated,
+        fullSettings.quality,
       )
-      for (const image of images) {
-        image.requestId = requestId
-        onImageReceived?.(image)
-        yield image
-      }
+
+      // End span and trace with success
+      await TraceService.endSpan(span.id, {
+        status: 'completed',
+        cost,
+        output: {
+          response: {
+            imagesGenerated,
+            generationTimeMs,
+          },
+        },
+      })
+      await TraceService.endTrace(trace.id, {
+        status: 'completed',
+        output: `Generated ${imagesGenerated} image(s)`,
+      })
+    } catch (error) {
+      // End span and trace with error
+      await TraceService.endSpan(span.id, {
+        status: 'error',
+        statusMessage: error instanceof Error ? error.message : String(error),
+      })
+      await TraceService.endTrace(trace.id, {
+        status: 'error',
+        statusMessage: error instanceof Error ? error.message : String(error),
+      })
+      throw error
     }
   }
 

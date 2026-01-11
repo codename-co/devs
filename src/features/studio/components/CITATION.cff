@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: 'If you use this software, please cite it as below.'
+authors:
+  - family-names: 'Leymet'
+    given-names: 'Arnaud'
+title: 'DEVS'
+version: 0.5.1
+date-released: 2026-01-11
+url: 'https://github.com/codename-co/devs'

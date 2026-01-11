@@ -347,17 +347,26 @@ export function ConversationPage() {
                       {group.conversations.map((conversation) => (
                         <Card
                           key={conversation.id}
-                          isPressable
                           isHoverable
                           shadow="none"
-                          className={`transition-transform w-full ${conversation.isPinned ? 'border-l-4 border-l-warning' : ''}`}
-                          onPress={() =>
-                            handleLoadConversation(conversation.id)
-                          }
+                          className={`transition-transform w-full cursor-pointer ${conversation.isPinned ? 'border-l-4 border-l-warning' : ''}`}
                         >
                           <CardBody className="py-4">
                             <div className="flex items-center justify-between gap-4">
-                              <div className="flex-1 min-w-0">
+                              <div
+                                className="flex-1 min-w-0 cursor-pointer"
+                                onClick={() =>
+                                  handleLoadConversation(conversation.id)
+                                }
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault()
+                                    handleLoadConversation(conversation.id)
+                                  }
+                                }}
+                                role="button"
+                                tabIndex={0}
+                              >
                                 <div className="flex items-center gap-2">
                                   <h3 className="text-base font-medium truncate">
                                     {getConversationTitle(conversation)}

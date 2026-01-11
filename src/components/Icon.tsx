@@ -92,7 +92,9 @@ const SimpleIconToComponent = (icon: any) => {
 
 export const Icons = {
   // Iconoir icons
+  Activity: IconoirIcons.Activity,
   AppWindow: IconoirIcons.AppWindow,
+  ArrowLeft: IconoirIcons.ArrowLeft,
   ArrowRight: IconoirIcons.ArrowRight,
   Attachment: IconoirIcons.Attachment,
   Book: IconoirIcons.Book,
