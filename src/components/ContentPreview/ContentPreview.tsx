@@ -172,18 +172,18 @@ const getFileTypeColor = (
 }
 
 /**
- * Get sync source display info
+ * Get sync source display info (returns translation keys)
  */
 const getSyncSourceInfo = (item: KnowledgeItem) => {
   switch (item.syncSource) {
     case 'manual':
-      return { label: 'Manual Upload', icon: 'Upload' }
+      return { labelKey: 'Manual Upload' as const, icon: 'Upload' }
     case 'filesystem_api':
-      return { label: 'Synced Folder', icon: 'Folder' }
+      return { labelKey: 'Synced Folder' as const, icon: 'Folder' }
     case 'connector':
-      return { label: 'Connector', icon: 'Puzzle' }
+      return { labelKey: 'Connector' as const, icon: 'Puzzle' }
     default:
-      return { label: 'Unknown', icon: 'QuestionMark' }
+      return { labelKey: 'Unknown' as const, icon: 'QuestionMark' }
   }
 }
 
@@ -246,6 +246,7 @@ const VideoPreview = ({
   content: string
   mimeType: string
 }) => {
+  const { t } = useI18n(localI18n)
   const videoUrl = useMemo(() => {
     if (content.startsWith('data:') || content.startsWith('blob:')) {
       return content
@@ -256,7 +257,7 @@ const VideoPreview = ({
   return (
     <video controls className="max-w-full rounded-lg" preload="metadata">
       <source src={videoUrl} type={mimeType} />
-      Your browser does not support video playback.
+      {t('Your browser does not support video playback.')}
     </video>
   )
 }
@@ -271,6 +272,7 @@ const AudioPreview = ({
   content: string
   mimeType: string
 }) => {
+  const { t } = useI18n(localI18n)
   const audioUrl = useMemo(() => {
     if (content.startsWith('data:') || content.startsWith('blob:')) {
       return content
@@ -281,7 +283,7 @@ const AudioPreview = ({
   return (
     <audio controls className="w-full" preload="metadata">
       <source src={audioUrl} type={mimeType} />
-      Your browser does not support audio playback.
+      {t('Your browser does not support audio playback.')}
     </audio>
   )
 }
@@ -829,7 +831,7 @@ const MetadataSection = ({
           <span className="text-default-500">{t('Source')}:</span>
           <span className="ml-2 flex items-center gap-1 inline-flex">
             <Icon name={sourceInfo.icon as any} className="w-3 h-3" />
-            {sourceInfo.label}
+            {t(sourceInfo.labelKey)}
           </span>
         </div>
       </div>

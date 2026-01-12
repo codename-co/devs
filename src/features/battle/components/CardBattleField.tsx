@@ -206,7 +206,7 @@ const EffectAnimation = ({ effect }: EffectAnimationProps) => {
   const positionClasses = {
     left: 'left-0 w-1/2',
     right: 'right-0 w-1/2',
-    center: 'left-1/4 right-1/4',
+    center: 'left-1/4 end-1/4',
     both: 'inset-0',
   }
 
@@ -598,7 +598,7 @@ export const CardBattleField = ({
       {/* Right Card (Opponent) */}
       <div
         className={`
-          absolute right-4 md:right-12 top-1/2 -translate-y-1/2
+          absolute end-4 md:end-12 top-1/2 -translate-y-1/2
           ${isRightActive ? 'z-20' : 'z-10'}
         `}
       >
@@ -673,7 +673,7 @@ export const CardBattleField = ({
       <BattleAnnouncementDisplay announcement={announcement} />
 
       {/* Battle Log (bottom) */}
-      <div className="absolute bottom-4 left-4 right-4 z-20">
+      <div className="absolute bottom-4 left-4 end-4 z-20">
         <div className="bg-black/60 backdrop-blur-sm rounded-lg p-3 max-h-32 overflow-y-auto">
           <h4 className="text-xs font-semibold text-default-400 mb-2">
             {t('Battle Log')}

@@ -50,4 +50,12 @@ export const en = [
   'Processing document...',
   'Extracting text content from the document',
   'Processing failed',
+  // Sync source labels
+  'Manual Upload',
+  'Synced Folder',
+  'Connector',
+  'Unknown',
+  // Browser support
+  'Your browser does not support video playback.',
+  'Your browser does not support audio playback.',
 ] as const

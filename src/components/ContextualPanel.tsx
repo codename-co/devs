@@ -51,13 +51,13 @@ export const ContextualPanel: React.FC = memo(() => {
   return (
     <aside
       className={clsx(
-        'pointer-events-none flex-0 h-full md:h-screen z-40 fixed md:relative right-0',
+        'pointer-events-none flex-0 h-full md:h-screen z-40 fixed md:relative end-0',
       )}
     >
       <div
         id="contextual-panel"
         data-testid="contextual-panel"
-        className={clsx('h-full', isCollapsed && 'fixed right-0')}
+        className={clsx('h-full', isCollapsed && 'fixed end-0')}
         data-state={isCollapsed ? 'collapsed' : 'expanded'}
       >
         <CollapsedPanel className="panel-collapsed" />
@@ -125,7 +125,7 @@ const ExpandedPanel = ({ className }: { className?: string }) => {
 
   return (
     <div
-      className={`fixed w-96 bg-background dark:bg-content1 p-3 border-l border-default-200 dark:border-default-200 h-full flex flex-col overflow-y-auto ${className}`}
+      className={`fixed w-96 bg-background dark:bg-content1 p-3 border-s border-default-200 dark:border-default-200 h-full flex flex-col overflow-y-auto ${className}`}
     >
       <ScrollShadow
         hideScrollBar

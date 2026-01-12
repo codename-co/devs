@@ -48,4 +48,12 @@ export const de = [
   'Dokument wird verarbeitet...',
   'Textinhalt wird aus dem Dokument extrahiert',
   'Verarbeitung fehlgeschlagen',
+  // Sync source labels
+  'Manueller Upload',
+  'Synchronisierter Ordner',
+  'Konnektor',
+  'Unbekannt',
+  // Browser support
+  'Ihr Browser unterstützt keine Videowiedergabe.',
+  'Ihr Browser unterstützt keine Audiowiedergabe.',
 ] as const

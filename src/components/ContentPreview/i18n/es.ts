@@ -48,4 +48,12 @@ export const es = [
   'Procesando documento...',
   'Extrayendo contenido de texto del documento',
   'El procesamiento falló',
+  // Sync source labels
+  'Subida manual',
+  'Carpeta sincronizada',
+  'Conector',
+  'Desconocido',
+  // Browser support
+  'Tu navegador no soporta la reproducción de video.',
+  'Tu navegador no soporta la reproducción de audio.',
 ] as const

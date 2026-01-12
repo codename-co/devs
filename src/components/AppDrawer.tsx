@@ -350,7 +350,7 @@ const CollapsedDrawer = ({
 
   return (
     <div
-      className={`group w-18 p-2 lg:p-4 h-full z-50 flex flex-col transition-all duration-200 border-r border-transparent hover:bg-gray-50 dark:hover:bg-content1 hover:border-default-200 ${className} hover:pointer-events-auto`}
+      className={`group w-18 p-2 lg:p-4 h-full z-50 flex flex-col transition-all duration-200 border-e border-transparent hover:bg-gray-50 dark:hover:bg-content1 hover:border-default-200 ${className} hover:pointer-events-auto`}
     >
       <div className="flex flex-col items-center overflow-y-auto overflow-x-hidden no-scrollbar">
         <Tooltip content={t('Expand sidebar')} placement="right">
@@ -590,7 +590,7 @@ const ExpandedDrawer = ({
 
   return (
     <div
-      className={`fixed w-64 bg-gray-50 dark:bg-content1 p-3 border-r border-default-200 dark:border-default-200 h-full flex flex-col ${className}`}
+      className={`fixed w-64 bg-gray-50 dark:bg-content1 p-3 border-e border-default-200 dark:border-default-200 h-full flex flex-col ${className}`}
     >
       <ScrollShadow
         hideScrollBar
@@ -652,7 +652,7 @@ const ExpandedDrawer = ({
                   <Icon name="Search" className="text-default-700" />
                 }
                 endContent={
-                  <Kbd keys={['command']} className="ml-auto text-xs">
+                  <Kbd keys={['command']} className="ms-auto text-xs">
                     K
                   </Kbd>
                 }
@@ -920,7 +920,7 @@ const ExpandedDrawer = ({
           offset={10}
         >
           <PopoverTrigger>
-            <span className="absolute bottom-16 right-4 w-0 h-0" />
+            <span className="absolute bottom-16 end-4 w-0 h-0" />
           </PopoverTrigger>
           <PopoverContent className="p-1">
             <Listbox

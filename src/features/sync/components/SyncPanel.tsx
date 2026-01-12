@@ -15,118 +15,13 @@ import { Icon } from '@/components/Icon'
 import { PageMenuPanel } from '@/components/PageMenuPanel'
 import { useI18n, useUrl } from '@/i18n'
 
-const localI18n = {
-  en: [
-    'Sync',
-    'Syncing',
-    'Connecting...',
-    'Offline',
-    'Share',
-    'Join',
-    'Create a new sync room',
-    'Join an existing room',
-    'Start Sync',
-    'Join Room',
-    'Disconnect',
-    'Enter room code',
-    'Room Code',
-    'Connected',
-    '{count} peer',
-    '{count} peers',
-    'Share this code or link with other devices:',
-    'Copy Link',
-    'Copied!',
-    'Sync Settings',
-    'Or scan this QR Code:',
-    'Generating QR Code...',
-    'Sync your data across devices in real-time.',
-    'No server needed - data stays between your devices.',
-    'Scan QR Code',
-    'Stop Scanner',
-    'Unable to access camera. Please grant camera permissions.',
-    'Point your camera at a sync QR code',
-    'or',
-  ] as const,
-  fr: {
-    Sync: 'Synchronisation',
-    Syncing: 'Synchronisation',
-    'Connecting...': 'Connexion...',
-    Offline: 'Hors ligne',
-    Share: 'Partager',
-    Join: 'Rejoindre',
-    'Create a new sync room': 'Créer une nouvelle salle de sync',
-    'Join an existing room': 'Rejoindre une salle existante',
-    'Start Sync': 'Démarrer la sync',
-    'Join Room': 'Rejoindre',
-    Disconnect: 'Déconnecter',
-    'Enter room code': 'Entrez le code de la salle',
-    'Room Code': 'Code de la salle',
-    Connected: 'Connecté',
-    '{count} peer': '{count} pair',
-    '{count} peers': '{count} pairs',
-    'Share this code or link with other devices:':
-      'Partagez ce code ou lien avec vos autres appareils :',
-    'Copy Link': 'Copier le lien',
-    'Copied!': 'Copié !',
-    'Sync Settings': 'Paramètres de sync',
-    'Or scan this QR Code:': 'Ou scannez ce QR Code :',
-    'Generating QR Code...': 'Génération du QR Code...',
-    'Sync your data across devices in real-time.':
-      'Synchronisez vos données entre appareils en temps réel.',
-    'No server needed - data stays between your devices.':
-      'Aucun serveur requis - les données restent entre vos appareils.',
-    'Scan QR Code': 'Scanner le QR Code',
-    'Stop Scanner': 'Arrêter le scanner',
-    'Unable to access camera. Please grant camera permissions.':
-      "Impossible d'accéder à la caméra. Veuillez autoriser l'accès.",
-    'Point your camera at a sync QR code':
-      'Pointez votre caméra vers un QR code de sync',
-    or: 'ou',
-  },
-  es: {
-    Sync: 'Sincronizar',
-    'Connecting...': 'Conectando...',
-    Offline: 'Sin conexión',
-    Share: 'Compartir',
-    Join: 'Unirse',
-    'Create a new sync room': 'Crear una nueva sala de sync',
-    'Join an existing room': 'Unirse a una sala existante',
-    'Start Sync': 'Iniciar sync',
-    'Join Room': 'Unirse',
-    Disconnect: 'Desconectar',
-    'Enter room code': 'Ingrese el código de la sala',
-    'Room Code': 'Código de sala',
-    Connected: 'Conectado',
-    '{count} peer': '{count} par',
-    '{count} peers': '{count} pares',
-    'Share this code or link with other devices:':
-      'Comparte este código o enlace con otros dispositivos:',
-    'Copy Link': 'Copiar enlace',
-    'Copied!': '¡Copiado!',
-    'Sync Settings': 'Configuración de sync',
-    'Or scan this QR Code:': 'O escanea este código QR:',
-    'Generating QR Code...': 'Generando código QR...',
-    'Sync your data across devices in real-time.':
-      'Sincroniza tus datos entre dispositivos en tiempo real.',
-    'No server needed - data stays between your devices.':
-      'No se necesita servidor - los datos se quedan entre tus dispositivos.',
-    'Scan QR Code': 'Escanear código QR',
-    'Stop Scanner': 'Detener escáner',
-    'Unable to access camera. Please grant camera permissions.':
-      'No se puede acceder a la cámara. Por favor, conceda permisos de cámara.',
-    'Point your camera at a sync QR code':
-      'Apunte su cámara a un código QR de sync',
-    or: 'o',
-  },
-}
-
 export interface SyncPanelProps {
   /** Callback to close the panel/popover */
   onClose?: () => void
 }
 
 export function SyncPanel({ onClose }: SyncPanelProps) {
-  const { lang, t } = useI18n(localI18n)
+  const { lang, t } = useI18n()
   const url = useUrl(lang)
   const navigate = useNavigate()
 
@@ -148,7 +43,7 @@ export function SyncPanel({ onClose }: SyncPanelProps) {
   const [isScannerOpen, setIsScannerOpen] = useState(false)
   const [scannerError, setScannerError] = useState<string | null>(null)
   const scannerRef = useRef<HTMLDivElement>(null)
-   
+
   const html5QrCodeRef = useRef<any>(null)
 
   const syncUrl = `${window.location.origin}${url('')}?join=${roomId}`

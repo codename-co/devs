@@ -3,19 +3,22 @@
  *
  * Fixed top-right menu for global page actions
  */
-import { Icon } from '@/components'
-import { LocalBackupButton } from '@/features/local-backup'
-import { SyncButton } from '@/features/sync'
-import { useI18n, useUrl } from '@/i18n'
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Button,
   Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
+  Kbd,
   Tooltip,
 } from '@heroui/react'
-import { useNavigate } from 'react-router-dom'
+
+import { Icon } from '@/components'
+import { LocalBackupButton } from '@/features/local-backup'
+import { SyncButton } from '@/features/sync'
+import { useI18n, useUrl } from '@/i18n'
 
 export interface PageMenuProps {
   /**
@@ -30,8 +33,11 @@ export function PageMenu({ supplementalActions }: PageMenuProps = {}) {
   const url = useUrl(lang)
   const navigate = useNavigate()
 
+  // Register Cmd+, / Ctrl+, shortcut for settings
+  useSettingsShortcut()
+
   return (
-    <div className="absolute top-4 right-4 flex items-center gap-1">
+    <div className="absolute top-4 end-4 flex items-center gap-1">
       {supplementalActions}
       <SyncButton />
       <LocalBackupButton />
@@ -47,7 +53,7 @@ export function PageMenu({ supplementalActions }: PageMenuProps = {}) {
                 aria-label={t('More actions')}
                 className="opacity-70 hover:opacity-100"
               >
-                <Icon name="MoreHoriz" size="sm" />
+                <Icon name="MoreVert" size="sm" />
               </Button>
             </DropdownTrigger>
           </span>
@@ -64,6 +70,11 @@ export function PageMenu({ supplementalActions }: PageMenuProps = {}) {
             key="settings"
             startContent={<Icon name="Settings" size="sm" />}
             // description={t('App configuration')}
+            endContent={
+              <Kbd keys={['command']} className="ms-2 text-xs">
+                ,
+              </Kbd>
+            }
             onPress={() => navigate(url('/settings'))}
           >
             {t('App configuration')}
@@ -79,4 +90,26 @@ export function PageMenu({ supplementalActions }: PageMenuProps = {}) {
       </Dropdown>
     </div>
   )
+}
+/**
+ * Hook to register global Cmd+, (Mac) or Ctrl+, (Windows/Linux) keyboard shortcut for settings
+ */
+function useSettingsShortcut(): void {
+  const { lang } = useI18n()
+  const url = useUrl(lang)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd+, (Mac) or Ctrl+, (Windows/Linux)
+      if ((e.metaKey || e.ctrlKey) && e.key === ',') {
+        e.preventDefault()
+        navigate(url('/settings'))
+      }
+    }
+
+    // Use capture phase to ensure shortcut works even when focus is in form fields
+    document.addEventListener('keydown', handleKeyDown, true)
+    return () => document.removeEventListener('keydown', handleKeyDown, true)
+  }, [navigate, url])
 }

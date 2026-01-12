@@ -85,7 +85,7 @@ export const PageMenuButton = forwardRef<
                 }
               />
               {showBadge && (
-                <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
+                <span className="absolute top-1 end-1 flex h-2.5 w-2.5">
                   {badgePulsing && (
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success-400 opacity-75" />
                   )}

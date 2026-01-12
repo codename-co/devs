@@ -48,4 +48,12 @@ export const fr = [
   'Traitement du document...',
   'Extraction du contenu textuel du document',
   'Le traitement a échoué',
+  // Sync source labels
+  'Téléchargement manuel',
+  'Dossier synchronisé',
+  'Connecteur',
+  'Inconnu',
+  // Browser support
+  'Votre navigateur ne prend pas en charge la lecture vidéo.',
+  'Votre navigateur ne prend pas en charge la lecture audio.',
 ] as const

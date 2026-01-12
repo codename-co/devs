@@ -141,7 +141,7 @@ export function GeneratedImageCard({
             {/* Favorite toggle button - top right corner, visible on hover or when favorited */}
             {onFavorite && (
               <div
-                className={`absolute z-10 top-2 right-2 transition-opacity ${isFavorite ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}
+                className={`absolute z-10 top-2 end-2 transition-opacity ${isFavorite ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}
               >
                 <Tooltip content={isFavorite ? t('Unfavorite') : t('Favorite')}>
                   <Button
@@ -163,7 +163,7 @@ export function GeneratedImageCard({
 
             {/* Favorite indicator (when no onFavorite handler) */}
             {!onFavorite && isFavorite && (
-              <div className="absolute top-2 right-2">
+              <div className="absolute top-2 end-2">
                 <Icon
                   name="HeartSolid"
                   size="sm"

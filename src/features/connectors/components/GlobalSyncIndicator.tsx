@@ -26,7 +26,9 @@ interface GlobalSyncIndicatorProps {
  * - Click to expand and see details
  * - Auto-hides when no sync in progress
  */
-export function GlobalSyncIndicator({ position = 'bottom-right' }: GlobalSyncIndicatorProps) {
+export function GlobalSyncIndicator({
+  position = 'bottom-right',
+}: GlobalSyncIndicatorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const { connectors, syncStates } = useConnectorStore()
 
@@ -50,8 +52,8 @@ export function GlobalSyncIndicator({ position = 'bottom-right' }: GlobalSyncInd
 
   // Position classes
   const positionClasses = {
-    'top-right': 'top-4 right-4',
-    'bottom-right': 'bottom-4 right-4',
+    'top-right': 'top-4 end-4',
+    'bottom-right': 'bottom-4 end-4',
   }
 
   // Don't render if nothing is syncing
@@ -87,7 +89,10 @@ export function GlobalSyncIndicator({ position = 'bottom-right' }: GlobalSyncInd
           <Card shadow="none" className="border-none">
             <CardBody className="p-3">
               <div className="flex items-center gap-2 mb-3">
-                <Icon name="RefreshDouble" className="w-4 h-4 text-primary animate-spin" />
+                <Icon
+                  name="RefreshDouble"
+                  className="w-4 h-4 text-primary animate-spin"
+                />
                 <span className="text-sm font-medium">
                   Syncing {syncCount} connector{syncCount > 1 ? 's' : ''}
                 </span>
@@ -115,10 +120,17 @@ export function GlobalSyncIndicator({ position = 'bottom-right' }: GlobalSyncInd
  */
 interface SyncingConnectorItemProps {
   connector: Connector
-  syncState?: ReturnType<typeof useConnectorStore.getState>['syncStates'] extends Map<string, infer T> ? T : never
+  syncState?: ReturnType<
+    typeof useConnectorStore.getState
+  >['syncStates'] extends Map<string, infer T>
+    ? T
+    : never
 }
 
-function SyncingConnectorItem({ connector, syncState }: SyncingConnectorItemProps) {
+function SyncingConnectorItem({
+  connector,
+  syncState,
+}: SyncingConnectorItemProps) {
   return (
     <div className="flex items-center gap-3">
       <div className="flex-shrink-0">

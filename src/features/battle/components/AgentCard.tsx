@@ -432,7 +432,7 @@ export const AgentCard = ({
           )}
 
           {/* Rarity Badge */}
-          <div className="absolute top-1 right-1">
+          <div className="absolute top-1 end-1">
             <Chip
               size="sm"
               className={`
@@ -514,7 +514,7 @@ export const AgentCard = ({
 
         {/* Flavor Text (only if not battle mode) */}
         {!isCompact && !isBattleMode && card.flavorText && (
-          <div className="absolute bottom-1 left-2 right-2">
+          <div className="absolute bottom-1 left-2 end-2">
             <p className="text-[8px] text-gray-500 italic text-center line-clamp-2">
               "{card.flavorText}"
             </p>
@@ -583,7 +583,7 @@ export const CardBack = ({ size = 'full', onClick }: CardBackProps) => {
       </div>
 
       {/* DEVS Text */}
-      <div className="absolute bottom-4 left-0 right-0 text-center">
+      <div className="absolute bottom-4 left-0 end-0 text-center">
         <span className="text-lg font-bold text-amber-500/70 tracking-widest">
           DEVS
         </span>

@@ -457,7 +457,7 @@ export const CardCarousel = ({
                 <Icon name="NavArrowLeft" className="w-6 h-6 text-white" />
               </Button>
             </div>
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 z-30">
+            <div className="absolute end-4 top-1/2 -translate-y-1/2 z-30">
               <Button
                 isIconOnly
                 variant="flat"
@@ -869,7 +869,7 @@ const CarouselCard = ({
       )}
 
       {/* Card shine effect */}
-      <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/5 to-transparent rounded-t-xl" />
+      <div className="absolute top-0 left-0 end-0 h-1/3 bg-gradient-to-b from-white/5 to-transparent rounded-t-xl" />
     </motion.div>
   )
 }

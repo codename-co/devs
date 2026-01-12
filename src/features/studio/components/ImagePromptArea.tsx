@@ -366,7 +366,7 @@ export const ImagePromptArea = forwardRef<
 
         {/* Progress bar */}
         {isGenerating && progress > 0 && (
-          <div className="absolute top-0 left-0 right-0 h-1 bg-default-200 rounded-t-lg overflow-hidden">
+          <div className="absolute top-0 left-0 end-0 h-1 bg-default-200 rounded-t-lg overflow-hidden">
             <div
               className="h-full bg-primary transition-all duration-300"
               style={{ width: `${progress}%` }}

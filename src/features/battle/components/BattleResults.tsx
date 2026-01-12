@@ -206,7 +206,7 @@ export const BattleResults = ({
                 className="w-8 h-8 text-amber-400 animate-pulse"
               />
             </div>
-            <div className="absolute top-4 right-4">
+            <div className="absolute top-4 end-4">
               <Icon
                 name="SparksSolid"
                 className="w-8 h-8 text-amber-400 animate-pulse"

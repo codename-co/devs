@@ -410,7 +410,7 @@ const EditableAgentProfile = ({
       <Button
         size="sm"
         variant="light"
-        className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute top-0 end-0 opacity-0 group-hover:opacity-100 transition-opacity"
         onPress={() => setIsEditing(true)}
         startContent={<Icon name="EditPencil" className="w-4 h-4" />}
       >
@@ -497,7 +497,7 @@ const EditableSystemPrompt = ({
       <Button
         size="sm"
         variant="light"
-        className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute top-0 end-0 opacity-0 group-hover:opacity-100 transition-opacity"
         onPress={() => setIsEditing(true)}
         startContent={<Icon name="EditPencil" className="w-4 h-4" />}
       >
@@ -853,7 +853,7 @@ const AgentKnowledgeContent = ({
       <Button
         size="sm"
         variant="light"
-        className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute top-0 end-0 opacity-0 group-hover:opacity-100 transition-opacity"
         onPress={() => setIsEditing(true)}
         startContent={<Icon name="EditPencil" className="w-4 h-4" />}
       >

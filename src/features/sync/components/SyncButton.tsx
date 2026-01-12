@@ -15,24 +15,8 @@ import { useSyncStore } from '../stores/syncStore'
 import { PageMenuButton } from '@/components/PageMenuButton'
 import { useI18n } from '@/i18n'
 
-const localI18n = {
-  en: ['Sync', 'Syncing', 'Connecting...', 'Offline'] as const,
-  fr: {
-    Sync: 'Synchro',
-    Syncing: 'Synchronisation',
-    'Connecting...': 'Connexion...',
-    Offline: 'Hors ligne',
-  },
-  es: {
-    Sync: 'Sincronizar',
-    Syncing: 'Sincronizando',
-    'Connecting...': 'Conectando...',
-    Offline: 'Sin conexión',
-  },
-}
-
 export function SyncButton() {
-  const { t } = useI18n(localI18n)
+  const { t } = useI18n()
 
   const { enabled, status, peerCount, initialize } = useSyncStore()
 
