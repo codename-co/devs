@@ -232,12 +232,12 @@ export function TraceList({
 
   const columns = [
     { key: 'name', label: t('Name') },
-    { key: 'status', label: t('Status') },
     { key: 'model', label: t('Model') },
     { key: 'duration', label: t('Duration') },
     { key: 'tokens', label: t('Tokens') },
     { key: 'cost', label: t('Cost') },
     { key: 'time', label: t('Started') },
+    { key: 'status', label: t('Status') },
     { key: 'actions', label: '' },
   ]
 
@@ -478,6 +478,15 @@ export function TraceList({
                         </span>
                       </TableCell>
                       <TableCell>
+                        <Chip
+                          size="sm"
+                          color={getStatusColor(trace.status)}
+                          variant="flat"
+                        >
+                          {trace.status}
+                        </Chip>
+                      </TableCell>
+                      <TableCell>
                         <Button
                           isIconOnly
                           size="sm"
@@ -489,15 +498,6 @@ export function TraceList({
                         >
                           <Icon name="Trash" className="w-4 h-4" />
                         </Button>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size="sm"
-                          color={getStatusColor(trace.status)}
-                          variant="flat"
-                        >
-                          {trace.status}
-                        </Chip>
                       </TableCell>
                     </TableRow>
                   ))}
