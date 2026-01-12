@@ -7,6 +7,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { db } from '@/lib/db'
+import { syncToYjs, deleteFromYjs } from '@/features/sync'
 import { useFolderSyncStore } from '@/features/local-backup/stores/folderSyncStore'
 import { StudioEntry, GeneratedImage, ImageGenerationSettings } from '../types'
 
@@ -30,6 +31,8 @@ async function getAllHistory(): Promise<StudioEntry[]> {
 async function saveEntry(entry: StudioEntry): Promise<void> {
   await db.init()
   await db.update('studioEntries', entry)
+  console.debug('[StudioHistory] Syncing entry to Yjs:', entry.id)
+  syncToYjs('studioEntries', entry)
 }
 
 /**
@@ -38,6 +41,7 @@ async function saveEntry(entry: StudioEntry): Promise<void> {
 async function deleteEntry(id: string): Promise<void> {
   await db.init()
   await db.delete('studioEntries', id)
+  deleteFromYjs('studioEntries', id)
 }
 
 /**
@@ -45,7 +49,14 @@ async function deleteEntry(id: string): Promise<void> {
  */
 async function clearAllHistory(): Promise<void> {
   await db.init()
+  // Get all entries to sync deletions
+  const entries = await db.getAll<'studioEntries'>('studioEntries')
+  // Clear from DB
   await db.clear('studioEntries')
+  // Sync deletions to Yjs
+  for (const entry of entries) {
+    deleteFromYjs('studioEntries', entry.id)
+  }
 }
 
 export interface UseStudioHistoryReturn {

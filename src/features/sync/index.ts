@@ -21,7 +21,10 @@ export type {
   Conversation,
   Credential,
   KnowledgeItem,
+  Span,
+  StudioEntry,
   Task,
+  Trace,
   Workflow,
   Preferences,
   Secrets,
@@ -38,7 +41,10 @@ export {
   getMemoriesMap,
   getPreferencesMap,
   getSecretsMap,
+  getSpansMap,
+  getStudioEntriesMap,
   getTasksMap,
+  getTracesMap,
   getWorkflowsMap,
 } from './lib/yjs-doc'
 

@@ -20,7 +20,10 @@ import {
   getKnowledgeMap,
   getMemoriesMap,
   getPreferencesMap,
+  getSpansMap,
+  getStudioEntriesMap,
   getTasksMap,
+  getTracesMap,
   getYDoc,
 } from './yjs-doc'
 import { initPersistence, isPersistenceReady } from './yjs-persistence'
@@ -39,10 +42,13 @@ type SyncedStoreName =
   | 'pinnedMessages'
   | 'credentials'
   | 'preferences'
+  | 'studioEntries'
+  | 'traces'
+  | 'spans'
 
 // Map store names to Yjs map getters
 // Uses type assertion because this function handles generic operations
- 
+
 function getYjsMapForStore(storeName: SyncedStoreName): Y.Map<any> {
   const ydoc = getYDoc()
   switch (storeName) {
@@ -64,6 +70,12 @@ function getYjsMapForStore(storeName: SyncedStoreName): Y.Map<any> {
       return ydoc.getMap('credentials')
     case 'preferences':
       return getPreferencesMap()
+    case 'studioEntries':
+      return getStudioEntriesMap()
+    case 'traces':
+      return getTracesMap()
+    case 'spans':
+      return getSpansMap()
   }
 }
 
@@ -77,6 +89,9 @@ const SYNCED_STORES: SyncedStoreName[] = [
   'tasks',
   'pinnedMessages',
   'credentials',
+  'studioEntries',
+  'traces',
+  'spans',
 ]
 
 // Keys from userSettings that should be synced via P2P
@@ -185,11 +200,17 @@ export async function forceLoadDataToYjs(): Promise<void> {
       const items = await db.getAll(
         storeName as keyof typeof db extends 'getAll' ? never : never,
       )
-      const yjsMap = getYjsMapForStore(storeName)
 
       console.debug(
         `[SyncBridge] Loading ${items.length} ${storeName} items to Yjs`,
       )
+
+      if (items.length === 0) {
+        console.debug(`[SyncBridge] No items in ${storeName} to load`)
+        continue
+      }
+
+      const yjsMap = getYjsMapForStore(storeName)
 
       ydoc.transact(() => {
         for (const item of items) {
@@ -382,6 +403,9 @@ export function syncToYjs<T extends { id: string }>(
   item: T,
 ): void {
   if (isApplyingRemoteChange) {
+    console.debug(
+      `[SyncBridge] Skipping sync for ${storeName}/${item.id} (applying remote change)`,
+    )
     return
   }
   if (!isPersistenceReady()) {
@@ -394,7 +418,13 @@ export function syncToYjs<T extends { id: string }>(
   }
 
   const yjsMap = getYjsMapForStore(storeName)
+  console.debug(
+    `[SyncBridge] Syncing ${storeName}/${item.id} to Yjs (map size before: ${yjsMap.size})`,
+  )
   yjsMap.set(item.id, serializeForYjs(item))
+  console.debug(
+    `[SyncBridge] Synced ${storeName}/${item.id} to Yjs (map size after: ${yjsMap.size})`,
+  )
 }
 
 /**

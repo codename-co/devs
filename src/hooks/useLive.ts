@@ -29,9 +29,12 @@ import {
   getConversationsMap,
   getKnowledgeMap,
   getMemoriesMap,
+  getSpansMap,
+  getStudioEntriesMap,
   getTasksMap,
   getArtifactsMap,
   getSecretsMap,
+  getTracesMap,
   isPersistenceReady,
 } from '@/features/sync'
 import { loadBuiltInAgents } from '@/stores/agentStore'
@@ -44,6 +47,8 @@ import type {
   KnowledgeItem,
   Task,
 } from '@/types'
+import type { StudioEntry } from '@/features/studio/types'
+import type { Trace, Span } from '@/features/traces/types'
 
 // ============================================================================
 // Core Hook: useLiveMap
@@ -362,6 +367,81 @@ export function useArtifact(id: string | undefined): Artifact | undefined {
  */
 export function useCredentials(): Credential[] {
   return useLiveMap(getSecretsMap)
+}
+
+// ============================================================================
+// Studio Hooks
+// ============================================================================
+
+/**
+ * Subscribe to all studio entries with instant reactivity.
+ */
+export function useStudioEntries(): StudioEntry[] {
+  return useLiveMap(getStudioEntriesMap)
+}
+
+/**
+ * Subscribe to a single studio entry with instant reactivity.
+ */
+export function useStudioEntry(
+  id: string | undefined,
+): StudioEntry | undefined {
+  return useLiveValue(getStudioEntriesMap, id)
+}
+
+/**
+ * Subscribe to favorite studio entries with instant reactivity.
+ */
+export function useFavoriteStudioEntries(): StudioEntry[] {
+  const allEntries = useLiveMap(getStudioEntriesMap)
+
+  return useMemo(() => {
+    return allEntries.filter((entry) => entry.isFavorite === true)
+  }, [allEntries])
+}
+
+// ============================================================================
+// Traces Hooks
+// ============================================================================
+
+/**
+ * Subscribe to all traces with instant reactivity.
+ */
+export function useTraces(): Trace[] {
+  return useLiveMap(getTracesMap)
+}
+
+/**
+ * Subscribe to a single trace with instant reactivity.
+ */
+export function useTrace(id: string | undefined): Trace | undefined {
+  return useLiveValue(getTracesMap, id)
+}
+
+/**
+ * Subscribe to all spans with instant reactivity.
+ */
+export function useSpans(): Span[] {
+  return useLiveMap(getSpansMap)
+}
+
+/**
+ * Subscribe to a single span with instant reactivity.
+ */
+export function useSpan(id: string | undefined): Span | undefined {
+  return useLiveValue(getSpansMap, id)
+}
+
+/**
+ * Subscribe to spans for a specific trace.
+ */
+export function useTraceSpans(traceId: string | undefined): Span[] {
+  const allSpans = useLiveMap(getSpansMap)
+
+  return useMemo(() => {
+    if (!traceId) return []
+    return allSpans.filter((span) => span.traceId === traceId)
+  }, [allSpans, traceId])
 }
 
 // ============================================================================

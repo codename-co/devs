@@ -18,6 +18,8 @@ import type {
   Task,
 } from '@/types'
 import type { Battle } from '@/features/battle/types'
+import type { StudioEntry } from '@/features/studio/types'
+import type { Trace, Span } from '@/features/traces/types'
 
 // Re-export types for convenience (dates are strings at runtime after serialization)
 export type {
@@ -29,6 +31,9 @@ export type {
   KnowledgeItem,
   Task,
   Battle,
+  StudioEntry,
+  Trace,
+  Span,
 }
 
 /**
@@ -135,4 +140,19 @@ export function getCredentialsMap(): Y.Map<Credential> {
 /** Get the battles map (id -> Battle) */
 export function getBattlesMap(): Y.Map<Battle> {
   return getYDoc().getMap<Battle>('battles')
+}
+
+/** Get the studio entries map (id -> StudioEntry) */
+export function getStudioEntriesMap(): Y.Map<StudioEntry> {
+  return getYDoc().getMap<StudioEntry>('studioEntries')
+}
+
+/** Get the traces map (id -> Trace) */
+export function getTracesMap(): Y.Map<Trace> {
+  return getYDoc().getMap<Trace>('traces')
+}
+
+/** Get the spans map (id -> Span) */
+export function getSpansMap(): Y.Map<Span> {
+  return getYDoc().getMap<Span>('spans')
 }

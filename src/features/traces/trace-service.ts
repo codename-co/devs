@@ -1,4 +1,5 @@
 import { db } from '@/lib/db'
+import { syncToYjs, deleteFromYjs } from '@/features/sync'
 import { LLMConfig } from '@/types'
 import {
   estimateUsdCost,
@@ -491,6 +492,8 @@ export class TraceService {
       try {
         await db.init()
         await db.add('traces', trace)
+        console.debug('[TraceService] Syncing trace to Yjs:', trace.id)
+        syncToYjs('traces', trace)
       } catch (error) {
         console.error('[TraceService] Failed to save trace:', error)
       }
@@ -599,6 +602,8 @@ export class TraceService {
       try {
         await db.init()
         await db.add('spans', span)
+        console.debug('[TraceService] Syncing span to Yjs:', span.id)
+        syncToYjs('spans', span)
       } catch (error) {
         console.error('[TraceService] Failed to save span:', error)
       }
@@ -885,9 +890,11 @@ export class TraceService {
     const spans = await this.getSpansForTrace(traceId)
     for (const span of spans) {
       await db.delete('spans', span.id)
+      deleteFromYjs('spans', span.id)
     }
     // Delete trace
     await db.delete('traces', traceId)
+    deleteFromYjs('traces', traceId)
   }
 
   /**
@@ -895,8 +902,21 @@ export class TraceService {
    */
   static async clearAllTraces(): Promise<void> {
     await db.init()
+    // Get all traces and spans to sync deletions
+    const traces = await db.getAll('traces')
+    const spans = await db.getAll('spans')
+
+    // Clear from DB
     await db.clear('traces')
     await db.clear('spans')
+
+    // Sync deletions to Yjs
+    for (const span of spans) {
+      deleteFromYjs('spans', span.id)
+    }
+    for (const trace of traces) {
+      deleteFromYjs('traces', trace.id)
+    }
   }
 
   // ============================================================================

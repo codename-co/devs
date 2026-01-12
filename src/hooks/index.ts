@@ -21,6 +21,16 @@ export {
   useArtifacts,
   useArtifact,
   useCredentials,
+  // Studio hooks
+  useStudioEntries,
+  useStudioEntry,
+  useFavoriteStudioEntries,
+  // Traces hooks
+  useTraces,
+  useTrace,
+  useSpans,
+  useSpan,
+  useTraceSpans,
   // Utility hooks
   useFiltered,
   useSorted,

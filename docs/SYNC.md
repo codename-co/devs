@@ -243,6 +243,9 @@ const schema = {
   workflows: ydoc.getMap('workflows'), // Map<workflowId, Workflow>
   preferences: ydoc.getMap('preferences'), // Map<key, value>
   credentials: ydoc.getMap('credentials'), // Map<credentialId, Credential> (encrypted API keys)
+  studioEntries: ydoc.getMap('studioEntries'), // Map<entryId, StudioEntry> (image generation history)
+  traces: ydoc.getMap('traces'), // Map<traceId, Trace> (LLM observability)
+  spans: ydoc.getMap('spans'), // Map<spanId, Span> (LLM call details)
 }
 ```
 
@@ -260,6 +263,9 @@ const schema = {
 | User Preferences         | ✅    | Yjs                                               |
 | LLM Provider Credentials | ✅    | Yjs (encrypted API keys)                          |
 | LLM Configurations       | ✅    | Yjs (provider, model, base URL)                   |
+| Studio Entries           | ✅    | Yjs (image generation history)                    |
+| Traces                   | ✅    | Yjs (LLM observability traces)                    |
+| Spans                    | ✅    | Yjs (LLM call details)                            |
 | **Master Key**           | ❌    | Local device only (encrypts local sensitive data) |
 
 ---
