@@ -234,6 +234,7 @@ export class LLMService {
       conversationId?: string
       taskId?: string
       sessionId?: string
+      tags?: string[]
     },
   ): AsyncIterableIterator<string> {
     const requestId = generateRequestId()
@@ -246,6 +247,7 @@ export class LLMService {
       conversationId: context?.conversationId,
       taskId: context?.taskId,
       sessionId: context?.sessionId,
+      tags: context?.tags,
       input: messages[messages.length - 1]?.content,
     })
 

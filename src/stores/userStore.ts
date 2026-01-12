@@ -2,6 +2,10 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Lang } from '@/i18n/utils'
 import type { ImageProvider, ImageModel } from '@/features/studio/types'
+import type {
+  STTProviderType,
+  TTSProviderType,
+} from '@/features/live/lib/types'
 
 // type User = {
 //   firstname: string
@@ -24,6 +28,11 @@ export interface UserSettings {
   // Image Generation defaults
   defaultImageProvider?: ImageProvider
   defaultImageModel?: ImageModel
+  // Voice settings
+  kokoroVoiceId?: string // Selected Kokoro TTS voice (default: af_heart)
+  sttProvider?: STTProviderType // Selected STT provider (default: web-speech)
+  ttsProvider?: TTSProviderType // Selected TTS provider (default: web-speech)
+  liveAutoSpeak?: boolean // Auto-speak AI responses in Live mode (default: true)
 }
 
 const defaultSettings: UserSettings = {
@@ -47,6 +56,10 @@ interface UserSettingsStore extends UserSettings {
   setHideDefaultAgents: (hide: boolean) => void
   setDefaultImageProvider: (provider: ImageProvider | undefined) => void
   setDefaultImageModel: (model: ImageModel | undefined) => void
+  setKokoroVoiceId: (voiceId: string | undefined) => void
+  setSTTProvider: (provider: STTProviderType | undefined) => void
+  setTTSProvider: (provider: TTSProviderType | undefined) => void
+  setLiveAutoSpeak: (enabled: boolean) => void
   isDarkTheme: () => boolean
 }
 
@@ -74,6 +87,13 @@ export const userSettings = create<UserSettingsStore>()(
         set({ defaultImageProvider: provider }),
       setDefaultImageModel: (model: ImageModel | undefined) =>
         set({ defaultImageModel: model }),
+      setKokoroVoiceId: (voiceId: string | undefined) =>
+        set({ kokoroVoiceId: voiceId }),
+      setSTTProvider: (provider: STTProviderType | undefined) =>
+        set({ sttProvider: provider }),
+      setTTSProvider: (provider: TTSProviderType | undefined) =>
+        set({ ttsProvider: provider }),
+      setLiveAutoSpeak: (enabled: boolean) => set({ liveAutoSpeak: enabled }),
       isDarkTheme: () => {
         const { theme } = get()
         if (theme === 'dark') return true
@@ -96,6 +116,10 @@ export const userSettings = create<UserSettingsStore>()(
         hideDefaultAgents: state.hideDefaultAgents,
         defaultImageProvider: state.defaultImageProvider,
         defaultImageModel: state.defaultImageModel,
+        kokoroVoiceId: state.kokoroVoiceId,
+        sttProvider: state.sttProvider,
+        ttsProvider: state.ttsProvider,
+        liveAutoSpeak: state.liveAutoSpeak,
       }),
     },
   ),

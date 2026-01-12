@@ -75,4 +75,5 @@ export const fr: I18n = {
     'Aucune mémoire apprise. Commencez des conversations et utilisez "Apprendre de la conversation" pour construire la mémoire de l\'agent.',
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     'Épinglez des messages importants des conversations pour les rendre disponibles ici.',
+  'Start Live Conversation': 'Démarrer une conversation live',
 } as const

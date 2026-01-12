@@ -12,10 +12,6 @@ import { getYDoc } from './yjs-doc'
 // Default WebSocket server URL
 const getDefaultServerUrl = (): string => {
   return 'wss://signal.devs.new' // TODO: Let the user override this in the advanced settings
-
-  // Use current hostname to allow network devices to connect
-  // Falls back to localhost for local-only development
-  return `wss://${window.location.hostname || 'localhost'}`
 }
 
 let wsProvider: WebsocketProvider | null = null

@@ -76,4 +76,5 @@ export const es: I18n = {
     'Aún no hay memorias aprendidas. Inicia conversaciones y usa "Aprender de la conversación" para construir la memoria del agente.',
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     'Aún no hay mensajes fijados. Fija mensajes importantes de las conversaciones para hacerlos disponibles aquí.',
+  'Start Live Conversation': 'Iniciar conversación en vivo',
 } as const

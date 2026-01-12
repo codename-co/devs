@@ -39,6 +39,7 @@ export interface SessionGroup {
   totalTokens: number
   hasTokenData: boolean // Whether any trace in the session has token data
   isImageSession: boolean // Whether session contains image generation traces
+  isVoiceSession: boolean // Whether session contains voice/live conversation traces
   totalCost: number
   startTime: Date
   endTime: Date
@@ -136,6 +137,7 @@ export function TraceList({
           totalTokens: 0,
           hasTokenData: false,
           isImageSession: false,
+          isVoiceSession: false,
           totalCost: 0,
           startTime: new Date(trace.startTime),
           endTime: new Date(trace.endTime || trace.startTime),
@@ -157,6 +159,10 @@ export function TraceList({
       // Track if session contains image generation traces
       if (trace.name.includes('(image')) {
         group.isImageSession = true
+      }
+      // Track if session contains voice/live conversation traces
+      if (trace.tags?.includes('voice') || trace.tags?.includes('live')) {
+        group.isVoiceSession = true
       }
       group.totalCost += trace.totalCost?.totalCost || 0
 
@@ -325,17 +331,21 @@ export function TraceList({
                   name={
                     session.isImageSession
                       ? 'MediaImage'
-                      : session.sessionId.startsWith('single-')
-                        ? 'ChatBubble'
-                        : 'ChatLines'
+                      : session.isVoiceSession
+                        ? 'Voice'
+                        : session.sessionId.startsWith('single-')
+                          ? 'ChatBubble'
+                          : 'ChatLines'
                   }
                   size="lg"
                   className={
                     session.isImageSession
                       ? 'text-danger-400'
-                      : session.sessionId.startsWith('single-')
-                        ? 'text-default-500'
-                        : 'text-primary'
+                      : session.isVoiceSession
+                        ? 'text-cyan-500 dark:text-cyan-400'
+                        : session.sessionId.startsWith('single-')
+                          ? 'text-default-500'
+                          : 'text-primary'
                   }
                 />
               }
@@ -354,13 +364,6 @@ export function TraceList({
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <Chip
-                      size="sm"
-                      color={getStatusColor(session.status)}
-                      variant="flat"
-                    >
-                      {session.status}
-                    </Chip>
                     <div className="hidden md:flex items-center gap-3 text-xs text-default-500">
                       <span className="flex items-center gap-1">
                         <Icon name="ChatBubble" className="w-3 h-3" />
@@ -379,6 +382,13 @@ export function TraceList({
                         {formatCost(session.totalCost)}
                       </span>
                     </div>
+                    <Chip
+                      size="sm"
+                      color={getStatusColor(session.status)}
+                      variant="flat"
+                    >
+                      {session.status}
+                    </Chip>
                   </div>
                 </div>
               }
@@ -438,15 +448,6 @@ export function TraceList({
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          size="sm"
-                          color={getStatusColor(trace.status)}
-                          variant="flat"
-                        >
-                          {trace.status}
-                        </Chip>
-                      </TableCell>
-                      <TableCell>
                         <div className="flex flex-col">
                           <span className="text-sm">
                             {trace.primaryModel?.model || '-'}
@@ -488,6 +489,15 @@ export function TraceList({
                         >
                           <Icon name="Trash" className="w-4 h-4" />
                         </Button>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          size="sm"
+                          color={getStatusColor(trace.status)}
+                          variant="flat"
+                        >
+                          {trace.status}
+                        </Chip>
                       </TableCell>
                     </TableRow>
                   ))}

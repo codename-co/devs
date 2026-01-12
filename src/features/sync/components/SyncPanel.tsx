@@ -148,7 +148,7 @@ export function SyncPanel({ onClose }: SyncPanelProps) {
   const [isScannerOpen, setIsScannerOpen] = useState(false)
   const [scannerError, setScannerError] = useState<string | null>(null)
   const scannerRef = useRef<HTMLDivElement>(null)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const html5QrCodeRef = useRef<any>(null)
 
   const syncUrl = `${window.location.origin}${url('')}?join=${roomId}`

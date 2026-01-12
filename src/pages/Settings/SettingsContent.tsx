@@ -119,7 +119,6 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
       await loadCredentials()
     }
     initialize()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadCacheInfo = async () => {

@@ -73,4 +73,5 @@ export const ko: I18n = {
     '아직 학습된 기억이 없습니다. 대화를 시작하고 "대화에서 학습"을 사용하여 에이전트 기억을 구축하세요.',
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     '아직 고정된 메시지가 없습니다. 대화에서 중요한 메시지를 고정하여 여기에서 사용할 수 있게 하세요.',
+  'Start Live Conversation': '실시간 대화 시작',
 } as const

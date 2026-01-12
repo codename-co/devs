@@ -73,7 +73,7 @@ export const es: I18n = {
   Terms: 'Términos',
 
   // PageMenu
-  Voice: 'Voz',
+  Live: 'En vivo',
   'Voice input mode': 'Modo de entrada de voz',
   'Connect external services': 'Conectar servicios externos',
   'Agent learned knowledge': 'Conocimientos aprendidos por el agente',

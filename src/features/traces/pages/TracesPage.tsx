@@ -13,6 +13,7 @@ import {
   Switch,
   Select,
   SelectItem,
+  Tooltip,
 } from '@heroui/react'
 import { useNavigate, useLocation } from 'react-router'
 import { addToast } from '@heroui/toast'
@@ -43,16 +44,11 @@ export function TracesPage() {
     metrics: liveMetrics,
     dailyMetrics: liveDailyMetrics,
     isLoading: isDashboardLoading,
-    refresh: refreshDashboard,
   } = useLiveTraceDashboard({
     enabled: activeTab === 'dashboard',
   })
 
-  const {
-    traces: liveTraces,
-    isLoading: isTracesLoading,
-    refresh: refreshTraces,
-  } = useLiveTraces({
+  const { traces: liveTraces, isLoading: isTracesLoading } = useLiveTraces({
     enabled: activeTab === 'logs',
   })
 
@@ -78,11 +74,6 @@ export function TracesPage() {
     config?.samplingRate?.toString() || '1',
   )
   const [isEnabled, setIsEnabled] = useState(config?.enabled ?? true)
-
-  // Refresh all data (for manual refresh button)
-  const refreshAll = async () => {
-    await Promise.all([refreshDashboard(), refreshTraces(), loadConfig()])
-  }
 
   // Load config on mount
   useEffect(() => {
@@ -176,27 +167,40 @@ export function TracesPage() {
     },
     title: t('Traces and Metrics'),
     subtitle: t('Monitor and analyze LLM requests'),
-    moreActions: [
-      {
-        label: t('Settings'),
-        onClick: onConfigOpen,
-        icon: 'Settings',
-      },
-      {
-        label: t('Clear All'),
-        onClick: onClearOpen,
-        icon: 'Trash',
-      },
-      {
-        label: t('Refresh'),
-        onClick: refreshAll,
-        icon: 'RefreshDouble',
-      },
-    ],
   }
 
   return (
-    <DefaultLayout header={header}>
+    <DefaultLayout
+      header={header}
+      pageMenuActions={
+        <>
+          <Tooltip content={t('Settings')} placement="bottom">
+            <Button
+              variant="light"
+              isIconOnly
+              aria-label={t('Settings')}
+              className="opacity-70 hover:opacity-100"
+              onPress={onConfigOpen}
+            >
+              <Icon name="Settings" size="sm" />
+            </Button>
+          </Tooltip>
+
+          <Tooltip content={t('Clear All')} placement="bottom">
+            <Button
+              variant="light"
+              isIconOnly
+              aria-label={t('Clear All')}
+              className="opacity-70 hover:opacity-100"
+              color="danger"
+              onPress={onClearOpen}
+            >
+              <Icon name="Trash" size="sm" />
+            </Button>
+          </Tooltip>
+        </>
+      }
+    >
       <Section>
         <Container>
           {/* Tabs */}

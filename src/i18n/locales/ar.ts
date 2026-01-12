@@ -73,7 +73,7 @@ export const ar: I18n = {
   Terms: 'الشروط',
 
   // PageMenu
-  Voice: 'الصوت',
+  Live: 'مباشر',
   'Voice input mode': 'وضع الإدخال الصوتي',
   'Connect external services': 'ربط الخدمات الخارجية',
   'Agent learned knowledge': 'المعرفة التي تعلمها الوكيل',

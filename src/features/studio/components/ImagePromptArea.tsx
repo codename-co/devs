@@ -197,7 +197,9 @@ export const ImagePromptArea = forwardRef<
       // Try to get image URL from drag data (for images dragged from the same page)
       // Check for data URL first (from canvas or blob URLs)
       const htmlData = event.dataTransfer.getData('text/html')
-      const urlData = event.dataTransfer.getData('text/uri-list') || event.dataTransfer.getData('text/plain')
+      const urlData =
+        event.dataTransfer.getData('text/uri-list') ||
+        event.dataTransfer.getData('text/plain')
 
       let imageUrl: string | null = null
 
@@ -212,9 +214,11 @@ export const ImagePromptArea = forwardRef<
       // Fall back to URL data
       if (!imageUrl && urlData) {
         // Check if it looks like an image URL
-        if (urlData.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?|$)/i) ||
-            urlData.startsWith('data:image/') ||
-            urlData.startsWith('blob:')) {
+        if (
+          urlData.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?|$)/i) ||
+          urlData.startsWith('data:image/') ||
+          urlData.startsWith('blob:')
+        ) {
           imageUrl = urlData
         }
       }
@@ -224,15 +228,20 @@ export const ImagePromptArea = forwardRef<
         try {
           const response = await fetch(imageUrl)
           const blob = await response.blob()
-          
+
           if (blob.type.startsWith('image/')) {
             // Generate a filename from the URL or use a default
             const urlParts = imageUrl.split('/')
-            const filename = urlParts[urlParts.length - 1]?.split('?')[0] || 'dropped-image'
+            const filename =
+              urlParts[urlParts.length - 1]?.split('?')[0] || 'dropped-image'
             const extension = blob.type.split('/')[1] || 'png'
-            const finalFilename = filename.includes('.') ? filename : `${filename}.${extension}`
-            
-            const imageFile = new File([blob], finalFilename, { type: blob.type })
+            const finalFilename = filename.includes('.')
+              ? filename
+              : `${filename}.${extension}`
+
+            const imageFile = new File([blob], finalFilename, {
+              type: blob.type,
+            })
             onReferenceImageChange?.(imageFile)
           }
         } catch (error) {
@@ -496,11 +505,13 @@ export const ImagePromptArea = forwardRef<
               <ButtonGroup variant="flat">
                 <Tooltip content={t('Generate image')} placement="bottom">
                   <Button
+                    type="submit"
                     data-testid="generate-button"
                     isIconOnly={isSmallWidth()}
                     disabled={isGenerating || !prompt.trim()}
                     color={!prompt.trim() ? 'default' : 'primary'}
                     className={cn(
+                      'rtl:rotate-180',
                       canGenerate && 'dark:bg-white dark:text-black',
                     )}
                     radius="md"
@@ -512,12 +523,7 @@ export const ImagePromptArea = forwardRef<
                     {isGenerating ? (
                       <Spinner size="sm" color="current" />
                     ) : (
-                      <>
-                        <Icon name="Sparks" size="sm" />
-                        {!isSmallWidth() && (
-                          <span className="ml-1">{t('Generate')}</span>
-                        )}
-                      </>
+                      <Icon name="ArrowRight" size="sm" />
                     )}
                   </Button>
                 </Tooltip>

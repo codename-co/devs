@@ -600,10 +600,10 @@ const SEARCHABLE_PAGES: PageDefinition[] = [
   },
   {
     id: 'page-voice',
-    href: '/voice',
+    href: '/live',
     icon: 'Voice',
     color: 'primary',
-    nameKey: 'Voice',
+    nameKey: 'Live',
     descriptionKey: 'Voice input mode',
     keywords: ['speak', 'talk', 'audio', 'microphone', 'dictate'],
   },

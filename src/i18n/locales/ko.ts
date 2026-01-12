@@ -72,7 +72,7 @@ export const ko: I18n = {
   Terms: '이용약관',
 
   // PageMenu
-  Voice: '음성',
+  Live: '라이브',
   'Voice input mode': '음성 입력 모드',
   'Connect external services': '외부 서비스 연결',
   'Agent learned knowledge': '에이전트가 학습한 지식',

@@ -104,6 +104,7 @@ export function GeneratedImageCard({
               }}
               onLoad={handleImageLoad}
               radius="none"
+              loading="lazy"
             />
 
             {/* Overlay with actions on hover */}

@@ -73,7 +73,7 @@ export const en = [
   'Terms',
 
   // PageMenu
-  'Voice',
+  'Live',
   'Voice input mode',
   'Connect external services',
   'Agent learned knowledge',

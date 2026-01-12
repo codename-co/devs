@@ -76,4 +76,5 @@ export const de: I18n = {
     'Noch keine Erinnerungen gelernt. Starten Sie Gespräche und nutzen Sie "Aus Gespräch lernen" um das Agentenwissen aufzubauen.',
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     'Noch keine angepinnten Nachrichten. Pinnen Sie wichtige Nachrichten aus Gesprächen an, um sie hier verfügbar zu machen.',
+  'Start Live Conversation': 'Live-Gespräch starten',
 } as const

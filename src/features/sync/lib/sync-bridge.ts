@@ -42,7 +42,7 @@ type SyncedStoreName =
 
 // Map store names to Yjs map getters
 // Uses type assertion because this function handles generic operations
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 function getYjsMapForStore(storeName: SyncedStoreName): Y.Map<any> {
   const ydoc = getYDoc()
   switch (storeName) {

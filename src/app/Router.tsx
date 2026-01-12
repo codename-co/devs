@@ -26,7 +26,7 @@ import { OAuthCallbackPage } from '@/pages/OAuth'
 import { SettingsPage } from '@/pages/Settings'
 import { TaskPage } from '@/pages/Tasks/show'
 import { TasksPage } from '@/pages/Tasks'
-import { VoicePage } from '@/pages/Voice'
+import { LivePage } from '@/features/live'
 import { ArenaPage } from '@/pages/Arena'
 import { TracesPage, TraceShowPage } from '@/features/traces'
 
@@ -75,7 +75,7 @@ const routes = {
   'traces/logs': TracesPage,
   'traces/sessions': TracesPage,
   'traces/logs/:traceId': TraceShowPage,
-  voice: VoicePage,
+  live: LivePage,
   '*': NotFoundPage,
 }
 

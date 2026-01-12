@@ -69,4 +69,5 @@ export const ar: I18n = {
     'لم يتم تعلم أي ذكريات بعد. ابدأ محادثات واستخدم "التعلم من المحادثة" لبناء ذاكرة الوكيل.',
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     'لا توجد رسائل مثبتة بعد. ثبت الرسائل المهمة من المحادثات لجعلها متاحة هنا.',
+  'Start Live Conversation': 'بدء محادثة مباشرة',
 } as const

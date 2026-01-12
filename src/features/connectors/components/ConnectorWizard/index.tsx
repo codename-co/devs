@@ -343,7 +343,7 @@ export function ConnectorWizard({
       setConnectorId(null)
       oauth.reset()
     }
-  }, [isOpen, initialProvider]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen, initialProvider])  
 
   return (
     <Modal

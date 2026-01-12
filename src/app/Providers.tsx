@@ -95,7 +95,7 @@ function ProvidersInner({ children }: { children: React.ReactNode }) {
     }
 
     initializePlatform()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [])
 
   // Apply theme to document

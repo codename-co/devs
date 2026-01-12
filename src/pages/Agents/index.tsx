@@ -21,6 +21,7 @@ import {
 import { useEffect, useState } from 'react'
 
 import { useI18n } from '@/i18n'
+import localI18n from './i18n'
 import {
   getAgentsSeparated,
   updateAgent,
@@ -33,7 +34,7 @@ import { AgentCard } from '@/components/AgentCard'
 import DefaultLayout from '@/layouts/Default'
 import { HeaderProps } from '@/lib/types'
 import { useNavigate } from 'react-router-dom'
-import { EditPencil, MoreVert, Trash } from 'iconoir-react'
+import { EditPencil, MoreVert, Trash, Voice } from 'iconoir-react'
 
 export const AgentsPage = () => {
   const [userAgents, setUserAgents] = useState<Agent[]>([])
@@ -48,7 +49,7 @@ export const AgentsPage = () => {
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
-  const { t, url } = useI18n()
+  const { t, url } = useI18n(localI18n)
   const navigate = useNavigate()
   const {
     isOpen: isKnowledgeModalOpen,
@@ -88,6 +89,10 @@ export const AgentsPage = () => {
 
   const handleAgentClick = (agentSlug: string) => {
     navigate(url(`/agents/run#${agentSlug}`))
+  }
+
+  const handleStartLiveConversation = (agentSlug: string) => {
+    navigate(url(`/live#${agentSlug}`))
   }
 
   const handleEditKnowledge = (agent: Agent) => {
@@ -167,36 +172,44 @@ export const AgentsPage = () => {
               className="w-full"
               onPress={handleAgentClick}
               children={
-                !isGlobal &&
-                agent.id.startsWith('custom-') && (
-                  <div className="absolute end-2 top-2">
-                    <Dropdown>
-                      <DropdownTrigger>
-                        <Button isIconOnly variant="light" size="sm">
-                          <MoreVert className="w-4 h-4" />
-                        </Button>
-                      </DropdownTrigger>
-                      <DropdownMenu>
-                        <DropdownItem
-                          key="edit"
-                          startContent={<EditPencil className="w-4 h-4" />}
-                          onPress={() => handleEditKnowledge(agent)}
-                        >
-                          {t('Edit Knowledge')}
-                        </DropdownItem>
-                        <DropdownItem
-                          key="delete"
-                          className="text-danger"
-                          color="danger"
-                          startContent={<Trash className="w-4 h-4" />}
-                          onPress={() => handleDeleteAgent(agent)}
-                        >
-                          {t('Delete')}
-                        </DropdownItem>
-                      </DropdownMenu>
-                    </Dropdown>
-                  </div>
-                )
+                <div className="absolute end-2 top-2">
+                  <Dropdown>
+                    <DropdownTrigger>
+                      <Button isIconOnly variant="light" size="sm">
+                        <MoreVert className="w-4 h-4" />
+                      </Button>
+                    </DropdownTrigger>
+                    <DropdownMenu>
+                      <DropdownItem
+                        key="live"
+                        startContent={<Voice className="w-4 h-4" />}
+                        onPress={() => handleStartLiveConversation(agent.slug)}
+                      >
+                        {t('Start Live Conversation')}
+                      </DropdownItem>
+                      {!isGlobal && agent.id.startsWith('custom-') ? (
+                        <>
+                          <DropdownItem
+                            key="edit"
+                            startContent={<EditPencil className="w-4 h-4" />}
+                            onPress={() => handleEditKnowledge(agent)}
+                          >
+                            {t('Edit Knowledge')}
+                          </DropdownItem>
+                          <DropdownItem
+                            key="delete"
+                            className="text-danger"
+                            color="danger"
+                            startContent={<Trash className="w-4 h-4" />}
+                            onPress={() => handleDeleteAgent(agent)}
+                          >
+                            {t('Delete')}
+                          </DropdownItem>
+                        </>
+                      ) : null}
+                    </DropdownMenu>
+                  </Dropdown>
+                </div>
               }
             />
           </div>

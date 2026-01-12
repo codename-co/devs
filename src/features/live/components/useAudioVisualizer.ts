@@ -4,10 +4,13 @@ interface UseAudioVisualizerOptions {
   isActive: boolean
   fftSize?: number
   smoothingTimeConstant?: number
+  /** External TTS AnalyserNode for visualizing TTS playback */
+  ttsAnalyserRef?: React.RefObject<AnalyserNode | null>
 }
 
 interface UseAudioVisualizerReturn {
   analyserRef: React.RefObject<AnalyserNode | null>
+  /** Combined data array (mic + TTS merged) */
   dataArray: Uint8Array | null
   isInitialized: boolean
   error: string | null
@@ -21,14 +24,25 @@ export function useAudioVisualizer({
   isActive,
   fftSize = 256,
   smoothingTimeConstant = 0.8,
+  ttsAnalyserRef,
 }: UseAudioVisualizerOptions): UseAudioVisualizerReturn {
   const audioContextRef = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const [dataArray, setDataArray] = useState<Uint8Array | null>(null)
+  // Separate buffer for TTS data to merge with mic data
+  const ttsDataArrayRef = useRef<Uint8Array | null>(null)
   const [isInitialized, setIsInitialized] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Initialize TTS data buffer when TTS analyser is available
+  useEffect(() => {
+    if (ttsAnalyserRef?.current) {
+      const bufferLength = ttsAnalyserRef.current.frequencyBinCount
+      ttsDataArrayRef.current = new Uint8Array(bufferLength)
+    }
+  }, [ttsAnalyserRef?.current])
 
   const cleanup = useCallback(() => {
     // Stop all tracks in the stream

@@ -54,4 +54,5 @@ export const en = [
   'Add knowledge',
   'No memories learned yet. Start conversations and use "Learn from conversation" to build agent memory.',
   'No pinned messages yet. Pin important messages from conversations to make them available here.',
+  'Start Live Conversation',
 ] as const

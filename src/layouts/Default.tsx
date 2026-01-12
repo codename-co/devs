@@ -1,6 +1,6 @@
 import { Container, ContextualPanel, Icon, Section, Title } from '@/components'
 import { AppDrawer } from '@/components/AppDrawer'
-import { PageMenu } from '@/components/PageMenu'
+import { PageMenu, type PageMenuProps } from '@/components/PageMenu'
 import { Tabbar } from '@/components/Tabbar'
 import { languageDirection, useI18n } from '@/i18n'
 import type { HeaderProps, IconName } from '@/lib/types'
@@ -22,21 +22,29 @@ import { useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { PRODUCT } from '@/config/product'
 
+export interface DefaultLayoutProps {
+  title?: string
+  description?: string
+  darkMode?: boolean
+  header?: HeaderProps
+  showBackButton?: boolean
+  /**
+   * Optional supplemental action items to be rendered in the PageMenu.
+   * These will appear before the default menu items (Sync, Local Backup, etc.).
+   */
+  pageMenuActions?: PageMenuProps['supplementalActions']
+  children: React.ReactNode
+}
+
 export default function DefaultLayout({
   title,
   // description,
   // darkMode,
   header,
   showBackButton = true,
+  pageMenuActions,
   children,
-}: {
-  title?: string
-  description?: string
-  darkMode?: boolean
-  header?: HeaderProps
-  showBackButton?: boolean
-  children: React.ReactNode
-}) {
+}: DefaultLayoutProps) {
   const { lang, t } = useI18n()
   const navigate = useNavigate()
   const location = useLocation()
@@ -198,7 +206,7 @@ export default function DefaultLayout({
                 </div>
               )}
               <ToastProvider />
-              <PageMenu />
+              <PageMenu supplementalActions={pageMenuActions} />
 
               {children}
             </div>

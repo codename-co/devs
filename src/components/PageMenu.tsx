@@ -17,13 +17,22 @@ import {
 } from '@heroui/react'
 import { useNavigate } from 'react-router-dom'
 
-export function PageMenu() {
+export interface PageMenuProps {
+  /**
+   * Optional supplemental action items to be rendered before the default menu items.
+   * Typically buttons or other interactive elements.
+   */
+  supplementalActions?: React.ReactNode
+}
+
+export function PageMenu({ supplementalActions }: PageMenuProps = {}) {
   const { lang, t } = useI18n()
   const url = useUrl(lang)
   const navigate = useNavigate()
 
   return (
     <div className="absolute top-4 right-4 flex items-center gap-1">
+      {supplementalActions}
       <SyncButton />
       <LocalBackupButton />
 

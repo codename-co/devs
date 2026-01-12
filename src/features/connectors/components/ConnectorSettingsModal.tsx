@@ -98,7 +98,7 @@ export function ConnectorSettingsModal({
       }
     }
     // Only re-initialize when connector ID changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [connector?.id])
 
   // Helper to refresh token and update connector
@@ -255,7 +255,7 @@ export function ConnectorSettingsModal({
 
     fetchFolders()
     // Only refetch when modal opens or connector ID changes, not on every connector object change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [isOpen, connector?.id, provider])
 
   // Toggle folder selection

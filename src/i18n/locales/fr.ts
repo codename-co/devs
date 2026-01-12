@@ -76,7 +76,7 @@ export const fr: I18n = {
   Terms: 'Conditions',
 
   // PageMenu
-  Voice: 'Vocal',
+  Live: 'Live',
   'Voice input mode': 'Mode de saisie vocale',
   'Connect external services': 'Connecter des services externes',
   'Agent learned knowledge': 'Connaissances apprises par l’agent',

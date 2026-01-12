@@ -41,14 +41,14 @@ export const Tabbar = () => {
         href={url('/agents')}
       />
       <Tab
-        key="/knowledge"
+        key="/studio"
         // data-color="danger"
         title={
-          <Tooltip content={t('Knowledge')} placement="top">
-            <Icon name="Book" />
+          <Tooltip content={t('Studio')} placement="top">
+            <Icon name="MediaImagePlus" />
           </Tooltip>
         }
-        href={url('/knowledge')}
+        href={url('/studio')}
       />
       <Tab
         key="/"
@@ -62,16 +62,6 @@ export const Tabbar = () => {
         className="zoom-in scale-125"
       />
       <Tab
-        key="/methodologies"
-        // data-color="success"
-        title={
-          <Tooltip content={t('Methodologies')} placement="top">
-            <Icon name="Strategy" />
-          </Tooltip>
-        }
-        href={url('/methodologies')}
-      />
-      <Tab
         key="/tasks"
         // data-color="secondary"
         title={
@@ -80,6 +70,16 @@ export const Tabbar = () => {
           </Tooltip>
         }
         href={url('/tasks')}
+      />
+      <Tab
+        key="/live"
+        // data-color="cyan"
+        title={
+          <Tooltip content={t('Live')} placement="top">
+            <Icon name="Voice" />
+          </Tooltip>
+        }
+        href={url('/live')}
       />
     </Tabs>
   )

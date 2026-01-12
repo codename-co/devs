@@ -432,17 +432,17 @@ const CollapsedDrawer = ({
                 <Icon name="MediaImagePlus" />
               </Button>
             </Tooltip>
-            <Tooltip content={t('Voice')} placement="right">
+            <Tooltip content={t('Live')} placement="right">
               <Button
                 as={Link}
-                href={url('/voice')}
+                href={url('/live')}
                 isIconOnly
                 variant="light"
                 className={cn(
                   'w-full text-cyan-500 dark:text-cyan-400 [.is-active]:bg-default-100',
-                  isCurrentPath('/voice') && 'is-active',
+                  isCurrentPath('/live') && 'is-active',
                 )}
-                aria-label={t('Voice')}
+                aria-label={t('Live')}
               >
                 <Icon name="Voice" />
               </Button>
@@ -716,11 +716,11 @@ const ExpandedDrawer = ({
                 {t('Studio')}
               </ListboxItem>
               <ListboxItem
-                href={url('/voice')}
+                href={url('/live')}
                 variant="faded"
                 className={cn(
                   '[.is-active]:bg-default-100',
-                  isCurrentPath('/voice') && 'is-active',
+                  isCurrentPath('/live') && 'is-active',
                 )}
                 startContent={
                   <Icon
@@ -729,7 +729,7 @@ const ExpandedDrawer = ({
                   />
                 }
               >
-                {t('Voice')}
+                {t('Live')}
               </ListboxItem>
               <ListboxItem
                 href={url('/tasks')}

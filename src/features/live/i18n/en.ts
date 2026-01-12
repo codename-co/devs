@@ -1,0 +1,38 @@
+export const en = [
+  // LivePage
+  'Speech-to-Text Provider',
+  'Text-to-Speech Provider',
+  'Local',
+  'Cloud',
+  'Speak to microphone',
+  'Stop speaking',
+  'Speak transcript',
+  'Voice Settings',
+  // STT Providers
+  'Fast but requires internet.',
+  'Web Speech API is not supported in this browser',
+  'Moonshine',
+  'Fast local transcription (~200ms). English only. ~166MB download.',
+  'Moonshine only supports English',
+  'Whisper',
+  'High quality, multilingual. ~500MB download.',
+  'Bidirectional audio with Gemini. Requires API key.',
+  // TTS Providers
+  'Instant but robotic.',
+  'SOTA quality, 4-bit quantized. (↓ ~154MB)',
+  'Natural voice with Gemini. Requires API key.',
+  'Browser',
+  'Kokoro',
+  'Gemini Live',
+  'Text-to-Speech voice',
+  // Agent & Chat
+  'Select an agent',
+  'Thinking…',
+  'Stop',
+  'Auto-speak responses',
+  'Automatically speak AI responses using TTS',
+  'No LLM provider configured',
+  'Please configure an LLM provider in Settings to use voice chat.',
+  'Send',
+  'Listening…',
+] as const

@@ -73,7 +73,7 @@ export const de: I18n = {
   Terms: 'Nutzungsbedingungen',
 
   // PageMenu
-  Voice: 'Stimme',
+  Live: 'Live',
   'Voice input mode': 'Spracheingabemodus',
   'Connect external services': 'Externe Dienste verbinden',
   'Agent learned knowledge': 'Vom Agenten gelernte Kenntnisse',

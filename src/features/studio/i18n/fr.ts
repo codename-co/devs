@@ -16,7 +16,7 @@ export const fr: I18n = {
   'No images yet': 'Aucune image pour le moment',
   All: 'Tous',
   'Favorites only': 'Favoris uniquement',
-  'Generated visuals': 'Historique des visuels',
+  'Generated visuals': 'Visuels générés',
   'Clear all': 'Tout effacer',
   Download: 'Télécharger',
   Delete: 'Supprimer',
