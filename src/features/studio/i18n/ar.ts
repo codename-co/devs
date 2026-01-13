@@ -80,4 +80,7 @@ export const ar: I18n = {
   'Current Session': 'الجلسة الحالية',
   Unfavorite: 'إزالة من المفضلة',
   Favorite: 'مفضل',
+  'Previous image': 'الصورة السابقة',
+  'Next image': 'الصورة التالية',
+  Navigate: 'تصفح',
 }

@@ -82,4 +82,7 @@ export const de: I18n = {
   'Current Session': 'Aktuelle Sitzung',
   Unfavorite: 'Aus Favoriten entfernen',
   Favorite: 'Favorit',
+  'Previous image': 'Vorheriges Bild',
+  'Next image': 'Nächstes Bild',
+  Navigate: 'Navigieren',
 }

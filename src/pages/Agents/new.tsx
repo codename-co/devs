@@ -9,6 +9,8 @@ import {
   Input,
   Slider,
   Spinner,
+  Tab,
+  Tabs,
   Textarea,
 } from '@heroui/react'
 import { useEffect, useRef, useState } from 'react'
@@ -24,6 +26,7 @@ import {
   Title,
   MarkdownRenderer,
   AgentKnowledgePicker,
+  Icon,
 } from '@/components'
 import { createAgent } from '@/stores/agentStore'
 import { LLMService, LLMMessage } from '@/lib/llm'
@@ -37,6 +40,51 @@ interface AgentConfig {
   instructions?: string
   temperature?: number
 }
+
+type CreationMode = 'meta' | 'manual'
+
+// Meta-prompting system prompt for agent generation
+const META_PROMPT_SYSTEM = `You are an expert AI agent designer. Your role is to help users create specialized AI agents by understanding their needs and generating appropriate agent configurations.
+
+## Your Task
+
+Based on the user's description of what they want, generate a complete agent profile as a JSON object.
+
+## Required Output Format
+
+Your response must be a valid JSON object with exactly this structure:
+
+\`\`\`json
+{
+  "name": "string",
+  "role": "string",
+  "instructions": "multi-line string"
+}
+\`\`\`
+
+Where:
+- **name**: A memorable, professional name for the agent that reflects its purpose
+- **role**: A concise description of what the agent does (1-2 sentences)
+- **instructions**: Comprehensive instructions defining the agent's personality, expertise, capabilities, constraints, and communication style. Should be detailed enough to guide the agent's behavior effectively.
+
+## Guidelines
+
+1. **Understand the Request**: Carefully analyze what the user needs
+2. **Name Appropriately**: Choose a name that's memorable and reflects the agent's purpose
+3. **Define Clear Role**: The role should immediately convey what the agent does
+4. **Write Detailed Instructions**: Include:
+   - Core expertise and knowledge domains
+   - Communication style and tone
+   - Specific capabilities and limitations
+   - How to approach tasks
+   - Any constraints or guidelines
+
+## Important
+
+- Always respond with a valid JSON object
+- Make the agent feel authentic and specialized
+- Tailor the personality to match the domain
+- RESPOND IN THE SAME LANGUAGE AS THE USER'S REQUEST`
 
 export function AgentsNewPage() {
   const navigate = useNavigate()
@@ -52,6 +100,15 @@ export function AgentsNewPage() {
     subtitle: t('Design and configure your custom specialized AI agent'),
   }
 
+  // Creation mode state
+  const [creationMode, setCreationMode] = useState<CreationMode>('meta')
+
+  // Meta-prompting state
+  const [metaPrompt, setMetaPrompt] = useState('')
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [generationError, setGenerationError] = useState('')
+  const [generatedPreview, setGeneratedPreview] = useState('')
+
   // Form state
   const [name, setName] = useState('')
   const [role, setRole] = useState('')
@@ -62,7 +119,7 @@ export function AgentsNewPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
-  // Chat state
+  // Chat state (for preview)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -82,6 +139,71 @@ export function AgentsNewPage() {
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  // Meta-prompting: Generate agent from description
+  const generateAgentFromDescription = async () => {
+    if (!metaPrompt.trim() || isGenerating) return
+
+    setIsGenerating(true)
+    setGenerationError('')
+    setGeneratedPreview('')
+
+    try {
+      const config = await CredentialService.getActiveConfig()
+      if (!config) {
+        throw new Error(
+          t('No LLM provider configured. Please configure one in Settings.'),
+        )
+      }
+
+      const systemPrompt = META_PROMPT_SYSTEM
+
+      const llmMessages: LLMMessage[] = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: metaPrompt.trim() },
+      ]
+
+      let response = ''
+      for await (const chunk of LLMService.streamChat(llmMessages, config)) {
+        response += chunk
+        setGeneratedPreview(response)
+      }
+
+      // Parse JSON from response
+      const jsonMatch = response.match(/\{[\s\S]*\}/)
+      if (!jsonMatch) {
+        throw new Error(
+          t('Failed to generate agent configuration. Please try again.'),
+        )
+      }
+
+      const agentProfile = JSON.parse(jsonMatch[0])
+
+      // Validate required fields
+      if (!agentProfile.name || !agentProfile.role) {
+        throw new Error(
+          t('Generated configuration is missing required fields.'),
+        )
+      }
+
+      // Fill form with generated values
+      setName(agentProfile.name)
+      setRole(agentProfile.role)
+      setInstructions(agentProfile.instructions || '')
+
+      // Switch to manual mode to show filled form
+      setCreationMode('manual')
+    } catch (error) {
+      console.error('Failed to generate agent:', error)
+      setGenerationError(
+        error instanceof Error
+          ? error.message
+          : t('Failed to generate agent. Please try again.'),
+      )
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
   const handleCreateAgent = async () => {
@@ -232,6 +354,10 @@ export function AgentsNewPage() {
     setError('')
     setSuccess(false)
     setMessages([])
+    setMetaPrompt('')
+    setGenerationError('')
+    setGeneratedPreview('')
+    setCreationMode('meta')
   }
 
   const isFormValid = name.trim() && role.trim()
@@ -242,122 +368,230 @@ export function AgentsNewPage() {
       <Section>
         <Container>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left Side - Agent Creation Form */}
-            <form
-              onSubmit={(e) => {
-                e.preventDefault()
-                handleCreateAgent()
-              }}
-              className="space-y-6"
-            >
-              <div>
-                <Title level={3}>{t('Agent Profile')}</Title>
-                <p className="text-small text-default-500 mt-2">
-                  {t("Define your agent's personality and capabilities")}
-                </p>
-              </div>
+            {/* Left Side - Agent Creation */}
+            <div className="space-y-6">
+              <Tabs
+                selectedKey={creationMode}
+                onSelectionChange={(key) =>
+                  setCreationMode(key as CreationMode)
+                }
+                aria-label={t('Creation mode')}
+                color="primary"
+                variant="bordered"
+                classNames={{
+                  tabList: 'w-full',
+                }}
+              >
+                <Tab
+                  key="meta"
+                  title={
+                    <div className="flex items-center gap-2">
+                      <Icon name="Sparks" className="w-4 h-4" />
+                      <span>{t('Describe Your Agent')}</span>
+                    </div>
+                  }
+                >
+                  {/* Meta-prompting Mode */}
+                  <div className="space-y-6 pt-4">
+                    <div>
+                      <p className="text-small text-default-500">
+                        {t(
+                          "Tell us what kind of agent you want, and we'll create it for you.",
+                        )}
+                      </p>
+                    </div>
 
-              {error && <Alert color="danger">{error}</Alert>}
+                    {generationError && (
+                      <Alert color="danger">{generationError}</Alert>
+                    )}
 
-              {success && (
-                <Alert color="success">
-                  {t(
-                    'Agent created successfully! Redirecting to agents list...',
-                  )}
-                </Alert>
-              )}
-
-              <Input
-                label={t('Name')}
-                value={name}
-                onValueChange={setName}
-                isRequired
-                isDisabled={isSubmitting}
-                placeholder={t('e.g., Mike the Magician')}
-                description={t('A friendly name for your agent')}
-              />
-
-              <Input
-                label={t('Role')}
-                value={role}
-                onValueChange={setRole}
-                isRequired
-                isDisabled={isSubmitting}
-                placeholder={t('e.g., Performs magic tricks and illusions')}
-                description={t('What does your agent do?')}
-              />
-
-              <Textarea
-                label={t('Instructions')}
-                value={instructions}
-                onValueChange={setInstructions}
-                isDisabled={isSubmitting}
-                placeholder={t(
-                  "Detailed instructions for the agent's personality, skills, constraints, and goals…",
-                )}
-                minRows={5}
-                description={t(
-                  "Detailed instructions for the agent's behavior",
-                )}
-              />
-
-              <Accordion>
-                <AccordionItem title={t('Advanced Configuration')}>
-                  <div className="space-y-4 p-4 border rounded-md">
-                    <AgentKnowledgePicker
-                      selectedKnowledgeIds={selectedKnowledgeIds}
-                      onSelectionChange={setSelectedKnowledgeIds}
-                    />
-
-                    <p className="text-xs text-default-500">
-                      Configure advanced settings for your agent. The LLM
-                      provider and model will use your active configuration from
-                      Settings.
-                    </p>
-
-                    <Slider
-                      label={t('Temperature')}
-                      className="max-w-md"
-                      maxValue={2}
-                      minValue={0}
-                      showSteps={true}
-                      size="sm"
-                      step={0.1}
-                      value={temperature}
-                      onChange={(value) =>
-                        setTemperature(Array.isArray(value) ? value[0] : value)
-                      }
-                      isDisabled={isSubmitting}
-                    />
-                    <p className="text-xs text-default-500">
-                      {t(
-                        'Lower values = more focused, Higher values = more creative',
+                    <Textarea
+                      label={t('What agent do you need?')}
+                      value={metaPrompt}
+                      onValueChange={setMetaPrompt}
+                      isDisabled={isGenerating}
+                      placeholder={t(
+                        'e.g., A friendly cooking assistant who specializes in Italian cuisine and can suggest wine pairings...',
                       )}
-                    </p>
+                      minRows={4}
+                      description={t(
+                        'Describe the agent you want to create. Be as specific as you like!',
+                      )}
+                    />
+
+                    {isGenerating && generatedPreview && (
+                      <Card>
+                        <CardBody>
+                          <div className="flex items-center gap-2 mb-2">
+                            <Spinner size="sm" />
+                            <span className="text-small text-default-500">
+                              {t('Generating agent...')}
+                            </span>
+                          </div>
+                          <div className="text-sm text-default-600 whitespace-pre-wrap max-h-48 overflow-y-auto">
+                            {generatedPreview}
+                          </div>
+                        </CardBody>
+                      </Card>
+                    )}
+
+                    <div className="flex gap-4">
+                      <Button
+                        color="primary"
+                        onPress={generateAgentFromDescription}
+                        isDisabled={isGenerating || !metaPrompt.trim()}
+                        isLoading={isGenerating}
+                        startContent={
+                          !isGenerating && (
+                            <Icon name="Sparks" className="w-4 h-4" />
+                          )
+                        }
+                      >
+                        {isGenerating
+                          ? t('Generating...')
+                          : t('Generate Agent')}
+                      </Button>
+
+                      <Button
+                        variant="light"
+                        onPress={() => setCreationMode('manual')}
+                        isDisabled={isGenerating}
+                      >
+                        {t('Or configure manually')}
+                      </Button>
+                    </div>
                   </div>
-                </AccordionItem>
-              </Accordion>
+                </Tab>
 
-              <div className="flex gap-4">
-                <Button
-                  type="submit"
-                  color="primary"
-                  isDisabled={isSubmitting || !isFormValid}
-                  isLoading={isSubmitting}
+                <Tab
+                  key="manual"
+                  title={
+                    <div className="flex items-center gap-2">
+                      <Icon name="Settings" className="w-4 h-4" />
+                      <span>{t('Manual Configuration')}</span>
+                    </div>
+                  }
                 >
-                  {isSubmitting ? t('Creating...') : t('Create Agent')}
-                </Button>
+                  {/* Manual Mode - Original Form */}
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      handleCreateAgent()
+                    }}
+                    className="space-y-6 pt-4"
+                  >
+                    <div>
+                      <p className="text-small text-default-500">
+                        {t("Define your agent's personality and capabilities")}
+                      </p>
+                    </div>
 
-                <Button
-                  type="button"
-                  variant="bordered"
-                  onPress={resetForm}
-                  isDisabled={isSubmitting}
-                >
-                  {t('Reset Form')}
-                </Button>
-              </div>
-            </form>
+                    {error && <Alert color="danger">{error}</Alert>}
+
+                    {success && (
+                      <Alert color="success">
+                        {t(
+                          'Agent created successfully! Redirecting to agents list...',
+                        )}
+                      </Alert>
+                    )}
+
+                    <Input
+                      label={t('Name')}
+                      value={name}
+                      onValueChange={setName}
+                      isRequired
+                      isDisabled={isSubmitting}
+                      placeholder={t('e.g., Mike the Magician')}
+                      description={t('A friendly name for your agent')}
+                    />
+
+                    <Input
+                      label={t('Role')}
+                      value={role}
+                      onValueChange={setRole}
+                      isRequired
+                      isDisabled={isSubmitting}
+                      placeholder={t(
+                        'e.g., Performs magic tricks and illusions',
+                      )}
+                      description={t('What does your agent do?')}
+                    />
+
+                    <Textarea
+                      label={t('Instructions')}
+                      value={instructions}
+                      onValueChange={setInstructions}
+                      isDisabled={isSubmitting}
+                      placeholder={t(
+                        "Detailed instructions for the agent's personality, skills, constraints, and goals…",
+                      )}
+                      minRows={5}
+                      description={t(
+                        "Detailed instructions for the agent's behavior",
+                      )}
+                    />
+
+                    <Accordion>
+                      <AccordionItem title={t('Advanced Configuration')}>
+                        <div className="space-y-4 p-4 border rounded-md">
+                          <AgentKnowledgePicker
+                            selectedKnowledgeIds={selectedKnowledgeIds}
+                            onSelectionChange={setSelectedKnowledgeIds}
+                          />
+
+                          <p className="text-xs text-default-500">
+                            {t('Configure advanced settings for your agent')}
+                          </p>
+
+                          <Slider
+                            label={t('Temperature')}
+                            className="max-w-md"
+                            maxValue={2}
+                            minValue={0}
+                            showSteps={true}
+                            size="sm"
+                            step={0.1}
+                            value={temperature}
+                            onChange={(value) =>
+                              setTemperature(
+                                Array.isArray(value) ? value[0] : value,
+                              )
+                            }
+                            isDisabled={isSubmitting}
+                          />
+                          <p className="text-xs text-default-500">
+                            {t(
+                              'Lower values = more focused, Higher values = more creative',
+                            )}
+                          </p>
+                        </div>
+                      </AccordionItem>
+                    </Accordion>
+
+                    <div className="flex gap-4">
+                      <Button
+                        type="submit"
+                        color="primary"
+                        isDisabled={isSubmitting || !isFormValid}
+                        isLoading={isSubmitting}
+                      >
+                        {isSubmitting ? t('Creating...') : t('Create Agent')}
+                      </Button>
+
+                      <Button
+                        type="button"
+                        variant="bordered"
+                        onPress={resetForm}
+                        isDisabled={isSubmitting}
+                      >
+                        {t('Reset Form')}
+                      </Button>
+                    </div>
+                  </form>
+                </Tab>
+              </Tabs>
+            </div>
 
             {/* Right Side - Live Chat Preview */}
             {isPreviewEnabled && (
@@ -382,8 +616,9 @@ export function AgentsNewPage() {
                       <div className="text-center text-default-500 py-8">
                         <p>{t('Start a conversation to test your agent')}</p>
                         <p className="text-sm mt-2">
-                          The chat will use your current form configuration and
-                          active LLM provider from Settings
+                          {t(
+                            'The chat will use your current form configuration',
+                          )}
                         </p>
                       </div>
                     )}

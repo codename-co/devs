@@ -35,6 +35,10 @@ export const PROVIDER_FILE_TYPES: Record<
     // Google Meet doesn't sync content, but we need an entry
     'text/plain': 'text',
   },
+  'google-tasks': {
+    'text/plain': 'text',
+    'text/markdown': 'text',
+  },
   notion: {
     'text/markdown': 'text',
     'application/vnd.notion.page': 'document',

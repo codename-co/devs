@@ -70,4 +70,27 @@ export const ar: I18n = {
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     'لا توجد رسائل مثبتة بعد. ثبت الرسائل المهمة من المحادثات لجعلها متاحة هنا.',
   'Start Live Conversation': 'بدء محادثة مباشرة',
+  // Meta-prompting
+  'Creation mode': 'وضع الإنشاء',
+  'Describe Your Agent': 'صف وكيلك',
+  'Manual Configuration': 'التكوين اليدوي',
+  "Tell us what kind of agent you want, and we'll create it for you.":
+    'أخبرنا بنوع الوكيل الذي تريده، وسننشئه لك.',
+  'What agent do you need?': 'ما الوكيل الذي تحتاجه؟',
+  'e.g., A friendly cooking assistant who specializes in Italian cuisine and can suggest wine pairings...':
+    'مثال: مساعد طبخ ودود متخصص في المطبخ الإيطالي ويمكنه اقتراح أزواج النبيذ...',
+  'Describe the agent you want to create. Be as specific as you like!':
+    'صف الوكيل الذي تريد إنشاءه. كن محدداً كما تريد!',
+  'Generating agent...': 'جارٍ إنشاء الوكيل...',
+  'Generate Agent': 'إنشاء الوكيل',
+  'Generating...': 'جارٍ الإنشاء...',
+  'Or configure manually': 'أو التكوين يدوياً',
+  'No LLM provider configured. Please configure one in Settings.':
+    'لم يتم تكوين مزود LLM. يرجى تكوين واحد في الإعدادات.',
+  'Failed to generate agent configuration. Please try again.':
+    'فشل في إنشاء تكوين الوكيل. يرجى المحاولة مرة أخرى.',
+  'Generated configuration is missing required fields.':
+    'التكوين المُنشأ يفتقد الحقول المطلوبة.',
+  'Failed to generate agent. Please try again.':
+    'فشل في إنشاء الوكيل. يرجى المحاولة مرة أخرى.',
 } as const

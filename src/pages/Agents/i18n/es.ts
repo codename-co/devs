@@ -77,4 +77,27 @@ export const es: I18n = {
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     'Aún no hay mensajes fijados. Fija mensajes importantes de las conversaciones para hacerlos disponibles aquí.',
   'Start Live Conversation': 'Iniciar conversación en vivo',
+  // Meta-prompting
+  'Creation mode': 'Modo de creación',
+  'Describe Your Agent': 'Describe tu agente',
+  'Manual Configuration': 'Configuración manual',
+  "Tell us what kind of agent you want, and we'll create it for you.":
+    'Dinos qué tipo de agente quieres y lo crearemos para ti.',
+  'What agent do you need?': '¿Qué agente necesitas?',
+  'e.g., A friendly cooking assistant who specializes in Italian cuisine and can suggest wine pairings...':
+    'ej., Un asistente de cocina amigable especializado en cocina italiana que puede sugerir maridajes de vinos...',
+  'Describe the agent you want to create. Be as specific as you like!':
+    '¡Describe el agente que quieres crear. ¡Sé tan específico como quieras!',
+  'Generating agent...': 'Generando agente...',
+  'Generate Agent': 'Generar agente',
+  'Generating...': 'Generando...',
+  'Or configure manually': 'O configurar manualmente',
+  'No LLM provider configured. Please configure one in Settings.':
+    'No hay proveedor de LLM configurado. Por favor, configura uno en Ajustes.',
+  'Failed to generate agent configuration. Please try again.':
+    'Error al generar la configuración del agente. Por favor, inténtalo de nuevo.',
+  'Generated configuration is missing required fields.':
+    'A la configuración generada le faltan campos obligatorios.',
+  'Failed to generate agent. Please try again.':
+    'Error al generar el agente. Por favor, inténtalo de nuevo.',
 } as const

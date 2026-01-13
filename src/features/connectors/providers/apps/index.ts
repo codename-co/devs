@@ -64,6 +64,13 @@ export const PROVIDER_CONFIG: Partial<
     description: 'Join meetings with AI agents',
     syncSupported: false,
   },
+  'google-tasks': {
+    name: 'Google Tasks',
+    icon: 'GoogleTasks',
+    color: '#4285f4',
+    description: 'Sync tasks and to-do lists from Google Tasks',
+    syncSupported: true,
+  },
   // dropbox: {
   //   name: 'Dropbox',
   //   icon: 'Dropbox',
@@ -87,6 +94,7 @@ export const AVAILABLE_PROVIDERS: AppConnectorProvider[] = [
   'gmail',
   'google-calendar',
   'google-meet',
+  'google-tasks',
   'notion',
 ]
 
@@ -119,6 +127,11 @@ export const notion = () => import('./notion')
  */
 export const googleMeet = () => import('./google-meet')
 
+/**
+ * Lazy-load Google Tasks provider
+ */
+export const googleTasks = () => import('./google-tasks')
+
 // =============================================================================
 // Default Export
 // =============================================================================
@@ -128,6 +141,7 @@ export default {
   gmail,
   googleCalendar,
   googleMeet,
+  googleTasks,
   notion,
   PROVIDER_CONFIG,
   AVAILABLE_PROVIDERS,

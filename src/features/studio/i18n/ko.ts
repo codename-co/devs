@@ -79,4 +79,7 @@ export const ko: I18n = {
   'Current Session': '현재 세션',
   Unfavorite: '즐겨찾기 해제',
   Favorite: '즐겨찾기',
+  'Previous image': '이전 이미지',
+  'Next image': '다음 이미지',
+  Navigate: '탐색',
 }

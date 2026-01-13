@@ -28,7 +28,9 @@ export class ProviderNotFoundError extends Error {
  */
 export class ProviderLoadError extends Error {
   constructor(provider: ConnectorProvider, cause?: Error) {
-    super(`Failed to load provider '${provider}'${cause ? `: ${cause.message}` : ''}`)
+    super(
+      `Failed to load provider '${provider}'${cause ? `: ${cause.message}` : ''}`,
+    )
     this.name = 'ProviderLoadError'
     this.cause = cause
   }
@@ -41,6 +43,7 @@ const APP_PROVIDERS: readonly AppConnectorProvider[] = [
   'google-drive',
   'gmail',
   'google-calendar',
+  'google-tasks',
   'notion',
 ] as const
 
@@ -56,7 +59,8 @@ export class ProviderRegistry {
   /**
    * Cached provider instances
    */
-  private static instances: Map<ConnectorProvider, ConnectorProviderInterface> = new Map()
+  private static instances: Map<ConnectorProvider, ConnectorProviderInterface> =
+    new Map()
 
   /**
    * Register a provider loader for lazy loading
@@ -74,9 +78,9 @@ export class ProviderRegistry {
    * @throws ProviderNotFoundError if provider is not registered
    * @throws ProviderLoadError if provider fails to load
    */
-  static async get<T extends ConnectorProviderInterface = ConnectorProviderInterface>(
-    provider: ConnectorProvider
-  ): Promise<T> {
+  static async get<
+    T extends ConnectorProviderInterface = ConnectorProviderInterface,
+  >(provider: ConnectorProvider): Promise<T> {
     // Check cache first
     const cached = this.instances.get(provider)
     if (cached) {
@@ -106,7 +110,7 @@ export class ProviderRegistry {
     } catch (error) {
       throw new ProviderLoadError(
         provider,
-        error instanceof Error ? error : new Error(String(error))
+        error instanceof Error ? error : new Error(String(error)),
       )
     }
   }
@@ -117,7 +121,7 @@ export class ProviderRegistry {
    * @returns Promise resolving to the app connector provider instance
    */
   static async getAppProvider(
-    provider: AppConnectorProvider
+    provider: AppConnectorProvider,
   ): Promise<AppConnectorProviderInterface> {
     return this.get<AppConnectorProviderInterface>(provider)
   }
@@ -144,8 +148,9 @@ export class ProviderRegistry {
    * @returns Array of registered app connector provider identifiers
    */
   static getRegisteredAppProviders(): AppConnectorProvider[] {
-    return this.getRegistered().filter((provider): provider is AppConnectorProvider =>
-      APP_PROVIDERS.includes(provider as AppConnectorProvider)
+    return this.getRegistered().filter(
+      (provider): provider is AppConnectorProvider =>
+        APP_PROVIDERS.includes(provider as AppConnectorProvider),
     )
   }
 
@@ -172,7 +177,11 @@ export class ProviderRegistry {
     // App providers - lazy loaded
     this.register('google-drive', () => import('./providers/apps/google-drive'))
     this.register('gmail', () => import('./providers/apps/gmail'))
-    this.register('google-calendar', () => import('./providers/apps/google-calendar'))
+    this.register(
+      'google-calendar',
+      () => import('./providers/apps/google-calendar'),
+    )
+    this.register('google-tasks', () => import('./providers/apps/google-tasks'))
     this.register('notion', () => import('./providers/apps/notion'))
   }
 

@@ -36,6 +36,11 @@ export const ar: I18n = {
   'Import pages and databases from Notion':
     'استيراد الصفحات وقواعد البيانات من Notion',
 
+  // Providers - Google Tasks
+  'Google Tasks': 'مهام Google',
+  'Import tasks and to-do lists from Google Tasks':
+    'استيراد المهام وقوائم المهام من مهام Google',
+
   // Status
   Connected: 'متصل',
   'Syncing...': 'جارِ المزامنة...',

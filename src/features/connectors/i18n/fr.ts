@@ -35,6 +35,11 @@ export const fr: I18n = {
   'Import pages and databases from Notion':
     'Importer des pages et bases de données depuis Notion',
 
+  // Providers - Google Tasks
+  'Google Tasks': 'Google Tasks',
+  'Import tasks and to-do lists from Google Tasks':
+    'Importer des tâches et listes de tâches depuis Google Tasks',
+
   // Status
   Connected: 'Connecté',
   'Syncing...': 'Synchronisation...',

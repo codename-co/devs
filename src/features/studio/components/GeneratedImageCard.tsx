@@ -39,6 +39,8 @@ interface GeneratedImageCardProps {
   onFavorite?: () => void
   isFavorite?: boolean
   showActions?: boolean
+  /** External preview handler - when provided, disables internal modal */
+  onPreview?: () => void
 }
 
 export function GeneratedImageCard({
@@ -54,6 +56,7 @@ export function GeneratedImageCard({
   onFavorite,
   isFavorite = false,
   showActions = true,
+  onPreview,
 }: GeneratedImageCardProps) {
   const { t } = useI18n(lang as any)
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -64,8 +67,13 @@ export function GeneratedImageCard({
   }, [])
 
   const handleImageClick = useCallback(() => {
-    onOpen()
-  }, [onOpen])
+    // Use external preview if provided, otherwise use internal modal
+    if (onPreview) {
+      onPreview()
+    } else {
+      onOpen()
+    }
+  }, [onPreview, onOpen])
 
   const imageUrl = image.base64
     ? `data:image/${image.format};base64,${image.base64}`
@@ -116,7 +124,7 @@ export function GeneratedImageCard({
                     size="sm"
                     variant="flat"
                     className="bg-white/20 backdrop-blur-sm"
-                    onPress={onOpen}
+                    onPress={onPreview || onOpen}
                   >
                     <Icon name="Expand" size="sm" className="text-white" />
                   </Button>
@@ -236,61 +244,63 @@ export function GeneratedImageCard({
         )}
       </Card>
 
-      {/* Fullscreen modal */}
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        size="full"
-        classNames={{
-          body: 'p-0',
-          closeButton: 'z-50 bg-white/20 backdrop-blur-sm hover:bg-white/40',
-        }}
-      >
-        <ModalContent>
-          <ModalBody className="flex items-center justify-center bg-black/90 min-h-screen">
-            <img
-              src={imageUrl}
-              alt="Generated image full size"
-              className="max-w-full max-h-screen object-contain"
-            />
+      {/* Fullscreen modal - only render when external preview is not provided */}
+      {!onPreview && (
+        <Modal
+          isOpen={isOpen}
+          onClose={onClose}
+          size="full"
+          classNames={{
+            body: 'p-0',
+            closeButton: 'z-50 bg-white/20 backdrop-blur-sm hover:bg-white/40',
+          }}
+        >
+          <ModalContent>
+            <ModalBody className="flex items-center justify-center bg-black/90 min-h-screen">
+              <img
+                src={imageUrl}
+                alt="Generated image full size"
+                className="max-w-full max-h-screen object-contain"
+              />
 
-            {/* Bottom actions bar */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 backdrop-blur-sm rounded-full px-4 py-2">
-              {onDownload && (
-                <Button
-                  size="sm"
-                  variant="flat"
-                  className="text-white"
-                  startContent={<Icon name="Download" size="sm" />}
-                  onPress={onDownload}
-                >
-                  {t('Download')}
-                </Button>
-              )}
-              {onUseAsReference && (
-                <Button
-                  size="sm"
-                  variant="flat"
-                  className="text-white"
-                  startContent={<Icon name="MediaImage" size="sm" />}
-                  onPress={onUseAsReference}
-                >
-                  {t('Use as reference')}
-                </Button>
-              )}
-            </div>
-
-            {/* Image info */}
-            {image.revisedPrompt && (
-              <div className="absolute bottom-20 left-1/2 -translate-x-1/2 max-w-2xl px-4">
-                <p className="text-white/70 text-sm text-center line-clamp-2">
-                  {image.revisedPrompt}
-                </p>
+              {/* Bottom actions bar */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 backdrop-blur-sm rounded-full px-4 py-2">
+                {onDownload && (
+                  <Button
+                    size="sm"
+                    variant="flat"
+                    className="text-white"
+                    startContent={<Icon name="Download" size="sm" />}
+                    onPress={onDownload}
+                  >
+                    {t('Download')}
+                  </Button>
+                )}
+                {onUseAsReference && (
+                  <Button
+                    size="sm"
+                    variant="flat"
+                    className="text-white"
+                    startContent={<Icon name="MediaImage" size="sm" />}
+                    onPress={onUseAsReference}
+                  >
+                    {t('Use as reference')}
+                  </Button>
+                )}
               </div>
-            )}
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+
+              {/* Image info */}
+              {image.revisedPrompt && (
+                <div className="absolute bottom-20 left-1/2 -translate-x-1/2 max-w-2xl px-4">
+                  <p className="text-white/70 text-sm text-center line-clamp-2">
+                    {image.revisedPrompt}
+                  </p>
+                </div>
+              )}
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
     </>
   )
 }

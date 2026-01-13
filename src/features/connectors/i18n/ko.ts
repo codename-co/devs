@@ -35,6 +35,11 @@ export const ko: I18n = {
   'Import pages and databases from Notion':
     'Notion에서 페이지와 데이터베이스 가져오기',
 
+  // Providers - Google Tasks
+  'Google Tasks': 'Google Tasks',
+  'Import tasks and to-do lists from Google Tasks':
+    'Google Tasks에서 작업과 할 일 목록 가져오기',
+
   // Status
   Connected: '연결됨',
   'Syncing...': '동기화 중...',

@@ -20,6 +20,7 @@ const PROVIDER_ICONS: Record<ConnectorProvider, string> = {
   gmail: 'Gmail',
   'google-calendar': 'GoogleCalendar',
   'google-meet': 'GoogleMeet',
+  'google-tasks': 'GoogleTasks',
   notion: 'Notion',
   dropbox: 'Dropbox',
   github: 'GitHub',

@@ -73,4 +73,7 @@ export const en = [
   'Current Session',
   'Unfavorite',
   'Favorite',
+  'Previous image',
+  'Next image',
+  'Navigate',
 ] as const

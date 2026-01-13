@@ -239,6 +239,7 @@ export const Icons = {
   GoogleDocs: SimpleIconToComponent(SimpleIcons['siGoogledocs']),
   GoogleDrive: SimpleIconToComponent(SimpleIcons['siGoogledrive']),
   GoogleMeet: SimpleIconToComponent(SimpleIcons['siGooglemeet']),
+  GoogleTasks: SimpleIconToComponent(SimpleIcons['siGoogletasks']),
   HuggingFace: SimpleIconToComponent(SimpleIcons['siHuggingface']),
   MistralAI: SimpleIconToComponent(SimpleIcons['siMistralai']),
   Notion: SimpleIconToComponent(SimpleIcons['siNotion']),

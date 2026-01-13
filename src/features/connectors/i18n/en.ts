@@ -28,6 +28,10 @@ export const en = [
   'Notion',
   'Import pages and databases from Notion',
 
+  // Providers - Google Tasks
+  'Google Tasks',
+  'Import tasks and to-do lists from Google Tasks',
+
   // Status
   'Connected',
   'Syncing...',

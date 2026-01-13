@@ -81,4 +81,7 @@ export const es: I18n = {
   'Current Session': 'Sesión actual',
   Unfavorite: 'Quitar de favoritos',
   Favorite: 'Favorito',
+  'Previous image': 'Imagen anterior',
+  'Next image': 'Siguiente imagen',
+  Navigate: 'Navegar',
 }

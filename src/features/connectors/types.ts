@@ -25,6 +25,7 @@ export type AppConnectorProvider =
   | 'gmail'
   | 'google-calendar'
   | 'google-meet'
+  | 'google-tasks'
   | 'notion'
   | 'dropbox'
   | 'github'
@@ -537,6 +538,17 @@ export const APP_CONNECTOR_CONFIGS: Record<
     supportedTypes: ['meeting'],
     maxFileSize: 0,
     rateLimit: { requests: 100, windowSeconds: 60 },
+  },
+  'google-tasks': {
+    id: 'google-tasks',
+    category: 'app',
+    name: 'Google Tasks',
+    icon: 'google-tasks',
+    color: '#4285F4',
+    capabilities: ['read'],
+    supportedTypes: ['task', 'tasklist'],
+    maxFileSize: 1024 * 1024,
+    rateLimit: { requests: 500, windowSeconds: 100 },
   },
   notion: {
     id: 'notion',

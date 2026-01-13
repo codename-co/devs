@@ -74,4 +74,27 @@ export const ko: I18n = {
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     '아직 고정된 메시지가 없습니다. 대화에서 중요한 메시지를 고정하여 여기에서 사용할 수 있게 하세요.',
   'Start Live Conversation': '실시간 대화 시작',
+  // Meta-prompting
+  'Creation mode': '생성 모드',
+  'Describe Your Agent': '에이전트 설명하기',
+  'Manual Configuration': '수동 구성',
+  "Tell us what kind of agent you want, and we'll create it for you.":
+    '원하는 에이전트 유형을 알려주시면 만들어 드리겠습니다.',
+  'What agent do you need?': '어떤 에이전트가 필요하세요?',
+  'e.g., A friendly cooking assistant who specializes in Italian cuisine and can suggest wine pairings...':
+    '예: 이탈리아 요리를 전문으로 하고 와인 페어링을 제안할 수 있는 친근한 요리 도우미...',
+  'Describe the agent you want to create. Be as specific as you like!':
+    '만들고 싶은 에이전트를 설명하세요. 원하는 만큼 구체적으로!',
+  'Generating agent...': '에이전트 생성 중...',
+  'Generate Agent': '에이전트 생성',
+  'Generating...': '생성 중...',
+  'Or configure manually': '또는 수동으로 구성',
+  'No LLM provider configured. Please configure one in Settings.':
+    'LLM 제공자가 구성되지 않았습니다. 설정에서 구성해 주세요.',
+  'Failed to generate agent configuration. Please try again.':
+    '에이전트 구성 생성에 실패했습니다. 다시 시도해 주세요.',
+  'Generated configuration is missing required fields.':
+    '생성된 구성에 필수 필드가 누락되었습니다.',
+  'Failed to generate agent. Please try again.':
+    '에이전트 생성에 실패했습니다. 다시 시도해 주세요.',
 } as const

@@ -451,7 +451,7 @@ export const ImagePromptArea = forwardRef<
                   <DropdownTrigger>
                     <Button
                       size="sm"
-                      variant="flat"
+                      variant="light"
                       className="min-w-0 px-2 h-8"
                       endContent={<Icon name="NavArrowDown" size="sm" />}
                     >
