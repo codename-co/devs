@@ -1,5 +1,6 @@
 const sharp = require('sharp')
 const { join } = require('path')
+const { execSync } = require('child_process')
 
 const publicDir = join(__dirname, '..', 'public')
 
@@ -47,33 +48,33 @@ const createGradientBackground = (size) => {
       </radialGradient>
     </defs>
 
-    <!-- Deep background -->
-    <rect width="${size}" height="${size}" fill="#0f0a2e"/>
+    <!-- Background - vibrant purple base -->
+    <rect width="${size}" height="${size}" fill="#2d1f5e"/>
 
     <!-- Large blurred color blobs creating the mesh effect -->
     <g filter="url(#blur)">
       <!-- Blue blob - top left, stretching right -->
-      <ellipse cx="${size * 0.15}" cy="${size * 0.2}" rx="${size * 0.55}" ry="${size * 0.45}" fill="url(#g1)" opacity="0.9"/>
+      <ellipse cx="${size * 0.15}" cy="${size * 0.2}" rx="${size * 0.6}" ry="${size * 0.5}" fill="url(#g1)" opacity="1"/>
 
       <!-- Purple blob - top right -->
-      <ellipse cx="${size * 0.85}" cy="${size * 0.15}" rx="${size * 0.5}" ry="${size * 0.5}" fill="url(#g2)" opacity="0.85"/>
+      <ellipse cx="${size * 0.85}" cy="${size * 0.15}" rx="${size * 0.55}" ry="${size * 0.55}" fill="url(#g2)" opacity="1"/>
 
       <!-- Pink blob - bottom right, large -->
-      <ellipse cx="${size * 0.9}" cy="${size * 0.85}" rx="${size * 0.6}" ry="${size * 0.55}" fill="url(#g3)" opacity="0.8"/>
+      <ellipse cx="${size * 0.9}" cy="${size * 0.85}" rx="${size * 0.65}" ry="${size * 0.6}" fill="url(#g3)" opacity="1"/>
 
       <!-- Orange blob - bottom left -->
-      <ellipse cx="${size * 0.1}" cy="${size * 0.9}" rx="${size * 0.5}" ry="${size * 0.45}" fill="url(#g4)" opacity="0.85"/>
+      <ellipse cx="${size * 0.1}" cy="${size * 0.9}" rx="${size * 0.55}" ry="${size * 0.5}" fill="url(#g4)" opacity="1"/>
 
       <!-- Green blob - center, creates mixing zone -->
-      <ellipse cx="${size * 0.5}" cy="${size * 0.55}" rx="${size * 0.4}" ry="${size * 0.35}" fill="url(#g5)" opacity="0.7"/>
+      <ellipse cx="${size * 0.5}" cy="${size * 0.55}" rx="${size * 0.45}" ry="${size * 0.4}" fill="url(#g5)" opacity="0.95"/>
 
-      <!-- Secondary mixing blobs -->
-      <ellipse cx="${size * 0.35}" cy="${size * 0.7}" rx="${size * 0.35}" ry="${size * 0.3}" fill="url(#g2)" opacity="0.5"/>
-      <ellipse cx="${size * 0.65}" cy="${size * 0.35}" rx="${size * 0.3}" ry="${size * 0.35}" fill="url(#g3)" opacity="0.5"/>
+      <!-- Secondary mixing blobs for extra vibrancy -->
+      <ellipse cx="${size * 0.35}" cy="${size * 0.7}" rx="${size * 0.4}" ry="${size * 0.35}" fill="url(#g2)" opacity="0.85"/>
+      <ellipse cx="${size * 0.65}" cy="${size * 0.35}" rx="${size * 0.35}" ry="${size * 0.4}" fill="url(#g3)" opacity="0.85"/>
     </g>
 
-    <!-- Subtle highlight overlay for vibrancy -->
-    <rect width="${size}" height="${size}" fill="url(#g1)" opacity="0.1"/>
+    <!-- Bright highlight overlay for extra pop -->
+    <rect width="${size}" height="${size}" fill="url(#g1)" opacity="0.2"/>
   `
 }
 
@@ -105,31 +106,50 @@ const createStandardSvg = (size) => {
 
 const sizes = [192, 512]
 
+// Optimize PNG with OxiPNG (lossless compression)
+function optimizePng(filePath) {
+  try {
+    execSync(`oxipng -o max --strip safe "${filePath}"`, { stdio: 'pipe' })
+  } catch {
+    console.warn(
+      `Warning: oxipng not found or failed. Install with: brew install oxipng`,
+    )
+  }
+}
+
 async function generateIcons() {
+  const generatedFiles = []
+
   for (const size of sizes) {
     // Generate standard icon
     const standardSvg = createStandardSvg(size)
-    await sharp(Buffer.from(standardSvg))
-      .png()
-      .toFile(join(publicDir, `icon-${size}.png`))
+    const standardPath = join(publicDir, `icon-${size}.png`)
+    await sharp(Buffer.from(standardSvg)).png().toFile(standardPath)
+    generatedFiles.push(standardPath)
     console.log(`Generated icon-${size}.png`)
 
     // Generate maskable icon with safe zone padding
     const maskableSvg = createMaskableSvg(size)
-    await sharp(Buffer.from(maskableSvg))
-      .png()
-      .toFile(join(publicDir, `icon-${size}-maskable.png`))
+    const maskablePath = join(publicDir, `icon-${size}-maskable.png`)
+    await sharp(Buffer.from(maskableSvg)).png().toFile(maskablePath)
+    generatedFiles.push(maskablePath)
     console.log(`Generated icon-${size}-maskable.png`)
   }
 
   // Also generate Apple Touch Icon (180x180)
   const appleSvg = createStandardSvg(180)
-  await sharp(Buffer.from(appleSvg))
-    .png()
-    .toFile(join(publicDir, 'apple-touch-icon.png'))
+  const applePath = join(publicDir, 'apple-touch-icon.png')
+  await sharp(Buffer.from(appleSvg)).png().toFile(applePath)
+  generatedFiles.push(applePath)
   console.log('Generated apple-touch-icon.png')
 
-  console.log('\nAll icons generated successfully!')
+  // Optimize all generated files with OxiPNG
+  console.log('\nOptimizing with OxiPNG...')
+  for (const filePath of generatedFiles) {
+    optimizePng(filePath)
+  }
+
+  console.log('\nAll icons generated and optimized successfully!')
 }
 
 generateIcons().catch(console.error)
