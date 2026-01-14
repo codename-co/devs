@@ -93,4 +93,28 @@ export const ar: I18n = {
     'التكوين المُنشأ يفتقد الحقول المطلوبة.',
   'Failed to generate agent. Please try again.':
     'فشل في إنشاء الوكيل. يرجى المحاولة مرة أخرى.',
+  Tools: 'الأدوات',
+  'No tools enabled for this agent.': 'لا توجد أدوات مُفعّلة لهذا الوكيل.',
+  'Knowledge search': 'بحث المعرفة',
+  // Trace/Tool display
+  Duration: 'المدة',
+  Tokens: 'الرموز',
+  'Loading…': 'جاري التحميل…',
+  'Processing step': 'خطوة المعالجة',
+  'Processing Details': 'تفاصيل المعالجة',
+  Status: 'الحالة',
+  Cost: 'التكلفة',
+  Input: 'الإدخال',
+  Output: 'الإخراج',
+  Steps: 'الخطوات',
+  'Trace not found': 'لم يتم العثور على التتبع',
+  Close: 'إغلاق',
+  'View details': 'عرض التفاصيل',
+  Error: 'خطأ',
+  'View document': 'عرض المستند',
+  // Tool display names
+  'Searching knowledge base': 'البحث في قاعدة المعرفة',
+  'Reading document': 'قراءة المستند',
+  'Browsing documents': 'تصفح المستندات',
+  'Summarizing document': 'تلخيص المستند',
 } as const

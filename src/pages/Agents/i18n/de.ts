@@ -98,6 +98,31 @@ export const de: I18n = {
     'Agentenkonfiguration konnte nicht generiert werden. Bitte versuchen Sie es erneut.',
   'Generated configuration is missing required fields.':
     'Der generierten Konfiguration fehlen erforderliche Felder.',
+  Tools: 'Werkzeuge',
+  'No tools enabled for this agent.':
+    'Keine Werkzeuge für diesen Agenten aktiviert.',
+  'Knowledge search': 'Wissenssuche',
+  // Trace/Tool display
+  Duration: 'Dauer',
+  Tokens: 'Tokens',
+  'Loading…': 'Laden…',
+  'Processing step': 'Verarbeitungsschritt',
+  'Processing Details': 'Verarbeitungsdetails',
+  Status: 'Status',
+  Cost: 'Kosten',
+  Input: 'Eingabe',
+  Output: 'Ausgabe',
+  Steps: 'Schritte',
+  'Trace not found': 'Trace nicht gefunden',
+  Close: 'Schließen',
+  'View details': 'Details anzeigen',
+  Error: 'Fehler',
+  'View document': 'Dokument anzeigen',
+  // Tool display names
+  'Searching knowledge base': 'Wissensdatenbank durchsuchen',
+  'Reading document': 'Dokument lesen',
+  'Browsing documents': 'Dokumente durchsuchen',
+  'Summarizing document': 'Dokument zusammenfassen',
   'Failed to generate agent. Please try again.':
     'Agent konnte nicht generiert werden. Bitte versuchen Sie es erneut.',
 } as const

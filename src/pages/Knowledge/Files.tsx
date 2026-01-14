@@ -18,6 +18,7 @@ import {
   Spinner,
   Textarea,
   useDisclosure,
+  Tooltip,
 } from '@heroui/react'
 import {
   Upload,
@@ -414,9 +415,24 @@ export const Files: React.FC = () => {
               break
 
             case 'job_completed':
+              // Get the completed job's item ID before deleting
+              const completedJob = next.get(event.jobId)
               next.delete(event.jobId)
               // Knowledge items update automatically via reactive hooks
               successToast('Document processing completed')
+
+              // Update preview item if it's the one that was just processed
+              if (completedJob) {
+                db.get('knowledgeItems', completedJob.itemId).then(
+                  (updatedItem) => {
+                    if (updatedItem) {
+                      setPreviewItem((current) =>
+                        current?.id === updatedItem.id ? updatedItem : current,
+                      )
+                    }
+                  },
+                )
+              }
               break
 
             case 'job_failed':
@@ -630,6 +646,23 @@ export const Files: React.FC = () => {
     } catch (error) {
       console.error('Failed to delete items:', error)
       errorToast(t('Failed to delete some items'))
+    }
+  }
+
+  const reprocessSelectedItems = async () => {
+    try {
+      const itemsToProcess = Array.from(selectedItems)
+      for (const id of itemsToProcess) {
+        await documentProcessor.queueProcessing(id)
+      }
+      successToast(
+        t('{count} item(s) queued for processing', {
+          count: itemsToProcess.length,
+        }),
+      )
+    } catch (error) {
+      console.error('Failed to reprocess items:', error)
+      errorToast(t('Failed to reprocess some items'))
     }
   }
 
@@ -965,6 +998,28 @@ export const Files: React.FC = () => {
                       <>
                         {selectedItems.size > 0 ? (
                           <>
+                            <Tooltip content={t('Delete selected')}>
+                              <Button
+                                size="sm"
+                                color="danger"
+                                variant="flat"
+                                isIconOnly
+                                startContent={<Trash className="w-4 h-4" />}
+                                onPress={onBulkDeleteModalOpen}
+                              />
+                            </Tooltip>
+                            <Tooltip content={t('Reprocess')}>
+                              <Button
+                                size="sm"
+                                color="primary"
+                                variant="flat"
+                                isIconOnly
+                                startContent={
+                                  <RefreshDouble className="w-4 h-4" />
+                                }
+                                onPress={reprocessSelectedItems}
+                              />
+                            </Tooltip>
                             <Button
                               size="sm"
                               variant="flat"
@@ -972,15 +1027,6 @@ export const Files: React.FC = () => {
                               onPress={unselectAllItems}
                             >
                               {t('Unselect all')}
-                            </Button>
-                            <Button
-                              size="sm"
-                              color="danger"
-                              variant="flat"
-                              startContent={<Trash className="w-4 h-4" />}
-                              onPress={onBulkDeleteModalOpen}
-                            >
-                              {t('Delete selected')}
                             </Button>
                           </>
                         ) : (

@@ -97,6 +97,30 @@ export const fr: I18n = {
     "Échec de la génération de la configuration de l'agent. Veuillez réessayer.",
   'Generated configuration is missing required fields.':
     'La configuration générée est incomplète.',
+  Tools: 'Outils',
+  'No tools enabled for this agent.': 'Aucun outil activé pour cet agent.',
+  'Knowledge search': 'Recherche de connaissances',
+  // Trace/Tool display
+  Duration: 'Durée',
+  Tokens: 'Tokens',
+  'Loading…': 'Chargement…',
+  'Processing step': 'Étape de traitement',
+  'Processing Details': 'Détails du traitement',
+  Status: 'Statut',
+  Cost: 'Coût',
+  Input: 'Entrée',
+  Output: 'Sortie',
+  Steps: 'Étapes',
+  'Trace not found': 'Trace non trouvée',
+  Close: 'Fermer',
+  'View details': 'Voir les détails',
+  Error: 'Erreur',
+  'View document': 'Voir le document',
+  // Tool display names
+  'Searching knowledge base': 'Recherche dans la base de connaissances',
+  'Reading document': 'Lecture du document',
+  'Browsing documents': 'Parcours des documents',
+  'Summarizing document': 'Résumé du document',
   'Failed to generate agent. Please try again.':
     "Échec de la génération de l'agent. Veuillez réessayer.",
 } as const

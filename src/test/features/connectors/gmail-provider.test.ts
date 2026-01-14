@@ -19,7 +19,7 @@ describe('GmailProvider', () => {
       return base64
     }
 
-    it('should decode Quoted-Printable encoded subject (UTF-8)', () => {
+    it('should decode Quoted-Printable encoded subject (UTF-8)', async () => {
       // "Your account is live – next, add your business info"
       // The en-dash (–) is =E2=80=93 in UTF-8, comma is =2C
       const encodedSubject =
@@ -33,14 +33,14 @@ describe('GmailProvider', () => {
         labelIds: ['INBOX'],
       }
 
-      const result = gmailProvider.normalizeItem(message)
+      const result = await gmailProvider.normalizeItem(message)
 
       expect(result.name).toBe(
         'Your account is live – next, add your business info',
       )
     })
 
-    it('should decode Base64 encoded subject (UTF-8)', () => {
+    it('should decode Base64 encoded subject (UTF-8)', async () => {
       // "Hello World" in Base64
       const encodedSubject = '=?UTF-8?B?SGVsbG8gV29ybGQ=?='
 
@@ -52,12 +52,12 @@ describe('GmailProvider', () => {
         labelIds: ['INBOX'],
       }
 
-      const result = gmailProvider.normalizeItem(message)
+      const result = await gmailProvider.normalizeItem(message)
 
       expect(result.name).toBe('Hello World')
     })
 
-    it('should decode subject with special characters', () => {
+    it('should decode subject with special characters', async () => {
       // "Café résumé" with accented characters
       const encodedSubject = '=?UTF-8?Q?Caf=C3=A9_r=C3=A9sum=C3=A9?='
 
@@ -69,12 +69,12 @@ describe('GmailProvider', () => {
         labelIds: ['INBOX'],
       }
 
-      const result = gmailProvider.normalizeItem(message)
+      const result = await gmailProvider.normalizeItem(message)
 
       expect(result.name).toBe('Café résumé')
     })
 
-    it('should handle plain ASCII subject without encoding', () => {
+    it('should handle plain ASCII subject without encoding', async () => {
       const plainSubject = 'Hello World - Plain Subject'
 
       const message = {
@@ -85,12 +85,12 @@ describe('GmailProvider', () => {
         labelIds: ['INBOX'],
       }
 
-      const result = gmailProvider.normalizeItem(message)
+      const result = await gmailProvider.normalizeItem(message)
 
       expect(result.name).toBe('Hello World - Plain Subject')
     })
 
-    it('should handle mixed encoded and plain text', () => {
+    it('should handle mixed encoded and plain text', async () => {
       // "Re: Café meeting" where only "Café" is encoded
       const mixedSubject = 'Re: =?UTF-8?Q?Caf=C3=A9?= meeting'
 
@@ -102,12 +102,12 @@ describe('GmailProvider', () => {
         labelIds: ['INBOX'],
       }
 
-      const result = gmailProvider.normalizeItem(message)
+      const result = await gmailProvider.normalizeItem(message)
 
       expect(result.name).toBe('Re: Café meeting')
     })
 
-    it('should decode From header with encoded name', () => {
+    it('should decode From header with encoded name', async () => {
       // "José García" <jose@example.com>
       const encodedFrom = '=?UTF-8?Q?Jos=C3=A9_Garc=C3=ADa?= <jose@example.com>'
 
@@ -125,12 +125,12 @@ describe('GmailProvider', () => {
         labelIds: ['INBOX'],
       }
 
-      const result = gmailProvider.normalizeItem(message)
+      const result = await gmailProvider.normalizeItem(message)
 
       expect(result.description).toBe('From: José García <jose@example.com>')
     })
 
-    it('should handle ISO-8859-1 encoded subject', () => {
+    it('should handle ISO-8859-1 encoded subject', async () => {
       // "Héllo" in ISO-8859-1 Q encoding (é = E9 in ISO-8859-1)
       const encodedSubject = '=?ISO-8859-1?Q?H=E9llo?='
 
@@ -142,12 +142,12 @@ describe('GmailProvider', () => {
         labelIds: ['INBOX'],
       }
 
-      const result = gmailProvider.normalizeItem(message)
+      const result = await gmailProvider.normalizeItem(message)
 
       expect(result.name).toBe('Héllo')
     })
 
-    it('should handle case-insensitive encoding specifiers', () => {
+    it('should handle case-insensitive encoding specifiers', async () => {
       // Lowercase 'q' and 'utf-8'
       const encodedSubject = '=?utf-8?q?Hello_World?='
 
@@ -159,12 +159,12 @@ describe('GmailProvider', () => {
         labelIds: ['INBOX'],
       }
 
-      const result = gmailProvider.normalizeItem(message)
+      const result = await gmailProvider.normalizeItem(message)
 
       expect(result.name).toBe('Hello World')
     })
 
-    it('should default to (No Subject) for missing subject', () => {
+    it('should default to (No Subject) for missing subject', async () => {
       const rawContent = `From: test@example.com\r\nDate: Mon, 10 Jan 2026 12:00:00 +0000\r\n\r\nBody`
       const base64 = btoa(rawContent)
         .replace(/\+/g, '-')
@@ -179,12 +179,12 @@ describe('GmailProvider', () => {
         labelIds: ['INBOX'],
       }
 
-      const result = gmailProvider.normalizeItem(message)
+      const result = await gmailProvider.normalizeItem(message)
 
       expect(result.name).toBe('(No Subject)')
     })
 
-    it('should handle multiple adjacent encoded words', () => {
+    it('should handle multiple adjacent encoded words', async () => {
       // Adjacent encoded words should be joined without space between them
       // This tests RFC 2047 section 6.2 behavior
       const encodedSubject = '=?UTF-8?Q?Hello?= =?UTF-8?Q?World?='
@@ -197,14 +197,14 @@ describe('GmailProvider', () => {
         labelIds: ['INBOX'],
       }
 
-      const result = gmailProvider.normalizeItem(message)
+      const result = await gmailProvider.normalizeItem(message)
 
       // RFC 2047: whitespace between adjacent encoded words should be ignored
       // This means "Hello" + "World" = "HelloWorld" (no space)
       expect(result.name).toBe('HelloWorld')
     })
 
-    it('should handle emoji in subject', () => {
+    it('should handle emoji in subject', async () => {
       // "🎉 Party!" - party popper emoji
       const encodedSubject = '=?UTF-8?Q?=F0=9F=8E=89_Party!?='
 
@@ -216,7 +216,7 @@ describe('GmailProvider', () => {
         labelIds: ['INBOX'],
       }
 
-      const result = gmailProvider.normalizeItem(message)
+      const result = await gmailProvider.normalizeItem(message)
 
       expect(result.name).toBe('🎉 Party!')
     })

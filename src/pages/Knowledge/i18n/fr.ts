@@ -158,6 +158,10 @@ export const fr: I18n = {
   // Bulk selection
   '{count} item(s) deleted': '{count} élément(s) supprimé(s)',
   'Failed to delete some items': 'Échec de la suppression de certains éléments',
+  '{count} item(s) queued for processing':
+    '{count} élément(s) ajouté(s) à la file de traitement',
+  'Failed to reprocess some items':
+    'Échec du retraitement de certains éléments',
   'Select all': 'Tout sélectionner',
   'Unselect all': 'Tout désélectionner',
   'Delete selected': 'Supprimer la sélection',

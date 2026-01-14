@@ -495,11 +495,14 @@ export abstract class BaseAppConnectorProvider
 
   /**
    * Normalize a raw item from the provider's API to a ConnectorItem.
+   * Can be async for providers that need to parse content (e.g., email parsing).
    *
    * @param rawItem - The raw item from the provider's API
-   * @returns Normalized ConnectorItem
+   * @returns Normalized ConnectorItem (or Promise for async providers)
    */
-  abstract normalizeItem(rawItem: unknown): ConnectorItem
+  abstract normalizeItem(
+    rawItem: unknown,
+  ): ConnectorItem | Promise<ConnectorItem>
 
   // ===========================================================================
   // Optional Methods - Can be overridden by providers

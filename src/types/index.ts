@@ -61,6 +61,7 @@ export interface Message {
   pinnedDescription?: string // Short AI-generated description when pinned
   pinnedAt?: Date // When the message was pinned
   attachments?: MessageAttachment[] // File attachments for this message
+  traceIds?: string[] // Trace IDs for operations performed to generate this message
 }
 
 export interface Conversation {

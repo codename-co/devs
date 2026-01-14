@@ -107,6 +107,7 @@ const isExtractableDocument = (mimeType?: string): boolean => {
     'application/vnd.google-apps.document',
     'application/vnd.google-apps.spreadsheet',
     'application/vnd.google-apps.presentation',
+    'message/rfc822',
   ]
   return mimeType ? extractableTypes.includes(mimeType) : false
 }
@@ -397,30 +398,76 @@ const parseEMLHeaders = (rawContent: string): Record<string, string> => {
 }
 
 /**
- * Decode quoted-printable or base64 encoded content
+ * Decode quoted-printable or base64 encoded content with proper charset handling
  */
-const decodeEmailContent = (content: string, encoding?: string): string => {
+const decodeEmailContent = (
+  content: string,
+  encoding?: string,
+  charset: string = 'utf-8',
+): string => {
   if (!encoding) return content
 
   const lowerEncoding = encoding.toLowerCase()
 
   if (lowerEncoding === 'quoted-printable') {
-    return content
-      .replace(/=([0-9A-Fa-f]{2})/g, (_, hex) =>
-        String.fromCharCode(parseInt(hex, 16)),
-      )
-      .replace(/=\r?\n/g, '')
+    // First, remove soft line breaks (=\r?\n)
+    const cleanedContent = content.replace(/=\r?\n/g, '')
+    // Decode =XX hex sequences to bytes
+    const bytes: number[] = []
+    let i = 0
+    while (i < cleanedContent.length) {
+      if (
+        cleanedContent[i] === '=' &&
+        i + 2 < cleanedContent.length &&
+        /[0-9A-Fa-f]{2}/.test(cleanedContent.substring(i + 1, i + 3))
+      ) {
+        const hex = cleanedContent.substring(i + 1, i + 3)
+        bytes.push(parseInt(hex, 16))
+        i += 3
+      } else {
+        bytes.push(cleanedContent.charCodeAt(i))
+        i++
+      }
+    }
+    // Decode bytes using the specified charset
+    try {
+      return new TextDecoder(charset).decode(new Uint8Array(bytes))
+    } catch {
+      // Fallback to utf-8 if charset is not supported
+      return new TextDecoder('utf-8').decode(new Uint8Array(bytes))
+    }
   }
 
   if (lowerEncoding === 'base64') {
     try {
-      return atob(content.replace(/\s/g, ''))
+      // Decode base64 to binary string
+      const binaryString = atob(content.replace(/\s/g, ''))
+      // Convert binary string to Uint8Array
+      const bytes = new Uint8Array(binaryString.length)
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i)
+      }
+      // Decode bytes using the specified charset
+      try {
+        return new TextDecoder(charset).decode(bytes)
+      } catch {
+        // Fallback to utf-8 if charset is not supported
+        return new TextDecoder('utf-8').decode(bytes)
+      }
     } catch {
       return content
     }
   }
 
   return content
+}
+
+/**
+ * Extract charset from Content-Type header
+ */
+const extractCharset = (contentType: string): string => {
+  const charsetMatch = contentType.match(/charset=["']?([^"';\s]+)["']?/i)
+  return charsetMatch ? charsetMatch[1].toLowerCase() : 'utf-8'
 }
 
 /**
@@ -433,6 +480,7 @@ const extractEMLBody = (rawContent: string): { text: string; html: string } => {
   const headers = parseEMLHeaders(rawContent)
   const contentType = headers['content-type'] || 'text/plain'
   const contentEncoding = headers['content-transfer-encoding']
+  const mainCharset = extractCharset(contentType)
 
   // Handle multipart messages
   const boundaryMatch = contentType.match(/boundary=["']?([^"';\s]+)["']?/i)
@@ -451,13 +499,20 @@ const extractEMLBody = (rawContent: string): { text: string; html: string } => {
       const partHeaders = partParts[0] || ''
       const partBody = partParts.slice(1).join('\n\n')
 
+      // Extract full content-type line for charset extraction
+      const partContentTypeFull =
+        partHeaders.match(/content-type:\s*([^\r\n]+)/i)?.[1] || ''
       const partContentType =
-        partHeaders.match(/content-type:\s*([^;\r\n]+)/i)?.[1]?.toLowerCase() ||
-        ''
+        partContentTypeFull.split(';')[0]?.toLowerCase() || ''
+      const partCharset = extractCharset(partContentTypeFull) || mainCharset
       const partEncoding =
         partHeaders.match(/content-transfer-encoding:\s*([^\r\n]+)/i)?.[1] || ''
 
-      const decodedBody = decodeEmailContent(partBody.trim(), partEncoding)
+      const decodedBody = decodeEmailContent(
+        partBody.trim(),
+        partEncoding,
+        partCharset,
+      )
 
       if (partContentType.includes('text/html')) {
         htmlPart = decodedBody
@@ -470,7 +525,11 @@ const extractEMLBody = (rawContent: string): { text: string; html: string } => {
   }
 
   // Single-part message
-  const decodedBody = decodeEmailContent(bodyContent, contentEncoding)
+  const decodedBody = decodeEmailContent(
+    bodyContent,
+    contentEncoding,
+    mainCharset,
+  )
 
   if (contentType.includes('text/html')) {
     return { text: '', html: decodedBody }

@@ -152,6 +152,9 @@ export const ar: I18n = {
   // Bulk selection
   '{count} item(s) deleted': 'تم حذف {count} عنصر(عناصر)',
   'Failed to delete some items': 'فشل في حذف بعض العناصر',
+  '{count} item(s) queued for processing':
+    'تم إضافة {count} عنصر(عناصر) إلى قائمة المعالجة',
+  'Failed to reprocess some items': 'فشل في إعادة معالجة بعض العناصر',
   'Select all': 'تحديد الكل',
   'Unselect all': 'إلغاء تحديد الكل',
   'Delete selected': 'حذف المحدد',

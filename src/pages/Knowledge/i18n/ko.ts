@@ -155,6 +155,9 @@ export const ko: I18n = {
   // Bulk selection
   '{count} item(s) deleted': '{count}개 항목 삭제됨',
   'Failed to delete some items': '일부 항목 삭제 실패',
+  '{count} item(s) queued for processing':
+    '{count}개 항목이 처리 대기열에 추가됨',
+  'Failed to reprocess some items': '일부 항목 재처리 실패',
   'Select all': '모두 선택',
   'Unselect all': '선택 해제',
   'Delete selected': '선택 항목 삭제',

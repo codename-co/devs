@@ -1,7 +1,7 @@
 {
   "name": "devs",
   "private": true,
-  "version": "0.5.2",
+  "version": "0.5.3",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -53,6 +53,8 @@
     "monaco-mermaid": "^1.1.0",
     "monaco-yaml": "^5.4.0",
     "nanoid": "^5.1.5",
+    "pdfjs-dist": "^5.4.530",
+    "postal-mime": "^2.7.3",
     "pretty-bytes": "^7.1.0",
     "qrcode": "^1.5.4",
     "react": "^19.1.1",

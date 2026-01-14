@@ -402,6 +402,9 @@ export function normalizeToKnowledgeItem(
     mimeType: item.mimeType,
     size: item.size,
 
+    // Transcript (extracted text from documents like emails)
+    transcript: item.transcript,
+
     // Organization
     path: item.path,
     parentId: undefined, // Will be resolved during folder sync
@@ -476,6 +479,9 @@ export function mergeWithExisting(
     contentHash: newItem.contentHash,
     mimeType: newItem.mimeType,
     size: newItem.size,
+
+    // Update transcript (prefer new if provided, otherwise preserve existing)
+    transcript: newItem.transcript ?? existing.transcript,
 
     // Update organization
     path: newItem.path,

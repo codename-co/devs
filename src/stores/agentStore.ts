@@ -3,7 +3,7 @@ import { errorToast, successToast } from '@/lib/toast'
 import { db } from '@/lib/db'
 import { deleteFromYjs, syncToYjs } from '@/features/sync'
 import { slugify, generateUniqueSlug } from '@/lib/slugify'
-import { type Agent } from '@/types'
+import { type Agent, type Tool } from '@/types'
 import { Lang } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
 
@@ -409,6 +409,7 @@ export async function createAgent(agentData: {
   temperature?: number
   tags?: string[]
   knowledgeItemIds?: string[]
+  tools?: Tool[]
 }): Promise<Agent> {
   try {
     // Ensure database is initialized
@@ -431,7 +432,7 @@ export async function createAgent(agentData: {
       temperature: agentData.temperature,
       tags: agentData.tags,
       knowledgeItemIds: agentData.knowledgeItemIds,
-      tools: [],
+      tools: agentData.tools || [],
       createdAt: new Date(),
       updatedAt: new Date(),
     }

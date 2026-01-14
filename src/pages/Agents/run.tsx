@@ -8,6 +8,7 @@ import {
   Card,
   CardBody,
   Chip,
+  Divider,
   Input,
   Modal,
   ModalBody,
@@ -31,10 +32,12 @@ import {
   Widget,
 } from '@/components'
 import DefaultLayout from '@/layouts/Default'
+import { Link } from 'react-router-dom'
 import type { HeaderProps } from '@/lib/types'
 import { getAgentById, getAgentBySlug } from '@/stores/agentStore'
 import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
 import { usePinnedMessageStore } from '@/stores/pinnedMessageStore'
+import { useTraceStore } from '@/stores/traceStore'
 import {
   Agent,
   Message,
@@ -42,8 +45,10 @@ import {
   AgentMemoryEntry,
   MemoryCategory,
 } from '@/types'
+import type { Trace, Span } from '@/features/traces/types'
 import { errorToast, successToast } from '@/lib/toast'
 import { submitChat } from '@/lib/chat'
+import { db } from '@/lib/db'
 import { copyRichText } from '@/lib/clipboard'
 import {
   learnFromMessage,
@@ -60,6 +65,572 @@ import localI18n from './i18n'
 type TimelineItem =
   | { type: 'message'; data: Message; timestamp: Date }
   | { type: 'memory'; data: AgentMemoryEntry; timestamp: Date }
+
+// ============================================================================
+// Tool Display Name Mapping & Context Helpers
+// ============================================================================
+
+/** Map tool names to user-friendly display names */
+const TOOL_DISPLAY_NAMES: Record<string, string> = {
+  search_knowledge: 'Searching knowledge base',
+  read_document: 'Reading document',
+  list_documents: 'Browsing documents',
+  get_document_summary: 'Summarizing document',
+  // Add more tool mappings as needed
+}
+
+/** Get appropriate icon for tool type */
+const getToolIcon = (toolName: string): string => {
+  if (toolName.includes('search')) return 'Search'
+  if (toolName.includes('read') || toolName.includes('document')) return 'Page'
+  if (toolName.includes('list') || toolName.includes('browse')) return 'Folder'
+  if (toolName.includes('summary')) return 'AlignLeft'
+  return 'Settings'
+}
+
+/** Extract contextual info from tool metadata */
+interface ToolContextInfo {
+  displayName: string
+  icon: string
+  documentId?: string
+  documentName?: string
+  query?: string
+  folderId?: string
+}
+
+const extractToolContext = (span: Span): ToolContextInfo | null => {
+  const toolName = span.metadata?.toolName as string
+  if (!toolName) return null
+
+  const args = span.metadata?.arguments as Record<string, unknown> | undefined
+  const displayName =
+    TOOL_DISPLAY_NAMES[toolName] || toolName.replace(/_/g, ' ')
+  const icon = getToolIcon(toolName)
+
+  const context: ToolContextInfo = { displayName, icon }
+
+  // Extract contextual info based on tool type
+  if (args) {
+    if ('document_id' in args) {
+      context.documentId = args.document_id as string
+    }
+    if ('query' in args) {
+      context.query = args.query as string
+    }
+    if ('folder_id' in args) {
+      context.folderId = args.folder_id as string
+    }
+  }
+
+  // Try to extract document name from output if available
+  if (span.io?.output?.response) {
+    const response = span.io.output.response as Record<string, unknown>
+
+    // Try different paths where document name might be located:
+    // 1. Direct response.metadata.name (ReadDocumentResult with include_metadata)
+    if (response.metadata && typeof response.metadata === 'object') {
+      const metadata = response.metadata as Record<string, unknown>
+      if (metadata.name) {
+        context.documentName = metadata.name as string
+      }
+    }
+
+    // 2. Direct response.name (some tool results)
+    if (
+      !context.documentName &&
+      response.name &&
+      typeof response.name === 'string'
+    ) {
+      context.documentName = response.name
+    }
+
+    // 3. From search hits - first result's name (SearchKnowledgeResult)
+    if (
+      !context.documentName &&
+      Array.isArray(response.hits) &&
+      response.hits.length > 0
+    ) {
+      const firstHit = response.hits[0] as Record<string, unknown>
+      if (firstHit.name && typeof firstHit.name === 'string') {
+        context.documentName = firstHit.name
+      }
+    }
+
+    // 4. Wrapped in data property (ToolExecutionResult success case)
+    if (
+      !context.documentName &&
+      response.data &&
+      typeof response.data === 'object'
+    ) {
+      const data = response.data as Record<string, unknown>
+      if (data.metadata && typeof data.metadata === 'object') {
+        const metadata = data.metadata as Record<string, unknown>
+        if (metadata.name) {
+          context.documentName = metadata.name as string
+        }
+      }
+      if (!context.documentName && data.name && typeof data.name === 'string') {
+        context.documentName = data.name
+      }
+    }
+  }
+
+  return context
+}
+
+// ============================================================================
+// Single Tool Item Display (for timeline)
+// ============================================================================
+
+/** Display a single tool execution inline */
+const ToolTimelineItem = memo(
+  ({
+    span,
+    onDocumentClick,
+  }: {
+    span: Span
+    onDocumentClick?: (documentId: string) => void
+  }) => {
+    const { t } = useI18n(localI18n)
+    const context = extractToolContext(span)
+    const [resolvedDocumentName, setResolvedDocumentName] = useState<
+      string | null
+    >(null)
+
+    // Fetch document name from DB if we have an ID but no name from the span
+    useEffect(() => {
+      if (context?.documentId && !context.documentName) {
+        db.get('knowledgeItems', context.documentId).then((item) => {
+          if (item?.name) {
+            setResolvedDocumentName(item.name)
+          }
+        })
+      }
+    }, [context?.documentId, context?.documentName])
+
+    if (!context) return null
+
+    // Use resolved name from DB, or from span context
+    const displayName = context.documentName || resolvedDocumentName
+
+    const formatDuration = (ms?: number) => {
+      if (!ms) return ''
+      if (ms < 1000) return `${ms.toFixed(0)}ms`
+      return `${(ms / 1000).toFixed(1)}s`
+    }
+
+    const isError = span.status === 'error'
+
+    return (
+      <div className="flex items-center gap-1.5 text-sm text-default-500">
+        <Icon
+          name={context.icon as any}
+          size="sm"
+          className={isError ? 'text-danger-500' : 'text-default-400'}
+        />
+        <span className={isError ? 'text-danger-600' : ''}>
+          {t(context.displayName as any)}
+        </span>
+        {context.query && (
+          <span className="text-default-400 italic truncate max-w-[200px]">
+            "
+            {context.query.length > 40
+              ? context.query.slice(0, 40) + '…'
+              : context.query}
+            "
+          </span>
+        )}
+        {displayName && (
+          <Link
+            to={`/knowledge?doc=${context.documentId}`}
+            className="text-primary-500 hover:text-primary-600 hover:underline flex items-center gap-1 flex-shrink-0"
+            onClick={(e) => {
+              if (onDocumentClick && context.documentId) {
+                e.preventDefault()
+                onDocumentClick(context.documentId)
+              }
+            }}
+          >
+            <Icon name="Page" className="w-3 h-3" />
+            <span className="truncate max-w-[16em]">{displayName}</span>
+          </Link>
+        )}
+        {!displayName && context.documentId && (
+          <Link
+            to={`/knowledge?doc=${context.documentId}`}
+            className="text-primary-500 hover:text-primary-600 hover:underline flex items-center gap-1 flex-shrink-0"
+            onClick={(e) => {
+              if (onDocumentClick) {
+                e.preventDefault()
+                onDocumentClick(context.documentId!)
+              }
+            }}
+          >
+            <Icon name="Page" className="w-3 h-3" />
+            <span className="truncate max-w-[150px]">{context.documentId}</span>
+          </Link>
+        )}
+        {span.duration && (
+          <span className="text-tiny text-default-400 flex-shrink-0">
+            {formatDuration(span.duration)}
+          </span>
+        )}
+        {isError && (
+          <Chip
+            size="sm"
+            color="danger"
+            variant="flat"
+            className="text-tiny h-5"
+          >
+            {t('Error')}
+          </Chip>
+        )}
+      </div>
+    )
+  },
+)
+
+ToolTimelineItem.displayName = 'ToolTimelineItem'
+
+// ============================================================================
+// Timeline Tools Display Component
+// ============================================================================
+
+/**
+ * Displays tool calls in timeline order with nice display names and contextual info.
+ * Shows tools inline with clickable document references.
+ */
+const TimelineToolsDisplay = memo(
+  ({
+    traceIds,
+    onDocumentClick,
+  }: {
+    traceIds: string[]
+    onDocumentClick?: (documentId: string) => void
+  }) => {
+    const { t } = useI18n(localI18n)
+    const { loadTrace, currentTrace, currentSpans, clearCurrentTrace } =
+      useTraceStore()
+    const {
+      isOpen: isTraceModalOpen,
+      // onOpen: onTraceModalOpen,
+      onClose: onTraceModalClose,
+    } = useDisclosure()
+    const [allSpans, setAllSpans] = useState<Span[]>([])
+    const [_traces, setTraces] = useState<Map<string, Trace>>(new Map())
+    const [isLoading, setIsLoading] = useState(true)
+
+    // Load all traces and their spans on mount
+    useEffect(() => {
+      const loadAllTracesAndSpans = async () => {
+        setIsLoading(true)
+        const newTraces = new Map<string, Trace>()
+        const spans: Span[] = []
+
+        for (const id of traceIds) {
+          try {
+            await loadTrace(id)
+            const { currentTrace: loadedTrace, currentSpans: loadedSpans } =
+              useTraceStore.getState()
+            if (loadedTrace) {
+              newTraces.set(id, loadedTrace)
+              // Add spans with their trace context
+              spans.push(...loadedSpans)
+            }
+          } catch (error) {
+            console.warn(`Failed to load trace ${id}:`, error)
+          }
+        }
+
+        // Sort spans by startTime
+        spans.sort(
+          (a, b) =>
+            new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+        )
+
+        setTraces(newTraces)
+        setAllSpans(spans)
+        clearCurrentTrace()
+        setIsLoading(false)
+      }
+      loadAllTracesAndSpans()
+    }, [traceIds, loadTrace, clearCurrentTrace])
+
+    // const handleShowFullTrace = async (traceId: string) => {
+    //   await loadTrace(traceId)
+    //   onTraceModalOpen()
+    // }
+
+    const handleCloseModal = () => {
+      onTraceModalClose()
+      clearCurrentTrace()
+    }
+
+    const formatDuration = (ms?: number) => {
+      if (!ms) return '-'
+      if (ms < 1000) return `${ms.toFixed(0)}ms`
+      return `${(ms / 1000).toFixed(2)}s`
+    }
+
+    const getStatusColor = (status: string) => {
+      switch (status) {
+        case 'completed':
+          return 'success'
+        case 'error':
+          return 'danger'
+        case 'running':
+          return 'primary'
+        default:
+          return 'default'
+      }
+    }
+
+    const getSpanIcon = (type: string) => {
+      switch (type) {
+        case 'tool':
+          return 'Settings'
+        case 'retrieval':
+          return 'Search'
+        case 'llm':
+          return 'Sparks'
+        default:
+          return 'Activity'
+      }
+    }
+
+    if (traceIds.length === 0) return null
+
+    // Filter to only show tool spans (not LLM spans)
+    const toolSpans = allSpans.filter((span) => span.type === 'tool')
+
+    if (isLoading) {
+      return (
+        <div className="flex items-center gap-2 mb-2 text-tiny text-default-400">
+          <Spinner size="sm" />
+          <span>{t('Loading…')}</span>
+        </div>
+      )
+    }
+
+    return (
+      <>
+        {/* Inline tool calls - shown before response */}
+        {toolSpans.length > 0 && (
+          <div className="mb-3 space-y-1">
+            {toolSpans.map((span) => (
+              <ToolTimelineItem
+                key={span.id}
+                span={span}
+                onDocumentClick={onDocumentClick}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Summary chip to show all traces */}
+        {/* {traces.size > 0 && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {Array.from(traces.entries()).map(([traceId, trace]) => (
+              <Tooltip
+                key={traceId}
+                content={
+                  <div className="text-tiny max-w-xs">
+                    <div className="font-medium">{trace.name}</div>
+                    <div className="text-default-400">
+                      {t('Duration')}: {formatDuration(trace.duration)}
+                    </div>
+                    {trace.totalTokens && (
+                      <div className="text-default-400">
+                        {t('Tokens')}: {trace.totalTokens.toLocaleString()}
+                      </div>
+                    )}
+                  </div>
+                }
+              >
+                <Chip
+                  size="sm"
+                  variant="dot"
+                  color={getStatusColor(trace.status)}
+                  className="cursor-pointer hover:opacity-80 transition-opacity text-tiny"
+                  onClick={() => handleShowFullTrace(traceId)}
+                >
+                  {t('View details')}
+                </Chip>
+              </Tooltip>
+            ))}
+          </div>
+        )} */}
+
+        {/* Trace Detail Modal */}
+        <Modal
+          isOpen={isTraceModalOpen}
+          onClose={handleCloseModal}
+          size="2xl"
+          scrollBehavior="inside"
+        >
+          <ModalContent>
+            <ModalHeader className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <Icon name="Activity" className="w-5 h-5 text-success-500" />
+                <span>{t('Processing Details')}</span>
+              </div>
+              {currentTrace && (
+                <p className="text-sm font-normal text-default-500">
+                  {currentTrace.name}
+                </p>
+              )}
+            </ModalHeader>
+            <ModalBody>
+              {!currentTrace ? (
+                <div className="flex justify-center py-8">
+                  <Spinner size="lg" />
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* Overview */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="bg-default-100 rounded-lg p-3">
+                      <p className="text-xs text-default-400">{t('Status')}</p>
+                      <Chip
+                        size="sm"
+                        color={getStatusColor(currentTrace.status)}
+                        variant="flat"
+                        className="mt-1"
+                      >
+                        {currentTrace.status}
+                      </Chip>
+                    </div>
+                    <div className="bg-default-100 rounded-lg p-3">
+                      <p className="text-xs text-default-400">
+                        {t('Duration')}
+                      </p>
+                      <p className="text-sm font-medium mt-1">
+                        {formatDuration(currentTrace.duration)}
+                      </p>
+                    </div>
+                    {currentTrace.totalTokens && (
+                      <div className="bg-default-100 rounded-lg p-3">
+                        <p className="text-xs text-default-400">
+                          {t('Tokens')}
+                        </p>
+                        <p className="text-sm font-mono mt-1">
+                          {currentTrace.totalTokens.toLocaleString()}
+                        </p>
+                      </div>
+                    )}
+                    {currentTrace.totalCost && (
+                      <div className="bg-default-100 rounded-lg p-3">
+                        <p className="text-xs text-default-400">{t('Cost')}</p>
+                        <p className="text-sm font-mono mt-1">
+                          ${currentTrace.totalCost.totalCost.toFixed(4)}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Input/Output */}
+                  {currentTrace.input && (
+                    <div>
+                      <p className="text-sm font-medium text-default-600 mb-2 flex items-center gap-1">
+                        <Icon name="ArrowRight" className="w-4 h-4" />
+                        {t('Input')}
+                      </p>
+                      <pre className="text-xs bg-default-100 p-3 rounded-lg overflow-x-auto whitespace-pre-wrap max-h-32">
+                        {currentTrace.input}
+                      </pre>
+                    </div>
+                  )}
+
+                  {currentTrace.output && (
+                    <div>
+                      <p className="text-sm font-medium text-default-600 mb-2 flex items-center gap-1">
+                        <Icon name="ArrowLeft" className="w-4 h-4" />
+                        {t('Output')}
+                      </p>
+                      <pre className="text-xs bg-default-100 p-3 rounded-lg overflow-x-auto whitespace-pre-wrap max-h-48">
+                        {currentTrace.output}
+                      </pre>
+                    </div>
+                  )}
+
+                  {/* Spans */}
+                  {currentSpans.length > 0 && (
+                    <div>
+                      <Divider className="my-3" />
+                      <p className="text-sm font-medium text-default-600 mb-3 flex items-center gap-1">
+                        <Icon name="TableRows" className="w-4 h-4" />
+                        {t('Steps')} ({currentSpans.length})
+                      </p>
+                      <div className="space-y-2">
+                        {currentSpans.map((span) => (
+                          <div
+                            key={span.id}
+                            className="bg-default-50 border border-default-200 rounded-lg p-3"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Icon
+                                  name={getSpanIcon(span.type)}
+                                  className="w-4 h-4 text-default-500"
+                                />
+                                <span className="text-sm font-medium">
+                                  {span.name}
+                                </span>
+                                <Chip size="sm" variant="flat" color="default">
+                                  {span.type}
+                                </Chip>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Chip
+                                  size="sm"
+                                  color={getStatusColor(span.status)}
+                                  variant="flat"
+                                >
+                                  {span.status}
+                                </Chip>
+                                <span className="text-xs text-default-400">
+                                  {formatDuration(span.duration)}
+                                </span>
+                              </div>
+                            </div>
+                            {span.statusMessage && (
+                              <p className="text-xs text-danger mt-2">
+                                {span.statusMessage}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {currentTrace.statusMessage && (
+                    <div className="p-3 bg-danger-50 dark:bg-danger-900/20 rounded-lg">
+                      <p className="text-sm text-danger">
+                        {currentTrace.statusMessage}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <Button variant="flat" onPress={handleCloseModal}>
+                {t('Close')}
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      </>
+    )
+  },
+)
+
+TimelineToolsDisplay.displayName = 'TimelineToolsDisplay'
+
+// ============================================================================
+// Message Display Component
+// ============================================================================
 
 // Component to display a single message with proper agent context
 const MessageDisplay = memo(
@@ -84,7 +655,7 @@ const MessageDisplay = memo(
     isLearning: boolean
     conversationId: string | undefined
   }) => {
-    const { t } = useI18n()
+    const { t } = useI18n(localI18n)
     const [messageAgent, setMessageAgent] = useState<Agent | null>(null)
 
     useEffect(() => {
@@ -142,6 +713,12 @@ const MessageDisplay = memo(
               </Chip>
             </div>
           )}
+          {/* Tool calls timeline - shown BEFORE response since tools execute first */}
+          {message.role === 'assistant' &&
+            message.traceIds &&
+            message.traceIds.length > 0 && (
+              <TimelineToolsDisplay traceIds={message.traceIds} />
+            )}
           <div className="text-left">
             <div className="prose prose-neutral text-medium break-words">
               {detectContentType(message.content) === 'marpit-presentation' ? (
@@ -156,7 +733,7 @@ const MessageDisplay = memo(
           </div>
           {/* Assistant message action buttons */}
           {message.role === 'assistant' && (
-            <div className="mt-2 flex gap-1">
+            <div className="mt-2 flex flex-wrap items-center gap-1">
               <Tooltip content={t('Copy the answer')}>
                 <Button
                   size="sm"

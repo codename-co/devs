@@ -1,8 +1,9 @@
-import { LLMService, LLMMessage } from '@/lib/llm'
+import { LLMService, LLMMessage, ToolDefinition, ToolCall } from '@/lib/llm'
 import { CredentialService } from '@/lib/credential-service'
 import { useConversationStore } from '@/stores/conversationStore'
 import { getDefaultAgent } from '@/stores/agentStore'
 import { buildPinnedContextForChat } from '@/stores/pinnedMessageStore'
+import { TraceService } from '@/features/traces/trace-service'
 import { WorkflowOrchestrator } from '@/lib/orchestrator'
 import { Agent, Message } from '@/types'
 import { errorToast } from '@/lib/toast'
@@ -12,6 +13,125 @@ import {
 } from '@/lib/agent-knowledge'
 import { buildMemoryContextForChat } from '@/lib/memory-learning-service'
 import { Lang, languages } from '@/i18n'
+import {
+  defaultExecutor,
+  registerKnowledgeTools,
+  areKnowledgeToolsRegistered,
+} from '@/lib/tool-executor'
+import { KNOWLEDGE_TOOL_DEFINITIONS } from '@/lib/knowledge-tools'
+
+// ============================================================================
+// Tool Helpers
+// ============================================================================
+
+/** Maximum iterations for tool calling loop to prevent infinite loops */
+const MAX_TOOL_ITERATIONS = 10
+
+/**
+ * Get all knowledge tool definitions.
+ * Tools are universal: all agents have access to all knowledge tools by default.
+ * This ensures pre-existing agents and new agents alike can use tools.
+ */
+function getAgentToolDefinitions(_agent: Agent): ToolDefinition[] {
+  // Return all knowledge tools - they are universally available to all agents
+  return Object.values(KNOWLEDGE_TOOL_DEFINITIONS)
+}
+
+/**
+ * Parse tool calls from streaming response.
+ * Tool calls are emitted as __TOOL_CALLS__[...json...] at the end of stream.
+ */
+function parseToolCallsFromStream(response: string): {
+  content: string
+  toolCalls: ToolCall[]
+} {
+  const toolCallMarker = '__TOOL_CALLS__'
+  const markerIndex = response.indexOf(toolCallMarker)
+
+  if (markerIndex === -1) {
+    return { content: response, toolCalls: [] }
+  }
+
+  const content = response.substring(0, markerIndex)
+  const toolCallsJson = response.substring(markerIndex + toolCallMarker.length)
+
+  try {
+    const toolCalls = JSON.parse(toolCallsJson) as ToolCall[]
+    return { content, toolCalls }
+  } catch (error) {
+    console.error('Failed to parse tool calls from stream:', error)
+    return { content: response, toolCalls: [] }
+  }
+}
+
+/**
+ * Execute tool calls and return formatted results.
+ * Creates a trace for observability with individual spans per tool.
+ * Returns both results and the trace ID for tracking.
+ */
+async function executeToolCalls(
+  toolCalls: ToolCall[],
+  context: {
+    agentId?: string
+    conversationId?: string
+  },
+): Promise<{
+  results: Array<{ toolCallId: string; result: string }>
+  traceId: string
+}> {
+  // Ensure knowledge tools are registered
+  if (!areKnowledgeToolsRegistered()) {
+    registerKnowledgeTools()
+  }
+
+  // Create a trace for the tool execution batch
+  const trace = TraceService.startTrace({
+    name: `Tools: ${toolCalls.map((tc) => tc.function.name).join(', ')}`,
+    agentId: context.agentId,
+    conversationId: context.conversationId,
+    input: toolCalls
+      .map((tc) => `${tc.function.name}(${tc.function.arguments})`)
+      .join('\n'),
+  })
+
+  const results: Array<{ toolCallId: string; result: string }> = []
+
+  try {
+    for (const toolCall of toolCalls) {
+      const result = await defaultExecutor.execute(toolCall, {
+        context: {
+          agentId: context.agentId,
+          conversationId: context.conversationId,
+        },
+        traceId: trace.id,
+      })
+
+      results.push({
+        toolCallId: toolCall.id,
+        result: defaultExecutor.formatResultForLLM(result),
+      })
+    }
+
+    // End trace with success
+    await TraceService.endTrace(trace.id, {
+      status: 'completed',
+      output: results.map((r) => `${r.toolCallId}: ${r.result}`).join('\n'),
+    })
+  } catch (error) {
+    // End trace with error
+    await TraceService.endTrace(trace.id, {
+      status: 'error',
+      statusMessage: error instanceof Error ? error.message : String(error),
+    })
+    throw error
+  }
+
+  return { results, traceId: trace.id }
+}
+
+// ============================================================================
+// Chat Submit Options
+// ============================================================================
 
 export interface ChatSubmitOptions {
   prompt: string
@@ -295,26 +415,115 @@ export const submitChat = async (
     console.log('▶', 'prompt:', prompt)
     const timestart = Date.now()
 
-    // Call the LLM service with streaming
-    let response = ''
+    // Get tool definitions from agent's configured tools
+    const toolDefinitions = getAgentToolDefinitions(agent)
+    const hasTools = toolDefinitions.length > 0
 
-    for await (const chunk of LLMService.streamChat(messages, config, {
-      agentId: agent.id,
-      conversationId: conversation.id,
-    })) {
-      console.debug('◁', chunk)
-      response += chunk
-      onResponseUpdate(response)
+    // Build config with tools if the agent has any enabled
+    const llmConfig = hasTools
+      ? { ...config, tools: toolDefinitions, tool_choice: 'auto' as const }
+      : config
+
+    // Call the LLM service with streaming and handle tool calls
+    let response = ''
+    let finalContent = ''
+    let toolIterations = 0
+    const workingMessages = [...messages]
+
+    // Tool execution loop - continues until we get a response without tool calls
+    while (toolIterations < MAX_TOOL_ITERATIONS) {
+      toolIterations++
+      response = ''
+
+      for await (const chunk of LLMService.streamChat(
+        workingMessages,
+        llmConfig,
+        {
+          agentId: agent.id,
+          conversationId: conversation.id,
+        },
+      )) {
+        console.debug('◁', chunk)
+        response += chunk
+
+        // Only show content to user, not the tool call markers
+        const { content } = parseToolCallsFromStream(response)
+        onResponseUpdate(content)
+      }
+
+      // Parse the final response for tool calls
+      const { content, toolCalls } = parseToolCallsFromStream(response)
+      finalContent = content
+
+      // If no tool calls, we're done
+      if (toolCalls.length === 0) {
+        console.log('✓ No tool calls, conversation complete')
+        break
+      }
+
+      console.log(
+        `🔧 Executing ${toolCalls.length} tool call(s):`,
+        toolCalls.map((tc) => tc.function.name),
+      )
+
+      // Show user that tools are being executed
+      onResponseUpdate(finalContent + '\n\n🔧 *Searching knowledge base...*')
+
+      // Execute the tool calls
+      const { results: toolResults } = await executeToolCalls(toolCalls, {
+        agentId: agent.id,
+        conversationId: conversation.id,
+      })
+
+      console.log('🔧 Tool results:', toolResults)
+
+      // Add assistant message with tool calls to the conversation
+      // Note: We need to format this as the LLM expects for tool results
+      workingMessages.push({
+        role: 'assistant',
+        content: finalContent || '',
+      })
+
+      // Add tool results as user message (this is a simplification -
+      // proper tool result format would require extending LLMMessage)
+      const toolResultsText = toolResults
+        .map((r) => `[Tool Result for ${r.toolCallId}]:\n${r.result}`)
+        .join('\n\n')
+
+      workingMessages.push({
+        role: 'user',
+        content: `Here are the results from the tools you requested:\n\n${toolResultsText}\n\nPlease use this information to answer my original question.`,
+      })
+
+      // Update display to show we're continuing
+      onResponseUpdate(
+        finalContent + '\n\n📚 *Found relevant information, processing...*',
+      )
     }
+
+    if (toolIterations >= MAX_TOOL_ITERATIONS) {
+      console.warn('⚠️ Max tool iterations reached')
+    }
+
     const timeend = Date.now()
-    console.log('◀', { response })
+    console.log('◀', { finalContent })
     console.log(`LLM response time: ${(timeend - timestart) / 1000}s`)
 
-    // Save assistant response to conversation
+    // Query all traces created during this message generation
+    // This captures both LLM traces and tool traces
+    const allTracesForMessage = await TraceService.getTraces({
+      conversationId: conversation.id,
+      startDate: new Date(timestart),
+      endDate: new Date(timeend + 1000), // Add 1s buffer for async completion
+    })
+    const allTraceIds = allTracesForMessage.map((t) => t.id)
+
+    // Save assistant response to conversation (with all trace IDs from this generation)
     await addMessage(conversation.id, {
       role: 'assistant',
-      content: response,
+      content: finalContent,
       agentId: agent.id,
+      ...(allTraceIds.length > 0 && { traceIds: allTraceIds }),
     })
 
     // Clear the prompt after successful submission

@@ -158,6 +158,9 @@ export const es: I18n = {
   // Bulk selection
   '{count} item(s) deleted': '{count} elemento(s) eliminado(s)',
   'Failed to delete some items': 'Error al eliminar algunos elementos',
+  '{count} item(s) queued for processing':
+    '{count} elemento(s) en cola para procesar',
+  'Failed to reprocess some items': 'Error al reprocesar algunos elementos',
   'Select all': 'Seleccionar todo',
   'Unselect all': 'Deseleccionar todo',
   'Delete selected': 'Eliminar selección',

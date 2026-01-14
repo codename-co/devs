@@ -1,10 +1,14 @@
-import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
+import { LLMProviderInterface, LLMMessage, LLMResponseWithTools } from '../index'
 import { LLMConfig } from '@/types'
 import {
   processAttachments,
   formatTextAttachmentContent,
   getUnsupportedDocumentMessage,
 } from '../attachment-processor'
+import {
+  ToolCall,
+  LLMConfigWithTools,
+} from '../types'
 
 export class OpenAIProvider implements LLMProviderInterface {
   protected baseUrl = 'https://api.openai.com/v1'
@@ -79,14 +83,15 @@ export class OpenAIProvider implements LLMProviderInterface {
 
   async chat(
     messages: LLMMessage[],
-    config?: Partial<LLMConfig>,
-  ): Promise<LLMResponse> {
+    config?: Partial<LLMConfig> & LLMConfigWithTools,
+  ): Promise<LLMResponseWithTools> {
     const endpoint = `${config?.baseUrl || this.baseUrl}/chat/completions`
     console.log('[OPENAI-PROVIDER] 🚀 Making LLM request:', {
       endpoint,
       model: config?.model || OpenAIProvider.DEFAULT_MODEL,
       messagesCount: messages.length,
       temperature: config?.temperature || 0.7,
+      hasTools: !!config?.tools?.length,
     })
 
     // Convert messages (may involve async document conversion)
@@ -94,18 +99,32 @@ export class OpenAIProvider implements LLMProviderInterface {
       messages.map((msg) => this.convertMessageToOpenAIFormat(msg)),
     )
 
+    // Build request body
+    const requestBody: Record<string, unknown> = {
+      model: config?.model || OpenAIProvider.DEFAULT_MODEL,
+      messages: convertedMessages,
+      temperature: config?.temperature || 0.7,
+      max_tokens: config?.maxTokens,
+    }
+
+    // Add tools if provided
+    if (config?.tools && config.tools.length > 0) {
+      requestBody.tools = config.tools
+      if (config.tool_choice) {
+        requestBody.tool_choice = config.tool_choice
+      }
+      if (config.parallel_tool_calls !== undefined) {
+        requestBody.parallel_tool_calls = config.parallel_tool_calls
+      }
+    }
+
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${config?.apiKey}`,
       },
-      body: JSON.stringify({
-        model: config?.model || OpenAIProvider.DEFAULT_MODEL,
-        messages: convertedMessages,
-        temperature: config?.temperature || 0.7,
-        max_tokens: config?.maxTokens,
-      }),
+      body: JSON.stringify(requestBody),
     })
 
     console.log('[OPENAI-PROVIDER] 📡 Response received:', {
@@ -119,9 +138,25 @@ export class OpenAIProvider implements LLMProviderInterface {
     }
 
     const data = await response.json()
+    const message = data.choices[0].message
+
+    // Parse tool_calls from response if present
+    let toolCalls: ToolCall[] | undefined
+    if (message.tool_calls && message.tool_calls.length > 0) {
+      toolCalls = message.tool_calls.map((tc: any) => ({
+        id: tc.id,
+        type: tc.type as 'function',
+        function: {
+          name: tc.function.name,
+          arguments: tc.function.arguments,
+        },
+      }))
+    }
 
     return {
-      content: data.choices[0].message.content,
+      content: message.content || '',
+      tool_calls: toolCalls,
+      finish_reason: data.choices[0].finish_reason,
       usage: data.usage
         ? {
             promptTokens: data.usage.prompt_tokens,
@@ -134,12 +169,32 @@ export class OpenAIProvider implements LLMProviderInterface {
 
   async *streamChat(
     messages: LLMMessage[],
-    config?: Partial<LLMConfig>,
+    config?: Partial<LLMConfig> & LLMConfigWithTools,
   ): AsyncIterableIterator<string> {
     // Convert messages (may involve async document conversion)
     const convertedMessages = await Promise.all(
       messages.map((msg) => this.convertMessageToOpenAIFormat(msg)),
     )
+
+    // Build request body
+    const requestBody: Record<string, unknown> = {
+      model: config?.model || OpenAIProvider.DEFAULT_MODEL,
+      messages: convertedMessages,
+      temperature: config?.temperature || 0.7,
+      max_tokens: config?.maxTokens,
+      stream: true,
+    }
+
+    // Add tools if provided
+    if (config?.tools && config.tools.length > 0) {
+      requestBody.tools = config.tools
+      if (config.tool_choice) {
+        requestBody.tool_choice = config.tool_choice
+      }
+      if (config.parallel_tool_calls !== undefined) {
+        requestBody.parallel_tool_calls = config.parallel_tool_calls
+      }
+    }
 
     const response = await fetch(
       `${config?.baseUrl || this.baseUrl}/chat/completions`,
@@ -149,13 +204,7 @@ export class OpenAIProvider implements LLMProviderInterface {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${config?.apiKey}`,
         },
-        body: JSON.stringify({
-          model: config?.model || OpenAIProvider.DEFAULT_MODEL,
-          messages: convertedMessages,
-          temperature: config?.temperature || 0.7,
-          max_tokens: config?.maxTokens,
-          stream: true,
-        }),
+        body: JSON.stringify(requestBody),
       },
     )
 
@@ -169,6 +218,9 @@ export class OpenAIProvider implements LLMProviderInterface {
     const decoder = new TextDecoder()
     let buffer = ''
 
+    // Accumulate tool calls from streaming deltas
+    const toolCallAccumulators: Map<number, { id: string; name: string; arguments: string }> = new Map()
+
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
@@ -180,12 +232,46 @@ export class OpenAIProvider implements LLMProviderInterface {
       for (const line of lines) {
         if (line.trim().startsWith('data: ')) {
           const data = line.slice(6).trim()
-          if (data === '[DONE]') return
+          if (data === '[DONE]') {
+            // If we accumulated tool calls, yield them as a special marker
+            if (toolCallAccumulators.size > 0) {
+              const toolCalls = Array.from(toolCallAccumulators.values()).map(tc => ({
+                id: tc.id,
+                type: 'function' as const,
+                function: { name: tc.name, arguments: tc.arguments },
+              }))
+              // Yield tool calls as JSON with special prefix
+              yield `\n__TOOL_CALLS__${JSON.stringify(toolCalls)}`
+            }
+            return
+          }
 
           try {
             const parsed = JSON.parse(data)
-            const content = parsed.choices[0]?.delta?.content
-            if (content) yield content
+            const delta = parsed.choices[0]?.delta
+
+            // Handle content delta
+            if (delta?.content) {
+              yield delta.content
+            }
+
+            // Handle tool call deltas
+            if (delta?.tool_calls) {
+              for (const tcDelta of delta.tool_calls) {
+                const index = tcDelta.index
+                if (!toolCallAccumulators.has(index)) {
+                  toolCallAccumulators.set(index, {
+                    id: tcDelta.id || '',
+                    name: tcDelta.function?.name || '',
+                    arguments: '',
+                  })
+                }
+                const acc = toolCallAccumulators.get(index)!
+                if (tcDelta.id) acc.id = tcDelta.id
+                if (tcDelta.function?.name) acc.name = tcDelta.function.name
+                if (tcDelta.function?.arguments) acc.arguments += tcDelta.function.arguments
+              }
+            }
           } catch (e) {
             // Skip invalid JSON
           }

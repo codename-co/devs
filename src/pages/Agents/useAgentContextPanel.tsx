@@ -123,6 +123,18 @@ export const useAgentContextPanel = (
       ),
     })
 
+    // Agent Tools block - shows enabled knowledge tools
+    if (agent.tools && agent.tools.length > 0) {
+      blocks.push({
+        id: 'agent-tools',
+        title: t('Tools'),
+        icon: 'Puzzle',
+        priority: 3,
+        defaultExpanded: false,
+        content: <AgentToolsDisplay tools={agent.tools} />,
+      })
+    }
+
     // Load conversation history (async)
     try {
       const { conversations, loadConversations } =
@@ -1011,6 +1023,72 @@ const AgentContextTabs = ({
           </>
         )}
       </div>
+    </div>
+  )
+}
+
+/**
+ * Knowledge tool display metadata.
+ * Maps tool names to user-friendly information.
+ */
+const KNOWLEDGE_TOOL_INFO: Record<
+  string,
+  { icon: 'PageSearch' | 'Document' | 'Folder' | 'Page'; label: string }
+> = {
+  search_knowledge: {
+    icon: 'PageSearch',
+    label: 'Search Knowledge',
+  },
+  read_document: {
+    icon: 'Document',
+    label: 'Read Document',
+  },
+  list_documents: {
+    icon: 'Folder',
+    label: 'List Documents',
+  },
+  get_document_summary: {
+    icon: 'Page',
+    label: 'Get Document Summary',
+  },
+}
+
+/**
+ * Component to display agent's enabled tools in the contextual panel.
+ */
+const AgentToolsDisplay = ({ tools }: { tools: Agent['tools'] }) => {
+  const { t } = useI18n(localI18n)
+
+  if (!tools || tools.length === 0) {
+    return (
+      <p className="text-default-500 text-sm">
+        {t('No tools enabled for this agent.')}
+      </p>
+    )
+  }
+
+  return (
+    <div className="space-y-2">
+      {tools.map((tool) => {
+        const info = KNOWLEDGE_TOOL_INFO[tool.name]
+        const iconName = info?.icon || 'Puzzle'
+        const label = info?.label || tool.name
+
+        return (
+          <div
+            key={tool.id}
+            className="flex items-start gap-3 p-2 rounded-lg bg-default-50"
+          >
+            <Icon name={iconName} className="w-4 h-4 text-secondary mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <span className="font-medium text-sm">{label}</span>
+              <p className="text-xs text-default-500 mt-0.5 line-clamp-2">
+                {tool.description}
+              </p>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }

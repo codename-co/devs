@@ -5,6 +5,7 @@
  * Supports listing, reading, searching emails, and delta sync via History API.
  */
 
+import PostalMime from 'postal-mime'
 import { BaseAppConnectorProvider } from '../../connector-provider'
 import type {
   Connector,
@@ -304,6 +305,102 @@ function getPrimaryLabel(labelIds: string[] | undefined): string {
   // Use first non-category label
   const nonCategoryLabel = labelIds.find((l) => !l.startsWith('CATEGORY_'))
   return nonCategoryLabel?.toLowerCase() ?? 'all'
+}
+
+/**
+ * Extract the plain text body from RFC 822 email content using postal-mime.
+ *
+ * The library handles:
+ * - Simple text/plain and text/html emails
+ * - Multipart emails (extracts text/plain part, with nested multipart support)
+ * - Quoted-printable and base64 content transfer encodings
+ * - Character set decoding
+ *
+ * @param rawEmail - The raw RFC 822 email content
+ * @returns The extracted plain text body, or undefined if not found
+ */
+async function extractEmailTextBody(
+  rawEmail: string,
+): Promise<string | undefined> {
+  try {
+    const email = await PostalMime.parse(rawEmail)
+
+    // Prefer plain text if available
+    if (email.text) {
+      return cleanEmailText(email.text)
+    }
+
+    // Fall back to HTML with tags stripped
+    if (email.html) {
+      return cleanEmailText(stripHtmlTags(email.html))
+    }
+
+    return undefined
+  } catch (error) {
+    console.error('Failed to parse email:', error)
+    return undefined
+  }
+}
+
+/**
+ * Strip HTML tags and decode HTML entities to get plain text.
+ *
+ * @param html - HTML content
+ * @returns Plain text with HTML removed
+ */
+function stripHtmlTags(html: string): string {
+  return (
+    html
+      // Remove style and script blocks entirely
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      // Replace block-level elements with newlines
+      .replace(/<\/(p|div|h[1-6]|li|tr|br|hr)[^>]*>/gi, '\n')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<hr\s*\/?>/gi, '\n---\n')
+      // Remove all remaining HTML tags
+      .replace(/<[^>]+>/g, '')
+      // Decode common HTML entities
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/&amp;/gi, '&')
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/gi, "'")
+      .replace(/&apos;/gi, "'")
+      // Decode numeric HTML entities
+      .replace(/&#(\d+);/g, (_, code) =>
+        String.fromCharCode(parseInt(code, 10)),
+      )
+      .replace(/&#x([0-9a-f]+);/gi, (_, code) =>
+        String.fromCharCode(parseInt(code, 16)),
+      )
+  )
+}
+
+/**
+ * Clean up extracted email text.
+ *
+ * Removes excessive whitespace, normalizes line breaks,
+ * and trims the result.
+ *
+ * @param text - Raw extracted text
+ * @returns Cleaned text
+ */
+function cleanEmailText(text: string): string {
+  return (
+    text
+      // Normalize line endings
+      .replace(/\r\n/g, '\n')
+      // Remove excessive blank lines (more than 2 consecutive)
+      .replace(/\n{3,}/g, '\n\n')
+      // Remove trailing whitespace on each line
+      .replace(/[ \t]+$/gm, '')
+      // Remove leading whitespace on each line (but preserve indentation for quotes)
+      .replace(/^[ \t]+(?=[^\s>])/gm, '')
+      // Trim overall
+      .trim()
+  )
 }
 
 // =============================================================================
@@ -630,7 +727,7 @@ export class GmailProvider extends BaseAppConnectorProvider {
     )
 
     return {
-      items: messages.map((msg) => this.normalizeItem(msg)),
+      items: await Promise.all(messages.map((msg) => this.normalizeItem(msg))),
       nextCursor: listData.nextPageToken,
       hasMore: !!listData.nextPageToken,
     }
@@ -734,7 +831,7 @@ export class GmailProvider extends BaseAppConnectorProvider {
     )
 
     return {
-      items: messages.map((msg) => this.normalizeItem(msg)),
+      items: await Promise.all(messages.map((msg) => this.normalizeItem(msg))),
       totalCount: listData.resultSizeEstimate,
       nextCursor: listData.nextPageToken,
     }
@@ -854,7 +951,9 @@ export class GmailProvider extends BaseAppConnectorProvider {
       const newCursor = historyData.historyId || cursor
 
       return {
-        added: addedMessages.map((msg) => this.normalizeItem(msg)),
+        added: await Promise.all(
+          addedMessages.map((msg) => this.normalizeItem(msg)),
+        ),
         modified: [], // Gmail History API treats modifications as add+delete
         deleted: Array.from(deletedIds),
         newCursor,
@@ -892,7 +991,7 @@ export class GmailProvider extends BaseAppConnectorProvider {
    * @param rawItem - The raw Gmail message object
    * @returns Normalized ConnectorItem
    */
-  normalizeItem(rawItem: unknown): ConnectorItem {
+  async normalizeItem(rawItem: unknown): Promise<ConnectorItem> {
     const message = rawItem as GmailMessage
 
     // Decode the raw RFC 822 email content
@@ -903,6 +1002,9 @@ export class GmailProvider extends BaseAppConnectorProvider {
     const subject = extractRawHeader(headerSection, 'Subject') || '(No Subject)'
     const from = extractRawHeader(headerSection, 'From') || ''
     const date = extractRawHeader(headerSection, 'Date')
+
+    // Extract plain text body for transcript (async with postal-mime)
+    const textBody = await extractEmailTextBody(rawContent)
 
     // Parse the internal date (Unix timestamp in milliseconds)
     const lastModified = message.internalDate
@@ -928,6 +1030,7 @@ export class GmailProvider extends BaseAppConnectorProvider {
       lastModified,
       externalUrl,
       content: rawContent,
+      transcript: textBody,
       description: `From: ${from}`,
       tags: message.labelIds?.map((l) => l.toLowerCase()),
       metadata: {

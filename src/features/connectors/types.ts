@@ -311,6 +311,7 @@ export interface ConnectorItem {
   externalUrl?: string
   contentHash?: string
   content?: string
+  transcript?: string // Extracted plain text content (e.g., from email body)
   description?: string
   tags?: string[]
   metadata?: Record<string, unknown>
@@ -377,8 +378,8 @@ export interface ConnectorProviderInterface {
     cursor: string | null,
   ): Promise<ChangesResult>
 
-  // Normalization
-  normalizeItem(rawItem: unknown): ConnectorItem
+  // Normalization (can be async for providers that need to parse content)
+  normalizeItem(rawItem: unknown): ConnectorItem | Promise<ConnectorItem>
 }
 
 /**

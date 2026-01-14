@@ -159,6 +159,10 @@ export const de: I18n = {
   '{count} item(s) deleted': '{count} Element(e) gelöscht',
   'Failed to delete some items':
     'Einige Elemente konnten nicht gelöscht werden',
+  '{count} item(s) queued for processing':
+    '{count} Element(e) zur Verarbeitung eingereiht',
+  'Failed to reprocess some items':
+    'Einige Elemente konnten nicht erneut verarbeitet werden',
   'Select all': 'Alle auswählen',
   'Unselect all': 'Auswahl aufheben',
   'Delete selected': 'Ausgewählte löschen',

@@ -97,4 +97,28 @@ export const ko: I18n = {
     '생성된 구성에 필수 필드가 누락되었습니다.',
   'Failed to generate agent. Please try again.':
     '에이전트 생성에 실패했습니다. 다시 시도해 주세요.',
+  Tools: '도구',
+  'No tools enabled for this agent.': '이 에이전트에 활성화된 도구가 없습니다.',
+  'Knowledge search': '지식 검색',
+  // Trace/Tool display
+  Duration: '기간',
+  Tokens: '토큰',
+  'Loading…': '로딩 중…',
+  'Processing step': '처리 단계',
+  'Processing Details': '처리 세부 정보',
+  Status: '상태',
+  Cost: '비용',
+  Input: '입력',
+  Output: '출력',
+  Steps: '단계',
+  'Trace not found': '추적을 찾을 수 없음',
+  Close: '닫기',
+  'View details': '세부 정보 보기',
+  Error: '오류',
+  'View document': '문서 보기',
+  // Tool display names
+  'Searching knowledge base': '지식 베이스 검색 중',
+  'Reading document': '문서 읽는 중',
+  'Browsing documents': '문서 탐색 중',
+  'Summarizing document': '문서 요약 중',
 } as const

@@ -3,6 +3,31 @@ import {
   TraceService,
   estimateTokenUsage,
 } from '@/features/traces/trace-service'
+import {
+  ToolDefinition,
+  ToolChoice,
+  ToolCall,
+  LLMConfigWithTools,
+  LLMResponseWithTools,
+  FinishReason,
+  TokenUsage,
+} from './types'
+
+// Re-export tool types for convenience
+export type {
+  ToolDefinition,
+  ToolChoice,
+  ToolCall,
+  LLMConfigWithTools,
+  LLMResponseWithTools,
+  FinishReason,
+  TokenUsage,
+}
+export {
+  hasToolCalls,
+  isToolResultMessage,
+  parseToolArguments,
+} from './types'
 
 export interface LLMMessageAttachment {
   type: 'image' | 'document' | 'text'
@@ -110,11 +135,11 @@ class LLMProgressTracker {
 export interface LLMProviderInterface {
   chat(
     messages: LLMMessage[],
-    config?: Partial<LLMConfig>,
-  ): Promise<LLMResponse>
+    config?: Partial<LLMConfig> & LLMConfigWithTools,
+  ): Promise<LLMResponse | LLMResponseWithTools>
   streamChat(
     messages: LLMMessage[],
-    config?: Partial<LLMConfig>,
+    config?: Partial<LLMConfig> & LLMConfigWithTools,
   ): AsyncIterableIterator<string>
   validateApiKey(apiKey: string): Promise<boolean>
   getAvailableModels?(config?: Partial<LLMConfig>): Promise<string[]>
@@ -153,14 +178,14 @@ export class LLMService {
 
   static async chat(
     messages: LLMMessage[],
-    config: LLMConfig,
+    config: LLMConfig & LLMConfigWithTools,
     context?: {
       agentId?: string
       conversationId?: string
       taskId?: string
       sessionId?: string
     },
-  ): Promise<LLMResponse> {
+  ): Promise<LLMResponseWithTools> {
     const requestId = generateRequestId()
     progressTracker.startRequest(requestId)
 
@@ -196,17 +221,23 @@ export class LLMService {
 
     try {
       const provider = this.getProvider(config.provider)
-      const response = await provider.chat(messages, config)
+      const response = await provider.chat(messages, config) as LLMResponseWithTools
 
       // End span and trace with success
       await TraceService.endSpan(span.id, {
         status: 'completed',
         usage: response.usage,
-        output: { content: response.content },
+        output: { 
+          content: response.content,
+          toolCalls: response.tool_calls?.map(tc => ({
+            name: tc.function.name,
+            arguments: JSON.parse(tc.function.arguments || '{}'),
+          })),
+        },
       })
       await TraceService.endTrace(trace.id, {
         status: 'completed',
-        output: response.content,
+        output: response.content || (response.tool_calls ? `[Tool calls: ${response.tool_calls.map(tc => tc.function.name).join(', ')}]` : ''),
       })
 
       return response

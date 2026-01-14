@@ -136,6 +136,8 @@ export const en = [
   // Bulk selection
   '{count} item(s) deleted',
   'Failed to delete some items',
+  '{count} item(s) queued for processing',
+  'Failed to reprocess some items',
   'Select all',
   'Unselect all',
   'Delete selected',

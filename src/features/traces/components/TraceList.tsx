@@ -232,7 +232,7 @@ export function TraceList({
 
   const columns = [
     { key: 'name', label: t('Name') },
-    { key: 'model', label: t('Model') },
+    { key: 'conversation', label: t('Conversation') },
     { key: 'duration', label: t('Duration') },
     { key: 'tokens', label: t('Tokens') },
     { key: 'cost', label: t('Cost') },
@@ -354,6 +354,13 @@ export function TraceList({
                   <div className="flex items-center gap-3">
                     <div className="flex flex-col">
                       <span className="text-xs text-default-400">
+                        {session.displayName}, {formatDate(session.startTime)}
+                      </span>
+                    </div>
+                  </div>
+                  {/* <div className="flex items-center gap-3">
+                    <div className="flex flex-col">
+                      <span className="text-xs text-default-400">
                         {formatDate(session.startTime)}
                         {session.models.size > 0 && (
                           <span className="ml-2">
@@ -362,7 +369,7 @@ export function TraceList({
                         )}
                       </span>
                     </div>
-                  </div>
+                  </div> */}
                   <div className="flex items-center gap-4">
                     <div className="hidden md:flex items-center gap-3 text-xs text-default-500">
                       <span className="flex items-center gap-1">

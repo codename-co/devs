@@ -19,13 +19,15 @@ import { useNavigate } from 'react-router-dom'
 import { languages, useI18n } from '@/i18n'
 import DefaultLayout from '@/layouts/Default'
 import { HeaderProps } from '@/lib/types'
-import { Message } from '@/types'
+import { Message, Tool } from '@/types'
 import {
   Container,
   Section,
   Title,
   MarkdownRenderer,
   AgentKnowledgePicker,
+  AgentToolsPicker,
+  getKnowledgeToolNames,
   Icon,
 } from '@/components'
 import { createAgent } from '@/stores/agentStore'
@@ -115,6 +117,7 @@ export function AgentsNewPage() {
   const [instructions, setInstructions] = useState('')
   const [temperature, setTemperature] = useState(0.7)
   const [selectedKnowledgeIds, setSelectedKnowledgeIds] = useState<string[]>([])
+  const [selectedTools, setSelectedTools] = useState<Tool[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -222,6 +225,7 @@ export function AgentsNewPage() {
         temperature,
         tags: ['custom'],
         knowledgeItemIds: selectedKnowledgeIds,
+        tools: selectedTools.length > 0 ? selectedTools : undefined,
       })
 
       setSuccess(true)
@@ -351,6 +355,7 @@ export function AgentsNewPage() {
     setInstructions('')
     setTemperature(0.7)
     setSelectedKnowledgeIds([])
+    setSelectedTools([])
     setError('')
     setSuccess(false)
     setMessages([])
@@ -538,6 +543,13 @@ export function AgentsNewPage() {
                           <AgentKnowledgePicker
                             selectedKnowledgeIds={selectedKnowledgeIds}
                             onSelectionChange={setSelectedKnowledgeIds}
+                          />
+
+                          <AgentToolsPicker
+                            selectedToolNames={getKnowledgeToolNames(
+                              selectedTools,
+                            )}
+                            onSelectionChange={setSelectedTools}
                           />
 
                           <p className="text-xs text-default-500">

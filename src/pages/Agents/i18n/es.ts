@@ -98,6 +98,31 @@ export const es: I18n = {
     'Error al generar la configuración del agente. Por favor, inténtalo de nuevo.',
   'Generated configuration is missing required fields.':
     'A la configuración generada le faltan campos obligatorios.',
+  Tools: 'Herramientas',
+  'No tools enabled for this agent.':
+    'No hay herramientas habilitadas para este agente.',
+  'Knowledge search': 'Búsqueda de conocimientos',
+  // Trace/Tool display
+  Duration: 'Duración',
+  Tokens: 'Tokens',
+  'Loading…': 'Cargando…',
+  'Processing step': 'Paso de procesamiento',
+  'Processing Details': 'Detalles del procesamiento',
+  Status: 'Estado',
+  Cost: 'Costo',
+  Input: 'Entrada',
+  Output: 'Salida',
+  Steps: 'Pasos',
+  'Trace not found': 'Rastro no encontrado',
+  Close: 'Cerrar',
+  'View details': 'Ver detalles',
+  Error: 'Error',
+  'View document': 'Ver documento',
+  // Tool display names
+  'Searching knowledge base': 'Buscando en la base de conocimientos',
+  'Reading document': 'Leyendo documento',
+  'Browsing documents': 'Explorando documentos',
+  'Summarizing document': 'Resumiendo documento',
   'Failed to generate agent. Please try again.':
     'Error al generar el agente. Por favor, inténtalo de nuevo.',
 } as const
