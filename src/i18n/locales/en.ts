@@ -106,8 +106,17 @@ export const en = [
   'Time-Boxed',
   'Hybrid',
   'Select a model',
-  'Add a model',
+  'Add LLM provider',
   '{n} models',
+  'Search models...',
+  'No models found',
+
+  // Model capabilities
+  'Fast',
+  'Low cost',
+  'High cost',
+  'Vision',
+  'Tools',
 
   // Service worker
   'New features are waiting',
@@ -445,6 +454,8 @@ export const en = [
   'Message pinned successfully',
   'Copy the answer',
   'Answer copied to clipboard',
+  'Copy prompt',
+  'Prompt copied to clipboard',
   'Add a description to help you remember why this message is important.',
   'Description',
   'Brief description of why this is important...',
@@ -653,4 +664,8 @@ export const en = [
   'History',
   'Clear',
   'Current Session',
+
+  // Agent Tools Picker
+  'Calculate',
+  'Evaluate mathematical expressions with support for variables and Math functions',
 ] as const

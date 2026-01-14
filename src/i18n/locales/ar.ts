@@ -107,8 +107,18 @@ export const ar: I18n = {
   'Time-Boxed': 'محدد بوقت',
   Hybrid: 'هجين',
   'Select a model': 'اختر نموذجاً',
-  'Add a model': 'إضافة نموذج',
+  'Add LLM provider': 'إضافة مزود LLM',
   '{n} models': '{n} نماذج',
+  'Search models...': 'البحث عن نماذج...',
+  'No models found': 'لم يتم العثور على نماذج',
+
+  // Model capabilities
+  Fast: 'سريع',
+  'Low cost': 'منخفض التكلفة',
+  'High cost': 'مرتفع التكلفة',
+  Vision: 'رؤية',
+  Tools: 'أدوات',
+
   // Service worker
   'New features are waiting': 'ميزات جديدة في الانتظار',
   '{product} v{version} is ready to be installed.':
@@ -462,6 +472,8 @@ export const ar: I18n = {
   'Message pinned successfully': 'تم تثبيت الرسالة بنجاح',
   'Copy the answer': 'نسخ الإجابة',
   'Answer copied to clipboard': 'تم نسخ الإجابة إلى الحافظة',
+  'Copy prompt': 'نسخ الطلب',
+  'Prompt copied to clipboard': 'تم نسخ الطلب إلى الحافظة',
   'Add a description to help you remember why this message is important.':
     'أضف وصفًا لمساعدتك على تذكر سبب أهمية هذه الرسالة.',
   Description: 'الوصف',
@@ -698,4 +710,9 @@ export const ar: I18n = {
   Studio: 'الاستوديو',
   'Select model': 'اختر النموذج',
   'Select image model': 'اختر نموذج الصورة',
+
+  // Agent Tools Picker
+  Calculate: 'حساب',
+  'Evaluate mathematical expressions with support for variables and Math functions':
+    'تقييم التعبيرات الرياضية مع دعم المتغيرات ودوال Math',
 } as const

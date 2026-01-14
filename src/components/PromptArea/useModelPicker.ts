@@ -57,7 +57,7 @@ interface UseModelPickerReturn {
 }
 
 export function useModelPicker({
-  lang,
+  lang: _lang,
 }: UseModelPickerOptions = {}): UseModelPickerReturn {
   const {
     credentials,
@@ -104,16 +104,14 @@ export function useModelPicker({
       // Remove provider prefixes and common separators
       return model
         .replace(/.*\//, '') // Remove everything before last slash
-        .replace(/[_-]+/g, ' ') // Replace underscores and hyphens with space
+        .replace(/\s*\([^)]*\)\s*/g, ' ') // Remove any content in parentheses
+        .replace(/[_-]?\d{8}(?!\w)/g, '') // Remove date suffixes like -20240115 or _20240115
+        .replace(/(\d)[_-](\d)/g, '$1.$2') // Convert version separators to dots (e.g., 4-5 → 4.5)
+        .replace(/[_-]+/g, ' ') // Replace remaining underscores and hyphens with space
         .replace(/\s+/g, ' ') // Collapse multiple spaces
-        .replace(
-          /(\d{4})(\d{2})(\d{2})(?!\w)/,
-          (_, p1, p2, p3) =>
-            `(${new Date(p1, p2, p3).toLocaleDateString(lang)})`,
-        ) // Format dates like 20240115 to 2024-01-15
         .trim()
     },
-    [lang],
+    [],
   )
 
   const getSelectedModelForProvider = useCallback(

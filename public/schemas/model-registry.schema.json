@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://devs.run/schemas/model-registry.schema.json",
+  "title": "LLM Model Registry",
+  "description": "Registry of LLM models with their capability flags for the DEVS platform",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to the JSON schema"
+    }
+  },
+  "additionalProperties": {
+    "type": "array",
+    "items": {
+      "$ref": "#/$defs/LLMModel"
+    }
+  },
+  "$defs": {
+    "LLMModel": {
+      "type": "object",
+      "required": ["id", "capabilities"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the model"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable display name for the model"
+        },
+        "capabilities": {
+          "$ref": "#/$defs/ModelCapabilities"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ModelCapabilities": {
+      "type": "object",
+      "properties": {
+        "lowCost": {
+          "type": "boolean",
+          "description": "Model is inexpensive to run"
+        },
+        "highCost": {
+          "type": "boolean",
+          "description": "Model is expensive to run"
+        },
+        "fast": {
+          "type": "boolean",
+          "description": "Model has fast inference speed"
+        },
+        "thinking": {
+          "type": "boolean",
+          "description": "Model supports extended thinking/reasoning"
+        },
+        "vision": {
+          "type": "boolean",
+          "description": "Model can process images"
+        },
+        "tools": {
+          "type": "boolean",
+          "description": "Model supports function/tool calling"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

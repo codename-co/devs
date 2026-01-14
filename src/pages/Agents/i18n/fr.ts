@@ -114,6 +114,7 @@ export const fr: I18n = {
   'Trace not found': 'Trace non trouvée',
   Close: 'Fermer',
   'View details': 'Voir les détails',
+  'View trace details': 'Voir les détails de la trace',
   Error: 'Erreur',
   'View document': 'Voir le document',
   // Tool display names
@@ -121,6 +122,17 @@ export const fr: I18n = {
   'Reading document': 'Lecture du document',
   'Browsing documents': 'Parcours des documents',
   'Summarizing document': 'Résumé du document',
+  Calculating: 'Calcul',
+  'Code interpreter': 'Interpréteur de code',
   'Failed to generate agent. Please try again.':
     "Échec de la génération de l'agent. Veuillez réessayer.",
+  // Tool labels
+  'Search Knowledge': 'Rechercher',
+  'Read Document': 'Lire un document',
+  'List Documents': 'Lister les documents',
+  'Get Document Summary': 'Résumer un document',
+  Calculate: 'Calculer',
+  // Search results
+  result: 'résultat',
+  results: 'résultats',
 } as const

@@ -116,6 +116,7 @@ export const es: I18n = {
   'Trace not found': 'Rastro no encontrado',
   Close: 'Cerrar',
   'View details': 'Ver detalles',
+  'View trace details': 'Ver detalles del rastro',
   Error: 'Error',
   'View document': 'Ver documento',
   // Tool display names
@@ -123,6 +124,17 @@ export const es: I18n = {
   'Reading document': 'Leyendo documento',
   'Browsing documents': 'Explorando documentos',
   'Summarizing document': 'Resumiendo documento',
+  Calculating: 'Calculando',
+  'Code interpreter': 'Intérprete de código',
   'Failed to generate agent. Please try again.':
     'Error al generar el agente. Por favor, inténtalo de nuevo.',
+  // Tool labels
+  'Search Knowledge': 'Buscar conocimiento',
+  'Read Document': 'Leer documento',
+  'List Documents': 'Listar documentos',
+  'Get Document Summary': 'Obtener resumen',
+  Calculate: 'Calcular',
+  // Search results
+  result: 'resultado',
+  results: 'resultados',
 } as const

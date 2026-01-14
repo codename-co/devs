@@ -139,10 +139,48 @@ export interface Credential {
   id: string
   provider: LLMProvider
   encryptedApiKey: string
+  /** @deprecated - model selection is now stored separately in selectedModels */
   model?: string
   baseUrl?: string
   timestamp: Date
   order?: number
+}
+
+/**
+ * Stores the selected model for each provider
+ * Key is the provider name, value is the selected model ID
+ */
+export type SelectedModels = Partial<Record<LLMProvider, string>>
+
+/**
+ * Capability flags for LLM models
+ * Used to select appropriate models for different tasks
+ */
+export interface ModelCapabilities {
+  /** Budget-friendly model suitable for high-volume, simple tasks */
+  lowCost?: boolean
+  /** Premium model with higher pricing (flagship/pro tiers) */
+  highCost?: boolean
+  /** Model with extended reasoning/thinking capabilities (e.g., o1, DeepSeek R1) */
+  thinking?: boolean
+  /** Optimized for low latency responses */
+  fast?: boolean
+  /** Can process and understand images */
+  vision?: boolean
+  /** Supports function/tool calling */
+  tools?: boolean
+}
+
+/**
+ * LLM Model definition with capabilities
+ */
+export interface LLMModel {
+  /** Model identifier (e.g., "gpt-4o", "claude-sonnet-4-5-20250929") */
+  id: string
+  /** Optional display name (defaults to id if not provided) */
+  name?: string
+  /** Model capability flags */
+  capabilities?: ModelCapabilities
 }
 
 export type LLMProvider =

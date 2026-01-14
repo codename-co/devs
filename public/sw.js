@@ -574,14 +574,23 @@ self.addEventListener('fetch', (event) => {
       return
     }
 
+    // Skip caching for model registry - always fetch fresh
+    if (url.pathname === '/models/model-registry.json') {
+      return
+    }
+
     // Determine caching strategy based on file type
     const isHTMLRequest =
       url.pathname.endsWith('.html') ||
       url.pathname.endsWith('/') ||
       !url.pathname.includes('.')
 
-    if (isHTMLRequest) {
-      // Network-first for HTML to ensure users get latest version
+    // JSON files in /schemas/ should use network-first to ensure fresh data
+    const isSchemaJSON =
+      url.pathname.startsWith('/schemas/') && url.pathname.endsWith('.json')
+
+    if (isHTMLRequest || isSchemaJSON) {
+      // Network-first for HTML and schema JSON to ensure users get latest version
       event.respondWith(
         fetch(event.request)
           .then((response) => {

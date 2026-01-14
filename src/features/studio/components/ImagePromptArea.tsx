@@ -181,6 +181,29 @@ export const ImagePromptArea = forwardRef<
     setIsDragOver(false)
   }, [])
 
+  const handlePaste = useCallback(
+    async (event: React.ClipboardEvent) => {
+      const items = event.clipboardData?.items
+      if (!items) return
+
+      for (const item of items) {
+        if (item.type.startsWith('image/')) {
+          event.preventDefault()
+          const file = item.getAsFile()
+          if (file) {
+            // Generate a filename based on timestamp
+            const extension = item.type.split('/')[1] || 'png'
+            const filename = `pasted-image-${Date.now()}.${extension}`
+            const renamedFile = new File([file], filename, { type: file.type })
+            onReferenceImageChange?.(renamedFile)
+          }
+          return
+        }
+      }
+    },
+    [onReferenceImageChange],
+  )
+
   const handleDrop = useCallback(
     async (event: React.DragEvent) => {
       event.preventDefault()
@@ -340,6 +363,7 @@ export const ImagePromptArea = forwardRef<
           onBlur={handleBlur as any}
           onFocus={handleFocus as any}
           onKeyDown={handleKeyDown as any}
+          onPaste={handlePaste as any}
           onValueChange={handlePromptChange}
           {...props}
         />

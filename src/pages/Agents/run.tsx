@@ -76,11 +76,14 @@ const TOOL_DISPLAY_NAMES: Record<string, string> = {
   read_document: 'Reading document',
   list_documents: 'Browsing documents',
   get_document_summary: 'Summarizing document',
+  calculate: 'Calculating',
+  execute: 'Code interpreter',
   // Add more tool mappings as needed
 }
 
 /** Get appropriate icon for tool type */
 const getToolIcon = (toolName: string): string => {
+  if (toolName === 'execute') return 'Code'
   if (toolName.includes('search')) return 'Search'
   if (toolName.includes('read') || toolName.includes('document')) return 'Page'
   if (toolName.includes('list') || toolName.includes('browse')) return 'Folder'
@@ -92,10 +95,19 @@ const getToolIcon = (toolName: string): string => {
 interface ToolContextInfo {
   displayName: string
   icon: string
+  toolName: string
   documentId?: string
   documentName?: string
   query?: string
   folderId?: string
+  // Tool-specific input/output
+  input?: Record<string, unknown>
+  output?: unknown
+  // Calculate tool specific
+  expression?: string
+  result?: string | number
+  // Search tool specific
+  searchHitsCount?: number
 }
 
 const extractToolContext = (span: Span): ToolContextInfo | null => {
@@ -107,7 +119,15 @@ const extractToolContext = (span: Span): ToolContextInfo | null => {
     TOOL_DISPLAY_NAMES[toolName] || toolName.replace(/_/g, ' ')
   const icon = getToolIcon(toolName)
 
-  const context: ToolContextInfo = { displayName, icon }
+  const context: ToolContextInfo = { displayName, icon, toolName }
+
+  // Store raw input/output for display
+  if (args) {
+    context.input = args
+  }
+  if (span.io?.output?.response) {
+    context.output = span.io.output.response
+  }
 
   // Extract contextual info based on tool type
   if (args) {
@@ -119,6 +139,25 @@ const extractToolContext = (span: Span): ToolContextInfo | null => {
     }
     if ('folder_id' in args) {
       context.folderId = args.folder_id as string
+    }
+    // Calculate tool: extract expression
+    if ('expression' in args) {
+      context.expression = args.expression as string
+    }
+  }
+
+  // Extract tool-specific output
+  if (span.io?.output?.response) {
+    const response = span.io.output.response as Record<string, unknown>
+
+    // Calculate tool: extract result
+    if (toolName === 'calculate' && 'result' in response) {
+      context.result = response.result as string | number
+    }
+
+    // Search tool: extract hits count
+    if (Array.isArray(response.hits)) {
+      context.searchHitsCount = response.hits.length
     }
   }
 
@@ -144,17 +183,9 @@ const extractToolContext = (span: Span): ToolContextInfo | null => {
       context.documentName = response.name
     }
 
-    // 3. From search hits - first result's name (SearchKnowledgeResult)
-    if (
-      !context.documentName &&
-      Array.isArray(response.hits) &&
-      response.hits.length > 0
-    ) {
-      const firstHit = response.hits[0] as Record<string, unknown>
-      if (firstHit.name && typeof firstHit.name === 'string') {
-        context.documentName = firstHit.name
-      }
-    }
+    // 3. Skip extracting documentName from search hits - search_knowledge
+    // is about finding documents, not reading a specific one, so we don't
+    // want to display a document link for search results.
 
     // 4. Wrapped in data property (ToolExecutionResult success case)
     if (
@@ -221,8 +252,68 @@ const ToolTimelineItem = memo(
 
     const isError = span.status === 'error'
 
+    // Render tool-specific input/output display
+    const renderToolIO = () => {
+      // Calculate tool: show expression → result
+      if (context.toolName === 'calculate' && context.expression) {
+        return (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <code className="text-xs bg-default-100 dark:bg-default-200/50 px-1.5 py-0.5 rounded font-mono text-default-700">
+              {context.expression}
+            </code>
+            {context.result !== undefined && (
+              <>
+                <span className="text-default-400">→</span>
+                <code className="text-xs bg-success-100 dark:bg-success-900/30 px-1.5 py-0.5 rounded font-mono text-success-700 dark:text-success-400">
+                  {context.result}
+                </code>
+              </>
+            )}
+          </div>
+        )
+      }
+
+      // Search tool: show query and results count
+      if (context.toolName === 'search_knowledge' && context.query) {
+        return (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-default-400 italic truncate max-w-[250px]">
+              "
+              {context.query.length > 50
+                ? context.query.slice(0, 50) + '…'
+                : context.query}
+              "
+            </span>
+            {context.searchHitsCount !== undefined && (
+              <>
+                <span className="text-xs">
+                  ({context.searchHitsCount}{' '}
+                  {context.searchHitsCount === 1 ? t('result') : t('results')})
+                </span>
+              </>
+            )}
+          </div>
+        )
+      }
+
+      // Default: show query if available (for other tools)
+      if (context.query) {
+        return (
+          <span className="text-default-400 italic truncate max-w-[200px]">
+            "
+            {context.query.length > 40
+              ? context.query.slice(0, 40) + '…'
+              : context.query}
+            "
+          </span>
+        )
+      }
+
+      return null
+    }
+
     return (
-      <div className="flex items-center gap-1.5 text-sm text-default-500">
+      <div className="flex items-center gap-1.5 text-sm text-default-500 flex-wrap">
         <Icon
           name={context.icon as any}
           size="sm"
@@ -231,15 +322,7 @@ const ToolTimelineItem = memo(
         <span className={isError ? 'text-danger-600' : ''}>
           {t(context.displayName as any)}
         </span>
-        {context.query && (
-          <span className="text-default-400 italic truncate max-w-[200px]">
-            "
-            {context.query.length > 40
-              ? context.query.slice(0, 40) + '…'
-              : context.query}
-            "
-          </span>
-        )}
+        {renderToolIO()}
         {displayName && (
           <Link
             to={`/knowledge?doc=${context.documentId}`}
@@ -285,6 +368,19 @@ const ToolTimelineItem = memo(
             {t('Error')}
           </Chip>
         )}
+        {/* Navigate to trace details */}
+        <Tooltip content={t('View trace details')}>
+          <Button
+            as={Link}
+            to={`/traces/logs/${span.traceId}`}
+            size="sm"
+            variant="light"
+            isIconOnly
+            className="min-w-6 w-6 h-6 opacity-60 hover:opacity-100"
+          >
+            <Icon name="Activity" className="w-3.5 h-3.5" />
+          </Button>
+        </Tooltip>
       </div>
     )
   },
@@ -677,12 +773,31 @@ const MessageDisplay = memo(
         data-message-id={message.id}
         aria-hidden="false"
         tabIndex={0}
-        className="flex w-full gap-3"
+        className={`flex w-full gap-3 group ${message.role === 'user' ? 'justify-end' : ''}`}
       >
+        {/* User message action buttons - shown on hover at start */}
+        {message.role === 'user' && (
+          <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <Tooltip content={t('Copy prompt')}>
+              <Button
+                size="sm"
+                variant="light"
+                color="default"
+                isIconOnly
+                onPress={async () => {
+                  await copyRichText(message.content)
+                  successToast(t('Prompt copied to clipboard'))
+                }}
+              >
+                <Icon name="Copy" className="w-4 h-4" />
+              </Button>
+            </Tooltip>
+          </div>
+        )}
         <div
-          className={`rounded-medium text-foreground group relative overflow-hidden font-medium ${
+          className={`rounded-medium text-foreground relative overflow-hidden font-medium ${
             message.role === 'user'
-              ? 'bg-default-100 px-4 py-3 ml-auto max-w-[80%]'
+              ? 'bg-default-100 px-4 py-3 max-w-[80%]'
               : 'bg-transparent px-1 py-0'
           } ${isPinned ? 'border-l-4 border-warning-400 pl-4' : ''}`}
         >

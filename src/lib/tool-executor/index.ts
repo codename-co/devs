@@ -20,4 +20,10 @@ export {
   registerKnowledgeTools,
   areKnowledgeToolsRegistered,
   unregisterKnowledgeTools,
+  registerMathTools,
+  areMathToolsRegistered,
+  unregisterMathTools,
+  registerCodeTools,
+  areCodeToolsRegistered,
+  unregisterCodeTools,
 } from './executor'

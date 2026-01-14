@@ -52,6 +52,24 @@ import type {
   GetDocumentSummaryParams,
   GetDocumentSummaryResult,
 } from '@/lib/knowledge-tools/types'
+import {
+  calculate,
+  MATH_TOOL_DEFINITIONS,
+} from '@/lib/math-tools/service'
+import {
+  execute,
+  CODE_TOOL_DEFINITIONS,
+} from '@/lib/code-tools/service'
+import type {
+  CalculateParams,
+  CalculateResult,
+  CalculateError,
+} from '@/lib/math-tools/types'
+import type {
+  ExecuteParams,
+  ExecuteResult,
+  ExecuteError,
+} from '@/lib/code-tools/types'
 
 // ============================================================================
 // Constants
@@ -953,4 +971,108 @@ export function unregisterKnowledgeTools(): void {
   defaultRegistry.unregister('read_document')
   defaultRegistry.unregister('list_documents')
   defaultRegistry.unregister('get_document_summary')
+}
+
+// ============================================================================
+// Math Tools Registration
+// ============================================================================
+
+/**
+ * Register all math tools with the default registry.
+ * Call this during application initialization to enable math/calculation tools.
+ *
+ * @example
+ * ```typescript
+ * import { registerMathTools } from '@/lib/tool-executor/executor'
+ *
+ * // In app initialization
+ * registerMathTools()
+ * ```
+ */
+export function registerMathTools(): void {
+  // Register calculate tool
+  defaultRegistry.register<CalculateParams, CalculateResult | CalculateError>(
+    MATH_TOOL_DEFINITIONS.calculate,
+    async (args, context) => {
+      // Check for abort signal
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+
+      return calculate(args)
+    },
+    {
+      tags: ['math', 'calculate'],
+      estimatedDuration: 100,
+    },
+  )
+}
+
+/**
+ * Check if math tools are registered.
+ *
+ * @returns true if all math tools are registered
+ */
+export function areMathToolsRegistered(): boolean {
+  return defaultRegistry.has('calculate')
+}
+
+/**
+ * Unregister all math tools from the default registry.
+ * Useful for testing or when disabling math features.
+ */
+export function unregisterMathTools(): void {
+  defaultRegistry.unregister('calculate')
+}
+
+// ============================================================================
+// Code Tools Registration
+// ============================================================================
+
+/**
+ * Register all code tools with the default registry.
+ * Call this during application initialization to enable code execution tools.
+ *
+ * @example
+ * ```typescript
+ * import { registerCodeTools } from '@/lib/tool-executor/executor'
+ *
+ * // In app initialization
+ * registerCodeTools()
+ * ```
+ */
+export function registerCodeTools(): void {
+  // Register execute tool
+  defaultRegistry.register<ExecuteParams, ExecuteResult | ExecuteError>(
+    CODE_TOOL_DEFINITIONS.execute,
+    async (args, context) => {
+      // Check for abort signal
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+
+      return execute(args)
+    },
+    {
+      tags: ['code', 'execute', 'sandbox'],
+      estimatedDuration: 5000, // Code execution can take longer
+    },
+  )
+}
+
+/**
+ * Check if code tools are registered.
+ *
+ * @returns true if all code tools are registered
+ */
+export function areCodeToolsRegistered(): boolean {
+  return defaultRegistry.has('execute')
+}
+
+/**
+ * Unregister all code tools from the default registry.
+ * Useful for testing or when disabling code execution features.
+ */
+export function unregisterCodeTools(): void {
+  defaultRegistry.unregister('execute')
 }

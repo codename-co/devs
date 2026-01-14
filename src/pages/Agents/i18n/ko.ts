@@ -114,6 +114,7 @@ export const ko: I18n = {
   'Trace not found': '추적을 찾을 수 없음',
   Close: '닫기',
   'View details': '세부 정보 보기',
+  'View trace details': '추적 세부 정보 보기',
   Error: '오류',
   'View document': '문서 보기',
   // Tool display names
@@ -121,4 +122,15 @@ export const ko: I18n = {
   'Reading document': '문서 읽는 중',
   'Browsing documents': '문서 탐색 중',
   'Summarizing document': '문서 요약 중',
+  Calculating: '계산 중',
+  'Code interpreter': '코드 인터프리터',
+  // Tool labels
+  'Search Knowledge': '지식 검색',
+  'Read Document': '문서 읽기',
+  'List Documents': '문서 목록',
+  'Get Document Summary': '문서 요약',
+  Calculate: '계산',
+  // Search results
+  result: '결과',
+  results: '결과',
 } as const

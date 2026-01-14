@@ -57,6 +57,7 @@
     "postal-mime": "^2.7.3",
     "pretty-bytes": "^7.1.0",
     "qrcode": "^1.5.4",
+    "quickjs-emscripten": "^0.31.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.7.1",

@@ -1,0 +1,501 @@
+{
+  "$schema": "../schemas/model-registry.schema.json",
+  "local": [
+    {
+      "id": "SmolLM2-360M-Instruct-q4f16_1-MLC",
+      "name": "SmolLM2 360M",
+      "capabilities": { "lowCost": true, "fast": true }
+    },
+    {
+      "id": "SmolLM2-1.7B-Instruct-q4f16_1-MLC",
+      "name": "SmolLM2 1.7B",
+      "capabilities": { "lowCost": true, "fast": true }
+    },
+    {
+      "id": "Llama-3.2-1B-Instruct-q4f16_1-MLC",
+      "name": "Llama 3.2 1B",
+      "capabilities": { "lowCost": true, "fast": true }
+    },
+    {
+      "id": "Llama-3.2-3B-Instruct-q4f16_1-MLC",
+      "name": "Llama 3.2 3B",
+      "capabilities": { "lowCost": true }
+    },
+    {
+      "id": "Phi-3.5-mini-instruct-q4f16_1-MLC",
+      "name": "Phi 3.5 Mini",
+      "capabilities": { "lowCost": true }
+    },
+    {
+      "id": "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
+      "name": "Qwen2.5 1.5B",
+      "capabilities": { "lowCost": true, "fast": true }
+    }
+  ],
+  "ollama": [
+    {
+      "id": "gemma3:4b",
+      "name": "Gemma3 4B",
+      "capabilities": { "fast": true, "vision": true }
+    },
+    {
+      "id": "gemma3:12b",
+      "name": "Gemma3 12B",
+      "capabilities": { "vision": true }
+    },
+    {
+      "id": "gemma3:27b",
+      "name": "Gemma3 27B",
+      "capabilities": { "vision": true }
+    },
+    {
+      "id": "deepseek-r1:8b",
+      "name": "DeepSeek R1 8B",
+      "capabilities": { "tools": true, "thinking": true }
+    },
+    {
+      "id": "deepseek-r1:70b",
+      "name": "DeepSeek R1 70B",
+      "capabilities": { "tools": true, "thinking": true }
+    },
+    {
+      "id": "qwen3:8b",
+      "name": "Qwen3 8B",
+      "capabilities": { "tools": true, "thinking": true }
+    },
+    {
+      "id": "qwen3:30b",
+      "name": "Qwen3 30B",
+      "capabilities": { "tools": true, "thinking": true }
+    },
+    {
+      "id": "llama3.1:8b",
+      "name": "Llama 3.1 8B",
+      "capabilities": { "tools": true }
+    },
+    {
+      "id": "llama3.1:70b",
+      "name": "Llama 3.1 70B",
+      "capabilities": { "tools": true }
+    },
+    {
+      "id": "llama3.2:3b",
+      "name": "Llama 3.2 3B",
+      "capabilities": { "fast": true, "tools": true }
+    },
+    {
+      "id": "mistral",
+      "name": "Mistral 7B",
+      "capabilities": { "tools": true }
+    },
+    {
+      "id": "qwen2.5-coder:7b",
+      "name": "Qwen2.5 Coder 7B",
+      "capabilities": { "tools": true }
+    },
+    {
+      "id": "qwen2.5-coder:32b",
+      "name": "Qwen2.5 Coder 32B",
+      "capabilities": { "tools": true }
+    },
+    {
+      "id": "qwen3-coder:30b",
+      "name": "Qwen3 Coder 30B",
+      "capabilities": { "tools": true }
+    },
+    {
+      "id": "qwen3-vl:8b",
+      "name": "Qwen3 VL 8B",
+      "capabilities": { "vision": true, "tools": true, "thinking": true }
+    },
+    {
+      "id": "llava:7b",
+      "name": "LLaVA 7B",
+      "capabilities": { "vision": true }
+    },
+    {
+      "id": "llava:34b",
+      "name": "LLaVA 34B",
+      "capabilities": { "vision": true }
+    },
+    {
+      "id": "llama3.2-vision:11b",
+      "name": "Llama 3.2 Vision 11B",
+      "capabilities": { "vision": true }
+    },
+    {
+      "id": "gpt-oss:20b",
+      "name": "GPT-OSS 20B",
+      "capabilities": { "tools": true, "thinking": true }
+    },
+    {
+      "id": "gpt-oss:120b",
+      "name": "GPT-OSS 120B",
+      "capabilities": { "tools": true, "thinking": true }
+    },
+    {
+      "id": "llama4:16x17b",
+      "name": "Llama 4 Scout",
+      "capabilities": { "vision": true, "tools": true }
+    },
+    {
+      "id": "phi4:14b",
+      "name": "Phi-4 14B",
+      "capabilities": {}
+    },
+    {
+      "id": "phi4-mini:3.8b",
+      "name": "Phi-4 Mini",
+      "capabilities": { "fast": true, "tools": true }
+    },
+    {
+      "id": "mistral-small3.2:24b",
+      "name": "Mistral Small 3.2",
+      "capabilities": { "vision": true, "tools": true }
+    },
+    {
+      "id": "mixtral:8x7b",
+      "name": "Mixtral 8x7B",
+      "capabilities": { "tools": true }
+    },
+    {
+      "id": "granite4:3b",
+      "name": "Granite 4 3B",
+      "capabilities": { "fast": true, "tools": true }
+    },
+    {
+      "id": "granite4:1b",
+      "name": "Granite 4 1B",
+      "capabilities": { "fast": true, "tools": true }
+    },
+    {
+      "id": "ministral-3:3b",
+      "name": "Ministral 3 3B",
+      "capabilities": { "fast": true, "vision": true, "tools": true }
+    },
+    {
+      "id": "ministral-3:8b",
+      "name": "Ministral 3 8B",
+      "capabilities": { "vision": true, "tools": true }
+    },
+    {
+      "id": "nemotron-3-nano:30b",
+      "name": "Nemotron 3 Nano",
+      "capabilities": { "tools": true, "thinking": true }
+    },
+    {
+      "id": "devstral-small-2:24b",
+      "name": "Devstral Small 2",
+      "capabilities": { "vision": true, "tools": true }
+    },
+    {
+      "id": "devstral-2:123b",
+      "name": "Devstral 2",
+      "capabilities": { "tools": true }
+    },
+    {
+      "id": "devstral:24b",
+      "name": "Devstral 24B",
+      "capabilities": { "tools": true }
+    },
+    {
+      "id": "smollm2:1.7b",
+      "name": "SmolLM2 1.7B",
+      "capabilities": { "fast": true, "tools": true }
+    },
+    {
+      "id": "command-r:35b",
+      "name": "Command R 35B",
+      "capabilities": { "tools": true }
+    },
+    {
+      "id": "hermes3:8b",
+      "name": "Hermes 3 8B",
+      "capabilities": { "tools": true }
+    },
+    {
+      "id": "codellama",
+      "name": "Code Llama",
+      "capabilities": {}
+    }
+  ],
+  "openai": [
+    {
+      "id": "gpt-5.2",
+      "name": "GPT-5.2",
+      "capabilities": { "highCost": true, "vision": true, "tools": true }
+    },
+    {
+      "id": "gpt-5.2-pro",
+      "name": "GPT-5.2 Pro",
+      "capabilities": {
+        "highCost": true,
+        "thinking": true,
+        "vision": true,
+        "tools": true
+      }
+    },
+    {
+      "id": "gpt-5",
+      "name": "GPT-5",
+      "capabilities": { "highCost": true, "vision": true, "tools": true }
+    },
+    {
+      "id": "gpt-5-mini",
+      "name": "GPT-5 Mini",
+      "capabilities": {
+        "lowCost": true,
+        "fast": true,
+        "vision": true,
+        "tools": true
+      }
+    },
+    {
+      "id": "gpt-5-nano",
+      "name": "GPT-5 Nano",
+      "capabilities": { "lowCost": true, "fast": true, "tools": true }
+    },
+    {
+      "id": "gpt-4.1",
+      "name": "GPT-4.1",
+      "capabilities": { "vision": true, "tools": true }
+    },
+    {
+      "id": "gpt-4-turbo",
+      "name": "GPT-4 Turbo",
+      "capabilities": { "vision": true, "tools": true }
+    },
+    {
+      "id": "gpt-3.5-turbo",
+      "name": "GPT-3.5 Turbo",
+      "capabilities": { "lowCost": true, "fast": true, "tools": true }
+    }
+  ],
+  "anthropic": [
+    {
+      "id": "claude-sonnet-4-5-20250929",
+      "name": "Claude Sonnet 4.5",
+      "capabilities": { "vision": true, "tools": true }
+    },
+    {
+      "id": "claude-sonnet-4-20250514",
+      "name": "Claude Sonnet 4",
+      "capabilities": { "vision": true, "tools": true }
+    },
+    {
+      "id": "claude-opus-4-5-20251101",
+      "name": "Claude Opus 4.5",
+      "capabilities": {
+        "highCost": true,
+        "thinking": true,
+        "vision": true,
+        "tools": true
+      }
+    },
+    {
+      "id": "claude-opus-4-20250514",
+      "name": "Claude Opus 4",
+      "capabilities": { "highCost": true, "vision": true, "tools": true }
+    },
+    {
+      "id": "claude-haiku-4-5-20251001",
+      "name": "Claude Haiku 4.5",
+      "capabilities": {
+        "lowCost": true,
+        "fast": true,
+        "vision": true,
+        "tools": true
+      }
+    }
+  ],
+  "google": [
+    {
+      "id": "gemini-3-pro-preview",
+      "name": "Gemini 3 Pro",
+      "capabilities": {
+        "highCost": true,
+        "thinking": true,
+        "vision": true,
+        "tools": true
+      }
+    },
+    {
+      "id": "gemini-2.5-flash",
+      "name": "Gemini 2.5 Flash",
+      "capabilities": { "fast": true, "vision": true, "tools": true }
+    },
+    {
+      "id": "gemini-2.5-flash-lite",
+      "name": "Gemini 2.5 Flash Lite",
+      "capabilities": {
+        "lowCost": true,
+        "fast": true,
+        "vision": true,
+        "tools": true
+      }
+    },
+    {
+      "id": "gemini-2.5-pro",
+      "name": "Gemini 2.5 Pro",
+      "capabilities": {
+        "highCost": true,
+        "thinking": true,
+        "vision": true,
+        "tools": true
+      }
+    },
+    {
+      "id": "gemini-2.5-flash-image-preview",
+      "name": "Gemini 2.5 Flash Image",
+      "capabilities": { "fast": true, "vision": true }
+    }
+  ],
+  "vertex-ai": [
+    {
+      "id": "gemini-2.5-flash",
+      "name": "Gemini 2.5 Flash",
+      "capabilities": { "fast": true, "vision": true, "tools": true }
+    },
+    {
+      "id": "claude-sonnet-4-5@20250929",
+      "name": "Claude Sonnet 4.5 (Vertex)",
+      "capabilities": { "vision": true, "tools": true }
+    },
+    {
+      "id": "google/gemini-2.5-flash-image-preview",
+      "name": "Gemini 2.5 Flash Image",
+      "capabilities": { "fast": true, "vision": true }
+    },
+    {
+      "id": "google/gemini-live-2.5-flash-preview-native-audio",
+      "name": "Gemini Live Audio",
+      "capabilities": { "fast": true }
+    },
+    {
+      "id": "google/gemini-2.5-pro",
+      "name": "Gemini 2.5 Pro",
+      "capabilities": {
+        "highCost": true,
+        "thinking": true,
+        "vision": true,
+        "tools": true
+      }
+    },
+    {
+      "id": "google/gemini-2.5-flash-lite",
+      "name": "Gemini 2.5 Flash Lite",
+      "capabilities": {
+        "lowCost": true,
+        "fast": true,
+        "vision": true,
+        "tools": true
+      }
+    },
+    {
+      "id": "google/veo-3.0-generate-001",
+      "name": "Veo 3.0",
+      "capabilities": { "highCost": true }
+    },
+    {
+      "id": "google/veo-3.0-fast-generate-001",
+      "name": "Veo 3.0 Fast",
+      "capabilities": { "fast": true }
+    },
+    {
+      "id": "google/gemini-2.0-flash-001",
+      "name": "Gemini 2.0 Flash",
+      "capabilities": { "fast": true, "vision": true, "tools": true }
+    },
+    {
+      "id": "google/gemini-2.0-flash-lite-001",
+      "name": "Gemini 2.0 Flash Lite",
+      "capabilities": {
+        "lowCost": true,
+        "fast": true,
+        "vision": true,
+        "tools": true
+      }
+    }
+  ],
+  "mistral": [
+    {
+      "id": "mistral-medium",
+      "name": "Mistral Medium",
+      "capabilities": { "tools": true }
+    },
+    {
+      "id": "mistral-small",
+      "name": "Mistral Small",
+      "capabilities": { "lowCost": true, "tools": true }
+    },
+    {
+      "id": "mistral-tiny",
+      "name": "Mistral Tiny",
+      "capabilities": { "lowCost": true, "fast": true }
+    }
+  ],
+  "openrouter": [
+    {
+      "id": "openai/gpt-4",
+      "name": "GPT-4 (OpenRouter)",
+      "capabilities": { "vision": true, "tools": true }
+    },
+    {
+      "id": "anthropic/claude-3-opus",
+      "name": "Claude 3 Opus (OpenRouter)",
+      "capabilities": { "highCost": true, "vision": true, "tools": true }
+    },
+    {
+      "id": "google/gemini-pro",
+      "name": "Gemini Pro (OpenRouter)",
+      "capabilities": { "vision": true, "tools": true }
+    },
+    {
+      "id": "meta-llama/llama-3-70b",
+      "name": "Llama 3 70B (OpenRouter)",
+      "capabilities": { "tools": true }
+    }
+  ],
+  "deepseek": [
+    {
+      "id": "deepseek-chat",
+      "name": "DeepSeek Chat",
+      "capabilities": { "lowCost": true, "tools": true }
+    },
+    {
+      "id": "deepseek-coder",
+      "name": "DeepSeek Coder",
+      "capabilities": { "lowCost": true, "tools": true }
+    }
+  ],
+  "grok": [
+    {
+      "id": "grok-beta",
+      "name": "Grok Beta",
+      "capabilities": { "vision": true, "tools": true }
+    }
+  ],
+  "huggingface": [
+    {
+      "id": "meta-llama/Llama-2-7b-chat-hf",
+      "name": "Llama 2 7B",
+      "capabilities": { "lowCost": true }
+    },
+    {
+      "id": "mistralai/Mistral-7B-Instruct-v0.1",
+      "name": "Mistral 7B Instruct",
+      "capabilities": { "lowCost": true }
+    },
+    {
+      "id": "google/flan-t5-xxl",
+      "name": "Flan-T5 XXL",
+      "capabilities": { "lowCost": true }
+    }
+  ],
+  "openai-compatible": [],
+  "custom": [],
+  "stability": [],
+  "replicate": [],
+  "together": [],
+  "fal": []
+}

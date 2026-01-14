@@ -107,8 +107,17 @@ export const de: I18n = {
   'Time-Boxed': 'Zeitbegrenzt',
   Hybrid: 'Hybrid',
   'Select a model': 'Modell auswählen',
-  'Add a model': 'Modell hinzufügen',
+  'Add LLM provider': 'LLM-Anbieter hinzufügen',
   '{n} models': '{n} Modelle',
+  'Search models...': 'Modelle suchen...',
+  'No models found': 'Keine Modelle gefunden',
+
+  // Model capabilities
+  Fast: 'Schnell',
+  'Low cost': 'Günstig',
+  'High cost': 'Teuer',
+  Vision: 'Vision',
+  Tools: 'Werkzeuge',
 
   // Service worker
   'New features are waiting': 'Neue Funktionen warten',
@@ -470,6 +479,8 @@ export const de: I18n = {
   'Message pinned successfully': 'Nachricht erfolgreich angeheftet',
   'Copy the answer': 'Antwort kopieren',
   'Answer copied to clipboard': 'Antwort in Zwischenablage kopiert',
+  'Copy prompt': 'Prompt kopieren',
+  'Prompt copied to clipboard': 'Prompt in Zwischenablage kopiert',
   'Add a description to help you remember why this message is important.':
     'Fügen Sie eine Beschreibung hinzu, um sich daran zu erinnern, warum diese Nachricht wichtig ist.',
   Description: 'Beschreibung',
@@ -711,4 +722,9 @@ export const de: I18n = {
   Studio: 'Studio',
   'Select model': 'Modell auswählen',
   'Select image model': 'Bildmodell auswählen',
+
+  // Agent Tools Picker
+  Calculate: 'Berechnen',
+  'Evaluate mathematical expressions with support for variables and Math functions':
+    'Mathematische Ausdrücke mit Unterstützung für Variablen und Math-Funktionen auswerten',
 } as const

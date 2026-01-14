@@ -105,8 +105,17 @@ export const ko: I18n = {
   'Time-Boxed': '시간 제한',
   Hybrid: '하이브리드',
   'Select a model': '모델 선택',
-  'Add a model': '모델 추가',
+  'Add LLM provider': 'LLM 공급자 추가',
   '{n} models': '{n}개 모델',
+  'Search models...': '모델 검색...',
+  'No models found': '모델을 찾을 수 없습니다',
+
+  // Model capabilities
+  Fast: '빠름',
+  'Low cost': '저렴함',
+  'High cost': '고비용',
+  Vision: '비전',
+  Tools: '도구',
 
   // Service worker
   'New features are waiting': '새로운 기능이 기다리고 있습니다',
@@ -461,6 +470,8 @@ export const ko: I18n = {
   'Message pinned successfully': '메시지가 성공적으로 고정되었습니다',
   'Copy the answer': '답변 복사',
   'Answer copied to clipboard': '답변이 클립보드에 복사되었습니다',
+  'Copy prompt': '프롬프트 복사',
+  'Prompt copied to clipboard': '프롬프트가 클립보드에 복사되었습니다',
   'Add a description to help you remember why this message is important.':
     '이 메시지가 중요한 이유를 기억하는 데 도움이 되는 설명을 추가하세요.',
   Description: '설명',
@@ -697,4 +708,9 @@ export const ko: I18n = {
   Studio: '스튜디오',
   'Select model': '모델 선택',
   'Select image model': '이미지 모델 선택',
+
+  // Agent Tools Picker
+  Calculate: '계산',
+  'Evaluate mathematical expressions with support for variables and Math functions':
+    '변수와 Math 함수를 지원하는 수학 표현식 평가',
 } as const

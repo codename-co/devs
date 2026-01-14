@@ -1030,10 +1030,11 @@ const AgentContextTabs = ({
 /**
  * Knowledge tool display metadata.
  * Maps tool names to user-friendly information.
+ * Labels are i18n keys that will be translated in the component.
  */
 const KNOWLEDGE_TOOL_INFO: Record<
   string,
-  { icon: 'PageSearch' | 'Document' | 'Folder' | 'Page'; label: string }
+  { icon: 'PageSearch' | 'Document' | 'Folder' | 'Page' | 'MathBook' | 'Puzzle'; label: string }
 > = {
   search_knowledge: {
     icon: 'PageSearch',
@@ -1050,6 +1051,10 @@ const KNOWLEDGE_TOOL_INFO: Record<
   get_document_summary: {
     icon: 'Page',
     label: 'Get Document Summary',
+  },
+  calculate: {
+    icon: 'MathBook',
+    label: 'Calculate',
   },
 }
 
@@ -1072,7 +1077,10 @@ const AgentToolsDisplay = ({ tools }: { tools: Agent['tools'] }) => {
       {tools.map((tool) => {
         const info = KNOWLEDGE_TOOL_INFO[tool.name]
         const iconName = info?.icon || 'Puzzle'
-        const label = info?.label || tool.name
+        // Use translated label if available, otherwise capitalize the tool name
+        const label = info?.label
+          ? t(info.label as Parameters<typeof t>[0])
+          : tool.name.charAt(0).toUpperCase() + tool.name.slice(1)
 
         return (
           <div

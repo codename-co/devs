@@ -110,6 +110,7 @@ export const ar: I18n = {
   'Trace not found': 'لم يتم العثور على التتبع',
   Close: 'إغلاق',
   'View details': 'عرض التفاصيل',
+  'View trace details': 'عرض تفاصيل التتبع',
   Error: 'خطأ',
   'View document': 'عرض المستند',
   // Tool display names
@@ -117,4 +118,15 @@ export const ar: I18n = {
   'Reading document': 'قراءة المستند',
   'Browsing documents': 'تصفح المستندات',
   'Summarizing document': 'تلخيص المستند',
+  Calculating: 'الحساب',
+  'Code interpreter': 'مفسر الكود',
+  // Tool labels
+  'Search Knowledge': 'بحث في المعرفة',
+  'Read Document': 'قراءة مستند',
+  'List Documents': 'قائمة المستندات',
+  'Get Document Summary': 'الحصول على ملخص',
+  Calculate: 'حساب',
+  // Search results
+  result: 'نتيجة',
+  results: 'نتائج',
 } as const

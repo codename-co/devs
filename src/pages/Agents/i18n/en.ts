@@ -88,6 +88,7 @@ export const en = [
   'Trace not found',
   'Close',
   'View details',
+  'View trace details',
   'Error',
   'View document',
   // Tool display names
@@ -95,4 +96,15 @@ export const en = [
   'Reading document',
   'Browsing documents',
   'Summarizing document',
+  'Calculating',
+  'Code interpreter',
+  // Tool labels
+  'Search Knowledge',
+  'Read Document',
+  'List Documents',
+  'Get Document Summary',
+  'Calculate',
+  // Search results
+  'result',
+  'results',
 ] as const

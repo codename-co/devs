@@ -6,11 +6,13 @@ import { useAutoBackup, tryReconnectLocalBackup } from '@/features/local-backup'
 import { ServiceWorkerManager } from '@/lib/service-worker'
 import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
+import { loadModelRegistry } from '@/lib/llm/models'
 import { successToast } from '@/lib/toast'
 import { userSettings } from '@/stores/userStore'
 import { useLLMModelStore } from '@/stores/llmModelStore'
 import { useSyncStore } from '@/features/sync'
 import { ServiceWorkerUpdatePrompt } from '@/components/ServiceWorkerUpdatePrompt'
+import { AddLLMProviderModal } from '@/components/AddLLMProviderModal'
 import { I18nProvider, useI18n } from '@/i18n'
 import localI18n from './i18n'
 
@@ -29,6 +31,7 @@ console.log('[Dev] Sync debug tools available at window.devsSync')
 function ProvidersInner({ children }: { children: React.ReactNode }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const theme = userSettings((state) => state.theme)
+  const lang = userSettings((state) => state.language)
   const loadCredentials = useLLMModelStore((state) => state.loadCredentials)
   const initializeSync = useSyncStore((state) => state.initialize)
   const enableSync = useSyncStore((state) => state.enableSync)
@@ -68,6 +71,9 @@ function ProvidersInner({ children }: { children: React.ReactNode }) {
 
         // Initialize secure storage
         await SecureStorage.init()
+
+        // Preload model registry (needed before loading credentials)
+        await loadModelRegistry()
 
         // Load credentials (will create default local provider if none exist)
         await loadCredentials()
@@ -135,6 +141,7 @@ function ProvidersInner({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       <ServiceWorkerUpdatePrompt />
+      <AddLLMProviderModal lang={lang} />
     </>
   )
 }

@@ -27,8 +27,10 @@ export { hasToolCalls, isToolResultMessage, parseToolArguments } from './types'
 
 // Re-export model utilities
 export {
-  MODEL_REGISTRY,
+  loadModelRegistry,
+  getModelRegistry,
   getModelsForProvider,
+  getModelsForProviderAsync,
   getModelIdsForProvider,
   getModel,
   getModelCapabilities,

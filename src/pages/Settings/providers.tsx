@@ -1,13 +1,14 @@
 import { Alert } from '@heroui/react'
 import type { Lang } from '@/i18n'
 import type { IconName } from '@/lib/types'
-import { LLMProvider } from '@/types'
+import type { LLMModel, LLMProvider } from '@/types'
 import {
   AnthropicProvider,
   LocalLLMProvider,
   OpenAIProvider,
   VertexAIProvider,
 } from '@/lib/llm'
+import { getModelsForProviderAsync } from '@/lib/llm/models'
 import { Icon } from '@/components'
 import {
   availableMemory,
@@ -20,7 +21,8 @@ import { formatBytes } from '@/lib/format'
 export interface ProviderConfig {
   provider: LLMProvider
   name: string
-  models: string[] | Promise<string[]>
+  /** Models can be LLMModel[], string[], or a Promise resolving to either */
+  models: LLMModel[] | string[] | Promise<LLMModel[] | string[]>
   icon: IconName
   requiresBaseUrl?: boolean
   apiKeyFormat?: string
@@ -31,6 +33,17 @@ export interface ProviderConfig {
   noServerUrl?: boolean
   fetchModelsFromServer?: boolean
   moreDetails?: () => React.ReactNode
+}
+
+/**
+ * Get model IDs from a models array (handles both LLMModel[] and string[])
+ */
+export function getModelIds(models: LLMModel[] | string[]): string[] {
+  if (models.length === 0) return []
+  if (typeof models[0] === 'string') {
+    return models as string[]
+  }
+  return (models as LLMModel[]).map((m) => m.id)
 }
 
 export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
@@ -138,18 +151,7 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
   {
     provider: 'ollama',
     name: 'Ollama',
-    models: [
-      'gpt-oss:20b',
-      'gpt-oss:120b',
-      'deepseek-r1:8b',
-      'gemma3:4b',
-      'qwen3:8b',
-      'llama2',
-      'mistral',
-      'codellama',
-      'vicuna',
-      'orca-mini',
-    ],
+    models: getModelsForProviderAsync('ollama'),
     icon: 'Ollama',
     noApiKey: true,
     apiKeyPlaceholder: 'http://localhost:11434',
@@ -157,102 +159,76 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
   {
     provider: 'openai',
     name: 'OpenAI',
-    models: [
-      OpenAIProvider.DEFAULT_MODEL,
-      'gpt-5.2',
-      'gpt-5-mini',
-      'gpt-5-nano',
-      'gpt-5.2-pro',
-      'gpt-5',
-      'gpt-4.1',
-      'gpt-4-turbo',
-      'gpt-3.5-turbo',
-    ],
+    models: getModelsForProviderAsync('openai').then((models) => [
+      { id: OpenAIProvider.DEFAULT_MODEL, capabilities: { vision: true, tools: true } },
+      ...models.filter((m) => m.id !== OpenAIProvider.DEFAULT_MODEL),
+    ]),
     icon: 'OpenAI',
     apiKeyPage: 'https://platform.openai.com/api-keys',
   },
   {
     provider: 'anthropic',
     name: 'Anthropic',
-    models: [
-      AnthropicProvider.DEFAULT_MODEL,
-      'claude-sonnet-4-20250514',
-      'claude-opus-4-5-20251101',
-      'claude-opus-4-20250514',
-      'claude-haiku-4-5-20251001',
-    ],
+    models: getModelsForProviderAsync('anthropic').then((models) => [
+      { id: AnthropicProvider.DEFAULT_MODEL, capabilities: { vision: true, tools: true } },
+      ...models.filter((m) => m.id !== AnthropicProvider.DEFAULT_MODEL),
+    ]),
     icon: 'Anthropic',
     apiKeyPage: 'https://console.anthropic.com/settings/keys',
   },
   {
     provider: 'google',
     name: 'Google Gemini',
-    models: [
-      'gemini-3-pro-preview',
-      'gemini-2.5-flash',
-      'gemini-2.5-flash-lite',
-      'gemini-2.5-pro',
-      'gemini-2.5-flash-image-preview',
-    ],
+    models: getModelsForProviderAsync('google'),
     icon: 'Google',
+    apiKeyPage: 'https://aistudio.google.com/apikey',
   },
   {
     provider: 'vertex-ai',
     name: 'Vertex AI',
-    models: [
-      VertexAIProvider.DEFAULT_MODEL,
-      'claude-sonnet-4-5@20250929',
-      'google/gemini-2.5-flash-image-preview',
-      'google/gemini-live-2.5-flash-preview-native-audio',
-      'google/gemini-2.5-pro',
-      'google/gemini-2.5-flash-lite',
-      'google/veo-3.0-generate-001',
-      'google/veo-3.0-fast-generate-001',
-      'google/gemini-2.0-flash-001',
-      'google/gemini-2.0-flash-lite-001',
-    ],
+    models: getModelsForProviderAsync('vertex-ai').then((models) => [
+      { id: VertexAIProvider.DEFAULT_MODEL, capabilities: { fast: true, vision: true, tools: true } },
+      ...models.filter((m) => m.id !== VertexAIProvider.DEFAULT_MODEL),
+    ]),
     icon: 'GoogleCloud',
     apiKeyFormat: 'LOCATION:PROJECT_ID:API_KEY',
     apiKeyPlaceholder: 'us-central1:my-project:your-api-key',
+    apiKeyPage: 'https://console.cloud.google.com/apis/credentials',
   },
   {
     provider: 'mistral',
     name: 'Mistral AI',
-    models: ['mistral-medium', 'mistral-small', 'mistral-tiny'],
+    models: getModelsForProviderAsync('mistral'),
     icon: 'MistralAI',
+    apiKeyPage: 'https://console.mistral.ai/api-keys',
   },
   {
     provider: 'openrouter',
     name: 'OpenRouter',
-    models: [
-      'openai/gpt-4',
-      'anthropic/claude-3-opus',
-      'google/gemini-pro',
-      'meta-llama/llama-3-70b',
-    ],
+    models: getModelsForProviderAsync('openrouter'),
     icon: 'OpenRouter',
+    apiKeyPage: 'https://openrouter.ai/settings/keys',
   },
   {
     provider: 'deepseek',
     name: 'DeepSeek',
-    models: ['deepseek-chat', 'deepseek-coder'],
+    models: getModelsForProviderAsync('deepseek'),
     icon: 'DeepSeek',
+    apiKeyPage: 'https://platform.deepseek.com/api_keys',
   },
   {
     provider: 'grok',
     name: 'Grok (X.AI)',
-    models: ['grok-beta'],
+    models: getModelsForProviderAsync('grok'),
     icon: 'X',
+    apiKeyPage: 'https://console.x.ai',
   },
   {
     provider: 'huggingface',
     name: 'Hugging Face',
-    models: [
-      'meta-llama/Llama-2-7b-chat-hf',
-      'mistralai/Mistral-7B-Instruct-v0.1',
-      'google/flan-t5-xxl',
-    ],
+    models: getModelsForProviderAsync('huggingface'),
     icon: 'HuggingFace',
+    apiKeyPage: 'https://huggingface.co/settings/tokens',
   },
   {
     provider: 'openai-compatible',

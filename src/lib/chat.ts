@@ -4,6 +4,7 @@ import { useConversationStore } from '@/stores/conversationStore'
 import { getDefaultAgent } from '@/stores/agentStore'
 import { buildPinnedContextForChat } from '@/stores/pinnedMessageStore'
 import { TraceService } from '@/features/traces/trace-service'
+import { ModelInfo } from '@/features/traces/types'
 import { WorkflowOrchestrator } from '@/lib/orchestrator'
 import { Agent, Message } from '@/types'
 import { errorToast } from '@/lib/toast'
@@ -17,8 +18,14 @@ import {
   defaultExecutor,
   registerKnowledgeTools,
   areKnowledgeToolsRegistered,
+  registerMathTools,
+  areMathToolsRegistered,
+  registerCodeTools,
+  areCodeToolsRegistered,
 } from '@/lib/tool-executor'
 import { KNOWLEDGE_TOOL_DEFINITIONS } from '@/lib/knowledge-tools'
+import { MATH_TOOL_DEFINITIONS } from '@/lib/math-tools'
+import { CODE_TOOL_DEFINITIONS } from '@/lib/code-tools'
 
 // ============================================================================
 // Tool Helpers
@@ -33,8 +40,12 @@ const MAX_TOOL_ITERATIONS = 10
  * This ensures pre-existing agents and new agents alike can use tools.
  */
 function getAgentToolDefinitions(_agent: Agent): ToolDefinition[] {
-  // Return all knowledge tools - they are universally available to all agents
-  return Object.values(KNOWLEDGE_TOOL_DEFINITIONS)
+  // Return all knowledge, math, and code tools - they are universally available to all agents
+  return [
+    ...Object.values(KNOWLEDGE_TOOL_DEFINITIONS),
+    ...Object.values(MATH_TOOL_DEFINITIONS),
+    ...Object.values(CODE_TOOL_DEFINITIONS),
+  ]
 }
 
 /**
@@ -74,6 +85,8 @@ async function executeToolCalls(
   context: {
     agentId?: string
     conversationId?: string
+    taskId?: string
+    primaryModel?: ModelInfo
   },
 ): Promise<{
   results: Array<{ toolCallId: string; result: string }>
@@ -84,14 +97,24 @@ async function executeToolCalls(
     registerKnowledgeTools()
   }
 
+  // Ensure math tools are registered
+  if (!areMathToolsRegistered()) {
+    registerMathTools()
+  }
+
+  // Ensure code tools are registered
+  if (!areCodeToolsRegistered()) {
+    registerCodeTools()
+  }
+
   // Create a trace for the tool execution batch
   const trace = TraceService.startTrace({
     name: `Tools: ${toolCalls.map((tc) => tc.function.name).join(', ')}`,
     agentId: context.agentId,
     conversationId: context.conversationId,
-    input: toolCalls
-      .map((tc) => `${tc.function.name}(${tc.function.arguments})`)
-      .join('\n'),
+    taskId: context.taskId,
+    primaryModel: context.primaryModel,
+    input: toolCalls.map((tc) => tc.function.arguments).join('\n'),
   })
 
   const results: Array<{ toolCallId: string; result: string }> = []
@@ -102,6 +125,7 @@ async function executeToolCalls(
         context: {
           agentId: context.agentId,
           conversationId: context.conversationId,
+          taskId: context.taskId,
         },
         traceId: trace.id,
       })
@@ -115,7 +139,7 @@ async function executeToolCalls(
     // End trace with success
     await TraceService.endTrace(trace.id, {
       status: 'completed',
-      output: results.map((r) => `${r.toolCallId}: ${r.result}`).join('\n'),
+      output: results.map((r) => r.result).join('\n'),
     })
   } catch (error) {
     // End trace with error
@@ -473,6 +497,12 @@ export const submitChat = async (
       const { results: toolResults } = await executeToolCalls(toolCalls, {
         agentId: agent.id,
         conversationId: conversation.id,
+        primaryModel: {
+          provider: config.provider,
+          model: config.model,
+          temperature: config.temperature,
+          maxTokens: config.maxTokens,
+        },
       })
 
       console.log('🔧 Tool results:', toolResults)

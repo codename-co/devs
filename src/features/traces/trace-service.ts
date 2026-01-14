@@ -371,6 +371,7 @@ export class TraceService {
     conversationId?: string
     taskId?: string
     sessionId?: string
+    primaryModel?: ModelInfo
     metadata?: Record<string, unknown>
     tags?: string[]
     input?: string
@@ -385,6 +386,7 @@ export class TraceService {
       conversationId: options.conversationId,
       taskId: options.taskId,
       sessionId: options.sessionId,
+      primaryModel: options.primaryModel,
       metadata: options.metadata,
       tags: options.tags,
       input: options.input,

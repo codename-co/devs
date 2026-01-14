@@ -110,8 +110,17 @@ export const fr: I18n = {
   'Time-Boxed': 'Temps limité',
   Hybrid: 'Hybride',
   'Select a model': 'Sélectionner un modèle',
-  'Add a model': 'Ajouter un modèle',
+  'Add LLM provider': 'Ajouter un fournisseur LLM',
   '{n} models': '{n} modèles',
+  'Search models...': 'Rechercher des modèles...',
+  'No models found': 'Aucun modèle trouvé',
+
+  // Model capabilities
+  Fast: 'Rapide',
+  'Low cost': 'Économique',
+  'High cost': 'Coût élevé',
+  Vision: 'Vision',
+  Tools: 'Outils',
 
   // Service worker
   'New features are waiting': 'De nouvelles fonctionnalités vous attendent',
@@ -477,6 +486,8 @@ export const fr: I18n = {
   'Message pinned successfully': 'Message épinglé avec succès',
   'Copy the answer': 'Copier la réponse',
   'Answer copied to clipboard': 'Réponse copiée dans le presse-papiers',
+  'Copy prompt': 'Copier le prompt',
+  'Prompt copied to clipboard': 'Prompt copié dans le presse-papiers',
   'Add a description to help you remember why this message is important.':
     'Ajoutez une description pour vous aider à vous souvenir pourquoi ce message est important.',
   Description: 'Description',
@@ -715,4 +726,9 @@ export const fr: I18n = {
   History: 'Historique',
   Clear: 'Effacer',
   'Current Session': 'Session actuelle',
+
+  // Agent Tools Picker
+  Calculate: 'Calculer',
+  'Evaluate mathematical expressions with support for variables and Math functions':
+    'Évaluer des expressions mathématiques avec prise en charge des variables et des fonctions Math',
 } as const

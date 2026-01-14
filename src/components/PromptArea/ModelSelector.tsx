@@ -7,15 +7,18 @@ import {
   DropdownItem,
   DropdownSection,
   Tooltip,
+  Input,
 } from '@heroui/react'
-import { useNavigate } from 'react-router-dom'
 
 import { Icon } from '../Icon'
+import { useAddLLMProviderModal } from '../AddLLMProviderModal'
 import { useModelPicker } from './useModelPicker'
 import { PROVIDERS, getModelIds } from '@/pages/Settings/providers'
+import { loadModelRegistry, getModelCapabilities } from '@/lib/llm/models'
 
 import { type Lang, useI18n } from '@/i18n'
-import type { LLMProvider, Credential } from '@/types'
+import type { LLMProvider, Credential, ModelCapabilities } from '@/types'
+import type { IconName } from '@/lib/types'
 
 interface ModelSelectorProps {
   lang: Lang
@@ -28,8 +31,8 @@ interface ProviderWithModels {
 }
 
 export function ModelSelector({ lang }: ModelSelectorProps) {
-  const navigate = useNavigate()
-  const { t, url } = useI18n(lang as any)
+  const { t } = useI18n(lang as any)
+  const openAddProviderModal = useAddLLMProviderModal((state) => state.open)
 
   const {
     credentials,
@@ -53,6 +56,15 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
     useState<ProviderWithModels | null>(null)
   // Track if models have been resolved to avoid repeated fetches
   const [modelsResolved, setModelsResolved] = useState(false)
+  // Search query for filtering models
+  const [modelSearchQuery, setModelSearchQuery] = useState('')
+  // Track if model registry has been loaded
+  const [registryLoaded, setRegistryLoaded] = useState(false)
+
+  // Load model registry on mount
+  useEffect(() => {
+    loadModelRegistry().then(() => setRegistryLoaded(true))
+  }, [])
 
   // Get provider configurations with their models
   const providerConfigs = useMemo(() => PROVIDERS(lang, t), [lang, t])
@@ -79,7 +91,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
 
   // Build provider data with their available models
   const providersWithModels = useMemo((): ProviderWithModels[] => {
-    return credentials.map((cred) => {
+    const providers = credentials.map((cred) => {
       const config = providerConfigs.find((p) => p.provider === cred.provider)
       const configModels = config?.models
       const fallbackModels = Array.isArray(configModels)
@@ -91,7 +103,81 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
         providerName: config?.name || cred.provider,
       } as ProviderWithModels
     })
+    // Sort to put 'local' provider first
+    return providers.sort((a, b) => {
+      if (a.credential.provider === 'local') return -1
+      if (b.credential.provider === 'local') return 1
+      return 0
+    })
   }, [credentials, providerConfigs, resolvedModels])
+
+  // Render capability icons for a model (compact view for endContent)
+  const renderCapabilityIcons = useCallback(
+    (provider: LLMProvider, modelId: string) => {
+      if (!registryLoaded) return null
+      const caps = getModelCapabilities(provider, modelId)
+      if (!caps) return null
+
+      const iconConfig: {
+        key: keyof ModelCapabilities
+        icon: IconName
+        className: string
+        tooltip: string
+      }[] = [
+        {
+          key: 'fast',
+          icon: 'Timer',
+          className: 'text-warning',
+          tooltip: t('Fast'),
+        },
+        {
+          key: 'lowCost',
+          icon: 'PiggyBank',
+          className: 'text-success',
+          tooltip: t('Low cost'),
+        },
+        {
+          key: 'highCost',
+          icon: 'PiggyBank',
+          className: 'text-danger',
+          tooltip: t('High cost'),
+        },
+        {
+          key: 'thinking',
+          icon: 'Brain',
+          className: 'text-secondary',
+          tooltip: t('Thinking'),
+        },
+        {
+          key: 'vision',
+          icon: 'MediaImage',
+          className: 'text-primary',
+          tooltip: t('Vision'),
+        },
+        {
+          key: 'tools',
+          icon: 'Puzzle',
+          className: 'text-default-400',
+          tooltip: t('Tools'),
+        },
+      ]
+
+      const icons = iconConfig
+        .filter(({ key }) => caps[key])
+        .map(({ key, icon, className, tooltip }) => (
+          <Tooltip key={key} content={tooltip} size="sm">
+            <span className="cursor-help">
+              <Icon name={icon} size="sm" className={`w-3 h-3 ${className}`} />
+            </span>
+          </Tooltip>
+        ))
+
+      return icons.length > 0 ? (
+        <div className="flex gap-1 items-center shrink-0">{icons}</div>
+      ) : null
+    },
+    [registryLoaded, t],
+  )
 
   const handleProviderSelect = useCallback(
     (credential: Credential, models: string[]) => {
@@ -124,6 +210,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
     if (!isOpen) {
       setViewMode('providers')
       setViewingProvider(null)
+      setModelSearchQuery('')
     }
   }, [])
 
@@ -188,16 +275,25 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
             }
           }}
         >
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-0.5">
             <span>{providerName}</span>
             {isSelected && currentModelForProvider ? (
-              <span className="text-xs text-default-500">
-                {displayModelName(currentModelForProvider)}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-default-500">
+                  {displayModelName(currentModelForProvider)}
+                </span>
+                {renderCapabilityIcons(
+                  credential.provider,
+                  currentModelForProvider,
+                )}
+              </div>
             ) : singleModel && !hasMultipleModels ? (
-              <span className="text-xs text-default-500">
-                {displayModelName(singleModel)}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-default-500">
+                  {displayModelName(singleModel)}
+                </span>
+                {renderCapabilityIcons(credential.provider, singleModel)}
+              </div>
             ) : hasMultipleModels ? (
               <span className="text-xs text-default-500">
                 {t('{n} models', { n: models.length })}
@@ -217,111 +313,150 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
       viewingProvider.credential.provider,
     )
 
-    return viewingProvider.models.map((model) => {
-      const isSelected = currentModelForProvider === model
+    // Filter models based on search query
+    const filteredModels = modelSearchQuery
+      ? viewingProvider.models.filter((model) =>
+          model.toLowerCase().includes(modelSearchQuery.toLowerCase()),
+        )
+      : viewingProvider.models
 
-      return (
-        <DropdownItem
-          key={model}
-          startContent={
-            isSelected ? (
-              <Icon name="Check" size="sm" />
-            ) : (
-              <span className="w-4" />
-            )
-          }
-          textValue={model}
-          closeOnSelect
-          onPress={() => {
-            handleProviderSelect(
-              viewingProvider.credential,
-              viewingProvider.models,
-            )
-            handleModelSelect(viewingProvider.credential.provider, model)
-          }}
-        >
-          {displayModelName(model)}
-        </DropdownItem>
-      )
-    })
+    const showSearch = viewingProvider.models.length > 10
+
+    return (
+      <>
+        {showSearch && (
+          <DropdownItem
+            key="search"
+            isReadOnly
+            textValue="Search"
+            className="cursor-default"
+          >
+            <Input
+              size="sm"
+              placeholder={t('Search models...')}
+              value={modelSearchQuery}
+              onValueChange={setModelSearchQuery}
+              startContent={
+                <Icon name="Search" size="sm" className="text-default-400" />
+              }
+              classNames={{
+                inputWrapper: 'h-8',
+              }}
+              autoFocus
+            />
+          </DropdownItem>
+        )}
+        {filteredModels.map((model) => {
+          const isSelected = currentModelForProvider === model
+
+          return (
+            <DropdownItem
+              key={model}
+              startContent={
+                isSelected ? (
+                  <Icon name="Check" size="sm" />
+                ) : (
+                  <span className="w-4" />
+                )
+              }
+              endContent={renderCapabilityIcons(
+                viewingProvider.credential.provider,
+                model,
+              )}
+              textValue={model}
+              closeOnSelect
+              onPress={() => {
+                handleProviderSelect(
+                  viewingProvider.credential,
+                  viewingProvider.models,
+                )
+                handleModelSelect(viewingProvider.credential.provider, model)
+              }}
+            >
+              {displayModelName(model)}
+            </DropdownItem>
+          )
+        })}
+        {filteredModels.length === 0 && (
+          <DropdownItem key="no-results" isReadOnly textValue="No results">
+            <span className="text-default-400 text-sm">
+              {t('No models found')}
+            </span>
+          </DropdownItem>
+        )}
+      </>
+    )
   }
 
   return (
-    <Tooltip
-      content={t('Select a model')}
-      classNames={{
-        base: 'pointer-events-none',
-      }}
+    <Dropdown
+      placement="bottom-start"
+      className="bg-white dark:bg-default-50 dark:text-white"
+      onOpenChange={handleDropdownOpenChange}
     >
-      <Dropdown
-        placement="bottom-start"
-        className="bg-white dark:bg-default-50 dark:text-white"
-        onOpenChange={handleDropdownOpenChange}
-      >
-        <DropdownTrigger>
-          <Button
-            radius="full"
-            variant="light"
-            size="sm"
-            startContent={
-              <Icon
-                name={getProviderIcon(selectedProvider?.provider || 'custom')}
-                size="sm"
-                className="hidden md:flex text-default-500 dark:text-default-600"
-              />
-            }
-          >
-            <span className="text-xs truncate max-w-22 md:max-w-48">
-              {displayText}
-            </span>
-          </Button>
-        </DropdownTrigger>
-        <DropdownMenu
-          aria-label="LLM Provider and Model selection"
-          selectionMode="none"
-          closeOnSelect={false}
-          className="max-h-80 overflow-y-auto max-w-64"
+      <DropdownTrigger>
+        <Button
+          radius="full"
+          variant="light"
+          size="sm"
+          startContent={
+            <Icon
+              name={getProviderIcon(selectedProvider?.provider || 'custom')}
+              size="sm"
+              className="hidden md:flex text-default-500 dark:text-default-600"
+            />
+          }
         >
-          {viewMode === 'providers' ? (
-            <>
-              <DropdownSection showDivider>
-                {renderProviderItems()}
-              </DropdownSection>
-              <DropdownSection>
-                <DropdownItem
-                  key="settings"
-                  startContent={<Icon name="Plus" size="sm" />}
-                  textValue={t('Add a model')}
-                  onPress={() => navigate(url('/settings#llm-models'))}
-                  closeOnSelect
-                >
-                  {t('Add a model')}
-                </DropdownItem>
-              </DropdownSection>
-            </>
-          ) : (
-            <>
-              <DropdownSection showDivider>
-                <DropdownItem
-                  key="back"
-                  startContent={<Icon name="ArrowLeft" size="sm" />}
-                  textValue={t('Back')}
-                  closeOnSelect={false}
-                  onPress={() => {
-                    setViewMode('providers')
-                    setViewingProvider(null)
-                  }}
-                >
-                  <span className="font-medium">
-                    {viewingProvider?.providerName}
-                  </span>
-                </DropdownItem>
-              </DropdownSection>
-              <DropdownSection>{renderModelItems()}</DropdownSection>
-            </>
-          )}
-        </DropdownMenu>
-      </Dropdown>
-    </Tooltip>
+          <span className="text-xs truncate max-w-22 md:max-w-48">
+            {displayText}
+          </span>
+        </Button>
+      </DropdownTrigger>
+      <DropdownMenu
+        aria-label="LLM Provider and Model selection"
+        selectionMode="none"
+        closeOnSelect={false}
+        className="max-h-80 overflow-y-auto w-64"
+      >
+        {viewMode === 'providers' ? (
+          <>
+            <DropdownSection showDivider>
+              {renderProviderItems()}
+            </DropdownSection>
+            <DropdownSection>
+              <DropdownItem
+                key="settings"
+                startContent={<Icon name="Plus" size="sm" />}
+                textValue={t('Add LLM provider')}
+                onPress={openAddProviderModal}
+                closeOnSelect
+              >
+                {t('Add LLM provider')}
+              </DropdownItem>
+            </DropdownSection>
+          </>
+        ) : (
+          <>
+            <DropdownSection showDivider>
+              <DropdownItem
+                key="back"
+                startContent={<Icon name="ArrowLeft" size="sm" />}
+                textValue={t('Back')}
+                closeOnSelect={false}
+                onPress={() => {
+                  setViewMode('providers')
+                  setViewingProvider(null)
+                }}
+              >
+                <span className="font-medium">
+                  {viewingProvider?.providerName}
+                </span>
+              </DropdownItem>
+            </DropdownSection>
+            <DropdownSection>{renderModelItems()}</DropdownSection>
+          </>
+        )}
+      </DropdownMenu>
+    </Dropdown>
   )
 }

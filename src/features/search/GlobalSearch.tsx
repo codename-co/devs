@@ -625,7 +625,7 @@ export function GlobalSearch() {
 }
 
 /**
- * Hook to register global Cmd+K keyboard shortcut
+ * Hook to register global Cmd+K and Cmd+Shift+P keyboard shortcuts
  */
 export function useGlobalSearchShortcut(): void {
   const open = useSearchStore((state) => state.open)
@@ -633,7 +633,11 @@ export function useGlobalSearchShortcut(): void {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Cmd+K (Mac) or Ctrl+K (Windows/Linux)
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      // Cmd+Shift+P (Mac) or Ctrl+Shift+P (Windows/Linux)
+      if (
+        ((e.metaKey || e.ctrlKey) && e.key === 'k') ||
+        ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'p')
+      ) {
         e.preventDefault()
         open()
       }

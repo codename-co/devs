@@ -9,26 +9,19 @@ import {
   Checkbox,
   Chip,
   Input,
-  Link,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   Select,
   SelectItem,
   Tooltip,
-  useDisclosure,
   Switch,
 } from '@heroui/react'
 import { useNavigate } from 'react-router-dom'
 import { useI18n, useUrl, languages, type Lang } from '@/i18n'
-import type { IconName } from '@/lib/types'
 import { LLMProvider, Credential, LangfuseConfig } from '@/types'
 import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
 import { Container, Icon, Title } from '@/components'
 import { EasySetupExport } from '@/components/EasySetup/EasySetupExport'
+import { useAddLLMProviderModal } from '@/components/AddLLMProviderModal'
 import { SyncSettings } from '@/features/sync'
 import { errorToast, successToast } from '@/lib/toast'
 import { userSettings } from '@/stores/userStore'
@@ -51,20 +44,15 @@ interface SettingsContentProps {
 export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
   const { lang, t, url } = useI18n(localI18n)
   const navigate = useNavigate()
-  const { isOpen, onOpen, onOpenChange } = useDisclosure()
+  const openAddProviderModal = useAddLLMProviderModal((state) => state.open)
   const { handleImageFile, setBackgroundImage } = useBackgroundImage()
 
   // Use the LLM Model Store
   const credentials = useLLMModelStore((state) => state.credentials)
   const loadCredentials = useLLMModelStore((state) => state.loadCredentials)
-  const addCredential = useLLMModelStore((state) => state.addCredential)
   const deleteCredential = useLLMModelStore((state) => state.deleteCredential)
   const setAsDefault = useLLMModelStore((state) => state.setAsDefault)
 
-  const [selectedProvider, setSelectedProvider] = useState<LLMProvider>()
-  const [apiKey, setApiKey] = useState('')
-  const [baseUrl, setBaseUrl] = useState('')
-  const [isValidating, setIsValidating] = useState(false)
   const [masterPassword, setMasterPassword] = useState('')
   const [isUnlocking, setIsUnlocking] = useState(false)
   const [masterKey, setMasterKey] = useState<string | null>(null)
@@ -312,61 +300,6 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
     successToast(t('Provider set as default'))
   }
 
-  const handleAddCredential = async () => {
-    if (!selectedProvider) {
-      return
-    }
-
-    const providerConfig = PROVIDERS(lang, t).find(
-      (p) => p.provider === selectedProvider,
-    )
-
-    // Check if provider is already configured
-    const existingCred = credentials.find(
-      (c) => c.provider === selectedProvider,
-    )
-    if (existingCred) {
-      errorToast(t('This provider is already configured'))
-      return
-    }
-
-    if (
-      (!apiKey &&
-        !providerConfig?.noApiKey &&
-        !providerConfig?.optionalApiKey) ||
-      (providerConfig?.requiresBaseUrl && !baseUrl)
-    ) {
-      errorToast(t('Please fill in all required fields'))
-      return
-    }
-
-    setIsValidating(true)
-    try {
-      const keyToEncrypt =
-        apiKey ||
-        (providerConfig?.noApiKey || providerConfig?.optionalApiKey
-          ? `${selectedProvider}-no-key`
-          : '')
-
-      const success = await addCredential(
-        selectedProvider,
-        keyToEncrypt,
-        undefined, // model is now selected separately
-        baseUrl,
-      )
-
-      if (success) {
-        setApiKey('')
-        setBaseUrl('')
-        onOpenChange()
-      }
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setIsValidating(false)
-    }
-  }
-
   const handleDeleteCredential = async (id: string) => {
     await deleteCredential(id)
   }
@@ -386,20 +319,9 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
     }
   }
 
-  const resetForm = () => {
-    setSelectedProvider(undefined)
-    setApiKey('')
-    setBaseUrl('')
-  }
-
   const handleModalOpen = () => {
-    resetForm()
-    onOpen()
+    openAddProviderModal()
   }
-
-  const providerConfig = PROVIDERS(lang, t).find(
-    (p) => p.provider === selectedProvider,
-  )
 
   const findProvider = (provider: LLMProvider) =>
     PROVIDERS(lang, t).find((p) => p.provider === provider)
@@ -943,140 +865,6 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
           />
         </Accordion>
       </Container>
-
-      <Modal
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
-        scrollBehavior="inside"
-      >
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader>{t('Add LLM Provider')}</ModalHeader>
-              <ModalBody>
-                {!selectedProvider ? (
-                  <p className="gap-2 flex flex-wrap">
-                    {PROVIDERS(lang, t).map((provider) => (
-                      <Card
-                        key={provider.provider}
-                        className="inline-flex min-w-[8em] w-[calc(50%-0.25rem)] sm:w-auto h-[5em] flex-col hover:bg-primary-50"
-                        isPressable
-                        onPress={() =>
-                          setSelectedProvider(provider.provider as LLMProvider)
-                        }
-                      >
-                        <CardBody className="flex flex-col items-center justify-center gap-2 p-3">
-                          <Icon
-                            name={provider.icon as IconName}
-                            className="h-5 w-5"
-                          />
-                          <span className="text-sm">{provider.name}</span>
-                        </CardBody>
-                      </Card>
-                    ))}
-                  </p>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Button
-                        isIconOnly
-                        size="sm"
-                        variant="light"
-                        onPress={() => setSelectedProvider(undefined)}
-                      >
-                        <Icon name="NavArrowLeft" className="h-4 w-4" />
-                      </Button>
-                      <Icon
-                        name={providerConfig?.icon as IconName}
-                        className="h-5 w-5"
-                      />
-                      <span className="font-medium">
-                        {providerConfig?.name}
-                      </span>
-                    </div>
-
-                    {providerConfig?.provider === 'ollama' && (
-                      <Input
-                        label={t('Server URL')}
-                        placeholder={providerConfig?.apiKeyPlaceholder}
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
-                        description={t('URL of your Ollama server')}
-                      />
-                    )}
-
-                    {providerConfig?.requiresBaseUrl && (
-                      <Input
-                        label={t('Base URL')}
-                        placeholder="https://api.example.com/v1"
-                        value={baseUrl}
-                        onChange={(e) => setBaseUrl(e.target.value)}
-                        isRequired
-                      />
-                    )}
-
-                    {!providerConfig?.noApiKey &&
-                      providerConfig?.provider !== 'ollama' && (
-                        <Input
-                          label={t('API Key')}
-                          placeholder={
-                            providerConfig?.apiKeyPlaceholder || 'sk-...'
-                          }
-                          type="password"
-                          value={apiKey}
-                          onChange={(e) => setApiKey(e.target.value)}
-                          isRequired={!providerConfig?.optionalApiKey}
-                          description={
-                            providerConfig?.apiKeyPage ? (
-                              <>
-                                {t('Get your API key from')}{' '}
-                                <Link
-                                  href={providerConfig.apiKeyPage}
-                                  target="_blank"
-                                  size="sm"
-                                >
-                                  {providerConfig.apiKeyPage}
-                                </Link>
-                              </>
-                            ) : undefined
-                          }
-                        />
-                      )}
-
-                    {providerConfig?.moreDetails?.()}
-
-                    <Alert variant="faded" className="mt-4">
-                      <p className="text-sm">
-                        {t(
-                          'Once configured, all models from this provider will be available in the model selector.',
-                        )}
-                      </p>
-                    </Alert>
-                  </div>
-                )}
-              </ModalBody>
-              <ModalFooter>
-                <Button variant="light" onPress={onClose}>
-                  {t('Cancel')}
-                </Button>
-                <Button
-                  color="primary"
-                  onPress={handleAddCredential}
-                  isLoading={isValidating}
-                  isDisabled={
-                    (!apiKey &&
-                      !providerConfig?.noApiKey &&
-                      !providerConfig?.optionalApiKey) ||
-                    (providerConfig?.requiresBaseUrl && !baseUrl)
-                  }
-                >
-                  {t('Validate & Add')}
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
     </>
   )
 }
