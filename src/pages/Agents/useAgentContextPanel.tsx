@@ -1034,7 +1034,10 @@ const AgentContextTabs = ({
  */
 const KNOWLEDGE_TOOL_INFO: Record<
   string,
-  { icon: 'PageSearch' | 'Document' | 'Folder' | 'Page' | 'MathBook' | 'Puzzle'; label: string }
+  {
+    icon: 'PageSearch' | 'Document' | 'Folder' | 'Page' | 'MathBook' | 'Puzzle'
+    label: string
+  }
 > = {
   search_knowledge: {
     icon: 'PageSearch',

@@ -96,23 +96,20 @@ export function useModelPicker({
     return PROVIDER_ICONS[provider] || 'Server'
   }, [])
 
-  const displayModelName = useCallback(
-    (model: string | undefined): string => {
-      if (!model) return ''
+  const displayModelName = useCallback((model: string | undefined): string => {
+    if (!model) return ''
 
-      // Handle common model name patterns and make them more readable
-      // Remove provider prefixes and common separators
-      return model
-        .replace(/.*\//, '') // Remove everything before last slash
-        .replace(/\s*\([^)]*\)\s*/g, ' ') // Remove any content in parentheses
-        .replace(/[_-]?\d{8}(?!\w)/g, '') // Remove date suffixes like -20240115 or _20240115
-        .replace(/(\d)[_-](\d)/g, '$1.$2') // Convert version separators to dots (e.g., 4-5 → 4.5)
-        .replace(/[_-]+/g, ' ') // Replace remaining underscores and hyphens with space
-        .replace(/\s+/g, ' ') // Collapse multiple spaces
-        .trim()
-    },
-    [],
-  )
+    // Handle common model name patterns and make them more readable
+    // Remove provider prefixes and common separators
+    return model
+      .replace(/.*\//, '') // Remove everything before last slash
+      .replace(/\s*\([^)]*\)\s*/g, ' ') // Remove any content in parentheses
+      .replace(/[_-]?\d{8}(?!\w)/g, '') // Remove date suffixes like -20240115 or _20240115
+      .replace(/(\d)[_-](\d)/g, '$1.$2') // Convert version separators to dots (e.g., 4-5 → 4.5)
+      .replace(/[_-]+/g, ' ') // Replace remaining underscores and hyphens with space
+      .replace(/\s+/g, ' ') // Collapse multiple spaces
+      .trim()
+  }, [])
 
   const getSelectedModelForProvider = useCallback(
     (provider: LLMProvider): string | null => {

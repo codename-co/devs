@@ -8,11 +8,7 @@
  * @module lib/math-tools/service
  */
 
-import type {
-  CalculateParams,
-  CalculateResult,
-  CalculateError,
-} from './types'
+import type { CalculateParams, CalculateResult, CalculateError } from './types'
 import {
   evaluateExpression,
   ExpressionSecurityError,

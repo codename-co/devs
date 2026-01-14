@@ -10,7 +10,11 @@ export * from './types'
 
 // Core modules
 export { OAuthGateway } from './oauth-gateway'
-export { ProviderRegistry, ProviderNotFoundError, ProviderLoadError } from './provider-registry'
+export {
+  ProviderRegistry,
+  ProviderNotFoundError,
+  ProviderLoadError,
+} from './provider-registry'
 export {
   BaseAppConnectorProvider,
   TokenDecryptionError,

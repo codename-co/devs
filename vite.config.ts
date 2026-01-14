@@ -124,7 +124,7 @@ export default defineConfig(({ mode }) => {
             ],
             // features
             battle: ['@/features/battle'],
-            connectors: ['@/features/connectors'],
+            // connectors removed - has cross-chunk circular dependencies with battle/sync
             live: ['@/features/live'],
             local: ['@/features/local-backup'],
             meeting: ['@/features/meeting-bot'],

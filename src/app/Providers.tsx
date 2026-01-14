@@ -101,7 +101,6 @@ function ProvidersInner({ children }: { children: React.ReactNode }) {
     }
 
     initializePlatform()
-     
   }, [])
 
   // Apply theme to document

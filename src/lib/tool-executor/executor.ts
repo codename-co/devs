@@ -52,14 +52,8 @@ import type {
   GetDocumentSummaryParams,
   GetDocumentSummaryResult,
 } from '@/lib/knowledge-tools/types'
-import {
-  calculate,
-  MATH_TOOL_DEFINITIONS,
-} from '@/lib/math-tools/service'
-import {
-  execute,
-  CODE_TOOL_DEFINITIONS,
-} from '@/lib/code-tools/service'
+import { calculate, MATH_TOOL_DEFINITIONS } from '@/lib/math-tools/service'
+import { execute, CODE_TOOL_DEFINITIONS } from '@/lib/code-tools/service'
 import type {
   CalculateParams,
   CalculateResult,

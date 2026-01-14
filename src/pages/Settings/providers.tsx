@@ -160,7 +160,10 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     provider: 'openai',
     name: 'OpenAI',
     models: getModelsForProviderAsync('openai').then((models) => [
-      { id: OpenAIProvider.DEFAULT_MODEL, capabilities: { vision: true, tools: true } },
+      {
+        id: OpenAIProvider.DEFAULT_MODEL,
+        capabilities: { vision: true, tools: true },
+      },
       ...models.filter((m) => m.id !== OpenAIProvider.DEFAULT_MODEL),
     ]),
     icon: 'OpenAI',
@@ -170,7 +173,10 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     provider: 'anthropic',
     name: 'Anthropic',
     models: getModelsForProviderAsync('anthropic').then((models) => [
-      { id: AnthropicProvider.DEFAULT_MODEL, capabilities: { vision: true, tools: true } },
+      {
+        id: AnthropicProvider.DEFAULT_MODEL,
+        capabilities: { vision: true, tools: true },
+      },
       ...models.filter((m) => m.id !== AnthropicProvider.DEFAULT_MODEL),
     ]),
     icon: 'Anthropic',
@@ -187,7 +193,10 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     provider: 'vertex-ai',
     name: 'Vertex AI',
     models: getModelsForProviderAsync('vertex-ai').then((models) => [
-      { id: VertexAIProvider.DEFAULT_MODEL, capabilities: { fast: true, vision: true, tools: true } },
+      {
+        id: VertexAIProvider.DEFAULT_MODEL,
+        capabilities: { fast: true, vision: true, tools: true },
+      },
       ...models.filter((m) => m.id !== VertexAIProvider.DEFAULT_MODEL),
     ]),
     icon: 'GoogleCloud',
