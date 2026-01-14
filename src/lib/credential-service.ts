@@ -1,5 +1,5 @@
 import { SecureStorage } from '@/lib/crypto'
-import { LLMConfig, Credential } from '@/types'
+import { LLMConfig, Credential, LLMProvider } from '@/types'
 import { errorToast } from './toast'
 import { useLLMModelStore } from '@/stores/llmModelStore'
 
@@ -8,7 +8,7 @@ export class CredentialService {
     credentialId: string,
   ): Promise<LLMConfig | null> {
     try {
-      const { credentials } = useLLMModelStore.getState()
+      const { credentials, selectedModels } = useLLMModelStore.getState()
       const credential = credentials.find((c) => c.id === credentialId)
       if (!credential) return null
 
@@ -29,9 +29,13 @@ export class CredentialService {
         salt,
       )
 
+      // Get the selected model for this provider
+      const model =
+        selectedModels[credential.provider] || credential.model || ''
+
       return {
         provider: credential.provider,
-        model: credential.model || '',
+        model,
         apiKey,
         baseUrl: credential.baseUrl,
       }
@@ -42,22 +46,41 @@ export class CredentialService {
   }
 
   static async getActiveCredential(
-    provider?: string,
+    provider?: LLMProvider,
   ): Promise<Credential | null> {
-    const { credentials, getSelectedCredential } = useLLMModelStore.getState()
+    const { getSelectedProvider, getCredentialForProvider } =
+      useLLMModelStore.getState()
 
     if (provider) {
-      return credentials.find((c) => c.provider === provider) || null
+      return getCredentialForProvider(provider)
     }
 
-    // Use the selected credential from the store
-    return getSelectedCredential()
+    // Use the selected provider from the store
+    return getSelectedProvider()
   }
 
-  static async getActiveConfig(provider?: string): Promise<LLMConfig | null> {
+  static async getActiveConfig(
+    provider?: LLMProvider,
+  ): Promise<LLMConfig | null> {
     const credential = await this.getActiveCredential(provider)
     if (!credential) return null
 
     return this.getDecryptedConfig(credential.id)
+  }
+
+  /**
+   * Get the currently selected model for a provider
+   */
+  static getSelectedModel(provider?: LLMProvider): string | null {
+    const { getSelectedModel } = useLLMModelStore.getState()
+    return getSelectedModel(provider)
+  }
+
+  /**
+   * Set the selected model for a provider
+   */
+  static setSelectedModel(provider: LLMProvider, model: string): void {
+    const { setSelectedModel } = useLLMModelStore.getState()
+    setSelectedModel(provider, model)
   }
 }

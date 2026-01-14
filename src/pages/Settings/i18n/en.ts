@@ -96,4 +96,7 @@ export const en = [
   'Enter model name manually',
   'Fetching available models...',
   'Enter the model name manually',
+  'models available',
+  'This provider is already configured',
+  'Once configured, all models from this provider will be available in the model selector.',
 ] as const

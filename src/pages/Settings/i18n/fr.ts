@@ -123,4 +123,8 @@ export const fr: I18n = {
   'Enter model name manually': 'Entrez le nom du modèle manuellement',
   'Fetching available models...': 'Récupération des modèles disponibles...',
   'Enter the model name manually': 'Entrez le nom du modèle manuellement',
+  'models available': 'modèles disponibles',
+  'This provider is already configured': 'Ce fournisseur est déjà configuré',
+  'Once configured, all models from this provider will be available in the model selector.':
+    'Une fois configuré, tous les modèles de ce fournisseur seront disponibles dans le sélecteur de modèle.',
 } as const

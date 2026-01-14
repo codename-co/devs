@@ -24,10 +24,9 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { useI18n, useUrl, languages, type Lang } from '@/i18n'
 import type { IconName } from '@/lib/types'
-import { LLMProvider, Credential, LangfuseConfig, LLMConfig } from '@/types'
+import { LLMProvider, Credential, LangfuseConfig } from '@/types'
 import { db } from '@/lib/db'
 import { SecureStorage } from '@/lib/crypto'
-import { LLMService } from '@/lib/llm'
 import { Container, Icon, Title } from '@/components'
 import { EasySetupExport } from '@/components/EasySetup/EasySetupExport'
 import { SyncSettings } from '@/features/sync'
@@ -64,16 +63,12 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
 
   const [selectedProvider, setSelectedProvider] = useState<LLMProvider>()
   const [apiKey, setApiKey] = useState('')
-  const [model, setModel] = useState('')
   const [baseUrl, setBaseUrl] = useState('')
   const [isValidating, setIsValidating] = useState(false)
   const [masterPassword, setMasterPassword] = useState('')
   const [isUnlocking, setIsUnlocking] = useState(false)
   const [masterKey, setMasterKey] = useState<string | null>(null)
   const [isRegeneratingKey, setIsRegeneratingKey] = useState(false)
-  const [availableModels, setAvailableModels] = useState<string[]>([])
-  const [isFetchingModels, setIsFetchingModels] = useState(false)
-  const [useManualModel, setUseManualModel] = useState(false)
   const [cacheInfo, setCacheInfo] = useState<CacheInfo | null>(null)
   const [isClearingCache, setIsClearingCache] = useState(false)
 
@@ -150,39 +145,6 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
       setIsClearingCache(false)
     }
   }
-
-  useEffect(() => {
-    if (selectedProvider) {
-      setModel('')
-      setAvailableModels([])
-      setUseManualModel(false)
-
-      if (selectedProvider === 'ollama') {
-        fetchAvailableModels('ollama', apiKey || undefined)
-      } else if (selectedProvider === 'local') {
-        fetchAvailableModels('local')
-      } else {
-        fetchAvailableModels(selectedProvider)
-      }
-    }
-  }, [selectedProvider])
-
-  useEffect(() => {
-    if (selectedProvider === 'ollama' && apiKey) {
-      fetchAvailableModels('ollama', apiKey)
-    }
-  }, [apiKey, selectedProvider])
-
-  useEffect(() => {
-    if (selectedProvider && baseUrl) {
-      const providerCfg = PROVIDERS(lang, t).find(
-        (p) => p.provider === selectedProvider,
-      )
-      if (providerCfg?.fetchModelsFromServer) {
-        fetchAvailableModels(selectedProvider, baseUrl, apiKey || undefined)
-      }
-    }
-  }, [baseUrl, selectedProvider, apiKey])
 
   const initializeSecurity = async () => {
     await SecureStorage.init()
@@ -359,11 +321,19 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
       (p) => p.provider === selectedProvider,
     )
 
+    // Check if provider is already configured
+    const existingCred = credentials.find(
+      (c) => c.provider === selectedProvider,
+    )
+    if (existingCred) {
+      errorToast(t('This provider is already configured'))
+      return
+    }
+
     if (
       (!apiKey &&
         !providerConfig?.noApiKey &&
         !providerConfig?.optionalApiKey) ||
-      !model ||
       (providerConfig?.requiresBaseUrl && !baseUrl)
     ) {
       errorToast(t('Please fill in all required fields'))
@@ -381,13 +351,12 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
       const success = await addCredential(
         selectedProvider,
         keyToEncrypt,
-        model,
+        undefined, // model is now selected separately
         baseUrl,
       )
 
       if (success) {
         setApiKey('')
-        setModel('')
         setBaseUrl('')
         onOpenChange()
       }
@@ -417,49 +386,10 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
     }
   }
 
-  const fetchAvailableModels = async (
-    provider: LLMProvider,
-    baseUrl?: string,
-    fetchApiKey?: string,
-  ) => {
-    const providerCfg = PROVIDERS(lang, t).find((p) => p.provider === provider)
-
-    if (provider !== 'ollama' && !providerCfg?.fetchModelsFromServer) {
-      const models = providerCfg?.models
-      const resolvedModels = models instanceof Promise ? await models : models
-      setAvailableModels(resolvedModels || [])
-      return
-    }
-
-    if (providerCfg?.fetchModelsFromServer && !baseUrl) {
-      setAvailableModels([])
-      return
-    }
-
-    setIsFetchingModels(true)
-    try {
-      const config: Partial<LLMConfig> = {}
-      if (baseUrl) config.baseUrl = baseUrl
-      if (fetchApiKey) config.apiKey = fetchApiKey
-      const models = await LLMService.getAvailableModels(provider, config)
-      setAvailableModels(models)
-      setUseManualModel(false)
-    } catch (error) {
-      console.error('Failed to fetch models:', error)
-      setAvailableModels([])
-      setUseManualModel(true)
-    } finally {
-      setIsFetchingModels(false)
-    }
-  }
-
   const resetForm = () => {
     setSelectedProvider(undefined)
     setApiKey('')
-    setModel('')
     setBaseUrl('')
-    setAvailableModels([])
-    setUseManualModel(false)
   }
 
   const handleModalOpen = () => {
@@ -483,6 +413,13 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
   }) => {
     const provider = findProvider(credential.provider)
     const isDefault = index === 0
+    const providerModels = provider?.models || []
+    const modelCount =
+      providerModels instanceof Promise
+        ? '...'
+        : Array.isArray(providerModels)
+          ? providerModels.length
+          : 0
 
     return (
       <Card
@@ -501,7 +438,9 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
                 </Chip>
               )}
             </div>
-            <p className="text-sm text-default-500">{credential.model}</p>
+            <p className="text-sm text-default-500">
+              {modelCount} {t('models available')}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -1104,68 +1043,15 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
                         />
                       )}
 
-                    {['ollama', 'local'].includes(String(selectedProvider)) && (
-                      <div className="space-y-2">
-                        {(isFetchingModels || availableModels.length === 0) &&
-                        !useManualModel ? (
-                          <Input
-                            label={t('Model Name')}
-                            placeholder={t('Enter model name manually')}
-                            value={model}
-                            onChange={(e) => setModel(e.target.value)}
-                            isRequired
-                            isDisabled={isFetchingModels}
-                            description={
-                              isFetchingModels
-                                ? t('Fetching available models...')
-                                : t('Enter the model name manually')
-                            }
-                          />
-                        ) : (
-                          <Select
-                            label={t('Available Models')}
-                            placeholder={t('Select a model')}
-                            value={model}
-                            onChange={(e) => setModel(e.target.value)}
-                            isRequired
-                            isLoading={isFetchingModels}
-                          >
-                            {availableModels.map((m) => (
-                              <SelectItem key={m} textValue={m}>
-                                {m}
-                              </SelectItem>
-                            ))}
-                          </Select>
-                        )}
-                      </div>
-                    )}
-                    {!['ollama', 'local', 'custom'].includes(
-                      String(selectedProvider),
-                    ) && (
-                      <Select
-                        label={t('Model')}
-                        placeholder={t('Select a model')}
-                        value={model}
-                        onChange={(e) => setModel(e.target.value)}
-                        isRequired
-                        isLoading={isFetchingModels}
-                      >
-                        {availableModels.map((m) => (
-                          <SelectItem key={m} textValue={m}>
-                            {m}
-                          </SelectItem>
-                        ))}
-                      </Select>
-                    )}
-                    {providerConfig?.provider === 'custom' && (
-                      <Input
-                        label={t('Custom Model Name')}
-                        placeholder={t('Enter model name')}
-                        value={model}
-                        onChange={(e) => setModel(e.target.value)}
-                      />
-                    )}
                     {providerConfig?.moreDetails?.()}
+
+                    <Alert variant="faded" className="mt-4">
+                      <p className="text-sm">
+                        {t(
+                          'Once configured, all models from this provider will be available in the model selector.',
+                        )}
+                      </p>
+                    </Alert>
                   </div>
                 )}
               </ModalBody>
@@ -1181,7 +1067,6 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
                     (!apiKey &&
                       !providerConfig?.noApiKey &&
                       !providerConfig?.optionalApiKey) ||
-                    !model ||
                     (providerConfig?.requiresBaseUrl && !baseUrl)
                   }
                 >

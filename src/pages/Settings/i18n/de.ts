@@ -123,4 +123,9 @@ export const de: I18n = {
   'Enter model name manually': 'Modellnamen manuell eingeben',
   'Fetching available models...': 'Verfügbare Modelle werden abgerufen...',
   'Enter the model name manually': 'Geben Sie den Modellnamen manuell ein',
+  'models available': 'Modelle verfügbar',
+  'This provider is already configured':
+    'Dieser Anbieter ist bereits konfiguriert',
+  'Once configured, all models from this provider will be available in the model selector.':
+    'Nach der Konfiguration werden alle Modelle dieses Anbieters im Modellselektor verfügbar sein.',
 } as const

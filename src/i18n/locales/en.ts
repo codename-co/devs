@@ -107,6 +107,7 @@ export const en = [
   'Hybrid',
   'Select a model',
   'Add a model',
+  '{n} models',
 
   // Service worker
   'New features are waiting',

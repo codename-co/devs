@@ -108,7 +108,7 @@ export const ar: I18n = {
   Hybrid: 'هجين',
   'Select a model': 'اختر نموذجاً',
   'Add a model': 'إضافة نموذج',
-
+  '{n} models': '{n} نماذج',
   // Service worker
   'New features are waiting': 'ميزات جديدة في الانتظار',
   '{product} v{version} is ready to be installed.':

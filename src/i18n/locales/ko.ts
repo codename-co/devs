@@ -106,6 +106,7 @@ export const ko: I18n = {
   Hybrid: '하이브리드',
   'Select a model': '모델 선택',
   'Add a model': '모델 추가',
+  '{n} models': '{n}개 모델',
 
   // Service worker
   'New features are waiting': '새로운 기능이 기다리고 있습니다',

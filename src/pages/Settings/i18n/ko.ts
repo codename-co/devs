@@ -119,4 +119,8 @@ export const ko: I18n = {
   'Enter model name manually': '모델 이름 수동 입력',
   'Fetching available models...': '사용 가능한 모델 가져오는 중...',
   'Enter the model name manually': '모델 이름을 수동으로 입력하세요',
+  'models available': '사용 가능한 모델',
+  'This provider is already configured': '이 제공업체는 이미 구성되어 있습니다',
+  'Once configured, all models from this provider will be available in the model selector.':
+    '구성 후 이 제공업체의 모든 모델을 모델 선택기에서 사용할 수 있습니다.',
 } as const

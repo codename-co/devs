@@ -121,4 +121,8 @@ export const es: I18n = {
   'Fetching available models...': 'Obteniendo modelos disponibles...',
   'Enter the model name manually':
     'Introduzca el nombre del modelo manualmente',
+  'models available': 'modelos disponibles',
+  'This provider is already configured': 'Este proveedor ya está configurado',
+  'Once configured, all models from this provider will be available in the model selector.':
+    'Una vez configurado, todos los modelos de este proveedor estarán disponibles en el selector de modelos.',
 } as const

@@ -108,6 +108,7 @@ export const es: I18n = {
   Hybrid: 'Híbrido',
   'Select a model': 'Seleccionar un modelo',
   'Add a model': 'Agregar un modelo',
+  '{n} models': '{n} modelos',
 
   // Service worker
   'New features are waiting': 'Nuevas funciones te están esperando',

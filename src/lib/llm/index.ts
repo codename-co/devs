@@ -25,6 +25,18 @@ export type {
 }
 export { hasToolCalls, isToolResultMessage, parseToolArguments } from './types'
 
+// Re-export model utilities
+export {
+  MODEL_REGISTRY,
+  getModelsForProvider,
+  getModelIdsForProvider,
+  getModel,
+  getModelCapabilities,
+  findModelsWithCapabilities,
+  findBestModel,
+  modelHasCapabilities,
+} from './models'
+
 export interface LLMMessageAttachment {
   type: 'image' | 'document' | 'text'
   name: string

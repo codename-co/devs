@@ -120,4 +120,8 @@ export const ar: I18n = {
   'Enter model name manually': 'أدخل اسم النموذج يدوياً',
   'Fetching available models...': 'جاري جلب النماذج المتاحة...',
   'Enter the model name manually': 'أدخل اسم النموذج يدوياً',
+  'models available': 'نماذج متاحة',
+  'This provider is already configured': 'هذا المزود مُعدّ بالفعل',
+  'Once configured, all models from this provider will be available in the model selector.':
+    'بمجرد التكوين، ستتوفر جميع نماذج هذا المزود في محدد النماذج.',
 } as const
