@@ -23,11 +23,7 @@ export type {
   FinishReason,
   TokenUsage,
 }
-export {
-  hasToolCalls,
-  isToolResultMessage,
-  parseToolArguments,
-} from './types'
+export { hasToolCalls, isToolResultMessage, parseToolArguments } from './types'
 
 export interface LLMMessageAttachment {
   type: 'image' | 'document' | 'text'
@@ -221,15 +217,18 @@ export class LLMService {
 
     try {
       const provider = this.getProvider(config.provider)
-      const response = await provider.chat(messages, config) as LLMResponseWithTools
+      const response = (await provider.chat(
+        messages,
+        config,
+      )) as LLMResponseWithTools
 
       // End span and trace with success
       await TraceService.endSpan(span.id, {
         status: 'completed',
         usage: response.usage,
-        output: { 
+        output: {
           content: response.content,
-          toolCalls: response.tool_calls?.map(tc => ({
+          toolCalls: response.tool_calls?.map((tc) => ({
             name: tc.function.name,
             arguments: JSON.parse(tc.function.arguments || '{}'),
           })),
@@ -237,7 +236,11 @@ export class LLMService {
       })
       await TraceService.endTrace(trace.id, {
         status: 'completed',
-        output: response.content || (response.tool_calls ? `[Tool calls: ${response.tool_calls.map(tc => tc.function.name).join(', ')}]` : ''),
+        output:
+          response.content ||
+          (response.tool_calls
+            ? `[Tool calls: ${response.tool_calls.map((tc) => tc.function.name).join(', ')}]`
+            : ''),
       })
 
       return response

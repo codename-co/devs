@@ -18,7 +18,14 @@
  */
 export interface JSONSchemaProperty {
   /** The data type of the property */
-  type: 'string' | 'number' | 'integer' | 'boolean' | 'array' | 'object' | 'null'
+  type:
+    | 'string'
+    | 'number'
+    | 'integer'
+    | 'boolean'
+    | 'array'
+    | 'object'
+    | 'null'
   /** Human-readable description for the LLM to understand the parameter */
   description?: string
   /** Enumeration of allowed values (for string types) */
@@ -369,7 +376,7 @@ export type InferToolArgs<T extends ToolDefinition> =
  * Type guard to check if a message contains tool calls.
  */
 export function hasToolCalls(
-  message: LLMMessageWithTools
+  message: LLMMessageWithTools,
 ): message is LLMMessageWithTools & { tool_calls: ToolCall[] } {
   return (
     message.role === 'assistant' &&
@@ -382,7 +389,7 @@ export function hasToolCalls(
  * Type guard to check if a message is a tool result.
  */
 export function isToolResultMessage(
-  message: LLMMessageWithTools
+  message: LLMMessageWithTools,
 ): message is LLMMessageWithTools & { role: 'tool'; tool_call_id: string } {
   return message.role === 'tool' && typeof message.tool_call_id === 'string'
 }
@@ -394,7 +401,7 @@ export function isToolResultMessage(
  * @template TArgs - Expected argument type
  */
 export function parseToolArguments<TArgs = Record<string, unknown>>(
-  toolCall: ToolCall
+  toolCall: ToolCall,
 ): ParsedToolCall<TArgs> | null {
   try {
     const args = JSON.parse(toolCall.function.arguments) as TArgs

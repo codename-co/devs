@@ -1,14 +1,15 @@
-import { LLMProviderInterface, LLMMessage, LLMResponseWithTools } from '../index'
+import {
+  LLMProviderInterface,
+  LLMMessage,
+  LLMResponseWithTools,
+} from '../index'
 import { LLMConfig } from '@/types'
 import {
   processAttachments,
   formatTextAttachmentContent,
   getUnsupportedDocumentMessage,
 } from '../attachment-processor'
-import {
-  ToolCall,
-  LLMConfigWithTools,
-} from '../types'
+import { ToolCall, LLMConfigWithTools } from '../types'
 
 export class OpenAIProvider implements LLMProviderInterface {
   protected baseUrl = 'https://api.openai.com/v1'
@@ -219,7 +220,10 @@ export class OpenAIProvider implements LLMProviderInterface {
     let buffer = ''
 
     // Accumulate tool calls from streaming deltas
-    const toolCallAccumulators: Map<number, { id: string; name: string; arguments: string }> = new Map()
+    const toolCallAccumulators: Map<
+      number,
+      { id: string; name: string; arguments: string }
+    > = new Map()
 
     while (true) {
       const { done, value } = await reader.read()
@@ -235,11 +239,13 @@ export class OpenAIProvider implements LLMProviderInterface {
           if (data === '[DONE]') {
             // If we accumulated tool calls, yield them as a special marker
             if (toolCallAccumulators.size > 0) {
-              const toolCalls = Array.from(toolCallAccumulators.values()).map(tc => ({
-                id: tc.id,
-                type: 'function' as const,
-                function: { name: tc.name, arguments: tc.arguments },
-              }))
+              const toolCalls = Array.from(toolCallAccumulators.values()).map(
+                (tc) => ({
+                  id: tc.id,
+                  type: 'function' as const,
+                  function: { name: tc.name, arguments: tc.arguments },
+                }),
+              )
               // Yield tool calls as JSON with special prefix
               yield `\n__TOOL_CALLS__${JSON.stringify(toolCalls)}`
             }
@@ -269,7 +275,8 @@ export class OpenAIProvider implements LLMProviderInterface {
                 const acc = toolCallAccumulators.get(index)!
                 if (tcDelta.id) acc.id = tcDelta.id
                 if (tcDelta.function?.name) acc.name = tcDelta.function.name
-                if (tcDelta.function?.arguments) acc.arguments += tcDelta.function.arguments
+                if (tcDelta.function?.arguments)
+                  acc.arguments += tcDelta.function.arguments
               }
             }
           } catch (e) {

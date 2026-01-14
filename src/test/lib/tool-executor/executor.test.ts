@@ -41,7 +41,7 @@ let executorModule: typeof import('@/lib/tool-executor/executor')
 function createToolDefinition(
   name: string,
   description = 'Test tool',
-  parameters: Record<string, JSONSchemaProperty> = {}
+  parameters: Record<string, JSONSchemaProperty> = {},
 ): ToolDefinition {
   return {
     type: 'function',
@@ -63,7 +63,7 @@ function createToolDefinition(
 function createToolCall(
   name: string,
   args: Record<string, unknown> = {},
-  id = `call-${Date.now()}`
+  id = `call-${Date.now()}`,
 ): ToolCall {
   return {
     id,
@@ -236,9 +236,15 @@ describe('Tool Executor', () => {
 
       it('should filter by tags', () => {
         const registry = new executorModule.KnowledgeToolRegistry()
-        registry.register(createToolDefinition('tool_1'), vi.fn(), { tags: ['knowledge'] })
-        registry.register(createToolDefinition('tool_2'), vi.fn(), { tags: ['custom'] })
-        registry.register(createToolDefinition('tool_3'), vi.fn(), { tags: ['knowledge', 'search'] })
+        registry.register(createToolDefinition('tool_1'), vi.fn(), {
+          tags: ['knowledge'],
+        })
+        registry.register(createToolDefinition('tool_2'), vi.fn(), {
+          tags: ['custom'],
+        })
+        registry.register(createToolDefinition('tool_3'), vi.fn(), {
+          tags: ['knowledge', 'search'],
+        })
 
         const definitions = registry.listDefinitions({ tags: ['knowledge'] })
 
@@ -249,10 +255,16 @@ describe('Tool Executor', () => {
 
       it('should filter by excludeTags', () => {
         const registry = new executorModule.KnowledgeToolRegistry()
-        registry.register(createToolDefinition('tool_1'), vi.fn(), { tags: ['safe'] })
-        registry.register(createToolDefinition('tool_2'), vi.fn(), { tags: ['dangerous'] })
+        registry.register(createToolDefinition('tool_1'), vi.fn(), {
+          tags: ['safe'],
+        })
+        registry.register(createToolDefinition('tool_2'), vi.fn(), {
+          tags: ['dangerous'],
+        })
 
-        const definitions = registry.listDefinitions({ excludeTags: ['dangerous'] })
+        const definitions = registry.listDefinitions({
+          excludeTags: ['dangerous'],
+        })
 
         expect(definitions.length).toBe(1)
         expect(definitions[0].function.name).toBe('tool_1')
@@ -260,10 +272,16 @@ describe('Tool Executor', () => {
 
       it('should filter by includeConfirmationRequired', () => {
         const registry = new executorModule.KnowledgeToolRegistry()
-        registry.register(createToolDefinition('safe_tool'), vi.fn(), { requiresConfirmation: false })
-        registry.register(createToolDefinition('risky_tool'), vi.fn(), { requiresConfirmation: true })
+        registry.register(createToolDefinition('safe_tool'), vi.fn(), {
+          requiresConfirmation: false,
+        })
+        registry.register(createToolDefinition('risky_tool'), vi.fn(), {
+          requiresConfirmation: true,
+        })
 
-        const definitions = registry.listDefinitions({ includeConfirmationRequired: false })
+        const definitions = registry.listDefinitions({
+          includeConfirmationRequired: false,
+        })
 
         expect(definitions.length).toBe(1)
         expect(definitions[0].function.name).toBe('safe_tool')
@@ -342,7 +360,7 @@ describe('Tool Executor', () => {
         }
         expect(handler).toHaveBeenCalledWith(
           { input: 'value' },
-          expect.any(Object)
+          expect.any(Object),
         )
       })
 
@@ -366,7 +384,7 @@ describe('Tool Executor', () => {
           expect.objectContaining({
             agentId: 'agent-123',
             conversationId: 'conv-456',
-          })
+          }),
         )
       })
 
@@ -481,14 +499,15 @@ describe('Tool Executor', () => {
         })
         registry.register(createToolDefinition('slow_tool'), handler)
 
-        const result = await executor.execute(
-          createToolCall('slow_tool'),
-          { timeout: 30 }
-        )
+        const result = await executor.execute(createToolCall('slow_tool'), {
+          timeout: 30,
+        })
 
         expect(result.success).toBe(false)
         if (!result.success) {
-          expect(['timeout', 'aborted', 'execution']).toContain(result.errorType)
+          expect(['timeout', 'aborted', 'execution']).toContain(
+            result.errorType,
+          )
         }
       }, 10000)
 
@@ -511,10 +530,9 @@ describe('Tool Executor', () => {
         // Abort almost immediately
         setTimeout(() => abortController.abort(), 10)
 
-        const result = await executor.execute(
-          createToolCall('test_tool'),
-          { context: { abortSignal: abortController.signal } }
-        )
+        const result = await executor.execute(createToolCall('test_tool'), {
+          context: { abortSignal: abortController.signal },
+        })
 
         expect(result.success).toBe(false)
         if (!result.success) {
@@ -623,7 +641,7 @@ describe('Tool Executor', () => {
 
         // In parallel, both start before either ends
         expect(executionOrder.slice(0, 2)).toEqual(
-          expect.arrayContaining(['start-1', 'start-2'])
+          expect.arrayContaining(['start-1', 'start-2']),
         )
       })
 
@@ -654,7 +672,7 @@ describe('Tool Executor', () => {
             createToolCall('tool_1', {}, 'call-1'),
             createToolCall('tool_2', {}, 'call-2'),
           ],
-          { parallel: false }
+          { parallel: false },
         )
 
         // Sequential: first tool completes before second starts
@@ -676,7 +694,7 @@ describe('Tool Executor', () => {
             createToolCall('failing_tool', {}, 'call-1'),
             createToolCall('working_tool', {}, 'call-2'),
           ],
-          { parallel: false }
+          { parallel: false },
         )
 
         expect(result.results.length).toBe(2)
@@ -699,7 +717,7 @@ describe('Tool Executor', () => {
             createToolCall('failing_tool', {}, 'call-1'),
             createToolCall('working_tool', {}, 'call-2'),
           ],
-          { parallel: false, continueOnError: false }
+          { parallel: false, continueOnError: false },
         )
 
         // Should stop after first failure
@@ -725,7 +743,7 @@ describe('Tool Executor', () => {
 
         registry.register(
           createToolDefinition('tool'),
-          vi.fn().mockResolvedValue('ok')
+          vi.fn().mockResolvedValue('ok'),
         )
 
         const result = await executor.executeBatch([
@@ -755,9 +773,9 @@ describe('Tool Executor', () => {
 
         await executor.executeBatch(
           Array.from({ length: 10 }, (_, i) =>
-            createToolCall('tool', {}, `call-${i}`)
+            createToolCall('tool', {}, `call-${i}`),
           ),
-          { maxConcurrency: 2 }
+          { maxConcurrency: 2 },
         )
 
         expect(maxConcurrent).toBeLessThanOrEqual(2)
@@ -771,7 +789,7 @@ describe('Tool Executor', () => {
 
         registry.register(
           createToolDefinition('test_tool'),
-          vi.fn().mockResolvedValue('Simple string result')
+          vi.fn().mockResolvedValue('Simple string result'),
         )
 
         const result = await executor.execute(createToolCall('test_tool'))
@@ -786,7 +804,7 @@ describe('Tool Executor', () => {
 
         registry.register(
           createToolDefinition('test_tool'),
-          vi.fn().mockResolvedValue({ key: 'value', nested: { data: true } })
+          vi.fn().mockResolvedValue({ key: 'value', nested: { data: true } }),
         )
 
         const result = await executor.execute(createToolCall('test_tool'))
@@ -803,7 +821,7 @@ describe('Tool Executor', () => {
 
         registry.register(
           createToolDefinition('test_tool'),
-          vi.fn().mockResolvedValue(42)
+          vi.fn().mockResolvedValue(42),
         )
 
         const result = await executor.execute(createToolCall('test_tool'))
@@ -818,7 +836,7 @@ describe('Tool Executor', () => {
 
         registry.register(
           createToolDefinition('test_tool'),
-          vi.fn().mockResolvedValue(true)
+          vi.fn().mockResolvedValue(true),
         )
 
         const result = await executor.execute(createToolCall('test_tool'))
@@ -833,7 +851,7 @@ describe('Tool Executor', () => {
 
         registry.register(
           createToolDefinition('test_tool'),
-          vi.fn().mockResolvedValue(null)
+          vi.fn().mockResolvedValue(null),
         )
 
         const result = await executor.execute(createToolCall('test_tool'))
@@ -861,7 +879,7 @@ describe('Tool Executor', () => {
 
         registry.register(
           createToolDefinition('test_tool'),
-          vi.fn().mockResolvedValue([1, 2, 3, 'four'])
+          vi.fn().mockResolvedValue([1, 2, 3, 'four']),
         )
 
         const result = await executor.execute(createToolCall('test_tool'))
@@ -879,7 +897,7 @@ describe('Tool Executor', () => {
 
         registry.register(
           createToolDefinition('test_tool'),
-          vi.fn().mockResolvedValue('ok')
+          vi.fn().mockResolvedValue('ok'),
         )
 
         const listener = vi.fn()
@@ -891,7 +909,7 @@ describe('Tool Executor', () => {
           expect.objectContaining({
             type: 'tool_execution_start',
             toolName: 'test_tool',
-          })
+          }),
         )
       })
 
@@ -901,7 +919,7 @@ describe('Tool Executor', () => {
 
         registry.register(
           createToolDefinition('test_tool'),
-          vi.fn().mockResolvedValue('result')
+          vi.fn().mockResolvedValue('result'),
         )
 
         const listener = vi.fn()
@@ -913,7 +931,7 @@ describe('Tool Executor', () => {
           expect.objectContaining({
             type: 'tool_execution_complete',
             result: expect.objectContaining({ success: true }),
-          })
+          }),
         )
       })
 
@@ -923,7 +941,7 @@ describe('Tool Executor', () => {
 
         registry.register(
           createToolDefinition('test_tool'),
-          vi.fn().mockResolvedValue('ok')
+          vi.fn().mockResolvedValue('ok'),
         )
 
         const listener = vi.fn()
@@ -948,7 +966,7 @@ describe('Tool Executor', () => {
 
         registry.register(
           createToolDefinition('test_tool'),
-          vi.fn().mockResolvedValue('ok')
+          vi.fn().mockResolvedValue('ok'),
         )
 
         const errorListener = vi.fn().mockImplementation(() => {
@@ -969,7 +987,11 @@ describe('Tool Executor', () => {
   // ============================================
   describe('Knowledge Tools Registration', () => {
     it('should register all knowledge tools', () => {
-      const { defaultRegistry, registerKnowledgeTools, areKnowledgeToolsRegistered } = executorModule
+      const {
+        defaultRegistry,
+        registerKnowledgeTools,
+        areKnowledgeToolsRegistered,
+      } = executorModule
 
       // Clear any existing tools
       defaultRegistry.clear()
@@ -986,7 +1008,12 @@ describe('Tool Executor', () => {
     })
 
     it('should unregister all knowledge tools', () => {
-      const { defaultRegistry, registerKnowledgeTools, unregisterKnowledgeTools, areKnowledgeToolsRegistered } = executorModule
+      const {
+        defaultRegistry,
+        registerKnowledgeTools,
+        unregisterKnowledgeTools,
+        areKnowledgeToolsRegistered,
+      } = executorModule
 
       defaultRegistry.clear()
       registerKnowledgeTools()
@@ -1001,8 +1028,12 @@ describe('Tool Executor', () => {
     it('should provide default registry and executor instances', () => {
       const { defaultRegistry, defaultExecutor } = executorModule
 
-      expect(defaultRegistry).toBeInstanceOf(executorModule.KnowledgeToolRegistry)
-      expect(defaultExecutor).toBeInstanceOf(executorModule.KnowledgeToolExecutor)
+      expect(defaultRegistry).toBeInstanceOf(
+        executorModule.KnowledgeToolRegistry,
+      )
+      expect(defaultExecutor).toBeInstanceOf(
+        executorModule.KnowledgeToolExecutor,
+      )
       expect(defaultExecutor.registry).toBe(defaultRegistry)
     })
   })

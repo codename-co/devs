@@ -126,10 +126,7 @@ export function AgentToolsPicker({
                 <Checkbox value={name} className="mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <Icon
-                      name={info.icon}
-                      className="w-4 h-4 text-secondary"
-                    />
+                    <Icon name={info.icon} className="w-4 h-4 text-secondary" />
                     <span className="font-medium">{info.label}</span>
                   </div>
                   <p className="text-sm text-default-500 mt-1">

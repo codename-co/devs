@@ -46,12 +46,9 @@ export interface ToolExecutionContext {
  * @template TArgs - Type of the tool's arguments
  * @template TResult - Type of the tool's result
  */
-export type ToolHandler<
-  TArgs = Record<string, unknown>,
-  TResult = unknown
-> = (
+export type ToolHandler<TArgs = Record<string, unknown>, TResult = unknown> = (
   args: TArgs,
-  context: ToolExecutionContext
+  context: ToolExecutionContext,
 ) => Promise<TResult>
 
 /**
@@ -62,7 +59,7 @@ export type ToolHandler<
  */
 export interface RegisteredTool<
   TArgs = Record<string, unknown>,
-  TResult = unknown
+  TResult = unknown,
 > {
   /** The tool definition (for LLM) */
   definition: ToolDefinition
@@ -229,7 +226,7 @@ export interface ToolRegistry {
   register<TArgs = Record<string, unknown>, TResult = unknown>(
     definition: ToolDefinition,
     handler: ToolHandler<TArgs, TResult>,
-    options?: ToolRegistrationOptions
+    options?: ToolRegistrationOptions,
   ): void
 
   /**
@@ -301,7 +298,7 @@ export interface ExecuteToolOptions {
    */
   onConfirmation?: (
     toolCall: ParsedToolCall,
-    tool: RegisteredTool
+    tool: RegisteredTool,
   ) => Promise<boolean>
 }
 
@@ -341,7 +338,7 @@ export interface ToolExecutor {
    */
   execute(
     toolCall: ToolCall,
-    options?: ExecuteToolOptions
+    options?: ExecuteToolOptions,
   ): Promise<ToolExecutionResult>
 
   /**
@@ -351,7 +348,7 @@ export interface ToolExecutor {
    */
   executeBatch(
     toolCalls: ToolCall[],
-    options?: ExecuteBatchOptions
+    options?: ExecuteBatchOptions,
   ): Promise<BatchToolExecutionResult>
 
   /**
@@ -433,7 +430,7 @@ export interface TypedTool<TArgs, TResult> {
  * Type guard to check if a result is successful.
  */
 export function isToolExecutionSuccess<TResult>(
-  result: ToolExecutionResult<TResult>
+  result: ToolExecutionResult<TResult>,
 ): result is ToolExecutionSuccess<TResult> {
   return result.success === true
 }
@@ -442,7 +439,7 @@ export function isToolExecutionSuccess<TResult>(
  * Type guard to check if a result is an error.
  */
 export function isToolExecutionError(
-  result: ToolExecutionResult
+  result: ToolExecutionResult,
 ): result is ToolExecutionError {
   return result.success === false
 }
@@ -453,7 +450,7 @@ export function isToolExecutionError(
 export function createToolSuccess<TResult>(
   toolCall: ToolCall,
   result: TResult,
-  duration: number
+  duration: number,
 ): ToolExecutionSuccess<TResult> {
   return {
     success: true,
@@ -471,7 +468,7 @@ export function createToolError(
   errorType: ToolExecutionErrorType,
   error: string,
   duration: number,
-  cause?: Error
+  cause?: Error,
 ): ToolExecutionError {
   return {
     success: false,
