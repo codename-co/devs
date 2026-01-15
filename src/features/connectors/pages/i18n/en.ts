@@ -133,6 +133,11 @@ export const en = [
   'Connection restored successfully',
   'Your access token has expired. Please reconnect.',
 
+  // Missing refresh token warning
+  'Limited session',
+  'Google did not provide a refresh token. Your session will expire in about 1 hour. To enable automatic token refresh, go to myaccount.google.com/permissions, revoke access to DEVS, then reconnect.',
+  'Your session has expired. Please disconnect and reconnect this service. To avoid this in the future, revoke access at myaccount.google.com/permissions before reconnecting.',
+
   // Common
   'Cancel',
   'Done',

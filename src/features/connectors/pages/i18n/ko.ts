@@ -157,6 +157,13 @@ export const ko: I18n = {
   'Your access token has expired. Please reconnect.':
     '액세스 토큰이 만료되었습니다. 다시 연결해 주세요.',
 
+  // Missing refresh token warning
+  'Limited session': '제한된 세션',
+  'Google did not provide a refresh token. Your session will expire in about 1 hour. To enable automatic token refresh, go to myaccount.google.com/permissions, revoke access to DEVS, then reconnect.':
+    'Google에서 새로고침 토큰을 제공하지 않았습니다. 세션이 약 1시간 후에 만료됩니다. 자동 토큰 새로고침을 활성화하려면 myaccount.google.com/permissions로 이동하여 DEVS에 대한 액세스를 취소한 다음 다시 연결하세요.',
+  'Your session has expired. Please disconnect and reconnect this service. To avoid this in the future, revoke access at myaccount.google.com/permissions before reconnecting.':
+    '세션이 만료되었습니다. 이 서비스의 연결을 끊고 다시 연결해 주세요. 향후 이를 방지하려면 다시 연결하기 전에 myaccount.google.com/permissions에서 액세스를 취소하세요.',
+
   // Common
   Cancel: '취소',
   Done: '완료',

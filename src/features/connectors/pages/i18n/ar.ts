@@ -155,6 +155,13 @@ export const ar: I18n = {
   'Your access token has expired. Please reconnect.':
     'انتهت صلاحية رمز الوصول الخاص بك. يرجى إعادة الاتصال.',
 
+  // Missing refresh token warning
+  'Limited session': 'جلسة محدودة',
+  'Google did not provide a refresh token. Your session will expire in about 1 hour. To enable automatic token refresh, go to myaccount.google.com/permissions, revoke access to DEVS, then reconnect.':
+    'لم يوفر Google رمز تحديث. ستنتهي جلستك في حوالي ساعة واحدة. لتمكين التحديث التلقائي للرمز، انتقل إلى myaccount.google.com/permissions، وألغِ الوصول إلى DEVS، ثم أعد الاتصال.',
+  'Your session has expired. Please disconnect and reconnect this service. To avoid this in the future, revoke access at myaccount.google.com/permissions before reconnecting.':
+    'انتهت جلستك. يرجى قطع الاتصال وإعادة الاتصال بهذه الخدمة. لتجنب ذلك في المستقبل، ألغِ الوصول على myaccount.google.com/permissions قبل إعادة الاتصال.',
+
   // Common
   Cancel: 'إلغاء',
   Done: 'تم',

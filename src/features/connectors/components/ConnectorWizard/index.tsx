@@ -25,6 +25,7 @@ import { FolderPicker } from './FolderPicker'
 import { SuccessStep } from './SuccessStep'
 import { PROVIDER_CONFIG } from '../../providers/apps'
 import { storeEncryptionMetadata } from '../../connector-provider'
+import { SyncEngine } from '../../sync-engine'
 import type {
   AppConnectorProvider,
   ConnectorCategory,
@@ -291,10 +292,21 @@ export function ConnectorWizard({
   }, [handleFolderSelect])
 
   // Handle start sync
-  const handleStartSync = useCallback(() => {
-    // TODO: Trigger initial sync for the connector
-    console.log('Starting sync for connector:', connectorId)
-    onClose()
+  const handleStartSync = useCallback(async () => {
+    if (connectorId) {
+      // Close the modal first for better UX
+      onClose()
+
+      // Start sync in the background
+      try {
+        await SyncEngine.sync(connectorId)
+      } catch (error) {
+        console.error('Failed to start sync:', error)
+        // Error handling is done by SyncEngine which updates connector status
+      }
+    } else {
+      onClose()
+    }
   }, [connectorId, onClose])
 
   // Handle close and reset
@@ -343,7 +355,7 @@ export function ConnectorWizard({
       setConnectorId(null)
       oauth.reset()
     }
-  }, [isOpen, initialProvider])  
+  }, [isOpen, initialProvider])
 
   return (
     <Modal

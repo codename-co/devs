@@ -98,7 +98,6 @@ export function ConnectorSettingsModal({
       }
     }
     // Only re-initialize when connector ID changes
-     
   }, [connector?.id])
 
   // Helper to refresh token and update connector
@@ -228,7 +227,13 @@ export function ConnectorSettingsModal({
                   refreshErr.message.includes('No refresh token'))
 
               // Show appropriate error message
-              setError(t('Your access token has expired. Please reconnect.'))
+              setError(
+                isNoRefreshToken
+                  ? t(
+                      'Your session has expired. Please disconnect and reconnect this service. To avoid this in the future, revoke access at myaccount.google.com/permissions before reconnecting.',
+                    )
+                  : t('Your access token has expired. Please reconnect.'),
+              )
 
               // Update connector status to expired
               await updateConnector(connector.id, {
@@ -255,7 +260,6 @@ export function ConnectorSettingsModal({
 
     fetchFolders()
     // Only refetch when modal opens or connector ID changes, not on every connector object change
-     
   }, [isOpen, connector?.id, provider])
 
   // Toggle folder selection

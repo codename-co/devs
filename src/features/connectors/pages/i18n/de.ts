@@ -160,6 +160,13 @@ export const de: I18n = {
   'Your access token has expired. Please reconnect.':
     'Ihr Zugriffstoken ist abgelaufen. Bitte verbinden Sie sich erneut.',
 
+  // Missing refresh token warning
+  'Limited session': 'Begrenzte Sitzung',
+  'Google did not provide a refresh token. Your session will expire in about 1 hour. To enable automatic token refresh, go to myaccount.google.com/permissions, revoke access to DEVS, then reconnect.':
+    'Google hat kein Aktualisierungstoken bereitgestellt. Ihre Sitzung läuft in etwa 1 Stunde ab. Um die automatische Token-Aktualisierung zu aktivieren, gehen Sie zu myaccount.google.com/permissions, widerrufen Sie den Zugriff auf DEVS und verbinden Sie sich erneut.',
+  'Your session has expired. Please disconnect and reconnect this service. To avoid this in the future, revoke access at myaccount.google.com/permissions before reconnecting.':
+    'Ihre Sitzung ist abgelaufen. Bitte trennen Sie diesen Dienst und verbinden Sie ihn erneut. Um dies in Zukunft zu vermeiden, widerrufen Sie den Zugriff unter myaccount.google.com/permissions, bevor Sie sich erneut verbinden.',
+
   // Common
   Cancel: 'Abbrechen',
   Done: 'Fertig',

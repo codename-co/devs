@@ -160,6 +160,13 @@ export const fr: I18n = {
   'Your access token has expired. Please reconnect.':
     "Votre jeton d'accès a expiré. Veuillez vous reconnecter.",
 
+  // Missing refresh token warning
+  'Limited session': 'Session limitée',
+  'Google did not provide a refresh token. Your session will expire in about 1 hour. To enable automatic token refresh, go to myaccount.google.com/permissions, revoke access to DEVS, then reconnect.':
+    "Google n'a pas fourni de jeton de rafraîchissement. Votre session expirera dans environ 1 heure. Pour activer le rafraîchissement automatique, allez sur myaccount.google.com/permissions, révoquez l'accès à DEVS, puis reconnectez-vous.",
+  'Your session has expired. Please disconnect and reconnect this service. To avoid this in the future, revoke access at myaccount.google.com/permissions before reconnecting.':
+    "Votre session a expiré. Veuillez déconnecter et reconnecter ce service. Pour éviter cela à l'avenir, révoquez l'accès sur myaccount.google.com/permissions avant de vous reconnecter.",
+
   // Common
   Cancel: 'Annuler',
   Done: 'Terminé',
