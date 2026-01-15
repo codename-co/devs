@@ -1,6 +1,7 @@
 import { Navigate, Outlet, Route, Routes, useParams } from 'react-router-dom'
 
 import { LocalLLMLoadingIndicator } from '@/components'
+import { LanguageRedirect } from '@/components/LanguageRedirect'
 import { defaultLang, I18nProvider, Lang, langs } from '@/i18n'
 import { StudioPage } from '@/features/studio/pages/StudioPage'
 import { CardBattlePage } from '@/features/battle'
@@ -82,7 +83,7 @@ const routes = {
 function Router() {
   return (
     <Routes>
-      <Route path="/" element={<Outlet />}>
+      <Route path="/" element={<RootLayout />}>
         {Object.entries(routes).map(([path, Component]) => (
           <Route
             key={path}
@@ -112,6 +113,18 @@ function Router() {
 }
 
 export default Router
+
+/**
+ * RootLayout handles the language detection redirect at the root level.
+ * It renders the LanguageRedirect component to detect and redirect users
+ * to their preferred language on first visit.
+ */
+const RootLayout = () => (
+  <>
+    <LanguageRedirect />
+    <Outlet />
+  </>
+)
 
 const LanguagePath = () => {
   const params = useParams()
