@@ -124,6 +124,30 @@ export const fr: I18n = {
   'Summarizing document': 'Résumé du document',
   Calculating: 'Calcul',
   'Code interpreter': 'Interpréteur de code',
+  'Running code': 'Exécution du code',
+  // Gmail tools
+  'Searching Gmail': 'Recherche Gmail',
+  'Reading email': "Lecture de l'email",
+  'Listing Gmail labels': 'Liste des libellés Gmail',
+  // Google Drive tools
+  'Searching Google Drive': 'Recherche dans Google Drive',
+  'Reading file from Drive': 'Lecture du fichier depuis Drive',
+  'Listing Drive files': 'Liste des fichiers Drive',
+  // Google Calendar tools
+  'Listing calendar events': 'Liste des événements',
+  'Getting calendar event': "Récupération de l'événement",
+  'Searching calendar': 'Recherche dans le calendrier',
+  // Google Tasks tools
+  'Listing tasks': 'Liste des tâches',
+  'Getting task details': 'Détails de la tâche',
+  'Listing task lists': 'Liste des listes de tâches',
+  // Notion tools
+  'Searching Notion': 'Recherche dans Notion',
+  'Reading Notion page': 'Lecture de la page Notion',
+  'Querying Notion database': 'Requête de la base Notion',
+  // Generic tool messages
+  'Using tool': "Utilisation de l'outil",
+  'Using tools': 'Utilisation des outils',
   'Failed to generate agent. Please try again.':
     "Échec de la génération de l'agent. Veuillez réessayer.",
   // Tool labels
@@ -135,4 +159,9 @@ export const fr: I18n = {
   // Search results
   result: 'résultat',
   results: 'résultats',
+  // Sources
+  Sources: 'Sources',
+  'View in Knowledge Base': 'Voir dans la base de connaissances',
+  // Quick replies
+  'Generating suggestions…': 'Génération des suggestions…',
 } as const

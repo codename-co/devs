@@ -120,6 +120,30 @@ export const ar: I18n = {
   'Summarizing document': 'تلخيص المستند',
   Calculating: 'الحساب',
   'Code interpreter': 'مفسر الكود',
+  'Running code': 'تشغيل الكود',
+  // Gmail tools
+  'Searching Gmail': 'البحث في Gmail',
+  'Reading email': 'قراءة البريد',
+  'Listing Gmail labels': 'عرض تصنيفات Gmail',
+  // Google Drive tools
+  'Searching Google Drive': 'البحث في Google Drive',
+  'Reading file from Drive': 'قراءة ملف من Drive',
+  'Listing Drive files': 'عرض ملفات Drive',
+  // Google Calendar tools
+  'Listing calendar events': 'عرض أحداث التقويم',
+  'Getting calendar event': 'جلب حدث التقويم',
+  'Searching calendar': 'البحث في التقويم',
+  // Google Tasks tools
+  'Listing tasks': 'عرض المهام',
+  'Getting task details': 'تفاصيل المهمة',
+  'Listing task lists': 'عرض قوائم المهام',
+  // Notion tools
+  'Searching Notion': 'البحث في Notion',
+  'Reading Notion page': 'قراءة صفحة Notion',
+  'Querying Notion database': 'استعلام قاعدة بيانات Notion',
+  // Generic tool messages
+  'Using tool': 'استخدام الأداة',
+  'Using tools': 'استخدام الأدوات',
   // Tool labels
   'Search Knowledge': 'بحث في المعرفة',
   'Read Document': 'قراءة مستند',
@@ -129,4 +153,9 @@ export const ar: I18n = {
   // Search results
   result: 'نتيجة',
   results: 'نتائج',
+  // Sources
+  Sources: 'المصادر',
+  'View in Knowledge Base': 'عرض في قاعدة المعرفة',
+  // Quick replies
+  'Generating suggestions…': 'جارٍ إنشاء الاقتراحات…',
 } as const

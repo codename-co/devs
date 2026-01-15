@@ -124,6 +124,30 @@ export const ko: I18n = {
   'Summarizing document': '문서 요약 중',
   Calculating: '계산 중',
   'Code interpreter': '코드 인터프리터',
+  'Running code': '코드 실행 중',
+  // Gmail tools
+  'Searching Gmail': 'Gmail 검색 중',
+  'Reading email': '이메일 읽는 중',
+  'Listing Gmail labels': 'Gmail 라벨 목록',
+  // Google Drive tools
+  'Searching Google Drive': 'Google Drive 검색 중',
+  'Reading file from Drive': 'Drive 파일 읽는 중',
+  'Listing Drive files': 'Drive 파일 목록',
+  // Google Calendar tools
+  'Listing calendar events': '캘린더 일정 목록',
+  'Getting calendar event': '캘린더 일정 가져오는 중',
+  'Searching calendar': '캘린더 검색 중',
+  // Google Tasks tools
+  'Listing tasks': '작업 목록',
+  'Getting task details': '작업 세부 정보',
+  'Listing task lists': '작업 목록 리스트',
+  // Notion tools
+  'Searching Notion': 'Notion 검색 중',
+  'Reading Notion page': 'Notion 페이지 읽는 중',
+  'Querying Notion database': 'Notion 데이터베이스 쿼리 중',
+  // Generic tool messages
+  'Using tool': '도구 사용 중',
+  'Using tools': '도구 사용 중',
   // Tool labels
   'Search Knowledge': '지식 검색',
   'Read Document': '문서 읽기',
@@ -133,4 +157,9 @@ export const ko: I18n = {
   // Search results
   result: '결과',
   results: '결과',
+  // Sources
+  Sources: '출처',
+  'View in Knowledge Base': '지식 베이스에서 보기',
+  // Quick replies
+  'Generating suggestions…': '제안 생성 중…',
 } as const

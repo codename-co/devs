@@ -30,10 +30,12 @@ import {
   PromptArea,
   Section,
   Widget,
+  SourcesDisplay,
+  useTraceSources,
 } from '@/components'
 import DefaultLayout from '@/layouts/Default'
 import { Link } from 'react-router-dom'
-import type { HeaderProps } from '@/lib/types'
+import type { HeaderProps, IconName } from '@/lib/types'
 import { getAgentById, getAgentBySlug } from '@/stores/agentStore'
 import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
 import { usePinnedMessageStore } from '@/stores/pinnedMessageStore'
@@ -72,17 +74,38 @@ type TimelineItem =
 
 /** Map tool names to user-friendly display names */
 const TOOL_DISPLAY_NAMES: Record<string, string> = {
+  // Knowledge tools
   search_knowledge: 'Searching knowledge base',
   read_document: 'Reading document',
   list_documents: 'Browsing documents',
   get_document_summary: 'Summarizing document',
+  // Math & code tools
   calculate: 'Calculating',
   execute: 'Code interpreter',
-  // Add more tool mappings as needed
+  // Gmail tools
+  gmail_search: 'Searching Gmail',
+  gmail_read: 'Reading email',
+  gmail_list_labels: 'Listing Gmail labels',
+  // Google Drive tools
+  drive_search: 'Searching Google Drive',
+  drive_read: 'Reading file from Drive',
+  drive_list: 'Listing Drive files',
+  // Google Calendar tools
+  calendar_list_events: 'Listing calendar events',
+  calendar_get_event: 'Getting calendar event',
+  calendar_search: 'Searching calendar',
+  // Google Tasks tools
+  tasks_list: 'Listing tasks',
+  tasks_get: 'Getting task details',
+  tasks_list_tasklists: 'Listing task lists',
+  // Notion tools
+  notion_search: 'Searching Notion',
+  notion_read_page: 'Reading Notion page',
+  notion_query_database: 'Querying Notion database',
 }
 
 /** Get appropriate icon for tool type */
-const getToolIcon = (toolName: string): string => {
+const getToolIcon = (toolName: string): IconName => {
   if (toolName === 'execute') return 'Code'
   if (toolName.includes('search')) return 'Search'
   if (toolName.includes('read') || toolName.includes('document')) return 'Page'
@@ -94,7 +117,7 @@ const getToolIcon = (toolName: string): string => {
 /** Extract contextual info from tool metadata */
 interface ToolContextInfo {
   displayName: string
-  icon: string
+  icon: IconName
   toolName: string
   documentId?: string
   documentName?: string
@@ -315,9 +338,9 @@ const ToolTimelineItem = memo(
     return (
       <div className="flex items-center gap-1.5 text-sm text-default-500 flex-wrap">
         <Icon
-          name={context.icon as any}
+          name={context.icon}
           size="sm"
-          className={isError ? 'text-danger-500' : 'text-default-400'}
+          className={`hidden md:inline-flex ${isError ? 'text-danger-500' : 'text-default-400'}`}
         />
         <span className={isError ? 'text-danger-600' : ''}>
           {t(context.displayName as any)}
@@ -725,6 +748,63 @@ const TimelineToolsDisplay = memo(
 TimelineToolsDisplay.displayName = 'TimelineToolsDisplay'
 
 // ============================================================================
+// Message Content with Sources Component
+// ============================================================================
+
+/**
+ * Component that renders message content with sources.
+ * Uses useTraceSources hook to load sources once and share them between
+ * MarkdownRenderer (for inline citations) and SourcesDisplay (for source list).
+ */
+const MessageContentWithSources = memo(
+  ({
+    content,
+    detectContentType,
+    traceIds,
+  }: {
+    content: string
+    detectContentType: (content: string) => string
+    traceIds: string[]
+  }) => {
+    const { t } = useI18n(localI18n)
+    const { citedSources, isLoading } = useTraceSources({
+      traceIds,
+      loadTrace: useTraceStore.getState().loadTrace,
+      getCurrentSpans: () => useTraceStore.getState().currentSpans,
+      clearCurrentTrace: useTraceStore.getState().clearCurrentTrace,
+      content,
+    })
+
+    return (
+      <>
+        <div className="text-left">
+          <div className="prose prose-neutral text-medium break-words">
+            {detectContentType(content) === 'marpit-presentation' ? (
+              <Widget type="marpit" language="yaml" code={content} />
+            ) : (
+              <MarkdownRenderer
+                content={content}
+                className="prose dark:prose-invert"
+                sources={citedSources}
+              />
+            )}
+          </div>
+        </div>
+        {/* Inline sources display - shown AFTER response */}
+        {!isLoading && citedSources.length > 0 && (
+          <SourcesDisplay
+            sources={citedSources}
+            t={(key: string) => t(key as 'Sources' | 'View in Knowledge Base')}
+          />
+        )}
+      </>
+    )
+  },
+)
+
+MessageContentWithSources.displayName = 'MessageContentWithSources'
+
+// ============================================================================
 // Message Display Component
 // ============================================================================
 
@@ -834,18 +914,11 @@ const MessageDisplay = memo(
             message.traceIds.length > 0 && (
               <TimelineToolsDisplay traceIds={message.traceIds} />
             )}
-          <div className="text-left">
-            <div className="prose prose-neutral text-medium break-words">
-              {detectContentType(message.content) === 'marpit-presentation' ? (
-                <Widget type="marpit" language="yaml" code={message.content} />
-              ) : (
-                <MarkdownRenderer
-                  content={message.content}
-                  className="prose dark:prose-invert"
-                />
-              )}
-            </div>
-          </div>
+          <MessageContentWithSources
+            content={message.content}
+            detectContentType={detectContentType}
+            traceIds={message.traceIds || []}
+          />
           {/* Assistant message action buttons */}
           {message.role === 'assistant' && (
             <div className="mt-2 flex flex-wrap items-center gap-1">
@@ -1264,6 +1337,10 @@ export const AgentRunPage = () => {
   const [newlyLearnedMemories, setNewlyLearnedMemories] = useState<
     AgentMemoryEntry[]
   >([])
+
+  // Quick replies state
+  const [quickReplies, setQuickReplies] = useState<string[]>([])
+  const [isGeneratingReplies, setIsGeneratingReplies] = useState(false)
 
   // Pin modal state
   const {
@@ -1697,7 +1774,13 @@ export const AgentRunPage = () => {
   // Only update when there's no conversationId in the URL yet (new conversation created)
   useEffect(() => {
     if (currentConversation?.id && selectedAgent?.slug) {
-      const { conversationId: urlConversationId } = parseHash()
+      // Read hash directly to check current URL state
+      // Note: We intentionally read location.hash inside the effect (not in deps)
+      // to avoid infinite loops when navigate() updates the hash
+      const hash = location.hash.replace('#', '')
+      const [hashPart] = hash.split('?')
+      const parts = hashPart.split('/')
+      const urlConversationId = parts[1] || null
 
       // Only update hash if there's no conversation ID in the URL yet
       // This prevents navigation loops when switching between existing conversations
@@ -1706,7 +1789,7 @@ export const AgentRunPage = () => {
         navigate(newHash, { replace: true })
       }
     }
-  }, [currentConversation?.id, selectedAgent?.slug, parseHash, navigate])
+  }, [currentConversation?.id, selectedAgent?.slug, navigate])
 
   // Load artifacts on mount
   useEffect(() => {
@@ -1731,6 +1814,79 @@ export const AgentRunPage = () => {
     setConversationArtifacts(relatedArtifacts)
   }, [artifacts, currentConversation])
 
+  // Generate quick reply suggestions based on conversation
+  const generateQuickReplies = useCallback(
+    async (lastAssistantMessage: string, recentMessages: Message[]) => {
+      if (!selectedAgent) return
+
+      setIsGeneratingReplies(true)
+      setQuickReplies([])
+
+      try {
+        const { LLMService } = await import('@/lib/llm')
+        const { CredentialService } = await import('@/lib/credential-service')
+
+        const config = await CredentialService.getActiveConfig()
+        if (!config?.provider || !config?.apiKey) {
+          return
+        }
+
+        // Build context from recent messages
+        const contextMessages = recentMessages
+          .slice(-4)
+          .map(
+            (m) =>
+              `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content.slice(0, 200)}`,
+          )
+          .join('\n')
+
+        const systemPrompt = `You are a helpful assistant that generates quick reply suggestions for a conversation.
+Based on the assistant's last response, generate exactly 3 short, natural follow-up questions or responses that the user might want to send next.
+
+Rules:
+- Each suggestion should be 3-10 words maximum
+- Make them diverse: one clarifying question, one action request, one exploration
+- Be conversational and natural
+- Match the language used in the conversation (if French, respond in French, etc.)
+- Return ONLY a JSON array of 3 strings, nothing else
+
+Example output: ["Tell me more about that", "Can you give an example?", "How do I get started?"]`
+
+        const userPrompt = `Recent conversation:\n${contextMessages}\n\nLast assistant response:\n${lastAssistantMessage.slice(0, 500)}\n\nGenerate 3 quick reply suggestions:`
+
+        const response = await LLMService.chat(
+          [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          {
+            provider: config.provider,
+            apiKey: config.apiKey,
+            model: config.model,
+            temperature: 0.7,
+            maxTokens: 150,
+          },
+        )
+
+        // Parse JSON response
+        const content = response.content.trim()
+        // Try to extract JSON array from response
+        const jsonMatch = content.match(/\[.*\]/s)
+        if (jsonMatch) {
+          const suggestions = JSON.parse(jsonMatch[0]) as string[]
+          if (Array.isArray(suggestions) && suggestions.length > 0) {
+            setQuickReplies(suggestions.slice(0, 3))
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to generate quick replies:', error)
+      } finally {
+        setIsGeneratingReplies(false)
+      }
+    },
+    [selectedAgent],
+  )
+
   // Auto-submit handler for prompts from Index page
   const handleAutoSubmit = useCallback(
     async (
@@ -1749,6 +1905,7 @@ export const AgentRunPage = () => {
       setResponse('')
       setPrompt('')
 
+      let finalResponse = ''
       await submitChat({
         prompt: promptText,
         agent,
@@ -1758,14 +1915,22 @@ export const AgentRunPage = () => {
         attachments: files,
         lang,
         t,
-        onResponseUpdate: setResponse,
+        onResponseUpdate: (text) => {
+          finalResponse = text
+          setResponse(text)
+        },
         onPromptClear: () => setPrompt(''),
         onResponseClear: () => setResponse(''),
       })
 
       setIsSending(false)
+
+      // Generate quick replies after response completes
+      if (finalResponse) {
+        generateQuickReplies(finalResponse, conversationMessages)
+      }
     },
-    [isSending, conversationMessages, lang, t],
+    [isSending, conversationMessages, lang, t, generateQuickReplies],
   )
 
   // Helper function to convert File to base64
@@ -1803,6 +1968,10 @@ export const AgentRunPage = () => {
         })),
       )
 
+      // Clear quick replies when starting new message
+      setQuickReplies([])
+
+      let finalResponse = ''
       await submitChat({
         prompt: promptToUse,
         agent: agentToUse,
@@ -1812,7 +1981,10 @@ export const AgentRunPage = () => {
         attachments: filesData,
         lang,
         t,
-        onResponseUpdate: setResponse,
+        onResponseUpdate: (text) => {
+          finalResponse = text
+          setResponse(text)
+        },
         onPromptClear: () => setPrompt(''),
         onResponseClear: () => setResponse(''),
       })
@@ -1820,6 +1992,11 @@ export const AgentRunPage = () => {
       // Clear files after submission
       setSelectedFiles([])
       setIsSending(false)
+
+      // Generate quick replies after response completes
+      if (finalResponse) {
+        generateQuickReplies(finalResponse, conversationMessages)
+      }
     },
     [
       prompt,
@@ -1830,6 +2007,7 @@ export const AgentRunPage = () => {
       fileToBase64,
       lang,
       t,
+      generateQuickReplies,
     ],
   )
 
@@ -1968,6 +2146,50 @@ export const AgentRunPage = () => {
                 )}
               </div>
             )}
+
+            {/* Quick reply suggestions */}
+            {!isSending &&
+              !isConversationPristine &&
+              (quickReplies.length > 0 || isGeneratingReplies) && (
+                <div className="flex gap-2 flex-wrap mt-4">
+                  {isGeneratingReplies ? (
+                    <div className="flex items-center gap-2 text-sm text-default-400">
+                      <Spinner size="sm" />
+                      <span>{t('Generating suggestions…')}</span>
+                    </div>
+                  ) : (
+                    quickReplies.map((reply, index) => (
+                      <Button
+                        key={index}
+                        variant="flat"
+                        size="sm"
+                        color="default"
+                        className="text-sm"
+                        endContent={
+                          <Icon
+                            name="NavArrowRight"
+                            size="sm"
+                            className="text-default-400"
+                          />
+                        }
+                        onPress={() => {
+                          setPrompt(reply)
+                          setQuickReplies([])
+                          // Auto-submit after a short delay
+                          setTimeout(() => {
+                            const submitButton = document.querySelector(
+                              '#prompt-area [type="submit"]',
+                            ) as HTMLButtonElement | null
+                            submitButton?.click()
+                          }, 100)
+                        }}
+                      >
+                        {reply}
+                      </Button>
+                    ))
+                  )}
+                </div>
+              )}
 
             {/* Example prompts for new conversations */}
             {isConversationPristine &&

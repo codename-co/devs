@@ -764,7 +764,7 @@ The following information was learned from previous conversations and may be rel
 
 ${memoryContext}
 
-Use this context to provide more personalized and contextually relevant responses.
+Use this context to provide more personalized and contextually relevant responses. When using this information, cite it as [Memory].
 
 ---
 

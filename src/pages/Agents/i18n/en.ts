@@ -98,6 +98,30 @@ export const en = [
   'Summarizing document',
   'Calculating',
   'Code interpreter',
+  'Running code',
+  // Gmail tools
+  'Searching Gmail',
+  'Reading email',
+  'Listing Gmail labels',
+  // Google Drive tools
+  'Searching Google Drive',
+  'Reading file from Drive',
+  'Listing Drive files',
+  // Google Calendar tools
+  'Listing calendar events',
+  'Getting calendar event',
+  'Searching calendar',
+  // Google Tasks tools
+  'Listing tasks',
+  'Getting task details',
+  'Listing task lists',
+  // Notion tools
+  'Searching Notion',
+  'Reading Notion page',
+  'Querying Notion database',
+  // Generic tool messages
+  'Using tool',
+  'Using tools',
   // Tool labels
   'Search Knowledge',
   'Read Document',
@@ -107,4 +131,9 @@ export const en = [
   // Search results
   'result',
   'results',
+  // Sources
+  'Sources',
+  'View in Knowledge Base',
+  // Quick replies
+  'Generating suggestions…',
 ] as const

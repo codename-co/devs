@@ -389,7 +389,7 @@ The following are key moments from previous conversations that may be relevant:
 
 ${pinnedContext}
 
-Consider this context when providing your response.
+Consider this context when providing your response. When using this information, cite it as [Pinned].
 
 ---
 

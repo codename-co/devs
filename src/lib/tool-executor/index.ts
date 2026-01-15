@@ -26,4 +26,7 @@ export {
   registerCodeTools,
   areCodeToolsRegistered,
   unregisterCodeTools,
+  registerConnectorTools,
+  areConnectorToolsRegistered,
+  unregisterConnectorTools,
 } from './executor'

@@ -153,11 +153,11 @@ export function useAgentMention({
   // Extract all mentioned agents from the prompt
   const extractMentionedAgents = useCallback((): Agent[] => {
     const mentions: Agent[] = []
-    // Use matchAll to avoid issues with global regex state
-    const matches = prompt.matchAll(/@(\w+)/g)
+    // Use matchAll to find @mentions at word boundaries (not inside emails)
+    const matches = prompt.matchAll(/(^|[\s])@(\w+)/g)
 
     for (const match of matches) {
-      const mentionName = match[1].toLowerCase()
+      const mentionName = match[2].toLowerCase()
 
       // Find matching agent by name or id (case-insensitive, ignoring spaces)
       const agent = availableAgents.find((a) => {
@@ -180,8 +180,9 @@ export function useAgentMention({
   // Remove all @mentions from the prompt
   const removeMentionsFromPrompt = useCallback((text: string): string => {
     // Replace @mentions with empty string, cleaning up extra spaces
+    // Only match @mentions at word boundaries (not inside emails like user@domain.com)
     return text
-      .replace(/@[\w]+\s*/g, '')
+      .replace(/(^|[\s])@[\w]+\s*/g, '$1')
       .replace(/\s+/g, ' ')
       .trim()
   }, [])

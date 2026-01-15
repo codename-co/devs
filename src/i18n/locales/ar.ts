@@ -111,6 +111,7 @@ export const ar: I18n = {
   '{n} models': '{n} نماذج',
   'Search models...': 'البحث عن نماذج...',
   'No models found': 'لم يتم العثور على نماذج',
+  'Search agents…': 'البحث عن وكلاء…',
 
   // Model capabilities
   Fast: 'سريع',
@@ -715,4 +716,9 @@ export const ar: I18n = {
   Calculate: 'حساب',
   'Evaluate mathematical expressions with support for variables and Math functions':
     'تقييم التعبيرات الرياضية مع دعم المتغيرات ودوال Math',
+
+  // Citations
+  Memory: 'الذاكرة',
+  'From remembered context about the user': 'من السياق المحفوظ عن المستخدم',
+  'From important past conversations': 'من المحادثات السابقة المهمة',
 } as const

@@ -54,6 +54,56 @@ import type {
 } from '@/lib/knowledge-tools/types'
 import { calculate, MATH_TOOL_DEFINITIONS } from '@/lib/math-tools/service'
 import { execute, CODE_TOOL_DEFINITIONS } from '@/lib/code-tools/service'
+import {
+  CONNECTOR_TOOL_DEFINITIONS,
+  gmailSearch,
+  gmailRead,
+  gmailListLabels,
+  driveSearch,
+  driveRead,
+  driveList,
+  calendarListEvents,
+  calendarGetEvent,
+  calendarSearch,
+  tasksList,
+  tasksGet,
+  tasksListTasklists,
+  notionSearch,
+  notionReadPage,
+  notionQueryDatabase,
+} from '@/features/connectors/tools'
+import type {
+  GmailSearchParams,
+  GmailSearchResult,
+  GmailReadParams,
+  GmailReadResult,
+  GmailListLabelsParams,
+  GmailListLabelsResult,
+  DriveSearchParams,
+  DriveSearchResult,
+  DriveReadParams,
+  DriveReadResult,
+  DriveListParams,
+  DriveListResult,
+  CalendarListEventsParams,
+  CalendarListEventsResult,
+  CalendarGetEventParams,
+  CalendarGetEventResult,
+  CalendarSearchParams,
+  CalendarSearchResult,
+  TasksListParams,
+  TasksListResult,
+  TasksGetParams,
+  TasksGetResult,
+  TasksListTasklistsParams,
+  TasksListTasklistsResult,
+  NotionSearchParams,
+  NotionSearchResult,
+  NotionReadPageParams,
+  NotionReadPageResult,
+  NotionQueryDatabaseParams,
+  NotionQueryDatabaseResult,
+} from '@/features/connectors/tools'
 import type {
   CalculateParams,
   CalculateResult,
@@ -1069,4 +1119,284 @@ export function areCodeToolsRegistered(): boolean {
  */
 export function unregisterCodeTools(): void {
   defaultRegistry.unregister('execute')
+}
+
+// ============================================================================
+// Connector Tools Registration
+// ============================================================================
+
+/**
+ * Register all connector tools with the default registry.
+ * Call this during application initialization to enable connector tools.
+ * These tools allow agents to interact with connected external services
+ * (Gmail, Google Drive, Calendar, Tasks, Notion).
+ *
+ * @example
+ * ```typescript
+ * import { registerConnectorTools } from '@/lib/tool-executor/executor'
+ *
+ * // In app initialization
+ * registerConnectorTools()
+ * ```
+ */
+export function registerConnectorTools(): void {
+  // ===== Gmail Tools =====
+  defaultRegistry.register<GmailSearchParams, GmailSearchResult>(
+    CONNECTOR_TOOL_DEFINITIONS.gmail_search,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return gmailSearch(args)
+    },
+    {
+      tags: ['connector', 'gmail', 'search'],
+      estimatedDuration: 2000,
+    },
+  )
+
+  defaultRegistry.register<GmailReadParams, GmailReadResult>(
+    CONNECTOR_TOOL_DEFINITIONS.gmail_read,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return gmailRead(args)
+    },
+    {
+      tags: ['connector', 'gmail', 'read'],
+      estimatedDuration: 1500,
+    },
+  )
+
+  defaultRegistry.register<GmailListLabelsParams, GmailListLabelsResult>(
+    CONNECTOR_TOOL_DEFINITIONS.gmail_list_labels,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return gmailListLabels(args)
+    },
+    {
+      tags: ['connector', 'gmail', 'labels'],
+      estimatedDuration: 1000,
+    },
+  )
+
+  // ===== Google Drive Tools =====
+  defaultRegistry.register<DriveSearchParams, DriveSearchResult>(
+    CONNECTOR_TOOL_DEFINITIONS.drive_search,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return driveSearch(args)
+    },
+    {
+      tags: ['connector', 'drive', 'search'],
+      estimatedDuration: 2000,
+    },
+  )
+
+  defaultRegistry.register<DriveReadParams, DriveReadResult>(
+    CONNECTOR_TOOL_DEFINITIONS.drive_read,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return driveRead(args)
+    },
+    {
+      tags: ['connector', 'drive', 'read'],
+      estimatedDuration: 2000,
+    },
+  )
+
+  defaultRegistry.register<DriveListParams, DriveListResult>(
+    CONNECTOR_TOOL_DEFINITIONS.drive_list,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return driveList(args)
+    },
+    {
+      tags: ['connector', 'drive', 'list'],
+      estimatedDuration: 1500,
+    },
+  )
+
+  // ===== Google Calendar Tools =====
+  defaultRegistry.register<CalendarListEventsParams, CalendarListEventsResult>(
+    CONNECTOR_TOOL_DEFINITIONS.calendar_list_events,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return calendarListEvents(args)
+    },
+    {
+      tags: ['connector', 'calendar', 'events'],
+      estimatedDuration: 2000,
+    },
+  )
+
+  defaultRegistry.register<CalendarGetEventParams, CalendarGetEventResult>(
+    CONNECTOR_TOOL_DEFINITIONS.calendar_get_event,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return calendarGetEvent(args)
+    },
+    {
+      tags: ['connector', 'calendar', 'event'],
+      estimatedDuration: 1500,
+    },
+  )
+
+  defaultRegistry.register<CalendarSearchParams, CalendarSearchResult>(
+    CONNECTOR_TOOL_DEFINITIONS.calendar_search,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return calendarSearch(args)
+    },
+    {
+      tags: ['connector', 'calendar', 'search'],
+      estimatedDuration: 2000,
+    },
+  )
+
+  // ===== Google Tasks Tools =====
+  defaultRegistry.register<TasksListParams, TasksListResult>(
+    CONNECTOR_TOOL_DEFINITIONS.tasks_list,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return tasksList(args)
+    },
+    {
+      tags: ['connector', 'tasks', 'list'],
+      estimatedDuration: 1500,
+    },
+  )
+
+  defaultRegistry.register<TasksGetParams, TasksGetResult>(
+    CONNECTOR_TOOL_DEFINITIONS.tasks_get,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return tasksGet(args)
+    },
+    {
+      tags: ['connector', 'tasks', 'get'],
+      estimatedDuration: 1000,
+    },
+  )
+
+  defaultRegistry.register<TasksListTasklistsParams, TasksListTasklistsResult>(
+    CONNECTOR_TOOL_DEFINITIONS.tasks_list_tasklists,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return tasksListTasklists(args)
+    },
+    {
+      tags: ['connector', 'tasks', 'tasklists'],
+      estimatedDuration: 1000,
+    },
+  )
+
+  // ===== Notion Tools =====
+  defaultRegistry.register<NotionSearchParams, NotionSearchResult>(
+    CONNECTOR_TOOL_DEFINITIONS.notion_search,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return notionSearch(args)
+    },
+    {
+      tags: ['connector', 'notion', 'search'],
+      estimatedDuration: 2000,
+    },
+  )
+
+  defaultRegistry.register<NotionReadPageParams, NotionReadPageResult>(
+    CONNECTOR_TOOL_DEFINITIONS.notion_read_page,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return notionReadPage(args)
+    },
+    {
+      tags: ['connector', 'notion', 'read'],
+      estimatedDuration: 2000,
+    },
+  )
+
+  defaultRegistry.register<
+    NotionQueryDatabaseParams,
+    NotionQueryDatabaseResult
+  >(
+    CONNECTOR_TOOL_DEFINITIONS.notion_query_database,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return notionQueryDatabase(args)
+    },
+    {
+      tags: ['connector', 'notion', 'database'],
+      estimatedDuration: 2500,
+    },
+  )
+}
+
+/**
+ * List of all connector tool names.
+ */
+const CONNECTOR_TOOL_NAMES = [
+  'gmail_search',
+  'gmail_read',
+  'gmail_list_labels',
+  'drive_search',
+  'drive_read',
+  'drive_list',
+  'calendar_list_events',
+  'calendar_get_event',
+  'calendar_search',
+  'tasks_list',
+  'tasks_get',
+  'tasks_list_tasklists',
+  'notion_search',
+  'notion_read_page',
+  'notion_query_database',
+] as const
+
+/**
+ * Check if connector tools are registered.
+ *
+ * @returns true if all connector tools are registered
+ */
+export function areConnectorToolsRegistered(): boolean {
+  return CONNECTOR_TOOL_NAMES.every((name) => defaultRegistry.has(name))
+}
+
+/**
+ * Unregister all connector tools from the default registry.
+ * Useful for testing or when disabling connector features.
+ */
+export function unregisterConnectorTools(): void {
+  CONNECTOR_TOOL_NAMES.forEach((name) => {
+    if (defaultRegistry.has(name)) {
+      defaultRegistry.unregister(name)
+    }
+  })
 }

@@ -110,6 +110,7 @@ export const en = [
   '{n} models',
   'Search models...',
   'No models found',
+  'Search agents…',
 
   // Model capabilities
   'Fast',
@@ -668,4 +669,9 @@ export const en = [
   // Agent Tools Picker
   'Calculate',
   'Evaluate mathematical expressions with support for variables and Math functions',
+
+  // Citations
+  'Memory',
+  'From remembered context about the user',
+  'From important past conversations',
 ] as const

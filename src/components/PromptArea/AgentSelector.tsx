@@ -1,4 +1,11 @@
-import { Button, Dropdown, DropdownTrigger, Tooltip } from '@heroui/react'
+import {
+  Button,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  Tooltip,
+} from '@heroui/react'
+import { useState } from 'react'
 
 import { AgentPicker } from './AgentPicker'
 import { Icon } from '../Icon'
@@ -21,6 +28,12 @@ export function AgentSelector({
   onAgentChange,
 }: AgentSelectorProps) {
   const { t } = useI18n(lang as any)
+  const [isOpen, setIsOpen] = useState(false)
+
+  const handleAgentChange = (agent: Agent | null) => {
+    onAgentChange?.(agent)
+    setIsOpen(false)
+  }
 
   return (
     <Tooltip
@@ -29,18 +42,24 @@ export function AgentSelector({
         base: 'pointer-events-none',
       }}
     >
-      <Dropdown
-        className="bg-white dark:bg-default-50 dark:text-white max-w-[94dvw]"
-        isDisabled={disabled}
+      <Popover
+        isOpen={isOpen}
+        onOpenChange={setIsOpen}
         placement="bottom-start"
+        classNames={{
+          content:
+            'bg-white dark:bg-default-50 dark:text-white max-w-[94dvw] p-0',
+        }}
+        isKeyboardDismissDisabled={false}
       >
-        <DropdownTrigger>
+        <PopoverTrigger>
           <Button
             data-testid="agent-picker"
             isIconOnly={isSmallWidth()}
             radius="full"
             variant="light"
             size="sm"
+            isDisabled={disabled}
           >
             <Icon
               name={selectedAgent.icon ?? 'User'}
@@ -51,13 +70,14 @@ export function AgentSelector({
               {selectedAgent.i18n?.[lang]?.name ?? selectedAgent.name}
             </span>
           </Button>
-        </DropdownTrigger>
-        <AgentPicker
-          disabled={disabled}
-          selectedAgent={selectedAgent}
-          onAgentChange={onAgentChange}
-        />
-      </Dropdown>
+        </PopoverTrigger>
+        <PopoverContent>
+          <AgentPicker
+            selectedAgent={selectedAgent}
+            onAgentChange={handleAgentChange}
+          />
+        </PopoverContent>
+      </Popover>
     </Tooltip>
   )
 }

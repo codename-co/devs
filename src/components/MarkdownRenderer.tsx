@@ -8,11 +8,22 @@ import {
   Widget,
 } from './Widget/Widget'
 import { useI18n } from '@/i18n'
+import type { SourceInfo } from './InlineSource'
+import {
+  InlineCitation,
+  SemanticCitation,
+  EXTENDED_CITATION_PATTERN,
+  getSemanticCitationType,
+} from './InlineSource'
 
 interface MarkdownRendererProps {
   content: string
   className?: string
   renderWidgets?: boolean
+  /** Sources for inline citation rendering */
+  sources?: SourceInfo[]
+  /** Callback when a citation is clicked */
+  onCitationClick?: (source: SourceInfo) => void
 }
 
 interface CodeBlock {
@@ -38,6 +49,8 @@ export const MarkdownRenderer = ({
   content,
   className = '',
   renderWidgets = true,
+  sources = [],
+  onCitationClick,
 }: MarkdownRendererProps) => {
   const [processedContent, setProcessedContent] = useState<{
     html: string
@@ -352,16 +365,87 @@ export const MarkdownRenderer = ({
     '--markdown-blockquote-border': 'var(--heroui-colors-default-300)',
   } as React.CSSProperties
 
+  // Helper to process text and replace citations with React components
+  // Handles both numeric citations [1], [2] and semantic citations [Memory], [Pinned], [Document Name]
+  const processCitations = (
+    text: string,
+    keyPrefix: string,
+  ): (string | JSX.Element)[] => {
+    const parts: (string | JSX.Element)[] = []
+    let lastIndex = 0
+    const citationRegex = new RegExp(EXTENDED_CITATION_PATTERN.source, 'g')
+    let match
+
+    while ((match = citationRegex.exec(text)) !== null) {
+      // Add text before the citation
+      if (match.index > lastIndex) {
+        parts.push(text.substring(lastIndex, match.index))
+      }
+
+      const capturedValue = match[1]
+      const isNumeric = /^\d+$/.test(capturedValue)
+
+      if (isNumeric) {
+        // Numeric citation [1], [2], etc.
+        const refNumber = parseInt(capturedValue, 10)
+        const source = sources.find((s) => s.refNumber === refNumber)
+
+        if (source) {
+          const handleClick = onCitationClick
+            ? () => onCitationClick(source)
+            : undefined
+          parts.push(
+            <InlineCitation
+              key={`${keyPrefix}-citation-${match.index}`}
+              number={refNumber}
+              source={source}
+              onClick={handleClick}
+            />,
+          )
+        } else {
+          // Keep as text if no matching source
+          parts.push(match[0])
+        }
+      } else {
+        // Semantic citation [Memory], [Pinned], or [Document Name]
+        const semanticType = getSemanticCitationType(capturedValue)
+        parts.push(
+          <SemanticCitation
+            key={`${keyPrefix}-semantic-${match.index}`}
+            type={semanticType || 'document'}
+            label={capturedValue}
+          />,
+        )
+      }
+
+      lastIndex = match.index + match[0].length
+    }
+
+    // Add remaining text
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex))
+    }
+
+    return parts.length > 0 ? parts : [text]
+  }
+
   const renderedContent = useMemo(() => {
     const { html, codeBlocks, thinkBlocks, mathBlocks } = processedContent
+
+    // Check for numeric citations (requires sources) or semantic citations in content
+    const hasNumericCitations = sources.length > 0
+    const hasSemanticCitations =
+      /\[(Memory|Pinned|[A-Z][A-Za-z0-9\s\-_.]+)\]/.test(html)
+    const hasCitations = hasNumericCitations || hasSemanticCitations
 
     if (
       (codeBlocks.length === 0 ||
         !codeBlocks.some((block) => block.type === 'specialized')) &&
       thinkBlocks.length === 0 &&
-      mathBlocks.length === 0
+      mathBlocks.length === 0 &&
+      !hasCitations
     ) {
-      // No specialized code blocks, think blocks, or math blocks, render normally
+      // No specialized code blocks, think blocks, math blocks, or citations, render normally
       return (
         <div
           className={`markdown-content ${className}`}
@@ -378,9 +462,21 @@ export const MarkdownRenderer = ({
     const elements: JSX.Element[] = []
 
     let elementIndex = 0
-    const processNode = (node: Node): JSX.Element | string => {
+    const processNode = (
+      node: Node,
+    ): JSX.Element | string | (string | JSX.Element)[] => {
       if (node.nodeType === Node.TEXT_NODE) {
-        return node.textContent || ''
+        const text = node.textContent || ''
+        // Process citations in text nodes
+        if (hasCitations && text) {
+          const parts = processCitations(text, `text-${elementIndex++}`)
+          // If only one part and it's the same as input, return as string
+          if (parts.length === 1 && parts[0] === text) {
+            return text
+          }
+          return parts
+        }
+        return text
       }
 
       if (node.nodeType === Node.ELEMENT_NODE) {
@@ -483,8 +579,11 @@ export const MarkdownRenderer = ({
           }
         })
 
-        // Process children
-        const children = Array.from(element.childNodes).map(processNode)
+        // Process children - flatten arrays from citation processing
+        const children = Array.from(element.childNodes).flatMap((child) => {
+          const result = processNode(child)
+          return Array.isArray(result) ? result : [result]
+        })
 
         return React.createElement(tagName, props, ...children)
       }
@@ -498,13 +597,24 @@ export const MarkdownRenderer = ({
       Array.from(bodyContent.childNodes).forEach((node) => {
         const processed = processNode(node)
         if (processed) {
-          elements.push(
-            typeof processed === 'string' ? (
-              <span key={`text-${elementIndex++}`}>{processed}</span>
-            ) : (
-              processed
-            ),
-          )
+          if (Array.isArray(processed)) {
+            // Citation processing returned multiple parts
+            processed.forEach((part, idx) => {
+              if (typeof part === 'string') {
+                elements.push(
+                  <span key={`text-${elementIndex++}-${idx}`}>{part}</span>,
+                )
+              } else {
+                elements.push(part)
+              }
+            })
+          } else if (typeof processed === 'string') {
+            elements.push(
+              <span key={`text-${elementIndex++}`}>{processed}</span>,
+            )
+          } else {
+            elements.push(processed)
+          }
         }
       })
     }
@@ -514,7 +624,7 @@ export const MarkdownRenderer = ({
         {elements}
       </div>
     )
-  }, [processedContent, className])
+  }, [processedContent, className, sources, onCitationClick, processCitations])
 
   return renderedContent
 }

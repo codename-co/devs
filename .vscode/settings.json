@@ -1,4 +1,6 @@
 {
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "markdown.marp.themes": ["./src/components/widget.marpit.css"],
   "yaml.schemaStore.url": "https://www.schemastore.org/api/json/catalog.json",
   "yaml.schemaStore.enable": true,

@@ -11,6 +11,7 @@ import { errorToast } from '@/lib/toast'
 import {
   getKnowledgeAttachments,
   buildAgentInstructions,
+  CITATION_INSTRUCTIONS,
 } from '@/lib/agent-knowledge'
 import { buildMemoryContextForChat } from '@/lib/memory-learning-service'
 import { Lang, languages } from '@/i18n'
@@ -22,10 +23,15 @@ import {
   areMathToolsRegistered,
   registerCodeTools,
   areCodeToolsRegistered,
+  registerConnectorTools,
+  areConnectorToolsRegistered,
 } from '@/lib/tool-executor'
 import { KNOWLEDGE_TOOL_DEFINITIONS } from '@/lib/knowledge-tools'
 import { MATH_TOOL_DEFINITIONS } from '@/lib/math-tools'
 import { CODE_TOOL_DEFINITIONS } from '@/lib/code-tools'
+import { getToolDefinitionsForProvider } from '@/features/connectors/tools'
+import { db } from '@/lib/db'
+import type { Connector } from '@/features/connectors/types'
 
 // ============================================================================
 // Tool Helpers
@@ -33,6 +39,70 @@ import { CODE_TOOL_DEFINITIONS } from '@/lib/code-tools'
 
 /** Maximum iterations for tool calling loop to prevent infinite loops */
 const MAX_TOOL_ITERATIONS = 10
+
+/** Map tool names to i18n keys for status messages */
+const TOOL_STATUS_I18N_KEYS: Record<string, string> = {
+  // Knowledge tools
+  search_knowledge: 'Searching knowledge base',
+  read_document: 'Reading document',
+  list_documents: 'Browsing documents',
+  get_document_summary: 'Summarizing document',
+  // Math & code tools
+  calculate: 'Calculating',
+  execute: 'Running code',
+  // Gmail tools
+  gmail_search: 'Searching Gmail',
+  gmail_read: 'Reading email',
+  gmail_list_labels: 'Listing Gmail labels',
+  // Google Drive tools
+  drive_search: 'Searching Google Drive',
+  drive_read: 'Reading file from Drive',
+  drive_list: 'Listing Drive files',
+  // Google Calendar tools
+  calendar_list_events: 'Listing calendar events',
+  calendar_get_event: 'Getting calendar event',
+  calendar_search: 'Searching calendar',
+  // Google Tasks tools
+  tasks_list: 'Listing tasks',
+  tasks_get: 'Getting task details',
+  tasks_list_tasklists: 'Listing task lists',
+  // Notion tools
+  notion_search: 'Searching Notion',
+  notion_read_page: 'Reading Notion page',
+  notion_query_database: 'Querying Notion database',
+}
+
+/**
+ * Get a user-friendly status message for tool calls being executed.
+ * Shows specific tool names when possible, falls back to generic message.
+ * @param toolCalls - The tool calls being executed
+ * @param t - Translation function from i18n
+ */
+function getToolStatusMessage(
+  toolCalls: ToolCall[],
+  t: (key: string) => string,
+): string {
+  if (toolCalls.length === 1) {
+    const toolName = toolCalls[0].function.name
+    const i18nKey = TOOL_STATUS_I18N_KEYS[toolName]
+    return i18nKey
+      ? `${t(i18nKey)}...`
+      : `${t('Using tool')}: ${toolName.replace(/_/g, ' ')}...`
+  }
+
+  // Multiple tools - show unique tool types
+  const uniqueToolNames = [...new Set(toolCalls.map((tc) => tc.function.name))]
+  if (uniqueToolNames.length === 1) {
+    const toolName = uniqueToolNames[0]
+    const i18nKey = TOOL_STATUS_I18N_KEYS[toolName]
+    return i18nKey
+      ? `${t(i18nKey)}...`
+      : `${t('Using tool')}: ${toolName.replace(/_/g, ' ')}...`
+  }
+
+  // Multiple different tools - give a summary
+  return `${t('Using tools')}...`
+}
 
 /**
  * Get all knowledge tool definitions.
@@ -46,6 +116,87 @@ function getAgentToolDefinitions(_agent: Agent): ToolDefinition[] {
     ...Object.values(MATH_TOOL_DEFINITIONS),
     ...Object.values(CODE_TOOL_DEFINITIONS),
   ]
+}
+
+/**
+ * Get connector tool definitions based on active connectors.
+ * Only includes tools for connectors that are connected and active.
+ * Enhances tool descriptions with available connector IDs so the LLM knows which to use.
+ */
+async function getConnectorToolDefinitions(): Promise<ToolDefinition[]> {
+  try {
+    if (!db.isInitialized()) {
+      await db.init()
+    }
+
+    const connectors = (await db.getAll('connectors')) as Connector[]
+    console.log(
+      '▶ connectors from db:',
+      connectors.map((c) => ({
+        id: c.id,
+        provider: c.provider,
+        status: c.status,
+      })),
+    )
+    const activeConnectors = connectors.filter((c) =>
+      ['connected', 'syncing'].includes(c.status),
+    )
+    console.log('▶ active connectors:', activeConnectors.length)
+
+    if (activeConnectors.length === 0) {
+      return []
+    }
+
+    // Group active connectors by provider
+    const connectorsByProvider = new Map<string, Connector[]>()
+    for (const connector of activeConnectors) {
+      const existing = connectorsByProvider.get(connector.provider) || []
+      existing.push(connector)
+      connectorsByProvider.set(connector.provider, existing)
+    }
+
+    // Get unique providers from active connectors
+    const activeProviders = [...connectorsByProvider.keys()]
+    console.log('▶ active providers:', activeProviders)
+
+    // Get tools for each active provider, enhancing with connector IDs
+    const tools: ToolDefinition[] = []
+    for (const provider of activeProviders) {
+      const providerConnectors = connectorsByProvider.get(provider) || []
+      const providerTools = getToolDefinitionsForProvider(provider)
+      console.log(`▶ tools for ${provider}:`, providerTools.length)
+
+      // Enhance each tool with available connector IDs for this provider
+      const enhancedTools = providerTools.map((tool) => {
+        const connectorInfo = providerConnectors
+          .map(
+            (c) =>
+              `"${c.id}"${c.accountEmail ? ` (${c.accountEmail})` : c.name ? ` (${c.name})` : ''}`,
+          )
+          .join(', ')
+
+        // Deep clone the tool definition to avoid mutating the original
+        const enhancedTool: ToolDefinition = JSON.parse(JSON.stringify(tool))
+
+        // Enhance the connector_id parameter description with available IDs
+        if (enhancedTool.function.parameters?.properties?.connector_id) {
+          const originalDesc =
+            enhancedTool.function.parameters.properties.connector_id
+              .description || ''
+          enhancedTool.function.parameters.properties.connector_id.description = `${originalDesc}. Available connector IDs: ${connectorInfo}`
+        }
+
+        return enhancedTool
+      })
+
+      tools.push(...enhancedTools)
+    }
+
+    return tools
+  } catch (error) {
+    console.error('Failed to get connector tool definitions:', error)
+    return []
+  }
 }
 
 /**
@@ -105,6 +256,11 @@ async function executeToolCalls(
   // Ensure code tools are registered
   if (!areCodeToolsRegistered()) {
     registerCodeTools()
+  }
+
+  // Ensure connector tools are registered
+  if (!areConnectorToolsRegistered()) {
+    registerConnectorTools()
   }
 
   // Create a trace for the tool execution batch
@@ -352,16 +508,22 @@ export const submitChat = async (
       prompt,
     )
 
-    const instructions = [
+    // Build instructions array
+    // Citation instructions are always included since tools are always available
+    const hasKnowledgeItems =
+      agent.knowledgeItemIds && agent.knowledgeItemIds.length > 0
+    const instructionParts = [
       enhancedInstructions,
       // Inject memory context if available
       memoryContext,
       // Inject pinned messages context if available
       pinnedContext,
+      // Add citation instructions if not already included via buildAgentInstructions
+      !hasKnowledgeItems ? CITATION_INSTRUCTIONS : '',
       `ALWAYS respond in ${languages[lang]} as this is the user's language.`,
     ]
-      .filter(Boolean)
-      .join('\n\n')
+
+    const instructions = instructionParts.filter(Boolean).join('\n\n')
 
     // Save the system prompt ONLY for new conversations (for transparency)
     if (isNewConversation) {
@@ -441,11 +603,24 @@ export const submitChat = async (
 
     // Get tool definitions from agent's configured tools
     const toolDefinitions = getAgentToolDefinitions(agent)
-    const hasTools = toolDefinitions.length > 0
+    // Add connector tools if any connectors are active
+    const connectorTools = await getConnectorToolDefinitions()
+    console.log(
+      '▶ connector tools:',
+      connectorTools.length,
+      connectorTools.map((t) => t.function.name),
+    )
+    const allToolDefinitions = [...toolDefinitions, ...connectorTools]
+    console.log(
+      '▶ all tools:',
+      allToolDefinitions.length,
+      allToolDefinitions.map((t) => t.function.name),
+    )
+    const hasTools = allToolDefinitions.length > 0
 
     // Build config with tools if the agent has any enabled
     const llmConfig = hasTools
-      ? { ...config, tools: toolDefinitions, tool_choice: 'auto' as const }
+      ? { ...config, tools: allToolDefinitions, tool_choice: 'auto' as const }
       : config
 
     // Call the LLM service with streaming and handle tool calls
@@ -490,8 +665,9 @@ export const submitChat = async (
         toolCalls.map((tc) => tc.function.name),
       )
 
-      // Show user that tools are being executed
-      onResponseUpdate(finalContent + '\n\n🔧 *Searching knowledge base...*')
+      // Show user that tools are being executed with appropriate message
+      const toolStatusMessage = getToolStatusMessage(toolCalls, t)
+      onResponseUpdate(finalContent + `\n\n🔧 *${toolStatusMessage}*`)
 
       // Execute the tool calls
       const { results: toolResults } = await executeToolCalls(toolCalls, {

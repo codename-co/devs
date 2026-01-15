@@ -52,6 +52,9 @@ export class LocalLLMProvider implements LLMProviderInterface {
   private static currentModel: string | null = null
   private static isLoading = false
   private static loadingPromise: Promise<TextGenerationPipeline> | null = null
+  // Cache for available models to avoid repeated HuggingFace API calls
+  private static cachedModels: string[] | null = null
+  private static modelsPromise: Promise<string[]> | null = null
 
   // Default model, optimized for browser inference
   public static readonly DEFAULT_MODEL =
@@ -291,6 +294,29 @@ export class LocalLLMProvider implements LLMProviderInterface {
   }
 
   async getAvailableModels(): Promise<string[]> {
+    // Return cached models if available
+    if (LocalLLMProvider.cachedModels) {
+      return LocalLLMProvider.cachedModels
+    }
+
+    // If a fetch is already in progress, wait for it
+    if (LocalLLMProvider.modelsPromise) {
+      return LocalLLMProvider.modelsPromise
+    }
+
+    // Start a new fetch and cache the promise
+    LocalLLMProvider.modelsPromise = this.fetchAvailableModels()
+
+    try {
+      const models = await LocalLLMProvider.modelsPromise
+      LocalLLMProvider.cachedModels = models
+      return models
+    } finally {
+      LocalLLMProvider.modelsPromise = null
+    }
+  }
+
+  private async fetchAvailableModels(): Promise<string[]> {
     try {
       // Fetch models from HuggingFace API filtered by onnx-community and transformers.js
       const response = await fetch(

@@ -3,6 +3,40 @@ import { KnowledgeItem } from '@/types'
 import { LLMMessageAttachment } from './llm'
 
 /**
+ * Citation format instructions for LLM to use when citing knowledge sources.
+ * This is shared between agents with attached knowledge and agents using knowledge tools.
+ */
+export const CITATION_INSTRUCTIONS = `## Citation Format
+
+When you use information from ANY of the following sources, you MUST cite them using the appropriate format:
+
+**1. Tool Results (search_knowledge, read_document, gmail_search, etc.):**
+Use numbered references [1], [2], [3], etc. in the order sources appear.
+
+**2. Remembered Context (user memories):**
+Cite as [Memory] when using information from the "Remembered Context about the User" section.
+
+**3. Pinned Messages (important past conversations):**
+Cite as [Pinned] when referencing information from the "Important Past Conversations" section.
+
+**4. Knowledge Base Attachments:**
+Cite by document name, e.g., [Project Guidelines] or [Technical Specs].
+
+**Citation Rules:**
+- Place the citation immediately after the statement that uses that source's information
+- Multiple citations can be combined: [1][Memory] or [1, 2]
+- Each distinct source document should have its own unique number
+- Be consistent: always use the same number for the same source throughout your response
+
+**Examples:**
+- Tool results: "The project follows agile methodology [1] with weekly sprints."
+- Memory: "Comme vous l'avez mentionné, vous n'aimez pas les crevettes [Memory]."
+- Pinned: "Une marge de flexibilité de 70% serait très inhabituelle [Pinned]."
+- Combined: "Le projet BILLOT GAZ [Memory] suit les marges standards de ± 5-10% [Pinned]."
+
+This citation format helps users identify and verify the source of information.`
+
+/**
  * Converts knowledge items into LLM message attachments
  */
 export async function getKnowledgeAttachments(
@@ -119,7 +153,9 @@ export async function buildAgentInstructions(
 
 ## Knowledge Base Context
 
-You have access to ${knowledgeItemIds.length} knowledge base item(s) that have been provided as attachments to this conversation. When responding, draw upon this knowledge base context when relevant. Reference specific information from the knowledge base when it helps answer questions or provide better assistance. Always prioritize accuracy and relevance from the knowledge base over general knowledge when there are conflicts.`
+You have access to ${knowledgeItemIds.length} knowledge base item(s) that have been provided as attachments to this conversation. When responding, draw upon this knowledge base context when relevant. Reference specific information from the knowledge base when it helps answer questions or provide better assistance. Always prioritize accuracy and relevance from the knowledge base over general knowledge when there are conflicts.
+
+${CITATION_INSTRUCTIONS}`
 
     return enhancedInstructions
   } catch (error) {

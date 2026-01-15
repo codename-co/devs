@@ -111,6 +111,7 @@ export const es: I18n = {
   '{n} models': '{n} modelos',
   'Search models...': 'Buscar modelos...',
   'No models found': 'No se encontraron modelos',
+  'Search agents…': 'Buscar agentes…',
 
   // Model capabilities
   Fast: 'Rápido',
@@ -725,4 +726,10 @@ export const es: I18n = {
   Calculate: 'Calcular',
   'Evaluate mathematical expressions with support for variables and Math functions':
     'Evaluar expresiones matemáticas con soporte para variables y funciones Math',
+
+  // Citations
+  Memory: 'Memoria',
+  'From remembered context about the user':
+    'Del contexto recordado sobre el usuario',
+  'From important past conversations': 'De conversaciones importantes pasadas',
 } as const

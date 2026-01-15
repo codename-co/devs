@@ -109,6 +109,7 @@ export const ko: I18n = {
   '{n} models': '{n}개 모델',
   'Search models...': '모델 검색...',
   'No models found': '모델을 찾을 수 없습니다',
+  'Search agents…': '에이전트 검색…',
 
   // Model capabilities
   Fast: '빠름',
@@ -713,4 +714,9 @@ export const ko: I18n = {
   Calculate: '계산',
   'Evaluate mathematical expressions with support for variables and Math functions':
     '변수와 Math 함수를 지원하는 수학 표현식 평가',
+
+  // Citations
+  Memory: '메모리',
+  'From remembered context about the user': '사용자에 대해 기억된 컨텍스트',
+  'From important past conversations': '중요한 이전 대화에서',
 } as const

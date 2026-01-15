@@ -126,6 +126,30 @@ export const de: I18n = {
   'Summarizing document': 'Dokument zusammenfassen',
   Calculating: 'Berechnen',
   'Code interpreter': 'Code-Interpreter',
+  'Running code': 'Code ausführen',
+  // Gmail tools
+  'Searching Gmail': 'Gmail durchsuchen',
+  'Reading email': 'E-Mail lesen',
+  'Listing Gmail labels': 'Gmail-Labels auflisten',
+  // Google Drive tools
+  'Searching Google Drive': 'Google Drive durchsuchen',
+  'Reading file from Drive': 'Datei von Drive lesen',
+  'Listing Drive files': 'Drive-Dateien auflisten',
+  // Google Calendar tools
+  'Listing calendar events': 'Kalendertermine auflisten',
+  'Getting calendar event': 'Kalendertermin abrufen',
+  'Searching calendar': 'Kalender durchsuchen',
+  // Google Tasks tools
+  'Listing tasks': 'Aufgaben auflisten',
+  'Getting task details': 'Aufgabendetails abrufen',
+  'Listing task lists': 'Aufgabenlisten auflisten',
+  // Notion tools
+  'Searching Notion': 'Notion durchsuchen',
+  'Reading Notion page': 'Notion-Seite lesen',
+  'Querying Notion database': 'Notion-Datenbank abfragen',
+  // Generic tool messages
+  'Using tool': 'Werkzeug verwenden',
+  'Using tools': 'Werkzeuge verwenden',
   'Failed to generate agent. Please try again.':
     'Agent konnte nicht generiert werden. Bitte versuchen Sie es erneut.',
   // Tool labels
@@ -137,4 +161,9 @@ export const de: I18n = {
   // Search results
   result: 'Ergebnis',
   results: 'Ergebnisse',
+  // Sources
+  Sources: 'Quellen',
+  'View in Knowledge Base': 'In Wissensbasis anzeigen',
+  // Quick replies
+  'Generating suggestions…': 'Vorschläge werden generiert…',
 } as const
