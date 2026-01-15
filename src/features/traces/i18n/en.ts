@@ -22,6 +22,7 @@ export const en = [
   'Search traces...',
 
   // Time periods
+  'Time Range',
   'Last Hour',
   'Last 24 Hours',
   'Last 7 Days',

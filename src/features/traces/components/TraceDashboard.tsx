@@ -1,5 +1,12 @@
 import { useMemo, useState, useEffect } from 'react'
-import { Card, CardBody, CardHeader, Spinner } from '@heroui/react'
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  Spinner,
+  Select,
+  SelectItem,
+} from '@heroui/react'
 import ReactECharts from 'echarts-for-react'
 import type { EChartsOption } from 'echarts'
 
@@ -9,16 +16,30 @@ import { getAgentById } from '@/stores/agentStore'
 import { TraceMetrics, DailyMetrics } from '../types'
 import localI18n from '../i18n'
 
+export type TracePeriod = 'hour' | 'day' | 'week' | 'month' | 'all'
+
 interface TraceDashboardProps {
   metrics: TraceMetrics | null
   dailyMetrics: DailyMetrics[]
   isLoading: boolean
+  period?: TracePeriod
+  onPeriodChange?: (period: TracePeriod) => void
 }
+
+const PERIOD_OPTIONS = [
+  { key: 'hour', labelKey: 'Last Hour' },
+  { key: 'day', labelKey: 'Last 24 Hours' },
+  { key: 'week', labelKey: 'Last 7 Days' },
+  { key: 'month', labelKey: 'Last 30 Days' },
+  { key: 'all', labelKey: 'All Time' },
+] as const
 
 export function TraceDashboard({
   metrics,
   dailyMetrics,
   isLoading,
+  period = 'all',
+  onPeriodChange,
 }: TraceDashboardProps) {
   const { t } = useI18n(localI18n)
 
@@ -56,6 +77,28 @@ export function TraceDashboard({
 
   return (
     <div className="space-y-6">
+      {/* Time Range Selector */}
+      {onPeriodChange && (
+        <div className="flex justify-end">
+          <Select
+            label={t('Time Range')}
+            labelPlacement="outside-left"
+            selectedKeys={[period]}
+            onSelectionChange={(keys) => {
+              const selected = Array.from(keys)[0] as TracePeriod
+              if (selected) onPeriodChange(selected)
+            }}
+            className="w-60"
+            size="sm"
+            aria-label={t('Time Range')}
+          >
+            {PERIOD_OPTIONS.map((option) => (
+              <SelectItem key={option.key}>{t(option.labelKey)}</SelectItem>
+            ))}
+          </Select>
+        </div>
+      )}
+
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MetricCard

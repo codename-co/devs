@@ -26,6 +26,7 @@ export const ko: I18n = {
   'Search traces...': '추적 검색...',
 
   // Time periods
+  'Time Range': '기간 선택',
   'Last Hour': '지난 1시간',
   'Last 24 Hours': '지난 24시간',
   'Last 7 Days': '지난 7일',

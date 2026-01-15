@@ -26,6 +26,7 @@ export const ar: I18n = {
   'Search traces...': 'البحث في التتبعات...',
 
   // Time periods
+  'Time Range': 'النطاق الزمني',
   'Last Hour': 'الساعة الأخيرة',
   'Last 24 Hours': 'آخر 24 ساعة',
   'Last 7 Days': 'آخر 7 أيام',

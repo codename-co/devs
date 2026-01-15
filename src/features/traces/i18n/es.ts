@@ -27,6 +27,7 @@ export const es: I18n = {
   'Search traces...': 'Buscar trazas...',
 
   // Time periods
+  'Time Range': 'Rango de tiempo',
   'Last Hour': 'Última hora',
   'Last 24 Hours': 'Últimas 24 horas',
   'Last 7 Days': 'Últimos 7 días',

@@ -21,7 +21,7 @@ import { addToast } from '@heroui/toast'
 import { useI18n } from '@/i18n'
 import { Container, Icon, Section } from '@/components'
 import { useTraceStore } from '@/stores/traceStore'
-import { TraceList, TraceDashboard } from '../components'
+import { TraceList, TraceDashboard, TracePeriod } from '../components'
 import { useLiveTraceDashboard, useLiveTraces } from '../hooks'
 import localI18n from '../i18n'
 import DefaultLayout from '@/layouts/Default'
@@ -39,12 +39,16 @@ export function TracesPage() {
   }
   const activeTab = getActiveTab()
 
+  // Period state for metrics filtering
+  const [period, setPeriod] = useState<TracePeriod>('week')
+
   // Use live hooks for real-time updates (polls every 5s, works across windows)
   const {
     metrics: liveMetrics,
     dailyMetrics: liveDailyMetrics,
     isLoading: isDashboardLoading,
   } = useLiveTraceDashboard({
+    period,
     enabled: activeTab === 'dashboard',
   })
 
@@ -235,6 +239,8 @@ export function TracesPage() {
               metrics={liveMetrics}
               dailyMetrics={liveDailyMetrics}
               isLoading={isDashboardLoading}
+              period={period}
+              onPeriodChange={setPeriod}
             />
           )}
           {activeTab === 'logs' && (

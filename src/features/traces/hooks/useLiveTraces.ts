@@ -276,7 +276,7 @@ export function useLiveTraceDashboard(
   } = {},
 ) {
   const {
-    period = 'day',
+    period = 'all',
     days = 14,
     pollInterval = DEFAULT_POLL_INTERVAL,
     enabled = true,
