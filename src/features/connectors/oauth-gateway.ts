@@ -120,6 +120,17 @@ const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
     // Notion requires Basic Auth header instead of client_secret in body
     useBasicAuth: true,
   },
+  qonto: {
+    authUrl: 'https://oauth.qonto.com/oauth2/auth',
+    // Use proxy in development to avoid CORS, direct URL in production
+    tokenUrl: import.meta.env.DEV
+      ? '/api/qonto/oauth2/token'
+      : 'https://oauth.qonto.com/oauth2/token',
+    clientId: import.meta.env.VITE_QONTO_CLIENT_ID || '',
+    clientSecret: import.meta.env.VITE_QONTO_CLIENT_SECRET || '',
+    scopes: ['offline_access', 'organization.read'],
+    pkceRequired: true,
+  },
   dropbox: {
     authUrl: 'https://www.dropbox.com/oauth2/authorize',
     tokenUrl: 'https://api.dropboxapi.com/oauth2/token',

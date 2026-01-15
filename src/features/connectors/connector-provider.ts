@@ -52,6 +52,7 @@ const PROVIDER_SCOPES: Record<AppConnectorProvider, string[]> = {
   notion: [], // Notion handles scopes differently via their OAuth integration settings
   dropbox: ['files.content.read', 'files.metadata.read'],
   github: ['repo', 'read:user'],
+  qonto: ['offline_access', 'organization.read'],
 }
 
 /**

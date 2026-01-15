@@ -14,7 +14,7 @@ import {
   Tooltip,
   Switch,
 } from '@heroui/react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useI18n, useUrl, languages, type Lang } from '@/i18n'
 import { LLMProvider, Credential, LangfuseConfig } from '@/types'
 import { db } from '@/lib/db'
@@ -44,6 +44,7 @@ interface SettingsContentProps {
 export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
   const { lang, t, url } = useI18n(localI18n)
   const navigate = useNavigate()
+  const location = useLocation()
   const openAddProviderModal = useAddLLMProviderModal((state) => state.open)
   const { handleImageFile, setBackgroundImage } = useBackgroundImage()
 
@@ -89,7 +90,8 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
     if (!isModal) {
       const newUrl = useUrl(newLanguage)
       const settingsPath = newUrl('/settings')
-      navigate(settingsPath)
+      // Preserve hash when navigating to new language
+      navigate(settingsPath + location.hash)
     }
   }
 

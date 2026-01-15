@@ -140,6 +140,18 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       host: true,
       proxy: {
+        // Proxy Qonto OAuth token requests to avoid CORS issues
+        '/api/qonto/oauth': {
+          target: 'https://oauth.qonto.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/qonto\/oauth/, ''),
+        },
+        // Proxy Qonto API requests to avoid CORS issues
+        '/api/qonto/v2': {
+          target: 'https://thirdparty.qonto.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/qonto/, ''),
+        },
         // Proxy all Notion API requests to avoid CORS issues
         '/api/notion': {
           target: 'https://api.notion.com',

@@ -934,6 +934,7 @@ const ExpandedDrawer = ({
                   setIsLanguagePopoverOpen(false)
                   // Navigate to the same path in the new language
                   const currentPath = window.location.pathname
+                  const currentHash = window.location.hash
                   const pathWithoutLang = currentPath
                     .replace(/^\/(en|ar|de|es|fr|ko)/, '')
                     .replace(/^\/$/, '')
@@ -941,7 +942,7 @@ const ExpandedDrawer = ({
                     selectedLang === 'en'
                       ? pathWithoutLang || '/'
                       : `/${selectedLang}${pathWithoutLang || ''}`
-                  navigate(newPath)
+                  navigate(newPath + currentHash)
                 }
               }}
             >

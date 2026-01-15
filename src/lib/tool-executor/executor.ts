@@ -71,6 +71,11 @@ import {
   notionSearch,
   notionReadPage,
   notionQueryDatabase,
+  qontoListBusinessAccounts,
+  qontoListTransactions,
+  qontoGetTransaction,
+  qontoListStatements,
+  qontoGetStatement,
 } from '@/features/connectors/tools'
 import type {
   GmailSearchParams,
@@ -103,6 +108,16 @@ import type {
   NotionReadPageResult,
   NotionQueryDatabaseParams,
   NotionQueryDatabaseResult,
+  QontoListBusinessAccountsParams,
+  QontoListBusinessAccountsResult,
+  QontoListTransactionsParams,
+  QontoListTransactionsResult,
+  QontoGetTransactionParams,
+  QontoGetTransactionResult,
+  QontoListStatementsParams,
+  QontoListStatementsResult,
+  QontoGetStatementParams,
+  QontoGetStatementResult,
 } from '@/features/connectors/tools'
 import type {
   CalculateParams,
@@ -1357,6 +1372,89 @@ export function registerConnectorTools(): void {
       estimatedDuration: 2500,
     },
   )
+
+  // ===== Qonto Tools =====
+  defaultRegistry.register<
+    QontoListBusinessAccountsParams,
+    QontoListBusinessAccountsResult
+  >(
+    CONNECTOR_TOOL_DEFINITIONS.qonto_list_business_accounts,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return qontoListBusinessAccounts(args)
+    },
+    {
+      tags: ['connector', 'qonto', 'accounts'],
+      estimatedDuration: 1500,
+    },
+  )
+
+  defaultRegistry.register<
+    QontoListTransactionsParams,
+    QontoListTransactionsResult
+  >(
+    CONNECTOR_TOOL_DEFINITIONS.qonto_list_transactions,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return qontoListTransactions(args)
+    },
+    {
+      tags: ['connector', 'qonto', 'transactions'],
+      estimatedDuration: 2000,
+    },
+  )
+
+  defaultRegistry.register<
+    QontoGetTransactionParams,
+    QontoGetTransactionResult
+  >(
+    CONNECTOR_TOOL_DEFINITIONS.qonto_get_transaction,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return qontoGetTransaction(args)
+    },
+    {
+      tags: ['connector', 'qonto', 'transaction'],
+      estimatedDuration: 1500,
+    },
+  )
+
+  defaultRegistry.register<
+    QontoListStatementsParams,
+    QontoListStatementsResult
+  >(
+    CONNECTOR_TOOL_DEFINITIONS.qonto_list_statements,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return qontoListStatements(args)
+    },
+    {
+      tags: ['connector', 'qonto', 'statements'],
+      estimatedDuration: 1500,
+    },
+  )
+
+  defaultRegistry.register<QontoGetStatementParams, QontoGetStatementResult>(
+    CONNECTOR_TOOL_DEFINITIONS.qonto_get_statement,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return qontoGetStatement(args)
+    },
+    {
+      tags: ['connector', 'qonto', 'statement'],
+      estimatedDuration: 2000,
+    },
+  )
 }
 
 /**
@@ -1378,6 +1476,11 @@ const CONNECTOR_TOOL_NAMES = [
   'notion_search',
   'notion_read_page',
   'notion_query_database',
+  'qonto_list_business_accounts',
+  'qonto_list_transactions',
+  'qonto_get_transaction',
+  'qonto_list_statements',
+  'qonto_get_statement',
 ] as const
 
 /**

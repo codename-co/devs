@@ -31,7 +31,6 @@ export type ImageModel =
   | 'gpt-image-1'
   // Google Gemini
   | 'gemini-2.5-flash-image'
-  | 'gemini-2.5-flash-image-preview'
   | 'gemini-2.0-flash-preview-image-generation'
   | 'gemini-3-pro-image-preview'
   // Google Imagen
@@ -78,14 +77,14 @@ export const IMAGE_MODELS_BY_PROVIDER: Record<
   ],
   google: [
     {
+      id: 'gemini-3-pro-image-preview',
+      name: 'Gemini 3 Pro Image',
+      description: 'Professional quality, up to 4K, thinking-enabled',
+    },
+    {
       id: 'gemini-2.5-flash-image',
       name: 'Gemini 2.5 Flash Image',
       description: 'Fast image generation',
-    },
-    {
-      id: 'gemini-2.5-flash-image-preview',
-      name: 'Gemini 2.5 Flash Preview',
-      description: 'Preview image generation',
     },
   ],
   stability: [

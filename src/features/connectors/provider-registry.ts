@@ -45,6 +45,7 @@ const APP_PROVIDERS: readonly AppConnectorProvider[] = [
   'google-calendar',
   'google-tasks',
   'notion',
+  'qonto',
 ] as const
 
 /**
@@ -183,6 +184,7 @@ export class ProviderRegistry {
     )
     this.register('google-tasks', () => import('./providers/apps/google-tasks'))
     this.register('notion', () => import('./providers/apps/notion'))
+    this.register('qonto', () => import('./providers/apps/qonto'))
   }
 
   /**

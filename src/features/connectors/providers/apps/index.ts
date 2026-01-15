@@ -71,6 +71,13 @@ export const PROVIDER_CONFIG: Partial<
     description: 'Sync tasks and to-do lists from Google Tasks',
     syncSupported: true,
   },
+  qonto: {
+    name: 'Qonto',
+    icon: 'Qonto',
+    color: 'currentColor',
+    description: 'Access business accounts, transactions, and statements',
+    syncSupported: false,
+  },
   // dropbox: {
   //   name: 'Dropbox',
   //   icon: 'Dropbox',
@@ -96,6 +103,7 @@ export const AVAILABLE_PROVIDERS: AppConnectorProvider[] = [
   'google-meet',
   'google-tasks',
   'notion',
+  'qonto',
 ]
 
 // =============================================================================
@@ -132,6 +140,11 @@ export const googleMeet = () => import('./google-meet')
  */
 export const googleTasks = () => import('./google-tasks')
 
+/**
+ * Lazy-load Qonto provider
+ */
+export const qonto = () => import('./qonto')
+
 // =============================================================================
 // Default Export
 // =============================================================================
@@ -143,6 +156,7 @@ export default {
   googleMeet,
   googleTasks,
   notion,
+  qonto,
   PROVIDER_CONFIG,
   AVAILABLE_PROVIDERS,
 }

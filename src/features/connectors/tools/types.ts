@@ -900,6 +900,355 @@ export interface NotionQueryDatabaseResult {
 }
 
 // ============================================================================
+// Qonto Tools
+// ============================================================================
+
+/**
+ * Parameters for the qonto_list_business_accounts tool.
+ * List business accounts from Qonto.
+ */
+export interface QontoListBusinessAccountsParams
+  extends ConnectorToolBaseParams {
+  /**
+   * Page number for pagination.
+   * @default 1
+   */
+  page?: number
+  /**
+   * Number of accounts per page.
+   * @default 100
+   */
+  per_page?: number
+}
+
+/**
+ * Qonto business account summary.
+ */
+export interface QontoBankAccountSummary {
+  /** Account ID */
+  id: string
+  /** Account name */
+  name: string
+  /** Organization ID */
+  organizationId: string
+  /** Account status */
+  status: 'active' | 'inactive' | 'closed'
+  /** Whether this is the main account */
+  main: boolean
+  /** IBAN */
+  iban?: string
+  /** BIC */
+  bic?: string
+  /** Currency */
+  currency?: string
+  /** Current balance */
+  balance?: number
+  /** Authorized balance */
+  authorizedBalance?: number
+  /** Last update */
+  updatedAt?: Date
+}
+
+/**
+ * Result of qonto_list_business_accounts operation.
+ */
+export interface QontoListBusinessAccountsResult {
+  /** Business accounts */
+  accounts: QontoBankAccountSummary[]
+  /** Result count */
+  result_count: number
+  /** Total count */
+  total_count?: number
+  /** Pagination info */
+  pagination?: {
+    current_page: number
+    total_pages: number
+    per_page: number
+  }
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Parameters for the qonto_list_transactions tool.
+ * List transactions from a Qonto bank account.
+ */
+export interface QontoListTransactionsParams extends ConnectorToolBaseParams {
+  /**
+   * Bank account ID to list transactions for.
+   */
+  bank_account_id?: string
+  /**
+   * IBAN of the bank account.
+   */
+  iban?: string
+  /**
+   * Filter by transaction status.
+   */
+  status?: ('pending' | 'declined' | 'completed')[]
+  /**
+   * Filter by transaction side.
+   */
+  side?: 'credit' | 'debit'
+  /**
+   * Filter by transactions updated after this date (ISO 8601).
+   */
+  updated_at_from?: string
+  /**
+   * Filter by transactions updated before this date (ISO 8601).
+   */
+  updated_at_to?: string
+  /**
+   * Filter by transactions settled after this date (ISO 8601).
+   */
+  settled_at_from?: string
+  /**
+   * Filter by transactions settled before this date (ISO 8601).
+   */
+  settled_at_to?: string
+  /**
+   * Sort by field and direction.
+   * @default 'settled_at:desc'
+   */
+  sort_by?: string
+  /**
+   * Page number.
+   * @default 1
+   */
+  page?: number
+  /**
+   * Results per page.
+   * @default 100
+   */
+  per_page?: number
+}
+
+/**
+ * Qonto transaction summary.
+ */
+export interface QontoTransactionSummary {
+  /** Transaction ID */
+  id: string
+  /** Transaction reference ID */
+  transactionId: string
+  /** Amount */
+  amount: number
+  /** Amount in cents */
+  amountCents: number
+  /** Transaction side */
+  side: 'credit' | 'debit'
+  /** Operation type */
+  operationType: string
+  /** Currency */
+  currency: string
+  /** Label/description */
+  label: string
+  /** Status */
+  status: 'pending' | 'declined' | 'completed'
+  /** Settlement date */
+  settledAt?: Date
+  /** Emission date */
+  emittedAt?: Date
+  /** Note */
+  note?: string
+  /** Category */
+  category?: string
+  /** Whether attachment is required */
+  attachmentRequired: boolean
+  /** Number of attachments */
+  attachmentCount: number
+}
+
+/**
+ * Result of qonto_list_transactions operation.
+ */
+export interface QontoListTransactionsResult {
+  /** Transactions */
+  transactions: QontoTransactionSummary[]
+  /** Result count */
+  result_count: number
+  /** Pagination info */
+  pagination: {
+    current_page: number
+    total_pages: number
+    total_count: number
+    per_page: number
+  }
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Parameters for the qonto_get_transaction tool.
+ * Get a specific transaction by ID.
+ */
+export interface QontoGetTransactionParams extends ConnectorToolBaseParams {
+  /**
+   * Transaction ID.
+   */
+  transaction_id: string
+  /**
+   * Include additional details.
+   */
+  includes?: ('vat_details' | 'labels' | 'attachments')[]
+}
+
+/**
+ * Full Qonto transaction details.
+ */
+export interface QontoTransactionDetail extends QontoTransactionSummary {
+  /** Local amount (in local currency) */
+  localAmount?: number
+  /** Local currency */
+  localCurrency?: string
+  /** VAT amount */
+  vatAmount?: number
+  /** VAT rate */
+  vatRate?: number
+  /** Reference */
+  reference?: string
+  /** Card last digits (if card payment) */
+  cardLastDigits?: string
+  /** Cashflow category */
+  cashflowCategory?: string
+  /** Cashflow subcategory */
+  cashflowSubcategory?: string
+  /** Initiator ID */
+  initiatorId?: string
+  /** Label IDs */
+  labelIds?: string[]
+  /** Attachment IDs */
+  attachmentIds?: string[]
+  /** Transfer details (if transfer) */
+  transfer?: {
+    counterpartyAccountNumber?: string
+    counterpartyBankIdentifier?: string
+  }
+}
+
+/**
+ * Result of qonto_get_transaction operation.
+ */
+export interface QontoGetTransactionResult {
+  /** Whether transaction was found */
+  found: boolean
+  /** Error message if not found */
+  error?: string
+  /** Transaction details */
+  transaction?: QontoTransactionDetail
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Parameters for the qonto_list_statements tool.
+ * List bank statements from Qonto.
+ */
+export interface QontoListStatementsParams extends ConnectorToolBaseParams {
+  /**
+   * Filter by bank account IDs.
+   */
+  bank_account_ids?: string[]
+  /**
+   * Filter by IBANs.
+   */
+  ibans?: string[]
+  /**
+   * Filter by period from (format: MM-YYYY).
+   */
+  period_from?: string
+  /**
+   * Filter by period to (format: MM-YYYY).
+   */
+  period_to?: string
+  /**
+   * Sort by field.
+   * @default 'period:desc'
+   */
+  sort_by?: string
+  /**
+   * Page number.
+   * @default 1
+   */
+  page?: number
+  /**
+   * Results per page.
+   * @default 100
+   */
+  per_page?: number
+}
+
+/**
+ * Qonto statement summary.
+ */
+export interface QontoStatementSummary {
+  /** Statement ID */
+  id: string
+  /** Bank account ID */
+  bankAccountId: string
+  /** Period (format: MM-YYYY) */
+  period: string
+  /** File info */
+  file: {
+    fileName: string
+    contentType: string
+    size: number
+  }
+}
+
+/**
+ * Result of qonto_list_statements operation.
+ */
+export interface QontoListStatementsResult {
+  /** Statements */
+  statements: QontoStatementSummary[]
+  /** Result count */
+  result_count: number
+  /** Pagination info */
+  pagination: {
+    current_page: number
+    total_pages: number
+    total_count: number
+    per_page: number
+  }
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Parameters for the qonto_get_statement tool.
+ * Get a specific statement by ID.
+ */
+export interface QontoGetStatementParams extends ConnectorToolBaseParams {
+  /**
+   * Statement ID.
+   */
+  statement_id: string
+}
+
+/**
+ * Full Qonto statement details with download URL.
+ */
+export interface QontoStatementDetail extends QontoStatementSummary {
+  /** Download URL for the PDF */
+  downloadUrl: string
+}
+
+/**
+ * Result of qonto_get_statement operation.
+ */
+export interface QontoGetStatementResult {
+  /** Whether statement was found */
+  found: boolean
+  /** Error message if not found */
+  error?: string
+  /** Statement details */
+  statement?: QontoStatementDetail
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+// ============================================================================
 // Tool Name Types
 // ============================================================================
 
@@ -935,6 +1284,16 @@ export type NotionToolName =
   | 'notion_query_database'
 
 /**
+ * Qonto tool names.
+ */
+export type QontoToolName =
+  | 'qonto_list_business_accounts'
+  | 'qonto_list_transactions'
+  | 'qonto_get_transaction'
+  | 'qonto_list_statements'
+  | 'qonto_get_statement'
+
+/**
  * All connector tool names.
  */
 export type ConnectorToolName =
@@ -943,6 +1302,7 @@ export type ConnectorToolName =
   | CalendarToolName
   | TasksToolName
   | NotionToolName
+  | QontoToolName
 
 // ============================================================================
 // Tool Definitions
@@ -1527,6 +1887,239 @@ Filter examples:
 }
 
 /**
+ * Qonto tool definitions for LLM function calling.
+ */
+export const QONTO_TOOL_DEFINITIONS: Record<QontoToolName, ToolDefinition> = {
+  qonto_list_business_accounts: {
+    type: 'function',
+    function: {
+      name: 'qonto_list_business_accounts',
+      description:
+        'List all business accounts from a connected Qonto organization. ' +
+        'Returns account details including name, IBAN, balance, and status.',
+      parameters: {
+        type: 'object',
+        properties: {
+          connector_id: {
+            type: 'string',
+            description: 'The Qonto connector ID to use',
+          },
+          page: {
+            type: 'integer',
+            description: 'Page number for pagination (default: 1)',
+            minimum: 1,
+          },
+          per_page: {
+            type: 'integer',
+            description: 'Number of accounts per page (default: 100, max: 100)',
+            minimum: 1,
+            maximum: 100,
+          },
+        },
+        required: ['connector_id'],
+      },
+    },
+  },
+
+  qonto_list_transactions: {
+    type: 'function',
+    function: {
+      name: 'qonto_list_transactions',
+      description: `List transactions from a Qonto bank account.
+
+IMPORTANT: You must provide either bank_account_id OR iban. Use qonto_list_business_accounts first to get account IDs.
+
+Filter options:
+- bank_account_id or iban: Target account (REQUIRED - one of these must be provided)
+- status: pending, declined, completed
+- side: credit or debit
+- Date filters: updated_at_from/to, settled_at_from/to
+- sort_by: settled_at:desc (default), created_at:asc, etc.`,
+      parameters: {
+        type: 'object',
+        properties: {
+          connector_id: {
+            type: 'string',
+            description: 'The Qonto connector ID to use',
+          },
+          bank_account_id: {
+            type: 'string',
+            description:
+              'Bank account ID to filter transactions (REQUIRED if iban not provided). Get from qonto_list_business_accounts.',
+          },
+          iban: {
+            type: 'string',
+            description:
+              'IBAN to filter transactions (REQUIRED if bank_account_id not provided)',
+          },
+          status: {
+            type: 'array',
+            description: 'Filter by transaction status',
+            items: {
+              type: 'string',
+              enum: ['pending', 'declined', 'completed'],
+            },
+          },
+          side: {
+            type: 'string',
+            description: 'Filter by transaction side',
+            enum: ['credit', 'debit'],
+          },
+          updated_at_from: {
+            type: 'string',
+            description:
+              'Filter transactions updated after this date (ISO 8601)',
+          },
+          updated_at_to: {
+            type: 'string',
+            description:
+              'Filter transactions updated before this date (ISO 8601)',
+          },
+          settled_at_from: {
+            type: 'string',
+            description:
+              'Filter transactions settled after this date (ISO 8601)',
+          },
+          settled_at_to: {
+            type: 'string',
+            description:
+              'Filter transactions settled before this date (ISO 8601)',
+          },
+          sort_by: {
+            type: 'string',
+            description: 'Sort field and direction (e.g., settled_at:desc)',
+          },
+          page: {
+            type: 'integer',
+            description: 'Page number (default: 1)',
+            minimum: 1,
+          },
+          per_page: {
+            type: 'integer',
+            description: 'Results per page (default: 100, max: 100)',
+            minimum: 1,
+            maximum: 100,
+          },
+        },
+        required: ['connector_id'],
+      },
+    },
+  },
+
+  qonto_get_transaction: {
+    type: 'function',
+    function: {
+      name: 'qonto_get_transaction',
+      description:
+        'Get detailed information about a specific Qonto transaction. ' +
+        'Use this after qonto_list_transactions to get full transaction details.',
+      parameters: {
+        type: 'object',
+        properties: {
+          connector_id: {
+            type: 'string',
+            description: 'The Qonto connector ID to use',
+          },
+          transaction_id: {
+            type: 'string',
+            description: 'The transaction ID to retrieve',
+          },
+          includes: {
+            type: 'array',
+            description: 'Additional details to include',
+            items: {
+              type: 'string',
+              enum: ['vat_details', 'labels', 'attachments'],
+            },
+          },
+        },
+        required: ['connector_id', 'transaction_id'],
+      },
+    },
+  },
+
+  qonto_list_statements: {
+    type: 'function',
+    function: {
+      name: 'qonto_list_statements',
+      description: `List bank statements from a Qonto organization.
+
+Filter options:
+- bank_account_ids or ibans: Filter by accounts
+- period_from/period_to: Date range (format: MM-YYYY)
+- sort_by: period:desc (default) or period:asc`,
+      parameters: {
+        type: 'object',
+        properties: {
+          connector_id: {
+            type: 'string',
+            description: 'The Qonto connector ID to use',
+          },
+          bank_account_ids: {
+            type: 'array',
+            description: 'Filter by bank account IDs',
+            items: { type: 'string' },
+          },
+          ibans: {
+            type: 'array',
+            description: 'Filter by IBANs',
+            items: { type: 'string' },
+          },
+          period_from: {
+            type: 'string',
+            description: 'Start period (format: MM-YYYY, e.g., 01-2024)',
+          },
+          period_to: {
+            type: 'string',
+            description: 'End period (format: MM-YYYY, e.g., 12-2024)',
+          },
+          sort_by: {
+            type: 'string',
+            description: 'Sort order (period:desc or period:asc)',
+          },
+          page: {
+            type: 'integer',
+            description: 'Page number (default: 1)',
+            minimum: 1,
+          },
+          per_page: {
+            type: 'integer',
+            description: 'Results per page (default: 100, max: 100)',
+            minimum: 1,
+            maximum: 100,
+          },
+        },
+        required: ['connector_id'],
+      },
+    },
+  },
+
+  qonto_get_statement: {
+    type: 'function',
+    function: {
+      name: 'qonto_get_statement',
+      description:
+        'Get a specific bank statement with download URL. ' +
+        'Use this after qonto_list_statements to get the PDF download link.',
+      parameters: {
+        type: 'object',
+        properties: {
+          connector_id: {
+            type: 'string',
+            description: 'The Qonto connector ID to use',
+          },
+          statement_id: {
+            type: 'string',
+            description: 'The statement ID to retrieve',
+          },
+        },
+        required: ['connector_id', 'statement_id'],
+      },
+    },
+  },
+}
+
+/**
  * All connector tool definitions combined.
  */
 export const CONNECTOR_TOOL_DEFINITIONS: Record<
@@ -1538,6 +2131,7 @@ export const CONNECTOR_TOOL_DEFINITIONS: Record<
   ...CALENDAR_TOOL_DEFINITIONS,
   ...TASKS_TOOL_DEFINITIONS,
   ...NOTION_TOOL_DEFINITIONS,
+  ...QONTO_TOOL_DEFINITIONS,
 }
 
 /**
@@ -1557,6 +2151,8 @@ export function getToolDefinitionsForProvider(
       return Object.values(TASKS_TOOL_DEFINITIONS)
     case 'notion':
       return Object.values(NOTION_TOOL_DEFINITIONS)
+    case 'qonto':
+      return Object.values(QONTO_TOOL_DEFINITIONS)
     default:
       return []
   }

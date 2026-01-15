@@ -37,7 +37,9 @@ const IMAGE_PRICING: Record<string, number> = {
   'dall-e-3-hd': 0.08, // $0.08 per image (HD quality)
   'dall-e-2': 0.02, // $0.02 per image
   // Google Gemini
-  'gemini-image': 0.02,
+  'gemini-2.5-flash-image': 0.02, // Fast image generation
+  'gemini-3-pro-image-preview': 0.05, // Professional quality, up to 4K
+  'gemini-image': 0.02, // Legacy
   'imagen-3': 0.03,
   // Stability AI
   'stable-diffusion-xl': 0.002,
@@ -598,11 +600,28 @@ class GoogleImageProvider implements ImageProviderInterface {
       responseModalities: ['TEXT', 'IMAGE'],
     }
 
+    // Build image config based on model
+    const imageConfig: Record<string, string> = {}
+
     // Add aspect ratio if not default
     if (settings.aspectRatio && settings.aspectRatio !== '1:1') {
-      generationConfig.imageConfig = {
-        aspectRatio: settings.aspectRatio,
-      }
+      imageConfig.aspectRatio = settings.aspectRatio
+    }
+
+    // Add image size for gemini-3-pro-image-preview (supports 1K, 2K, 4K)
+    if (model === 'gemini-3-pro-image-preview') {
+      const imageSize =
+        settings.quality === 'ultra'
+          ? '4K'
+          : settings.quality === 'hd'
+            ? '2K'
+            : '1K'
+      imageConfig.imageSize = imageSize
+    }
+
+    // Only add imageConfig if we have settings
+    if (Object.keys(imageConfig).length > 0) {
+      generationConfig.imageConfig = imageConfig
     }
 
     const response = await fetch(
@@ -709,11 +728,28 @@ class GoogleImageProvider implements ImageProviderInterface {
       responseModalities: ['TEXT', 'IMAGE'],
     }
 
+    // Build image config based on model
+    const imageConfig: Record<string, string> = {}
+
     // Add aspect ratio if not default
     if (settings.aspectRatio && settings.aspectRatio !== '1:1') {
-      generationConfig.imageConfig = {
-        aspectRatio: settings.aspectRatio,
-      }
+      imageConfig.aspectRatio = settings.aspectRatio
+    }
+
+    // Add image size for gemini-3-pro-image-preview (supports 1K, 2K, 4K)
+    if (model === 'gemini-3-pro-image-preview') {
+      const imageSize =
+        settings.quality === 'ultra'
+          ? '4K'
+          : settings.quality === 'hd'
+            ? '2K'
+            : '1K'
+      imageConfig.imageSize = imageSize
+    }
+
+    // Only add imageConfig if we have settings
+    if (Object.keys(imageConfig).length > 0) {
+      generationConfig.imageConfig = imageConfig
     }
 
     const response = await fetch(

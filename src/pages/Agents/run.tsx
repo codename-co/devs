@@ -30,7 +30,6 @@ import {
   PromptArea,
   Section,
   Widget,
-  SourcesDisplay,
   useTraceSources,
 } from '@/components'
 import DefaultLayout from '@/layouts/Default'
@@ -348,7 +347,7 @@ const ToolTimelineItem = memo(
         {renderToolIO()}
         {displayName && (
           <Link
-            to={`/knowledge?doc=${context.documentId}`}
+            to={`/knowledge/files#${context.documentId}`}
             className="text-primary-500 hover:text-primary-600 hover:underline flex items-center gap-1 flex-shrink-0"
             onClick={(e) => {
               if (onDocumentClick && context.documentId) {
@@ -363,7 +362,7 @@ const ToolTimelineItem = memo(
         )}
         {!displayName && context.documentId && (
           <Link
-            to={`/knowledge?doc=${context.documentId}`}
+            to={`/knowledge/files#${context.documentId}`}
             className="text-primary-500 hover:text-primary-600 hover:underline flex items-center gap-1 flex-shrink-0"
             onClick={(e) => {
               if (onDocumentClick) {
@@ -766,8 +765,7 @@ const MessageContentWithSources = memo(
     detectContentType: (content: string) => string
     traceIds: string[]
   }) => {
-    const { t } = useI18n(localI18n)
-    const { citedSources, isLoading } = useTraceSources({
+    const { citedSources } = useTraceSources({
       traceIds,
       loadTrace: useTraceStore.getState().loadTrace,
       getCurrentSpans: () => useTraceStore.getState().currentSpans,
@@ -776,28 +774,19 @@ const MessageContentWithSources = memo(
     })
 
     return (
-      <>
-        <div className="text-left">
-          <div className="prose prose-neutral text-medium break-words">
-            {detectContentType(content) === 'marpit-presentation' ? (
-              <Widget type="marpit" language="yaml" code={content} />
-            ) : (
-              <MarkdownRenderer
-                content={content}
-                className="prose dark:prose-invert"
-                sources={citedSources}
-              />
-            )}
-          </div>
+      <div className="text-left">
+        <div className="prose prose-neutral text-medium break-words">
+          {detectContentType(content) === 'marpit-presentation' ? (
+            <Widget type="marpit" language="yaml" code={content} />
+          ) : (
+            <MarkdownRenderer
+              content={content}
+              className="prose dark:prose-invert"
+              sources={citedSources}
+            />
+          )}
         </div>
-        {/* Inline sources display - shown AFTER response */}
-        {!isLoading && citedSources.length > 0 && (
-          <SourcesDisplay
-            sources={citedSources}
-            t={(key: string) => t(key as 'Sources' | 'View in Knowledge Base')}
-          />
-        )}
-      </>
+      </div>
     )
   },
 )

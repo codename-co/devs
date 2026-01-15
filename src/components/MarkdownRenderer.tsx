@@ -7,7 +7,7 @@ import {
   detectSpecializedCodeType,
   Widget,
 } from './Widget/Widget'
-import { useI18n } from '@/i18n'
+import { useI18n, useUrl } from '@/i18n'
 import type { SourceInfo } from './InlineSource'
 import {
   InlineCitation,
@@ -22,8 +22,6 @@ interface MarkdownRendererProps {
   renderWidgets?: boolean
   /** Sources for inline citation rendering */
   sources?: SourceInfo[]
-  /** Callback when a citation is clicked */
-  onCitationClick?: (source: SourceInfo) => void
 }
 
 interface CodeBlock {
@@ -50,7 +48,6 @@ export const MarkdownRenderer = ({
   className = '',
   renderWidgets = true,
   sources = [],
-  onCitationClick,
 }: MarkdownRendererProps) => {
   const [processedContent, setProcessedContent] = useState<{
     html: string
@@ -59,7 +56,8 @@ export const MarkdownRenderer = ({
     mathBlocks: MathBlock[]
   }>({ html: '', codeBlocks: [], thinkBlocks: [], mathBlocks: [] })
 
-  const { t } = useI18n()
+  const { lang, t } = useI18n()
+  const url = useUrl(lang)
 
   // Helper function to configure marked with KaTeX support
   const configureMarked = () => {
@@ -391,15 +389,11 @@ export const MarkdownRenderer = ({
         const source = sources.find((s) => s.refNumber === refNumber)
 
         if (source) {
-          const handleClick = onCitationClick
-            ? () => onCitationClick(source)
-            : undefined
           parts.push(
             <InlineCitation
               key={`${keyPrefix}-citation-${match.index}`}
               number={refNumber}
               source={source}
-              onClick={handleClick}
             />,
           )
         } else {
@@ -624,7 +618,7 @@ export const MarkdownRenderer = ({
         {elements}
       </div>
     )
-  }, [processedContent, className, sources, onCitationClick, processCitations])
+  }, [processedContent, className, sources, processCitations])
 
   return renderedContent
 }

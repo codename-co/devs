@@ -63,6 +63,11 @@ export const PROVIDER_FILE_TYPES: Record<
     'application/x-git-issue': 'document',
     'application/x-git-pull-request': 'document',
   },
+  qonto: {
+    // Qonto content types
+    'application/json': 'document',
+    'text/plain': 'text',
+  },
 }
 
 /**

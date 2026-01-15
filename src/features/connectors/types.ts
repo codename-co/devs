@@ -29,6 +29,7 @@ export type AppConnectorProvider =
   | 'notion'
   | 'dropbox'
   | 'github'
+  | 'qonto'
 
 /**
  * API connectors use API keys or bearer tokens
@@ -583,5 +584,16 @@ export const APP_CONNECTOR_CONFIGS: Record<
     supportedTypes: ['repository', 'file'],
     maxFileSize: MAX_SYNC_FILE_SIZE,
     rateLimit: { requests: 5000, windowSeconds: 3600 },
+  },
+  qonto: {
+    id: 'qonto',
+    category: 'app',
+    name: 'Qonto',
+    icon: 'qonto',
+    color: '#000',
+    capabilities: ['read'],
+    supportedTypes: ['account', 'transaction', 'statement'],
+    maxFileSize: MAX_SYNC_FILE_SIZE,
+    rateLimit: { requests: 10, windowSeconds: 1 },
   },
 }

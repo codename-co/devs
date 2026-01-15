@@ -57,6 +57,22 @@ import type {
   NotionItemSummary,
   NotionPageContent,
   NotionDatabaseEntry,
+  // Qonto types
+  QontoListBusinessAccountsParams,
+  QontoListBusinessAccountsResult,
+  QontoListTransactionsParams,
+  QontoListTransactionsResult,
+  QontoGetTransactionParams,
+  QontoGetTransactionResult,
+  QontoListStatementsParams,
+  QontoListStatementsResult,
+  QontoGetStatementParams,
+  QontoGetStatementResult,
+  QontoBankAccountSummary,
+  QontoTransactionSummary,
+  QontoTransactionDetail,
+  QontoStatementSummary,
+  QontoStatementDetail,
   // Common
   ConnectorMetadata,
 } from './types'
@@ -1018,6 +1034,308 @@ export async function notionQueryDatabase(
 }
 
 // ============================================================================
+// Qonto Tools Implementation
+// ============================================================================
+
+/**
+ * List business accounts from Qonto.
+ *
+ * @param params - List parameters
+ * @returns List of business accounts
+ */
+export async function qontoListBusinessAccounts(
+  params: QontoListBusinessAccountsParams,
+): Promise<QontoListBusinessAccountsResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'qonto') {
+    throw new Error(`Connector ${params.connector_id} is not a Qonto connector`)
+  }
+
+  const provider = (await getProvider(connector)) as any // QontoProvider
+  const result = await provider.listBusinessAccounts(
+    connector,
+    params.page ?? 1,
+    params.per_page ?? 100,
+  )
+
+  const accounts: QontoBankAccountSummary[] = result.bank_accounts.map(
+    (account: any) => ({
+      id: account.id,
+      name: account.name,
+      organizationId: account.organization_id,
+      status: account.status,
+      main: account.main,
+      iban: account.iban,
+      bic: account.bic,
+      currency: account.currency,
+      balance: account.balance,
+      authorizedBalance: account.authorized_balance
+        ? parseFloat(account.authorized_balance)
+        : undefined,
+      updatedAt: account.updated_at ? new Date(account.updated_at) : undefined,
+    }),
+  )
+
+  return {
+    accounts,
+    result_count: accounts.length,
+    total_count: result.meta?.total_count,
+    pagination: result.meta
+      ? {
+          current_page: result.meta.current_page,
+          total_pages: result.meta.total_pages,
+          per_page: result.meta.per_page,
+        }
+      : undefined,
+    connector: createConnectorMetadata(connector),
+  }
+}
+
+/**
+ * List transactions from Qonto.
+ *
+ * @param params - List parameters with filters
+ * @returns List of transactions with pagination
+ */
+export async function qontoListTransactions(
+  params: QontoListTransactionsParams,
+): Promise<QontoListTransactionsResult> {
+  // Validate that either bank_account_id or iban is provided
+  if (!params.bank_account_id && !params.iban) {
+    throw new Error(
+      'Either bank_account_id or iban is required. Use qonto_list_business_accounts first to get available account IDs.',
+    )
+  }
+
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'qonto') {
+    throw new Error(`Connector ${params.connector_id} is not a Qonto connector`)
+  }
+
+  const provider = (await getProvider(connector)) as any // QontoProvider
+  const result = await provider.listTransactions(connector, {
+    bank_account_id: params.bank_account_id,
+    iban: params.iban,
+    status: params.status,
+    side: params.side,
+    updated_at_from: params.updated_at_from,
+    updated_at_to: params.updated_at_to,
+    settled_at_from: params.settled_at_from,
+    settled_at_to: params.settled_at_to,
+    sort_by: params.sort_by,
+    page: params.page,
+    per_page: params.per_page,
+  })
+
+  const transactions: QontoTransactionSummary[] = result.transactions.map(
+    (tx: any) => ({
+      id: tx.id,
+      transactionId: tx.transaction_id,
+      amount: tx.amount,
+      amountCents: tx.amount_cents,
+      side: tx.side,
+      operationType: tx.operation_type,
+      currency: tx.currency,
+      label: tx.label,
+      status: tx.status,
+      settledAt: tx.settled_at ? new Date(tx.settled_at) : undefined,
+      emittedAt: tx.emitted_at ? new Date(tx.emitted_at) : undefined,
+      note: tx.note,
+      category: tx.category,
+      attachmentRequired: tx.attachment_required,
+      attachmentCount: tx.attachment_ids?.length || 0,
+    }),
+  )
+
+  return {
+    transactions,
+    result_count: transactions.length,
+    pagination: {
+      current_page: result.meta.current_page,
+      total_pages: result.meta.total_pages,
+      total_count: result.meta.total_count,
+      per_page: result.meta.per_page,
+    },
+    connector: createConnectorMetadata(connector),
+  }
+}
+
+/**
+ * Get a specific transaction from Qonto.
+ *
+ * @param params - Get parameters with transaction ID
+ * @returns Transaction details
+ */
+export async function qontoGetTransaction(
+  params: QontoGetTransactionParams,
+): Promise<QontoGetTransactionResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'qonto') {
+    throw new Error(`Connector ${params.connector_id} is not a Qonto connector`)
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any // QontoProvider
+    const result = await provider.getTransaction(
+      connector,
+      params.transaction_id,
+      params.includes,
+    )
+
+    const tx = result.transaction
+    const transaction: QontoTransactionDetail = {
+      id: tx.id,
+      transactionId: tx.transaction_id,
+      amount: tx.amount,
+      amountCents: tx.amount_cents,
+      side: tx.side,
+      operationType: tx.operation_type,
+      currency: tx.currency,
+      label: tx.label,
+      status: tx.status,
+      settledAt: tx.settled_at ? new Date(tx.settled_at) : undefined,
+      emittedAt: tx.emitted_at ? new Date(tx.emitted_at) : undefined,
+      note: tx.note,
+      category: tx.category,
+      attachmentRequired: tx.attachment_required,
+      attachmentCount: tx.attachment_ids?.length || 0,
+      localAmount: tx.local_amount,
+      localCurrency: tx.local_currency,
+      vatAmount: tx.vat_amount,
+      vatRate: tx.vat_rate,
+      reference: tx.reference,
+      cardLastDigits: tx.card_last_digits,
+      cashflowCategory: tx.cashflow_category?.name,
+      cashflowSubcategory: tx.cashflow_subcategory?.name,
+      initiatorId: tx.initiator_id,
+      labelIds: tx.label_ids,
+      attachmentIds: tx.attachment_ids,
+      transfer: tx.transfer
+        ? {
+            counterpartyAccountNumber: tx.transfer.counterparty_account_number,
+            counterpartyBankIdentifier:
+              tx.transfer.counterparty_bank_identifier,
+          }
+        : undefined,
+    }
+
+    return {
+      found: true,
+      transaction,
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    return {
+      found: false,
+      error:
+        error instanceof Error ? error.message : 'Failed to get transaction',
+      connector: createConnectorMetadata(connector),
+    }
+  }
+}
+
+/**
+ * List statements from Qonto.
+ *
+ * @param params - List parameters with filters
+ * @returns List of statements with pagination
+ */
+export async function qontoListStatements(
+  params: QontoListStatementsParams,
+): Promise<QontoListStatementsResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'qonto') {
+    throw new Error(`Connector ${params.connector_id} is not a Qonto connector`)
+  }
+
+  const provider = (await getProvider(connector)) as any // QontoProvider
+  const result = await provider.listStatements(connector, {
+    bank_account_ids: params.bank_account_ids,
+    ibans: params.ibans,
+    period_from: params.period_from,
+    period_to: params.period_to,
+    sort_by: params.sort_by,
+    page: params.page,
+    per_page: params.per_page,
+  })
+
+  const statements: QontoStatementSummary[] = result.statements.map(
+    (stmt: any) => ({
+      id: stmt.id,
+      bankAccountId: stmt.bank_account_id,
+      period: stmt.period,
+      file: {
+        fileName: stmt.file.file_name,
+        contentType: stmt.file.file_content_type,
+        size: parseInt(stmt.file.file_size, 10),
+      },
+    }),
+  )
+
+  return {
+    statements,
+    result_count: statements.length,
+    pagination: {
+      current_page: result.meta.current_page,
+      total_pages: result.meta.total_pages,
+      total_count: result.meta.total_count,
+      per_page: result.meta.per_page,
+    },
+    connector: createConnectorMetadata(connector),
+  }
+}
+
+/**
+ * Get a specific statement from Qonto.
+ *
+ * @param params - Get parameters with statement ID
+ * @returns Statement details with download URL
+ */
+export async function qontoGetStatement(
+  params: QontoGetStatementParams,
+): Promise<QontoGetStatementResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'qonto') {
+    throw new Error(`Connector ${params.connector_id} is not a Qonto connector`)
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any // QontoProvider
+    const result = await provider.getStatement(connector, params.statement_id)
+
+    const stmt = result.statement
+    const statement: QontoStatementDetail = {
+      id: stmt.id,
+      bankAccountId: stmt.bank_account_id,
+      period: stmt.period,
+      file: {
+        fileName: stmt.file.file_name,
+        contentType: stmt.file.file_content_type,
+        size: parseInt(stmt.file.file_size, 10),
+      },
+      downloadUrl: stmt.file.file_url,
+    }
+
+    return {
+      found: true,
+      statement,
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    return {
+      found: false,
+      error: error instanceof Error ? error.message : 'Failed to get statement',
+      connector: createConnectorMetadata(connector),
+    }
+  }
+}
+
+// ============================================================================
 // Tool Definitions Re-export
 // ============================================================================
 
@@ -1027,6 +1345,7 @@ export {
   CALENDAR_TOOL_DEFINITIONS,
   TASKS_TOOL_DEFINITIONS,
   NOTION_TOOL_DEFINITIONS,
+  QONTO_TOOL_DEFINITIONS,
   CONNECTOR_TOOL_DEFINITIONS,
   getToolDefinitionsForProvider,
 } from './types'

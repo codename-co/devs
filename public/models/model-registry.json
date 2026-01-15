@@ -320,6 +320,15 @@
       }
     },
     {
+      "id": "gemini-3-pro-image-preview",
+      "name": "Gemini 3 Pro Image",
+      "capabilities": {
+        "highCost": true,
+        "thinking": true,
+        "vision": true
+      }
+    },
+    {
       "id": "gemini-2.5-flash",
       "name": "Gemini 2.5 Flash",
       "capabilities": { "fast": true, "vision": true, "tools": true }
@@ -345,7 +354,7 @@
       }
     },
     {
-      "id": "gemini-2.5-flash-image-preview",
+      "id": "gemini-2.5-flash-image",
       "name": "Gemini 2.5 Flash Image",
       "capabilities": { "fast": true, "vision": true }
     }
@@ -362,7 +371,7 @@
       "capabilities": { "vision": true, "tools": true }
     },
     {
-      "id": "google/gemini-2.5-flash-image-preview",
+      "id": "google/gemini-2.5-flash-image",
       "name": "Gemini 2.5 Flash Image",
       "capabilities": { "fast": true, "vision": true }
     },

@@ -1,9 +1,11 @@
-import { memo, useEffect, useState, useMemo, useRef } from 'react'
+import { memo, useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Chip, Tooltip } from '@heroui/react'
+import { Chip, Tooltip, useDisclosure } from '@heroui/react'
 
 import { Icon } from '@/components/Icon'
+import { ContentPreviewModal } from '@/components/ContentPreview'
 import { db } from '@/lib/db'
+import type { KnowledgeItem } from '@/types'
 import type { Span } from '@/features/traces/types'
 import type { IconName } from '@/lib/types'
 import { useI18n } from '@/i18n'
@@ -54,28 +56,6 @@ export const getSourceIcon = (type: SourceType): string => {
       return 'GoogleTasks'
     default:
       return 'Internet'
-  }
-}
-
-/** Get color for source type */
-export const getSourceColor = (
-  type: SourceType,
-): 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'default' => {
-  switch (type) {
-    case 'knowledge':
-      return 'primary'
-    case 'gmail':
-      return 'danger'
-    case 'drive':
-      return 'warning'
-    case 'calendar':
-      return 'success'
-    case 'notion':
-      return 'default'
-    case 'tasks':
-      return 'secondary'
-    default:
-      return 'default'
   }
 }
 
@@ -172,7 +152,7 @@ export const extractSourcesFromSpans = async (
             type: 'knowledge',
             name,
             externalUrl: externalUrl || undefined,
-            internalPath: `/knowledge?doc=${documentId}`,
+            internalPath: `/knowledge/files#${documentId}`,
           })
         }
       }
@@ -188,7 +168,7 @@ export const extractSourcesFromSpans = async (
               type: 'knowledge',
               name: hitName,
               externalUrl: (hit.externalUrl as string) || undefined,
-              internalPath: `/knowledge?doc=${hitId}`,
+              internalPath: `/knowledge/files#${hitId}`,
             })
           }
         }
@@ -408,23 +388,57 @@ export interface InlineCitationProps {
 
 /**
  * Inline Citation Component
- * Renders a clickable [1] style citation that links to the source.
+ * Renders a clickable inline source badge with icon and name.
+ * For knowledge items, opens a preview modal instead of navigating away.
  */
 export const InlineCitation = memo(
   ({ number, source, onClick }: InlineCitationProps) => {
-    const color = source ? getSourceColor(source.type) : 'primary'
-    const targetUrl = source?.externalUrl || source?.internalPath
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    const [knowledgeItem, setKnowledgeItem] = useState<KnowledgeItem | null>(
+      null,
+    )
+    const [isLoading, setIsLoading] = useState(false)
+
+    const icon = source ? getSourceIcon(source.type) : 'Internet'
+    const isExternal = !!source?.externalUrl
+    const isKnowledgeSource = source?.type === 'knowledge' && !isExternal
+
+    // Truncate name for inline display
+    const displayName = source?.name
+      ? source.name.length > 25
+        ? source.name.substring(0, 23) + '…'
+        : source.name
+      : `Source ${number}`
+
+    // Fetch knowledge item when opening modal
+    const handleOpenPreview = useCallback(async () => {
+      if (!isKnowledgeSource || !source) return
+
+      setIsLoading(true)
+      try {
+        const item = await db.get('knowledgeItems', source.id)
+        if (item) {
+          setKnowledgeItem(item)
+          onOpen()
+        }
+      } catch (error) {
+        console.error('Failed to load knowledge item:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }, [source, isKnowledgeSource, onOpen])
 
     const citationContent = (
       <span
-        className={`inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 text-xs font-medium rounded cursor-pointer transition-opacity hover:opacity-70 bg-${color}/20 text-${color}-600 dark:text-${color}-400`}
+        className={`align-text-top inline-flex items-center gap-0.5 h-5 px-1.5 text-xs font-medium rounded bg-default-100 dark:bg-default-50 text-default-700 dark:text-default-600 cursor-pointer transition-opacity hover:opacity-70 ${isLoading ? 'opacity-50' : ''}`}
         onClick={onClick}
       >
-        {number}
+        <Icon name={icon as IconName} size="sm" />
+        <span>{displayName}</span>
       </span>
     )
 
-    if (!source || !targetUrl) {
+    if (!source) {
       return citationContent
     }
 
@@ -437,7 +451,8 @@ export const InlineCitation = memo(
       </div>
     )
 
-    if (source.externalUrl) {
+    // External link - opens in new tab
+    if (isExternal) {
       return (
         <Tooltip content={tooltipContent}>
           <a
@@ -452,13 +467,42 @@ export const InlineCitation = memo(
       )
     }
 
-    return (
-      <Tooltip content={tooltipContent}>
-        <Link to={targetUrl} className="inline">
-          {citationContent}
-        </Link>
-      </Tooltip>
-    )
+    // Knowledge source - opens preview modal
+    if (isKnowledgeSource) {
+      return (
+        <>
+          <Tooltip content={tooltipContent}>
+            <span className="inline" onClick={handleOpenPreview}>
+              {citationContent}
+            </span>
+          </Tooltip>
+
+          {/* Content Preview Modal */}
+          {knowledgeItem && (
+            <ContentPreviewModal
+              isOpen={isOpen}
+              onClose={onClose}
+              type="knowledge"
+              item={knowledgeItem}
+            />
+          )}
+        </>
+      )
+    }
+
+    // Fallback for other internal paths (shouldn't happen often)
+    const targetUrl = source.internalPath
+    if (targetUrl) {
+      return (
+        <Tooltip content={tooltipContent}>
+          <Link to={targetUrl} className="inline">
+            {citationContent}
+          </Link>
+        </Tooltip>
+      )
+    }
+
+    return citationContent
   },
 )
 
@@ -509,7 +553,7 @@ export const SemanticCitation = memo(
         ? 'bg-secondary/20 text-secondary-600 dark:text-secondary-400'
         : type === 'pinned'
           ? 'bg-warning/20 text-warning-600 dark:text-warning-500'
-          : 'bg-primary/20 text-primary-600 dark:text-primary-400'
+          : undefined
 
     const citationContent = (
       <span
@@ -540,18 +584,41 @@ export interface InlineSourceProps {
 
 /**
  * Inline Source Component
- * Displays a clickable source reference that links to the original source.
+ * Displays a clickable source reference that opens a preview modal for internal sources.
  */
 export const InlineSource = memo(
   ({ source, t, showRefNumber = true }: InlineSourceProps) => {
     const icon = getSourceIcon(source.type)
-    const color = getSourceColor(source.type)
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    const [knowledgeItem, setKnowledgeItem] = useState<KnowledgeItem | null>(
+      null,
+    )
+    const [isLoading, setIsLoading] = useState(false)
 
     // Determine the target URL - prefer external URL, fallback to internal path
     const targetUrl = source.externalUrl || source.internalPath
     const isExternal = !!source.externalUrl
+    const isKnowledgeSource = source.type === 'knowledge' && !isExternal
 
-    if (!targetUrl) return null
+    // Fetch knowledge item when opening modal
+    const handleOpenPreview = useCallback(async () => {
+      if (!isKnowledgeSource) return
+
+      setIsLoading(true)
+      try {
+        const item = await db.get('knowledgeItems', source.id)
+        if (item) {
+          setKnowledgeItem(item)
+          onOpen()
+        }
+      } catch (error) {
+        console.error('Failed to load knowledge item:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }, [source.id, isKnowledgeSource, onOpen])
+
+    if (!targetUrl && !isKnowledgeSource) return null
 
     // Build the display content with optional reference number
     const displayContent = (
@@ -581,7 +648,6 @@ export const InlineSource = memo(
             rel="noopener noreferrer"
             size="sm"
             variant="flat"
-            color={color}
             className="cursor-pointer hover:opacity-80 transition-opacity text-tiny gap-1"
             startContent={<Icon name={icon as any} className="w-3 h-3" />}
           >
@@ -591,30 +657,42 @@ export const InlineSource = memo(
       )
     }
 
-    // Internal link uses React Router
+    // Internal knowledge source - open preview modal
     return (
-      <Tooltip
-        content={
-          <div className="text-tiny max-w-xs">
-            <div className="font-medium">{source.name}</div>
-            <div className="text-default-400">
-              {t?.('View in Knowledge Base') ?? 'View in Knowledge Base'}
+      <>
+        <Tooltip
+          content={
+            <div className="text-tiny max-w-xs">
+              <div className="font-medium">{source.name}</div>
+              <div className="text-default-400">
+                {t?.('View in Knowledge Base') ?? 'View in Knowledge Base'}
+              </div>
             </div>
-          </div>
-        }
-      >
-        <Chip
-          as={Link}
-          to={targetUrl}
-          size="sm"
-          variant="flat"
-          color={color}
-          className="cursor-pointer hover:opacity-80 transition-opacity text-tiny gap-1"
-          startContent={<Icon name={icon as any} className="w-3 h-3" />}
+          }
         >
-          {displayContent}
-        </Chip>
-      </Tooltip>
+          <Chip
+            as="button"
+            onClick={handleOpenPreview}
+            isDisabled={isLoading}
+            size="sm"
+            variant="flat"
+            className="cursor-pointer hover:opacity-80 transition-opacity text-tiny gap-1"
+            startContent={<Icon name={icon as any} className="w-3 h-3" />}
+          >
+            {displayContent}
+          </Chip>
+        </Tooltip>
+
+        {/* Content Preview Modal */}
+        {knowledgeItem && (
+          <ContentPreviewModal
+            isOpen={isOpen}
+            onClose={onClose}
+            type="knowledge"
+            item={knowledgeItem}
+          />
+        )}
+      </>
     )
   },
 )
@@ -848,8 +926,7 @@ export const CITATION_PATTERN = /\[(\d+)\]/g
  * - Semantic: [Memory], [Pinned]
  * - Named: [Document Name] (any other text in brackets, excluding common markdown patterns)
  */
-export const EXTENDED_CITATION_PATTERN =
-  /\[(\d+|Memory|Pinned|[A-Z][A-Za-z0-9\s\-_.]+)\]/g
+export const EXTENDED_CITATION_PATTERN = /\[(\d+|Memory|Pinned]+)\]/g
 
 /**
  * Determine the semantic type of a citation
@@ -862,24 +939,6 @@ export const getSemanticCitationType = (
   // If it's not a number and not Memory/Pinned, it's a document name
   if (!/^\d+$/.test(citation)) return 'document'
   return null
-}
-
-/**
- * Get color for semantic citation type
- */
-export const getSemanticCitationColor = (
-  type: SemanticCitationType,
-): 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'default' => {
-  switch (type) {
-    case 'memory':
-      return 'secondary'
-    case 'pinned':
-      return 'warning'
-    case 'document':
-      return 'primary'
-    default:
-      return 'default'
-  }
 }
 
 /**

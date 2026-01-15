@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   Button,
   Checkbox,
@@ -104,6 +105,8 @@ declare global {
 
 export const Files: React.FC = () => {
   const { lang, t } = useI18n(localI18n)
+  const location = useLocation()
+  const navigate = useNavigate()
 
   // Use reactive hook for instant updates (no async loading needed)
   const rawKnowledgeItems = useKnowledge()
@@ -334,6 +337,36 @@ export const Files: React.FC = () => {
     onOpen: onBulkDeleteModalOpen,
     onClose: onBulkDeleteModalClose,
   } = useDisclosure()
+
+  // Handle URL hash to open preview modal for specific file ID
+  useEffect(() => {
+    const hash = location.hash.replace('#', '')
+    if (hash) {
+      // Load the knowledge item by ID and open the preview modal
+      db.get('knowledgeItems', hash).then((item) => {
+        if (item) {
+          setPreviewItem(item)
+          onPreviewOpen()
+        }
+      })
+    }
+  }, [location.hash, onPreviewOpen])
+
+  // Close preview and clear URL hash
+  const handlePreviewClose = useCallback(() => {
+    onPreviewClose()
+    setPreviewItem(null)
+    // Clear the hash from URL without triggering navigation
+    if (location.hash) {
+      navigate(location.pathname + location.search, { replace: true })
+    }
+  }, [
+    onPreviewClose,
+    navigate,
+    location.pathname,
+    location.search,
+    location.hash,
+  ])
 
   useEffect(() => {
     loadWatchedFolders()
@@ -1319,10 +1352,7 @@ export const Files: React.FC = () => {
       {previewItem && (
         <ContentPreviewModal
           isOpen={isPreviewOpen}
-          onClose={() => {
-            onPreviewClose()
-            setPreviewItem(null)
-          }}
+          onClose={handlePreviewClose}
           type="knowledge"
           item={previewItem}
           onRequestProcessing={async (itemId) => {

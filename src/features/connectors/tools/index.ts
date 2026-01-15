@@ -76,12 +76,29 @@ export type {
   NotionItemSummary,
   NotionPageContent,
   NotionDatabaseEntry,
+  // Qonto
+  QontoListBusinessAccountsParams,
+  QontoListBusinessAccountsResult,
+  QontoListTransactionsParams,
+  QontoListTransactionsResult,
+  QontoGetTransactionParams,
+  QontoGetTransactionResult,
+  QontoListStatementsParams,
+  QontoListStatementsResult,
+  QontoGetStatementParams,
+  QontoGetStatementResult,
+  QontoBankAccountSummary,
+  QontoTransactionSummary,
+  QontoTransactionDetail,
+  QontoStatementSummary,
+  QontoStatementDetail,
   // Tool names
   GmailToolName,
   DriveToolName,
   CalendarToolName,
   TasksToolName,
   NotionToolName,
+  QontoToolName,
   ConnectorToolName,
 } from './types'
 
@@ -92,6 +109,7 @@ export {
   CALENDAR_TOOL_DEFINITIONS,
   TASKS_TOOL_DEFINITIONS,
   NOTION_TOOL_DEFINITIONS,
+  QONTO_TOOL_DEFINITIONS,
   CONNECTOR_TOOL_DEFINITIONS,
   getToolDefinitionsForProvider,
 } from './types'
@@ -118,4 +136,10 @@ export {
   notionSearch,
   notionReadPage,
   notionQueryDatabase,
+  // Qonto
+  qontoListBusinessAccounts,
+  qontoListTransactions,
+  qontoGetTransaction,
+  qontoListStatements,
+  qontoGetStatement,
 } from './service'

@@ -24,6 +24,7 @@ const PROVIDER_ICONS: Record<ConnectorProvider, string> = {
   notion: 'Notion',
   dropbox: 'Dropbox',
   github: 'GitHub',
+  qonto: 'Qonto',
   'custom-api': 'Api',
   'custom-mcp': 'Server',
 }
