@@ -7,7 +7,7 @@ import {
   detectSpecializedCodeType,
   Widget,
 } from './Widget/Widget'
-import { useI18n, useUrl } from '@/i18n'
+import { useI18n } from '@/i18n'
 import type { SourceInfo } from './InlineSource'
 import {
   InlineCitation,
@@ -56,8 +56,7 @@ export const MarkdownRenderer = ({
     mathBlocks: MathBlock[]
   }>({ html: '', codeBlocks: [], thinkBlocks: [], mathBlocks: [] })
 
-  const { lang, t } = useI18n()
-  const url = useUrl(lang)
+  const { t } = useI18n()
 
   // Helper function to configure marked with KaTeX support
   const configureMarked = () => {
