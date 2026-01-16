@@ -32,6 +32,14 @@ export const en = [
   'Google Tasks',
   'Import tasks and to-do lists from Google Tasks',
 
+  // Providers - Slack
+  'Slack',
+  'Sync messages and files from Slack channels',
+
+  // Providers - Figma
+  'Figma',
+  'Sync design files and components from Figma',
+
   // Status
   'Connected',
   'Syncing...',
@@ -71,6 +79,8 @@ export const en = [
   'Provider error: {error}',
   'Failed to load folders',
   'Failed to save',
+  'OAuth not configured for provider: {provider}',
+  'Missing client ID for provider: {provider}',
 
   // Empty states
   'No connectors',

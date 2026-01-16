@@ -21,6 +21,14 @@ const QONTO_CLIENT_ID = process.env.QONTO_CLIENT_ID || ''
 const QONTO_CLIENT_SECRET = process.env.QONTO_CLIENT_SECRET || ''
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || ''
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || ''
+const MICROSOFT_CLIENT_ID = process.env.MICROSOFT_CLIENT_ID || ''
+const MICROSOFT_CLIENT_SECRET = process.env.MICROSOFT_CLIENT_SECRET || ''
+const SLACK_CLIENT_ID = process.env.SLACK_CLIENT_ID || ''
+const SLACK_CLIENT_SECRET = process.env.SLACK_CLIENT_SECRET || ''
+const FIGMA_CLIENT_ID = process.env.FIGMA_CLIENT_ID || ''
+const FIGMA_CLIENT_SECRET = process.env.FIGMA_CLIENT_SECRET || ''
+const DROPBOX_CLIENT_ID = process.env.DROPBOX_CLIENT_ID || ''
+const DROPBOX_CLIENT_SECRET = process.env.DROPBOX_CLIENT_SECRET || ''
 
 // CORS headers for browser requests
 const CORS_HEADERS = {
@@ -195,11 +203,17 @@ async function handleHttpRequest(req, res) {
         if (!QONTO_CLIENT_ID || !QONTO_CLIENT_SECRET) {
           logger.error('Qonto OAuth credentials not configured!')
           res.writeHead(500, CORS_HEADERS)
-          res.end(JSON.stringify({ error: 'Server misconfiguration: Qonto credentials not set' }))
+          res.end(
+            JSON.stringify({
+              error: 'Server misconfiguration: Qonto credentials not set',
+            }),
+          )
           return
         }
 
-        logger.info('Qonto OAuth token request (injecting client credentials via client_secret_post)')
+        logger.info(
+          'Qonto OAuth token request (injecting client credentials via client_secret_post)',
+        )
 
         // Read and modify the request body to add client credentials
         const chunks = []
@@ -208,7 +222,7 @@ async function handleHttpRequest(req, res) {
         }
         const originalBody = Buffer.concat(chunks).toString()
         logger.debug(`Original body: ${originalBody}`)
-        
+
         const params = new URLSearchParams(originalBody)
         params.set('client_id', QONTO_CLIENT_ID)
         params.set('client_secret', QONTO_CLIENT_SECRET)
@@ -225,7 +239,7 @@ async function handleHttpRequest(req, res) {
           const responseBody = await response.text()
           logger.debug(`Qonto response status: ${response.status}`)
           logger.debug(`Qonto response: ${responseBody.substring(0, 200)}...`)
-          
+
           res.writeHead(response.status, {
             ...CORS_HEADERS,
             'Content-Type':
@@ -236,7 +250,9 @@ async function handleHttpRequest(req, res) {
         } catch (err) {
           logger.error(`Qonto proxy error: ${err.message}`)
           res.writeHead(502, CORS_HEADERS)
-          res.end(JSON.stringify({ error: 'Proxy error', message: err.message }))
+          res.end(
+            JSON.stringify({ error: 'Proxy error', message: err.message }),
+          )
           return
         }
       }
@@ -253,6 +269,204 @@ async function handleHttpRequest(req, res) {
     return proxyRequest(req, res, targetUrl, options)
   }
 
+  // === SLACK PROXY ===
+  if (path.startsWith('/api/slack/')) {
+    const slackPath = path.replace('/api/slack/', '')
+    const targetUrl = `https://slack.com/api/${slackPath}${url.search}`
+
+    // For OAuth token endpoint, inject client credentials into the body
+    if (
+      slackPath === 'oauth.v2.access' &&
+      SLACK_CLIENT_ID &&
+      SLACK_CLIENT_SECRET
+    ) {
+      logger.info('Slack OAuth token request (injecting client credentials)')
+
+      // Read and modify the request body to add client credentials
+      const chunks = []
+      for await (const chunk of req) {
+        chunks.push(chunk)
+      }
+      const originalBody = Buffer.concat(chunks).toString()
+      const params = new URLSearchParams(originalBody)
+      params.set('client_id', SLACK_CLIENT_ID)
+      params.set('client_secret', SLACK_CLIENT_SECRET)
+
+      try {
+        const response = await fetch(targetUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: params.toString(),
+        })
+        const responseBody = await response.text()
+        res.writeHead(response.status, {
+          ...CORS_HEADERS,
+          'Content-Type':
+            response.headers.get('content-type') || 'application/json',
+        })
+        res.end(responseBody)
+        return
+      } catch (err) {
+        logger.error(`Slack proxy error: ${err.message}`)
+        res.writeHead(502, CORS_HEADERS)
+        res.end(JSON.stringify({ error: 'Proxy error', message: err.message }))
+        return
+      }
+    }
+
+    return proxyRequest(req, res, targetUrl)
+  }
+
+  // === MICROSOFT OAUTH PROXY ===
+  if (path.startsWith('/api/microsoft/')) {
+    const msPath = path.replace('/api/microsoft/', '')
+    const targetUrl = `https://login.microsoftonline.com/common/${msPath}${url.search}`
+
+    // For token endpoint, inject client credentials into the body
+    if (
+      msPath === 'oauth2/v2.0/token' &&
+      MICROSOFT_CLIENT_ID &&
+      MICROSOFT_CLIENT_SECRET
+    ) {
+      logger.info(
+        'Microsoft OAuth token request (injecting client credentials)',
+      )
+
+      // Read and modify the request body to add client credentials
+      const chunks = []
+      for await (const chunk of req) {
+        chunks.push(chunk)
+      }
+      const originalBody = Buffer.concat(chunks).toString()
+      const params = new URLSearchParams(originalBody)
+      params.set('client_id', MICROSOFT_CLIENT_ID)
+      params.set('client_secret', MICROSOFT_CLIENT_SECRET)
+
+      try {
+        const response = await fetch(targetUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: params.toString(),
+        })
+        const responseBody = await response.text()
+        res.writeHead(response.status, {
+          ...CORS_HEADERS,
+          'Content-Type':
+            response.headers.get('content-type') || 'application/json',
+        })
+        res.end(responseBody)
+        return
+      } catch (err) {
+        logger.error(`Microsoft proxy error: ${err.message}`)
+        res.writeHead(502, CORS_HEADERS)
+        res.end(JSON.stringify({ error: 'Proxy error', message: err.message }))
+        return
+      }
+    }
+
+    return proxyRequest(req, res, targetUrl)
+  }
+
+  // === FIGMA PROXY ===
+  if (path.startsWith('/api/figma/')) {
+    const figmaPath = path.replace('/api/figma/', '')
+    const targetUrl = `https://api.figma.com/v1/${figmaPath}${url.search}`
+
+    // For OAuth token and refresh endpoints, add Basic Auth with client credentials
+    if (
+      (figmaPath === 'oauth/token' || figmaPath === 'oauth/refresh') &&
+      FIGMA_CLIENT_ID &&
+      FIGMA_CLIENT_SECRET
+    ) {
+      logger.info(`Figma OAuth ${figmaPath} request (adding Basic Auth)`)
+
+      const credentials = Buffer.from(
+        `${FIGMA_CLIENT_ID}:${FIGMA_CLIENT_SECRET}`,
+      ).toString('base64')
+
+      // Read the request body
+      const chunks = []
+      for await (const chunk of req) {
+        chunks.push(chunk)
+      }
+      const originalBody = Buffer.concat(chunks).toString()
+
+      try {
+        const response = await fetch(targetUrl, {
+          method: 'POST',
+          headers: {
+            Authorization: `Basic ${credentials}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: originalBody,
+        })
+        const responseBody = await response.text()
+        res.writeHead(response.status, {
+          ...CORS_HEADERS,
+          'Content-Type':
+            response.headers.get('content-type') || 'application/json',
+        })
+        res.end(responseBody)
+        return
+      } catch (err) {
+        logger.error(`Figma proxy error: ${err.message}`)
+        res.writeHead(502, CORS_HEADERS)
+        res.end(JSON.stringify({ error: 'Proxy error', message: err.message }))
+        return
+      }
+    }
+
+    return proxyRequest(req, res, targetUrl)
+  }
+
+  // === DROPBOX OAUTH PROXY ===
+  if (path.startsWith('/api/dropbox/')) {
+    const dropboxPath = path.replace('/api/dropbox/', '')
+    const targetUrl = `https://api.dropboxapi.com/${dropboxPath}${url.search}`
+
+    // For token endpoint, inject client credentials into the body
+    if (
+      dropboxPath === 'oauth2/token' &&
+      DROPBOX_CLIENT_ID &&
+      DROPBOX_CLIENT_SECRET
+    ) {
+      logger.info('Dropbox OAuth token request (injecting client credentials)')
+
+      // Read and modify the request body to add client credentials
+      const chunks = []
+      for await (const chunk of req) {
+        chunks.push(chunk)
+      }
+      const originalBody = Buffer.concat(chunks).toString()
+      const params = new URLSearchParams(originalBody)
+      params.set('client_id', DROPBOX_CLIENT_ID)
+      params.set('client_secret', DROPBOX_CLIENT_SECRET)
+
+      try {
+        const response = await fetch(targetUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: params.toString(),
+        })
+        const responseBody = await response.text()
+        res.writeHead(response.status, {
+          ...CORS_HEADERS,
+          'Content-Type':
+            response.headers.get('content-type') || 'application/json',
+        })
+        res.end(responseBody)
+        return
+      } catch (err) {
+        logger.error(`Dropbox proxy error: ${err.message}`)
+        res.writeHead(502, CORS_HEADERS)
+        res.end(JSON.stringify({ error: 'Proxy error', message: err.message }))
+        return
+      }
+    }
+
+    return proxyRequest(req, res, targetUrl)
+  }
+
   // Unknown route
   res.writeHead(404, CORS_HEADERS)
   res.end(JSON.stringify({ error: 'Not found' }))
@@ -266,6 +480,10 @@ const start = () => {
     logger.info(`  - Google proxy: /api/google/*`)
     logger.info(`  - Notion proxy: /api/notion/*`)
     logger.info(`  - Qonto proxy: /api/qonto/*`)
+    logger.info(`  - Slack proxy: /api/slack/*`)
+    logger.info(`  - Microsoft proxy: /api/microsoft/*`)
+    logger.info(`  - Figma proxy: /api/figma/*`)
+    logger.info(`  - Dropbox proxy: /api/dropbox/*`)
   })
 }
 

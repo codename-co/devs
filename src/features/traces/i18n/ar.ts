@@ -102,6 +102,9 @@ export const ar: I18n = {
   requests: 'طلبات',
   tokens: 'رموز',
   ms: 'مللي ثانية',
+  Average: 'المتوسط',
+  Median: 'الوسيط',
+  '{n}th percentile': 'النسبة المئوية {n}',
   'Are you sure you want to delete all traces?':
     'هل أنت متأكد من حذف جميع التتبعات؟',
   'This action cannot be undone.': 'لا يمكن التراجع عن هذا الإجراء.',

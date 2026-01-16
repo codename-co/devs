@@ -24,12 +24,17 @@ export type AppConnectorProvider =
   | 'google-drive'
   | 'gmail'
   | 'google-calendar'
+  | 'google-chat'
   | 'google-meet'
   | 'google-tasks'
   | 'notion'
   | 'dropbox'
   | 'github'
   | 'qonto'
+  | 'slack'
+  | 'outlook-mail'
+  | 'onedrive'
+  | 'figma'
 
 /**
  * API connectors use API keys or bearer tokens
@@ -530,6 +535,17 @@ export const APP_CONNECTOR_CONFIGS: Record<
     maxFileSize: 1024 * 1024,
     rateLimit: { requests: 500, windowSeconds: 100 },
   },
+  'google-chat': {
+    id: 'google-chat',
+    category: 'app',
+    name: 'Google Chat',
+    icon: 'google-chat',
+    color: '#00AC47',
+    capabilities: ['read', 'search'],
+    supportedTypes: ['message', 'space'],
+    maxFileSize: 10 * 1024 * 1024,
+    rateLimit: { requests: 60, windowSeconds: 60 },
+  },
   'google-meet': {
     id: 'google-meet',
     category: 'app',
@@ -595,5 +611,49 @@ export const APP_CONNECTOR_CONFIGS: Record<
     supportedTypes: ['account', 'transaction', 'statement'],
     maxFileSize: MAX_SYNC_FILE_SIZE,
     rateLimit: { requests: 10, windowSeconds: 1 },
+  },
+  slack: {
+    id: 'slack',
+    category: 'app',
+    name: 'Slack',
+    icon: 'slack',
+    color: '#4A154B',
+    capabilities: ['read', 'search'],
+    supportedTypes: ['message', 'channel', 'file'],
+    maxFileSize: MAX_SYNC_FILE_SIZE,
+    rateLimit: { requests: 50, windowSeconds: 60 },
+  },
+  'outlook-mail': {
+    id: 'outlook-mail',
+    category: 'app',
+    name: 'Outlook Mail',
+    icon: 'outlook',
+    color: '#0078D4',
+    capabilities: ['read', 'search'],
+    supportedTypes: ['email'],
+    maxFileSize: 25 * 1024 * 1024,
+    rateLimit: { requests: 100, windowSeconds: 60 },
+  },
+  onedrive: {
+    id: 'onedrive',
+    category: 'app',
+    name: 'OneDrive',
+    icon: 'onedrive',
+    color: '#0078D4',
+    capabilities: ['read', 'search'],
+    supportedTypes: ['*'],
+    maxFileSize: MAX_SYNC_FILE_SIZE,
+    rateLimit: { requests: 100, windowSeconds: 60 },
+  },
+  figma: {
+    id: 'figma',
+    category: 'app',
+    name: 'Figma',
+    icon: 'figma',
+    color: '#F24E1E',
+    capabilities: ['read', 'search'],
+    supportedTypes: ['file', 'project'],
+    maxFileSize: MAX_SYNC_FILE_SIZE,
+    rateLimit: { requests: 100, windowSeconds: 60 },
   },
 }

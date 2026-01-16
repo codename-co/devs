@@ -31,6 +31,10 @@ export const PROVIDER_FILE_TYPES: Record<
     'text/calendar': 'document',
     'application/vnd.google-apps.calendar': 'document',
   },
+  'google-chat': {
+    'text/plain': 'text',
+    'text/markdown': 'text',
+  },
   'google-meet': {
     // Google Meet doesn't sync content, but we need an entry
     'text/plain': 'text',
@@ -67,6 +71,26 @@ export const PROVIDER_FILE_TYPES: Record<
     // Qonto content types
     'application/json': 'document',
     'text/plain': 'text',
+  },
+  slack: {
+    // Slack content types
+    'text/plain': 'text',
+    'text/markdown': 'text',
+    'application/json': 'document',
+  },
+  'outlook-mail': {
+    // Outlook Mail content types
+    'message/rfc822': 'document',
+    'text/html': 'document',
+    'text/plain': 'text',
+  },
+  onedrive: {
+    // OneDrive uses standard MIME types, will use detectFileType
+  },
+  figma: {
+    // Figma content types
+    'application/figma': 'document',
+    'text/markdown': 'text',
   },
 }
 

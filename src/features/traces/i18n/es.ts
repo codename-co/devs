@@ -103,6 +103,9 @@ export const es: I18n = {
   requests: 'solicitudes',
   tokens: 'tokens',
   ms: 'ms',
+  Average: 'Promedio',
+  Median: 'Mediana',
+  '{n}th percentile': 'Percentil {n}',
   'Are you sure you want to delete all traces?':
     '¿Está seguro de que desea eliminar todas las trazas?',
   'This action cannot be undone.': 'Esta acción no se puede deshacer.',

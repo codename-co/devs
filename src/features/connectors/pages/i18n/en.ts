@@ -42,6 +42,8 @@ export const en = [
   'Choose a service to connect to your knowledge base:',
   'Choose a service to connect to your knowledge base',
   'Select a Service',
+  'OAuth not configured for this provider',
+  'This provider is not ready',
 
   // Wizard - OAuth Step
   'Connecting...',

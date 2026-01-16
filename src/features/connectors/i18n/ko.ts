@@ -39,6 +39,15 @@ export const ko: I18n = {
   'Google Tasks': 'Google Tasks',
   'Import tasks and to-do lists from Google Tasks':
     'Google Tasks에서 작업과 할 일 목록 가져오기',
+  // Providers - Slack
+  Slack: 'Slack',
+  'Sync messages and files from Slack channels':
+    'Slack 채널에서 메시지 및 파일 동기화',
+
+  // Providers - Figma
+  Figma: 'Figma',
+  'Sync design files and components from Figma':
+    'Figma에서 디자인 파일 및 컴포넌트 동기화',
 
   // Status
   Connected: '연결됨',
@@ -81,6 +90,10 @@ export const ko: I18n = {
   'Provider error: {error}': '제공자 오류: {error}',
   'Failed to load folders': '폴더 로드 실패',
   'Failed to save': '저장 실패',
+  'OAuth not configured for provider: {provider}':
+    '제공자에 대해 OAuth가 구성되지 않음: {provider}',
+  'Missing client ID for provider: {provider}':
+    '제공자에 대한 클라이언트 ID 누락: {provider}',
 
   // Empty states
   'No connectors': '커넥터 없음',

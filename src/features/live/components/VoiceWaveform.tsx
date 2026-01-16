@@ -66,8 +66,8 @@ const generateWaveLayers = (): WaveLayer[] => {
       opacity: 0.5 + Math.sin(progress * Math.PI) * 0.35,
       lineWidth: 1.5 + Math.sin(progress * Math.PI) * 1,
       phaseOffset: i * 0.4,
-      scale: 0.6 + Math.sin(progress * Math.PI) * 0.4,
-      yOffset: (progress - 0.5) * 60,
+      scale: 0.1 + Math.sin(progress * Math.PI) * 0.2,
+      yOffset: (progress - 0.5) * 20,
       color,
       frequency: 0.8 + progress * 0.4,
       speed: 0.8 + i * 0.05,
@@ -525,7 +525,10 @@ export function VoiceWaveform({
           }
         }
 
-        ctx.lineWidth = layer.lineWidth * (lineWidth / 2)
+        ctx.lineWidth =
+          ((layer.lineWidth * (lineWidth / 2) * 1) /
+            (window.innerWidth * 0.4)) *
+          1200
         ctx.strokeStyle = layer.color
         ctx.stroke()
       }

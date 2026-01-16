@@ -1303,6 +1303,13 @@ export type ConnectorToolName =
   | TasksToolName
   | NotionToolName
   | QontoToolName
+  | OutlookToolName
+  | OneDriveToolName
+  | SlackToolName
+  | DropboxToolName
+  | FigmaToolName
+  | GoogleChatToolName
+  | GoogleMeetToolName
 
 // ============================================================================
 // Tool Definitions
@@ -2119,6 +2126,1553 @@ Filter options:
   },
 }
 
+// ============================================================================
+// Outlook Mail Tools
+// ============================================================================
+
+/**
+ * Parameters for the outlook_search tool.
+ * Search emails using Microsoft Graph search syntax.
+ */
+export interface OutlookSearchParams extends ConnectorToolBaseParams {
+  /**
+   * The search query using Microsoft Graph search syntax.
+   * Examples:
+   * - "from:john@example.com" - Emails from a specific sender
+   * - "subject:quarterly report" - Emails with specific subject
+   * - "hasAttachment:true" - Emails with attachments
+   * - "received>=2024-01-01" - Date range
+   */
+  query: string
+  /**
+   * Maximum number of results to return.
+   * @default 10
+   */
+  max_results?: number
+  /**
+   * Folder ID to search within.
+   */
+  folder_id?: string
+}
+
+/**
+ * Email message summary for search results.
+ */
+export interface OutlookMessageSummary {
+  /** Message ID */
+  id: string
+  /** Conversation ID */
+  conversationId?: string
+  /** Subject line */
+  subject: string
+  /** Sender name and email */
+  from: string
+  /** Recipient(s) */
+  to: string
+  /** Date received */
+  receivedDateTime: Date
+  /** Short snippet of content */
+  bodyPreview: string
+  /** Whether the message is read */
+  isRead: boolean
+  /** Whether the message has attachments */
+  hasAttachments: boolean
+  /** Message importance */
+  importance: 'low' | 'normal' | 'high'
+}
+
+/**
+ * Result of outlook_search operation.
+ */
+export interface OutlookSearchResult {
+  /** The search query that was executed */
+  query: string
+  /** Number of results returned */
+  result_count: number
+  /** The matching messages */
+  messages: OutlookMessageSummary[]
+  /** Pagination cursor for more results */
+  next_cursor?: string
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Parameters for the outlook_read tool.
+ * Read the full content of a specific email.
+ */
+export interface OutlookReadParams extends ConnectorToolBaseParams {
+  /**
+   * The message ID to read.
+   */
+  message_id: string
+  /**
+   * Whether to include attachment info.
+   * @default true
+   */
+  include_attachments?: boolean
+}
+
+/**
+ * Full email message content.
+ */
+export interface OutlookMessageContent {
+  /** Message ID */
+  id: string
+  /** Subject line */
+  subject: string
+  /** Sender */
+  from: string
+  /** Recipients (To) */
+  to: string
+  /** CC recipients */
+  cc?: string
+  /** Date received */
+  receivedDateTime: Date
+  /** Plain text body */
+  body: string
+  /** Is read */
+  isRead: boolean
+  /** Importance */
+  importance: 'low' | 'normal' | 'high'
+  /** Attachments info */
+  attachments: Array<{
+    id: string
+    name: string
+    contentType: string
+    size: number
+  }>
+}
+
+/**
+ * Result of outlook_read operation.
+ */
+export interface OutlookReadResult {
+  /** Whether the message was found */
+  found: boolean
+  /** Error message if not found */
+  error?: string
+  /** The full message content */
+  message?: OutlookMessageContent
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Parameters for the outlook_list_folders tool.
+ * List available mail folders.
+ */
+export interface OutlookListFoldersParams extends ConnectorToolBaseParams {
+  /**
+   * Maximum results.
+   * @default 50
+   */
+  max_results?: number
+}
+
+/**
+ * Mail folder information.
+ */
+export interface OutlookFolder {
+  /** Folder ID */
+  id: string
+  /** Display name */
+  displayName: string
+  /** Parent folder ID */
+  parentFolderId?: string
+  /** Unread count */
+  unreadItemCount: number
+  /** Total count */
+  totalItemCount: number
+}
+
+/**
+ * Result of outlook_list_folders operation.
+ */
+export interface OutlookListFoldersResult {
+  /** Available folders */
+  folders: OutlookFolder[]
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Outlook Mail tool names.
+ */
+export type OutlookToolName =
+  | 'outlook_search'
+  | 'outlook_read'
+  | 'outlook_list_folders'
+
+/**
+ * Outlook Mail tool definitions for LLM function calling.
+ */
+export const OUTLOOK_TOOL_DEFINITIONS: Record<OutlookToolName, ToolDefinition> =
+  {
+    outlook_search: {
+      type: 'function',
+      function: {
+        name: 'outlook_search',
+        description: `Search for emails in a connected Outlook account using Microsoft Graph.
+
+Examples:
+- "from:john@example.com" - Emails from specific sender
+- "subject:meeting" - Emails with specific subject
+- "hasAttachment:true" - Emails with attachments
+- "received>=2024-01-01" - Date range filter
+- "isRead eq false" - Unread emails
+- Combine: "from:boss@company.com hasAttachment:true"`,
+        parameters: {
+          type: 'object',
+          properties: {
+            connector_id: {
+              type: 'string',
+              description: 'The Outlook connector ID to use',
+            },
+            query: {
+              type: 'string',
+              description: 'Search query using Microsoft Graph search syntax',
+            },
+            max_results: {
+              type: 'integer',
+              description: 'Maximum number of results (default: 10, max: 50)',
+              minimum: 1,
+              maximum: 50,
+            },
+            folder_id: {
+              type: 'string',
+              description: 'Folder ID to search within (optional)',
+            },
+          },
+          required: ['connector_id', 'query'],
+        },
+      },
+    },
+
+    outlook_read: {
+      type: 'function',
+      function: {
+        name: 'outlook_read',
+        description:
+          'Read the full content of a specific email by message ID. ' +
+          'Use this after outlook_search to get complete email content.',
+        parameters: {
+          type: 'object',
+          properties: {
+            connector_id: {
+              type: 'string',
+              description: 'The Outlook connector ID to use',
+            },
+            message_id: {
+              type: 'string',
+              description: 'The message ID from outlook_search results',
+            },
+            include_attachments: {
+              type: 'boolean',
+              description: 'Include attachment metadata (default: true)',
+            },
+          },
+          required: ['connector_id', 'message_id'],
+        },
+      },
+    },
+
+    outlook_list_folders: {
+      type: 'function',
+      function: {
+        name: 'outlook_list_folders',
+        description:
+          'List available mail folders in the connected Outlook account. ' +
+          'Useful for discovering folder structure before searching.',
+        parameters: {
+          type: 'object',
+          properties: {
+            connector_id: {
+              type: 'string',
+              description: 'The Outlook connector ID to use',
+            },
+            max_results: {
+              type: 'integer',
+              description: 'Maximum folders to return (default: 50)',
+              minimum: 1,
+              maximum: 100,
+            },
+          },
+          required: ['connector_id'],
+        },
+      },
+    },
+  }
+
+// ============================================================================
+// OneDrive Tools
+// ============================================================================
+
+/**
+ * Parameters for the onedrive_search tool.
+ * Search files in OneDrive.
+ */
+export interface OneDriveSearchParams extends ConnectorToolBaseParams {
+  /**
+   * The search query.
+   */
+  query: string
+  /**
+   * Maximum number of results.
+   * @default 10
+   */
+  max_results?: number
+}
+
+/**
+ * OneDrive file summary for search results.
+ */
+export interface OneDriveFileSummary {
+  /** File ID */
+  id: string
+  /** File name */
+  name: string
+  /** MIME type */
+  mimeType?: string
+  /** Whether it's a folder */
+  isFolder: boolean
+  /** File size in bytes */
+  size?: number
+  /** Last modified date */
+  lastModifiedDateTime: Date
+  /** Web URL */
+  webUrl?: string
+  /** Parent path */
+  parentPath?: string
+}
+
+/**
+ * Result of onedrive_search operation.
+ */
+export interface OneDriveSearchResult {
+  /** Search query executed */
+  query: string
+  /** Number of results */
+  result_count: number
+  /** Matching files */
+  files: OneDriveFileSummary[]
+  /** Pagination cursor */
+  next_cursor?: string
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Parameters for the onedrive_read tool.
+ * Read the content of a OneDrive file.
+ */
+export interface OneDriveReadParams extends ConnectorToolBaseParams {
+  /**
+   * The file ID to read.
+   */
+  file_id: string
+  /**
+   * Maximum content length for text files.
+   */
+  max_length?: number
+}
+
+/**
+ * Result of onedrive_read operation.
+ */
+export interface OneDriveReadResult {
+  /** Whether the file was found */
+  found: boolean
+  /** Error message if failed */
+  error?: string
+  /** File metadata */
+  file?: OneDriveFileSummary
+  /** File content (for text-based files) */
+  content?: string
+  /** Content type */
+  content_type?: 'text' | 'binary'
+  /** Whether content was truncated */
+  truncated?: boolean
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Parameters for the onedrive_list tool.
+ * List files in a OneDrive folder.
+ */
+export interface OneDriveListParams extends ConnectorToolBaseParams {
+  /**
+   * Folder ID to list. Omit for root.
+   */
+  folder_id?: string
+  /**
+   * Maximum number of results.
+   * @default 50
+   */
+  limit?: number
+}
+
+/**
+ * Result of onedrive_list operation.
+ */
+export interface OneDriveListResult {
+  /** Parent folder info (null if root) */
+  folder: { id: string; name: string } | null
+  /** Files in the folder */
+  files: OneDriveFileSummary[]
+  /** Total count */
+  total_count: number
+  /** Pagination cursor */
+  next_cursor?: string
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * OneDrive tool names.
+ */
+export type OneDriveToolName =
+  | 'onedrive_search'
+  | 'onedrive_read'
+  | 'onedrive_list'
+
+/**
+ * OneDrive tool definitions for LLM function calling.
+ */
+export const ONEDRIVE_TOOL_DEFINITIONS: Record<
+  OneDriveToolName,
+  ToolDefinition
+> = {
+  onedrive_search: {
+    type: 'function',
+    function: {
+      name: 'onedrive_search',
+      description: `Search for files in connected OneDrive using Microsoft Graph.
+
+Supports natural language search:
+- "budget spreadsheet" - Files containing these terms
+- "quarterly report" - Find documents by content
+- "presentation 2024" - Search by name or content`,
+      parameters: {
+        type: 'object',
+        properties: {
+          connector_id: {
+            type: 'string',
+            description: 'The OneDrive connector ID to use',
+          },
+          query: {
+            type: 'string',
+            description: 'Search query',
+          },
+          max_results: {
+            type: 'integer',
+            description: 'Maximum results (default: 10, max: 50)',
+            minimum: 1,
+            maximum: 50,
+          },
+        },
+        required: ['connector_id', 'query'],
+      },
+    },
+  },
+
+  onedrive_read: {
+    type: 'function',
+    function: {
+      name: 'onedrive_read',
+      description:
+        'Read the content of a file from OneDrive. ' +
+        'Works with text files. Binary files return metadata only.',
+      parameters: {
+        type: 'object',
+        properties: {
+          connector_id: {
+            type: 'string',
+            description: 'The OneDrive connector ID to use',
+          },
+          file_id: {
+            type: 'string',
+            description: 'The file ID from onedrive_search results',
+          },
+          max_length: {
+            type: 'integer',
+            description: 'Maximum content length in characters',
+            minimum: 100,
+          },
+        },
+        required: ['connector_id', 'file_id'],
+      },
+    },
+  },
+
+  onedrive_list: {
+    type: 'function',
+    function: {
+      name: 'onedrive_list',
+      description:
+        'List files and folders in a OneDrive directory. ' +
+        'Useful for browsing folder structure.',
+      parameters: {
+        type: 'object',
+        properties: {
+          connector_id: {
+            type: 'string',
+            description: 'The OneDrive connector ID to use',
+          },
+          folder_id: {
+            type: 'string',
+            description: 'Folder ID to list (omit for root)',
+          },
+          limit: {
+            type: 'integer',
+            description: 'Maximum items to return (default: 50)',
+            minimum: 1,
+            maximum: 100,
+          },
+        },
+        required: ['connector_id'],
+      },
+    },
+  },
+}
+
+// ============================================================================
+// Slack Tools
+// ============================================================================
+
+/**
+ * Parameters for the slack_search tool.
+ * Search messages in Slack.
+ */
+export interface SlackSearchParams extends ConnectorToolBaseParams {
+  /**
+   * Search query for messages.
+   * Supports Slack search modifiers like from:, in:, has:, etc.
+   */
+  query: string
+  /**
+   * Maximum number of results.
+   * @default 20
+   */
+  max_results?: number
+}
+
+/**
+ * Slack message summary for search results.
+ */
+export interface SlackMessageSummary {
+  /** Message ID (timestamp) */
+  ts: string
+  /** Channel ID */
+  channelId: string
+  /** Channel name */
+  channelName: string
+  /** Message text */
+  text: string
+  /** User ID who sent the message */
+  userId?: string
+  /** Permalink to message */
+  permalink: string
+}
+
+/**
+ * Result of slack_search operation.
+ */
+export interface SlackSearchResult {
+  /** Search query */
+  query: string
+  /** Number of results */
+  result_count: number
+  /** Matching messages */
+  messages: SlackMessageSummary[]
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Parameters for the slack_list_channels tool.
+ * List Slack channels.
+ */
+export interface SlackListChannelsParams extends ConnectorToolBaseParams {
+  /**
+   * Include private channels.
+   * @default true
+   */
+  include_private?: boolean
+  /**
+   * Maximum results.
+   * @default 100
+   */
+  max_results?: number
+}
+
+/**
+ * Slack channel summary.
+ */
+export interface SlackChannelSummary {
+  /** Channel ID */
+  id: string
+  /** Channel name */
+  name: string
+  /** Whether private */
+  isPrivate: boolean
+  /** Whether archived */
+  isArchived: boolean
+  /** Topic */
+  topic?: string
+  /** Purpose */
+  purpose?: string
+  /** Member count */
+  numMembers?: number
+}
+
+/**
+ * Result of slack_list_channels operation.
+ */
+export interface SlackListChannelsResult {
+  /** Channels */
+  channels: SlackChannelSummary[]
+  /** Result count */
+  result_count: number
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Parameters for the slack_read_channel tool.
+ * Read messages from a Slack channel.
+ */
+export interface SlackReadChannelParams extends ConnectorToolBaseParams {
+  /**
+   * Channel ID to read from.
+   */
+  channel_id: string
+  /**
+   * Maximum messages to return.
+   * @default 50
+   */
+  limit?: number
+  /**
+   * Get messages before this timestamp.
+   */
+  oldest?: string
+  /**
+   * Get messages after this timestamp.
+   */
+  latest?: string
+}
+
+/**
+ * Slack channel message.
+ */
+export interface SlackChannelMessage {
+  /** Message timestamp (ID) */
+  ts: string
+  /** User ID */
+  userId?: string
+  /** Message text */
+  text: string
+  /** Thread timestamp (if in thread) */
+  threadTs?: string
+  /** Reply count (if parent of thread) */
+  replyCount?: number
+  /** Has attachments */
+  hasAttachments: boolean
+}
+
+/**
+ * Result of slack_read_channel operation.
+ */
+export interface SlackReadChannelResult {
+  /** Channel info */
+  channel: {
+    id: string
+    name: string
+  }
+  /** Messages */
+  messages: SlackChannelMessage[]
+  /** Whether there are more messages */
+  hasMore: boolean
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Slack tool names.
+ */
+export type SlackToolName =
+  | 'slack_search'
+  | 'slack_list_channels'
+  | 'slack_read_channel'
+
+/**
+ * Slack tool definitions for LLM function calling.
+ */
+export const SLACK_TOOL_DEFINITIONS: Record<SlackToolName, ToolDefinition> = {
+  slack_search: {
+    type: 'function',
+    function: {
+      name: 'slack_search',
+      description: `Search for messages in connected Slack workspace.
+
+Uses Slack's search syntax:
+- "project update" - Search for messages containing these words
+- "from:@john" - Messages from a specific user
+- "in:#general" - Messages in a specific channel
+- "has:link" - Messages with links
+- "has:reaction" - Messages with reactions
+- "during:today" - Messages from today
+- "before:2024-01-01" - Messages before a date`,
+      parameters: {
+        type: 'object',
+        properties: {
+          connector_id: {
+            type: 'string',
+            description: 'The Slack connector ID to use',
+          },
+          query: {
+            type: 'string',
+            description: 'Search query using Slack search syntax',
+          },
+          max_results: {
+            type: 'integer',
+            description: 'Maximum results (default: 20, max: 100)',
+            minimum: 1,
+            maximum: 100,
+          },
+        },
+        required: ['connector_id', 'query'],
+      },
+    },
+  },
+
+  slack_list_channels: {
+    type: 'function',
+    function: {
+      name: 'slack_list_channels',
+      description:
+        'List available channels in the connected Slack workspace. ' +
+        'Returns both public and private channels the bot has access to.',
+      parameters: {
+        type: 'object',
+        properties: {
+          connector_id: {
+            type: 'string',
+            description: 'The Slack connector ID to use',
+          },
+          include_private: {
+            type: 'boolean',
+            description: 'Include private channels (default: true)',
+          },
+          max_results: {
+            type: 'integer',
+            description: 'Maximum channels to return (default: 100)',
+            minimum: 1,
+            maximum: 200,
+          },
+        },
+        required: ['connector_id'],
+      },
+    },
+  },
+
+  slack_read_channel: {
+    type: 'function',
+    function: {
+      name: 'slack_read_channel',
+      description:
+        'Read recent messages from a Slack channel. ' +
+        'Use slack_list_channels first to get channel IDs.',
+      parameters: {
+        type: 'object',
+        properties: {
+          connector_id: {
+            type: 'string',
+            description: 'The Slack connector ID to use',
+          },
+          channel_id: {
+            type: 'string',
+            description: 'The channel ID to read messages from',
+          },
+          limit: {
+            type: 'integer',
+            description: 'Maximum messages to return (default: 50)',
+            minimum: 1,
+            maximum: 200,
+          },
+          oldest: {
+            type: 'string',
+            description: 'Get messages after this timestamp (exclusive)',
+          },
+          latest: {
+            type: 'string',
+            description: 'Get messages before this timestamp (inclusive)',
+          },
+        },
+        required: ['connector_id', 'channel_id'],
+      },
+    },
+  },
+}
+
+// ============================================================================
+// Dropbox Tools
+// ============================================================================
+
+/**
+ * Parameters for the dropbox_search tool.
+ * Search files in Dropbox.
+ */
+export interface DropboxSearchParams extends ConnectorToolBaseParams {
+  /**
+   * Search query.
+   */
+  query: string
+  /**
+   * Path to search within.
+   */
+  path?: string
+  /**
+   * Maximum results.
+   * @default 20
+   */
+  max_results?: number
+}
+
+/**
+ * Dropbox file summary.
+ */
+export interface DropboxFileSummary {
+  /** File ID */
+  id: string
+  /** File name */
+  name: string
+  /** Full path */
+  pathDisplay: string
+  /** Whether it's a folder */
+  isFolder: boolean
+  /** File size in bytes */
+  size?: number
+  /** Last modified date */
+  serverModified?: Date
+  /** Content hash */
+  contentHash?: string
+}
+
+/**
+ * Result of dropbox_search operation.
+ */
+export interface DropboxSearchResult {
+  /** Search query */
+  query: string
+  /** Number of results */
+  result_count: number
+  /** Matching files */
+  files: DropboxFileSummary[]
+  /** Whether there are more results */
+  hasMore: boolean
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Parameters for the dropbox_read tool.
+ */
+export interface DropboxReadParams extends ConnectorToolBaseParams {
+  /**
+   * File ID or path to read.
+   */
+  file_id: string
+  /**
+   * Maximum content length.
+   */
+  max_length?: number
+}
+
+/**
+ * Result of dropbox_read operation.
+ */
+export interface DropboxReadResult {
+  /** Whether file was found */
+  found: boolean
+  /** Error if failed */
+  error?: string
+  /** File metadata */
+  file?: DropboxFileSummary
+  /** File content */
+  content?: string
+  /** Whether content was truncated */
+  truncated?: boolean
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Parameters for the dropbox_list tool.
+ */
+export interface DropboxListParams extends ConnectorToolBaseParams {
+  /**
+   * Path to list. Empty for root.
+   */
+  path?: string
+  /**
+   * Maximum results.
+   * @default 50
+   */
+  limit?: number
+}
+
+/**
+ * Result of dropbox_list operation.
+ */
+export interface DropboxListResult {
+  /** Path listed */
+  path: string
+  /** Files and folders */
+  entries: DropboxFileSummary[]
+  /** Whether there are more entries */
+  hasMore: boolean
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Dropbox tool names.
+ */
+export type DropboxToolName = 'dropbox_search' | 'dropbox_read' | 'dropbox_list'
+
+/**
+ * Dropbox tool definitions for LLM function calling.
+ */
+export const DROPBOX_TOOL_DEFINITIONS: Record<DropboxToolName, ToolDefinition> =
+  {
+    dropbox_search: {
+      type: 'function',
+      function: {
+        name: 'dropbox_search',
+        description:
+          'Search for files in connected Dropbox. ' +
+          'Searches file and folder names and content.',
+        parameters: {
+          type: 'object',
+          properties: {
+            connector_id: {
+              type: 'string',
+              description: 'The Dropbox connector ID to use',
+            },
+            query: {
+              type: 'string',
+              description: 'Search query for file names and content',
+            },
+            path: {
+              type: 'string',
+              description: 'Limit search to this path (e.g., "/Documents")',
+            },
+            max_results: {
+              type: 'integer',
+              description: 'Maximum results (default: 20)',
+              minimum: 1,
+              maximum: 100,
+            },
+          },
+          required: ['connector_id', 'query'],
+        },
+      },
+    },
+
+    dropbox_read: {
+      type: 'function',
+      function: {
+        name: 'dropbox_read',
+        description:
+          'Read the content of a file from Dropbox. ' +
+          'Works with text files up to 10MB.',
+        parameters: {
+          type: 'object',
+          properties: {
+            connector_id: {
+              type: 'string',
+              description: 'The Dropbox connector ID to use',
+            },
+            file_id: {
+              type: 'string',
+              description: 'File ID or path from dropbox_search results',
+            },
+            max_length: {
+              type: 'integer',
+              description: 'Maximum content length in characters',
+              minimum: 100,
+            },
+          },
+          required: ['connector_id', 'file_id'],
+        },
+      },
+    },
+
+    dropbox_list: {
+      type: 'function',
+      function: {
+        name: 'dropbox_list',
+        description:
+          'List files and folders in a Dropbox directory. ' +
+          'Use empty path for root folder.',
+        parameters: {
+          type: 'object',
+          properties: {
+            connector_id: {
+              type: 'string',
+              description: 'The Dropbox connector ID to use',
+            },
+            path: {
+              type: 'string',
+              description: 'Path to list (empty or "/" for root)',
+            },
+            limit: {
+              type: 'integer',
+              description: 'Maximum items to return (default: 50)',
+              minimum: 1,
+              maximum: 200,
+            },
+          },
+          required: ['connector_id'],
+        },
+      },
+    },
+  }
+
+// ============================================================================
+// Figma Tools
+// ============================================================================
+
+/**
+ * Parameters for the figma_list_files tool.
+ * List files in Figma projects.
+ */
+export interface FigmaListFilesParams extends ConnectorToolBaseParams {
+  /**
+   * Project ID to list files from.
+   */
+  project_id?: string
+  /**
+   * Team ID to list projects and files from.
+   */
+  team_id?: string
+}
+
+/**
+ * Figma file summary.
+ */
+export interface FigmaFileSummary {
+  /** File key */
+  key: string
+  /** File name */
+  name: string
+  /** Thumbnail URL */
+  thumbnailUrl?: string
+  /** Last modified date */
+  lastModified: Date
+  /** Editor type */
+  editorType?: string
+}
+
+/**
+ * Result of figma_list_files operation.
+ */
+export interface FigmaListFilesResult {
+  /** Project info if querying a project */
+  project?: {
+    id: string
+    name: string
+  }
+  /** Files */
+  files: FigmaFileSummary[]
+  /** Result count */
+  result_count: number
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Parameters for the figma_get_file tool.
+ * Get details of a Figma file.
+ */
+export interface FigmaGetFileParams extends ConnectorToolBaseParams {
+  /**
+   * File key to retrieve.
+   */
+  file_key: string
+  /**
+   * Depth of nodes to return.
+   * @default 2
+   */
+  depth?: number
+}
+
+/**
+ * Figma node summary.
+ */
+export interface FigmaNodeSummary {
+  /** Node ID */
+  id: string
+  /** Node name */
+  name: string
+  /** Node type */
+  type: string
+  /** Child count */
+  childCount?: number
+}
+
+/**
+ * Result of figma_get_file operation.
+ */
+export interface FigmaGetFileResult {
+  /** Whether file was found */
+  found: boolean
+  /** Error if failed */
+  error?: string
+  /** File info */
+  file?: {
+    key: string
+    name: string
+    lastModified: Date
+    version: string
+    thumbnailUrl?: string
+  }
+  /** Top-level nodes */
+  pages?: FigmaNodeSummary[]
+  /** Component count */
+  componentCount?: number
+  /** Style count */
+  styleCount?: number
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Parameters for the figma_get_comments tool.
+ * Get comments on a Figma file.
+ */
+export interface FigmaGetCommentsParams extends ConnectorToolBaseParams {
+  /**
+   * File key.
+   */
+  file_key: string
+}
+
+/**
+ * Figma comment.
+ */
+export interface FigmaComment {
+  /** Comment ID */
+  id: string
+  /** Comment text */
+  message: string
+  /** Author name */
+  authorName: string
+  /** Created date */
+  createdAt: Date
+  /** Is resolved */
+  resolved: boolean
+  /** Parent comment ID (for replies) */
+  parentId?: string
+}
+
+/**
+ * Result of figma_get_comments operation.
+ */
+export interface FigmaGetCommentsResult {
+  /** Comments */
+  comments: FigmaComment[]
+  /** Result count */
+  result_count: number
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Figma tool names.
+ */
+export type FigmaToolName =
+  | 'figma_list_files'
+  | 'figma_get_file'
+  | 'figma_get_comments'
+
+/**
+ * Figma tool definitions for LLM function calling.
+ */
+export const FIGMA_TOOL_DEFINITIONS: Record<FigmaToolName, ToolDefinition> = {
+  figma_list_files: {
+    type: 'function',
+    function: {
+      name: 'figma_list_files',
+      description:
+        'List Figma design files from a project or team. ' +
+        'Provide either project_id or team_id to filter.',
+      parameters: {
+        type: 'object',
+        properties: {
+          connector_id: {
+            type: 'string',
+            description: 'The Figma connector ID to use',
+          },
+          project_id: {
+            type: 'string',
+            description: 'Project ID to list files from',
+          },
+          team_id: {
+            type: 'string',
+            description: 'Team ID to list all team files',
+          },
+        },
+        required: ['connector_id'],
+      },
+    },
+  },
+
+  figma_get_file: {
+    type: 'function',
+    function: {
+      name: 'figma_get_file',
+      description:
+        'Get details of a Figma design file including pages, components, and styles. ' +
+        'Use file key from figma_list_files.',
+      parameters: {
+        type: 'object',
+        properties: {
+          connector_id: {
+            type: 'string',
+            description: 'The Figma connector ID to use',
+          },
+          file_key: {
+            type: 'string',
+            description: 'The file key from figma_list_files',
+          },
+          depth: {
+            type: 'integer',
+            description: 'Depth of node tree to return (default: 2)',
+            minimum: 1,
+            maximum: 5,
+          },
+        },
+        required: ['connector_id', 'file_key'],
+      },
+    },
+  },
+
+  figma_get_comments: {
+    type: 'function',
+    function: {
+      name: 'figma_get_comments',
+      description:
+        'Get comments and feedback on a Figma file. ' +
+        'Useful for reviewing design discussions.',
+      parameters: {
+        type: 'object',
+        properties: {
+          connector_id: {
+            type: 'string',
+            description: 'The Figma connector ID to use',
+          },
+          file_key: {
+            type: 'string',
+            description: 'The file key to get comments for',
+          },
+        },
+        required: ['connector_id', 'file_key'],
+      },
+    },
+  },
+}
+
+// ============================================================================
+// Google Chat Tools
+// ============================================================================
+
+/**
+ * Parameters for the google_chat_list_spaces tool.
+ * List Google Chat spaces.
+ */
+export interface GoogleChatListSpacesParams extends ConnectorToolBaseParams {
+  /**
+   * Maximum results.
+   * @default 50
+   */
+  max_results?: number
+  /**
+   * Filter by space type.
+   */
+  type?: 'ROOM' | 'DM' | 'SPACE'
+}
+
+/**
+ * Google Chat space summary.
+ */
+export interface GoogleChatSpaceSummary {
+  /** Space resource name */
+  name: string
+  /** Space ID */
+  id: string
+  /** Display name */
+  displayName?: string
+  /** Space type */
+  type: 'ROOM' | 'DM' | 'SPACE'
+  /** Is threaded */
+  threaded?: boolean
+}
+
+/**
+ * Result of google_chat_list_spaces operation.
+ */
+export interface GoogleChatListSpacesResult {
+  /** Spaces */
+  spaces: GoogleChatSpaceSummary[]
+  /** Result count */
+  result_count: number
+  /** Pagination cursor */
+  next_cursor?: string
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Parameters for the google_chat_read_messages tool.
+ * Read messages from a Google Chat space.
+ */
+export interface GoogleChatReadMessagesParams extends ConnectorToolBaseParams {
+  /**
+   * Space name/ID to read from.
+   */
+  space_id: string
+  /**
+   * Maximum messages.
+   * @default 50
+   */
+  max_results?: number
+}
+
+/**
+ * Google Chat message.
+ */
+export interface GoogleChatMessage {
+  /** Message resource name */
+  name: string
+  /** Sender display name */
+  senderName?: string
+  /** Sender type */
+  senderType: 'HUMAN' | 'BOT'
+  /** Message text */
+  text?: string
+  /** Created time */
+  createTime: Date
+  /** Thread name */
+  threadName?: string
+}
+
+/**
+ * Result of google_chat_read_messages operation.
+ */
+export interface GoogleChatReadMessagesResult {
+  /** Space info */
+  space: {
+    id: string
+    name: string
+  }
+  /** Messages */
+  messages: GoogleChatMessage[]
+  /** Result count */
+  result_count: number
+  /** Pagination cursor */
+  next_cursor?: string
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Google Chat tool names.
+ */
+export type GoogleChatToolName =
+  | 'google_chat_list_spaces'
+  | 'google_chat_read_messages'
+
+/**
+ * Google Chat tool definitions for LLM function calling.
+ */
+export const GOOGLE_CHAT_TOOL_DEFINITIONS: Record<
+  GoogleChatToolName,
+  ToolDefinition
+> = {
+  google_chat_list_spaces: {
+    type: 'function',
+    function: {
+      name: 'google_chat_list_spaces',
+      description:
+        'List Google Chat spaces (rooms, DMs, and spaces) the user has access to.',
+      parameters: {
+        type: 'object',
+        properties: {
+          connector_id: {
+            type: 'string',
+            description: 'The Google Chat connector ID to use',
+          },
+          max_results: {
+            type: 'integer',
+            description: 'Maximum spaces to return (default: 50)',
+            minimum: 1,
+            maximum: 100,
+          },
+          type: {
+            type: 'string',
+            description: 'Filter by space type',
+            enum: ['ROOM', 'DM', 'SPACE'],
+          },
+        },
+        required: ['connector_id'],
+      },
+    },
+  },
+
+  google_chat_read_messages: {
+    type: 'function',
+    function: {
+      name: 'google_chat_read_messages',
+      description:
+        'Read messages from a Google Chat space. ' +
+        'Use google_chat_list_spaces first to get space IDs.',
+      parameters: {
+        type: 'object',
+        properties: {
+          connector_id: {
+            type: 'string',
+            description: 'The Google Chat connector ID to use',
+          },
+          space_id: {
+            type: 'string',
+            description: 'The space ID or name to read messages from',
+          },
+          max_results: {
+            type: 'integer',
+            description: 'Maximum messages to return (default: 50)',
+            minimum: 1,
+            maximum: 100,
+          },
+        },
+        required: ['connector_id', 'space_id'],
+      },
+    },
+  },
+}
+
+// ============================================================================
+// Google Meet Tools
+// ============================================================================
+
+/**
+ * Parameters for the google_meet_list_meetings tool.
+ * List upcoming Google Meet meetings.
+ */
+export interface GoogleMeetListMeetingsParams extends ConnectorToolBaseParams {
+  /**
+   * Start of time range (ISO 8601).
+   * @default now
+   */
+  time_min?: string
+  /**
+   * End of time range (ISO 8601).
+   * @default 7 days from now
+   */
+  time_max?: string
+  /**
+   * Maximum results.
+   * @default 25
+   */
+  max_results?: number
+}
+
+/**
+ * Google Meet meeting summary.
+ */
+export interface GoogleMeetMeetingSummary {
+  /** Meeting ID */
+  id: string
+  /** Meeting title */
+  title: string
+  /** Start time */
+  startTime?: Date
+  /** End time */
+  endTime?: Date
+  /** Meet URL */
+  meetUrl: string
+  /** Calendar event ID */
+  calendarEventId?: string
+}
+
+/**
+ * Result of google_meet_list_meetings operation.
+ */
+export interface GoogleMeetListMeetingsResult {
+  /** Meetings */
+  meetings: GoogleMeetMeetingSummary[]
+  /** Result count */
+  result_count: number
+  /** Time range queried */
+  timeRange: {
+    start: string
+    end: string
+  }
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
+/**
+ * Google Meet tool names.
+ */
+export type GoogleMeetToolName = 'google_meet_list_meetings'
+
+/**
+ * Google Meet tool definitions for LLM function calling.
+ */
+export const GOOGLE_MEET_TOOL_DEFINITIONS: Record<
+  GoogleMeetToolName,
+  ToolDefinition
+> = {
+  google_meet_list_meetings: {
+    type: 'function',
+    function: {
+      name: 'google_meet_list_meetings',
+      description:
+        'List upcoming Google Meet meetings from the calendar. ' +
+        'Returns meetings with Meet links within the specified time range.',
+      parameters: {
+        type: 'object',
+        properties: {
+          connector_id: {
+            type: 'string',
+            description: 'The Google Meet connector ID to use',
+          },
+          time_min: {
+            type: 'string',
+            description:
+              'Start of time range in ISO 8601 format (default: now)',
+          },
+          time_max: {
+            type: 'string',
+            description:
+              'End of time range in ISO 8601 format (default: 7 days from now)',
+          },
+          max_results: {
+            type: 'integer',
+            description: 'Maximum meetings to return (default: 25)',
+            minimum: 1,
+            maximum: 100,
+          },
+        },
+        required: ['connector_id'],
+      },
+    },
+  },
+}
+
 /**
  * All connector tool definitions combined.
  */
@@ -2132,6 +3686,13 @@ export const CONNECTOR_TOOL_DEFINITIONS: Record<
   ...TASKS_TOOL_DEFINITIONS,
   ...NOTION_TOOL_DEFINITIONS,
   ...QONTO_TOOL_DEFINITIONS,
+  ...OUTLOOK_TOOL_DEFINITIONS,
+  ...ONEDRIVE_TOOL_DEFINITIONS,
+  ...SLACK_TOOL_DEFINITIONS,
+  ...DROPBOX_TOOL_DEFINITIONS,
+  ...FIGMA_TOOL_DEFINITIONS,
+  ...GOOGLE_CHAT_TOOL_DEFINITIONS,
+  ...GOOGLE_MEET_TOOL_DEFINITIONS,
 }
 
 /**
@@ -2153,6 +3714,20 @@ export function getToolDefinitionsForProvider(
       return Object.values(NOTION_TOOL_DEFINITIONS)
     case 'qonto':
       return Object.values(QONTO_TOOL_DEFINITIONS)
+    case 'outlook-mail':
+      return Object.values(OUTLOOK_TOOL_DEFINITIONS)
+    case 'onedrive':
+      return Object.values(ONEDRIVE_TOOL_DEFINITIONS)
+    case 'slack':
+      return Object.values(SLACK_TOOL_DEFINITIONS)
+    case 'dropbox':
+      return Object.values(DROPBOX_TOOL_DEFINITIONS)
+    case 'figma':
+      return Object.values(FIGMA_TOOL_DEFINITIONS)
+    case 'google-chat':
+      return Object.values(GOOGLE_CHAT_TOOL_DEFINITIONS)
+    case 'google-meet':
+      return Object.values(GOOGLE_MEET_TOOL_DEFINITIONS)
     default:
       return []
   }

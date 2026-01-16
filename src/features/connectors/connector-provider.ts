@@ -39,6 +39,12 @@ const PROVIDER_SCOPES: Record<AppConnectorProvider, string[]> = {
   'google-drive': ['https://www.googleapis.com/auth/drive.readonly'],
   gmail: ['https://www.googleapis.com/auth/gmail.readonly'],
   'google-calendar': ['https://www.googleapis.com/auth/calendar.readonly'],
+  'google-chat': [
+    'https://www.googleapis.com/auth/chat.spaces.readonly',
+    'https://www.googleapis.com/auth/chat.messages.readonly',
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+  ],
   'google-meet': [
     'https://www.googleapis.com/auth/calendar.readonly',
     'https://www.googleapis.com/auth/userinfo.email',
@@ -53,6 +59,28 @@ const PROVIDER_SCOPES: Record<AppConnectorProvider, string[]> = {
   dropbox: ['files.content.read', 'files.metadata.read'],
   github: ['repo', 'read:user'],
   qonto: ['offline_access', 'organization.read'],
+  slack: [
+    'channels:history',
+    'channels:read',
+    'files:read',
+    'groups:history',
+    'groups:read',
+    'im:history',
+    'im:read',
+    'mpim:history',
+    'mpim:read',
+    'search:read',
+    'users:read',
+    'users:read.email',
+  ],
+  'outlook-mail': ['Mail.Read', 'User.Read'],
+  onedrive: ['Files.Read.All', 'User.Read'],
+  figma: [
+    'file_content:read',
+    'file_metadata:read',
+    'current_user:read',
+    'projects:read',
+  ],
 }
 
 /**
@@ -60,7 +88,14 @@ const PROVIDER_SCOPES: Record<AppConnectorProvider, string[]> = {
  * Providers in the same group can potentially reuse account information
  */
 const SHARED_ACCOUNT_GROUPS: AppConnectorProvider[][] = [
-  ['google-drive', 'gmail', 'google-calendar', 'google-meet', 'google-tasks'], // Google services share account
+  [
+    'google-drive',
+    'gmail',
+    'google-calendar',
+    'google-chat',
+    'google-meet',
+    'google-tasks',
+  ], // Google services share account
 ]
 
 // =============================================================================

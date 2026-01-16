@@ -140,6 +140,38 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       host: true,
       proxy: {
+        // Proxy Google OAuth token requests (for Drive, Gmail, Calendar, Chat, Meet, Tasks)
+        '/api/google': {
+          target: 'https://oauth2.googleapis.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/google/, ''),
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq, req, res, options) => {
+              // For token endpoint, inject client credentials
+              if (req.url?.includes('/token')) {
+                const clientId = env.VITE_GOOGLE_CLIENT_ID || ''
+                const clientSecret = env.VITE_GOOGLE_CLIENT_SECRET || ''
+                // Read original body and append credentials
+                let body = ''
+                req.on('data', (chunk: Buffer) => {
+                  body += chunk.toString()
+                })
+                req.on('end', () => {
+                  const params = new URLSearchParams(body)
+                  params.set('client_id', clientId)
+                  params.set('client_secret', clientSecret)
+                  const newBody = params.toString()
+                  proxyReq.setHeader(
+                    'Content-Length',
+                    Buffer.byteLength(newBody),
+                  )
+                  proxyReq.write(newBody)
+                  proxyReq.end()
+                })
+              }
+            })
+          },
+        },
         // Proxy Qonto OAuth token requests to avoid CORS issues
         '/api/qonto/oauth': {
           target: 'https://oauth.qonto.com',
@@ -167,6 +199,38 @@ export default defineConfig(({ mode }) => {
                   `${clientId}:${clientSecret}`,
                 ).toString('base64')
                 proxyReq.setHeader('Authorization', `Basic ${credentials}`)
+              }
+            })
+          },
+        },
+        // Proxy Dropbox OAuth token requests
+        '/api/dropbox': {
+          target: 'https://api.dropboxapi.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/dropbox/, ''),
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq, req, res, options) => {
+              // For token endpoint, inject client credentials
+              if (req.url?.includes('/oauth2/token')) {
+                const clientId = env.VITE_DROPBOX_CLIENT_ID || ''
+                const clientSecret = env.VITE_DROPBOX_CLIENT_SECRET || ''
+                // Read original body and append credentials
+                let body = ''
+                req.on('data', (chunk: Buffer) => {
+                  body += chunk.toString()
+                })
+                req.on('end', () => {
+                  const params = new URLSearchParams(body)
+                  params.set('client_id', clientId)
+                  params.set('client_secret', clientSecret)
+                  const newBody = params.toString()
+                  proxyReq.setHeader(
+                    'Content-Length',
+                    Buffer.byteLength(newBody),
+                  )
+                  proxyReq.write(newBody)
+                  proxyReq.end()
+                })
               }
             })
           },

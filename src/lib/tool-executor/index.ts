@@ -29,4 +29,7 @@ export {
   registerConnectorTools,
   areConnectorToolsRegistered,
   unregisterConnectorTools,
+  registerPresentationTools,
+  arePresentationToolsRegistered,
+  unregisterPresentationTools,
 } from './executor'

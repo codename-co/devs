@@ -41,6 +41,16 @@ export const ar: I18n = {
   'Import tasks and to-do lists from Google Tasks':
     'استيراد المهام وقوائم المهام من مهام Google',
 
+  // Providers - Slack
+  Slack: 'Slack',
+  'Sync messages and files from Slack channels':
+    'مزامنة الرسائل والملفات من قنوات Slack',
+
+  // Providers - Figma
+  Figma: 'Figma',
+  'Sync design files and components from Figma':
+    'مزامنة ملفات التصميم والمكونات من Figma',
+
   // Status
   Connected: 'متصل',
   'Syncing...': 'جارِ المزامنة...',
@@ -82,6 +92,10 @@ export const ar: I18n = {
   'Provider error: {error}': 'خطأ في المزود: {error}',
   'Failed to load folders': 'فشل تحميل المجلدات',
   'Failed to save': 'فشل الحفظ',
+  'OAuth not configured for provider: {provider}':
+    'OAuth غير مهيأ للمزود: {provider}',
+  'Missing client ID for provider: {provider}':
+    'معرف العميل مفقود للمزود: {provider}',
 
   // Empty states
   'No connectors': 'لا توجد موصلات',

@@ -25,10 +25,13 @@ import {
   areCodeToolsRegistered,
   registerConnectorTools,
   areConnectorToolsRegistered,
+  registerPresentationTools,
+  arePresentationToolsRegistered,
 } from '@/lib/tool-executor'
 import { KNOWLEDGE_TOOL_DEFINITIONS } from '@/lib/knowledge-tools'
 import { MATH_TOOL_DEFINITIONS } from '@/lib/math-tools'
 import { CODE_TOOL_DEFINITIONS } from '@/lib/code-tools'
+import { PRESENTATION_TOOL_DEFINITIONS } from '@/lib/presentation-tools'
 import { getToolDefinitionsForProvider } from '@/features/connectors/tools'
 import { db } from '@/lib/db'
 import type { Connector } from '@/features/connectors/types'
@@ -110,11 +113,12 @@ function getToolStatusMessage(
  * This ensures pre-existing agents and new agents alike can use tools.
  */
 function getAgentToolDefinitions(_agent: Agent): ToolDefinition[] {
-  // Return all knowledge, math, and code tools - they are universally available to all agents
+  // Return all knowledge, math, code, and presentation tools - they are universally available to all agents
   return [
     ...Object.values(KNOWLEDGE_TOOL_DEFINITIONS),
     ...Object.values(MATH_TOOL_DEFINITIONS),
     ...Object.values(CODE_TOOL_DEFINITIONS),
+    ...Object.values(PRESENTATION_TOOL_DEFINITIONS),
   ]
 }
 
@@ -261,6 +265,11 @@ async function executeToolCalls(
   // Ensure connector tools are registered
   if (!areConnectorToolsRegistered()) {
     registerConnectorTools()
+  }
+
+  // Ensure presentation tools are registered
+  if (!arePresentationToolsRegistered()) {
+    registerPresentationTools()
   }
 
   // Create a trace for the tool execution batch

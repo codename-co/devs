@@ -84,6 +84,19 @@ const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
     ],
     pkceRequired: true,
   },
+  'google-chat': {
+    authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+    tokenUrl: `${BRIDGE_URL}/api/google/token`,
+    clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
+    clientSecret: '', // Secret handled server-side by gateway
+    scopes: [
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'https://www.googleapis.com/auth/chat.spaces.readonly',
+      'https://www.googleapis.com/auth/chat.messages.readonly',
+    ],
+    pkceRequired: true,
+  },
   'google-meet': {
     authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
     tokenUrl: `${BRIDGE_URL}/api/google/token`,
@@ -132,9 +145,11 @@ const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
   },
   dropbox: {
     authUrl: 'https://www.dropbox.com/oauth2/authorize',
-    tokenUrl: 'https://api.dropboxapi.com/oauth2/token',
+    // Use gateway proxy for token exchange (keeps client_secret server-side)
+    tokenUrl: `${BRIDGE_URL}/api/dropbox/oauth2/token`,
     clientId: import.meta.env.VITE_DROPBOX_CLIENT_ID || '',
-    scopes: ['files.metadata.read', 'files.content.read'],
+    clientSecret: '', // Secret handled server-side by gateway
+    scopes: [], // Dropbox doesn't use scopes in auth URL
     pkceRequired: true,
   },
   github: {
@@ -143,6 +158,60 @@ const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
     clientId: import.meta.env.VITE_GITHUB_CLIENT_ID || '',
     scopes: ['repo', 'read:user'],
     pkceRequired: false,
+  },
+  'outlook-mail': {
+    authUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+    // Use gateway proxy for token exchange (keeps client_secret server-side)
+    tokenUrl: `${BRIDGE_URL}/api/microsoft/oauth2/v2.0/token`,
+    clientId: import.meta.env.VITE_MICROSOFT_CLIENT_ID || '',
+    clientSecret: '', // Secret handled server-side by gateway
+    scopes: [
+      'openid',
+      'profile',
+      'email',
+      'offline_access',
+      'https://graph.microsoft.com/Mail.Read',
+    ],
+    pkceRequired: true,
+  },
+  onedrive: {
+    authUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+    // Use gateway proxy for token exchange (keeps client_secret server-side)
+    tokenUrl: `${BRIDGE_URL}/api/microsoft/oauth2/v2.0/token`,
+    clientId: import.meta.env.VITE_MICROSOFT_CLIENT_ID || '',
+    clientSecret: '', // Secret handled server-side by gateway
+    scopes: [
+      'openid',
+      'profile',
+      'email',
+      'offline_access',
+      'https://graph.microsoft.com/Files.Read.All',
+    ],
+    pkceRequired: true,
+  },
+  slack: {
+    authUrl: 'https://slack.com/oauth/v2/authorize',
+    // Use gateway proxy for token exchange (keeps client_secret server-side)
+    tokenUrl: `${BRIDGE_URL}/api/slack/oauth.v2.access`,
+    clientId: import.meta.env.VITE_SLACK_CLIENT_ID || '',
+    clientSecret: '', // Secret handled server-side by gateway
+    scopes: [
+      'channels:history',
+      'channels:read',
+      'files:read',
+      'users:read',
+      'team:read',
+    ],
+    pkceRequired: false, // Slack OAuth v2 doesn't require PKCE
+  },
+  figma: {
+    authUrl: 'https://www.figma.com/oauth',
+    // Use gateway proxy for token exchange (keeps client_secret server-side)
+    tokenUrl: `${BRIDGE_URL}/api/figma/oauth/token`,
+    clientId: import.meta.env.VITE_FIGMA_CLIENT_ID || '',
+    clientSecret: '', // Secret handled server-side by gateway
+    scopes: ['files:read'],
+    pkceRequired: false, // Figma doesn't require PKCE
   },
 }
 
@@ -210,6 +279,17 @@ export class OAuthGateway {
   // ===========================================================================
 
   /**
+   * Check if OAuth is properly configured for a provider
+   *
+   * @param provider - The app connector provider
+   * @returns true if OAuth is configured with a valid clientId, false otherwise
+   */
+  static isOAuthConfigured(provider: AppConnectorProvider): boolean {
+    const config = OAUTH_CONFIGS[provider]
+    return !!(config && config.clientId)
+  }
+
+  /**
    * Get OAuth configuration for a provider
    *
    * @param provider - The app connector provider
@@ -219,11 +299,19 @@ export class OAuthGateway {
   static getProviderOAuthConfig(provider: AppConnectorProvider): OAuthConfig {
     const config = OAUTH_CONFIGS[provider]
     if (!config) {
-      throw new Error(`OAuth not configured for provider: ${provider}`)
+      throw new Error(
+        `OAuth not configured for provider: {provider}`.replace(
+          '{provider}',
+          provider,
+        ),
+      )
     }
     if (!config.clientId) {
       throw new Error(
-        `Missing client ID for provider: ${provider}. Check environment variables.`,
+        `Missing client ID for provider: {provider}`.replace(
+          '{provider}',
+          provider,
+        ),
       )
     }
     return config

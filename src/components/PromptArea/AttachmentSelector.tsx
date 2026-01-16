@@ -208,18 +208,20 @@ export function AttachmentSelector({
             key="connectors"
             startContent={<Icon name="Plus" size="sm" />}
             endContent={
-              <div className="flex items-center -space-x-1">
-                {Object.values(PROVIDER_CONFIG).map((provider, index) => (
-                  <div
-                    key={provider.name}
-                    className="w-5 h-5 rounded-full bg-white dark:bg-default-100 flex items-center justify-center border border-default-200 -ml-1.5"
-                    style={{
-                      zIndex: Object.values(PROVIDER_CONFIG).length - index,
-                    }}
-                  >
-                    <Icon name={provider.icon} className="w-3 h-3" />
-                  </div>
-                ))}
+              <div className="flex items-center -space-x-0.5">
+                {Object.values(PROVIDER_CONFIG)
+                  .slice(0, 5)
+                  .map((provider, index) => (
+                    <div
+                      key={provider.name}
+                      className="w-5 h-5 rounded-full bg-white dark:bg-default-100 flex items-center justify-center border border-default-200 -ml-1.5"
+                      style={{
+                        zIndex: Object.values(PROVIDER_CONFIG).length - index,
+                      }}
+                    >
+                      <Icon name={provider.icon} className="w-3 h-3" />
+                    </div>
+                  ))}
               </div>
             }
             textValue={t('Add connectors')}

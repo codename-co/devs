@@ -53,6 +53,9 @@ export const ko: I18n = {
   'Choose a service to connect to your knowledge base':
     '지식 베이스에 연결할 서비스를 선택하세요',
   'Select a Service': '서비스 선택',
+  'OAuth not configured for this provider':
+    '이 제공자에 대해 OAuth가 구성되지 않았습니다',
+  'This provider is not ready': '이 제공자는 준비되지 않았습니다',
 
   // Wizard - OAuth Step
   'Connecting...': '연결 중...',

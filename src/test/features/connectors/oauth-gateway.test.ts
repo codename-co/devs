@@ -89,11 +89,19 @@ class TestableOAuthGateway {
   static getProviderOAuthConfig(provider: string) {
     const config = mockOAuthConfigs[provider]
     if (!config) {
-      throw new Error(`OAuth not configured for provider: ${provider}`)
+      throw new Error(
+        `OAuth not configured for provider: {provider}`.replace(
+          '{provider}',
+          provider,
+        ),
+      )
     }
     if (!config.clientId) {
       throw new Error(
-        `Missing client ID for provider: ${provider}. Check environment variables.`,
+        `Missing client ID for provider: {provider}`.replace(
+          '{provider}',
+          provider,
+        ),
       )
     }
     return config

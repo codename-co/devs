@@ -73,6 +73,63 @@ import type {
   QontoTransactionDetail,
   QontoStatementSummary,
   QontoStatementDetail,
+  // Outlook Mail types
+  OutlookSearchParams,
+  OutlookSearchResult,
+  OutlookReadParams,
+  OutlookReadResult,
+  OutlookListFoldersParams,
+  OutlookListFoldersResult,
+  OutlookMessageSummary,
+  OutlookMessageContent,
+  OutlookFolder,
+  // OneDrive types
+  OneDriveSearchParams,
+  OneDriveSearchResult,
+  OneDriveReadParams,
+  OneDriveReadResult,
+  OneDriveListParams,
+  OneDriveListResult,
+  OneDriveFileSummary,
+  // Slack types
+  SlackSearchParams,
+  SlackSearchResult,
+  SlackListChannelsParams,
+  SlackListChannelsResult,
+  SlackReadChannelParams,
+  SlackReadChannelResult,
+  SlackMessageSummary,
+  SlackChannelSummary,
+  SlackChannelMessage,
+  // Dropbox types
+  DropboxSearchParams,
+  DropboxSearchResult,
+  DropboxReadParams,
+  DropboxReadResult,
+  DropboxListParams,
+  DropboxListResult,
+  DropboxFileSummary,
+  // Figma types
+  FigmaListFilesParams,
+  FigmaListFilesResult,
+  FigmaGetFileParams,
+  FigmaGetFileResult,
+  FigmaGetCommentsParams,
+  FigmaGetCommentsResult,
+  FigmaFileSummary,
+  FigmaNodeSummary,
+  FigmaComment,
+  // Google Chat types
+  GoogleChatListSpacesParams,
+  GoogleChatListSpacesResult,
+  GoogleChatReadMessagesParams,
+  GoogleChatReadMessagesResult,
+  GoogleChatSpaceSummary,
+  GoogleChatMessage,
+  // Google Meet types
+  GoogleMeetListMeetingsParams,
+  GoogleMeetListMeetingsResult,
+  GoogleMeetMeetingSummary,
   // Common
   ConnectorMetadata,
 } from './types'
@@ -1336,6 +1393,938 @@ export async function qontoGetStatement(
 }
 
 // ============================================================================
+// Outlook Mail Tools
+// ============================================================================
+
+/**
+ * Search emails in a connected Outlook account.
+ */
+export async function outlookSearch(
+  params: OutlookSearchParams,
+): Promise<OutlookSearchResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'outlook-mail') {
+    throw new Error(
+      `Connector ${params.connector_id} is not an Outlook Mail connector`,
+    )
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any
+    const maxResults = Math.min(params.max_results ?? DEFAULT_MAX_RESULTS, 50)
+    const result = await provider.search(connector, {
+      query: params.query,
+      pageSize: maxResults,
+      folderId: params.folder_id,
+    })
+
+    const messages: OutlookMessageSummary[] = (result.items || []).map(
+      (item: any) => ({
+        id: item.id,
+        conversationId: item.conversationId,
+        subject: item.name || item.subject || '',
+        from: item.from || '',
+        to: item.to || '',
+        receivedDateTime: new Date(item.lastModified || Date.now()),
+        bodyPreview: item.description || '',
+        isRead: item.isRead ?? true,
+        hasAttachments: item.hasAttachments ?? false,
+        importance: item.importance || 'normal',
+      }),
+    )
+
+    return {
+      query: params.query,
+      result_count: messages.length,
+      messages,
+      next_cursor: result.cursor,
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    throw new Error(
+      `Outlook search failed: ${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+}
+
+/**
+ * Read the full content of an Outlook email.
+ */
+export async function outlookRead(
+  params: OutlookReadParams,
+): Promise<OutlookReadResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'outlook-mail') {
+    throw new Error(
+      `Connector ${params.connector_id} is not an Outlook Mail connector`,
+    )
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any
+    const result = await provider.getContent(connector, params.message_id)
+
+    if (!result.content) {
+      return {
+        found: false,
+        error: 'Message not found',
+        connector: createConnectorMetadata(connector),
+      }
+    }
+
+    const message: OutlookMessageContent = {
+      id: params.message_id,
+      subject: result.metadata?.subject || '',
+      from: result.metadata?.from || '',
+      to: result.metadata?.to || '',
+      receivedDateTime: new Date(
+        result.metadata?.receivedDateTime || Date.now(),
+      ),
+      body: result.content,
+      isRead: result.metadata?.isRead ?? true,
+      importance: result.metadata?.importance || 'normal',
+      attachments: (result.metadata?.attachments || []).map((att: any) => ({
+        id: att.id,
+        name: att.name,
+        contentType: att.contentType,
+        size: att.size,
+      })),
+    }
+
+    return {
+      found: true,
+      message,
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    return {
+      found: false,
+      error: error instanceof Error ? error.message : 'Failed to read message',
+      connector: createConnectorMetadata(connector),
+    }
+  }
+}
+
+/**
+ * List mail folders in Outlook.
+ */
+export async function outlookListFolders(
+  params: OutlookListFoldersParams,
+): Promise<OutlookListFoldersResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'outlook-mail') {
+    throw new Error(
+      `Connector ${params.connector_id} is not an Outlook Mail connector`,
+    )
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any
+    const result = (await provider.listFolders?.(connector)) || { folders: [] }
+
+    const folders: OutlookFolder[] = (result.folders || []).map(
+      (folder: any) => ({
+        id: folder.id,
+        displayName: folder.displayName || folder.name,
+        parentFolderId: folder.parentFolderId,
+        unreadItemCount: folder.unreadItemCount ?? 0,
+        totalItemCount: folder.totalItemCount ?? 0,
+      }),
+    )
+
+    return {
+      folders,
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    throw new Error(
+      `Failed to list Outlook folders: ${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+}
+
+// ============================================================================
+// OneDrive Tools
+// ============================================================================
+
+/**
+ * Search files in OneDrive.
+ */
+export async function onedriveSearch(
+  params: OneDriveSearchParams,
+): Promise<OneDriveSearchResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'onedrive') {
+    throw new Error(
+      `Connector ${params.connector_id} is not a OneDrive connector`,
+    )
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any
+    const maxResults = Math.min(params.max_results ?? DEFAULT_MAX_RESULTS, 50)
+    const result = await provider.search(connector, {
+      query: params.query,
+      pageSize: maxResults,
+    })
+
+    const files: OneDriveFileSummary[] = (result.items || []).map(
+      (item: any) => ({
+        id: item.id,
+        name: item.name,
+        mimeType: item.mimeType,
+        isFolder: item.type === 'folder',
+        size: item.size,
+        lastModifiedDateTime: new Date(item.lastModified || Date.now()),
+        webUrl: item.webUrl,
+        parentPath: item.path,
+      }),
+    )
+
+    return {
+      query: params.query,
+      result_count: files.length,
+      files,
+      next_cursor: result.cursor,
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    throw new Error(
+      `OneDrive search failed: ${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+}
+
+/**
+ * Read file content from OneDrive.
+ */
+export async function onedriveRead(
+  params: OneDriveReadParams,
+): Promise<OneDriveReadResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'onedrive') {
+    throw new Error(
+      `Connector ${params.connector_id} is not a OneDrive connector`,
+    )
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any
+    const result = await provider.getContent(connector, params.file_id)
+
+    if (!result.content && !result.metadata) {
+      return {
+        found: false,
+        error: 'File not found',
+        connector: createConnectorMetadata(connector),
+      }
+    }
+
+    const file: OneDriveFileSummary = {
+      id: params.file_id,
+      name: result.metadata?.name || '',
+      mimeType: result.metadata?.mimeType,
+      isFolder: result.metadata?.type === 'folder',
+      size: result.metadata?.size,
+      lastModifiedDateTime: new Date(
+        result.metadata?.lastModified || Date.now(),
+      ),
+      webUrl: result.metadata?.webUrl,
+      parentPath: result.metadata?.path,
+    }
+
+    let content = result.content
+    let truncated = false
+    if (params.max_length && content && content.length > params.max_length) {
+      content = content.slice(0, params.max_length)
+      truncated = true
+    }
+
+    return {
+      found: true,
+      file,
+      content,
+      content_type: result.contentType === 'binary' ? 'binary' : 'text',
+      truncated,
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    return {
+      found: false,
+      error: error instanceof Error ? error.message : 'Failed to read file',
+      connector: createConnectorMetadata(connector),
+    }
+  }
+}
+
+/**
+ * List files in a OneDrive folder.
+ */
+export async function onedriveList(
+  params: OneDriveListParams,
+): Promise<OneDriveListResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'onedrive') {
+    throw new Error(
+      `Connector ${params.connector_id} is not a OneDrive connector`,
+    )
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any
+    const result = await provider.list(connector, {
+      path: params.folder_id || '/',
+      pageSize: params.limit ?? 50,
+    })
+
+    const files: OneDriveFileSummary[] = (result.items || []).map(
+      (item: any) => ({
+        id: item.id,
+        name: item.name,
+        mimeType: item.mimeType,
+        isFolder: item.type === 'folder',
+        size: item.size,
+        lastModifiedDateTime: new Date(item.lastModified || Date.now()),
+        webUrl: item.webUrl,
+        parentPath: item.path,
+      }),
+    )
+
+    return {
+      folder: params.folder_id
+        ? { id: params.folder_id, name: params.folder_id }
+        : null,
+      files,
+      total_count: files.length,
+      next_cursor: result.cursor,
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    throw new Error(
+      `OneDrive list failed: ${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+}
+
+// ============================================================================
+// Slack Tools
+// ============================================================================
+
+/**
+ * Search messages in Slack.
+ */
+export async function slackSearch(
+  params: SlackSearchParams,
+): Promise<SlackSearchResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'slack') {
+    throw new Error(`Connector ${params.connector_id} is not a Slack connector`)
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any
+    const maxResults = Math.min(params.max_results ?? 20, 100)
+    const result = await provider.search(connector, {
+      query: params.query,
+      pageSize: maxResults,
+    })
+
+    const messages: SlackMessageSummary[] = (result.items || []).map(
+      (item: any) => ({
+        ts: item.id || item.ts,
+        channelId: item.channelId || '',
+        channelName: item.channelName || '',
+        text: item.content || item.text || '',
+        userId: item.userId,
+        permalink: item.permalink || '',
+      }),
+    )
+
+    return {
+      query: params.query,
+      result_count: messages.length,
+      messages,
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    throw new Error(
+      `Slack search failed: ${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+}
+
+/**
+ * List Slack channels.
+ */
+export async function slackListChannels(
+  params: SlackListChannelsParams,
+): Promise<SlackListChannelsResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'slack') {
+    throw new Error(`Connector ${params.connector_id} is not a Slack connector`)
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any
+    const result = await provider.list(connector, {
+      pageSize: params.max_results ?? 100,
+      includePrivate: params.include_private ?? true,
+    })
+
+    const channels: SlackChannelSummary[] = (result.items || []).map(
+      (item: any) => ({
+        id: item.id,
+        name: item.name,
+        isPrivate: item.isPrivate ?? false,
+        isArchived: item.isArchived ?? false,
+        topic: item.topic,
+        purpose: item.purpose || item.description,
+        numMembers: item.numMembers,
+      }),
+    )
+
+    return {
+      channels,
+      result_count: channels.length,
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    throw new Error(
+      `Failed to list Slack channels: ${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+}
+
+/**
+ * Read messages from a Slack channel.
+ */
+export async function slackReadChannel(
+  params: SlackReadChannelParams,
+): Promise<SlackReadChannelResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'slack') {
+    throw new Error(`Connector ${params.connector_id} is not a Slack connector`)
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any
+    const result = await provider.getContent(connector, params.channel_id, {
+      limit: params.limit ?? 50,
+      oldest: params.oldest,
+      latest: params.latest,
+    })
+
+    const messages: SlackChannelMessage[] = (result.messages || []).map(
+      (msg: any) => ({
+        ts: msg.ts || msg.id,
+        userId: msg.user || msg.userId,
+        text: msg.text || msg.content || '',
+        threadTs: msg.thread_ts || msg.threadTs,
+        replyCount: msg.reply_count || msg.replyCount,
+        hasAttachments: !!(msg.files?.length || msg.attachments?.length),
+      }),
+    )
+
+    return {
+      channel: {
+        id: params.channel_id,
+        name: result.channelName || params.channel_id,
+      },
+      messages,
+      hasMore: result.has_more ?? false,
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    throw new Error(
+      `Failed to read Slack channel: ${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+}
+
+// ============================================================================
+// Dropbox Tools
+// ============================================================================
+
+/**
+ * Search files in Dropbox.
+ */
+export async function dropboxSearch(
+  params: DropboxSearchParams,
+): Promise<DropboxSearchResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'dropbox') {
+    throw new Error(
+      `Connector ${params.connector_id} is not a Dropbox connector`,
+    )
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any
+    const maxResults = Math.min(params.max_results ?? 20, 100)
+    const result = await provider.search(connector, {
+      query: params.query,
+      path: params.path,
+      pageSize: maxResults,
+    })
+
+    const files: DropboxFileSummary[] = (result.items || []).map(
+      (item: any) => ({
+        id: item.id,
+        name: item.name,
+        pathDisplay: item.path || item.pathDisplay || '',
+        isFolder: item.type === 'folder',
+        size: item.size,
+        serverModified: item.lastModified
+          ? new Date(item.lastModified)
+          : undefined,
+        contentHash: item.contentHash,
+      }),
+    )
+
+    return {
+      query: params.query,
+      result_count: files.length,
+      files,
+      hasMore: result.hasMore ?? false,
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    throw new Error(
+      `Dropbox search failed: ${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+}
+
+/**
+ * Read file content from Dropbox.
+ */
+export async function dropboxRead(
+  params: DropboxReadParams,
+): Promise<DropboxReadResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'dropbox') {
+    throw new Error(
+      `Connector ${params.connector_id} is not a Dropbox connector`,
+    )
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any
+    const result = await provider.getContent(connector, params.file_id)
+
+    if (!result.content && !result.metadata) {
+      return {
+        found: false,
+        error: 'File not found',
+        connector: createConnectorMetadata(connector),
+      }
+    }
+
+    const file: DropboxFileSummary = {
+      id: params.file_id,
+      name: result.metadata?.name || '',
+      pathDisplay: result.metadata?.path || '',
+      isFolder: result.metadata?.type === 'folder',
+      size: result.metadata?.size,
+      serverModified: result.metadata?.lastModified
+        ? new Date(result.metadata.lastModified)
+        : undefined,
+      contentHash: result.metadata?.contentHash,
+    }
+
+    let content = result.content
+    let truncated = false
+    if (params.max_length && content && content.length > params.max_length) {
+      content = content.slice(0, params.max_length)
+      truncated = true
+    }
+
+    return {
+      found: true,
+      file,
+      content,
+      truncated,
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    return {
+      found: false,
+      error: error instanceof Error ? error.message : 'Failed to read file',
+      connector: createConnectorMetadata(connector),
+    }
+  }
+}
+
+/**
+ * List files in a Dropbox folder.
+ */
+export async function dropboxList(
+  params: DropboxListParams,
+): Promise<DropboxListResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'dropbox') {
+    throw new Error(
+      `Connector ${params.connector_id} is not a Dropbox connector`,
+    )
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any
+    const result = await provider.list(connector, {
+      path: params.path || '',
+      pageSize: params.limit ?? 50,
+    })
+
+    const entries: DropboxFileSummary[] = (result.items || []).map(
+      (item: any) => ({
+        id: item.id,
+        name: item.name,
+        pathDisplay: item.path || item.pathDisplay || '',
+        isFolder: item.type === 'folder',
+        size: item.size,
+        serverModified: item.lastModified
+          ? new Date(item.lastModified)
+          : undefined,
+        contentHash: item.contentHash,
+      }),
+    )
+
+    return {
+      path: params.path || '/',
+      entries,
+      hasMore: result.hasMore ?? false,
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    throw new Error(
+      `Dropbox list failed: ${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+}
+
+// ============================================================================
+// Figma Tools
+// ============================================================================
+
+/**
+ * List Figma files.
+ */
+export async function figmaListFiles(
+  params: FigmaListFilesParams,
+): Promise<FigmaListFilesResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'figma') {
+    throw new Error(`Connector ${params.connector_id} is not a Figma connector`)
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any
+    const result = await provider.list(connector, {
+      projectId: params.project_id,
+      teamId: params.team_id,
+    })
+
+    const files: FigmaFileSummary[] = (result.items || []).map((item: any) => ({
+      key: item.id || item.key,
+      name: item.name,
+      thumbnailUrl: item.thumbnailUrl || item.thumbnail_url,
+      lastModified: new Date(
+        item.lastModified || item.last_modified || Date.now(),
+      ),
+      editorType: item.editorType || item.editor_type,
+    }))
+
+    return {
+      project: params.project_id
+        ? {
+            id: params.project_id,
+            name: result.projectName || params.project_id,
+          }
+        : undefined,
+      files,
+      result_count: files.length,
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    throw new Error(
+      `Failed to list Figma files: ${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+}
+
+/**
+ * Get Figma file details.
+ */
+export async function figmaGetFile(
+  params: FigmaGetFileParams,
+): Promise<FigmaGetFileResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'figma') {
+    throw new Error(`Connector ${params.connector_id} is not a Figma connector`)
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any
+    const result = await provider.getContent(connector, params.file_key, {
+      depth: params.depth ?? 2,
+    })
+
+    if (!result.metadata) {
+      return {
+        found: false,
+        error: 'File not found',
+        connector: createConnectorMetadata(connector),
+      }
+    }
+
+    const pages: FigmaNodeSummary[] = (result.pages || []).map((page: any) => ({
+      id: page.id,
+      name: page.name,
+      type: page.type || 'PAGE',
+      childCount: page.children?.length,
+    }))
+
+    return {
+      found: true,
+      file: {
+        key: params.file_key,
+        name: result.metadata.name,
+        lastModified: new Date(result.metadata.lastModified || Date.now()),
+        version: result.metadata.version || '0',
+        thumbnailUrl: result.metadata.thumbnailUrl,
+      },
+      pages,
+      componentCount: result.componentCount ?? 0,
+      styleCount: result.styleCount ?? 0,
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    return {
+      found: false,
+      error: error instanceof Error ? error.message : 'Failed to get file',
+      connector: createConnectorMetadata(connector),
+    }
+  }
+}
+
+/**
+ * Get comments on a Figma file.
+ */
+export async function figmaGetComments(
+  params: FigmaGetCommentsParams,
+): Promise<FigmaGetCommentsResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'figma') {
+    throw new Error(`Connector ${params.connector_id} is not a Figma connector`)
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any
+    const result = (await provider.getComments?.(
+      connector,
+      params.file_key,
+    )) || {
+      comments: [],
+    }
+
+    const comments: FigmaComment[] = (result.comments || []).map(
+      (comment: any) => ({
+        id: comment.id,
+        message: comment.message || comment.text || '',
+        authorName: comment.user?.handle || comment.authorName || 'Unknown',
+        createdAt: new Date(
+          comment.created_at || comment.createdAt || Date.now(),
+        ),
+        resolved: comment.resolved_at != null || comment.resolved || false,
+        parentId: comment.parent_id || comment.parentId,
+      }),
+    )
+
+    return {
+      comments,
+      result_count: comments.length,
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    throw new Error(
+      `Failed to get Figma comments: ${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+}
+
+// ============================================================================
+// Google Chat Tools
+// ============================================================================
+
+/**
+ * List Google Chat spaces.
+ */
+export async function googleChatListSpaces(
+  params: GoogleChatListSpacesParams,
+): Promise<GoogleChatListSpacesResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'google-chat') {
+    throw new Error(
+      `Connector ${params.connector_id} is not a Google Chat connector`,
+    )
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any
+    const result = await provider.list(connector, {
+      pageSize: params.max_results ?? 50,
+      type: params.type,
+    })
+
+    const spaces: GoogleChatSpaceSummary[] = (result.items || []).map(
+      (item: any) => ({
+        name: item.name || item.id,
+        id: item.id,
+        displayName: item.displayName || item.name,
+        type: item.type || 'SPACE',
+        threaded: item.threaded ?? false,
+      }),
+    )
+
+    return {
+      spaces,
+      result_count: spaces.length,
+      next_cursor: result.cursor,
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    throw new Error(
+      `Failed to list Google Chat spaces: ${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+}
+
+/**
+ * Read messages from a Google Chat space.
+ */
+export async function googleChatReadMessages(
+  params: GoogleChatReadMessagesParams,
+): Promise<GoogleChatReadMessagesResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'google-chat') {
+    throw new Error(
+      `Connector ${params.connector_id} is not a Google Chat connector`,
+    )
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any
+    const result = await provider.getContent(connector, params.space_id, {
+      pageSize: params.max_results ?? 50,
+    })
+
+    const messages: GoogleChatMessage[] = (result.messages || []).map(
+      (msg: any) => ({
+        name: msg.name || msg.id,
+        senderName: msg.sender?.displayName || msg.senderName,
+        senderType: msg.sender?.type || 'HUMAN',
+        text: msg.text || msg.content || '',
+        createTime: new Date(msg.createTime || msg.createdAt || Date.now()),
+        threadName: msg.thread?.name || msg.threadName,
+      }),
+    )
+
+    return {
+      space: {
+        id: params.space_id,
+        name: result.spaceName || params.space_id,
+      },
+      messages,
+      result_count: messages.length,
+      next_cursor: result.cursor,
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    throw new Error(
+      `Failed to read Google Chat messages: ${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+}
+
+// ============================================================================
+// Google Meet Tools
+// ============================================================================
+
+/**
+ * List upcoming Google Meet meetings.
+ */
+export async function googleMeetListMeetings(
+  params: GoogleMeetListMeetingsParams,
+): Promise<GoogleMeetListMeetingsResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'google-meet') {
+    throw new Error(
+      `Connector ${params.connector_id} is not a Google Meet connector`,
+    )
+  }
+
+  try {
+    const provider = (await getProvider(connector)) as any
+
+    // Calculate default time range
+    const now = new Date()
+    const defaultTimeMax = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) // 7 days
+
+    const timeMin = params.time_min || now.toISOString()
+    const timeMax = params.time_max || defaultTimeMax.toISOString()
+
+    const result = await provider.list(connector, {
+      timeMin,
+      timeMax,
+      maxResults: params.max_results ?? 25,
+    })
+
+    const meetings: GoogleMeetMeetingSummary[] = (result.items || []).map(
+      (item: any) => ({
+        id: item.id,
+        title: item.name || item.summary || 'Untitled Meeting',
+        startTime: item.start ? new Date(item.start) : undefined,
+        endTime: item.end ? new Date(item.end) : undefined,
+        meetUrl: item.meetUrl || item.hangoutLink || '',
+        calendarEventId: item.calendarEventId,
+      }),
+    )
+
+    return {
+      meetings,
+      result_count: meetings.length,
+      timeRange: {
+        start: timeMin,
+        end: timeMax,
+      },
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    throw new Error(
+      `Failed to list Google Meet meetings: ${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+}
+
+// ============================================================================
 // Tool Definitions Re-export
 // ============================================================================
 
@@ -1346,6 +2335,13 @@ export {
   TASKS_TOOL_DEFINITIONS,
   NOTION_TOOL_DEFINITIONS,
   QONTO_TOOL_DEFINITIONS,
+  OUTLOOK_TOOL_DEFINITIONS,
+  ONEDRIVE_TOOL_DEFINITIONS,
+  SLACK_TOOL_DEFINITIONS,
+  DROPBOX_TOOL_DEFINITIONS,
+  FIGMA_TOOL_DEFINITIONS,
+  GOOGLE_CHAT_TOOL_DEFINITIONS,
+  GOOGLE_MEET_TOOL_DEFINITIONS,
   CONNECTOR_TOOL_DEFINITIONS,
   getToolDefinitionsForProvider,
 } from './types'

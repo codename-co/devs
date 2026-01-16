@@ -102,6 +102,9 @@ export const ko: I18n = {
   requests: '요청',
   tokens: '토큰',
   ms: 'ms',
+  Average: '평균',
+  Median: '중앙값',
+  '{n}th percentile': '{n}번째 백분위수',
   'Are you sure you want to delete all traces?':
     '모든 추적을 삭제하시겠습니까?',
   'This action cannot be undone.': '이 작업은 취소할 수 없습니다.',

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { Alert, Spinner } from '@heroui/react'
 import { type Marpit as MarpitType } from '@marp-team/marpit'
 import MarpitCSS from './Presentation.marp.css?raw'
@@ -21,68 +21,91 @@ const extractSlideHTML = (fullHTML: string, slideIndex: number): string => {
 
 /**
  * Marpit Presentation Renderer
+ * Optimized for streaming content - avoids flickering by:
+ * 1. Only showing loading state on initial render
+ * 2. Keeping previous content visible while new content renders
+ * 3. Debouncing rapid updates during streaming
  */
 export const Presentation = ({ code }: { code: string }) => {
   const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState<boolean>(true)
+  const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true)
   const [renderedContent, setRenderedContent] = useState<{
     html: string
     css: string
     slides: number
   } | null>(null)
 
-  useEffect(() => {
-    const renderMarpit = async () => {
-      try {
-        setLoading(true)
-        setError(null)
+  // Keep reference to Marpit instance to avoid re-importing
+  const marpitRef = useRef<MarpitType | null>(null)
+  const marpitLoadingRef = useRef<Promise<void> | null>(null)
 
-        // Check if we're in a browser environment
-        if (typeof window === 'undefined') {
-          throw new Error('Marpit requires a browser environment')
+  // Animation frame for smooth streaming updates
+  const rafRef = useRef<number | null>(null)
+  const pendingCodeRef = useRef<string | null>(null)
+  const isRenderingRef = useRef<boolean>(false)
+
+  // Initialize Marpit instance once
+  const initMarpit = useCallback(async () => {
+    if (marpitRef.current) return
+    if (marpitLoadingRef.current) {
+      await marpitLoadingRef.current
+      return
+    }
+
+    marpitLoadingRef.current = (async () => {
+      const Marpit = (
+        await import('https://esm.sh/@marp-team/marpit@3.1.3' as string)
+      ).Marpit
+
+      const marpit: MarpitType = new Marpit({
+        emoji: {
+          shortcode: 'twemoji',
+          unicode: 'twemoji',
+        },
+        math: 'katex',
+        minifyCSS: true,
+        slug: true,
+        markdown: {
+          html: true,
+          breaks: true,
+          looseYAML: true,
+          inlineSVG: true,
+        },
+        script: false,
+        inlineSVG: false,
+      }) as MarpitType
+
+      marpit.themeSet.default = marpit.themeSet.add(MarpitCSS)
+      marpitRef.current = marpit
+    })()
+
+    await marpitLoadingRef.current
+  }, [])
+
+  // Render function that uses cached Marpit instance
+  const renderCode = useCallback(
+    async (codeToRender: string) => {
+      // Prevent concurrent renders
+      if (isRenderingRef.current) {
+        pendingCodeRef.current = codeToRender
+        return
+      }
+
+      isRenderingRef.current = true
+
+      try {
+        await initMarpit()
+
+        if (!marpitRef.current) {
+          throw new Error('Marpit failed to initialize')
         }
 
-        // Dynamically import marpit from ESM CDN
-        const Marpit = (
-          await import('https://esm.sh/@marp-team/marpit@3.1.3' as string)
-        ).Marpit
-
-        // Create Marpit instance
-        const marpit: MarpitType = new Marpit({
-          // html: true,
-          emoji: {
-            shortcode: 'twemoji',
-            unicode: 'twemoji',
-            // twemoji: {
-            //   base: '/resources/twemoji/',
-            // },
-          },
-          math: 'katex',
-          minifyCSS: true,
-          slug: true,
-          markdown: {
-            html: true,
-            breaks: true,
-            looseYAML: true,
-            inlineSVG: true,
-          },
-          script: false,
-          inlineSVG: false,
-        }) as MarpitType
-
-        marpit.themeSet.default = marpit.themeSet.add(MarpitCSS)
-
-        // Render the markdown
-        const { html, css } = marpit.render(code)
-
-        // Count slides by counting section elements in rendered HTML
+        const { html, css } = marpitRef.current.render(codeToRender)
         const slideCount = (html.match(/<section[^>]*>/g) || []).length
 
-        setRenderedContent({
-          html,
-          css,
-          slides: slideCount,
-        })
+        setRenderedContent({ html, css, slides: slideCount })
+        setError(null)
+        setIsInitialLoad(false)
       } catch (err) {
         console.error('Error rendering Marpit presentation:', err)
         setError(
@@ -91,14 +114,55 @@ export const Presentation = ({ code }: { code: string }) => {
             : 'Failed to render Marpit presentation',
         )
       } finally {
-        setLoading(false)
+        isRenderingRef.current = false
+
+        // If there's a pending update, schedule it for the next frame
+        if (pendingCodeRef.current && pendingCodeRef.current !== codeToRender) {
+          const pendingCode = pendingCodeRef.current
+          pendingCodeRef.current = null
+          rafRef.current = requestAnimationFrame(() => {
+            renderCode(pendingCode)
+          })
+        }
       }
+    },
+    [initMarpit],
+  )
+
+  useEffect(() => {
+    // Cancel any pending animation frame
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current)
     }
 
-    renderMarpit()
-  }, [code])
+    // For initial load, render immediately
+    if (!renderedContent) {
+      renderCode(code)
+      return
+    }
 
-  const exportToPDF = () => {
+    // For streaming updates, use requestAnimationFrame for smooth 60fps updates
+    rafRef.current = requestAnimationFrame(() => {
+      renderCode(code)
+    })
+
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+      }
+    }
+  }, [code, renderCode, renderedContent])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+      }
+    }
+  }, [])
+
+  const exportToPDF = useCallback(() => {
     if (!renderedContent) return
 
     // Create a new window
@@ -161,15 +225,22 @@ export const Presentation = ({ code }: { code: string }) => {
         win.close()
       }, 500)
     }
-  }
+  }, [renderedContent])
 
-  // This effect is now handled in the individual slide containers
+  // Memoize slides array to prevent unnecessary re-renders
+  const renderedSlides = useMemo(() => {
+    if (!renderedContent) return []
+    return Array.from({ length: renderedContent.slides }, (_, index) =>
+      extractSlideHTML(renderedContent.html, index),
+    )
+  }, [renderedContent])
 
-  if (loading) {
+  // Only show loading spinner on initial load
+  if (isInitialLoad && !renderedContent) {
     return <Spinner size="lg" className="m-4" />
   }
 
-  if (error) {
+  if (error && !renderedContent) {
     return (
       <Alert color="danger" title="Marpit rendering error">
         {error}
@@ -180,12 +251,6 @@ export const Presentation = ({ code }: { code: string }) => {
   if (!renderedContent) {
     return <Alert color="default">No slides to display</Alert>
   }
-
-  // Create slides array - each slide contains only its specific section HTML
-  const renderedSlides = Array.from(
-    { length: renderedContent.slides },
-    (_, index) => extractSlideHTML(renderedContent.html, index),
-  )
 
   return (
     <SlidesRenderer

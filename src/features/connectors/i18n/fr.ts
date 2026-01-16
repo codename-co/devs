@@ -40,6 +40,16 @@ export const fr: I18n = {
   'Import tasks and to-do lists from Google Tasks':
     'Importer des tâches et listes de tâches depuis Google Tasks',
 
+  // Providers - Slack
+  Slack: 'Slack',
+  'Sync messages and files from Slack channels':
+    'Synchroniser les messages et fichiers des chaînes Slack',
+
+  // Providers - Figma
+  Figma: 'Figma',
+  'Sync design files and components from Figma':
+    'Synchroniser les fichiers de design et composants depuis Figma',
+
   // Status
   Connected: 'Connecté',
   'Syncing...': 'Synchronisation...',
@@ -81,6 +91,10 @@ export const fr: I18n = {
   'Provider error: {error}': 'Erreur du fournisseur : {error}',
   'Failed to load folders': 'Échec du chargement des dossiers',
   'Failed to save': "Échec de l'enregistrement",
+  'OAuth not configured for provider: {provider}':
+    'OAuth non configuré pour le fournisseur : {provider}',
+  'Missing client ID for provider: {provider}':
+    'ID client manquant pour le fournisseur : {provider}',
 
   // Empty states
   'No connectors': 'Aucun connecteur',

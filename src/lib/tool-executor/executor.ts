@@ -55,6 +55,15 @@ import type {
 import { calculate, MATH_TOOL_DEFINITIONS } from '@/lib/math-tools/service'
 import { execute, CODE_TOOL_DEFINITIONS } from '@/lib/code-tools/service'
 import {
+  generatePresentation,
+  PRESENTATION_TOOL_DEFINITIONS,
+} from '@/lib/presentation-tools/service'
+import type {
+  GeneratePresentationParams,
+  GeneratePresentationResult,
+  GeneratePresentationError,
+} from '@/lib/presentation-tools/types'
+import {
   CONNECTOR_TOOL_DEFINITIONS,
   gmailSearch,
   gmailRead,
@@ -76,6 +85,31 @@ import {
   qontoGetTransaction,
   qontoListStatements,
   qontoGetStatement,
+  // Outlook Mail
+  outlookSearch,
+  outlookRead,
+  outlookListFolders,
+  // OneDrive
+  onedriveSearch,
+  onedriveRead,
+  onedriveList,
+  // Slack
+  slackSearch,
+  slackListChannels,
+  slackReadChannel,
+  // Dropbox
+  dropboxSearch,
+  dropboxRead,
+  dropboxList,
+  // Figma
+  figmaListFiles,
+  figmaGetFile,
+  figmaGetComments,
+  // Google Chat
+  googleChatListSpaces,
+  googleChatReadMessages,
+  // Google Meet
+  googleMeetListMeetings,
 } from '@/features/connectors/tools'
 import type {
   GmailSearchParams,
@@ -118,6 +152,49 @@ import type {
   QontoListStatementsResult,
   QontoGetStatementParams,
   QontoGetStatementResult,
+  // Outlook Mail
+  OutlookSearchParams,
+  OutlookSearchResult,
+  OutlookReadParams,
+  OutlookReadResult,
+  OutlookListFoldersParams,
+  OutlookListFoldersResult,
+  // OneDrive
+  OneDriveSearchParams,
+  OneDriveSearchResult,
+  OneDriveReadParams,
+  OneDriveReadResult,
+  OneDriveListParams,
+  OneDriveListResult,
+  // Slack
+  SlackSearchParams,
+  SlackSearchResult,
+  SlackListChannelsParams,
+  SlackListChannelsResult,
+  SlackReadChannelParams,
+  SlackReadChannelResult,
+  // Dropbox
+  DropboxSearchParams,
+  DropboxSearchResult,
+  DropboxReadParams,
+  DropboxReadResult,
+  DropboxListParams,
+  DropboxListResult,
+  // Figma
+  FigmaListFilesParams,
+  FigmaListFilesResult,
+  FigmaGetFileParams,
+  FigmaGetFileResult,
+  FigmaGetCommentsParams,
+  FigmaGetCommentsResult,
+  // Google Chat
+  GoogleChatListSpacesParams,
+  GoogleChatListSpacesResult,
+  GoogleChatReadMessagesParams,
+  GoogleChatReadMessagesResult,
+  // Google Meet
+  GoogleMeetListMeetingsParams,
+  GoogleMeetListMeetingsResult,
 } from '@/features/connectors/tools'
 import type {
   CalculateParams,
@@ -1455,6 +1532,274 @@ export function registerConnectorTools(): void {
       estimatedDuration: 2000,
     },
   )
+
+  // ===== Outlook Mail Tools =====
+  defaultRegistry.register<OutlookSearchParams, OutlookSearchResult>(
+    CONNECTOR_TOOL_DEFINITIONS.outlook_search,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return outlookSearch(args)
+    },
+    {
+      tags: ['connector', 'outlook', 'search'],
+      estimatedDuration: 2000,
+    },
+  )
+
+  defaultRegistry.register<OutlookReadParams, OutlookReadResult>(
+    CONNECTOR_TOOL_DEFINITIONS.outlook_read,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return outlookRead(args)
+    },
+    {
+      tags: ['connector', 'outlook', 'read'],
+      estimatedDuration: 1500,
+    },
+  )
+
+  defaultRegistry.register<OutlookListFoldersParams, OutlookListFoldersResult>(
+    CONNECTOR_TOOL_DEFINITIONS.outlook_list_folders,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return outlookListFolders(args)
+    },
+    {
+      tags: ['connector', 'outlook', 'folders'],
+      estimatedDuration: 1000,
+    },
+  )
+
+  // ===== OneDrive Tools =====
+  defaultRegistry.register<OneDriveSearchParams, OneDriveSearchResult>(
+    CONNECTOR_TOOL_DEFINITIONS.onedrive_search,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return onedriveSearch(args)
+    },
+    {
+      tags: ['connector', 'onedrive', 'search'],
+      estimatedDuration: 2000,
+    },
+  )
+
+  defaultRegistry.register<OneDriveReadParams, OneDriveReadResult>(
+    CONNECTOR_TOOL_DEFINITIONS.onedrive_read,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return onedriveRead(args)
+    },
+    {
+      tags: ['connector', 'onedrive', 'read'],
+      estimatedDuration: 2000,
+    },
+  )
+
+  defaultRegistry.register<OneDriveListParams, OneDriveListResult>(
+    CONNECTOR_TOOL_DEFINITIONS.onedrive_list,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return onedriveList(args)
+    },
+    {
+      tags: ['connector', 'onedrive', 'list'],
+      estimatedDuration: 1500,
+    },
+  )
+
+  // ===== Slack Tools =====
+  defaultRegistry.register<SlackSearchParams, SlackSearchResult>(
+    CONNECTOR_TOOL_DEFINITIONS.slack_search,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return slackSearch(args)
+    },
+    {
+      tags: ['connector', 'slack', 'search'],
+      estimatedDuration: 2000,
+    },
+  )
+
+  defaultRegistry.register<SlackListChannelsParams, SlackListChannelsResult>(
+    CONNECTOR_TOOL_DEFINITIONS.slack_list_channels,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return slackListChannels(args)
+    },
+    {
+      tags: ['connector', 'slack', 'channels'],
+      estimatedDuration: 1500,
+    },
+  )
+
+  defaultRegistry.register<SlackReadChannelParams, SlackReadChannelResult>(
+    CONNECTOR_TOOL_DEFINITIONS.slack_read_channel,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return slackReadChannel(args)
+    },
+    {
+      tags: ['connector', 'slack', 'messages'],
+      estimatedDuration: 1500,
+    },
+  )
+
+  // ===== Dropbox Tools =====
+  defaultRegistry.register<DropboxSearchParams, DropboxSearchResult>(
+    CONNECTOR_TOOL_DEFINITIONS.dropbox_search,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return dropboxSearch(args)
+    },
+    {
+      tags: ['connector', 'dropbox', 'search'],
+      estimatedDuration: 2000,
+    },
+  )
+
+  defaultRegistry.register<DropboxReadParams, DropboxReadResult>(
+    CONNECTOR_TOOL_DEFINITIONS.dropbox_read,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return dropboxRead(args)
+    },
+    {
+      tags: ['connector', 'dropbox', 'read'],
+      estimatedDuration: 2000,
+    },
+  )
+
+  defaultRegistry.register<DropboxListParams, DropboxListResult>(
+    CONNECTOR_TOOL_DEFINITIONS.dropbox_list,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return dropboxList(args)
+    },
+    {
+      tags: ['connector', 'dropbox', 'list'],
+      estimatedDuration: 1500,
+    },
+  )
+
+  // ===== Figma Tools =====
+  defaultRegistry.register<FigmaListFilesParams, FigmaListFilesResult>(
+    CONNECTOR_TOOL_DEFINITIONS.figma_list_files,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return figmaListFiles(args)
+    },
+    {
+      tags: ['connector', 'figma', 'files'],
+      estimatedDuration: 2000,
+    },
+  )
+
+  defaultRegistry.register<FigmaGetFileParams, FigmaGetFileResult>(
+    CONNECTOR_TOOL_DEFINITIONS.figma_get_file,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return figmaGetFile(args)
+    },
+    {
+      tags: ['connector', 'figma', 'file'],
+      estimatedDuration: 2500,
+    },
+  )
+
+  defaultRegistry.register<FigmaGetCommentsParams, FigmaGetCommentsResult>(
+    CONNECTOR_TOOL_DEFINITIONS.figma_get_comments,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return figmaGetComments(args)
+    },
+    {
+      tags: ['connector', 'figma', 'comments'],
+      estimatedDuration: 1500,
+    },
+  )
+
+  // ===== Google Chat Tools =====
+  defaultRegistry.register<
+    GoogleChatListSpacesParams,
+    GoogleChatListSpacesResult
+  >(
+    CONNECTOR_TOOL_DEFINITIONS.google_chat_list_spaces,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return googleChatListSpaces(args)
+    },
+    {
+      tags: ['connector', 'google-chat', 'spaces'],
+      estimatedDuration: 1500,
+    },
+  )
+
+  defaultRegistry.register<
+    GoogleChatReadMessagesParams,
+    GoogleChatReadMessagesResult
+  >(
+    CONNECTOR_TOOL_DEFINITIONS.google_chat_read_messages,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return googleChatReadMessages(args)
+    },
+    {
+      tags: ['connector', 'google-chat', 'messages'],
+      estimatedDuration: 2000,
+    },
+  )
+
+  // ===== Google Meet Tools =====
+  defaultRegistry.register<
+    GoogleMeetListMeetingsParams,
+    GoogleMeetListMeetingsResult
+  >(
+    CONNECTOR_TOOL_DEFINITIONS.google_meet_list_meetings,
+    async (args, context) => {
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+      return googleMeetListMeetings(args)
+    },
+    {
+      tags: ['connector', 'google-meet', 'meetings'],
+      estimatedDuration: 2000,
+    },
+  )
 }
 
 /**
@@ -1481,6 +1826,31 @@ const CONNECTOR_TOOL_NAMES = [
   'qonto_get_transaction',
   'qonto_list_statements',
   'qonto_get_statement',
+  // Outlook Mail
+  'outlook_search',
+  'outlook_read',
+  'outlook_list_folders',
+  // OneDrive
+  'onedrive_search',
+  'onedrive_read',
+  'onedrive_list',
+  // Slack
+  'slack_search',
+  'slack_list_channels',
+  'slack_read_channel',
+  // Dropbox
+  'dropbox_search',
+  'dropbox_read',
+  'dropbox_list',
+  // Figma
+  'figma_list_files',
+  'figma_get_file',
+  'figma_get_comments',
+  // Google Chat
+  'google_chat_list_spaces',
+  'google_chat_read_messages',
+  // Google Meet
+  'google_meet_list_meetings',
 ] as const
 
 /**
@@ -1502,4 +1872,59 @@ export function unregisterConnectorTools(): void {
       defaultRegistry.unregister(name)
     }
   })
+}
+
+// ============================================================================
+// Presentation Tools Registration
+// ============================================================================
+
+/**
+ * Register all presentation tools with the default registry.
+ * Call this during application initialization to enable presentation generation tools.
+ *
+ * @example
+ * ```typescript
+ * import { registerPresentationTools } from '@/lib/tool-executor/executor'
+ *
+ * // In app initialization
+ * registerPresentationTools()
+ * ```
+ */
+export function registerPresentationTools(): void {
+  // Register generate_presentation tool
+  defaultRegistry.register<
+    GeneratePresentationParams,
+    GeneratePresentationResult | GeneratePresentationError
+  >(
+    PRESENTATION_TOOL_DEFINITIONS.generate_presentation,
+    async (args, context) => {
+      // Check for abort signal
+      if (context.abortSignal?.aborted) {
+        throw new Error('Aborted')
+      }
+
+      return generatePresentation(args)
+    },
+    {
+      tags: ['presentation', 'marpit', 'slides'],
+      estimatedDuration: 500,
+    },
+  )
+}
+
+/**
+ * Check if presentation tools are registered.
+ *
+ * @returns true if all presentation tools are registered
+ */
+export function arePresentationToolsRegistered(): boolean {
+  return defaultRegistry.has('generate_presentation')
+}
+
+/**
+ * Unregister all presentation tools from the default registry.
+ * Useful for testing or when disabling presentation features.
+ */
+export function unregisterPresentationTools(): void {
+  defaultRegistry.unregister('generate_presentation')
 }

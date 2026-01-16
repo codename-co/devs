@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import {
   Button,
   ButtonGroup,
@@ -16,6 +16,7 @@ import { Icon } from '../../Icon'
 
 /**
  * Slides presentation layout with built-in navigation logic
+ * Optimized for streaming - maintains slide position when content updates
  */
 export const SlidesRenderer = ({
   slides,
@@ -33,6 +34,9 @@ export const SlidesRenderer = ({
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const totalSlides = slides.length
+
+  // Track previous slide count to handle streaming gracefully
+  const prevSlidesCountRef = useRef(totalSlides)
 
   const { t } = useI18n(localI18n)
 
@@ -107,13 +111,28 @@ export const SlidesRenderer = ({
     }
   }, [isFullscreen, currentSlide, totalSlides])
 
-  // Reset slide when slides change
+  // Handle slide bounds when slide count changes (streaming or editing)
+  // Only reset if current slide is out of bounds AND we're not just adding slides
   useEffect(() => {
-    if (currentSlide >= totalSlides) {
-      setCurrentSlide(0)
-      onSlideChange?.(0)
+    const wasAddingSlides = totalSlides > prevSlidesCountRef.current
+    prevSlidesCountRef.current = totalSlides
+
+    // If slides were added, don't change position - user can navigate
+    if (wasAddingSlides) return
+
+    // If current slide is now out of bounds (slides were removed), adjust
+    if (currentSlide >= totalSlides && totalSlides > 0) {
+      const newSlide = totalSlides - 1
+      setCurrentSlide(newSlide)
+      onSlideChange?.(newSlide)
     }
   }, [totalSlides, currentSlide, onSlideChange])
+
+  // Memoize the current slide content to prevent unnecessary re-renders
+  const currentSlideContent = useMemo(
+    () => slides[currentSlide] || slides[0] || '',
+    [slides, currentSlide],
+  )
 
   return (
     <>
@@ -124,7 +143,7 @@ export const SlidesRenderer = ({
             <div className="flex items-center gap-3">
               <div className="w-full h-full flex items-center justify-center">
                 <div className="relative w-full h-full max-w-none max-h-none">
-                  <Slide content={slides[currentSlide]} />
+                  <Slide content={currentSlideContent} />
 
                   {/* Navigation overlay - only show on hover */}
                   <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300">
@@ -226,7 +245,7 @@ export const SlidesRenderer = ({
           {/* Main Content */}
           <div className="flex-1 min-w-0">
             {/* Slide Content */}
-            <Slide content={slides[currentSlide]} />
+            <Slide content={currentSlideContent} />
 
             {/* Navigation Controls */}
             <div className="flex items-center justify-between">

@@ -1,0 +1,117 @@
+/**
+ * Bridge Server Route Template for {Provider}
+ * 
+ * Add this route handler to utils/devs-bridge/server.mjs
+ * Replace all {PLACEHOLDER} values with actual provider-specific values.
+ */
+
+// =============================================================================
+// 1. Add environment variables at the top of server.mjs
+// =============================================================================
+
+const {PROVIDER}_CLIENT_ID = process.env.{PROVIDER}_CLIENT_ID || ''
+const {PROVIDER}_CLIENT_SECRET = process.env.{PROVIDER}_CLIENT_SECRET || ''
+
+// =============================================================================
+// 2. Add this route handler in handleHttpRequest() before "Unknown route"
+// =============================================================================
+
+// === {PROVIDER} PROXY ===
+if (path.startsWith('/api/{provider-id}/')) {
+  const providerPath = path.replace('/api/{provider-id}/', '')
+  
+  // OAuth token endpoint - inject client credentials
+  if (providerPath.startsWith('oauth/token')) {
+    logger.info('{Provider} OAuth token request (injecting credentials)')
+    
+    // Check credentials are configured
+    if (!{PROVIDER}_CLIENT_ID || !{PROVIDER}_CLIENT_SECRET) {
+      logger.error('{Provider} OAuth credentials not configured!')
+      res.writeHead(500, CORS_HEADERS)
+      res.end(JSON.stringify({
+        error: 'Server misconfiguration: {Provider} credentials not set',
+      }))
+      return
+    }
+    
+    // Read request body
+    const chunks = []
+    for await (const chunk of req) {
+      chunks.push(chunk)
+    }
+    const originalBody = Buffer.concat(chunks).toString()
+    
+    // Parse and add credentials based on auth method
+    // Option A: client_secret_post (credentials in body)
+    const params = new URLSearchParams(originalBody)
+    params.set('client_id', {PROVIDER}_CLIENT_ID)
+    params.set('client_secret', {PROVIDER}_CLIENT_SECRET)
+    
+    // Option B: Basic auth (for providers like Notion)
+    // const credentials = Buffer.from(
+    //   `${PROVIDER_CLIENT_ID}:${PROVIDER_CLIENT_SECRET}`
+    // ).toString('base64')
+    
+    const tokenUrl = 'https://{provider}.com/oauth/token'
+    
+    try {
+      const response = await fetch(tokenUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          // For Basic auth, add:
+          // 'Authorization': `Basic ${credentials}`,
+        },
+        body: params.toString(),
+      })
+      
+      const responseBody = await response.text()
+      logger.debug(`{Provider} response status: ${response.status}`)
+      
+      res.writeHead(response.status, {
+        ...CORS_HEADERS,
+        'Content-Type': response.headers.get('content-type') || 'application/json',
+      })
+      res.end(responseBody)
+      return
+    } catch (err) {
+      logger.error(`{Provider} proxy error: ${err.message}`)
+      res.writeHead(502, CORS_HEADERS)
+      res.end(JSON.stringify({ error: 'Proxy error', message: err.message }))
+      return
+    }
+  }
+  
+  // OAuth revoke endpoint
+  if (providerPath.startsWith('oauth/revoke')) {
+    const targetUrl = 'https://{provider}.com/oauth/revoke'
+    return proxyRequest(req, res, targetUrl)
+  }
+  
+  // API endpoints - proxy with auth header passthrough
+  const apiPath = providerPath
+  const targetUrl = `https://api.{provider}.com/v1/${apiPath}${url.search}`
+  return proxyRequest(req, res, targetUrl)
+}
+
+// =============================================================================
+// 3. Update .env.example with new variables
+// =============================================================================
+
+/*
+Add to utils/devs-bridge/.env.example:
+
+# {Provider} OAuth
+{PROVIDER}_CLIENT_ID=
+{PROVIDER}_CLIENT_SECRET=
+*/
+
+// =============================================================================
+// 4. Update startup log
+// =============================================================================
+
+/*
+Update the server.listen callback to include:
+
+logger.info(`  - {Provider} proxy: /api/{provider-id}/*`)
+*/

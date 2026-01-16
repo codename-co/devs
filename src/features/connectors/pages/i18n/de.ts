@@ -53,6 +53,9 @@ export const de: I18n = {
   'Choose a service to connect to your knowledge base':
     'Wählen Sie einen Dienst, den Sie mit Ihrer Wissensdatenbank verbinden möchten',
   'Select a Service': 'Dienst auswählen',
+  'OAuth not configured for this provider':
+    'OAuth ist für diesen Anbieter nicht konfiguriert',
+  'This provider is not ready': 'Dieser Anbieter ist nicht aktiv',
 
   // Wizard - OAuth Step
   'Connecting...': 'Verbindung wird hergestellt...',

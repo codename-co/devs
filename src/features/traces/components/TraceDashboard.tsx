@@ -136,28 +136,28 @@ export function TraceDashboard({
         <MetricCard
           title={t('Avg Duration')}
           value={formatDuration(displayMetrics.averageDuration)}
-          subtitle="Average"
+          subtitle={t('Average')}
           icon="Clock"
           color="default"
         />
         <MetricCard
           title="P50"
           value={formatDuration(displayMetrics.p50Duration)}
-          subtitle="Median"
+          subtitle={t('Median')}
           icon="Timer"
           color="default"
         />
         <MetricCard
           title="P95"
           value={formatDuration(displayMetrics.p95Duration)}
-          subtitle="95th percentile"
+          subtitle={t('{n}th percentile', { n: 95 })}
           icon="Timer"
           color="default"
         />
         <MetricCard
           title="P99"
           value={formatDuration(displayMetrics.p99Duration)}
-          subtitle="99th percentile"
+          subtitle={t('{n}th percentile', { n: 99 })}
           icon="Timer"
           color="default"
         />

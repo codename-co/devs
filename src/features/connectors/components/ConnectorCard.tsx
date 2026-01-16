@@ -1,4 +1,13 @@
-import { Card, CardBody, CardHeader, Button, Chip } from '@heroui/react'
+import {
+  Card,
+  CardBody,
+  Button,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  Tooltip,
+} from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import type { Connector, ConnectorStatus } from '../types'
@@ -16,7 +25,7 @@ interface ConnectorCardProps {
  * ConnectorCard Component
  *
  * Displays a single connector with its status, last sync time,
- * and action buttons for sync, settings, and disconnect.
+ * and unified action menu for sync, settings, and disconnect.
  */
 export function ConnectorCard({
   connector,
@@ -57,124 +66,140 @@ export function ConnectorCard({
     })
   }
 
-  // Get status chip properties
-  const getStatusChip = (status: ConnectorStatus) => {
-    const statusConfig: Record<
+  // Get status indicator config
+  const getStatusConfig = (status: ConnectorStatus) => {
+    const config: Record<
       ConnectorStatus,
-      { color: 'success' | 'danger' | 'warning' | 'default'; label?: string }
+      { color: string; bgColor: string; label: string; icon?: string }
     > = {
-      connected: { color: 'success' },
-      error: { color: 'danger', label: t('Error') },
-      expired: { color: 'warning', label: t('Expired') },
-      syncing: { color: 'warning' },
+      connected: {
+        color: 'text-success',
+        bgColor: 'bg-success',
+        label: t('Connected'),
+      },
+      error: {
+        color: 'text-danger',
+        bgColor: 'bg-danger',
+        label: t('Error'),
+        icon: 'WarningTriangle',
+      },
+      expired: {
+        color: 'text-warning',
+        bgColor: 'bg-warning',
+        label: t('Expired'),
+        icon: 'Clock',
+      },
+      syncing: {
+        color: 'text-primary',
+        bgColor: 'bg-primary',
+        label: t('Syncing'),
+      },
     }
-    return statusConfig[status] || statusConfig.connected
+    return config[status] || config.connected
   }
 
-  const statusChip = getStatusChip(connector.status)
+  const statusConfig = getStatusConfig(connector.status)
   const isSyncing = connector.status === 'syncing'
+  const hasError =
+    connector.status === 'error' || connector.status === 'expired'
 
   return (
-    <Card className="border border-divider">
-      <CardHeader className="flex gap-3 pb-0">
-        {/* Provider Icon */}
-        <div
-          className="w-10 h-10 rounded-lg flex items-center justify-center bg-default-200"
-          style={{ backgroundColor: `${providerColor}20` }}
-        >
-          <Icon
-            name={providerIcon as any}
-            className="w-5 h-5"
-            style={{ color: providerColor }}
-          />
+    <Card className="group border border-divider hover:border-primary/30 transition-colors">
+      <CardBody className="p-4">
+        {/* Header: Icon + Name + Status + Menu */}
+        <div className="flex items-center gap-3 mb-3">
+          {/* Provider Icon */}
+          <div
+            className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
+            style={{ backgroundColor: `${providerColor}15` }}
+          >
+            <Icon
+              name={providerIcon as any}
+              className="w-6 h-6"
+              style={{ color: providerColor }}
+            />
+          </div>
+
+          {/* Name + Status */}
+          <div className="flex-1 min-w-0">
+            <h4 className="text-sm font-semibold truncate">{providerName}</h4>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span
+                className={`w-2 h-2 rounded-full ${statusConfig.bgColor} ${isSyncing ? 'animate-pulse' : ''}`}
+              />
+              <span className={`text-xs ${statusConfig.color}`}>
+                {statusConfig.label}
+              </span>
+            </div>
+          </div>
+
+          {/* Actions Menu */}
+          <Dropdown>
+            <DropdownTrigger>
+              <Button isIconOnly size="sm" variant="light">
+                <Icon name="MoreVert" className="w-4 h-4" />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu aria-label={t('Connector actions')}>
+              <DropdownItem
+                key="settings"
+                startContent={<Icon name="Settings" className="w-4 h-4" />}
+                onPress={onSettings}
+              >
+                {t('Settings')}
+              </DropdownItem>
+              <DropdownItem
+                key="disconnect"
+                className="text-danger"
+                color="danger"
+                startContent={<Icon name="Xmark" className="w-4 h-4" />}
+                onPress={onDisconnect}
+              >
+                {t('Disconnect')}
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
         </div>
 
-        {/* Provider Name */}
-        <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-semibold truncate">{providerName}</h4>
-        </div>
-
-        {/* Status Chip */}
-        <Chip
-          size="sm"
-          color={statusChip.color}
-          className="w-40"
-          variant="flat"
-          startContent={
-            isSyncing && (
-              <Icon name="RefreshDouble" className="w-3 h-3 animate-spin" />
-            )
-          }
-        >
-          {statusChip.label}
-        </Chip>
-      </CardHeader>
-
-      <CardBody className="pt-3">
         {/* Error Message */}
-        {connector.status === 'error' && connector.errorMessage && (
-          <div className="mb-3 p-2 rounded-lg bg-danger-50 dark:bg-danger-900/20">
-            <p className="text-xs text-danger">{connector.errorMessage}</p>
-          </div>
+        {hasError && connector.errorMessage && (
+          <Tooltip content={connector.errorMessage} placement="bottom">
+            <div className="mb-3 p-2 rounded-lg bg-danger-50 dark:bg-danger-900/20 cursor-help">
+              <p className="text-xs text-danger line-clamp-2">
+                {connector.errorMessage}
+              </p>
+            </div>
+          </Tooltip>
         )}
 
-        {/* Last Sync Time */}
-        <div className="flex items-center gap-2 text-xs text-default-500 mb-3">
-          <Icon name="Clock" className="w-3 h-3" />
-          <span>
-            {t('Last sync:')} {formatLastSync(connector.lastSyncAt)}
-          </span>
-        </div>
-
-        {/* Sync Folders Info */}
-        {connector.syncFolders && connector.syncFolders.length > 0 && (
-          <div className="flex items-center gap-2 text-xs text-default-500 mb-3">
-            <Icon name="Folder" className="w-3 h-3" />
-            <span>
-              {t('{n} folders syncing', { n: connector.syncFolders.length })}
+        {/* Footer: Sync info + Sync button */}
+        <div className="flex items-center justify-between pt-2 border-t border-divider">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-xs text-default-500">
+              {formatLastSync(connector.lastSyncAt)}
             </span>
+            {connector.syncFolders && connector.syncFolders.length > 0 && (
+              <span className="text-[10px] text-default-400">
+                {t('{n} folders syncing', { n: connector.syncFolders.length })}
+              </span>
+            )}
           </div>
-        )}
 
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-2">
-          {/* Sync Action */}
           <Button
             size="sm"
             variant="flat"
+            color="primary"
             isDisabled={isSyncing}
             isLoading={isSyncing}
             startContent={
-              !isSyncing && <Icon name="RefreshDouble" className="w-3 h-3" />
+              !isSyncing && (
+                <Icon name="RefreshDouble" className="w-3.5 h-3.5" />
+              )
             }
             onPress={onSync}
-            className="w-full"
           >
-            {isSyncing ? t('Syncing...') : t('Sync Now')}
+            {isSyncing ? t('Syncing...') : t('Sync')}
           </Button>
-
-          {/* Other Actions */}
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="flat"
-              startContent={<Icon name="Settings" className="w-3 h-3" />}
-              onPress={onSettings}
-              className="flex-1"
-            >
-              {t('Settings')}
-            </Button>
-            <Button
-              size="sm"
-              variant="flat"
-              color="danger"
-              startContent={<Icon name="Xmark" className="w-3 h-3" />}
-              onPress={onDisconnect}
-              className="flex-1"
-            >
-              {t('Disconnect')}
-            </Button>
-          </div>
         </div>
       </CardBody>
     </Card>

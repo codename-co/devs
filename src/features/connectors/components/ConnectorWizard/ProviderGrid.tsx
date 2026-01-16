@@ -5,10 +5,11 @@
  * Each provider shows its icon, name, and description.
  */
 
-import { Card, CardBody } from '@heroui/react'
+import { Card, CardBody, Tooltip } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { PROVIDER_CONFIG, AVAILABLE_PROVIDERS } from '../../providers/apps'
+import { OAuthGateway } from '../../oauth-gateway'
 import type { AppConnectorProvider, ConnectorCategory } from '../../types'
 import localI18n from '../../pages/i18n'
 
@@ -48,12 +49,21 @@ export function ProviderGrid({ category, onSelect }: ProviderGridProps) {
           const config = PROVIDER_CONFIG[provider]
           if (!config) return null
 
-          return (
+          const isConfigured = OAuthGateway.isOAuthConfigured(provider)
+          const isActive = config.active !== false
+          const isReady = isConfigured && isActive
+
+          const card = (
             <Card
               key={provider}
-              isPressable
-              onPress={() => onSelect(provider)}
-              className="border border-divider hover:border-primary transition-colors"
+              isPressable={isReady}
+              isDisabled={!isReady}
+              onPress={isReady ? () => onSelect(provider) : undefined}
+              className={`border border-divider transition-colors ${
+                isReady
+                  ? 'hover:border-primary'
+                  : 'opacity-50 cursor-not-allowed'
+              }`}
             >
               <CardBody className="flex flex-col items-center gap-2 p-4">
                 <div
@@ -75,6 +85,24 @@ export function ProviderGrid({ category, onSelect }: ProviderGridProps) {
               </CardBody>
             </Card>
           )
+
+          if (!isReady) {
+            return (
+              <Tooltip
+                key={provider}
+                content={
+                  !isActive
+                    ? t('This provider is not ready')
+                    : t('OAuth not configured for this provider')
+                }
+                placement="top"
+              >
+                <div>{card}</div>
+              </Tooltip>
+            )
+          }
+
+          return card
         })}
       </div>
     </div>

@@ -1,0 +1,388 @@
+/**
+ * {PROVIDER_NAME} Connector Provider
+ *
+ * Template for implementing OAuth 2.0 authentication and API integration.
+ * Replace all {PLACEHOLDERS} with actual values.
+ *
+ * Usage:
+ * 1. Copy this file to src/features/connectors/providers/apps/{provider-id}.ts
+ * 2. Replace all placeholders with actual values
+ * 3. Follow SKILL.md for registration and setup steps
+ */
+
+import { BRIDGE_URL } from '@/config/bridge'
+import { BaseAppConnectorProvider } from '../../connector-provider'
+import type {
+  Connector,
+  ConnectorProviderConfig,
+  OAuthResult,
+  TokenRefreshResult,
+  AccountInfo,
+  ListOptions,
+  ListResult,
+  ContentResult,
+  SearchResult,
+  ChangesResult,
+  ConnectorItem,
+} from '../../types'
+
+// =============================================================================
+// Constants - Update these for your provider
+// =============================================================================
+
+/** API base URL - proxied through bridge to avoid CORS */
+const API_BASE = `${BRIDGE_URL}/api/{provider-id}`
+
+/** OAuth endpoints - use provider's actual URLs */
+const AUTH_URL = 'https://{provider}.com/oauth/authorize'
+const TOKEN_URL = `${BRIDGE_URL}/api/{provider-id}/oauth/token`
+const REVOKE_URL = 'https://{provider}.com/oauth/revoke'
+const USERINFO_URL = 'https://api.{provider}.com/v1/users/me'
+
+// =============================================================================
+// Types - Define based on provider's API documentation
+// =============================================================================
+
+/** Raw item from provider's API */
+interface RawItem {
+  id: string
+  name: string
+  type: string
+  modified_at: string
+  // Add provider-specific fields
+}
+
+/** List response from provider's API */
+interface ListResponse {
+  items: RawItem[]
+  next_cursor?: string
+  has_more?: boolean
+}
+
+/** Token response from OAuth endpoint */
+interface TokenResponse {
+  access_token: string
+  refresh_token?: string
+  expires_in?: number
+  scope?: string
+  token_type: string
+}
+
+/** User info response */
+interface UserInfoResponse {
+  id: string
+  email?: string
+  name?: string
+  avatar_url?: string
+}
+
+// =============================================================================
+// Provider Implementation
+// =============================================================================
+
+export class TemplateProvider extends BaseAppConnectorProvider {
+  // Provider identifier - must match types.ts AppConnectorProvider
+  readonly id = '{provider-id}' as const
+
+  readonly config: ConnectorProviderConfig = {
+    id: '{provider-id}',
+    category: 'app',
+    name: '{Provider Name}',
+    icon: '{provider-icon}', // Must exist in Icon component
+    color: '#000000', // Brand color
+    capabilities: ['read', 'search'], // or ['read'] if no search
+    supportedTypes: ['*'], // or specific types like ['file', 'folder']
+    maxFileSize: 10 * 1024 * 1024, // 10MB
+    rateLimit: { requests: 100, windowSeconds: 60 },
+  }
+
+  /** Get OAuth client ID from environment */
+  private get clientId(): string {
+    return import.meta.env.VITE_{PROVIDER}_CLIENT_ID || ''
+  }
+
+  /** Get OAuth redirect URI */
+  private get redirectUri(): string {
+    return `${window.location.origin}/oauth/callback`
+  }
+
+  // ===========================================================================
+  // OAuth Methods
+  // ===========================================================================
+
+  getAuthUrl(state: string, codeChallenge: string): string {
+    const params = new URLSearchParams({
+      client_id: this.clientId,
+      redirect_uri: this.redirectUri,
+      response_type: 'code',
+      scope: '{scopes}', // e.g., 'read:user read:files'
+      state,
+      // PKCE params - omit if provider doesn't support PKCE
+      code_challenge: codeChallenge,
+      code_challenge_method: 'S256',
+    })
+
+    return `${AUTH_URL}?${params.toString()}`
+  }
+
+  async exchangeCode(code: string, codeVerifier: string): Promise<OAuthResult> {
+    const response = await fetch(TOKEN_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        code,
+        code_verifier: codeVerifier,
+        grant_type: 'authorization_code',
+        redirect_uri: this.redirectUri,
+        // client_id/secret injected by bridge server
+      }),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`Token exchange failed: ${response.status} ${errorText}`)
+    }
+
+    const data: TokenResponse = await response.json()
+
+    return {
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+      expiresIn: data.expires_in,
+      scope: data.scope || '',
+      tokenType: data.token_type,
+    }
+  }
+
+  async refreshToken(connector: Connector): Promise<TokenRefreshResult> {
+    const refreshToken = await this.getDecryptedRefreshToken(connector)
+    if (!refreshToken) {
+      throw new Error('No refresh token available')
+    }
+
+    const response = await fetch(TOKEN_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        refresh_token: refreshToken,
+        grant_type: 'refresh_token',
+      }),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`Token refresh failed: ${response.status} ${errorText}`)
+    }
+
+    const data: TokenResponse = await response.json()
+
+    return {
+      accessToken: data.access_token,
+      expiresIn: data.expires_in,
+    }
+  }
+
+  async validateToken(token: string): Promise<boolean> {
+    try {
+      const response = await fetch(USERINFO_URL, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      return response.ok
+    } catch {
+      return false
+    }
+  }
+
+  async revokeAccess(connector: Connector): Promise<void> {
+    const token = await this.getDecryptedToken(connector)
+
+    const response = await fetch(REVOKE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: `Bearer ${token}`,
+      },
+      body: new URLSearchParams({ token }),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`Revocation failed: ${response.status} ${errorText}`)
+    }
+  }
+
+  async getAccountInfo(token: string): Promise<AccountInfo> {
+    const response = await fetch(USERINFO_URL, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`Failed to get account: ${response.status} ${errorText}`)
+    }
+
+    const data: UserInfoResponse = await response.json()
+
+    return {
+      id: data.id,
+      email: data.email,
+      name: data.name,
+      picture: data.avatar_url,
+    }
+  }
+
+  // ===========================================================================
+  // Content Operations
+  // ===========================================================================
+
+  async list(connector: Connector, options?: ListOptions): Promise<ListResult> {
+    const params = new URLSearchParams({
+      limit: String(options?.pageSize ?? 100),
+    })
+    if (options?.cursor) {
+      params.set('cursor', options.cursor)
+    }
+    if (options?.path) {
+      params.set('folder_id', options.path)
+    }
+
+    const url = `${API_BASE}/files?${params.toString()}`
+    const data = await this.fetchJson<ListResponse>(connector, url)
+
+    return {
+      items: data.items.map((item) => this.normalizeItem(item)),
+      nextCursor: data.next_cursor,
+      hasMore: !!data.next_cursor || !!data.has_more,
+    }
+  }
+
+  async listWithToken(
+    token: string,
+    options?: ListOptions,
+  ): Promise<ListResult> {
+    const params = new URLSearchParams({
+      limit: String(options?.pageSize ?? 100),
+    })
+    if (options?.cursor) {
+      params.set('cursor', options.cursor)
+    }
+
+    const url = `${API_BASE}/files?${params.toString()}`
+    const data = await this.fetchJsonWithRawToken<ListResponse>(token, url)
+
+    return {
+      items: data.items.map((item) => this.normalizeItem(item)),
+      nextCursor: data.next_cursor,
+      hasMore: !!data.next_cursor || !!data.has_more,
+    }
+  }
+
+  async read(connector: Connector, externalId: string): Promise<ContentResult> {
+    const url = `${API_BASE}/files/${encodeURIComponent(externalId)}/content`
+    const response = await this.fetchWithAuth(connector, url)
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`Failed to read file: ${response.status} ${errorText}`)
+    }
+
+    const content = await response.text()
+    const mimeType = response.headers.get('content-type') || 'text/plain'
+
+    return { content, mimeType }
+  }
+
+  async search(connector: Connector, query: string): Promise<SearchResult> {
+    const url = `${API_BASE}/search?query=${encodeURIComponent(query)}`
+    const data = await this.fetchJson<ListResponse>(connector, url)
+
+    return {
+      items: data.items.map((item) => this.normalizeItem(item)),
+      totalCount: data.items.length,
+    }
+  }
+
+  async getChanges(
+    connector: Connector,
+    cursor: string | null,
+  ): Promise<ChangesResult> {
+    // Many providers don't have a changes API
+    // Fallback to full list comparison
+    const params = new URLSearchParams()
+    if (cursor) {
+      params.set('cursor', cursor)
+    }
+
+    try {
+      const url = `${API_BASE}/changes?${params.toString()}`
+      const response = await this.fetchWithAuth(connector, url)
+
+      if (!response.ok) {
+        // Fallback to full sync
+        const list = await this.list(connector)
+        return {
+          added: list.items,
+          modified: [],
+          deleted: [],
+          newCursor: new Date().toISOString(),
+          hasMore: list.hasMore,
+        }
+      }
+
+      const data = await response.json()
+      return {
+        added: (data.added || []).map((i: RawItem) => this.normalizeItem(i)),
+        modified: (data.modified || []).map((i: RawItem) => this.normalizeItem(i)),
+        deleted: data.deleted || [],
+        newCursor: data.cursor || new Date().toISOString(),
+        hasMore: !!data.has_more,
+      }
+    } catch {
+      // Fallback to full sync on error
+      const list = await this.list(connector)
+      return {
+        added: list.items,
+        modified: [],
+        deleted: [],
+        newCursor: new Date().toISOString(),
+        hasMore: list.hasMore,
+      }
+    }
+  }
+
+  // ===========================================================================
+  // Normalization
+  // ===========================================================================
+
+  normalizeItem(rawItem: unknown): ConnectorItem {
+    const item = rawItem as RawItem
+
+    // Determine if item is a folder
+    const isFolder = item.type === 'folder'
+
+    return {
+      externalId: item.id,
+      name: item.name,
+      type: isFolder ? 'folder' : 'file',
+      fileType: isFolder ? undefined : 'document', // or 'image', 'text'
+      mimeType: 'text/plain', // Map from provider's type
+      path: `/${item.name}`,
+      lastModified: new Date(item.modified_at),
+      // Optional fields
+      // externalUrl: item.web_url,
+      // size: item.size,
+      // description: item.description,
+      // tags: item.labels,
+    }
+  }
+}
+
+// =============================================================================
+// Default Export - Required for lazy loading
+// =============================================================================
+
+export default new TemplateProvider()
