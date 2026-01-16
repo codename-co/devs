@@ -5,6 +5,8 @@
  * Supports listing, reading, searching pages and databases, and change detection.
  */
 
+import { BRIDGE_URL } from '@/config/bridge'
+
 import { BaseAppConnectorProvider } from '../../connector-provider'
 import type {
   Connector,
@@ -24,10 +26,8 @@ import type {
 // Constants
 // =============================================================================
 
-/** Notion API base URL - use proxy in development to avoid CORS issues */
-const NOTION_API_BASE = import.meta.env.DEV
-  ? '/api/notion'
-  : 'https://api.notion.com/v1'
+/** Notion API base URL - use gateway proxy to avoid CORS issues and keep secrets safe */
+const NOTION_API_BASE = `${BRIDGE_URL}/api/notion`
 
 /** Notion OAuth endpoints */
 const NOTION_AUTH_URL = 'https://api.notion.com/v1/oauth/authorize'

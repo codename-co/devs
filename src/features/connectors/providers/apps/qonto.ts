@@ -5,6 +5,8 @@
  * Supports listing business accounts, transactions, and statements.
  */
 
+import { BRIDGE_URL } from '@/config/bridge'
+
 import { BaseAppConnectorProvider } from '../../connector-provider'
 import type {
   Connector,
@@ -24,17 +26,13 @@ import type {
 // Constants
 // =============================================================================
 
-/** Qonto API base URL - Use proxy in development to avoid CORS issues */
-const QONTO_API_BASE = import.meta.env.DEV
-  ? '/api/qonto'
-  : 'https://thirdparty.qonto.com'
+/** Qonto API base URL - Use gateway proxy to avoid CORS issues */
+const QONTO_API_BASE = `${BRIDGE_URL}/api/qonto`
 
 /** Qonto OAuth endpoints */
 const QONTO_AUTH_URL = 'https://oauth.qonto.com/oauth2/auth'
-// Use proxy in development to avoid CORS issues
-const QONTO_TOKEN_URL = import.meta.env.DEV
-  ? '/api/qonto/oauth/oauth2/token'
-  : 'https://oauth.qonto.com/oauth2/token'
+// Use gateway proxy for token exchange
+const QONTO_TOKEN_URL = `${BRIDGE_URL}/api/qonto/oauth/oauth2/token`
 
 /** Default page size for API requests */
 const DEFAULT_PAGE_SIZE = 100

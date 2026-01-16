@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Devs Y-WebSocket Server
+ * DEVS Y-WebSocket Server
  *
  * A minimal WebSocket server for Yjs document synchronization.
  * Run with: ./server.mjs
@@ -96,7 +96,7 @@ wss.on('connection', (ws, req) => {
 
 const start = () => {
   server.listen(PORT, HOST, () => {
-    logger.info(`Devs Y-WebSocket server running on ws://${HOST}:${PORT}`)
+    logger.info(`DEVS Y-WebSocket server running on ws://${HOST}:${PORT}`)
   })
 }
 

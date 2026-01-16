@@ -1,0 +1,23 @@
+services:
+  bridge:
+    build:
+      context: .
+    restart: unless-stopped
+    environment:
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - NOTION_CLIENT_ID=${NOTION_CLIENT_ID:-}
+      - NOTION_CLIENT_SECRET=${NOTION_CLIENT_SECRET:-}
+      - QONTO_CLIENT_ID=${QONTO_CLIENT_ID:-}
+      - QONTO_CLIENT_SECRET=${QONTO_CLIENT_SECRET:-}
+    labels:
+      traefik.enable: true
+      traefik.http.routers.bridge.rule: Host(`bridge.devs.new`)
+      traefik.http.routers.bridge.entrypoints: web
+      traefik.http.services.bridge.loadbalancer.server.port: 4445
+    networks:
+      - external
+
+networks:
+  external:
+    external: true

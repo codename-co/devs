@@ -10,6 +10,8 @@
  * - Automatic cleanup of stale pending auth states
  */
 
+import { BRIDGE_URL } from '@/config/bridge'
+
 import type {
   AppConnectorProvider,
   OAuthConfig,
@@ -44,13 +46,12 @@ const STATE_LENGTH = 32
  */
 const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
   // Google services share OAuth config
-  // Note: Google requires client_secret even for SPAs with PKCE
-  // This is safe because the secret alone cannot be used without user consent
+  // Gateway handles client_secret injection server-side
   'google-drive': {
     authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
-    tokenUrl: 'https://oauth2.googleapis.com/token',
+    tokenUrl: `${BRIDGE_URL}/api/google/token`,
     clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
-    clientSecret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET || '',
+    clientSecret: '', // Secret handled server-side by gateway
     scopes: [
       'https://www.googleapis.com/auth/userinfo.email',
       'https://www.googleapis.com/auth/userinfo.profile',
@@ -61,9 +62,9 @@ const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
   },
   gmail: {
     authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
-    tokenUrl: 'https://oauth2.googleapis.com/token',
+    tokenUrl: `${BRIDGE_URL}/api/google/token`,
     clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
-    clientSecret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET || '',
+    clientSecret: '', // Secret handled server-side by gateway
     scopes: [
       'https://www.googleapis.com/auth/userinfo.email',
       'https://www.googleapis.com/auth/userinfo.profile',
@@ -73,9 +74,9 @@ const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
   },
   'google-calendar': {
     authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
-    tokenUrl: 'https://oauth2.googleapis.com/token',
+    tokenUrl: `${BRIDGE_URL}/api/google/token`,
     clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
-    clientSecret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET || '',
+    clientSecret: '', // Secret handled server-side by gateway
     scopes: [
       'https://www.googleapis.com/auth/userinfo.email',
       'https://www.googleapis.com/auth/userinfo.profile',
@@ -85,9 +86,9 @@ const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
   },
   'google-meet': {
     authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
-    tokenUrl: 'https://oauth2.googleapis.com/token',
+    tokenUrl: `${BRIDGE_URL}/api/google/token`,
     clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
-    clientSecret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET || '',
+    clientSecret: '', // Secret handled server-side by gateway
     scopes: [
       'https://www.googleapis.com/auth/userinfo.email',
       'https://www.googleapis.com/auth/userinfo.profile',
@@ -97,9 +98,9 @@ const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
   },
   'google-tasks': {
     authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
-    tokenUrl: 'https://oauth2.googleapis.com/token',
+    tokenUrl: `${BRIDGE_URL}/api/google/token`,
     clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
-    clientSecret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET || '',
+    clientSecret: '', // Secret handled server-side by gateway
     scopes: [
       'https://www.googleapis.com/auth/userinfo.email',
       'https://www.googleapis.com/auth/userinfo.profile',
@@ -109,12 +110,11 @@ const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
   },
   notion: {
     authUrl: 'https://api.notion.com/v1/oauth/authorize',
-    // Use proxy in development to avoid CORS, direct URL in production (requires backend proxy)
-    tokenUrl: import.meta.env.DEV
-      ? '/api/notion/oauth/token'
-      : 'https://api.notion.com/v1/oauth/token',
+    // Use gateway proxy for token exchange (keeps client_secret server-side)
+    tokenUrl: `${BRIDGE_URL}/api/notion/oauth/token`,
     clientId: import.meta.env.VITE_NOTION_CLIENT_ID || '',
-    clientSecret: import.meta.env.VITE_NOTION_CLIENT_SECRET || '',
+    // Secret not needed client-side - gateway handles Basic Auth
+    clientSecret: '',
     scopes: [], // Notion uses owner permission level, not scopes
     pkceRequired: false, // Notion doesn't require PKCE
     // Notion requires Basic Auth header instead of client_secret in body
@@ -122,12 +122,11 @@ const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
   },
   qonto: {
     authUrl: 'https://oauth.qonto.com/oauth2/auth',
-    // Use proxy in development to avoid CORS, direct URL in production
-    tokenUrl: import.meta.env.DEV
-      ? '/api/qonto/oauth2/token'
-      : 'https://oauth.qonto.com/oauth2/token',
+    // Use gateway proxy for token exchange (gateway handles Basic Auth)
+    tokenUrl: `${BRIDGE_URL}/api/qonto/oauth/oauth2/token`,
     clientId: import.meta.env.VITE_QONTO_CLIENT_ID || '',
-    clientSecret: import.meta.env.VITE_QONTO_CLIENT_SECRET || '',
+    // Secret not needed client-side - gateway handles Basic Auth
+    clientSecret: '',
     scopes: ['offline_access', 'organization.read'],
     pkceRequired: true,
   },
