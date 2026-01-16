@@ -41,6 +41,25 @@
       content="https://devs.new/screenshots/devs-desktop-home.webp"
     />
 
+    <!-- Prevent FOUC: Apply theme before render -->
+    <script>
+      ;(function () {
+        try {
+          var stored = localStorage.getItem('devs-user-settings')
+          var theme = stored ? JSON.parse(stored).state?.theme : 'system'
+          var isDark =
+            theme === 'dark' ||
+            (theme !== 'light' &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches)
+          document.documentElement.classList.add(isDark ? 'dark' : 'light')
+        } catch (e) {
+          if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark')
+          }
+        }
+      })()
+    </script>
+
     <!-- Structured Data for Rich Results -->
     <script type="application/ld+json">
       {
