@@ -62,6 +62,7 @@ export const en = [
   // Span types
   'LLM Call',
   'Image Generation',
+  'Video Generation',
   'Agent',
   'Tool',
   'Chain',

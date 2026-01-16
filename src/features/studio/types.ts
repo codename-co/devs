@@ -1,10 +1,19 @@
 /**
- * Image Generation Feature Types
+ * Studio Feature Types
  *
- * Type definitions for the AI Image Generation system, supporting multiple
- * providers (OpenAI DALL-E, Stability AI, Replicate, etc.) with a unified
- * preset-based interface for defining image characteristics.
+ * Type definitions for the AI Image and Video Generation system, supporting multiple
+ * providers (OpenAI DALL-E, Stability AI, Replicate, Google Veo, etc.) with a unified
+ * preset-based interface for defining media characteristics.
  */
+
+// =============================================================================
+// Media Type
+// =============================================================================
+
+/**
+ * Type of media being generated
+ */
+export type MediaType = 'image' | 'video'
 
 // =============================================================================
 // Image Generation Providers
@@ -20,6 +29,11 @@ export type ImageProvider =
   | 'replicate' // Replicate (various models)
   | 'together' // Together AI
   | 'fal' // Fal.ai
+
+/**
+ * Supported video generation providers
+ */
+export type VideoProvider = 'google' // Google Veo
 
 /**
  * Image model identifier
@@ -54,6 +68,51 @@ export type ImageModel =
   // Replicate
   | 'stability-ai/sdxl'
   | 'bytedance/sdxl-lightning-4step'
+
+/**
+ * Video model identifier
+ */
+export type VideoModel =
+  // Google Veo
+  | 'veo-3.1-generate-preview'
+  | 'veo-3.1-fast-generate-preview'
+  | 'veo-2-generate-001'
+
+/**
+ * Available video models per provider
+ */
+export const VIDEO_MODELS_BY_PROVIDER: Record<
+  VideoProvider,
+  { id: VideoModel; name: string; description?: string }[]
+> = {
+  google: [
+    {
+      id: 'veo-3.1-generate-preview',
+      name: 'Veo 3.1',
+      description: 'Best quality, 720p/1080p/4K with audio',
+    },
+    {
+      id: 'veo-3.1-fast-generate-preview',
+      name: 'Veo 3.1 Fast',
+      description: 'Fast generation, optimized for speed',
+    },
+    {
+      id: 'veo-2-generate-001',
+      name: 'Veo 2',
+      description: 'Stable, 720p/1080p',
+    },
+  ],
+}
+
+/**
+ * Get default video model for a provider
+ */
+export function getDefaultVideoModelForProvider(
+  provider: VideoProvider,
+): VideoModel {
+  const models = VIDEO_MODELS_BY_PROVIDER[provider]
+  return models[0]?.id || 'veo-3.1-generate-preview'
+}
 
 /**
  * Available models per provider
@@ -443,12 +502,21 @@ export interface ImageGenerationResponse {
 
 /**
  * An entry in the studio generation history
+ * Supports both images and videos
  */
 export interface StudioEntry {
   id: string
   prompt: string
-  settings: ImageGenerationSettings
-  images: GeneratedImage[]
+  /** Type of media - defaults to 'image' for backwards compatibility */
+  mediaType?: MediaType
+  /** Image generation settings (when mediaType is 'image') */
+  settings?: ImageGenerationSettings
+  /** Video generation settings (when mediaType is 'video') */
+  videoSettings?: VideoGenerationSettings
+  /** Generated images (when mediaType is 'image') */
+  images?: GeneratedImage[]
+  /** Generated videos (when mediaType is 'video') */
+  videos?: GeneratedVideo[]
   isFavorite?: boolean
   tags?: string[]
   createdAt: Date
@@ -505,4 +573,167 @@ export interface EnhancedPrompt {
   original: string
   enhanced: string
   additions: string[]
+}
+
+// =============================================================================
+// Video Generation Types
+// =============================================================================
+
+/**
+ * Video aspect ratio presets
+ */
+export type VideoAspectRatio = '16:9' | '9:16'
+
+/**
+ * Video resolution options
+ */
+export type VideoResolution = '720p' | '1080p' | '4k'
+
+/**
+ * Video duration options (in seconds)
+ */
+export type VideoDuration = 4 | 6 | 8
+
+/**
+ * Person generation settings for video
+ */
+export type PersonGeneration = 'allow_all' | 'allow_adult' | 'dont_allow'
+
+/**
+ * Video generation settings
+ */
+export interface VideoGenerationSettings {
+  /** Target aspect ratio */
+  aspectRatio: VideoAspectRatio
+  /** Video resolution */
+  resolution: VideoResolution
+  /** Duration in seconds */
+  duration: VideoDuration
+  /** Negative prompt (what to avoid) */
+  negativePrompt?: string
+  /** Person generation policy */
+  personGeneration?: PersonGeneration
+  /** Seed for reproducibility (note: doesn't guarantee determinism) */
+  seed?: number
+  /** Reference image for image-to-video generation (base64 data) */
+  referenceImageBase64?: string
+  /** Reference image MIME type */
+  referenceImageMimeType?: string
+  /** Last frame image for interpolation (base64 data) */
+  lastFrameBase64?: string
+  /** Last frame image MIME type */
+  lastFrameMimeType?: string
+}
+
+/**
+ * Default settings for video generation
+ */
+export const DEFAULT_VIDEO_SETTINGS: VideoGenerationSettings = {
+  aspectRatio: '16:9',
+  resolution: '720p',
+  duration: 8,
+}
+
+/**
+ * Status of a video generation operation
+ */
+export type VideoGenerationStatus =
+  | 'pending'
+  | 'queued'
+  | 'generating'
+  | 'completed'
+  | 'failed'
+
+/**
+ * Provider-specific video configuration
+ */
+export interface VideoProviderConfig {
+  provider: VideoProvider
+  apiKey: string
+  baseUrl?: string
+  model?: string
+}
+
+/**
+ * Video generation request
+ */
+export interface VideoGenerationRequest {
+  id: string
+  /** The user's prompt */
+  prompt: string
+  /** Applied settings */
+  settings: VideoGenerationSettings
+  /** Provider configuration */
+  providerConfig: VideoProviderConfig
+  /** Request status */
+  status: VideoGenerationStatus
+  /** Operation name from API (for polling) */
+  operationName?: string
+  /** Timestamp of request */
+  createdAt: Date
+  /** When generation started */
+  startedAt?: Date
+  /** When generation completed */
+  completedAt?: Date
+  /** Error message if failed */
+  error?: string
+}
+
+/**
+ * Generated video result
+ */
+export interface GeneratedVideo {
+  id: string
+  /** Reference to the generation request */
+  requestId: string
+  /** Video URL (temporary - valid for 2 days) */
+  url: string
+  /** Video blob data (for runtime use only, not persisted) */
+  blob?: Blob
+  /** Base64-encoded video data (for local storage) */
+  base64?: string
+  /** Video width in pixels */
+  width: number
+  /** Video height in pixels */
+  height: number
+  /** Duration in seconds */
+  duration: number
+  /** File format */
+  format: 'mp4'
+  /** File size in bytes */
+  size?: number
+  /** Whether the video has audio */
+  hasAudio: boolean
+  /** Generation seed used */
+  seed?: number
+  /** When this video was generated */
+  createdAt: Date
+}
+
+/**
+ * Complete video generation response
+ */
+export interface VideoGenerationResponse {
+  request: VideoGenerationRequest
+  videos: GeneratedVideo[]
+  /** Total generation time in ms */
+  generationTimeMs?: number
+  /** Provider-specific usage/billing info */
+  usage?: {
+    videosGenerated: number
+    estimatedCost?: number
+  }
+}
+
+/**
+ * An entry in the studio video history
+ */
+export interface StudioVideoEntry {
+  id: string
+  prompt: string
+  settings: VideoGenerationSettings
+  videos: GeneratedVideo[]
+  isFavorite?: boolean
+  tags?: string[]
+  createdAt: Date
 }

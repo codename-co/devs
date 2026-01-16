@@ -489,6 +489,37 @@ export class TraceService {
       }
     }
 
+    // Handle video generation spans (no tokens, but has model info and potential cost)
+    const videoSpans = spans.filter((s) => s.type === 'video')
+    if (videoSpans.length > 0 && !trace.primaryModel) {
+      // Set primary model from first video span if not already set
+      if (videoSpans[0]?.model) {
+        trace.primaryModel = videoSpans[0].model
+      }
+
+      // Aggregate video generation costs if any
+      const videoCosts = videoSpans.filter((s) => s.cost)
+      if (videoCosts.length > 0) {
+        const totalInputCost = videoCosts.reduce(
+          (sum, s) => sum + (s.cost?.inputCost || 0),
+          0,
+        )
+        const totalOutputCost = videoCosts.reduce(
+          (sum, s) => sum + (s.cost?.outputCost || 0),
+          0,
+        )
+        trace.totalCost = {
+          inputCost: (trace.totalCost?.inputCost || 0) + totalInputCost,
+          outputCost: (trace.totalCost?.outputCost || 0) + totalOutputCost,
+          totalCost:
+            (trace.totalCost?.totalCost || 0) +
+            totalInputCost +
+            totalOutputCost,
+          currency: 'USD',
+        }
+      }
+    }
+
     // Save to database if enabled
     if (this.isEnabled()) {
       try {

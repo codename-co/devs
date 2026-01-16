@@ -66,6 +66,7 @@ export const ar: I18n = {
   // Span types
   'LLM Call': 'استدعاء LLM',
   'Image Generation': 'توليد الصور',
+  'Video Generation': 'توليد الفيديو',
   Agent: 'وكيل',
   Tool: 'أداة',
   Chain: 'سلسلة',

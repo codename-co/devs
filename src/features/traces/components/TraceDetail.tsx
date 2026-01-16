@@ -200,6 +200,7 @@ function SpanCard({ span, index }: SpanCardProps) {
     const labels: Record<SpanType, string> = {
       llm: t('LLM Call'),
       image: t('Image Generation'),
+      video: t('Video Generation'),
       agent: t('Agent'),
       tool: t('Tool'),
       chain: t('Chain'),

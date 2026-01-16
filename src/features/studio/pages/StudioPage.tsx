@@ -40,15 +40,23 @@ import { ImagePromptArea } from '../components/ImagePromptArea'
 import { PresetGrid } from '../components/PresetGrid'
 import { SettingsPanel } from '../components/SettingsPanel'
 import { GeneratedImageCard } from '../components/GeneratedImageCard'
+import { GeneratedVideoCard } from '../components/GeneratedVideoCard'
 import { StudioBackground } from '../components/StudioBackground'
 import { useImageGeneration } from '../hooks/useImageGeneration'
+import { useVideoGeneration } from '../hooks/useVideoGeneration'
 import { useImagePresets } from '../hooks/useImagePresets'
 import { useStudioHistory } from '../hooks/useStudioHistory'
 import {
   ImageProvider,
   GeneratedImage,
+  GeneratedVideo,
   ImageModel,
   getDefaultModelForProvider,
+  MediaType,
+  VideoModel,
+  VideoProvider,
+  VideoGenerationSettings,
+  DEFAULT_VIDEO_SETTINGS,
 } from '../types'
 import localI18n from '../i18n'
 
@@ -57,6 +65,9 @@ export function StudioPage() {
   const navigate = useNavigate()
   const url = useUrl(lang)
 
+  // Media type mode (image or video)
+  const [mediaType, setMediaType] = useState<MediaType>('image')
+
   // Track streaming images separately from history
   const [streamingImages, setStreamingImages] = useState<GeneratedImage[]>([])
   const [currentGenerationPrompt, setCurrentGenerationPrompt] =
@@ -64,43 +75,101 @@ export function StudioPage() {
   // Use a ref to avoid stale closure in callbacks
   const currentGenerationPromptRef = useRef<string>('')
 
-  // Hooks
-  const { isGenerating, progress, error, generate, downloadImage } =
-    useImageGeneration({
-      onImageReceived: (image) => {
-        // Add each streaming image as it arrives
-        setStreamingImages((prev) => [image, ...prev])
-      },
-      onGenerationComplete: (response) => {
-        if (response.images.length > 0) {
-          // Use ref to get current prompt value (avoids stale closure)
-          addToHistory(
-            currentGenerationPromptRef.current,
-            currentSettings,
-            response.images,
-          )
-          addToast({
-            title: t('Image generated successfully'),
-            color: 'success',
-          })
-        }
-        // Clear streaming images - they're now in history
-        setStreamingImages([])
-        setCurrentGenerationPrompt('')
-        currentGenerationPromptRef.current = ''
-      },
-      onGenerationError: () => {
+  // Track video generation prompt for persistence
+  const [_currentVideoPrompt, setCurrentVideoPrompt] = useState<string>('')
+  const currentVideoPromptRef = useRef<string>('')
+
+  // Track generated videos (removed - now using history)
+
+  // Hooks - Image Generation
+  const {
+    isGenerating: isGeneratingImage,
+    progress: imageProgress,
+    error: imageError,
+    generate: generateImage,
+    downloadImage,
+  } = useImageGeneration({
+    onImageReceived: (image) => {
+      // Add each streaming image as it arrives
+      setStreamingImages((prev) => [image, ...prev])
+    },
+    onGenerationComplete: (response) => {
+      if (response.images.length > 0) {
+        // Use ref to get current prompt value (avoids stale closure)
+        addToHistory(
+          currentGenerationPromptRef.current,
+          currentSettings,
+          response.images,
+        )
         addToast({
-          title: t('Failed to generate image'),
-          description: error || undefined,
-          color: 'danger',
+          title: t('Image generated successfully'),
+          color: 'success',
         })
-        // Clear streaming state on error
-        setStreamingImages([])
-        setCurrentGenerationPrompt('')
-        currentGenerationPromptRef.current = ''
-      },
-    })
+      }
+      // Clear streaming images - they're now in history
+      setStreamingImages([])
+      setCurrentGenerationPrompt('')
+      currentGenerationPromptRef.current = ''
+    },
+    onGenerationError: () => {
+      addToast({
+        title: t('Failed to generate image'),
+        description: imageError || undefined,
+        color: 'danger',
+      })
+      // Clear streaming state on error
+      setStreamingImages([])
+      setCurrentGenerationPrompt('')
+      currentGenerationPromptRef.current = ''
+    },
+  })
+
+  // Hooks - Video Generation
+  const {
+    isGenerating: isGeneratingVideo,
+    progress: videoProgress,
+    progressMessage: videoProgressMessage,
+    error: videoError,
+    generate: generateVideo,
+    downloadVideo,
+  } = useVideoGeneration({
+    onGenerationComplete: (response) => {
+      if (response.videos.length > 0) {
+        // Use ref to get current prompt value (avoids stale closure)
+        addVideoToHistory(
+          currentVideoPromptRef.current,
+          videoSettings,
+          response.videos,
+        )
+        addToast({
+          title: t('Video generated successfully'),
+          color: 'success',
+        })
+      }
+      // Clear video generation state
+      setCurrentVideoPrompt('')
+      currentVideoPromptRef.current = ''
+    },
+    onGenerationError: () => {
+      addToast({
+        title: t('Failed to generate video'),
+        description: videoError || undefined,
+        color: 'danger',
+      })
+      // Clear video generation state on error
+      setCurrentVideoPrompt('')
+      currentVideoPromptRef.current = ''
+    },
+    onProgressUpdate: (progress, message) => {
+      // Progress updates are already handled by the hook state
+      console.log(`Video progress: ${progress}% - ${message}`)
+    },
+  })
+
+  // Combined states
+  const isGenerating =
+    mediaType === 'image' ? isGeneratingImage : isGeneratingVideo
+  const progress = mediaType === 'image' ? imageProgress : videoProgress
 
   const {
     presets,
@@ -114,36 +183,94 @@ export function StudioPage() {
     deletePreset,
   } = useImagePresets()
 
-  const { history, addToHistory, toggleFavorite } = useStudioHistory()
+  // Video settings state (setVideoSettings will be used when video settings panel is added)
+  const [videoSettings] = useState<VideoGenerationSettings>(
+    DEFAULT_VIDEO_SETTINGS,
+  )
+
+  const { history, addToHistory, addVideoToHistory, toggleFavorite } =
+    useStudioHistory()
 
   // Local state
   const [prompt, setPrompt] = useState('')
   const [referenceImage, setReferenceImage] = useState<File | null>(null)
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
+  const [mediaFilter, setMediaFilter] = useState<
+    'all' | 'images' | 'videos' | 'favorites'
+  >('all')
   const [savePresetName, setSavePresetName] = useState('')
   const [savePresetDescription, setSavePresetDescription] = useState('')
   const [selectedProvider, setSelectedProvider] =
     useState<ImageProvider | null>(null)
   const [selectedModel, setSelectedModel] = useState<ImageModel | null>(null)
+  const [selectedVideoProvider, setSelectedVideoProvider] =
+    useState<VideoProvider | null>(null)
+  const [selectedVideoModel, setSelectedVideoModel] =
+    useState<VideoModel | null>(null)
 
-  // Computed values
-  const favoriteImages = useMemo(
+  // Computed values - unified favorite media (images and videos)
+  const favoriteMedia = useMemo(() => {
+    const items: Array<{
+      type: 'image' | 'video'
+      image?: GeneratedImage
+      video?: GeneratedVideo
+      entryId: string
+      prompt: string
+    }> = []
+
+    history
+      .filter((entry) => entry.isFavorite)
+      .forEach((entry) => {
+        if (entry.mediaType === 'video') {
+          ;(entry.videos || []).forEach((video) => {
+            items.push({
+              type: 'video',
+              video,
+              entryId: entry.id,
+              prompt: entry.prompt,
+            })
+          })
+        } else {
+          ;(entry.images || []).forEach((image) => {
+            items.push({
+              type: 'image',
+              image,
+              entryId: entry.id,
+              prompt: entry.prompt,
+            })
+          })
+        }
+      })
+
+    return items
+  }, [history])
+
+  // Get videos from history
+  const historyVideos = useMemo(
     () =>
       history
-        .filter((entry) => entry.isFavorite)
+        .filter((entry) => entry.mediaType === 'video')
         .flatMap((entry) =>
-          entry.images.map((image) => ({
-            image,
+          (entry.videos || []).map((video) => ({
+            video,
             entryId: entry.id,
             prompt: entry.prompt,
+            isFavorite: entry.isFavorite,
           })),
         ),
     [history],
   )
 
   const historyImagesCount = useMemo(
-    () => history.reduce((sum, entry) => sum + entry.images.length, 0),
+    () =>
+      history
+        .filter((e) => e.mediaType !== 'video')
+        .reduce((sum, entry) => sum + (entry.images?.length || 0), 0),
     [history],
+  )
+
+  const totalMediaCount = useMemo(
+    () => historyImagesCount + historyVideos.length,
+    [historyImagesCount, historyVideos.length],
   )
 
   // Get credentials from the LLM model store
@@ -182,6 +309,30 @@ export function StudioPage() {
       providerCredentials: credMap,
     }
   }, [credentials])
+
+  // Get available video providers from stored credentials (currently only Google)
+  const availableVideoProviders = useMemo<VideoProvider[]>(() => {
+    // Video generation uses Google Veo which requires a Google API key
+    const hasGoogle = credentials.some((c) => c.provider === 'google')
+    return hasGoogle ? ['google'] : []
+  }, [credentials])
+
+  // Initialize video provider/model when Google credentials are available
+  useEffect(() => {
+    if (availableVideoProviders.length > 0 && !selectedVideoProvider) {
+      setSelectedVideoProvider('google')
+      setSelectedVideoModel('veo-3.1-generate-preview')
+    }
+  }, [availableVideoProviders, selectedVideoProvider])
+
+  // Handle video model change
+  const handleVideoModelChange = useCallback(
+    (provider: VideoProvider, model: VideoModel) => {
+      setSelectedVideoProvider(provider)
+      setSelectedVideoModel(model)
+    },
+    [],
+  )
 
   // Get user's default image generation settings
   const defaultImageProvider = userSettings(
@@ -272,65 +423,144 @@ export function StudioPage() {
     }
   }, [selectedProvider, selectedModel, providerCredentials])
 
-  // Handle generation
+  // Get video provider config (uses Google credentials)
+  const getVideoProviderConfig = useCallback(async () => {
+    // Video generation currently only supports Google
+    const googleCred = providerCredentials.get('google')
+    if (!googleCred) return null
+
+    const config = await CredentialService.getDecryptedConfig(googleCred.id)
+    if (!config) return null
+
+    return {
+      provider: 'google' as VideoProvider,
+      apiKey: config.apiKey || '',
+      model: selectedVideoModel || ('veo-3.1-generate-preview' as VideoModel),
+    }
+  }, [providerCredentials, selectedVideoModel])
+
+  // Handle generation (image or video)
   const handleGenerate = useCallback(
     async (promptText: string) => {
-      const config = await getProviderConfig()
-      if (!config) {
-        addToast({
-          title: t('Configure your image provider in Settings to get started'),
-          color: 'warning',
-          endContent: (
-            <Button
-              size="sm"
-              color="warning"
-              variant="flat"
-              onPress={() => navigate(url('/settings'))}
-            >
-              {t('Go to Settings')}
-            </Button>
-          ),
-        })
-        return
-      }
-
-      setPrompt(promptText)
-      setCurrentGenerationPrompt(promptText)
-      currentGenerationPromptRef.current = promptText
-      setStreamingImages([]) // Clear any previous streaming images
-
-      // Build settings with reference image if present
-      let settingsWithReference = { ...currentSettings }
-      if (referenceImage) {
-        try {
-          const base64 = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader()
-            reader.onload = () => {
-              const result = reader.result as string
-              // Extract base64 data without the data URL prefix
-              const base64Data = result.split(',')[1]
-              resolve(base64Data)
-            }
-            reader.onerror = reject
-            reader.readAsDataURL(referenceImage)
+      if (mediaType === 'video') {
+        // Video generation
+        const config = await getVideoProviderConfig()
+        if (!config) {
+          addToast({
+            title: t(
+              'Configure your video provider in Settings to get started',
+            ),
+            color: 'warning',
+            endContent: (
+              <Button
+                size="sm"
+                color="warning"
+                variant="flat"
+                onPress={() => navigate(url('/settings'))}
+              >
+                {t('Go to Settings')}
+              </Button>
+            ),
           })
-          settingsWithReference = {
-            ...settingsWithReference,
-            referenceImageBase64: base64,
-            referenceImageMimeType: referenceImage.type,
-          }
-        } catch (err) {
-          console.error('Failed to convert reference image to base64:', err)
+          return
         }
-      }
 
-      await generate(promptText, settingsWithReference, config)
+        setPrompt(promptText)
+
+        // Store prompt for persistence callback
+        setCurrentVideoPrompt(promptText)
+        currentVideoPromptRef.current = promptText
+
+        // Build video settings with reference image if present
+        let settingsWithReference = { ...videoSettings }
+        if (referenceImage) {
+          try {
+            const base64 = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader()
+              reader.onload = () => {
+                const result = reader.result as string
+                const base64Data = result.split(',')[1]
+                resolve(base64Data)
+              }
+              reader.onerror = reject
+              reader.readAsDataURL(referenceImage)
+            })
+            settingsWithReference = {
+              ...settingsWithReference,
+              referenceImageBase64: base64,
+              referenceImageMimeType: referenceImage.type,
+            }
+          } catch (err) {
+            console.error('Failed to convert reference image to base64:', err)
+          }
+        }
+
+        await generateVideo(promptText, settingsWithReference, config)
+      } else {
+        // Image generation
+        const config = await getProviderConfig()
+        if (!config) {
+          addToast({
+            title: t(
+              'Configure your image provider in Settings to get started',
+            ),
+            color: 'warning',
+            endContent: (
+              <Button
+                size="sm"
+                color="warning"
+                variant="flat"
+                onPress={() => navigate(url('/settings'))}
+              >
+                {t('Go to Settings')}
+              </Button>
+            ),
+          })
+          return
+        }
+
+        setPrompt(promptText)
+        setCurrentGenerationPrompt(promptText)
+        currentGenerationPromptRef.current = promptText
+        setStreamingImages([]) // Clear any previous streaming images
+
+        // Build settings with reference image if present
+        let settingsWithReference = { ...currentSettings }
+        if (referenceImage) {
+          try {
+            const base64 = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader()
+              reader.onload = () => {
+                const result = reader.result as string
+                // Extract base64 data without the data URL prefix
+                const base64Data = result.split(',')[1]
+                resolve(base64Data)
+              }
+              reader.onerror = reject
+              reader.readAsDataURL(referenceImage)
+            })
+            settingsWithReference = {
+              ...settingsWithReference,
+              referenceImageBase64: base64,
+              referenceImageMimeType: referenceImage.type,
+            }
+          } catch (err) {
+            console.error('Failed to convert reference image to base64:', err)
+          }
+        }
+
+        await generateImage(promptText, settingsWithReference, config)
+      }
     },
     [
-      generate,
+      mediaType,
+      generateImage,
+      generateVideo,
       currentSettings,
+      videoSettings,
       referenceImage,
       getProviderConfig,
+      getVideoProviderConfig,
       t,
       navigate,
       url,
@@ -423,12 +653,40 @@ export function StudioPage() {
                 className="text-2xl md:text-3xl font-bold mb-2 flex items-center justify-center gap-2"
               >
                 <Icon
-                  name="MediaImagePlus"
+                  name={mediaType === 'video' ? 'MediaVideo' : 'MediaImagePlus'}
                   size="3xl"
                   className="text-danger"
                 />
                 {t('Studio')}
               </Title>
+            </motion.div>
+
+            {/* Media type toggle */}
+            <motion.div
+              className="flex justify-center mt-4"
+              {...fadeInUp(10)}
+              transition={createTransition(0.15, { duration: 0.5 })}
+            >
+              <div className="flex gap-2 p-1 bg-default-100 rounded-xl">
+                <Button
+                  size="sm"
+                  variant={mediaType === 'image' ? 'solid' : 'light'}
+                  color={mediaType === 'image' ? 'primary' : 'default'}
+                  onPress={() => setMediaType('image')}
+                  startContent={<Icon name="MediaImage" size="sm" />}
+                >
+                  {t('Image')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant={mediaType === 'video' ? 'solid' : 'light'}
+                  color={mediaType === 'video' ? 'primary' : 'default'}
+                  onPress={() => setMediaType('video')}
+                  startContent={<Icon name="MediaVideo" size="sm" />}
+                >
+                  {t('Video')}
+                </Button>
+              </div>
             </motion.div>
           </motion.div>
 
@@ -455,11 +713,16 @@ export function StudioPage() {
               model={selectedModel}
               availableProviders={availableProviders}
               onModelChange={handleModelChange}
+              mediaType={mediaType}
+              videoProvider={selectedVideoProvider}
+              videoModel={selectedVideoModel}
+              availableVideoProviders={availableVideoProviders}
+              onVideoModelChange={handleVideoModelChange}
             />
           </motion.div>
 
           {/* History section header with title and filter */}
-          {historyImagesCount > 0 && (
+          {(totalMediaCount > 0 || streamingImages.length > 0) && (
             <motion.div
               className="flex items-center justify-between mb-6"
               {...fadeInUp(30)}
@@ -467,42 +730,82 @@ export function StudioPage() {
             >
               <div className="flex items-center gap-3">
                 <h2 className="text-lg font-semibold">
-                  {t('Generated visuals')}
+                  {t('Generated media')}
                 </h2>
                 <Chip size="sm" variant="flat">
-                  {historyImagesCount}
+                  {totalMediaCount}
                 </Chip>
               </div>
               <Filter
                 label={t('All')}
                 options={[
-                  { key: 'all', label: t('All'), count: historyImagesCount },
+                  { key: 'all', label: t('All'), count: totalMediaCount },
+                  {
+                    key: 'images',
+                    label: t('Images'),
+                    count: historyImagesCount,
+                    icon: 'MediaImage',
+                  },
+                  {
+                    key: 'videos',
+                    label: t('Videos'),
+                    count: historyVideos.length,
+                    icon: 'MediaVideo',
+                  },
                   {
                     key: 'favorites',
-                    label: t('Favorites only'),
-                    count: favoriteImages.length,
+                    label: t('Favorites'),
+                    count: favoriteMedia.length,
                     icon: 'HeartSolid',
                   },
                 ]}
-                selectedKey={showFavoritesOnly ? 'favorites' : 'all'}
+                selectedKey={mediaFilter}
                 onSelectionChange={(key) =>
-                  setShowFavoritesOnly(key === 'favorites')
+                  setMediaFilter(
+                    key as 'all' | 'images' | 'videos' | 'favorites',
+                  )
                 }
                 showCounts="all"
               />
             </motion.div>
           )}
 
-          {/* Gallery content - shows streaming images first, then history */}
+          {/* Gallery content - unified media gallery */}
           <motion.div
             className="min-h-[300px]"
             {...fadeInUp(30)}
             transition={createTransition(0.5, { duration: 0.7 })}
           >
-            {history.length === 0 &&
+            {/* Video Generation Progress */}
+            {isGeneratingVideo && (
+              <div className="mb-6 p-4 bg-default-100 rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <Icon
+                    name="MediaVideoPlus"
+                    size="md"
+                    className="text-primary animate-pulse"
+                  />
+                  <span className="font-medium">
+                    {t('Generating video...')}
+                  </span>
+                </div>
+                <div className="w-full bg-default-200 rounded-full h-2 mb-2">
+                  <div
+                    className="bg-primary h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${videoProgress}%` }}
+                  />
+                </div>
+                <p className="text-sm text-default-500">
+                  {videoProgressMessage}
+                </p>
+              </div>
+            )}
+
+            {/* Unified Media Gallery */}
+            {totalMediaCount === 0 &&
             streamingImages.length === 0 &&
-            !isGenerating ? null : showFavoritesOnly &&
-              favoriteImages.length === 0 ? (
+            !isGenerating ? null : mediaFilter === 'favorites' &&
+              favoriteMedia.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="w-16 h-16 rounded-full bg-default-100 flex items-center justify-center mb-4">
                   <Icon name="Heart" size="lg" className="text-default-300" />
@@ -513,20 +816,22 @@ export function StudioPage() {
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                {/* Skeleton placeholder while generating and no images yet */}
+                {/* Skeleton placeholder while generating and no media yet */}
                 {isGenerating &&
                   streamingImages.length === 0 &&
-                  !showFavoritesOnly && (
+                  mediaFilter !== 'favorites' && (
                     <div className="aspect-square rounded-lg bg-default-100 animate-pulse flex items-center justify-center">
                       <Icon
-                        name="MediaImage"
+                        name={
+                          mediaType === 'video' ? 'MediaVideo' : 'MediaImage'
+                        }
                         size="lg"
                         className="text-default-300"
                       />
                     </div>
                   )}
                 {/* Streaming images appear first (inline with history) */}
-                {!showFavoritesOnly &&
+                {(mediaFilter === 'all' || mediaFilter === 'images') &&
                   streamingImages.map((image) => (
                     <GeneratedImageCard
                       key={image.id}
@@ -538,22 +843,55 @@ export function StudioPage() {
                       showActions={true}
                     />
                   ))}
-                {/* History images */}
-                {showFavoritesOnly
-                  ? favoriteImages.map(({ image, entryId, prompt }) => (
-                      <GeneratedImageCard
-                        key={image.id}
+                {/* Generated videos */}
+                {(mediaFilter === 'all' || mediaFilter === 'videos') &&
+                  historyVideos.map(
+                    ({ video, entryId, isFavorite, prompt }) => (
+                      <GeneratedVideoCard
+                        key={video.id}
+                        video={video}
                         lang={lang}
-                        image={image}
                         prompt={prompt}
-                        onDownload={() => downloadImage(image)}
-                        onUseAsReference={() => handleUseAsReference(image)}
+                        onDownload={() => downloadVideo(video)}
                         onFavorite={() => toggleFavorite(entryId)}
+                        isFavorite={isFavorite}
+                      />
+                    ),
+                  )}
+                {/* Favorite media (images and videos) */}
+                {mediaFilter === 'favorites' &&
+                  favoriteMedia.map((item) =>
+                    item.type === 'video' && item.video ? (
+                      <GeneratedVideoCard
+                        key={item.video.id}
+                        video={item.video}
+                        lang={lang}
+                        prompt={item.prompt}
+                        onDownload={() => downloadVideo(item.video!)}
+                        onFavorite={() => toggleFavorite(item.entryId)}
                         isFavorite={true}
                       />
-                    ))
-                  : history.flatMap((entry) =>
-                      entry.images.map((image) => (
+                    ) : item.image ? (
+                      <GeneratedImageCard
+                        key={item.image.id}
+                        lang={lang}
+                        image={item.image}
+                        prompt={item.prompt}
+                        onDownload={() => downloadImage(item.image!)}
+                        onUseAsReference={() =>
+                          handleUseAsReference(item.image!)
+                        }
+                        onFavorite={() => toggleFavorite(item.entryId)}
+                        isFavorite={true}
+                      />
+                    ) : null,
+                  )}
+                {/* History images */}
+                {(mediaFilter === 'all' || mediaFilter === 'images') &&
+                  history
+                    .filter((entry) => entry.mediaType !== 'video')
+                    .flatMap((entry) =>
+                      (entry.images || []).map((image) => (
                         <GeneratedImageCard
                           key={image.id}
                           lang={lang}

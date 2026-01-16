@@ -15,6 +15,7 @@ export type TraceStatus = 'pending' | 'running' | 'completed' | 'error'
 export type SpanType =
   | 'llm' // LLM API call
   | 'image' // Image generation call
+  | 'video' // Video generation call
   | 'agent' // Agent execution
   | 'tool' // Tool/function call
   | 'chain' // Chain of operations

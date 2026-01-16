@@ -180,11 +180,14 @@ export interface FileMetadata {
 export interface StudioEntryFrontmatter {
   id: string
   prompt: string
+  mediaType?: 'image' | 'video'
   isFavorite?: boolean
   tags?: string[]
   createdAt: string
-  settings: Record<string, unknown>
-  images: Record<string, unknown>[]
+  settings?: Record<string, unknown>
+  videoSettings?: Record<string, unknown>
+  images?: Record<string, unknown>[]
+  videos?: Record<string, unknown>[]
 }
 
 /**

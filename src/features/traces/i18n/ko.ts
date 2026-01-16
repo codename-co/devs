@@ -66,6 +66,7 @@ export const ko: I18n = {
   // Span types
   'LLM Call': 'LLM 호출',
   'Image Generation': '이미지 생성',
+  'Video Generation': '비디오 생성',
   Agent: '에이전트',
   Tool: '도구',
   Chain: '체인',

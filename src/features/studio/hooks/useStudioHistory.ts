@@ -9,7 +9,13 @@ import { useState, useCallback, useEffect } from 'react'
 import { db } from '@/lib/db'
 import { syncToYjs, deleteFromYjs } from '@/features/sync'
 import { useFolderSyncStore } from '@/features/local-backup/stores/folderSyncStore'
-import { StudioEntry, GeneratedImage, ImageGenerationSettings } from '../types'
+import {
+  StudioEntry,
+  GeneratedImage,
+  ImageGenerationSettings,
+  GeneratedVideo,
+  VideoGenerationSettings,
+} from '../types'
 
 const MAX_HISTORY_ENTRIES = 100
 
@@ -71,6 +77,12 @@ export interface UseStudioHistoryReturn {
     prompt: string,
     settings: ImageGenerationSettings,
     images: GeneratedImage[],
+  ) => Promise<StudioEntry>
+  /** Add videos to history */
+  addVideoToHistory: (
+    prompt: string,
+    settings: VideoGenerationSettings,
+    videos: GeneratedVideo[],
   ) => Promise<StudioEntry>
   /** Toggle favorite status */
   toggleFavorite: (entryId: string) => Promise<void>
@@ -134,8 +146,90 @@ export function useStudioHistory(): UseStudioHistoryReturn {
       const entry: StudioEntry = {
         id: `studio-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         prompt,
+        mediaType: 'image',
         settings,
         images,
+        createdAt: new Date(),
+      }
+
+      await saveEntry(entry)
+
+      // Trigger local backup sync
+      triggerBackupSync()
+
+      // Update state
+      setHistory((prev) => {
+        const newHistory = [entry, ...prev]
+        // Trim to max entries
+        if (newHistory.length > MAX_HISTORY_ENTRIES) {
+          // Remove oldest non-favorite entries
+          const sorted = newHistory.sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+          )
+          const toRemove = sorted
+            .filter((e) => !e.isFavorite)
+            .slice(MAX_HISTORY_ENTRIES - 1)
+
+          // Delete from DB
+          toRemove.forEach((e) => deleteEntry(e.id).catch(console.error))
+
+          return sorted.filter((e) => !toRemove.includes(e))
+        }
+        return newHistory
+      })
+
+      return entry
+    },
+    [triggerBackupSync],
+  )
+
+  // Add video to history
+  const addVideoToHistory = useCallback(
+    async (
+      prompt: string,
+      settings: VideoGenerationSettings,
+      videos: GeneratedVideo[],
+    ): Promise<StudioEntry> => {
+      // Convert video blobs to base64 for persistence
+      const videosWithBase64 = await Promise.all(
+        videos.map(async (video) => {
+          // If already has base64 or no blob, return as-is
+          if (video.base64 || !video.blob) {
+            // Remove blob before saving (it can't be serialized)
+            const { blob: _blob, ...videoWithoutBlob } = video
+            return videoWithoutBlob
+          }
+
+          // Convert blob to base64
+          const blob = video.blob
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => {
+              const result = reader.result as string
+              // Extract base64 data without the data URL prefix
+              const base64Data = result.split(',')[1]
+              resolve(base64Data)
+            }
+            reader.onerror = reject
+            reader.readAsDataURL(blob)
+          })
+
+          // Return video with base64, without blob (blob can't be serialized)
+          const { blob: _blob, ...videoWithoutBlob } = video
+          return {
+            ...videoWithoutBlob,
+            base64,
+          }
+        }),
+      )
+
+      const entry: StudioEntry = {
+        id: `studio-video-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        prompt,
+        mediaType: 'video',
+        videoSettings: settings,
+        videos: videosWithBase64,
         createdAt: new Date(),
       }
 
@@ -258,6 +352,7 @@ export function useStudioHistory(): UseStudioHistoryReturn {
     favorites,
     isLoading,
     addToHistory,
+    addVideoToHistory,
     toggleFavorite,
     addTags,
     removeEntry,

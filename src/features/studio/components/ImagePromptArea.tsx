@@ -42,24 +42,31 @@ import {
   ImageProvider,
   ImageModel,
   IMAGE_MODELS_BY_PROVIDER,
+  MediaType,
+  VideoProvider,
+  VideoModel,
+  VIDEO_MODELS_BY_PROVIDER,
 } from '../types'
+import localI18n from '../i18n'
 
 interface ImagePromptAreaProps
   extends Omit<TextAreaProps, 'onFocus' | 'onBlur' | 'onKeyDown'> {
   lang: Lang
+  /** Media type mode (image or video) */
+  mediaType?: MediaType
   /** Callback when user submits for generation */
   onGenerate?: (prompt: string) => void
   /** Whether generation is in progress */
   isGenerating?: boolean
   /** Generation progress (0-100) */
   progress?: number
-  /** Current settings for display */
+  /** Current settings for display (image mode only) */
   settings?: ImageGenerationSettings
-  /** Active preset for display */
+  /** Active preset for display (image mode only) */
   activePreset?: ImagePreset | null
-  /** Callback to open settings panel */
+  /** Callback to open settings panel (image mode only) */
   onOpenSettings?: () => void
-  /** Callback to open preset selector */
+  /** Callback to open preset selector (image mode only) */
   onOpenPresets?: () => void
   /** Reference image file */
   referenceImage?: File | null
@@ -67,14 +74,22 @@ interface ImagePromptAreaProps
   onReferenceImageChange?: (file: File | null) => void
   /** Placeholder text override */
   placeholder?: string
-  /** Current provider */
+  /** Current image provider */
   provider?: ImageProvider | null
-  /** Current model */
+  /** Current image model */
   model?: ImageModel | null
-  /** Available providers (from credentials) */
+  /** Available image providers (from credentials) */
   availableProviders?: ImageProvider[]
-  /** Callback when model changes */
+  /** Callback when image model changes */
   onModelChange?: (provider: ImageProvider, model: ImageModel) => void
+  /** Current video provider */
+  videoProvider?: VideoProvider | null
+  /** Current video model */
+  videoModel?: VideoModel | null
+  /** Available video providers */
+  availableVideoProviders?: VideoProvider[]
+  /** Callback when video model changes */
+  onVideoModelChange?: (provider: VideoProvider, model: VideoModel) => void
   onFocus?: React.FocusEventHandler<HTMLTextAreaElement>
   onBlur?: React.FocusEventHandler<HTMLTextAreaElement>
   onKeyDown?: React.KeyboardEventHandler<HTMLTextAreaElement>
@@ -87,6 +102,7 @@ export const ImagePromptArea = forwardRef<
   {
     className,
     lang,
+    mediaType = 'image',
     onGenerate,
     onValueChange,
     isGenerating = false,
@@ -102,6 +118,10 @@ export const ImagePromptArea = forwardRef<
     model,
     availableProviders = [],
     onModelChange,
+    videoProvider,
+    videoModel,
+    availableVideoProviders = [],
+    onVideoModelChange,
     onFocus,
     onBlur,
     onKeyDown,
@@ -109,7 +129,7 @@ export const ImagePromptArea = forwardRef<
   },
   ref,
 ) {
-  const { t } = useI18n(lang as any)
+  const { t } = useI18n(localI18n)
 
   const [prompt, setPrompt] = useState((props.value as string) || '')
   const [isDragOver, setIsDragOver] = useState(false)
@@ -401,37 +421,45 @@ export const ImagePromptArea = forwardRef<
         {/* Bottom toolbar */}
         <div className="absolute z-10 bottom-0 inset-x-px p-1 sm:p-2 rounded-b-lg">
           <div className="flex flex-wrap justify-between items-end gap-1">
-            {/* Left side: Settings & Presets */}
+            {/* Left side: Settings & Presets (image mode only) */}
             <div className="flex items-center gap-1">
-              {/* Preset button */}
-              <Tooltip content={t('Image presets')} placement="bottom">
-                <Button
-                  isIconOnly
-                  variant="light"
-                  size="sm"
-                  radius="full"
-                  onPress={onOpenPresets}
-                >
-                  <Icon name="Sparks" size="sm" className="text-default-500" />
-                </Button>
-              </Tooltip>
+              {mediaType === 'image' && (
+                <>
+                  {/* Preset button */}
+                  <Tooltip content={t('Image presets')} placement="bottom">
+                    <Button
+                      isIconOnly
+                      variant="light"
+                      size="sm"
+                      radius="full"
+                      onPress={onOpenPresets}
+                    >
+                      <Icon
+                        name="Sparks"
+                        size="sm"
+                        className="text-default-500"
+                      />
+                    </Button>
+                  </Tooltip>
 
-              {/* Settings button */}
-              <Tooltip content={t('Image settings')} placement="bottom">
-                <Button
-                  isIconOnly
-                  variant="light"
-                  size="sm"
-                  radius="full"
-                  onPress={onOpenSettings}
-                >
-                  <Icon
-                    name="Settings"
-                    size="sm"
-                    className="text-default-500"
-                  />
-                </Button>
-              </Tooltip>
+                  {/* Settings button */}
+                  <Tooltip content={t('Image settings')} placement="bottom">
+                    <Button
+                      isIconOnly
+                      variant="light"
+                      size="sm"
+                      radius="full"
+                      onPress={onOpenSettings}
+                    >
+                      <Icon
+                        name="Settings"
+                        size="sm"
+                        className="text-default-500"
+                      />
+                    </Button>
+                  </Tooltip>
+                </>
+              )}
 
               {/* Reference image button */}
               <Tooltip content={t('Add reference image')} placement="bottom">
@@ -450,8 +478,8 @@ export const ImagePromptArea = forwardRef<
                 </Button>
               </Tooltip>
 
-              {/* Active preset/settings badge */}
-              {settingsBadge && (
+              {/* Active preset/settings badge (image mode only) */}
+              {mediaType === 'image' && settingsBadge && (
                 <div className="hidden sm:flex items-center px-2 py-1 bg-default-100 rounded-full">
                   <span className="text-xs text-default-600 truncate max-w-32">
                     {settingsBadge}
@@ -462,15 +490,15 @@ export const ImagePromptArea = forwardRef<
 
             {/* Right side: Model selector & Generate button */}
             <div className="flex items-center gap-2">
-              {/* Image count indicator */}
-              {settings && settings.count > 1 && (
+              {/* Image count indicator (image mode only) */}
+              {mediaType === 'image' && settings && settings.count > 1 && (
                 <span className="text-xs text-default-500">
                   ×{settings.count}
                 </span>
               )}
 
-              {/* Model selector dropdown */}
-              {availableProviders.length > 0 && (
+              {/* Image model selector dropdown */}
+              {mediaType === 'image' && availableProviders.length > 0 && (
                 <Dropdown>
                   <DropdownTrigger>
                     <Button
@@ -526,8 +554,75 @@ export const ImagePromptArea = forwardRef<
                 </Dropdown>
               )}
 
+              {/* Video model selector dropdown */}
+              {mediaType === 'video' && availableVideoProviders.length > 0 && (
+                <Dropdown>
+                  <DropdownTrigger>
+                    <Button
+                      size="sm"
+                      variant="light"
+                      className="min-w-0 px-2 h-8"
+                      endContent={<Icon name="NavArrowDown" size="sm" />}
+                    >
+                      <span className="text-xs truncate max-w-24">
+                        {videoModel
+                          ? VIDEO_MODELS_BY_PROVIDER[
+                              videoProvider || 'google'
+                            ]?.find((m) => m.id === videoModel)?.name ||
+                            videoModel
+                          : t('Select video model')}
+                      </span>
+                    </Button>
+                  </DropdownTrigger>
+                  <DropdownMenu
+                    aria-label={t('Select video model')}
+                    selectionMode="single"
+                    selectedKeys={
+                      videoModel
+                        ? new Set([`${videoProvider}:${videoModel}`])
+                        : new Set()
+                    }
+                    onSelectionChange={(keys) => {
+                      const key = Array.from(keys)[0] as string
+                      if (key) {
+                        const [prov, ...modelParts] = key.split(':')
+                        const modelId = modelParts.join(':') as VideoModel
+                        onVideoModelChange?.(prov as VideoProvider, modelId)
+                      }
+                    }}
+                  >
+                    {availableVideoProviders.map((prov) => (
+                      <DropdownSection
+                        key={prov}
+                        title={prov.charAt(0).toUpperCase() + prov.slice(1)}
+                        showDivider={
+                          availableVideoProviders.indexOf(prov) <
+                          availableVideoProviders.length - 1
+                        }
+                      >
+                        {VIDEO_MODELS_BY_PROVIDER[prov]?.map((m) => (
+                          <DropdownItem
+                            key={`${prov}:${m.id}`}
+                            description={m.description}
+                          >
+                            {m.name}
+                          </DropdownItem>
+                        )) || []}
+                      </DropdownSection>
+                    ))}
+                  </DropdownMenu>
+                </Dropdown>
+              )}
+
               <ButtonGroup variant="flat">
-                <Tooltip content={t('Generate image')} placement="bottom">
+                <Tooltip
+                  content={
+                    mediaType === 'video'
+                      ? t('Generate video')
+                      : t('Generate image')
+                  }
+                  placement="bottom"
+                >
                   <Button
                     type="submit"
                     data-testid="generate-button"

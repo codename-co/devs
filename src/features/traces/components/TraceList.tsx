@@ -39,6 +39,7 @@ export interface SessionGroup {
   totalTokens: number
   hasTokenData: boolean // Whether any trace in the session has token data
   isImageSession: boolean // Whether session contains image generation traces
+  isVideoSession: boolean // Whether session contains video generation traces
   isVoiceSession: boolean // Whether session contains voice/live conversation traces
   totalCost: number
   startTime: Date
@@ -137,6 +138,7 @@ export function TraceList({
           totalTokens: 0,
           hasTokenData: false,
           isImageSession: false,
+          isVideoSession: false,
           isVoiceSession: false,
           totalCost: 0,
           startTime: new Date(trace.startTime),
@@ -159,6 +161,10 @@ export function TraceList({
       // Track if session contains image generation traces
       if (trace.name.includes('(image')) {
         group.isImageSession = true
+      }
+      // Track if session contains video generation traces
+      if (trace.name.includes('(video')) {
+        group.isVideoSession = true
       }
       // Track if session contains voice/live conversation traces
       if (trace.tags?.includes('voice') || trace.tags?.includes('live')) {
@@ -329,23 +335,27 @@ export function TraceList({
               startContent={
                 <Icon
                   name={
-                    session.isImageSession
-                      ? 'MediaImage'
-                      : session.isVoiceSession
-                        ? 'Voice'
-                        : session.sessionId.startsWith('single-')
-                          ? 'ChatBubble'
-                          : 'ChatLines'
+                    session.isVideoSession
+                      ? 'MediaVideo'
+                      : session.isImageSession
+                        ? 'MediaImage'
+                        : session.isVoiceSession
+                          ? 'Voice'
+                          : session.sessionId.startsWith('single-')
+                            ? 'ChatBubble'
+                            : 'ChatLines'
                   }
                   size="lg"
                   className={
-                    session.isImageSession
-                      ? 'text-danger-400'
-                      : session.isVoiceSession
-                        ? 'text-cyan-500 dark:text-cyan-400'
-                        : session.sessionId.startsWith('single-')
-                          ? 'text-default-500'
-                          : 'text-primary'
+                    session.isVideoSession
+                      ? 'text-violet-500 dark:text-violet-400'
+                      : session.isImageSession
+                        ? 'text-danger-400'
+                        : session.isVoiceSession
+                          ? 'text-cyan-500 dark:text-cyan-400'
+                          : session.sessionId.startsWith('single-')
+                            ? 'text-default-500'
+                            : 'text-primary'
                   }
                 />
               }

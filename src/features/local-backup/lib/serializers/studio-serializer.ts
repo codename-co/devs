@@ -149,23 +149,25 @@ function frontmatterToImage(
  * Serialize a StudioEntry to Markdown with YAML frontmatter
  */
 function serialize(entry: StudioEntry): SerializedFile {
+  const images = entry.images || []
   const frontmatter: StudioEntryFrontmatter = {
     id: entry.id,
     prompt: entry.prompt,
+    ...(entry.mediaType && { mediaType: entry.mediaType }),
     ...(entry.isFavorite && { isFavorite: entry.isFavorite }),
     ...(entry.tags?.length && { tags: entry.tags }),
     createdAt: formatDate(entry.createdAt),
-    settings: settingsToFrontmatter(entry.settings),
-    images: entry.images.map(imageToFrontmatter),
+    ...(entry.settings && { settings: settingsToFrontmatter(entry.settings) }),
+    images: images.map(imageToFrontmatter),
   }
 
   // Build body content
   let body = '## Prompt\n\n' + entry.prompt
 
   // Add images section with references to binary files
-  if (entry.images.length > 0) {
+  if (images.length > 0) {
     body += '\n\n## Images\n'
-    entry.images.forEach((image, index) => {
+    images.forEach((image, index) => {
       const imageFilename = `${sanitizeFilename(entry.id)}-${index + 1}.${image.format}`
       body += `\n![Image ${index + 1}](./${imageFilename})`
       if (image.revisedPrompt) {
@@ -194,7 +196,8 @@ function serializeStudioFileSet(entry: StudioEntry): SerializedStudioFileSet {
   const imageFiles: { filename: string; content: string; isBase64: boolean }[] =
     []
 
-  entry.images.forEach((image, index) => {
+  const images = entry.images || []
+  images.forEach((image, index) => {
     // Get image data from base64 or URL
     const imageData = image.base64 || image.url
     if (imageData) {
@@ -283,7 +286,8 @@ function deserializeWithImages(
   if (!entry || !imageContents) return entry
 
   // Reconstruct images with their binary content
-  entry.images = entry.images.map((image, index) => {
+  const images = entry.images || []
+  entry.images = images.map((image, index) => {
     const imageFilename = `${sanitizeFilename(entry.id)}-${index + 1}.${image.format}`
     const imageContent = imageContents.get(imageFilename)
 

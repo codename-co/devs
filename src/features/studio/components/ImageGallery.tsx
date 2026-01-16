@@ -281,7 +281,7 @@ function HistoryEntry({
             : 'flex gap-2 overflow-x-auto'
         }
       >
-        {entry.images.map((image) => (
+        {(entry.images || []).map((image) => (
           <GeneratedImageCard
             key={image.id}
             lang={lang}

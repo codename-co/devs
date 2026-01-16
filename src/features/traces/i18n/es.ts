@@ -67,6 +67,7 @@ export const es: I18n = {
   // Span types
   'LLM Call': 'Llamada LLM',
   'Image Generation': 'Generación de Imágenes',
+  'Video Generation': 'Generación de Video',
   Agent: 'Agente',
   Tool: 'Herramienta',
   Chain: 'Cadena',

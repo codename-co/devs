@@ -67,6 +67,7 @@ export const de: I18n = {
   // Span types
   'LLM Call': 'LLM-Aufruf',
   'Image Generation': 'Bilderzeugung',
+  'Video Generation': 'Videoerzeugung',
   Agent: 'Agent',
   Tool: 'Werkzeug',
   Chain: 'Kette',
