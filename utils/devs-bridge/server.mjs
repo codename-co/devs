@@ -186,17 +186,59 @@ async function handleHttpRequest(req, res) {
       const oauthPath = path.replace('/api/qonto/oauth/', '')
       targetUrl = `https://oauth.qonto.com/${oauthPath}${url.search}`
 
-      // Add Basic Auth for token endpoint
-      if (
-        oauthPath.includes('token') &&
-        QONTO_CLIENT_ID &&
-        QONTO_CLIENT_SECRET
-      ) {
-        const credentials = Buffer.from(
-          `${QONTO_CLIENT_ID}:${QONTO_CLIENT_SECRET}`,
-        ).toString('base64')
-        options.headers = { Authorization: `Basic ${credentials}` }
-        logger.info('Qonto OAuth token request (adding Basic Auth)')
+      // For token endpoint, inject client credentials into the body (client_secret_post)
+      if (oauthPath.includes('token')) {
+        logger.info('Qonto OAuth token request detected')
+        logger.debug(`QONTO_CLIENT_ID set: ${!!QONTO_CLIENT_ID}`)
+        logger.debug(`QONTO_CLIENT_SECRET set: ${!!QONTO_CLIENT_SECRET}`)
+
+        if (!QONTO_CLIENT_ID || !QONTO_CLIENT_SECRET) {
+          logger.error('Qonto OAuth credentials not configured!')
+          res.writeHead(500, CORS_HEADERS)
+          res.end(JSON.stringify({ error: 'Server misconfiguration: Qonto credentials not set' }))
+          return
+        }
+
+        logger.info('Qonto OAuth token request (injecting client credentials via client_secret_post)')
+
+        // Read and modify the request body to add client credentials
+        const chunks = []
+        for await (const chunk of req) {
+          chunks.push(chunk)
+        }
+        const originalBody = Buffer.concat(chunks).toString()
+        logger.debug(`Original body: ${originalBody}`)
+        
+        const params = new URLSearchParams(originalBody)
+        params.set('client_id', QONTO_CLIENT_ID)
+        params.set('client_secret', QONTO_CLIENT_SECRET)
+
+        logger.debug(`Target URL: ${targetUrl}`)
+        logger.debug(`Modified body params: ${[...params.keys()].join(', ')}`)
+
+        try {
+          const response = await fetch(targetUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params.toString(),
+          })
+          const responseBody = await response.text()
+          logger.debug(`Qonto response status: ${response.status}`)
+          logger.debug(`Qonto response: ${responseBody.substring(0, 200)}...`)
+          
+          res.writeHead(response.status, {
+            ...CORS_HEADERS,
+            'Content-Type':
+              response.headers.get('content-type') || 'application/json',
+          })
+          res.end(responseBody)
+          return
+        } catch (err) {
+          logger.error(`Qonto proxy error: ${err.message}`)
+          res.writeHead(502, CORS_HEADERS)
+          res.end(JSON.stringify({ error: 'Proxy error', message: err.message }))
+          return
+        }
       }
     } else if (path.startsWith('/api/qonto/v2/')) {
       // API endpoints
