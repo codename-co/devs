@@ -19,6 +19,8 @@ import type {
   GmailReadResult,
   GmailListLabelsParams,
   GmailListLabelsResult,
+  GmailCreateDraftParams,
+  GmailCreateDraftResult,
   GmailMessageSummary,
   GmailMessageContent,
   // Drive types
@@ -387,6 +389,61 @@ export async function gmailListLabels(
   return {
     labels,
     connector: createConnectorMetadata(connector),
+  }
+}
+
+/**
+ * Create an email draft in Gmail.
+ *
+ * Creates a draft that the user can review and send from Gmail.
+ *
+ * @param params - Draft creation parameters
+ * @returns Created draft information
+ */
+export async function gmailCreateDraft(
+  params: GmailCreateDraftParams,
+): Promise<GmailCreateDraftResult> {
+  const connector = await getConnector(params.connector_id)
+
+  if (connector.provider !== 'gmail') {
+    throw new Error(`Connector ${params.connector_id} is not a Gmail connector`)
+  }
+
+  // Import the Gmail provider to access createDraft method
+  const gmailModule = await import('../providers/apps/gmail')
+  const gmailProvider = gmailModule.default
+
+  try {
+    const draft = await gmailProvider.createDraft(connector, {
+      to: params.to,
+      subject: params.subject,
+      body: params.body,
+      isHtml: params.is_html,
+      cc: params.cc,
+      bcc: params.bcc,
+      replyToMessageId: params.reply_to_message_id,
+    })
+
+    return {
+      success: true,
+      draft: {
+        id: draft.id,
+        messageId: draft.messageId,
+        threadId: draft.threadId,
+        subject: draft.subject,
+        to: draft.to,
+        cc: draft.cc,
+        bcc: draft.bcc,
+        webLink: draft.webLink,
+      },
+      connector: createConnectorMetadata(connector),
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to create draft',
+      connector: createConnectorMetadata(connector),
+    }
   }
 }
 

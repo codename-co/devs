@@ -4,7 +4,7 @@ import { Folder, Plus, RefreshDouble } from 'iconoir-react'
 
 import { Title, Icon } from '@/components'
 import { useI18n } from '@/i18n'
-import { useConnectorStore } from '@/stores/connectorStore'
+import { useConnectorStore } from '@/features/connectors/stores'
 import {
   ConnectorCard,
   ConnectorWizard,

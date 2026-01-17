@@ -54,9 +54,6 @@ export const es: I18n = {
   'Choose a service to connect to your knowledge base':
     'Elige un servicio para conectar a tu base de conocimientos',
   'Select a Service': 'Seleccionar un servicio',
-  'OAuth not configured for this provider':
-    'OAuth no configurado para este proveedor',
-  'This provider is not ready': 'Este proveedor no está listo',
 
   // Wizard - OAuth Step
   'Connecting...': 'Conectando...',
@@ -155,6 +152,7 @@ export const es: I18n = {
   'Failed to load folders': 'Error al cargar carpetas',
   'Failed to save': 'Error al guardar',
   'Failed to save connector': 'Error al guardar el conector',
+  Reconnect: 'Reconectar',
 
   // Configuration
   'Configure Connector': 'Configurar conector',

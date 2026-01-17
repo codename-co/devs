@@ -1,8 +1,8 @@
 import { useState, useCallback, useMemo } from 'react'
-import { useConnectorStore } from '@/stores/connectorStore'
+import { useConnectorStore } from '../stores'
 import { infoToast, successToast, errorToast } from '@/lib/toast'
-import type { ConnectorSyncState } from '../types'
-import { PROVIDER_CONFIG } from '../providers/apps'
+import type { ConnectorSyncState, AppConnectorProvider } from '../types'
+import { getProvider } from '../providers/apps'
 import { SyncEngine } from '../sync-engine'
 
 interface UseConnectorSyncOptions {
@@ -49,27 +49,25 @@ interface UseConnectorSyncReturn {
  */
 export function useConnectorSync(
   connectorId?: string,
-  options: UseConnectorSyncOptions = {}
+  options: UseConnectorSyncOptions = {},
 ): UseConnectorSyncReturn {
   const { showToasts = true } = options
-  const [abortController, setAbortController] = useState<AbortController | null>(null)
+  const [abortController, setAbortController] =
+    useState<AbortController | null>(null)
 
-  const {
-    getConnector,
-    getSyncState,
-    updateSyncState,
-    setConnectorStatus,
-  } = useConnectorStore()
+  const { getConnector, getSyncState, updateSyncState, setConnectorStatus } =
+    useConnectorStore()
 
   // Get current connector and sync state
   const connector = connectorId ? getConnector(connectorId) : undefined
   const syncState = connectorId ? getSyncState(connectorId) : undefined
 
-  // Derive sync status
+  // Derive sync status from syncState (updated in-memory, but not persisted to DB for 'syncing')
   const isSyncing = useMemo(() => {
-    if (!connector) return false
-    return connector.status === 'syncing' || syncState?.status === 'syncing'
-  }, [connector, syncState])
+    if (!connectorId) return false
+    // Check both SyncEngine (for job status) and syncState (for reactive updates)
+    return SyncEngine.isSyncing(connectorId) || syncState?.status === 'syncing'
+  }, [connectorId, syncState])
 
   // Calculate progress (undefined for indeterminate)
   const progress = useMemo(() => {
@@ -99,7 +97,7 @@ export function useConnectorSync(
    */
   const getProviderName = useCallback(() => {
     if (!connector) return 'Unknown'
-    const config = PROVIDER_CONFIG[connector.provider as keyof typeof PROVIDER_CONFIG]
+    const config = getProvider(connector.provider as AppConnectorProvider)
     return config?.name || connector.name || connector.provider
   }, [connector])
 
@@ -128,14 +126,7 @@ export function useConnectorSync(
         infoToast(`Syncing ${providerName}...`)
       }
 
-      // Update connector status to syncing
-      await setConnectorStatus(connectorId, 'syncing')
-
-      // Update sync state
-      await updateSyncState(connectorId, {
-        status: 'syncing',
-        errorMessage: undefined,
-      })
+      // Note: We don't persist 'syncing' status - SyncEngine.sync() handles transient status via jobs Map
 
       // Perform the actual sync
       // This would typically call the connector's sync service
@@ -215,7 +206,10 @@ export function useConnectorSync(
 /**
  * Perform the actual sync operation using the SyncEngine
  */
-async function performSync(connectorId: string, signal: AbortSignal): Promise<void> {
+async function performSync(
+  connectorId: string,
+  signal: AbortSignal,
+): Promise<void> {
   // Check if aborted before starting
   if (signal.aborted) {
     throw new Error('Sync cancelled')
@@ -245,9 +239,13 @@ export function useGlobalSyncStatus() {
   const { connectors, syncStates } = useConnectorStore()
 
   const syncingConnectors = useMemo(() => {
+    // Check both SyncEngine (for job status) and syncState (for reactive updates)
+    // syncState.status is updated in-memory but not persisted to DB for 'syncing'
     return connectors.filter((connector) => {
       const syncState = syncStates.get(connector.id)
-      return connector.status === 'syncing' || syncState?.status === 'syncing'
+      return (
+        SyncEngine.isSyncing(connector.id) || syncState?.status === 'syncing'
+      )
     })
   }, [connectors, syncStates])
 

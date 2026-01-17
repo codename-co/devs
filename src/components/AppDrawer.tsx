@@ -588,6 +588,22 @@ const ExpandedDrawer = ({
   const [showAboutModal, setShowAboutModal] = useState(false)
   const [isLanguagePopoverOpen, setIsLanguagePopoverOpen] = useState(false)
 
+  // Register Cmd/Ctrl + Shift + L shortcut for theme toggle
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        e.shiftKey &&
+        e.key.toLowerCase() === 'l'
+      ) {
+        e.preventDefault()
+        setTheme(isDarkTheme ? 'light' : 'dark')
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isDarkTheme, setTheme])
+
   return (
     <div
       className={`fixed w-64 bg-gray-50 dark:bg-content1 p-3 border-e border-default-200 dark:border-default-200 h-full flex flex-col ${className}`}
@@ -978,7 +994,12 @@ const ExpandedDrawer = ({
 
           {/* Theme Toggle */}
           <Tooltip
-            content={isDarkTheme ? t('Light') : t('Dark')}
+            content={
+              <span className="flex items-center gap-2">
+                {isDarkTheme ? t('Light') : t('Dark')}
+                <Kbd keys={['command', 'shift']}>L</Kbd>
+              </span>
+            }
             placement="top"
           >
             <Button

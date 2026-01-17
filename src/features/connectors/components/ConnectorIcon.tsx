@@ -1,5 +1,5 @@
 import { Icon } from '@/components/Icon'
-import { PROVIDER_CONFIG } from '../providers/apps'
+import { getProvider } from '../providers/apps'
 import type { ConnectorProvider, AppConnectorProvider } from '../types'
 
 interface ConnectorIconProps {
@@ -39,7 +39,7 @@ const PROVIDER_ICONS: Record<ConnectorProvider, string> = {
  *
  * Renders the appropriate icon for each connector provider.
  * Uses the Icon component with provider-specific icon names and colors.
- * Colors are sourced from PROVIDER_CONFIG for app connectors.
+ * Colors are sourced from the provider registry for app connectors.
  */
 export function ConnectorIcon({
   provider,
@@ -50,8 +50,8 @@ export function ConnectorIcon({
 }: ConnectorIconProps) {
   const iconName = PROVIDER_ICONS[provider] || 'AppWindow'
 
-  // Get the provider color from PROVIDER_CONFIG
-  const providerConfig = PROVIDER_CONFIG[provider as AppConnectorProvider]
+  // Get the provider color from registry
+  const providerConfig = getProvider(provider as AppConnectorProvider)
   const providerColor = color ?? providerConfig?.color
 
   if (withBackground && providerColor) {

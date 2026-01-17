@@ -60,6 +60,17 @@ describe('Connector Tools', () => {
         expect(tool.function.parameters.required).toContain('connector_id')
       })
 
+      it('should define gmail_create_draft tool', () => {
+        const tool = GMAIL_TOOL_DEFINITIONS.gmail_create_draft
+        expect(tool).toBeDefined()
+        expect(tool.type).toBe('function')
+        expect(tool.function.name).toBe('gmail_create_draft')
+        expect(tool.function.parameters.required).toContain('connector_id')
+        expect(tool.function.parameters.required).toContain('to')
+        expect(tool.function.parameters.required).toContain('subject')
+        expect(tool.function.parameters.required).toContain('body')
+      })
+
       it('should have helpful descriptions for Gmail search syntax', () => {
         const description =
           GMAIL_TOOL_DEFINITIONS.gmail_search.function.description
@@ -219,7 +230,9 @@ describe('Connector Tools', () => {
 
       it('should have correct count of all tools', () => {
         const totalTools = Object.keys(CONNECTOR_TOOL_DEFINITIONS).length
-        expect(totalTools).toBe(15) // 3 Gmail + 3 Drive + 3 Calendar + 3 Tasks + 3 Notion
+        // Dynamic count: Gmail(4) + Drive(3) + Calendar(3) + Tasks(3) + Notion(3) +
+        // Qonto(4) + Outlook(3) + OneDrive(3) + Slack(3) + Dropbox(3) + Figma(3) + Chat(3) + Meet(1)
+        expect(totalTools).toBe(39)
       })
     })
   })
@@ -227,10 +240,11 @@ describe('Connector Tools', () => {
   describe('getToolDefinitionsForProvider', () => {
     it('should return Gmail tools for gmail provider', () => {
       const tools = getToolDefinitionsForProvider('gmail')
-      expect(tools).toHaveLength(3)
+      expect(tools).toHaveLength(4)
       expect(tools.map((t) => t.function.name)).toContain('gmail_search')
       expect(tools.map((t) => t.function.name)).toContain('gmail_read')
       expect(tools.map((t) => t.function.name)).toContain('gmail_list_labels')
+      expect(tools.map((t) => t.function.name)).toContain('gmail_create_draft')
     })
 
     it('should return Drive tools for google-drive provider', () => {
@@ -276,9 +290,12 @@ describe('Connector Tools', () => {
       expect(tools).toHaveLength(0)
     })
 
-    it('should return empty array for providers without tools', () => {
+    it('should return Meet tools for google-meet provider', () => {
       const tools = getToolDefinitionsForProvider('google-meet')
-      expect(tools).toHaveLength(0)
+      expect(tools).toHaveLength(1)
+      expect(tools.map((t) => t.function.name)).toContain(
+        'google_meet_list_meetings',
+      )
     })
   })
 

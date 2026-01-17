@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Button } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
-import { PROVIDER_CONFIG } from '../../providers/apps'
+import { getProvider } from '../../providers/apps'
 import type {
   AppConnectorProvider,
   OAuthResult,
@@ -65,7 +65,7 @@ export function OAuthStep({
   const [showMissingRefreshTokenWarning, setShowMissingRefreshTokenWarning] =
     useState(false)
 
-  const config = PROVIDER_CONFIG[provider]
+  const config = getProvider(provider)
   const isGoogleProvider = provider.startsWith('google') || provider === 'gmail'
 
   // Auto-start authentication when component mounts

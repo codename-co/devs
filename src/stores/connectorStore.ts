@@ -55,7 +55,7 @@ interface ConnectorState {
   updateSyncState: (
     connectorId: string,
     state: Partial<ConnectorSyncState>,
-    options?: { silent?: boolean },
+    options?: { silent?: boolean; skipPersist?: boolean },
   ) => Promise<void>
   getSyncState: (connectorId: string) => ConnectorSyncState | undefined
 
@@ -253,10 +253,10 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
   updateSyncState: async (
     connectorId: string,
     stateUpdates: Partial<ConnectorSyncState>,
-    options?: { silent?: boolean },
+    options?: { silent?: boolean; skipPersist?: boolean },
   ) => {
     try {
-      if (!db.isInitialized()) {
+      if (!options?.skipPersist && !db.isInitialized()) {
         await db.init()
       }
 
@@ -273,7 +273,10 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
           ...stateUpdates,
           connectorId,
         }
-        await db.update('connectorSyncStates', updatedState)
+        // Only persist to DB if skipPersist is not true
+        if (!options?.skipPersist) {
+          await db.update('connectorSyncStates', updatedState)
+        }
       } else {
         // Create new sync state
         updatedState = {
@@ -286,7 +289,10 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
           status: 'idle',
           ...stateUpdates,
         }
-        await db.add('connectorSyncStates', updatedState)
+        // Only persist to DB if skipPersist is not true
+        if (!options?.skipPersist) {
+          await db.add('connectorSyncStates', updatedState)
+        }
       }
 
       // Update local state

@@ -20,7 +20,48 @@ import type {
   SearchResult,
   ChangesResult,
   ConnectorItem,
+  ProviderMetadata,
 } from '../../types'
+import { registerProvider } from './registry'
+
+// =============================================================================
+// Provider Metadata
+// =============================================================================
+
+/** Self-contained metadata for Notion provider */
+export const metadata: ProviderMetadata = {
+  id: 'notion',
+  name: 'Notion',
+  icon: 'Notion',
+  color: 'currentColor',
+  description: 'Sync pages and databases from Notion',
+  syncSupported: true,
+  oauth: {
+    authUrl: 'https://api.notion.com/v1/oauth/authorize',
+    tokenUrl: `${BRIDGE_URL}/api/notion/oauth/token`,
+    clientId: import.meta.env.VITE_NOTION_CLIENT_ID || '',
+    clientSecret: '',
+    scopes: [], // Notion uses owner permission level, not scopes
+    pkceRequired: false,
+    useBasicAuth: true,
+  },
+  proxyRoutes: [
+    {
+      pathPrefix: '/api/notion',
+      pathMatch: '/oauth/token',
+      target: 'https://api.notion.com',
+      targetPathPrefix: '/v1',
+      credentials: {
+        type: 'basic-auth',
+        clientIdEnvKey: 'VITE_NOTION_CLIENT_ID',
+        clientSecretEnvKey: 'VITE_NOTION_CLIENT_SECRET',
+      },
+    },
+  ],
+}
+
+// Register the provider
+registerProvider(metadata, () => import('./notion'))
 
 // =============================================================================
 // Constants

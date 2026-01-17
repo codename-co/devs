@@ -8,6 +8,8 @@
  * real-time meeting participation capabilities via the devs-meet service.
  */
 
+import { BRIDGE_URL } from '@/config/bridge'
+
 import { BaseAppConnectorProvider } from '../../connector-provider'
 import type {
   Connector,
@@ -20,7 +22,40 @@ import type {
   ListResult,
   ContentResult,
   ChangesResult,
+  ProviderMetadata,
 } from '../../types'
+import { registerProvider } from './registry'
+
+// =============================================================================
+// Provider Metadata
+// =============================================================================
+
+/** Self-contained metadata for Google Meet provider */
+export const metadata: ProviderMetadata = {
+  id: 'google-meet',
+  name: 'Google Meet',
+  icon: 'GoogleMeet',
+  color: '#00897B',
+  description: 'Join meetings with AI agents',
+  syncSupported: false,
+  active: false, // Not ready for production
+  oauth: {
+    authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+    tokenUrl: `${BRIDGE_URL}/api/google/token`,
+    clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
+    clientSecret: '',
+    scopes: [
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'https://www.googleapis.com/auth/calendar.readonly',
+    ],
+    pkceRequired: true,
+  },
+  // Google providers share proxy routes - defined in google-drive
+}
+
+// Register the provider
+registerProvider(metadata, () => import('./google-meet'))
 
 // =============================================================================
 // Constants
@@ -28,7 +63,8 @@ import type {
 
 /** Google OAuth2 endpoints */
 const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
-const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
+/** Use bridge URL for token operations - bridge injects client_secret server-side */
+const GOOGLE_TOKEN_URL = `${BRIDGE_URL}/api/google/token`
 const GOOGLE_REVOKE_URL = 'https://oauth2.googleapis.com/revoke'
 const GOOGLE_TOKENINFO_URL = 'https://oauth2.googleapis.com/tokeninfo'
 const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo'

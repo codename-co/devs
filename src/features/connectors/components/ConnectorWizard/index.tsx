@@ -16,14 +16,14 @@ import {
   Progress,
 } from '@heroui/react'
 import { useI18n } from '@/i18n'
-import { useConnectorStore } from '@/stores/connectorStore'
+import { useConnectorStore } from '../../stores'
 import { useOAuth } from '@/hooks/useOAuth'
 import { SecureStorage } from '@/lib/crypto'
 import { ProviderGrid } from './ProviderGrid'
 import { OAuthStep } from './OAuthStep'
 import { FolderPicker } from './FolderPicker'
 import { SuccessStep } from './SuccessStep'
-import { PROVIDER_CONFIG } from '../../providers/apps'
+import { getProvider } from '../../providers/apps'
 import { storeEncryptionMetadata } from '../../connector-provider'
 import { SyncEngine } from '../../sync-engine'
 import type {
@@ -102,7 +102,7 @@ export function ConnectorWizard({
       case 'auth':
         return selectedProvider
           ? t('Connect {name}', {
-              name: PROVIDER_CONFIG[selectedProvider]?.name || selectedProvider,
+              name: getProvider(selectedProvider)?.name || selectedProvider,
             })
           : t('Connecting...')
       case 'folders':
@@ -177,19 +177,20 @@ export function ConnectorWizard({
 
         // Check if provider supports sync
         const providerSyncSupported =
-          PROVIDER_CONFIG[provider]?.syncSupported !== false
+          getProvider(provider)?.syncSupported !== false
 
         // Create the connector in the store
         const id = await addConnector({
           category: 'app',
           provider,
-          name: PROVIDER_CONFIG[provider]?.name || provider,
+          name: getProvider(provider)?.name || provider,
           encryptedToken,
           encryptedRefreshToken,
           tokenExpiresAt,
           scopes: result.scope?.split(' ') || [],
           accountId: info?.id,
           accountEmail: info?.email,
+          accountPicture: info?.picture,
           syncEnabled: providerSyncSupported,
           syncFolders: folderIds || undefined,
           status: 'connected',
@@ -226,7 +227,7 @@ export function ConnectorWizard({
 
       // Check if provider supports sync - skip folders step if not
       const providerConfig = selectedProvider
-        ? PROVIDER_CONFIG[selectedProvider]
+        ? getProvider(selectedProvider)
         : null
       const providerSyncSupported = providerConfig?.syncSupported !== false
 

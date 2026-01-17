@@ -20,7 +20,41 @@ import type {
   SearchResult,
   ChangesResult,
   ConnectorItem,
+  ProviderMetadata,
 } from '../../types'
+import { registerProvider } from './registry'
+
+// =============================================================================
+// Provider Metadata
+// =============================================================================
+
+/** Self-contained metadata for Slack provider */
+export const metadata: ProviderMetadata = {
+  id: 'slack',
+  name: 'Slack',
+  icon: 'Slack',
+  color: '#4A154B',
+  description: 'Sync messages and files from Slack channels',
+  syncSupported: true,
+  oauth: {
+    authUrl: 'https://slack.com/oauth/v2/authorize',
+    tokenUrl: `${BRIDGE_URL}/api/slack/oauth.v2.access`,
+    clientId: import.meta.env.VITE_SLACK_CLIENT_ID || '',
+    clientSecret: '',
+    scopes: [
+      'channels:history',
+      'channels:read',
+      'files:read',
+      'users:read',
+      'team:read',
+    ],
+    pkceRequired: false,
+  },
+  // Slack uses bridge proxy - no credential injection needed in dev server
+}
+
+// Register the provider
+registerProvider(metadata, () => import('./slack'))
 
 // =============================================================================
 // Constants

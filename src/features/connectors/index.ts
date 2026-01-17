@@ -46,6 +46,9 @@ export {
   ConnectorIcon,
 } from './components'
 
+// Stores
+export { useConnectorStore } from './stores'
+
 // Hooks
 export { useConnectorSync, useGlobalSyncStatus } from './hooks/useConnectorSync'
 
@@ -56,5 +59,12 @@ export { ConnectorsPage } from './pages'
 import { ProviderRegistry } from './provider-registry'
 ProviderRegistry.initializeDefaults()
 
-// Providers
-export { PROVIDER_CONFIG, AVAILABLE_PROVIDERS } from './providers/apps'
+// Provider registry exports
+export {
+  getProviders,
+  getProviderIds,
+  getProvider,
+  hasProvider,
+  getProviderConfig,
+  getProxyRoutes,
+} from './providers/apps'

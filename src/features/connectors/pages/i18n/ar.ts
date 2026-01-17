@@ -54,8 +54,6 @@ export const ar: I18n = {
   'Choose a service to connect to your knowledge base':
     'اختر خدمة لتوصيلها بقاعدة معرفتك',
   'Select a Service': 'اختر خدمة',
-  'OAuth not configured for this provider': 'لم يتم تكوين OAuth لهذا المزود',
-  'This provider is not ready': 'هذا المزود غير نشط',
 
   // Wizard - OAuth Step
   'Connecting...': 'جارٍ الاتصال...',
@@ -151,6 +149,7 @@ export const ar: I18n = {
   'Failed to load folders': 'فشل تحميل المجلدات',
   'Failed to save': 'فشل الحفظ',
   'Failed to save connector': 'فشل حفظ الموصل',
+  Reconnect: 'إعادة الاتصال',
 
   // Configuration
   'Configure Connector': 'تكوين الموصل',

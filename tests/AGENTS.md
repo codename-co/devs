@@ -134,7 +134,7 @@ Tests run on multiple browsers and devices:
 
 The test configuration is defined in `playwright.config.ts`:
 
-- **Base URL**: `http://localhost:4173` (preview server)
+- **Base URL**: `http://localhost:3000` (preview server)
 - **Timeout**: 30 seconds per test
 - **Retries**: 2 on CI, 0 locally
 - **Parallel Execution**: Full parallelization
@@ -282,4 +282,4 @@ The CI runs tests across multiple configurations:
 
 - Check the [Playwright documentation](https://playwright.dev/docs/intro)
 - Review existing test patterns in the codebase
-- Use the Playwright test generator: `npx playwright codegen localhost:4173`
+- Use the Playwright test generator: `npx playwright codegen localhost:3000`

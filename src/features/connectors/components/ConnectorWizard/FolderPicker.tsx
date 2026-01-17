@@ -17,7 +17,7 @@ import {
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { ProviderRegistry } from '../../provider-registry'
-import { PROVIDER_CONFIG } from '../../providers/apps'
+import { getProvider } from '../../providers/apps'
 import type {
   AppConnectorProvider,
   AppConnectorProviderInterface,
@@ -70,7 +70,7 @@ export function FolderPicker({
   const [error, setError] = useState<string | null>(null)
   const [urlInput, setUrlInput] = useState('')
 
-  const config = PROVIDER_CONFIG[provider]
+  const config = getProvider(provider)
   const isUrlInputMode = config?.folderPickerType === 'url-input'
 
   // Fetch root folders on mount (only for tree mode)

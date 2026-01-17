@@ -6,6 +6,9 @@
  */
 
 import PostalMime from 'postal-mime'
+
+import { BRIDGE_URL } from '@/config/bridge'
+
 import { BaseAppConnectorProvider } from '../../connector-provider'
 import type {
   Connector,
@@ -19,7 +22,40 @@ import type {
   SearchResult,
   ChangesResult,
   ConnectorItem,
+  ProviderMetadata,
 } from '../../types'
+import { registerProvider } from './registry'
+
+// =============================================================================
+// Provider Metadata
+// =============================================================================
+
+/** Self-contained metadata for Gmail provider */
+export const metadata: ProviderMetadata = {
+  id: 'gmail',
+  name: 'Gmail',
+  icon: 'Gmail',
+  color: '#ea4335',
+  description: 'Sync emails from Gmail',
+  syncSupported: true,
+  oauth: {
+    authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+    tokenUrl: `${BRIDGE_URL}/api/google/token`,
+    clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
+    clientSecret: '',
+    scopes: [
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'https://www.googleapis.com/auth/gmail.readonly',
+      'https://www.googleapis.com/auth/gmail.compose',
+    ],
+    pkceRequired: true,
+  },
+  // Google providers share proxy routes - defined in google-drive
+}
+
+// Register the provider
+registerProvider(metadata, () => import('./gmail'))
 
 // =============================================================================
 // Constants
@@ -30,13 +66,15 @@ const GMAIL_API_BASE = 'https://gmail.googleapis.com/gmail/v1/users/me'
 
 /** Google OAuth2 endpoints */
 const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
-const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
+/** Use bridge URL for token operations - bridge injects client_secret server-side */
+const GOOGLE_TOKEN_URL = `${BRIDGE_URL}/api/google/token`
 const GOOGLE_REVOKE_URL = 'https://oauth2.googleapis.com/revoke'
 const GOOGLE_TOKENINFO_URL = 'https://oauth2.googleapis.com/tokeninfo'
 const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo'
 
-/** Gmail API scopes */
-const GMAIL_SCOPE = 'https://www.googleapis.com/auth/gmail.readonly'
+/** Gmail API scopes - readonly for reading, compose for draft creation */
+const GMAIL_SCOPE =
+  'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.compose'
 
 /** Default page size for message listing */
 const DEFAULT_PAGE_SIZE = 50
@@ -422,7 +460,7 @@ export class GmailProvider extends BaseAppConnectorProvider {
     name: 'Gmail',
     icon: 'gmail',
     color: '#EA4335',
-    capabilities: ['read', 'search'],
+    capabilities: ['read', 'search', 'write'],
     supportedTypes: ['email'],
     maxFileSize: 25 * 1024 * 1024,
     rateLimit: { requests: 250, windowSeconds: 1 },
@@ -885,7 +923,7 @@ export class GmailProvider extends BaseAppConnectorProvider {
 
     // Check if we're continuing an initial sync (compound cursor with 'initial' marker)
     if (cursor.includes(':initial:')) {
-      const [historyId, , pageToken] = cursor.split(':initial:')
+      const [historyId, pageToken] = cursor.split(':initial:')
 
       // Continue fetching messages for initial sync
       const listResult = await this.list(connector, {
@@ -1062,6 +1100,140 @@ export class GmailProvider extends BaseAppConnectorProvider {
     )
     return response.labels || []
   }
+
+  /**
+   * Create an email draft.
+   *
+   * The draft will appear in the user's Drafts folder for review and sending.
+   *
+   * @param connector - The connector to use
+   * @param options - Draft creation options
+   * @returns The created draft details
+   */
+  async createDraft(
+    connector: Connector,
+    options: {
+      to: string
+      subject: string
+      body: string
+      isHtml?: boolean
+      cc?: string
+      bcc?: string
+      replyToMessageId?: string
+    },
+  ): Promise<GmailDraftResult> {
+    const { to, subject, body, isHtml, cc, bcc, replyToMessageId } = options
+
+    // Build the RFC 2822 formatted email
+    const headers: string[] = [
+      `To: ${to}`,
+      `Subject: ${subject}`,
+      `Content-Type: ${isHtml ? 'text/html' : 'text/plain'}; charset=utf-8`,
+    ]
+
+    if (cc) {
+      headers.push(`Cc: ${cc}`)
+    }
+
+    if (bcc) {
+      headers.push(`Bcc: ${bcc}`)
+    }
+
+    // Get the user's email for the From header
+    const token = await this.getDecryptedToken(connector)
+    const accountInfo = await this.getAccountInfo(token)
+    if (accountInfo?.email) {
+      headers.push(`From: ${accountInfo.email}`)
+    }
+
+    // Add In-Reply-To and References headers for replies
+    let threadId: string | undefined
+    if (replyToMessageId) {
+      // Fetch the original message to get its Message-ID header and thread ID
+      try {
+        const originalMessage = await this.fetchJson<GmailMessage>(
+          connector,
+          `${GMAIL_API_BASE}/messages/${replyToMessageId}?format=metadata&metadataHeaders=Message-ID`,
+        )
+
+        threadId = originalMessage.threadId
+
+        const messageIdHeader = originalMessage.payload?.headers?.find(
+          (h) => h.name.toLowerCase() === 'message-id',
+        )
+        if (messageIdHeader?.value) {
+          headers.push(`In-Reply-To: ${messageIdHeader.value}`)
+          headers.push(`References: ${messageIdHeader.value}`)
+        }
+      } catch (error) {
+        // Continue without reply headers if original message can't be fetched
+        console.warn('Could not fetch original message for reply:', error)
+      }
+    }
+
+    // Combine headers and body
+    const rawEmail = headers.join('\r\n') + '\r\n\r\n' + body
+
+    // Base64url encode the email (RFC 4648)
+    const base64Email = btoa(unescape(encodeURIComponent(rawEmail)))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '')
+
+    // Create the draft
+    const url = `${GMAIL_API_BASE}/drafts`
+    const requestBody: { message: { raw: string; threadId?: string } } = {
+      message: {
+        raw: base64Email,
+      },
+    }
+
+    // Include threadId to keep the draft in the same thread
+    if (threadId) {
+      requestBody.message.threadId = threadId
+    }
+
+    const response = await this.fetchJson<GmailDraftResponse>(connector, url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    })
+
+    return {
+      id: response.id,
+      messageId: response.message.id,
+      threadId: response.message.threadId,
+      subject,
+      to,
+      cc,
+      bcc,
+      webLink: `https://mail.google.com/mail/u/0/#drafts/${response.id}`,
+    }
+  }
+}
+
+/** Response from Gmail drafts.create API */
+interface GmailDraftResponse {
+  id: string
+  message: {
+    id: string
+    threadId: string
+    labelIds: string[]
+  }
+}
+
+/** Result from createDraft method */
+export interface GmailDraftResult {
+  id: string
+  messageId: string
+  threadId?: string
+  subject: string
+  to: string
+  cc?: string
+  bcc?: string
+  webLink: string
 }
 
 // =============================================================================

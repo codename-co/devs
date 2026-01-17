@@ -5,6 +5,8 @@
  * Supports listing, reading, searching files, and delta sync via Changes API.
  */
 
+import { BRIDGE_URL } from '@/config/bridge'
+
 import { BaseAppConnectorProvider } from '../../connector-provider'
 import type {
   Connector,
@@ -18,7 +20,51 @@ import type {
   SearchResult,
   ChangesResult,
   ConnectorItem,
+  ProviderMetadata,
 } from '../../types'
+import { registerProvider } from './registry'
+
+// =============================================================================
+// Provider Metadata
+// =============================================================================
+
+/** Self-contained metadata for Google Drive provider */
+export const metadata: ProviderMetadata = {
+  id: 'google-drive',
+  name: 'Google Drive',
+  icon: 'GoogleDrive',
+  color: '#4285f4',
+  description: 'Sync files and folders from Google Drive',
+  syncSupported: true,
+  oauth: {
+    authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+    tokenUrl: `${BRIDGE_URL}/api/google/token`,
+    clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
+    clientSecret: '',
+    scopes: [
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'https://www.googleapis.com/auth/drive.readonly',
+      'https://www.googleapis.com/auth/drive.metadata.readonly',
+    ],
+    pkceRequired: true,
+  },
+  proxyRoutes: [
+    {
+      pathPrefix: '/api/google',
+      pathMatch: '/token',
+      target: 'https://oauth2.googleapis.com',
+      credentials: {
+        type: 'body',
+        clientIdEnvKey: 'VITE_GOOGLE_CLIENT_ID',
+        clientSecretEnvKey: 'VITE_GOOGLE_CLIENT_SECRET',
+      },
+    },
+  ],
+}
+
+// Register the provider
+registerProvider(metadata, () => import('./google-drive'))
 
 // =============================================================================
 // Constants
@@ -29,7 +75,8 @@ const DRIVE_API_BASE = 'https://www.googleapis.com/drive/v3'
 
 /** Google OAuth2 endpoints */
 const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
-const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
+/** Use bridge URL for token operations - bridge injects client_secret server-side */
+const GOOGLE_TOKEN_URL = `${BRIDGE_URL}/api/google/token`
 const GOOGLE_REVOKE_URL = 'https://oauth2.googleapis.com/revoke'
 const GOOGLE_TOKENINFO_URL = 'https://oauth2.googleapis.com/tokeninfo'
 const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo'

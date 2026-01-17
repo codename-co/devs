@@ -54,9 +54,6 @@ export const de: I18n = {
   'Choose a service to connect to your knowledge base':
     'Wählen Sie einen Dienst, den Sie mit Ihrer Wissensdatenbank verbinden möchten',
   'Select a Service': 'Dienst auswählen',
-  'OAuth not configured for this provider':
-    'OAuth ist für diesen Anbieter nicht konfiguriert',
-  'This provider is not ready': 'Dieser Anbieter ist nicht aktiv',
 
   // Wizard - OAuth Step
   'Connecting...': 'Verbindung wird hergestellt...',
@@ -154,6 +151,7 @@ export const de: I18n = {
   'Failed to load folders': 'Ordner konnten nicht geladen werden',
   'Failed to save': 'Speichern fehlgeschlagen',
   'Failed to save connector': 'Konnektor konnte nicht gespeichert werden',
+  Reconnect: 'Neu verbinden',
 
   // Configuration
   'Configure Connector': 'Konnektor konfigurieren',

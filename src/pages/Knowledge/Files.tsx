@@ -69,8 +69,9 @@ import {
   documentProcessor,
   type ProcessingEvent,
 } from '@/lib/document-processor'
-import { useConnectorStore } from '@/stores/connectorStore'
-import { PROVIDER_CONFIG } from '@/features/connectors/providers/apps'
+import { useConnectorStore } from '@/features/connectors/stores'
+import { getProvider } from '@/features/connectors/providers/apps'
+import type { AppConnectorProvider } from '@/features/connectors/types'
 import localI18n from './i18n'
 
 // Import to ensure File System API types are available
@@ -188,16 +189,15 @@ export const Files: React.FC = () => {
       if (count > 0) {
         const providerConfig =
           connector.category === 'app'
-            ? PROVIDER_CONFIG[
-                connector.provider as keyof typeof PROVIDER_CONFIG
-              ]
+            ? getProvider(connector.provider as AppConnectorProvider)
             : null
 
         sourceOptions.push({
           key: `connector:${connector.id}`,
           label: connector.name,
           count,
-          icon: providerConfig?.icon || 'OpenNewWindow',
+          icon: (providerConfig?.icon ||
+            'OpenNewWindow') as FilterOption['icon'],
         })
       }
     })

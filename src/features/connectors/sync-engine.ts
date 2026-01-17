@@ -18,7 +18,7 @@ import {
   storeEncryptionMetadata,
 } from './connector-provider'
 import { SecureStorage } from '@/lib/crypto'
-import { useConnectorStore } from '@/stores/connectorStore'
+import { useConnectorStore } from './stores'
 import { db } from '@/lib/db'
 import { syncToYjs, deleteFromYjs } from '@/features/sync'
 import type { KnowledgeItem } from '@/types'
@@ -247,14 +247,17 @@ export class SyncEngine {
     this.jobs.set(connectorId, job)
 
     try {
-      // Update connector status
-      await store.setConnectorStatus(connectorId, 'syncing')
-
-      // Update sync state to syncing
-      await store.updateSyncState(connectorId, {
-        status: 'syncing',
-        syncType: store.getSyncState(connectorId)?.cursor ? 'delta' : 'full',
-      })
+      // Update sync state to 'syncing' in-memory only (skipPersist: true)
+      // This ensures React components re-render, but 'syncing' status is not
+      // persisted to DB - preventing stuck state if the app crashes during sync
+      await store.updateSyncState(
+        connectorId,
+        {
+          status: 'syncing',
+          syncType: store.getSyncState(connectorId)?.cursor ? 'delta' : 'full',
+        },
+        { skipPersist: true, silent: true },
+      )
 
       log.info(
         `Starting sync for connector: ${connector.name} (${connectorId})`,

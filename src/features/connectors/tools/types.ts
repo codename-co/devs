@@ -231,6 +231,83 @@ export interface GmailListLabelsResult {
   connector: ConnectorMetadata
 }
 
+/**
+ * Parameters for the gmail_create_draft tool.
+ * Create an email draft for the user to review and send later.
+ */
+export interface GmailCreateDraftParams extends ConnectorToolBaseParams {
+  /**
+   * The recipient email address(es).
+   * Multiple recipients can be comma-separated.
+   */
+  to: string
+  /**
+   * The email subject line.
+   */
+  subject: string
+  /**
+   * The email body content.
+   * Can be plain text or HTML.
+   */
+  body: string
+  /**
+   * Whether the body is HTML formatted.
+   * @default false
+   */
+  is_html?: boolean
+  /**
+   * CC recipient email address(es).
+   * Multiple recipients can be comma-separated.
+   */
+  cc?: string
+  /**
+   * BCC recipient email address(es).
+   * Multiple recipients can be comma-separated.
+   */
+  bcc?: string
+  /**
+   * The message ID to reply to.
+   * If provided, the draft will be created as a reply.
+   */
+  reply_to_message_id?: string
+}
+
+/**
+ * Created draft summary.
+ */
+export interface GmailDraftSummary {
+  /** Draft ID */
+  id: string
+  /** Associated message ID */
+  messageId: string
+  /** Thread ID (if part of a thread) */
+  threadId?: string
+  /** Subject line */
+  subject: string
+  /** Recipient(s) */
+  to: string
+  /** CC recipients */
+  cc?: string
+  /** BCC recipients */
+  bcc?: string
+  /** Gmail web link to the draft */
+  webLink: string
+}
+
+/**
+ * Result of gmail_create_draft operation.
+ */
+export interface GmailCreateDraftResult {
+  /** Whether the draft was created successfully */
+  success: boolean
+  /** Error message if creation failed */
+  error?: string
+  /** The created draft details */
+  draft?: GmailDraftSummary
+  /** Connector metadata */
+  connector: ConnectorMetadata
+}
+
 // ============================================================================
 // Google Drive Tools
 // ============================================================================
@@ -1255,7 +1332,11 @@ export interface QontoGetStatementResult {
 /**
  * Gmail tool names.
  */
-export type GmailToolName = 'gmail_search' | 'gmail_read' | 'gmail_list_labels'
+export type GmailToolName =
+  | 'gmail_search'
+  | 'gmail_read'
+  | 'gmail_list_labels'
+  | 'gmail_create_draft'
 
 /**
  * Google Drive tool names.
@@ -1414,6 +1495,63 @@ Uses Gmail's powerful search syntax. Examples:
           },
         },
         required: ['connector_id'],
+      },
+    },
+  },
+
+  gmail_create_draft: {
+    type: 'function',
+    function: {
+      name: 'gmail_create_draft',
+      description: `Create an email draft in Gmail for the user to review and send later.
+
+This tool creates a draft email that will appear in the user's Drafts folder.
+The user can then review, edit, and send the email manually from Gmail.
+
+Use cases:
+- Composing emails for user review before sending
+- Creating templated responses
+- Drafting replies to existing emails
+- Preparing bulk communications for user approval`,
+      parameters: {
+        type: 'object',
+        properties: {
+          connector_id: {
+            type: 'string',
+            description: 'The Gmail connector ID to use',
+          },
+          to: {
+            type: 'string',
+            description:
+              'Recipient email address(es), comma-separated for multiple',
+          },
+          subject: {
+            type: 'string',
+            description: 'Email subject line',
+          },
+          body: {
+            type: 'string',
+            description: 'Email body content (plain text or HTML)',
+          },
+          is_html: {
+            type: 'boolean',
+            description: 'Whether the body is HTML formatted (default: false)',
+          },
+          cc: {
+            type: 'string',
+            description: 'CC recipients, comma-separated for multiple',
+          },
+          bcc: {
+            type: 'string',
+            description: 'BCC recipients, comma-separated for multiple',
+          },
+          reply_to_message_id: {
+            type: 'string',
+            description:
+              'Message ID to reply to (creates draft as a reply in the thread)',
+          },
+        },
+        required: ['connector_id', 'to', 'subject', 'body'],
       },
     },
   },

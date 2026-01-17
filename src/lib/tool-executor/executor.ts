@@ -35,177 +35,13 @@ import {
   createToolError,
   isToolExecutionSuccess,
 } from './types'
+
+// Import plugin system for bridging
 import {
-  searchKnowledge,
-  readDocument,
-  listDocuments,
-  getDocumentSummary,
-  KNOWLEDGE_TOOL_DEFINITIONS,
-} from '@/lib/knowledge-tools/service'
-import type {
-  SearchKnowledgeParams,
-  SearchKnowledgeResult,
-  ReadDocumentParams,
-  ReadDocumentResult,
-  ListDocumentsParams,
-  ListDocumentsResult,
-  GetDocumentSummaryParams,
-  GetDocumentSummaryResult,
-} from '@/lib/knowledge-tools/types'
-import { calculate, MATH_TOOL_DEFINITIONS } from '@/lib/math-tools/service'
-import { execute, CODE_TOOL_DEFINITIONS } from '@/lib/code-tools/service'
-import {
-  generatePresentation,
-  PRESENTATION_TOOL_DEFINITIONS,
-} from '@/lib/presentation-tools/service'
-import type {
-  GeneratePresentationParams,
-  GeneratePresentationResult,
-  GeneratePresentationError,
-} from '@/lib/presentation-tools/types'
-import {
-  CONNECTOR_TOOL_DEFINITIONS,
-  gmailSearch,
-  gmailRead,
-  gmailListLabels,
-  driveSearch,
-  driveRead,
-  driveList,
-  calendarListEvents,
-  calendarGetEvent,
-  calendarSearch,
-  tasksList,
-  tasksGet,
-  tasksListTasklists,
-  notionSearch,
-  notionReadPage,
-  notionQueryDatabase,
-  qontoListBusinessAccounts,
-  qontoListTransactions,
-  qontoGetTransaction,
-  qontoListStatements,
-  qontoGetStatement,
-  // Outlook Mail
-  outlookSearch,
-  outlookRead,
-  outlookListFolders,
-  // OneDrive
-  onedriveSearch,
-  onedriveRead,
-  onedriveList,
-  // Slack
-  slackSearch,
-  slackListChannels,
-  slackReadChannel,
-  // Dropbox
-  dropboxSearch,
-  dropboxRead,
-  dropboxList,
-  // Figma
-  figmaListFiles,
-  figmaGetFile,
-  figmaGetComments,
-  // Google Chat
-  googleChatListSpaces,
-  googleChatReadMessages,
-  // Google Meet
-  googleMeetListMeetings,
-} from '@/features/connectors/tools'
-import type {
-  GmailSearchParams,
-  GmailSearchResult,
-  GmailReadParams,
-  GmailReadResult,
-  GmailListLabelsParams,
-  GmailListLabelsResult,
-  DriveSearchParams,
-  DriveSearchResult,
-  DriveReadParams,
-  DriveReadResult,
-  DriveListParams,
-  DriveListResult,
-  CalendarListEventsParams,
-  CalendarListEventsResult,
-  CalendarGetEventParams,
-  CalendarGetEventResult,
-  CalendarSearchParams,
-  CalendarSearchResult,
-  TasksListParams,
-  TasksListResult,
-  TasksGetParams,
-  TasksGetResult,
-  TasksListTasklistsParams,
-  TasksListTasklistsResult,
-  NotionSearchParams,
-  NotionSearchResult,
-  NotionReadPageParams,
-  NotionReadPageResult,
-  NotionQueryDatabaseParams,
-  NotionQueryDatabaseResult,
-  QontoListBusinessAccountsParams,
-  QontoListBusinessAccountsResult,
-  QontoListTransactionsParams,
-  QontoListTransactionsResult,
-  QontoGetTransactionParams,
-  QontoGetTransactionResult,
-  QontoListStatementsParams,
-  QontoListStatementsResult,
-  QontoGetStatementParams,
-  QontoGetStatementResult,
-  // Outlook Mail
-  OutlookSearchParams,
-  OutlookSearchResult,
-  OutlookReadParams,
-  OutlookReadResult,
-  OutlookListFoldersParams,
-  OutlookListFoldersResult,
-  // OneDrive
-  OneDriveSearchParams,
-  OneDriveSearchResult,
-  OneDriveReadParams,
-  OneDriveReadResult,
-  OneDriveListParams,
-  OneDriveListResult,
-  // Slack
-  SlackSearchParams,
-  SlackSearchResult,
-  SlackListChannelsParams,
-  SlackListChannelsResult,
-  SlackReadChannelParams,
-  SlackReadChannelResult,
-  // Dropbox
-  DropboxSearchParams,
-  DropboxSearchResult,
-  DropboxReadParams,
-  DropboxReadResult,
-  DropboxListParams,
-  DropboxListResult,
-  // Figma
-  FigmaListFilesParams,
-  FigmaListFilesResult,
-  FigmaGetFileParams,
-  FigmaGetFileResult,
-  FigmaGetCommentsParams,
-  FigmaGetCommentsResult,
-  // Google Chat
-  GoogleChatListSpacesParams,
-  GoogleChatListSpacesResult,
-  GoogleChatReadMessagesParams,
-  GoogleChatReadMessagesResult,
-  // Google Meet
-  GoogleMeetListMeetingsParams,
-  GoogleMeetListMeetingsResult,
-} from '@/features/connectors/tools'
-import type {
-  CalculateParams,
-  CalculateResult,
-  CalculateError,
-} from '@/lib/math-tools/types'
-import type {
-  ExecuteParams,
-  ExecuteResult,
-  ExecuteError,
-} from '@/lib/code-tools/types'
+  registerCategoryWithLegacy,
+  unregisterCategoryFromLegacy,
+  isCategoryRegisteredInLegacy,
+} from '@/tools/bridge'
 
 // ============================================================================
 // Constants
@@ -1018,70 +854,7 @@ export const defaultExecutor = new KnowledgeToolExecutor(defaultRegistry)
  * ```
  */
 export function registerKnowledgeTools(): void {
-  // Register search_knowledge tool
-  defaultRegistry.register<SearchKnowledgeParams, SearchKnowledgeResult>(
-    KNOWLEDGE_TOOL_DEFINITIONS.search_knowledge,
-    async (args, context) => {
-      // Check for abort signal
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-
-      return searchKnowledge(args)
-    },
-    {
-      tags: ['knowledge', 'search'],
-      estimatedDuration: 500,
-    },
-  )
-
-  // Register read_document tool
-  defaultRegistry.register<ReadDocumentParams, ReadDocumentResult>(
-    KNOWLEDGE_TOOL_DEFINITIONS.read_document,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-
-      return readDocument(args)
-    },
-    {
-      tags: ['knowledge', 'read'],
-      estimatedDuration: 200,
-    },
-  )
-
-  // Register list_documents tool
-  defaultRegistry.register<ListDocumentsParams, ListDocumentsResult>(
-    KNOWLEDGE_TOOL_DEFINITIONS.list_documents,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-
-      return listDocuments(args)
-    },
-    {
-      tags: ['knowledge', 'list'],
-      estimatedDuration: 300,
-    },
-  )
-
-  // Register get_document_summary tool
-  defaultRegistry.register<GetDocumentSummaryParams, GetDocumentSummaryResult>(
-    KNOWLEDGE_TOOL_DEFINITIONS.get_document_summary,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-
-      return getDocumentSummary(args)
-    },
-    {
-      tags: ['knowledge', 'summary'],
-      estimatedDuration: 1000,
-    },
-  )
+  registerCategoryWithLegacy('knowledge', defaultRegistry)
 }
 
 /**
@@ -1090,12 +863,7 @@ export function registerKnowledgeTools(): void {
  * @returns true if all knowledge tools are registered
  */
 export function areKnowledgeToolsRegistered(): boolean {
-  return (
-    defaultRegistry.has('search_knowledge') &&
-    defaultRegistry.has('read_document') &&
-    defaultRegistry.has('list_documents') &&
-    defaultRegistry.has('get_document_summary')
-  )
+  return isCategoryRegisteredInLegacy('knowledge', defaultRegistry)
 }
 
 /**
@@ -1103,10 +871,7 @@ export function areKnowledgeToolsRegistered(): boolean {
  * Useful for testing or when disabling knowledge features.
  */
 export function unregisterKnowledgeTools(): void {
-  defaultRegistry.unregister('search_knowledge')
-  defaultRegistry.unregister('read_document')
-  defaultRegistry.unregister('list_documents')
-  defaultRegistry.unregister('get_document_summary')
+  unregisterCategoryFromLegacy('knowledge', defaultRegistry)
 }
 
 // ============================================================================
@@ -1126,22 +891,7 @@ export function unregisterKnowledgeTools(): void {
  * ```
  */
 export function registerMathTools(): void {
-  // Register calculate tool
-  defaultRegistry.register<CalculateParams, CalculateResult | CalculateError>(
-    MATH_TOOL_DEFINITIONS.calculate,
-    async (args, context) => {
-      // Check for abort signal
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-
-      return calculate(args)
-    },
-    {
-      tags: ['math', 'calculate'],
-      estimatedDuration: 100,
-    },
-  )
+  registerCategoryWithLegacy('math', defaultRegistry)
 }
 
 /**
@@ -1150,7 +900,7 @@ export function registerMathTools(): void {
  * @returns true if all math tools are registered
  */
 export function areMathToolsRegistered(): boolean {
-  return defaultRegistry.has('calculate')
+  return isCategoryRegisteredInLegacy('math', defaultRegistry)
 }
 
 /**
@@ -1158,7 +908,7 @@ export function areMathToolsRegistered(): boolean {
  * Useful for testing or when disabling math features.
  */
 export function unregisterMathTools(): void {
-  defaultRegistry.unregister('calculate')
+  unregisterCategoryFromLegacy('math', defaultRegistry)
 }
 
 // ============================================================================
@@ -1178,22 +928,7 @@ export function unregisterMathTools(): void {
  * ```
  */
 export function registerCodeTools(): void {
-  // Register execute tool
-  defaultRegistry.register<ExecuteParams, ExecuteResult | ExecuteError>(
-    CODE_TOOL_DEFINITIONS.execute,
-    async (args, context) => {
-      // Check for abort signal
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-
-      return execute(args)
-    },
-    {
-      tags: ['code', 'execute', 'sandbox'],
-      estimatedDuration: 5000, // Code execution can take longer
-    },
-  )
+  registerCategoryWithLegacy('code', defaultRegistry)
 }
 
 /**
@@ -1202,7 +937,7 @@ export function registerCodeTools(): void {
  * @returns true if all code tools are registered
  */
 export function areCodeToolsRegistered(): boolean {
-  return defaultRegistry.has('execute')
+  return isCategoryRegisteredInLegacy('code', defaultRegistry)
 }
 
 /**
@@ -1210,7 +945,7 @@ export function areCodeToolsRegistered(): boolean {
  * Useful for testing or when disabling code execution features.
  */
 export function unregisterCodeTools(): void {
-  defaultRegistry.unregister('execute')
+  unregisterCategoryFromLegacy('code', defaultRegistry)
 }
 
 // ============================================================================
@@ -1232,626 +967,8 @@ export function unregisterCodeTools(): void {
  * ```
  */
 export function registerConnectorTools(): void {
-  // ===== Gmail Tools =====
-  defaultRegistry.register<GmailSearchParams, GmailSearchResult>(
-    CONNECTOR_TOOL_DEFINITIONS.gmail_search,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return gmailSearch(args)
-    },
-    {
-      tags: ['connector', 'gmail', 'search'],
-      estimatedDuration: 2000,
-    },
-  )
-
-  defaultRegistry.register<GmailReadParams, GmailReadResult>(
-    CONNECTOR_TOOL_DEFINITIONS.gmail_read,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return gmailRead(args)
-    },
-    {
-      tags: ['connector', 'gmail', 'read'],
-      estimatedDuration: 1500,
-    },
-  )
-
-  defaultRegistry.register<GmailListLabelsParams, GmailListLabelsResult>(
-    CONNECTOR_TOOL_DEFINITIONS.gmail_list_labels,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return gmailListLabels(args)
-    },
-    {
-      tags: ['connector', 'gmail', 'labels'],
-      estimatedDuration: 1000,
-    },
-  )
-
-  // ===== Google Drive Tools =====
-  defaultRegistry.register<DriveSearchParams, DriveSearchResult>(
-    CONNECTOR_TOOL_DEFINITIONS.drive_search,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return driveSearch(args)
-    },
-    {
-      tags: ['connector', 'drive', 'search'],
-      estimatedDuration: 2000,
-    },
-  )
-
-  defaultRegistry.register<DriveReadParams, DriveReadResult>(
-    CONNECTOR_TOOL_DEFINITIONS.drive_read,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return driveRead(args)
-    },
-    {
-      tags: ['connector', 'drive', 'read'],
-      estimatedDuration: 2000,
-    },
-  )
-
-  defaultRegistry.register<DriveListParams, DriveListResult>(
-    CONNECTOR_TOOL_DEFINITIONS.drive_list,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return driveList(args)
-    },
-    {
-      tags: ['connector', 'drive', 'list'],
-      estimatedDuration: 1500,
-    },
-  )
-
-  // ===== Google Calendar Tools =====
-  defaultRegistry.register<CalendarListEventsParams, CalendarListEventsResult>(
-    CONNECTOR_TOOL_DEFINITIONS.calendar_list_events,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return calendarListEvents(args)
-    },
-    {
-      tags: ['connector', 'calendar', 'events'],
-      estimatedDuration: 2000,
-    },
-  )
-
-  defaultRegistry.register<CalendarGetEventParams, CalendarGetEventResult>(
-    CONNECTOR_TOOL_DEFINITIONS.calendar_get_event,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return calendarGetEvent(args)
-    },
-    {
-      tags: ['connector', 'calendar', 'event'],
-      estimatedDuration: 1500,
-    },
-  )
-
-  defaultRegistry.register<CalendarSearchParams, CalendarSearchResult>(
-    CONNECTOR_TOOL_DEFINITIONS.calendar_search,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return calendarSearch(args)
-    },
-    {
-      tags: ['connector', 'calendar', 'search'],
-      estimatedDuration: 2000,
-    },
-  )
-
-  // ===== Google Tasks Tools =====
-  defaultRegistry.register<TasksListParams, TasksListResult>(
-    CONNECTOR_TOOL_DEFINITIONS.tasks_list,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return tasksList(args)
-    },
-    {
-      tags: ['connector', 'tasks', 'list'],
-      estimatedDuration: 1500,
-    },
-  )
-
-  defaultRegistry.register<TasksGetParams, TasksGetResult>(
-    CONNECTOR_TOOL_DEFINITIONS.tasks_get,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return tasksGet(args)
-    },
-    {
-      tags: ['connector', 'tasks', 'get'],
-      estimatedDuration: 1000,
-    },
-  )
-
-  defaultRegistry.register<TasksListTasklistsParams, TasksListTasklistsResult>(
-    CONNECTOR_TOOL_DEFINITIONS.tasks_list_tasklists,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return tasksListTasklists(args)
-    },
-    {
-      tags: ['connector', 'tasks', 'tasklists'],
-      estimatedDuration: 1000,
-    },
-  )
-
-  // ===== Notion Tools =====
-  defaultRegistry.register<NotionSearchParams, NotionSearchResult>(
-    CONNECTOR_TOOL_DEFINITIONS.notion_search,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return notionSearch(args)
-    },
-    {
-      tags: ['connector', 'notion', 'search'],
-      estimatedDuration: 2000,
-    },
-  )
-
-  defaultRegistry.register<NotionReadPageParams, NotionReadPageResult>(
-    CONNECTOR_TOOL_DEFINITIONS.notion_read_page,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return notionReadPage(args)
-    },
-    {
-      tags: ['connector', 'notion', 'read'],
-      estimatedDuration: 2000,
-    },
-  )
-
-  defaultRegistry.register<
-    NotionQueryDatabaseParams,
-    NotionQueryDatabaseResult
-  >(
-    CONNECTOR_TOOL_DEFINITIONS.notion_query_database,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return notionQueryDatabase(args)
-    },
-    {
-      tags: ['connector', 'notion', 'database'],
-      estimatedDuration: 2500,
-    },
-  )
-
-  // ===== Qonto Tools =====
-  defaultRegistry.register<
-    QontoListBusinessAccountsParams,
-    QontoListBusinessAccountsResult
-  >(
-    CONNECTOR_TOOL_DEFINITIONS.qonto_list_business_accounts,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return qontoListBusinessAccounts(args)
-    },
-    {
-      tags: ['connector', 'qonto', 'accounts'],
-      estimatedDuration: 1500,
-    },
-  )
-
-  defaultRegistry.register<
-    QontoListTransactionsParams,
-    QontoListTransactionsResult
-  >(
-    CONNECTOR_TOOL_DEFINITIONS.qonto_list_transactions,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return qontoListTransactions(args)
-    },
-    {
-      tags: ['connector', 'qonto', 'transactions'],
-      estimatedDuration: 2000,
-    },
-  )
-
-  defaultRegistry.register<
-    QontoGetTransactionParams,
-    QontoGetTransactionResult
-  >(
-    CONNECTOR_TOOL_DEFINITIONS.qonto_get_transaction,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return qontoGetTransaction(args)
-    },
-    {
-      tags: ['connector', 'qonto', 'transaction'],
-      estimatedDuration: 1500,
-    },
-  )
-
-  defaultRegistry.register<
-    QontoListStatementsParams,
-    QontoListStatementsResult
-  >(
-    CONNECTOR_TOOL_DEFINITIONS.qonto_list_statements,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return qontoListStatements(args)
-    },
-    {
-      tags: ['connector', 'qonto', 'statements'],
-      estimatedDuration: 1500,
-    },
-  )
-
-  defaultRegistry.register<QontoGetStatementParams, QontoGetStatementResult>(
-    CONNECTOR_TOOL_DEFINITIONS.qonto_get_statement,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return qontoGetStatement(args)
-    },
-    {
-      tags: ['connector', 'qonto', 'statement'],
-      estimatedDuration: 2000,
-    },
-  )
-
-  // ===== Outlook Mail Tools =====
-  defaultRegistry.register<OutlookSearchParams, OutlookSearchResult>(
-    CONNECTOR_TOOL_DEFINITIONS.outlook_search,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return outlookSearch(args)
-    },
-    {
-      tags: ['connector', 'outlook', 'search'],
-      estimatedDuration: 2000,
-    },
-  )
-
-  defaultRegistry.register<OutlookReadParams, OutlookReadResult>(
-    CONNECTOR_TOOL_DEFINITIONS.outlook_read,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return outlookRead(args)
-    },
-    {
-      tags: ['connector', 'outlook', 'read'],
-      estimatedDuration: 1500,
-    },
-  )
-
-  defaultRegistry.register<OutlookListFoldersParams, OutlookListFoldersResult>(
-    CONNECTOR_TOOL_DEFINITIONS.outlook_list_folders,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return outlookListFolders(args)
-    },
-    {
-      tags: ['connector', 'outlook', 'folders'],
-      estimatedDuration: 1000,
-    },
-  )
-
-  // ===== OneDrive Tools =====
-  defaultRegistry.register<OneDriveSearchParams, OneDriveSearchResult>(
-    CONNECTOR_TOOL_DEFINITIONS.onedrive_search,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return onedriveSearch(args)
-    },
-    {
-      tags: ['connector', 'onedrive', 'search'],
-      estimatedDuration: 2000,
-    },
-  )
-
-  defaultRegistry.register<OneDriveReadParams, OneDriveReadResult>(
-    CONNECTOR_TOOL_DEFINITIONS.onedrive_read,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return onedriveRead(args)
-    },
-    {
-      tags: ['connector', 'onedrive', 'read'],
-      estimatedDuration: 2000,
-    },
-  )
-
-  defaultRegistry.register<OneDriveListParams, OneDriveListResult>(
-    CONNECTOR_TOOL_DEFINITIONS.onedrive_list,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return onedriveList(args)
-    },
-    {
-      tags: ['connector', 'onedrive', 'list'],
-      estimatedDuration: 1500,
-    },
-  )
-
-  // ===== Slack Tools =====
-  defaultRegistry.register<SlackSearchParams, SlackSearchResult>(
-    CONNECTOR_TOOL_DEFINITIONS.slack_search,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return slackSearch(args)
-    },
-    {
-      tags: ['connector', 'slack', 'search'],
-      estimatedDuration: 2000,
-    },
-  )
-
-  defaultRegistry.register<SlackListChannelsParams, SlackListChannelsResult>(
-    CONNECTOR_TOOL_DEFINITIONS.slack_list_channels,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return slackListChannels(args)
-    },
-    {
-      tags: ['connector', 'slack', 'channels'],
-      estimatedDuration: 1500,
-    },
-  )
-
-  defaultRegistry.register<SlackReadChannelParams, SlackReadChannelResult>(
-    CONNECTOR_TOOL_DEFINITIONS.slack_read_channel,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return slackReadChannel(args)
-    },
-    {
-      tags: ['connector', 'slack', 'messages'],
-      estimatedDuration: 1500,
-    },
-  )
-
-  // ===== Dropbox Tools =====
-  defaultRegistry.register<DropboxSearchParams, DropboxSearchResult>(
-    CONNECTOR_TOOL_DEFINITIONS.dropbox_search,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return dropboxSearch(args)
-    },
-    {
-      tags: ['connector', 'dropbox', 'search'],
-      estimatedDuration: 2000,
-    },
-  )
-
-  defaultRegistry.register<DropboxReadParams, DropboxReadResult>(
-    CONNECTOR_TOOL_DEFINITIONS.dropbox_read,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return dropboxRead(args)
-    },
-    {
-      tags: ['connector', 'dropbox', 'read'],
-      estimatedDuration: 2000,
-    },
-  )
-
-  defaultRegistry.register<DropboxListParams, DropboxListResult>(
-    CONNECTOR_TOOL_DEFINITIONS.dropbox_list,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return dropboxList(args)
-    },
-    {
-      tags: ['connector', 'dropbox', 'list'],
-      estimatedDuration: 1500,
-    },
-  )
-
-  // ===== Figma Tools =====
-  defaultRegistry.register<FigmaListFilesParams, FigmaListFilesResult>(
-    CONNECTOR_TOOL_DEFINITIONS.figma_list_files,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return figmaListFiles(args)
-    },
-    {
-      tags: ['connector', 'figma', 'files'],
-      estimatedDuration: 2000,
-    },
-  )
-
-  defaultRegistry.register<FigmaGetFileParams, FigmaGetFileResult>(
-    CONNECTOR_TOOL_DEFINITIONS.figma_get_file,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return figmaGetFile(args)
-    },
-    {
-      tags: ['connector', 'figma', 'file'],
-      estimatedDuration: 2500,
-    },
-  )
-
-  defaultRegistry.register<FigmaGetCommentsParams, FigmaGetCommentsResult>(
-    CONNECTOR_TOOL_DEFINITIONS.figma_get_comments,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return figmaGetComments(args)
-    },
-    {
-      tags: ['connector', 'figma', 'comments'],
-      estimatedDuration: 1500,
-    },
-  )
-
-  // ===== Google Chat Tools =====
-  defaultRegistry.register<
-    GoogleChatListSpacesParams,
-    GoogleChatListSpacesResult
-  >(
-    CONNECTOR_TOOL_DEFINITIONS.google_chat_list_spaces,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return googleChatListSpaces(args)
-    },
-    {
-      tags: ['connector', 'google-chat', 'spaces'],
-      estimatedDuration: 1500,
-    },
-  )
-
-  defaultRegistry.register<
-    GoogleChatReadMessagesParams,
-    GoogleChatReadMessagesResult
-  >(
-    CONNECTOR_TOOL_DEFINITIONS.google_chat_read_messages,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return googleChatReadMessages(args)
-    },
-    {
-      tags: ['connector', 'google-chat', 'messages'],
-      estimatedDuration: 2000,
-    },
-  )
-
-  // ===== Google Meet Tools =====
-  defaultRegistry.register<
-    GoogleMeetListMeetingsParams,
-    GoogleMeetListMeetingsResult
-  >(
-    CONNECTOR_TOOL_DEFINITIONS.google_meet_list_meetings,
-    async (args, context) => {
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return googleMeetListMeetings(args)
-    },
-    {
-      tags: ['connector', 'google-meet', 'meetings'],
-      estimatedDuration: 2000,
-    },
-  )
+  registerCategoryWithLegacy('connector', defaultRegistry)
 }
-
-/**
- * List of all connector tool names.
- */
-const CONNECTOR_TOOL_NAMES = [
-  'gmail_search',
-  'gmail_read',
-  'gmail_list_labels',
-  'drive_search',
-  'drive_read',
-  'drive_list',
-  'calendar_list_events',
-  'calendar_get_event',
-  'calendar_search',
-  'tasks_list',
-  'tasks_get',
-  'tasks_list_tasklists',
-  'notion_search',
-  'notion_read_page',
-  'notion_query_database',
-  'qonto_list_business_accounts',
-  'qonto_list_transactions',
-  'qonto_get_transaction',
-  'qonto_list_statements',
-  'qonto_get_statement',
-  // Outlook Mail
-  'outlook_search',
-  'outlook_read',
-  'outlook_list_folders',
-  // OneDrive
-  'onedrive_search',
-  'onedrive_read',
-  'onedrive_list',
-  // Slack
-  'slack_search',
-  'slack_list_channels',
-  'slack_read_channel',
-  // Dropbox
-  'dropbox_search',
-  'dropbox_read',
-  'dropbox_list',
-  // Figma
-  'figma_list_files',
-  'figma_get_file',
-  'figma_get_comments',
-  // Google Chat
-  'google_chat_list_spaces',
-  'google_chat_read_messages',
-  // Google Meet
-  'google_meet_list_meetings',
-] as const
 
 /**
  * Check if connector tools are registered.
@@ -1859,7 +976,7 @@ const CONNECTOR_TOOL_NAMES = [
  * @returns true if all connector tools are registered
  */
 export function areConnectorToolsRegistered(): boolean {
-  return CONNECTOR_TOOL_NAMES.every((name) => defaultRegistry.has(name))
+  return isCategoryRegisteredInLegacy('connector', defaultRegistry)
 }
 
 /**
@@ -1867,11 +984,7 @@ export function areConnectorToolsRegistered(): boolean {
  * Useful for testing or when disabling connector features.
  */
 export function unregisterConnectorTools(): void {
-  CONNECTOR_TOOL_NAMES.forEach((name) => {
-    if (defaultRegistry.has(name)) {
-      defaultRegistry.unregister(name)
-    }
-  })
+  unregisterCategoryFromLegacy('connector', defaultRegistry)
 }
 
 // ============================================================================
@@ -1891,25 +1004,7 @@ export function unregisterConnectorTools(): void {
  * ```
  */
 export function registerPresentationTools(): void {
-  // Register generate_presentation tool
-  defaultRegistry.register<
-    GeneratePresentationParams,
-    GeneratePresentationResult | GeneratePresentationError
-  >(
-    PRESENTATION_TOOL_DEFINITIONS.generate_presentation,
-    async (args, context) => {
-      // Check for abort signal
-      if (context.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-
-      return generatePresentation(args)
-    },
-    {
-      tags: ['presentation', 'marpit', 'slides'],
-      estimatedDuration: 500,
-    },
-  )
+  registerCategoryWithLegacy('presentation', defaultRegistry)
 }
 
 /**
@@ -1918,7 +1013,7 @@ export function registerPresentationTools(): void {
  * @returns true if all presentation tools are registered
  */
 export function arePresentationToolsRegistered(): boolean {
-  return defaultRegistry.has('generate_presentation')
+  return isCategoryRegisteredInLegacy('presentation', defaultRegistry)
 }
 
 /**
@@ -1926,5 +1021,4 @@ export function arePresentationToolsRegistered(): boolean {
  * Useful for testing or when disabling presentation features.
  */
 export function unregisterPresentationTools(): void {
-  defaultRegistry.unregister('generate_presentation')
-}
+  unregisterCategoryFromLegacy('presentation', defaultRegistry)}

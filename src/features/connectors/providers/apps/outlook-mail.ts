@@ -6,6 +6,7 @@
  */
 
 import { BRIDGE_URL } from '@/config/bridge'
+
 import { BaseAppConnectorProvider } from '../../connector-provider'
 import type {
   Connector,
@@ -19,7 +20,54 @@ import type {
   SearchResult,
   ChangesResult,
   ConnectorItem,
+  ProviderMetadata,
 } from '../../types'
+import { registerProvider } from './registry'
+
+// =============================================================================
+// Provider Metadata
+// =============================================================================
+
+/** Self-contained metadata for Outlook Mail provider */
+export const metadata: ProviderMetadata = {
+  id: 'outlook-mail',
+  name: 'Outlook Mail',
+  icon: 'MicrosoftOutlook',
+  color: '#0078D4',
+  description: 'Sync emails from Microsoft Outlook',
+  syncSupported: true,
+  active: false, // Not ready for production
+  oauth: {
+    authUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+    tokenUrl: `${BRIDGE_URL}/api/microsoft/oauth2/v2.0/token`,
+    clientId: import.meta.env.VITE_MICROSOFT_CLIENT_ID || '',
+    clientSecret: '',
+    scopes: [
+      'openid',
+      'profile',
+      'email',
+      'offline_access',
+      'https://graph.microsoft.com/Mail.Read',
+    ],
+    pkceRequired: true,
+  },
+  proxyRoutes: [
+    {
+      pathPrefix: '/api/microsoft',
+      pathMatch: '/oauth2/v2.0/token',
+      target: 'https://login.microsoftonline.com',
+      targetPathPrefix: '/common',
+      credentials: {
+        type: 'body',
+        clientIdEnvKey: 'VITE_MICROSOFT_CLIENT_ID',
+        clientSecretEnvKey: 'VITE_MICROSOFT_CLIENT_SECRET',
+      },
+    },
+  ],
+}
+
+// Register the provider
+registerProvider(metadata, () => import('./outlook-mail'))
 
 // =============================================================================
 // Constants

@@ -5,7 +5,7 @@
  * Uses the existing stored authentication rather than re-authenticating.
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Modal,
   ModalContent,
@@ -18,12 +18,20 @@ import {
   ScrollShadow,
   Switch,
   Divider,
+  Accordion,
+  AccordionItem,
+  Chip,
+  Card,
+  CardBody,
+  RadioGroup,
+  Textarea,
+  Avatar,
 } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
-import { useConnectorStore } from '@/stores/connectorStore'
+import { useConnectorStore } from '../stores'
 import { ProviderRegistry } from '../provider-registry'
-import { PROVIDER_CONFIG } from '../providers/apps'
+import { getProvider } from '../providers/apps'
 import {
   AuthenticationError,
   storeEncryptionMetadata,
@@ -38,6 +46,7 @@ import type {
 } from '../types'
 import { getToolDefinitionsForProvider } from '../tools'
 import localI18n from '../pages/i18n'
+import { CustomRadio } from '@/features/sync/components/CustomRadio'
 
 // =============================================================================
 // Types
@@ -46,6 +55,7 @@ import localI18n from '../pages/i18n'
 interface ConnectorSettingsModalProps {
   isOpen: boolean
   onClose: () => void
+  onReconnect?: (connector: Connector) => void
   connector: Connector | null
 }
 
@@ -69,6 +79,7 @@ interface FolderNode extends ConnectorItem {
 export function ConnectorSettingsModal({
   isOpen,
   onClose,
+  onReconnect,
   connector,
 }: ConnectorSettingsModalProps) {
   const { t } = useI18n(localI18n)
@@ -82,9 +93,20 @@ export function ConnectorSettingsModal({
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isTokenExpired, setIsTokenExpired] = useState(false)
+  const [urlInput, setUrlInput] = useState('')
 
   const provider = connector?.provider as AppConnectorProvider | undefined
-  const config = provider ? PROVIDER_CONFIG[provider] : null
+  const config = provider ? getProvider(provider) : null
+  const isUrlInputMode = config?.folderPickerType === 'url-input'
+
+  // Get selected folder names for summary
+  const selectedFolderNames = useMemo(() => {
+    if (syncAll || selectedIds.size === 0) return []
+    return folders
+      .filter((f) => selectedIds.has(f.externalId))
+      .map((f) => f.name)
+  }, [folders, selectedIds, syncAll])
 
   // Initialize state from connector
   useEffect(() => {
@@ -93,13 +115,18 @@ export function ConnectorSettingsModal({
       if (connector.syncFolders && connector.syncFolders.length > 0) {
         setSyncAll(false)
         setSelectedIds(new Set(connector.syncFolders))
+        // For URL input mode, initialize the textarea with existing URLs
+        if (isUrlInputMode) {
+          setUrlInput(connector.syncFolders.join('\n'))
+        }
       } else {
         setSyncAll(true)
         setSelectedIds(new Set())
+        setUrlInput('')
       }
     }
     // Only re-initialize when connector ID changes
-  }, [connector?.id])
+  }, [connector?.id, isUrlInputMode])
 
   // Helper to refresh token and update connector
   const refreshAndUpdateToken = useCallback(
@@ -156,10 +183,16 @@ export function ConnectorSettingsModal({
     [updateConnector, t],
   )
 
-  // Fetch folders when modal opens
+  // Fetch folders when modal opens (only for tree mode, not URL input mode)
   useEffect(() => {
     const fetchFolders = async () => {
       if (!isOpen || !connector || !provider) return
+
+      // Skip fetching for URL input mode
+      if (isUrlInputMode) {
+        setIsLoading(false)
+        return
+      }
 
       setIsLoading(true)
       setError(null)
@@ -235,6 +268,7 @@ export function ConnectorSettingsModal({
                     )
                   : t('Your access token has expired. Please reconnect.'),
               )
+              setIsTokenExpired(true)
 
               // Update connector status to expired
               await updateConnector(connector.id, {
@@ -261,7 +295,7 @@ export function ConnectorSettingsModal({
 
     fetchFolders()
     // Only refetch when modal opens or connector ID changes, not on every connector object change
-  }, [isOpen, connector?.id, provider])
+  }, [isOpen, connector?.id, provider, isUrlInputMode])
 
   // Toggle folder selection
   const toggleFolder = useCallback((folderId: string) => {
@@ -283,8 +317,23 @@ export function ConnectorSettingsModal({
     setSyncAll(checked)
     if (checked) {
       setSelectedIds(new Set())
+      setUrlInput('')
     }
   }, [])
+
+  // Parse URL input into array of IDs/URLs
+  const parseUrlInput = useCallback((input: string): string[] => {
+    return input
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+  }, [])
+
+  // Get parsed URLs count for display
+  const parsedUrls = useMemo(
+    () => parseUrlInput(urlInput),
+    [urlInput, parseUrlInput],
+  )
 
   // Save settings
   const handleSave = useCallback(async () => {
@@ -292,9 +341,17 @@ export function ConnectorSettingsModal({
 
     setIsSaving(true)
     try {
+      // For URL input mode, parse the textarea content
+      let syncFoldersValue: string[] | undefined
+      if (isUrlInputMode) {
+        syncFoldersValue = parsedUrls.length > 0 ? parsedUrls : undefined
+      } else {
+        syncFoldersValue = syncAll ? undefined : Array.from(selectedIds)
+      }
+
       await updateConnector(connector.id, {
         syncEnabled,
-        syncFolders: syncAll ? undefined : Array.from(selectedIds),
+        syncFolders: syncFoldersValue,
       })
       successToast(
         t('Settings saved'),
@@ -315,6 +372,8 @@ export function ConnectorSettingsModal({
     syncEnabled,
     syncAll,
     selectedIds,
+    isUrlInputMode,
+    parsedUrls,
     updateConnector,
     onClose,
     t,
@@ -322,47 +381,24 @@ export function ConnectorSettingsModal({
 
   // Render a folder item
   const renderFolder = useCallback(
-    (folder: FolderNode, depth = 0) => {
+    (folder: FolderNode) => {
       const isSelected = selectedIds.has(folder.externalId)
 
       return (
-        <div key={folder.externalId} className="select-none">
-          <div
-            className={`flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-default-100 cursor-pointer transition-colors ${
-              isSelected ? 'bg-primary-50 dark:bg-primary-900/20' : ''
-            }`}
-            style={{ paddingLeft: `${depth * 16 + 12}px` }}
-          >
-            {folder.children && folder.children.length > 0 ? (
-              <button className="w-5 h-5 flex items-center justify-center text-default-400 hover:text-default-600">
-                <Icon
-                  name={folder.isExpanded ? 'NavArrowDown' : 'NavArrowRight'}
-                  className="w-4 h-4"
-                />
-              </button>
-            ) : (
-              <div className="w-5" />
-            )}
-
-            <Checkbox
-              isSelected={isSelected}
-              onValueChange={() => toggleFolder(folder.externalId)}
-              size="sm"
-            />
-
-            <Icon name="Folder" className="w-4 h-4 text-warning" />
-
-            <span
-              className="text-sm flex-1 truncate"
-              onClick={() => toggleFolder(folder.externalId)}
-            >
-              {folder.name}
-            </span>
+        <Checkbox
+          key={folder.externalId}
+          isSelected={isSelected}
+          onValueChange={() => toggleFolder(folder.externalId)}
+          classNames={{
+            base: 'max-w-full w-full m-0 p-2 rounded-lg hover:bg-default-100 cursor-pointer',
+            label: 'w-full',
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <Icon name="Folder" className="text-warning" size="sm" />
+            <span className="text-sm truncate">{folder.name}</span>
           </div>
-
-          {folder.isExpanded &&
-            folder.children?.map((child) => renderFolder(child, depth + 1))}
-        </div>
+        </Checkbox>
       )
     },
     [selectedIds, toggleFolder],
@@ -397,20 +433,241 @@ export function ConnectorSettingsModal({
               </div>
             </ModalHeader>
 
-            <ModalBody className="gap-6">
+            <ModalBody className="gap-4">
               {/* Account Info */}
               {connector.accountEmail && (
-                <div className="flex items-center gap-3 p-3 bg-default-50 dark:bg-default-100/10 rounded-lg">
-                  <Icon name="User" className="w-5 h-5 text-default-400" />
-                  <div>
-                    <p className="text-sm font-medium">
-                      {t('Connected Account')}
-                    </p>
-                    <p className="text-xs text-default-500">
-                      {connector.accountEmail}
-                    </p>
+                <Card shadow="none" className="bg-default-100">
+                  <CardBody className="flex-row items-center gap-3">
+                    {connector.accountPicture ? (
+                      <Avatar src={connector.accountPicture} size="sm" />
+                    ) : (
+                      <Icon name="User" className="w-5 h-5 text-default-500" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {connector.accountEmail}
+                      </p>
+                      <p className="text-xs text-default-500">
+                        {t('Connected Account')}
+                      </p>
+                    </div>
+                    {connector.status === 'connected' && (
+                      <Chip size="sm" color="success" variant="flat">
+                        {t('Connected')}
+                      </Chip>
+                    )}
+                    {connector.status === 'expired' && (
+                      <Chip size="sm" color="danger" variant="flat">
+                        {t('Expired')}
+                      </Chip>
+                    )}
+                  </CardBody>
+                </Card>
+              )}
+
+              {/* Sync Toggle */}
+              <Card shadow="none" className="bg-default-100">
+                <CardBody className="flex-row items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <Icon
+                      name="CloudDownload"
+                      size="lg"
+                      className={
+                        'mx-1 ' +
+                        (syncEnabled ? 'text-primary' : 'text-default-400')
+                      }
+                    />
+                    <div>
+                      <p className="font-medium">
+                        {t('Enable Automatic Sync')}
+                      </p>
+                      <p className="text-xs text-default-500">
+                        {t('Automatically sync new and updated content')}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                  <Switch
+                    isSelected={syncEnabled}
+                    onValueChange={setSyncEnabled}
+                    aria-label={t('Enable Sync')}
+                  />
+                </CardBody>
+              </Card>
+
+              {/* Folder/URL Selection - Only shown when sync is enabled */}
+              {syncEnabled && (
+                <>
+                  <Divider />
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium">{t('Sync Settings')}</p>
+                      {isUrlInputMode
+                        ? parsedUrls.length > 0 && (
+                            <Chip size="sm" variant="flat" color="primary">
+                              {t('{n} items to sync', { n: parsedUrls.length })}
+                            </Chip>
+                          )
+                        : !syncAll &&
+                          selectedIds.size > 0 && (
+                            <Chip size="sm" variant="flat" color="primary">
+                              {t('{n} folders selected', {
+                                n: selectedIds.size,
+                              })}
+                            </Chip>
+                          )}
+                    </div>
+
+                    {/* URL Input Mode (for Figma, etc.) */}
+                    {isUrlInputMode ? (
+                      <div className="space-y-3">
+                        <p className="text-sm text-default-500">
+                          {t('Paste file URLs or IDs from {name} to sync.', {
+                            name: config?.name || provider,
+                          })}
+                        </p>
+                        <Textarea
+                          value={urlInput}
+                          onValueChange={setUrlInput}
+                          placeholder={
+                            config?.urlInputPlaceholder ||
+                            t('Enter URLs or IDs (one per line)')
+                          }
+                          minRows={4}
+                          maxRows={8}
+                          classNames={{
+                            input: 'font-mono text-sm',
+                          }}
+                        />
+                        <p className="text-xs text-default-400">
+                          {config?.urlInputHelp ||
+                            t('Enter file URLs or IDs, one per line')}
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <RadioGroup
+                          value={syncAll ? 'all' : 'select'}
+                          onValueChange={(value) =>
+                            toggleSyncAll(value === 'all')
+                          }
+                        >
+                          <CustomRadio
+                            size="sm"
+                            value="all"
+                            description={t(
+                              'All files and folders will be synced automatically',
+                            )}
+                          >
+                            {t('Sync everything')}
+                          </CustomRadio>
+                          <CustomRadio
+                            size="sm"
+                            value="select"
+                            description={t(
+                              'Choose which folders to sync or sync everything',
+                            )}
+                          >
+                            {t('Select Folders')}
+                          </CustomRadio>
+                        </RadioGroup>
+
+                        {/* Folder Tree - Shown when selecting specific folders */}
+                        {!syncAll && (
+                          <Card shadow="none" className="bg-default-50">
+                            <CardBody className="p-3">
+                              <ScrollShadow className="max-h-48">
+                                {isLoading ? (
+                                  <div className="flex flex-col items-center justify-center py-6 gap-2">
+                                    <Spinner size="sm" />
+                                    <span className="text-sm text-default-500">
+                                      {t('Loading folders...')}
+                                    </span>
+                                  </div>
+                                ) : error ? (
+                                  <div className="flex flex-col items-center justify-center py-6 gap-3 text-center">
+                                    <Icon
+                                      name="WarningTriangle"
+                                      className="w-8 h-8 text-danger"
+                                    />
+                                    <div>
+                                      <p className="text-sm text-danger font-medium">
+                                        {t('Connection failed')}
+                                      </p>
+                                      <p className="text-xs text-default-500 mt-1">
+                                        {error}
+                                      </p>
+                                    </div>
+                                    {isTokenExpired && onReconnect && (
+                                      <Button
+                                        color="primary"
+                                        size="sm"
+                                        onPress={() => {
+                                          onClose()
+                                          onReconnect(connector)
+                                        }}
+                                        startContent={
+                                          <Icon
+                                            name="RefreshDouble"
+                                            size="sm"
+                                          />
+                                        }
+                                      >
+                                        {t('Reconnect')}
+                                      </Button>
+                                    )}
+                                  </div>
+                                ) : folders.length === 0 ? (
+                                  <div className="flex flex-col items-center justify-center py-6 text-default-400 gap-2">
+                                    <Icon
+                                      name="Folder"
+                                      className="w-8 h-8 opacity-50"
+                                    />
+                                    <p className="text-sm">
+                                      {t('No folders found')}
+                                    </p>
+                                  </div>
+                                ) : (
+                                  <div className="space-y-1">
+                                    {folders.map((folder) =>
+                                      renderFolder(folder),
+                                    )}
+                                  </div>
+                                )}
+                              </ScrollShadow>
+
+                              {/* Selected folders summary */}
+                              {!isLoading &&
+                                !error &&
+                                selectedFolderNames.length > 0 && (
+                                  <>
+                                    <Divider className="my-3" />
+                                    <div className="flex flex-wrap gap-1">
+                                      {selectedFolderNames
+                                        .slice(0, 5)
+                                        .map((name) => (
+                                          <Chip
+                                            key={name}
+                                            size="sm"
+                                            variant="flat"
+                                          >
+                                            {name}
+                                          </Chip>
+                                        ))}
+                                      {selectedFolderNames.length > 5 && (
+                                        <Chip size="sm" variant="flat">
+                                          +{selectedFolderNames.length - 5}
+                                        </Chip>
+                                      )}
+                                    </div>
+                                  </>
+                                )}
+                            </CardBody>
+                          </Card>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </>
               )}
 
               {/* Available Tools */}
@@ -421,127 +678,55 @@ export function ConnectorSettingsModal({
                   )
                   if (tools.length === 0) return null
                   return (
-                    <div className="space-y-3">
-                      <div>
-                        <p className="font-medium">{t('Available Tools')}</p>
-                        <p className="text-xs text-default-500">
-                          {t('{n} tools available for AI agents', {
-                            n: tools.length,
-                          })}
-                        </p>
-                      </div>
-                      <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
-                        {tools.map((tool) => (
-                          <div
-                            key={tool.function.name}
-                            className="flex items-start gap-2 p-2"
-                          >
-                            <Icon name="Puzzle" size="sm" />
-                            <dl className="min-w-0">
-                              <dt className="text-xs font-medium font-mono truncate">
-                                {tool.function.name}
-                              </dt>
-                              <dd className="text-xs text-default-500 line-clamp-2">
-                                {tool.function.description}
-                              </dd>
-                            </dl>
+                    <>
+                      <Divider />
+                      <Accordion variant="light" className="px-0">
+                        <AccordionItem
+                          key="tools"
+                          aria-label={t('Available Tools')}
+                          title={
+                            <div className="flex items-center gap-2">
+                              <Icon
+                                name="Puzzle"
+                                size="sm"
+                                className="text-default-400"
+                              />
+                              <span className="text-sm font-medium">
+                                {t('Available Tools')}
+                              </span>
+                              <Chip size="sm" variant="flat">
+                                {tools.length}
+                              </Chip>
+                            </div>
+                          }
+                        >
+                          <div className="space-y-2">
+                            {tools.map((tool) => (
+                              <div
+                                key={tool.function.name}
+                                className="flex items-start gap-2 p-2 rounded-lg bg-default-100"
+                              >
+                                <Icon
+                                  name="Terminal"
+                                  size="sm"
+                                  className="text-default-400 mt-0.5"
+                                />
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-xs font-medium font-mono truncate">
+                                    {tool.function.name}
+                                  </p>
+                                  <p className="text-xs text-default-500 line-clamp-1">
+                                    {tool.function.description}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    </div>
+                        </AccordionItem>
+                      </Accordion>
+                    </>
                   )
                 })()}
-
-              <Divider />
-
-              {/* Sync Toggle */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{t('Enable Sync')}</p>
-                  <p className="text-xs text-default-500">
-                    {t('Automatically sync content from this connector')}
-                  </p>
-                </div>
-                <Switch
-                  isSelected={syncEnabled}
-                  onValueChange={setSyncEnabled}
-                />
-              </div>
-
-              <Divider />
-
-              {/* Folder Selection */}
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-medium mb-1">{t('Sync Settings')}</h3>
-                  <p className="text-xs text-default-500">
-                    {t('Choose which folders to sync or sync everything')}
-                  </p>
-                </div>
-
-                {/* Sync All Option */}
-                <div className="p-4 bg-default-50 dark:bg-default-100/10 rounded-lg">
-                  <Checkbox
-                    isSelected={syncAll}
-                    onValueChange={toggleSyncAll}
-                    classNames={{
-                      label: 'text-sm',
-                    }}
-                  >
-                    <div>
-                      <span className="font-medium">
-                        {t('Sync everything')}
-                      </span>
-                      <p className="text-xs text-default-400 mt-0.5">
-                        {t(
-                          'All files and folders will be synced automatically',
-                        )}
-                      </p>
-                    </div>
-                  </Checkbox>
-                </div>
-
-                {/* Folder Tree */}
-                {!syncAll && (
-                  <ScrollShadow className="max-h-64">
-                    {isLoading ? (
-                      <div className="flex items-center justify-center py-8">
-                        <Spinner size="sm" />
-                        <span className="ml-2 text-sm text-default-500">
-                          {t('Loading folders...')}
-                        </span>
-                      </div>
-                    ) : error ? (
-                      <div className="text-center py-8">
-                        <Icon
-                          name="WarningTriangle"
-                          className="w-8 h-8 text-danger mx-auto mb-2"
-                        />
-                        <p className="text-sm text-danger">{error}</p>
-                      </div>
-                    ) : folders.length === 0 ? (
-                      <div className="text-center py-8 text-default-400">
-                        <Icon
-                          name="Folder"
-                          className="w-8 h-8 mx-auto mb-2 opacity-50"
-                        />
-                        <p className="text-sm">{t('No folders found')}</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-1">
-                        {folders.map((folder) => renderFolder(folder))}
-                      </div>
-                    )}
-                  </ScrollShadow>
-                )}
-
-                {/* Selection Summary */}
-                {!syncAll && selectedIds.size > 0 && (
-                  <p className="text-xs text-default-500 text-center">
-                    {t('{n} folders selected', { n: selectedIds.size })}
-                  </p>
-                )}
-              </div>
             </ModalBody>
 
             <ModalFooter>

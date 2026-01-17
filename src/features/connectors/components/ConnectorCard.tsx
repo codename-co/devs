@@ -11,9 +11,11 @@ import {
 } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
-import type { Connector, ConnectorStatus } from '../types'
-import { PROVIDER_CONFIG } from '../providers/apps'
+import { useConnectorStore } from '../stores'
+import type { Connector, ConnectorStatus, AppConnectorProvider } from '../types'
+import { getProvider } from '../providers/apps'
 import { getToolDefinitionsForProvider } from '../tools'
+import { SyncEngine } from '../sync-engine'
 import localI18n from '../pages/i18n'
 
 interface ConnectorCardProps {
@@ -36,10 +38,13 @@ export function ConnectorCard({
   onSettings,
 }: ConnectorCardProps) {
   const { t, lang } = useI18n(localI18n)
+  const { getSyncState } = useConnectorStore()
+
+  // Get sync state for reactive updates
+  const syncState = getSyncState(connector.id)
 
   // Get provider config for icon and name
-  const providerConfig =
-    PROVIDER_CONFIG[connector.provider as keyof typeof PROVIDER_CONFIG]
+  const providerConfig = getProvider(connector.provider as AppConnectorProvider)
   const providerName = providerConfig?.name || connector.name
   const providerIcon = providerConfig?.icon || 'AppWindow'
   const providerColor = providerConfig?.color || '#888888'
@@ -68,10 +73,10 @@ export function ConnectorCard({
     })
   }
 
-  // Get status indicator config
-  const getStatusConfig = (status: ConnectorStatus) => {
+  // Get status indicator config (includes 'syncing' for display purposes only)
+  const getStatusConfig = (status: ConnectorStatus | 'syncing') => {
     const config: Record<
-      ConnectorStatus,
+      ConnectorStatus | 'syncing',
       { color: string; bgColor: string; label: string; icon?: string }
     > = {
       connected: {
@@ -100,8 +105,10 @@ export function ConnectorCard({
     return config[status] || config.connected
   }
 
-  const statusConfig = getStatusConfig(connector.status)
-  const isSyncing = connector.status === 'syncing'
+  // Check both SyncEngine (for job status) and syncState (for reactive updates)
+  const isSyncing =
+    SyncEngine.isSyncing(connector.id) || syncState?.status === 'syncing'
+  const statusConfig = getStatusConfig(isSyncing ? 'syncing' : connector.status)
   const hasError =
     connector.status === 'error' || connector.status === 'expired'
 

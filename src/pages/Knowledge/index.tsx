@@ -8,7 +8,7 @@ import { Section, Container, Icon } from '@/components'
 import type { HeaderProps } from '@/lib/types'
 import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
 import { usePinnedMessageStore } from '@/stores/pinnedMessageStore'
-import { useConnectorStore } from '@/stores/connectorStore'
+import { useConnectorStore } from '@/features/connectors/stores'
 import localI18n from './i18n'
 
 import { Files } from './Files'

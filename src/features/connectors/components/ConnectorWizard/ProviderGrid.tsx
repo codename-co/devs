@@ -8,7 +8,7 @@
 import { Card, CardBody, Tooltip } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
-import { PROVIDER_CONFIG, AVAILABLE_PROVIDERS } from '../../providers/apps'
+import { getProviders } from '../../providers/apps'
 import { OAuthGateway } from '../../oauth-gateway'
 import type { AppConnectorProvider, ConnectorCategory } from '../../types'
 import localI18n from '../../pages/i18n'
@@ -35,8 +35,8 @@ interface ProviderGridProps {
 export function ProviderGrid({ category, onSelect }: ProviderGridProps) {
   const { t } = useI18n(localI18n)
 
-  // Filter providers by category (for now, all app providers)
-  const providers = category === 'app' ? AVAILABLE_PROVIDERS : []
+  // Get all registered providers
+  const providers = category === 'app' ? getProviders() : []
 
   return (
     <div className="space-y-4">
@@ -45,9 +45,8 @@ export function ProviderGrid({ category, onSelect }: ProviderGridProps) {
       </p>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {providers.map((provider) => {
-          const config = PROVIDER_CONFIG[provider]
-          if (!config) return null
+        {providers.map((config) => {
+          const provider = config.id
 
           const isConfigured = OAuthGateway.isOAuthConfigured(provider)
           const isActive = config.active !== false
@@ -88,15 +87,7 @@ export function ProviderGrid({ category, onSelect }: ProviderGridProps) {
 
           if (!isReady) {
             return (
-              <Tooltip
-                key={provider}
-                content={
-                  !isActive
-                    ? t('This provider is not ready')
-                    : t('OAuth not configured for this provider')
-                }
-                placement="top"
-              >
+              <Tooltip key={provider} content={t('Coming soon')}>
                 <div>{card}</div>
               </Tooltip>
             )

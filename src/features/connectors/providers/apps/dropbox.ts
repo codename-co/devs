@@ -20,7 +20,46 @@ import type {
   SearchResult,
   ChangesResult,
   ConnectorItem,
+  ProviderMetadata,
 } from '../../types'
+import { registerProvider } from './registry'
+
+// =============================================================================
+// Provider Metadata
+// =============================================================================
+
+/** Self-contained metadata for Dropbox provider */
+export const metadata: ProviderMetadata = {
+  id: 'dropbox',
+  name: 'Dropbox',
+  icon: 'Dropbox',
+  color: '#0061FF',
+  description: 'Sync files and folders from Dropbox',
+  syncSupported: true,
+  oauth: {
+    authUrl: 'https://www.dropbox.com/oauth2/authorize',
+    tokenUrl: `${BRIDGE_URL}/api/dropbox/oauth2/token`,
+    clientId: import.meta.env.VITE_DROPBOX_CLIENT_ID || '',
+    clientSecret: '',
+    scopes: [], // Dropbox doesn't use scopes in auth URL
+    pkceRequired: true,
+  },
+  proxyRoutes: [
+    {
+      pathPrefix: '/api/dropbox',
+      pathMatch: '/oauth2/token',
+      target: 'https://api.dropboxapi.com',
+      credentials: {
+        type: 'body',
+        clientIdEnvKey: 'VITE_DROPBOX_CLIENT_ID',
+        clientSecretEnvKey: 'VITE_DROPBOX_CLIENT_SECRET',
+      },
+    },
+  ],
+}
+
+// Register the provider
+registerProvider(metadata, () => import('./dropbox'))
 
 // =============================================================================
 // Constants

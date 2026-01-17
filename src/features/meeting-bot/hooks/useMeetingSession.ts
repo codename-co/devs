@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react'
-import { useConnectorStore } from '@/stores/connectorStore'
+import { useConnectorStore } from '@/features/connectors/stores'
 import { useMeetingBot, type UseMeetingBotOptions } from './useMeetingBot'
 import type { MeetMeetingInfo } from '@/features/connectors/providers/apps/google-meet'
 

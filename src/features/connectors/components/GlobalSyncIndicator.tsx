@@ -9,8 +9,9 @@ import {
   PopoverContent,
 } from '@heroui/react'
 import { Icon } from '@/components/Icon'
-import { useConnectorStore } from '@/stores/connectorStore'
+import { useConnectorStore } from '../stores'
 import { ConnectorIcon } from './ConnectorIcon'
+import { SyncEngine } from '../sync-engine'
 import type { Connector } from '../types'
 
 interface GlobalSyncIndicatorProps {
@@ -33,10 +34,13 @@ export function GlobalSyncIndicator({
   const { connectors, syncStates } = useConnectorStore()
 
   // Get all syncing connectors
+  // Check both SyncEngine (for job status) and syncState (for reactive updates)
   const syncingConnectors = useMemo(() => {
     return connectors.filter((connector) => {
       const syncState = syncStates.get(connector.id)
-      return connector.status === 'syncing' || syncState?.status === 'syncing'
+      return (
+        SyncEngine.isSyncing(connector.id) || syncState?.status === 'syncing'
+      )
     })
   }, [connectors, syncStates])
 

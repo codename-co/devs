@@ -3,7 +3,7 @@ import { Tabs, Tab, Button, Spinner } from '@heroui/react'
 import DefaultLayout from '@/layouts/Default'
 import { Container, Icon, Section } from '@/components'
 import { useI18n } from '@/i18n'
-import { useConnectorStore } from '@/stores/connectorStore'
+import { useConnectorStore } from '../stores'
 import {
   ConnectorCard,
   ConnectorWizard,

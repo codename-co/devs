@@ -11,6 +11,8 @@ import { createMpaPlugin, type Page } from 'vite-plugin-virtual-mpa'
 import { PRODUCT } from './src/config/product'
 import { defaultLang, type Lang, langs, meta } from './src/i18n'
 import { cacheVersionPlugin } from './src/lib/cache-version-plugin'
+import { oauthProxyPlugin } from './src/lib/oauth-proxy-plugin'
+import { getProxyRoutes } from './vite-proxy-routes'
 
 // Read version from package.json
 const packageJson = JSON.parse(readFileSync('./package.json', 'utf-8'))
@@ -91,6 +93,9 @@ export default defineConfig(({ mode }) => {
         pages,
       }) as any,
       cacheVersionPlugin(),
+      // Unified proxy plugin for all OAuth/API routes
+      // Proxy configuration is defined in src/features/connectors/providers/apps/index.ts
+      oauthProxyPlugin(getProxyRoutes(env)),
     ],
     optimizeDeps: {
       include: ['quickjs-emscripten'],
@@ -139,125 +144,7 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       host: true,
-      proxy: {
-        // Proxy Google OAuth token requests (for Drive, Gmail, Calendar, Chat, Meet, Tasks)
-        '/api/google': {
-          target: 'https://oauth2.googleapis.com',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/google/, ''),
-          configure: (proxy) => {
-            proxy.on('proxyReq', (proxyReq, req, res, options) => {
-              // For token endpoint, inject client credentials
-              if (req.url?.includes('/token')) {
-                const clientId = env.VITE_GOOGLE_CLIENT_ID || ''
-                const clientSecret = env.VITE_GOOGLE_CLIENT_SECRET || ''
-                // Read original body and append credentials
-                let body = ''
-                req.on('data', (chunk: Buffer) => {
-                  body += chunk.toString()
-                })
-                req.on('end', () => {
-                  const params = new URLSearchParams(body)
-                  params.set('client_id', clientId)
-                  params.set('client_secret', clientSecret)
-                  const newBody = params.toString()
-                  proxyReq.setHeader(
-                    'Content-Length',
-                    Buffer.byteLength(newBody),
-                  )
-                  proxyReq.write(newBody)
-                  proxyReq.end()
-                })
-              }
-            })
-          },
-        },
-        // Proxy Qonto OAuth token requests to avoid CORS issues
-        '/api/qonto/oauth': {
-          target: 'https://oauth.qonto.com',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/qonto\/oauth/, ''),
-        },
-        // Proxy Qonto API requests to avoid CORS issues
-        '/api/qonto/v2': {
-          target: 'https://thirdparty.qonto.com',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/qonto/, ''),
-        },
-        // Proxy all Notion API requests to avoid CORS issues
-        '/api/notion': {
-          target: 'https://api.notion.com',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/notion/, '/v1'),
-          configure: (proxy) => {
-            proxy.on('proxyReq', (proxyReq, req) => {
-              // For OAuth token endpoint, add Basic Auth
-              if (req.url?.includes('/oauth/token')) {
-                const clientId = env.VITE_NOTION_CLIENT_ID || ''
-                const clientSecret = env.VITE_NOTION_CLIENT_SECRET || ''
-                const credentials = Buffer.from(
-                  `${clientId}:${clientSecret}`,
-                ).toString('base64')
-                proxyReq.setHeader('Authorization', `Basic ${credentials}`)
-              }
-            })
-          },
-        },
-        // Proxy Dropbox OAuth token requests
-        '/api/dropbox': {
-          target: 'https://api.dropboxapi.com',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/dropbox/, ''),
-          configure: (proxy) => {
-            proxy.on('proxyReq', (proxyReq, req, res, options) => {
-              // For token endpoint, inject client credentials
-              if (req.url?.includes('/oauth2/token')) {
-                const clientId = env.VITE_DROPBOX_CLIENT_ID || ''
-                const clientSecret = env.VITE_DROPBOX_CLIENT_SECRET || ''
-                // Read original body and append credentials
-                let body = ''
-                req.on('data', (chunk: Buffer) => {
-                  body += chunk.toString()
-                })
-                req.on('end', () => {
-                  const params = new URLSearchParams(body)
-                  params.set('client_id', clientId)
-                  params.set('client_secret', clientSecret)
-                  const newBody = params.toString()
-                  proxyReq.setHeader(
-                    'Content-Length',
-                    Buffer.byteLength(newBody),
-                  )
-                  proxyReq.write(newBody)
-                  proxyReq.end()
-                })
-              }
-            })
-          },
-        },
-        // Proxy Figma API and OAuth requests
-        '/api/figma': {
-          target: 'https://api.figma.com',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/figma/, '/v1'),
-          configure: (proxy) => {
-            proxy.on('proxyReq', (proxyReq, req, res, options) => {
-              // For OAuth token/refresh endpoints, add Basic Auth
-              if (
-                req.url?.includes('/oauth/token') ||
-                req.url?.includes('/oauth/refresh')
-              ) {
-                const clientId = env.VITE_FIGMA_CLIENT_ID || ''
-                const clientSecret = env.VITE_FIGMA_CLIENT_SECRET || ''
-                const credentials = Buffer.from(
-                  `${clientId}:${clientSecret}`,
-                ).toString('base64')
-                proxyReq.setHeader('Authorization', `Basic ${credentials}`)
-              }
-            })
-          },
-        },
-      },
+      // All proxy routes are handled by the oauthProxyPlugin above
     },
     preview: {
       port: 3000,

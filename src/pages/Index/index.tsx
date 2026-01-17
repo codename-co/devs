@@ -18,6 +18,7 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
+  Link,
 } from '@heroui/react'
 import { motion } from 'framer-motion'
 import { motionVariants } from './motion'
@@ -482,6 +483,16 @@ export const IndexPage = () => {
             </Container>
           )} */}
           </motion.div>
+
+          <footer className="mt-12 mb-6 flex justify-center gap-4 text-sm *:text-default-500">
+            <Link href={url('/terms')}>{t('Terms')}</Link>
+            <Link href={url('/privacy')}>{t('Privacy')}</Link>
+            {/* Open Source */}
+            <Link href="https://github.com/codename-co/devs">
+              <Icon name="GitHub" size="sm" className="me-1" />
+              {t('Open Source')}
+            </Link>
+          </footer>
         </Section>
       </DefaultLayout>
 

@@ -1,6 +1,7 @@
 import { Chip, Progress, Tooltip } from '@heroui/react'
 import { Icon } from '@/components/Icon'
 import type { Connector, ConnectorSyncState } from '../types'
+import { SyncEngine } from '../sync-engine'
 
 interface ConnectorSyncStatusProps {
   connector: Connector
@@ -50,7 +51,9 @@ export function ConnectorSyncStatus({
 }: ConnectorSyncStatusProps) {
   const config = SIZE_CONFIG[size]
   const status = connector.status
-  const isSyncing = status === 'syncing' || syncState?.status === 'syncing'
+  // Check both SyncEngine (for job status) and syncState (for reactive updates)
+  const isSyncing =
+    SyncEngine.isSyncing(connector.id) || syncState?.status === 'syncing'
 
   // Handle syncing state with animated progress
   if (isSyncing) {
@@ -95,20 +98,21 @@ export function ConnectorSyncStatus({
 
   // Handle error state with tooltip showing error message
   if (status === 'error') {
-    const errorMessage = connector.errorMessage || syncState?.errorMessage || 'Unknown error'
+    const errorMessage =
+      connector.errorMessage || syncState?.errorMessage || 'Unknown error'
 
     return (
-      <Tooltip
-        content={errorMessage}
-        color="danger"
-        placement="top"
-      >
+      <Tooltip content={errorMessage} color="danger" placement="top">
         <Chip
           size={config.chip}
           color="danger"
           variant="flat"
           startContent={
-            <Icon name="WarningTriangle" width={config.icon} height={config.icon} />
+            <Icon
+              name="WarningTriangle"
+              width={config.icon}
+              height={config.icon}
+            />
           }
         >
           {showLabel ? 'Error' : null}
@@ -141,11 +145,7 @@ export function ConnectorSyncStatus({
 
   // Default/unknown state
   return (
-    <Chip
-      size={config.chip}
-      color="default"
-      variant="flat"
-    >
+    <Chip size={config.chip} color="default" variant="flat">
       {showLabel ? 'Unknown' : null}
     </Chip>
   )

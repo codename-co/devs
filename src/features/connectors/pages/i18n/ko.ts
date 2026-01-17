@@ -54,9 +54,6 @@ export const ko: I18n = {
   'Choose a service to connect to your knowledge base':
     '지식 베이스에 연결할 서비스를 선택하세요',
   'Select a Service': '서비스 선택',
-  'OAuth not configured for this provider':
-    '이 제공자에 대해 OAuth가 구성되지 않았습니다',
-  'This provider is not ready': '이 제공자는 준비되지 않았습니다',
 
   // Wizard - OAuth Step
   'Connecting...': '연결 중...',
@@ -152,6 +149,7 @@ export const ko: I18n = {
   'Failed to load folders': '폴더 로드 실패',
   'Failed to save': '저장 실패',
   'Failed to save connector': '커넥터 저장 실패',
+  Reconnect: '재연결',
 
   // Configuration
   'Configure Connector': '커넥터 구성',

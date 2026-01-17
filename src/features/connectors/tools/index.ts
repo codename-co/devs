@@ -36,6 +36,9 @@ export type {
   GmailReadResult,
   GmailListLabelsParams,
   GmailListLabelsResult,
+  GmailCreateDraftParams,
+  GmailCreateDraftResult,
+  GmailDraftSummary,
   GmailMessageSummary,
   GmailMessageContent,
   GmailAttachment,
@@ -191,6 +194,7 @@ export {
   gmailSearch,
   gmailRead,
   gmailListLabels,
+  gmailCreateDraft,
   // Google Drive
   driveSearch,
   driveRead,

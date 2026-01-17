@@ -20,7 +20,60 @@ import type {
   SearchResult,
   ChangesResult,
   ConnectorItem,
+  ProviderMetadata,
 } from '../../types'
+import { registerProvider } from './registry'
+
+// =============================================================================
+// Provider Metadata
+// =============================================================================
+
+/** Self-contained metadata for Figma provider */
+export const metadata: ProviderMetadata = {
+  id: 'figma',
+  name: 'Figma',
+  icon: 'Figma',
+  color: '#F24E1E',
+  description: 'Sync design files and components from Figma',
+  syncSupported: true,
+  folderPickerType: 'url-input',
+  urlInputPlaceholder: 'https://www.figma.com/design/ABC123/...',
+  urlInputHelp:
+    'Paste Figma file URLs (one per line). You can also use team IDs to sync all files from a team.',
+  oauth: {
+    authUrl: 'https://www.figma.com/oauth',
+    tokenUrl: `${BRIDGE_URL}/api/figma/oauth/token`,
+    clientId: import.meta.env.VITE_FIGMA_CLIENT_ID || '',
+    clientSecret: '',
+    scopes: [
+      'current_user:read',
+      'file_content:read',
+      'file_metadata:read',
+      'file_comments:read',
+      'file_versions:read',
+      'library_assets:read',
+      'library_content:read',
+      'team_library_content:read',
+    ],
+    pkceRequired: false,
+  },
+  proxyRoutes: [
+    {
+      pathPrefix: '/api/figma',
+      pathMatch: '/oauth',
+      target: 'https://api.figma.com',
+      targetPathPrefix: '/v1',
+      credentials: {
+        type: 'basic-auth',
+        clientIdEnvKey: 'VITE_FIGMA_CLIENT_ID',
+        clientSecretEnvKey: 'VITE_FIGMA_CLIENT_SECRET',
+      },
+    },
+  ],
+}
+
+// Register the provider
+registerProvider(metadata, () => import('./figma'))
 
 // =============================================================================
 // Constants

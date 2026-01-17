@@ -6,6 +6,7 @@
  */
 
 import { BRIDGE_URL } from '@/config/bridge'
+
 import { BaseAppConnectorProvider } from '../../connector-provider'
 import type {
   Connector,
@@ -19,7 +20,42 @@ import type {
   SearchResult,
   ChangesResult,
   ConnectorItem,
+  ProviderMetadata,
 } from '../../types'
+import { registerProvider } from './registry'
+
+// =============================================================================
+// Provider Metadata
+// =============================================================================
+
+/** Self-contained metadata for OneDrive provider */
+export const metadata: ProviderMetadata = {
+  id: 'onedrive',
+  name: 'OneDrive',
+  icon: 'OneDrive',
+  color: '#0078D4',
+  description: 'Sync files and folders from OneDrive',
+  syncSupported: true,
+  active: false, // Not ready for production
+  oauth: {
+    authUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+    tokenUrl: `${BRIDGE_URL}/api/microsoft/oauth2/v2.0/token`,
+    clientId: import.meta.env.VITE_MICROSOFT_CLIENT_ID || '',
+    clientSecret: '',
+    scopes: [
+      'openid',
+      'profile',
+      'email',
+      'offline_access',
+      'https://graph.microsoft.com/Files.Read.All',
+    ],
+    pkceRequired: true,
+  },
+  // Microsoft providers share proxy routes - defined in outlook-mail
+}
+
+// Register the provider
+registerProvider(metadata, () => import('./onedrive'))
 
 // =============================================================================
 // Constants

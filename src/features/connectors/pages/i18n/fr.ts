@@ -15,7 +15,7 @@ export const fr: I18n = {
   Apps: 'Applications',
   APIs: 'APIs',
   MCPs: 'MCPs',
-  'Coming soon': 'Bientôt disponible',
+  'Coming soon': 'Prochainement',
 
   // ConnectorCard
   Connected: 'Connecté',
@@ -54,9 +54,6 @@ export const fr: I18n = {
   'Choose a service to connect to your knowledge base':
     'Choisissez un service à connecter à votre base de connaissances',
   'Select a Service': 'Sélectionner un service',
-  'OAuth not configured for this provider':
-    'OAuth non configuré pour ce fournisseur',
-  'This provider is not ready': 'Ce fournisseur n’est pas prêt',
 
   // Wizard - OAuth Step
   'Connecting...': 'Connexion en cours...',
@@ -156,6 +153,7 @@ export const fr: I18n = {
   'Failed to load folders': 'Échec du chargement des dossiers',
   'Failed to save': "Échec de l'enregistrement",
   'Failed to save connector': "Échec de l'enregistrement du connecteur",
+  Reconnect: 'Reconnecter',
 
   // Configuration
   'Configure Connector': 'Configurer le connecteur',

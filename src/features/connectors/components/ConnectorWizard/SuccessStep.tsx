@@ -8,7 +8,7 @@
 import { Button } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
-import { PROVIDER_CONFIG } from '../../providers/apps'
+import { getProvider } from '../../providers/apps'
 import type { AppConnectorProvider, AccountInfo } from '../../types'
 import localI18n from '../../pages/i18n'
 
@@ -46,7 +46,7 @@ export function SuccessStep({
 }: SuccessStepProps) {
   const { t } = useI18n(localI18n)
 
-  const config = PROVIDER_CONFIG[provider]
+  const config = getProvider(provider)
   const syncSupported = config?.syncSupported !== false
 
   return (

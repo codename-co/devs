@@ -553,7 +553,7 @@ export const fr: I18n = {
   Guest: 'Invité',
   Synchronization: 'Mode de synchronisation',
   Sync: 'Synchro',
-  Syncing: 'Synchronisé',
+  Syncing: 'Synchronise',
   Offline: 'Hors ligne',
   Connected: 'Connecté',
   Disabled: 'Désactivé',

@@ -55,9 +55,10 @@ export type ConnectorProvider =
   | McpConnectorProvider
 
 /**
- * Status of a connector
+ * Status of a connector (persisted states only)
+ * Note: 'syncing' is a transient state tracked by SyncEngine.jobs, not persisted
  */
-export type ConnectorStatus = 'connected' | 'error' | 'expired' | 'syncing'
+export type ConnectorStatus = 'connected' | 'error' | 'expired'
 
 // =============================================================================
 // Connector Configuration
@@ -125,6 +126,64 @@ export interface RateLimitConfig {
   windowSeconds: number
 }
 
+// =============================================================================
+// Provider Metadata & Registration
+// =============================================================================
+
+/**
+ * Proxy route configuration for OAuth credential injection
+ */
+export interface ProviderProxyRoute {
+  /** URL path prefix to match (e.g., '/api/google') */
+  pathPrefix: string
+  /** Additional path pattern to match for credential injection (e.g., '/token') */
+  pathMatch?: string
+  /** Target base URL to proxy to */
+  target: string
+  /** Path to prepend to the rewritten URL (e.g., '/v1' for Notion) */
+  targetPathPrefix?: string
+  /** How to inject credentials */
+  credentials:
+    | { type: 'body'; clientIdEnvKey: string; clientSecretEnvKey: string }
+    | { type: 'basic-auth'; clientIdEnvKey: string; clientSecretEnvKey: string }
+    | { type: 'none' }
+}
+
+/**
+ * Self-contained metadata for an app connector provider.
+ * Each provider defines its own metadata, making it fully self-contained.
+ */
+export interface ProviderMetadata {
+  /** Unique provider identifier */
+  id: AppConnectorProvider
+  /** Display name */
+  name: string
+  /** Icon name from the Icon component */
+  icon: string
+  /** Brand color (hex or 'currentColor') */
+  color: string
+  /** Short description for UI display */
+  description: string
+  /** Whether this provider supports syncing content to the Knowledge Base */
+  syncSupported: boolean
+  /** Whether this provider is currently active (false = coming soon) */
+  active?: boolean
+  /**
+   * Type of folder picker UI to show during setup:
+   * - 'tree' (default): Standard folder tree browser
+   * - 'url-input': Text input for URLs/IDs (for providers like Figma)
+   */
+  folderPickerType?: 'tree' | 'url-input'
+  /** Placeholder text for url-input mode */
+  urlInputPlaceholder?: string
+  /** Help text for url-input mode */
+  urlInputHelp?: string
+  /** OAuth configuration */
+  oauth: OAuthConfig
+  /** Proxy routes for dev server (credential injection) */
+  proxyRoutes?: ProviderProxyRoute[]
+}
+
 /**
  * Provider configuration - defines how to interact with a connector type
  */
@@ -167,6 +226,7 @@ export interface Connector {
   scopes?: string[]
   accountId?: string // For linking related services (e.g., Google)
   accountEmail?: string // Display purposes
+  accountPicture?: string // User avatar URL from userinfo endpoint
 
   // API connectors
   apiConfig?: ApiConfig

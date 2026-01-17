@@ -20,7 +20,47 @@ import type {
   SearchResult,
   ChangesResult,
   ConnectorItem,
+  ProviderMetadata,
 } from '../../types'
+import { registerProvider } from './registry'
+
+// =============================================================================
+// Provider Metadata
+// =============================================================================
+
+/** Self-contained metadata for Qonto provider */
+export const metadata: ProviderMetadata = {
+  id: 'qonto',
+  name: 'Qonto',
+  icon: 'Qonto',
+  color: 'currentColor',
+  description: 'Access business accounts, transactions, and statements',
+  syncSupported: false,
+  oauth: {
+    authUrl: 'https://oauth.qonto.com/oauth2/auth',
+    tokenUrl: `${BRIDGE_URL}/api/qonto/oauth/oauth2/token`,
+    clientId: import.meta.env.VITE_QONTO_CLIENT_ID || '',
+    clientSecret: '',
+    scopes: ['offline_access', 'organization.read'],
+    pkceRequired: true,
+  },
+  proxyRoutes: [
+    {
+      pathPrefix: '/api/qonto/oauth',
+      target: 'https://oauth.qonto.com',
+      credentials: { type: 'none' },
+    },
+    {
+      pathPrefix: '/api/qonto/v2',
+      target: 'https://thirdparty.qonto.com',
+      targetPathPrefix: '/v2',
+      credentials: { type: 'none' },
+    },
+  ],
+}
+
+// Register the provider
+registerProvider(metadata, () => import('./qonto'))
 
 // =============================================================================
 // Constants
