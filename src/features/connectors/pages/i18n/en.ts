@@ -23,6 +23,7 @@ export const en = [
   '{n} days ago',
   'Last sync:',
   '{n} folders syncing',
+  '{n} tools',
   'Sync Now',
   'More options',
   'Connector actions',
@@ -68,6 +69,11 @@ export const en = [
   // Wizard - Folder Selection
   'Select Folders',
   'Select folders to sync',
+  'Add files to sync',
+  'Paste file URLs or IDs from {name} to sync.',
+  'Enter URLs or IDs (one per line)',
+  'Enter file URLs or IDs, one per line',
+  '{n} items to sync',
   'Choose which folders you want to sync from {name}, or sync everything.',
   'Sync everything',
   'All files and folders will be synced automatically',
@@ -106,6 +112,8 @@ export const en = [
   // Settings Modal
   '{name} Settings',
   'Connected Account',
+  'Available Tools',
+  '{n} tools available for AI agents',
   'Enable Sync',
   'Enable Automatic Sync',
   'Automatically sync content from this connector',

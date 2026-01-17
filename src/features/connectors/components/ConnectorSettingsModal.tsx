@@ -36,6 +36,7 @@ import type {
   AppConnectorProviderInterface,
   ConnectorItem,
 } from '../types'
+import { getToolDefinitionsForProvider } from '../tools'
 import localI18n from '../pages/i18n'
 
 // =============================================================================
@@ -411,6 +412,47 @@ export function ConnectorSettingsModal({
                   </div>
                 </div>
               )}
+
+              {/* Available Tools */}
+              {connector.provider &&
+                (() => {
+                  const tools = getToolDefinitionsForProvider(
+                    connector.provider,
+                  )
+                  if (tools.length === 0) return null
+                  return (
+                    <div className="space-y-3">
+                      <div>
+                        <p className="font-medium">{t('Available Tools')}</p>
+                        <p className="text-xs text-default-500">
+                          {t('{n} tools available for AI agents', {
+                            n: tools.length,
+                          })}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+                        {tools.map((tool) => (
+                          <div
+                            key={tool.function.name}
+                            className="flex items-start gap-2 p-2"
+                          >
+                            <Icon name="Puzzle" size="sm" />
+                            <dl className="min-w-0">
+                              <dt className="text-xs font-medium font-mono truncate">
+                                {tool.function.name}
+                              </dt>
+                              <dd className="text-xs text-default-500 line-clamp-2">
+                                {tool.function.description}
+                              </dd>
+                            </dl>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })()}
+
+              <Divider />
 
               {/* Sync Toggle */}
               <div className="flex items-center justify-between">

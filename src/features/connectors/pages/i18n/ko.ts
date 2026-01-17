@@ -29,6 +29,7 @@ export const ko: I18n = {
   '{n} days ago': '{n}일 전',
   'Last sync:': '마지막 동기화:',
   '{n} folders syncing': '{n}개 폴더 동기화 중',
+  '{n} tools': '{n}개 도구',
   'Sync Now': '지금 동기화',
   'More options': '더 많은 옵션',
   'Connector actions': '커넥터 작업',
@@ -83,6 +84,13 @@ export const ko: I18n = {
   // Wizard - Folder Selection
   'Select Folders': '폴더 선택',
   'Select folders to sync': '동기화할 폴더 선택',
+  'Add files to sync': '동기화할 파일 추가',
+  'Paste file URLs or IDs from {name} to sync.':
+    '동기화할 {name}의 파일 URL 또는 ID를 붙여넣으세요.',
+  'Enter URLs or IDs (one per line)': 'URL 또는 ID 입력 (한 줄에 하나씩)',
+  'Enter file URLs or IDs, one per line':
+    '파일 URL 또는 ID를 한 줄에 하나씩 입력하세요',
+  '{n} items to sync': '{n}개 항목 동기화 예정',
   'Choose which folders you want to sync from {name}, or sync everything.':
     '{name}에서 동기화할 폴더를 선택하거나 모든 항목을 동기화하세요.',
   'Sync everything': '모두 동기화',
@@ -126,6 +134,8 @@ export const ko: I18n = {
   // Settings Modal
   '{name} Settings': '{name} 설정',
   'Connected Account': '연결된 계정',
+  'Available Tools': '사용 가능한 도구',
+  '{n} tools available for AI agents': 'AI 에이전트에 {n}개 도구 사용 가능',
   'Enable Sync': '동기화 활성화',
   'Enable Automatic Sync': '자동 동기화 활성화',
   'Automatically sync content from this connector':

@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import {
   Card,
   CardBody,
@@ -12,6 +13,7 @@ import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import type { Connector, ConnectorStatus } from '../types'
 import { PROVIDER_CONFIG } from '../providers/apps'
+import { getToolDefinitionsForProvider } from '../tools'
 import localI18n from '../pages/i18n'
 
 interface ConnectorCardProps {
@@ -103,6 +105,11 @@ export function ConnectorCard({
   const hasError =
     connector.status === 'error' || connector.status === 'expired'
 
+  // Get the number of tools for this provider
+  const toolCount = useMemo(() => {
+    return getToolDefinitionsForProvider(connector.provider).length
+  }, [connector.provider])
+
   return (
     <Card className="group border border-divider hover:border-primary/30 transition-colors">
       <CardBody className="p-4">
@@ -178,11 +185,21 @@ export function ConnectorCard({
             <span className="text-xs text-default-500">
               {formatLastSync(connector.lastSyncAt)}
             </span>
-            {connector.syncFolders && connector.syncFolders.length > 0 && (
-              <span className="text-[10px] text-default-400">
-                {t('{n} folders syncing', { n: connector.syncFolders.length })}
-              </span>
-            )}
+            <div className="flex items-center gap-2 text-[10px] text-default-400">
+              {toolCount > 0 && (
+                <span className="flex items-center gap-1">
+                  <Icon name="Puzzle" className="w-2.5 h-2.5" />
+                  {t('{n} tools', { n: toolCount })}
+                </span>
+              )}
+              {connector.syncFolders && connector.syncFolders.length > 0 && (
+                <span>
+                  {t('{n} folders syncing', {
+                    n: connector.syncFolders.length,
+                  })}
+                </span>
+              )}
+            </div>
           </div>
 
           <Button

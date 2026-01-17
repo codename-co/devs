@@ -29,6 +29,7 @@ export const ar: I18n = {
   '{n} days ago': 'منذ {n} أيام',
   'Last sync:': 'آخر مزامنة:',
   '{n} folders syncing': '{n} مجلدات قيد المزامنة',
+  '{n} tools': '{n} أدوات',
   'Sync Now': 'مزامنة الآن',
   'More options': 'خيارات إضافية',
   'Connector actions': 'إجراءات الموصل',
@@ -82,6 +83,13 @@ export const ar: I18n = {
   // Wizard - Folder Selection
   'Select Folders': 'اختر المجلدات',
   'Select folders to sync': 'اختر المجلدات للمزامنة',
+  'Add files to sync': 'أضف ملفات للمزامنة',
+  'Paste file URLs or IDs from {name} to sync.':
+    'الصق روابط أو معرفات الملفات من {name} للمزامنة.',
+  'Enter URLs or IDs (one per line)': 'أدخل الروابط أو المعرفات (واحد لكل سطر)',
+  'Enter file URLs or IDs, one per line':
+    'أدخل روابط أو معرفات الملفات، واحد لكل سطر',
+  '{n} items to sync': '{n} عناصر للمزامنة',
   'Choose which folders you want to sync from {name}, or sync everything.':
     'اختر المجلدات التي تريد مزامنتها من {name}، أو قم بمزامنة كل شيء.',
   'Sync everything': 'مزامنة كل شيء',
@@ -124,6 +132,9 @@ export const ar: I18n = {
   // Settings Modal
   '{name} Settings': 'إعدادات {name}',
   'Connected Account': 'الحساب المتصل',
+  'Available Tools': 'الأدوات المتاحة',
+  '{n} tools available for AI agents':
+    '{n} أدوات متاحة لوكلاء الذكاء الاصطناعي',
   'Enable Sync': 'تفعيل المزامنة',
   'Enable Automatic Sync': 'تفعيل المزامنة التلقائية',
   'Automatically sync content from this connector':

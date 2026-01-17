@@ -29,6 +29,7 @@ export const de: I18n = {
   '{n} days ago': 'Vor {n} Tagen',
   'Last sync:': 'Letzte Synchronisierung:',
   '{n} folders syncing': '{n} Ordner werden synchronisiert',
+  '{n} tools': '{n} Werkzeuge',
   'Sync Now': 'Jetzt synchronisieren',
   'More options': 'Weitere Optionen',
   'Connector actions': 'Konnektor-Aktionen',
@@ -83,6 +84,13 @@ export const de: I18n = {
   // Wizard - Folder Selection
   'Select Folders': 'Ordner auswählen',
   'Select folders to sync': 'Ordner zum Synchronisieren auswählen',
+  'Add files to sync': 'Dateien zum Synchronisieren hinzufügen',
+  'Paste file URLs or IDs from {name} to sync.':
+    'Fügen Sie Datei-URLs oder IDs von {name} zum Synchronisieren ein.',
+  'Enter URLs or IDs (one per line)': 'URLs oder IDs eingeben (eine pro Zeile)',
+  'Enter file URLs or IDs, one per line':
+    'Datei-URLs oder IDs eingeben, eine pro Zeile',
+  '{n} items to sync': '{n} Elemente zum Synchronisieren',
   'Choose which folders you want to sync from {name}, or sync everything.':
     'Wählen Sie, welche Ordner Sie von {name} synchronisieren möchten, oder synchronisieren Sie alles.',
   'Sync everything': 'Alles synchronisieren',
@@ -127,6 +135,8 @@ export const de: I18n = {
   // Settings Modal
   '{name} Settings': '{name}-Einstellungen',
   'Connected Account': 'Verbundenes Konto',
+  'Available Tools': 'Verfügbare Werkzeuge',
+  '{n} tools available for AI agents': '{n} Werkzeuge für KI-Agenten verfügbar',
   'Enable Sync': 'Synchronisierung aktivieren',
   'Enable Automatic Sync': 'Automatische Synchronisierung aktivieren',
   'Automatically sync content from this connector':
