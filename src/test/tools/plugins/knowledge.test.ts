@@ -170,7 +170,9 @@ describe('Knowledge Tool Plugins', () => {
   describe('getDocumentSummaryPlugin', () => {
     describe('metadata', () => {
       it('should have correct name', () => {
-        expect(getDocumentSummaryPlugin.metadata.name).toBe('get_document_summary')
+        expect(getDocumentSummaryPlugin.metadata.name).toBe(
+          'get_document_summary',
+        )
       })
 
       it('should have knowledge category', () => {

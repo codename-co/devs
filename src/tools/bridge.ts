@@ -10,7 +10,10 @@
 import type { ToolPlugin, ToolCategory } from './types'
 import { toolRegistry } from './registry'
 import { allPlugins } from './plugins'
-import type { ToolRegistry, ToolRegistrationOptions } from '@/lib/tool-executor/types'
+import type {
+  ToolRegistry,
+  ToolRegistrationOptions,
+} from '@/lib/tool-executor/types'
 
 // ============================================================================
 // Bridge Functions
@@ -35,16 +38,12 @@ export function registerPluginWithLegacy(
 
   // Register with legacy registry
   if (!legacyRegistry.has(plugin.metadata.name)) {
-    legacyRegistry.register(
-      plugin.definition,
-      plugin.handler,
-      {
-        replace: options?.replace,
-        tags: plugin.metadata.tags,
-        estimatedDuration: plugin.metadata.estimatedDuration,
-        requiresConfirmation: plugin.metadata.requiresConfirmation,
-      },
-    )
+    legacyRegistry.register(plugin.definition, plugin.handler, {
+      replace: options?.replace,
+      tags: plugin.metadata.tags,
+      estimatedDuration: plugin.metadata.estimatedDuration,
+      requiresConfirmation: plugin.metadata.requiresConfirmation,
+    })
   }
 }
 

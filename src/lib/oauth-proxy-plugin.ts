@@ -102,10 +102,7 @@ export function oauthProxyPlugin(routes: ProxyRoute[]): Plugin {
 
         try {
           // Build target URL
-          const pathSuffix = url.replace(
-            new RegExp(`^${route.pathPrefix}`),
-            '',
-          )
+          const pathSuffix = url.replace(new RegExp(`^${route.pathPrefix}`), '')
           const targetUrl = `${route.target}${route.targetPathPrefix || ''}${pathSuffix}`
 
           // Prepare headers

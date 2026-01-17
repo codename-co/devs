@@ -26,25 +26,27 @@ import {
 /**
  * Drive search plugin - Search files in Google Drive.
  */
-export const driveSearchPlugin: ToolPlugin<DriveSearchParams, DriveSearchResult> =
-  createToolPlugin({
-    metadata: {
-      name: 'drive_search',
-      displayName: 'Drive Search',
-      shortDescription: 'Search files in Google Drive',
-      category: 'connector',
-      tags: ['connector', 'drive', 'search', 'files'],
-      icon: 'GoogleDrive',
-      estimatedDuration: 2000,
-    },
-    definition: DRIVE_TOOL_DEFINITIONS.drive_search,
-    handler: async (args, context) => {
-      if (context?.abortSignal?.aborted) {
-        throw new Error('Aborted')
-      }
-      return driveSearch(args)
-    },
-  })
+export const driveSearchPlugin: ToolPlugin<
+  DriveSearchParams,
+  DriveSearchResult
+> = createToolPlugin({
+  metadata: {
+    name: 'drive_search',
+    displayName: 'Drive Search',
+    shortDescription: 'Search files in Google Drive',
+    category: 'connector',
+    tags: ['connector', 'drive', 'search', 'files'],
+    icon: 'GoogleDrive',
+    estimatedDuration: 2000,
+  },
+  definition: DRIVE_TOOL_DEFINITIONS.drive_search,
+  handler: async (args, context) => {
+    if (context?.abortSignal?.aborted) {
+      throw new Error('Aborted')
+    }
+    return driveSearch(args)
+  },
+})
 
 /**
  * Drive read plugin - Read a specific file from Google Drive.

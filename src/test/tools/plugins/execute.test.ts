@@ -78,9 +78,7 @@ describe('executePlugin', () => {
     it('should throw for missing code', () => {
       const params = {} as { code: string }
 
-      expect(() => executePlugin.validate!(params)).toThrow(
-        'Code is required',
-      )
+      expect(() => executePlugin.validate!(params)).toThrow('Code is required')
     })
 
     it('should throw for empty code', () => {

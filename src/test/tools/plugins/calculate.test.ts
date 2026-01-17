@@ -76,10 +76,7 @@ describe('calculatePlugin', () => {
 
   describe('handler', () => {
     it('should evaluate simple expressions', async () => {
-      const result = await calculatePlugin.handler(
-        { expression: '2 + 2' },
-        {},
-      )
+      const result = await calculatePlugin.handler({ expression: '2 + 2' }, {})
 
       expect(result).toHaveProperty('result', 4)
     })
@@ -108,10 +105,7 @@ describe('calculatePlugin', () => {
     })
 
     it('should handle errors gracefully', async () => {
-      const result = await calculatePlugin.handler(
-        { expression: '' },
-        {},
-      )
+      const result = await calculatePlugin.handler({ expression: '' }, {})
 
       expect(result).toHaveProperty('error')
     })

@@ -57,7 +57,10 @@ function createMockMetadata(
 /**
  * Create a mock tool plugin
  */
-function createMockPlugin<TArgs = { input: string }, TResult = { output: string }>(
+function createMockPlugin<
+  TArgs = { input: string },
+  TResult = { output: string },
+>(
   name: string,
   options?: {
     category?: ToolMetadata['category']
@@ -225,9 +228,21 @@ describe('ToolPluginRegistry', () => {
 
   describe('list', () => {
     beforeEach(() => {
-      registry.register(createMockPlugin('math_tool', { category: 'math', tags: ['arithmetic'] }))
-      registry.register(createMockPlugin('code_tool', { category: 'code', tags: ['python'] }))
-      registry.register(createMockPlugin('util_tool', { category: 'utility', tags: ['helper'] }))
+      registry.register(
+        createMockPlugin('math_tool', {
+          category: 'math',
+          tags: ['arithmetic'],
+        }),
+      )
+      registry.register(
+        createMockPlugin('code_tool', { category: 'code', tags: ['python'] }),
+      )
+      registry.register(
+        createMockPlugin('util_tool', {
+          category: 'utility',
+          tags: ['helper'],
+        }),
+      )
     })
 
     it('should return all registered tools', () => {

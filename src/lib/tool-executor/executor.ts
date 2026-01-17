@@ -1021,4 +1021,5 @@ export function arePresentationToolsRegistered(): boolean {
  * Useful for testing or when disabling presentation features.
  */
 export function unregisterPresentationTools(): void {
-  unregisterCategoryFromLegacy('presentation', defaultRegistry)}
+  unregisterCategoryFromLegacy('presentation', defaultRegistry)
+}

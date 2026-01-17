@@ -19,7 +19,9 @@ describe('generatePresentationPlugin', () => {
 
   describe('metadata', () => {
     it('should have correct name', () => {
-      expect(generatePresentationPlugin.metadata.name).toBe('generate_presentation')
+      expect(generatePresentationPlugin.metadata.name).toBe(
+        'generate_presentation',
+      )
     })
 
     it('should have presentation category', () => {
@@ -43,7 +45,9 @@ describe('generatePresentationPlugin', () => {
     })
 
     it('should have matching function name', () => {
-      expect(generatePresentationPlugin.definition.function.name).toBe('generate_presentation')
+      expect(generatePresentationPlugin.definition.function.name).toBe(
+        'generate_presentation',
+      )
     })
 
     it('should require title and slides parameters', () => {
