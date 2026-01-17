@@ -3,10 +3,17 @@
  *
  * Tree view for selecting folders/labels from a connected provider.
  * Supports multi-select with checkboxes and a "Sync All" option.
+ * Also supports URL input mode for providers like Figma.
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { Button, Checkbox, Spinner, ScrollShadow } from '@heroui/react'
+import {
+  Button,
+  Checkbox,
+  Spinner,
+  ScrollShadow,
+  Textarea,
+} from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { ProviderRegistry } from '../../provider-registry'
@@ -61,11 +68,20 @@ export function FolderPicker({
   const [syncAll, setSyncAll] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [urlInput, setUrlInput] = useState('')
 
   const config = PROVIDER_CONFIG[provider]
+  const isUrlInputMode = config?.folderPickerType === 'url-input'
 
-  // Fetch root folders on mount
+  // Fetch root folders on mount (only for tree mode)
   useEffect(() => {
+    // Skip fetching for URL input mode
+    if (isUrlInputMode) {
+      setIsLoading(false)
+      setSyncAll(false) // URL input mode requires explicit input
+      return
+    }
+
     const fetchFolders = async () => {
       setIsLoading(true)
       setError(null)
@@ -127,14 +143,31 @@ export function FolderPicker({
     }
   }, [])
 
+  // Parse URL input into array of IDs/URLs
+  const parseUrlInput = useCallback((input: string): string[] => {
+    return input
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+  }, [])
+
   // Handle continue
   const handleContinue = useCallback(() => {
-    if (syncAll) {
+    if (isUrlInputMode) {
+      // For URL input mode, parse the textarea content
+      const urls = parseUrlInput(urlInput)
+      onSelect(urls.length > 0 ? urls : null)
+    } else if (syncAll) {
       onSelect(null) // null means sync everything
     } else {
       onSelect(Array.from(selectedIds))
     }
-  }, [syncAll, selectedIds, onSelect])
+  }, [isUrlInputMode, urlInput, parseUrlInput, syncAll, selectedIds, onSelect])
+
+  // Check if continue is disabled
+  const isContinueDisabled = isUrlInputMode
+    ? parseUrlInput(urlInput).length === 0
+    : !syncAll && selectedIds.size === 0
 
   // Expand folder to load children
   const expandFolder = useCallback(async (folderId: string) => {
@@ -200,36 +233,71 @@ export function FolderPicker({
     <div className="space-y-4">
       <div className="text-center mb-6">
         <h3 className="text-lg font-medium mb-2">
-          {t('Select folders to sync')}
+          {isUrlInputMode
+            ? t('Add files to sync')
+            : t('Select folders to sync')}
         </h3>
         <p className="text-default-500 text-sm">
-          {t(
-            'Choose which folders you want to sync from {name}, or sync everything.',
-            { name: config?.name || provider },
-          )}
+          {isUrlInputMode
+            ? t('Paste file URLs or IDs from {name} to sync.', {
+                name: config?.name || provider,
+              })
+            : t(
+                'Choose which folders you want to sync from {name}, or sync everything.',
+                { name: config?.name || provider },
+              )}
         </p>
       </div>
 
-      {/* Sync All Option */}
-      <div className="p-4 bg-default-50 dark:bg-default-100/10 rounded-lg">
-        <Checkbox
-          isSelected={syncAll}
-          onValueChange={toggleSyncAll}
-          classNames={{
-            label: 'text-sm',
-          }}
-        >
-          <div>
-            <span className="font-medium">{t('Sync everything')}</span>
-            <p className="text-xs text-default-400 mt-0.5">
-              {t('All files and folders will be synced automatically')}
-            </p>
-          </div>
-        </Checkbox>
-      </div>
+      {/* Sync All Option (only for tree mode) */}
+      {!isUrlInputMode && (
+        <div className="p-4 bg-default-50 dark:bg-default-100/10 rounded-lg">
+          <Checkbox
+            isSelected={syncAll}
+            onValueChange={toggleSyncAll}
+            classNames={{
+              label: 'text-sm',
+            }}
+          >
+            <div>
+              <span className="font-medium">{t('Sync everything')}</span>
+              <p className="text-xs text-default-400 mt-0.5">
+                {t('All files and folders will be synced automatically')}
+              </p>
+            </div>
+          </Checkbox>
+        </div>
+      )}
 
-      {/* Folder Tree */}
-      {!syncAll && (
+      {/* URL Input Mode (for Figma, etc.) */}
+      {isUrlInputMode && (
+        <div className="space-y-3">
+          <Textarea
+            value={urlInput}
+            onValueChange={setUrlInput}
+            placeholder={
+              config?.urlInputPlaceholder ||
+              t('Enter URLs or IDs (one per line)')
+            }
+            minRows={4}
+            maxRows={8}
+            classNames={{
+              input: 'font-mono text-sm',
+            }}
+          />
+          <p className="text-xs text-default-400">
+            {config?.urlInputHelp || t('Enter file URLs or IDs, one per line')}
+          </p>
+          {parseUrlInput(urlInput).length > 0 && (
+            <p className="text-xs text-default-500 text-center">
+              {t('{n} items to sync', { n: parseUrlInput(urlInput).length })}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Folder Tree (standard mode) */}
+      {!isUrlInputMode && !syncAll && (
         <ScrollShadow className="max-h-64">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
@@ -259,8 +327,8 @@ export function FolderPicker({
         </ScrollShadow>
       )}
 
-      {/* Selection Summary */}
-      {!syncAll && selectedIds.size > 0 && (
+      {/* Selection Summary (tree mode) */}
+      {!isUrlInputMode && !syncAll && selectedIds.size > 0 && (
         <p className="text-xs text-default-500 text-center">
           {t('{n} folders selected', { n: selectedIds.size })}
         </p>
@@ -274,7 +342,7 @@ export function FolderPicker({
         <Button
           color="primary"
           onPress={handleContinue}
-          isDisabled={!syncAll && selectedIds.size === 0}
+          isDisabled={isContinueDisabled}
         >
           {t('Continue')}
         </Button>

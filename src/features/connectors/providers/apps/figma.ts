@@ -156,6 +156,17 @@ interface FigmaStyle {
 export class FigmaProvider extends BaseAppConnectorProvider {
   readonly id = 'figma' as const
 
+  readonly scopes = [
+    'current_user:read',
+    'file_content:read',
+    'file_metadata:read',
+    'file_comments:read',
+    'file_versions:read',
+    'library_assets:read',
+    'library_content:read',
+    'team_library_content:read',
+  ]
+
   readonly config: ConnectorProviderConfig = {
     id: 'figma',
     category: 'app',
@@ -194,18 +205,11 @@ export class FigmaProvider extends BaseAppConnectorProvider {
    * @returns The full authorization URL
    */
   getAuthUrl(state: string, codeChallenge: string): string {
-    const scopes = [
-      'file_content:read',
-      'file_metadata:read',
-      'current_user:read',
-      'projects:read',
-    ]
-
     const params = new URLSearchParams({
       client_id: this.clientId,
       redirect_uri: this.redirectUri,
       response_type: 'code',
-      scope: scopes.join(','),
+      scope: this.scopes.join(','),
       state,
       code_challenge: codeChallenge,
     })
@@ -251,8 +255,7 @@ export class FigmaProvider extends BaseAppConnectorProvider {
       accessToken: data.access_token,
       refreshToken: data.refresh_token,
       expiresIn: data.expires_in,
-      scope:
-        'file_content:read,file_metadata:read,current_user:read,projects:read',
+      scope: this.scopes.join(','),
       tokenType: data.token_type,
     }
   }
@@ -389,8 +392,13 @@ export class FigmaProvider extends BaseAppConnectorProvider {
   /**
    * List files from Figma.
    *
-   * Note: Figma requires a team ID to list projects/files.
-   * This needs to be configured in the connector's syncFolders.
+   * Supports two types of identifiers in syncFolders:
+   * - Team IDs (numeric): Lists all files from all projects in the team
+   * - File keys (alphanumeric): Fetches metadata for specific files
+   *
+   * File keys can be extracted from Figma URLs:
+   * - https://www.figma.com/file/ABC123xyz/Design-Name
+   * - https://www.figma.com/design/ABC123xyz/Design-Name
    *
    * @param connector - The connector to list from
    * @param options - Pagination and filtering options
@@ -398,41 +406,74 @@ export class FigmaProvider extends BaseAppConnectorProvider {
    */
   async list(connector: Connector, options?: ListOptions): Promise<ListResult> {
     const items: ConnectorItem[] = []
+    const syncEntries = connector.syncFolders || []
 
-    // If syncFolders contains team IDs, list their projects and files
-    const teamIds = connector.syncFolders || []
+    if (syncEntries.length === 0) {
+      console.warn(
+        '[Figma] No syncFolders configured. Add team IDs or file keys to sync.',
+      )
+      return {
+        items: [],
+        hasMore: false,
+      }
+    }
 
-    for (const teamId of teamIds) {
+    for (const entry of syncEntries) {
       try {
-        // Get team projects
-        const projectsResponse = await this.fetchWithAuth(
-          connector,
-          `${FIGMA_API_BASE}/teams/${teamId}/projects`,
-        )
+        // Determine if entry is a team ID (numeric) or file key (alphanumeric)
+        const isTeamId = /^\d+$/.test(entry)
 
-        if (projectsResponse.ok) {
-          const projectsData: FigmaTeamProjectsResponse =
-            await projectsResponse.json()
+        if (isTeamId) {
+          // Entry is a team ID - list all projects and files
+          const projectsResponse = await this.fetchWithAuth(
+            connector,
+            `${FIGMA_API_BASE}/teams/${entry}/projects`,
+          )
 
-          for (const project of projectsData.projects) {
-            // Get files in each project
-            const filesResponse = await this.fetchWithAuth(
-              connector,
-              `${FIGMA_API_BASE}/projects/${project.id}/files`,
-            )
+          if (projectsResponse.ok) {
+            const projectsData: FigmaTeamProjectsResponse =
+              await projectsResponse.json()
 
-            if (filesResponse.ok) {
-              const filesData: FigmaProjectFilesResponse =
-                await filesResponse.json()
+            for (const project of projectsData.projects) {
+              // Get files in each project
+              const filesResponse = await this.fetchWithAuth(
+                connector,
+                `${FIGMA_API_BASE}/projects/${project.id}/files`,
+              )
 
-              for (const file of filesData.files) {
-                items.push(this.normalizeFile(file, project.name))
+              if (filesResponse.ok) {
+                const filesData: FigmaProjectFilesResponse =
+                  await filesResponse.json()
+
+                for (const file of filesData.files) {
+                  items.push(this.normalizeFile(file, project.name))
+                }
               }
             }
+          } else {
+            console.error(
+              `[Figma] Failed to list projects for team ${entry}: ${projectsResponse.status}`,
+            )
+          }
+        } else {
+          // Entry is a file key - fetch file metadata directly
+          const fileKey = this.extractFileKey(entry)
+          const metaResponse = await this.fetchWithAuth(
+            connector,
+            `${FIGMA_API_BASE}/files/${fileKey}/meta`,
+          )
+
+          if (metaResponse.ok) {
+            const meta: FigmaFileMeta = await metaResponse.json()
+            items.push(this.normalizeFileMeta(fileKey, meta))
+          } else {
+            console.error(
+              `[Figma] Failed to get metadata for file ${fileKey}: ${metaResponse.status}`,
+            )
           }
         }
       } catch (error) {
-        console.error(`Failed to list files for team ${teamId}:`, error)
+        console.error(`[Figma] Failed to process entry ${entry}:`, error)
       }
     }
 
@@ -448,6 +489,56 @@ export class FigmaProvider extends BaseAppConnectorProvider {
           ? String(startIndex + pageSize)
           : undefined,
       hasMore: startIndex + pageSize < items.length,
+    }
+  }
+
+  /**
+   * Extract file key from a Figma URL or return as-is if already a key.
+   *
+   * Supports URLs like:
+   * - https://www.figma.com/file/ABC123xyz/Design-Name
+   * - https://www.figma.com/design/ABC123xyz/Design-Name
+   * - ABC123xyz (raw file key)
+   *
+   * @param input - URL or file key
+   * @returns The extracted file key
+   */
+  private extractFileKey(input: string): string {
+    // Check if it's a URL
+    const urlMatch = input.match(/figma\.com\/(?:file|design)\/([a-zA-Z0-9]+)/)
+    if (urlMatch) {
+      return urlMatch[1]
+    }
+    // Already a file key
+    return input
+  }
+
+  /**
+   * Normalize file metadata to a ConnectorItem.
+   *
+   * @param fileKey - The Figma file key
+   * @param meta - The file metadata from the API
+   * @returns Normalized ConnectorItem
+   */
+  private normalizeFileMeta(
+    fileKey: string,
+    meta: FigmaFileMeta,
+  ): ConnectorItem {
+    return {
+      externalId: fileKey,
+      name: meta.file.name,
+      type: 'file',
+      fileType: 'document',
+      mimeType: 'application/figma',
+      path: `/figma/${meta.file.folder_name || 'files'}/${meta.file.name}`,
+      lastModified: new Date(meta.file.last_touched_at),
+      externalUrl: meta.file.url,
+      metadata: {
+        thumbnailUrl: meta.file.thumbnail_url,
+        folderName: meta.file.folder_name,
+        editorType: meta.file.editor_type,
+        version: meta.file.version,
+      },
     }
   }
 

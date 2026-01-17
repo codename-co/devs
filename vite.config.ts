@@ -235,6 +235,28 @@ export default defineConfig(({ mode }) => {
             })
           },
         },
+        // Proxy Figma API and OAuth requests
+        '/api/figma': {
+          target: 'https://api.figma.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/figma/, '/v1'),
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq, req, res, options) => {
+              // For OAuth token/refresh endpoints, add Basic Auth
+              if (
+                req.url?.includes('/oauth/token') ||
+                req.url?.includes('/oauth/refresh')
+              ) {
+                const clientId = env.VITE_FIGMA_CLIENT_ID || ''
+                const clientSecret = env.VITE_FIGMA_CLIENT_SECRET || ''
+                const credentials = Buffer.from(
+                  `${clientId}:${clientSecret}`,
+                ).toString('base64')
+                proxyReq.setHeader('Authorization', `Basic ${credentials}`)
+              }
+            })
+          },
+        },
       },
     },
     preview: {

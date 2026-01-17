@@ -27,6 +27,16 @@ export const PROVIDER_CONFIG: Partial<
       /** Whether this provider supports syncing content to the Knowledge Base */
       syncSupported?: boolean
       active?: false
+      /**
+       * Type of folder picker UI to show during setup:
+       * - 'tree' (default): Standard folder tree browser
+       * - 'url-input': Text input for URLs/IDs (for providers like Figma)
+       */
+      folderPickerType?: 'tree' | 'url-input'
+      /** Placeholder text for url-input mode */
+      urlInputPlaceholder?: string
+      /** Help text for url-input mode */
+      urlInputHelp?: string
     }
   >
 > = {
@@ -116,6 +126,10 @@ export const PROVIDER_CONFIG: Partial<
     color: '#F24E1E',
     description: 'Sync design files and components from Figma',
     syncSupported: true,
+    folderPickerType: 'url-input',
+    urlInputPlaceholder: 'https://www.figma.com/design/ABC123/...',
+    urlInputHelp:
+      'Paste Figma file URLs (one per line). You can also use team IDs to sync all files from a team.',
   },
   dropbox: {
     name: 'Dropbox',

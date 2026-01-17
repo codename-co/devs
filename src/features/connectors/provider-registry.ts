@@ -45,11 +45,13 @@ const APP_PROVIDERS: readonly AppConnectorProvider[] = [
   'google-calendar',
   'google-chat',
   'google-tasks',
+  'google-meet',
   'notion',
   'qonto',
   'slack',
   'outlook-mail',
   'dropbox',
+  'figma',
 ] as const
 
 /**
@@ -188,11 +190,13 @@ export class ProviderRegistry {
     )
     this.register('google-chat', () => import('./providers/apps/google-chat'))
     this.register('google-tasks', () => import('./providers/apps/google-tasks'))
+    this.register('google-meet', () => import('./providers/apps/google-meet'))
     this.register('notion', () => import('./providers/apps/notion'))
     this.register('qonto', () => import('./providers/apps/qonto'))
     this.register('slack', () => import('./providers/apps/slack'))
     this.register('outlook-mail', () => import('./providers/apps/outlook-mail'))
     this.register('dropbox', () => import('./providers/apps/dropbox'))
+    this.register('figma', () => import('./providers/apps/figma'))
   }
 
   /**

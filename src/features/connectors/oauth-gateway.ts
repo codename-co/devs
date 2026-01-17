@@ -210,7 +210,16 @@ const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
     tokenUrl: `${BRIDGE_URL}/api/figma/oauth/token`,
     clientId: import.meta.env.VITE_FIGMA_CLIENT_ID || '',
     clientSecret: '', // Secret handled server-side by gateway
-    scopes: ['files:read'],
+    scopes: [
+      'current_user:read',
+      'file_content:read',
+      'file_metadata:read',
+      'file_comments:read',
+      'file_versions:read',
+      'library_assets:read',
+      'library_content:read',
+      'team_library_content:read',
+    ],
     pkceRequired: false, // Figma doesn't require PKCE
   },
 }
