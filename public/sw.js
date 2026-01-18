@@ -155,7 +155,7 @@ async function trackLLMRequest(requestData, response, duration) {
   })
 
   if (!langfuseConfig?.enabled) {
-    console.log(
+    console.debug(
       '[SW-LANGFUSE] ⚠️ Langfuse tracking disabled or not configured, skipping',
     )
     return

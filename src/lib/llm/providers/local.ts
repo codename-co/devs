@@ -214,7 +214,7 @@ export class LocalLLMProvider implements LLMProviderInterface {
     })
 
     // Extract generated text
-    const response =
+    let response =
       Array.isArray(result) &&
       result[0] &&
       typeof result[0] === 'object' &&
@@ -224,8 +224,22 @@ export class LocalLLMProvider implements LLMProviderInterface {
           ? (result as any).generated_text
           : ''
 
+    // Strip the prompt from the response (generated_text includes the input prompt)
+    if (response.startsWith(prompt)) {
+      response = response.slice(prompt.length)
+    }
+
+    // Clean up any trailing special tokens
+    const stopTokens = ['<|endoftext|>', '</s>', '<|end|>', '<|eot_id|>', '<|assistant|>', '<|user|>', '<|system|>']
+    for (const token of stopTokens) {
+      const tokenIndex = response.indexOf(token)
+      if (tokenIndex !== -1) {
+        response = response.slice(0, tokenIndex)
+      }
+    }
+
     return {
-      content: response,
+      content: response.trim(),
       usage: {
         promptTokens: NaN, // TODO: Not available
         completionTokens: response.length / 4, // Rough estimate

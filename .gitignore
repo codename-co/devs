@@ -7,6 +7,9 @@ node_modules
 /playwright-report
 /public/agents/manifest.json
 /public/agents/*.agent.json
+/public/extensions/manifest.json
+/public/extensions/*.extension.json
+/public/extensions/components/
 /public/methodologies/manifest.json
 /public/methodologies/*.methodology.json
 /public/sitemap.xml

@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://devs.new/schemas/extension.schema.yaml",
+  "title": "DEVS Extension Definition",
+  "description": "Schema for defining extensions",
+  "type": "object",
+  "required": ["id", "type", "name", "version", "license"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Unique extension identifier"
+    },
+    "type": {
+      "description": "Extension type",
+      "oneOf": [
+        {
+          "const": "app",
+          "description": "Full application with custom UI pages"
+        },
+        {
+          "const": "agent",
+          "description": "AI agent with specific role and instructions"
+        },
+        {
+          "const": "connector",
+          "description": "Integration with external services (OAuth, APIs)"
+        },
+        {
+          "const": "tool",
+          "description": "Callable tool that agents can use"
+        }
+      ]
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "license": {
+      "type": "string",
+      "default": "MIT"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Must be a valid Iconoir icon name <https://iconoir.com/>"
+    },
+    "color": {
+      "type": "string",
+      "description": "Hex color code for the extension (tailwind color names)",
+      "enum": [
+        "default",
+        "primary",
+        "secondary",
+        "success",
+        "warning",
+        "danger",
+        "info",
+        "red",
+        "orange",
+        "yellow",
+        "green",
+        "teal",
+        "blue",
+        "indigo",
+        "purple",
+        "pink",
+        "gray"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "author": {
+      "$ref": "#/$defs/author"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "privacyPolicy": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to the extension's privacy policy page"
+    },
+    "source": {
+      "type": "string",
+      "format": "uri"
+    },
+    "screenshots": {
+      "type": "array",
+      "description": "Base64-encoded screenshots of the extension",
+      "items": {
+        "type": "string",
+        "contentEncoding": "base64",
+        "description": "Base64-encoded screenshot image"
+      }
+    },
+    "i18n": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z]{2}(-[A-Z]{2})?$": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "messages": {
+              "type": "object",
+              "description": "Key-value pairs for UI label translations",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "pages": {
+      "type": "object",
+      "description": "Additional extension pages",
+      "patternProperties": {
+        "^[a-zA-Z0-9-_]+$": {
+          "type": "string",
+          "description": "Inline React code for the page"
+        }
+      }
+    },
+    "configuration": {
+      "type": "object",
+      "description": "User-configurable settings",
+      "properties": {
+        "schema": {
+          "type": "object",
+          "description": "JSON Schema for configuration options"
+        },
+        "defaults": {
+          "type": "object",
+          "description": "Default configuration values"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "author": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  }
+}

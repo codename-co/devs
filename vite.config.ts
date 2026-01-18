@@ -4,8 +4,9 @@ import react from '@vitejs/plugin-react'
 import basicSsl from '@vitejs/plugin-basic-ssl'
 import { resolve } from 'node:path'
 import { readFileSync } from 'node:fs'
+import { execSync } from 'node:child_process'
 import { globSync } from 'glob'
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig, loadEnv, type Plugin } from 'vite'
 import { createMpaPlugin, type Page } from 'vite-plugin-virtual-mpa'
 
 import { PRODUCT } from './src/config/product'
@@ -73,6 +74,46 @@ const pages = langs.reduce((acc, lang = defaultLang) => {
   return acc
 }, [] as Page[])
 
+/**
+ * Vite plugin that watches YAML files in the public folder and runs
+ * prepare-config-files.js when they change during development.
+ */
+function yamlWatchPlugin(): Plugin {
+  return {
+    name: 'yaml-watch',
+    configureServer(server) {
+      const runPrepareScript = (file: string) => {
+        console.log(`\n[yaml-watch] Detected change in ${file}`)
+        console.log('[yaml-watch] Running prepare-config-files.js...')
+        try {
+          execSync('node src/scripts/prepare-config-files.js', {
+            cwd: process.cwd(),
+            stdio: 'inherit',
+          })
+          console.log('[yaml-watch] Config files prepared successfully')
+          // Trigger a full page reload after the config is updated
+          server.ws.send({ type: 'full-reload' })
+          console.log('[yaml-watch] Triggered browser reload\n')
+        } catch (error) {
+          console.error('[yaml-watch] Failed to run prepare-config-files.js:', error)
+        }
+      }
+
+      server.watcher.add('public/**/*.yaml')
+      server.watcher.on('change', (file) => {
+        if (file.includes('public/') && file.endsWith('.yaml')) {
+          runPrepareScript(file)
+        }
+      })
+      server.watcher.on('add', (file) => {
+        if (file.includes('public/') && file.endsWith('.yaml')) {
+          runPrepareScript(file)
+        }
+      })
+    },
+  }
+}
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory.
@@ -87,6 +128,7 @@ export default defineConfig(({ mode }) => {
       react(),
       tailwindcss(),
       mdx(),
+      yamlWatchPlugin(),
       // basicSsl(),
       createMpaPlugin({
         htmlMinify: true,

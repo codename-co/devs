@@ -2140,7 +2140,7 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
             {!isSending &&
               !isConversationPristine &&
               (quickReplies.length > 0 || isGeneratingReplies) && (
-                <div className="flex gap-2 flex-wrap mt-4">
+                <div className="flex gap-2 flex-wrap mt-4 justify-end">
                   {isGeneratingReplies ? (
                     <div className="flex items-center gap-2 text-sm text-default-400">
                       <Spinner size="sm" />

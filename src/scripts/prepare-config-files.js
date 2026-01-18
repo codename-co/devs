@@ -101,5 +101,57 @@ async function generateMethodologiesManifest() {
   }
 }
 
+const extensionsDir = join(__dirname, '../../public/extensions')
+const extensionsManifestPath = join(extensionsDir, 'manifest.json')
+
+async function generateExtensionsManifest() {
+  try {
+    let files = await readdir(extensionsDir)
+
+    // First, convert any extension source YAML files to JSON
+    const yamlFiles = files.filter((file) => file.endsWith('.extension.yaml'))
+    for (const yamlFile of yamlFiles) {
+      const yamlPath = join(extensionsDir, yamlFile)
+      const jsonFile = yamlFile.replace('.extension.yaml', '.extension.json')
+      const jsonPath = join(extensionsDir, jsonFile)
+      await convertYamlToJson(yamlPath, jsonPath)
+    }
+
+    // Get updated file list after YAML conversion
+    files = await readdir(extensionsDir)
+    const extensionFiles = files
+      .filter((file) => file.endsWith('.json') && file !== 'manifest.json')
+      .sort()
+
+    // Read each extension file and include its metadata
+    const extensions = await Promise.all(
+      extensionFiles.map(async (file) => {
+        const filePath = join(extensionsDir, file)
+        const content = await readFile(filePath, 'utf8')
+        const data = JSON.parse(content)
+        delete data.pages
+        delete data.configuration
+        for (const key in data.i18n) {
+          delete data.i18n[key].messages
+        }
+        return data
+      }),
+    )
+
+    const manifest = { extensions }
+
+    await writeFile(
+      extensionsManifestPath,
+      JSON.stringify(manifest, null, 2) + '\n',
+    )
+
+    console.log(`Generated manifest with ${extensions.length} extensions.`)
+  } catch (error) {
+    console.error('Error generating extensions manifest:', error)
+    process.exit(1)
+  }
+}
+
 generateAgentsManifest()
 generateMethodologiesManifest()
+generateExtensionsManifest()

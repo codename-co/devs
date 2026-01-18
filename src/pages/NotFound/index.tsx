@@ -18,11 +18,11 @@ export const NotFoundPage = () => {
       } else {
         window.location.href = '/'
       }
-    }, 700)
+    }, 300)
   }, [])
 
   return (
-    <DefaultLayout>
+    <DefaultLayout showBackButton={false}>
       <Section
         mainClassName="flex items-center"
         className="justify-items-center"

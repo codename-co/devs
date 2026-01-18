@@ -1,6 +1,4 @@
-import { cn } from '@/lib/utils'
-
-interface SectionProps {
+export interface SectionProps {
   children?: React.ReactNode
   className?: string
   mainClassName?: string
@@ -10,25 +8,31 @@ interface SectionProps {
 
 export const Section = ({
   children,
-  className,
-  mainClassName,
+  className = '',
+  mainClassName = '',
   size = 4,
   style,
 }: SectionProps) => {
+  const sizeClasses: Record<number, string> = {
+    4: 'max-w-4xl',
+    5: 'max-w-5xl',
+    6: 'max-w-6xl',
+    7: 'max-w-7xl',
+  }
+
   return (
     <section
       role="section"
-      className={cn('w-full p-6 lg:px-8 overflow-hidden', mainClassName)}
-      {...{ style }}
+      className={`w-full p-6 lg:px-8 overflow-hidden ${mainClassName}`.trim()}
+      style={style}
     >
       <div
-        className={cn(
-          `max-w-${size}xl mx-auto my-6 space-y-6 gap-6`,
-          className,
-        )}
+        className={`${sizeClasses[size] || 'max-w-4xl'} mx-auto my-6 space-y-6 gap-6 ${className}`.trim()}
       >
         {children}
       </div>
     </section>
   )
 }
+
+export default Section

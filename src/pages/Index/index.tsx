@@ -485,7 +485,7 @@ export const IndexPage = () => {
           </motion.div>
         </Section>
 
-        <footer className="absolute bottom-0 left-0 right-0 mt-auto py-6 flex justify-center gap-4 text-sm *:text-default-400 dark:*:text-default-500">
+        <footer className="absolute bottom-0 left-0 right-0 mt-auto py-6 flex justify-center gap-4 scale-90 text-sm *:text-default-400 dark:*:text-default-500">
           <Link href={url('/terms')}>{t('Terms')}</Link>
           <Link href={url('/privacy')}>{t('Privacy')}</Link>
           {/* Open Source */}

@@ -22,7 +22,6 @@ import { KnowledgePage } from '@/pages/Knowledge'
 import { MethodologiesPage } from '@/pages/Methodologies/index'
 import { MethodologyNewPage } from '@/pages/Methodologies/new'
 import { MethodologyPage } from '@/pages/Methodologies/show'
-import { NotFoundPage } from '@/pages/NotFound'
 import { OAuthCallbackPage } from '@/pages/OAuth'
 import { SettingsPage } from '@/pages/Settings'
 import { TaskPage } from '@/pages/Tasks/show'
@@ -30,6 +29,11 @@ import { TasksPage } from '@/pages/Tasks'
 import { LivePage } from '@/features/live'
 import { ArenaPage } from '@/pages/Arena'
 import { TracesPage, TraceShowPage } from '@/features/traces'
+import {
+  MarketplacePage,
+  DynamicAppRoute,
+  NewExtensionPage,
+} from '@/features/marketplace/pages'
 
 /**
  * Redirect component for /connectors -> /knowledge/connectors
@@ -43,9 +47,9 @@ const routes = {
   'agents/run': AgentRunPage,
   'agents/new': AgentsNewPage,
   'agents/start': AgentsStartPage,
-  arena: CardBattlePage,
-  'arena/classic': ArenaPage,
-  'arena/match/:battleId': ArenaPage,
+  arena2: CardBattlePage,
+  'arena2/classic': ArenaPage,
+  'arena2/match/:battleId': ArenaPage,
   // Redirect /connectors to /knowledge/connectors
   connectors: ConnectorsRedirect,
   conversations: ConversationPage,
@@ -74,10 +78,12 @@ const routes = {
   terms: TermsPage,
   traces: TracesPage,
   'traces/logs': TracesPage,
+  marketplace: MarketplacePage,
+  'marketplace/new': NewExtensionPage,
   'traces/sessions': TracesPage,
   'traces/logs/:traceId': TraceShowPage,
   live: LivePage,
-  '*': NotFoundPage,
+  '*': DynamicAppRoute,
 }
 
 function Router() {
@@ -130,9 +136,16 @@ const LanguagePath = () => {
   const params = useParams()
   const lang = (params.lang as Lang) || defaultLang
 
+  // If the lang param is not a valid language, it might be a dynamic app route like /translate
+  // Let DynamicAppRoute handle it instead of showing 404
+  // This prevents errors like "Invalid language tag" when using lang in toLocaleString()
+  if (!langs.includes(lang)) {
+    return <DynamicAppRoute />
+  }
+
   return (
     <I18nProvider lang={lang}>
-      {!langs.includes(lang) ? <NotFoundPage /> : <Outlet />}
+      <Outlet />
       <LocalLLMLoadingIndicator />
     </I18nProvider>
   )

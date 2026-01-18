@@ -1,0 +1,1461 @@
+id: battle-arena
+name: Battle Arena
+version: 1.0.0
+type: app
+license: MIT
+icon: Crown
+color: warning
+description: Pit your agents against each other in a turn-based battle arena.
+author:
+  name: Arnaud Leymet
+  email: arnaud@codename.co
+  url: https://arnley.com
+privacyPolicy: https://devs.new/privacy
+source: https://github.com/codename-devs/devs/tree/main/public/extensions/battle-arena.extension.yaml
+screenshots:
+  - data:image/webp;base64,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
+i18n:
+  ar:
+    name: ساحة المعركة
+    description: حارب عملائك ضد بعضهم البعض في ساحة معركة تعتمد على الأدوار.
+    messages:
+      selectYourCards: اختر بطاقاتك
+      yourCard: بطاقتك
+      opponentCard: بطاقة الخصم
+      selectCard: اختر بطاقة
+      generateFromAgent: + إنشاء من الوكيل
+      generate: + إنشاء
+      random: 🎲 عشوائي
+      startBattle: ⚔️ ابدأ المعركة
+      yourCardCollection: مجموعة بطاقاتك
+      selectAgentToGenerate: اختر وكيلاً لإنشاء البطاقة
+      generateAiArtwork: إنشاء رسومات بالذكاء الاصطناعي (يتطلب API للصور)
+      cancel: إلغاء
+      generatingCardFor: جاري إنشاء بطاقة لـ {name}...
+      turn: الدور
+      yourTurn: 🎯 دورك
+      opponentTurn: 🤖 دور الخصم
+      defend: 🛡️ دافع (+10 دفاع)
+      charge: ⚡ اشحن (+2 طاقة)
+      opponentThinking: الخصم يفكر...
+      battleLog: سجل المعركة
+      victory: نصر!
+      defeat: هزيمة
+      victoryMessage: بطاقتك انتصرت!
+      defeatMessage: حظاً أفضل في المرة القادمة!
+      battleStatistics: إحصائيات المعركة
+      turnsPlayed: الأدوار الملعوبة
+      damageDealt: الضرر المُلحق
+      criticalHits: ضربات حاسمة
+      superEffective: فعالة جداً
+      newBattle: 🔄 معركة جديدة
+      back: → رجوع
+      startBattleConfirmTitle: بدء المعركة؟
+      cardGenerated: 'تم إنشاء البطاقة: {name}'
+      cardRemoved: تم حذف البطاقة
+      battleStarted: بدأت المعركة!
+      failedToLoadAgents: فشل في تحميل الوكلاء
+      failedToGenerateCard: فشل في إنشاء البطاقة
+      victoryToast: 🎉 نصر! لقد فزت بالمعركة!
+  de:
+    name: Kampfarena
+    description: Setze deine Agenten in einer rundenbasierten Kampfarena gegeneinander ein.
+    messages:
+      selectYourCards: Wähle deine Karten
+      yourCard: Deine Karte
+      opponentCard: Gegnerkarte
+      selectCard: Karte auswählen
+      generateFromAgent: + Aus Agent generieren
+      generate: + Generieren
+      random: 🎲 Zufällig
+      startBattle: ⚔️ Kampf starten
+      yourCardCollection: Deine Kartensammlung
+      selectAgentToGenerate: Agent für Kartengenerierung auswählen
+      generateAiArtwork: KI-Artwork generieren (erfordert Bild-API)
+      cancel: Abbrechen
+      generatingCardFor: Karte für {name} wird generiert...
+      turn: Runde
+      yourTurn: 🎯 Dein Zug
+      opponentTurn: 🤖 Gegnerzug
+      defend: 🛡️ Verteidigen (+10 VER)
+      charge: ⚡ Aufladen (+2 Energie)
+      opponentThinking: Gegner denkt nach...
+      battleLog: Kampfprotokoll
+      victory: Sieg!
+      defeat: Niederlage
+      victoryMessage: Deine Karte hat gesiegt!
+      defeatMessage: Nächstes Mal mehr Glück!
+      battleStatistics: Kampfstatistiken
+      turnsPlayed: Gespielte Runden
+      damageDealt: Verursachter Schaden
+      criticalHits: Kritische Treffer
+      superEffective: Sehr Effektiv
+      newBattle: 🔄 Neuer Kampf
+      back: ← Zurück
+      startBattleConfirmTitle: Kampf starten?
+      cardGenerated: 'Karte generiert: {name}'
+      cardRemoved: Karte entfernt
+      battleStarted: Kampf gestartet!
+      failedToLoadAgents: Agenten konnten nicht geladen werden
+      failedToGenerateCard: Karte konnte nicht generiert werden
+      victoryToast: 🎉 Sieg! Du hast den Kampf gewonnen!
+  es:
+    name: Arena de Batalla
+    description: Enfrenta a tus agentes en una arena de batalla por turnos.
+    messages:
+      selectYourCards: Selecciona tus cartas
+      yourCard: Tu carta
+      opponentCard: Carta del oponente
+      selectCard: Seleccionar carta
+      generateFromAgent: + Generar desde agente
+      generate: + Generar
+      random: 🎲 Aleatorio
+      startBattle: ⚔️ Iniciar batalla
+      yourCardCollection: Tu colección de cartas
+      selectAgentToGenerate: Selecciona un agente para generar carta
+      generateAiArtwork: Generar arte con IA (requiere API de imágenes)
+      cancel: Cancelar
+      generatingCardFor: Generando carta para {name}...
+      turn: Turno
+      yourTurn: 🎯 Tu turno
+      opponentTurn: 🤖 Turno del oponente
+      defend: 🛡️ Defender (+10 DEF)
+      charge: ⚡ Cargar (+2 Energía)
+      opponentThinking: El oponente está pensando...
+      battleLog: Registro de batalla
+      victory: ¡Victoria!
+      defeat: Derrota
+      victoryMessage: ¡Tu carta resultó victoriosa!
+      defeatMessage: ¡Mejor suerte la próxima vez!
+      battleStatistics: Estadísticas de batalla
+      turnsPlayed: Turnos jugados
+      damageDealt: Daño infligido
+      criticalHits: Golpes críticos
+      superEffective: Súper efectivo
+      newBattle: 🔄 Nueva batalla
+      back: ← Atrás
+      startBattleConfirmTitle: ¿Iniciar batalla?
+      cardGenerated: 'Carta generada: {name}'
+      cardRemoved: Carta eliminada
+      battleStarted: ¡Batalla iniciada!
+      failedToLoadAgents: Error al cargar agentes
+      failedToGenerateCard: Error al generar carta
+      victoryToast: 🎉 ¡Victoria! ¡Ganaste la batalla!
+  fr:
+    name: Arène de Combat
+    description: Affrontez vos agents dans une arène de combat au tour par tour.
+    messages:
+      selectYourCards: Sélectionnez vos cartes
+      yourCard: Votre carte
+      opponentCard: Carte adverse
+      selectCard: Sélectionner une carte
+      generateFromAgent: + Générer depuis un agent
+      generate: + Générer
+      random: 🎲 Aléatoire
+      startBattle: ⚔️ Lancer le combat
+      yourCardCollection: Votre collection de cartes
+      selectAgentToGenerate: Sélectionnez un agent pour générer une carte
+      generateAiArtwork: Générer une illustration IA (nécessite l'API image)
+      cancel: Annuler
+      generatingCardFor: Génération de la carte pour {name}...
+      turn: Tour
+      yourTurn: 🎯 Votre tour
+      opponentTurn: 🤖 Tour adverse
+      defend: 🛡️ Défendre (+10 DÉF)
+      charge: ⚡ Charger (+2 Énergie)
+      opponentThinking: L'adversaire réfléchit...
+      battleLog: Journal de combat
+      victory: Victoire !
+      defeat: Défaite
+      victoryMessage: Votre carte a triomphé !
+      defeatMessage: Meilleure chance la prochaine fois !
+      battleStatistics: Statistiques de combat
+      turnsPlayed: Tours joués
+      damageDealt: Dégâts infligés
+      criticalHits: Coups critiques
+      superEffective: Super efficace
+      newBattle: 🔄 Nouveau combat
+      back: ← Retour
+      startBattleConfirmTitle: Lancer le combat ?
+      cardGenerated: 'Carte générée : {name}'
+      cardRemoved: Carte supprimée
+      battleStarted: Combat lancé !
+      failedToLoadAgents: Échec du chargement des agents
+      failedToGenerateCard: Échec de la génération de la carte
+      victoryToast: 🎉 Victoire ! Vous avez gagné le combat !
+  ko:
+    name: 배틀 아레나
+    description: 턴제 배틀 아레나에서 에이전트를 대결시켜보세요.
+    messages:
+      selectYourCards: 카드를 선택하세요
+      yourCard: 내 카드
+      opponentCard: 상대 카드
+      selectCard: 카드 선택
+      generateFromAgent: + 에이전트에서 생성
+      generate: + 생성
+      random: 🎲 랜덤
+      startBattle: ⚔️ 배틀 시작
+      yourCardCollection: 내 카드 컬렉션
+      selectAgentToGenerate: 카드를 생성할 에이전트를 선택하세요
+      generateAiArtwork: AI 아트워크 생성 (이미지 API 필요)
+      cancel: 취소
+      generatingCardFor: '{name} 카드 생성 중...'
+      turn: 턴
+      yourTurn: 🎯 내 턴
+      opponentTurn: 🤖 상대 턴
+      defend: 🛡️ 방어 (+10 방어력)
+      charge: ⚡ 충전 (+2 에너지)
+      opponentThinking: 상대가 생각 중...
+      battleLog: 배틀 로그
+      victory: 승리!
+      defeat: 패배
+      victoryMessage: 당신의 카드가 승리했습니다!
+      defeatMessage: 다음에는 더 잘 할 수 있을 거예요!
+      battleStatistics: 배틀 통계
+      turnsPlayed: 진행된 턴
+      damageDealt: 입힌 피해
+      criticalHits: 치명타
+      superEffective: 효과가 좋음
+      newBattle: 🔄 새 배틀
+      back: ← 뒤로
+      startBattleConfirmTitle: 배틀을 시작할까요?
+      cardGenerated: '카드 생성됨: {name}'
+      cardRemoved: 카드가 삭제되었습니다
+      battleStarted: 배틀이 시작되었습니다!
+      failedToLoadAgents: 에이전트를 불러오지 못했습니다
+      failedToGenerateCard: 카드를 생성하지 못했습니다
+      victoryToast: 🎉 승리! 배틀에서 이겼습니다!
+
+pages:
+  'arena': | # jsx
+    import { Button, Card, CardBody, CardHeader, Progress, Chip, Divider, Tooltip, Section, Spinner, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Avatar, ScrollShadow } from '@devs/components';
+    import { create } from 'https://esm.sh/zustand@5?standalone&external=react,react-dom';
+
+    // =============================================================================
+    // Constants & Configuration
+    // =============================================================================
+
+    // Element types with effectiveness relationships
+    const ELEMENTS = {
+      wisdom: { icon: '📚', strong: ['creativity', 'spirit'], weak: ['charisma', 'tech'], color: 'primary', gradient: 'from-blue-600 to-indigo-600' },
+      creativity: { icon: '🎨', strong: ['tech', 'strategy'], weak: ['wisdom', 'cosmic'], color: 'secondary', gradient: 'from-purple-600 to-pink-500' },
+      charisma: { icon: '⭐', strong: ['wisdom', 'nature'], weak: ['strategy', 'spirit'], color: 'warning', gradient: 'from-amber-500 to-orange-500' },
+      strategy: { icon: '♟️', strong: ['charisma', 'cosmic'], weak: ['creativity', 'nature'], color: 'success', gradient: 'from-emerald-600 to-teal-500' },
+      nature: { icon: '🌿', strong: ['strategy', 'tech'], weak: ['charisma', 'spirit'], color: 'success', gradient: 'from-green-600 to-lime-500' },
+      spirit: { icon: '✨', strong: ['nature', 'charisma'], weak: ['tech', 'wisdom'], color: 'secondary', gradient: 'from-violet-600 to-purple-500' },
+      tech: { icon: '⚙️', strong: ['spirit', 'wisdom'], weak: ['nature', 'creativity'], color: 'default', gradient: 'from-cyan-600 to-sky-500' },
+      cosmic: { icon: '🌌', strong: ['wisdom', 'creativity'], weak: ['strategy', 'nature'], color: 'primary', gradient: 'from-indigo-600 to-purple-600' },
+    };
+
+    // Rarity configuration with stats multipliers
+    const RARITIES = {
+      common: { stars: 1, color: 'default', multiplier: 1.0, abilityCount: 2, label: 'Common' },
+      uncommon: { stars: 2, color: 'success', multiplier: 1.15, abilityCount: 2, label: 'Uncommon' },
+      rare: { stars: 3, color: 'primary', multiplier: 1.3, abilityCount: 3, label: 'Rare' },
+      epic: { stars: 4, color: 'secondary', multiplier: 1.5, abilityCount: 3, label: 'Epic' },
+      legendary: { stars: 5, color: 'warning', multiplier: 1.8, abilityCount: 4, label: 'Legendary' },
+    };
+
+    // Base stats by rarity
+    const BASE_STATS = {
+      common: { hp: 80, attack: 40, defense: 40, speed: 40, maxEnergy: 3 },
+      uncommon: { hp: 100, attack: 50, defense: 50, speed: 50, maxEnergy: 3 },
+      rare: { hp: 120, attack: 60, defense: 60, speed: 60, maxEnergy: 4 },
+      epic: { hp: 150, attack: 75, defense: 75, speed: 75, maxEnergy: 4 },
+      legendary: { hp: 200, attack: 90, defense: 90, speed: 90, maxEnergy: 5 },
+    };
+
+    // Keywords for element detection
+    const ELEMENT_KEYWORDS = {
+      wisdom: ['knowledge', 'learn', 'understand', 'analyze', 'research', 'study', 'education', 'scholar', 'professor', 'academic'],
+      creativity: ['art', 'create', 'design', 'imagine', 'invent', 'innovate', 'artist', 'musician', 'writer', 'creative'],
+      charisma: ['lead', 'influence', 'persuade', 'speak', 'present', 'negotiate', 'motivate', 'inspire', 'social', 'diplomat'],
+      strategy: ['plan', 'strategy', 'tactic', 'chess', 'game', 'military', 'general', 'manage', 'organize', 'coordinate'],
+      nature: ['science', 'nature', 'biology', 'physics', 'chemistry', 'environment', 'animal', 'plant', 'ecology', 'natural'],
+      spirit: ['philosophy', 'spirit', 'soul', 'ethics', 'moral', 'enlighten', 'meditate', 'consciousness', 'zen', 'spiritual'],
+      tech: ['technology', 'computer', 'code', 'program', 'engineer', 'software', 'hardware', 'digital', 'cyber', 'AI'],
+      cosmic: ['space', 'universe', 'cosmic', 'star', 'galaxy', 'astronomy', 'quantum', 'dimension', 'infinite', 'theoretical'],
+    };
+
+    // Default abilities by element
+    const DEFAULT_ABILITIES = {
+      wisdom: [
+        { name: 'Knowledge Strike', desc: 'Attack with accumulated wisdom', power: 50, cost: 2, effect: 'damage', animation: 'beam' },
+        { name: 'Mind Shield', desc: 'Protect with mental fortitude', power: 30, cost: 2, effect: 'shield', animation: 'shield' },
+        { name: 'Enlightenment', desc: 'Boost attack through insight', power: 0, cost: 3, effect: 'buff_attack', animation: 'glow' },
+        { name: 'Deep Analysis', desc: 'Lower enemy defense', power: 0, cost: 2, effect: 'debuff_defense', animation: 'beam' },
+      ],
+      creativity: [
+        { name: 'Creative Burst', desc: 'Unleash creative energy', power: 55, cost: 2, effect: 'damage', animation: 'explosion' },
+        { name: 'Inspire', desc: 'Boost abilities through inspiration', power: 0, cost: 2, effect: 'buff_attack', animation: 'glow' },
+        { name: 'Artistic Vision', desc: 'Confuse with abstract visions', power: 45, cost: 3, effect: 'damage', animation: 'swirl' },
+        { name: 'Masterpiece', desc: 'Powerful creative strike', power: 70, cost: 4, effect: 'damage', animation: 'explosion' },
+      ],
+      charisma: [
+        { name: 'Persuasive Strike', desc: 'Attack with convincing force', power: 45, cost: 2, effect: 'damage', animation: 'wave' },
+        { name: 'Rally', desc: 'Boost defense with motivation', power: 0, cost: 2, effect: 'buff_defense', animation: 'glow' },
+        { name: 'Demoralize', desc: 'Weaken enemy resolve', power: 0, cost: 3, effect: 'debuff_attack', animation: 'wave' },
+        { name: 'Charm Offensive', desc: 'Drain life force', power: 40, cost: 3, effect: 'drain', animation: 'sparkle' },
+      ],
+      strategy: [
+        { name: 'Tactical Strike', desc: 'Calculated precision attack', power: 60, cost: 3, effect: 'damage', animation: 'slash' },
+        { name: 'Fortify', desc: 'Strategic defense boost', power: 0, cost: 2, effect: 'buff_defense', animation: 'shield' },
+        { name: 'Analyze', desc: 'Find enemy weaknesses', power: 0, cost: 2, effect: 'debuff_defense', animation: 'beam' },
+        { name: 'Checkmate', desc: 'Devastating tactical blow', power: 75, cost: 4, effect: 'damage', animation: 'slash' },
+      ],
+      nature: [
+        { name: 'Natural Force', desc: "Harness nature's power", power: 50, cost: 2, effect: 'damage', animation: 'wave' },
+        { name: 'Regenerate', desc: 'Heal with natural energy', power: 35, cost: 3, effect: 'heal', animation: 'glow' },
+        { name: 'Poison Spore', desc: 'Apply damaging toxin', power: 30, cost: 2, effect: 'burn', animation: 'cloud' },
+        { name: 'Earthquake', desc: 'Massive earth attack', power: 65, cost: 4, effect: 'damage', animation: 'explosion' },
+      ],
+      spirit: [
+        { name: 'Soul Strike', desc: 'Attack with spiritual energy', power: 50, cost: 2, effect: 'damage', animation: 'beam' },
+        { name: 'Purify', desc: 'Cleanse and heal', power: 40, cost: 3, effect: 'heal', animation: 'glow' },
+        { name: 'Transcend', desc: 'Boost all stats briefly', power: 0, cost: 3, effect: 'buff_attack', animation: 'sparkle' },
+        { name: 'Ethereal Blast', desc: 'Powerful spirit attack', power: 70, cost: 4, effect: 'damage', animation: 'explosion' },
+      ],
+      tech: [
+        { name: 'System Shock', desc: 'Electric surge attack', power: 55, cost: 2, effect: 'damage', animation: 'lightning' },
+        { name: 'Firewall', desc: 'Digital defense', power: 0, cost: 2, effect: 'shield', animation: 'shield' },
+        { name: 'Overclock', desc: 'Boost speed temporarily', power: 0, cost: 2, effect: 'buff_speed', animation: 'glow' },
+        { name: 'EMP Blast', desc: 'Devastating tech attack', power: 75, cost: 4, effect: 'damage', animation: 'explosion' },
+      ],
+      cosmic: [
+        { name: 'Cosmic Ray', desc: 'Attack from the stars', power: 55, cost: 2, effect: 'damage', animation: 'beam' },
+        { name: 'Gravity Well', desc: 'Slow enemy with gravity', power: 35, cost: 2, effect: 'debuff_speed', animation: 'swirl' },
+        { name: 'Nebula Shield', desc: 'Cosmic protection', power: 0, cost: 3, effect: 'shield', animation: 'shield' },
+        { name: 'Supernova', desc: 'Explosive cosmic power', power: 80, cost: 5, effect: 'damage', animation: 'explosion' },
+      ],
+    };
+
+    // =============================================================================
+    // Utility Functions
+    // =============================================================================
+
+    // Determine element from agent text
+    const determineElement = (agent) => {
+      const text = `${agent.name} ${agent.role || ''} ${agent.instructions || ''}`.toLowerCase();
+      let bestElement = 'wisdom';
+      let highestScore = 0;
+
+      for (const [element, keywords] of Object.entries(ELEMENT_KEYWORDS)) {
+        const score = keywords.reduce((acc, kw) => acc + (text.includes(kw) ? 1 : 0), 0);
+        if (score > highestScore) {
+          highestScore = score;
+          bestElement = element;
+        }
+      }
+      return bestElement;
+    };
+
+    // Determine rarity based on agent
+    const determineRarity = (agent) => {
+      const famousNames = ['einstein', 'newton', 'da vinci', 'shakespeare', 'aristotle', 'plato', 'hawking', 'tesla', 'curie'];
+      const nameLower = agent.name.toLowerCase();
+      if (famousNames.some(n => nameLower.includes(n))) return 'legendary';
+      const len = agent.instructions?.length || 0;
+      if (len > 2000) return 'epic';
+      if (len > 1000) return 'rare';
+      if (len > 500) return 'uncommon';
+      return 'common';
+    };
+
+    // Generate card stats
+    const generateStats = (rarity, element) => {
+      const base = BASE_STATS[rarity];
+      const variation = () => Math.floor((Math.random() - 0.5) * 20);
+      return {
+        hp: base.hp + variation(),
+        maxHp: base.hp + variation(),
+        attack: base.attack + variation(),
+        defense: base.defense + variation(),
+        speed: base.speed + variation(),
+        energy: 3,
+        maxEnergy: base.maxEnergy,
+      };
+    };
+
+    // Generate abilities for element
+    const generateAbilities = (element, rarity) => {
+      const pool = DEFAULT_ABILITIES[element] || DEFAULT_ABILITIES.wisdom;
+      const count = RARITIES[rarity].abilityCount;
+      const abilities = [];
+      const shuffled = [...pool].sort(() => Math.random() - 0.5);
+      for (let i = 0; i < Math.min(count, shuffled.length); i++) {
+        abilities.push({
+          id: `${element}_${i}_${Date.now()}`,
+          element,
+          ...shuffled[i],
+        });
+      }
+      return abilities;
+    };
+
+    // Generate title based on agent
+    const generateTitle = (agent, element) => {
+      const titles = {
+        wisdom: ['The Scholar', 'Master of Knowledge', 'The Sage', 'Keeper of Wisdom'],
+        creativity: ['The Artist', 'Creative Genius', 'The Innovator', 'Visionary Master'],
+        charisma: ['The Leader', 'Master of Words', 'The Diplomat', 'Inspiring Force'],
+        strategy: ['The Tactician', 'Master Strategist', 'The General', 'Chess Master'],
+        nature: ['Nature\'s Champion', 'The Scientist', 'Force of Nature', 'The Naturalist'],
+        spirit: ['The Philosopher', 'Spiritual Guide', 'The Enlightened', 'Soul Keeper'],
+        tech: ['Tech Wizard', 'The Engineer', 'Digital Master', 'Code Architect'],
+        cosmic: ['Cosmic Being', 'Star Walker', 'The Infinite', 'Quantum Master'],
+      };
+      const pool = titles[element] || titles.wisdom;
+      return pool[Math.floor(Math.random() * pool.length)];
+    };
+
+    // Generate card from agent
+    const generateCardFromAgent = async (agent, generateArtwork = false) => {
+      const element = determineElement(agent);
+      const rarity = determineRarity(agent);
+      const stats = generateStats(rarity, element);
+      const abilities = generateAbilities(element, rarity);
+      const title = generateTitle(agent, element);
+
+      let artworkUrl = null;
+      if (generateArtwork && window.DEVS?.image?.generate) {
+        try {
+          const prompt = `Trading card game character portrait of ${agent.name}, ${title}, ${element} element, ${rarity} rarity, dramatic lighting, fantasy art style, detailed, vibrant colors`;
+          const result = await window.DEVS.image.generate(prompt, { size: '512x512' });
+          artworkUrl = result?.url || result;
+        } catch (err) {
+          console.warn('Failed to generate artwork:', err);
+        }
+      }
+
+      return {
+        id: `card_${agent.id || agent.slug}_${Date.now()}`,
+        agentId: agent.id,
+        agentSlug: agent.slug,
+        name: agent.name,
+        title,
+        element,
+        rarity,
+        abilities,
+        artworkUrl,
+        flavorText: agent.role || 'A powerful contender',
+        createdAt: new Date().toISOString(),
+        ...stats,
+      };
+    };
+
+    // Calculate damage with element effectiveness
+    const calculateDamage = (ability, attacker, defender) => {
+      let baseDamage = ability.power + Math.floor(attacker.attack * 0.3);
+      const attackerElement = ELEMENTS[attacker.element];
+      const defenderElement = ELEMENTS[defender.element];
+
+      let effectiveness = 'normal';
+      let multiplier = 1.0;
+
+      if (attackerElement.strong.includes(defender.element)) {
+        multiplier = 1.5;
+        effectiveness = 'super';
+      } else if (attackerElement.weak?.includes(defender.element)) {
+        multiplier = 0.5;
+        effectiveness = 'weak';
+      }
+
+      // Critical hit chance (10% base)
+      const isCritical = Math.random() < 0.1;
+      if (isCritical) multiplier *= 1.5;
+
+      // Apply defense reduction
+      const defenseReduction = Math.floor(defender.defense * 0.2);
+      const finalDamage = Math.max(1, Math.floor(baseDamage * multiplier) - defenseReduction);
+
+      return { damage: finalDamage, effectiveness, isCritical };
+    };
+
+    // AI decision making
+    const selectAIAction = (aiCard, aiState, playerCard, playerState) => {
+      const affordableAbilities = (aiCard.abilities || []).filter(a => a.cost <= aiState.energy);
+
+      // Low HP - try to heal or defend
+      if (aiState.hp < aiState.maxHp * 0.3) {
+        const healAbility = affordableAbilities.find(a => a.effect === 'heal');
+        if (healAbility) return { type: 'ability', ability: healAbility };
+        if (aiState.defense < 80) return { type: 'defend' };
+      }
+
+      // Low energy - charge
+      if (aiState.energy < 2 && affordableAbilities.length === 0) {
+        return { type: 'charge' };
+      }
+
+      // Use strongest affordable damage ability
+      const damageAbilities = affordableAbilities.filter(a => a.effect === 'damage' || !a.effect);
+      if (damageAbilities.length > 0) {
+        const best = damageAbilities.reduce((a, b) => (b.power || 0) > (a.power || 0) ? b : a);
+        return { type: 'ability', ability: best };
+      }
+
+      // Use any affordable ability
+      if (affordableAbilities.length > 0) {
+        return { type: 'ability', ability: affordableAbilities[0] };
+      }
+
+      // Default to charge
+      return { type: 'charge' };
+    };
+
+    // =============================================================================
+    // Battle Store (Zustand)
+    // =============================================================================
+
+    // Get translation helper from DEVS context
+    const t = window.DEVS?.t || ((key) => key);
+
+    const useBattleStore = create((set, get) => ({
+      // Phase: 'selection' | 'generating' | 'battle' | 'results'
+      phase: 'selection',
+
+      // Agents & Cards
+      agents: [],
+      cardCollection: [],
+      playerCard: null,
+      opponentCard: null,
+
+      // Battle State
+      playerState: null,
+      opponentState: null,
+      currentTurn: 1,
+      maxTurns: 30,
+      isPlayerTurn: true,
+      isAIActing: false,
+      battleLog: [],
+      winner: null,
+
+      // Stats tracking
+      totalDamageDealt: 0,
+      turnsPlayed: 0,
+      criticalHits: 0,
+      superEffectiveHits: 0,
+
+      // Loading states
+      isLoadingAgents: false,
+      isGeneratingCard: false,
+      generatingCardName: '',
+
+      // Initialize - load agents and saved cards
+      initialize: async () => {
+        set({ isLoadingAgents: true });
+        try {
+          // Load agents from DEVS API
+          if (window.DEVS?.agents?.list) {
+            const agents = await window.DEVS.agents.list();
+            set({ agents: agents.filter(a => !a.deletedAt) });
+          }
+
+          // Load saved card collection
+          if (window.DEVS?.storage?.get) {
+            const saved = await window.DEVS.storage.get('battle-arena-cards');
+            if (saved && Array.isArray(saved)) {
+              set({ cardCollection: saved });
+            }
+          }
+        } catch (err) {
+          console.error('Failed to initialize:', err);
+          window.DEVS?.ui?.toast?.(t('failedToLoadAgents'), { type: 'error' });
+        } finally {
+          set({ isLoadingAgents: false });
+        }
+      },
+
+      // Save card collection
+      saveCollection: async () => {
+        const { cardCollection } = get();
+        if (window.DEVS?.storage?.set) {
+          await window.DEVS.storage.set('battle-arena-cards', cardCollection);
+        }
+      },
+
+      // Generate card from agent
+      generateCard: async (agent, withArtwork = false) => {
+        set({ isGeneratingCard: true, generatingCardName: agent.name });
+        try {
+          const card = await generateCardFromAgent(agent, withArtwork);
+          set(state => ({
+            cardCollection: [...state.cardCollection, card],
+            isGeneratingCard: false,
+            generatingCardName: '',
+          }));
+
+          // Save to storage
+          get().saveCollection();
+          window.DEVS?.ui?.toast?.(t('cardGenerated', { name: card.name }), { type: 'success' });
+
+          return card;
+        } catch (err) {
+          console.error('Failed to generate card:', err);
+          window.DEVS?.ui?.toast?.(t('failedToGenerateCard'), { type: 'error' });
+          set({ isGeneratingCard: false, generatingCardName: '' });
+          return null;
+        }
+      },
+
+      // Remove card from collection
+      removeCard: async (cardId) => {
+        set(state => ({
+          cardCollection: state.cardCollection.filter(c => c.id !== cardId),
+        }));
+        get().saveCollection();
+        window.DEVS?.ui?.toast?.(t('cardRemoved'), { type: 'success' });
+      },
+
+      // Reset to selection phase
+      startSelection: () => set({ phase: 'selection', playerCard: null, opponentCard: null }),
+
+      // Select player card
+      selectPlayerCard: (card) => set({ playerCard: card }),
+
+      // Select opponent card
+      selectOpponentCard: (card) => set({ opponentCard: card }),
+
+      // Select random opponent
+      selectRandomOpponent: () => {
+        const { cardCollection, playerCard } = get();
+        const eligible = cardCollection.filter(c => c.id !== playerCard?.id);
+        if (eligible.length > 0) {
+          const random = eligible[Math.floor(Math.random() * eligible.length)];
+          set({ opponentCard: random });
+        }
+      },
+
+      // Start battle
+      startBattle: async () => {
+        const { playerCard, opponentCard } = get();
+        if (!playerCard || !opponentCard) return;
+
+        const confirmed = window.DEVS?.ui?.confirm
+          ? await window.DEVS.ui.confirm({
+              title: t('startBattleConfirmTitle'),
+              message: `${playerCard.name} vs ${opponentCard.name}`,
+            })
+          : true;
+
+        if (!confirmed) return;
+
+        const playerFirst = playerCard.speed >= opponentCard.speed;
+
+        set({
+          phase: 'battle',
+          playerState: { ...playerCard, hp: playerCard.maxHp, energy: 3, statusEffects: [] },
+          opponentState: { ...opponentCard, hp: opponentCard.maxHp, energy: 3, statusEffects: [] },
+          currentTurn: 1,
+          isPlayerTurn: playerFirst,
+          isAIActing: false,
+          battleLog: [`⚔️ Battle Start! ${playerCard.name} vs ${opponentCard.name}`],
+          winner: null,
+          totalDamageDealt: 0,
+          turnsPlayed: 0,
+          criticalHits: 0,
+          superEffectiveHits: 0,
+        });
+
+        window.DEVS?.ui?.toast?.(t('battleStarted'), { type: 'success' });
+      },
+
+      // Use ability
+      useAbility: (ability) => {
+        const state = get();
+        if (state.phase !== 'battle') return;
+
+        const isPlayer = state.isPlayerTurn;
+        const attacker = isPlayer ? state.playerState : state.opponentState;
+        const defender = isPlayer ? state.opponentState : state.playerState;
+
+        if (attacker.energy < ability.cost) return;
+
+        let logEntry = `${attacker.name} used ${ability.name}!`;
+        let newAttacker = { ...attacker, energy: attacker.energy - ability.cost };
+        let newDefender = { ...defender };
+        let damageDealt = 0;
+
+        // Handle different ability effects
+        switch (ability.effect) {
+          case 'heal': {
+            const healAmount = Math.floor(ability.power * 0.8);
+            newAttacker.hp = Math.min(newAttacker.maxHp, newAttacker.hp + healAmount);
+            logEntry += ` +${healAmount} HP`;
+            break;
+          }
+          case 'buff_attack': {
+            newAttacker.attack += 15;
+            logEntry += ' Attack +15!';
+            break;
+          }
+          case 'buff_defense': {
+            newAttacker.defense += 15;
+            logEntry += ' Defense +15!';
+            break;
+          }
+          case 'buff_speed': {
+            newAttacker.speed += 10;
+            logEntry += ' Speed +10!';
+            break;
+          }
+          case 'debuff_attack': {
+            newDefender.attack = Math.max(10, newDefender.attack - 15);
+            logEntry += ` ${defender.name}'s Attack -15!`;
+            break;
+          }
+          case 'debuff_defense': {
+            newDefender.defense = Math.max(10, newDefender.defense - 15);
+            logEntry += ` ${defender.name}'s Defense -15!`;
+            break;
+          }
+          case 'debuff_speed': {
+            newDefender.speed = Math.max(10, newDefender.speed - 10);
+            logEntry += ` ${defender.name}'s Speed -10!`;
+            break;
+          }
+          case 'shield': {
+            newAttacker.statusEffects = [...(newAttacker.statusEffects || []), { type: 'shield', duration: 2, value: 30 }];
+            logEntry += ' Shield activated!';
+            break;
+          }
+          case 'burn': {
+            newDefender.statusEffects = [...(newDefender.statusEffects || []), { type: 'burn', duration: 3, damage: 10 }];
+            const { damage, effectiveness, isCritical } = calculateDamage(ability, attacker, defender);
+            newDefender.hp = Math.max(0, newDefender.hp - damage);
+            damageDealt = damage;
+            logEntry += ` -${damage} HP + Burn!`;
+            break;
+          }
+          case 'drain': {
+            const { damage, effectiveness, isCritical } = calculateDamage(ability, attacker, defender);
+            newDefender.hp = Math.max(0, newDefender.hp - damage);
+            const healAmount = Math.floor(damage * 0.5);
+            newAttacker.hp = Math.min(newAttacker.maxHp, newAttacker.hp + healAmount);
+            damageDealt = damage;
+            logEntry += ` -${damage} HP, healed ${healAmount}!`;
+            break;
+          }
+          default: {
+            // Standard damage
+            const { damage, effectiveness, isCritical } = calculateDamage(ability, attacker, defender);
+            newDefender.hp = Math.max(0, newDefender.hp - damage);
+            damageDealt = damage;
+
+            if (effectiveness === 'super') {
+              logEntry += ` -${damage} HP 💥 Super Effective!`;
+              set(s => ({ superEffectiveHits: s.superEffectiveHits + 1 }));
+            } else if (effectiveness === 'weak') {
+              logEntry += ` -${damage} HP 🛡️ Not Very Effective...`;
+            } else {
+              logEntry += ` -${damage} HP`;
+            }
+
+            if (isCritical) {
+              logEntry += ' ⚡ Critical Hit!';
+              set(s => ({ criticalHits: s.criticalHits + 1 }));
+            }
+            break;
+          }
+        }
+
+        // Check for KO
+        let newPhase = state.phase;
+        let newWinner = null;
+        if (newDefender.hp <= 0) {
+          newPhase = 'results';
+          newWinner = isPlayer ? 'player' : 'opponent';
+          logEntry += ` 💀 ${defender.name} is KO'd!`;
+        }
+
+        set({
+          playerState: isPlayer ? newAttacker : newDefender,
+          opponentState: isPlayer ? newDefender : newAttacker,
+          battleLog: [...state.battleLog, logEntry],
+          phase: newPhase,
+          winner: newWinner,
+          totalDamageDealt: state.totalDamageDealt + (isPlayer ? damageDealt : 0),
+        });
+      },
+
+      // Defend action
+      defend: () => {
+        const state = get();
+        const isPlayer = state.isPlayerTurn;
+        const card = isPlayer ? state.playerState : state.opponentState;
+        const newCard = {
+          ...card,
+          defense: card.defense + 10,
+          statusEffects: [...(card.statusEffects || []), { type: 'defending', duration: 1 }],
+        };
+
+        set({
+          playerState: isPlayer ? newCard : state.playerState,
+          opponentState: isPlayer ? state.opponentState : newCard,
+          battleLog: [...state.battleLog, `🛡️ ${card.name} defends! Defense +10`],
+        });
+      },
+
+      // Charge action
+      charge: () => {
+        const state = get();
+        const isPlayer = state.isPlayerTurn;
+        const card = isPlayer ? state.playerState : state.opponentState;
+        const newCard = { ...card, energy: Math.min(card.maxEnergy, card.energy + 2) };
+
+        set({
+          playerState: isPlayer ? newCard : state.playerState,
+          opponentState: isPlayer ? state.opponentState : newCard,
+          battleLog: [...state.battleLog, `⚡ ${card.name} charges! Energy +2`],
+        });
+      },
+
+      // End turn
+      endTurn: () => {
+        const state = get();
+        if (state.phase !== 'battle') return;
+
+        // Process status effects
+        let playerState = { ...state.playerState };
+        let opponentState = { ...state.opponentState };
+
+        // Apply burn damage
+        [playerState, opponentState].forEach((cardState, idx) => {
+          const burns = (cardState.statusEffects || []).filter(e => e.type === 'burn');
+          burns.forEach(burn => {
+            cardState.hp = Math.max(0, cardState.hp - burn.damage);
+          });
+
+          // Decrement effect durations
+          cardState.statusEffects = (cardState.statusEffects || [])
+            .map(e => ({ ...e, duration: e.duration - 1 }))
+            .filter(e => e.duration > 0);
+        });
+
+        // Check for KO from burn
+        if (playerState.hp <= 0 || opponentState.hp <= 0) {
+          set({
+            playerState,
+            opponentState,
+            phase: 'results',
+            winner: playerState.hp <= 0 ? 'opponent' : 'player',
+          });
+          return;
+        }
+
+        // Energy regeneration for next player
+        const nextIsPlayer = !state.isPlayerTurn;
+        const nextCard = nextIsPlayer ? playerState : opponentState;
+        nextCard.energy = Math.min(nextCard.maxEnergy, nextCard.energy + 1);
+
+        set({
+          isPlayerTurn: nextIsPlayer,
+          currentTurn: state.currentTurn + (state.isPlayerTurn ? 0 : 1),
+          turnsPlayed: state.turnsPlayed + 1,
+          playerState,
+          opponentState,
+        });
+      },
+
+      // Execute AI turn
+      executeAITurn: () => {
+        const state = get();
+        if (state.phase !== 'battle' || state.isPlayerTurn) return;
+
+        set({ isAIActing: true });
+
+        setTimeout(() => {
+          const currentState = get();
+          if (currentState.phase !== 'battle') {
+            set({ isAIActing: false });
+            return;
+          }
+
+          const action = selectAIAction(
+            currentState.opponentCard,
+            currentState.opponentState,
+            currentState.playerCard,
+            currentState.playerState
+          );
+
+          if (action.type === 'ability' && action.ability) {
+            get().useAbility(action.ability);
+          } else if (action.type === 'defend') {
+            get().defend();
+          } else {
+            get().charge();
+          }
+
+          setTimeout(() => {
+            const s = get();
+            if (s.phase === 'battle') {
+              get().endTurn();
+            }
+            set({ isAIActing: false });
+          }, 500);
+        }, 1000);
+      },
+
+      // Reset to selection
+      reset: () => set({
+        phase: 'selection',
+        playerCard: null,
+        opponentCard: null,
+        playerState: null,
+        opponentState: null,
+        currentTurn: 1,
+        isPlayerTurn: true,
+        isAIActing: false,
+        battleLog: [],
+        winner: null,
+        totalDamageDealt: 0,
+        turnsPlayed: 0,
+        criticalHits: 0,
+        superEffectiveHits: 0,
+      }),
+    }));
+
+    // =============================================================================
+    // Components
+    // =============================================================================
+
+    // Animated Card Component
+    const BattleCard = ({ card, state, isActive, isCompact, onClick, showAbilities, onAbilityClick, abilitiesDisabled }) => {
+      const element = ELEMENTS[card.element];
+      const rarity = RARITIES[card.rarity];
+      const hpPercent = state ? (state.hp / state.maxHp) * 100 : 100;
+      const currentEnergy = state?.energy ?? card.energy ?? 3;
+      const maxEnergy = state?.maxEnergy ?? card.maxEnergy ?? 5;
+      const energySegments = Array(maxEnergy).fill(0).map((_, i) => i < currentEnergy);
+
+      const cardState = state || card;
+
+      return (
+        <Card
+          isPressable={!!onClick}
+          onPress={onClick}
+          className={`
+            ${isCompact ? 'w-48' : 'w-72'}
+            transition-all duration-300
+            ${isActive ? 'ring-2 ring-warning-400 shadow-xl scale-105' : ''}
+            ${card.rarity === 'legendary' ? 'bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900' : ''}
+            ${card.rarity === 'epic' ? 'bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900' : ''}
+          `}
+        >
+          <CardHeader className="flex-col items-start gap-1 pb-0">
+            <div className="flex w-full justify-between items-center">
+              <span className="font-bold text-lg">{card.name}</span>
+              <Chip size="sm" color={element.color}>{element.icon}</Chip>
+            </div>
+            <span className="text-default-500 text-xs italic">"{card.title}"</span>
+          </CardHeader>
+
+          <CardBody className={`gap-2 ${isCompact ? 'p-2' : ''}`}>
+            {/* Artwork placeholder */}
+            {card.artworkUrl ? (
+              <div className="w-full h-32 rounded-lg overflow-hidden bg-default-100">
+                <img src={card.artworkUrl} alt={card.name} className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <div className={`w-full ${isCompact ? 'h-20' : 'h-32'} rounded-lg bg-gradient-to-br ${element.gradient} flex items-center justify-center`}>
+                <span className="text-4xl">{element.icon}</span>
+              </div>
+            )}
+
+            {/* HP Bar */}
+            <div>
+              <div className="flex justify-between text-xs mb-1">
+                <span>HP</span>
+                <span>{cardState.hp}/{cardState.maxHp}</span>
+              </div>
+              <Progress
+                value={hpPercent}
+                color={hpPercent > 50 ? 'success' : hpPercent > 25 ? 'warning' : 'danger'}
+                size="sm"
+              />
+            </div>
+
+            {/* Energy */}
+            <div className="flex gap-1 items-center">
+              <span className="text-xs">⚡</span>
+              {energySegments.map((filled, i) => (
+                <div key={i} className={`w-3 h-3 rounded-full ${filled ? 'bg-warning-400' : 'bg-default-200'}`} />
+              ))}
+            </div>
+
+            {/* Stats */}
+            {!isCompact && (
+              <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                <div className="bg-default-100 rounded p-1">
+                  <div className="font-bold text-danger-500">{cardState.attack}</div>
+                  <div className="text-default-400">ATK</div>
+                </div>
+                <div className="bg-default-100 rounded p-1">
+                  <div className="font-bold text-primary-500">{cardState.defense}</div>
+                  <div className="text-default-400">DEF</div>
+                </div>
+                <div className="bg-default-100 rounded p-1">
+                  <div className="font-bold text-success-500">{cardState.speed}</div>
+                  <div className="text-default-400">SPD</div>
+                </div>
+              </div>
+            )}
+
+            {/* Rarity */}
+            <div className="text-center">
+              <Chip size="sm" variant="flat" color={rarity.color}>
+                {'⭐'.repeat(rarity.stars)} {rarity.label}
+              </Chip>
+            </div>
+
+            {/* Abilities (for battle) */}
+            {showAbilities && card.abilities && (
+              <div className="space-y-1">
+                <Divider />
+                <div className="text-xs font-semibold">Abilities:</div>
+                <div className="flex flex-wrap gap-1">
+                  {card.abilities.map(ability => (
+                    <Tooltip key={ability.id} content={`${ability.desc} (Cost: ${ability.cost}⚡, Power: ${ability.power || 'N/A'})`}>
+                      <Button
+                        size="sm"
+                        color="primary"
+                        variant="flat"
+                        isDisabled={abilitiesDisabled || currentEnergy < ability.cost}
+                        onPress={() => onAbilityClick?.(ability)}
+                        className="text-xs px-2 h-7"
+                      >
+                        {ELEMENTS[ability.element]?.icon} {ability.name} ({ability.cost}⚡)
+                      </Button>
+                    </Tooltip>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardBody>
+        </Card>
+      );
+    };
+
+    // Card Selection Screen
+    const CardSelectionScreen = () => {
+      const {
+        agents, cardCollection, playerCard, opponentCard,
+        selectPlayerCard, selectOpponentCard, selectRandomOpponent,
+        startBattle, generateCard, isGeneratingCard, generatingCardName,
+        removeCard, initialize
+      } = useBattleStore();
+
+      // Initialize on mount
+      React.useEffect(() => {
+        initialize();
+      }, []);
+
+      const [showAgentPicker, setShowAgentPicker] = React.useState(false);
+      const [pickingFor, setPickingFor] = React.useState('player');
+      const [generateArtwork, setGenerateArtwork] = React.useState(false);
+
+      const openAgentPicker = (slot) => {
+        setPickingFor(slot);
+        setShowAgentPicker(true);
+      };
+
+      const handleAgentSelect = async (agent) => {
+        setShowAgentPicker(false);
+        const card = await generateCard(agent, generateArtwork);
+        if (card) {
+          if (pickingFor === 'player') {
+            selectPlayerCard(card);
+          } else {
+            selectOpponentCard(card);
+          }
+        }
+      };
+
+      const handleCardSelect = (card, slot) => {
+        if (slot === 'player') {
+          selectPlayerCard(card);
+        } else {
+          selectOpponentCard(card);
+        }
+      };
+
+      return (
+        <div className="space-y-6 p-4">
+          <div className="flex justify-between items-center">
+            <div className="w-20" />
+            <h2 className="text-2xl font-bold">{t('selectYourCards')}</h2>
+            <div className="w-20" />
+          </div>
+
+          {/* Card Generation Status */}
+          {isGeneratingCard && (
+            <Card className="bg-warning-50">
+              <CardBody className="flex flex-row items-center gap-3">
+                <Spinner size="sm" color="warning" />
+                <span>{t('generatingCardFor', { name: generatingCardName })}</span>
+              </CardBody>
+            </Card>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Player Side */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-success-600">{t('yourCard')}</h3>
+              {playerCard ? (
+                <BattleCard card={playerCard} state={playerCard} isCompact />
+              ) : (
+                <Card className="h-64 border-2 border-dashed border-success-300">
+                  <CardBody className="flex flex-col items-center justify-center gap-4">
+                    <span className="text-4xl">🃏</span>
+                    <span className="text-default-500">{t('selectCard')}</span>
+                  </CardBody>
+                </Card>
+              )}
+              <Button
+                color="success"
+                variant="flat"
+                onPress={() => openAgentPicker('player')}
+                className="w-full"
+              >
+                {t('generateFromAgent')}
+              </Button>
+            </div>
+
+            {/* VS */}
+            <div className="flex items-center justify-center">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-2xl">VS</span>
+              </div>
+            </div>
+
+            {/* Opponent Side */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-danger-600">{t('opponentCard')}</h3>
+              {opponentCard ? (
+                <BattleCard card={opponentCard} state={opponentCard} isCompact />
+              ) : (
+                <Card className="h-64 border-2 border-dashed border-danger-300">
+                  <CardBody className="flex flex-col items-center justify-center gap-4">
+                    <span className="text-4xl">🃏</span>
+                    <span className="text-default-500">{t('selectCard')}</span>
+                  </CardBody>
+                </Card>
+              )}
+              <div className="flex gap-2">
+                <Button
+                  color="danger"
+                  variant="flat"
+                  onPress={() => openAgentPicker('opponent')}
+                  className="flex-1"
+                >
+                  {t('generate')}
+                </Button>
+                <Button
+                  color="warning"
+                  variant="flat"
+                  onPress={selectRandomOpponent}
+                  isDisabled={cardCollection.length < 2}
+                >
+                  {t('random')}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Start Battle Button */}
+          <div className="text-center">
+            <Button
+              color="warning"
+              size="lg"
+              variant="shadow"
+              isDisabled={!playerCard || !opponentCard || playerCard.id === opponentCard.id}
+              onPress={startBattle}
+              className="px-12"
+            >
+              {t('startBattle')}
+            </Button>
+          </div>
+
+          {/* Card Collection */}
+          {cardCollection.length > 0 && (
+            <div className="space-y-4">
+              <Divider />
+              <h3 className="text-lg font-semibold">{t('yourCardCollection')} ({cardCollection.length})</h3>
+              <ScrollShadow orientation="horizontal" className="w-full">
+                <div className="flex gap-4 pb-4">
+                  {cardCollection.map(card => (
+                    <div key={card.id} className="flex-shrink-0 relative group">
+                      <BattleCard
+                        card={card}
+                        state={card}
+                        isCompact
+                        onClick={() => {
+                          if (!playerCard) {
+                            selectPlayerCard(card);
+                          } else if (!opponentCard && card.id !== playerCard.id) {
+                            selectOpponentCard(card);
+                          }
+                        }}
+                      />
+                      <Button
+                        size="sm"
+                        color="danger"
+                        variant="flat"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onPress={() => removeCard(card.id)}
+                      >
+                        ✕
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </ScrollShadow>
+            </div>
+          )}
+
+          {/* Agent Picker Modal */}
+          <Modal isOpen={showAgentPicker} onClose={() => setShowAgentPicker(false)} size="2xl">
+            <ModalContent>
+              <ModalHeader>{t('selectAgentToGenerate')}</ModalHeader>
+              <ModalBody>
+                <div className="flex items-center gap-2 mb-4">
+                  <input
+                    type="checkbox"
+                    id="artwork"
+                    checked={generateArtwork}
+                    onChange={(e) => setGenerateArtwork(e.target.checked)}
+                  />
+                  <label htmlFor="artwork" className="text-sm">{t('generateAiArtwork')}</label>
+                </div>
+                <ScrollShadow className="max-h-96">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {agents.map(agent => (
+                      <Card
+                        key={agent.id || agent.slug}
+                        isPressable
+                        onPress={() => handleAgentSelect(agent)}
+                        className="hover:ring-2 hover:ring-warning-400"
+                      >
+                        <CardBody className="p-3">
+                          <div className="flex items-center gap-3">
+                            <Avatar name={agent.name} size="sm" />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-semibold truncate">{agent.name}</div>
+                              <div className="text-xs text-default-500 truncate">{agent.role || 'AI Agent'}</div>
+                            </div>
+                          </div>
+                        </CardBody>
+                      </Card>
+                    ))}
+                  </div>
+                </ScrollShadow>
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="light" onPress={() => setShowAgentPicker(false)}>{t('cancel')}</Button>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
+        </div>
+      );
+    };
+
+    // Battle Screen
+    const BattleScreen = () => {
+      const {
+        playerCard, opponentCard, playerState, opponentState,
+        currentTurn, maxTurns, isPlayerTurn, isAIActing, battleLog,
+        useAbility, defend, charge, endTurn, executeAITurn
+      } = useBattleStore();
+
+      // Trigger AI turn
+      React.useEffect(() => {
+        if (!isPlayerTurn && !isAIActing) {
+          executeAITurn();
+        }
+      }, [isPlayerTurn, isAIActing]);
+
+      const handleAbility = (ability) => {
+        useAbility(ability);
+        setTimeout(() => endTurn(), 500);
+      };
+
+      const handleDefend = () => {
+        defend();
+        setTimeout(() => endTurn(), 500);
+      };
+
+      const handleCharge = () => {
+        charge();
+        setTimeout(() => endTurn(), 500);
+      };
+
+      return (
+        <div className="space-y-6 p-4">
+          {/* Turn Indicator */}
+          <div className="flex justify-between items-center">
+            <Chip color="default" size="sm">{t('turn')} {currentTurn}/{maxTurns}</Chip>
+            <Chip color={isPlayerTurn ? 'success' : 'danger'} size="lg" variant="shadow">
+              {isPlayerTurn ? t('yourTurn') : t('opponentTurn')}
+            </Chip>
+            <div className="w-20" />
+          </div>
+
+          {/* Battle Field */}
+          <div className="flex justify-center items-center gap-4 md:gap-8 flex-wrap">
+            <BattleCard
+              card={playerCard}
+              state={playerState}
+              isActive={isPlayerTurn}
+              showAbilities={isPlayerTurn && !isAIActing}
+              onAbilityClick={handleAbility}
+              abilitiesDisabled={isAIActing}
+            />
+
+            <div className="text-4xl font-bold text-warning-500 animate-pulse">VS</div>
+
+            <BattleCard
+              card={opponentCard}
+              state={opponentState}
+              isActive={!isPlayerTurn}
+            />
+          </div>
+
+          {/* Action Buttons (player turn only) */}
+          {isPlayerTurn && !isAIActing && (
+            <div className="flex justify-center gap-3">
+              <Button color="default" variant="bordered" onPress={handleDefend}>
+                {t('defend')}
+              </Button>
+              <Button color="warning" variant="bordered" onPress={handleCharge}>
+                {t('charge')}
+              </Button>
+            </div>
+          )}
+
+          {/* AI Acting Indicator */}
+          {isAIActing && (
+            <div className="flex justify-center items-center gap-2">
+              <Spinner size="sm" color="danger" />
+              <span className="text-danger-500">{t('opponentThinking')}</span>
+            </div>
+          )}
+
+          {/* Battle Log */}
+          <Card>
+            <CardBody>
+              <h4 className="font-semibold mb-2">{t('battleLog')}</h4>
+              <ScrollShadow className="max-h-32">
+                <div className="space-y-1 text-sm">
+                  {battleLog.slice().reverse().slice(0, 10).map((log, i) => (
+                    <div key={i} className={`${i === 0 ? 'font-semibold' : 'text-default-500'}`}>{log}</div>
+                  ))}
+                </div>
+              </ScrollShadow>
+            </CardBody>
+          </Card>
+        </div>
+      );
+    };
+
+    // Results Screen
+    const ResultsScreen = () => {
+      const {
+        winner, playerCard, opponentCard, playerState, opponentState,
+        totalDamageDealt, turnsPlayed, criticalHits, superEffectiveHits,
+        reset, startSelection, saveCollection
+      } = useBattleStore();
+
+      const isVictory = winner === 'player';
+
+      React.useEffect(() => {
+        if (isVictory) {
+          window.DEVS?.ui?.toast?.(t('victoryToast'), { type: 'success' });
+        }
+      }, [isVictory]);
+
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-8 p-4">
+          {/* Victory/Defeat Banner */}
+          <div className={`text-center ${isVictory ? 'text-success-500' : 'text-danger-500'}`}>
+            <div className="text-7xl mb-4">{isVictory ? '👑' : '💀'}</div>
+            <h1 className="text-5xl font-bold mb-2">{isVictory ? t('victory') : t('defeat')}</h1>
+            <p className="text-xl text-default-600">
+              {isVictory ? t('victoryMessage') : t('defeatMessage')}
+            </p>
+          </div>
+
+          {/* Final State */}
+          <div className="flex items-center gap-8">
+            <Card className={isVictory ? 'ring-2 ring-success-400' : 'opacity-50'}>
+              <CardBody className="p-4 text-center">
+                <div className="text-2xl mb-2">{ELEMENTS[playerCard.element].icon}</div>
+                <div className="font-semibold">{playerCard.name}</div>
+                <div className="text-sm text-default-500">
+                  HP: {playerState?.hp || 0}/{playerState?.maxHp || playerCard.maxHp}
+                </div>
+              </CardBody>
+            </Card>
+
+            <span className="text-3xl">⚔️</span>
+
+            <Card className={!isVictory ? 'ring-2 ring-success-400' : 'opacity-50'}>
+              <CardBody className="p-4 text-center">
+                <div className="text-2xl mb-2">{ELEMENTS[opponentCard.element].icon}</div>
+                <div className="font-semibold">{opponentCard.name}</div>
+                <div className="text-sm text-default-500">
+                  HP: {opponentState?.hp || 0}/{opponentState?.maxHp || opponentCard.maxHp}
+                </div>
+              </CardBody>
+            </Card>
+          </div>
+
+          {/* Battle Stats */}
+          <Card className="w-full max-w-md">
+            <CardBody>
+              <h4 className="font-semibold mb-3">{t('battleStatistics')}</h4>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div className="text-default-500">{t('turnsPlayed')}</div>
+                  <div className="font-bold text-lg">{turnsPlayed}</div>
+                </div>
+                <div>
+                  <div className="text-default-500">{t('damageDealt')}</div>
+                  <div className="font-bold text-lg text-danger-500">{totalDamageDealt}</div>
+                </div>
+                <div>
+                  <div className="text-default-500">{t('criticalHits')}</div>
+                  <div className="font-bold text-lg text-warning-500">⚡ {criticalHits}</div>
+                </div>
+                <div>
+                  <div className="text-default-500">{t('superEffective')}</div>
+                  <div className="font-bold text-lg text-success-500">💥 {superEffectiveHits}</div>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+
+          {/* Action Buttons */}
+          <div className="flex gap-4">
+            <Button color="warning" variant="shadow" onPress={startSelection}>
+              {t('newBattle')}
+            </Button>
+          </div>
+        </div>
+      );
+    };
+
+    // =============================================================================
+    // Main App
+    // =============================================================================
+
+    const App = () => {
+      const { phase } = useBattleStore();
+
+      return (
+        <Section>
+          {phase === 'selection' && <CardSelectionScreen />}
+          {phase === 'battle' && <BattleScreen />}
+          {phase === 'results' && <ResultsScreen />}
+        </Section>
+      );
+    }

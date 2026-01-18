@@ -1,0 +1,1 @@
+export { ExtensionDetailModal } from './ExtensionDetailModal'

@@ -32,10 +32,16 @@ import {
 } from '@/features/search'
 import { PRODUCT } from '@/config/product'
 import clsx from 'clsx'
-import { useState, useEffect, memo } from 'react'
+import { useState, useEffect, memo, useMemo } from 'react'
 import { cn, isCurrentPath } from '@/lib/utils'
 import { useNavigate } from 'react-router-dom'
 import { useConversationStore } from '@/stores/conversationStore'
+import {
+  useMarketplaceStore,
+  type InstalledExtension,
+} from '@/features/marketplace'
+import { getAppPrimaryPageUrl } from '@/features/marketplace/store'
+import { getExtensionColorClass } from '@/features/marketplace/utils'
 
 const AgentList = () => {
   const { lang, t } = useI18n()
@@ -240,6 +246,7 @@ const BackDrop = () => (
 )
 
 export const AppDrawer = memo(() => {
+  const { lang } = useI18n()
   const isCollapsed = userSettings((state) => state.isDrawerCollapsed)
 
   const openSearch = useSearchStore((state) => state.open)
@@ -253,6 +260,20 @@ export const AppDrawer = memo(() => {
   )
   const loadConversations = useConversationStore(
     (state) => state.loadConversations,
+  )
+
+  // Marketplace installed apps
+  const installed = useMarketplaceStore((state) => state.installed)
+  const installedApps = useMemo(
+    () =>
+      Array.from(installed.values()).filter(
+        (ext) => ext.enabled && ext.extension.type === 'app',
+      ),
+    [installed],
+  )
+  const loadExtensions = useMarketplaceStore((state) => state.loadExtensions)
+  const loadInstalledExtensions = useMarketplaceStore(
+    (state) => state.loadInstalledExtensions,
   )
 
   // Register Cmd+K shortcut for global search
@@ -275,11 +296,13 @@ export const AppDrawer = memo(() => {
     }
   }, [isMobile])
 
-  // Load conversations and check searchable items on mount
+  // Load conversations, marketplace extensions, and check searchable items on mount
   useEffect(() => {
     loadConversations()
+    loadExtensions()
+    loadInstalledExtensions()
     hasSearchableItems().then(setHasSearchable)
-  }, [loadConversations])
+  }, [loadConversations, loadExtensions, loadInstalledExtensions])
 
   return (
     <aside
@@ -298,12 +321,16 @@ export const AppDrawer = memo(() => {
           onOpenSearch={openSearch}
           hasConversations={conversationsCount > 0}
           hasSearchable={hasSearchable}
+          installedApps={installedApps}
+          lang={lang}
         />
         <ExpandedDrawer
           className="drawer-expanded"
           onOpenSearch={openSearch}
           hasConversations={conversationsCount > 0}
           hasSearchable={hasSearchable}
+          installedApps={installedApps}
+          lang={lang}
         />
         {!isCollapsed && isMobile && <BackDrop />}
 
@@ -339,13 +366,17 @@ const CollapsedDrawer = ({
   className,
   onOpenSearch,
   hasConversations,
+  installedApps,
+  lang,
 }: {
   className?: string
   onOpenSearch: () => void
   hasConversations: boolean
   hasSearchable: boolean
+  installedApps: InstalledExtension[]
+  lang: LanguageCode
 }) => {
-  const { lang, t } = useI18n()
+  const { t } = useI18n()
   const url = useUrl(lang)
 
   return (
@@ -401,6 +432,22 @@ const CollapsedDrawer = ({
                 <Icon name="Search" />
               </Button>
             </Tooltip>
+            <Tooltip content={t('Knowledge')} placement="right">
+              <Button
+                as={Link}
+                href={url('/knowledge')}
+                isIconOnly
+                color="primary"
+                variant="light"
+                className={cn(
+                  'w-full text-primary-600 [.is-active]:bg-default-100',
+                  isCurrentPath('/knowledge') && 'is-active',
+                )}
+                aria-label={t('Knowledge')}
+              >
+                <Icon name="Book" />
+              </Button>
+            </Tooltip>
             <Tooltip content={t('Agents')} placement="right">
               <Button
                 as={Link}
@@ -417,6 +464,39 @@ const CollapsedDrawer = ({
                 <Icon name="Sparks" />
               </Button>
             </Tooltip>
+            <Tooltip content={t('Tasks')} placement="right">
+              <Button
+                as={Link}
+                href={url('/tasks')}
+                isIconOnly
+                color="secondary"
+                variant="light"
+                className={cn(
+                  'w-full text-secondary-600 [.is-active]:bg-default-100',
+                  isCurrentPath('/tasks') && 'is-active',
+                )}
+                aria-label={t('Tasks')}
+              >
+                <Icon name="TriangleFlagTwoStripes" />
+              </Button>
+            </Tooltip>
+            {hasConversations && (
+              <Tooltip content={t('Conversations history')} placement="right">
+                <Button
+                  as={Link}
+                  href={url('/conversations')}
+                  isIconOnly
+                  variant="light"
+                  className={cn(
+                    'w-full text-gray-500 dark:text-gray-400 [.is-active]:bg-default-100',
+                    isCurrentPath('/conversations') && 'is-active',
+                  )}
+                  aria-label={t('Conversations history')}
+                >
+                  <Icon name="ChatBubble" />
+                </Button>
+              </Tooltip>
+            )}
             <Tooltip content={t('Studio')} placement="right">
               <Button
                 as={Link}
@@ -447,39 +527,7 @@ const CollapsedDrawer = ({
                 <Icon name="Voice" />
               </Button>
             </Tooltip>
-            <Tooltip content={t('Tasks')} placement="right">
-              <Button
-                as={Link}
-                href={url('/tasks')}
-                isIconOnly
-                color="secondary"
-                variant="light"
-                className={cn(
-                  'w-full text-secondary-600 [.is-active]:bg-default-100',
-                  isCurrentPath('/tasks') && 'is-active',
-                )}
-                aria-label={t('Tasks')}
-              >
-                <Icon name="TriangleFlagTwoStripes" />
-              </Button>
-            </Tooltip>
-            <Tooltip content={t('Knowledge')} placement="right">
-              <Button
-                as={Link}
-                href={url('/knowledge')}
-                isIconOnly
-                color="primary"
-                variant="light"
-                className={cn(
-                  'w-full text-primary-600 [.is-active]:bg-default-100',
-                  isCurrentPath('/knowledge') && 'is-active',
-                )}
-                aria-label={t('Knowledge')}
-              >
-                <Icon name="Book" />
-              </Button>
-            </Tooltip>
-            <Tooltip content={t('Methodologies')} placement="right">
+            {/* <Tooltip content={t('Methodologies')} placement="right">
               <Button
                 as={Link}
                 href={url('/methodologies')}
@@ -494,8 +542,8 @@ const CollapsedDrawer = ({
               >
                 <Icon name="Strategy" />
               </Button>
-            </Tooltip>
-            <Tooltip content={t('Arena')} placement="right">
+            </Tooltip> */}
+            {/* <Tooltip content={t('Arena')} placement="right">
               <Button
                 as={Link}
                 href={url('/arena')}
@@ -510,7 +558,7 @@ const CollapsedDrawer = ({
               >
                 <Icon name="Crown" />
               </Button>
-            </Tooltip>
+            </Tooltip> */}
             {/* <Tooltip content={t('Teams')} placement="right">
                 <Button
                   as={Link}
@@ -524,23 +572,54 @@ const CollapsedDrawer = ({
                   <Icon name="Community" />
                 </Button>
               </Tooltip> */}
-            {hasConversations && (
-              <Tooltip content={t('Conversations history')} placement="right">
-                <Button
-                  as={Link}
-                  href={url('/conversations')}
-                  isIconOnly
-                  variant="light"
-                  className={cn(
-                    'w-full text-gray-500 dark:text-gray-400 [.is-active]:bg-default-100',
-                    isCurrentPath('/conversations') && 'is-active',
-                  )}
-                  aria-label={t('Conversations history')}
-                >
-                  <Icon name="ChatBubble" />
-                </Button>
-              </Tooltip>
-            )}
+            {
+              // Installed Marketplace Apps
+              installedApps.map((installedApp) => {
+                const ext = installedApp.extension
+                const extPath = getAppPrimaryPageUrl(ext.id)
+                // Get localized name if available
+                const localizedName =
+                  ext.i18n?.[lang as keyof typeof ext.i18n]?.name || ext.name
+                const iconColorClass = getExtensionColorClass(ext.color)
+                return (
+                  <Tooltip
+                    key={ext.id}
+                    content={localizedName}
+                    placement="right"
+                  >
+                    <Button
+                      as={Link}
+                      href={url(extPath)}
+                      isIconOnly
+                      variant="light"
+                      className={cn(
+                        'w-full [.is-active]:bg-default-100',
+                        isCurrentPath(extPath) && 'is-active',
+                      )}
+                      aria-label={localizedName}
+                    >
+                      <Icon
+                        name={ext.icon || 'Puzzle'}
+                        className={iconColorClass}
+                      />
+                    </Button>
+                  </Tooltip>
+                )
+              })
+            }
+            <Tooltip content={t('Marketplace')} placement="right">
+              <Button
+                as={Link}
+                href={url('/marketplace')}
+                isIconOnly
+                color="warning"
+                variant="light"
+                className="w-full"
+                aria-label={t('Marketplace')}
+              >
+                <Icon name="HexagonPlus" />
+              </Button>
+            </Tooltip>
           </nav>
 
           {/* <div className="mt-4 pt-4 border-t border-default-200 float-end">
@@ -572,13 +651,17 @@ const ExpandedDrawer = ({
   className,
   onOpenSearch,
   hasConversations,
+  installedApps,
+  lang,
 }: {
   className?: string
   onOpenSearch: () => void
   hasConversations: boolean
   hasSearchable: boolean
+  installedApps: InstalledExtension[]
+  lang: LanguageCode
 }) => {
-  const { lang, t } = useI18n()
+  const { t } = useI18n()
   const url = useUrl(lang)
   const navigate = useNavigate()
   const customPlatformName = userSettings((state) => state.platformName)
@@ -676,8 +759,23 @@ const ExpandedDrawer = ({
               >
                 {t('Search')}
               </ListboxItem>
-            </ListboxSection>
-            <ListboxSection showDivider>
+              <ListboxItem
+                href={url('/knowledge')}
+                variant="faded"
+                color="primary"
+                className={cn(
+                  'dark:text-gray-200 dark:hover:text-primary-600 [.is-active]:bg-default-100',
+                  isCurrentPath('/knowledge') && 'is-active',
+                )}
+                startContent={
+                  <Icon
+                    name="Book"
+                    className="text-primary dark:text-primary-600"
+                  />
+                }
+              >
+                {t('Knowledge')}
+              </ListboxItem>
               <ListboxItem
                 href={url('/agents')}
                 variant="faded"
@@ -714,38 +812,6 @@ const ExpandedDrawer = ({
                 textValue={t('Agents')}
               >
                 {t('Agents')}
-              </ListboxItem>
-              <ListboxItem
-                href={url('/studio')}
-                variant="faded"
-                className={cn(
-                  '[.is-active]:bg-default-100',
-                  isCurrentPath('/studio') && 'is-active',
-                )}
-                startContent={
-                  <Icon
-                    name="MediaImagePlus"
-                    className="text-pink-500 dark:text-pink-400"
-                  />
-                }
-              >
-                {t('Studio')}
-              </ListboxItem>
-              <ListboxItem
-                href={url('/live')}
-                variant="faded"
-                className={cn(
-                  '[.is-active]:bg-default-100',
-                  isCurrentPath('/live') && 'is-active',
-                )}
-                startContent={
-                  <Icon
-                    name="Voice"
-                    className="text-cyan-500 dark:text-cyan-400"
-                  />
-                }
-              >
-                {t('Live')}
               </ListboxItem>
               <ListboxItem
                 href={url('/tasks')}
@@ -788,119 +854,111 @@ const ExpandedDrawer = ({
               >
                 {t('Tasks')}
               </ListboxItem>
-            </ListboxSection>
-
-            <ListboxSection showDivider>
               <ListboxItem
-                href={url('/knowledge')}
+                href={url('/conversations')}
                 variant="faded"
-                color="primary"
                 className={cn(
-                  'dark:text-gray-200 dark:hover:text-primary-600 [.is-active]:bg-default-100',
-                  isCurrentPath('/knowledge') && 'is-active',
+                  '[.is-active]:bg-default-100',
+                  isCurrentPath('/conversations') && 'is-active',
+                  !hasConversations && 'hidden',
                 )}
                 startContent={
                   <Icon
-                    name="Book"
-                    className="text-primary dark:text-primary-600"
+                    name="ChatBubble"
+                    className="text-gray-500 dark:text-gray-400"
                   />
                 }
               >
-                {t('Knowledge')}
+                {t('Conversations')}
               </ListboxItem>
-              <ListboxItem
-                href={url('/methodologies')}
-                variant="faded"
-                color="success"
-                className={cn(
-                  'dark:text-gray-200 dark:hover:text-success-500 [.is-active]:bg-default-100',
-                  isCurrentPath('/methodologies') && 'is-active',
-                )}
-                startContent={<Icon name="Strategy" className="text-success" />}
-                // endContent={
-                //   <Tooltip content={t('New Methodology')} placement="right">
-                //     <span
-                //       role="button"
-                //       tabIndex={0}
-                //       className="inline-flex items-center justify-center w-6 h-6 rounded-small bg-success/20 text-success hover:bg-success/30 cursor-pointer transition-colors"
-                //       aria-label={t('New Methodology')}
-                //       onClick={(e) => {
-                //         e.preventDefault()
-                //         e.stopPropagation()
-                //         navigate(url('/methodologies/new'))
-                //       }}
-                //       onKeyDown={(e) => {
-                //         if (e.key === 'Enter' || e.key === ' ') {
-                //           e.preventDefault()
-                //           e.stopPropagation()
-                //           navigate(url('/methodologies/new'))
-                //         }
-                //       }}
-                //     >
-                //       <Icon name="Plus" />
-                //     </span>
-                //   </Tooltip>
-                // }
-              >
-                {t('Methodologies')}
-              </ListboxItem>
-              <ListboxItem
-                href={url('/arena')}
-                variant="faded"
-                color="warning"
-                className={cn(
-                  'dark:text-gray-200 dark:hover:text-amber-500 [.is-active]:bg-default-100',
-                  isCurrentPath('/arena') && 'is-active',
-                )}
-                startContent={<Icon name="Crown" className="text-amber-500" />}
-              >
-                {t('Arena')}
-              </ListboxItem>
+            </ListboxSection>
 
-              {/* <ListboxItem
-                  href={url('/teams')}
+            <ListboxSection
+              title={t('APPLICATIONS')}
+              classNames={{
+                heading: 'ms-[34px]',
+              }}
+            >
+              {[
+                <ListboxItem
+                  key="studio"
+                  href={url('/studio')}
                   variant="faded"
-                  color="success"
-                  startContent={<Icon name="Community" color="success" />}
-                  endContent={
-                    <Tooltip content={t('New Team')} placement="right">
-                      <Button
-                        isIconOnly
-                        size="sm"
-                        variant="flat"
-                        color="success"
-                        aria-label={t('New Team')}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          navigate(url('/teams/new'))
-                        }}
-                      >
-                        <Icon name="Plus" />
-                      </Button>
-                    </Tooltip>
+                  className={cn(
+                    '[.is-active]:bg-default-100',
+                    isCurrentPath('/studio') && 'is-active',
+                  )}
+                  startContent={
+                    <Icon
+                      name="MediaImagePlus"
+                      className="text-pink-500 dark:text-pink-400"
+                    />
                   }
                 >
-                  {t('Teams')}
-                </ListboxItem> */}
+                  {t('Studio')}
+                </ListboxItem>,
+                <ListboxItem
+                  key="live"
+                  href={url('/live')}
+                  variant="faded"
+                  className={cn(
+                    '[.is-active]:bg-default-100',
+                    isCurrentPath('/live') && 'is-active',
+                  )}
+                  startContent={
+                    <Icon
+                      name="Voice"
+                      className="text-cyan-500 dark:text-cyan-400"
+                    />
+                  }
+                >
+                  {t('Live')}
+                </ListboxItem>,
+                // Installed Marketplace Apps
+                ...installedApps.map((installedApp) => {
+                  const ext = installedApp.extension
+                  const extPath = getAppPrimaryPageUrl(ext.id)
+                  // Get localized name if available
+                  const localizedName =
+                    ext.i18n?.[lang as keyof typeof ext.i18n]?.name || ext.name
+                  const iconColorClass = getExtensionColorClass(ext.color)
+                  return (
+                    <ListboxItem
+                      key={ext.id}
+                      href={url(extPath)}
+                      variant="faded"
+                      className={cn(
+                        'dark:text-gray-200 [.is-active]:bg-default-100',
+                        isCurrentPath(extPath) && 'is-active',
+                      )}
+                      startContent={
+                        <Icon
+                          name={ext.icon || 'Puzzle'}
+                          className={iconColorClass}
+                        />
+                      }
+                    >
+                      {localizedName}
+                    </ListboxItem>
+                  )
+                }),
+                <ListboxItem
+                  key="marketplace"
+                  href={url('/marketplace')}
+                  variant="faded"
+                  color="warning"
+                  className={cn(
+                    'dark:text-gray-200 dark:hover:text-yellow-500 [.is-active]:bg-default-100',
+                    isCurrentPath('/marketplace') && 'is-active',
+                  )}
+                  startContent={
+                    <Icon name="HexagonPlus" className="text-yellow-500" />
+                  }
+                >
+                  {t('Marketplace')}
+                </ListboxItem>,
+              ]}
             </ListboxSection>
-            <ListboxItem
-              href={url('/conversations')}
-              variant="faded"
-              className={cn(
-                '[.is-active]:bg-default-100',
-                isCurrentPath('/conversations') && 'is-active',
-                !hasConversations && 'hidden',
-              )}
-              startContent={
-                <Icon
-                  name="ChatBubble"
-                  className="text-gray-500 dark:text-gray-400"
-                />
-              }
-            >
-              {t('Conversations')}
-            </ListboxItem>
           </Listbox>
 
           <AgentList />

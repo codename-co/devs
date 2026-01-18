@@ -114,7 +114,7 @@ export default function DefaultLayout({
             role="main"
             className="flex-1 flex flex-col w-full @container/main"
           >
-            <div className="space-y space-y-8 relative bg-transparent min-h-full">
+            <div className="flex flex-col relative bg-transparent min-h-full">
               {(header || showBackButton) && (
                 <div
                   className={clsx(
@@ -208,7 +208,7 @@ export default function DefaultLayout({
               <ToastProvider />
               <PageMenu supplementalActions={pageMenuActions} />
 
-              {children}
+              <div className="flex-1 flex flex-col">{children}</div>
             </div>
           </main>
         </div>

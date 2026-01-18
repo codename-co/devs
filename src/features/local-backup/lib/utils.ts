@@ -5,16 +5,23 @@
  */
 import * as yaml from 'yaml'
 
+// UTF-8 BOM for proper encoding detection in external applications (e.g., Microsoft Word)
+const UTF8_BOM = '\uFEFF'
+
 const FRONTMATTER_REGEX = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/
 
 /**
  * Parse a Markdown file with YAML frontmatter
+ * Handles files with or without UTF-8 BOM
  */
 export function parseFrontmatter<T>(content: string): {
   frontmatter: T
   body: string
 } | null {
-  const match = content.match(FRONTMATTER_REGEX)
+  // Strip UTF-8 BOM if present
+  const cleanContent = content.startsWith(UTF8_BOM) ? content.slice(1) : content
+
+  const match = cleanContent.match(FRONTMATTER_REGEX)
   if (!match) {
     return null
   }
@@ -31,6 +38,7 @@ export function parseFrontmatter<T>(content: string): {
 
 /**
  * Stringify an object with body content to Markdown with YAML frontmatter
+ * Includes UTF-8 BOM for proper encoding detection in external applications
  */
 export function stringifyFrontmatter<T extends object>(
   frontmatter: T,
@@ -42,7 +50,7 @@ export function stringifyFrontmatter<T extends object>(
     nullStr: '', // Don't output 'null' for empty values
   })
 
-  return `---\n${yamlContent}---\n\n${body}`
+  return `${UTF8_BOM}---\n${yamlContent}---\n\n${body}`
 }
 
 /**

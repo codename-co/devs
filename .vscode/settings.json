@@ -5,6 +5,8 @@
   "yaml.schemaStore.url": "https://www.schemastore.org/api/json/catalog.json",
   "yaml.schemaStore.enable": true,
   "yaml.schemas": {
+    "./public/schemas/extension.schema.json": "*.extension.yaml",
+    // "https://devs.new/schemas/extension.schema.json": "*.extension.yaml",
     "./public/schemas/methodology.schema.json": "*.methodology.yaml",
     // "https://devs.new/schemas/methodology.schema.json": "*.methodology.yaml",
     "./public/schemas/agent.schema.json": "*.agent.yaml"

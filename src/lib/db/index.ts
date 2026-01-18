@@ -19,6 +19,10 @@ import { Connector, ConnectorSyncState } from '@/features/connectors/types'
 import { Battle } from '@/features/battle/types'
 import { StudioEntry } from '@/features/studio/types'
 import { Trace, Span, TracingConfig } from '@/features/traces/types'
+import {
+  InstalledExtension,
+  CustomExtension,
+} from '@/features/marketplace/types'
 
 export interface DBStores {
   agents: Agent
@@ -49,6 +53,9 @@ export interface DBStores {
   traces: Trace
   spans: Span
   tracingConfig: TracingConfig
+  // Marketplace System
+  extensions: InstalledExtension
+  customExtensions: CustomExtension
 }
 
 export class Database {
@@ -56,7 +63,7 @@ export class Database {
   private initialized = false
 
   static DB_NAME = 'devs-ai-platform'
-  static DB_VERSION = 15
+  static DB_VERSION = 18
   static STORES: (keyof DBStores)[] = [
     'agents',
     'conversations',
@@ -85,6 +92,9 @@ export class Database {
     'traces',
     'spans',
     'tracingConfig',
+    // Marketplace System
+    'extensions',
+    'customExtensions',
   ]
 
   isInitialized(): boolean {
@@ -688,6 +698,55 @@ export class Database {
               keyPath: 'id',
             })
             tracingConfigStore.createIndex('enabled', 'enabled', {
+              unique: false,
+            })
+          }
+        }
+
+        // Migration for version 17: Add Marketplace System store
+        if (event.oldVersion < 17) {
+          console.log(
+            'Database migrated to version 17: Added Marketplace System store',
+          )
+
+          // Create extensions store
+          if (!db.objectStoreNames.contains('extensions')) {
+            const extensionsStore = db.createObjectStore('extensions', {
+              keyPath: 'id',
+            })
+            extensionsStore.createIndex('enabled', 'enabled', {
+              unique: false,
+            })
+            extensionsStore.createIndex('status', 'status', {
+              unique: false,
+            })
+            extensionsStore.createIndex('installedAt', 'installedAt', {
+              unique: false,
+            })
+          }
+        }
+
+        // Migration for version 18: Add Custom Extensions store
+        if (event.oldVersion < 18) {
+          console.log(
+            'Database migrated to version 18: Added Custom Extensions store',
+          )
+
+          // Create customExtensions store for AI-generated extensions
+          if (!db.objectStoreNames.contains('customExtensions')) {
+            const customExtensionsStore = db.createObjectStore(
+              'customExtensions',
+              {
+                keyPath: 'id',
+              },
+            )
+            customExtensionsStore.createIndex('type', 'type', {
+              unique: false,
+            })
+            customExtensionsStore.createIndex('name', 'name', {
+              unique: false,
+            })
+            customExtensionsStore.createIndex('createdAt', 'createdAt', {
               unique: false,
             })
           }

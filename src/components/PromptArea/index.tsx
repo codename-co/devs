@@ -40,7 +40,7 @@ import {
 } from '@/lib/device'
 import { userSettings } from '@/stores/userStore'
 
-interface PromptAreaProps
+export interface PromptAreaProps
   extends Omit<TextAreaProps, 'onFocus' | 'onBlur' | 'onKeyDown'> {
   lang: LanguageCode
   onSubmitToAgent?: (

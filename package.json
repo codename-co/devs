@@ -8,8 +8,9 @@
   "scripts": {
     "predev": "npm run scripts",
     "dev": "vite",
-    "prebuild": "npm run scripts",
+    "prebuild": "npm run scripts && npm run build:extension-components",
     "build": "tsc && vite build && npm run sitemap",
+    "build:extension-components": "vite build --config vite.extension-components.config.ts",
     "build:prerender": "npm run build && npm run prerender",
     "prerender": "node scripts/prerender.js",
     "sitemap": "node scripts/generate-sitemap.js",
