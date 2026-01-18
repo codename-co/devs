@@ -364,6 +364,8 @@ export interface ImageGenerationSettings {
   referenceImageBase64?: string
   /** Reference image MIME type */
   referenceImageMimeType?: string
+  /** Multiple reference images for advanced workflows */
+  referenceImages?: Array<{ base64: string; mimeType: string }>
 }
 
 /**
@@ -619,6 +621,8 @@ export interface VideoGenerationSettings {
   referenceImageBase64?: string
   /** Reference image MIME type */
   referenceImageMimeType?: string
+  /** Multiple reference images for advanced workflows */
+  referenceImages?: Array<{ base64: string; mimeType: string }>
   /** Last frame image for interpolation (base64 data) */
   lastFrameBase64?: string
   /** Last frame image MIME type */

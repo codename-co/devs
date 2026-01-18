@@ -585,8 +585,21 @@ class GoogleImageProvider implements ImageProviderInterface {
     // Add text prompt
     parts.push({ text: prompt })
 
-    // Add reference image if provided
-    if (settings.referenceImageBase64 && settings.referenceImageMimeType) {
+    // Add reference images if provided (Gemini 3 Pro supports up to 14 images)
+    if (settings.referenceImages && settings.referenceImages.length > 0) {
+      for (const image of settings.referenceImages) {
+        parts.push({
+          inline_data: {
+            mime_type: image.mimeType,
+            data: image.base64,
+          },
+        })
+      }
+    } else if (
+      settings.referenceImageBase64 &&
+      settings.referenceImageMimeType
+    ) {
+      // Backward compatibility: single reference image
       parts.push({
         inline_data: {
           mime_type: settings.referenceImageMimeType,
@@ -713,8 +726,21 @@ class GoogleImageProvider implements ImageProviderInterface {
     // Add text prompt
     parts.push({ text: prompt })
 
-    // Add reference image if provided
-    if (settings.referenceImageBase64 && settings.referenceImageMimeType) {
+    // Add reference images if provided (Gemini 3 Pro supports up to 14 images)
+    if (settings.referenceImages && settings.referenceImages.length > 0) {
+      for (const image of settings.referenceImages) {
+        parts.push({
+          inline_data: {
+            mime_type: image.mimeType,
+            data: image.base64,
+          },
+        })
+      }
+    } else if (
+      settings.referenceImageBase64 &&
+      settings.referenceImageMimeType
+    ) {
+      // Backward compatibility: single reference image
       parts.push({
         inline_data: {
           mime_type: settings.referenceImageMimeType,

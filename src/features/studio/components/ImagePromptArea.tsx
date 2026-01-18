@@ -68,10 +68,10 @@ interface ImagePromptAreaProps
   onOpenSettings?: () => void
   /** Callback to open preset selector (image mode only) */
   onOpenPresets?: () => void
-  /** Reference image file */
-  referenceImage?: File | null
-  /** Callback when reference image changes */
-  onReferenceImageChange?: (file: File | null) => void
+  /** Reference image files */
+  referenceImages?: File[]
+  /** Callback when reference images change */
+  onReferenceImagesChange?: (files: File[]) => void
   /** Placeholder text override */
   placeholder?: string
   /** Current image provider */
@@ -111,8 +111,8 @@ export const ImagePromptArea = forwardRef<
     activePreset,
     onOpenSettings,
     onOpenPresets,
-    referenceImage,
-    onReferenceImageChange,
+    referenceImages = [],
+    onReferenceImagesChange,
     placeholder,
     provider,
     model,
@@ -167,22 +167,31 @@ export const ImagePromptArea = forwardRef<
 
   const handleReferenceImageSelect = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0]
-      if (file && file.type.startsWith('image/')) {
-        onReferenceImageChange?.(file)
+      const files = event.target.files
+      if (files) {
+        const imageFiles = Array.from(files).filter((file) =>
+          file.type.startsWith('image/'),
+        )
+        if (imageFiles.length > 0) {
+          onReferenceImagesChange?.([...referenceImages, ...imageFiles])
+        }
       }
       event.target.value = ''
     },
-    [onReferenceImageChange],
+    [onReferenceImagesChange, referenceImages],
   )
 
   const handleImageClick = useCallback(() => {
     fileInputRef.current?.click()
   }, [])
 
-  const handleRemoveReferenceImage = useCallback(() => {
-    onReferenceImageChange?.(null)
-  }, [onReferenceImageChange])
+  const handleRemoveReferenceImage = useCallback(
+    (index: number) => {
+      const newImages = referenceImages.filter((_, i) => i !== index)
+      onReferenceImagesChange?.(newImages)
+    },
+    [onReferenceImagesChange, referenceImages],
+  )
 
   const handleDragEnter = useCallback((event: React.DragEvent) => {
     event.preventDefault()
@@ -206,6 +215,7 @@ export const ImagePromptArea = forwardRef<
       const items = event.clipboardData?.items
       if (!items) return
 
+      const newImages: File[] = []
       for (const item of items) {
         if (item.type.startsWith('image/')) {
           event.preventDefault()
@@ -213,15 +223,17 @@ export const ImagePromptArea = forwardRef<
           if (file) {
             // Generate a filename based on timestamp
             const extension = item.type.split('/')[1] || 'png'
-            const filename = `pasted-image-${Date.now()}.${extension}`
+            const filename = `pasted-image-${Date.now()}-${newImages.length}.${extension}`
             const renamedFile = new File([file], filename, { type: file.type })
-            onReferenceImageChange?.(renamedFile)
+            newImages.push(renamedFile)
           }
-          return
         }
       }
+      if (newImages.length > 0) {
+        onReferenceImagesChange?.([...referenceImages, ...newImages])
+      }
     },
-    [onReferenceImageChange],
+    [onReferenceImagesChange, referenceImages],
   )
 
   const handleDrop = useCallback(
@@ -230,11 +242,16 @@ export const ImagePromptArea = forwardRef<
       event.stopPropagation()
       setIsDragOver(false)
 
-      // First, try to get a file from the drop (e.g., from file system)
-      const file = event.dataTransfer.files?.[0]
-      if (file && file.type.startsWith('image/')) {
-        onReferenceImageChange?.(file)
-        return
+      // First, try to get files from the drop (e.g., from file system)
+      const droppedFiles = event.dataTransfer.files
+      if (droppedFiles && droppedFiles.length > 0) {
+        const imageFiles = Array.from(droppedFiles).filter((file) =>
+          file.type.startsWith('image/'),
+        )
+        if (imageFiles.length > 0) {
+          onReferenceImagesChange?.([...referenceImages, ...imageFiles])
+          return
+        }
       }
 
       // Try to get image URL from drag data (for images dragged from the same page)
@@ -285,14 +302,14 @@ export const ImagePromptArea = forwardRef<
             const imageFile = new File([blob], finalFilename, {
               type: blob.type,
             })
-            onReferenceImageChange?.(imageFile)
+            onReferenceImagesChange?.([...referenceImages, imageFile])
           }
         } catch (error) {
           console.warn('Failed to load dropped image:', error)
         }
       }
     },
-    [onReferenceImageChange],
+    [onReferenceImagesChange, referenceImages],
   )
 
   const handleFocus = useCallback(
@@ -360,6 +377,7 @@ export const ImagePromptArea = forwardRef<
           accept="image/*"
           className="hidden"
           type="file"
+          multiple
           onChange={handleReferenceImageSelect}
         />
 
@@ -369,7 +387,7 @@ export const ImagePromptArea = forwardRef<
           className="pb-16 bg-content2 rounded-lg"
           classNames={{
             input: 'p-1',
-            inputWrapper: `shadow-none -mb-16 pb-8 bg-default-200 !ring-0 !ring-offset-0 ${referenceImage ? 'pl-16' : ''}`,
+            inputWrapper: `shadow-none -mb-16 pb-8 bg-default-200 !ring-0 !ring-offset-0 ${referenceImages.length > 0 ? 'pl-16' : ''}`,
           }}
           maxRows={5}
           minRows={isMobileDevice() && isLandscape() && isSmallHeight() ? 1 : 2}
@@ -388,23 +406,25 @@ export const ImagePromptArea = forwardRef<
           {...props}
         />
 
-        {/* Reference image preview - inside the prompt area on the left */}
-        {referenceImage && (
-          <div className="absolute top-2 left-2 z-20">
-            <div className="relative group">
-              <img
-                src={URL.createObjectURL(referenceImage)}
-                alt="Reference"
-                className="h-12 w-12 object-cover rounded-lg border-2 border-default-300"
-              />
-              <button
-                type="button"
-                onClick={handleRemoveReferenceImage}
-                className="absolute -top-1 -right-1 p-0.5 rounded-full bg-danger text-white opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <Icon name="Xmark" size="sm" />
-              </button>
-            </div>
+        {/* Reference images preview - inside the prompt area on the left */}
+        {referenceImages.length > 0 && (
+          <div className="absolute top-2 left-2 z-20 flex gap-1 flex-wrap max-w-[50%]">
+            {referenceImages.map((image, index) => (
+              <div key={`${image.name}-${index}`} className="relative group">
+                <img
+                  src={URL.createObjectURL(image)}
+                  alt={`Reference ${index + 1}`}
+                  className="h-12 w-12 object-cover rounded-lg border-2 border-default-300"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveReferenceImage(index)}
+                  className="absolute -top-1 -right-1 p-0.5 rounded-full bg-danger text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Icon name="Xmark" size="sm" />
+                </button>
+              </div>
+            ))}
           </div>
         )}
 

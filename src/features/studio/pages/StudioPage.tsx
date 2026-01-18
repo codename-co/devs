@@ -193,7 +193,7 @@ export function StudioPage() {
 
   // Local state
   const [prompt, setPrompt] = useState('')
-  const [referenceImage, setReferenceImage] = useState<File | null>(null)
+  const [referenceImages, setReferenceImages] = useState<File[]>([])
   const [mediaFilter, setMediaFilter] = useState<
     'all' | 'images' | 'videos' | 'favorites'
   >('all')
@@ -471,27 +471,34 @@ export function StudioPage() {
         setCurrentVideoPrompt(promptText)
         currentVideoPromptRef.current = promptText
 
-        // Build video settings with reference image if present
+        // Build video settings with reference images if present
         let settingsWithReference = { ...videoSettings }
-        if (referenceImage) {
+        if (referenceImages.length > 0) {
           try {
-            const base64 = await new Promise<string>((resolve, reject) => {
-              const reader = new FileReader()
-              reader.onload = () => {
-                const result = reader.result as string
-                const base64Data = result.split(',')[1]
-                resolve(base64Data)
-              }
-              reader.onerror = reject
-              reader.readAsDataURL(referenceImage)
-            })
+            const convertedImages = await Promise.all(
+              referenceImages.map(async (image) => {
+                const base64 = await new Promise<string>((resolve, reject) => {
+                  const reader = new FileReader()
+                  reader.onload = () => {
+                    const result = reader.result as string
+                    const base64Data = result.split(',')[1]
+                    resolve(base64Data)
+                  }
+                  reader.onerror = reject
+                  reader.readAsDataURL(image)
+                })
+                return { base64, mimeType: image.type }
+              }),
+            )
+            // Use first image for backward compatibility
             settingsWithReference = {
               ...settingsWithReference,
-              referenceImageBase64: base64,
-              referenceImageMimeType: referenceImage.type,
+              referenceImageBase64: convertedImages[0].base64,
+              referenceImageMimeType: convertedImages[0].mimeType,
+              referenceImages: convertedImages,
             }
           } catch (err) {
-            console.error('Failed to convert reference image to base64:', err)
+            console.error('Failed to convert reference images to base64:', err)
           }
         }
 
@@ -524,28 +531,35 @@ export function StudioPage() {
         currentGenerationPromptRef.current = promptText
         setStreamingImages([]) // Clear any previous streaming images
 
-        // Build settings with reference image if present
+        // Build settings with reference images if present
         let settingsWithReference = { ...currentSettings }
-        if (referenceImage) {
+        if (referenceImages.length > 0) {
           try {
-            const base64 = await new Promise<string>((resolve, reject) => {
-              const reader = new FileReader()
-              reader.onload = () => {
-                const result = reader.result as string
-                // Extract base64 data without the data URL prefix
-                const base64Data = result.split(',')[1]
-                resolve(base64Data)
-              }
-              reader.onerror = reject
-              reader.readAsDataURL(referenceImage)
-            })
+            const convertedImages = await Promise.all(
+              referenceImages.map(async (image) => {
+                const base64 = await new Promise<string>((resolve, reject) => {
+                  const reader = new FileReader()
+                  reader.onload = () => {
+                    const result = reader.result as string
+                    // Extract base64 data without the data URL prefix
+                    const base64Data = result.split(',')[1]
+                    resolve(base64Data)
+                  }
+                  reader.onerror = reject
+                  reader.readAsDataURL(image)
+                })
+                return { base64, mimeType: image.type }
+              }),
+            )
+            // Use first image for backward compatibility
             settingsWithReference = {
               ...settingsWithReference,
-              referenceImageBase64: base64,
-              referenceImageMimeType: referenceImage.type,
+              referenceImageBase64: convertedImages[0].base64,
+              referenceImageMimeType: convertedImages[0].mimeType,
+              referenceImages: convertedImages,
             }
           } catch (err) {
-            console.error('Failed to convert reference image to base64:', err)
+            console.error('Failed to convert reference images to base64:', err)
           }
         }
 
@@ -558,7 +572,7 @@ export function StudioPage() {
       generateVideo,
       currentSettings,
       videoSettings,
-      referenceImage,
+      referenceImages,
       getProviderConfig,
       getVideoProviderConfig,
       t,
@@ -619,7 +633,7 @@ export function StudioPage() {
       const file = new File([blob], `reference-${image.id}.${image.format}`, {
         type: `image/${image.format}`,
       })
-      setReferenceImage(file)
+      setReferenceImages((prev) => [...prev, file])
     } catch (err) {
       console.error('Failed to set reference image:', err)
     }
@@ -707,8 +721,8 @@ export function StudioPage() {
               activePreset={activePreset}
               onOpenSettings={onOpenSettings}
               onOpenPresets={onOpenPresets}
-              referenceImage={referenceImage}
-              onReferenceImageChange={setReferenceImage}
+              referenceImages={referenceImages}
+              onReferenceImagesChange={setReferenceImages}
               provider={selectedProvider}
               model={selectedModel}
               availableProviders={availableProviders}
