@@ -110,6 +110,9 @@ export function StudioPage() {
       setStreamingImages([])
       setCurrentGenerationPrompt('')
       currentGenerationPromptRef.current = ''
+      // Clear prompt area
+      setPrompt('')
+      setReferenceImages([])
     },
     onGenerationError: () => {
       addToast({
@@ -149,6 +152,9 @@ export function StudioPage() {
       // Clear video generation state
       setCurrentVideoPrompt('')
       currentVideoPromptRef.current = ''
+      // Clear prompt area
+      setPrompt('')
+      setReferenceImages([])
     },
     onGenerationError: () => {
       addToast({
@@ -242,6 +248,51 @@ export function StudioPage() {
       })
 
     return items
+  }, [history])
+
+  // Unified media list combining images and videos, sorted by entry date
+  const allMedia = useMemo(() => {
+    const items: Array<{
+      type: 'image' | 'video'
+      image?: GeneratedImage
+      video?: GeneratedVideo
+      entryId: string
+      prompt: string
+      isFavorite?: boolean
+      createdAt: Date
+    }> = []
+
+    history.forEach((entry) => {
+      if (entry.mediaType === 'video') {
+        ;(entry.videos || []).forEach((video) => {
+          items.push({
+            type: 'video',
+            video,
+            entryId: entry.id,
+            prompt: entry.prompt,
+            isFavorite: entry.isFavorite,
+            createdAt: entry.createdAt,
+          })
+        })
+      } else {
+        ;(entry.images || []).forEach((image) => {
+          items.push({
+            type: 'image',
+            image,
+            entryId: entry.id,
+            prompt: entry.prompt,
+            isFavorite: entry.isFavorite,
+            createdAt: entry.createdAt,
+          })
+        })
+      }
+    })
+
+    // Sort by date descending (newest first)
+    return items.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )
   }, [history])
 
   // Get videos from history
@@ -857,8 +908,36 @@ export function StudioPage() {
                       showActions={true}
                     />
                   ))}
-                {/* Generated videos */}
-                {(mediaFilter === 'all' || mediaFilter === 'videos') &&
+                {/* All media (images and videos sorted by date) */}
+                {mediaFilter === 'all' &&
+                  allMedia.map((item) =>
+                    item.type === 'video' && item.video ? (
+                      <GeneratedVideoCard
+                        key={item.video.id}
+                        video={item.video}
+                        lang={lang}
+                        prompt={item.prompt}
+                        onDownload={() => downloadVideo(item.video!)}
+                        onFavorite={() => toggleFavorite(item.entryId)}
+                        isFavorite={item.isFavorite}
+                      />
+                    ) : item.image ? (
+                      <GeneratedImageCard
+                        key={item.image.id}
+                        lang={lang}
+                        image={item.image}
+                        prompt={item.prompt}
+                        onDownload={() => downloadImage(item.image!)}
+                        onUseAsReference={() =>
+                          handleUseAsReference(item.image!)
+                        }
+                        onFavorite={() => toggleFavorite(item.entryId)}
+                        isFavorite={item.isFavorite}
+                      />
+                    ) : null,
+                  )}
+                {/* Videos only filter */}
+                {mediaFilter === 'videos' &&
                   historyVideos.map(
                     ({ video, entryId, isFavorite, prompt }) => (
                       <GeneratedVideoCard
@@ -900,23 +979,25 @@ export function StudioPage() {
                       />
                     ) : null,
                   )}
-                {/* History images */}
-                {(mediaFilter === 'all' || mediaFilter === 'images') &&
-                  history
-                    .filter((entry) => entry.mediaType !== 'video')
-                    .flatMap((entry) =>
-                      (entry.images || []).map((image) => (
+                {/* Images only filter */}
+                {mediaFilter === 'images' &&
+                  allMedia
+                    .filter((item) => item.type === 'image')
+                    .map((item) =>
+                      item.image ? (
                         <GeneratedImageCard
-                          key={image.id}
+                          key={item.image.id}
                           lang={lang}
-                          image={image}
-                          prompt={entry.prompt}
-                          onDownload={() => downloadImage(image)}
-                          onUseAsReference={() => handleUseAsReference(image)}
-                          onFavorite={() => toggleFavorite(entry.id)}
-                          isFavorite={entry.isFavorite}
+                          image={item.image}
+                          prompt={item.prompt}
+                          onDownload={() => downloadImage(item.image!)}
+                          onUseAsReference={() =>
+                            handleUseAsReference(item.image!)
+                          }
+                          onFavorite={() => toggleFavorite(item.entryId)}
+                          isFavorite={item.isFavorite}
                         />
-                      )),
+                      ) : null,
                     )}
               </div>
             )}
