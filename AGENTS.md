@@ -396,17 +396,19 @@ Local Backup provides automatic, bidirectional synchronization between DEVS's In
 - CRDT (Conflict-free Replicated Data Types) for shared state
 - Privacy-preserving collaboration protocols
 
-### 11. Battle Arena - Agent vs Agent Competition
+### 11. Battle Arena - Card Battle System
 
-The Battle Arena is a competitive feature where AI agents engage in structured debates and discussions. See [docs/ARENA.md](docs/ARENA.md) for full documentation.
+The Battle Arena is a gamified competitive feature where AI agents battle as collectible playing cards. Each agent is transformed into a unique card with stats, abilities, elemental types, and AI-generated artwork. See [docs/ARENA.md](docs/ARENA.md) for full documentation.
 
 **Key Features:**
 
-- Team-based agent competitions with configurable team sizes
-- Tournament-style elimination rounds
-- Neutral judge agent for fair evaluation
-- User-defined debate topics and judging criteria
-- Real-time conversation visualization
+- **Collectible Agent Cards**: Each AI agent becomes a unique trading card
+- **Eight Element Types**: Wisdom, Creativity, Charisma, Strategy, Nature, Spirit, Tech, Cosmic
+- **Rarity System**: Common, Uncommon, Rare, Epic, Legendary
+- **AI-Generated Artwork**: Card portraits generated via the Studio
+- **Turn-Based Combat**: Strategic battles with abilities, energy, and status effects
+- **Visual Effects**: Animated attacks, damage numbers, screen shakes
+- **Tournament Mode**: Elimination-style competitions
 
 ### 12. Global Search
 
@@ -455,6 +457,48 @@ DEVS uses Yjs P2P for optional data synchronization across devices and users. Se
 - CRDT-based automatic conflict resolution
 - WebSocket-based sync with auto-reconnect
 - Firebase-like reactive hooks for instant UI updates
+
+### 16. Marketplace - Platform Extension System
+
+The DEVS Marketplace transforms DEVS into an extensible platform, allowing the community to build and share custom extensions. All extensions are defined using YAML schemas with standardized hooks. See [docs/MARKETPLACE.md](docs/MARKETPLACE.md) for full documentation.
+
+**Extension Types:**
+
+| Type           | Description                                      | Examples                                |
+| -------------- | ------------------------------------------------ | --------------------------------------- |
+| **Apps**       | Complete workflows combining agents and tools    | Translation, Code Analysis, PR Review   |
+| **Agents**     | Custom AI personas with specialized capabilities | Code Reviewer, Doc Writer, PR Analyst   |
+| **Connectors** | External service integrations                    | GitHub, Jira, Linear                    |
+| **Tools**      | Specific capabilities for agents                 | Web Search, Calculator, File Operations |
+
+**Key Features:**
+
+- **Standardized YAML Schemas**: Unified schema for all extension types
+- **Discoverability**: Searchable, categorized marketplace with ratings/reviews
+- **Security**: Sandboxed execution, permission systems
+- **Interoperability**: Extensions can compose and depend on each other
+- **Low Barrier**: Non-developers can create simple extensions via specialist agents
+
+### 17. Extension Bridge - Sandboxed Extension API
+
+Extensions run in sandboxed iframes and communicate with DEVS through a message-based API. The bridge script exposes the `window.DEVS` object for extensions. See [docs/EXTENSION-BRIDGE.md](docs/EXTENSION-BRIDGE.md) for full documentation.
+
+**Available APIs:**
+
+| API        | Description                          |
+| ---------- | ------------------------------------ |
+| `DEVS.llm` | LLM chat and completion requests     |
+| `DEVS.ui`  | Toast notifications, prompts, modals |
+| `DEVS.t()` | Translation helper for i18n          |
+| Context    | Theme, language, extension info      |
+
+**Key Features:**
+
+- Secure message-based communication
+- Access to configured LLM providers
+- UI components integration (toasts, prompts)
+- Theme and language awareness
+- Full TypeScript type definitions
 
 ---
 

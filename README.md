@@ -24,36 +24,48 @@ through a universally accessible, privacy-first platform.
 
 - [x] 🤖 **LLM provider independence**: <abbr title="Bring Your Own Key">BYOK</abbr> support for OpenAI, Anthropic, Google Gemini, Mistral, Ollama, and custom endpoints.
 - [x] 🧠 **Local AI models**: Run HuggingFace open models directly in your browser.
-- [ ] 💰 **Cost tracking**: Monitor usage and estimate costs across providers.
+- [x] 💰 **Traces & Cost tracking**: LLM observability with real-time cost tracking and performance metrics.
 
 ### Swarm Intelligence
 
 - [x] 🤖 **AI Studio**: Pre-built agents, custom agent builder.
 - [x] 📝 **Methodologies**: <abbr title="8 Disciplines">8D</abbr>, <abbr title="A3 Problem Solving">A3</abbr>, Agile, <abbr title="Analysis, Objectives, Strategies, Tactics, Control">AOSTC</abbr>, <abbr title="Define, Measure, Analyze, Improve, Control">DMAIC</abbr>, <abbr title="Plan-Do-Check-Act">PDCA</abbr>, Scrum, <abbr title="You Only Live Once">YOLO</abbr>, and your own.
+- [x] 🧠 **Agent Memory**: Agents learn and remember information from conversations with human review.
+- [ ] 🎯 **Intelligent orchestration**: Automated multi-agent task coordination with validation.
 - [ ] 🎭 **Hyper meta-prompting**: Multi-layered prompt generation for dynamic task handling.
 - [ ] 👥 **Dynamic team formation**: Mimicking human organizational structures.
-- [ ] 🎯 **Intelligent orchestration**: Automated task management with human oversight.
+
+### Integrations
+
+- [x] 🔗 **Connectors**: Integrations with Google Drive, Gmail, Calendar, Notion and more.
+- [x] 🏪 **Marketplace**: Extensible platform with apps, agents, connectors, and tools.
+- [ ] 🎤 **Meeting Bot**: AI agents join Google Meet as real participants.
 
 ### Privacy
 
 - [x] 🌐 **Browser-native**: The browser is the <abbr title="Operating System">OS</abbr>. Runs entirely in your browser, no server dependencies.
 - [x] 🛡️ **Privacy-first**: All data stays on your device, no tracking, no cookies.
 - [x] 🥷 **Offline capable**: Works without internet after initial load.
-- [x] 💾 **[Local Backup](docs/LOCAL-BACKUP.md)**: Bidirectional sync to a local folder with human-readable Markdown files.
+- [x] 💾 **Local Backup**: Bidirectional sync to a local folder with human-readable Markdown files.
 
 ### User Experience
 
 - [x] 📱 **Mobile-first design**: Optimized for touch and small screens.
 - [x] 🌐 **Multi-language support**: Accessibility for global users.
+- [x] 🔍 **Global Search**: Unified search across agents, conversations, tasks, and files.
 - [x] 💄 **Customizable**: Tailor the platform to your specific needs.
 
-### Diffusion
+### Collaboration
 
 - [x] 🌐 **Universal access**: Web-based platform accessible from anywhere: <https://devs.new>
+- [x] 🔄 **P2P Sync**: Cross-device synchronization with CRDT-based conflict resolution.
+- [x] 🤝 **Team collaboration**: Peer-to-peer networking and sharing.
+- [x] 📱 **QR Code support**: Easily share and access your platform configuration.
+
+### Deployment
+
 - [x] ⚙️ **Open-source**: Community-driven development and transparency.
 - [x] 🐳 **Docker-ready**: One-command self-hosting with an image of ~10MB ([registry](https://hub.docker.com/r/codename/devs)).
-- [x] 📱 **QR Code support**: Easily share and access your platform configuration.
-- [x] 🤝 **Team collaboration**: Peer-to-peer networking and sharing.
 
 ## Self-Hosting
 
