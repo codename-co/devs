@@ -279,4 +279,10 @@ export const ar: I18n = {
   'Are you sure you want to delete this extension?':
     'هل أنت متأكد من رغبتك في حذف هذه الإضافة؟',
   'This action cannot be undone.': 'لا يمكن التراجع عن هذا الإجراء.',
+
+  // Duplicate extension
+  'Duplicate & edit': 'تكرار وتعديل',
+
+  // Manual creation
+  'or create manually': 'أو إنشاء يدويًا',
 }

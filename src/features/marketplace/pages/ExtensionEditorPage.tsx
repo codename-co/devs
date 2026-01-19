@@ -54,6 +54,7 @@ import { LLMService, type LLMMessage } from '@/lib/llm'
 import type { ToolDefinition, LLMConfigWithTools } from '@/lib/llm/types'
 import { CredentialService } from '@/lib/credential-service'
 import { successToast, errorToast } from '@/lib/toast'
+import { db } from '@/lib/db'
 import type { HeaderProps, IconName } from '@/lib/types'
 import type { CustomExtension, ExtensionColor } from '../types'
 import {
@@ -376,6 +377,7 @@ export function ExtensionEditorPage() {
   const { extensionId } = useParams<{ extensionId: string }>()
   const [searchParams] = useSearchParams()
   const isNewExtension = searchParams.get('new') === 'true'
+  const isDuplicate = searchParams.get('duplicate') === 'true'
 
   // Extension state
   const [extension, setExtension] = useState<CustomExtension | null>(null)
@@ -404,7 +406,13 @@ export function ExtensionEditorPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [chatInput, setChatInput] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isConversationVisible, setIsConversationVisible] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const conversationContainerRef = useRef<HTMLDivElement>(null)
+  const isClickingInsideRef = useRef(false)
+
+  // Track if extension has been loaded to prevent re-loading on URL param changes
+  const hasLoadedRef = useRef(false)
 
   // Modal state for new page
   const {
@@ -422,6 +430,9 @@ export function ExtensionEditorPage() {
   // Get store methods
   const loadCustomExtensions = useMarketplaceStore(
     (state) => state.loadCustomExtensions,
+  )
+  const loadExtensionById = useMarketplaceStore(
+    (state) => state.loadExtensionById,
   )
 
   // Page keys
@@ -451,7 +462,114 @@ export function ExtensionEditorPage() {
         return
       }
 
+      // Prevent re-loading if already loaded (avoids rollback on URL param changes)
+      if (hasLoadedRef.current && extensionId !== 'new' && !isDuplicate) {
+        return
+      }
+
       try {
+        // Handle manual creation: create a blank extension from scratch
+        if (extensionId === 'new') {
+          const newId = `custom-extension-${Date.now().toString(36)}`
+          const blankExtension: CustomExtension = {
+            id: newId,
+            name: 'My Extension',
+            version: '1.0.0',
+            type: 'app',
+            license: 'MIT',
+            description: 'A custom extension',
+            icon: 'Code',
+            color: 'primary',
+            pages: {
+              app: `import { Button, Card, CardBody, Container, Section } from '@devs/components'
+
+const App = () => {
+  return (
+    <Section>
+      <Container className="max-w-2xl">
+        <Card>
+          <CardBody className="text-center py-12">
+            <h1 className="text-2xl font-bold mb-4">My Extension</h1>
+            <p className="text-default-500 mb-6">
+              Start building your extension here!
+            </p>
+            <Button color="primary">
+              Get Started
+            </Button>
+          </CardBody>
+        </Card>
+      </Container>
+    </Section>
+  )
+}
+`,
+            },
+            generationPrompt: '',
+            createdAt: new Date(),
+            enabled: true,
+          }
+
+          // Save to IndexedDB
+          if (!db.isInitialized()) {
+            await db.init()
+          }
+          await db.update('customExtensions', blankExtension)
+
+          // Reload custom extensions in the store
+          await loadCustomExtensions()
+
+          // Navigate to the new extension's edit page
+          navigate(`/marketplace/edit/${newId}?new=true`, { replace: true })
+          return
+        }
+
+        // Handle duplication: load extension, create a copy, and navigate to the new one
+        if (isDuplicate) {
+          // Remove the duplicate query param immediately to prevent re-triggering
+          navigate(`/marketplace/edit/${extensionId}`, { replace: true })
+
+          const sourceExt = await loadExtensionById(extensionId)
+          if (sourceExt) {
+            // Create a unique ID for the duplicate
+            const newId = `${extensionId}-copy-${Date.now().toString(36)}`
+            const duplicatedExtension: CustomExtension = {
+              id: newId,
+              name: `${sourceExt.name} (copy)`,
+              version: '1.0.0',
+              type: sourceExt.type || 'app',
+              license: sourceExt.license || 'MIT',
+              description: sourceExt.description,
+              icon: sourceExt.icon,
+              color: sourceExt.color,
+              pages: sourceExt.pages || {},
+              configuration: sourceExt.configuration,
+              i18n: sourceExt.i18n,
+              author: sourceExt.author,
+              generationPrompt: `Duplicated from ${sourceExt.name}`,
+              createdAt: new Date(),
+              enabled: true,
+            }
+
+            // Save to IndexedDB
+            if (!db.isInitialized()) {
+              await db.init()
+            }
+            await db.update('customExtensions', duplicatedExtension)
+
+            // Reload custom extensions in the store
+            await loadCustomExtensions()
+
+            // Navigate to the new extension's edit page (without duplicate param)
+            navigate(`/marketplace/edit/${newId}?new=true`, { replace: true })
+            return
+          } else {
+            errorToast(t('Extension not found'))
+            setIsLoading(false)
+            return
+          }
+        }
+
+        // Normal loading: load custom extension by ID
         const ext = await getCustomExtension(extensionId)
         if (ext) {
           setExtension(ext)
@@ -459,8 +577,12 @@ export function ExtensionEditorPage() {
           const firstPageKey = Object.keys(pages)[0] || ''
           setSelectedPage(firstPageKey)
           setPageCode(pages[firstPageKey] || '')
+          hasLoadedRef.current = true
 
           if (isNewExtension) {
+            // Remove the new query param to prevent re-triggering
+            navigate(`/marketplace/edit/${extensionId}`, { replace: true })
+
             setMessages([
               {
                 id: 'welcome',
@@ -482,7 +604,15 @@ export function ExtensionEditorPage() {
     }
 
     loadExtension()
-  }, [extensionId, isNewExtension])
+  }, [
+    extensionId,
+    isNewExtension,
+    isDuplicate,
+    loadExtensionById,
+    loadCustomExtensions,
+    navigate,
+    t,
+  ])
 
   // ==========================================================================
   // PAGE SELECTION
@@ -841,6 +971,34 @@ User request: ${userMessage.content}
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  // Handle focus/blur for conversation visibility
+  const handleConversationFocus = useCallback(() => {
+    setIsConversationVisible(true)
+  }, [])
+
+  const handleConversationBlur = useCallback(() => {
+    // Check if the new focus target is still within the conversation container
+    // Use a small timeout to allow click events to complete first
+    setTimeout(() => {
+      // Don't hide if we're clicking inside the container
+      if (isClickingInsideRef.current) {
+        isClickingInsideRef.current = false
+        return
+      }
+      if (
+        conversationContainerRef.current &&
+        !conversationContainerRef.current.contains(document.activeElement)
+      ) {
+        setIsConversationVisible(false)
+      }
+    }, 150)
+  }, [])
+
+  const handleConversationMouseDown = useCallback(() => {
+    isClickingInsideRef.current = true
+    setIsConversationVisible(true)
+  }, [])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -1245,59 +1403,76 @@ User request: ${userMessage.content}
 
         {/* Bottom Accordion: Chat & Metadata */}
         {/* Chat Section */}
-        <Container className="absolute left-0 right-0 bottom-0 pb-4">
-          <ScrollShadow className="max-h-48 space-y-4 overflow-y-auto scrollbar-hide">
-            {messages.length === 0
-              ? null
-              : messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${
-                      message.role === 'user' ? 'justify-end' : 'justify-start'
-                    }`}
-                  >
+        <div
+          ref={conversationContainerRef}
+          className="absolute left-0 right-0 bottom-8 z-20 pt-2"
+          onFocus={handleConversationFocus}
+          onBlur={handleConversationBlur}
+          onMouseDown={handleConversationMouseDown}
+        >
+          <Container>
+            <ScrollShadow
+              className={`max-h-48 space-y-4 overflow-y-auto scrollbar-hide transition-opacity duration-200 ${
+                isConversationVisible || isGenerating
+                  ? 'opacity-100'
+                  : 'opacity-0 pointer-events-none h-0'
+              }`}
+            >
+              {messages.length === 0
+                ? null
+                : messages.map((message) => (
                     <div
-                      className={`max-w-[85%] px-4 py-2 rounded-large ${
+                      key={message.id}
+                      className={`flex ${
                         message.role === 'user'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-content2 text-foreground'
+                          ? 'justify-end'
+                          : 'justify-start'
                       }`}
                     >
-                      {message.role === 'user' ? (
-                        <p className="text-sm whitespace-pre-wrap">
-                          {message.content}
-                        </p>
-                      ) : isGenerating ? (
-                        <Spinner size="sm" />
-                      ) : (
-                        <MarkdownRenderer
-                          content={message.content}
-                          className="text-sm"
-                        />
-                      )}
+                      <div
+                        className={`max-w-[85%] px-4 py-2 rounded-large ${
+                          message.role === 'user'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-content2 text-foreground'
+                        }`}
+                      >
+                        {message.role === 'user' ? (
+                          <p className="text-sm whitespace-pre-wrap">
+                            {message.content}
+                          </p>
+                        ) : isGenerating ? (
+                          <Spinner size="sm" />
+                        ) : (
+                          <MarkdownRenderer
+                            content={message.content}
+                            className="text-sm"
+                          />
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
 
-            <div ref={messagesEndRef} />
-          </ScrollShadow>
+              <div ref={messagesEndRef} />
+            </ScrollShadow>
 
-          <div className="flex gap-2">
-            <PromptArea
-              lang={lang}
-              minRows={1}
-              placeholder={t("Describe what you'd like to change...")}
-              withAgentSelector={false}
-              withAttachmentSelector={false}
-              isDisabled={isGenerating}
-              value={chatInput}
-              onValueChange={setChatInput}
-              onKeyDown={handleKeyDown}
-              aria-label={t('Chat input')}
-              onSubmit={handleSubmit}
-            />
-          </div>
-        </Container>
+            <div className="flex gap-2">
+              <PromptArea
+                lang={lang}
+                minRows={1}
+                placeholder={t("Describe what you'd like to change...")}
+                withAgentSelector={false}
+                withAttachmentSelector={false}
+                isDisabled={isGenerating}
+                value={chatInput}
+                onValueChange={setChatInput}
+                onKeyDown={handleKeyDown}
+                aria-label={t('Chat input')}
+                onSubmit={handleSubmit}
+                autoFocus
+              />
+            </div>
+          </Container>
+        </div>
 
         {/* New Page Modal */}
         <Modal isOpen={isNewPageOpen} onClose={onNewPageClose}>

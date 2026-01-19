@@ -245,4 +245,10 @@ export const en = [
   'Are you sure you want to delete this extension?',
   'This action cannot be undone.',
   'Delete',
+
+  // Duplicate extension
+  'Duplicate & edit',
+
+  // Manual creation
+  'or create manually',
 ] as const

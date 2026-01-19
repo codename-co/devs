@@ -285,4 +285,10 @@ export const es: I18n = {
   'Are you sure you want to delete this extension?':
     '¿Estás seguro de que quieres eliminar esta extensión?',
   'This action cannot be undone.': 'Esta acción no se puede deshacer.',
+
+  // Duplicate extension
+  'Duplicate & edit': 'Duplicar y editar',
+
+  // Manual creation
+  'or create manually': 'o crear manualmente',
 }

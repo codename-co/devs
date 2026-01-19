@@ -1,3 +1,5 @@
+import { forwardRef } from 'react'
+
 export interface SectionProps {
   children?: React.ReactNode
   className?: string
@@ -6,33 +8,32 @@ export interface SectionProps {
   style?: React.CSSProperties
 }
 
-export const Section = ({
-  children,
-  className = '',
-  mainClassName = '',
-  size = 4,
-  style,
-}: SectionProps) => {
-  const sizeClasses: Record<number, string> = {
-    4: 'max-w-4xl',
-    5: 'max-w-5xl',
-    6: 'max-w-6xl',
-    7: 'max-w-7xl',
-  }
+export const Section = forwardRef<HTMLElement, SectionProps>(
+  ({ children, className = '', mainClassName = '', size = 4, style }, ref) => {
+    const sizeClasses: Record<number, string> = {
+      4: 'max-w-4xl',
+      5: 'max-w-5xl',
+      6: 'max-w-6xl',
+      7: 'max-w-7xl',
+    }
 
-  return (
-    <section
-      role="section"
-      className={`w-full p-6 lg:px-8 overflow-hidden ${mainClassName}`.trim()}
-      style={style}
-    >
-      <div
-        className={`${sizeClasses[size] || 'max-w-4xl'} mx-auto my-6 space-y-6 gap-6 ${className}`.trim()}
+    return (
+      <section
+        ref={ref}
+        role="section"
+        className={`w-full p-6 lg:px-8 overflow-hidden ${mainClassName}`.trim()}
+        style={style}
       >
-        {children}
-      </div>
-    </section>
-  )
-}
+        <div
+          className={`${sizeClasses[size] || 'max-w-4xl'} mx-auto my-6 space-y-6 gap-6 ${className}`.trim()}
+        >
+          {children}
+        </div>
+      </section>
+    )
+  },
+)
+
+Section.displayName = 'Section'
 
 export default Section

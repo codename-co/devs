@@ -286,4 +286,9 @@ export const fr: I18n = {
   'Are you sure you want to delete this extension?':
     'Êtes-vous sûr de vouloir supprimer cette extension ?',
   'This action cannot be undone.': 'Cette action est irréversible.',
+  // Duplicate extension
+  'Duplicate & edit': 'Dupliquer et modifier',
+
+  // Manual creation
+  'or create manually': 'ou créer manuellement',
 }

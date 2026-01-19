@@ -18,7 +18,7 @@ import { Link } from 'react-router-dom'
 
 import DefaultLayout from '@/layouts/Default'
 import { Container, Section, Icon, Title } from '@/components'
-import { useI18n, type LanguageCode } from '@/i18n'
+import { useI18n, useUrl, type LanguageCode } from '@/i18n'
 import type { HeaderProps, IconName } from '@/lib/types'
 import { useMarketplaceStore } from '../store'
 import type {
@@ -78,6 +78,7 @@ function getChipColor(
 
 export function MarketplacePage() {
   const { lang, t } = useI18n(localI18n)
+  const url = useUrl(lang)
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedExtension, setSelectedExtension] =
@@ -326,7 +327,7 @@ export function MarketplacePage() {
                     variant="shadow"
                     startContent={<Icon name="Code" />}
                     as={Link}
-                    to="/marketplace/new"
+                    to={url('/marketplace/new')}
                   >
                     {t('Build my own extension')}
                   </Button>
@@ -340,7 +341,7 @@ export function MarketplacePage() {
           </div>
 
           {/* Main layout with vertical tabs on left */}
-          <div style={{ display: 'flex', gap: 32 }}>
+          <div className="flex gap-8">
             {/* Category Listbox */}
             <Listbox
               aria-label={t('Categories')}
@@ -351,7 +352,7 @@ export function MarketplacePage() {
                 if (selected) setSelectedCategory(selected)
               }}
               variant="flat"
-              className="hidden sm:flex max-w-xs flex-shrink-0"
+              className="hidden sm:flex w-auto"
             >
               <ListboxItem
                 key="all"

@@ -284,4 +284,10 @@ export const ko: I18n = {
   'Are you sure you want to delete this extension?':
     '이 확장 프로그램을 삭제하시겠습니까?',
   'This action cannot be undone.': '이 작업은 취소할 수 없습니다.',
+
+  // Duplicate extension
+  'Duplicate & edit': '복제 및 편집',
+
+  // Manual creation
+  'or create manually': '또는 수동으로 생성',
 }

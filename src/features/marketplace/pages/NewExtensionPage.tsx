@@ -14,7 +14,7 @@ import {
 
 import DefaultLayout from '@/layouts/Default'
 import { Container, Section, Icon, Title, PromptArea } from '@/components'
-import { useI18n } from '@/i18n'
+import { useI18n, useUrl } from '@/i18n'
 import type { HeaderProps, IconName } from '@/lib/types'
 import type { ExtensionType } from '../types'
 import { generateExtension } from '../extension-generator'
@@ -75,6 +75,7 @@ const EXTENSION_TYPES: {
 
 export function NewExtensionPage() {
   const { lang, t } = useI18n(localI18n)
+  const url = useUrl(lang)
   const navigate = useNavigate()
 
   const [selectedType, setSelectedType] = useState<ExtensionType>('app')
@@ -253,29 +254,38 @@ export function NewExtensionPage() {
           )}
 
           {/* Generate Button */}
-          <div className="flex justify-end gap-4">
-            <Button
-              variant="flat"
-              onPress={() => navigate('/marketplace')}
-              isDisabled={isGenerating}
+          <div className="flex flex-col items-end gap-3">
+            <div className="flex gap-4">
+              <Button
+                variant="flat"
+                onPress={() => navigate('/marketplace')}
+                isDisabled={isGenerating}
+              >
+                {t('Cancel')}
+              </Button>
+              <Button
+                color="warning"
+                variant="shadow"
+                startContent={
+                  isGenerating ? (
+                    <Spinner size="sm" color="current" />
+                  ) : (
+                    <Icon name="Sparks" />
+                  )
+                }
+                onPress={handleGenerate}
+                isDisabled={isGenerating || !prompt.trim()}
+              >
+                {isGenerating ? t('Generating...') : t('Generate Extension')}
+              </Button>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate(url('/marketplace/edit/new'))}
+              className="text-sm text-default-400 hover:text-default-600 dark:hover:text-default-300 transition-colors"
             >
-              {t('Cancel')}
-            </Button>
-            <Button
-              color="warning"
-              variant="shadow"
-              startContent={
-                isGenerating ? (
-                  <Spinner size="sm" color="current" />
-                ) : (
-                  <Icon name="Sparks" />
-                )
-              }
-              onPress={handleGenerate}
-              isDisabled={isGenerating || !prompt.trim()}
-            >
-              {isGenerating ? t('Generating...') : t('Generate Extension')}
-            </Button>
+              {t('or create manually')}
+            </button>
           </div>
 
           {/* Generating State */}

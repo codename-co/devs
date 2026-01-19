@@ -427,6 +427,17 @@ export function ExtensionDetailModal({
                                   },
                                 },
                                 {
+                                  key: 'duplicate',
+                                  icon: 'Copy',
+                                  label: t('Duplicate & edit'),
+                                  action: () => {
+                                    navigate(
+                                      `/marketplace/edit/${displayExtension.id}?duplicate=true`,
+                                    )
+                                    onClose()
+                                  },
+                                },
+                                {
                                   key: 'delete',
                                   icon: 'Trash',
                                   color: 'danger',
@@ -440,6 +451,17 @@ export function ExtensionDetailModal({
                                   icon: 'Eye',
                                   label: t('Preview'),
                                   action: () => setIsPreviewMode(true),
+                                },
+                                {
+                                  key: 'duplicate',
+                                  icon: 'Copy',
+                                  label: t('Duplicate & edit'),
+                                  action: () => {
+                                    navigate(
+                                      `/marketplace/edit/${displayExtension.id}?duplicate=true`,
+                                    )
+                                    onClose()
+                                  },
                                 },
                               ]
                         }

@@ -289,4 +289,10 @@ export const de: I18n = {
     'Sind Sie sicher, dass Sie diese Erweiterung löschen möchten?',
   'This action cannot be undone.':
     'Diese Aktion kann nicht rückgängig gemacht werden.',
+
+  // Duplicate extension
+  'Duplicate & edit': 'Duplizieren und bearbeiten',
+
+  // Manual creation
+  'or create manually': 'oder manuell erstellen',
 }
