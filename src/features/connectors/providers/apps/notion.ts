@@ -867,7 +867,10 @@ export class NotionProvider extends BaseAppConnectorProvider {
     let cursor: string | null = null
 
     do {
-      const url = new URL(`${NOTION_API_BASE}/blocks/${blockId}/children`)
+      const url = new URL(
+        `${NOTION_API_BASE}/blocks/${blockId}/children`,
+        window.location.origin,
+      )
       url.searchParams.set('page_size', '100')
       if (cursor) {
         url.searchParams.set('start_cursor', cursor)
