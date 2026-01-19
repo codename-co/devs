@@ -35,6 +35,7 @@ const EXTENSION_TYPES: {
   label: string
   description: string
   example: string
+  disable?: true
 }[] = [
   {
     type: 'app',
@@ -51,6 +52,7 @@ const EXTENSION_TYPES: {
     description: 'AI agents with specialized instructions and personality',
     example:
       'A code reviewer agent, a writing coach, a data analysis specialist',
+    disable: true,
   },
   {
     type: 'connector',
@@ -58,6 +60,7 @@ const EXTENSION_TYPES: {
     label: 'Connector',
     description: 'Integrations with external services and APIs',
     example: 'A GitHub integration, a Slack connector, a weather data provider',
+    disable: true,
   },
   {
     type: 'tool',
@@ -66,6 +69,7 @@ const EXTENSION_TYPES: {
     description: 'Utility functions that agents can use',
     example:
       'A URL shortener, a JSON formatter, a unit converter, a calculator',
+    disable: true,
   },
 ]
 
@@ -128,16 +132,6 @@ export function NewExtensionPage() {
     <DefaultLayout header={header}>
       <Section>
         <Container className="max-w-3xl">
-          {/* Back button */}
-          <Button
-            variant="light"
-            startContent={<Icon name="ArrowLeft" />}
-            onPress={() => navigate('/marketplace')}
-            className="mb-6"
-          >
-            {t('Back to Marketplace')}
-          </Button>
-
           {/* Hero Section */}
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-warning-100 to-warning-50 dark:from-warning-900/30 dark:to-warning-950/20 p-8 mb-8">
             <div className="relative z-10">
@@ -178,6 +172,7 @@ export function NewExtensionPage() {
                   <Radio
                     key={typeInfo.type}
                     value={typeInfo.type}
+                    isDisabled={typeInfo.disable}
                     classNames={{
                       base: 'inline-flex m-0 bg-content1 hover:bg-content2 items-center justify-between flex-row-reverse max-w-[300px] cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent data-[selected=true]:border-warning',
                       label: 'w-full',

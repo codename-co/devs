@@ -95,7 +95,10 @@ function yamlWatchPlugin(): Plugin {
           server.ws.send({ type: 'full-reload' })
           console.log('[yaml-watch] Triggered browser reload\n')
         } catch (error) {
-          console.error('[yaml-watch] Failed to run prepare-config-files.js:', error)
+          console.error(
+            '[yaml-watch] Failed to run prepare-config-files.js:',
+            error,
+          )
         }
       }
 

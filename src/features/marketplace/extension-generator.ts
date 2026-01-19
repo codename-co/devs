@@ -44,22 +44,20 @@ ${ExtensionBridge.replace(/^/gm, '  ')}
 
 ## EXAMPLE EXTENSION CODE
 
-Example page code:
+Example page code (this is the ONLY valid structure):
 \`\`\`
-const App = () => {
-  import { Button, Container, PromptArea, Section } from '@devs/components'
+import { Button, Container, Section } from '@devs/components'
 
-  const App = () => {
-    return (
-      <Section>
-        <Container>
-          <Button variant="light">
-            Example button
-          </Button>
-        </Container>
-      </Section>
-    )
-  }
+const App = () => {
+  return (
+    <Section>
+      <Container>
+        <Button variant="light">
+          Example button
+        </Button>
+      </Container>
+    </Section>
+  )
 }
 \`\`\`
 
@@ -73,7 +71,7 @@ const App = () => {
 - The path keys should match the actual app routes (e.g., "/translate" for a translation app); never use "/" for the main page nor generic names like "main" or "home"; prefer short yet descriptive paths that will be unique within the app; exclude the leading slash in the path keys
 - The id must be unique and URL-friendly (lowercase, hyphens only)
 - React code: Except for react, react-dom, react-dom/client, react/jsx-runtime, framer-motion, @heroui/react and @devs/components, import only https://esm.sh packages and set the path to "?external=react,react-dom"
-- React code: Do NOT return anything at the end of the page codes; instead make sure to define the App component as shown in the example
+- React code: The page code must define an "App" component but NEVER render or return it. NO "return <App />" or "export default App" at the end. The extension loader handles rendering automatically. Just define the component, nothing else.
 
 Respond with ONLY the JSON object, no markdown code blocks or explanations.
 `
