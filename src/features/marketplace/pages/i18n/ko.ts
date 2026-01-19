@@ -245,4 +245,43 @@ export const ko: I18n = {
   Custom: '사용자 정의',
   'AI-generated': 'AI 생성',
   'My extensions': '내 확장 프로그램',
+
+  // Extension Editor Page
+  'Edit and refine your extension': '확장 프로그램 편집 및 개선',
+  'Extension not found': '확장 프로그램을 찾을 수 없습니다',
+  'Editor tabs': '편집기 탭',
+  Preview: '미리보기',
+  Code: '코드',
+  Chat: '채팅',
+  Save: '저장',
+  Done: '완료',
+  Unsaved: '저장되지 않음',
+  'Extension saved': '확장 프로그램이 저장되었습니다',
+  'Failed to save extension': '확장 프로그램을 저장하지 못했습니다',
+  'Failed to load extension': '확장 프로그램을 로드하지 못했습니다',
+  'You have unsaved changes. Save before leaving?':
+    '저장되지 않은 변경 사항이 있습니다. 나가기 전에 저장하시겠습니까?',
+  "Your extension has been created! You can preview it, edit the code directly, or describe changes you'd like me to make.":
+    '확장 프로그램이 생성되었습니다! 미리보기하거나 코드를 직접 편집하거나 원하는 변경 사항을 설명할 수 있습니다.',
+  "Describe changes you'd like to make": '원하는 변경 사항을 설명하세요',
+  'The AI will help you refine your extension':
+    'AI가 확장 프로그램을 개선하는 데 도움을 줄 것입니다',
+  "Describe what you'd like to change...": '변경하고 싶은 내용을 설명하세요...',
+  Send: '보내기',
+  'AI-suggested code changes are automatically applied':
+    'AI가 제안한 코드 변경 사항이 자동으로 적용됩니다',
+  'No LLM provider configured': 'LLM 제공자가 구성되지 않았습니다',
+  'Unknown error': '알 수 없는 오류',
+  'Sorry, I encountered an error: {error}':
+    '죄송합니다, 오류가 발생했습니다: {error}',
+  'Code applied successfully!': '코드가 성공적으로 적용되었습니다!',
+  'Code changes applied': '코드 변경 사항이 적용되었습니다',
+  'Sorry, I encountered an error parsing the code changes.':
+    '죄송합니다, 코드 변경 사항을 파싱하는 중 오류가 발생했습니다.',
+
+  // Delete extension
+  'Delete extension': '확장 프로그램 삭제',
+  'Are you sure you want to delete this extension?':
+    '이 확장 프로그램을 삭제하시겠습니까?',
+  'This action cannot be undone.': '이 작업은 취소할 수 없습니다.',
 }

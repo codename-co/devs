@@ -21,6 +21,7 @@ import type {
   ExtensionsManifest,
   CustomExtension,
 } from './types'
+import { deleteCustomExtension as deleteCustomExtensionFromDb } from './extension-generator'
 
 // =============================================================================
 // CONSTANTS
@@ -151,6 +152,7 @@ interface MarketplaceStore {
   uninstallExtension: (extensionId: string) => Promise<void>
   enableExtension: (extensionId: string) => Promise<void>
   disableExtension: (extensionId: string) => Promise<void>
+  deleteCustomExtension: (extensionId: string) => Promise<void>
   updateExtensionConfig: (
     extensionId: string,
     config: Record<string, unknown>,
@@ -397,6 +399,28 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
     await db.update('extensions', updated)
   },
 
+  // Delete a custom extension
+  deleteCustomExtension: async (extensionId: string) => {
+    const { customExtensions, installed } = get()
+
+    // Also uninstall if it was installed
+    if (installed.has(extensionId)) {
+      const newInstalled = new Map(installed)
+      newInstalled.delete(extensionId)
+      set({ installed: newInstalled })
+      await db.delete('extensions', extensionId)
+    }
+
+    // Remove from custom extensions list
+    const newCustomExtensions = customExtensions.filter(
+      (ext) => ext.id !== extensionId,
+    )
+    set({ customExtensions: newCustomExtensions })
+
+    // Delete from database
+    await deleteCustomExtensionFromDb(extensionId)
+  },
+
   // Update extension configuration
   updateExtensionConfig: async (
     extensionId: string,
@@ -423,6 +447,33 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
 
   // Load full extension details by ID (fetches if not cached)
   loadExtensionById: async (extensionId: string) => {
+    // Check custom extensions first - fetch fresh from IndexedDB
+    if (!db.isInitialized()) {
+      await db.init()
+    }
+    const customExt = await db.get('customExtensions', extensionId)
+    if (customExt) {
+      // Convert to MarketplaceExtension format
+      return {
+        id: customExt.id,
+        name: customExt.name,
+        version: customExt.version,
+        type: customExt.type,
+        license: customExt.license,
+        icon: customExt.icon,
+        color: customExt.color,
+        description: customExt.description,
+        author: customExt.author,
+        featured: customExt.featured,
+        source: customExt.source,
+        i18n: customExt.i18n,
+        pages: customExt.pages,
+        configuration: customExt.configuration,
+        isCustom: true,
+      } as MarketplaceExtension
+    }
+
+    // Fetch from marketplace
     return fetchExtensionDetails(extensionId)
   },
 

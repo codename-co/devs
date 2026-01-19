@@ -223,8 +223,6 @@ graph TD
         MST[Mistral]
         OLL[Ollama]
         OR[OpenRouter]
-        DS[DeepSeek]
-        GRK[Grok]
         HF[HuggingFace]
         CST[Custom]
     end

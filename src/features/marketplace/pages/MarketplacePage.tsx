@@ -342,96 +342,95 @@ export function MarketplacePage() {
           {/* Main layout with vertical tabs on left */}
           <div style={{ display: 'flex', gap: 32 }}>
             {/* Category Listbox */}
-            <div style={{ maxWidth: 240, flexShrink: 0 }}>
-              <Listbox
-                aria-label={t('Categories')}
-                selectedKeys={[selectedCategory]}
-                selectionMode="single"
-                onSelectionChange={(keys) => {
-                  const selected = Array.from(keys)[0] as string
-                  if (selected) setSelectedCategory(selected)
-                }}
-                variant="flat"
+            <Listbox
+              aria-label={t('Categories')}
+              selectedKeys={[selectedCategory]}
+              selectionMode="single"
+              onSelectionChange={(keys) => {
+                const selected = Array.from(keys)[0] as string
+                if (selected) setSelectedCategory(selected)
+              }}
+              variant="flat"
+              className="hidden sm:flex max-w-xs flex-shrink-0"
+            >
+              <ListboxItem
+                key="all"
+                startContent={<Icon name="ViewGrid" />}
+                endContent={
+                  <Chip size="sm" variant="flat">
+                    {categoryCounts.all}
+                  </Chip>
+                }
               >
-                <ListboxItem
-                  key="all"
-                  startContent={<Icon name="ViewGrid" />}
-                  endContent={
-                    <Chip size="sm" variant="flat">
-                      {categoryCounts.all}
-                    </Chip>
-                  }
-                >
-                  {t('All')}
-                </ListboxItem>
-                <ListboxItem
-                  key="app"
-                  startContent={<Icon name="CubeScan" />}
-                  endContent={
-                    <Chip size="sm" variant="flat">
-                      {categoryCounts.app}
-                    </Chip>
-                  }
-                >
-                  {t('Apps')}
-                </ListboxItem>
-                <ListboxItem
-                  key="agent"
-                  startContent={<Icon name="User" />}
-                  endContent={
-                    <Chip size="sm" variant="flat">
-                      {categoryCounts.agent}
-                    </Chip>
-                  }
-                >
-                  {t('Agents')}
-                </ListboxItem>
-                <ListboxItem
-                  key="connector"
-                  startContent={<Icon name="Puzzle" />}
-                  endContent={
-                    <Chip size="sm" variant="flat">
-                      {categoryCounts.connector}
-                    </Chip>
-                  }
-                >
-                  {t('Connectors')}
-                </ListboxItem>
-                <ListboxItem
-                  key="tool"
-                  startContent={<Icon name="Settings" />}
-                  endContent={
-                    <Chip size="sm" variant="flat">
-                      {categoryCounts.tool}
-                    </Chip>
-                  }
-                >
-                  {t('Tools')}
-                </ListboxItem>
-                <ListboxItem
-                  key="custom"
-                  startContent={<Icon name="Sparks" />}
-                  endContent={
-                    <Chip size="sm" variant="flat">
-                      {categoryCounts.custom}
-                    </Chip>
-                  }
-                >
-                  {t('My extensions')}
-                </ListboxItem>
-                <ListboxItem
-                  key="installed"
-                  startContent={<Icon name="Check" />}
-                  endContent={
-                    <Chip size="sm" variant="flat">
-                      {categoryCounts.installed}
-                    </Chip>
-                  }
-                >
-                  {t('Installed')}
-                </ListboxItem>
-              </Listbox>
-            </div>
+                {t('All')}
+              </ListboxItem>
+              <ListboxItem
+                key="app"
+                startContent={<Icon name="CubeScan" />}
+                endContent={
+                  <Chip size="sm" variant="flat">
+                    {categoryCounts.app}
+                  </Chip>
+                }
+              >
+                {t('Apps')}
+              </ListboxItem>
+              <ListboxItem
+                key="agent"
+                startContent={<Icon name="User" />}
+                endContent={
+                  <Chip size="sm" variant="flat">
+                    {categoryCounts.agent}
+                  </Chip>
+                }
+              >
+                {t('Agents')}
+              </ListboxItem>
+              <ListboxItem
+                key="connector"
+                startContent={<Icon name="Puzzle" />}
+                endContent={
+                  <Chip size="sm" variant="flat">
+                    {categoryCounts.connector}
+                  </Chip>
+                }
+              >
+                {t('Connectors')}
+              </ListboxItem>
+              <ListboxItem
+                key="tool"
+                startContent={<Icon name="Settings" />}
+                endContent={
+                  <Chip size="sm" variant="flat">
+                    {categoryCounts.tool}
+                  </Chip>
+                }
+              >
+                {t('Tools')}
+              </ListboxItem>
+              <ListboxItem
+                key="custom"
+                startContent={<Icon name="Sparks" />}
+                endContent={
+                  <Chip size="sm" variant="flat">
+                    {categoryCounts.custom}
+                  </Chip>
+                }
+              >
+                {t('My extensions')}
+              </ListboxItem>
+              <ListboxItem
+                key="installed"
+                startContent={<Icon name="Check" />}
+                endContent={
+                  <Chip size="sm" variant="flat">
+                    {categoryCounts.installed}
+                  </Chip>
+                }
+              >
+                {t('Installed')}
+              </ListboxItem>
+            </Listbox>
 
             {/* Content area */}
             <div style={{ flex: 1, minWidth: 0 }}>

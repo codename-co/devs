@@ -544,8 +544,6 @@ self.addEventListener('fetch', (event) => {
     'generativelanguage.googleapis.com',
     'api.mistral.ai',
     'openrouter.ai',
-    'api.deepseek.com',
-    'api.x.ai',
   ]
 
   const isLLMRequest = llmHosts.some((host) => url.hostname.includes(host))

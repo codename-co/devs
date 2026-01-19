@@ -35,8 +35,6 @@ describe('Model Registry', () => {
       'vertex-ai',
       'mistral',
       'openrouter',
-      'deepseek',
-      'grok',
       'huggingface',
     ]
 
@@ -195,11 +193,7 @@ describe('findBestModel', () => {
   })
 
   it('should prefer fast models when specified', () => {
-    const result = findBestModel(
-      ['openai', 'google'],
-      { tools: true },
-      'fast',
-    )
+    const result = findBestModel(['openai', 'google'], { tools: true }, 'fast')
     expect(result).toBeDefined()
     // Should prefer fast models when available
   })
@@ -233,18 +227,26 @@ describe('findBestModel', () => {
 
 describe('modelHasCapabilities', () => {
   it('should return true when model has all required capabilities', () => {
-    const hasIt = modelHasCapabilities('anthropic', 'claude-opus-4-5-20251101', {
-      thinking: true,
-      vision: true,
-      tools: true,
-    })
+    const hasIt = modelHasCapabilities(
+      'anthropic',
+      'claude-opus-4-5-20251101',
+      {
+        thinking: true,
+        vision: true,
+        tools: true,
+      },
+    )
     expect(hasIt).toBe(true)
   })
 
   it('should return false when model lacks a required capability', () => {
-    const hasIt = modelHasCapabilities('local', 'SmolLM2-360M-Instruct-q4f16_1-MLC', {
-      vision: true,
-    })
+    const hasIt = modelHasCapabilities(
+      'local',
+      'SmolLM2-360M-Instruct-q4f16_1-MLC',
+      {
+        vision: true,
+      },
+    )
     expect(hasIt).toBe(false)
   })
 
@@ -257,9 +259,13 @@ describe('modelHasCapabilities', () => {
   })
 
   it('should return false when model has excluded capability', () => {
-    const hasIt = modelHasCapabilities('anthropic', 'claude-opus-4-5-20251101', {
-      highCost: false,
-    })
+    const hasIt = modelHasCapabilities(
+      'anthropic',
+      'claude-opus-4-5-20251101',
+      {
+        highCost: false,
+      },
+    )
     expect(hasIt).toBe(false)
   })
 })

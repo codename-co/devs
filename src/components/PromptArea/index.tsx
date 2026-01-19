@@ -65,6 +65,9 @@ export interface PromptAreaProps
   onFocus?: React.FocusEventHandler<HTMLTextAreaElement>
   onBlur?: React.FocusEventHandler<HTMLTextAreaElement>
   onKeyDown?: React.KeyboardEventHandler<HTMLTextAreaElement>
+  withModelSelector?: boolean
+  withAttachmentSelector?: boolean
+  withAgentSelector?: boolean
 }
 
 export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
@@ -74,6 +77,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       lang,
       onSubmitToAgent,
       onSubmitTask,
+      onSubmit,
       onValueChange,
       onFilesChange,
       defaultPrompt = '',
@@ -86,6 +90,9 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       onFocus,
       onBlur,
       onKeyDown,
+      withModelSelector,
+      withAttachmentSelector,
+      withAgentSelector,
       ...props
     },
     ref,
@@ -501,22 +508,26 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
           <div className="absolute z-10 bottom-0 inset-x-px p-1 sm:p-2 rounded-b-lg">
             <div className="flex flex-wrap justify-between items-end gap-1">
               <div className="flex items-center gap-1">
-                <AttachmentSelector
-                  lang={lang}
-                  onFileUpload={handlePaperclipClick}
-                  onKnowledgeFileSelect={handleKnowledgeFileSelect}
-                />
+                {withAttachmentSelector !== false && (
+                  <AttachmentSelector
+                    lang={lang}
+                    onFileUpload={handlePaperclipClick}
+                    onKnowledgeFileSelect={handleKnowledgeFileSelect}
+                  />
+                )}
 
-                <AgentSelector
-                  lang={lang}
-                  disabled={disabledAgentPicker}
-                  selectedAgent={currentAgent}
-                  onAgentChange={onAgentChange}
-                />
+                {withAgentSelector !== false && (
+                  <AgentSelector
+                    lang={lang}
+                    disabled={disabledAgentPicker}
+                    selectedAgent={currentAgent}
+                    onAgentChange={onAgentChange}
+                  />
+                )}
               </div>
 
               <div className="flex items-center gap-2">
-                <ModelSelector lang={lang} />
+                {withModelSelector !== false && <ModelSelector lang={lang} />}
 
                 {speechToTextEnabled && (!prompt.trim() || isRecording) && (
                   <Tooltip
@@ -559,6 +570,32 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                         isDisabled={!canSubmit}
                         isLoading={props.isSending}
                         onPress={() => handleSubmitWithMentions(onSubmitTask)}
+                      >
+                        <Icon name="ArrowRight" size="sm" />
+                      </Button>
+                    </Tooltip>
+                  )}
+
+                  {onSubmit && (
+                    <Tooltip content={t('Send prompt')} placement="bottom">
+                      <Button
+                        type="submit"
+                        data-testid="submit-button"
+                        isIconOnly={isSmallWidth()}
+                        disabled={props.isSending}
+                        color={!prompt.trim() ? 'default' : 'primary'}
+                        className={cn(
+                          'rtl:rotate-180',
+                          canSubmit && 'dark:bg-white dark:text-black',
+                        )}
+                        radius="md"
+                        variant="solid"
+                        size="sm"
+                        isDisabled={!canSubmit}
+                        isLoading={props.isSending}
+                        onPress={() =>
+                          handleSubmitWithMentions(onSubmit as any)
+                        }
                       >
                         <Icon name="ArrowRight" size="sm" />
                       </Button>

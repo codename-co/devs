@@ -81,21 +81,21 @@ export const fr: I18n = {
   'Write a review': 'Écrire un avis',
   Rating: 'Note',
   'Your review': 'Votre avis',
-  'Submit review': "Soumettre l'avis",
+  'Submit review': 'Soumettre l’avis',
   Helpful: 'Utile',
   '{n} people found this helpful': '{n} personnes ont trouvé ceci utile',
-  'Report review': "Signaler l'avis",
+  'Report review': 'Signaler l’avis',
 
   // Install flow
   'Installing...': 'Installation en cours...',
   'Installation complete': 'Installation terminée',
-  'Installation failed': "Échec de l'installation",
+  'Installation failed': 'Échec de l’installation',
   'This extension requires the following permissions:':
     'Cette extension nécessite les permissions suivantes :',
   Allow: 'Autoriser',
   Deny: 'Refuser',
   Cancel: 'Annuler',
-  'Confirm installation': "Confirmer l'installation",
+  'Confirm installation': 'Confirmer l’installation',
 
   // Publish
   'Publish Extension': 'Publier une extension',
@@ -104,7 +104,7 @@ export const fr: I18n = {
   'Create New Extension': 'Créer une nouvelle extension',
   'Upload Extension': 'Téléverser une extension',
   'Upload a .yaml or .devs file': 'Téléversez un fichier .yaml ou .devs',
-  'Drop your extension file here': "Déposez votre fichier d'extension ici",
+  'Drop your extension file here': 'Déposez votre fichier d’extension ici',
   'Or browse files': 'Ou parcourir les fichiers',
   Validate: 'Valider',
   'Validating...': 'Validation en cours...',
@@ -245,4 +245,45 @@ export const fr: I18n = {
   Custom: 'Personnalisée',
   'AI-generated': 'Générée par IA',
   'My extensions': 'Mes extensions',
+
+  // Extension Editor Page
+  'Edit and refine your extension': 'Modifier et améliorer votre extension',
+  'Extension not found': 'Extension non trouvée',
+  'Editor tabs': "Onglets de l'éditeur",
+  Preview: 'Aperçu',
+  Code: 'Code',
+  Chat: 'Discussion',
+  Save: 'Enregistrer',
+  Done: 'Terminé',
+  Unsaved: 'Non enregistré',
+  'Extension saved': 'Extension enregistrée',
+  'Failed to save extension': "Échec de l'enregistrement de l'extension",
+  'Failed to load extension': "Échec du chargement de l'extension",
+  'You have unsaved changes. Save before leaving?':
+    'Vous avez des modifications non enregistrées. Enregistrer avant de partir ?',
+  "Your extension has been created! You can preview it, edit the code directly, or describe changes you'd like me to make.":
+    'Votre extension a été créée ! Vous pouvez la prévisualiser, modifier le code directement ou décrire les modifications que vous souhaitez que je fasse.',
+  "Describe changes you'd like to make":
+    'Décrivez les modifications que vous souhaitez apporter',
+  'The AI will help you refine your extension':
+    "L'IA vous aidera à améliorer votre extension",
+  "Describe what you'd like to change...":
+    'Décrivez ce que vous souhaitez modifier...',
+  Send: 'Envoyer',
+  'AI-suggested code changes are automatically applied':
+    "Les modifications de code suggérées par l'IA sont appliquées automatiquement",
+  'No LLM provider configured': 'Aucun fournisseur LLM configuré',
+  'Unknown error': 'Erreur inconnue',
+  'Sorry, I encountered an error: {error}':
+    "Désolé, j'ai rencontré une erreur : {error}",
+  'Code applied successfully!': 'Code appliqué avec succès !',
+  'Code changes applied': 'Modifications du code appliquées',
+  'Sorry, I encountered an error parsing the code changes.':
+    "Désolé, j'ai rencontré une erreur lors de l'analyse des modifications de code.",
+
+  // Delete extension
+  'Delete extension': 'Supprimer l’extension',
+  'Are you sure you want to delete this extension?':
+    'Êtes-vous sûr de vouloir supprimer cette extension ?',
+  'This action cannot be undone.': 'Cette action est irréversible.',
 }

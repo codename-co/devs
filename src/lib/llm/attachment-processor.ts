@@ -142,7 +142,7 @@ export function getUnsupportedDocumentMessage(
 
 /**
  * Convert a message to OpenAI-compatible format with attachment handling.
- * This is the standard format used by OpenAI, Grok, OpenRouter, and many other providers.
+ * This is the standard format used by OpenAI, OpenRouter, and many other providers.
  *
  * - Images are sent as multimodal content parts
  * - Text attachments (including converted Word docs) are inlined

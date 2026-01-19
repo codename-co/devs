@@ -241,4 +241,42 @@ export const ar: I18n = {
   Custom: 'مخصص',
   'AI-generated': 'مُنشأ بالذكاء الاصطناعي',
   'My extensions': 'إضافاتي',
+
+  // Extension Editor Page
+  'Edit and refine your extension': 'تعديل وتحسين إضافتك',
+  'Extension not found': 'الإضافة غير موجودة',
+  'Editor tabs': 'علامات تبويب المحرر',
+  Preview: 'معاينة',
+  Code: 'الكود',
+  Chat: 'محادثة',
+  Save: 'حفظ',
+  Done: 'تم',
+  Unsaved: 'غير محفوظ',
+  'Extension saved': 'تم حفظ الإضافة',
+  'Failed to save extension': 'فشل في حفظ الإضافة',
+  'Failed to load extension': 'فشل في تحميل الإضافة',
+  'You have unsaved changes. Save before leaving?':
+    'لديك تغييرات غير محفوظة. هل تريد الحفظ قبل المغادرة؟',
+  "Your extension has been created! You can preview it, edit the code directly, or describe changes you'd like me to make.":
+    'تم إنشاء إضافتك! يمكنك معاينتها أو تعديل الكود مباشرة أو وصف التغييرات التي تريدني إجراءها.',
+  "Describe changes you'd like to make": 'صف التغييرات التي تريد إجراءها',
+  'The AI will help you refine your extension':
+    'سيساعدك الذكاء الاصطناعي في تحسين إضافتك',
+  "Describe what you'd like to change...": 'صف ما تريد تغييره...',
+  Send: 'إرسال',
+  'AI-suggested code changes are automatically applied':
+    'يتم تطبيق تغييرات الكود المقترحة من الذكاء الاصطناعي تلقائياً',
+  'No LLM provider configured': 'لم يتم تكوين مزود LLM',
+  'Unknown error': 'خطأ غير معروف',
+  'Sorry, I encountered an error: {error}': 'عذراً، واجهت خطأ: {error}',
+  'Code applied successfully!': 'تم تطبيق الكود بنجاح!',
+  'Code changes applied': 'تم تطبيق تغييرات الكود',
+  'Sorry, I encountered an error parsing the code changes.':
+    'عذراً، واجهت خطأ في تحليل تغييرات الكود.',
+
+  // Delete extension
+  'Delete extension': 'حذف الإضافة',
+  'Are you sure you want to delete this extension?':
+    'هل أنت متأكد من رغبتك في حذف هذه الإضافة؟',
+  'This action cannot be undone.': 'لا يمكن التراجع عن هذا الإجراء.',
 }

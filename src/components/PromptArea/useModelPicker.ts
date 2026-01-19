@@ -13,8 +13,6 @@ const PROVIDER_ICONS: Record<string, IconName> = {
   'vertex-ai': 'GoogleCloud',
   mistral: 'MistralAI',
   openrouter: 'OpenRouter',
-  deepseek: 'DeepSeek',
-  grok: 'X',
   huggingface: 'HuggingFace',
   custom: 'Server',
   'openai-compatible': 'Internet',

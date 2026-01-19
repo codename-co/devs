@@ -246,4 +246,47 @@ export const de: I18n = {
   Custom: 'Benutzerdefiniert',
   'AI-generated': 'KI-generiert',
   'My extensions': 'Meine Erweiterungen',
+
+  // Extension Editor Page
+  'Edit and refine your extension':
+    'Ihre Erweiterung bearbeiten und verfeinern',
+  'Extension not found': 'Erweiterung nicht gefunden',
+  'Editor tabs': 'Editor-Tabs',
+  Preview: 'Vorschau',
+  Code: 'Code',
+  Chat: 'Chat',
+  Save: 'Speichern',
+  Done: 'Fertig',
+  Unsaved: 'Nicht gespeichert',
+  'Extension saved': 'Erweiterung gespeichert',
+  'Failed to save extension': 'Erweiterung konnte nicht gespeichert werden',
+  'Failed to load extension': 'Erweiterung konnte nicht geladen werden',
+  'You have unsaved changes. Save before leaving?':
+    'Sie haben nicht gespeicherte Änderungen. Vor dem Verlassen speichern?',
+  "Your extension has been created! You can preview it, edit the code directly, or describe changes you'd like me to make.":
+    'Ihre Erweiterung wurde erstellt! Sie können sie in der Vorschau anzeigen, den Code direkt bearbeiten oder Änderungen beschreiben, die ich vornehmen soll.',
+  "Describe changes you'd like to make":
+    'Beschreiben Sie die gewünschten Änderungen',
+  'The AI will help you refine your extension':
+    'Die KI hilft Ihnen, Ihre Erweiterung zu verfeinern',
+  "Describe what you'd like to change...":
+    'Beschreiben Sie, was Sie ändern möchten...',
+  Send: 'Senden',
+  'AI-suggested code changes are automatically applied':
+    'KI-vorgeschlagene Code-Änderungen werden automatisch angewendet',
+  'No LLM provider configured': 'Kein LLM-Anbieter konfiguriert',
+  'Unknown error': 'Unbekannter Fehler',
+  'Sorry, I encountered an error: {error}':
+    'Entschuldigung, ein Fehler ist aufgetreten: {error}',
+  'Code applied successfully!': 'Code erfolgreich angewendet!',
+  'Code changes applied': 'Codeänderungen angewendet',
+  'Sorry, I encountered an error parsing the code changes.':
+    'Entschuldigung, beim Parsen der Codeänderungen ist ein Fehler aufgetreten.',
+
+  // Delete extension
+  'Delete extension': 'Erweiterung löschen',
+  'Are you sure you want to delete this extension?':
+    'Sind Sie sicher, dass Sie diese Erweiterung löschen möchten?',
+  'This action cannot be undone.':
+    'Diese Aktion kann nicht rückgängig gemacht werden.',
 }

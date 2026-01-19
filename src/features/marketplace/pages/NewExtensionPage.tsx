@@ -5,15 +5,15 @@ import {
   CardBody,
   CardHeader,
   Button,
-  Textarea,
   RadioGroup,
   Radio,
   Spinner,
   Chip,
+  Tooltip,
 } from '@heroui/react'
 
 import DefaultLayout from '@/layouts/Default'
-import { Container, Section, Icon, Title } from '@/components'
+import { Container, Section, Icon, Title, PromptArea } from '@/components'
 import { useI18n } from '@/i18n'
 import type { HeaderProps, IconName } from '@/lib/types'
 import type { ExtensionType } from '../types'
@@ -74,7 +74,7 @@ const EXTENSION_TYPES: {
 ]
 
 export function NewExtensionPage() {
-  const { t } = useI18n(localI18n)
+  const { lang, t } = useI18n(localI18n)
   const navigate = useNavigate()
 
   const [selectedType, setSelectedType] = useState<ExtensionType>('app')
@@ -109,13 +109,8 @@ export function NewExtensionPage() {
       })
 
       if (result.success && result.extension) {
-        // Navigate to marketplace with success
-        navigate('/marketplace', {
-          state: {
-            newExtension: result.extension.id,
-            message: t('Extension created successfully!'),
-          },
-        })
+        // Navigate to the extension editor for refinement
+        navigate(`/marketplace/edit/${result.extension.id}?new=true`)
       } else {
         setError(result.error || t('Failed to generate extension'))
       }
@@ -165,34 +160,36 @@ export function NewExtensionPage() {
                 }
                 orientation="horizontal"
                 classNames={{
-                  wrapper: 'gap-4 flex-wrap',
+                  wrapper: 'grid grid-cols-2 md:grid-cols-4 gap-4',
                 }}
               >
                 {EXTENSION_TYPES.map((typeInfo) => (
-                  <Radio
+                  <Tooltip
                     key={typeInfo.type}
-                    value={typeInfo.type}
-                    isDisabled={typeInfo.disable}
-                    classNames={{
-                      base: 'inline-flex m-0 bg-content1 hover:bg-content2 items-center justify-between flex-row-reverse max-w-[300px] cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent data-[selected=true]:border-warning',
-                      label: 'w-full',
-                    }}
+                    content={typeInfo.description}
+                    placement="top"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-warning-100 dark:bg-warning-900/30">
-                        <Icon
-                          name={typeInfo.icon}
-                          className="text-warning-600 dark:text-warning-400"
-                        />
-                      </div>
-                      <div>
-                        <div className="font-medium">{typeInfo.label}</div>
-                        <div className="text-xs text-default-500">
-                          {typeInfo.description}
+                    <Radio
+                      value={typeInfo.type}
+                      isDisabled={typeInfo.disable}
+                      classNames={{
+                        base: 'inline-flex m-0 bg-content1 hover:bg-content2 items-center justify-between flex-row-reverse max-w-[200px] cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent data-[selected=true]:border-warning',
+                        label: 'w-full',
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-warning-100 dark:bg-warning-900/30">
+                          <Icon
+                            name={typeInfo.icon}
+                            className="text-warning-600 dark:text-warning-400"
+                          />
+                        </div>
+                        <div>
+                          <div className="font-medium">{typeInfo.label}</div>
                         </div>
                       </div>
-                    </div>
-                  </Radio>
+                    </Radio>
+                  </Tooltip>
                 ))}
               </RadioGroup>
 
@@ -218,17 +215,17 @@ export function NewExtensionPage() {
               </span>
             </CardHeader>
             <CardBody>
-              <Textarea
+              <PromptArea
+                lang={lang}
                 placeholder={t(
                   'Describe what your extension should do, its features, and how it should look...',
                 )}
                 value={prompt}
                 onValueChange={setPrompt}
-                minRows={4}
+                minRows={5}
                 maxRows={10}
-                classNames={{
-                  input: 'text-base',
-                }}
+                withAgentSelector={false}
+                onSubmit={handleGenerate}
               />
 
               <div className="mt-4 text-sm text-default-500">

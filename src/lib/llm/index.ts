@@ -400,8 +400,6 @@ import {
   MistralProvider,
   OllamaProvider,
   OpenRouterProvider,
-  DeepSeekProvider,
-  GrokProvider,
   HuggingFaceProvider,
   OpenAICompatibleProvider,
   CustomProvider,
@@ -416,8 +414,6 @@ LLMService.registerProvider('google', new GoogleProvider())
 LLMService.registerProvider('vertex-ai', new VertexAIProvider())
 LLMService.registerProvider('mistral', new MistralProvider())
 LLMService.registerProvider('openrouter', new OpenRouterProvider())
-LLMService.registerProvider('deepseek', new DeepSeekProvider())
-LLMService.registerProvider('grok', new GrokProvider())
 LLMService.registerProvider('huggingface', new HuggingFaceProvider())
 LLMService.registerProvider('openai-compatible', new OpenAICompatibleProvider())
 LLMService.registerProvider('custom', new CustomProvider())

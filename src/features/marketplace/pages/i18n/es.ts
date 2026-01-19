@@ -245,4 +245,44 @@ export const es: I18n = {
   Custom: 'Personalizada',
   'AI-generated': 'Generada por IA',
   'My extensions': 'Mis extensiones',
+
+  // Extension Editor Page
+  'Edit and refine your extension': 'Edita y mejora tu extensión',
+  'Extension not found': 'Extensión no encontrada',
+  'Editor tabs': 'Pestañas del editor',
+  Preview: 'Vista previa',
+  Code: 'Código',
+  Chat: 'Chat',
+  Save: 'Guardar',
+  Done: 'Listo',
+  Unsaved: 'Sin guardar',
+  'Extension saved': 'Extensión guardada',
+  'Failed to save extension': 'Error al guardar la extensión',
+  'Failed to load extension': 'Error al cargar la extensión',
+  'You have unsaved changes. Save before leaving?':
+    '¿Tienes cambios sin guardar. ¿Guardar antes de salir?',
+  "Your extension has been created! You can preview it, edit the code directly, or describe changes you'd like me to make.":
+    '¡Tu extensión ha sido creada! Puedes previsualizarla, editar el código directamente o describir los cambios que quieres que haga.',
+  "Describe changes you'd like to make":
+    'Describe los cambios que quieres hacer',
+  'The AI will help you refine your extension':
+    'La IA te ayudará a mejorar tu extensión',
+  "Describe what you'd like to change...": 'Describe lo que quieres cambiar...',
+  Send: 'Enviar',
+  'AI-suggested code changes are automatically applied':
+    'Los cambios de código sugeridos por la IA se aplican automáticamente',
+  'No LLM provider configured': 'No hay proveedor de LLM configurado',
+  'Unknown error': 'Error desconocido',
+  'Sorry, I encountered an error: {error}':
+    'Lo siento, encontré un error: {error}',
+  'Code applied successfully!': '¡Código aplicado con éxito!',
+  'Code changes applied': 'Cambios de código aplicados',
+  'Sorry, I encountered an error parsing the code changes.':
+    'Lo siento, encontré un error al analizar los cambios de código.',
+
+  // Delete extension
+  'Delete extension': 'Eliminar extensión',
+  'Are you sure you want to delete this extension?':
+    '¿Estás seguro de que quieres eliminar esta extensión?',
+  'This action cannot be undone.': 'Esta acción no se puede deshacer.',
 }

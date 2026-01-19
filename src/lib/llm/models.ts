@@ -40,8 +40,6 @@ const EMPTY_REGISTRY: ModelRegistry = {
   'vertex-ai': [],
   mistral: [],
   openrouter: [],
-  deepseek: [],
-  grok: [],
   huggingface: [],
   'openai-compatible': [],
   custom: [],

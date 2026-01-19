@@ -22,7 +22,7 @@ import ExtensionBridge from '../../../docs/EXTENSION-BRIDGE.md?raw'
 // SYSTEM PROMPT
 // =============================================================================
 
-const SYSTEM_PROMPT = /* md */ `You are an expert extension generator for DEVS, a browser-native AI agent orchestration platform.
+export const EXTENSION_SYSTEM_PROMPT = /* md */ `You are an expert extension generator for DEVS, a browser-native AI agent orchestration platform.
 
 Your task is to generate valid extension definitions based on user descriptions. Extensions follow this JSON schema:
 
@@ -35,7 +35,7 @@ ${ExtensionSchema}
 FOR APP EXTENSIONS:
 The "pages" object should contain React component code as strings. The code has access to:
 - All React hooks (useState, useEffect, etc.). But NEVER import React itself (it is already imported).
-- @heroui/react components (Button, Card, Input, Modal, etc.)
+- @dev/components components (that inherit from @heroui/react) (Button, Card, Input, Modal, Container, Sectionm, etc.)
 - The "window.DEVS" Bridge API for platform integration
 
 ## EXTENSION BRIDGE API
@@ -109,7 +109,7 @@ export async function generateExtension(
   }
 
   const messages: LLMMessage[] = [
-    { role: 'system', content: SYSTEM_PROMPT },
+    { role: 'system', content: EXTENSION_SYSTEM_PROMPT },
     {
       role: 'user',
       content: `Generate a ${type} extension based on this description:\n\n${prompt}\n\nRemember to output ONLY valid JSON.`,

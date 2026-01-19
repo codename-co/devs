@@ -33,6 +33,7 @@ export interface DefaultLayoutProps {
    * These will appear before the default menu items (Sync, Local Backup, etc.).
    */
   pageMenuActions?: PageMenuProps['supplementalActions']
+  className?: string
   children: React.ReactNode
 }
 
@@ -43,6 +44,7 @@ export default function DefaultLayout({
   header,
   showBackButton = true,
   pageMenuActions,
+  className,
   children,
 }: DefaultLayoutProps) {
   const { lang, t } = useI18n()
@@ -208,7 +210,9 @@ export default function DefaultLayout({
               <ToastProvider />
               <PageMenu supplementalActions={pageMenuActions} />
 
-              <div className="flex-1 flex flex-col">{children}</div>
+              <div className={`flex-1 flex flex-col ${className ?? ''}`}>
+                {children}
+              </div>
             </div>
           </main>
         </div>

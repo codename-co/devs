@@ -293,3 +293,257 @@ export function generateAppPageHtml(
 </body>
 </html>`
 }
+
+/**
+ * Generate HTML template for rendering a marketplace app page with console capture
+ * Same as generateAppPageHtml but includes console interception to send
+ * console messages back to the parent window for debugging.
+ */
+export function generateAppPageHtmlWithConsole(
+  pageCode: string,
+  isDarkTheme: boolean = true,
+  context?: DevsContext,
+): string {
+  const consoleInterceptScript = /* js */ `
+    // Intercept console methods and forward to parent
+    (function() {
+      const originalConsole = {
+        log: console.log,
+        info: console.info,
+        warn: console.warn,
+        error: console.error,
+      };
+
+      function formatValue(arg, depth = 0) {
+        if (depth > 5) return '[Max depth reached]';
+
+        if (arg === null) return 'null';
+        if (arg === undefined) return 'undefined';
+
+        // Handle Error objects - check prototype chain and duck typing
+        if (arg instanceof Error || (arg && typeof arg === 'object' && 'message' in arg && ('stack' in arg || 'name' in arg))) {
+          let errorStr = '';
+
+          // Get error name and message
+          const name = arg.name || arg.constructor?.name || 'Error';
+          const message = arg.message || '';
+          errorStr = name + (message ? ': ' + message : '');
+
+          // Add location info (Babel-style errors)
+          if (arg.loc) {
+            errorStr += ' at line ' + arg.loc.line + ', column ' + arg.loc.column;
+          }
+
+          // Add code frame (Babel provides this for syntax errors)
+          if (arg.codeFrame) {
+            errorStr += '\\n\\n' + arg.codeFrame;
+          }
+
+          // Add stack trace if available
+          if (arg.stack) {
+            // Check if stack already includes the message
+            if (!arg.stack.includes(message)) {
+              errorStr += '\\n' + arg.stack;
+            } else {
+              errorStr = arg.stack;
+            }
+          }
+
+          // Include any other useful properties
+          const skipKeys = new Set(['name', 'message', 'stack', 'loc', 'codeFrame', 'pos', 'missingPlugin']);
+          for (const key of Object.getOwnPropertyNames(arg)) {
+            if (!skipKeys.has(key)) {
+              try {
+                const val = arg[key];
+                if (val !== undefined && val !== null && typeof val !== 'function') {
+                  errorStr += '\\n' + key + ': ' + formatValue(val, depth + 1);
+                }
+              } catch (e) {}
+            }
+          }
+
+          return errorStr;
+        }
+
+        if (typeof arg === 'object') {
+          try {
+            // Check for error-like objects from Babel parser
+            if (arg.message && (arg.loc || arg.pos !== undefined)) {
+              let errStr = arg.message;
+              if (arg.loc) {
+                errStr += ' at line ' + arg.loc.line + ', column ' + arg.loc.column;
+              }
+              if (arg.codeFrame) {
+                errStr += '\\n\\n' + arg.codeFrame;
+              }
+              return errStr;
+            }
+
+            // For arrays, format each element
+            if (Array.isArray(arg)) {
+              return '[' + arg.map(item => formatValue(item, depth + 1)).join(', ') + ']';
+            }
+
+            return JSON.stringify(arg, (key, value) => {
+              if (value instanceof Error) {
+                return { name: value.name, message: value.message, stack: value.stack };
+              }
+              if (typeof value === 'function') return '[Function]';
+              return value;
+            }, 2);
+          } catch (e) {
+            return Object.prototype.toString.call(arg);
+          }
+        }
+        return String(arg);
+      }
+
+      function sendToParent(level, args) {
+        try {
+          // Filter out empty strings and combine meaningfully
+          const parts = args.map(arg => formatValue(arg)).filter(s => s && s.trim());
+          const message = parts.join(' ');
+
+          // Skip empty messages
+          if (!message.trim()) return;
+
+          window.parent.postMessage({
+            type: 'DEVS_CONSOLE_MESSAGE',
+            payload: { level, message }
+          }, '*');
+        } catch (e) {
+          // Silently fail if postMessage fails
+        }
+      }
+
+      console.log = function(...args) {
+        sendToParent('log', args);
+        originalConsole.log.apply(console, args);
+      };
+
+      console.info = function(...args) {
+        sendToParent('info', args);
+        originalConsole.info.apply(console, args);
+      };
+
+      console.warn = function(...args) {
+        // Filter out expected Babel in-browser warning (we're intentionally using browser transform for live preview)
+        const firstArg = args[0];
+        if (typeof firstArg === 'string' && firstArg.includes('in-browser Babel transformer')) {
+          originalConsole.warn.apply(console, args);
+          return;
+        }
+        sendToParent('warn', args);
+        originalConsole.warn.apply(console, args);
+      };
+
+      console.error = function(...args) {
+        sendToParent('error', args);
+        originalConsole.error.apply(console, args);
+      };
+
+      // Capture uncaught errors with full details
+      window.addEventListener('error', function(event) {
+        let errorMessage = '';
+
+        if (event.error) {
+          errorMessage = formatValue(event.error);
+        } else if (event.message && event.message !== 'Script error.') {
+          // Only use event.message if it's meaningful
+          errorMessage = event.message;
+          if (event.filename) {
+            errorMessage += '\\n  at ' + event.filename;
+            if (event.lineno) {
+              errorMessage += ':' + event.lineno;
+              if (event.colno) {
+                errorMessage += ':' + event.colno;
+              }
+            }
+          }
+        }
+
+        // Only send if we have meaningful error info
+        if (errorMessage && errorMessage.trim() && errorMessage !== 'Script error.') {
+          sendToParent('error', ['Uncaught: ' + errorMessage]);
+        }
+      }, true);
+
+      // Capture unhandled promise rejections with full details
+      window.addEventListener('unhandledrejection', function(event) {
+        const reason = event.reason;
+        const message = formatValue(reason);
+        if (message && message.trim()) {
+          sendToParent('error', ['Unhandled Promise Rejection: ' + message]);
+        }
+      }, true);
+    })();
+  `
+
+  return /* html */ `<!doctype html>
+<html lang="en" class="${isDarkTheme ? 'dark' : ''}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>${consoleInterceptScript}</script>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+  <script>
+    // Patch Babel to capture transformation errors with full details
+    (function() {
+      if (typeof Babel !== 'undefined') {
+        const originalTransform = Babel.transform;
+        Babel.transform = function(code, options) {
+          try {
+            return originalTransform.call(this, code, options);
+          } catch (e) {
+            // Log the full Babel error with code frame
+            console.error('Babel Syntax Error:', e);
+            throw e;
+          }
+        };
+      }
+    })();
+  </script>
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/preact@10/compat",
+        "react-dom": "https://esm.sh/preact@10/compat",
+        "react-dom/client": "https://esm.sh/preact@10/compat/client?standalone",
+        "react/jsx-runtime": "https://esm.sh/preact@10/jsx-runtime",
+        "framer-motion": "https://esm.sh/framer-motion?standalone&external=react,react-dom",
+        "@heroui/react": "https://esm.sh/@heroui/react?standalone&external=react,react-dom",
+        "@devs/components": "/extensions/components/index.js"
+      }
+    }
+  </script>
+  <script>
+    // Set context data for the DEVS bridge
+    window.__DEVS_CONTEXT__ = ${JSON.stringify(context || {})};
+  </script>
+  <script src="/extensions/extension-bridge.js"></script>
+  <style type="text/tailwindcss">
+    ${heroUIThemeCSS}
+  </style>
+  <style>
+    ${globals}
+  </style>
+</head>
+<body class="bg-background dark:bg-content1 text-foreground rtl:*">
+  <div id="root"></div>
+  <script type="text/babel" data-type="module">
+    import React from 'react-dom'
+    import { HeroUIProvider } from '@heroui/react'
+
+    ${pageCode}
+
+    React.render(
+      <HeroUIProvider>
+        <App />
+      </HeroUIProvider>,
+      document.getElementById('root')
+    )
+  </script>
+</body>
+</html>`
+}

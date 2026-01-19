@@ -219,20 +219,6 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     apiKeyPage: 'https://openrouter.ai/settings/keys',
   },
   {
-    provider: 'deepseek',
-    name: 'DeepSeek',
-    models: getModelsForProviderAsync('deepseek'),
-    icon: 'DeepSeek',
-    apiKeyPage: 'https://platform.deepseek.com/api_keys',
-  },
-  {
-    provider: 'grok',
-    name: 'Grok (X.AI)',
-    models: getModelsForProviderAsync('grok'),
-    icon: 'X',
-    apiKeyPage: 'https://console.x.ai',
-  },
-  {
     provider: 'huggingface',
     name: 'Hugging Face',
     models: getModelsForProviderAsync('huggingface'),

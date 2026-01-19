@@ -465,25 +465,6 @@
       "capabilities": { "tools": true }
     }
   ],
-  "deepseek": [
-    {
-      "id": "deepseek-chat",
-      "name": "DeepSeek Chat",
-      "capabilities": { "lowCost": true, "tools": true }
-    },
-    {
-      "id": "deepseek-coder",
-      "name": "DeepSeek Coder",
-      "capabilities": { "lowCost": true, "tools": true }
-    }
-  ],
-  "grok": [
-    {
-      "id": "grok-beta",
-      "name": "Grok Beta",
-      "capabilities": { "vision": true, "tools": true }
-    }
-  ],
   "huggingface": [
     {
       "id": "meta-llama/Llama-2-7b-chat-hf",

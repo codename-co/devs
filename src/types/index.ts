@@ -192,8 +192,6 @@ export type LLMProvider =
   | 'vertex-ai'
   | 'mistral'
   | 'openrouter'
-  | 'deepseek'
-  | 'grok'
   | 'huggingface'
   | 'openai-compatible'
   | 'custom'

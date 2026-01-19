@@ -33,6 +33,7 @@ import {
   MarketplacePage,
   DynamicAppRoute,
   NewExtensionPage,
+  ExtensionEditorPage,
 } from '@/features/marketplace/pages'
 
 /**
@@ -80,6 +81,7 @@ const routes = {
   'traces/logs': TracesPage,
   marketplace: MarketplacePage,
   'marketplace/new': NewExtensionPage,
+  'marketplace/edit/:extensionId': ExtensionEditorPage,
   'traces/sessions': TracesPage,
   'traces/logs/:traceId': TraceShowPage,
   live: LivePage,

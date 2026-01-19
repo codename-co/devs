@@ -7,12 +7,15 @@ import { userSettings } from '@/stores/userStore'
 interface YamlEditorProps {
   defaultLanguage?: string
   defaultValue?: string
+  /** Controlled value - use this instead of defaultValue for reactive updates */
+  value?: string
   onChange?: (value: string | undefined) => void
 }
 
 export const MonacoEditor = ({
   defaultLanguage,
   defaultValue,
+  value,
   onChange,
 }: YamlEditorProps) => {
   const { isDarkTheme } = userSettings()
@@ -53,6 +56,7 @@ export const MonacoEditor = ({
       className="w-full h-full min-h-100"
       defaultLanguage={defaultLanguage}
       defaultValue={defaultValue}
+      value={value}
       beforeMount={handleEditorWillMount}
       onChange={onChange}
       onMount={handleEditorDidMount}

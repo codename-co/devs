@@ -55,12 +55,6 @@ const FALLBACK_PRICING: Record<string, { input: number; output: number }> = {
   // Mistral
   'mistral-large': { input: 2, output: 6 },
   'mistral-small': { input: 0.2, output: 0.6 },
-  // DeepSeek
-  'deepseek-chat': { input: 0.27, output: 1.1 },
-  'deepseek-reasoner': { input: 0.55, output: 2.19 },
-  // Grok
-  'grok-3': { input: 3, output: 15 },
-  'grok-3-mini': { input: 0.3, output: 0.5 },
   // Default
   default: { input: 1, output: 3 },
 }
