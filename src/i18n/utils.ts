@@ -3,6 +3,7 @@ import { createElement, Fragment } from 'react'
 import { Link } from 'react-router-dom'
 
 import { defaultLang, Lang, locales } from './locales'
+export type { Lang } from './locales'
 import { userSettings } from '@/stores/userStore'
 
 /**
