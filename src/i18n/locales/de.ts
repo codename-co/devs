@@ -457,6 +457,23 @@ export const de: I18n = {
   'Memory rejected': 'Erinnerung abgelehnt',
   'Memory edited and approved': 'Erinnerung bearbeitet und genehmigt',
   'Memory deleted': 'Erinnerung gelöscht',
+  'Edited during review': 'Bei der Überprüfung bearbeitet',
+  'Failed to load agent memories': 'Fehler beim Laden der Agenten-Erinnerungen',
+  'Failed to load memories': 'Fehler beim Laden der Erinnerungen',
+  'Failed to create memory': 'Fehler beim Erstellen der Erinnerung',
+  'Failed to update memory': 'Fehler beim Aktualisieren der Erinnerung',
+  'Failed to delete memory': 'Fehler beim Löschen der Erinnerung',
+  'Failed to load learning events': 'Fehler beim Laden der Lernereignisse',
+  'Failed to update memory document':
+    'Fehler beim Aktualisieren des Erinnerungsdokuments',
+  '{count} memories approved': '{count} Erinnerungen genehmigt',
+  'Failed to bulk approve memories':
+    'Fehler bei der Massengenehmigung von Erinnerungen',
+  '{count} memories rejected': '{count} Erinnerungen abgelehnt',
+  'Failed to bulk reject memories':
+    'Fehler bei der Massenablehnung von Erinnerungen',
+  'Memory upgraded to global': 'Erinnerung auf global hochgestuft',
+  'Memory downgraded from global': 'Erinnerung von global herabgestuft',
   'Learn from conversation': 'Aus Unterhaltung lernen',
   'Learning...': 'Lernen...',
   'Memory learning failed': 'Gedächtnislernen fehlgeschlagen',
@@ -735,6 +752,7 @@ export const de: I18n = {
 
   // Citations
   Memory: 'Speicher',
-  'From remembered context about the user': 'Aus dem gespeicherten Kontext über den Benutzer',
+  'From remembered context about the user':
+    'Aus dem gespeicherten Kontext über den Benutzer',
   'From important past conversations': 'Aus wichtigen vergangenen Gesprächen',
 } as const

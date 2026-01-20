@@ -2,13 +2,8 @@ import { marked } from 'marked'
 import { createElement, Fragment } from 'react'
 import { Link } from 'react-router-dom'
 
-import { defaultLang, LanguageCode, languages, locales } from './locales'
-
-export type Lang = LanguageCode
-
-export const langs = Object.keys(languages).map(
-  (lang) => (lang === defaultLang ? '' : lang) as Lang,
-)
+import { defaultLang, Lang, locales } from './locales'
+import { userSettings } from '@/stores/userStore'
 
 /**
  * Parses markdown-style links [text](url) and converts them to React Router Link components
@@ -154,4 +149,18 @@ export const textDirection = (lang: Lang) => {
     default:
       return 'ltr'
   }
+}
+
+/**
+ * Get a translation function for use outside of React components.
+ * Uses the current language from userStore.
+ *
+ * @example
+ * import { getT } from '@/i18n'
+ * const t = getT()
+ * successToast(t('Memory rejected'))
+ */
+export const getT = (): ReturnType<typeof useTranslations> => {
+  const lang = userSettings.getState().language as Lang
+  return useTranslations(lang)
 }

@@ -50,7 +50,7 @@ interface SynthesisResult {
 // Prompts
 // ============================================================================
 
-const EXTRACTION_SYSTEM_PROMPT = `You are a memory extraction specialist. Your task is to analyze conversations and extract learnable information that would be valuable for an AI agent to remember about the user or domain.
+const EXTRACTION_SYSTEM_PROMPT = /* md */ `You are a memory extraction specialist. Your task is to analyze conversations and extract learnable information that would be valuable for an AI agent to remember about the user or domain.
 
 ## Categories of Learnings:
 - **fact**: Factual information about the user, their work, preferences, or domain
@@ -67,14 +67,25 @@ const EXTRACTION_SYSTEM_PROMPT = `You are a memory extraction specialist. Your t
 - **low**: Tentatively inferred, might need validation
 
 ## Guidelines:
-1. Only extract information that would be genuinely useful for future conversations
-2. Avoid extracting trivial or one-time information
+1. Extract information that would help personalize FUTURE interactions
+2. Focus on information with lasting value about the user, not conversation-specific details
 3. Be specific and actionable in the content
 4. Extract keywords that would help retrieve this memory later
 5. Assign confidence based on how clearly the information was communicated
-6. **IMPORTANT**: Only extract NEW information explicitly shared by the user in their messages
-7. **DO NOT** extract information that the assistant already knew or mentioned first
-8. **DO NOT** extract information from any "Remembered Context" or memory sections - these are already stored
+6. **DO NOT** extract information from any "Remembered Context" or memory sections - these are already stored
+
+## What TO extract:
+- User's name, job title, company, or location (if they share it about themselves)
+- Technologies, tools, or frameworks the user works with regularly
+- User's preferences about communication style or how they want help
+- Ongoing projects or goals the user is working toward
+- Key relationships (their team, clients, collaborators) with context about the relationship
+
+## What NOT to extract:
+- Names or entities merely mentioned in the conversation without context about their relationship to the user
+- Temporary or one-off requests (e.g., "translate this text")
+- Information the assistant provided (only extract what the USER shared)
+- Generic facts that don't tell us anything specific about this user
 
 Respond in JSON format:
 \`\`\`json
@@ -99,9 +110,10 @@ If no learnable information is found, return:
   "learnings": [],
   "summary": "No significant learnable information in this conversation"
 }
-\`\`\``
+\`\`\`
+`
 
-const SYNTHESIS_SYSTEM_PROMPT = `You are a memory synthesis specialist. Your task is to create a comprehensive summary document of an agent's learned memories about a user.
+const SYNTHESIS_SYSTEM_PROMPT = /* md */ `You are a memory synthesis specialist. Your task is to create a comprehensive summary document of an agent's learned memories about a user.
 
 This document serves as the agent's "working memory" - a persistent reference that helps the agent maintain continuity across conversations.
 
@@ -131,7 +143,8 @@ This document serves as the agent's "working memory" - a persistent reference th
 - Any information with lower confidence that may need validation
 
 Write in clear, concise language. Use bullet points for readability.
-Focus on actionable information that would help improve future interactions.`
+Focus on actionable information that would help improve future interactions.
+`
 
 // ============================================================================
 // Memory Learning Service

@@ -1,10 +1,23 @@
-import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
+import {
+  LLMProviderInterface,
+  LLMMessage,
+  LLMResponseWithTools,
+} from '../index'
 import { LLMConfig } from '@/types'
 import {
   processAttachments,
   formatTextAttachmentContent,
   getUnsupportedDocumentMessage,
 } from '../attachment-processor'
+import { LLMConfigWithTools } from '../types'
+import {
+  addToolsToRequestBody,
+  parseToolCallsFromResponse,
+  processStreamingToolCallDelta,
+  finalizeAccumulatedToolCalls,
+  formatToolCallsForStream,
+  ToolCallAccumulator,
+} from './openai-tools-support'
 
 /**
  * OpenAI-Compatible Provider
@@ -120,8 +133,8 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
 
   async chat(
     messages: LLMMessage[],
-    config?: Partial<LLMConfig>,
-  ): Promise<LLMResponse> {
+    config?: Partial<LLMConfig> & LLMConfigWithTools,
+  ): Promise<LLMResponseWithTools> {
     if (!config?.baseUrl) {
       throw new Error('OpenAI-compatible provider requires a base URL')
     }
@@ -133,6 +146,7 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
       model: config?.model || OpenAICompatibleProvider.DEFAULT_MODEL,
       messagesCount: messages.length,
       temperature: config?.temperature || 0.7,
+      hasTools: !!config?.tools?.length,
     })
 
     const headers: Record<string, string> = {
@@ -144,17 +158,23 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
       headers['Authorization'] = `Bearer ${config.apiKey}`
     }
 
+    // Build request body
+    const requestBody: Record<string, unknown> = {
+      model: config?.model || OpenAICompatibleProvider.DEFAULT_MODEL,
+      messages: await Promise.all(
+        messages.map((msg) => this.convertMessageToOpenAIFormat(msg)),
+      ),
+      temperature: config?.temperature || 0.7,
+      max_tokens: config?.maxTokens,
+    }
+
+    // Add tools if provided
+    addToolsToRequestBody(requestBody, config)
+
     const response = await fetch(endpoint, {
       method: 'POST',
       headers,
-      body: JSON.stringify({
-        model: config?.model || OpenAICompatibleProvider.DEFAULT_MODEL,
-        messages: await Promise.all(
-          messages.map((msg) => this.convertMessageToOpenAIFormat(msg)),
-        ),
-        temperature: config?.temperature || 0.7,
-        max_tokens: config?.maxTokens,
-      }),
+      body: JSON.stringify(requestBody),
     })
 
     console.log('[OPENAI-COMPATIBLE-PROVIDER] 📡 Response received:', {
@@ -170,9 +190,12 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
     }
 
     const data = await response.json()
+    const message = data.choices[0].message
 
     return {
-      content: data.choices[0].message.content,
+      content: message.content || '',
+      tool_calls: parseToolCallsFromResponse(message),
+      finish_reason: data.choices[0].finish_reason,
       usage: data.usage
         ? {
             promptTokens: data.usage.prompt_tokens,
@@ -185,7 +208,7 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
 
   async *streamChat(
     messages: LLMMessage[],
-    config?: Partial<LLMConfig>,
+    config?: Partial<LLMConfig> & LLMConfigWithTools,
   ): AsyncIterableIterator<string> {
     if (!config?.baseUrl) {
       throw new Error('OpenAI-compatible provider requires a base URL')
@@ -201,18 +224,24 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
       headers['Authorization'] = `Bearer ${config.apiKey}`
     }
 
+    // Build request body
+    const requestBody: Record<string, unknown> = {
+      model: config?.model || OpenAICompatibleProvider.DEFAULT_MODEL,
+      messages: await Promise.all(
+        messages.map((msg) => this.convertMessageToOpenAIFormat(msg)),
+      ),
+      temperature: config?.temperature || 0.7,
+      max_tokens: config?.maxTokens,
+      stream: true,
+    }
+
+    // Add tools if provided
+    addToolsToRequestBody(requestBody, config)
+
     const response = await fetch(`${baseUrl}/chat/completions`, {
       method: 'POST',
       headers,
-      body: JSON.stringify({
-        model: config?.model || OpenAICompatibleProvider.DEFAULT_MODEL,
-        messages: await Promise.all(
-          messages.map((msg) => this.convertMessageToOpenAIFormat(msg)),
-        ),
-        temperature: config?.temperature || 0.7,
-        max_tokens: config?.maxTokens,
-        stream: true,
-      }),
+      body: JSON.stringify(requestBody),
     })
 
     if (!response.ok) {
@@ -228,6 +257,9 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
     const decoder = new TextDecoder()
     let buffer = ''
 
+    // Accumulate tool calls from streaming deltas
+    const toolCallAccumulators: Map<number, ToolCallAccumulator> = new Map()
+
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
@@ -239,12 +271,30 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
       for (const line of lines) {
         if (line.trim().startsWith('data: ')) {
           const data = line.slice(6).trim()
-          if (data === '[DONE]') return
+          if (data === '[DONE]') {
+            // If we accumulated tool calls, yield them as a special marker
+            if (toolCallAccumulators.size > 0) {
+              const toolCalls =
+                finalizeAccumulatedToolCalls(toolCallAccumulators)
+              yield formatToolCallsForStream(toolCalls)
+            }
+            return
+          }
 
           try {
             const parsed = JSON.parse(data)
-            const content = parsed.choices[0]?.delta?.content
-            if (content) yield content
+            const delta = parsed.choices[0]?.delta
+
+            // Handle content delta
+            if (delta?.content) yield delta.content
+
+            // Handle tool call deltas
+            if (delta?.tool_calls) {
+              processStreamingToolCallDelta(
+                toolCallAccumulators,
+                delta.tool_calls,
+              )
+            }
           } catch (e) {
             // Skip invalid JSON
           }

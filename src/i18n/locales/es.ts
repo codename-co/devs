@@ -454,6 +454,23 @@ export const es: I18n = {
   'Memory rejected': 'Memoria rechazada',
   'Memory edited and approved': 'Memoria editada y aprobada',
   'Memory deleted': 'Memoria eliminada',
+  'Edited during review': 'Editado durante la revisión',
+  'Failed to load agent memories': 'Error al cargar las memorias del agente',
+  'Failed to load memories': 'Error al cargar las memorias',
+  'Failed to create memory': 'Error al crear la memoria',
+  'Failed to update memory': 'Error al actualizar la memoria',
+  'Failed to delete memory': 'Error al eliminar la memoria',
+  'Failed to load learning events':
+    'Error al cargar los eventos de aprendizaje',
+  'Failed to update memory document':
+    'Error al actualizar el documento de memorias',
+  '{count} memories approved': '{count} memorias aprobadas',
+  'Failed to bulk approve memories':
+    'Error en la aprobación masiva de memorias',
+  '{count} memories rejected': '{count} memorias rechazadas',
+  'Failed to bulk reject memories': 'Error en el rechazo masivo de memorias',
+  'Memory upgraded to global': 'Memoria ascendida a global',
+  'Memory downgraded from global': 'Memoria degradada de global',
   'Learn from conversation': 'Aprender de la conversación',
   'Learning...': 'Aprendiendo...',
   'Memory learning failed': 'Error en el aprendizaje de memoria',

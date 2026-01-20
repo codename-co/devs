@@ -1,4 +1,8 @@
-import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
+import {
+  LLMProviderInterface,
+  LLMMessage,
+  LLMResponseWithTools,
+} from '../index'
 import { LLMConfig } from '@/types'
 import {
   processAttachments,
@@ -6,9 +10,45 @@ import {
   getUnsupportedDocumentMessage,
 } from '../attachment-processor'
 import { isPdf } from '../../document-converter'
+import { ToolCall, ToolDefinition, LLMConfigWithTools } from '../types'
 
 export class VertexAIProvider implements LLMProviderInterface {
   public static readonly DEFAULT_MODEL = 'gemini-2.5-flash'
+
+  /**
+   * Convert OpenAI tool format to Gemini/Vertex AI tool format
+   */
+  private convertToolsToGeminiFormat(tools: ToolDefinition[]): any[] {
+    return [
+      {
+        functionDeclarations: tools.map((tool) => ({
+          name: tool.function.name,
+          description: tool.function.description,
+          parameters: tool.function.parameters,
+        })),
+      },
+    ]
+  }
+
+  /**
+   * Convert Gemini function call response to OpenAI tool_calls format
+   */
+  private convertFunctionCallsToToolCalls(parts: any[]): ToolCall[] {
+    const toolCalls: ToolCall[] = []
+    for (const part of parts) {
+      if (part.functionCall) {
+        toolCalls.push({
+          id: `call_${toolCalls.length}`,
+          type: 'function',
+          function: {
+            name: part.functionCall.name,
+            arguments: JSON.stringify(part.functionCall.args || {}),
+          },
+        })
+      }
+    }
+    return toolCalls
+  }
 
   private getEndpoint(config?: Partial<LLMConfig>): string {
     // Vertex AI requires location and project ID in the URL
@@ -93,8 +133,8 @@ export class VertexAIProvider implements LLMProviderInterface {
 
   async chat(
     messages: LLMMessage[],
-    config?: Partial<LLMConfig>,
-  ): Promise<LLMResponse> {
+    config?: Partial<LLMConfig> & LLMConfigWithTools,
+  ): Promise<LLMResponseWithTools> {
     const endpoint = this.getEndpoint(config)
     const apiKey = this.getApiKey(config)
     const model = config?.model || VertexAIProvider.DEFAULT_MODEL
@@ -104,6 +144,39 @@ export class VertexAIProvider implements LLMProviderInterface {
       messages.map((msg) => this.convertMessageToVertexFormat(msg)),
     )
 
+    // Build request body
+    const requestBody: Record<string, unknown> = {
+      contents,
+      generationConfig: {
+        temperature: config?.temperature || 0.7,
+        maxOutputTokens: config?.maxTokens,
+        candidateCount: 1,
+      },
+      safetySettings: [
+        {
+          category: 'HARM_CATEGORY_HATE_SPEECH',
+          threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+        },
+        {
+          category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+          threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+        },
+        {
+          category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+          threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+        },
+        {
+          category: 'HARM_CATEGORY_HARASSMENT',
+          threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+        },
+      ],
+    }
+
+    // Add tools if provided (convert to Gemini format)
+    if (config?.tools && config.tools.length > 0) {
+      requestBody.tools = this.convertToolsToGeminiFormat(config.tools)
+    }
+
     const response = await fetch(
       `${endpoint}/publishers/google/models/${model}:generateContent`,
       {
@@ -112,32 +185,7 @@ export class VertexAIProvider implements LLMProviderInterface {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${apiKey}`,
         },
-        body: JSON.stringify({
-          contents,
-          generationConfig: {
-            temperature: config?.temperature || 0.7,
-            maxOutputTokens: config?.maxTokens,
-            candidateCount: 1,
-          },
-          safetySettings: [
-            {
-              category: 'HARM_CATEGORY_HATE_SPEECH',
-              threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-            },
-            {
-              category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-              threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-            },
-            {
-              category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-              threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-            },
-            {
-              category: 'HARM_CATEGORY_HARASSMENT',
-              threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-            },
-          ],
-        }),
+        body: JSON.stringify(requestBody),
       },
     )
 
@@ -152,8 +200,31 @@ export class VertexAIProvider implements LLMProviderInterface {
       throw new Error('No response generated from Vertex AI')
     }
 
+    const candidate = data.candidates[0]
+    const parts = candidate.content?.parts || []
+
+    // Extract text content
+    let content = ''
+    for (const part of parts) {
+      if (part.text) {
+        content += part.text
+      }
+    }
+
+    // Extract function calls as tool_calls
+    const toolCalls = this.convertFunctionCallsToToolCalls(parts)
+
     return {
-      content: data.candidates[0].content.parts[0].text,
+      content,
+      tool_calls: toolCalls.length > 0 ? toolCalls : undefined,
+      finish_reason:
+        candidate.finishReason === 'STOP'
+          ? 'stop'
+          : candidate.finishReason === 'MAX_TOKENS'
+            ? 'length'
+            : toolCalls.length > 0
+              ? 'tool_calls'
+              : 'stop',
       usage: data.usageMetadata
         ? {
             promptTokens: data.usageMetadata.promptTokenCount,
@@ -166,7 +237,7 @@ export class VertexAIProvider implements LLMProviderInterface {
 
   async *streamChat(
     messages: LLMMessage[],
-    config?: Partial<LLMConfig>,
+    config?: Partial<LLMConfig> & LLMConfigWithTools,
   ): AsyncIterableIterator<string> {
     const endpoint = this.getEndpoint(config)
     const apiKey = this.getApiKey(config)
@@ -177,6 +248,21 @@ export class VertexAIProvider implements LLMProviderInterface {
       messages.map((msg) => this.convertMessageToVertexFormat(msg)),
     )
 
+    // Build request body
+    const requestBody: Record<string, unknown> = {
+      contents,
+      generationConfig: {
+        temperature: config?.temperature || 0.7,
+        maxOutputTokens: config?.maxTokens,
+        candidateCount: 1,
+      },
+    }
+
+    // Add tools if provided (convert to Gemini format)
+    if (config?.tools && config.tools.length > 0) {
+      requestBody.tools = this.convertToolsToGeminiFormat(config.tools)
+    }
+
     const response = await fetch(
       `${endpoint}/publishers/google/models/${model}:streamGenerateContent?alt=sse`,
       {
@@ -185,14 +271,7 @@ export class VertexAIProvider implements LLMProviderInterface {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${apiKey}`,
         },
-        body: JSON.stringify({
-          contents,
-          generationConfig: {
-            temperature: config?.temperature || 0.7,
-            maxOutputTokens: config?.maxTokens,
-            candidateCount: 1,
-          },
-        }),
+        body: JSON.stringify(requestBody),
       },
     )
 
@@ -206,6 +285,9 @@ export class VertexAIProvider implements LLMProviderInterface {
 
     const decoder = new TextDecoder()
     let buffer = ''
+
+    // Accumulate function calls
+    const accumulatedToolCalls: ToolCall[] = []
 
     while (true) {
       const { done, value } = await reader.read()
@@ -221,17 +303,36 @@ export class VertexAIProvider implements LLMProviderInterface {
 
           try {
             const parsed = JSON.parse(data)
-            if (
-              parsed.candidates &&
-              parsed.candidates[0]?.content?.parts[0]?.text
-            ) {
-              yield parsed.candidates[0].content.parts[0].text
+            const parts = parsed.candidates?.[0]?.content?.parts || []
+
+            for (const part of parts) {
+              // Handle text content
+              if (part.text) {
+                yield part.text
+              }
+
+              // Handle function calls
+              if (part.functionCall) {
+                accumulatedToolCalls.push({
+                  id: `call_${accumulatedToolCalls.length}`,
+                  type: 'function',
+                  function: {
+                    name: part.functionCall.name,
+                    arguments: JSON.stringify(part.functionCall.args || {}),
+                  },
+                })
+              }
             }
           } catch (e) {
             // Skip invalid JSON
           }
         }
       }
+    }
+
+    // Yield accumulated tool calls at the end
+    if (accumulatedToolCalls.length > 0) {
+      yield `\n__TOOL_CALLS__${JSON.stringify(accumulatedToolCalls)}`
     }
   }
 

@@ -464,6 +464,24 @@ export const fr: I18n = {
   'Memory rejected': 'Souvenir rejeté',
   'Memory edited and approved': 'Souvenir modifié et approuvé',
   'Memory deleted': 'Souvenir supprimé',
+  'Edited during review': 'Modifié pendant la révision',
+  'Failed to load agent memories':
+    "Échec du chargement des souvenirs de l'agent",
+  'Failed to load memories': 'Échec du chargement des souvenirs',
+  'Failed to create memory': 'Échec de la création du souvenir',
+  'Failed to update memory': 'Échec de la mise à jour du souvenir',
+  'Failed to delete memory': 'Échec de la suppression du souvenir',
+  'Failed to load learning events':
+    "Échec du chargement des événements d'apprentissage",
+  'Failed to update memory document':
+    'Échec de la mise à jour du document de souvenirs',
+  '{count} memories approved': '{count} souvenirs approuvés',
+  'Failed to bulk approve memories':
+    "Échec de l'approbation en masse des souvenirs",
+  '{count} memories rejected': '{count} souvenirs rejetés',
+  'Failed to bulk reject memories': 'Échec du rejet en masse des souvenirs',
+  'Memory upgraded to global': 'Souvenir promu en global',
+  'Memory downgraded from global': 'Souvenir rétrogradé du global',
   'Learn from conversation': 'Apprendre de la conversation',
   'Learning...': 'Apprentissage...',
   'Memory learning failed': 'Échec de l’apprentissage',

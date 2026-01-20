@@ -1,10 +1,23 @@
-import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
+import {
+  LLMProviderInterface,
+  LLMMessage,
+  LLMResponseWithTools,
+} from '../index'
 import { LLMConfig } from '@/types'
 import {
   processAttachments,
   formatTextAttachmentContent,
   getUnsupportedDocumentMessage,
 } from '../attachment-processor'
+import { LLMConfigWithTools } from '../types'
+import {
+  addToolsToRequestBody,
+  parseToolCallsFromResponse,
+  processStreamingToolCallDelta,
+  finalizeAccumulatedToolCalls,
+  formatToolCallsForStream,
+  ToolCallAccumulator,
+} from './openai-tools-support'
 
 /**
  * Google Gemini Provider
@@ -118,14 +131,15 @@ export class GoogleProvider implements LLMProviderInterface {
 
   async chat(
     messages: LLMMessage[],
-    config?: Partial<LLMConfig>,
-  ): Promise<LLMResponse> {
+    config?: Partial<LLMConfig> & LLMConfigWithTools,
+  ): Promise<LLMResponseWithTools> {
     const endpoint = `${config?.baseUrl || this.baseUrl}/chat/completions`
     console.log('[GOOGLE-PROVIDER] 🚀 Making LLM request:', {
       endpoint,
       model: config?.model || GoogleProvider.DEFAULT_MODEL,
       messagesCount: messages.length,
       temperature: config?.temperature || 0.7,
+      hasTools: !!config?.tools?.length,
     })
 
     // Convert messages (may involve async document conversion)
@@ -133,18 +147,24 @@ export class GoogleProvider implements LLMProviderInterface {
       messages.map((msg) => this.convertMessageToGoogleFormat(msg)),
     )
 
+    // Build request body
+    const requestBody: Record<string, unknown> = {
+      model: config?.model || GoogleProvider.DEFAULT_MODEL,
+      messages: convertedMessages,
+      temperature: config?.temperature || 0.7,
+      max_tokens: config?.maxTokens,
+    }
+
+    // Add tools if provided
+    addToolsToRequestBody(requestBody, config)
+
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${config?.apiKey}`,
       },
-      body: JSON.stringify({
-        model: config?.model || GoogleProvider.DEFAULT_MODEL,
-        messages: convertedMessages,
-        temperature: config?.temperature || 0.7,
-        max_tokens: config?.maxTokens,
-      }),
+      body: JSON.stringify(requestBody),
     })
 
     console.log('[GOOGLE-PROVIDER] 📡 Response received:', {
@@ -158,9 +178,12 @@ export class GoogleProvider implements LLMProviderInterface {
     }
 
     const data = await response.json()
+    const message = data.choices[0].message
 
     return {
-      content: data.choices[0].message.content,
+      content: message.content || '',
+      tool_calls: parseToolCallsFromResponse(message),
+      finish_reason: data.choices[0].finish_reason,
       usage: data.usage
         ? {
             promptTokens: data.usage.prompt_tokens,
@@ -173,12 +196,24 @@ export class GoogleProvider implements LLMProviderInterface {
 
   async *streamChat(
     messages: LLMMessage[],
-    config?: Partial<LLMConfig>,
+    config?: Partial<LLMConfig> & LLMConfigWithTools,
   ): AsyncIterableIterator<string> {
     // Convert messages (may involve async document conversion)
     const convertedMessages = await Promise.all(
       messages.map((msg) => this.convertMessageToGoogleFormat(msg)),
     )
+
+    // Build request body
+    const requestBody: Record<string, unknown> = {
+      model: config?.model || GoogleProvider.DEFAULT_MODEL,
+      messages: convertedMessages,
+      temperature: config?.temperature || 0.7,
+      max_tokens: config?.maxTokens,
+      stream: true,
+    }
+
+    // Add tools if provided
+    addToolsToRequestBody(requestBody, config)
 
     const response = await fetch(
       `${config?.baseUrl || this.baseUrl}/chat/completions`,
@@ -188,13 +223,7 @@ export class GoogleProvider implements LLMProviderInterface {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${config?.apiKey}`,
         },
-        body: JSON.stringify({
-          model: config?.model || GoogleProvider.DEFAULT_MODEL,
-          messages: convertedMessages,
-          temperature: config?.temperature || 0.7,
-          max_tokens: config?.maxTokens,
-          stream: true,
-        }),
+        body: JSON.stringify(requestBody),
       },
     )
 
@@ -209,6 +238,9 @@ export class GoogleProvider implements LLMProviderInterface {
     const decoder = new TextDecoder()
     let buffer = ''
 
+    // Accumulate tool calls from streaming deltas
+    const toolCallAccumulators: Map<number, ToolCallAccumulator> = new Map()
+
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
@@ -220,12 +252,30 @@ export class GoogleProvider implements LLMProviderInterface {
       for (const line of lines) {
         if (line.trim().startsWith('data: ')) {
           const data = line.slice(6).trim()
-          if (data === '[DONE]') return
+          if (data === '[DONE]') {
+            // If we accumulated tool calls, yield them as a special marker
+            if (toolCallAccumulators.size > 0) {
+              const toolCalls =
+                finalizeAccumulatedToolCalls(toolCallAccumulators)
+              yield formatToolCallsForStream(toolCalls)
+            }
+            return
+          }
 
           try {
             const parsed = JSON.parse(data)
-            const content = parsed.choices[0]?.delta?.content
-            if (content) yield content
+            const delta = parsed.choices[0]?.delta
+
+            // Handle content delta
+            if (delta?.content) yield delta.content
+
+            // Handle tool call deltas
+            if (delta?.tool_calls) {
+              processStreamingToolCallDelta(
+                toolCallAccumulators,
+                delta.tool_calls,
+              )
+            }
           } catch {
             // Skip invalid JSON
           }

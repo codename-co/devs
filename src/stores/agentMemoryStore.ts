@@ -14,6 +14,9 @@ import type {
   MemoryValidationStatus,
 } from '@/types'
 import { errorToast, successToast } from '@/lib/toast'
+import { getT } from '@/i18n/utils'
+
+const t = getT()
 
 interface AgentMemoryStore {
   // State
@@ -136,7 +139,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
 
       set({ memories: validMemories, isLoading: false })
     } catch (error) {
-      errorToast('Failed to load agent memories', error)
+      errorToast(t('Failed to load agent memories'), error)
       set({ isLoading: false })
     }
   },
@@ -158,7 +161,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
 
       set({ memories: validMemories, isLoading: false })
     } catch (error) {
-      errorToast('Failed to load memories', error)
+      errorToast(t('Failed to load memories'), error)
       set({ isLoading: false })
     }
   },
@@ -187,7 +190,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
 
       return memory
     } catch (error) {
-      errorToast('Failed to create memory', error)
+      errorToast(t('Failed to create memory'), error)
       set({ isLoading: false })
       throw error
     }
@@ -222,7 +225,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
       )
       set({ memories: updatedMemories, isLoading: false })
     } catch (error) {
-      errorToast('Failed to update memory', error)
+      errorToast(t('Failed to update memory'), error)
       set({ isLoading: false })
       throw error
     }
@@ -242,9 +245,9 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
       const updatedMemories = memories.filter((m) => m.id !== id)
       set({ memories: updatedMemories, isLoading: false })
 
-      successToast('Memory deleted')
+      successToast(t('Memory deleted'))
     } catch (error) {
-      errorToast('Failed to delete memory', error)
+      errorToast(t('Failed to delete memory'), error)
       set({ isLoading: false })
     }
   },
@@ -265,7 +268,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
 
       set({ learningEvents: agentEvents, isLoading: false })
     } catch (error) {
-      errorToast('Failed to load learning events', error)
+      errorToast(t('Failed to load learning events'), error)
       set({ isLoading: false })
     }
   },
@@ -423,7 +426,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
         return newDoc
       }
     } catch (error) {
-      errorToast('Failed to update memory document', error)
+      errorToast(t('Failed to update memory document'), error)
       throw error
     }
   },
@@ -455,7 +458,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
       reviewedBy: 'human',
       reviewNotes,
     })
-    successToast('Memory approved')
+    successToast(t('Memory approved'))
   },
 
   rejectMemory: async (id: string, reviewNotes?: string) => {
@@ -465,7 +468,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
       reviewedBy: 'human',
       reviewNotes,
     })
-    successToast('Memory rejected')
+    successToast(t('Memory rejected'))
   },
 
   editAndApproveMemory: async (
@@ -478,9 +481,9 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
       validationStatus: 'approved',
       reviewedAt: new Date(),
       reviewedBy: 'human',
-      reviewNotes: reviewNotes || 'Edited during review',
+      reviewNotes: reviewNotes || t('Edited during review'),
     })
-    successToast('Memory edited and approved')
+    successToast(t('Memory edited and approved'))
   },
 
   // =========================================================================
@@ -693,9 +696,9 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
       for (const id of ids) {
         await get().approveMemory(id)
       }
-      successToast(`${ids.length} memories approved`)
+      successToast(t(`{count} memories approved`, { count: ids.length }))
     } catch (error) {
-      errorToast('Failed to bulk approve memories', error)
+      errorToast(t('Failed to bulk approve memories'), error)
     } finally {
       set({ isLoading: false })
     }
@@ -707,9 +710,9 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
       for (const id of ids) {
         await get().rejectMemory(id)
       }
-      successToast(`${ids.length} memories rejected`)
+      successToast(t(`{count} memories rejected`, { count: ids.length }))
     } catch (error) {
-      errorToast('Failed to bulk reject memories', error)
+      errorToast(t('Failed to bulk reject memories'), error)
     } finally {
       set({ isLoading: false })
     }
@@ -753,12 +756,12 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
 
   upgradeToGlobal: async (id: string) => {
     await get().updateMemory(id, { isGlobal: true })
-    successToast('Memory upgraded to global')
+    successToast(t('Memory upgraded to global'))
   },
 
   downgradeFromGlobal: async (id: string) => {
     await get().updateMemory(id, { isGlobal: false })
-    successToast('Memory downgraded from global')
+    successToast(t('Memory downgraded from global'))
   },
 
   getGlobalMemoriesAsync: async (

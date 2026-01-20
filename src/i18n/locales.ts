@@ -11,6 +11,8 @@ enum LanguageCodeEnum {
 }
 export type LanguageCode = `${LanguageCodeEnum}`
 
+export type Lang = LanguageCode
+
 export const languages: Record<LanguageCode, string> = {
   en: 'English',
   ar: 'العربية',
@@ -19,6 +21,11 @@ export const languages: Record<LanguageCode, string> = {
   fr: 'Français',
   ko: '한국어',
 } as const
+
+export const langs = Object.keys(languages).map(
+  (lang) => (lang === 'en' ? '' : lang) as Lang,
+)
+
 export const en = localesIndex.en
 
 export const defaultLang: LanguageCode = 'en'
