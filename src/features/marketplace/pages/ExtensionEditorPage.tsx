@@ -413,6 +413,8 @@ export function ExtensionEditorPage() {
 
   // Track if extension has been loaded to prevent re-loading on URL param changes
   const hasLoadedRef = useRef(false)
+  // Track if we're currently creating a new extension (guards against StrictMode double-run)
+  const isCreatingRef = useRef(false)
 
   // Modal state for new page
   const {
@@ -470,6 +472,12 @@ export function ExtensionEditorPage() {
       try {
         // Handle manual creation: create a blank extension from scratch
         if (extensionId === 'new') {
+          // Guard against StrictMode double-run or multiple navigations
+          if (isCreatingRef.current) {
+            return
+          }
+          isCreatingRef.current = true
+
           const newId = `custom-extension-${Date.now().toString(36)}`
           const blankExtension: CustomExtension = {
             id: newId,
@@ -525,6 +533,12 @@ const App = () => {
 
         // Handle duplication: load extension, create a copy, and navigate to the new one
         if (isDuplicate) {
+          // Guard against StrictMode double-run or multiple navigations
+          if (isCreatingRef.current) {
+            return
+          }
+          isCreatingRef.current = true
+
           // Remove the duplicate query param immediately to prevent re-triggering
           navigate(`/marketplace/edit/${extensionId}`, { replace: true })
 

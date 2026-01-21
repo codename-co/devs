@@ -762,6 +762,113 @@ class FolderSyncService {
   }
 
   /**
+   * Delete a studio entry and all its associated files (metadata + images/videos)
+   */
+  async deleteStudioEntryFiles(entryId: string): Promise<void> {
+    if (!this.config?.isActive || !this.config.syncStudio) return
+
+    try {
+      // Get the studio directory
+      const studioDir = await this.config.directoryHandle.getDirectoryHandle(
+        'studio',
+        { create: false },
+      )
+
+      // Studio entries are stored in their own folder: studio/{entryId}/
+      // Try to delete the entire entry folder
+      try {
+        await studioDir.removeEntry(entryId, { recursive: true })
+
+        // Clear all file hashes related to this entry
+        const prefix = `studio/${entryId}/`
+        for (const key of this.fileHashes.keys()) {
+          if (key.startsWith(prefix)) {
+            this.fileHashes.delete(key)
+          }
+        }
+
+        this.emitEvent({
+          type: 'file_deleted',
+          entityType: 'studio',
+          entityId: entryId,
+          filename: entryId,
+        })
+
+        console.info(`[LocalBackup] Deleted studio entry folder: ${entryId}`)
+      } catch (error) {
+        // Folder might not exist, which is fine
+        if ((error as DOMException).name !== 'NotFoundError') {
+          console.error(
+            `[LocalBackup] Failed to delete studio entry folder:`,
+            error,
+          )
+        }
+      }
+    } catch (error) {
+      // Studio directory might not exist, which is fine
+      if ((error as DOMException).name !== 'NotFoundError') {
+        console.error(`[LocalBackup] Failed to access studio directory:`, error)
+      }
+    }
+  }
+
+  /**
+   * Delete a specific image file from a studio entry
+   */
+  async deleteStudioImageFile(entryId: string, imageId: string): Promise<void> {
+    if (!this.config?.isActive || !this.config.syncStudio) return
+
+    try {
+      // Get the studio directory
+      const studioDir = await this.config.directoryHandle.getDirectoryHandle(
+        'studio',
+        { create: false },
+      )
+
+      // Get the entry folder
+      const entryDir = await studioDir.getDirectoryHandle(entryId, {
+        create: false,
+      })
+
+      // List files and find matching image file(s)
+      // Image files are named: {entryId}-{imageIndex}.{format}
+      // Since we don't know the exact format or index, we'll search for files containing the imageId
+      for await (const handle of entryDir.values()) {
+        if (handle.kind === 'file' && handle.name.includes(imageId)) {
+          try {
+            await entryDir.removeEntry(handle.name)
+            const filePath = `studio/${entryId}/${handle.name}`
+            this.fileHashes.delete(filePath)
+            console.info(
+              `[LocalBackup] Deleted studio image file: ${handle.name}`,
+            )
+          } catch (error) {
+            console.error(
+              `[LocalBackup] Failed to delete studio image file:`,
+              error,
+            )
+          }
+        }
+      }
+
+      this.emitEvent({
+        type: 'file_deleted',
+        entityType: 'studio',
+        entityId: entryId,
+        filename: imageId,
+      })
+    } catch (error) {
+      // Directory might not exist, which is fine
+      if ((error as DOMException).name !== 'NotFoundError') {
+        console.error(
+          `[LocalBackup] Failed to delete studio image file:`,
+          error,
+        )
+      }
+    }
+  }
+
+  /**
    * Convert base64 string to ArrayBuffer
    */
   private base64ToArrayBuffer(base64: string): ArrayBuffer {
