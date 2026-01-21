@@ -8,12 +8,36 @@ import { ModelInfo } from '@/features/traces/types'
 import { WorkflowOrchestrator } from '@/lib/orchestrator'
 import { Agent, Message } from '@/types'
 import { errorToast } from '@/lib/toast'
+import type { IconName } from '@/lib/types'
+
+// ============================================================================
+// Response Update Types
+// ============================================================================
+
+/** A structured status update with icon and i18n key */
+export interface ResponseStatus {
+  /** Icon name from iconoir-react */
+  icon: IconName
+  /** i18n translation key */
+  i18nKey: string
+  /** Optional variables for i18n interpolation */
+  vars?: Record<string, string | number>
+}
+
+/** Response update can be either plain content or a status update */
+export type ResponseUpdate =
+  | { type: 'content'; content: string }
+  | { type: 'status'; status: ResponseStatus }
 import {
   getKnowledgeAttachments,
   buildAgentInstructions,
   CITATION_INSTRUCTIONS,
 } from '@/lib/agent-knowledge'
-import { buildMemoryContextForChat } from '@/lib/memory-learning-service'
+import {
+  buildMemoryContextForChat,
+  learnFromMessage,
+} from '@/lib/memory-learning-service'
+import { userSettings } from '@/stores/userStore'
 import { Lang, languages } from '@/i18n'
 import {
   defaultExecutor,
@@ -76,21 +100,18 @@ const TOOL_STATUS_I18N_KEYS: Record<string, string> = {
 }
 
 /**
- * Get a user-friendly status message for tool calls being executed.
- * Shows specific tool names when possible, falls back to generic message.
+ * Get i18n key for tool status message.
+ * Returns specific tool i18n key when a single tool type is used,
+ * or generic 'Using tools…' for multiple different tools.
  * @param toolCalls - The tool calls being executed
- * @param t - Translation function from i18n
  */
-function getToolStatusMessage(
-  toolCalls: ToolCall[],
-  t: (key: string) => string,
-): string {
+function getToolStatusI18nKey(toolCalls: ToolCall[]): string {
   if (toolCalls.length === 1) {
     const toolName = toolCalls[0].function.name
     const i18nKey = TOOL_STATUS_I18N_KEYS[toolName]
     return i18nKey
-      ? `${t(i18nKey)}...`
-      : `${t('Using tool')}: ${toolName.replace(/_/g, ' ')}...`
+      ? `${i18nKey}…`
+      : `Using tool: ${toolName.replace(/_/g, ' ')}…`
   }
 
   // Multiple tools - show unique tool types
@@ -99,12 +120,12 @@ function getToolStatusMessage(
     const toolName = uniqueToolNames[0]
     const i18nKey = TOOL_STATUS_I18N_KEYS[toolName]
     return i18nKey
-      ? `${t(i18nKey)}...`
-      : `${t('Using tool')}: ${toolName.replace(/_/g, ' ')}...`
+      ? `${i18nKey}…`
+      : `Using tool: ${toolName.replace(/_/g, ' ')}…`
   }
 
   // Multiple different tools - give a summary
-  return `${t('Using tools')}...`
+  return 'Using tools…'
 }
 
 /**
@@ -336,7 +357,8 @@ export interface ChatSubmitOptions {
   }>
   lang: Lang
   t: any
-  onResponseUpdate: (response: string) => void
+  /** Callback for response updates - receives either content or status updates */
+  onResponseUpdate: (update: ResponseUpdate) => void
   onPromptClear: () => void
   onResponseClear?: () => void
 }
@@ -408,7 +430,13 @@ export const submitChat = async (
         // Save user message to conversation
         await addMessage(conversation.id, { role: 'user', content: prompt })
 
-        onResponseUpdate('🚀 Starting autonomous task orchestration...\n\n')
+        onResponseUpdate({
+          type: 'status',
+          status: {
+            icon: 'Rocket',
+            i18nKey: 'Starting autonomous task orchestration…',
+          },
+        })
 
         const result = await WorkflowOrchestrator.orchestrateTask(prompt)
 
@@ -440,7 +468,7 @@ export const submitChat = async (
           .filter(Boolean)
           .join('\n')
 
-        onResponseUpdate(orchestrationReport)
+        onResponseUpdate({ type: 'content', content: orchestrationReport })
 
         // Save the orchestration report as assistant message
         await addMessage(conversation.id, {
@@ -455,8 +483,18 @@ export const submitChat = async (
         return { success: result.success }
       } catch (error) {
         console.error('Orchestration failed:', error)
-        const errorMessage = `❌ **Orchestration Failed**\n\n${error instanceof Error ? error.message : 'Unknown error occurred during task orchestration.'}`
-        onResponseUpdate(errorMessage)
+        const errorDetails =
+          error instanceof Error
+            ? error.message
+            : 'Unknown error occurred during task orchestration.'
+        onResponseUpdate({
+          type: 'status',
+          status: {
+            icon: 'WarningCircle',
+            i18nKey: 'Orchestration failed: {error}',
+            vars: { error: errorDetails },
+          },
+        })
 
         // Save error message to conversation if conversation exists
         try {
@@ -465,7 +503,7 @@ export const submitChat = async (
           if (currentConversation) {
             await addMessage(currentConversation.id, {
               role: 'assistant',
-              content: errorMessage,
+              content: `**Orchestration Failed**\n\n${errorDetails}`,
               agentId: agent.id,
             })
           }
@@ -656,7 +694,7 @@ export const submitChat = async (
 
         // Only show content to user, not the tool call markers
         const { content } = parseToolCallsFromStream(response)
-        onResponseUpdate(content)
+        onResponseUpdate({ type: 'content', content })
       }
 
       // Parse the final response for tool calls
@@ -675,8 +713,17 @@ export const submitChat = async (
       )
 
       // Show user that tools are being executed with appropriate message
-      const toolStatusMessage = getToolStatusMessage(toolCalls, t)
-      onResponseUpdate(finalContent + `\n\n🔧 *${toolStatusMessage}*`)
+      const toolStatusKey = getToolStatusI18nKey(toolCalls)
+      // First send the content so far
+      onResponseUpdate({ type: 'content', content: finalContent })
+      // Then send the tool status
+      onResponseUpdate({
+        type: 'status',
+        status: {
+          icon: 'Tools',
+          i18nKey: toolStatusKey,
+        },
+      })
 
       // Execute the tool calls
       const { results: toolResults } = await executeToolCalls(toolCalls, {
@@ -711,9 +758,14 @@ export const submitChat = async (
       })
 
       // Update display to show we're continuing
-      onResponseUpdate(
-        finalContent + '\n\n📚 *Found relevant information, processing...*',
-      )
+      onResponseUpdate({ type: 'content', content: finalContent })
+      onResponseUpdate({
+        type: 'status',
+        status: {
+          icon: 'Book',
+          i18nKey: 'Found relevant information, processing…',
+        },
+      })
     }
 
     if (toolIterations >= MAX_TOOL_ITERATIONS) {
@@ -749,19 +801,23 @@ export const submitChat = async (
       onResponseClear()
     }
 
-    // NOTE: Automatic memory learning has been disabled
-    // Users can manually trigger learning from individual messages using the "Learn" button
-    // This gives users full control over what gets learned and when
-    //
-    // Previous auto-trigger code (now disabled):
-    // triggerMemoryLearning(
-    //   conversation.id,
-    //   agent.id,
-    //   lang,
-    //   onMemoryLearningComplete,
-    // ).catch((err) => {
-    //   console.warn('Memory learning failed (non-critical):', err)
-    // })
+    // Trigger automatic memory learning if enabled in settings
+    // This runs asynchronously in the background and doesn't block the chat
+    const autoMemoryLearning = userSettings.getState().autoMemoryLearning
+    if (autoMemoryLearning && finalContent) {
+      // Learn from the user's prompt and the assistant's response
+      learnFromMessage(prompt, finalContent, agent.id, conversation.id, lang)
+        .then((events) => {
+          if (events.length > 0) {
+            console.log(
+              `📚 Auto-learned ${events.length} item(s) from conversation`,
+            )
+          }
+        })
+        .catch((err) => {
+          console.warn('Memory learning failed (non-critical):', err)
+        })
+    }
 
     return { success: true }
   } catch (err) {

@@ -315,17 +315,20 @@ export const extractSourcesFromSpans = async (
 
 /**
  * Parse citation references from text content.
- * Looks for patterns like [1], [2], etc. and returns the numbers found.
+ * Looks for patterns like [1], [2], [1, 2], etc. and returns the numbers found.
  */
 export const parseCitationsFromText = (text: string): number[] => {
-  const citationPattern = /\[(\d+)\]/g
+  const citationPattern = /\[(\d+(?:\s*,\s*\d+)*)\]/g
   const citations: number[] = []
   let match
 
   while ((match = citationPattern.exec(text)) !== null) {
-    const num = parseInt(match[1], 10)
-    if (!citations.includes(num)) {
-      citations.push(num)
+    // Split by comma to handle grouped citations like [1, 2]
+    const nums = match[1].split(/\s*,\s*/).map((n) => parseInt(n, 10))
+    for (const num of nums) {
+      if (!citations.includes(num)) {
+        citations.push(num)
+      }
     }
   }
 
@@ -916,17 +919,18 @@ SourcesDisplayWithLoading.displayName = 'SourcesDisplayWithLoading'
 export type SemanticCitationType = 'memory' | 'pinned' | 'document'
 
 /**
- * Regular expression to match numeric citation patterns like [1], [2], etc.
+ * Regular expression to match numeric citation patterns like [1], [2], [1, 2], etc.
  */
-export const CITATION_PATTERN = /\[(\d+)\]/g
+export const CITATION_PATTERN = /\[(\d+(?:\s*,\s*\d+)*)\]/g
 
 /**
  * Regular expression to match all citation patterns:
- * - Numeric: [1], [2], [3]
+ * - Numeric: [1], [2], [3], [1, 2], [1, 2, 3]
  * - Semantic: [Memory], [Pinned]
  * - Named: [Document Name] (any other text in brackets, excluding common markdown patterns)
  */
-export const EXTENDED_CITATION_PATTERN = /\[(\d+|Memory|Pinned]+)\]/g
+export const EXTENDED_CITATION_PATTERN =
+  /\[(\d+(?:\s*,\s*\d+)*|Memory|Pinned)\]/g
 
 /**
  * Determine the semantic type of a citation
@@ -990,15 +994,19 @@ export const splitContentWithExtendedCitations = (
     }
 
     const capturedValue = match[1]
-    const isNumeric = /^\d+$/.test(capturedValue)
+    // Check if it's purely numeric (possibly comma-separated)
+    const isNumeric = /^\d+(?:\s*,\s*\d+)*$/.test(capturedValue)
 
     if (isNumeric) {
-      // Numeric citation [1], [2], etc.
-      parts.push({
-        type: 'citation',
-        content: match[0],
-        number: parseInt(capturedValue, 10),
-      })
+      // Handle grouped citations like [1, 2] by adding separate citation parts
+      const nums = capturedValue.split(/\s*,\s*/).map((n) => parseInt(n, 10))
+      for (let i = 0; i < nums.length; i++) {
+        parts.push({
+          type: 'citation',
+          content: i === 0 ? match[0] : `[${nums[i]}]`, // Keep original for first, synthetic for rest
+          number: nums[i],
+        })
+      }
     } else {
       // Semantic citation [Memory], [Pinned], or [Document Name]
       const semanticType = getSemanticCitationType(capturedValue)
@@ -1050,12 +1058,15 @@ export const splitContentWithCitations = (content: string): ContentPart[] => {
       })
     }
 
-    // Add the citation
-    parts.push({
-      type: 'citation',
-      content: match[0],
-      number: parseInt(match[1], 10),
-    })
+    // Handle grouped citations like [1, 2] by adding separate citation parts
+    const nums = match[1].split(/\s*,\s*/).map((n) => parseInt(n, 10))
+    for (let i = 0; i < nums.length; i++) {
+      parts.push({
+        type: 'citation',
+        content: i === 0 ? match[0] : `[${nums[i]}]`, // Keep original for first, synthetic for rest
+        number: nums[i],
+      })
+    }
 
     lastIndex = match.index + match[0].length
   }

@@ -280,7 +280,6 @@ export const ko: I18n = {
     '죄송합니다, 코드 변경 사항을 파싱하는 중 오류가 발생했습니다.',
 
   // Delete extension
-  'Delete extension': '확장 프로그램 삭제',
   'Are you sure you want to delete this extension?':
     '이 확장 프로그램을 삭제하시겠습니까?',
   'This action cannot be undone.': '이 작업은 취소할 수 없습니다.',

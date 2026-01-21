@@ -441,7 +441,7 @@ export function ExtensionDetailModal({
                                   key: 'delete',
                                   icon: 'Trash',
                                   color: 'danger',
-                                  label: t('Delete extension'),
+                                  label: t('Delete'),
                                   action: onDeleteModalOpen,
                                 },
                               ]
@@ -517,7 +517,7 @@ export function ExtensionDetailModal({
       <Modal isOpen={isDeleteModalOpen} onClose={onDeleteModalClose} size="sm">
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">
-            {t('Delete extension')}
+            {t('Delete')}
           </ModalHeader>
           <ModalBody>
             <p>{t('Are you sure you want to delete this extension?')}</p>

@@ -5,8 +5,15 @@ import type {
   ConnectorSyncState,
   ConnectorCategory,
   ConnectorStatus,
+  AppConnectorProvider,
 } from '@/features/connectors/types'
 import { errorToast, successToast, infoToast } from '@/lib/toast'
+import { ProviderRegistry } from '@/features/connectors/provider-registry'
+import { SecureStorage } from '@/lib/crypto'
+import {
+  CONNECTOR_STORAGE_PREFIX,
+  storeEncryptionMetadata,
+} from '@/features/connectors/connector-provider'
 
 /**
  * Get provider display name for toast messages
@@ -75,6 +82,8 @@ interface ConnectorState {
     errorMessage?: string,
   ) => Promise<void>
   refreshConnectors: () => Promise<void>
+  validateConnectorTokens: () => Promise<void>
+  refreshConnectorToken: (connectorId: string) => Promise<boolean>
 }
 
 export const useConnectorStore = create<ConnectorState>((set, get) => ({
@@ -398,6 +407,185 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
     } catch (error) {
       errorToast('Failed to refresh connectors', error)
       set({ isLoading: false })
+    }
+  },
+
+  /**
+   * Validate tokens for all connected app connectors.
+   * Checks if tokens are expired (via tokenExpiresAt) or invalid (via API call).
+   * Automatically attempts to refresh tokens before marking as expired.
+   */
+  validateConnectorTokens: async () => {
+    const { connectors, updateConnector, refreshConnectorToken } = get()
+
+    // Only validate app connectors with 'connected' status
+    const connectedAppConnectors = connectors.filter(
+      (c) => c.category === 'app' && c.status === 'connected',
+    )
+
+    if (connectedAppConnectors.length === 0) return
+
+    // Validate each connector in parallel
+    const validationPromises = connectedAppConnectors.map(async (connector) => {
+      try {
+        let needsRefresh = false
+        let refreshReason = ''
+
+        // First check: tokenExpiresAt (quick local check)
+        if (connector.tokenExpiresAt) {
+          const expiresAt = new Date(connector.tokenExpiresAt)
+          if (expiresAt <= new Date()) {
+            needsRefresh = true
+            refreshReason = 'Token expired based on expiry time'
+          }
+        }
+
+        // Second check: validate token with the provider API (only if not already flagged)
+        if (!needsRefresh) {
+          const provider = connector.provider as AppConnectorProvider
+          const providerInstance =
+            await ProviderRegistry.getAppProvider(provider)
+
+          if (providerInstance.validateToken && connector.encryptedToken) {
+            const iv = localStorage.getItem(
+              `${CONNECTOR_STORAGE_PREFIX}-${connector.id}-iv`,
+            )
+            const salt = localStorage.getItem(
+              `${CONNECTOR_STORAGE_PREFIX}-${connector.id}-salt`,
+            )
+
+            if (iv && salt) {
+              try {
+                const token = await SecureStorage.decryptCredential(
+                  connector.encryptedToken,
+                  iv,
+                  salt,
+                )
+
+                const isValid = await providerInstance.validateToken(token)
+
+                if (!isValid) {
+                  needsRefresh = true
+                  refreshReason = 'Token validation failed (revoked or invalid)'
+                }
+              } catch (decryptError) {
+                console.error(
+                  `[ConnectorStore] Token decryption failed for ${connector.provider}:`,
+                  decryptError,
+                )
+                // Can't validate without decrypting, mark as needing refresh
+                needsRefresh = true
+                refreshReason = 'Token decryption failed'
+              }
+            } else {
+              console.warn(
+                `[ConnectorStore] Missing encryption metadata for ${connector.provider}`,
+              )
+            }
+          }
+        }
+
+        // Attempt automatic token refresh if needed
+        if (needsRefresh) {
+          console.log(
+            `[ConnectorStore] ${refreshReason} for ${connector.provider}, attempting refresh...`,
+          )
+
+          const refreshed = await refreshConnectorToken(connector.id)
+
+          if (!refreshed) {
+            // Refresh failed, mark as expired
+            console.log(
+              `[ConnectorStore] Token refresh failed for ${connector.provider}, marking as expired`,
+            )
+            await updateConnector(connector.id, {
+              status: 'expired',
+              errorMessage:
+                'Access token has expired and refresh failed. Please reconnect.',
+            })
+          }
+        }
+      } catch (error) {
+        // Log error but don't fail the whole validation
+        console.warn(
+          `[ConnectorStore] Failed to validate token for ${connector.provider}:`,
+          error,
+        )
+      }
+    })
+
+    await Promise.allSettled(validationPromises)
+  },
+
+  /**
+   * Attempt to refresh an expired access token for a connector.
+   * Uses the provider's refresh token to obtain a new access token.
+   *
+   * @param connectorId - The ID of the connector to refresh
+   * @returns True if refresh was successful, false otherwise
+   */
+  refreshConnectorToken: async (connectorId: string): Promise<boolean> => {
+    const { connectors, updateConnector } = get()
+    const connector = connectors.find((c) => c.id === connectorId)
+
+    if (!connector) {
+      console.warn(`[ConnectorStore] Connector not found: ${connectorId}`)
+      return false
+    }
+
+    // Check if refresh token is available
+    if (!connector.encryptedRefreshToken) {
+      console.warn(
+        `[ConnectorStore] No refresh token available for ${connector.provider}`,
+      )
+      return false
+    }
+
+    try {
+      console.log(
+        `[ConnectorStore] Attempting token refresh for ${connector.provider}`,
+      )
+
+      const provider = connector.provider as AppConnectorProvider
+      const providerInstance = await ProviderRegistry.getAppProvider(provider)
+
+      // Refresh the token using the provider
+      const refreshResult = await providerInstance.refreshToken(connector)
+
+      // Encrypt the new access token
+      await SecureStorage.init()
+      const {
+        encrypted: encryptedToken,
+        iv,
+        salt,
+      } = await SecureStorage.encryptCredential(refreshResult.accessToken)
+
+      // Calculate new expiry time
+      const tokenExpiresAt = refreshResult.expiresIn
+        ? new Date(Date.now() + refreshResult.expiresIn * 1000)
+        : undefined
+
+      // Update the connector in the store
+      await updateConnector(connector.id, {
+        encryptedToken,
+        tokenExpiresAt,
+        status: 'connected',
+        errorMessage: undefined,
+      })
+
+      // Store new encryption metadata
+      storeEncryptionMetadata(connector.id, iv, salt, false)
+
+      console.log(
+        `[ConnectorStore] Token refreshed successfully for ${connector.provider}`,
+      )
+      return true
+    } catch (error) {
+      console.error(
+        `[ConnectorStore] Failed to refresh token for ${connector.provider}:`,
+        error,
+      )
+      return false
     }
   },
 }))

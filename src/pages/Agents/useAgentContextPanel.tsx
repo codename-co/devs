@@ -11,6 +11,7 @@ import {
   Input,
   Tabs,
   Tab,
+  Tooltip,
 } from '@heroui/react'
 
 import {
@@ -34,6 +35,7 @@ import { db } from '@/lib/db'
 import { formatBytes } from '@/lib/format'
 import { updateAgent } from '@/stores/agentStore'
 import localI18n from './i18n'
+import type { IconName } from '@/lib/types'
 
 /**
  * Custom hook to manage contextual panel blocks for agent run page
@@ -72,7 +74,7 @@ export const useAgentContextPanel = (
       priority: 1,
       defaultExpanded: false,
       content: (
-        <EditableAgentProfile
+        <EditableAgentProfileWrapper
           agent={agent}
           onAgentUpdate={onAgentUpdateRef.current}
         />
@@ -95,7 +97,7 @@ export const useAgentContextPanel = (
             priority: 1.5,
             defaultExpanded: false,
             content: (
-              <EditableSystemPrompt
+              <EditableSystemPromptWrapper
                 conversationId={conversationId}
                 systemMessage={systemMessage}
               />
@@ -122,18 +124,6 @@ export const useAgentContextPanel = (
         />
       ),
     })
-
-    // Agent Tools block - shows enabled knowledge tools
-    if (agent.tools && agent.tools.length > 0) {
-      blocks.push({
-        id: 'agent-tools',
-        title: t('Tools'),
-        icon: 'Puzzle',
-        priority: 3,
-        defaultExpanded: false,
-        content: <AgentToolsDisplay tools={agent.tools} />,
-      })
-    }
 
     // Load conversation history (async)
     try {
@@ -294,8 +284,8 @@ export const useAgentContextPanel = (
   }, [])
 }
 
-// Separate component for editable agent profile
-const EditableAgentProfile = ({
+// Wrapper component for EditableAgentProfile that manages editing state and header action
+const EditableAgentProfileWrapper = ({
   agent,
   onAgentUpdate,
 }: {
@@ -304,6 +294,87 @@ const EditableAgentProfile = ({
 }) => {
   const { t } = useI18n(localI18n)
   const [isEditing, setIsEditing] = useState(false)
+
+  // Update the panel block's headerAction when editing state changes
+  useEffect(() => {
+    const { updateBlock } = useContextualPanelStore.getState()
+    updateBlock('agent-profile', {
+      headerAction: isEditing ? null : (
+        <Button
+          size="sm"
+          variant="light"
+          isIconOnly
+          onPress={() => setIsEditing(true)}
+          aria-label={t('Edit')}
+        >
+          <Icon name="EditPencil" size="sm" />
+        </Button>
+      ),
+    })
+  }, [isEditing, t])
+
+  return (
+    <EditableAgentProfile
+      agent={agent}
+      onAgentUpdate={onAgentUpdate}
+      isEditing={isEditing}
+      onEditChange={setIsEditing}
+    />
+  )
+}
+
+// Wrapper component for EditableSystemPrompt that manages editing state and header action
+const EditableSystemPromptWrapper = ({
+  conversationId,
+  systemMessage,
+}: {
+  conversationId: string
+  systemMessage: Message
+}) => {
+  const { t } = useI18n(localI18n)
+  const [isEditing, setIsEditing] = useState(false)
+
+  // Update the panel block's headerAction when editing state changes
+  useEffect(() => {
+    const { updateBlock } = useContextualPanelStore.getState()
+    updateBlock('system-prompt', {
+      headerAction: isEditing ? null : (
+        <Button
+          size="sm"
+          variant="light"
+          isIconOnly
+          onPress={() => setIsEditing(true)}
+          aria-label={t('Edit')}
+        >
+          <Icon name="EditPencil" size="sm" />
+        </Button>
+      ),
+    })
+  }, [isEditing, t])
+
+  return (
+    <EditableSystemPrompt
+      conversationId={conversationId}
+      systemMessage={systemMessage}
+      isEditing={isEditing}
+      onEditChange={setIsEditing}
+    />
+  )
+}
+
+// Separate component for editable agent profile
+const EditableAgentProfile = ({
+  agent,
+  onAgentUpdate,
+  isEditing,
+  onEditChange,
+}: {
+  agent: Agent
+  onAgentUpdate?: (agent: Agent) => void
+  isEditing: boolean
+  onEditChange: (editing: boolean) => void
+}) => {
+  const { t } = useI18n(localI18n)
   const [editedRole, setEditedRole] = useState(agent.role || '')
   const [editedInstructions, setEditedInstructions] = useState(
     agent.instructions || '',
@@ -328,7 +399,7 @@ const EditableAgentProfile = ({
       })
       // Notify parent to update the agent state
       onAgentUpdate?.(updatedAgent)
-      setIsEditing(false)
+      onEditChange(false)
     } catch (error) {
       console.error('Failed to update agent profile:', error)
     } finally {
@@ -339,7 +410,7 @@ const EditableAgentProfile = ({
   const handleCancel = () => {
     setEditedRole(agent.role || '')
     setEditedInstructions(agent.instructions || '')
-    setIsEditing(false)
+    onEditChange(false)
   }
 
   if (isEditing) {
@@ -398,8 +469,8 @@ const EditableAgentProfile = ({
   }
 
   return (
-    <div className="relative group">
-      <div className="space-y-4">
+    <div className="space-y-4">
+      <div className="flex-1 min-w-0">
         {agent.role && (
           <div>
             <h4 className="text-sm font-semibold text-default-700 mb-1">
@@ -408,26 +479,17 @@ const EditableAgentProfile = ({
             <p className="text-sm text-default-600">{agent.role}</p>
           </div>
         )}
-        <div>
-          <h4 className="text-sm font-semibold text-default-700 mb-1">
-            {t('Instructions')}
-          </h4>
-          <MarkdownRenderer
-            content={agent.instructions || t('No instructions defined.')}
-            className="text-sm prose dark:prose-invert prose-sm text-default-500"
-            renderWidgets={false}
-          />
-        </div>
       </div>
-      <Button
-        size="sm"
-        variant="light"
-        className="absolute top-0 end-0 opacity-0 group-hover:opacity-100 transition-opacity"
-        onPress={() => setIsEditing(true)}
-        startContent={<Icon name="EditPencil" className="w-4 h-4" />}
-      >
-        {t('Edit')}
-      </Button>
+      <div>
+        <h4 className="text-sm font-semibold text-default-700 mb-1">
+          {t('Instructions')}
+        </h4>
+        <MarkdownRenderer
+          content={agent.instructions || t('No instructions defined.')}
+          className="text-sm prose dark:prose-invert prose-sm text-default-500"
+          renderWidgets={false}
+        />
+      </div>
     </div>
   )
 }
@@ -436,12 +498,15 @@ const EditableAgentProfile = ({
 const EditableSystemPrompt = ({
   conversationId,
   systemMessage,
+  isEditing,
+  onEditChange,
 }: {
   conversationId: string
   systemMessage: Message
+  isEditing: boolean
+  onEditChange: (editing: boolean) => void
 }) => {
   const { t } = useI18n(localI18n)
-  const [isEditing, setIsEditing] = useState(false)
   const [editedContent, setEditedContent] = useState(systemMessage.content)
   const [isSaving, setIsSaving] = useState(false)
 
@@ -452,7 +517,7 @@ const EditableSystemPrompt = ({
         .getState()
         .updateMessage(conversationId, systemMessage.id, editedContent)
       successToast(t('System prompt updated successfully'))
-      setIsEditing(false)
+      onEditChange(false)
     } catch (error) {
       console.error('Failed to update system prompt:', error)
     } finally {
@@ -462,7 +527,7 @@ const EditableSystemPrompt = ({
 
   const handleCancel = () => {
     setEditedContent(systemMessage.content)
-    setIsEditing(false)
+    onEditChange(false)
   }
 
   if (isEditing) {
@@ -500,22 +565,11 @@ const EditableSystemPrompt = ({
   }
 
   return (
-    <div className="relative group">
-      <MarkdownRenderer
-        content={systemMessage.content}
-        className="prose dark:prose-invert prose-sm text-default-700"
-        renderWidgets={false}
-      />
-      <Button
-        size="sm"
-        variant="light"
-        className="absolute top-0 end-0 opacity-0 group-hover:opacity-100 transition-opacity"
-        onPress={() => setIsEditing(true)}
-        startContent={<Icon name="EditPencil" className="w-4 h-4" />}
-      >
-        {t('Edit')}
-      </Button>
-    </div>
+    <MarkdownRenderer
+      content={systemMessage.content}
+      className="prose dark:prose-invert prose-sm text-sm text-default-700"
+      renderWidgets={false}
+    />
   )
 }
 
@@ -844,38 +898,37 @@ const AgentKnowledgeContent = ({
   }
 
   return (
-    <div className="relative group">
-      <div className="space-y-2">
-        {knowledgeItems.map((item) => (
-          <Card key={item.id} className="p-2">
-            <div className="flex items-center gap-2 min-w-0 overflow-hidden">
-              <span className="flex-shrink-0">{getFileIcon(item)}</span>
-              <div className="flex-1 min-w-0 overflow-hidden">
-                <span className="text-sm font-medium truncate block">
-                  {item.name}
-                </span>
-                <span className="text-xs text-default-400">
-                  {formatBytes(item.size || 0, lang)}
-                </span>
-              </div>
-            </div>
-          </Card>
-        ))}
+    <div className="space-y-2">
+      <div className="flex justify-end">
+        <Button
+          size="sm"
+          variant="light"
+          onPress={() => setIsEditing(true)}
+          startContent={<Icon name="EditPencil" size="sm" />}
+        >
+          {t('Edit')}
+        </Button>
       </div>
-      <Button
-        size="sm"
-        variant="light"
-        className="absolute top-0 end-0 opacity-0 group-hover:opacity-100 transition-opacity"
-        onPress={() => setIsEditing(true)}
-        startContent={<Icon name="EditPencil" className="w-4 h-4" />}
-      >
-        {t('Edit')}
-      </Button>
+      {knowledgeItems.map((item) => (
+        <Card key={item.id} className="p-2">
+          <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+            <span className="flex-shrink-0">{getFileIcon(item)}</span>
+            <div className="flex-1 min-w-0 overflow-hidden">
+              <span className="text-sm font-medium truncate block">
+                {item.name}
+              </span>
+              <span className="text-xs text-default-400">
+                {formatBytes(item.size || 0, lang)}
+              </span>
+            </div>
+          </div>
+        </Card>
+      ))}
     </div>
   )
 }
 
-// Unified Agent Context component with tabs for Knowledge, Memories, and Pinned
+// Unified Agent Context component with tabs for Knowledge, Memories, Pinned, and Tools
 const AgentContextTabs = ({
   agent,
   conversationId,
@@ -942,10 +995,12 @@ const AgentContextTabs = ({
         onSelectionChange={(key) => setSelectedTab(key as string)}
         size="sm"
         variant="light"
+        className="sticky top-10 bg-default-50 z-10"
       >
         <Tab key="knowledge" title={t('Files')} />
         <Tab key="memories" title={t('Memories')} />
         <Tab key="pinned" title={t('Messages')} />
+        <Tab key="tools" title={t('Tools')} />
       </Tabs>
 
       <div className="pt-1">
@@ -1022,80 +1077,317 @@ const AgentContextTabs = ({
             )}
           </>
         )}
+
+        {selectedTab === 'tools' && <AgentToolsDisplay tools={agent.tools} />}
       </div>
     </div>
   )
 }
 
+type ToolCategory = 'knowledge' | 'math' | 'code' | 'presentation' | 'connector'
+
 /**
- * Knowledge tool display metadata.
- * Maps tool names to user-friendly information.
- * Labels are i18n keys that will be translated in the component.
+ * Infer icon from tool name based on provider prefix patterns.
  */
-const KNOWLEDGE_TOOL_INFO: Record<
-  string,
-  {
-    icon: 'PageSearch' | 'Document' | 'Folder' | 'Page' | 'MathBook' | 'Puzzle'
-    label: string
-  }
-> = {
-  search_knowledge: {
-    icon: 'PageSearch',
-    label: 'Search Knowledge',
-  },
-  read_document: {
-    icon: 'Document',
-    label: 'Read Document',
-  },
-  list_documents: {
-    icon: 'Folder',
-    label: 'List Documents',
-  },
-  get_document_summary: {
-    icon: 'Page',
-    label: 'Get Document Summary',
-  },
-  calculate: {
-    icon: 'MathBook',
-    label: 'Calculate',
-  },
+const inferIconFromToolName = (name: string): IconName => {
+  // Connector tool patterns - infer from provider prefix
+  if (name.startsWith('gmail_') || name.startsWith('outlook_'))
+    return 'MicrosoftOutlook'
+  if (name.startsWith('drive_') || name.startsWith('google_drive_'))
+    return 'GoogleDrive'
+  if (name.startsWith('calendar_') || name.startsWith('google_calendar_'))
+    return 'GoogleCalendar'
+  if (name.startsWith('tasks_') || name.startsWith('google_tasks_'))
+    return 'GoogleTasks'
+  if (name.startsWith('notion_')) return 'Notion'
+  if (name.startsWith('qonto_')) return 'Qonto'
+  if (name.startsWith('onedrive_')) return 'OneDrive'
+  if (name.startsWith('slack_')) return 'Slack'
+  if (name.startsWith('dropbox_')) return 'Dropbox'
+  if (name.startsWith('figma_')) return 'Figma'
+  if (name.startsWith('google_chat_')) return 'GoogleChat'
+  if (name.startsWith('google_meet_')) return 'GoogleMeet'
+
+  // Knowledge tool patterns
+  if (name.includes('search') || name.includes('find')) return 'PageSearch'
+  if (name.includes('list') || name.includes('folder')) return 'Folder'
+  if (name.includes('document') || name.includes('read')) return 'Page'
+
+  // Default fallback
+  return 'Puzzle'
 }
 
 /**
- * Component to display agent's enabled tools in the contextual panel.
+ * Convert snake_case tool name to Title Case label.
  */
-const AgentToolsDisplay = ({ tools }: { tools: Agent['tools'] }) => {
-  const { t } = useI18n(localI18n)
+const formatToolLabel = (name: string): string => {
+  return name
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
 
-  if (!tools || tools.length === 0) {
+const CATEGORY_LABELS: Record<ToolCategory, string> = {
+  knowledge: 'Knowledge',
+  math: 'Math',
+  code: 'Code',
+  presentation: 'Presentation',
+  connector: 'Connectors',
+}
+
+const CATEGORY_ICONS: Record<
+  ToolCategory,
+  'PageSearch' | 'MathBook' | 'Code' | 'Presentation' | 'Puzzle'
+> = {
+  knowledge: 'PageSearch',
+  math: 'MathBook',
+  code: 'Code',
+  presentation: 'Presentation',
+  connector: 'Puzzle',
+}
+
+interface AllToolInfo {
+  name: string
+  description: string
+  category: ToolCategory
+  icon:
+    | ReturnType<typeof inferIconFromToolName>
+    | 'MathBook'
+    | 'Code'
+    | 'Presentation'
+  label: string
+}
+
+/**
+ * Component to display all available tools for the agent in the contextual panel.
+ * Shows both universal tools (knowledge, math, code, presentation) and connector tools.
+ */
+const AgentToolsDisplay = (_props: { tools: Agent['tools'] }) => {
+  const { t } = useI18n(localI18n)
+  const [allTools, setAllTools] = useState<AllToolInfo[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [connectorCount, setConnectorCount] = useState(0)
+
+  useEffect(() => {
+    const loadTools = async () => {
+      setIsLoading(true)
+      try {
+        // Import tool definitions
+        const [
+          { KNOWLEDGE_TOOL_DEFINITIONS },
+          { MATH_TOOL_DEFINITIONS },
+          { CODE_TOOL_DEFINITIONS },
+          { PRESENTATION_TOOL_DEFINITIONS },
+        ] = await Promise.all([
+          import('@/lib/knowledge-tools'),
+          import('@/lib/math-tools'),
+          import('@/lib/code-tools'),
+          import('@/lib/presentation-tools'),
+        ])
+
+        const toolsList: AllToolInfo[] = []
+
+        // Add knowledge tools
+        for (const def of Object.values(KNOWLEDGE_TOOL_DEFINITIONS)) {
+          const name = def.function.name
+          toolsList.push({
+            name,
+            description: def.function.description,
+            category: 'knowledge',
+            icon: inferIconFromToolName(name) || 'PageSearch',
+            label: formatToolLabel(name),
+          })
+        }
+
+        // Add math tools
+        for (const def of Object.values(MATH_TOOL_DEFINITIONS)) {
+          const name = def.function.name
+          toolsList.push({
+            name,
+            description: def.function.description,
+            category: 'math',
+            icon: 'MathBook',
+            label: formatToolLabel(name),
+          })
+        }
+
+        // Add code tools
+        for (const def of Object.values(CODE_TOOL_DEFINITIONS)) {
+          const name = def.function.name
+          toolsList.push({
+            name,
+            description: def.function.description,
+            category: 'code',
+            icon: 'Code',
+            label: formatToolLabel(name),
+          })
+        }
+
+        // Add presentation tools
+        for (const def of Object.values(PRESENTATION_TOOL_DEFINITIONS)) {
+          const name = def.function.name
+          toolsList.push({
+            name,
+            description: def.function.description,
+            category: 'presentation',
+            icon: 'Presentation',
+            label: formatToolLabel(name),
+          })
+        }
+
+        // Load connector tools from active connectors
+        try {
+          if (!db.isInitialized()) {
+            await db.init()
+          }
+
+          const { getToolDefinitionsForProvider } = await import(
+            '@/features/connectors/tools'
+          )
+
+          interface ConnectorRecord {
+            id: string
+            provider: string
+            status: string
+          }
+          const connectors = (await db.getAll(
+            'connectors',
+          )) as ConnectorRecord[]
+          const activeConnectors = connectors.filter((c) =>
+            ['connected', 'syncing'].includes(c.status),
+          )
+
+          setConnectorCount(activeConnectors.length)
+
+          // Get unique providers
+          const providers = [
+            ...new Set(activeConnectors.map((c) => c.provider)),
+          ]
+
+          for (const provider of providers) {
+            const providerTools = getToolDefinitionsForProvider(provider)
+            for (const def of providerTools) {
+              const name = def.function.name
+              toolsList.push({
+                name,
+                description: def.function.description,
+                category: 'connector',
+                icon: inferIconFromToolName(name),
+                label: formatToolLabel(name),
+              })
+            }
+          }
+        } catch (error) {
+          console.warn('Failed to load connector tools:', error)
+        }
+
+        setAllTools(toolsList)
+      } catch (error) {
+        console.error('Failed to load tools:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadTools()
+  }, [])
+
+  if (isLoading) {
     return (
-      <p className="text-default-500 text-sm">
-        {t('No tools enabled for this agent.')}
-      </p>
+      <div className="flex justify-center py-4">
+        <Spinner size="sm" />
+      </div>
     )
   }
 
+  if (allTools.length === 0) {
+    return (
+      <p className="text-default-500 text-sm">{t('No tools available.')}</p>
+    )
+  }
+
+  // Group tools by category
+  const toolsByCategory = allTools.reduce(
+    (acc, tool) => {
+      if (!acc[tool.category]) {
+        acc[tool.category] = []
+      }
+      acc[tool.category].push(tool)
+      return acc
+    },
+    {} as Record<ToolCategory, AllToolInfo[]>,
+  )
+
+  // Define category order
+  const categoryOrder: ToolCategory[] = [
+    'knowledge',
+    'math',
+    'code',
+    'presentation',
+    'connector',
+  ]
+
   return (
-    <div className="space-y-2">
-      {tools.map((tool) => {
-        const info = KNOWLEDGE_TOOL_INFO[tool.name]
-        const iconName = info?.icon || 'Puzzle'
-        // Use translated label if available, otherwise capitalize the tool name
-        const label = info?.label
-          ? t(info.label as Parameters<typeof t>[0])
-          : tool.name.charAt(0).toUpperCase() + tool.name.slice(1)
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 text-xs text-default-400">
+        <Icon name="Puzzle" className="w-3 h-3" />
+        <span>
+          {t('{count} tools available', { count: allTools.length })}
+          {connectorCount > 0 && (
+            <span className="ml-1">
+              ({connectorCount} {t('connected services')})
+            </span>
+          )}
+        </span>
+      </div>
+
+      {categoryOrder.map((category) => {
+        const categoryTools = toolsByCategory[category]
+        if (!categoryTools || categoryTools.length === 0) return null
 
         return (
-          <div
-            key={tool.id}
-            className="flex items-start gap-3 p-2 rounded-lg bg-default-50"
-          >
-            <Icon name={iconName} className="w-4 h-4 text-secondary mt-0.5" />
-            <div className="flex-1 min-w-0">
-              <span className="font-medium text-sm">{label}</span>
-              <p className="text-xs text-default-500 mt-0.5 line-clamp-2">
-                {tool.description}
-              </p>
+          <div key={category}>
+            <div className="flex items-center gap-2 mb-2">
+              <Icon
+                name={CATEGORY_ICONS[category]}
+                className="w-3 h-3 text-default-500"
+              />
+              <span className="text-xs font-semibold text-default-600 uppercase tracking-wide">
+                {t(CATEGORY_LABELS[category] as Parameters<typeof t>[0])}
+              </span>
+              <Chip size="sm" variant="flat" className="h-4 text-xs">
+                {categoryTools.length}
+              </Chip>
+            </div>
+            <div className="space-y-1">
+              {categoryTools.map((tool) => (
+                <Tooltip
+                  key={tool.name}
+                  content={
+                    <MarkdownRenderer
+                      content={`# ${tool.name}\n${tool.description}`}
+                      renderWidgets={false}
+                      className="p-4 bg-white dark:bg-default-50 text-sm text-default-700 dark:text-default-700 max-w-xs"
+                    />
+                  }
+                  placement="left"
+                  delay={300}
+                  classNames={{
+                    content: 'max-w-xs',
+                  }}
+                >
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-default-50 hover:bg-default-100 transition-colors cursor-default">
+                    <Icon
+                      name={tool.icon}
+                      size="md"
+                      className="flex-shrink-0"
+                    />
+                    <span className="font-medium text-sm truncate">
+                      {tool.label}
+                    </span>
+                  </div>
+                </Tooltip>
+              ))}
             </div>
           </div>
         )

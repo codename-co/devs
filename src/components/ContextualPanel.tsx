@@ -123,6 +123,26 @@ const ExpandedPanel = ({ className }: { className?: string }) => {
   const toggleCollapsed = userSettings((s) => s.toggleContextualPanel)
   const { t } = useI18n()
 
+  // Track which accordion items are expanded
+  const [expandedKeys, setExpandedKeys] = useState<Set<string>>(
+    new Set(
+      blocks.filter((block) => block.defaultExpanded).map((block) => block.id),
+    ),
+  )
+
+  // Update expanded keys when blocks change (e.g., new blocks with defaultExpanded)
+  useEffect(() => {
+    setExpandedKeys((prev) => {
+      const newKeys = new Set(prev)
+      blocks.forEach((block) => {
+        if (block.defaultExpanded && !prev.has(block.id)) {
+          newKeys.add(block.id)
+        }
+      })
+      return newKeys
+    })
+  }, [blocks])
+
   return (
     <div
       className={`fixed w-96 bg-background dark:bg-content1 p-3 border-s border-default-200 dark:border-default-200 h-full flex flex-col overflow-y-auto ${className}`}
@@ -152,10 +172,11 @@ const ExpandedPanel = ({ className }: { className?: string }) => {
         </div>
 
         <Accordion
-          // selectionMode="multiple"
-          defaultExpandedKeys={blocks
-            .filter((block) => block.defaultExpanded)
-            .map((block) => block.id)}
+          selectionMode="multiple"
+          selectedKeys={expandedKeys}
+          onSelectionChange={(keys) =>
+            setExpandedKeys(new Set(keys as Set<string>))
+          }
           itemClasses={{
             base: 'py-0 w-full',
             title: 'text-sm font-medium',
@@ -164,26 +185,37 @@ const ExpandedPanel = ({ className }: { className?: string }) => {
             content: 'px-2 pb-3 pt-0',
           }}
         >
-          {blocks.map((block) => (
-            <AccordionItem
-              key={block.id}
-              aria-label={block.title}
-              title={
-                <div className="flex items-center gap-2">
-                  {block.icon && (
-                    <Icon
-                      name={block.icon}
-                      className="w-4 h-4 text-default-600"
-                    />
-                  )}
-                  <span>{block.title}</span>
-                </div>
-              }
-            >
-              <div className="mb-2" />
-              {block.content}
-            </AccordionItem>
-          ))}
+          {blocks.map((block) => {
+            const isExpanded = expandedKeys.has(block.id)
+            return (
+              <AccordionItem
+                key={block.id}
+                aria-label={block.title}
+                title={
+                  <div className="flex items-center gap-2 flex-1">
+                    {block.icon && (
+                      <Icon
+                        name={block.icon}
+                        className="w-4 h-4 text-default-600"
+                      />
+                    )}
+                    <span className="flex-1">{block.title}</span>
+                    {isExpanded && block.headerAction && (
+                      <div
+                        className="flex items-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {block.headerAction}
+                      </div>
+                    )}
+                  </div>
+                }
+              >
+                <div className="mb-2" />
+                {block.content}
+              </AccordionItem>
+            )
+          })}
         </Accordion>
       </ScrollShadow>
     </div>

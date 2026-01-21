@@ -12,10 +12,7 @@ import {
   useDisclosure,
   Tooltip,
 } from '@heroui/react'
-import { Search } from 'iconoir-react'
-
 import { Link } from 'react-router-dom'
-
 import DefaultLayout from '@/layouts/Default'
 import { Container, Section, Icon, Title } from '@/components'
 import { useI18n, useUrl, type LanguageCode } from '@/i18n'
@@ -440,7 +437,7 @@ export function MarketplacePage() {
                 placeholder={t('Search extensions...')}
                 value={searchQuery}
                 onValueChange={setSearchQuery}
-                startContent={<Search />}
+                startContent={<Icon name="Search" />}
                 size="sm"
                 isClearable
                 onClear={() => setSearchQuery('')}

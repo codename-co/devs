@@ -241,7 +241,6 @@ export const en = [
   'Sorry, I encountered an error parsing the code changes.',
 
   // Delete extension
-  'Delete extension',
   'Are you sure you want to delete this extension?',
   'This action cannot be undone.',
   'Delete',

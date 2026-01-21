@@ -44,6 +44,7 @@ export const Sources: React.FC = () => {
     initialize: initializeConnectors,
     getAppConnectors,
     deleteConnector,
+    validateConnectorTokens,
   } = useConnectorStore()
 
   // Local state
@@ -83,6 +84,12 @@ export const Sources: React.FC = () => {
     }
     loadWatchedFolders()
 
+    // Validate connector tokens after initialization
+    // This checks if tokens have expired and updates status accordingly
+    if (isInitialized) {
+      validateConnectorTokens()
+    }
+
     // Subscribe to watcher changes
     const unsubscribeWatchers = onWatchersChanged(() => {
       loadWatchedFolders()
@@ -115,7 +122,12 @@ export const Sources: React.FC = () => {
       unsubscribeWatchers()
       unsubscribeSync()
     }
-  }, [isInitialized, initializeConnectors, loadWatchedFolders])
+  }, [
+    isInitialized,
+    initializeConnectors,
+    loadWatchedFolders,
+    validateConnectorTokens,
+  ])
 
   // Add local folder
   const handleAddFolder = async () => {

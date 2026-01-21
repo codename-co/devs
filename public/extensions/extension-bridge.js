@@ -227,6 +227,7 @@
     extensionName: context.extensionName,
     theme: context.theme,
     language: context.language,
+    context,
 
     /**
      * Translation helper for UI labels
@@ -236,6 +237,14 @@
      * @returns {string} - Translated string or key as fallback
      */
     t,
+
+    /**
+     * Navigate to a different page or route
+     * @param {string} path - The path to navigate to (e.g., '/x/extension-id/page' or external URL)
+     */
+    navigate: (path) => {
+      sendEvent('DEVS_NAVIGATE', { path })
+    },
 
     /**
      * LLM API for making AI calls

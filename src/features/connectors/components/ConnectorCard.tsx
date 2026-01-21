@@ -23,6 +23,7 @@ interface ConnectorCardProps {
   onSync: () => void
   onDisconnect: () => void
   onSettings: () => void
+  onReconnect?: () => void
 }
 
 /**
@@ -36,6 +37,7 @@ export function ConnectorCard({
   onSync,
   onDisconnect,
   onSettings,
+  onReconnect,
 }: ConnectorCardProps) {
   const { t, lang } = useI18n(localI18n)
   const { getSyncState } = useConnectorStore()
@@ -209,21 +211,33 @@ export function ConnectorCard({
             </div>
           </div>
 
-          <Button
-            size="sm"
-            variant="flat"
-            color="primary"
-            isDisabled={isSyncing}
-            isLoading={isSyncing}
-            startContent={
-              !isSyncing && (
-                <Icon name="RefreshDouble" className="w-3.5 h-3.5" />
-              )
-            }
-            onPress={onSync}
-          >
-            {isSyncing ? t('Syncing...') : t('Sync')}
-          </Button>
+          {connector.status === 'expired' && onReconnect ? (
+            <Button
+              size="sm"
+              variant="flat"
+              color="warning"
+              startContent={<Icon name="Link" className="w-3.5 h-3.5" />}
+              onPress={onReconnect}
+            >
+              {t('Reconnect')}
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="flat"
+              color="primary"
+              isDisabled={isSyncing || connector.status === 'expired'}
+              isLoading={isSyncing}
+              startContent={
+                !isSyncing && (
+                  <Icon name="RefreshDouble" className="w-3.5 h-3.5" />
+                )
+              }
+              onPress={onSync}
+            >
+              {isSyncing ? t('Syncing...') : t('Sync')}
+            </Button>
+          )}
         </div>
       </CardBody>
     </Card>

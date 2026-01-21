@@ -281,7 +281,6 @@ export const es: I18n = {
     'Lo siento, encontré un error al analizar los cambios de código.',
 
   // Delete extension
-  'Delete extension': 'Eliminar extensión',
   'Are you sure you want to delete this extension?':
     '¿Estás seguro de que quieres eliminar esta extensión?',
   'This action cannot be undone.': 'Esta acción no se puede deshacer.',

@@ -284,7 +284,6 @@ export const de: I18n = {
     'Entschuldigung, beim Parsen der Codeänderungen ist ein Fehler aufgetreten.',
 
   // Delete extension
-  'Delete extension': 'Erweiterung löschen',
   'Are you sure you want to delete this extension?':
     'Sind Sie sicher, dass Sie diese Erweiterung löschen möchten?',
   'This action cannot be undone.':

@@ -166,4 +166,23 @@ export const de: I18n = {
   'View in Knowledge Base': 'In Wissensbasis anzeigen',
   // Quick replies
   'Generating suggestions…': 'Vorschläge werden generiert…',
+  // Tools display
+  'No tools available.': 'Keine Tools verfügbar.',
+  '{count} tools available': '{count} Tools verfügbar',
+  'connected services': 'verbundene Dienste',
+  Knowledge: 'Wissen',
+  Math: 'Mathematik',
+  Code: 'Code',
+  Presentation: 'Präsentation',
+  Connectors: 'Konnektoren',
+  'Execute Code': 'Code ausführen',
+  'Generate Presentation': 'Präsentation erstellen',
+  // Status messages
+  'Starting autonomous task orchestration…':
+    'Starte autonome Aufgabenorchestrierung…',
+  'Orchestration failed: {error}': 'Orchestrierung fehlgeschlagen: {error}',
+  'Found relevant information, processing…':
+    'Relevante Informationen gefunden, wird verarbeitet…',
+  'Using tools…': 'Verwende Tools…',
+  'Using tool: {tool}…': 'Verwende Tool: {tool}…',
 } as const

@@ -33,6 +33,8 @@ export interface UserSettings {
   sttProvider?: STTProviderType // Selected STT provider (default: web-speech)
   ttsProvider?: TTSProviderType // Selected TTS provider (default: web-speech)
   liveAutoSpeak?: boolean // Auto-speak AI responses in Live mode (default: true)
+  // Memory settings
+  autoMemoryLearning?: boolean // Auto-learn from conversations (default: false)
 }
 
 const defaultSettings: UserSettings = {
@@ -60,6 +62,7 @@ interface UserSettingsStore extends UserSettings {
   setSTTProvider: (provider: STTProviderType | undefined) => void
   setTTSProvider: (provider: TTSProviderType | undefined) => void
   setLiveAutoSpeak: (enabled: boolean) => void
+  setAutoMemoryLearning: (enabled: boolean) => void
   isDarkTheme: () => boolean
 }
 
@@ -94,6 +97,8 @@ export const userSettings = create<UserSettingsStore>()(
       setTTSProvider: (provider: TTSProviderType | undefined) =>
         set({ ttsProvider: provider }),
       setLiveAutoSpeak: (enabled: boolean) => set({ liveAutoSpeak: enabled }),
+      setAutoMemoryLearning: (enabled: boolean) =>
+        set({ autoMemoryLearning: enabled }),
       isDarkTheme: () => {
         const { theme } = get()
         if (theme === 'dark') return true
@@ -120,6 +125,7 @@ export const userSettings = create<UserSettingsStore>()(
         sttProvider: state.sttProvider,
         ttsProvider: state.ttsProvider,
         liveAutoSpeak: state.liveAutoSpeak,
+        autoMemoryLearning: state.autoMemoryLearning,
       }),
     },
   ),

@@ -158,4 +158,22 @@ export const ar: I18n = {
   'View in Knowledge Base': 'عرض في قاعدة المعرفة',
   // Quick replies
   'Generating suggestions…': 'جارٍ إنشاء الاقتراحات…',
+  // Tools display
+  'No tools available.': 'لا توجد أدوات متاحة.',
+  '{count} tools available': '{count} أدوات متاحة',
+  'connected services': 'الخدمات المتصلة',
+  Knowledge: 'المعرفة',
+  Math: 'الرياضيات',
+  Code: 'الكود',
+  Presentation: 'العرض التقديمي',
+  Connectors: 'الموصلات',
+  'Execute Code': 'تنفيذ الكود',
+  'Generate Presentation': 'إنشاء عرض تقديمي',
+  // Status messages
+  'Starting autonomous task orchestration…': 'بدء تنسيق المهام التلقائي…',
+  'Orchestration failed: {error}': 'فشل التنسيق: {error}',
+  'Found relevant information, processing…':
+    'تم العثور على معلومات ذات صلة، جارٍ المعالجة…',
+  'Using tools…': 'جارٍ استخدام الأدوات…',
+  'Using tool: {tool}…': 'جارٍ استخدام الأداة: {tool}…',
 } as const

@@ -105,6 +105,9 @@ export const es: I18n = {
   'Hide Default Agents': 'Ocultar agentes predeterminados',
   'Only show your custom agents in the agent picker and agents page':
     'Mostrar solo sus agentes personalizados en el selector de agentes y la página de agentes',
+  'Auto Memory Learning': 'Aprendizaje automático de memoria',
+  'Automatically extract learnable information from conversations to build agent memory':
+    'Extraer automáticamente información aprendible de las conversaciones para construir la memoria del agente',
   'Show Context Panel': 'Mostrar panel de contexto',
   'Display the contextual information panel on the right side of the screen':
     'Mostrar el panel de información contextual en el lado derecho de la pantalla',

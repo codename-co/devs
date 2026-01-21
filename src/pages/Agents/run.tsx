@@ -48,7 +48,11 @@ import {
 } from '@/types'
 import type { Trace, Span } from '@/features/traces/types'
 import { errorToast, successToast } from '@/lib/toast'
-import { submitChat } from '@/lib/chat'
+import {
+  submitChat,
+  type ResponseUpdate,
+  type ResponseStatus,
+} from '@/lib/chat'
 import { db } from '@/lib/db'
 import { copyRichText } from '@/lib/clipboard'
 import {
@@ -1291,6 +1295,9 @@ export const AgentRunPage = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
   const [response, setResponse] = useState<string>('')
+  const [currentStatus, setCurrentStatus] = useState<ResponseStatus | null>(
+    null,
+  )
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [conversationMessages, setConversationMessages] = useState<Message[]>(
     [],
@@ -1892,6 +1899,7 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
 
       setIsSending(true)
       setResponse('')
+      setCurrentStatus(null)
       setPrompt('')
 
       let finalResponse = ''
@@ -1904,12 +1912,20 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
         attachments: files,
         lang,
         t,
-        onResponseUpdate: (text) => {
-          finalResponse = text
-          setResponse(text)
+        onResponseUpdate: (update: ResponseUpdate) => {
+          if (update.type === 'content') {
+            finalResponse = update.content
+            setResponse(update.content)
+            setCurrentStatus(null) // Clear status when content arrives
+          } else {
+            setCurrentStatus(update.status)
+          }
         },
         onPromptClear: () => setPrompt(''),
-        onResponseClear: () => setResponse(''),
+        onResponseClear: () => {
+          setResponse('')
+          setCurrentStatus(null)
+        },
       })
 
       setIsSending(false)
@@ -1946,6 +1962,7 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
       setIsSending(true)
       setPrompt('')
       setResponse('')
+      setCurrentStatus(null)
 
       // Convert files to base64 for LLM processing
       const filesData = await Promise.all(
@@ -1970,12 +1987,20 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
         attachments: filesData,
         lang,
         t,
-        onResponseUpdate: (text) => {
-          finalResponse = text
-          setResponse(text)
+        onResponseUpdate: (update: ResponseUpdate) => {
+          if (update.type === 'content') {
+            finalResponse = update.content
+            setResponse(update.content)
+            setCurrentStatus(null) // Clear status when content arrives
+          } else {
+            setCurrentStatus(update.status)
+          }
         },
         onPromptClear: () => setPrompt(''),
-        onResponseClear: () => setResponse(''),
+        onResponseClear: () => {
+          setResponse('')
+          setCurrentStatus(null)
+        },
       })
 
       // Clear files after submission
@@ -2098,7 +2123,7 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
                 )}
 
                 {/* Display streaming response */}
-                {response && (
+                {(response || currentStatus) && (
                   <div
                     aria-hidden="false"
                     tabIndex={0}
@@ -2115,18 +2140,34 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
                     <div className="rounded-medium text-foreground group relative w-full overflow-hidden font-medium bg-transparent px-1 py-0">
                       <div className="text-small">
                         <div className="prose prose-neutral text-medium break-words">
-                          {detectContentType(response) ===
-                          'marpit-presentation' ? (
-                            <Widget
-                              type="marpit"
-                              language="yaml"
-                              code={response}
-                            />
-                          ) : (
-                            <MarkdownRenderer
-                              content={response}
-                              className="prose dark:prose-invert prose-sm"
-                            />
+                          {response &&
+                            (detectContentType(response) ===
+                            'marpit-presentation' ? (
+                              <Widget
+                                type="marpit"
+                                language="yaml"
+                                code={response}
+                              />
+                            ) : (
+                              <MarkdownRenderer
+                                content={response}
+                                className="prose dark:prose-invert prose-sm"
+                              />
+                            ))}
+                          {/* Display status with icon */}
+                          {currentStatus && (
+                            <div className="flex items-center gap-2 mt-2 text-default-500 italic">
+                              <Icon
+                                name={currentStatus.icon}
+                                className="w-4 h-4 animate-pulse"
+                              />
+                              <span>
+                                {t(
+                                  currentStatus.i18nKey as any,
+                                  currentStatus.vars,
+                                )}
+                              </span>
+                            </div>
                           )}
                         </div>
                       </div>

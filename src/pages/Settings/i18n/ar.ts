@@ -105,6 +105,9 @@ export const ar: I18n = {
   'Hide Default Agents': 'إخفاء الوكلاء الافتراضيين',
   'Only show your custom agents in the agent picker and agents page':
     'إظهار الوكلاء المخصصين فقط في منتقي الوكلاء وصفحة الوكلاء',
+  'Auto Memory Learning': 'التعلم الآلي للذاكرة',
+  'Automatically extract learnable information from conversations to build agent memory':
+    'استخراج المعلومات القابلة للتعلم تلقائياً من المحادثات لبناء ذاكرة الوكيل',
   'Show Context Panel': 'إظهار لوحة السياق',
   'Display the contextual information panel on the right side of the screen':
     'عرض لوحة المعلومات السياقية على الجانب الأيمن من الشاشة',

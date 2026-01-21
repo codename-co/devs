@@ -162,4 +162,22 @@ export const ko: I18n = {
   'View in Knowledge Base': '지식 베이스에서 보기',
   // Quick replies
   'Generating suggestions…': '제안 생성 중…',
+  // Tools display
+  'No tools available.': '사용 가능한 도구가 없습니다.',
+  '{count} tools available': '{count}개 도구 사용 가능',
+  'connected services': '연결된 서비스',
+  Knowledge: '지식',
+  Math: '수학',
+  Code: '코드',
+  Presentation: '프레젠테이션',
+  Connectors: '커넥터',
+  'Execute Code': '코드 실행',
+  'Generate Presentation': '프레젠테이션 생성',
+  // Status messages
+  'Starting autonomous task orchestration…':
+    '자율 작업 오케스트레이션 시작 중…',
+  'Orchestration failed: {error}': '오케스트레이션 실패: {error}',
+  'Found relevant information, processing…': '관련 정보를 찾았습니다, 처리 중…',
+  'Using tools…': '도구 사용 중…',
+  'Using tool: {tool}…': '{tool} 도구 사용 중…',
 } as const

@@ -136,4 +136,21 @@ export const en = [
   'View in Knowledge Base',
   // Quick replies
   'Generating suggestions…',
+  // Tools display
+  'No tools available.',
+  '{count} tools available',
+  'connected services',
+  'Knowledge',
+  'Math',
+  'Code',
+  'Presentation',
+  'Connectors',
+  'Execute Code',
+  'Generate Presentation',
+  // Status messages
+  'Starting autonomous task orchestration…',
+  'Orchestration failed: {error}',
+  'Found relevant information, processing…',
+  'Using tools…',
+  'Using tool: {tool}…',
 ] as const

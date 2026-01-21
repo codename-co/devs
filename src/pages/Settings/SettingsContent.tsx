@@ -84,6 +84,12 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
   const setHideDefaultAgents = userSettings(
     (state) => state.setHideDefaultAgents,
   )
+  const autoMemoryLearning = userSettings(
+    (state) => state.autoMemoryLearning ?? false,
+  )
+  const setAutoMemoryLearning = userSettings(
+    (state) => state.setAutoMemoryLearning,
+  )
 
   const handleLanguageChange = (newLanguage: Lang) => {
     setLanguage(newLanguage)
@@ -591,6 +597,21 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
                 <p className="text-xs text-default-500 mt-1 ml-7">
                   {t(
                     'Only show your custom agents in the agent picker and agents page',
+                  )}
+                </p>
+              </div>
+
+              <div className="max-w-xs mr-3">
+                <Switch
+                  isSelected={autoMemoryLearning}
+                  onChange={(e) => setAutoMemoryLearning(e.target.checked)}
+                  size="sm"
+                >
+                  {t('Auto Memory Learning')}
+                </Switch>
+                <p className="text-xs text-default-500 mt-1 ml-7">
+                  {t(
+                    'Automatically extract learnable information from conversations to build agent memory',
                   )}
                 </p>
               </div>

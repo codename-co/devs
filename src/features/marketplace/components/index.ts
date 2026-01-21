@@ -1,7 +1,4 @@
 export { ExtensionDetailModal } from './ExtensionDetailModal'
 export { ExtensionMonacoEditor } from './ExtensionMonacoEditor'
-export { ExtensionPreview } from './ExtensionPreview'
-export {
-  ExtensionPreviewWithConsole,
-  type ConsoleEntry,
-} from './ExtensionPreviewWithConsole'
+export { ExtensionPreview, type ConsoleEntry } from './ExtensionPreview'
+export { ExtensionPreviewWithConsole } from './ExtensionPreviewWithConsole'

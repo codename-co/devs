@@ -52,17 +52,17 @@ function parseAppPath(pathname: string): {
     pathParts[0]?.length === 2 && SUPPORTED_LANG_CODES.includes(pathParts[0])
 
   if (isLangCode) {
-    // /:lang/:pageKey
+    // /:lang/:pageKey/subpath...
     return {
       lang: pathParts[0],
-      pageKey: pathParts[1] || null,
+      pageKey: pathParts.slice(1).join('/') || null,
     }
   }
 
-  // /:pageKey
+  // /:pageKey/subpath...
   return {
     lang: null,
-    pageKey: pathParts[0] || null,
+    pageKey: pathParts.join('/') || null,
   }
 }
 
@@ -82,6 +82,7 @@ export function DynamicAppRoute() {
       ),
     [installed],
   )
+
   const isLoadingInstalled = useMarketplaceStore(
     (state) => state.isLoadingInstalled,
   )
@@ -107,6 +108,18 @@ export function DynamicAppRoute() {
       return pages && Object.keys(pages).includes(pageKey)
     })
   }, [pageKey, installedApps])
+
+  // Debug logging
+  console.debug('[DynamicAppRoute]', {
+    pathname: location.pathname,
+    pageKey,
+    installedAppsCount: installedApps.length,
+    installedAppIds: installedApps.map((a) => a.extension.id),
+    foundApp: installedApp?.extension.id,
+    pageKeys: installedApps.flatMap((a) =>
+      Object.keys(a.extension.pages || {}),
+    ),
+  })
 
   // Use loaded extension if available, otherwise fall back to installed extension
   const ext = loadedExtension || installedApp?.extension

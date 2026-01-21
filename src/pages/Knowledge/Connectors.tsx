@@ -12,7 +12,10 @@ import {
 } from '@/features/connectors/components'
 import { SyncEngine } from '@/features/connectors/sync-engine'
 import { successToast, errorToast } from '@/lib/toast'
-import type { Connector } from '@/features/connectors/types'
+import type {
+  Connector,
+  AppConnectorProvider,
+} from '@/features/connectors/types'
 import localI18n from './i18n'
 
 /**
@@ -34,6 +37,7 @@ export const Connectors: React.FC = () => {
     initialize: initializeConnectors,
     getAppConnectors,
     deleteConnector,
+    validateConnectorTokens,
   } = useConnectorStore()
 
   // Local state
@@ -42,6 +46,8 @@ export const Connectors: React.FC = () => {
   const [selectedConnector, setSelectedConnector] = useState<Connector | null>(
     null,
   )
+  const [reconnectProvider, setReconnectProvider] =
+    useState<AppConnectorProvider | null>(null)
 
   // Connected app connectors
   const appConnectors = useMemo(
@@ -49,12 +55,16 @@ export const Connectors: React.FC = () => {
     [connectors, getAppConnectors],
   )
 
-  // Initialize
+  // Initialize and validate tokens
   useEffect(() => {
     if (!isInitialized) {
       initializeConnectors()
+    } else {
+      // Validate connector tokens once initialized
+      // This checks if tokens have expired and updates status accordingly
+      validateConnectorTokens()
     }
-  }, [isInitialized, initializeConnectors])
+  }, [isInitialized, initializeConnectors, validateConnectorTokens])
 
   // Sync connector
   const handleSyncConnector = async (connector: Connector) => {
@@ -86,6 +96,19 @@ export const Connectors: React.FC = () => {
       console.error('Delete connector error:', error)
       errorToast(t('Failed to remove connector'))
     }
+  }
+
+  // Reconnect expired connector - delete and re-authenticate
+  const handleReconnect = async (connector: Connector) => {
+    // Delete the old connector first
+    try {
+      await deleteConnector(connector.id)
+    } catch (error) {
+      console.error('Failed to delete connector before reconnect:', error)
+    }
+    // Open wizard with the same provider pre-selected
+    setReconnectProvider(connector.provider as AppConnectorProvider)
+    setShowWizard(true)
   }
 
   // Empty state
@@ -157,6 +180,7 @@ export const Connectors: React.FC = () => {
               onSync={() => handleSyncConnector(connector)}
               onSettings={() => handleOpenSettings(connector)}
               onDisconnect={() => handleDeleteConnector(connector.id)}
+              onReconnect={() => handleReconnect(connector)}
             />
           ))}
         </div>
@@ -193,8 +217,12 @@ export const Connectors: React.FC = () => {
       {/* Connector Wizard Modal */}
       <ConnectorWizard
         isOpen={showWizard}
-        onClose={() => setShowWizard(false)}
+        onClose={() => {
+          setShowWizard(false)
+          setReconnectProvider(null)
+        }}
         category="app"
+        initialProvider={reconnectProvider}
       />
 
       {/* Connector Settings Modal */}

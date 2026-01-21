@@ -8,6 +8,7 @@ export interface PanelBlock {
   content: React.ReactNode
   defaultExpanded?: boolean
   priority?: number // Lower number = higher priority (shown first)
+  headerAction?: React.ReactNode // Optional action button(s) to show in the accordion header
 }
 
 interface ContextualPanelState {
