@@ -34,6 +34,8 @@ interface ImagePreviewModalProps {
   onDownload?: () => void
   /** Use current image as reference */
   onUseAsReference?: () => void
+  /** Delete current image */
+  onDelete?: () => void
   /** Toggle favorite */
   onFavorite?: () => void
   /** Whether current image is favorite */
@@ -52,6 +54,7 @@ export function ImagePreviewModal({
   onNext,
   onDownload,
   onUseAsReference,
+  onDelete,
   onFavorite,
   isFavorite = false,
 }: ImagePreviewModalProps) {
@@ -185,6 +188,22 @@ export function ImagePreviewModal({
                   }}
                 >
                   <Icon name="MediaImage" size="sm" />
+                </Button>
+              </Tooltip>
+            )}
+            {onDelete && (
+              <Tooltip content={t('Delete')}>
+                <Button
+                  isIconOnly
+                  size="sm"
+                  variant="flat"
+                  className="text-danger bg-transparent hover:bg-danger/20"
+                  onPress={() => {
+                    onDelete()
+                    onClose()
+                  }}
+                >
+                  <Icon name="Trash" size="sm" />
                 </Button>
               </Tooltip>
             )}

@@ -9,6 +9,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { db } from '@/lib/db'
 import { syncToYjs, deleteFromYjs } from '@/features/sync'
 import { useFolderSyncStore } from '@/features/local-backup/stores/folderSyncStore'
+import { folderSyncService } from '@/features/local-backup/lib/local-backup-service'
 import {
   StudioEntry,
   GeneratedImage,
@@ -90,6 +91,10 @@ export interface UseStudioHistoryReturn {
   addTags: (entryId: string, tags: string[]) => Promise<void>
   /** Remove a history entry */
   removeEntry: (entryId: string) => Promise<void>
+  /** Remove a specific image from a history entry */
+  removeImage: (entryId: string, imageId: string) => Promise<void>
+  /** Remove a specific video from a history entry */
+  removeVideo: (entryId: string, videoId: string) => Promise<void>
   /** Clear all history */
   clearHistory: () => Promise<void>
   /** Search history by prompt */
@@ -318,7 +323,90 @@ export function useStudioHistory(): UseStudioHistoryReturn {
     async (entryId: string) => {
       await deleteEntry(entryId)
       setHistory((prev) => prev.filter((e) => e.id !== entryId))
+      // Delete files from local backup
+      folderSyncService.deleteStudioEntryFiles(entryId).catch(console.error)
       triggerBackupSync()
+    },
+    [triggerBackupSync],
+  )
+
+  // Remove a specific image from an entry
+  const removeImage = useCallback(
+    async (entryId: string, imageId: string) => {
+      setHistory((prev) => {
+        const entryIndex = prev.findIndex((e) => e.id === entryId)
+        if (entryIndex === -1) return prev
+
+        const entry = prev[entryIndex]
+        const remainingImages = (entry.images || []).filter(
+          (img) => img.id !== imageId,
+        )
+
+        // If no images left, delete the entire entry
+        if (remainingImages.length === 0) {
+          deleteEntry(entryId).catch(console.error)
+          // Delete all files from local backup
+          folderSyncService.deleteStudioEntryFiles(entryId).catch(console.error)
+          return prev.filter((e) => e.id !== entryId)
+        }
+
+        // Otherwise, update the entry with remaining images
+        const updatedEntry = { ...entry, images: remainingImages }
+        saveEntry(updatedEntry)
+          .then(() => {
+            // Delete the specific image file from local backup
+            folderSyncService
+              .deleteStudioImageFile(entryId, imageId)
+              .catch(console.error)
+            triggerBackupSync()
+          })
+          .catch(console.error)
+
+        const updated = [...prev]
+        updated[entryIndex] = updatedEntry
+        return updated
+      })
+    },
+    [triggerBackupSync],
+  )
+
+  // Remove a specific video from an entry
+  const removeVideo = useCallback(
+    async (entryId: string, videoId: string) => {
+      setHistory((prev) => {
+        const entryIndex = prev.findIndex((e) => e.id === entryId)
+        if (entryIndex === -1) return prev
+
+        const entry = prev[entryIndex]
+        const remainingVideos = (entry.videos || []).filter(
+          (vid) => vid.id !== videoId,
+        )
+
+        // If no videos left, delete the entire entry
+        if (remainingVideos.length === 0) {
+          deleteEntry(entryId).catch(console.error)
+          // Delete all files from local backup
+          folderSyncService.deleteStudioEntryFiles(entryId).catch(console.error)
+          return prev.filter((e) => e.id !== entryId)
+        }
+
+        // Otherwise, update the entry with remaining videos
+        const updatedEntry = { ...entry, videos: remainingVideos }
+        saveEntry(updatedEntry)
+          .then(() => {
+            // Delete the specific video file from local backup
+            // Note: Videos are stored similarly to images in the entry folder
+            folderSyncService
+              .deleteStudioImageFile(entryId, videoId)
+              .catch(console.error)
+            triggerBackupSync()
+          })
+          .catch(console.error)
+
+        const updated = [...prev]
+        updated[entryIndex] = updatedEntry
+        return updated
+      })
     },
     [triggerBackupSync],
   )
@@ -356,6 +444,8 @@ export function useStudioHistory(): UseStudioHistoryReturn {
     toggleFavorite,
     addTags,
     removeEntry,
+    removeImage,
+    removeVideo,
     clearHistory,
     searchHistory,
     refresh: loadHistory,

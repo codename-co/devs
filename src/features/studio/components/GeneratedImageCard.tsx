@@ -143,6 +143,20 @@ export function GeneratedImageCard({
                     </Button>
                   </Tooltip>
                 )}
+
+                {onDelete && (
+                  <Tooltip content={t('Delete')}>
+                    <Button
+                      isIconOnly
+                      size="sm"
+                      variant="flat"
+                      className="bg-white/20 backdrop-blur-sm hover:bg-danger/50"
+                      onPress={onDelete}
+                    >
+                      <Icon name="Trash" size="sm" className="text-white" />
+                    </Button>
+                  </Tooltip>
+                )}
               </div>
             )}
 
