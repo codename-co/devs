@@ -128,4 +128,8 @@ export const ar: I18n = {
   Images: 'صور',
   Videos: 'فيديوهات',
   Favorites: 'المفضلة',
+  'Delete media': 'حذف الوسائط',
+  'Are you sure you want to permanently delete this media? This action cannot be undone.':
+    'هل أنت متأكد من أنك تريد حذف هذه الوسائط نهائياً؟ لا يمكن التراجع عن هذا الإجراء.',
+  'Media deleted': 'تم حذف الوسائط',
 }

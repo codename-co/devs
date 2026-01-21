@@ -13,6 +13,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalBody,
+  ModalFooter,
   useDisclosure,
   Drawer,
   DrawerContent,
@@ -194,8 +195,14 @@ export function StudioPage() {
     DEFAULT_VIDEO_SETTINGS,
   )
 
-  const { history, addToHistory, addVideoToHistory, toggleFavorite } =
-    useStudioHistory()
+  const {
+    history,
+    addToHistory,
+    addVideoToHistory,
+    toggleFavorite,
+    removeImage,
+    removeVideo,
+  } = useStudioHistory()
 
   // Local state
   const [prompt, setPrompt] = useState('')
@@ -212,6 +219,14 @@ export function StudioPage() {
     useState<VideoProvider | null>(null)
   const [selectedVideoModel, setSelectedVideoModel] =
     useState<VideoModel | null>(null)
+
+  // Delete confirmation state
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean
+    type: 'image' | 'video'
+    entryId: string
+    mediaId: string
+  } | null>(null)
 
   // Computed values - unified favorite media (images and videos)
   const favoriteMedia = useMemo(() => {
@@ -690,6 +705,37 @@ export function StudioPage() {
     }
   }, [])
 
+  // Handle delete media with confirmation
+  const handleDeleteMedia = useCallback(
+    (type: 'image' | 'video', entryId: string, mediaId: string) => {
+      setDeleteConfirm({ isOpen: true, type, entryId, mediaId })
+    },
+    [],
+  )
+
+  // Confirm delete
+  const handleConfirmDelete = useCallback(async () => {
+    if (!deleteConfirm) return
+
+    if (deleteConfirm.type === 'image') {
+      await removeImage(deleteConfirm.entryId, deleteConfirm.mediaId)
+    } else {
+      await removeVideo(deleteConfirm.entryId, deleteConfirm.mediaId)
+    }
+
+    addToast({
+      title: t('Media deleted'),
+      color: 'success',
+    })
+
+    setDeleteConfirm(null)
+  }, [deleteConfirm, removeImage, removeVideo, t])
+
+  // Cancel delete
+  const handleCancelDelete = useCallback(() => {
+    setDeleteConfirm(null)
+  }, [])
+
   return (
     <DefaultLayout showBackButton={false}>
       {/* Studio branded background */}
@@ -918,6 +964,13 @@ export function StudioPage() {
                         lang={lang}
                         prompt={item.prompt}
                         onDownload={() => downloadVideo(item.video!)}
+                        onDelete={() =>
+                          handleDeleteMedia(
+                            'video',
+                            item.entryId,
+                            item.video!.id,
+                          )
+                        }
                         onFavorite={() => toggleFavorite(item.entryId)}
                         isFavorite={item.isFavorite}
                       />
@@ -928,6 +981,13 @@ export function StudioPage() {
                         image={item.image}
                         prompt={item.prompt}
                         onDownload={() => downloadImage(item.image!)}
+                        onDelete={() =>
+                          handleDeleteMedia(
+                            'image',
+                            item.entryId,
+                            item.image!.id,
+                          )
+                        }
                         onUseAsReference={() =>
                           handleUseAsReference(item.image!)
                         }
@@ -946,6 +1006,9 @@ export function StudioPage() {
                         lang={lang}
                         prompt={prompt}
                         onDownload={() => downloadVideo(video)}
+                        onDelete={() =>
+                          handleDeleteMedia('video', entryId, video.id)
+                        }
                         onFavorite={() => toggleFavorite(entryId)}
                         isFavorite={isFavorite}
                       />
@@ -961,6 +1024,13 @@ export function StudioPage() {
                         lang={lang}
                         prompt={item.prompt}
                         onDownload={() => downloadVideo(item.video!)}
+                        onDelete={() =>
+                          handleDeleteMedia(
+                            'video',
+                            item.entryId,
+                            item.video!.id,
+                          )
+                        }
                         onFavorite={() => toggleFavorite(item.entryId)}
                         isFavorite={true}
                       />
@@ -971,6 +1041,13 @@ export function StudioPage() {
                         image={item.image}
                         prompt={item.prompt}
                         onDownload={() => downloadImage(item.image!)}
+                        onDelete={() =>
+                          handleDeleteMedia(
+                            'image',
+                            item.entryId,
+                            item.image!.id,
+                          )
+                        }
                         onUseAsReference={() =>
                           handleUseAsReference(item.image!)
                         }
@@ -991,6 +1068,13 @@ export function StudioPage() {
                           image={item.image}
                           prompt={item.prompt}
                           onDownload={() => downloadImage(item.image!)}
+                          onDelete={() =>
+                            handleDeleteMedia(
+                              'image',
+                              item.entryId,
+                              item.image!.id,
+                            )
+                          }
                           onUseAsReference={() =>
                             handleUseAsReference(item.image!)
                           }
@@ -1078,6 +1162,35 @@ export function StudioPage() {
               </div>
             </div>
           </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteConfirm?.isOpen ?? false}
+        onClose={handleCancelDelete}
+        size="sm"
+      >
+        <ModalContent>
+          <ModalHeader className="flex items-center gap-2">
+            <Icon name="Trash" size="md" className="text-danger" />
+            {t('Delete media')}
+          </ModalHeader>
+          <ModalBody>
+            <p className="text-default-600">
+              {t(
+                'Are you sure you want to permanently delete this media? This action cannot be undone.',
+              )}
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="flat" onPress={handleCancelDelete}>
+              {t('Cancel')}
+            </Button>
+            <Button color="danger" onPress={handleConfirmDelete}>
+              {t('Delete')}
+            </Button>
+          </ModalFooter>
         </ModalContent>
       </Modal>
     </DefaultLayout>

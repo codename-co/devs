@@ -127,4 +127,8 @@ export const ko: I18n = {
   Images: '이미지',
   Videos: '비디오',
   Favorites: '즐겨찾기',
+  'Delete media': '미디어 삭제',
+  'Are you sure you want to permanently delete this media? This action cannot be undone.':
+    '이 미디어를 영구적으로 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.',
+  'Media deleted': '미디어가 삭제되었습니다',
 }

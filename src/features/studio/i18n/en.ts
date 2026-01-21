@@ -120,4 +120,7 @@ export const en = [
   'Images',
   'Videos',
   'Favorites',
+  'Delete media',
+  'Are you sure you want to permanently delete this media? This action cannot be undone.',
+  'Media deleted',
 ] as const

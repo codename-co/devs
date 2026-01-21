@@ -130,4 +130,8 @@ export const es: I18n = {
   Images: 'Imágenes',
   Videos: 'Videos',
   Favorites: 'Favoritos',
+  'Delete media': 'Eliminar medio',
+  'Are you sure you want to permanently delete this media? This action cannot be undone.':
+    '¿Estás seguro de que deseas eliminar permanentemente este medio? Esta acción no se puede deshacer.',
+  'Media deleted': 'Medio eliminado',
 }

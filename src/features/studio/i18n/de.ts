@@ -131,4 +131,8 @@ export const de: I18n = {
   Images: 'Bilder',
   Videos: 'Videos',
   Favorites: 'Favoriten',
+  'Delete media': 'Medium löschen',
+  'Are you sure you want to permanently delete this media? This action cannot be undone.':
+    'Möchten Sie dieses Medium wirklich dauerhaft löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+  'Media deleted': 'Medium gelöscht',
 }
