@@ -1,0 +1,16 @@
+services:
+  proxy:
+    build:
+      context: .
+    restart: unless-stopped
+    labels:
+      traefik.enable: true
+      traefik.http.routers.proxy.rule: Host(`proxy.devs.new`)
+      traefik.http.routers.proxy.entrypoints: web
+      traefik.http.services.proxy.loadbalancer.server.port: 3001
+    networks:
+      - external
+
+networks:
+  external:
+    external: true
