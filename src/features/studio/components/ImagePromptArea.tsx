@@ -381,34 +381,9 @@ export const ImagePromptArea = forwardRef<
           onChange={handleReferenceImageSelect}
         />
 
-        <Textarea
-          ref={ref}
-          data-testid="image-prompt-input"
-          className="pb-16 bg-content2 rounded-lg"
-          classNames={{
-            input: 'p-1',
-            inputWrapper: `shadow-none -mb-16 pb-8 bg-default-200 !ring-0 !ring-offset-0 ${referenceImages.length > 0 ? 'pl-16' : ''}`,
-          }}
-          maxRows={5}
-          minRows={isMobileDevice() && isLandscape() && isSmallHeight() ? 1 : 2}
-          placeholder={
-            isDragOver
-              ? t('Drop reference image here…')
-              : placeholder || t('Describe the image you want to create…')
-          }
-          size="lg"
-          value={prompt}
-          onBlur={handleBlur as any}
-          onFocus={handleFocus as any}
-          onKeyDown={handleKeyDown as any}
-          onPaste={handlePaste as any}
-          onValueChange={handlePromptChange}
-          {...props}
-        />
-
-        {/* Reference images preview - inside the prompt area on the left */}
+        {/* Reference images preview - above the prompt area */}
         {referenceImages.length > 0 && (
-          <div className="absolute top-2 left-2 z-20 flex gap-1 flex-wrap max-w-[50%]">
+          <div className="absolute flex gap-2 flex-wrap p-2 -mt-12">
             {referenceImages.map((image, index) => (
               <div key={`${image.name}-${index}`} className="relative group">
                 <img
@@ -427,6 +402,35 @@ export const ImagePromptArea = forwardRef<
             ))}
           </div>
         )}
+
+        <Textarea
+          ref={ref}
+          data-testid="image-prompt-input"
+          className={cn(
+            'pb-16 bg-content2',
+            referenceImages.length > 0 ? 'rounded-b-lg' : 'rounded-lg',
+          )}
+          classNames={{
+            input: 'p-1',
+            inputWrapper:
+              'shadow-none -mb-16 pb-8 bg-default-200 !ring-0 !ring-offset-0',
+          }}
+          maxRows={5}
+          minRows={isMobileDevice() && isLandscape() && isSmallHeight() ? 1 : 2}
+          placeholder={
+            isDragOver
+              ? t('Drop reference image here…')
+              : placeholder || t('Describe the image you want to create…')
+          }
+          size="lg"
+          value={prompt}
+          onBlur={handleBlur as any}
+          onFocus={handleFocus as any}
+          onKeyDown={handleKeyDown as any}
+          onPaste={handlePaste as any}
+          onValueChange={handlePromptChange}
+          {...props}
+        />
 
         {/* Progress bar */}
         {isGenerating && progress > 0 && (
