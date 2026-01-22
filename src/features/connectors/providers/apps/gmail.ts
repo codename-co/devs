@@ -73,8 +73,12 @@ const GOOGLE_TOKENINFO_URL = 'https://oauth2.googleapis.com/tokeninfo'
 const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo'
 
 /** Gmail API scopes - readonly for reading, compose for draft creation */
-const GMAIL_SCOPE =
-  'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.compose'
+const GMAIL_SCOPE = [
+  'https://www.googleapis.com/auth/userinfo.email',
+  'https://www.googleapis.com/auth/userinfo.profile',
+  'https://www.googleapis.com/auth/gmail.readonly',
+  'https://www.googleapis.com/auth/gmail.compose',
+].join(' ')
 
 /** Default page size for message listing */
 const DEFAULT_PAGE_SIZE = 50

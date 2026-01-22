@@ -463,7 +463,12 @@ Since Gmail, Drive, and Calendar all use Google OAuth, users can connect once an
 // Combine scopes for single auth flow
 const GOOGLE_SCOPES = {
   'google-drive': ['https://www.googleapis.com/auth/drive.readonly'],
-  gmail: ['https://www.googleapis.com/auth/gmail.readonly'],
+  gmail: [
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'https://www.googleapis.com/auth/gmail.readonly',
+    'https://www.googleapis.com/auth/gmail.compose',
+  ],
   'google-calendar': ['https://www.googleapis.com/auth/calendar.readonly'],
 }
 
@@ -757,7 +762,12 @@ export class GmailProvider implements AppConnectorProviderInterface {
     oauth: {
       authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
       tokenUrl: 'https://oauth2.googleapis.com/token',
-      scopes: ['https://www.googleapis.com/auth/gmail.readonly'],
+      scopes: [
+        'https://www.googleapis.com/auth/userinfo.email',
+        'https://www.googleapis.com/auth/userinfo.profile',
+        'https://www.googleapis.com/auth/gmail.readonly',
+        'https://www.googleapis.com/auth/gmail.compose',
+      ],
       clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
       pkceRequired: true,
     },

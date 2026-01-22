@@ -17,7 +17,12 @@ const mockOAuthConfigs: Record<string, any> = {
     authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
     tokenUrl: 'https://oauth2.googleapis.com/token',
     clientId: 'test-google-client-id',
-    scopes: ['https://www.googleapis.com/auth/gmail.readonly'],
+    scopes: [
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'https://www.googleapis.com/auth/gmail.readonly',
+      'https://www.googleapis.com/auth/gmail.compose',
+    ],
     pkceRequired: true,
   },
   'google-calendar': {
