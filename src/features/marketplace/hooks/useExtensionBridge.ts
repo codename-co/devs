@@ -274,6 +274,96 @@ export function useExtensionBridge({
             break
           }
 
+          case 'DEVS_TOOLS_LIST': {
+            const { toolRegistry } = await import('@/tools/registry')
+            const { category, tags, enabledOnly = true } = payload || {}
+            const tools = toolRegistry.list({ category, tags, enabledOnly })
+            response = {
+              success: true,
+              data: tools.map((t) => ({
+                name: t.metadata.name,
+                displayName: t.metadata.displayName,
+                shortDescription: t.metadata.shortDescription,
+                icon: t.metadata.icon,
+                category: t.metadata.category,
+                tags: t.metadata.tags,
+                definition: t.definition,
+              })),
+            }
+            break
+          }
+
+          case 'DEVS_TOOLS_GET': {
+            const { toolRegistry } = await import('@/tools/registry')
+            const { name } = payload || {}
+            const tool = toolRegistry.get(name)
+            if (tool) {
+              response = {
+                success: true,
+                data: {
+                  name: tool.metadata.name,
+                  displayName: tool.metadata.displayName,
+                  shortDescription: tool.metadata.shortDescription,
+                  icon: tool.metadata.icon,
+                  category: tool.metadata.category,
+                  tags: tool.metadata.tags,
+                  definition: tool.definition,
+                },
+              }
+            } else {
+              response = { success: false, error: `Tool "${name}" not found` }
+            }
+            break
+          }
+
+          case 'DEVS_TOOLS_EXECUTE': {
+            const { toolRegistry } = await import('@/tools/registry')
+            const { name, args } = payload || {}
+            const tool = toolRegistry.get(name)
+            if (!tool) {
+              response = { success: false, error: `Tool "${name}" not found` }
+              break
+            }
+            if (!tool.enabled) {
+              response = {
+                success: false,
+                error: `Tool "${name}" is currently disabled`,
+              }
+              break
+            }
+            try {
+              // Validate arguments if validator exists
+              const validatedArgs = tool.validate
+                ? tool.validate(args)
+                : (args as Parameters<typeof tool.handler>[0])
+              // Execute the tool
+              const result = await tool.handler(validatedArgs, {
+                agentId: undefined,
+                conversationId: undefined,
+                taskId: undefined,
+              })
+              response = { success: true, data: { success: true, result } }
+            } catch (execError) {
+              response = {
+                success: true,
+                data: {
+                  success: false,
+                  error:
+                    execError instanceof Error
+                      ? execError.message
+                      : 'Tool execution failed',
+                },
+              }
+            }
+            break
+          }
+
+          case 'DEVS_TOOLS_CATEGORIES': {
+            const { toolRegistry } = await import('@/tools/registry')
+            response = { success: true, data: toolRegistry.getCategories() }
+            break
+          }
+
           default:
             response = {
               success: false,

@@ -2,7 +2,7 @@ import { db } from '@/lib/db'
 import { Agent, Credential, LLMProvider } from '@/types'
 import { EasySetupData } from './easy-setup'
 import { nanoid } from 'nanoid'
-import { successToast } from '@/lib/toast'
+import { notifySuccess } from '@/features/notifications'
 import { userSettings } from '@/stores/userStore'
 
 /**
@@ -138,7 +138,10 @@ export async function initializeEasySetup(
 
     // Show success message
     const successMessage = buildSuccessMessage(importedCounts, setupData.p.n)
-    successToast('Easy Setup Complete', successMessage)
+    notifySuccess({
+      title: 'Easy Setup Complete',
+      description: successMessage,
+    })
   } catch (error) {
     console.error('Error initializing team setup:', error)
     throw new Error(

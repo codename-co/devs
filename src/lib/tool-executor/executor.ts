@@ -1023,3 +1023,40 @@ export function arePresentationToolsRegistered(): boolean {
 export function unregisterPresentationTools(): void {
   unregisterCategoryFromLegacy('presentation', defaultRegistry)
 }
+
+// ============================================================================
+// Web Search Tools Registration
+// ============================================================================
+
+/**
+ * Register all research tools with the default registry.
+ * Call this during application initialization to enable research tools.
+ *
+ * @example
+ * ```typescript
+ * import { registerResearchTools } from '@/lib/tool-executor/executor'
+ *
+ * // In app initialization
+ * registerResearchTools()
+ * ```
+ */
+export function registerResearchTools(): void {
+  registerCategoryWithLegacy('research', defaultRegistry)
+}
+
+/**
+ * Check if research tools are registered.
+ *
+ * @returns true if all research tools are registered
+ */
+export function areResearchToolsRegistered(): boolean {
+  return isCategoryRegisteredInLegacy('research', defaultRegistry)
+}
+
+/**
+ * Unregister all research tools from the default registry.
+ * Useful for testing or when disabling research features.
+ */
+export function unregisterResearchTools(): void {
+  unregisterCategoryFromLegacy('research', defaultRegistry)
+}

@@ -174,6 +174,7 @@ export const de: I18n = {
   Math: 'Mathematik',
   Code: 'Code',
   Presentation: 'Präsentation',
+  Research: 'Forschung',
   Connectors: 'Konnektoren',
   'Execute Code': 'Code ausführen',
   'Generate Presentation': 'Präsentation erstellen',

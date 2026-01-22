@@ -106,32 +106,6 @@ const result = await DEVS.llm.complete('Write a haiku about coding')
 
 ## UI API (`DEVS.ui`)
 
-### `prompt(options?)`
-
-Show the DEVS PromptArea component in a modal overlay.
-
-```typescript
-prompt(options?: {
-  placeholder?: string
-  defaultPrompt?: string
-}): Promise<{
-  prompt: string
-  agentId?: string
-  methodologyId?: string
-} | null>
-```
-
-**Example:**
-
-```javascript
-const result = await DEVS.ui.prompt({
-  placeholder: 'Describe your task...',
-})
-if (result) {
-  console.log('User submitted:', result.prompt)
-}
-```
-
 ### `toast(message, options?)`
 
 Show a toast notification (fire-and-forget).

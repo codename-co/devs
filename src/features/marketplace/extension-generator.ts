@@ -35,7 +35,7 @@ ${ExtensionSchema}
 FOR APP EXTENSIONS:
 The "pages" object should contain React component code as strings. The code has access to:
 - All React hooks (useState, useEffect, etc.). But NEVER import React itself (it is already imported).
-- @dev/components components (that inherit from @heroui/react) (Button, Card, Input, Modal, Container, Sectionm, etc.)
+- @dev/components components (that inherit from @heroui/react) (Button, Card, Input, Modal, Container, Section, PromptArea, etc.)
 - The "window.DEVS" Bridge API for platform integration
 
 ## EXTENSION BRIDGE API

@@ -753,4 +753,9 @@ export const es: I18n = {
   'From remembered context about the user':
     'Del contexto recordado sobre el usuario',
   'From important past conversations': 'De conversaciones importantes pasadas',
+
+  // Notifications
+  Notifications: 'Notificaciones',
+  'No notifications': 'Sin notificaciones',
+  'Clear all': 'Borrar todo',
 } as const

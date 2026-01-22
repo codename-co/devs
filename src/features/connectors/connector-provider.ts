@@ -23,6 +23,24 @@ import type {
   AppConnectorProvider,
 } from './types'
 
+/**
+ * Lazy getter for the connector store to avoid circular dependency.
+ * The store imports from this module, so we need to import it dynamically.
+ */
+const getConnectorStore = async () => {
+  const { useConnectorStore } = await import('./stores/connectorStore')
+  return useConnectorStore.getState()
+}
+
+/**
+ * Lazy getter for notifyWarning to avoid circular dependency.
+ * The notifications feature imports from db which imports connector types.
+ */
+const getNotifyWarning = async () => {
+  const { notifyWarning } = await import('@/features/notifications')
+  return notifyWarning
+}
+
 // =============================================================================
 // Constants
 // =============================================================================
@@ -37,7 +55,12 @@ export const CONNECTOR_STORAGE_PREFIX = 'connector'
  */
 const PROVIDER_SCOPES: Record<AppConnectorProvider, string[]> = {
   'google-drive': ['https://www.googleapis.com/auth/drive.readonly'],
-  gmail: ['https://www.googleapis.com/auth/gmail.readonly'],
+  gmail: [
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'https://www.googleapis.com/auth/gmail.readonly',
+    'https://www.googleapis.com/auth/gmail.compose',
+  ],
   'google-calendar': ['https://www.googleapis.com/auth/calendar.readonly'],
   'google-chat': [
     'https://www.googleapis.com/auth/chat.spaces.readonly',
@@ -292,13 +315,15 @@ export abstract class BaseAppConnectorProvider
    *
    * Automatically:
    * - Decrypts and attaches the access token as a Bearer token
-   * - Handles 401 errors by throwing AuthenticationError
+   * - Handles 401 errors by attempting token refresh
+   * - Retries the request with a refreshed token if refresh succeeds
+   * - Shows a warning notification if refresh fails
    *
    * @param connector - The connector to authenticate with
    * @param url - The URL to fetch
    * @param options - Optional fetch options
    * @returns The fetch Response
-   * @throws AuthenticationError if the request returns 401
+   * @throws AuthenticationError if the request returns 401 and token refresh fails
    * @throws TokenDecryptionError if token decryption fails
    */
   protected async fetchWithAuth(
@@ -317,13 +342,139 @@ export abstract class BaseAppConnectorProvider
     })
 
     if (response.status === 401) {
+      // Attempt to refresh the token automatically
+      const refreshedConnector = await this.tryRefreshToken(connector)
+
+      if (refreshedConnector) {
+        // Retry the request with the new token
+        const newToken = await this.getDecryptedToken(refreshedConnector)
+        const retryHeaders = new Headers(options.headers)
+        retryHeaders.set('Authorization', `Bearer ${newToken}`)
+
+        const retryResponse = await fetch(url, {
+          ...options,
+          headers: retryHeaders,
+        })
+
+        if (retryResponse.status === 401) {
+          throw new AuthenticationError(
+            'Access token expired or invalid even after refresh.',
+            401,
+          )
+        }
+
+        return retryResponse
+      }
+
+      // Token refresh failed
       throw new AuthenticationError(
-        'Access token expired or invalid. Token refresh may be required.',
+        'Access token expired or invalid. Token refresh failed.',
         401,
       )
     }
 
     return response
+  }
+
+  /**
+   * Attempt to refresh an expired access token.
+   *
+   * If the connector has a refresh token, this will:
+   * 1. Call the provider's refreshToken method
+   * 2. Encrypt and store the new access token
+   * 3. Update the connector in the store
+   *
+   * If refresh fails, a warning notification is shown.
+   *
+   * @param connector - The connector with the expired token
+   * @returns Updated connector with new token, or null if refresh failed
+   */
+  private async tryRefreshToken(
+    connector: Connector,
+  ): Promise<Connector | null> {
+    // Check if refresh token is available
+    if (!connector.encryptedRefreshToken) {
+      console.warn(
+        `[ConnectorProvider] No refresh token available for ${connector.provider}`,
+      )
+      const notifyWarning = await getNotifyWarning()
+      notifyWarning({
+        title: 'Token Expired',
+        description: 'Your access token has expired. Please reconnect.',
+      })
+      return null
+    }
+
+    try {
+      console.log(
+        `[ConnectorProvider] Attempting token refresh for ${connector.provider}`,
+      )
+
+      // Refresh the token using the provider's implementation
+      const refreshResult = await this.refreshToken(connector)
+
+      // Encrypt the new access token
+      await SecureStorage.init()
+      const {
+        encrypted: encryptedToken,
+        iv,
+        salt,
+      } = await SecureStorage.encryptCredential(refreshResult.accessToken)
+
+      // Calculate new expiry time
+      const tokenExpiresAt = refreshResult.expiresIn
+        ? new Date(Date.now() + refreshResult.expiresIn * 1000)
+        : undefined
+
+      // Build updated connector
+      const updatedConnector: Connector = {
+        ...connector,
+        encryptedToken,
+        tokenExpiresAt,
+        status: 'connected',
+        errorMessage: undefined,
+      }
+
+      // Store encryption metadata
+      storeEncryptionMetadata(connector.id, iv, salt, false)
+
+      // Update the connector in the store
+      const store = await getConnectorStore()
+      await store.updateConnector(connector.id, {
+        encryptedToken,
+        tokenExpiresAt,
+        status: 'connected',
+        errorMessage: undefined,
+      })
+
+      console.log(
+        `[ConnectorProvider] Token refreshed successfully for ${connector.provider}`,
+      )
+
+      return updatedConnector
+    } catch (error) {
+      console.error(
+        `[ConnectorProvider] Failed to refresh token for ${connector.provider}:`,
+        error,
+      )
+
+      const notifyWarning = await getNotifyWarning()
+      notifyWarning({
+        title: 'Token Refresh Failed',
+        description:
+          'Could not refresh your access token. Please reconnect to continue.',
+      })
+
+      // Update connector status to expired
+      const store = await getConnectorStore()
+      await store.updateConnector(connector.id, {
+        status: 'expired',
+        errorMessage:
+          'Access token expired and refresh failed. Please reconnect.',
+      })
+
+      return null
+    }
   }
 
   /**

@@ -28,7 +28,7 @@ import {
   Artifact as IArtifact,
   Conversation,
 } from '@/types'
-import { errorToast } from '@/lib/toast'
+import { notifyError } from '@/features/notifications'
 import { buildTimelineEvents, type TimelineEvent } from '@/lib/task-timeline'
 import { WorkflowOrchestrator } from '@/lib/orchestrator'
 
@@ -242,7 +242,10 @@ export const TaskPage = () => {
   // Handle navigation when task ID is missing
   useEffect(() => {
     if (!taskId) {
-      errorToast(t('No task ID provided'))
+      notifyError({
+        title: 'Task Error',
+        description: t('No task ID provided'),
+      })
       navigate(url(''))
     }
   }, [taskId, navigate, url, t])
@@ -253,7 +256,10 @@ export const TaskPage = () => {
       // Give a small delay in case task is being loaded
       const timeout = setTimeout(() => {
         if (!task) {
-          errorToast(t('Task not found'))
+          notifyError({
+            title: 'Task Not Found',
+            description: t('Task not found'),
+          })
           navigate(url(''))
         }
       }, 1000)
@@ -336,7 +342,13 @@ export const TaskPage = () => {
             '⏭️ Orchestration already in progress, continuing with existing execution',
           )
         } else {
-          errorToast('Task orchestration failed', error)
+          notifyError({
+            title: 'Task Orchestration Failed',
+            description:
+              error instanceof Error
+                ? error.message
+                : 'Task orchestration failed',
+          })
         }
       } finally {
         setIsOrchestrating(false)

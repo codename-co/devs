@@ -7,7 +7,8 @@ import type {
   ConnectorStatus,
   AppConnectorProvider,
 } from '@/features/connectors/types'
-import { errorToast, successToast, infoToast } from '@/lib/toast'
+import { infoToast } from '@/lib/toast'
+import { notifyError, notifySuccess } from '@/features/notifications'
 import { ProviderRegistry } from '@/features/connectors/provider-registry'
 import { SecureStorage } from '@/lib/crypto'
 import {
@@ -123,7 +124,11 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
         isInitialized: true,
       })
     } catch (error) {
-      errorToast('Failed to initialize connectors', error)
+      notifyError({
+        title: 'Connector Initialization Failed',
+        description:
+          'Failed to initialize connectors. Please refresh the page.',
+      })
       set({ isLoading: false })
     }
   },
@@ -157,10 +162,13 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
       ])
       set({ connectors: updatedConnectors, isLoading: false })
 
-      successToast('Connector added successfully')
+      // Inline feedback - keep as toast
       return id
     } catch (error) {
-      errorToast('Failed to add connector', error)
+      notifyError({
+        title: 'Connector Error',
+        description: 'Failed to add connector',
+      })
       set({ isLoading: false })
       throw error
     }
@@ -193,7 +201,10 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
       )
       set({ connectors: updatedConnectors, isLoading: false })
     } catch (error) {
-      errorToast('Failed to update connector', error)
+      notifyError({
+        title: 'Connector Error',
+        description: 'Failed to update connector',
+      })
       set({ isLoading: false })
       throw error
     }
@@ -228,9 +239,12 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
         isLoading: false,
       })
 
-      successToast('Connector deleted successfully')
+      // Inline feedback - no toast needed
     } catch (error) {
-      errorToast('Failed to delete connector', error)
+      notifyError({
+        title: 'Connector Error',
+        description: 'Failed to delete connector',
+      })
       set({ isLoading: false })
       throw error
     }
@@ -331,21 +345,30 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
           infoToast(`Syncing ${providerName}...`)
         }
 
-        // Sync completed successfully
+        // Sync completed successfully - use persistent notification for record
         if (stateUpdates.status === 'idle' && previousStatus === 'syncing') {
           const itemsSynced =
             stateUpdates.itemsSynced ?? updatedState.itemsSynced ?? 0
-          successToast(`Synced ${itemsSynced} items from ${providerName}`)
+          notifySuccess({
+            title: 'Sync Completed',
+            description: `Synced ${itemsSynced} items from ${providerName}`,
+          })
         }
 
-        // Sync failed
+        // Sync failed - use persistent notification for investigation
         if (stateUpdates.status === 'error' && previousStatus === 'syncing') {
           const errorMsg = stateUpdates.errorMessage || 'Unknown error'
-          errorToast(`Failed to sync ${providerName}`, errorMsg)
+          notifyError({
+            title: 'Sync Failed',
+            description: `Failed to sync ${providerName}: ${errorMsg}`,
+          })
         }
       }
     } catch (error) {
-      errorToast('Failed to update sync state', error)
+      notifyError({
+        title: 'Sync State Error',
+        description: 'Failed to update sync state',
+      })
       throw error
     }
   },
@@ -377,7 +400,10 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
 
       await get().updateConnector(id, updates)
     } catch (error) {
-      errorToast('Failed to update connector status', error)
+      notifyError({
+        title: 'Connector Error',
+        description: 'Failed to update connector status',
+      })
       throw error
     }
   },
@@ -405,7 +431,10 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
         isLoading: false,
       })
     } catch (error) {
-      errorToast('Failed to refresh connectors', error)
+      notifyError({
+        title: 'Connector Refresh Failed',
+        description: 'Failed to refresh connectors',
+      })
       set({ isLoading: false })
     }
   },

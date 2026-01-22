@@ -14,7 +14,17 @@ import {
   ToolChoice,
   ToolCall,
   LLMConfigWithTools,
+  GroundingMetadata,
 } from '../types'
+
+/**
+ * Anthropic web search tool definition.
+ * Uses the web_search_20250305 type for native web grounding.
+ */
+const ANTHROPIC_WEB_SEARCH_TOOL = {
+  type: 'web_search_20250305',
+  name: 'web_search',
+}
 
 export class AnthropicProvider implements LLMProviderInterface {
   private baseUrl = 'https://api.anthropic.com/v1'
@@ -165,6 +175,7 @@ export class AnthropicProvider implements LLMProviderInterface {
       hasSystemMessage: !!systemMessage,
       temperature: config?.temperature || 0.7,
       hasTools: !!config?.tools?.length,
+      enableWebSearch: !!config?.enableWebSearch,
     })
 
     // Build request body
@@ -176,14 +187,27 @@ export class AnthropicProvider implements LLMProviderInterface {
       max_tokens: config?.maxTokens || AnthropicProvider.DEFAULT_MAX_TOKENS,
     }
 
-    // Add tools if provided (and tool_choice is not 'none')
+    // Build tools array
+    const tools: any[] = []
+
+    // Add web search tool if enabled
+    if (config?.enableWebSearch) {
+      tools.push(ANTHROPIC_WEB_SEARCH_TOOL)
+    }
+
+    // Add custom tools if provided (and tool_choice is not 'none')
     if (
       config?.tools &&
       config.tools.length > 0 &&
       config?.tool_choice !== 'none'
     ) {
-      requestBody.tools = this.convertToolsToAnthropicFormat(config.tools)
-      if (config.tool_choice) {
+      tools.push(...this.convertToolsToAnthropicFormat(config.tools))
+    }
+
+    // Add tools to request if any
+    if (tools.length > 0 && config?.tool_choice !== 'none') {
+      requestBody.tools = tools
+      if (config?.tool_choice) {
         const anthropicToolChoice = this.convertToolChoiceToAnthropicFormat(
           config.tool_choice,
         )
@@ -223,13 +247,23 @@ export class AnthropicProvider implements LLMProviderInterface {
       .join('')
 
     // Extract tool_use blocks and convert to OpenAI format
-    const toolCalls = this.convertToolUseToToolCalls(data.content)
+    // Filter out web_search tool calls as they are handled internally
+    const toolCalls = this.convertToolUseToToolCalls(
+      data.content.filter(
+        (block: any) =>
+          block.type === 'tool_use' && block.name !== 'web_search',
+      ),
+    )
+
+    // Extract grounding metadata from web search results
+    const groundingMetadata = this.extractGroundingMetadata(data.content)
 
     // Map Anthropic stop_reason to OpenAI finish_reason
     let finishReason: 'stop' | 'length' | 'tool_calls' | 'content_filter' =
       'stop'
     if (data.stop_reason === 'tool_use') {
-      finishReason = 'tool_calls'
+      // Only set to tool_calls if there are non-web-search tool calls
+      finishReason = toolCalls.length > 0 ? 'tool_calls' : 'stop'
     } else if (data.stop_reason === 'max_tokens') {
       finishReason = 'length'
     } else if (data.stop_reason === 'end_turn') {
@@ -239,6 +273,7 @@ export class AnthropicProvider implements LLMProviderInterface {
     return {
       content: textContent,
       tool_calls: toolCalls.length > 0 ? toolCalls : undefined,
+      groundingMetadata,
       finish_reason: finishReason,
       usage: data.usage
         ? {
@@ -247,6 +282,44 @@ export class AnthropicProvider implements LLMProviderInterface {
             totalTokens: data.usage.input_tokens + data.usage.output_tokens,
           }
         : undefined,
+    }
+  }
+
+  /**
+   * Extract grounding metadata from Anthropic web search results.
+   */
+  private extractGroundingMetadata(
+    contentBlocks: any[],
+  ): GroundingMetadata | undefined {
+    // Find web_search_tool_result blocks
+    const webSearchResults = contentBlocks.filter(
+      (block: any) => block.type === 'web_search_tool_result',
+    )
+
+    if (webSearchResults.length === 0) {
+      return undefined
+    }
+
+    const webResults: Array<{ title: string; url: string; snippet?: string }> =
+      []
+
+    for (const result of webSearchResults) {
+      if (result.content && Array.isArray(result.content)) {
+        for (const item of result.content) {
+          if (item.type === 'web_search_result') {
+            webResults.push({
+              title: item.title || '',
+              url: item.url || '',
+              snippet: item.encrypted_content ? '[Encrypted content]' : '',
+            })
+          }
+        }
+      }
+    }
+
+    return {
+      isGrounded: webResults.length > 0,
+      webResults,
     }
   }
 
@@ -274,14 +347,27 @@ export class AnthropicProvider implements LLMProviderInterface {
       stream: true,
     }
 
-    // Add tools if provided (and tool_choice is not 'none')
+    // Build tools array
+    const tools: any[] = []
+
+    // Add web search tool if enabled
+    if (config?.enableWebSearch) {
+      tools.push(ANTHROPIC_WEB_SEARCH_TOOL)
+    }
+
+    // Add custom tools if provided (and tool_choice is not 'none')
     if (
       config?.tools &&
       config.tools.length > 0 &&
       config?.tool_choice !== 'none'
     ) {
-      requestBody.tools = this.convertToolsToAnthropicFormat(config.tools)
-      if (config.tool_choice) {
+      tools.push(...this.convertToolsToAnthropicFormat(config.tools))
+    }
+
+    // Add tools to request if any
+    if (tools.length > 0 && config?.tool_choice !== 'none') {
+      requestBody.tools = tools
+      if (config?.tool_choice) {
         const anthropicToolChoice = this.convertToolChoiceToAnthropicFormat(
           config.tool_choice,
         )

@@ -28,6 +28,8 @@ export type ToolCategory =
   | 'math' // Mathematical calculations
   | 'code' // Code execution
   | 'presentation' // Presentation generation
+  | 'web' // Web search and internet tools
+  | 'research' // Research tools (Wikipedia, arXiv, etc.)
   | 'connector' // External service integrations
   | 'utility' // General utility tools
   | 'custom' // User-defined tools

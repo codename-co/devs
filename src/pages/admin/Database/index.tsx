@@ -19,6 +19,7 @@ import DefaultLayout from '@/layouts/Default'
 import type { HeaderProps } from '@/lib/types'
 import clsx from 'clsx'
 import { errorToast, successToast } from '@/lib/toast'
+import { notifyError, notifySuccess } from '@/features/notifications'
 import localI18n from './i18n'
 import { formatBytes } from '@/lib/format'
 
@@ -398,9 +399,15 @@ export const DatabasePage: React.FC = () => {
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
 
-      successToast(t('Database exported successfully'))
+      notifySuccess({
+        title: 'Database Backup',
+        description: t('Database exported successfully'),
+      })
     } catch (error) {
-      errorToast(t('Failed to export database'))
+      notifyError({
+        title: 'Backup Failed',
+        description: t('Failed to export database'),
+      })
       console.error('Export error:', error)
     }
   }
@@ -457,13 +464,17 @@ export const DatabasePage: React.FC = () => {
       }
 
       // await loadCredentials()
-      successToast(
-        t('Database imported successfully ({count} items)', {
+      notifySuccess({
+        title: 'Database Import',
+        description: t('Database imported successfully ({count} items)', {
           count: importedCount,
         }),
-      )
+      })
     } catch (error) {
-      errorToast(t('Failed to import database - invalid file format'))
+      notifyError({
+        title: 'Import Failed',
+        description: t('Failed to import database - invalid file format'),
+      })
       console.error('Import error:', error)
     } finally {
       event.target.value = ''

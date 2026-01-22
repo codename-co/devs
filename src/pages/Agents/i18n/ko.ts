@@ -170,6 +170,7 @@ export const ko: I18n = {
   Math: '수학',
   Code: '코드',
   Presentation: '프레젠테이션',
+  Research: '연구',
   Connectors: '커넥터',
   'Execute Code': '코드 실행',
   'Generate Presentation': '프레젠테이션 생성',

@@ -174,6 +174,7 @@ export const es: I18n = {
   Math: 'Matemáticas',
   Code: 'Código',
   Presentation: 'Presentación',
+  Research: 'Investigación',
   Connectors: 'Conectores',
   'Execute Code': 'Ejecutar código',
   'Generate Presentation': 'Generar presentación',

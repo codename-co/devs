@@ -23,6 +23,7 @@ import {
   InstalledExtension,
   CustomExtension,
 } from '@/features/marketplace/types'
+import { Notification } from '@/features/notifications/types'
 
 export interface DBStores {
   agents: Agent
@@ -56,6 +57,8 @@ export interface DBStores {
   // Marketplace System
   extensions: InstalledExtension
   customExtensions: CustomExtension
+  // Notification System
+  notifications: Notification
 }
 
 export class Database {
@@ -63,7 +66,7 @@ export class Database {
   private initialized = false
 
   static DB_NAME = 'devs-ai-platform'
-  static DB_VERSION = 18
+  static DB_VERSION = 19
   static STORES: (keyof DBStores)[] = [
     'agents',
     'conversations',
@@ -95,6 +98,8 @@ export class Database {
     // Marketplace System
     'extensions',
     'customExtensions',
+    // Notification System
+    'notifications',
   ]
 
   isInitialized(): boolean {
@@ -747,6 +752,28 @@ export class Database {
               unique: false,
             })
             customExtensionsStore.createIndex('createdAt', 'createdAt', {
+              unique: false,
+            })
+          }
+        }
+
+        // Migration for version 19: Add Notifications store
+        if (event.oldVersion < 19) {
+          console.log(
+            'Database migrated to version 19: Added Notifications store',
+          )
+
+          if (!db.objectStoreNames.contains('notifications')) {
+            const notificationsStore = db.createObjectStore('notifications', {
+              keyPath: 'id',
+            })
+            notificationsStore.createIndex('type', 'type', {
+              unique: false,
+            })
+            notificationsStore.createIndex('read', 'read', {
+              unique: false,
+            })
+            notificationsStore.createIndex('createdAt', 'createdAt', {
               unique: false,
             })
           }

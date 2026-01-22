@@ -737,4 +737,9 @@ export const ko: I18n = {
   Memory: '메모리',
   'From remembered context about the user': '사용자에 대해 기억된 컨텍스트',
   'From important past conversations': '중요한 이전 대화에서',
+
+  // Notifications
+  Notifications: '알림',
+  'No notifications': '알림 없음',
+  'Clear all': '모두 삭제',
 } as const

@@ -48,6 +48,7 @@ import {
 } from '@/types'
 import type { Trace, Span } from '@/features/traces/types'
 import { errorToast, successToast } from '@/lib/toast'
+import { notifyError } from '@/features/notifications'
 import {
   submitChat,
   type ResponseUpdate,
@@ -1656,7 +1657,10 @@ export const AgentRunPage = () => {
         // Load the specified agent by slug
         const agent = await getAgentBySlug(agentSlug)
         if (!agent) {
-          errorToast(`Agent "${agentSlug}" not found`)
+          notifyError({
+            title: 'Agent Not Found',
+            description: `Agent "${agentSlug}" not found`,
+          })
           navigate('/')
           return
         }
@@ -1711,7 +1715,10 @@ export const AgentRunPage = () => {
         }
       } catch (error) {
         console.error('Error loading agent/conversation:', error)
-        errorToast('Failed to load agent or conversation')
+        notifyError({
+          title: 'Loading Error',
+          description: 'Failed to load agent or conversation',
+        })
         navigate('/')
       } finally {
         setIsLoading(false)

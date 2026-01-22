@@ -11,7 +11,8 @@ import {
   ConnectorSettingsModal,
 } from '@/features/connectors/components'
 import { SyncEngine } from '@/features/connectors/sync-engine'
-import { successToast, errorToast, warningToast } from '@/lib/toast'
+import { successToast, warningToast } from '@/lib/toast'
+import { notifyError } from '@/features/notifications'
 import {
   getAllWatchers,
   watchFolder,
@@ -111,9 +112,12 @@ export const Sources: React.FC = () => {
           break
         case 'sync_error':
           setSyncStatus('error')
-          errorToast(
-            tRef.current('Sync error: {error}', { error: event.error }),
-          )
+          notifyError({
+            title: 'Sync Error',
+            description: tRef.current('Sync error: {error}', {
+              error: event.error,
+            }),
+          })
           break
       }
     })
@@ -177,7 +181,10 @@ export const Sources: React.FC = () => {
       successToast(t('Folder sync stopped'))
     } catch (error) {
       console.error('Failed to stop watching folder:', error)
-      errorToast(t('Failed to stop watching folder'))
+      notifyError({
+        title: 'Folder Sync Error',
+        description: t('Failed to stop watching folder'),
+      })
     } finally {
       setUnwatchingFolderId(null)
       setShowUnwatchConfirm(false)
@@ -195,7 +202,10 @@ export const Sources: React.FC = () => {
     } catch (error) {
       console.error('Failed to reconnect folder:', error)
       setSyncStatus('error')
-      errorToast(t('Failed to reconnect folder'))
+      notifyError({
+        title: 'Reconnect Failed',
+        description: t('Failed to reconnect folder'),
+      })
     }
   }
 
@@ -209,13 +219,17 @@ export const Sources: React.FC = () => {
           t('{n} items synced', { n: result.itemsSynced }),
         )
       } else {
-        errorToast(t('Sync failed'), result.errors?.join(', '))
+        notifyError({
+          title: 'Sync Failed',
+          description: result.errors?.join(', ') || t('Sync failed'),
+        })
       }
     } catch (error) {
-      errorToast(
-        t('Sync failed'),
-        error instanceof Error ? error.message : t('Unknown error'),
-      )
+      notifyError({
+        title: 'Sync Failed',
+        description:
+          error instanceof Error ? error.message : t('Unknown error'),
+      })
     }
   }
 

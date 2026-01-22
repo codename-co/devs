@@ -17,6 +17,10 @@ import {
 
 import { Icon } from '@/components'
 import { LocalBackupButton } from '@/features/local-backup'
+import {
+  NotificationButton,
+  useNotificationStore,
+} from '@/features/notifications'
 import { SyncButton } from '@/features/sync'
 import { useI18n, useUrl } from '@/i18n'
 
@@ -32,6 +36,9 @@ export function PageMenu({ supplementalActions }: PageMenuProps = {}) {
   const { lang, t } = useI18n()
   const url = useUrl(lang)
   const navigate = useNavigate()
+  const notificationCount = useNotificationStore(
+    (state) => state.notifications.length,
+  )
 
   // Register Cmd+, / Ctrl+, shortcut for settings
   useSettingsShortcut()
@@ -39,6 +46,7 @@ export function PageMenu({ supplementalActions }: PageMenuProps = {}) {
   return (
     <div className="absolute top-4 end-4 flex items-center gap-1">
       {supplementalActions}
+      {notificationCount > 0 && <NotificationButton />}
       <SyncButton />
       <LocalBackupButton />
 

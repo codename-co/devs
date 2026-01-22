@@ -14,6 +14,15 @@ import { KNOWLEDGE_TOOL_DEFINITIONS } from '@/lib/knowledge-tools'
 import type { KnowledgeToolName } from '@/lib/knowledge-tools/types'
 import { MATH_TOOL_DEFINITIONS } from '@/lib/math-tools'
 import type { MathToolName } from '@/lib/math-tools/types'
+import {
+  WIKIPEDIA_SEARCH_TOOL_DEFINITION,
+  WIKIPEDIA_ARTICLE_TOOL_DEFINITION,
+  WIKIDATA_SEARCH_TOOL_DEFINITION,
+  WIKIDATA_ENTITY_TOOL_DEFINITION,
+  WIKIDATA_SPARQL_TOOL_DEFINITION,
+  ARXIV_SEARCH_TOOL_DEFINITION,
+  ARXIV_PAPER_TOOL_DEFINITION,
+} from '@/tools/plugins'
 import type { Tool } from '@/types'
 
 interface AgentToolsPickerProps {
@@ -27,7 +36,19 @@ type IconName = keyof typeof Icons
 /**
  * Tool type identifier for categorization
  */
-type ToolType = 'knowledge' | 'math'
+type ToolType = 'knowledge' | 'math' | 'research'
+
+/**
+ * Research tool names
+ */
+type ResearchToolName =
+  | 'wikipedia_search'
+  | 'wikipedia_article'
+  | 'wikidata_search'
+  | 'wikidata_entity'
+  | 'wikidata_sparql'
+  | 'arxiv_search'
+  | 'arxiv_paper'
 
 /**
  * Combined tool info type
@@ -84,6 +105,70 @@ const MATH_TOOL_INFO: Record<MathToolName, ToolInfo> = {
 }
 
 /**
+ * Research tool definitions for display purposes.
+ */
+const RESEARCH_TOOL_DEFINITIONS: Record<
+  ResearchToolName,
+  typeof WIKIPEDIA_SEARCH_TOOL_DEFINITION
+> = {
+  wikipedia_search: WIKIPEDIA_SEARCH_TOOL_DEFINITION,
+  wikipedia_article: WIKIPEDIA_ARTICLE_TOOL_DEFINITION,
+  wikidata_search: WIKIDATA_SEARCH_TOOL_DEFINITION,
+  wikidata_entity: WIKIDATA_ENTITY_TOOL_DEFINITION,
+  wikidata_sparql: WIKIDATA_SPARQL_TOOL_DEFINITION,
+  arxiv_search: ARXIV_SEARCH_TOOL_DEFINITION,
+  arxiv_paper: ARXIV_PAPER_TOOL_DEFINITION,
+}
+
+/**
+ * Research tool metadata for display purposes.
+ */
+const RESEARCH_TOOL_INFO: Record<ResearchToolName, ToolInfo> = {
+  wikipedia_search: {
+    icon: 'Book',
+    label: 'Wikipedia Search',
+    shortDescription: 'Search Wikipedia for articles on any topic',
+    type: 'research',
+  },
+  wikipedia_article: {
+    icon: 'Book',
+    label: 'Wikipedia Article',
+    shortDescription: 'Get the content of a specific Wikipedia article',
+    type: 'research',
+  },
+  wikidata_search: {
+    icon: 'Database',
+    label: 'Wikidata Search',
+    shortDescription: 'Search Wikidata for structured knowledge entities',
+    type: 'research',
+  },
+  wikidata_entity: {
+    icon: 'Database',
+    label: 'Wikidata Entity',
+    shortDescription: 'Get detailed information about a Wikidata entity',
+    type: 'research',
+  },
+  wikidata_sparql: {
+    icon: 'Database',
+    label: 'Wikidata SPARQL',
+    shortDescription: 'Execute SPARQL queries against Wikidata',
+    type: 'research',
+  },
+  arxiv_search: {
+    icon: 'Page',
+    label: 'arXiv Search',
+    shortDescription: 'Search for scientific papers on arXiv',
+    type: 'research',
+  },
+  arxiv_paper: {
+    icon: 'Page',
+    label: 'arXiv Paper',
+    shortDescription: 'Get details of a specific arXiv paper',
+    type: 'research',
+  },
+}
+
+/**
  * Convert knowledge tool name to Tool object for agent storage.
  */
 function knowledgeToolNameToTool(name: KnowledgeToolName): Tool {
@@ -118,6 +203,23 @@ function mathToolNameToTool(name: MathToolName): Tool {
 }
 
 /**
+ * Convert research tool name to Tool object for agent storage.
+ */
+function researchToolNameToTool(name: ResearchToolName): Tool {
+  const definition = RESEARCH_TOOL_DEFINITIONS[name]
+  return {
+    id: `research_tool_${name}`,
+    name: definition.function.name,
+    description: definition.function.description,
+    type: 'custom',
+    config: {
+      toolType: 'research',
+      parameters: definition.function.parameters,
+    },
+  }
+}
+
+/**
  * Extract knowledge tool names from Tool array.
  */
 function getKnowledgeToolNames(tools?: Tool[]): string[] {
@@ -138,10 +240,24 @@ function getMathToolNames(tools?: Tool[]): string[] {
 }
 
 /**
+ * Extract research tool names from Tool array.
+ */
+function getResearchToolNames(tools?: Tool[]): string[] {
+  if (!tools) return []
+  return tools
+    .filter((tool) => tool.config?.toolType === 'research')
+    .map((tool) => tool.name)
+}
+
+/**
  * Get all tool names from Tool array.
  */
 function getAllToolNames(tools?: Tool[]): string[] {
-  return [...getKnowledgeToolNames(tools), ...getMathToolNames(tools)]
+  return [
+    ...getKnowledgeToolNames(tools),
+    ...getMathToolNames(tools),
+    ...getResearchToolNames(tools),
+  ]
 }
 
 export function AgentToolsPicker({
@@ -154,16 +270,21 @@ export function AgentToolsPicker({
     KNOWLEDGE_TOOL_DEFINITIONS,
   ) as KnowledgeToolName[]
   const mathToolNames = Object.keys(MATH_TOOL_DEFINITIONS) as MathToolName[]
+  const researchToolNames = Object.keys(
+    RESEARCH_TOOL_DEFINITIONS,
+  ) as ResearchToolName[]
 
   const handleSelectionChange = (values: string[]) => {
     const tools: Tool[] = []
 
-    // Add knowledge tools
+    // Add tools based on their type
     for (const name of values) {
       if (name in KNOWLEDGE_TOOL_DEFINITIONS) {
         tools.push(knowledgeToolNameToTool(name as KnowledgeToolName))
       } else if (name in MATH_TOOL_DEFINITIONS) {
         tools.push(mathToolNameToTool(name as MathToolName))
+      } else if (name in RESEARCH_TOOL_DEFINITIONS) {
+        tools.push(researchToolNameToTool(name as ResearchToolName))
       }
     }
 
@@ -267,6 +388,48 @@ export function AgentToolsPicker({
             })}
           </CheckboxGroup>
         </div>
+
+        <Divider />
+
+        {/* Research Tools Section */}
+        <div>
+          <p className="text-sm font-medium text-default-700 mb-2">
+            Research Tools
+          </p>
+          <p className="text-sm text-default-500 mb-4">
+            Enable tools that allow the agent to search Wikipedia, Wikidata, and
+            arXiv for encyclopedic and scientific information.
+          </p>
+          <CheckboxGroup
+            value={selectedToolNames}
+            onValueChange={handleSelectionChange}
+            className="gap-3"
+          >
+            {researchToolNames.map((name) => {
+              const info = RESEARCH_TOOL_INFO[name]
+              return (
+                <div
+                  key={name}
+                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-default-50 transition-colors"
+                >
+                  <Checkbox value={name} className="mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Icon
+                        name={info.icon}
+                        className="w-4 h-4 text-secondary"
+                      />
+                      <span className="font-medium">{info.label}</span>
+                    </div>
+                    <p className="text-sm text-default-500 mt-1">
+                      {info.shortDescription}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+          </CheckboxGroup>
+        </div>
       </CardBody>
     </Card>
   )
@@ -276,7 +439,9 @@ export function AgentToolsPicker({
 export {
   getKnowledgeToolNames,
   getMathToolNames,
+  getResearchToolNames,
   getAllToolNames,
   knowledgeToolNameToTool,
   mathToolNameToTool,
+  researchToolNameToTool,
 }

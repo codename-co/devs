@@ -1,0 +1,11 @@
+{
+  "name": "devs-proxy",
+  "private": true,
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "lint:privacy": "! grep -nE 'console\\.|logger\\.|\\blog\\(' server.mjs && echo 'Privacy check passed: No logging found'"
+  }
+}

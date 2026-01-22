@@ -692,4 +692,9 @@ export const en = [
   'Memory',
   'From remembered context about the user',
   'From important past conversations',
+
+  // Notifications
+  'Notifications',
+  'No notifications',
+  'Clear all',
 ] as const

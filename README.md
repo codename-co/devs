@@ -31,6 +31,7 @@ through a universally accessible, privacy-first platform.
 - [x] 🤖 **AI Studio**: Pre-built agents, custom agent builder.
 - [x] 📝 **Methodologies**: <abbr title="8 Disciplines">8D</abbr>, <abbr title="A3 Problem Solving">A3</abbr>, Agile, <abbr title="Analysis, Objectives, Strategies, Tactics, Control">AOSTC</abbr>, <abbr title="Define, Measure, Analyze, Improve, Control">DMAIC</abbr>, <abbr title="Plan-Do-Check-Act">PDCA</abbr>, Scrum, <abbr title="You Only Live Once">YOLO</abbr>, and your own.
 - [x] 🧠 **Agent Memory**: Agents learn and remember information from conversations with human review.
+- [x] 🔧 **Tools**: Equip agents with capabilities like Wikipedia search, arXiv search, and custom integrations.
 - [ ] 🎯 **Intelligent orchestration**: Automated multi-agent task coordination with validation.
 - [ ] 🎭 **Hyper meta-prompting**: Multi-layered prompt generation for dynamic task handling.
 - [ ] 👥 **Dynamic team formation**: Mimicking human organizational structures.

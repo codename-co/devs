@@ -1,7 +1,8 @@
 import { useTaskStore } from '@/stores/taskStore'
 import { useArtifactStore } from '@/stores/artifactStore'
 import { ValidationResult } from '@/lib/requirement-validator'
-import { successToast, warningToast, errorToast } from '@/lib/toast'
+import { successToast, warningToast } from '@/lib/toast'
+import { notifyError } from '@/features/notifications'
 
 /**
  * Hook for validating task requirements at key execution points
@@ -62,7 +63,10 @@ export function useTaskValidation() {
       return validation
     } catch (error) {
       console.error('Error validating requirements after step:', error)
-      errorToast('Validation Error', 'Failed to validate requirements')
+      notifyError({
+        title: 'Validation Error',
+        description: 'Failed to validate requirements',
+      })
       return null
     }
   }
@@ -96,7 +100,10 @@ export function useTaskValidation() {
       }
     } catch (error) {
       console.error('Error validating task completion:', error)
-      errorToast('Validation Error', 'Failed to validate task completion')
+      notifyError({
+        title: 'Validation Error',
+        description: 'Failed to validate task completion',
+      })
       return { canComplete: false, validation: null }
     }
   }

@@ -166,6 +166,7 @@ export const ar: I18n = {
   Math: 'الرياضيات',
   Code: 'الكود',
   Presentation: 'العرض التقديمي',
+  Research: 'البحث',
   Connectors: 'الموصلات',
   'Execute Code': 'تنفيذ الكود',
   'Generate Presentation': 'إنشاء عرض تقديمي',

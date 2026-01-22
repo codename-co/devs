@@ -32,4 +32,7 @@ export {
   registerPresentationTools,
   arePresentationToolsRegistered,
   unregisterPresentationTools,
+  registerResearchTools,
+  areResearchToolsRegistered,
+  unregisterResearchTools,
 } from './executor'

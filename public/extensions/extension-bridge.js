@@ -15,6 +15,10 @@
  *
  *   // Translate UI labels
  *   const label = window.DEVS.t('myKey') // Returns translated string or key as fallback
+ *
+ *   // Access and execute tools
+ *   const tools = await window.DEVS.tools.list()
+ *   const result = await window.DEVS.tools.execute('search_knowledge', { query: 'my search' })
  */
 ;(function () {
   'use strict'
@@ -282,16 +286,6 @@
      * UI API for accessing DEVS UI components
      */
     ui: Object.freeze({
-      /**
-       * Show the PromptArea component in a modal overlay
-       * Returns the submitted prompt and selected agent/methodology
-       * @param {object} [options] - Optional configuration
-       * @param {string} [options.placeholder] - Placeholder text for the prompt area
-       * @param {string} [options.defaultPrompt] - Default prompt text
-       * @returns {Promise<{prompt: string, agentId?: string, methodologyId?: string} | null>} - The submitted data or null if cancelled
-       */
-      prompt: (options = {}) => sendRequest('DEVS_UI_PROMPT', options, 120000), // 2 min timeout for user input
-
       /**
        * Show a toast notification
        * @param {string} message - Toast message
@@ -762,6 +756,49 @@
        * @returns {Promise<{type: 'elements'|'image'|'text', data: any} | null>}
        */
       paste: () => sendRequest('DEVS_CLIPBOARD_PASTE'),
+    }),
+
+    /**
+     * Tools API for accessing registered tools
+     */
+    tools: Object.freeze({
+      /**
+       * List all registered tools
+       * @param {object} [options] - Filter options
+       * @param {'knowledge'|'math'|'code'|'presentation'|'connector'|'utility'|'custom'} [options.category] - Filter by category
+       * @param {string[]} [options.tags] - Filter by tags (tools must have at least one matching tag)
+       * @param {boolean} [options.enabledOnly=true] - Only return enabled tools
+       * @returns {Promise<Array<{name: string, displayName: string, shortDescription: string, icon: string, category: string, tags?: string[], definition: object}>>}
+       */
+      list: (options = {}) => sendRequest('DEVS_TOOLS_LIST', options),
+
+      /**
+       * Get a specific tool by name
+       * @param {string} name - Tool name
+       * @returns {Promise<{name: string, displayName: string, shortDescription: string, icon: string, category: string, tags?: string[], definition: object} | null>}
+       */
+      get: (name) => sendRequest('DEVS_TOOLS_GET', { name }),
+
+      /**
+       * Execute a tool with the given arguments
+       * @param {string} name - Tool name to execute
+       * @param {object} args - Arguments to pass to the tool
+       * @param {object} [options] - Execution options
+       * @param {number} [options.timeout=60000] - Timeout in ms
+       * @returns {Promise<{success: boolean, result?: any, error?: string}>}
+       */
+      execute: (name, args, options = {}) =>
+        sendRequest(
+          'DEVS_TOOLS_EXECUTE',
+          { name, args, options },
+          options.timeout || 60000,
+        ),
+
+      /**
+       * Get all available tool categories
+       * @returns {Promise<string[]>}
+       */
+      getCategories: () => sendRequest('DEVS_TOOLS_CATEGORIES'),
     }),
   })
 

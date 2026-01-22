@@ -7,7 +7,7 @@ import { TraceService } from '@/features/traces/trace-service'
 import { ModelInfo } from '@/features/traces/types'
 import { WorkflowOrchestrator } from '@/lib/orchestrator'
 import { Agent, Message } from '@/types'
-import { errorToast } from '@/lib/toast'
+import { notifyError } from '@/features/notifications'
 import type { IconName } from '@/lib/types'
 
 // ============================================================================
@@ -51,11 +51,22 @@ import {
   areConnectorToolsRegistered,
   registerPresentationTools,
   arePresentationToolsRegistered,
+  registerResearchTools,
+  areResearchToolsRegistered,
 } from '@/lib/tool-executor'
 import { KNOWLEDGE_TOOL_DEFINITIONS } from '@/lib/knowledge-tools'
 import { MATH_TOOL_DEFINITIONS } from '@/lib/math-tools'
 import { CODE_TOOL_DEFINITIONS } from '@/lib/code-tools'
 import { PRESENTATION_TOOL_DEFINITIONS } from '@/lib/presentation-tools'
+import {
+  WIKIPEDIA_SEARCH_TOOL_DEFINITION,
+  WIKIPEDIA_ARTICLE_TOOL_DEFINITION,
+  WIKIDATA_SEARCH_TOOL_DEFINITION,
+  WIKIDATA_ENTITY_TOOL_DEFINITION,
+  WIKIDATA_SPARQL_TOOL_DEFINITION,
+  ARXIV_SEARCH_TOOL_DEFINITION,
+  ARXIV_PAPER_TOOL_DEFINITION,
+} from '@/tools/plugins'
 import { getToolDefinitionsForProvider } from '@/features/connectors/tools'
 import { db } from '@/lib/db'
 import type { Connector } from '@/features/connectors/types'
@@ -134,12 +145,20 @@ function getToolStatusI18nKey(toolCalls: ToolCall[]): string {
  * This ensures pre-existing agents and new agents alike can use tools.
  */
 function getAgentToolDefinitions(_agent: Agent): ToolDefinition[] {
-  // Return all knowledge, math, code, and presentation tools - they are universally available to all agents
+  // Return all knowledge, math, code, presentation, and research tools - they are universally available to all agents
   return [
     ...Object.values(KNOWLEDGE_TOOL_DEFINITIONS),
     ...Object.values(MATH_TOOL_DEFINITIONS),
     ...Object.values(CODE_TOOL_DEFINITIONS),
     ...Object.values(PRESENTATION_TOOL_DEFINITIONS),
+    // Research tools
+    WIKIPEDIA_SEARCH_TOOL_DEFINITION,
+    WIKIPEDIA_ARTICLE_TOOL_DEFINITION,
+    WIKIDATA_SEARCH_TOOL_DEFINITION,
+    WIKIDATA_ENTITY_TOOL_DEFINITION,
+    WIKIDATA_SPARQL_TOOL_DEFINITION,
+    ARXIV_SEARCH_TOOL_DEFINITION,
+    ARXIV_PAPER_TOOL_DEFINITION,
   ]
 }
 
@@ -293,6 +312,11 @@ async function executeToolCalls(
     registerPresentationTools()
   }
 
+  // Ensure research tools are registered
+  if (!areResearchToolsRegistered()) {
+    registerResearchTools()
+  }
+
   // Create a trace for the tool execution batch
   const trace = TraceService.startTrace({
     name: `Tools: ${toolCalls.map((tc) => tc.function.name).join(', ')}`,
@@ -393,15 +417,14 @@ export const submitChat = async (
     // Get the active LLM configuration
     const config = await CredentialService.getActiveConfig()
     if (!config) {
-      errorToast(
-        t(
-          'No LLM provider configured. Please [configure one in Settings]({path}).',
-          {
-            path: '/settings',
-          },
-          { allowJSX: true },
+      notifyError({
+        title: 'LLM Configuration Required',
+        description: t(
+          'No LLM provider configured. Please configure one in Settings.',
         ),
-      )
+        actionUrl: '/settings',
+        actionLabel: 'Open Settings',
+      })
       return { success: false, error: 'No LLM provider configured' }
     }
 
@@ -822,10 +845,12 @@ export const submitChat = async (
     return { success: true }
   } catch (err) {
     console.error('Error calling LLM:', err)
-    errorToast(
-      t('Failed to get response from LLM. Please try again later.'),
-      err,
-    )
+    notifyError({
+      title: 'LLM Request Failed',
+      description: t(
+        'Failed to get response from LLM. Please try again later.',
+      ),
+    })
     return { success: false, error: 'LLM call failed' }
   }
 }

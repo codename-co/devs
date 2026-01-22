@@ -12,6 +12,7 @@ import { createMpaPlugin, type Page } from 'vite-plugin-virtual-mpa'
 import { PRODUCT } from './src/config/product'
 import { defaultLang, type Lang, langs, meta } from './src/i18n/locales'
 import { cacheVersionPlugin } from './src/lib/cache-version-plugin'
+import { corsProxyPlugin } from './src/lib/cors-proxy-plugin'
 import { oauthProxyPlugin } from './src/lib/oauth-proxy-plugin'
 import { getProxyRoutes } from './vite-proxy-routes'
 
@@ -138,6 +139,7 @@ export default defineConfig(({ mode }) => {
         pages,
       }) as any,
       cacheVersionPlugin(),
+      corsProxyPlugin(),
       // Unified proxy plugin for all OAuth/API routes
       // Proxy configuration is defined in src/features/connectors/providers/apps/index.ts
       oauthProxyPlugin(getProxyRoutes(env)),

@@ -260,6 +260,17 @@ export interface LLMConfigWithTools {
    * @default true
    */
   parallel_tool_calls?: boolean
+  /**
+   * Enable provider-native web search grounding.
+   * When enabled, the LLM can search the web for current information.
+   *
+   * Supported providers:
+   * - Google Gemini: Uses Google Search grounding
+   * - Anthropic Claude: Uses web_search tool
+   *
+   * @default false
+   */
+  enableWebSearch?: boolean
 }
 
 // ============================================================================
@@ -288,6 +299,31 @@ export interface TokenUsage {
 }
 
 /**
+ * Web search result from grounding.
+ */
+export interface WebSearchGroundingResult {
+  /** Title of the search result */
+  title: string
+  /** URL of the source */
+  url: string
+  /** Snippet or description */
+  snippet?: string
+}
+
+/**
+ * Grounding metadata from web search.
+ * Present when the response was grounded using web search.
+ */
+export interface GroundingMetadata {
+  /** Search queries used to ground the response */
+  searchQueries?: string[]
+  /** Web results used for grounding */
+  webResults?: WebSearchGroundingResult[]
+  /** Whether the response was grounded in search results */
+  isGrounded: boolean
+}
+
+/**
  * Extended LLM response with tool calling support.
  */
 export interface LLMResponseWithTools {
@@ -298,6 +334,11 @@ export interface LLMResponseWithTools {
    * Present when the model wants to invoke tools.
    */
   tool_calls?: ToolCall[]
+  /**
+   * Grounding metadata from web search.
+   * Present when enableWebSearch was true and the model used search.
+   */
+  groundingMetadata?: GroundingMetadata
   /** Reason why the model stopped generating */
   finish_reason?: FinishReason
   /** Token usage statistics */

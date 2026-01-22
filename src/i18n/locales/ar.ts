@@ -739,4 +739,9 @@ export const ar: I18n = {
   Memory: 'الذاكرة',
   'From remembered context about the user': 'من السياق المحفوظ عن المستخدم',
   'From important past conversations': 'من المحادثات السابقة المهمة',
+
+  // Notifications
+  Notifications: 'الإشعارات',
+  'No notifications': 'لا توجد إشعارات',
+  'Clear all': 'مسح الكل',
 } as const

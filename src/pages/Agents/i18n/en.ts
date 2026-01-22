@@ -144,6 +144,7 @@ export const en = [
   'Math',
   'Code',
   'Presentation',
+  'Research',
   'Connectors',
   'Execute Code',
   'Generate Presentation',

@@ -172,6 +172,7 @@ export const fr: I18n = {
   Math: 'Mathématiques',
   Code: 'Code',
   Presentation: 'Présentation',
+  Research: 'Recherche',
   Connectors: 'Connecteurs',
   'Execute Code': 'Exécuter du code',
   'Generate Presentation': 'Générer une présentation',

@@ -1084,7 +1084,13 @@ const AgentContextTabs = ({
   )
 }
 
-type ToolCategory = 'knowledge' | 'math' | 'code' | 'presentation' | 'connector'
+type ToolCategory =
+  | 'knowledge'
+  | 'math'
+  | 'code'
+  | 'presentation'
+  | 'research'
+  | 'connector'
 
 /**
  * Infer icon from tool name based on provider prefix patterns.
@@ -1107,6 +1113,11 @@ const inferIconFromToolName = (name: string): IconName => {
   if (name.startsWith('figma_')) return 'Figma'
   if (name.startsWith('google_chat_')) return 'GoogleChat'
   if (name.startsWith('google_meet_')) return 'GoogleMeet'
+
+  // Research tool patterns
+  if (name.startsWith('wikipedia_')) return 'Book'
+  if (name.startsWith('wikidata_')) return 'Database'
+  if (name.startsWith('arxiv_')) return 'Page'
 
   // Knowledge tool patterns
   if (name.includes('search') || name.includes('find')) return 'PageSearch'
@@ -1132,17 +1143,19 @@ const CATEGORY_LABELS: Record<ToolCategory, string> = {
   math: 'Math',
   code: 'Code',
   presentation: 'Presentation',
+  research: 'Research',
   connector: 'Connectors',
 }
 
 const CATEGORY_ICONS: Record<
   ToolCategory,
-  'PageSearch' | 'MathBook' | 'Code' | 'Presentation' | 'Puzzle'
+  'PageSearch' | 'MathBook' | 'Code' | 'Presentation' | 'Book' | 'Puzzle'
 > = {
   knowledge: 'PageSearch',
   math: 'MathBook',
   code: 'Code',
   presentation: 'Presentation',
+  research: 'Book',
   connector: 'Puzzle',
 }
 
@@ -1235,6 +1248,45 @@ const AgentToolsDisplay = (_props: { tools: Agent['tools'] }) => {
           })
         }
 
+        // Add research tools (Wikipedia, Wikidata, arXiv)
+        try {
+          const {
+            WIKIPEDIA_SEARCH_TOOL_DEFINITION,
+            WIKIPEDIA_ARTICLE_TOOL_DEFINITION,
+            WIKIDATA_SEARCH_TOOL_DEFINITION,
+            WIKIDATA_ENTITY_TOOL_DEFINITION,
+            WIKIDATA_SPARQL_TOOL_DEFINITION,
+            ARXIV_SEARCH_TOOL_DEFINITION,
+            ARXIV_PAPER_TOOL_DEFINITION,
+          } = await import('@/tools/plugins')
+
+          const researchTools: Array<{
+            def: typeof WIKIPEDIA_SEARCH_TOOL_DEFINITION
+            icon: IconName
+          }> = [
+            { def: WIKIPEDIA_SEARCH_TOOL_DEFINITION, icon: 'Book' },
+            { def: WIKIPEDIA_ARTICLE_TOOL_DEFINITION, icon: 'Book' },
+            { def: WIKIDATA_SEARCH_TOOL_DEFINITION, icon: 'Database' },
+            { def: WIKIDATA_ENTITY_TOOL_DEFINITION, icon: 'Database' },
+            { def: WIKIDATA_SPARQL_TOOL_DEFINITION, icon: 'Database' },
+            { def: ARXIV_SEARCH_TOOL_DEFINITION, icon: 'Page' },
+            { def: ARXIV_PAPER_TOOL_DEFINITION, icon: 'Page' },
+          ]
+
+          for (const { def, icon } of researchTools) {
+            const name = def.function.name
+            toolsList.push({
+              name,
+              description: def.function.description,
+              category: 'research',
+              icon,
+              label: formatToolLabel(name),
+            })
+          }
+        } catch (error) {
+          console.warn('Failed to load research tools:', error)
+        }
+
         // Load connector tools from active connectors
         try {
           if (!db.isInitialized()) {
@@ -1324,6 +1376,7 @@ const AgentToolsDisplay = (_props: { tools: Agent['tools'] }) => {
     'math',
     'code',
     'presentation',
+    'research',
     'connector',
   ]
 

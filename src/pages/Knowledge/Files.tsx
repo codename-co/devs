@@ -60,6 +60,7 @@ import {
   type SyncEvent,
 } from '@/lib/knowledge-sync'
 import { errorToast, successToast, warningToast } from '@/lib/toast'
+import { notifyError } from '@/features/notifications'
 import { formatBytes } from '@/lib/format'
 import {
   getKnowledgeItemIcon,
@@ -409,7 +410,10 @@ export const Files: React.FC = () => {
           const watcher = watchedFolders.find((w) => w.id === event.watcherId)
           if (watcher?.isActive) {
             setSyncStatus('error')
-            errorToast(`Sync error in ${event.watcherPath}: ${event.error}`)
+            notifyError({
+              title: 'Sync Error',
+              description: `Sync error in ${event.watcherPath}: ${event.error}`,
+            })
           }
           break
       }
@@ -539,9 +543,11 @@ export const Files: React.FC = () => {
     } catch (error) {
       console.error('Failed to upload files:', error)
       setSyncStatus('error')
-      errorToast(
-        'Failed to upload files. Please try again or refresh the page.',
-      )
+      notifyError({
+        title: 'Upload Failed',
+        description:
+          'Failed to upload files. Please try again or refresh the page.',
+      })
     } finally {
       setUploading(false)
     }
@@ -678,7 +684,10 @@ export const Files: React.FC = () => {
       )
     } catch (error) {
       console.error('Failed to delete items:', error)
-      errorToast(t('Failed to delete some items'))
+      notifyError({
+        title: 'Delete Failed',
+        description: t('Failed to delete some items'),
+      })
     }
   }
 
@@ -695,7 +704,10 @@ export const Files: React.FC = () => {
       )
     } catch (error) {
       console.error('Failed to reprocess items:', error)
-      errorToast(t('Failed to reprocess some items'))
+      notifyError({
+        title: 'Reprocess Failed',
+        description: t('Failed to reprocess some items'),
+      })
     }
   }
 
@@ -811,9 +823,11 @@ export const Files: React.FC = () => {
         return
       } catch (error) {
         console.error('Permission request failed:', error)
-        errorToast(
-          'Failed to request permission. Please use "Reconnect" to select the folder again.',
-        )
+        notifyError({
+          title: 'Permission Error',
+          description:
+            'Failed to request permission. Please use "Reconnect" to select the folder again.',
+        })
         return
       }
     }
@@ -844,7 +858,10 @@ export const Files: React.FC = () => {
         return
       }
       console.error('Error reconnecting folder:', error)
-      errorToast('Failed to reconnect folder. Please try again.')
+      notifyError({
+        title: 'Reconnect Failed',
+        description: 'Failed to reconnect folder. Please try again.',
+      })
     } finally {
       setIsPickerActive(false)
     }
