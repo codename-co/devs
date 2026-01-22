@@ -231,6 +231,17 @@ const heroUIThemeCSS = /* css */ `
   .rounded-b-small { border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
   .rounded-b-medium { border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
   .rounded-b-large { border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
+
+  /* Fix for HeroUI Select/Input floating labels when value is selected */
+  /* When the component has a value (is-filled) or is focused, shrink and move the label up */
+  [data-slot="label"][data-filled="true"],
+  [data-slot="label"][data-focus="true"],
+  [data-filled="true"] [data-slot="label"],
+  [data-focus="true"] [data-slot="label"] {
+    transform: translateY(-50%) scale(0.85);
+    padding: 0 4px;
+    margin-left: -4px;
+  }
 `
 
 /**
