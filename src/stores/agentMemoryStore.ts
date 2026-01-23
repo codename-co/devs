@@ -733,6 +733,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
 
       for (const id of expiredIds) {
         await db.delete('agentMemories', id)
+        deleteFromYjs('agentMemories', id)
       }
 
       const validMemories = memories.filter((m) => !expiredIds.includes(m.id))

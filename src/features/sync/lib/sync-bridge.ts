@@ -107,6 +107,83 @@ let isApplyingRemoteChange = false
 // Callbacks for notifying stores of remote changes
 const changeCallbacks: Map<SyncedStoreName, Set<() => void>> = new Map()
 
+// ============================================================================
+// Timestamp-based Merge Utilities
+// ============================================================================
+
+/**
+ * Extract the most recent timestamp from an item for conflict resolution.
+ * Checks updatedAt first, then falls back to createdAt, timestamp, or learnedAt.
+ */
+function getItemTimestamp(item: unknown): Date | null {
+  if (!item || typeof item !== 'object') return null
+
+  const record = item as Record<string, unknown>
+
+  // Try updatedAt first (most common for updated items)
+  if (record.updatedAt) {
+    const date = toDate(record.updatedAt)
+    if (date) return date
+  }
+
+  // Fall back to createdAt
+  if (record.createdAt) {
+    const date = toDate(record.createdAt)
+    if (date) return date
+  }
+
+  // Fall back to timestamp (used by conversations)
+  if (record.timestamp) {
+    const date = toDate(record.timestamp)
+    if (date) return date
+  }
+
+  // Fall back to learnedAt (used by memories)
+  if (record.learnedAt) {
+    const date = toDate(record.learnedAt)
+    if (date) return date
+  }
+
+  return null
+}
+
+/**
+ * Convert various date formats to Date object
+ */
+function toDate(value: unknown): Date | null {
+  if (value instanceof Date) return value
+  if (typeof value === 'string') {
+    const date = new Date(value)
+    return isNaN(date.getTime()) ? null : date
+  }
+  // Handle serialized date objects from Yjs
+  if (
+    value &&
+    typeof value === 'object' &&
+    (value as Record<string, unknown>).__type === 'Date'
+  ) {
+    return new Date((value as { value: string }).value)
+  }
+  return null
+}
+
+/**
+ * Compare two items and determine which should win based on timestamps.
+ * Returns true if newItem should replace existingItem.
+ */
+function shouldReplaceItem(existingItem: unknown, newItem: unknown): boolean {
+  const existingTimestamp = getItemTimestamp(existingItem)
+  const newTimestamp = getItemTimestamp(newItem)
+
+  // If we can't determine timestamps, prefer the new item (backward compatibility)
+  if (!existingTimestamp || !newTimestamp) {
+    return true
+  }
+
+  // New item wins if it's newer or equal (for consistency across peers)
+  return newTimestamp.getTime() >= existingTimestamp.getTime()
+}
+
 // Queue for pending sync operations when persistence isn't ready
 interface PendingSyncOp {
   type: 'set' | 'delete'
@@ -257,10 +334,13 @@ function forceLoadPreferencesToYjs(): void {
 }
 
 /**
- * Load existing IndexedDB data into Yjs
- * Only loads if Yjs maps are empty (first sync)
+ * Load existing IndexedDB data into Yjs with bidirectional merge
+ * Always performs a proper merge to handle the case where both local
+ * and remote have data (e.g., when connecting 4+ devices)
  */
 async function loadExistingDataToYjs(): Promise<void> {
+  const ydoc = getYDoc()
+
   for (const storeName of SYNCED_STORES) {
     try {
       // Check if store exists in DB
@@ -269,22 +349,35 @@ async function loadExistingDataToYjs(): Promise<void> {
       }
 
       const yjsMap = getYjsMapForStore(storeName)
+      const localItems = await db.getAll(storeName as any)
+
+      if (yjsMap.size === 0 && localItems.length === 0) {
+        // Both empty, nothing to do
+        continue
+      }
 
       if (yjsMap.size === 0) {
         // Yjs is empty, load from IndexedDB
-        const items = await db.getAll(storeName as any)
         console.debug(
-          `[SyncBridge] Loading ${items.length} ${storeName} to Yjs`,
+          `[SyncBridge] Loading ${localItems.length} ${storeName} to Yjs`,
         )
-        for (const item of items) {
-          if (item && typeof item === 'object' && 'id' in item) {
-            yjsMap.set((item as { id: string }).id, serializeForYjs(item))
+        ydoc.transact(() => {
+          for (const item of localItems) {
+            if (item && typeof item === 'object' && 'id' in item) {
+              yjsMap.set((item as { id: string }).id, serializeForYjs(item))
+            }
           }
-        }
-      } else {
-        // Yjs has data, sync it back to IndexedDB
+        })
+      } else if (localItems.length === 0) {
+        // Local is empty, sync from Yjs
         console.debug(
-          `[SyncBridge] Yjs has ${yjsMap.size} ${storeName}, syncing to IndexedDB`,
+          `[SyncBridge] Yjs has ${yjsMap.size} ${storeName}, syncing to empty IndexedDB`,
+        )
+        await syncYjsToIndexedDB(storeName)
+      } else {
+        // Both have data: perform bidirectional merge
+        console.debug(
+          `[SyncBridge] Merging ${storeName}: ${localItems.length} local, ${yjsMap.size} remote`,
         )
         await syncYjsToIndexedDB(storeName)
       }
@@ -295,28 +388,80 @@ async function loadExistingDataToYjs(): Promise<void> {
 }
 
 /**
- * Sync Yjs data back to IndexedDB
+ * Sync Yjs data back to IndexedDB with bidirectional merge
+ * - Remote items newer than local: update local
+ * - Local items newer than remote: push to Yjs
+ * - Local-only items: push to Yjs
  */
 async function syncYjsToIndexedDB(storeName: SyncedStoreName): Promise<void> {
   const yjsMap = getYjsMapForStore(storeName)
+  const ydoc = getYDoc()
+
+  // Track which local IDs we've processed
+  const processedIds = new Set<string>()
 
   isApplyingRemoteChange = true
   try {
+    // First pass: sync remote items to local
     for (const [id, value] of yjsMap.entries()) {
-      const deserialized = deserializeFromYjs(value)
+      processedIds.add(id)
+      const remoteItem = deserializeFromYjs(value)
       try {
-        const existing = await db.get(storeName as any, id)
-        if (!existing) {
-          await db.add(storeName as any, deserialized)
+        const localItem = await db.get(storeName as any, id)
+        if (!localItem) {
+          // Remote-only item: add to local
+          await db.add(storeName as any, remoteItem)
         } else {
-          // Merge: remote wins for now (simple strategy)
-          await db.update(storeName as any, deserialized)
+          // Both exist: use timestamp-based merge
+          if (shouldReplaceItem(localItem, remoteItem)) {
+            await db.update(storeName as any, remoteItem)
+          } else {
+            // Local is newer: push to Yjs (will be handled in second pass)
+          }
         }
       } catch (error) {
         console.warn(
           `[SyncBridge] Error syncing item ${id} to ${storeName}:`,
           error,
         )
+      }
+    }
+
+    // Second pass: find local items that aren't in Yjs and push them
+    if (db.hasStore(storeName)) {
+      const localItems = await db.getAll(storeName as any)
+      const itemsToAdd: Array<{ id: string; item: unknown }> = []
+
+      for (const localItem of localItems) {
+        if (localItem && typeof localItem === 'object' && 'id' in localItem) {
+          const id = (localItem as { id: string }).id
+          if (!processedIds.has(id)) {
+            // Local-only item: queue for Yjs
+            itemsToAdd.push({ id, item: localItem })
+          } else {
+            // Both exist: check if local is newer and should override remote
+            const remoteValue = yjsMap.get(id)
+            if (remoteValue) {
+              const remoteItem = deserializeFromYjs(remoteValue)
+              if (!shouldReplaceItem(localItem, remoteItem)) {
+                // Local is newer: queue for Yjs update
+                itemsToAdd.push({ id, item: localItem })
+              }
+            }
+          }
+        }
+      }
+
+      // Push local-only and newer local items to Yjs
+      if (itemsToAdd.length > 0) {
+        console.debug(
+          `[SyncBridge] Pushing ${itemsToAdd.length} local ${storeName} items to Yjs`,
+        )
+        ydoc.transact(() => {
+          for (const { id, item } of itemsToAdd) {
+            yjsMap.set(id, serializeForYjs(item))
+          }
+        })
       }
     }
   } finally {
@@ -351,7 +496,7 @@ function setupYjsObservers(): void {
 }
 
 /**
- * Handle remote changes from Yjs peers
+ * Handle remote changes from Yjs peers with timestamp-based conflict resolution
  */
 async function handleRemoteChange(
   storeName: SyncedStoreName,
@@ -361,6 +506,10 @@ async function handleRemoteChange(
 
   try {
     const yjsMap = getYjsMapForStore(storeName)
+    const ydoc = getYDoc()
+
+    // Track items where local version is newer (need to push back to Yjs)
+    const localWinsItems: Array<{ id: string; item: unknown }> = []
 
     // Process changes
     for (const [key, change] of event.changes.keys) {
@@ -368,15 +517,45 @@ async function handleRemoteChange(
         if (change.action === 'add' || change.action === 'update') {
           const value = yjsMap.get(key)
           if (value) {
-            const deserialized = deserializeFromYjs(value)
-            const existing = await db.get(storeName as any, key)
-            if (existing) {
-              await db.update(storeName as any, deserialized)
+            const remoteItem = deserializeFromYjs(value)
+            const localItem = await db.get(storeName as any, key)
+
+            if (!localItem) {
+              // Remote-only: add to local
+              await db.add(storeName as any, remoteItem)
             } else {
-              await db.add(storeName as any, deserialized)
+              // Both exist: use timestamp-based merge
+              if (shouldReplaceItem(localItem, remoteItem)) {
+                // Remote is newer: update local
+                await db.update(storeName as any, remoteItem)
+              } else {
+                // Local is newer: queue to push back to Yjs
+                console.debug(
+                  `[SyncBridge] Local ${storeName}/${key} is newer than remote, will restore`,
+                )
+                localWinsItems.push({ id: key, item: localItem })
+              }
             }
           }
         } else if (change.action === 'delete') {
+          // For deletes, check if local item exists and is newer
+          const localItem = await db.get(storeName as any, key)
+          if (localItem) {
+            const localTimestamp = getItemTimestamp(localItem)
+            // If local item was updated after the delete event, preserve it
+            // We use the current time as proxy for when the delete happened
+            // This is imperfect but prevents recent items from being deleted
+            if (localTimestamp) {
+              const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
+              if (localTimestamp > fiveMinutesAgo) {
+                console.debug(
+                  `[SyncBridge] Preserving recently updated local ${storeName}/${key} despite remote delete`,
+                )
+                localWinsItems.push({ id: key, item: localItem })
+                continue
+              }
+            }
+          }
           await db.delete(storeName as any, key)
         }
       } catch (error) {
@@ -385,6 +564,21 @@ async function handleRemoteChange(
           error,
         )
       }
+    }
+
+    // Push local-wins items back to Yjs
+    if (localWinsItems.length > 0) {
+      console.debug(
+        `[SyncBridge] Restoring ${localWinsItems.length} newer local ${storeName} items to Yjs`,
+      )
+      // Use setTimeout to avoid nested transactions
+      setTimeout(() => {
+        ydoc.transact(() => {
+          for (const { id, item } of localWinsItems) {
+            yjsMap.set(id, serializeForYjs(item))
+          }
+        })
+      }, 0)
     }
 
     // Notify store listeners to refresh their state

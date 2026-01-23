@@ -597,6 +597,9 @@ export async function softDeleteAgent(agentId: string): Promise<void> {
     // Save to IndexedDB
     await db.update('agents', updatedAgent)
 
+    // Sync soft delete to Yjs for P2P sync
+    syncToYjs('agents', updatedAgent)
+
     // Remove from cache and slug map (so it won't appear in lists)
     if (currentAgent.slug) {
       slugToIdMap.delete(currentAgent.slug)

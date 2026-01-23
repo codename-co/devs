@@ -489,7 +489,7 @@ export function ExtensionEditorPage() {
             icon: 'Code',
             color: 'primary',
             pages: {
-              app: `import { Button, Card, CardBody, Container, Section } from '@devs/components'
+              app: /* js */ `import { Button, Card, CardBody, Container, Section } from '@devs/components'
 
 const App = () => {
   return (
@@ -757,7 +757,8 @@ const App = () => {
       </Container>
     </Section>
   )
-}`
+}
+`
 
     setExtension((prev) =>
       prev
@@ -834,7 +835,7 @@ const App = () => {
           throw new Error(t('No LLM provider configured'))
         }
 
-        const contextPrompt = `
+        const contextPrompt = /* md */ `
 Current extension: ${extension.name}
 Description: ${extension.description || 'No description'}
 Current page: ${selectedPage}

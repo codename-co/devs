@@ -11,10 +11,7 @@
 export * from '@heroui/react'
 
 // Export custom components
-export { Section } from '../Section'
-export { Container } from '../Container'
-export { PromptArea } from './PromptArea'
-// and their types
-export type { SectionProps } from '../Section'
-export type { ContainerProps } from '../Container'
-export type { PromptAreaProps } from './PromptArea'
+export { Container, type ContainerProps } from '../Container'
+export { PromptArea, type PromptAreaProps } from './PromptArea'
+export { Section, type SectionProps } from '../Section'
+export { Widget, type CodeBlockType } from '../Widget'
