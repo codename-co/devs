@@ -364,6 +364,154 @@ export function useExtensionBridge({
             break
           }
 
+          case 'DEVS_VISION_ANALYZE': {
+            const config = await CredentialService.getActiveConfig()
+            if (!config) {
+              response = {
+                success: false,
+                error:
+                  'No LLM provider configured. Please add credentials in Settings.',
+              }
+              break
+            }
+
+            const { imageData, prompt, options = {} } = payload || {}
+            if (!imageData) {
+              response = { success: false, error: 'imageData is required' }
+              break
+            }
+
+            // Extract MIME type and base64 data from data URL
+            const dataUrlMatch = imageData.match(
+              /^data:(image\/[^;]+);base64,(.+)$/,
+            )
+            const mimeType = dataUrlMatch ? dataUrlMatch[1] : 'image/png'
+            const base64Data = dataUrlMatch ? dataUrlMatch[2] : imageData
+
+            const analysisPrompt =
+              prompt ||
+              'Analyze this image in detail. Describe what you see, including any text, objects, people, colors, and overall composition.'
+
+            const messages = [
+              {
+                role: 'user' as const,
+                content: analysisPrompt,
+                attachments: [
+                  {
+                    type: 'image' as const,
+                    name: 'image',
+                    data: base64Data,
+                    mimeType,
+                  },
+                ],
+              },
+            ]
+
+            const result = await LLMService.chat(messages, {
+              ...config,
+              ...options,
+            })
+
+            response = {
+              success: true,
+              data: {
+                description: result.content,
+                usage: result.usage,
+              },
+            }
+            break
+          }
+
+          case 'DEVS_VISION_INTERPRET_SKETCH': {
+            const config = await CredentialService.getActiveConfig()
+            if (!config) {
+              response = {
+                success: false,
+                error:
+                  'No LLM provider configured. Please add credentials in Settings.',
+              }
+              break
+            }
+
+            const { imageData, options = {} } = payload || {}
+            if (!imageData) {
+              response = { success: false, error: 'imageData is required' }
+              break
+            }
+
+            // Extract MIME type and base64 data from data URL
+            const dataUrlMatch = imageData.match(
+              /^data:(image\/[^;]+);base64,(.+)$/,
+            )
+            const mimeType = dataUrlMatch ? dataUrlMatch[1] : 'image/png'
+            const base64Data = dataUrlMatch ? dataUrlMatch[2] : imageData
+
+            const sketchType = options.type || 'freeform'
+            const interpretPrompt = `Analyze this hand-drawn sketch or diagram. The expected type is: ${sketchType}.
+
+Please provide:
+1. An interpretation of what the sketch represents
+2. Identify all distinct elements (shapes, text, arrows, connections)
+3. Describe any relationships or flows between elements
+4. Suggest possible actions or next steps based on the sketch
+
+Format your response as JSON with this structure:
+{
+  "interpretation": "Overall description of what the sketch represents",
+  "elements": [
+    {"type": "shape/text/arrow/etc", "label": "optional label", "connections": ["ids of connected elements"]}
+  ],
+  "suggestedActions": ["action1", "action2"]
+}`
+
+            const messages = [
+              {
+                role: 'user' as const,
+                content: interpretPrompt,
+                attachments: [
+                  {
+                    type: 'image' as const,
+                    name: 'sketch',
+                    data: base64Data,
+                    mimeType,
+                  },
+                ],
+              },
+            ]
+
+            const result = await LLMService.chat(messages, {
+              ...config,
+              ...options,
+            })
+
+            // Try to parse JSON response, fallback to raw content
+            let parsedResult
+            try {
+              const jsonMatch = result.content.match(/\{[\s\S]*\}/)
+              if (jsonMatch) {
+                parsedResult = JSON.parse(jsonMatch[0])
+              } else {
+                parsedResult = {
+                  interpretation: result.content,
+                  elements: [],
+                  suggestedActions: [],
+                }
+              }
+            } catch {
+              parsedResult = {
+                interpretation: result.content,
+                elements: [],
+                suggestedActions: [],
+              }
+            }
+
+            response = {
+              success: true,
+              data: parsedResult,
+            }
+            break
+          }
+
           default:
             response = {
               success: false,

@@ -235,7 +235,15 @@ export class AnthropicProvider implements LLMProviderInterface {
     })
 
     if (!response.ok) {
-      throw new Error(`Anthropic API error: ${response.statusText}`)
+      let errorMessage = response.statusText
+      try {
+        const errorData = await response.json()
+        errorMessage =
+          errorData.error?.message || JSON.stringify(errorData) || errorMessage
+      } catch {
+        // If we can't parse the error body, use statusText
+      }
+      throw new Error(`Anthropic API error: ${errorMessage}`)
     }
 
     const data = await response.json()
@@ -392,7 +400,15 @@ export class AnthropicProvider implements LLMProviderInterface {
     )
 
     if (!response.ok) {
-      throw new Error(`Anthropic API error: ${response.statusText}`)
+      let errorMessage = response.statusText
+      try {
+        const errorData = await response.json()
+        errorMessage =
+          errorData.error?.message || JSON.stringify(errorData) || errorMessage
+      } catch {
+        // If we can't parse the error body, use statusText
+      }
+      throw new Error(`Anthropic API error: ${errorMessage}`)
     }
 
     const reader = response.body?.getReader()
