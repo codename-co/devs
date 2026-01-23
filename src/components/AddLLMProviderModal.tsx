@@ -7,6 +7,7 @@ import {
   ModalFooter,
   Button,
   Input,
+  Textarea,
   Card,
   CardBody,
   Link,
@@ -202,7 +203,34 @@ export function AddLLMProviderModal({ lang }: AddLLMProviderModalProps) {
                   )}
 
                   {!providerConfig?.noApiKey &&
-                    providerConfig?.provider !== 'ollama' && (
+                    providerConfig?.provider !== 'ollama' &&
+                    (providerConfig?.multilineApiKey ? (
+                      <Textarea
+                        label={t('API Key')}
+                        placeholder={
+                          providerConfig?.apiKeyPlaceholder || 'sk-...'
+                        }
+                        value={apiKey}
+                        onValueChange={setApiKey}
+                        minRows={3}
+                        maxRows={8}
+                        isRequired={!providerConfig?.optionalApiKey}
+                        description={
+                          providerConfig?.apiKeyPage ? (
+                            <>
+                              {t('Get your API key from')}{' '}
+                              <Link
+                                href={providerConfig.apiKeyPage}
+                                target="_blank"
+                                size="sm"
+                              >
+                                {providerConfig.apiKeyPage}
+                              </Link>
+                            </>
+                          ) : undefined
+                        }
+                      />
+                    ) : (
                       <Input
                         label={t('API Key')}
                         placeholder={
@@ -227,7 +255,7 @@ export function AddLLMProviderModal({ lang }: AddLLMProviderModalProps) {
                           ) : undefined
                         }
                       />
-                    )}
+                    ))}
 
                   {providerConfig?.moreDetails?.()}
 

@@ -12,8 +12,263 @@ import {
 import { isPdf } from '../../document-converter'
 import { ToolCall, ToolDefinition, LLMConfigWithTools } from '../types'
 
+/**
+ * Google Cloud Service Account JSON key structure
+ */
+interface ServiceAccountKey {
+  type: 'service_account'
+  project_id: string
+  private_key_id: string
+  private_key: string
+  client_email: string
+  client_id: string
+  auth_uri: string
+  token_uri: string
+  auth_provider_x509_cert_url: string
+  client_x509_cert_url: string
+  universe_domain?: string
+}
+
+/**
+ * Cache for access tokens to avoid regenerating on every request
+ */
+interface TokenCache {
+  accessToken: string
+  expiresAt: number
+}
+
 export class VertexAIProvider implements LLMProviderInterface {
   public static readonly DEFAULT_MODEL = 'gemini-2.5-flash'
+
+  private tokenCache: Map<string, TokenCache> = new Map()
+
+  /**
+   * Detect if the API key is a JSON service account key
+   */
+  private isJsonKey(apiKey?: string): boolean {
+    if (!apiKey) return false
+    const trimmed = apiKey.trim()
+    return trimmed.startsWith('{') && trimmed.includes('"type"')
+  }
+
+  /**
+   * Parse JSON service account key
+   */
+  private parseJsonKey(apiKey: string): ServiceAccountKey {
+    try {
+      const key = JSON.parse(apiKey.trim())
+      if (key.type !== 'service_account') {
+        throw new Error(
+          'Invalid service account key: type must be "service_account"',
+        )
+      }
+      if (!key.project_id || !key.private_key || !key.client_email) {
+        throw new Error(
+          'Invalid service account key: missing required fields (project_id, private_key, client_email)',
+        )
+      }
+      return key as ServiceAccountKey
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        throw new Error('Invalid JSON format for service account key')
+      }
+      throw error
+    }
+  }
+
+  /**
+   * Create a JWT for Google OAuth 2.0
+   */
+  private async createJwt(serviceAccount: ServiceAccountKey): Promise<string> {
+    const now = Math.floor(Date.now() / 1000)
+    const expiry = now + 3600 // 1 hour
+
+    const header = {
+      alg: 'RS256',
+      typ: 'JWT',
+    }
+
+    const payload = {
+      iss: serviceAccount.client_email,
+      sub: serviceAccount.client_email,
+      aud: 'https://oauth2.googleapis.com/token',
+      iat: now,
+      exp: expiry,
+      scope: 'https://www.googleapis.com/auth/cloud-platform',
+    }
+
+    const encodedHeader = this.base64UrlEncode(JSON.stringify(header))
+    const encodedPayload = this.base64UrlEncode(JSON.stringify(payload))
+    const signatureInput = `${encodedHeader}.${encodedPayload}`
+
+    // Sign with the private key using Web Crypto API
+    const signature = await this.signWithPrivateKey(
+      signatureInput,
+      serviceAccount.private_key,
+    )
+
+    return `${signatureInput}.${signature}`
+  }
+
+  /**
+   * Base64URL encode a string
+   */
+  private base64UrlEncode(str: string): string {
+    const base64 = btoa(unescape(encodeURIComponent(str)))
+    return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+  }
+
+  /**
+   * Base64URL encode a Uint8Array
+   */
+  private base64UrlEncodeBytes(bytes: Uint8Array): string {
+    let binary = ''
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i])
+    }
+    const base64 = btoa(binary)
+    return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+  }
+
+  /**
+   * Sign data with RSA private key using Web Crypto API
+   */
+  private async signWithPrivateKey(
+    data: string,
+    privateKeyPem: string,
+  ): Promise<string> {
+    // Remove PEM headers and convert to binary
+    const pemContents = privateKeyPem
+      .replace(/-----BEGIN PRIVATE KEY-----/g, '')
+      .replace(/-----END PRIVATE KEY-----/g, '')
+      .replace(/-----BEGIN RSA PRIVATE KEY-----/g, '')
+      .replace(/-----END RSA PRIVATE KEY-----/g, '')
+      .replace(/\s/g, '')
+
+    const binaryKey = Uint8Array.from(atob(pemContents), (c) => c.charCodeAt(0))
+
+    // Import the key
+    const cryptoKey = await crypto.subtle.importKey(
+      'pkcs8',
+      binaryKey,
+      {
+        name: 'RSASSA-PKCS1-v1_5',
+        hash: 'SHA-256',
+      },
+      false,
+      ['sign'],
+    )
+
+    // Sign the data
+    const encoder = new TextEncoder()
+    const signature = await crypto.subtle.sign(
+      'RSASSA-PKCS1-v1_5',
+      cryptoKey,
+      encoder.encode(data),
+    )
+
+    return this.base64UrlEncodeBytes(new Uint8Array(signature))
+  }
+
+  /**
+   * Exchange JWT for access token
+   */
+  private async exchangeJwtForAccessToken(
+    jwt: string,
+  ): Promise<{ accessToken: string; expiresIn: number }> {
+    const response = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+        assertion: jwt,
+      }),
+    })
+
+    if (!response.ok) {
+      const error = await response.text()
+      throw new Error(`Failed to get access token: ${error}`)
+    }
+
+    const data = await response.json()
+    return {
+      accessToken: data.access_token,
+      expiresIn: data.expires_in || 3600,
+    }
+  }
+
+  /**
+   * Get access token from service account key (with caching)
+   */
+  private async getAccessTokenFromServiceAccount(
+    serviceAccount: ServiceAccountKey,
+  ): Promise<string> {
+    const cacheKey = serviceAccount.client_email
+
+    // Check cache
+    const cached = this.tokenCache.get(cacheKey)
+    if (cached && cached.expiresAt > Date.now() + 60000) {
+      // 1 minute buffer
+      return cached.accessToken
+    }
+
+    // Generate new token
+    const jwt = await this.createJwt(serviceAccount)
+    const { accessToken, expiresIn } = await this.exchangeJwtForAccessToken(jwt)
+
+    // Cache the token
+    this.tokenCache.set(cacheKey, {
+      accessToken,
+      expiresAt: Date.now() + expiresIn * 1000,
+    })
+
+    return accessToken
+  }
+
+  /**
+   * Get endpoint and auth info based on API key format
+   */
+  private async getAuthInfo(config?: Partial<LLMConfig>): Promise<{
+    endpoint: string
+    accessToken: string
+  }> {
+    const apiKey = config?.apiKey || ''
+
+    if (this.isJsonKey(apiKey)) {
+      // JSON service account key
+      const serviceAccount = this.parseJsonKey(apiKey)
+      const accessToken =
+        await this.getAccessTokenFromServiceAccount(serviceAccount)
+
+      // Default to us-central1 if no baseUrl specified
+      const location = 'us-central1'
+      const endpoint =
+        config?.baseUrl ||
+        `https://${location}-aiplatform.googleapis.com/v1/projects/${serviceAccount.project_id}/locations/${location}`
+
+      return { endpoint, accessToken }
+    } else {
+      // Legacy format: LOCATION:PROJECT_ID:API_KEY
+      const parts = apiKey.split(':')
+      if (parts.length < 3) {
+        throw new Error(
+          'Vertex AI requires either:\n' +
+            '1. A JSON service account key (paste the entire JSON), or\n' +
+            '2. Format: LOCATION:PROJECT_ID:ACCESS_TOKEN',
+        )
+      }
+
+      const [location, projectId, ...tokenParts] = parts
+      const accessToken = tokenParts.join(':') // In case token has colons
+      const endpoint =
+        config?.baseUrl ||
+        `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}`
+
+      return { endpoint, accessToken }
+    }
+  }
 
   /**
    * Convert OpenAI tool format to Gemini/Vertex AI tool format
@@ -48,31 +303,6 @@ export class VertexAIProvider implements LLMProviderInterface {
       }
     }
     return toolCalls
-  }
-
-  private getEndpoint(config?: Partial<LLMConfig>): string {
-    // Vertex AI requires location and project ID in the URL
-    // Format: https://LOCATION-aiplatform.googleapis.com/v1/projects/PROJECT_ID/locations/LOCATION/publishers/google/models/MODEL:predict
-    if (config?.baseUrl) {
-      return config.baseUrl
-    }
-
-    // Extract location and project from API key (expected format: LOCATION:PROJECT_ID:API_KEY)
-    const parts = config?.apiKey?.split(':') || []
-    if (parts.length >= 2) {
-      const [location, projectId] = parts
-      return `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}`
-    }
-
-    throw new Error(
-      'Vertex AI requires location and project ID. Use format: LOCATION:PROJECT_ID:API_KEY',
-    )
-  }
-
-  private getApiKey(config?: Partial<LLMConfig>): string {
-    // Extract actual API key from composite format
-    const parts = config?.apiKey?.split(':') || []
-    return parts[parts.length - 1] || ''
   }
 
   /**
@@ -135,8 +365,7 @@ export class VertexAIProvider implements LLMProviderInterface {
     messages: LLMMessage[],
     config?: Partial<LLMConfig> & LLMConfigWithTools,
   ): Promise<LLMResponseWithTools> {
-    const endpoint = this.getEndpoint(config)
-    const apiKey = this.getApiKey(config)
+    const { endpoint, accessToken } = await this.getAuthInfo(config)
     const model = config?.model || VertexAIProvider.DEFAULT_MODEL
 
     // Convert messages to Vertex AI format (may involve async document conversion)
@@ -183,7 +412,7 @@ export class VertexAIProvider implements LLMProviderInterface {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify(requestBody),
       },
@@ -239,8 +468,7 @@ export class VertexAIProvider implements LLMProviderInterface {
     messages: LLMMessage[],
     config?: Partial<LLMConfig> & LLMConfigWithTools,
   ): AsyncIterableIterator<string> {
-    const endpoint = this.getEndpoint(config)
-    const apiKey = this.getApiKey(config)
+    const { endpoint, accessToken } = await this.getAuthInfo(config)
     const model = config?.model || VertexAIProvider.DEFAULT_MODEL
 
     // Convert messages to Vertex AI format (may involve async document conversion)
@@ -269,7 +497,7 @@ export class VertexAIProvider implements LLMProviderInterface {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify(requestBody),
       },
@@ -338,20 +566,33 @@ export class VertexAIProvider implements LLMProviderInterface {
 
   async validateApiKey(apiKey: string): Promise<boolean> {
     try {
-      // Parse the composite API key
+      // Check if it's a JSON service account key
+      if (this.isJsonKey(apiKey)) {
+        try {
+          const serviceAccount = this.parseJsonKey(apiKey)
+          // Try to get an access token - this validates the key
+          await this.getAccessTokenFromServiceAccount(serviceAccount)
+          return true
+        } catch {
+          return false
+        }
+      }
+
+      // Legacy format: LOCATION:PROJECT_ID:ACCESS_TOKEN
       const parts = apiKey.split(':')
       if (parts.length < 3) {
         return false
       }
 
-      const [location, projectId, actualKey] = parts
+      const [location, projectId, ...tokenParts] = parts
+      const accessToken = tokenParts.join(':')
       const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}`
 
       // Try to list available models
       const response = await fetch(`${endpoint}/models`, {
         method: 'GET',
         headers: {
-          Authorization: `Bearer ${actualKey}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       })
 

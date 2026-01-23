@@ -32,6 +32,8 @@ export interface ProviderConfig {
   optionalApiKey?: boolean
   noServerUrl?: boolean
   fetchModelsFromServer?: boolean
+  /** Use multiline textarea for API key input (e.g., for JSON keys) */
+  multilineApiKey?: boolean
   moreDetails?: () => React.ReactNode
 }
 
@@ -200,9 +202,24 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
       ...models.filter((m) => m.id !== VertexAIProvider.DEFAULT_MODEL),
     ]),
     icon: 'GoogleCloud',
-    apiKeyFormat: 'LOCATION:PROJECT_ID:API_KEY',
-    apiKeyPlaceholder: 'us-central1:my-project:your-api-key',
-    apiKeyPage: 'https://console.cloud.google.com/apis/credentials',
+    apiKeyPlaceholder:
+      'Paste JSON service account key or LOCATION:PROJECT_ID:ACCESS_TOKEN',
+    apiKeyPage: 'https://console.cloud.google.com/iam-admin/serviceaccounts',
+    multilineApiKey: true,
+    moreDetails: () => (
+      <Alert variant="faded">
+        <div className="flex flex-col gap-2">
+          <p className="font-medium">Authentication Options</p>
+          <p className="text-sm text-default-600">
+            <strong>Option 1 (Recommended):</strong> Paste the entire JSON
+            content from a Service Account key file.
+            <br />
+            <strong>Option 2:</strong> Use format{' '}
+            <code>LOCATION:PROJECT_ID:ACCESS_TOKEN</code>
+          </p>
+        </div>
+      </Alert>
+    ),
   },
   {
     provider: 'mistral',
