@@ -104,6 +104,9 @@ export const ko: I18n = {
   'Hide Default Agents': '기본 에이전트 숨기기',
   'Only show your custom agents in the agent picker and agents page':
     '에이전트 선택기 및 에이전트 페이지에서 사용자 정의 에이전트만 표시',
+  'Conversational Features': '대화 기능',
+  'Configure how you interact with agents':
+    '에이전트와 상호 작용하는 방식을 구성합니다',
   'Auto Memory Learning': '자동 메모리 학습',
   'Automatically extract learnable information from conversations to build agent memory':
     '대화에서 학습 가능한 정보를 자동으로 추출하여 에이전트 메모리 구축',

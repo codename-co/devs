@@ -571,51 +571,6 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
                 className="max-w-xs mr-3"
               />
 
-              <div className="max-w-xs mr-3">
-                <Switch
-                  isSelected={speechToTextEnabled}
-                  onChange={(e) => setSpeechToTextEnabled(e.target.checked)}
-                  size="sm"
-                >
-                  {t('Enable Speech-to-Text')}
-                </Switch>
-                <p className="text-xs text-default-500 mt-1 ml-7">
-                  {t(
-                    'Allow voice input using your device microphone in the prompt area',
-                  )}
-                </p>
-              </div>
-
-              <div className="max-w-xs mr-3">
-                <Switch
-                  isSelected={hideDefaultAgents}
-                  onChange={(e) => setHideDefaultAgents(e.target.checked)}
-                  size="sm"
-                >
-                  {t('Hide Default Agents')}
-                </Switch>
-                <p className="text-xs text-default-500 mt-1 ml-7">
-                  {t(
-                    'Only show your custom agents in the agent picker and agents page',
-                  )}
-                </p>
-              </div>
-
-              <div className="max-w-xs mr-3">
-                <Switch
-                  isSelected={autoMemoryLearning}
-                  onChange={(e) => setAutoMemoryLearning(e.target.checked)}
-                  size="sm"
-                >
-                  {t('Auto Memory Learning')}
-                </Switch>
-                <p className="text-xs text-default-500 mt-1 ml-7">
-                  {t(
-                    'Automatically extract learnable information from conversations to build agent memory',
-                  )}
-                </p>
-              </div>
-
               <div>
                 <label className="text-sm font-medium text-default-600">
                   {t('Background Image')}
@@ -665,6 +620,63 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
                     e.target.value = ''
                   }}
                 />
+              </div>
+            </div>
+          </AccordionItem>
+
+          {/* Conversational Features */}
+          <AccordionItem
+            key="conversational"
+            data-testid="conversational-settings"
+            title={t('Conversational Features')}
+            subtitle={t('Configure how you interact with agents')}
+            startContent={<Icon name="ChatBubble" className="h-5 w-7" />}
+            classNames={{ content: 'pl-8 mb-4' }}
+          >
+            <div className="space-y-6 p-2">
+              <div className="max-w-xs mr-3">
+                <Switch
+                  isSelected={speechToTextEnabled}
+                  onChange={(e) => setSpeechToTextEnabled(e.target.checked)}
+                  size="sm"
+                >
+                  {t('Enable Speech-to-Text')}
+                </Switch>
+                <p className="text-xs text-default-500 mt-1 ml-7">
+                  {t(
+                    'Allow voice input using your device microphone in the prompt area',
+                  )}
+                </p>
+              </div>
+
+              <div className="max-w-xs mr-3">
+                <Switch
+                  isSelected={autoMemoryLearning}
+                  onChange={(e) => setAutoMemoryLearning(e.target.checked)}
+                  size="sm"
+                >
+                  {t('Auto Memory Learning')}
+                </Switch>
+                <p className="text-xs text-default-500 mt-1 ml-7">
+                  {t(
+                    'Automatically extract learnable information from conversations to build agent memory',
+                  )}
+                </p>
+              </div>
+
+              <div className="max-w-xs mr-3">
+                <Switch
+                  isSelected={hideDefaultAgents}
+                  onChange={(e) => setHideDefaultAgents(e.target.checked)}
+                  size="sm"
+                >
+                  {t('Hide Default Agents')}
+                </Switch>
+                <p className="text-xs text-default-500 mt-1 ml-7">
+                  {t(
+                    'Only show your custom agents in the agent picker and agents page',
+                  )}
+                </p>
               </div>
             </div>
           </AccordionItem>

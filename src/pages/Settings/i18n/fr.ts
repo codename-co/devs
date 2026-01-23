@@ -108,6 +108,9 @@ export const fr: I18n = {
   'Hide Default Agents': 'Masquer les agents par défaut',
   'Only show your custom agents in the agent picker and agents page':
     "Afficher uniquement vos agents personnalisés dans le sélecteur d'agents et la page des agents",
+  'Conversational Features': 'Fonctionnalités conversationnelles',
+  'Configure how you interact with agents':
+    'Configurez la façon dont vous interagissez avec les agents',
   'Auto Memory Learning': 'Apprentissage automatique de la mémoire',
   'Automatically extract learnable information from conversations to build agent memory':
     'Extraire automatiquement les informations exploitables des conversations pour construire la mémoire des agents',
