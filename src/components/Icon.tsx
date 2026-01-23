@@ -2,8 +2,8 @@ import { IconName } from '@/lib/types'
 import * as IconoirIcons from 'iconoir-react'
 import { type ComponentProps } from 'react'
 import * as SimpleIcons from 'simple-icons'
-import DevsAnimatedIcon from '/devs.svg?raw'
-import DevsStaticIcon from '/devs-static.svg?raw'
+import DevsAnimatedIcon from '../../public/devs.svg?raw'
+import DevsStaticIcon from '../../public/devs-static.svg?raw'
 
 const CustomIcons = {
   Devs: (props: any) => (
