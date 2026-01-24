@@ -53,7 +53,7 @@ export default defineConfig({
         },
       },
     },
-    sourcemap: true,
+    sourcemap: false,
     minify: false, // Keep readable for debugging
   },
 })
