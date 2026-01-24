@@ -81,7 +81,7 @@ const routes = {
   'traces/logs': TracesPage,
   marketplace: MarketplacePage,
   'marketplace/new': NewExtensionPage,
-  'marketplace/edit/:extensionId': ExtensionEditorPage,
+  'marketplace/extensions/:extensionId/edit': ExtensionEditorPage,
   'traces/sessions': TracesPage,
   'traces/logs/:traceId': TraceShowPage,
   live: LivePage,

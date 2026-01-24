@@ -3,7 +3,7 @@ import { Icon } from './Icon'
 import { useI18n } from '@/i18n'
 import { currentBasePath } from '@/lib/utils'
 
-export const Tabbar = () => {
+export const Tabbar = ({ className = '' }) => {
   const { t, url } = useI18n()
 
   return (
@@ -13,7 +13,7 @@ export const Tabbar = () => {
       variant="underlined"
       // color="primary"
       selectedKey={currentBasePath()}
-      className="md:hidden flex w-full justify-center fixed bottom-0 z-20 backdrop-blur-xs backdrop-brightness-120 border-t-1 border-default-200 dark:border-default-400 bg-white/80 dark:bg-default-50/80"
+      className={`flex w-full justify-center fixed bottom-0 z-20 backdrop-blur-xs backdrop-brightness-120 border-t-1 border-default-200 dark:border-default-400 bg-white/80 dark:bg-default-50/80 ${className}`}
       classNames={{
         tab: [
           'py-6 px-[4vw]',

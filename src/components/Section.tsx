@@ -21,7 +21,8 @@ export const Section = forwardRef<HTMLElement, SectionProps>(
       <section
         ref={ref}
         role="section"
-        className={`w-full p-6 lg:px-8 overflow-hidden ${mainClassName}`.trim()}
+        className={`w-full px-4 lg:px-8 [@media(min-height:800px)]:py-6 overflow-hidden transition-all
+           ${mainClassName}`.trim()}
         style={style}
       >
         <div
