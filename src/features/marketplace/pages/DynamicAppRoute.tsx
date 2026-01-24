@@ -16,12 +16,13 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
-import { useLocation } from 'react-router-dom'
-import { Spinner } from '@heroui/react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { Button, Spinner, Tooltip } from '@heroui/react'
 
 import DefaultLayout from '@/layouts/Default'
-import { Container, Section } from '@/components'
+import { Container, Icon, Section } from '@/components'
 import { useI18n, languages } from '@/i18n'
+import localI18n from './i18n'
 import { useMarketplaceStore } from '../store'
 import { NotFoundPage } from '@/pages/NotFound'
 import { getExtensionColorClass } from '../utils'
@@ -68,7 +69,8 @@ function parseAppPath(pathname: string): {
 
 export function DynamicAppRoute() {
   const location = useLocation()
-  const { lang } = useI18n()
+  const navigate = useNavigate()
+  const { lang, t } = useI18n(localI18n)
   const [isLoadingApp, setIsLoadingApp] = useState(false)
   const [hasInitialized, setHasInitialized] = useState(false)
   const [loadedExtension, setLoadedExtension] =
@@ -199,7 +201,24 @@ export function DynamicAppRoute() {
   }
 
   return (
-    <DefaultLayout header={header}>
+    <DefaultLayout
+      header={header}
+      pageMenuActions={
+        ext.isCustom ? (
+          <Tooltip content={t('Edit')} placement="bottom">
+            <Button
+              variant="light"
+              isIconOnly
+              aria-label={t('Edit')}
+              className="opacity-70 hover:opacity-100"
+              onPress={() => navigate(`/marketplace/extensions/${ext.id}/edit`)}
+            >
+              <Icon name="EditPencil" size="sm" />
+            </Button>
+          </Tooltip>
+        ) : undefined
+      }
+    >
       <ExtensionPreview
         extensionId={ext.id}
         extensionName={localizedName || ext.name}

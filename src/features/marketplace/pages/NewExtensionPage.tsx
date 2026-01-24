@@ -111,7 +111,7 @@ export function NewExtensionPage() {
 
       if (result.success && result.extension) {
         // Navigate to the extension editor for refinement
-        navigate(`/marketplace/edit/${result.extension.id}?new=true`)
+        navigate(`/marketplace/extensions/${result.extension.id}/edit?new=true`)
       } else {
         setError(result.error || t('Failed to generate extension'))
       }
@@ -281,7 +281,7 @@ export function NewExtensionPage() {
             </div>
             <button
               type="button"
-              onClick={() => navigate(url('/marketplace/edit/new'))}
+              onClick={() => navigate(url('/marketplace/extensions/new/edit'))}
               className="text-sm text-default-400 hover:text-default-600 dark:hover:text-default-300 transition-colors"
             >
               {t('or create manually')}

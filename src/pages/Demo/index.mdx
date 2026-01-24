@@ -1,5 +1,11 @@
-import { Container, Icon, MarkdownRenderer, Section, Title, Widget } from '@/components'
-import { AgentCard } from '@/features/battle/components'
+import {
+  Container,
+  Icon,
+  MarkdownRenderer,
+  Section,
+  Title,
+  Widget,
+} from '@/components'
 import Layout from '@/layouts/Default'
 import ABC from './abc.mdx'
 import Code from './code.mdx'
@@ -9,12 +15,14 @@ import markdown from './markdown.md?raw'
 import Presentation from './presentation.mdx'
 import Svg from './svg.mdx'
 
-<Layout header={{
+<Layout
+  header={{
     color: 'bg-default-50',
     title: 'Demo',
     subtitle:
-      'This page demonstrates the rendering of specialized code blocks within markdown content'
-  }}>
+      'This page demonstrates the rendering of specialized code blocks within markdown content',
+  }}
+>
   <Section>
     <Container>
       <Title level={2}>Logo</Title>
@@ -40,65 +48,6 @@ import Svg from './svg.mdx'
           pulsating
         </div>
       </div>
-    </Container>
-  </Section>
-  <Section>
-    <Container>
-      <Title level={2}>AgentCard</Title>
-      <AgentCard
-        card={{
-          id: 'card-001',
-          agentId: 'einstein',
-          name: 'Albert Einstein',
-          title: 'The Relativity Master',
-          element: 'wisdom',
-          rarity: 'legendary',
-          frameStyle: 'golden',
-          baseStats: {
-            hp: 120,
-            maxHp: 120,
-            energy: 5,
-            maxEnergy: 5,
-            attack: 75,
-            defense: 60,
-            speed: 70
-          },
-          currentStats: {
-            hp: 95,
-            maxHp: 120,
-            energy: 3,
-            maxEnergy: 5,
-            attack: 75,
-            defense: 60,
-            speed: 70
-          },
-          abilities: [
-            {
-              id: 'ability-001',
-              name: 'Relativity Blast',
-              description: 'Unleashes energy that bends space-time.',
-              element: 'wisdom',
-              power: 80,
-              cost: 3,
-              cooldown: 1,
-              effect: 'damage',
-              animation: 'beam'
-            },
-            {
-              id: 'ability-002',
-              name: 'Time Shield',
-              description: 'Slows incoming attacks.',
-              element: 'wisdom',
-              power: 40,
-              cost: 2,
-              cooldown: 2,
-              effect: 'shield',
-              animation: 'shield_dome'
-            }
-          ],
-          flavorText: '"Imagination is more important than knowledge."'
-        }}
-      />
     </Container>
   </Section>
   <Section>

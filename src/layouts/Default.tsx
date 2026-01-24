@@ -110,7 +110,7 @@ export default function DefaultLayout({
       <div className="flex relative min-h-screen">
         <AppDrawer />
         <div className="flex flex-col-reverse w-full relative">
-          <Tabbar />
+          <Tabbar className="md:hidden" />
 
           <main
             role="main"
@@ -210,7 +210,9 @@ export default function DefaultLayout({
               <ToastProvider />
               <PageMenu supplementalActions={pageMenuActions} />
 
-              <div className={`flex-1 flex flex-col ${className ?? ''}`}>
+              <div
+                className={`flex-1 flex flex-col pb-14 md:pb-0 ${className ?? ''}`}
+              >
                 {children}
               </div>
             </div>

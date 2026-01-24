@@ -421,7 +421,7 @@ export function ExtensionDetailModal({
                                   label: t('Edit'),
                                   action: () => {
                                     navigate(
-                                      `/marketplace/edit/${displayExtension.id}`,
+                                      `/marketplace/extensions/${displayExtension.id}/edit`,
                                     )
                                     onClose()
                                   },
@@ -432,7 +432,7 @@ export function ExtensionDetailModal({
                                   label: t('Duplicate & edit'),
                                   action: () => {
                                     navigate(
-                                      `/marketplace/edit/${displayExtension.id}?duplicate=true`,
+                                      `/marketplace/extensions/${displayExtension.id}/edit?duplicate=true`,
                                     )
                                     onClose()
                                   },
@@ -458,7 +458,7 @@ export function ExtensionDetailModal({
                                   label: t('Duplicate & edit'),
                                   action: () => {
                                     navigate(
-                                      `/marketplace/edit/${displayExtension.id}?duplicate=true`,
+                                      `/marketplace/extensions/${displayExtension.id}/edit?duplicate=true`,
                                     )
                                     onClose()
                                   },

@@ -56,7 +56,11 @@ import { CredentialService } from '@/lib/credential-service'
 import { successToast, errorToast } from '@/lib/toast'
 import { db } from '@/lib/db'
 import type { HeaderProps, IconName } from '@/lib/types'
-import type { CustomExtension, ExtensionColor } from '../types'
+import type {
+  CustomExtension,
+  ExtensionColor,
+  ExtensionDefinition,
+} from '../types'
 import {
   getCustomExtension,
   updateCustomExtension,
@@ -129,6 +133,10 @@ const localI18n = {
     'Chat input',
     'Iconoir icon name',
     'Fix Error',
+    'Export',
+    'Export as JSON',
+    'Export as YAML',
+    'Extension exported',
   ] as const,
   fr: {
     'Extension Editor': "Éditeur d'extension",
@@ -187,6 +195,10 @@ const localI18n = {
     'Chat input': 'Entrée de discussion',
     'Iconoir icon name': "Nom d'icône Iconoir",
     'Fix Error': "Corriger l'erreur",
+    Export: 'Exporter',
+    'Export as JSON': 'Exporter en JSON',
+    'Export as YAML': 'Exporter en YAML',
+    'Extension exported': 'Extension exportée',
   },
   es: {
     'Extension Editor': 'Editor de extensión',
@@ -203,6 +215,10 @@ const localI18n = {
     Preview: 'Vista previa',
     Console: 'Consola',
     Chat: 'Chat',
+    Export: 'Exportar',
+    'Export as JSON': 'Exportar como JSON',
+    'Export as YAML': 'Exportar como YAML',
+    'Extension exported': 'Extensión exportada',
   },
   de: {
     'Extension Editor': 'Erweiterungs-Editor',
@@ -215,6 +231,10 @@ const localI18n = {
     Preview: 'Vorschau',
     Console: 'Konsole',
     Chat: 'Chat',
+    Export: 'Exportieren',
+    'Export as JSON': 'Als JSON exportieren',
+    'Export as YAML': 'Als YAML exportieren',
+    'Extension exported': 'Erweiterung exportiert',
   },
 }
 
@@ -527,7 +547,9 @@ const App = () => {
           await loadCustomExtensions()
 
           // Navigate to the new extension's edit page
-          navigate(`/marketplace/edit/${newId}?new=true`, { replace: true })
+          navigate(`/marketplace/extensions/${newId}/edit?new=true`, {
+            replace: true,
+          })
           return
         }
 
@@ -540,7 +562,9 @@ const App = () => {
           isCreatingRef.current = true
 
           // Remove the duplicate query param immediately to prevent re-triggering
-          navigate(`/marketplace/edit/${extensionId}`, { replace: true })
+          navigate(`/marketplace/extensions/${extensionId}/edit`, {
+            replace: true,
+          })
 
           const sourceExt = await loadExtensionById(extensionId)
           if (sourceExt) {
@@ -574,7 +598,9 @@ const App = () => {
             await loadCustomExtensions()
 
             // Navigate to the new extension's edit page (without duplicate param)
-            navigate(`/marketplace/edit/${newId}?new=true`, { replace: true })
+            navigate(`/marketplace/extensions/${newId}/edit?new=true`, {
+              replace: true,
+            })
             return
           } else {
             errorToast(t('Extension not found'))
@@ -595,7 +621,9 @@ const App = () => {
 
           if (isNewExtension) {
             // Remove the new query param to prevent re-triggering
-            navigate(`/marketplace/edit/${extensionId}`, { replace: true })
+            navigate(`/marketplace/extensions/${extensionId}/edit`, {
+              replace: true,
+            })
 
             setMessages([
               {
@@ -729,6 +757,123 @@ const App = () => {
       setIsSaving(false)
     }
   }, [extension, selectedPage, pageCode, loadCustomExtensions, t])
+
+  // ==========================================================================
+  // EXPORT
+  // ==========================================================================
+
+  const handleExport = useCallback(
+    (format: 'json' | 'yaml') => {
+      if (!extension) return
+
+      // Prepare extension data for export (remove internal fields)
+      const exportData: ExtensionDefinition = {
+        id: extension.id,
+        type: extension.type,
+        name: extension.name,
+        version: extension.version,
+        license: extension.license,
+        icon: extension.icon,
+        color: extension.color,
+        description: extension.description,
+        author: extension.author,
+        i18n: extension.i18n,
+        pages: extension.pages,
+        configuration: extension.configuration,
+      }
+
+      let content: string
+      let mimeType: string
+      let fileExtension: string
+
+      if (format === 'json') {
+        content = JSON.stringify(exportData, null, 2)
+        mimeType = 'application/json'
+        fileExtension = 'json'
+      } else {
+        // Convert to YAML manually (simple implementation)
+        const toYaml = (obj: unknown, indent = 0): string => {
+          const spaces = '  '.repeat(indent)
+          if (obj === null || obj === undefined) return 'null'
+          if (typeof obj === 'string') {
+            // Check if string needs quoting
+            if (
+              obj.includes('\n') ||
+              obj.includes(':') ||
+              obj.includes('#') ||
+              obj.startsWith(' ') ||
+              obj.endsWith(' ')
+            ) {
+              return `|\n${obj
+                .split('\n')
+                .map((line) => spaces + '  ' + line)
+                .join('\n')}`
+            }
+            return obj
+          }
+          if (typeof obj === 'number' || typeof obj === 'boolean') {
+            return String(obj)
+          }
+          if (Array.isArray(obj)) {
+            if (obj.length === 0) return '[]'
+            return obj
+              .map(
+                (item) => `${spaces}- ${toYaml(item, indent + 1).trimStart()}`,
+              )
+              .join('\n')
+          }
+          if (typeof obj === 'object') {
+            const entries = Object.entries(obj).filter(
+              ([, v]) => v !== undefined,
+            )
+            if (entries.length === 0) return '{}'
+            return entries
+              .map(([key, value]) => {
+                const yamlValue = toYaml(value, indent + 1)
+                if (
+                  typeof value === 'object' &&
+                  value !== null &&
+                  !Array.isArray(value)
+                ) {
+                  return `${spaces}${key}:\n${yamlValue}`
+                }
+                if (Array.isArray(value) && value.length > 0) {
+                  return `${spaces}${key}:\n${yamlValue}`
+                }
+                if (
+                  typeof value === 'string' &&
+                  (value.includes('\n') ||
+                    value.includes(':') ||
+                    value.includes('#'))
+                ) {
+                  return `${spaces}${key}: ${yamlValue}`
+                }
+                return `${spaces}${key}: ${yamlValue}`
+              })
+              .join('\n')
+          }
+          return String(obj)
+        }
+        content = toYaml(exportData)
+        mimeType = 'application/x-yaml'
+        fileExtension = 'yaml'
+      }
+
+      // Create and download the file
+      const blob = new Blob([content], { type: mimeType })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${extension.id}.${fileExtension}`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+
+      successToast(t('Extension exported'))
+    },
+    [extension, t],
+  )
 
   // ==========================================================================
   // PAGE MANAGEMENT
@@ -1089,7 +1234,7 @@ User request: ${userMessage.content}
       color: 'text-warning-400 dark:text-warning-500',
     },
     title: extension.name,
-    subtitle: t('Edit and refine your extension'),
+    subtitle: extension.description || t('Edit and refine your extension'),
   }
 
   // ==========================================================================
@@ -1203,6 +1348,36 @@ User request: ${userMessage.content}
               </Card>
             </PopoverContent>
           </Popover>
+
+          {/* Export */}
+          <Dropdown placement="bottom-end">
+            <DropdownTrigger>
+              <div>
+                <PageMenuButton
+                  icon="Download"
+                  tooltip={t('Export')}
+                  ariaLabel={t('Export')}
+                />
+              </div>
+            </DropdownTrigger>
+            <DropdownMenu
+              aria-label={t('Export')}
+              onAction={(key) => handleExport(key as 'json' | 'yaml')}
+            >
+              <DropdownItem
+                key="json"
+                startContent={<Icon name="Code" size="sm" />}
+              >
+                {t('Export as JSON')}
+              </DropdownItem>
+              <DropdownItem
+                key="yaml"
+                startContent={<Icon name="Page" size="sm" />}
+              >
+                {t('Export as YAML')}
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
         </>
       }
     >
