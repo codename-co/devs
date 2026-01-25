@@ -14,10 +14,15 @@ export {
   getExtensions,
   getExtensionById,
   isExtensionInstalled,
+  hasExtensionUpdate,
+  getMarketplaceVersion,
   getInstalledApps,
   loadExtensionDetails,
   clearExtensionCache,
 } from './store'
+
+// Utils
+export { compareVersions, isNewerVersion } from './utils'
 
 // Components
 export { ExtensionDetailModal } from './components'

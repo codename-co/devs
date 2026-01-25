@@ -13,4 +13,10 @@ export const en = [
   'Invalid number value',
   'Invalid date value',
   'Invalid JSON value',
+  'Clear Collection',
+  'Collection cleared successfully ({count} records removed)',
+  'Failed to clear collection',
+  'Are you sure you want to clear the "{store}" collection? This will permanently delete all {count} records.',
+  'This action cannot be undone.',
+  'Clear All Records',
 ] as const

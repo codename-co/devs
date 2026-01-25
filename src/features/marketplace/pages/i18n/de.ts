@@ -292,6 +292,9 @@ export const de: I18n = {
   // Duplicate extension
   'Duplicate & edit': 'Duplizieren und bearbeiten',
 
+  // Run app
+  Run: 'Starten',
+
   // Manual creation
   'or create manually': 'oder manuell erstellen',
 }

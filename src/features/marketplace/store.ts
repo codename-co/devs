@@ -22,6 +22,7 @@ import type {
   CustomExtension,
 } from './types'
 import { deleteCustomExtension as deleteCustomExtensionFromDb } from './extension-generator'
+import { isNewerVersion } from './utils'
 
 // =============================================================================
 // CONSTANTS
@@ -154,6 +155,7 @@ interface MarketplaceStore {
   // Extension management
   installExtension: (extensionId: string) => Promise<void>
   uninstallExtension: (extensionId: string) => Promise<void>
+  updateExtension: (extensionId: string) => Promise<void>
   enableExtension: (extensionId: string) => Promise<void>
   disableExtension: (extensionId: string) => Promise<void>
   deleteCustomExtension: (extensionId: string) => Promise<void>
@@ -164,9 +166,15 @@ interface MarketplaceStore {
   loadExtensionById: (
     extensionId: string,
   ) => Promise<MarketplaceExtension | null>
+  // Fetch fresh extension details from registry (for marketplace display)
+  fetchExtensionFromRegistry: (
+    extensionId: string,
+  ) => Promise<MarketplaceExtension | null>
 
   // Getters
   getExtensionById: (id: string) => MarketplaceExtension | undefined
+  getMarketplaceVersion: (extensionId: string) => string | undefined
+  hasUpdate: (extensionId: string) => boolean
   getInstalledExtension: (id: string) => InstalledExtension | undefined
   getInstalledApps: () => InstalledExtension[]
   isInstalled: (extensionId: string) => boolean
@@ -367,6 +375,74 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
     }
   },
 
+  // Update an installed extension to the latest marketplace version
+  updateExtension: async (extensionId: string) => {
+    const { installed, extensions } = get()
+    const installedExt = installed.get(extensionId)
+
+    if (!installedExt) {
+      errorToast('Not installed', 'This extension is not installed')
+      return
+    }
+
+    // Don't allow updating custom extensions via marketplace
+    if (installedExt.extension.isCustom) {
+      errorToast(
+        'Cannot update',
+        'Custom extensions cannot be updated from the marketplace',
+      )
+      return
+    }
+
+    try {
+      // Clear cache to force fresh fetch
+      extensionCache.delete(extensionId)
+
+      // Fetch the latest version from the marketplace
+      const latestExtension = await fetchExtensionDetails(extensionId)
+
+      if (!latestExtension) {
+        errorToast(
+          'Update failed',
+          `Could not fetch latest version of extension: ${extensionId}`,
+        )
+        return
+      }
+
+      // Check if we actually have a newer version
+      const marketplaceExt = extensions.find((e) => e.id === extensionId)
+      const marketplaceVersion =
+        marketplaceExt?.version || latestExtension.version
+
+      if (!isNewerVersion(installedExt.extension.version, marketplaceVersion)) {
+        errorToast('Already up to date', 'You already have the latest version')
+        return
+      }
+
+      // Update the installed extension with the new version
+      const updatedInstalled: InstalledExtension = {
+        ...installedExt,
+        extension: latestExtension,
+        // Keep user config
+        userConfig: installedExt.userConfig,
+      }
+
+      const newInstalled = new Map(installed)
+      newInstalled.set(extensionId, updatedInstalled)
+      set({ installed: newInstalled })
+
+      // Persist to IndexedDB
+      await db.update('extensions', updatedInstalled)
+
+      successToast(
+        'Extension updated',
+        `${latestExtension.name} has been updated to v${latestExtension.version}`,
+      )
+    } catch (error) {
+      errorToast('Update failed', error)
+    }
+  },
+
   // Enable an extension
   enableExtension: async (extensionId: string) => {
     const { installed } = get()
@@ -449,9 +525,21 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
     await db.update('extensions', updated)
   },
 
-  // Load full extension details by ID (fetches if not cached)
+  // Load full extension details by ID
+  // Priority order:
+  // 1. Installed extension (already contains full data)
+  // 2. Custom extension from IndexedDB
+  // 3. Fetch from marketplace (only for non-installed extensions)
   loadExtensionById: async (extensionId: string) => {
-    // Check custom extensions first - fetch fresh from IndexedDB
+    const { installed } = get()
+
+    // Check installed extensions first - these already have the full persisted data
+    const installedExt = installed.get(extensionId)
+    if (installedExt) {
+      return installedExt.extension
+    }
+
+    // Check custom extensions - fetch fresh from IndexedDB
     if (!db.isInitialized()) {
       await db.init()
     }
@@ -477,7 +565,41 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
       } as MarketplaceExtension
     }
 
-    // Fetch from marketplace
+    // Fetch from marketplace only for non-installed, non-custom extensions
+    return fetchExtensionDetails(extensionId)
+  },
+
+  // Fetch fresh extension details from the registry (for marketplace display)
+  // This always fetches from the network, ignoring installed versions
+  // Used for displaying up-to-date metadata in the marketplace UI
+  fetchExtensionFromRegistry: async (extensionId: string) => {
+    // Check custom extensions first - these are user-created, not in registry
+    if (!db.isInitialized()) {
+      await db.init()
+    }
+    const customExt = await db.get('customExtensions', extensionId)
+    if (customExt) {
+      // Convert to MarketplaceExtension format
+      return {
+        id: customExt.id,
+        name: customExt.name,
+        version: customExt.version,
+        type: customExt.type,
+        license: customExt.license,
+        icon: customExt.icon,
+        color: customExt.color,
+        description: customExt.description,
+        author: customExt.author,
+        featured: customExt.featured,
+        source: customExt.source,
+        i18n: customExt.i18n,
+        pages: customExt.pages,
+        configuration: customExt.configuration,
+        isCustom: true,
+      } as MarketplaceExtension
+    }
+
+    // Fetch from marketplace registry
     return fetchExtensionDetails(extensionId)
   },
 
@@ -518,6 +640,36 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
   // Get installed extension by ID
   getInstalledExtension: (id: string) => {
     return get().installed.get(id)
+  },
+
+  // Get the marketplace version for an extension (from the registry)
+  getMarketplaceVersion: (extensionId: string) => {
+    const { extensions } = get()
+    const marketplaceExt = extensions.find((e) => e.id === extensionId)
+    return marketplaceExt?.version
+  },
+
+  // Check if an installed extension has an update available
+  hasUpdate: (extensionId: string) => {
+    const { extensions, installed } = get()
+    const installedExt = installed.get(extensionId)
+
+    // Not installed or is a custom extension - no marketplace updates
+    if (!installedExt || installedExt.extension.isCustom) {
+      return false
+    }
+
+    // Find the marketplace version
+    const marketplaceExt = extensions.find((e) => e.id === extensionId)
+    if (!marketplaceExt) {
+      return false
+    }
+
+    // Compare versions
+    return isNewerVersion(
+      installedExt.extension.version,
+      marketplaceExt.version,
+    )
   },
 
   // Get all installed applications (extensions of type 'app')
@@ -700,4 +852,18 @@ export function getAppPrimaryPageUrl(extensionId: string): string {
  */
 export function getPageCode(pageKey: string): string | null {
   return useMarketplaceStore.getState().getPageCode(pageKey)
+}
+
+/**
+ * Check if an installed extension has an update available
+ */
+export function hasExtensionUpdate(extensionId: string): boolean {
+  return useMarketplaceStore.getState().hasUpdate(extensionId)
+}
+
+/**
+ * Get the marketplace version for an extension
+ */
+export function getMarketplaceVersion(extensionId: string): string | undefined {
+  return useMarketplaceStore.getState().getMarketplaceVersion(extensionId)
 }

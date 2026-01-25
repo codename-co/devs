@@ -11,13 +11,13 @@ export const fr: I18n = {
     'Trouvez et installez des applications, agents, connecteurs et outils de la communauté',
 
   // Tabs
-  All: 'Tous',
-  Apps: 'Applications',
-  Agents: 'Agents',
-  Connectors: 'Connecteurs',
-  Tools: 'Outils',
-  Installed: 'Installés',
-  Available: 'Disponibles',
+  All: 'Tout',
+  Apps: 'Application',
+  Agents: 'Agent',
+  Connectors: 'Connecteur',
+  Tools: 'Outil',
+  Installed: 'Installé',
+  Available: 'Disponible',
 
   // Search
   'Search extensions...': 'Rechercher des extensions...',
@@ -287,6 +287,9 @@ export const fr: I18n = {
   'This action cannot be undone.': 'Cette action est irréversible.',
   // Duplicate extension
   'Duplicate & edit': 'Dupliquer et modifier',
+
+  // Run app
+  Run: 'Lancer',
 
   // Manual creation
   'or create manually': 'ou créer manuellement',

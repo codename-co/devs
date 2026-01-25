@@ -1,38 +1,41 @@
 id: bowling
 type: app
 name: Bowling
-version: 0.5.0
+version: 0.5.4
 license: MIT
 icon: BowlingBall
 color: orange
-description: A simple 3D bowling game using Babylon.js. Choose your direction and throw the ball to knock down the pins!
+description: A simple 3D bowling game to relax without AI distractions.
 author:
   name: Arnaud Leymet
   url: https://arnley.com
 privacyPolicy: https://devs.new/privacy
 source: https://github.com/codename-co/devs/blob/main/public/extensions/bowling.extension.yaml
+screenshots:
+  - data:image/webp;base64,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
 i18n:
+  ar:
+    name: بولينج
+    description: لعبة بولينج ثلاثية الأبعاد بسيطة للاسترخاء بدون تشتيت من الذكاء الاصطناعي.
+  de:
+    name: Bowling
+    description: Ein einfaches 3D-Bowling-Spiel zum Entspannen ohne KI-Ablenkungen.
   en:
     name: Bowling
-    description: A simple 3D bowling game using Babylon.js. Choose your direction and throw the ball to knock down the pins!
-    messages:
-      loading: Loading game…
-      aim: Aim
-      throw: Throw
-      reset: Reset
-      instructions: Use the slider to aim, then click Throw
+    description: A simple 3D bowling game to relax without AI distractions.
   fr:
     name: Bowling
-    description: Un jeu de bowling 3D simple utilisant Babylon.js. Choisissez votre direction et lancez la boule pour faire tomber les quilles !
-    messages:
-      loading: Chargement du jeu…
-      aim: Viser
-      throw: Lancer
-      reset: Réinitialiser
-      instructions: Utilisez le curseur pour viser, puis cliquez sur Lancer
+    description: Un simple jeu de bowling en 3D pour se détendre sans distractions d'IA.
+  es:
+    name: Bolos
+    description: Un simple juego de bolos en 3D para relajarse sin distracciones de IA.
+  it:
+    name: Bowling
+    description: Un semplice gioco di bowling 3D per rilassarsi senza distrazioni dall'IA.
 pages:
   bowling: | # jsx
     import { useState, useEffect, useRef, useCallback } from 'react'
+    import { CircularProgress } from '@devs/components'
 
     const App = () => {
       const canvasRef = useRef(null)
@@ -44,12 +47,24 @@ pages:
       const cinematicPhaseRef = useRef(0)
       const impactOccurredRef = useRef(false)
       const [aimAngle, setAimAngle] = useState(0)
+      const [aimDirection, setAimDirection] = useState(0) // Oscillating direction angle
       const [isThrown, setIsThrown] = useState(false)
       const [babylonLoaded, setBabylonLoaded] = useState(false)
       const [BABYLON, setBABYLON] = useState(null)
       const [score, setScore] = useState(0)
       const [knockedPins, setKnockedPins] = useState(0)
       const [cinematicMode, setCinematicMode] = useState(false)
+      const [showStrike, setShowStrike] = useState(false)
+      const [isAiming, setIsAiming] = useState(false) // True when actively dragging to aim
+      const gameEndTimeoutRef = useRef(null) // Timer for automatic game end
+      const gameEndReasonRef = useRef(null) // Track why game is ending
+
+      // Performance detection - detect low-end devices
+      const isLowEndDevice = useRef(
+        navigator.hardwareConcurrency <= 4 ||
+        navigator.deviceMemory <= 4 ||
+        /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+      ).current
 
       // Touch/mouse drag state
       const isDraggingRef = useRef(false)
@@ -57,11 +72,50 @@ pages:
       const dragEndRef = useRef({ x: 0, y: 0, time: 0 })
       const lastPositionsRef = useRef([])
       const isThrownRef = useRef(false)
+      const aimDirectionRef = useRef(0) // Track current aim direction for throw
+      const resetGameRef = useRef(null) // Store resetGame callback for game end timer
 
       // Keep ref in sync with state
       useEffect(() => {
         isThrownRef.current = isThrown
       }, [isThrown])
+
+      // Keep aimDirection ref in sync
+      useEffect(() => {
+        aimDirectionRef.current = aimDirection
+      }, [aimDirection])
+
+      // Sinusoidal aim direction oscillation (1/16th of circle = π/8 radians ≈ 22.5°)
+      // Only runs when actively aiming (dragging) - throttled for performance
+      useEffect(() => {
+        if (isThrown || !isAiming) {
+          setAimDirection(0)
+          return
+        }
+
+        const amplitude = Math.PI / 16
+        const frequency = 0.8
+        let startTime = performance.now()
+        let animationId = null
+        let lastUpdate = 0
+        const updateInterval = 33 // ~30fps instead of 60fps for aim indicator
+
+        const animate = (now) => {
+          if (now - lastUpdate >= updateInterval) {
+            const elapsed = (now - startTime) / 1000
+            const angle = Math.sin(elapsed * frequency * Math.PI * 2) * amplitude
+            setAimDirection(angle)
+            lastUpdate = now
+          }
+          animationId = requestAnimationFrame(animate)
+        }
+
+        animationId = requestAnimationFrame(animate)
+
+        return () => {
+          if (animationId) cancelAnimationFrame(animationId)
+        }
+      }, [isThrown, isAiming])
 
       useEffect(() => {
         const script = document.createElement('script')
@@ -88,13 +142,24 @@ pages:
         if (!babylonLoaded || !canvasRef.current || !BABYLON) return
 
         const canvas = canvasRef.current
-        const engine = new BABYLON.Engine(canvas, true, {
+        // Reduce quality for low-end devices
+        const engineOptions = {
           preserveDrawingBuffer: true,
-          stencil: true,
-        })
+          stencil: !isLowEndDevice,
+          antialias: !isLowEndDevice,
+          powerPreference: isLowEndDevice ? 'low-power' : 'high-performance',
+        }
+        const engine = new BABYLON.Engine(canvas, !isLowEndDevice, engineOptions)
+        // Hardware scaling for low-end devices (renders at lower resolution)
+        if (isLowEndDevice) {
+          engine.setHardwareScalingLevel(1.5) // Render at 66% resolution
+        }
         const scene = new BABYLON.Scene(engine)
+        // Disable auto-clear for performance
+        scene.autoClear = false
+        scene.autoClearDepthAndStencil = false
         sceneRef.current = scene
-        console.log('Babylon scene created')
+        console.log('Babylon scene created, lowEndDevice:', isLowEndDevice)
 
         // Enable physics with better settings
         scene.enablePhysics(
@@ -102,18 +167,22 @@ pages:
           new BABYLON.CannonJSPlugin(),
         )
 
-        // Improved camera setup - positioned to see ball and pins from start
+        // Camera setup - focused on the bowling ball area
         const camera = new BABYLON.ArcRotateCamera(
           'camera',
           -Math.PI / 2,
           Math.PI / 4,
-          22,
-          new BABYLON.Vector3(0, 0.5, 4),
+          18,
+          new BABYLON.Vector3(0, 0.5, -1),
           scene,
         )
-        // Only allow camera control with right mouse button (button 2)
+        // Camera control: right/middle click on desktop, 2-finger touch on mobile
         camera.attachControl(canvas, true)
         camera.inputs.attached.pointers.buttons = [1, 2] // Middle and right click only
+        // Enable multi-touch for mobile camera control (2 fingers to rotate/zoom)
+        camera.inputs.attached.pointers.multiTouchPanning = true
+        camera.inputs.attached.pointers.multiTouchPanAndZoom = true
+        camera.pinchDeltaPercentage = 0.01 // Smooth pinch zoom
         camera.lowerRadiusLimit = 12
         camera.upperRadiusLimit = 35
         camera.lowerBetaLimit = 0.3
@@ -137,12 +206,14 @@ pages:
         // PROFESSIONAL LIGHTING SETUP
         // ============================================
 
-        // Enable image processing for post-processing effects
-        scene.imageProcessingConfiguration.contrast = 1.2
-        scene.imageProcessingConfiguration.exposure = 1.1
-        scene.imageProcessingConfiguration.toneMappingEnabled = true
-        scene.imageProcessingConfiguration.toneMappingType =
-          BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES
+        // Enable image processing for post-processing effects (simplified for performance)
+        if (!isLowEndDevice) {
+          scene.imageProcessingConfiguration.contrast = 1.2
+          scene.imageProcessingConfiguration.exposure = 1.1
+          scene.imageProcessingConfiguration.toneMappingEnabled = true
+          scene.imageProcessingConfiguration.toneMappingType =
+            BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES
+        }
 
         // Ambient light - soft global illumination
         const ambientLight = new BABYLON.HemisphericLight(
@@ -232,44 +303,50 @@ pages:
         // ADVANCED SHADOW CONFIGURATION
         // ============================================
 
-        // Primary shadow generator from key light - high quality PCF shadows
-        const shadowGenerator = new BABYLON.ShadowGenerator(2048, keyLight)
-        shadowGenerator.usePercentageCloserFiltering = true
-        shadowGenerator.filteringQuality = BABYLON.ShadowGenerator.QUALITY_HIGH
+        // Shadow generators - quality based on device capability
+        const shadowMapSize = isLowEndDevice ? 512 : 1024
+        const shadowGenerator = new BABYLON.ShadowGenerator(shadowMapSize, keyLight)
+        if (isLowEndDevice) {
+          // Use basic shadow map for low-end devices
+          shadowGenerator.usePoissonSampling = true
+        } else {
+          shadowGenerator.usePercentageCloserFiltering = true
+          shadowGenerator.filteringQuality = BABYLON.ShadowGenerator.QUALITY_MEDIUM
+        }
         shadowGenerator.bias = 0.001
         shadowGenerator.normalBias = 0.02
         shadowGenerator.darkness = 0.35
-        shadowGenerator.transparencyShadow = true
         shadowGenerator.frustumEdgeFalloff = 0.5
 
-        // Secondary shadow generator from fill light - softer shadows
-        const fillShadowGenerator = new BABYLON.ShadowGenerator(1024, fillLight)
-        fillShadowGenerator.useBlurExponentialShadowMap = true
-        fillShadowGenerator.blurKernel = 64
-        fillShadowGenerator.blurScale = 2
-        fillShadowGenerator.darkness = 0.5
-        fillShadowGenerator.depthScale = 50
-
-        // Store shadow generators for adding casters later
+        // Store shadow generators - only use one generator for performance
         scene.metadata = scene.metadata || {}
-        scene.metadata.shadowGenerators = [shadowGenerator, fillShadowGenerator]
+        scene.metadata.shadowGenerators = [shadowGenerator]
+
+        // Secondary shadow generator only for high-end devices
+        if (!isLowEndDevice) {
+          const fillShadowGenerator = new BABYLON.ShadowGenerator(512, fillLight)
+          fillShadowGenerator.useBlurExponentialShadowMap = true
+          fillShadowGenerator.blurKernel = 32
+          fillShadowGenerator.darkness = 0.5
+          scene.metadata.shadowGenerators.push(fillShadowGenerator)
+        }
 
         // ============================================
         // REFLECTION PROBE FOR ENVIRONMENT REFLECTIONS
         // ============================================
 
-        // Create reflection probe for realistic reflections on glossy surfaces
-        const reflectionProbe = new BABYLON.ReflectionProbe(
-          'reflectionProbe',
-          256,
-          scene,
-        )
-        reflectionProbe.position = new BABYLON.Vector3(0, 2, 8)
-        reflectionProbe.refreshRate =
-          BABYLON.RenderTargetTexture.REFRESHRATE_RENDER_ONCE
-
-        // Store for later use with materials
-        scene.metadata.reflectionProbe = reflectionProbe
+        // Create reflection probe only for high-end devices
+        if (!isLowEndDevice) {
+          const reflectionProbe = new BABYLON.ReflectionProbe(
+            'reflectionProbe',
+            128, // Reduced from 256
+            scene,
+          )
+          reflectionProbe.position = new BABYLON.Vector3(0, 2, 8)
+          reflectionProbe.refreshRate =
+            BABYLON.RenderTargetTexture.REFRESHRATE_RENDER_ONCE
+          scene.metadata.reflectionProbe = reflectionProbe
+        }
 
         // Create bowling lane with realistic wood texture
         const lane = BABYLON.MeshBuilder.CreateBox(
@@ -281,14 +358,17 @@ pages:
         lane.position.z = 6
         const laneMat = new BABYLON.StandardMaterial('laneMat', scene)
 
-        // Create wood grain texture procedurally
+        // Create wood grain texture procedurally (reduced size for performance)
+        const laneTextureSize = isLowEndDevice ? { width: 256, height: 512 } : { width: 512, height: 1024 }
         const laneTexture = new BABYLON.DynamicTexture(
           'laneTexture',
-          { width: 512, height: 1024 },
+          laneTextureSize,
           scene,
         )
         const ctx = laneTexture.getContext()
-        const gradient = ctx.createLinearGradient(0, 0, 512, 0)
+        const texW = laneTextureSize.width
+        const texH = laneTextureSize.height
+        const gradient = ctx.createLinearGradient(0, 0, texW, 0)
         gradient.addColorStop(0, '#d4a574')
         gradient.addColorStop(0.2, '#c9956a')
         gradient.addColorStop(0.4, '#d4a574')
@@ -296,34 +376,38 @@ pages:
         gradient.addColorStop(0.8, '#d4a574')
         gradient.addColorStop(1, '#c9956a')
         ctx.fillStyle = gradient
-        ctx.fillRect(0, 0, 512, 1024)
+        ctx.fillRect(0, 0, texW, texH)
 
-        // Add wood grain lines
+        // Add wood grain lines (reduced count for low-end)
         ctx.strokeStyle = '#b8845a'
         ctx.lineWidth = 1
-        for (let i = 0; i < 20; i++) {
+        const lineCount = isLowEndDevice ? 10 : 20
+        const lineSpacing = texW / lineCount
+        for (let i = 0; i < lineCount; i++) {
           ctx.beginPath()
-          ctx.moveTo(i * 26, 0)
-          ctx.lineTo(i * 26, 1024)
+          ctx.moveTo(i * lineSpacing, 0)
+          ctx.lineTo(i * lineSpacing, texH)
           ctx.stroke()
         }
 
-        // Add lane markers (arrows)
-        ctx.fillStyle = '#8b6914'
-        const arrowY = 300
-        for (let i = 0; i < 7; i++) {
-          const x = 73 + i * 52
-          ctx.beginPath()
-          ctx.moveTo(x, arrowY)
-          ctx.lineTo(x - 8, arrowY + 30)
-          ctx.lineTo(x + 8, arrowY + 30)
-          ctx.closePath()
-          ctx.fill()
+        // Add lane markers (arrows) - skip on low-end for simpler texture
+        if (!isLowEndDevice) {
+          ctx.fillStyle = '#8b6914'
+          const arrowY = texH * 0.29
+          for (let i = 0; i < 7; i++) {
+            const x = texW * 0.14 + i * texW * 0.1
+            ctx.beginPath()
+            ctx.moveTo(x, arrowY)
+            ctx.lineTo(x - 8, arrowY + 30)
+            ctx.lineTo(x + 8, arrowY + 30)
+            ctx.closePath()
+            ctx.fill()
+          }
         }
 
         // Add foul line
         ctx.fillStyle = '#1a1a1a'
-        ctx.fillRect(0, 180, 512, 8)
+        ctx.fillRect(0, texH * 0.176, texW, 8)
 
         laneTexture.update()
         laneMat.diffuseTexture = laneTexture
@@ -455,14 +539,17 @@ pages:
         ceilingMat.alpha = 1
         ceiling.material = ceilingMat
 
-        // Make ceiling transparent when camera is above it
+        // Make ceiling transparent when camera is above it (throttled for performance)
+        let lastCeilingCheck = 0
         scene.registerBeforeRender(() => {
+          const now = performance.now()
+          if (now - lastCeilingCheck < 200) return // Check every 200ms
+          lastCeilingCheck = now
           const cameraY = camera.position.y
           const ceilingY = ceiling.position.y
-          if (cameraY > ceilingY) {
-            ceilingMat.alpha = 0.15
-          } else {
-            ceilingMat.alpha = 1
+          const newAlpha = cameraY > ceilingY ? 0.15 : 1
+          if (ceilingMat.alpha !== newAlpha) {
+            ceilingMat.alpha = newAlpha
           }
         })
 
@@ -500,62 +587,57 @@ pages:
           bulbMat.diffuseColor = new BABYLON.Color3(1, 0.95, 0.8)
           bulb.material = bulbMat
         }
+        // Reduce hanging lights on low-end devices
         createHangingLight(0, 3)
         createHangingLight(0, 10)
-        createHangingLight(-3, 6)
-        createHangingLight(3, 6)
+        if (!isLowEndDevice) {
+          createHangingLight(-3, 6)
+          createHangingLight(3, 6)
+        }
 
         // Create bowling ball with realistic marble texture appearance
+        const ballSegments = isLowEndDevice ? 16 : 24 // Reduced from 32
         const ball = BABYLON.MeshBuilder.CreateSphere(
           'ball',
-          { diameter: 0.55, segments: 32 },
+          { diameter: 0.55, segments: ballSegments },
           scene,
         )
         ball.position = new BABYLON.Vector3(0, 1.5, -3) // Start higher to drop
         const ballMat = new BABYLON.StandardMaterial('ballMat', scene)
 
-        // Create marble texture procedurally
+        // Create marble texture procedurally (reduced size for performance)
+        const ballTextureSize = isLowEndDevice ? 256 : 512
         const ballTexture = new BABYLON.DynamicTexture(
           'ballTexture',
-          { width: 512, height: 512 },
+          { width: ballTextureSize, height: ballTextureSize },
           scene,
         )
         const ballCtx = ballTexture.getContext()
 
         // Base light blue color
         ballCtx.fillStyle = '#a8d4e6'
-        ballCtx.fillRect(0, 0, 512, 512)
+        ballCtx.fillRect(0, 0, ballTextureSize, ballTextureSize)
 
-        // Create marble swirl effect with multiple layers
-        const createMarbleSwirls = (ctx, width, height) => {
-          // Lighter swirl colors
-          const colors = [
-            '#c5e5f0',
-            '#8fc5db',
-            '#b8dce8',
-            '#7bb8d0',
-            '#d0eaf3',
-            '#9cd1e5',
-          ]
+        // Create marble swirl effect - simplified for performance
+        const createMarbleSwirls = (ctx, width, height, simplified = false) => {
+          const colors = ['#c5e5f0', '#8fc5db', '#b8dce8', '#7bb8d0']
+          const layerCount = simplified ? 3 : 6
+          const swirlCount = simplified ? 10 : 20
+          const stepsPerSwirl = simplified ? 5 : 10
 
-          for (let layer = 0; layer < 8; layer++) {
+          for (let layer = 0; layer < layerCount; layer++) {
             ctx.globalAlpha = 0.4 + Math.random() * 0.3
-
-            for (let i = 0; i < 25; i++) {
+            for (let i = 0; i < swirlCount; i++) {
               ctx.beginPath()
               ctx.strokeStyle = colors[Math.floor(Math.random() * colors.length)]
-              ctx.lineWidth = 3 + Math.random() * 12
+              ctx.lineWidth = 3 + Math.random() * 10
               ctx.lineCap = 'round'
-
-              // Create organic curved paths
               let x = Math.random() * width
               let y = Math.random() * height
               ctx.moveTo(x, y)
-
-              const steps = 8 + Math.floor(Math.random() * 12)
-              for (let j = 0; j < steps; j++) {
+              for (let j = 0; j < stepsPerSwirl; j++) {
                 const angle = Math.random() * Math.PI * 2
-                const distance = 20 + Math.random() * 60
+                const distance = 25 + Math.random() * 50
                 x += Math.cos(angle) * distance
                 y += Math.sin(angle) * distance
                 ctx.lineTo(x, y)
@@ -564,54 +646,27 @@ pages:
             }
           }
 
-          // Add white highlights/veins
+          // Add highlights (reduced)
           ctx.globalAlpha = 0.5
-          for (let i = 0; i < 40; i++) {
+          const highlightCount = simplified ? 12 : 25
+          for (let i = 0; i < highlightCount; i++) {
             ctx.beginPath()
             ctx.strokeStyle = '#e8f4f8'
-            ctx.lineWidth = 1 + Math.random() * 4
-
+            ctx.lineWidth = 1 + Math.random() * 3
             let x = Math.random() * width
             let y = Math.random() * height
             ctx.moveTo(x, y)
-
-            const steps = 5 + Math.floor(Math.random() * 8)
-            for (let j = 0; j < steps; j++) {
-              const angle = Math.random() * Math.PI * 2
-              const distance = 15 + Math.random() * 40
-              x += Math.cos(angle) * distance
-              y += Math.sin(angle) * distance
+            for (let j = 0; j < 4; j++) {
+              x += (Math.random() - 0.5) * 60
+              y += (Math.random() - 0.5) * 60
               ctx.lineTo(x, y)
             }
             ctx.stroke()
           }
-
-          // Add some darker blue depth areas
-          ctx.globalAlpha = 0.25
-          for (let i = 0; i < 15; i++) {
-            ctx.beginPath()
-            ctx.strokeStyle = '#5a9bb8'
-            ctx.lineWidth = 8 + Math.random() * 15
-
-            let x = Math.random() * width
-            let y = Math.random() * height
-            ctx.moveTo(x, y)
-
-            const steps = 4 + Math.floor(Math.random() * 6)
-            for (let j = 0; j < steps; j++) {
-              const angle = Math.random() * Math.PI * 2
-              const distance = 25 + Math.random() * 50
-              x += Math.cos(angle) * distance
-              y += Math.sin(angle) * distance
-              ctx.lineTo(x, y)
-            }
-            ctx.stroke()
-          }
-
           ctx.globalAlpha = 1.0
         }
 
-        createMarbleSwirls(ballCtx, 512, 512)
+        createMarbleSwirls(ballCtx, ballTextureSize, ballTextureSize, isLowEndDevice)
         ballTexture.update()
 
         ballMat.diffuseTexture = ballTexture
@@ -725,13 +780,14 @@ pages:
             new BABYLON.Vector3(0, 0.68, 0),
           ]
 
+          const pinTessellation = isLowEndDevice ? 16 : 24 // Reduced from 32
           const pin = BABYLON.MeshBuilder.CreateLathe(
             'pin',
             {
               shape: pinProfile,
               radius: 1,
-              tessellation: 32,
-              sideOrientation: BABYLON.Mesh.DOUBLESIDE,
+              tessellation: pinTessellation,
+              sideOrientation: BABYLON.Mesh.FRONTSIDE, // Single side for performance
             },
             scene,
           )
@@ -768,12 +824,13 @@ pages:
           }
 
           // Red stripes
+          const stripeTessellation = isLowEndDevice ? 12 : 20 // Reduced from 32
           const stripe1 = BABYLON.MeshBuilder.CreateTorus(
             'stripe1',
             {
               diameter: 0.085,
               thickness: 0.008,
-              tessellation: 32,
+              tessellation: stripeTessellation,
             },
             scene,
           )
@@ -788,21 +845,6 @@ pages:
           const stripe2 = stripe1.clone('stripe2')
           stripe2.position = new BABYLON.Vector3(0, 0.45, 0)
           stripe2.parent = pin
-
-          // Red ring at the base (liseret)
-          const baseRing = BABYLON.MeshBuilder.CreateTorus(
-            'baseRing',
-            {
-              diameter: 0.16,
-              thickness: 0.012,
-              tessellation: 32,
-            },
-            scene,
-          )
-          baseRing.rotation.x = Math.PI / 2
-          baseRing.parent = pin
-          baseRing.position = new BABYLON.Vector3(0, 0.02, 0)
-          baseRing.material = stripeMat
 
           pin.physicsImpostor = new BABYLON.PhysicsImpostor(
             pin,
@@ -835,26 +877,108 @@ pages:
         })
         pinsRef.current = pins
 
-        // Create aim guide line
-        const aimLine = BABYLON.MeshBuilder.CreateLines(
-          'aimLine',
+        // Create aim guide arrow - 2D flat visual guide (no physics, just visual)
+        // First pin is at z=12, ball starts at z=-3, so halfway is z=4.5
+        const arrowEndZ = 4.5
+        const arrowStartZ = -2.5 // Just in front of ball
+        const arrowLength = arrowEndZ - arrowStartZ
+        const arrowHeadLength = 1.0
+        const arrowBodyLength = arrowLength - arrowHeadLength
+        const arrowWidth = 0.25
+
+        // Create arrow texture procedurally
+        const arrowTextureSize = isLowEndDevice ? { width: 32, height: 128 } : { width: 64, height: 256 }
+        const arrowTexture = new BABYLON.DynamicTexture(
+          'arrowTexture',
+          arrowTextureSize,
+          scene,
+        )
+        const arrowCtx = arrowTexture.getContext()
+        const arrW = arrowTextureSize.width
+        const arrH = arrowTextureSize.height
+        // Transparent background
+        arrowCtx.clearRect(0, 0, arrW, arrH)
+        // Draw arrow body (rectangle) - proportional to texture size
+        arrowCtx.fillStyle = 'rgba(255, 80, 80, 0.7)'
+        arrowCtx.fillRect(arrW * 0.3125, 0, arrW * 0.375, arrH * 0.78)
+        // Draw arrow head (triangle)
+        arrowCtx.beginPath()
+        arrowCtx.moveTo(arrW * 0.5, arrH) // Tip
+        arrowCtx.lineTo(0, arrH * 0.78)  // Bottom left
+        arrowCtx.lineTo(arrW, arrH * 0.78) // Bottom right
+        arrowCtx.closePath()
+        arrowCtx.fill()
+        arrowTexture.update()
+        arrowTexture.hasAlpha = true
+
+        // Arrow body - flat plane at ball center height
+        // Ball is at z=-3, so positions are relative to that
+        const ballZ = -3
+        const ballCenterHeight = 0.35 + 0.275 // Ball position + half diameter
+        const arrowBody = BABYLON.MeshBuilder.CreatePlane(
+          'arrowBody',
           {
-            points: [
-              new BABYLON.Vector3(0, 0.1, -3),
-              new BABYLON.Vector3(0, 0.1, 5),
-            ],
-            updatable: true,
+            width: arrowWidth,
+            height: arrowBodyLength,
           },
           scene,
         )
-        aimLine.color = new BABYLON.Color3(1, 0.3, 0.3)
-        aimLine.alpha = 0.6
+        // Rotate to lie flat pointing forward, at ball center height
+        // Position relative to ball (arrow starts just in front of ball)
+        arrowBody.rotation.x = Math.PI / 2
+        arrowBody.position = new BABYLON.Vector3(0, 0.3, (arrowStartZ - ballZ) + arrowBodyLength / 2)
 
-        // Store aim line for updates
-        scene.aimLine = aimLine
+        // Arrow material - semi-transparent red, unlit (pure visual)
+        const arrowMat = new BABYLON.StandardMaterial('arrowMat', scene)
+        arrowMat.diffuseColor = new BABYLON.Color3(1, 0.3, 0.3)
+        arrowMat.emissiveColor = new BABYLON.Color3(1, 0.3, 0.3) // Self-illuminated
+        arrowMat.specularColor = new BABYLON.Color3(0, 0, 0) // No specular
+        arrowMat.alpha = 0.6
+        arrowMat.backFaceCulling = false
+        arrowMat.disableLighting = true // Pure visual, not affected by lights
+        arrowBody.material = arrowMat
 
-        // Add particle system for impact effect
-        const particleSystem = new BABYLON.ParticleSystem('particles', 100, scene)
+        // Arrow head - flat triangle plane pointing forward
+        const arrowHead = BABYLON.MeshBuilder.CreateDisc(
+          'arrowHead',
+          {
+            radius: 0.4,
+            tessellation: 3, // Triangle
+          },
+          scene,
+        )
+        arrowHead.rotation.x = Math.PI / 2
+        arrowHead.rotation.z = Math.PI / 2 // Rotate to point forward (along Z axis)
+        // Position relative to ball
+        arrowHead.position = new BABYLON.Vector3(0, 0.3, (arrowEndZ - ballZ) - 0.8)
+        arrowHead.material = arrowMat
+
+        // Create parent container for easy positioning - positioned at ball location
+        // This makes the arrow rotate around the ball as pivot point
+        const aimArrow = new BABYLON.TransformNode('aimArrow', scene)
+        arrowBody.parent = aimArrow
+        arrowHead.parent = aimArrow
+        aimArrow.position = new BABYLON.Vector3(0, 0, ballZ) // Position at ball Z
+
+        // Ensure arrow is purely visual - no shadows, no physics
+        arrowBody.receiveShadows = false
+        arrowHead.receiveShadows = false
+        arrowBody.isPickable = false
+        arrowHead.isPickable = false
+
+        // Store aim arrow components for updates
+        scene.aimArrow = aimArrow
+        scene.arrowBody = arrowBody
+        scene.arrowHead = arrowHead
+        scene.arrowEndZ = arrowEndZ
+        scene.arrowStartZ = arrowStartZ
+
+        // Start with arrow hidden (only shows during active aiming)
+        aimArrow.setEnabled(false)
+
+        // Add particle system for impact effect (reduced count for performance)
+        const particleCount = isLowEndDevice ? 30 : 60
+        const particleSystem = new BABYLON.ParticleSystem('particles', particleCount, scene)
         particleSystem.particleTexture = new BABYLON.Texture(
           'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAGklEQVQYV2NkYGD4z4AHMP7//x8fN+IGjFQHALfiBP9lq3bqAAAAAElFTkSuQmCC',
           scene,
@@ -877,17 +1001,24 @@ pages:
         particleSystem.start()
         scene.particleSystem = particleSystem
 
-        // Glow effect
-        const gl = new BABYLON.GlowLayer('glow', scene)
-        gl.intensity = 0.3
-        scene.metadata.glowLayer = gl
+        // Glow effect - disabled on low-end devices
+        if (!isLowEndDevice) {
+          const gl = new BABYLON.GlowLayer('glow', scene, { mainTextureSamples: 1 })
+          gl.intensity = 0.25
+          scene.metadata.glowLayer = gl
+        }
 
         // ============================================
         // CINEMATIC CAMERA SYSTEM
         // ============================================
 
-        // Create cinematic post-process effects
+        // Create cinematic post-process effects (disabled on low-end devices)
         const createCinematicEffects = () => {
+          if (isLowEndDevice) {
+            scene.metadata.vignetteEffect = null
+            scene.metadata.motionBlurIntensity = 0
+            return
+          }
           // Vignette effect for dramatic framing
           const vignetteEffect = new BABYLON.ImageProcessingPostProcess(
             'vignette',
@@ -900,8 +1031,6 @@ pages:
           vignetteEffect.vignetteColor = new BABYLON.Color4(0, 0, 0, 1)
           vignetteEffect.vignetteCameraFov = camera.fov
           scene.metadata.vignetteEffect = vignetteEffect
-
-          // Motion blur simulation via camera animation
           scene.metadata.motionBlurIntensity = 0
         }
         createCinematicEffects()
@@ -1376,6 +1505,10 @@ pages:
                 // Restore camera controls and limits
                 camera.attachControl(canvasRef.current, true)
                 camera.inputs.attached.pointers.buttons = [1, 2]
+                // Restore multi-touch for mobile
+                camera.inputs.attached.pointers.multiTouchPanning = true
+                camera.inputs.attached.pointers.multiTouchPanAndZoom = true
+                camera.pinchDeltaPercentage = 0.01
                 camera.lowerRadiusLimit = 12
                 camera.upperRadiusLimit = 35
                 camera.lowerBetaLimit = 0.3
@@ -1500,6 +1633,13 @@ pages:
           )
         })
 
+        // Performance optimizations before starting render loop
+        scene.freezeMaterials() // Materials won't change
+        if (isLowEndDevice) {
+          scene.skipPointerMovePicking = true // Reduce picking overhead
+          scene.blockMaterialDirtyMechanism = true
+        }
+
         engine.runRenderLoop(() => {
           scene.render()
         })
@@ -1513,30 +1653,31 @@ pages:
         }
       }, [babylonLoaded, BABYLON])
 
-      // Update aim line
+      // Update aim arrow position and rotation to follow ball with oscillating direction
+      // Only show arrow when actively aiming
       useEffect(() => {
-        if (!sceneRef.current || !BABYLON || isThrown) return
+        if (!sceneRef.current || !BABYLON) return
         const scene = sceneRef.current
-        if (scene.aimLine) {
-          const angle = (aimAngle * Math.PI) / 180
-          const startX = Math.sin(angle) * 1.5
-          const endX = startX + Math.sin(angle) * 8
+        if (scene.aimArrow) {
+          // Only show arrow when actively aiming (not thrown and dragging)
+          const shouldShow = isAiming && !isThrown
+          scene.aimArrow.setEnabled(shouldShow)
 
-          const points = [
-            new BABYLON.Vector3(startX, 0.1, -3),
-            new BABYLON.Vector3(endX, 0.1, 8),
-          ]
-          scene.aimLine = BABYLON.MeshBuilder.CreateLines('aimLine', {
-            points: points,
-            instance: scene.aimLine,
-          })
+          if (shouldShow && ballRef.current) {
+            // Arrow pivots around ball position - set both X and Z to ball position
+            scene.aimArrow.position.x = ballRef.current.position.x
+            scene.aimArrow.position.z = ballRef.current.position.z
+            // Rotate around the ball (Y-axis rotation)
+            scene.aimArrow.rotation.y = aimDirection
+          }
         }
-      }, [aimAngle, isThrown, BABYLON])
+      }, [aimAngle, aimDirection, isThrown, isAiming, BABYLON])
 
       useEffect(() => {
         if (ballRef.current && !isThrown && ballRef.current.physicsImpostor) {
-          const angle = (aimAngle * Math.PI) / 180
-          const newX = Math.sin(angle) * 1.5
+          // Direct mapping: aimAngle controls X position on the lane
+          // Max angle of 30 degrees maps to lane width of ~2 units
+          const newX = (aimAngle / 30) * 2
           console.log('Updating ball position for aim:', { aimAngle, newX })
           // Use physicsImpostor to move the ball properly
           ballRef.current.physicsImpostor.setLinearVelocity(
@@ -1553,25 +1694,107 @@ pages:
         }
       }, [aimAngle, isThrown, BABYLON])
 
-      // Check for knocked pins
+      // Check for knocked pins (optimized interval)
       useEffect(() => {
         if (!isThrown || !pinsRef.current.length) return
 
         const checkInterval = setInterval(() => {
           let knocked = 0
-          pinsRef.current.forEach((pin) => {
+          const pins = pinsRef.current
+          for (let i = 0; i < pins.length; i++) {
+            const pin = pins[i]
             if (pin.rotationQuaternion) {
               const euler = pin.rotationQuaternion.toEulerAngles()
               if (Math.abs(euler.x) > 0.5 || Math.abs(euler.z) > 0.5) {
                 knocked++
               }
             }
-          })
+          }
           setKnockedPins(knocked)
-        }, 500)
+        }, 800) // Increased from 500ms for performance
 
         return () => clearInterval(checkInterval)
       }, [isThrown])
+
+      // Detect strike (all 10 pins knocked)
+      useEffect(() => {
+        if (knockedPins === 10 && !showStrike) {
+          setShowStrike(true)
+          // Hide after 2 seconds
+          const timeout = setTimeout(() => {
+            setShowStrike(false)
+          }, 2000)
+          return () => clearTimeout(timeout)
+        }
+      }, [knockedPins, showStrike])
+
+      // Game end detection: pin fall (5s), gutter (3s), back wall (3s)
+      useEffect(() => {
+        if (!isThrown || !ballRef.current || !BABYLON) return
+
+        const scheduleGameEnd = (reason, delayMs) => {
+          // Only schedule if no end is already scheduled
+          if (gameEndTimeoutRef.current) return
+          gameEndReasonRef.current = reason
+          console.log(`Game will end in ${delayMs}ms - Reason: ${reason}`)
+          gameEndTimeoutRef.current = setTimeout(() => {
+            console.log(`Game ended: ${reason}`)
+            // Trigger reset
+            if (sceneRef.current?.metadata?.stopCinematicMode) {
+              sceneRef.current.metadata.stopCinematicMode()
+            }
+            // The resetGame will be called, but we need to trigger it
+            // Set a flag or directly reset
+            gameEndTimeoutRef.current = null
+            gameEndReasonRef.current = null
+            // Manually trigger reset by calling the callback
+            resetGameRef.current?.()
+          }, delayMs)
+        }
+
+        const checkInterval = setInterval(() => {
+          const ball = ballRef.current
+          if (!ball || gameEndTimeoutRef.current) return
+
+          const ballX = ball.position.x
+          const ballZ = ball.position.z
+
+          // Check for gutter: ball X position beyond lane edges (lane is 4.5 wide, so |x| > 2.25)
+          // Gutters are at x = ±2.5, ball radius is ~0.275
+          if (Math.abs(ballX) > 2.3 && ballZ > -2) {
+            scheduleGameEnd('gutter', 3000)
+            return
+          }
+
+          // Check for back wall hit: ball Z > 17 (back wall is at z=17.5)
+          if (ballZ > 16.5) {
+            scheduleGameEnd('back_wall', 3000)
+            return
+          }
+
+          // Check for first pin fall (any pin activated and tilted)
+          const hasKnockedPin = pinsRef.current.some((pin) => {
+            if (!pin.isActivated) return false
+            if (pin.rotationQuaternion) {
+              const euler = pin.rotationQuaternion.toEulerAngles()
+              return Math.abs(euler.x) > 0.5 || Math.abs(euler.z) > 0.5
+            }
+            return false
+          })
+          if (hasKnockedPin) {
+            scheduleGameEnd('pin_fall', 5000)
+            return
+          }
+        }, 200) // Increased from 100ms for performance
+
+        return () => {
+          clearInterval(checkInterval)
+          if (gameEndTimeoutRef.current) {
+            clearTimeout(gameEndTimeoutRef.current)
+            gameEndTimeoutRef.current = null
+          }
+        }
+      }, [isThrown, BABYLON])
 
       const throwBall = useCallback(
         (velocityX = 0, velocityY = 0) => {
@@ -1593,11 +1816,7 @@ pages:
           console.log('Setting isThrown to true')
           setIsThrown(true)
           isThrownRef.current = true // Update ref immediately
-
-          // Hide aim line
-          if (sceneRef.current.aimLine) {
-            sceneRef.current.aimLine.setEnabled(false)
-          }
+          setIsAiming(false) // Stop aiming mode
 
           // Reset pin activation state (mass will be activated on collision)
           pinsRef.current.forEach((pin) => {
@@ -1610,17 +1829,16 @@ pages:
           )
           const power = Math.min(Math.max(swipeSpeed / 15, 0.4), 1.2) // Clamp between 0.4 and 1.2
 
-          // Use horizontal velocity for angle adjustment
-          const swipeAngle = velocityX * 0.015
-          const angle = (aimAngle * Math.PI) / 180 + swipeAngle
-
-          // Realistic bowling ball speed: ~6-8 m/s
+          // Ball direction follows the oscillating aim arrow at moment of throw
+          // Use aimDirectionRef to get the current aim direction
+          const throwAngle = aimDirectionRef.current
+          // Realistic bowling ball speed: ~6-8 m/s (3x boost for fun gameplay)
           const force = new BABYLON.Vector3(
-            Math.sin(angle) * 4 * power,
+            Math.sin(throwAngle) * 36 * power, // Lateral force based on aim direction
             0.05,
-            12 * power,
+            Math.cos(throwAngle) * 36 * power, // Forward force
           )
-          console.log('Applying force', force.toString())
+          console.log('Applying force', force.toString(), 'angle:', throwAngle)
 
           // Make sure the ball is at ground level before throwing
           ballRef.current.position.y = 0.35
@@ -1659,6 +1877,13 @@ pages:
       const resetGame = useCallback(() => {
         if (!sceneRef.current || !BABYLON) return
 
+        // Clear any pending game end timeout
+        if (gameEndTimeoutRef.current) {
+          clearTimeout(gameEndTimeoutRef.current)
+          gameEndTimeoutRef.current = null
+        }
+        gameEndReasonRef.current = null
+
         // Stop cinematic mode if active
         if (
           sceneRef.current.metadata &&
@@ -1680,11 +1905,8 @@ pages:
         setKnockedPins(0)
         setIsThrown(false)
         setAimAngle(0)
-
-        // Show aim line
-        if (sceneRef.current.aimLine) {
-          sceneRef.current.aimLine.setEnabled(true)
-        }
+        setShowStrike(false)
+        setIsAiming(false)
 
         if (ballRef.current) {
           ballRef.current.physicsImpostor.setLinearVelocity(BABYLON.Vector3.Zero())
@@ -1720,6 +1942,11 @@ pages:
           pin.physicsImpostor.forceUpdate()
         })
       }, [BABYLON, knockedPins])
+
+      // Keep resetGameRef in sync with resetGame callback
+      useEffect(() => {
+        resetGameRef.current = resetGame
+      }, [resetGame])
 
       // Keyboard handler for R to reset
       useEffect(() => {
@@ -1770,6 +1997,7 @@ pages:
           e.stopPropagation()
           const pos = getEventPosition(e)
           isDraggingRef.current = true
+          setIsAiming(true)
           dragStartRef.current = { x: pos.x, y: pos.y, time: Date.now() }
           lastPositionsRef.current = [{ x: pos.x, y: pos.y, time: Date.now() }]
           console.log('handleStart: drag started at', pos)
@@ -1785,9 +2013,9 @@ pages:
             lastPositionsRef.current.shift()
           }
 
-          // Update aim angle based on horizontal movement
+          // Update aim angle based on horizontal movement (direct: drag left = aim left)
           const deltaX = pos.x - dragStartRef.current.x
-          const newAngle = Math.max(-30, Math.min(30, deltaX * 0.3)) // Increased sensitivity
+          const newAngle = Math.max(-30, Math.min(30, deltaX * 0.3))
           console.log('Mouse/Touch move:', {
             pos,
             deltaX,
@@ -1817,9 +2045,11 @@ pages:
           if (isThrownRef.current) {
             console.log('handleEnd: already thrown, resetting drag')
             isDraggingRef.current = false
+            setIsAiming(false)
             return
           }
           isDraggingRef.current = false
+          setIsAiming(false)
 
           // Calculate velocity from last positions
           const positions = lastPositionsRef.current
@@ -1884,7 +2114,7 @@ pages:
           {!babylonLoaded && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 text-white gap-3 z-50">
               <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-              <span>Chargement du jeu…</span>
+              <CircularProgress aria-label="Loading…" size="lg" />
             </div>
           )}
 
@@ -1894,12 +2124,10 @@ pages:
           {/* HUD Overlay - Score display */}
           <div className="absolute top-4 left-4 right-4 flex justify-between items-center pointer-events-none z-10">
             <div className="flex items-center gap-2 px-4 py-2 bg-black/60 backdrop-blur-sm rounded-lg">
-              <span className="text-lg font-bold text-primary">🎳 Score:</span>
               <span className="text-2xl font-bold text-white">{score}</span>
             </div>
             {isThrown && (
               <div className="flex items-center gap-2 px-4 py-2 bg-black/60 backdrop-blur-sm rounded-lg animate-pulse">
-                <span className="text-lg text-white">Quilles tombées:</span>
                 <span className="text-2xl font-bold text-green-400">
                   {knockedPins}
                 </span>
@@ -1927,35 +2155,29 @@ pages:
             </>
           )}
 
-          {/* HUD Overlay - Instructions at bottom */}
-          <div className="absolute bottom-4 left-4 right-4 z-10 pointer-events-none">
-            <div className="flex flex-col gap-2 p-4 bg-black/60 backdrop-blur-sm rounded-xl max-w-md mx-auto text-center">
-              {!isThrown ? (
-                <>
-                  <p className="text-white text-lg font-medium">
-                    👆 Glissez horizontalement pour viser
-                  </p>
-                  <p className="text-white text-lg font-medium">
-                    ⬆️ Balayez vers le haut pour lancer
-                  </p>
-                  <p className="text-gray-400 text-sm">
-                    Plus le geste est rapide, plus le lancer est puissant
-                  </p>
-                  {aimAngle !== 0 && (
-                    <p className="text-primary text-sm font-mono">
-                      Direction: {aimAngle > 0 ? '+' : ''}
-                      {aimAngle.toFixed(0)}°
-                    </p>
-                  )}
-                </>
-              ) : (
-                <p className="text-white text-lg font-medium">
-                  Appuyez sur <span className="text-primary font-bold">R</span> pour
-                  recommencer
-                </p>
-              )}
+          {/* STRIKE celebration overlay */}
+          {showStrike && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
+              <div className="animate-bounce">
+                <h1
+                  className="text-8xl md:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 drop-shadow-2xl"
+                  style={{
+                    textShadow: '0 0 40px rgba(255, 165, 0, 0.8), 0 0 80px rgba(255, 100, 0, 0.6), 0 0 120px rgba(255, 50, 0, 0.4)',
+                    animation: 'pulse 0.3s ease-in-out infinite alternate, scale-in 0.5s ease-out'
+                  }}
+                >
+                  🎳 STRIKE 🎳
+                </h1>
+              </div>
+              <style>{/* css */`
+                @keyframes scale-in {
+                  0% { transform: scale(0.3); opacity: 0; }
+                  50% { transform: scale(1.2); }
+                  100% { transform: scale(1); opacity: 1; }
+                }
+              `}</style>
             </div>
-          </div>
+          )}
         </div>
       )
     }

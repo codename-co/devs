@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import {
   Card,
   CardHeader,
@@ -9,10 +9,9 @@ import {
   Avatar,
   Input,
   Button,
-  useDisclosure,
   Tooltip,
 } from '@heroui/react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import DefaultLayout from '@/layouts/Default'
 import { Container, Section, Icon, Title } from '@/components'
 import { useI18n, useUrl, type LanguageCode } from '@/i18n'
@@ -76,11 +75,26 @@ function getChipColor(
 export function MarketplacePage() {
   const { lang, t } = useI18n(localI18n)
   const url = useUrl(lang)
+  const location = useLocation()
+  const navigate = useNavigate()
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedExtension, setSelectedExtension] =
-    useState<MarketplaceExtension | null>(null)
-  const { isOpen, onOpen, onClose } = useDisclosure()
+
+  // Parse hash for extension ID and preview mode
+  // Hash format: #extension-id or #extension-id/preview
+  const { extensionIdFromHash, isPreviewModeFromHash } = useMemo(() => {
+    const hash = location.hash.slice(1) // Remove leading #
+    if (!hash)
+      return { extensionIdFromHash: null, isPreviewModeFromHash: false }
+
+    const parts = hash.split('/')
+    const extensionId = parts[0] || null
+    const isPreview = parts[1] === 'preview'
+    return {
+      extensionIdFromHash: extensionId,
+      isPreviewModeFromHash: isPreview,
+    }
+  }, [location.hash])
 
   // Load extensions
   const extensions = useMarketplaceStore((state) => state.extensions)
@@ -217,16 +231,40 @@ export function MarketplacePage() {
     subtitle: t('Expand your platform capabilities with community extensions'),
   }
 
-  // Handle opening extension detail modal
-  const handleOpenExtensionDetail = (ext: MarketplaceExtension) => {
-    setSelectedExtension(ext)
-    onOpen()
-  }
+  // Find extension by ID from hash
+  const selectedExtension = useMemo(() => {
+    if (!extensionIdFromHash) return null
+    return allExtensions.find((ext) => ext.id === extensionIdFromHash) || null
+  }, [extensionIdFromHash, allExtensions])
 
-  const handleCloseModal = () => {
-    onClose()
-    setSelectedExtension(null)
-  }
+  // Modal is open when there's an extension ID in the hash
+  const isModalOpen = !!extensionIdFromHash
+
+  // Handle opening extension detail modal (updates URL hash)
+  const handleOpenExtensionDetail = useCallback(
+    (ext: MarketplaceExtension) => {
+      navigate(`${location.pathname}#${ext.id}`, { replace: false })
+    },
+    [navigate, location.pathname],
+  )
+
+  // Handle closing modal (clears URL hash)
+  const handleCloseModal = useCallback(() => {
+    navigate(location.pathname, { replace: false })
+  }, [navigate, location.pathname])
+
+  // Handle preview mode change (updates URL hash)
+  const handlePreviewModeChange = useCallback(
+    (isPreview: boolean) => {
+      if (extensionIdFromHash) {
+        const newHash = isPreview
+          ? `${extensionIdFromHash}/preview`
+          : extensionIdFromHash
+        navigate(`${location.pathname}#${newHash}`, { replace: true })
+      }
+    },
+    [navigate, location.pathname, extensionIdFromHash],
+  )
 
   // Render extension card
   const renderExtensionCard = (
@@ -493,8 +531,10 @@ export function MarketplacePage() {
       {/* Extension Detail Modal */}
       <ExtensionDetailModal
         extension={selectedExtension}
-        isOpen={isOpen}
+        isOpen={isModalOpen}
         onClose={handleCloseModal}
+        isPreviewMode={isPreviewModeFromHash}
+        onPreviewModeChange={handlePreviewModeChange}
       />
     </DefaultLayout>
   )

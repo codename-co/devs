@@ -29,7 +29,6 @@ import { getExtensionColorClass } from '../utils'
 import { ExtensionPreview } from '../components'
 import type { HeaderProps } from '@/lib/types'
 import type { LanguageCode } from '@/i18n'
-import type { MarketplaceExtension } from '../types'
 
 // Supported language codes for URL detection
 const SUPPORTED_LANG_CODES = Object.keys(languages)
@@ -71,10 +70,7 @@ export function DynamicAppRoute() {
   const location = useLocation()
   const navigate = useNavigate()
   const { lang, t } = useI18n(localI18n)
-  const [isLoadingApp, setIsLoadingApp] = useState(false)
   const [hasInitialized, setHasInitialized] = useState(false)
-  const [loadedExtension, setLoadedExtension] =
-    useState<MarketplaceExtension | null>(null)
 
   const installed = useMarketplaceStore((state) => state.installed)
   const installedApps = useMemo(
@@ -92,9 +88,9 @@ export function DynamicAppRoute() {
   const loadInstalledExtensions = useMarketplaceStore(
     (state) => state.loadInstalledExtensions,
   )
-  const loadExtensionById = useMarketplaceStore(
-    (state) => state.loadExtensionById,
-  )
+  const hasUpdate = useMarketplaceStore((state) => state.hasUpdate)
+  const updateExtension = useMarketplaceStore((state) => state.updateExtension)
+  const isLoading = useMarketplaceStore((state) => state.isLoading)
 
   // Parse the URL path to extract the page key
   const { pageKey } = useMemo(
@@ -123,8 +119,9 @@ export function DynamicAppRoute() {
     ),
   })
 
-  // Use loaded extension if available, otherwise fall back to installed extension
-  const ext = loadedExtension || installedApp?.extension
+  // Use the installed extension directly - it already contains all the persisted data
+  // No need to fetch from the network; the installed extension is the source of truth
+  const ext = installedApp?.extension
 
   // Load extensions on mount
   useEffect(() => {
@@ -138,41 +135,11 @@ export function DynamicAppRoute() {
   const localizedDescription =
     ext?.i18n?.[lang as LanguageCode]?.description || ext?.description
 
-  // Get the page code
+  // Get the page code from the installed extension (persisted snapshot)
   const pageCode = ext?.pages?.[pageKey || ''] || ''
 
-  // Load full extension details when app is found
-  // Reset loaded extension when the installed app changes (e.g., navigating between apps)
-  useEffect(() => {
-    if (!installedApp) {
-      setLoadedExtension(null)
-      return
-    }
-
-    // If we already loaded this extension, don't reload
-    if (loadedExtension?.id === installedApp.extension.id) {
-      return
-    }
-
-    // Reset and load the new extension
-    setLoadedExtension(null)
-    setIsLoadingApp(true)
-    loadExtensionById(installedApp.extension.id)
-      .then((ext) => {
-        if (ext) {
-          setLoadedExtension(ext)
-        } else {
-          // Registry not available, fall back to the extension stored in database
-          setLoadedExtension(installedApp.extension)
-        }
-      })
-      .finally(() => {
-        setIsLoadingApp(false)
-      })
-  }, [installedApp?.extension.id, installedApp?.extension, loadExtensionById])
-
   // Show loading state while installed apps are being loaded
-  if (!hasInitialized || isLoadingInstalled || isLoadingApp) {
+  if (!hasInitialized || isLoadingInstalled) {
     return (
       <DefaultLayout>
         <Section>
@@ -191,6 +158,16 @@ export function DynamicAppRoute() {
     return <NotFoundPage />
   }
 
+  // Check if update is available for this extension
+  const updateAvailable = ext ? hasUpdate(ext.id) : false
+
+  // Handle upgrade action
+  const handleUpgrade = async () => {
+    if (!ext) return
+    await updateExtension(ext.id)
+    window.location.reload()
+  }
+
   const header: HeaderProps = {
     icon: {
       name: ext.icon || 'Puzzle',
@@ -204,19 +181,38 @@ export function DynamicAppRoute() {
     <DefaultLayout
       header={header}
       pageMenuActions={
-        ext.isCustom ? (
-          <Tooltip content={t('Edit')} placement="bottom">
-            <Button
-              variant="light"
-              isIconOnly
-              aria-label={t('Edit')}
-              className="opacity-70 hover:opacity-100"
-              onPress={() => navigate(`/marketplace/extensions/${ext.id}/edit`)}
-            >
-              <Icon name="EditPencil" size="sm" />
-            </Button>
-          </Tooltip>
-        ) : undefined
+        <>
+          {updateAvailable && (
+            <Tooltip content={t('Update')} placement="bottom">
+              <Button
+                variant="flat"
+                isIconOnly
+                color="success"
+                aria-label={t('Update')}
+                className="opacity-70 hover:opacity-100"
+                onPress={handleUpgrade}
+                isLoading={isLoading}
+              >
+                <Icon name="Refresh" size="sm" />
+              </Button>
+            </Tooltip>
+          )}
+          {ext.isCustom && (
+            <Tooltip content={t('Edit')} placement="bottom">
+              <Button
+                variant="light"
+                isIconOnly
+                aria-label={t('Edit')}
+                className="opacity-70 hover:opacity-100"
+                onPress={() =>
+                  navigate(`/marketplace/extensions/${ext.id}/edit`)
+                }
+              >
+                <Icon name="EditPencil" size="sm" />
+              </Button>
+            </Tooltip>
+          )}
+        </>
       }
     >
       <ExtensionPreview

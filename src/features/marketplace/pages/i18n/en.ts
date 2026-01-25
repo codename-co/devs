@@ -248,6 +248,9 @@ export const en = [
   // Duplicate extension
   'Duplicate & edit',
 
+  // Run app
+  'Run',
+
   // Manual creation
   'or create manually',
 ] as const

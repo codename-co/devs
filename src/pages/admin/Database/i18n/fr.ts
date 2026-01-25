@@ -19,4 +19,12 @@ export const fr: I18n = {
   'Invalid number value': 'Valeur numérique invalide',
   'Invalid date value': 'Valeur de date invalide',
   'Invalid JSON value': 'Valeur JSON invalide',
+  'Clear Collection': 'Vider la collection',
+  'Collection cleared successfully ({count} records removed)':
+    'Collection vidée avec succès ({count} enregistrements supprimés)',
+  'Failed to clear collection': 'Échec du vidage de la collection',
+  'Are you sure you want to clear the "{store}" collection? This will permanently delete all {count} records.':
+    'Êtes-vous sûr de vouloir vider la collection « {store} » ? Cela supprimera définitivement les {count} enregistrements.',
+  'This action cannot be undone.': 'Cette action est irréversible.',
+  'Clear All Records': 'Supprimer tous les enregistrements',
 } as const

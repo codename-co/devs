@@ -16,8 +16,8 @@ export const es: I18n = {
   Agents: 'Agentes',
   Connectors: 'Conectores',
   Tools: 'Herramientas',
-  Installed: 'Instalados',
-  Available: 'Disponibles',
+  Installed: 'Instalado',
+  Available: 'Disponible',
 
   // Search
   'Search extensions...': 'Buscar extensiones...',
@@ -287,6 +287,9 @@ export const es: I18n = {
 
   // Duplicate extension
   'Duplicate & edit': 'Duplicar y editar',
+
+  // Run app
+  Run: 'Ejecutar',
 
   // Manual creation
   'or create manually': 'o crear manualmente',

@@ -20,7 +20,7 @@ import {
 import { OpenNewWindow } from 'iconoir-react'
 
 import { Icon } from '@/components'
-import { useI18n, type LanguageCode } from '@/i18n'
+import { useI18n, useUrl, type LanguageCode } from '@/i18n'
 import type { IconName } from '@/lib/types'
 import type {
   MarketplaceExtension,
@@ -80,15 +80,21 @@ interface ExtensionDetailModalProps {
   extension: MarketplaceExtension | null
   isOpen: boolean
   onClose: () => void
+  /** Whether to show the preview mode (controlled from URL hash) */
+  isPreviewMode?: boolean
+  /** Callback when preview mode changes (to update URL hash) */
+  onPreviewModeChange?: (isPreview: boolean) => void
 }
 
 export function ExtensionDetailModal({
   extension,
   isOpen,
   onClose,
+  isPreviewMode: externalPreviewMode,
+  onPreviewModeChange,
 }: ExtensionDetailModalProps) {
   const { lang, t } = useI18n(localI18n)
-
+  const url = useUrl(lang)
   const navigate = useNavigate()
   const isLoading = useMarketplaceStore((state) => state.isLoading)
   const installExtension = useMarketplaceStore(
@@ -97,12 +103,18 @@ export function ExtensionDetailModal({
   const uninstallExtension = useMarketplaceStore(
     (state) => state.uninstallExtension,
   )
+  const updateExtension = useMarketplaceStore((state) => state.updateExtension)
   const deleteCustomExtension = useMarketplaceStore(
     (state) => state.deleteCustomExtension,
   )
   const isInstalled = useMarketplaceStore((state) => state.isInstalled)
-  const loadExtensionById = useMarketplaceStore(
-    (state) => state.loadExtensionById,
+  const hasUpdate = useMarketplaceStore((state) => state.hasUpdate)
+  const getMarketplaceVersion = useMarketplaceStore(
+    (state) => state.getMarketplaceVersion,
+  )
+  // Use fetchExtensionFromRegistry for marketplace display (always shows latest metadata)
+  const fetchExtensionFromRegistry = useMarketplaceStore(
+    (state) => state.fetchExtensionFromRegistry,
   )
 
   // Delete confirmation modal
@@ -117,14 +129,23 @@ export function ExtensionDetailModal({
     useState<MarketplaceExtension | null>(null)
   const [isLoadingDetails, setIsLoadingDetails] = useState(false)
 
-  // State for preview mode
-  const [isPreviewMode, setIsPreviewMode] = useState(false)
+  // State for preview mode - use external control if provided, otherwise local state
+  const [localPreviewMode, setLocalPreviewMode] = useState(false)
+  const isPreviewMode = externalPreviewMode ?? localPreviewMode
+  const setIsPreviewMode = (value: boolean) => {
+    if (onPreviewModeChange) {
+      onPreviewModeChange(value)
+    } else {
+      setLocalPreviewMode(value)
+    }
+  }
 
-  // Load full extension details when modal opens
+  // Load full extension details from registry when modal opens
+  // This ensures marketplace always shows up-to-date metadata
   useEffect(() => {
     if (isOpen && extension?.id) {
       setIsLoadingDetails(true)
-      loadExtensionById(extension.id)
+      fetchExtensionFromRegistry(extension.id)
         .then((details) => {
           setFullExtension(details)
         })
@@ -134,9 +155,10 @@ export function ExtensionDetailModal({
     } else if (!isOpen) {
       // Reset when modal closes
       setFullExtension(null)
-      setIsPreviewMode(false)
+      // Only reset local preview mode state, not the external one
+      setLocalPreviewMode(false)
     }
-  }, [isOpen, extension?.id, loadExtensionById])
+  }, [isOpen, extension?.id, fetchExtensionFromRegistry])
 
   if (!extension) return null
 
@@ -151,21 +173,34 @@ export function ExtensionDetailModal({
   const categoryMeta = CATEGORY_META[displayExtension.type || 'app']
   const avatarColor = getAvatarColor(displayExtension.color)
   const installed = isInstalled(displayExtension.id)
+  const updateAvailable = hasUpdate(displayExtension.id)
+  const marketplaceVersion = getMarketplaceVersion(displayExtension.id)
 
   const handleInstall = async () => {
     await installExtension(extension.id)
-    onClose()
   }
 
   const handleUninstall = async () => {
     await uninstallExtension(extension.id)
-    onClose()
+  }
+
+  const handleUpdate = async () => {
+    await updateExtension(extension.id)
   }
 
   const handleConfirmDelete = async () => {
     await deleteCustomExtension(extension.id)
     onDeleteModalClose()
     onClose()
+  }
+
+  const handleOpenApp = () => {
+    // Navigate to the first page of the installed app
+    const pages = displayExtension.pages || {}
+    const pageKeys = Object.keys(pages)
+    if (pageKeys.length > 0) {
+      navigate(url(`/${pageKeys[0]}`))
+    }
   }
 
   // const handleCopyUuid = () => {
@@ -338,6 +373,7 @@ export function ExtensionDetailModal({
                     extensionId={displayExtension.id}
                     extensionName={localizedName}
                     pageCode={firstPageCode}
+                    i18n={displayExtension.i18n}
                     className="h-full"
                     minHeight="100%"
                   />
@@ -371,20 +407,41 @@ export function ExtensionDetailModal({
                     </div>
                   )}
 
-                {/* Install/Uninstall Button */}
+                {/* Install/Installed/Update Buttons */}
                 <div className="flex justify-center gap-2">
                   <ButtonGroup>
-                    {/* Primary action: Install/Uninstall */}
+                    {/* Primary action: Install/Installed/Update */}
                     {installed ? (
-                      <Button
-                        color="danger"
-                        variant="flat"
-                        onPress={handleUninstall}
-                        isLoading={isLoading}
-                        startContent={!isLoading && <Icon name="Trash" />}
-                      >
-                        {t('Uninstall')}
-                      </Button>
+                      updateAvailable ? (
+                        <Button
+                          color="success"
+                          variant="flat"
+                          onPress={handleUpdate}
+                          isLoading={isLoading}
+                          startContent={!isLoading && <Icon name="Refresh" />}
+                        >
+                          {t('Update')} (v{marketplaceVersion})
+                        </Button>
+                      ) : (
+                        <Button
+                          color="success"
+                          variant="flat"
+                          onPress={handleOpenApp}
+                          startContent={
+                            <Icon
+                              name={
+                                displayExtension.type === 'app'
+                                  ? 'Play'
+                                  : 'Check'
+                              }
+                            />
+                          }
+                        >
+                          {displayExtension.type === 'app'
+                            ? t('Run')
+                            : t('Installed')}
+                        </Button>
+                      )
                     ) : (
                       <Button
                         color="primary"
@@ -421,7 +478,9 @@ export function ExtensionDetailModal({
                                   label: t('Edit'),
                                   action: () => {
                                     navigate(
-                                      `/marketplace/extensions/${displayExtension.id}/edit`,
+                                      url(
+                                        `/marketplace/extensions/${displayExtension.id}/edit`,
+                                      ),
                                     )
                                     onClose()
                                   },
@@ -432,11 +491,25 @@ export function ExtensionDetailModal({
                                   label: t('Duplicate & edit'),
                                   action: () => {
                                     navigate(
-                                      `/marketplace/extensions/${displayExtension.id}/edit?duplicate=true`,
+                                      url(
+                                        `/marketplace/extensions/${displayExtension.id}/edit?duplicate=true`,
+                                      ),
                                     )
                                     onClose()
                                   },
                                 },
+                                // Add uninstall option when extension is installed
+                                ...(installed
+                                  ? [
+                                      {
+                                        key: 'uninstall',
+                                        icon: 'Trash',
+                                        color: 'danger',
+                                        label: t('Uninstall'),
+                                        action: handleUninstall,
+                                      },
+                                    ]
+                                  : []),
                                 {
                                   key: 'delete',
                                   icon: 'Trash',
@@ -458,11 +531,25 @@ export function ExtensionDetailModal({
                                   label: t('Duplicate & edit'),
                                   action: () => {
                                     navigate(
-                                      `/marketplace/extensions/${displayExtension.id}/edit?duplicate=true`,
+                                      url(
+                                        `/marketplace/extensions/${displayExtension.id}/edit?duplicate=true`,
+                                      ),
                                     )
                                     onClose()
                                   },
                                 },
+                                // Add uninstall option when extension is installed
+                                ...(installed
+                                  ? [
+                                      {
+                                        key: 'uninstall',
+                                        icon: 'Trash',
+                                        color: 'danger',
+                                        label: t('Uninstall'),
+                                        action: handleUninstall,
+                                      },
+                                    ]
+                                  : []),
                               ]
                         }
                       >
@@ -470,6 +557,7 @@ export function ExtensionDetailModal({
                           <DropdownItem
                             key={item.key}
                             startContent={<Icon name={item.icon as IconName} />}
+                            color={item.color as 'danger' | undefined}
                             onPress={item.action}
                           >
                             {t(item.label as any)}
@@ -487,7 +575,7 @@ export function ExtensionDetailModal({
                   {metadataRows.map((row, index) => (
                     <div
                       key={row.label}
-                      className={`flex items-center justify-between px-4 py-3 ${
+                      className={`flex items-center justify-between px-4 min-h-12 ${
                         index !== metadataRows.length - 1
                           ? 'border-b border-default-200'
                           : ''

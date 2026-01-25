@@ -282,6 +282,9 @@ export const ar: I18n = {
   // Duplicate extension
   'Duplicate & edit': 'تكرار وتعديل',
 
+  // Run app
+  Run: 'تشغيل',
+
   // Manual creation
   'or create manually': 'أو إنشاء يدويًا',
 }

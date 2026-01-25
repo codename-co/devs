@@ -287,6 +287,9 @@ export const ko: I18n = {
   // Duplicate extension
   'Duplicate & edit': '복제 및 편집',
 
+  // Run app
+  Run: '실행',
+
   // Manual creation
   'or create manually': '또는 수동으로 생성',
 }

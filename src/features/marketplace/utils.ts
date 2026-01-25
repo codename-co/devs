@@ -6,6 +6,69 @@ import globals from '@/styles/globals.css?raw'
 
 import type { ExtensionColor } from './types'
 
+// =============================================================================
+// VERSION COMPARISON
+// =============================================================================
+
+/**
+ * Compare two semantic version strings.
+ * Returns:
+ *   -1 if version1 < version2
+ *    0 if version1 === version2
+ *    1 if version1 > version2
+ *
+ * Handles versions like "1.0.0", "1.0", "1", "1.0.0-beta.1"
+ * Pre-release versions are considered lower than release versions.
+ */
+export function compareVersions(
+  version1: string,
+  version2: string,
+): -1 | 0 | 1 {
+  // Handle edge cases
+  if (!version1 && !version2) return 0
+  if (!version1) return -1
+  if (!version2) return 1
+  if (version1 === version2) return 0
+
+  // Split version and pre-release parts
+  const [v1Base, v1Pre] = version1.split('-')
+  const [v2Base, v2Pre] = version2.split('-')
+
+  // Parse version parts as numbers
+  const v1Parts = v1Base.split('.').map((p) => parseInt(p, 10) || 0)
+  const v2Parts = v2Base.split('.').map((p) => parseInt(p, 10) || 0)
+
+  // Normalize length by padding with zeros
+  const maxLength = Math.max(v1Parts.length, v2Parts.length)
+  while (v1Parts.length < maxLength) v1Parts.push(0)
+  while (v2Parts.length < maxLength) v2Parts.push(0)
+
+  // Compare each part
+  for (let i = 0; i < maxLength; i++) {
+    if (v1Parts[i] > v2Parts[i]) return 1
+    if (v1Parts[i] < v2Parts[i]) return -1
+  }
+
+  // If base versions are equal, compare pre-release
+  // A version without pre-release is greater than one with pre-release
+  if (!v1Pre && v2Pre) return 1
+  if (v1Pre && !v2Pre) return -1
+  if (v1Pre && v2Pre) {
+    // Simple lexicographic comparison for pre-release
+    if (v1Pre > v2Pre) return 1
+    if (v1Pre < v2Pre) return -1
+  }
+
+  return 0
+}
+
+/**
+ * Check if version2 is newer than version1
+ */
+export function isNewerVersion(version1: string, version2: string): boolean {
+  return compareVersions(version1, version2) === -1
+}
+
 /**
  * Map extension color to Tailwind text color class
  */

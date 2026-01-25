@@ -19,4 +19,12 @@ export const es: I18n = {
   'Invalid number value': 'Valor numérico inválido',
   'Invalid date value': 'Valor de fecha inválido',
   'Invalid JSON value': 'Valor JSON inválido',
+  'Clear Collection': 'Vaciar colección',
+  'Collection cleared successfully ({count} records removed)':
+    'Colección vaciada con éxito ({count} registros eliminados)',
+  'Failed to clear collection': 'Error al vaciar la colección',
+  'Are you sure you want to clear the "{store}" collection? This will permanently delete all {count} records.':
+    '¿Está seguro de que desea vaciar la colección «{store}»? Esto eliminará permanentemente los {count} registros.',
+  'This action cannot be undone.': 'Esta acción no se puede deshacer.',
+  'Clear All Records': 'Eliminar todos los registros',
 } as const

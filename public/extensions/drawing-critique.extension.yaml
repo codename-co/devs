@@ -1,11 +1,11 @@
 id: drawing-critique
 name: Drawing Critique
-version: 0.1.0
+version: 0.2.0
 type: app
 license: MIT
 icon: DesignPencil
 color: secondary
-description: Live AI-powered drawing critique that comments on your artwork in real-time as you draw.
+description: Your artworks real-time AI critique.
 author:
   name: Arnaud Leymet
   url: https://arnley.com
@@ -14,7 +14,8 @@ source: https://github.com/codename-co/devs/blob/main/public/extensions/drawing-
 i18n:
   en:
     name: Drawing Critique
-    description: Live AI-powered drawing critique that comments on your artwork in real-time as you draw.
+    # Vos œuvres commentées en temps réel par IA.
+    description: Your artworks real-time AI critique.
     messages:
       startDrawing: Start drawing and I'll provide live feedback on your artwork…
       canvasCleared: Canvas cleared! Start fresh and I'll provide new feedback…
@@ -29,7 +30,7 @@ i18n:
       styleMinimalist: Minimalist
   fr:
     name: Critique de Dessin
-    description: Critique de dessin en temps réel par IA qui commente vos œuvres pendant que vous dessinez.
+    description: Vos œuvres commentées en temps réel par IA.
     messages:
       startDrawing: Commencez à dessiner et je vous donnerai un retour en direct sur votre œuvre…
       canvasCleared: Toile effacée ! Recommencez et je vous donnerai de nouveaux commentaires…
@@ -44,7 +45,7 @@ i18n:
       styleMinimalist: Minimaliste
   de:
     name: Zeichnungskritik
-    description: KI-gestützte Echtzeit-Zeichnungskritik, die Ihre Kunstwerke während des Zeichnens kommentiert.
+    description: Echtzeit-KI-Kritik Ihrer Kunstwerke.
     messages:
       startDrawing: Beginnen Sie zu zeichnen und ich gebe Ihnen Live-Feedback zu Ihrem Kunstwerk…
       canvasCleared: Leinwand gelöscht! Beginnen Sie neu und ich gebe Ihnen neues Feedback…
@@ -59,7 +60,7 @@ i18n:
       styleMinimalist: Minimalistisch
   es:
     name: Crítica de Dibujo
-    description: Crítica de dibujo en tiempo real con IA que comenta tu obra mientras dibujas.
+    description: Crítica de IA en tiempo real de tus obras.
     messages:
       startDrawing: Empieza a dibujar y te daré comentarios en vivo sobre tu obra…
       canvasCleared: ¡Lienzo borrado! Empieza de nuevo y te daré nuevos comentarios…
@@ -74,7 +75,7 @@ i18n:
       styleMinimalist: Minimalista
   it:
     name: Critica del Disegno
-    description: Critica del disegno in tempo reale con IA che commenta le tue opere mentre disegni.
+    description: Critica IA in tempo reale delle tue opere.
     messages:
       startDrawing: Inizia a disegnare e ti darò feedback dal vivo sulla tua opera…
       canvasCleared: Tela cancellata! Ricomincia e ti darò nuovi commenti…
@@ -89,7 +90,7 @@ i18n:
       styleMinimalist: Minimalista
   pt:
     name: Crítica de Desenho
-    description: Crítica de desenho em tempo real com IA que comenta suas obras enquanto você desenha.
+    description: Crítica de IA em tempo real das suas obras.
     messages:
       startDrawing: Comece a desenhar e darei feedback ao vivo sobre sua obra…
       canvasCleared: Tela limpa! Recomece e darei novos comentários…
@@ -105,7 +106,8 @@ i18n:
 pages:
   'drawing-critique': | # jsx
     import { useState, useRef, useEffect, useCallback } from 'react'
-    import { Button, Select, SelectItem } from '@devs/components'
+    import { Button, ButtonGroup, Card, CardBody, Tooltip, Divider, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Slider, Popover, PopoverTrigger, PopoverContent } from '@heroui/react'
+    import { Icon } from '@devs/components'
 
     const CRITIQUE_STYLES = {
       encouraging: {
@@ -298,66 +300,104 @@ pages:
             style={{ position: 'absolute', inset: 0, cursor: 'crosshair', touchAction: 'none' }}
           />
 
-          <div style={{
-            position: 'absolute',
-            top: 16,
-            left: 16,
-            display: 'flex',
-            gap: 8,
-            padding: 12,
-            background: 'rgba(255,255,255,0.95)',
-            borderRadius: 12,
-            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            maxWidth: 'calc(100vw - 32px)'
-          }}>
-            {colors.map(color => (
-              <button
-                key={color}
-                onClick={() => setBrushColor(color)}
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: '50%',
-                  background: color,
-                  border: brushColor === color ? '3px solid #8b5cf6' : '2px solid #e5e7eb',
-                  cursor: 'pointer',
-                  transition: 'transform 0.1s',
-                  transform: brushColor === color ? 'scale(1.1)' : 'scale(1)'
-                }}
-              />
-            ))}
-            <div style={{ width: 1, height: 28, background: '#e5e7eb', margin: '0 4px' }} />
-            <input
-              type="range"
-              min="1"
-              max="30"
-              value={brushSize}
-              onChange={(e) => setBrushSize(Number(e.target.value))}
-              style={{ width: 80 }}
-            />
-            <span style={{ fontSize: 12, color: '#6b7280', minWidth: 24 }}>{brushSize}px</span>
-            <div style={{ width: 1, height: 28, background: '#e5e7eb', margin: '0 4px' }} />
-            <select
-              value={critiqueStyle}
-              onChange={(e) => setCritiqueStyle(e.target.value)}
-              style={{
-                padding: '4px 8px',
-                borderRadius: 8,
-                border: '1px solid #e5e7eb',
-                background: 'white',
-                fontSize: 12,
-                cursor: 'pointer',
-                color: '#374151'
-              }}
-            >
-              {Object.entries(CRITIQUE_STYLES).map(([key, config]) => (
-                <option key={key} value={key}>{window.DEVS.t(config.label)}</option>
-              ))}
-            </select>
-            <div style={{ width: 1, height: 28, background: '#e5e7eb', margin: '0 4px' }} />
-            <Button size="sm" variant="flat" color="danger" onPress={clearCanvas}>{window.DEVS.t('clear')}</Button>
+          {/* Floating Toolbar */}
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50">
+            <Card className="shadow-lg backdrop-blur-lg bg-background/90">
+              <CardBody className="p-2">
+                <div className="flex gap-2 items-center">
+                  {/* Color Picker */}
+                  <Popover placement="bottom">
+                    <PopoverTrigger>
+                      <Button isIconOnly variant="light" size="sm">
+                        <div
+                          style={{
+                            width: 20,
+                            height: 20,
+                            borderRadius: '50%',
+                            background: brushColor,
+                            border: '2px solid #e5e7eb'
+                          }}
+                        />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-3">
+                      <div className="grid grid-cols-5 gap-2">
+                        {colors.map(color => (
+                          <button
+                            key={color}
+                            onClick={() => setBrushColor(color)}
+                            style={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: '50%',
+                              background: color,
+                              border: brushColor === color ? '3px solid #8b5cf6' : '2px solid #e5e7eb',
+                              cursor: 'pointer',
+                              transition: 'transform 0.1s',
+                              transform: brushColor === color ? 'scale(1.15)' : 'scale(1)'
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Brush Size */}
+                  <Popover placement="bottom">
+                    <PopoverTrigger>
+                      <Button isIconOnly variant="light" size="sm">
+                        <Icon name="DesignPencil" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-3 w-48">
+                      <div className="flex flex-col gap-2">
+                        <span className="text-xs text-default-500">{brushSize}px</span>
+                        <Slider
+                          size="sm"
+                          step={1}
+                          minValue={1}
+                          maxValue={30}
+                          value={brushSize}
+                          onChange={setBrushSize}
+                          className="w-full"
+                        />
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  <Divider orientation="vertical" className="h-6" />
+
+                  {/* Style Selector */}
+                  <Dropdown>
+                    <DropdownTrigger>
+                      <Button variant="light" size="sm" className="gap-1">
+                        <Icon name="Palette" />
+                        <span className="text-xs hidden sm:inline">{window.DEVS.t('style')}</span>
+                      </Button>
+                    </DropdownTrigger>
+                    <DropdownMenu
+                      aria-label="Critique style"
+                      selectionMode="single"
+                      selectedKeys={[critiqueStyle]}
+                      onSelectionChange={(keys) => setCritiqueStyle(Array.from(keys)[0])}
+                    >
+                      {Object.entries(CRITIQUE_STYLES).map(([key, config]) => (
+                        <DropdownItem key={key}>{window.DEVS.t(config.label)}</DropdownItem>
+                      ))}
+                    </DropdownMenu>
+                  </Dropdown>
+
+                  <Divider orientation="vertical" className="h-6" />
+
+                  {/* Clear Button */}
+                  <Tooltip content={window.DEVS.t('clear')}>
+                    <Button isIconOnly variant="light" size="sm" color="danger" onPress={clearCanvas}>
+                      <Icon name="Trash" />
+                    </Button>
+                  </Tooltip>
+                </div>
+              </CardBody>
+            </Card>
           </div>
 
           <div style={{

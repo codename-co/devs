@@ -11,8 +11,13 @@ import {
   Pagination,
   Input,
   Textarea,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from '@heroui/react'
-import { db, Database } from '@/lib/db'
+import { db, Database, DBStores } from '@/lib/db'
 import { useI18n } from '@/i18n'
 import { Icon, Container, Section } from '@/components'
 import DefaultLayout from '@/layouts/Default'
@@ -50,6 +55,11 @@ export const DatabasePage: React.FC = () => {
   const [editingField, setEditingField] = useState<string | null>(null)
   const [editingValue, setEditingValue] = useState<string>('')
   const [currentStoreName, setCurrentStoreName] = useState<string>('')
+  const [clearStoreModal, setClearStoreModal] = useState<{
+    isOpen: boolean
+    storeName: string
+    recordCount: number
+  }>({ isOpen: false, storeName: '', recordCount: 0 })
   const ITEMS_PER_PAGE = 10
 
   function formatValue(value: any, shortened = true): string {
@@ -421,6 +431,34 @@ export const DatabasePage: React.FC = () => {
     }
   }
 
+  const openClearStoreModal = (storeName: string, recordCount: number) => {
+    setClearStoreModal({ isOpen: true, storeName, recordCount })
+  }
+
+  const closeClearStoreModal = () => {
+    setClearStoreModal({ isOpen: false, storeName: '', recordCount: 0 })
+  }
+
+  const handleClearStore = async () => {
+    const { storeName } = clearStoreModal
+    if (!storeName) return
+
+    try {
+      await db.clear(storeName as keyof DBStores)
+      closeClearStoreModal()
+      closeDrawer()
+      await loadDatabaseStats()
+      successToast(
+        t('Collection cleared successfully ({count} records removed)', {
+          count: clearStoreModal.recordCount,
+        }),
+      )
+    } catch (error) {
+      console.error('Error clearing store:', error)
+      errorToast(t('Failed to clear collection'))
+    }
+  }
+
   const handleImportDatabase = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -567,6 +605,41 @@ export const DatabasePage: React.FC = () => {
         id="import-file-input"
       />
 
+      {/* Clear Store Confirmation Modal */}
+      <Modal
+        isOpen={clearStoreModal.isOpen}
+        onClose={closeClearStoreModal}
+        size="md"
+      >
+        <ModalContent>
+          <ModalHeader className="flex flex-col gap-1">
+            {t('Clear Collection')}
+          </ModalHeader>
+          <ModalBody>
+            <p>
+              {t(
+                'Are you sure you want to clear the "{store}" collection? This will permanently delete all {count} records.',
+                {
+                  store: clearStoreModal.storeName,
+                  count: clearStoreModal.recordCount,
+                },
+              )}
+            </p>
+            <Alert color="warning" className="mt-2">
+              {t('This action cannot be undone.')}
+            </Alert>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="flat" onPress={closeClearStoreModal}>
+              {t('Cancel')}
+            </Button>
+            <Button color="danger" onPress={handleClearStore}>
+              {t('Clear All Records')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
       <Section>
         <div className="flex h-full">
           {/* Main content */}
@@ -603,7 +676,7 @@ export const DatabasePage: React.FC = () => {
                         return (
                           <div className="space-y-4">
                             {/* Store Info */}
-                            <div className="flex flex-wrap gap-2 text-small">
+                            <div className="flex flex-wrap items-center gap-2 text-small">
                               <Tooltip
                                 placement="right"
                                 content={
@@ -632,6 +705,21 @@ export const DatabasePage: React.FC = () => {
                               <span>
                                 {t('Size')} {formatBytes(store.size, lang)}
                               </span>
+                              <span>·</span>
+                              <Button
+                                size="sm"
+                                variant="light"
+                                color="danger"
+                                startContent={<Icon name="Trash" size="sm" />}
+                                onPress={() =>
+                                  openClearStoreModal(
+                                    store.name,
+                                    store.recordCount,
+                                  )
+                                }
+                              >
+                                {t('Clear Collection')}
+                              </Button>
                             </div>
 
                             {/* Search */}
