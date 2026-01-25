@@ -583,11 +583,12 @@ self.addEventListener('fetch', (event) => {
       url.pathname.endsWith('/') ||
       !url.pathname.includes('.')
 
-    // JSON files in /schemas/ should use network-first to ensure fresh data
+    // JSON files in /schemas/ and extensions manifest should use network-first to ensure fresh data
     const isSchemaJSON =
       url.pathname.startsWith('/schemas/') && url.pathname.endsWith('.json')
+    const isExtensionsManifest = url.pathname === '/extensions/manifest.json'
 
-    if (isHTMLRequest || isSchemaJSON) {
+    if (isHTMLRequest || isSchemaJSON || isExtensionsManifest) {
       // Network-first for HTML and schema JSON to ensure users get latest version
       event.respondWith(
         fetch(event.request)

@@ -210,6 +210,8 @@ export interface ManifestExtension {
  * Extensions manifest file structure
  */
 export interface ExtensionsManifest {
+  /** ISO timestamp of when the manifest was generated */
+  generatedAt?: string
   extensions: ManifestExtension[]
 }
 

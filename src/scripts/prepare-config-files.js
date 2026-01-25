@@ -138,7 +138,10 @@ async function generateExtensionsManifest() {
       }),
     )
 
-    const manifest = { extensions }
+    const manifest = {
+      generatedAt: new Date().toISOString(),
+      extensions,
+    }
 
     await writeFile(
       extensionsManifestPath,

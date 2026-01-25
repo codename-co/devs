@@ -69,9 +69,13 @@ function manifestToPartialExtension(
 
 /**
  * Fetch the extensions manifest from the registry
+ * Uses cache: 'no-cache' to ensure we always validate with the server
+ * while still leveraging conditional requests (ETags, Last-Modified)
  */
 async function fetchManifest(): Promise<ManifestExtension[]> {
-  const response = await fetch(MANIFEST_URL)
+  const response = await fetch(MANIFEST_URL, {
+    cache: 'no-cache',
+  })
   if (!response.ok) {
     throw new Error(`Failed to fetch manifest: ${response.statusText}`)
   }
