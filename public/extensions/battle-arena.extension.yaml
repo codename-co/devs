@@ -8,7 +8,6 @@ color: warning
 description: Pit your agents against each other in a turn-based battle arena.
 author:
   name: Arnaud Leymet
-  email: arnaud@codename.co
   url: https://arnley.com
 privacyPolicy: https://devs.new/privacy
 source: https://github.com/codename-co/devs/blob/main/public/extensions/battle-arena.extension.yaml

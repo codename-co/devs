@@ -1,0 +1,516 @@
+id: carto-france
+type: app
+name: Carto France
+version: 0.3.0
+license: MIT
+icon: Map
+color: blue
+description: Mapping of France with open data layers from data.gouv.fr.
+author:
+  name: Arnaud Leymet
+  url: https://arnley.com
+privacyPolicy: https://devs.new/privacy
+source: https://github.com/codename-co/devs/blob/main/public/extensions/carto-france.extension.yaml
+i18n:
+  fr:
+    name: Carto France
+    description: Cartographie de France avec calques de données ouvertes de data.gouv.fr.
+    messages:
+      search_placeholder: Rechercher des jeux de données...
+      layers: Calques
+      add_layer: Ajouter un calque
+      remove_layer: Supprimer
+      no_results: Aucun résultat trouvé
+      loading: Chargement...
+      error_loading: Erreur lors du chargement
+      datasets: Jeux de données
+      active_layers: Calques actifs
+      opacity: Opacité
+      zoom_in: Zoom avant
+      zoom_out: Zoom arrière
+      reset_view: Réinitialiser la vue
+  en:
+    name: Carto France
+    description: Mapping of France with open data layers from data.gouv.fr.
+    messages:
+      search_placeholder: Search datasets...
+      layers: Layers
+      add_layer: Add layer
+      remove_layer: Remove
+      no_results: No results found
+      loading: Loading...
+      error_loading: Error loading data
+      datasets: Datasets
+      active_layers: Active layers
+      opacity: Opacity
+      zoom_in: Zoom in
+      zoom_out: Zoom out
+      reset_view: Reset view
+pages:
+  carto: | #jsx
+    import { useState, useEffect, useRef, useCallback } from 'react'
+    import { Button, Input, Card, CardBody, CardHeader, Chip, Slider, Spinner, ScrollShadow } from '@devs/components'
+    import L from 'https://esm.sh/leaflet@1.9.4?external=react,react-dom'
+    import shp from 'https://esm.sh/shpjs@6.1.0'
+
+    const FRANCE_CENTER = [46.603354, 1.888334]
+    const FRANCE_ZOOM = 6
+
+    const isShapefile = (url) => {
+      if (!url) return false
+      const lowerUrl = url.toLowerCase()
+      return lowerUrl.endsWith('.shp') || lowerUrl.endsWith('.zip') || lowerUrl.includes('shapefile')
+    }
+
+    const isGeoJSON = (url, format) => {
+      if (!url && !format) return false
+      const lowerFormat = format?.toLowerCase() || ''
+      const lowerUrl = url?.toLowerCase() || ''
+      return lowerFormat === 'geojson' || lowerFormat === 'json' ||
+             lowerUrl.endsWith('.geojson') || lowerUrl.endsWith('.json') ||
+             lowerUrl.includes('geojson')
+    }
+
+    const POPULAR_DATASETS = [
+      {
+        id: 'departements',
+        name: 'Départements',
+        url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements.geojson',
+        type: 'geojson'
+      },
+      {
+        id: 'regions',
+        name: 'Régions',
+        url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/regions.geojson',
+        type: 'geojson'
+      },
+      {
+        id: 'metropole',
+        name: 'Contour France métropolitaine',
+        url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/metropole.geojson',
+        type: 'geojson'
+      },
+      {
+        id: 'communes-paris',
+        name: 'Communes de Paris (75)',
+        url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/75-paris/communes-75-paris.geojson',
+        type: 'geojson'
+      }
+    ]
+
+    const App = () => {
+      const mapRef = useRef(null)
+      const mapInstanceRef = useRef(null)
+      const [searchQuery, setSearchQuery] = useState('')
+      const [searchResults, setSearchResults] = useState([])
+      const [activeLayers, setActiveLayers] = useState([])
+      const [layerObjects, setLayerObjects] = useState({})
+      const [isSearching, setIsSearching] = useState(false)
+      const [isPanelOpen, setIsPanelOpen] = useState(true)
+      const [loadingLayers, setLoadingLayers] = useState({})
+
+      useEffect(() => {
+        if (!mapRef.current || mapInstanceRef.current) return
+
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
+        document.head.appendChild(link)
+
+        setTimeout(() => {
+          const map = L.map(mapRef.current, {
+            zoomControl: false
+          }).setView(FRANCE_CENTER, FRANCE_ZOOM)
+
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+          }).addTo(map)
+
+          mapInstanceRef.current = map
+        }, 100)
+
+        return () => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.remove()
+            mapInstanceRef.current = null
+          }
+        }
+      }, [])
+
+      const searchDataGouv = useCallback(async (query) => {
+        if (!query.trim()) {
+          setSearchResults([])
+          return
+        }
+
+        setIsSearching(true)
+        try {
+          const response = await fetch(
+            `https://www.data.gouv.fr/api/1/datasets/?q=${encodeURIComponent(query)}&page_size=30`
+          )
+          const data = await response.json()
+
+          const geoDatasets = data.data?.filter(d =>
+            d.resources?.some(r => {
+              const format = r.format?.toLowerCase() || ''
+              const url = r.url?.toLowerCase() || ''
+              return format === 'geojson' || format === 'json' || format === 'shp' ||
+                     format === 'shapefile' || url.includes('geojson') ||
+                     url.endsWith('.shp') || url.endsWith('.zip')
+            })
+          ) || []
+
+          setSearchResults(geoDatasets.map(d => {
+            const geoResource = d.resources?.find(r => {
+              const format = r.format?.toLowerCase() || ''
+              const url = r.url?.toLowerCase() || ''
+              return format === 'geojson' || format === 'json' || url.includes('geojson') ||
+                     url.endsWith('.geojson') || url.endsWith('.json')
+            })
+            const shapeResource = d.resources?.find(r => {
+              const format = r.format?.toLowerCase() || ''
+              const url = r.url?.toLowerCase() || ''
+              return format === 'shp' || format === 'shapefile' ||
+                     url.endsWith('.shp') || url.endsWith('.zip')
+            })
+            const resource = geoResource || shapeResource
+            return {
+              id: d.id,
+              name: d.title,
+              description: d.description?.substring(0, 150),
+              url: resource?.url,
+              format: geoResource ? 'geojson' : 'shapefile',
+              organization: d.organization?.name
+            }
+          }))
+        } catch (error) {
+          console.error('Search error:', error)
+          DEVS.ui.toast('Erreur lors de la recherche', { type: 'error' })
+        } finally {
+          setIsSearching(false)
+        }
+      }, [])
+
+      useEffect(() => {
+        const timer = setTimeout(() => {
+          searchDataGouv(searchQuery)
+        }, 500)
+        return () => clearTimeout(timer)
+      }, [searchQuery, searchDataGouv])
+
+      const addLayer = async (dataset) => {
+        if (activeLayers.find(l => l.id === dataset.id)) {
+          DEVS.ui.toast('Ce calque est déjà actif', { type: 'warning' })
+          return
+        }
+
+        if (!dataset.url) {
+          DEVS.ui.toast('URL du calque non disponible', { type: 'error' })
+          return
+        }
+
+        setLoadingLayers(prev => ({ ...prev, [dataset.id]: true }))
+
+        try {
+          let geojsonData
+
+          if (dataset.format === 'shapefile' || isShapefile(dataset.url)) {
+            // Fetch shapefile as ArrayBuffer first, then parse with shpjs
+            const response = await fetch(dataset.url)
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`)
+            }
+            const buffer = await response.arrayBuffer()
+            geojsonData = await shp(buffer)
+
+            // shpjs can return an array of GeoJSON for multi-layer shapefiles
+            if (Array.isArray(geojsonData)) {
+              geojsonData = {
+                type: 'FeatureCollection',
+                features: geojsonData.flatMap(g => g.features || [g])
+              }
+            }
+          } else {
+            // Load GeoJSON
+            const response = await fetch(dataset.url)
+
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`)
+            }
+
+            geojsonData = await response.json()
+          }
+
+          if (!geojsonData || (!geojsonData.features && geojsonData.type !== 'Feature')) {
+            throw new Error('Format GeoJSON invalide')
+          }
+
+          const color = `hsl(${Math.random() * 360}, 70%, 50%)`
+
+          const layer = L.geoJSON(geojsonData, {
+            style: {
+              color: color,
+              weight: 2,
+              fillOpacity: 0.3
+            },
+            pointToLayer: (feature, latlng) => {
+              return L.circleMarker(latlng, {
+                radius: 6,
+                fillColor: color,
+                color: color,
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.6
+              })
+            },
+            onEachFeature: (feature, layer) => {
+              if (feature.properties) {
+                const props = Object.entries(feature.properties)
+                  .filter(([k, v]) => v && typeof v !== 'object')
+                  .slice(0, 5)
+                  .map(([k, v]) => `<b>${k}:</b> ${v}`)
+                  .join('<br>')
+                if (props) layer.bindPopup(props)
+              }
+            }
+          }).addTo(mapInstanceRef.current)
+
+          setLayerObjects(prev => ({ ...prev, [dataset.id]: layer }))
+          setActiveLayers(prev => [...prev, { ...dataset, color, opacity: 0.7 }])
+
+          DEVS.ui.toast(`Calque "${dataset.name}" ajouté`, { type: 'success' })
+        } catch (error) {
+          console.error('Error loading layer:', error)
+          DEVS.ui.toast(`Erreur: ${error.message}`, { type: 'error' })
+        } finally {
+          setLoadingLayers(prev => ({ ...prev, [dataset.id]: false }))
+        }
+      }
+
+      const removeLayer = (layerId) => {
+        const layer = layerObjects[layerId]
+        if (layer && mapInstanceRef.current) {
+          mapInstanceRef.current.removeLayer(layer)
+        }
+        setLayerObjects(prev => {
+          const newObj = { ...prev }
+          delete newObj[layerId]
+          return newObj
+        })
+        setActiveLayers(prev => prev.filter(l => l.id !== layerId))
+      }
+
+      const updateLayerOpacity = (layerId, opacity) => {
+        const layer = layerObjects[layerId]
+        if (layer) {
+          layer.setStyle({ fillOpacity: opacity, opacity: opacity })
+        }
+        setActiveLayers(prev =>
+          prev.map(l => l.id === layerId ? { ...l, opacity } : l)
+        )
+      }
+
+      const zoomIn = () => mapInstanceRef.current?.zoomIn()
+      const zoomOut = () => mapInstanceRef.current?.zoomOut()
+      const resetView = () => mapInstanceRef.current?.setView(FRANCE_CENTER, FRANCE_ZOOM)
+
+      return (
+        <div style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden' }}>
+          <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
+
+          <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <Button isIconOnly variant="flat" onPress={zoomIn} size="sm">
+              <span style={{ fontSize: 18 }}>+</span>
+            </Button>
+            <Button isIconOnly variant="flat" onPress={zoomOut} size="sm">
+              <span style={{ fontSize: 18 }}>−</span>
+            </Button>
+            <Button isIconOnly variant="flat" onPress={resetView} size="sm">
+              <span style={{ fontSize: 14 }}>⌂</span>
+            </Button>
+          </div>
+
+          <Button
+            style={{ position: 'absolute', top: 16, left: 16, zIndex: 1000 }}
+            variant="flat"
+            onPress={() => setIsPanelOpen(!isPanelOpen)}
+          >
+            {isPanelOpen ? '◀ Masquer' : '▶ Calques'}
+          </Button>
+
+          {isPanelOpen && (
+            <Card style={{
+              position: 'absolute',
+              top: 60,
+              left: 16,
+              width: 360,
+              maxHeight: 'calc(100vh - 80px)',
+              zIndex: 1000,
+              overflow: 'hidden'
+            }}>
+              <CardHeader>
+                <Input
+                  placeholder="Rechercher des jeux de données…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  size="sm"
+                  className="text-xs"
+                />
+              </CardHeader>
+
+              <CardBody style={{ padding: '0 12px 12px', overflow: 'hidden' }}>
+                <ScrollShadow style={{ maxHeight: 'calc(100vh - 220px)' }}>
+                  {activeLayers.length > 0 && (
+                    <div style={{ marginBottom: 16 }}>
+                      <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: '#666' }}>Calques actifs</h4>
+                      {activeLayers.map(layer => (
+                        <div key={layer.id} style={{
+                          padding: 8,
+                          marginBottom: 8,
+                          backgroundColor: 'var(--nextui-colors-default-100)',
+                          borderRadius: 8,
+                          borderLeft: `4px solid ${layer.color}`
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                            <span style={{ fontSize: 13, fontWeight: 500 }}>{layer.name}</span>
+                            <Button size="sm" variant="light" color="danger" onPress={() => removeLayer(layer.id)}>
+                              ✕
+                            </Button>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ fontSize: 11, color: '#888' }}>Opacité</span>
+                            <Slider
+                              size="sm"
+                              step={0.1}
+                              minValue={0}
+                              maxValue={1}
+                              value={layer.opacity}
+                              onChange={(val) => updateLayerOpacity(layer.id, val)}
+                              style={{ flex: 1 }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {!searchQuery && (
+                    <div style={{ marginBottom: 16 }}>
+                      <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: '#666' }}>Calques populaires</h4>
+                      {POPULAR_DATASETS.map(dataset => (
+                        <div key={dataset.id} style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center'
+                        }}>
+                          <span style={{ fontSize: 13 }}>{dataset.name}</span>
+                          <Button
+                            size="sm"
+                            variant="light"
+                            color="primary"
+                            isLoading={loadingLayers[dataset.id]}
+                            onPress={() => addLayer(dataset)}
+                          >
+                            +
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {searchQuery && (
+                    <div>
+                      <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: '#666' }}>
+                        Résultats data.gouv.fr
+                      </h4>
+                      {isSearching ? (
+                        <div style={{ textAlign: 'center', padding: 20 }}>
+                          <Spinner size="sm" />
+                          <p style={{ fontSize: 12, color: '#888', marginTop: 8 }}>Recherche en cours…</p>
+                        </div>
+                      ) : searchResults.length === 0 ? (
+                        <p style={{ fontSize: 12, color: '#888', textAlign: 'center', padding: 20 }}>
+                          Aucun jeu de données GeoJSON trouvé
+                        </p>
+                      ) : (
+                        searchResults.map(result => (
+                          <div key={result.id} style={{
+                            padding: 10,
+                            marginBottom: 8,
+                            backgroundColor: 'var(--nextui-colors-default-50)',
+                            borderRadius: 8
+                          }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p style={{ fontSize: 13, fontWeight: 500, margin: 0, marginBottom: 4 }}>
+                                  {result.name}
+                                </p>
+                                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 4 }}>
+                                  {result.organization && (
+                                    <Chip size="sm" variant="light">
+                                      {result.organization}
+                                    </Chip>
+                                  )}
+                                  <Chip size="sm" variant="light" color={result.format === 'shapefile' ? 'warning' : 'success'}>
+                                    {result.format === 'shapefile' ? 'SHP' : 'GeoJSON'}
+                                  </Chip>
+                                </div>
+                                {result.description && (
+                                  <p style={{ fontSize: 11, color: '#888', margin: 0 }}>
+                                    {result.description}...
+                                  </p>
+                                )}
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="light"
+                                color="primary"
+                                isLoading={loadingLayers[result.id]}
+                                isDisabled={!result.url}
+                                onPress={() => addLayer(result)}
+                              >
+                                +
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </ScrollShadow>
+              </CardBody>
+            </Card>
+          )}
+        </div>
+      )
+    }
+configuration:
+  schema:
+    type: object
+    properties:
+      defaultCenter:
+        type: array
+        items:
+          type: number
+        default:
+          - 46.603354
+          - 1.888334
+        description: Coordonnées par défaut [latitude, longitude]
+      defaultZoom:
+        type: number
+        default: 6
+        description: Niveau de zoom par défaut
+      mapStyle:
+        type: string
+        enum:
+          - osm
+          - satellite
+          - terrain
+        default: osm
+        description: Style de carte par défaut
+  defaults:
+    defaultCenter:
+      - 46.603354
+      - 1.888334
+    defaultZoom: 6
+    mapStyle: osm

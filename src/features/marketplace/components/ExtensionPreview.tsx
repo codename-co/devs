@@ -138,7 +138,7 @@ export function ExtensionPreview({
       srcDoc={iframeSrcDoc}
       className={`w-full flex-1 border-0 ${className}`}
       style={{ minHeight }}
-      sandbox="allow-scripts allow-forms allow-modals allow-same-origin"
+      sandbox="allow-scripts allow-forms allow-modals allow-same-origin allow-downloads allow-popups"
       title={extensionName || 'Extension Preview'}
       // @ts-ignore
       allowtransparency="true"

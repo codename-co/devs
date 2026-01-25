@@ -1,0 +1,1590 @@
+id: composition
+name: Composition
+version: 0.5.0
+type: app
+license: MIT
+icon: MusicDoubleNote
+color: secondary
+description: Compose and edit your music scores with AI.
+author:
+  name: Arnaud Leymet
+  url: https://arnley.com
+privacyPolicy: https://devs.new/privacy
+source: https://github.com/codename-co/devs/blob/main/public/extensions/composition.extension.yaml
+i18n:
+  en:
+    name: Composition
+    description: Compose and edit your music scores with AI.
+    messages:
+      composing: Composing...
+      askAI: Ask AI to compose music... (e.g., 'Write a happy melody in G major' or 'Add a chorus section')
+      scoreSaved: Score saved!
+      scoreLoaded: Score loaded!
+      noSavedScore: No saved score found
+      compositionGenerated: Composition generated!
+      musicAdded: Music added to score!
+      compositionFailed: Failed to generate composition. Please try again.
+      playbackError: Error playing score. Check your notation.
+      downloadMidi: Download
+      midiExported: MIDI file downloaded!
+      print: Print
+      clearScore: Clear Score
+      clearConfirmMessage: Are you sure you want to clear the entire score? This cannot be undone.
+      clear: Clear
+      cancel: Cancel
+      scoreConfig: Score Configuration
+      title: Title
+      keySignature: Key
+      timeSignature: Time
+      tempo: Tempo (BPM)
+      apply: Apply
+      noteTool: Note Tool
+      deleteTool: Delete Tool
+      note: Note
+      duration: Duration
+      whole: Whole
+      half: Half
+      quarter: Quarter
+      eighth: Eighth
+      sixteenth: Sixteenth
+      addNote: Add Note
+      addRest: Add Rest
+      addChord: Add Chord
+      barline: Barline
+      doubleBarline: Double Barline
+      repeatStart: Repeat Start
+      repeatEnd: Repeat End
+      tie: Tie
+      play: Play
+      stop: Stop
+      undo: Undo
+      redo: Redo
+      spaceKey: space
+      config: Configure
+      save: Save
+      load: Load
+      exportABC: Export ABC
+      abcNotation: ABC Notation
+      keyC: C Major
+      keyG: G Major
+      keyD: D Major
+      keyA: A Major
+      keyE: E Major
+      keyB: B Major
+      keyF: F Major
+      keyBb: B♭ Major
+      keyEb: E♭ Major
+      keyAb: A♭ Major
+      keyCm: C Minor
+      keyGm: G Minor
+      keyDm: D Minor
+      keyAm: A Minor
+      keyEm: E Minor
+  fr:
+    name: Composition
+    description: Composez et éditez vos partitions musicales grâce à l'IA.
+    messages:
+      composing: Composition en cours...
+      askAI: Demandez à l'IA de composer... (ex. 'Écris une mélodie joyeuse en Sol majeur')
+      scoreSaved: Partition sauvegardée !
+      scoreLoaded: Partition chargée !
+      noSavedScore: Aucune partition sauvegardée trouvée
+      compositionGenerated: Composition générée !
+      musicAdded: Musique ajoutée à la partition !
+      compositionFailed: Échec de la génération. Veuillez réessayer.
+      playbackError: Erreur de lecture. Vérifiez votre notation.
+      downloadMidi: Télécharger
+      midiExported: Fichier MIDI téléchargé !
+      print: Imprimer
+      clearScore: Effacer la Partition
+      clearConfirmMessage: Êtes-vous sûr de vouloir effacer toute la partition ? Cette action est irréversible.
+      clear: Effacer
+      cancel: Annuler
+      scoreConfig: Configuration de la Partition
+      title: Titre
+      keySignature: Armure
+      timeSignature: Signature
+      tempo: Tempo (BPM)
+      apply: Appliquer
+      noteTool: Outil Note
+      deleteTool: Outil Supprimer
+      note: Note
+      duration: Durée
+      whole: Ronde
+      half: Blanche
+      quarter: Noire
+      eighth: Croche
+      sixteenth: Double croche
+      addNote: Ajouter une Note
+      addRest: Ajouter un Silence
+      addChord: Ajouter un Accord
+      barline: Barre de mesure
+      doubleBarline: Double barre
+      repeatStart: Début de reprise
+      repeatEnd: Fin de reprise
+      tie: Liaison
+      play: Jouer
+      stop: Arrêter
+      undo: Annuler
+      redo: Rétablir
+      spaceKey: espace
+      config: Configurer
+      save: Sauvegarder
+      load: Restaurer
+      exportABC: Exporter ABC
+      abcNotation: Notation ABC
+      keyC: Do Majeur
+      keyG: Sol Majeur
+      keyD: Ré Majeur
+      keyA: La Majeur
+      keyE: Mi Majeur
+      keyB: Si Majeur
+      keyF: Fa Majeur
+      keyBb: Si♭ Majeur
+      keyEb: Mi♭ Majeur
+      keyAb: La♭ Majeur
+      keyCm: Do Mineur
+      keyGm: Sol Mineur
+      keyDm: Ré Mineur
+      keyAm: La Mineur
+      keyEm: Mi Mineur
+  de:
+    name: Komponist
+    description: Komponieren und bearbeiten Sie Ihre Musiknoten mit KI.
+    messages:
+      composing: Komponiere...
+      askAI: Bitten Sie die KI zu komponieren... (z.B. 'Schreibe eine fröhliche Melodie in G-Dur')
+      scoreSaved: Partitur gespeichert!
+      scoreLoaded: Partitur geladen!
+      noSavedScore: Keine gespeicherte Partitur gefunden
+      compositionGenerated: Komposition generiert!
+      musicAdded: Musik zur Partitur hinzugefügt!
+      compositionFailed: Komposition fehlgeschlagen. Bitte erneut versuchen.
+      playbackError: Wiedergabefehler. Überprüfen Sie Ihre Notation.
+      downloadMidi: Herunterladen
+      midiExported: MIDI-Datei heruntergeladen!
+      print: Drucken
+      clearScore: Partitur löschen
+      clearConfirmMessage: Sind Sie sicher, dass Sie die gesamte Partitur löschen möchten? Dies kann nicht rückgängig gemacht werden.
+      clear: Löschen
+      cancel: Abbrechen
+      scoreConfig: Partitureinstellungen
+      title: Titel
+      keySignature: Tonart
+      timeSignature: Taktart
+      tempo: Tempo (BPM)
+      apply: Anwenden
+      noteTool: Notenwerkzeug
+      deleteTool: Löschwerkzeug
+      note: Note
+      duration: Dauer
+      whole: Ganze
+      half: Halbe
+      quarter: Viertel
+      eighth: Achtel
+      sixteenth: Sechzehntel
+      addNote: Note hinzufügen
+      addRest: Pause hinzufügen
+      addChord: Akkord hinzufügen
+      barline: Taktstrich
+      doubleBarline: Doppelstrich
+      repeatStart: Wiederholungsanfang
+      repeatEnd: Wiederholungsende
+      tie: Bindebogen
+      play: Abspielen
+      stop: Stopp
+      undo: Rückgängig
+      redo: Wiederholen
+      spaceKey: Leertaste
+      config: Konfigurieren
+      save: Speichern
+      load: Laden
+      exportABC: ABC exportieren
+      abcNotation: ABC-Notation
+      keyC: C-Dur
+      keyG: G-Dur
+      keyD: D-Dur
+      keyA: A-Dur
+      keyE: E-Dur
+      keyB: H-Dur
+      keyF: F-Dur
+      keyBb: B-Dur
+      keyEb: Es-Dur
+      keyAb: As-Dur
+      keyCm: c-Moll
+      keyGm: g-Moll
+      keyDm: d-Moll
+      keyAm: a-Moll
+      keyEm: e-Moll
+  es:
+    name: Compositor
+    description: Compón y edita tus partituras musicales con IA.
+    messages:
+      composing: Componiendo...
+      askAI: Pide a la IA que componga... (ej. 'Escribe una melodía alegre en Sol mayor')
+      scoreSaved: ¡Partitura guardada!
+      scoreLoaded: ¡Partitura cargada!
+      noSavedScore: No se encontró partitura guardada
+      compositionGenerated: ¡Composición generada!
+      musicAdded: ¡Música añadida a la partitura!
+      compositionFailed: Error al generar la composición. Inténtalo de nuevo.
+      playbackError: Error de reproducción. Verifica tu notación.
+      downloadMidi: Descargar
+      midiExported: ¡Archivo MIDI descargado!
+      print: Imprimir
+      clearScore: Limpiar Partitura
+      clearConfirmMessage: ¿Estás seguro de que quieres borrar toda la partitura? Esta acción no se puede deshacer.
+      clear: Limpiar
+      cancel: Cancelar
+      scoreConfig: Configuración de la Partitura
+      title: Título
+      keySignature: Armadura
+      timeSignature: Compás
+      tempo: Tempo (BPM)
+      apply: Aplicar
+      noteTool: Herramienta Nota
+      deleteTool: Herramienta Eliminar
+      note: Nota
+      duration: Duración
+      whole: Redonda
+      half: Blanca
+      quarter: Negra
+      eighth: Corchea
+      sixteenth: Semicorchea
+      addNote: Añadir Nota
+      addRest: Añadir Silencio
+      addChord: Añadir Acorde
+      barline: Barra de compás
+      doubleBarline: Doble barra
+      repeatStart: Inicio de repetición
+      repeatEnd: Fin de repetición
+      tie: Ligadura
+      play: Reproducir
+      stop: Parar
+      undo: Deshacer
+      redo: Rehacer
+      spaceKey: espacio
+      config: Configurar
+      save: Guardar
+      load: Cargar
+      exportABC: Exportar ABC
+      abcNotation: Notación ABC
+      keyC: Do Mayor
+      keyG: Sol Mayor
+      keyD: Re Mayor
+      keyA: La Mayor
+      keyE: Mi Mayor
+      keyB: Si Mayor
+      keyF: Fa Mayor
+      keyBb: Si♭ Mayor
+      keyEb: Mi♭ Mayor
+      keyAb: La♭ Mayor
+      keyCm: Do Menor
+      keyGm: Sol Menor
+      keyDm: Re Menor
+      keyAm: La Menor
+      keyEm: Mi Menor
+  it:
+    name: Compositore
+    description: Componi e modifica i tuoi spartiti musicali con l'IA.
+    messages:
+      composing: Composizione in corso...
+      askAI: Chiedi all'IA di comporre... (es. 'Scrivi una melodia allegra in Sol maggiore')
+      scoreSaved: Spartito salvato!
+      scoreLoaded: Spartito caricato!
+      noSavedScore: Nessuno spartito salvato trovato
+      compositionGenerated: Composizione generata!
+      musicAdded: Musica aggiunta allo spartito!
+      compositionFailed: Generazione fallita. Riprova.
+      playbackError: Errore di riproduzione. Controlla la notazione.
+      downloadMidi: Scarica
+      midiExported: File MIDI scaricato!
+      print: Stampa
+      clearScore: Cancella Spartito
+      clearConfirmMessage: Sei sicuro di voler cancellare l'intero spartito? Questa azione non può essere annullata.
+      clear: Cancella
+      cancel: Annulla
+      scoreConfig: Configurazione dello Spartito
+      title: Titolo
+      keySignature: Tonalità
+      timeSignature: Tempo
+      tempo: Tempo (BPM)
+      apply: Applica
+      noteTool: Strumento Nota
+      deleteTool: Strumento Elimina
+      note: Nota
+      duration: Durata
+      whole: Semibreve
+      half: Minima
+      quarter: Semiminima
+      eighth: Croma
+      sixteenth: Semicroma
+      addNote: Aggiungi Nota
+      addRest: Aggiungi Pausa
+      addChord: Aggiungi Accordo
+      barline: Stanghetta
+      doubleBarline: Doppia stanghetta
+      repeatStart: Inizio ripetizione
+      repeatEnd: Fine ripetizione
+      tie: Legatura
+      play: Riproduci
+      stop: Ferma
+      undo: Annulla
+      redo: Ripristina
+      spaceKey: spazio
+      config: Configura
+      save: Salva
+      load: Carica
+      exportABC: Esporta ABC
+      abcNotation: Notazione ABC
+      keyC: Do Maggiore
+      keyG: Sol Maggiore
+      keyD: Re Maggiore
+      keyA: La Maggiore
+      keyE: Mi Maggiore
+      keyB: Si Maggiore
+      keyF: Fa Maggiore
+      keyBb: Si♭ Maggiore
+      keyEb: Mi♭ Maggiore
+      keyAb: La♭ Maggiore
+      keyCm: Do Minore
+      keyGm: Sol Minore
+      keyDm: Re Minore
+      keyAm: La Minore
+      keyEm: Mi Minore
+  pt:
+    name: Compositor
+    description: Componha e edite suas partituras musicais com IA.
+    messages:
+      composing: Compondo...
+      askAI: Peça à IA para compor... (ex. 'Escreva uma melodia alegre em Sol maior')
+      scoreSaved: Partitura salva!
+      scoreLoaded: Partitura carregada!
+      noSavedScore: Nenhuma partitura salva encontrada
+      compositionGenerated: Composição gerada!
+      musicAdded: Música adicionada à partitura!
+      compositionFailed: Falha ao gerar composição. Tente novamente.
+      playbackError: Erro de reprodução. Verifique sua notação.
+      downloadMidi: Baixar
+      midiExported: Arquivo MIDI baixado!
+      print: Imprimir
+      clearScore: Limpar Partitura
+      clearConfirmMessage: Tem certeza de que deseja limpar toda a partitura? Esta ação não pode ser desfeita.
+      clear: Limpar
+      cancel: Cancelar
+      scoreConfig: Configuração da Partitura
+      title: Título
+      keySignature: Armadura
+      timeSignature: Compasso
+      tempo: Tempo (BPM)
+      apply: Aplicar
+      noteTool: Ferramenta Nota
+      deleteTool: Ferramenta Excluir
+      note: Nota
+      duration: Duração
+      whole: Semibreve
+      half: Mínima
+      quarter: Semínima
+      eighth: Colcheia
+      sixteenth: Semicolcheia
+      addNote: Adicionar Nota
+      addRest: Adicionar Pausa
+      addChord: Adicionar Acorde
+      barline: Barra de compasso
+      doubleBarline: Barra dupla
+      repeatStart: Início de repetição
+      repeatEnd: Fim de repetição
+      tie: Ligadura
+      play: Reproduzir
+      stop: Parar
+      undo: Desfazer
+      redo: Refazer
+      spaceKey: espaço
+      config: Configurar
+      save: Salvar
+      load: Carregar
+      exportABC: Exportar ABC
+      abcNotation: Notação ABC
+      keyC: Dó Maior
+      keyG: Sol Maior
+      keyD: Ré Maior
+      keyA: Lá Maior
+      keyE: Mi Maior
+      keyB: Si Maior
+      keyF: Fá Maior
+      keyBb: Si♭ Maior
+      keyEb: Mi♭ Maior
+      keyAb: Lá♭ Maior
+      keyCm: Dó Menor
+      keyGm: Sol Menor
+      keyDm: Ré Menor
+      keyAm: Lá Menor
+      keyEm: Mi Menor
+pages:
+  'composition': | # jsx
+    import { useState, useEffect, useRef, useCallback } from 'react'
+    import { Button, ButtonGroup, Card, CardBody, Tooltip, Divider, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Input, Select, SelectItem, Spinner, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Kbd } from '@heroui/react'
+    import { Icon, PromptArea, Section } from '@devs/components'
+
+    const { t } = DEVS
+
+    const App = () => {
+      const initialNotation = `X:1
+    T:My Composition
+    M:4/4
+    L:1/4
+    K:C
+    C D E F | G A B c |`
+      const [abcNotation, setAbcNotationRaw] = useState(initialNotation)
+      const [history, setHistory] = useState([]) // Past states for undo
+      const [future, setFuture] = useState([]) // Future states for redo
+      const [isPlaying, setIsPlaying] = useState(false)
+      const [showConfig, setShowConfig] = useState(false)
+      const [title, setTitle] = useState('My Composition')
+      const [timeSignature, setTimeSignature] = useState('4/4')
+      const [keySignature, setKeySignature] = useState('C')
+      const [tempo, setTempo] = useState(120)
+      const [isComposing, setIsComposing] = useState(false)
+      const scoreRef = useRef(null)
+      const abcjsRef = useRef(null)
+      const synthRef = useRef(null)
+      const timingCallbacksRef = useRef(null)
+      const audioContextRef = useRef(null)
+      const [selectedNotes, setSelectedNotes] = useState([]) // Array of { startChar, endChar, note }
+      const [isSelecting, setIsSelecting] = useState(false)
+      const [selectionRect, setSelectionRect] = useState(null) // { startX, startY, endX, endY }
+      const selectionStartRef = useRef(null)
+      const noteElementsMapRef = useRef(new Map()) // Map of DOM element -> { startChar, endChar, note }
+      const [isMobile, setIsMobile] = useState(false)
+      const scoreContainerRef = useRef(null) // For scrollable container on mobile
+      const playScoreRef = useRef(null) // Ref for playScore to use in keyboard handler
+
+      // Detect mobile screen size
+      useEffect(() => {
+        const checkMobile = () => {
+          setIsMobile(window.innerWidth < 768)
+        }
+        checkMobile()
+        window.addEventListener('resize', checkMobile)
+        return () => window.removeEventListener('resize', checkMobile)
+      }, [])
+
+      // Restore saved score on initialization
+      useEffect(() => {
+        const restoreScore = async () => {
+          const saved = await DEVS.storage.get('savedScore')
+          if (saved) {
+            setAbcNotationRaw(saved)
+          }
+        }
+        restoreScore()
+      }, [])
+
+      // Set notation with history tracking (clears redo stack)
+      const setAbcNotation = useCallback((newNotation) => {
+        const value = typeof newNotation === 'function' ? newNotation(abcNotation) : newNotation
+        if (value !== abcNotation) {
+          setHistory(prev => [...prev, abcNotation])
+          setFuture([]) // Clear redo stack on new change
+          setAbcNotationRaw(value)
+        }
+      }, [abcNotation])
+
+      // Undo: go back in history
+      const undo = useCallback(() => {
+        if (history.length === 0) return
+        const previous = history[history.length - 1]
+        setHistory(prev => prev.slice(0, -1))
+        setFuture(prev => [abcNotation, ...prev])
+        setAbcNotationRaw(previous)
+        setSelectedNote(null)
+      }, [history, abcNotation])
+
+      // Redo: go forward in future
+      const redo = useCallback(() => {
+        if (future.length === 0) return
+        const next = future[0]
+        setFuture(prev => prev.slice(1))
+        setHistory(prev => [...prev, abcNotation])
+        setAbcNotationRaw(next)
+        setSelectedNote(null)
+      }, [future, abcNotation])
+
+      const canUndo = history.length > 0
+      const canRedo = future.length > 0
+
+      // Note scale for transposition (including octave markers)
+      const noteScale = ['C,', 'D,', 'E,', 'F,', 'G,', 'A,', 'B,', 'C', 'D', 'E', 'F', 'G', 'A', 'B', 'c', 'd', 'e', 'f', 'g', 'a', 'b', "c'", "d'", "e'", "f'", "g'", "a'", "b'"]
+
+      // Get rest equivalent for a note duration, or empty string for rests (to delete them)
+      const getNoteRest = (noteStr) => {
+        // If it's already a rest, return empty string to delete it
+        if (/^[zZ]/.test(noteStr)) {
+          return ''
+        }
+        // Extract duration from note (e.g., C2 -> 2, C -> '', C/2 -> /2)
+        const durationMatch = noteStr.match(/[A-Ga-g][,']*([\d\/]*)/)
+        const duration = durationMatch ? durationMatch[1] : ''
+        return 'z' + duration
+      }
+
+      // Transpose a note up or down
+      const transposeNote = (noteStr, direction) => {
+        // Parse the note: letter + accidental + octave markers + duration
+        const match = noteStr.match(/^(\^{0,2}|_{0,2}|=)?([A-Ga-g])([,']*)(\d*\/?\d*)$/)
+        if (!match) return noteStr
+
+        const [, accidental = '', letter, octaveMarkers, duration] = match
+
+        // Build the base note with octave
+        let baseNote = letter + octaveMarkers
+
+        // Find in scale (simplified - just the letter and octave)
+        const scaleIndex = noteScale.findIndex(n => {
+          const noteLetter = n.replace(/[,']/g, '')
+          const noteOctave = n.replace(/[A-Ga-g]/g, '')
+          const baseLetter = baseNote[0]
+          const baseOct = baseNote.slice(1)
+          return noteLetter === baseLetter && noteOctave === baseOct
+        })
+
+        if (scaleIndex === -1) {
+          // Try simpler matching
+          const simpleIndex = noteScale.findIndex(n => n.toLowerCase() === baseNote.toLowerCase())
+          if (simpleIndex === -1) return noteStr
+          const newIndex = Math.max(0, Math.min(noteScale.length - 1, simpleIndex + direction))
+          return accidental + noteScale[newIndex] + duration
+        }
+
+        const newIndex = Math.max(0, Math.min(noteScale.length - 1, scaleIndex + direction))
+        return accidental + noteScale[newIndex] + duration
+      }
+
+      // Handle keyboard events for selected note and undo/redo
+      useEffect(() => {
+        const handleKeyDown = (e) => {
+          // Undo: Cmd/Ctrl + Z (without Shift)
+          if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+            e.preventDefault()
+            undo()
+            return
+          }
+          // Redo: Cmd/Ctrl + Shift + Z or Cmd/Ctrl + Y
+          if ((e.metaKey || e.ctrlKey) && ((e.key === 'z' && e.shiftKey) || e.key === 'y')) {
+            e.preventDefault()
+            redo()
+            return
+          }
+
+          // Space: Play/Stop (only if not in an input field)
+          if (e.key === ' ' && !e.target.closest('input, textarea, [contenteditable]')) {
+            e.preventDefault()
+            if (playScoreRef.current) playScoreRef.current()
+            return
+          }
+
+          if (selectedNotes.length === 0) return
+
+          if (e.key === 'Delete' || e.key === 'Backspace') {
+            e.preventDefault()
+            // Replace all selected notes with rests (process from end to start to preserve positions)
+            let newNotation = abcNotation
+            const sortedNotes = [...selectedNotes].sort((a, b) => b.startChar - a.startChar)
+            for (const note of sortedNotes) {
+              const rest = getNoteRest(note.note)
+              newNotation = newNotation.slice(0, note.startChar) + rest + newNotation.slice(note.endChar)
+            }
+            setAbcNotation(newNotation)
+            setSelectedNotes([])
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault()
+            // Transpose all selected notes up
+            let newNotation = abcNotation
+            const sortedNotes = [...selectedNotes].sort((a, b) => b.startChar - a.startChar)
+            const updatedNotes = []
+            for (const note of sortedNotes) {
+              const transposed = transposeNote(note.note, 1)
+              newNotation = newNotation.slice(0, note.startChar) + transposed + newNotation.slice(note.endChar)
+              updatedNotes.unshift({
+                ...note,
+                note: transposed,
+                endChar: note.startChar + transposed.length
+              })
+            }
+            setAbcNotation(newNotation)
+            // Recalculate positions for updated notes
+            setSelectedNotes(recalculateNotePositions(updatedNotes, sortedNotes))
+          } else if (e.key === 'ArrowDown') {
+            e.preventDefault()
+            // Transpose all selected notes down
+            let newNotation = abcNotation
+            const sortedNotes = [...selectedNotes].sort((a, b) => b.startChar - a.startChar)
+            const updatedNotes = []
+            for (const note of sortedNotes) {
+              const transposed = transposeNote(note.note, -1)
+              newNotation = newNotation.slice(0, note.startChar) + transposed + newNotation.slice(note.endChar)
+              updatedNotes.unshift({
+                ...note,
+                note: transposed,
+                endChar: note.startChar + transposed.length
+              })
+            }
+            setAbcNotation(newNotation)
+            setSelectedNotes(recalculateNotePositions(updatedNotes, sortedNotes))
+          } else if (e.key === 'Escape') {
+            setSelectedNotes([])
+          }
+        }
+
+        // Helper to recalculate note positions after transposition
+        const recalculateNotePositions = (updatedNotes, originalSortedNotes) => {
+          // Since we process from end to start, earlier notes' positions shift based on length changes
+          let offset = 0
+          const result = []
+          for (let i = originalSortedNotes.length - 1; i >= 0; i--) {
+            const original = originalSortedNotes[i]
+            const updated = updatedNotes[originalSortedNotes.length - 1 - i]
+            const lengthDiff = updated.note.length - original.note.length
+            result.push({
+              ...updated,
+              startChar: updated.startChar + offset,
+              endChar: updated.startChar + offset + updated.note.length
+            })
+            offset += lengthDiff
+          }
+          return result.reverse()
+        }
+
+        window.addEventListener('keydown', handleKeyDown)
+        return () => window.removeEventListener('keydown', handleKeyDown)
+      }, [selectedNotes, abcNotation, undo, redo])
+
+      // Sync title state from ABC notation whenever it changes
+      useEffect(() => {
+        const titleMatch = abcNotation.match(/^T:(.+)$/m)
+        if (titleMatch) {
+          const parsedTitle = titleMatch[1].trim()
+          if (parsedTitle !== title) {
+            setTitle(parsedTitle)
+          }
+        }
+      }, [abcNotation])
+
+      // Create cursor in SVG
+      const createCursor = () => {
+        const svg = scoreRef.current?.querySelector('svg')
+        if (!svg) return
+        // Remove existing cursor if any
+        const existingCursor = svg.querySelector('.abcjs-cursor')
+        if (existingCursor) existingCursor.remove()
+        // Create SVG rect cursor (rect supports CSS transform for transitions)
+        const cursor = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+        cursor.setAttribute('class', 'abcjs-cursor')
+        cursor.setAttribute('width', '24')
+        cursor.setAttribute('height', '10')
+        cursor.setAttribute('x', '-5')
+        cursor.setAttribute('y', '-5')
+        cursor.style.opacity = '0'
+        svg.appendChild(cursor)
+      }
+
+      // Handle timing event - update cursor and highlights
+      const handleTimingEvent = (ev) => {
+        if (!ev) {
+          // Playback finished
+          cleanupPlayback()
+          setIsPlaying(false)
+          return
+        }
+
+        // Skip tied notes across measure lines
+        if (ev.measureStart && ev.left === null) return
+
+        // Remove previous highlights
+        const lastSelection = document.querySelectorAll('#score-container svg .highlight')
+        lastSelection.forEach(el => el.classList.remove('highlight'))
+
+        // Highlight current notes
+        if (ev.elements) {
+          ev.elements.forEach(noteGroup => {
+            noteGroup.forEach(note => {
+              note.classList.add('highlight')
+            })
+          })
+        }
+
+        // Position cursor using CSS transform for smooth transitions
+        const cursor = document.querySelector('#score-container svg .abcjs-cursor')
+        if (cursor && ev.left !== null) {
+          cursor.style.transform = `translate(${ev.left - 2}px, ${ev.top}px)`
+          cursor.setAttribute('height', ev.height)
+          cursor.style.opacity = '1'
+
+          // Auto-scroll on mobile to keep cursor visible
+          if (isMobile && scoreContainerRef.current) {
+            const container = scoreContainerRef.current
+            const containerRect = container.getBoundingClientRect()
+
+            // ev.left and ev.top are SVG coordinates (position within the score)
+            // We need to scroll so the cursor stays visible with some margin
+            const marginX = containerRect.width * 0.3 // Keep cursor in middle 40% horizontally
+            const marginY = containerRect.height * 0.25 // Keep cursor in middle 50% vertically
+
+            // Current visible area in SVG coordinates
+            const visibleLeft = container.scrollLeft
+            const visibleRight = container.scrollLeft + containerRect.width
+            const visibleTop = container.scrollTop
+            const visibleBottom = container.scrollTop + containerRect.height
+
+            // Check if cursor is outside the comfortable zone and scroll if needed
+            let targetScrollLeft = container.scrollLeft
+            let targetScrollTop = container.scrollTop
+
+            // Horizontal: scroll when cursor approaches right edge
+            if (ev.left > visibleRight - marginX) {
+              targetScrollLeft = ev.left - marginX
+            } else if (ev.left < visibleLeft + marginX * 0.5) {
+              targetScrollLeft = Math.max(0, ev.left - marginX * 0.5)
+            }
+
+            // Vertical: scroll when cursor moves to a new staff line
+            if (ev.top > visibleBottom - marginY - ev.height) {
+              targetScrollTop = ev.top - marginY
+            } else if (ev.top < visibleTop + marginY * 0.5) {
+              targetScrollTop = Math.max(0, ev.top - marginY * 0.5)
+            }
+
+            // Only scroll if there's a significant change needed
+            if (Math.abs(targetScrollLeft - container.scrollLeft) > 10 ||
+                Math.abs(targetScrollTop - container.scrollTop) > 10) {
+              container.scrollTo({
+                left: targetScrollLeft,
+                top: targetScrollTop,
+                behavior: 'smooth'
+              })
+            }
+          }
+        }
+      }
+
+      // Cleanup playback state
+      const cleanupPlayback = () => {
+        // Remove all highlights
+        const highlights = document.querySelectorAll('#score-container svg .highlight')
+        highlights.forEach(el => el.classList.remove('highlight'))
+
+        // Hide cursor
+        const cursor = document.querySelector('#score-container svg .abcjs-cursor')
+        if (cursor) {
+          cursor.style.opacity = '0'
+        }
+      }
+
+      // Add cursor and highlight styles to document
+      useEffect(() => {
+        const styleId = 'abcjs-cursor-styles'
+        if (!document.getElementById(styleId)) {
+          const style = document.createElement('style')
+          style.id = styleId
+          style.textContent = /* css */ `
+            svg {
+              user-select: none;
+            }
+            .highlight {
+              fill: #006fee !important;
+              stroke: #006fee !important;
+              filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.6));
+            }
+            .abcjs-cursor {
+              stroke: transparent;
+              fill: #006fee22;
+              rx: 1.5;
+              transition: transform 0.3s ease-out, opacity 0.15s ease-out;
+            }
+            .note-selected, .abcjs-note-selectable:has(.note-selected) path {
+              fill: #7828c8 !important;
+              stroke: #7828c8 !important;
+              filter: drop-shadow(0 0 6px rgba(120, 40, 200, 0.7));
+            }
+            .abcjs-note-selectable {
+              cursor: pointer;
+            }
+            .abcjs-note-selectable:hover path {
+              fill: #7828c8 !important;
+              stroke: #7828c8 !important;
+            }
+            .selection-rect {
+              fill: rgba(120, 40, 200, 0.1);
+              stroke: #7828c8;
+              stroke-width: 1;
+              stroke-dasharray: 4 2;
+              pointer-events: none;
+            }
+          `
+          document.head.appendChild(style)
+        }
+        return () => {
+          const style = document.getElementById(styleId)
+          if (style) style.remove()
+        }
+      }, [])
+
+      useEffect(() => {
+        const loadAbcjs = async () => {
+          const ABCJS = await import('https://esm.sh/abcjs@6.4.1?external=react,react-dom')
+          abcjsRef.current = ABCJS.default
+          renderScore()
+        }
+        loadAbcjs()
+
+        // Cleanup on unmount
+        return () => {
+          if (timingCallbacksRef.current) {
+            timingCallbacksRef.current.stop()
+          }
+          if (synthRef.current) {
+            synthRef.current.stop()
+          }
+        }
+      }, [])
+
+      // Handle note click for selection
+      const handleNoteClick = useCallback((abcElem, tuneNumber, classes, analysis, drag, mouseEvent) => {
+        // If we're in the middle of a drag selection, don't handle single clicks
+        if (isSelecting) return
+
+        if (abcElem && abcElem.startChar !== undefined && abcElem.endChar !== undefined) {
+          const rawNoteStr = abcNotation.slice(abcElem.startChar, abcElem.endChar)
+          // Find the actual note or rest start (skip leading spaces, barlines, etc.)
+          // Match notes: [accidental][A-Ga-g][octave][duration] or rests: [zZ][duration]
+          const noteMatch = rawNoteStr.match(/([\^_=]*[A-Ga-g][,']*[\d\/]*|[zZ][\d\/]*)/)
+          if (noteMatch) {
+            const noteStr = noteMatch[1]
+            const noteOffset = rawNoteStr.indexOf(noteStr)
+            const newNote = {
+              startChar: abcElem.startChar + noteOffset,
+              endChar: abcElem.startChar + noteOffset + noteStr.length,
+              note: noteStr
+            }
+
+            // Check if Shift or Cmd/Ctrl is held for multi-select
+            if (mouseEvent && (mouseEvent.shiftKey || mouseEvent.metaKey || mouseEvent.ctrlKey)) {
+              // Toggle selection
+              const existingIndex = selectedNotes.findIndex(n => n.startChar === newNote.startChar)
+              if (existingIndex >= 0) {
+                setSelectedNotes(selectedNotes.filter((_, i) => i !== existingIndex))
+              } else {
+                setSelectedNotes([...selectedNotes, newNote])
+              }
+            } else {
+              // Single select
+              setSelectedNotes([newNote])
+            }
+          } else {
+            if (!mouseEvent || (!mouseEvent.shiftKey && !mouseEvent.metaKey && !mouseEvent.ctrlKey)) {
+              setSelectedNotes([])
+            }
+          }
+        } else {
+          // Clicked on empty area - deselect (unless modifier key held)
+          if (!mouseEvent || (!mouseEvent.shiftKey && !mouseEvent.metaKey && !mouseEvent.ctrlKey)) {
+            setSelectedNotes([])
+          }
+        }
+      }, [abcNotation, selectedNotes, isSelecting])
+
+      // Mouse drag selection handlers
+      const handleMouseDown = useCallback((e) => {
+        // Only start selection on left mouse button and if clicking on the score background
+        if (e.button !== 0) return
+
+        const scoreContainer = scoreRef.current
+        if (!scoreContainer) return
+
+        const svg = scoreContainer.querySelector('svg')
+        if (!svg) return
+
+        // Check if clicking directly on a note (let handleNoteClick handle it)
+        const target = e.target
+        if (target.closest('.abcjs-note-selectable')) return
+
+        const rect = svg.getBoundingClientRect()
+        const x = e.clientX - rect.left
+        const y = e.clientY - rect.top
+
+        selectionStartRef.current = { x, y }
+        setSelectionRect({ startX: x, startY: y, endX: x, endY: y })
+        setIsSelecting(true)
+
+        // Clear selection if no modifier key
+        if (!e.shiftKey && !e.metaKey && !e.ctrlKey) {
+          setSelectedNotes([])
+        }
+      }, [])
+
+      const handleMouseMove = useCallback((e) => {
+        if (!isSelecting || !selectionStartRef.current) return
+
+        const scoreContainer = scoreRef.current
+        if (!scoreContainer) return
+
+        const svg = scoreContainer.querySelector('svg')
+        if (!svg) return
+
+        const rect = svg.getBoundingClientRect()
+        const x = e.clientX - rect.left
+        const y = e.clientY - rect.top
+
+        setSelectionRect({
+          startX: selectionStartRef.current.x,
+          startY: selectionStartRef.current.y,
+          endX: x,
+          endY: y
+        })
+      }, [isSelecting])
+
+      const handleMouseUp = useCallback((e) => {
+        if (!isSelecting || !selectionRect) {
+          setIsSelecting(false)
+          setSelectionRect(null)
+          selectionStartRef.current = null
+          return
+        }
+
+        const scoreContainer = scoreRef.current
+        if (!scoreContainer) {
+          setIsSelecting(false)
+          setSelectionRect(null)
+          selectionStartRef.current = null
+          return
+        }
+
+        const svg = scoreContainer.querySelector('svg')
+        if (!svg) {
+          setIsSelecting(false)
+          setSelectionRect(null)
+          selectionStartRef.current = null
+          return
+        }
+
+        // Calculate selection bounds
+        const minX = Math.min(selectionRect.startX, selectionRect.endX)
+        const maxX = Math.max(selectionRect.startX, selectionRect.endX)
+        const minY = Math.min(selectionRect.startY, selectionRect.endY)
+        const maxY = Math.max(selectionRect.startY, selectionRect.endY)
+
+        // Find all notes within the selection rectangle using our pre-built map
+        const notesInRect = []
+
+        noteElementsMapRef.current.forEach((noteData, element) => {
+          try {
+            const noteBBox = element.getBBox()
+            const noteCenterX = noteBBox.x + noteBBox.width / 2
+            const noteCenterY = noteBBox.y + noteBBox.height / 2
+
+            // Check if note center is within selection rectangle
+            if (noteCenterX >= minX && noteCenterX <= maxX &&
+                noteCenterY >= minY && noteCenterY <= maxY) {
+              // Avoid duplicates (same startChar)
+              if (!notesInRect.find(n => n.startChar === noteData.startChar)) {
+                notesInRect.push({
+                  startChar: noteData.startChar,
+                  endChar: noteData.endChar,
+                  note: noteData.note
+                })
+              }
+            }
+          } catch (e) {
+            // Element might not be in DOM anymore
+          }
+        })
+
+        if (notesInRect.length > 0) {
+          if (e.shiftKey || e.metaKey || e.ctrlKey) {
+            // Add to existing selection
+            const newSelection = [...selectedNotes]
+            notesInRect.forEach(note => {
+              if (!newSelection.find(n => n.startChar === note.startChar)) {
+                newSelection.push(note)
+              }
+            })
+            setSelectedNotes(newSelection)
+          } else {
+            setSelectedNotes(notesInRect)
+          }
+        }
+
+        setIsSelecting(false)
+        setSelectionRect(null)
+        selectionStartRef.current = null
+      }, [isSelecting, selectionRect, abcNotation, selectedNotes])
+
+      // Add mouse event listeners for drag selection
+      useEffect(() => {
+        const scoreContainer = scoreRef.current
+        if (!scoreContainer) return
+
+        scoreContainer.addEventListener('mousedown', handleMouseDown)
+        window.addEventListener('mousemove', handleMouseMove)
+        window.addEventListener('mouseup', handleMouseUp)
+
+        return () => {
+          scoreContainer.removeEventListener('mousedown', handleMouseDown)
+          window.removeEventListener('mousemove', handleMouseMove)
+          window.removeEventListener('mouseup', handleMouseUp)
+        }
+      }, [handleMouseDown, handleMouseMove, handleMouseUp])
+
+      // Update selection rectangle visual without re-rendering entire score
+      useEffect(() => {
+        const scoreContainer = scoreRef.current
+        if (!scoreContainer) return
+
+        const svg = scoreContainer.querySelector('svg')
+        if (!svg) return
+
+        let selectionRectEl = svg.querySelector('.selection-rect')
+        if (isSelecting && selectionRect) {
+          if (!selectionRectEl) {
+            selectionRectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+            selectionRectEl.setAttribute('class', 'selection-rect')
+            svg.appendChild(selectionRectEl)
+          }
+          const x = Math.min(selectionRect.startX, selectionRect.endX)
+          const y = Math.min(selectionRect.startY, selectionRect.endY)
+          const width = Math.abs(selectionRect.endX - selectionRect.startX)
+          const height = Math.abs(selectionRect.endY - selectionRect.startY)
+          selectionRectEl.setAttribute('x', x)
+          selectionRectEl.setAttribute('y', y)
+          selectionRectEl.setAttribute('width', width)
+          selectionRectEl.setAttribute('height', height)
+        } else if (selectionRectEl) {
+          selectionRectEl.remove()
+        }
+      }, [isSelecting, selectionRect])
+
+      const renderScore = useCallback(() => {
+        if (abcjsRef.current && scoreRef.current) {
+          // Render with clickListener to capture note positions
+          // On mobile: use fixed staffwidth for zoomed view; on desktop: use responsive
+          const renderOptions = {
+            add_classes: true,
+            clickListener: handleNoteClick,
+            ...(isMobile
+              ? { staffwidth: 800 } // Fixed width for zoomed mobile view
+              : { responsive: 'resize' }
+            )
+          }
+          const visualObj = abcjsRef.current.renderAbc(scoreRef.current, abcNotation, renderOptions)[0]
+
+          // Build mapping of note elements to their character positions
+          noteElementsMapRef.current.clear()
+          if (visualObj && visualObj.lines) {
+            visualObj.lines.forEach(line => {
+              if (line.staff) {
+                line.staff.forEach(staff => {
+                  if (staff.voices) {
+                    staff.voices.forEach(voice => {
+                      voice.forEach(elem => {
+                        // Include both notes and rests
+                        if ((elem.el_type === 'note' || elem.el_type === 'rest') && elem.startChar !== undefined && elem.endChar !== undefined) {
+                          // Find the corresponding SVG element using data-index
+                          const svg = scoreRef.current.querySelector('svg')
+                          if (svg) {
+                            // abcjs creates elements with classes like abcjs-n0, abcjs-n1, etc.
+                            // and the abselem has an elemset array with DOM references
+                            if (elem.abselem && elem.abselem.elemset) {
+                              elem.abselem.elemset.forEach(domEl => {
+                                if (domEl) {
+                                  const rawNoteStr = abcNotation.slice(elem.startChar, elem.endChar)
+                                  // Match notes or rests
+                                  const noteMatch = rawNoteStr.match(/([\^_=]*[A-Ga-g][,']*[\d\/]*|[zZ][\d\/]*)/)
+                                  if (noteMatch) {
+                                    const noteStr = noteMatch[1]
+                                    const noteOffset = rawNoteStr.indexOf(noteStr)
+                                    noteElementsMapRef.current.set(domEl, {
+                                      startChar: elem.startChar + noteOffset,
+                                      endChar: elem.startChar + noteOffset + noteStr.length,
+                                      note: noteStr
+                                    })
+                                  }
+                                }
+                              })
+                            }
+                          }
+                        }
+                      })
+                    })
+                  }
+                })
+              }
+            })
+          }
+
+          console.log('Built note elements map with', noteElementsMapRef.current.size, 'entries')
+
+          // Update selected notes visual
+          const svg = scoreRef.current.querySelector('svg')
+          if (svg) {
+            // Remove previous selections
+            svg.querySelectorAll('.note-selected').forEach(el => el.classList.remove('note-selected'))
+
+            // Highlight all selected notes using the map
+            selectedNotes.forEach(selectedNote => {
+              noteElementsMapRef.current.forEach((noteData, element) => {
+                if (noteData.startChar === selectedNote.startChar) {
+                  element.classList.add('note-selected')
+                }
+              })
+            })
+          }
+        }
+      }, [abcNotation, handleNoteClick, selectedNotes, isMobile])
+
+      useEffect(() => {
+        renderScore()
+      }, [abcNotation, renderScore, isMobile])
+
+      const keys = [
+          { value: 'C', label: t('keyC') },
+          { value: 'G', label: t('keyG') },
+          { value: 'D', label: t('keyD') },
+          { value: 'A', label: t('keyA') },
+          { value: 'E', label: t('keyE') },
+          { value: 'B', label: t('keyB') },
+          { value: 'F', label: t('keyF') },
+          { value: 'Bb', label: t('keyBb') },
+          { value: 'Eb', label: t('keyEb') },
+          { value: 'Ab', label: t('keyAb') },
+          { value: 'Cm', label: t('keyCm') },
+          { value: 'Gm', label: t('keyGm') },
+          { value: 'Dm', label: t('keyDm') },
+          { value: 'Am', label: t('keyAm') },
+          { value: 'Em', label: t('keyEm') }
+        ]
+      const timeSignatures = ['4/4', '3/4', '2/4', '6/8', '2/2', '3/8']
+
+      const playScore = async () => {
+        if (!abcjsRef.current) return
+
+        if (isPlaying) {
+          // Stop playback
+          if (timingCallbacksRef.current) {
+            timingCallbacksRef.current.stop()
+            timingCallbacksRef.current = null
+          }
+          if (synthRef.current) {
+            synthRef.current.stop()
+          }
+          cleanupPlayback()
+          setIsPlaying(false)
+          return
+        }
+
+        try {
+          // Render and get visual object with mobile-aware options
+          const renderOptions = {
+            add_classes: true,
+            ...(isMobile
+              ? { staffwidth: 800 }
+              : { responsive: 'resize' }
+            )
+          }
+          const visualObj = abcjsRef.current.renderAbc(scoreRef.current, abcNotation, renderOptions)[0]
+
+          // Create cursor in SVG
+          createCursor()
+
+          // Create audio context if needed (required for browsers)
+          if (!audioContextRef.current) {
+            audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)()
+          }
+
+          // Create synth
+          synthRef.current = new abcjsRef.current.synth.CreateSynth()
+          await synthRef.current.init({
+            audioContext: audioContextRef.current,
+            visualObj: visualObj,
+            options: {
+              qpm: tempo
+            }
+          })
+          await synthRef.current.prime()
+
+          // Create timing callbacks AFTER synth is primed
+          // This ensures timing is synchronized with audio
+          timingCallbacksRef.current = new abcjsRef.current.TimingCallbacks(visualObj, {
+            qpm: tempo,
+            eventCallback: handleTimingEvent,
+            lineEndCallback: null
+          })
+
+          // Start both at the same time
+          timingCallbacksRef.current.start()
+          synthRef.current.start()
+          setIsPlaying(true)
+
+        } catch (err) {
+          console.error('Playback error:', err)
+          DEVS.ui.toast(t('playbackError'), { type: 'error' })
+        }
+      }
+
+      // Keep playScoreRef updated
+      playScoreRef.current = playScore
+
+      const updateHeader = () => {
+        const titleToUse = title
+        const lines = abcNotation.split('\n')
+        let hasTitle = false
+        const newLines = lines.map(line => {
+          if (line.startsWith('T:')) {
+            hasTitle = true
+            return `T:${titleToUse}`
+          }
+          if (line.startsWith('M:')) return `M:${timeSignature}`
+          if (line.startsWith('K:')) return `K:${keySignature}`
+          return line
+        })
+        // If no T: line exists, add it after X:
+        if (!hasTitle) {
+          const xIndex = newLines.findIndex(l => l.startsWith('X:'))
+          newLines.splice(xIndex + 1, 0, `T:${titleToUse}`)
+        }
+        setAbcNotation(newLines.join('\n'))
+        setShowConfig(false)
+      }
+
+      const clearScore = async () => {
+        const confirmed = await DEVS.ui.confirm({
+          title: t('clearScore'),
+          message: t('clearConfirmMessage'),
+          confirmLabel: t('clear'),
+          cancelLabel: t('cancel')
+        })
+        if (confirmed) {
+          const clearedTitle = 'My Composition'
+          setAbcNotation(`X:1\nT:${clearedTitle}\nM:${timeSignature}\nL:1/4\nK:${keySignature}\n`)
+        }
+      }
+
+      const saveScore = async () => {
+        await DEVS.storage.set('savedScore', abcNotation)
+        DEVS.ui.toast(t('scoreSaved'), { type: 'success' })
+      }
+
+      const loadScore = async () => {
+        const saved = await DEVS.storage.get('savedScore')
+        if (saved) {
+          setAbcNotation(saved)
+          DEVS.ui.toast(t('scoreLoaded'), { type: 'success' })
+        } else {
+          DEVS.ui.toast(t('noSavedScore'), { type: 'warning' })
+        }
+      }
+
+      const exportScore = () => {
+        const blob = new Blob([abcNotation], { type: 'text/plain' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${title}.abc`
+        a.click()
+        URL.revokeObjectURL(url)
+      }
+
+      const downloadMidi = async () => {
+        if (!abcjsRef.current) return
+
+        try {
+          // Render to get visual object if not already available
+          const visualObj = abcjsRef.current.renderAbc(scoreRef.current, abcNotation, {
+            responsive: 'resize',
+            add_classes: true
+          })[0]
+
+          // Use getMidiFile to generate MIDI
+          const midi = abcjsRef.current.synth.getMidiFile(abcNotation, {
+            qpm: tempo
+          })
+
+          // Create download link from the generated MIDI
+          const midiLink = document.createElement('div')
+          midiLink.innerHTML = midi
+          const anchor = midiLink.querySelector('a')
+          if (anchor) {
+            anchor.download = `${title}.mid`
+            anchor.click()
+            DEVS.ui.toast(t('midiExported'), { type: 'success' })
+          }
+        } catch (err) {
+          console.error('MIDI export error:', err)
+          DEVS.ui.toast(t('playbackError'), { type: 'error' })
+        }
+      }
+
+      const printScore = () => {
+        const scoreContainer = scoreRef.current
+        if (!scoreContainer) return
+
+        const printWindow = window.open('', '_blank')
+        if (!printWindow) return
+
+        const svgContent = scoreContainer.innerHTML
+        printWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>${title}</title>
+              <style>
+                body {
+                  margin: 0;
+                  padding: 20px;
+                  display: flex;
+                  justify-content: center;
+                }
+                svg {
+                  max-width: 100%;
+                  height: auto;
+                }
+                @media print {
+                  body { padding: 0; }
+                }
+              </style>
+            </head>
+            <body>
+              ${svgContent}
+            </body>
+          </html>
+        `)
+        printWindow.document.close()
+        printWindow.onload = () => {
+          printWindow.onafterprint = () => {
+            printWindow.close()
+          }
+          printWindow.print()
+        }
+      }
+
+      const handleAICompose = async (prompt) => {
+        if (!prompt.trim()) return
+
+        setIsComposing(true)
+        try {
+          const response = await DEVS.llm.chat([
+            {
+              role: 'system',
+              content: /* md */ `You are an expert music composer who writes music in ABC notation format. When given a request, generate valid ABC notation that can be rendered by abcjs.
+
+    Rules:
+    - Always include the header fields: X: (reference number), T: (title), M: (meter/time signature), L: (default note length), K: (key)
+    - Use standard ABC notation for notes (C D E F G A B for lower octave, c d e f g a b for higher octave)
+    - Use | for bar lines, || for double bar lines, |: and :| for repeats
+    - Use z for rests
+    - Note durations: number after note multiplies default length (e.g., C2 = half note if L:1/4)
+    - Use [CEG] for chords
+    - Keep compositions musically coherent and pleasing
+
+    Respond ONLY with the ABC notation, no explanations or markdown code blocks.
+    `
+            },
+            {
+              role: 'user',
+              content: `Current score:\n${abcNotation}\n\nRequest: ${prompt}`
+            }
+          ], { temperature: 0.7 })
+
+          const newNotation = response.content.trim()
+          // Validate it looks like ABC notation
+          if (newNotation.includes('X:') && newNotation.includes('K:')) {
+            setAbcNotation(newNotation)
+            // Title will be synced automatically via useEffect
+            DEVS.ui.toast(t('compositionGenerated'), { type: 'success' })
+          } else {
+            // If AI returned partial notation, append to existing
+            setAbcNotation(prev => prev + '\n' + newNotation)
+            DEVS.ui.toast(t('musicAdded'), { type: 'success' })
+          }
+        } catch (err) {
+          console.error('AI composition error:', err)
+          DEVS.ui.toast(t('compositionFailed'), { type: 'error' })
+        } finally {
+          setIsComposing(false)
+        }
+      }
+
+      return (
+        <Section className="relative min-h-screen">
+          {/* Floating Toolbar */}
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50">
+            <Card className="shadow-lg backdrop-blur-lg bg-background/90">
+              <CardBody className="p-2">
+                <div className="flex flex-wrap gap-2 items-center">
+                  <ButtonGroup size="sm">
+                    <Tooltip size="sm" content={
+                      <span className="flex items-center gap-2">
+                        {t('undo')}
+                        <Kbd className="capitalize text-sm" keys={['command']}>Z</Kbd>
+                      </span>
+                    }>
+                      <Button isIconOnly variant="light" onPress={undo} isDisabled={!canUndo}>
+                        <Icon name="Undo" color={!canUndo && 'grey'} />
+                      </Button>
+                    </Tooltip>
+                    <Tooltip size="sm" content={
+                      <span className="flex items-center gap-2">
+                        {t('redo')}
+                        <Kbd className="capitalize text-sm" keys={['command', 'shift']}>Z</Kbd>
+                      </span>
+                    }>
+                      <Button isIconOnly variant="light" onPress={redo} isDisabled={!canRedo}>
+                        <Icon name="Redo" color={!canRedo && 'grey'} />
+                      </Button>
+                    </Tooltip>
+                  </ButtonGroup>
+
+                  <Divider orientation="vertical" />
+
+                  <ButtonGroup size="sm">
+                    <Tooltip content={
+                      <span className="flex items-center gap-2">
+                        {isPlaying ? t('stop') : t('play')}
+                        <Kbd className="capitalize text-sm">{t('spaceKey')}</Kbd>
+                      </span>
+                    }>
+                      <Button
+                        isIconOnly
+                        variant="flat"
+                        color="primary"
+                        onPress={playScore}
+                      >
+                        {isPlaying ? (
+                          <Icon name="Pause" />
+                        ) : (
+                          <Icon name="Play" />
+                        )}
+                      </Button>
+                    </Tooltip>
+                  </ButtonGroup>
+
+                  <Divider orientation="vertical" />
+
+                  <ButtonGroup size="sm">
+                    <Tooltip content={t('config')}>
+                      <Button isIconOnly variant="light" onPress={() => setShowConfig(true)}>
+                        <Icon name="ControlSlider" />
+                      </Button>
+                    </Tooltip>
+                    <Dropdown>
+                      <DropdownTrigger>
+                        <Button isIconOnly variant="light">
+                          <Icon name="MoreVert" />
+                        </Button>
+                      </DropdownTrigger>
+                      <DropdownMenu aria-label="Score actions">
+                        <DropdownItem key="save" startContent={<Icon name="FloppyDisk" />} onPress={saveScore}>
+                          {t('save')}
+                        </DropdownItem>
+                        <DropdownItem key="load" startContent={<Icon name="FloppyDiskArrowOut" />} onPress={loadScore}>
+                          {t('load')}
+                        </DropdownItem>
+                        <DropdownItem key="clear" startContent={<Icon name="Trash" />} onPress={clearScore}>
+                          {t('clear')}
+                        </DropdownItem>
+                        <DropdownItem key="abc" startContent={<Icon name="MusicNote" />} onPress={exportScore}>
+                          {t('exportABC')}
+                        </DropdownItem>
+                        <DropdownItem key="download" startContent={<Icon name="Download" />} onPress={downloadMidi}>
+                          {t('downloadMidi')}
+                        </DropdownItem>
+                        <DropdownItem key="print" startContent={<Icon name="Printer" />} onPress={printScore}>
+                          {t('print')}
+                        </DropdownItem>
+                      </DropdownMenu>
+                    </Dropdown>
+                  </ButtonGroup>
+                </div>
+              </CardBody>
+            </Card>
+          </div>
+
+          {/* Score Container */}
+          <div className="pt-20 pb-8">
+            <div
+              ref={scoreContainerRef}
+              className="w-full"
+            >
+              <div id="score-container" ref={scoreRef} className={isMobile ? "p-4" : "w-full rounded-lg p-8"} />
+            </div>
+          </div>
+
+          {/* AI Composer Prompt Area */}
+          <div className="fixed left-0 right-0 bottom-8 z-20 pt-2">
+            <div className="max-w-4xl mx-auto">
+              <PromptArea
+                lang="fr"
+                placeholder={isComposing ? t('composing') : t('askAI')}
+                onSubmit={handleAICompose}
+                disabled={isComposing}
+                autoFocus
+                className="h-18"
+                minRows={1}
+                endContent={
+                  isComposing && (
+                    <div className="flex items-center gap-2 pr-2">
+                      <Spinner size="sm" />
+                    </div>
+                  )
+                }
+              />
+            </div>
+          </div>
+
+          <Modal isOpen={showConfig} onClose={() => setShowConfig(false)}>
+            <ModalContent>
+              <ModalHeader>{t('scoreConfig')}</ModalHeader>
+              <ModalBody>
+                <Input
+                  label={t('title')}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Select
+                    label={t('keySignature')}
+                    selectedKeys={[keySignature]}
+                    onChange={(e) => setKeySignature(e.target.value)}
+                    className="flex-1"
+                  >
+                    {keys.map(k => (
+                      <SelectItem key={k.value} value={k.value}>{k.label}</SelectItem>
+                    ))}
+                  </Select>
+                  <Select
+                    label={t('timeSignature')}
+                    selectedKeys={[timeSignature]}
+                    onChange={(e) => setTimeSignature(e.target.value)}
+                    className="flex-1"
+                  >
+                    {timeSignatures.map(ts => (
+                      <SelectItem key={ts} value={ts}>{ts}</SelectItem>
+                    ))}
+                  </Select>
+                  <Input
+                    type="number"
+                    label={t('tempo')}
+                    value={tempo.toString()}
+                    onChange={(e) => setTempo(parseInt(e.target.value) || 120)}
+                    className="flex-1"
+                  />
+                </div>
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="light" onPress={() => setShowConfig(false)}>{t('cancel')}</Button>
+                <Button color="primary" onPress={updateHeader}>{t('apply')}</Button>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
+        </Section>
+      )
+    }

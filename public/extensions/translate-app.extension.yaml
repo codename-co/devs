@@ -8,7 +8,6 @@ color: success
 description: Translate text between different languages.
 author:
   name: Arnaud Leymet
-  email: arnaud@codename.co
   url: https://arnley.com
 privacyPolicy: https://devs.new/privacy
 source: https://github.com/codename-co/devs/blob/main/public/extensions/translate-app.extension.yaml

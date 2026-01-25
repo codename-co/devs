@@ -1,4 +1,4 @@
-id: drawing-critic-app
+id: drawing-critique
 name: Drawing Critique
 version: 0.1.0
 type: app
@@ -7,69 +7,128 @@ icon: DesignPencil
 color: secondary
 description: Live AI-powered drawing critique that comments on your artwork in real-time as you draw.
 author:
-  name: DEVS Team
-  url: https://devs.new
+  name: Arnaud Leymet
+  url: https://arnley.com
 privacyPolicy: https://devs.new/privacy
-source: https://github.com/codename-co/devs/blob/main/public/extensions/drawing-critic-app.extension.yaml
+source: https://github.com/codename-co/devs/blob/main/public/extensions/drawing-critic.extension.yaml
 i18n:
   en:
     name: Drawing Critique
     description: Live AI-powered drawing critique that comments on your artwork in real-time as you draw.
     messages:
-      startDrawing: Start drawing and I'll provide live feedback on your artwork...
-      canvasCleared: Canvas cleared! Start fresh and I'll provide new feedback...
-      analyzing: analyzing...
+      startDrawing: Start drawing and I'll provide live feedback on your artwork…
+      canvasCleared: Canvas cleared! Start fresh and I'll provide new feedback…
+      analyzing: analyzing…
       artCritic: Art Critic
       clear: Clear
+      style: Style
+      styleEncouraging: Encouraging
+      styleTechnical: Technical
+      stylePoetic: Poetic
+      styleRoasting: Roasting
+      styleMinimalist: Minimalist
   fr:
     name: Critique de Dessin
     description: Critique de dessin en temps réel par IA qui commente vos œuvres pendant que vous dessinez.
     messages:
-      startDrawing: Commencez à dessiner et je vous donnerai un retour en direct sur votre œuvre...
-      canvasCleared: Toile effacée ! Recommencez et je vous donnerai de nouveaux commentaires...
-      analyzing: analyse en cours...
+      startDrawing: Commencez à dessiner et je vous donnerai un retour en direct sur votre œuvre…
+      canvasCleared: Toile effacée ! Recommencez et je vous donnerai de nouveaux commentaires…
+      analyzing: analyse en cours…
       artCritic: Critique d'Art
       clear: Effacer
+      style: Style
+      styleEncouraging: Encourageant
+      styleTechnical: Technique
+      stylePoetic: Poétique
+      styleRoasting: Moqueur
+      styleMinimalist: Minimaliste
   de:
     name: Zeichnungskritik
     description: KI-gestützte Echtzeit-Zeichnungskritik, die Ihre Kunstwerke während des Zeichnens kommentiert.
     messages:
-      startDrawing: Beginnen Sie zu zeichnen und ich gebe Ihnen Live-Feedback zu Ihrem Kunstwerk...
-      canvasCleared: Leinwand gelöscht! Beginnen Sie neu und ich gebe Ihnen neues Feedback...
-      analyzing: analysiere...
+      startDrawing: Beginnen Sie zu zeichnen und ich gebe Ihnen Live-Feedback zu Ihrem Kunstwerk…
+      canvasCleared: Leinwand gelöscht! Beginnen Sie neu und ich gebe Ihnen neues Feedback…
+      analyzing: analysiere…
       artCritic: Kunstkritiker
       clear: Löschen
+      style: Stil
+      styleEncouraging: Ermutigend
+      styleTechnical: Technisch
+      stylePoetic: Poetisch
+      styleRoasting: Spöttisch
+      styleMinimalist: Minimalistisch
   es:
     name: Crítica de Dibujo
     description: Crítica de dibujo en tiempo real con IA que comenta tu obra mientras dibujas.
     messages:
-      startDrawing: Empieza a dibujar y te daré comentarios en vivo sobre tu obra...
-      canvasCleared: ¡Lienzo borrado! Empieza de nuevo y te daré nuevos comentarios...
-      analyzing: analizando...
+      startDrawing: Empieza a dibujar y te daré comentarios en vivo sobre tu obra…
+      canvasCleared: ¡Lienzo borrado! Empieza de nuevo y te daré nuevos comentarios…
+      analyzing: analizando…
       artCritic: Crítico de Arte
       clear: Borrar
+      style: Estilo
+      styleEncouraging: Alentador
+      styleTechnical: Técnico
+      stylePoetic: Poético
+      styleRoasting: Burlón
+      styleMinimalist: Minimalista
   it:
     name: Critica del Disegno
     description: Critica del disegno in tempo reale con IA che commenta le tue opere mentre disegni.
     messages:
-      startDrawing: Inizia a disegnare e ti darò feedback dal vivo sulla tua opera...
-      canvasCleared: Tela cancellata! Ricomincia e ti darò nuovi commenti...
-      analyzing: analizzando...
+      startDrawing: Inizia a disegnare e ti darò feedback dal vivo sulla tua opera…
+      canvasCleared: Tela cancellata! Ricomincia e ti darò nuovi commenti…
+      analyzing: analizzando…
       artCritic: Critico d'Arte
       clear: Cancella
+      style: Stile
+      styleEncouraging: Incoraggiante
+      styleTechnical: Tecnico
+      stylePoetic: Poetico
+      styleRoasting: Beffardo
+      styleMinimalist: Minimalista
   pt:
     name: Crítica de Desenho
     description: Crítica de desenho em tempo real com IA que comenta suas obras enquanto você desenha.
     messages:
-      startDrawing: Comece a desenhar e darei feedback ao vivo sobre sua obra...
-      canvasCleared: Tela limpa! Recomece e darei novos comentários...
-      analyzing: analisando...
+      startDrawing: Comece a desenhar e darei feedback ao vivo sobre sua obra…
+      canvasCleared: Tela limpa! Recomece e darei novos comentários…
+      analyzing: analisando…
       artCritic: Crítico de Arte
       clear: Limpar
+      style: Estilo
+      styleEncouraging: Encorajador
+      styleTechnical: Técnico
+      stylePoetic: Poético
+      styleRoasting: Zombeteiro
+      styleMinimalist: Minimalista
 pages:
   'drawing-critique': | # jsx
     import { useState, useRef, useEffect, useCallback } from 'react'
-    import { Button } from '@devs/components'
+    import { Button, Select, SelectItem } from '@devs/components'
+
+    const CRITIQUE_STYLES = {
+      encouraging: {
+        label: 'styleEncouraging',
+        prompt: 'You are an encouraging and supportive art critic. Be warm, positive, and constructive. Celebrate small wins and gently suggest improvements.'
+      },
+      technical: {
+        label: 'styleTechnical',
+        prompt: 'You are a technical art instructor. Focus purely on technique: line weight, perspective, proportions, shading, composition. Be precise and educational.'
+      },
+      poetic: {
+        label: 'stylePoetic',
+        prompt: 'You are a poetic art critic who speaks in metaphors and flowery language. Find deep meaning in every stroke. Be dramatic and philosophical.'
+      },
+      roasting: {
+        label: 'styleRoasting',
+        prompt: 'You are a cruel, condescending art critic who ONLY makes disparaging, uncomfortable remarks. Never say anything positive or constructive. Be passive-aggressive, create awkward tension, and make the artist question their life choices. Use backhanded compliments, disappointed sighs, and uncomfortable silences implied through "…". Be cringe-inducing and make the artist feel judged. Examples: "Oh… you\'re still going with that, huh?", "I mean… it\'s certainly… something.", "My condolences to the paper.", "This is what happens when confidence exceeds ability.", "Were you perhaps blindfolded?", "Interesting how you\'ve managed to make every line worse than the last."'
+      },
+      minimalist: {
+        label: 'styleMinimalist',
+        prompt: 'You are a minimalist critic. Give extremely brief feedback—just 3-5 words maximum. Be cryptic and zen-like. Examples: "More contrast needed.", "The void speaks.", "Almost there."'
+      }
+    }
 
     const App = () => {
       const canvasRef = useRef(null)
@@ -78,6 +137,7 @@ pages:
       const [isAnalyzing, setIsAnalyzing] = useState(false)
       const [brushSize, setBrushSize] = useState(5)
       const [brushColor, setBrushColor] = useState('#000000')
+      const [critiqueStyle, setCritiqueStyle] = useState('encouraging')
       const lastAnalysisRef = useRef('')
       const strokeBufferRef = useRef([])
       const analysisTimeoutRef = useRef(null)
@@ -134,15 +194,17 @@ pages:
           lastAnalysisRef.current = currentSnapshot
 
           // Use the vision API to analyze the drawing instead of multipart chat messages
+          const styleConfig = CRITIQUE_STYLES[critiqueStyle]
           const analysis = await window.DEVS.vision.analyze(
             currentSnapshot,
-            `You are an encouraging but insightful art critic providing live feedback on a drawing in progress. Keep responses brief (2-3 sentences max). Focus on:
+            `${styleConfig.prompt}
+
+    You are providing live feedback on a drawing in progress. Keep responses brief (2-3 sentences max, or less for minimalist style). Focus on:
     - What the artist seems to be drawing right now
     - Technique observations (line quality, composition, proportions)
-    - Constructive suggestions
-    - Encouragement
+    - Feedback matching your personality style
 
-    Be specific about what you see. ${strokeDescription}. Vary your feedback style - sometimes focus on technique, sometimes on composition, sometimes on the emerging subject matter.
+    Be specific about what you see. ${strokeDescription}. Vary your feedback style.
 
     IMPORTANT: Respond in the following language: ${userLanguage}. Use natural, native expressions for that language.
 
@@ -155,7 +217,7 @@ pages:
         } finally {
           setIsAnalyzing(false)
         }
-      }, [isAnalyzing, getCanvasSnapshot, userLanguage])
+      }, [isAnalyzing, getCanvasSnapshot, userLanguage, critiqueStyle])
 
       const scheduleAnalysis = useCallback(() => {
         if (analysisTimeoutRef.current) {
@@ -276,6 +338,24 @@ pages:
               style={{ width: 80 }}
             />
             <span style={{ fontSize: 12, color: '#6b7280', minWidth: 24 }}>{brushSize}px</span>
+            <div style={{ width: 1, height: 28, background: '#e5e7eb', margin: '0 4px' }} />
+            <select
+              value={critiqueStyle}
+              onChange={(e) => setCritiqueStyle(e.target.value)}
+              style={{
+                padding: '4px 8px',
+                borderRadius: 8,
+                border: '1px solid #e5e7eb',
+                background: 'white',
+                fontSize: 12,
+                cursor: 'pointer',
+                color: '#374151'
+              }}
+            >
+              {Object.entries(CRITIQUE_STYLES).map(([key, config]) => (
+                <option key={key} value={key}>{window.DEVS.t(config.label)}</option>
+              ))}
+            </select>
             <div style={{ width: 1, height: 28, background: '#e5e7eb', margin: '0 4px' }} />
             <Button size="sm" variant="flat" color="danger" onPress={clearCanvas}>{window.DEVS.t('clear')}</Button>
           </div>
