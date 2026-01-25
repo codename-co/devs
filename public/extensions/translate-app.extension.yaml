@@ -159,7 +159,7 @@ pages:
     import { create } from 'https://esm.sh/zustand@5?standalone&external=react,react-dom';
     import { franc } from 'https://esm.sh/franc@6?standalone';
 
-    const { t } = window.DEVS;
+    const { t } = DEVS;
 
     const languages = [
       { code: 'eng', labelKey: 'lang_eng' },

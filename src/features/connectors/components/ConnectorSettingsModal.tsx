@@ -56,6 +56,7 @@ interface ConnectorSettingsModalProps {
   isOpen: boolean
   onClose: () => void
   onReconnect?: (connector: Connector) => void
+  onDisconnect?: (connectorId: string) => void
   connector: Connector | null
 }
 
@@ -75,11 +76,14 @@ interface FolderNode extends ConnectorItem {
  * @param isOpen - Whether the modal is open
  * @param onClose - Callback to close the modal
  * @param connector - The connector to edit settings for
+ * @param onDisconnect - Callback to disconnect the connector
+ * @param onReconnect - Callback to reconnect an expired connector
  */
 export function ConnectorSettingsModal({
   isOpen,
   onClose,
   onReconnect,
+  onDisconnect,
   connector,
 }: ConnectorSettingsModalProps) {
   const { t } = useI18n(localI18n)
@@ -95,6 +99,7 @@ export function ConnectorSettingsModal({
   const [error, setError] = useState<string | null>(null)
   const [isTokenExpired, setIsTokenExpired] = useState(false)
   const [urlInput, setUrlInput] = useState('')
+  const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false)
 
   const provider = connector?.provider as AppConnectorProvider | undefined
   const config = provider ? getProvider(provider) : null
@@ -465,273 +470,357 @@ export function ConnectorSettingsModal({
                 </Card>
               )}
 
-              {/* Sync Toggle */}
-              <Card shadow="none" className="bg-default-100">
-                <CardBody className="flex-row items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <Icon
-                      name="CloudDownload"
-                      size="lg"
-                      className={
-                        'mx-1 ' +
-                        (syncEnabled ? 'text-primary' : 'text-default-400')
-                      }
-                    />
-                    <div>
-                      <p className="font-medium">
-                        {t('Enable Automatic Sync')}
-                      </p>
-                      <p className="text-xs text-default-500">
-                        {t('Automatically sync new and updated content')}
-                      </p>
-                    </div>
-                  </div>
-                  <Switch
-                    isSelected={syncEnabled}
-                    onValueChange={setSyncEnabled}
-                    aria-label={t('Enable Sync')}
-                  />
-                </CardBody>
-              </Card>
-
-              {/* Folder/URL Selection - Only shown when sync is enabled */}
-              {syncEnabled && (
-                <>
-                  <Divider />
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <p className="font-medium">{t('Sync Settings')}</p>
-                      {isUrlInputMode
-                        ? parsedUrls.length > 0 && (
-                            <Chip size="sm" variant="flat" color="primary">
-                              {t('{n} items to sync', { n: parsedUrls.length })}
-                            </Chip>
-                          )
-                        : !syncAll &&
-                          selectedIds.size > 0 && (
-                            <Chip size="sm" variant="flat" color="primary">
-                              {t('{n} folders selected', {
-                                n: selectedIds.size,
-                              })}
-                            </Chip>
-                          )}
-                    </div>
-
-                    {/* URL Input Mode (for Figma, etc.) */}
-                    {isUrlInputMode ? (
-                      <div className="space-y-3">
-                        <p className="text-sm text-default-500">
-                          {t('Paste file URLs or IDs from {name} to sync.', {
-                            name: config?.name || provider,
-                          })}
-                        </p>
-                        <Textarea
-                          value={urlInput}
-                          onValueChange={setUrlInput}
-                          placeholder={
-                            config?.urlInputPlaceholder ||
-                            t('Enter URLs or IDs (one per line)')
-                          }
-                          minRows={4}
-                          maxRows={8}
-                          classNames={{
-                            input: 'font-mono text-sm',
-                          }}
-                        />
-                        <p className="text-xs text-default-400">
-                          {config?.urlInputHelp ||
-                            t('Enter file URLs or IDs, one per line')}
-                        </p>
-                      </div>
-                    ) : (
-                      <>
-                        <RadioGroup
-                          value={syncAll ? 'all' : 'select'}
-                          onValueChange={(value) =>
-                            toggleSyncAll(value === 'all')
-                          }
-                        >
-                          <CustomRadio
-                            size="sm"
-                            value="all"
-                            description={t(
-                              'All files and folders will be synced automatically',
-                            )}
-                          >
-                            {t('Sync everything')}
-                          </CustomRadio>
-                          <CustomRadio
-                            size="sm"
-                            value="select"
-                            description={t(
-                              'Choose which folders to sync or sync everything',
-                            )}
-                          >
-                            {t('Select Folders')}
-                          </CustomRadio>
-                        </RadioGroup>
-
-                        {/* Folder Tree - Shown when selecting specific folders */}
-                        {!syncAll && (
-                          <Card shadow="none" className="bg-default-50">
-                            <CardBody className="p-3">
-                              <ScrollShadow className="max-h-48">
-                                {isLoading ? (
-                                  <div className="flex flex-col items-center justify-center py-6 gap-2">
-                                    <Spinner size="sm" />
-                                    <span className="text-sm text-default-500">
-                                      {t('Loading folders...')}
-                                    </span>
-                                  </div>
-                                ) : error ? (
-                                  <div className="flex flex-col items-center justify-center py-6 gap-3 text-center">
-                                    <Icon
-                                      name="WarningTriangle"
-                                      className="w-8 h-8 text-danger"
-                                    />
-                                    <div>
-                                      <p className="text-sm text-danger font-medium">
-                                        {t('Connection failed')}
-                                      </p>
-                                      <p className="text-xs text-default-500 mt-1">
-                                        {error}
-                                      </p>
-                                    </div>
-                                    {isTokenExpired && onReconnect && (
-                                      <Button
-                                        color="primary"
-                                        size="sm"
-                                        onPress={() => {
-                                          onClose()
-                                          onReconnect(connector)
-                                        }}
-                                        startContent={
-                                          <Icon
-                                            name="RefreshDouble"
-                                            size="sm"
-                                          />
-                                        }
-                                      >
-                                        {t('Reconnect')}
-                                      </Button>
-                                    )}
-                                  </div>
-                                ) : folders.length === 0 ? (
-                                  <div className="flex flex-col items-center justify-center py-6 text-default-400 gap-2">
-                                    <Icon
-                                      name="Folder"
-                                      className="w-8 h-8 opacity-50"
-                                    />
-                                    <p className="text-sm">
-                                      {t('No folders found')}
-                                    </p>
-                                  </div>
-                                ) : (
-                                  <div className="space-y-1">
-                                    {folders.map((folder) =>
-                                      renderFolder(folder),
-                                    )}
-                                  </div>
-                                )}
-                              </ScrollShadow>
-
-                              {/* Selected folders summary */}
-                              {!isLoading &&
-                                !error &&
-                                selectedFolderNames.length > 0 && (
-                                  <>
-                                    <Divider className="my-3" />
-                                    <div className="flex flex-wrap gap-1">
-                                      {selectedFolderNames
-                                        .slice(0, 5)
-                                        .map((name) => (
-                                          <Chip
-                                            key={name}
-                                            size="sm"
-                                            variant="flat"
-                                          >
-                                            {name}
-                                          </Chip>
-                                        ))}
-                                      {selectedFolderNames.length > 5 && (
-                                        <Chip size="sm" variant="flat">
-                                          +{selectedFolderNames.length - 5}
-                                        </Chip>
-                                      )}
-                                    </div>
-                                  </>
-                                )}
-                            </CardBody>
-                          </Card>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </>
-              )}
-
-              {/* Available Tools */}
+              {/* Available Tools - Primary Value Proposition */}
               {connector.provider &&
                 (() => {
                   const tools = getToolDefinitionsForProvider(
                     connector.provider,
                   )
                   if (tools.length === 0) return null
+
                   return (
-                    <>
-                      <Divider />
-                      <Accordion variant="light" className="px-0">
-                        <AccordionItem
-                          key="tools"
-                          aria-label={t('Available Tools')}
-                          title={
-                            <div className="flex items-center gap-2">
-                              <Icon
-                                name="Puzzle"
-                                size="sm"
-                                className="text-default-400"
-                              />
-                              <span className="text-sm font-medium">
-                                {t('Available Tools')}
-                              </span>
-                              <Chip size="sm" variant="flat">
-                                {tools.length}
-                              </Chip>
-                            </div>
-                          }
-                        >
-                          <div className="space-y-2">
-                            {tools.map((tool) => (
-                              <div
-                                key={tool.function.name}
-                                className="flex items-start gap-2 p-2 rounded-lg bg-default-100"
-                              >
-                                <Icon
-                                  name="Terminal"
-                                  size="sm"
-                                  className="text-default-400 mt-0.5"
-                                />
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-xs font-medium font-mono truncate">
-                                    {tool.function.name}
-                                  </p>
-                                  <p className="text-xs text-default-500 line-clamp-1">
-                                    {tool.function.description}
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
+                    <Accordion variant="light" className="px-0" isCompact>
+                      <AccordionItem
+                        key="tools"
+                        aria-label={t('Agent Tools')}
+                        title={
+                          <div className="flex items-center gap-2">
+                            <Icon
+                              name="Puzzle"
+                              size="sm"
+                              className="text-primary"
+                            />
+                            <span className="text-sm font-medium">
+                              {t('Agent Tools')}
+                            </span>
                           </div>
-                        </AccordionItem>
-                      </Accordion>
-                    </>
+                        }
+                        subtitle={
+                          <span className="text-xs text-default-400">
+                            {t('{n} tools available for AI agents', {
+                              n: tools.length,
+                            })}
+                          </span>
+                        }
+                      >
+                        <div className="space-y-1">
+                          {tools.map((tool) => (
+                            <div
+                              key={tool.function.name}
+                              className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-default-100"
+                            >
+                              <Icon
+                                name="Terminal"
+                                size="sm"
+                                className="text-primary shrink-0 w-3 h-3"
+                              />
+                              <span className="text-xs font-mono text-default-700 truncate">
+                                {tool.function.name}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionItem>
+                    </Accordion>
                   )
                 })()}
+
+              <Divider />
+
+              {/* Sync Settings - Secondary Feature */}
+              <Accordion
+                variant="light"
+                className="px-0"
+                defaultExpandedKeys={syncEnabled ? ['sync'] : []}
+              >
+                <AccordionItem
+                  key="sync"
+                  aria-label={t('Knowledge Base Sync')}
+                  title={
+                    <div className="flex items-center gap-2">
+                      <Icon
+                        name="CloudDownload"
+                        size="sm"
+                        className={
+                          syncEnabled ? 'text-primary' : 'text-default-400'
+                        }
+                      />
+                      <span className="text-sm font-medium">
+                        {t('Knowledge Base Sync')}
+                      </span>
+                      <Chip
+                        size="sm"
+                        variant="flat"
+                        color={syncEnabled ? 'success' : 'default'}
+                      >
+                        {syncEnabled ? t('Enabled') : t('Disabled')}
+                      </Chip>
+                    </div>
+                  }
+                  subtitle={
+                    <span className="text-xs text-default-400">
+                      {t('Optionally sync content to your knowledge base')}
+                    </span>
+                  }
+                >
+                  <div className="space-y-4 pt-2">
+                    {/* Sync Toggle */}
+                    <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-default-100">
+                      <div>
+                        <p className="text-sm font-medium">
+                          {t('Enable Automatic Sync')}
+                        </p>
+                        <p className="text-xs text-default-500">
+                          {t('Automatically sync new and updated content')}
+                        </p>
+                      </div>
+                      <Switch
+                        isSelected={syncEnabled}
+                        onValueChange={setSyncEnabled}
+                        aria-label={t('Enable Sync')}
+                      />
+                    </div>
+
+                    {/* Folder/URL Selection - Only shown when sync is enabled */}
+                    {syncEnabled && (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium">
+                            {t('Sync Settings')}
+                          </p>
+                          {isUrlInputMode
+                            ? parsedUrls.length > 0 && (
+                                <Chip size="sm" variant="flat" color="primary">
+                                  {t('{n} items to sync', {
+                                    n: parsedUrls.length,
+                                  })}
+                                </Chip>
+                              )
+                            : !syncAll &&
+                              selectedIds.size > 0 && (
+                                <Chip size="sm" variant="flat" color="primary">
+                                  {t('{n} folders selected', {
+                                    n: selectedIds.size,
+                                  })}
+                                </Chip>
+                              )}
+                        </div>
+
+                        {/* URL Input Mode (for Figma, etc.) */}
+                        {isUrlInputMode ? (
+                          <div className="space-y-3">
+                            <p className="text-sm text-default-500">
+                              {t(
+                                'Paste file URLs or IDs from {name} to sync.',
+                                {
+                                  name: config?.name || provider,
+                                },
+                              )}
+                            </p>
+                            <Textarea
+                              value={urlInput}
+                              onValueChange={setUrlInput}
+                              placeholder={
+                                config?.urlInputPlaceholder ||
+                                t('Enter URLs or IDs (one per line)')
+                              }
+                              minRows={4}
+                              maxRows={8}
+                              classNames={{
+                                input: 'font-mono text-sm',
+                              }}
+                            />
+                            <p className="text-xs text-default-400">
+                              {config?.urlInputHelp ||
+                                t('Enter file URLs or IDs, one per line')}
+                            </p>
+                          </div>
+                        ) : (
+                          <>
+                            <RadioGroup
+                              value={syncAll ? 'all' : 'select'}
+                              onValueChange={(value) =>
+                                toggleSyncAll(value === 'all')
+                              }
+                            >
+                              <CustomRadio
+                                size="sm"
+                                value="all"
+                                description={t(
+                                  'All files and folders will be synced automatically',
+                                )}
+                              >
+                                {t('Sync everything')}
+                              </CustomRadio>
+                              <CustomRadio
+                                size="sm"
+                                value="select"
+                                description={t(
+                                  'Choose which folders to sync or sync everything',
+                                )}
+                              >
+                                {t('Select Folders')}
+                              </CustomRadio>
+                            </RadioGroup>
+
+                            {/* Folder Tree - Shown when selecting specific folders */}
+                            {!syncAll && (
+                              <Card shadow="none" className="bg-default-50">
+                                <CardBody className="p-3">
+                                  <ScrollShadow className="max-h-48">
+                                    {isLoading ? (
+                                      <div className="flex flex-col items-center justify-center py-6 gap-2">
+                                        <Spinner size="sm" />
+                                        <span className="text-sm text-default-500">
+                                          {t('Loading folders...')}
+                                        </span>
+                                      </div>
+                                    ) : error ? (
+                                      <div className="flex flex-col items-center justify-center py-6 gap-3 text-center">
+                                        <Icon
+                                          name="WarningTriangle"
+                                          className="w-8 h-8 text-danger"
+                                        />
+                                        <div>
+                                          <p className="text-sm text-danger font-medium">
+                                            {t('Connection failed')}
+                                          </p>
+                                          <p className="text-xs text-default-500 mt-1">
+                                            {error}
+                                          </p>
+                                        </div>
+                                        {isTokenExpired && onReconnect && (
+                                          <Button
+                                            color="primary"
+                                            size="sm"
+                                            onPress={() => {
+                                              onClose()
+                                              onReconnect(connector)
+                                            }}
+                                            startContent={
+                                              <Icon
+                                                name="RefreshDouble"
+                                                size="sm"
+                                              />
+                                            }
+                                          >
+                                            {t('Reconnect')}
+                                          </Button>
+                                        )}
+                                      </div>
+                                    ) : folders.length === 0 ? (
+                                      <div className="flex flex-col items-center justify-center py-6 text-default-400 gap-2">
+                                        <Icon
+                                          name="Folder"
+                                          className="w-8 h-8 opacity-50"
+                                        />
+                                        <p className="text-sm">
+                                          {t('No folders found')}
+                                        </p>
+                                      </div>
+                                    ) : (
+                                      <div className="space-y-1">
+                                        {folders.map((folder) =>
+                                          renderFolder(folder),
+                                        )}
+                                      </div>
+                                    )}
+                                  </ScrollShadow>
+
+                                  {/* Selected folders summary */}
+                                  {!isLoading &&
+                                    !error &&
+                                    selectedFolderNames.length > 0 && (
+                                      <>
+                                        <Divider className="my-3" />
+                                        <div className="flex flex-wrap gap-1">
+                                          {selectedFolderNames
+                                            .slice(0, 5)
+                                            .map((name) => (
+                                              <Chip
+                                                key={name}
+                                                size="sm"
+                                                variant="flat"
+                                              >
+                                                {name}
+                                              </Chip>
+                                            ))}
+                                          {selectedFolderNames.length > 5 && (
+                                            <Chip size="sm" variant="flat">
+                                              +{selectedFolderNames.length - 5}
+                                            </Chip>
+                                          )}
+                                        </div>
+                                      </>
+                                    )}
+                                </CardBody>
+                              </Card>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </AccordionItem>
+              </Accordion>
+
+              {/* Disconnect Section */}
+              {onDisconnect && (
+                <>
+                  <Divider />
+                  <div className="space-y-3">
+                    {!showDisconnectConfirm ? (
+                      <Button
+                        variant="light"
+                        color="danger"
+                        className="w-full"
+                        startContent={<Icon name="Xmark" className="w-4 h-4" />}
+                        onPress={() => setShowDisconnectConfirm(true)}
+                      >
+                        {t('Disconnect')}
+                      </Button>
+                    ) : (
+                      <Card
+                        shadow="none"
+                        className="bg-danger-50 dark:bg-danger-900/20"
+                      >
+                        <CardBody className="p-4 space-y-3">
+                          <p className="text-sm text-danger">
+                            {t(
+                              'Are you sure you want to disconnect this service? This will remove all synced data.',
+                            )}
+                          </p>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="flat"
+                              onPress={() => setShowDisconnectConfirm(false)}
+                            >
+                              {t('Cancel')}
+                            </Button>
+                            <Button
+                              size="sm"
+                              color="danger"
+                              onPress={() => {
+                                if (connector) {
+                                  onDisconnect(connector.id)
+                                }
+                              }}
+                            >
+                              {t('Disconnect')}
+                            </Button>
+                          </div>
+                        </CardBody>
+                      </Card>
+                    )}
+                  </div>
+                </>
+              )}
             </ModalBody>
 
             <ModalFooter>
               <Button variant="flat" onPress={onClose}>
-                {t('Cancel')}
+                {t('Close')}
               </Button>
               <Button color="primary" onPress={handleSave} isLoading={isSaving}>
                 {t('Save')}

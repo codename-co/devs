@@ -144,4 +144,9 @@ export const en = [
   'Select {name}',
   'Delete Selected Items',
   'Are you sure you want to delete {count} item(s)? This action cannot be undone.',
+  // Connectors page
+  'No connectors yet',
+  'Connect external services to give your agents powerful tools for searching, reading, and interacting with your data.',
+  'Manage your connected external services',
+  'Connected Apps',
 ] as const

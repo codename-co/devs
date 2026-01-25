@@ -1,45 +1,25 @@
-import { useMemo } from 'react'
-import {
-  Card,
-  CardBody,
-  Button,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  Tooltip,
-} from '@heroui/react'
+import { Card, CardBody } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { useConnectorStore } from '../stores'
 import type { Connector, ConnectorStatus, AppConnectorProvider } from '../types'
 import { getProvider } from '../providers/apps'
-import { getToolDefinitionsForProvider } from '../tools'
 import { SyncEngine } from '../sync-engine'
 import localI18n from '../pages/i18n'
 
 interface ConnectorCardProps {
   connector: Connector
-  onSync: () => void
-  onDisconnect: () => void
-  onSettings: () => void
-  onReconnect?: () => void
+  onClick: () => void
 }
 
 /**
  * ConnectorCard Component
  *
- * Displays a single connector with its status, last sync time,
- * and unified action menu for sync, settings, and disconnect.
+ * Displays a single connector with its status and tools count.
+ * The entire card is clickable and opens the details modal.
  */
-export function ConnectorCard({
-  connector,
-  onSync,
-  onDisconnect,
-  onSettings,
-  onReconnect,
-}: ConnectorCardProps) {
-  const { t, lang } = useI18n(localI18n)
+export function ConnectorCard({ connector, onClick }: ConnectorCardProps) {
+  const { t } = useI18n(localI18n)
   const { getSyncState } = useConnectorStore()
 
   // Get sync state for reactive updates
@@ -50,30 +30,6 @@ export function ConnectorCard({
   const providerName = providerConfig?.name || connector.name
   const providerIcon = providerConfig?.icon || 'AppWindow'
   const providerColor = providerConfig?.color || '#888888'
-
-  // Format last sync time
-  const formatLastSync = (date?: Date) => {
-    if (!date) return t('Never synced')
-
-    const syncDate = new Date(date)
-    const now = new Date()
-    const diffMs = now.getTime() - syncDate.getTime()
-    const diffMins = Math.floor(diffMs / 60000)
-    const diffHours = Math.floor(diffMs / 3600000)
-    const diffDays = Math.floor(diffMs / 86400000)
-
-    if (diffMins < 1) return t('Just now')
-    if (diffMins < 60) return t('{n} minutes ago', { n: diffMins })
-    if (diffHours < 24) return t('{n} hours ago', { n: diffHours })
-    if (diffDays < 7) return t('{n} days ago', { n: diffDays })
-
-    return syncDate.toLocaleDateString(lang, {
-      month: 'short',
-      day: 'numeric',
-      year:
-        syncDate.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
-    })
-  }
 
   // Get status indicator config (includes 'syncing' for display purposes only)
   const getStatusConfig = (status: ConnectorStatus | 'syncing') => {
@@ -111,19 +67,16 @@ export function ConnectorCard({
   const isSyncing =
     SyncEngine.isSyncing(connector.id) || syncState?.status === 'syncing'
   const statusConfig = getStatusConfig(isSyncing ? 'syncing' : connector.status)
-  const hasError =
-    connector.status === 'error' || connector.status === 'expired'
-
-  // Get the number of tools for this provider
-  const toolCount = useMemo(() => {
-    return getToolDefinitionsForProvider(connector.provider).length
-  }, [connector.provider])
 
   return (
-    <Card className="group border border-divider hover:border-primary/30 transition-colors">
-      <CardBody className="p-4">
-        {/* Header: Icon + Name + Status + Menu */}
-        <div className="flex items-center gap-3 mb-3">
+    <Card
+      isPressable
+      onPress={onClick}
+      className="group border border-divider hover:border-primary/30 transition-colors cursor-pointer"
+    >
+      <CardBody className="p-4 gap-3">
+        {/* Header: Icon + Name + Status */}
+        <div className="flex items-center gap-3">
           {/* Provider Icon */}
           <div
             className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
@@ -149,95 +102,11 @@ export function ConnectorCard({
             </div>
           </div>
 
-          {/* Actions Menu */}
-          <Dropdown>
-            <DropdownTrigger>
-              <Button isIconOnly size="sm" variant="light">
-                <Icon name="MoreVert" className="w-4 h-4" />
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu aria-label={t('Connector actions')}>
-              <DropdownItem
-                key="settings"
-                startContent={<Icon name="Settings" className="w-4 h-4" />}
-                onPress={onSettings}
-              >
-                {t('Settings')}
-              </DropdownItem>
-              <DropdownItem
-                key="disconnect"
-                className="text-danger"
-                color="danger"
-                startContent={<Icon name="Xmark" className="w-4 h-4" />}
-                onPress={onDisconnect}
-              >
-                {t('Disconnect')}
-              </DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
-        </div>
-
-        {/* Error Message */}
-        {hasError && connector.errorMessage && (
-          <Tooltip content={connector.errorMessage} placement="bottom">
-            <div className="mb-3 p-2 rounded-lg bg-danger-50 dark:bg-danger-900/20 cursor-help">
-              <p className="text-xs text-danger line-clamp-2">
-                {connector.errorMessage}
-              </p>
-            </div>
-          </Tooltip>
-        )}
-
-        {/* Footer: Sync info + Sync button */}
-        <div className="flex items-center justify-between pt-2 border-t border-divider">
-          <div className="flex flex-col gap-0.5">
-            <span className="text-xs text-default-500">
-              {formatLastSync(connector.lastSyncAt)}
-            </span>
-            <div className="flex items-center gap-2 text-[10px] text-default-400">
-              {toolCount > 0 && (
-                <span className="flex items-center gap-1">
-                  <Icon name="Puzzle" className="w-2.5 h-2.5" />
-                  {t('{n} tools', { n: toolCount })}
-                </span>
-              )}
-              {connector.syncFolders && connector.syncFolders.length > 0 && (
-                <span>
-                  {t('{n} folders syncing', {
-                    n: connector.syncFolders.length,
-                  })}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {connector.status === 'expired' && onReconnect ? (
-            <Button
-              size="sm"
-              variant="flat"
-              color="warning"
-              startContent={<Icon name="Link" className="w-3.5 h-3.5" />}
-              onPress={onReconnect}
-            >
-              {t('Reconnect')}
-            </Button>
-          ) : (
-            <Button
-              size="sm"
-              variant="flat"
-              color="primary"
-              isDisabled={isSyncing || connector.status === 'expired'}
-              isLoading={isSyncing}
-              startContent={
-                !isSyncing && (
-                  <Icon name="RefreshDouble" className="w-3.5 h-3.5" />
-                )
-              }
-              onPress={onSync}
-            >
-              {isSyncing ? t('Syncing...') : t('Sync')}
-            </Button>
-          )}
+          {/* Chevron indicator */}
+          <Icon
+            name="NavArrowRight"
+            className="w-4 h-4 text-default-400 opacity-0 group-hover:opacity-100 transition-opacity"
+          />
         </div>
       </CardBody>
     </Card>

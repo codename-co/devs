@@ -35,14 +35,17 @@ export const ko: I18n = {
   'Connector actions': '커넥터 작업',
   Settings: '설정',
   Disconnect: '연결 해제',
+  Sync: '동기화',
+  'Sync disabled': '동기화 비활성화됨',
 
   // Empty state
+  'No connectors yet': '아직 커넥터가 없습니다',
   'No app connectors yet': '아직 앱 커넥터가 없습니다',
-  'Connect your Google Drive, Notion, Gmail and more to sync files to your knowledge base.':
-    'Google Drive, Notion, Gmail 등을 연결하여 파일을 지식 베이스에 동기화하세요.',
+  'Connect external services to give your agents powerful tools for searching, reading, and interacting with your data.':
+    '외부 서비스를 연결하여 에이전트에게 데이터 검색, 읽기 및 상호 작용을 위한 강력한 도구를 제공하세요.',
   'No API connectors yet': '아직 API 커넥터가 없습니다',
-  'Connect custom REST or GraphQL APIs to integrate external data sources.':
-    '사용자 정의 REST 또는 GraphQL API를 연결하여 외부 데이터 소스를 통합하세요.',
+  'Connect custom REST or GraphQL APIs to extend agent capabilities.':
+    '사용자 정의 REST 또는 GraphQL API를 연결하여 에이전트 기능을 확장하세요.',
   'No MCP connectors yet': '아직 MCP 커넥터가 없습니다',
   'Connect Model Context Protocol servers to extend agent capabilities.':
     'Model Context Protocol 서버를 연결하여 에이전트 기능을 확장하세요.',
@@ -132,6 +135,9 @@ export const ko: I18n = {
   '{name} Settings': '{name} 설정',
   'Connected Account': '연결된 계정',
   'Available Tools': '사용 가능한 도구',
+  'Agent Tools': '에이전트 도구',
+  'These tools are available to your agents for searching, reading, and interacting with your data.':
+    '이 도구들은 에이전트가 데이터를 검색, 읽기 및 상호 작용하는 데 사용할 수 있습니다.',
   '{n} tools available for AI agents': 'AI 에이전트에 {n}개 도구 사용 가능',
   'Enable Sync': '동기화 활성화',
   'Enable Automatic Sync': '자동 동기화 활성화',
@@ -140,6 +146,11 @@ export const ko: I18n = {
   'Automatically sync new and updated content':
     '새로운 콘텐츠와 업데이트된 콘텐츠 자동 동기화',
   'Sync Settings': '동기화 설정',
+  'Knowledge Base Sync': '지식 베이스 동기화',
+  'Optionally sync content to your knowledge base':
+    '선택적으로 콘텐츠를 지식 베이스에 동기화',
+  Enabled: '활성화됨',
+  Disabled: '비활성화됨',
   'Sync Interval (minutes)': '동기화 간격 (분)',
   'How often to check for changes': '변경 사항 확인 빈도',
   'Choose which folders to sync or sync everything':
@@ -150,6 +161,9 @@ export const ko: I18n = {
   'Failed to save': '저장 실패',
   'Failed to save connector': '커넥터 저장 실패',
   Reconnect: '재연결',
+  Close: '닫기',
+  'Are you sure you want to disconnect this service? This will remove all synced data.':
+    '이 서비스 연결을 해제하시겠습니까? 모든 동기화된 데이터가 삭제됩니다.',
 
   // Configuration
   'Configure Connector': '커넥터 구성',

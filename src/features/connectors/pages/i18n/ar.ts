@@ -35,14 +35,17 @@ export const ar: I18n = {
   'Connector actions': 'إجراءات الموصل',
   Settings: 'الإعدادات',
   Disconnect: 'قطع الاتصال',
+  Sync: 'مزامنة',
+  'Sync disabled': 'المزامنة معطلة',
 
   // Empty state
+  'No connectors yet': 'لا توجد موصلات بعد',
   'No app connectors yet': 'لا توجد موصلات تطبيقات بعد',
-  'Connect your Google Drive, Notion, Gmail and more to sync files to your knowledge base.':
-    'قم بتوصيل Google Drive و Notion و Gmail والمزيد لمزامنة الملفات مع قاعدة معرفتك.',
+  'Connect external services to give your agents powerful tools for searching, reading, and interacting with your data.':
+    'قم بتوصيل خدمات خارجية لمنح وكلائك أدوات قوية للبحث والقراءة والتفاعل مع بياناتك.',
   'No API connectors yet': 'لا توجد موصلات API بعد',
-  'Connect custom REST or GraphQL APIs to integrate external data sources.':
-    'قم بتوصيل واجهات REST أو GraphQL المخصصة لدمج مصادر البيانات الخارجية.',
+  'Connect custom REST or GraphQL APIs to extend agent capabilities.':
+    'قم بتوصيل واجهات برمجة التطبيقات REST أو GraphQL المخصصة لتوسيع قدرات الوكلاء.',
   'No MCP connectors yet': 'لا توجد موصلات MCP بعد',
   'Connect Model Context Protocol servers to extend agent capabilities.':
     'قم بتوصيل خوادم Model Context Protocol لتوسيع قدرات الوكلاء.',
@@ -131,6 +134,9 @@ export const ar: I18n = {
   '{name} Settings': 'إعدادات {name}',
   'Connected Account': 'الحساب المتصل',
   'Available Tools': 'الأدوات المتاحة',
+  'Agent Tools': 'أدوات الوكلاء',
+  'These tools are available to your agents for searching, reading, and interacting with your data.':
+    'هذه الأدوات متاحة لوكلائك للبحث والقراءة والتفاعل مع بياناتك.',
   '{n} tools available for AI agents':
     '{n} أدوات متاحة لوكلاء الذكاء الاصطناعي',
   'Enable Sync': 'تفعيل المزامنة',
@@ -140,6 +146,11 @@ export const ar: I18n = {
   'Automatically sync new and updated content':
     'مزامنة المحتوى الجديد والمحدث تلقائياً',
   'Sync Settings': 'إعدادات المزامنة',
+  'Knowledge Base Sync': 'مزامنة قاعدة المعرفة',
+  'Optionally sync content to your knowledge base':
+    'قم بمزامنة المحتوى اختياريًا إلى قاعدة معرفتك',
+  Enabled: 'مفعّل',
+  Disabled: 'معطّل',
   'Sync Interval (minutes)': 'فترة المزامنة (بالدقائق)',
   'How often to check for changes': 'عدد مرات التحقق من التغييرات',
   'Choose which folders to sync or sync everything':
@@ -150,6 +161,9 @@ export const ar: I18n = {
   'Failed to save': 'فشل الحفظ',
   'Failed to save connector': 'فشل حفظ الموصل',
   Reconnect: 'إعادة الاتصال',
+  Close: 'إغلاق',
+  'Are you sure you want to disconnect this service? This will remove all synced data.':
+    'هل أنت متأكد من رغبتك في قطع الاتصال بهذه الخدمة؟ سيؤدي ذلك إلى إزالة جميع البيانات المتزامنة.',
 
   // Configuration
   'Configure Connector': 'تكوين الموصل',

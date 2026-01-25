@@ -126,6 +126,8 @@ export const ar: I18n = {
   'No connectors yet': 'لا توجد موصلات بعد',
   'Connect external services like Google Drive, Gmail, or Notion to import content into your knowledge base.':
     'اربط الخدمات الخارجية مثل Google Drive أو Gmail أو Notion لاستيراد المحتوى إلى قاعدة معرفتك.',
+  'Connect external services to give your agents powerful tools for searching, reading, and interacting with your data.':
+    'قم بتوصيل خدمات خارجية بقاعدة معرفتك لتزويد وكلائك بأدوات قوية للبحث والقراءة والتفاعل مع بياناتك.',
   'Add Connector': 'إضافة موصل',
   'Manage your connected external services': 'إدارة الخدمات الخارجية المتصلة',
   'Connector removed': 'تم إزالة الموصل',

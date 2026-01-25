@@ -1,10 +1,10 @@
 # DEVS Extension Bridge API
 
-This documentation describes the interfaces available to extensions running in DEVS sandboxed iframes via `window.DEVS`.
+This documentation describes the interfaces available to extensions running in DEVS sandboxed iframes via `DEVS`.
 
 ## Overview
 
-Extensions are loaded in sandboxed iframes and communicate with the parent DEVS app through a message-based API. The bridge script (`extension-bridge.js`) is automatically injected and exposes the `window.DEVS` object.
+Extensions are loaded in sandboxed iframes and communicate with the parent DEVS app through a message-based API. The bridge script (`extension-bridge.js`) is automatically injected and exposes the `DEVS` global object.
 
 ---
 

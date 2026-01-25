@@ -22,7 +22,7 @@ export interface PageMenuPanelStatus {
 
 export interface PageMenuPanelProps {
   /** Panel title displayed at top left */
-  title: string
+  title: string | ReactNode
   /** Action items displayed on the right, before the status chip */
   actions?: ReactNode
   /** Status chip configuration with optional close action */

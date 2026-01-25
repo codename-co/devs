@@ -10,7 +10,6 @@ import {
   ConnectorWizard,
   ConnectorSettingsModal,
 } from '@/features/connectors/components'
-import { SyncEngine } from '@/features/connectors/sync-engine'
 import { successToast, warningToast } from '@/lib/toast'
 import { notifyError } from '@/features/notifications'
 import {
@@ -209,30 +208,6 @@ export const Sources: React.FC = () => {
     }
   }
 
-  // Sync connector
-  const handleSyncConnector = async (connector: Connector) => {
-    try {
-      const result = await SyncEngine.sync(connector.id)
-      if (result.success) {
-        successToast(
-          t('Sync completed'),
-          t('{n} items synced', { n: result.itemsSynced }),
-        )
-      } else {
-        notifyError({
-          title: 'Sync Failed',
-          description: result.errors?.join(', ') || t('Sync failed'),
-        })
-      }
-    } catch (error) {
-      notifyError({
-        title: 'Sync Failed',
-        description:
-          error instanceof Error ? error.message : t('Unknown error'),
-      })
-    }
-  }
-
   // Disconnect connector
   const handleDisconnect = async (connector: Connector) => {
     await deleteConnector(connector.id)
@@ -386,9 +361,7 @@ export const Sources: React.FC = () => {
                   <ConnectorCard
                     key={connector.id}
                     connector={connector}
-                    onSync={() => handleSyncConnector(connector)}
-                    onDisconnect={() => handleDisconnect(connector)}
-                    onSettings={() => handleSettings(connector)}
+                    onClick={() => handleSettings(connector)}
                   />
                 ))}
               </div>
@@ -426,6 +399,14 @@ export const Sources: React.FC = () => {
           setSelectedConnector(null)
         }}
         connector={selectedConnector}
+        onDisconnect={(connectorId) => {
+          const connector = appConnectors.find((c) => c.id === connectorId)
+          if (connector) {
+            handleDisconnect(connector)
+            setShowSettings(false)
+            setSelectedConnector(null)
+          }
+        }}
       />
     </div>
   )

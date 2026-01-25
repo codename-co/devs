@@ -128,6 +128,8 @@ export const ko: I18n = {
   'No connectors yet': '아직 커넥터가 없습니다',
   'Connect external services like Google Drive, Gmail, or Notion to import content into your knowledge base.':
     'Google Drive, Gmail 또는 Notion과 같은 외부 서비스를 연결하여 지식 베이스로 콘텐츠를 가져오세요.',
+  'Connect external services to give your agents powerful tools for searching, reading, and interacting with your data.':
+    '외부 서비스를 연결하여 에이전트가 데이터를 검색, 읽기 및 상호 작용할 수 있는 강력한 도구를 제공하세요.',
   'Add Connector': '커넥터 추가',
   'Manage your connected external services': '연결된 외부 서비스 관리',
   'Connector removed': '커넥터가 제거되었습니다',

@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { Button, Spinner } from '@heroui/react'
 import { Plus } from 'iconoir-react'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import { Title, Icon } from '@/components'
 import { useI18n } from '@/i18n'
@@ -10,7 +11,6 @@ import {
   ConnectorWizard,
   ConnectorSettingsModal,
 } from '@/features/connectors/components'
-import { SyncEngine } from '@/features/connectors/sync-engine'
 import { successToast, errorToast } from '@/lib/toast'
 import type {
   Connector,
@@ -28,6 +28,8 @@ import localI18n from './i18n'
  */
 export const Connectors: React.FC = () => {
   const { t } = useI18n(localI18n)
+  const location = useLocation()
+  const navigate = useNavigate()
 
   // Connector store
   const {
@@ -42,10 +44,6 @@ export const Connectors: React.FC = () => {
 
   // Local state
   const [showWizard, setShowWizard] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
-  const [selectedConnector, setSelectedConnector] = useState<Connector | null>(
-    null,
-  )
   const [reconnectProvider, setReconnectProvider] =
     useState<AppConnectorProvider | null>(null)
 
@@ -54,6 +52,36 @@ export const Connectors: React.FC = () => {
     () => getAppConnectors(),
     [connectors, getAppConnectors],
   )
+
+  // Parse hash to get selected connector ID
+  const selectedConnectorId = useMemo(() => {
+    const hash = location.hash
+    if (hash.startsWith('#connector/')) {
+      return hash.replace('#connector/', '')
+    }
+    return null
+  }, [location.hash])
+
+  // Get selected connector from ID
+  const selectedConnector = useMemo(() => {
+    if (!selectedConnectorId) return null
+    return appConnectors.find((c) => c.id === selectedConnectorId) || null
+  }, [selectedConnectorId, appConnectors])
+
+  // Open connector details via hash
+  const handleOpenConnector = useCallback(
+    (connector: Connector) => {
+      navigate(`${location.pathname}#connector/${connector.id}`, {
+        replace: true,
+      })
+    },
+    [navigate, location.pathname],
+  )
+
+  // Close connector details
+  const handleCloseConnector = useCallback(() => {
+    navigate(location.pathname, { replace: true })
+  }, [navigate, location.pathname])
 
   // Initialize and validate tokens
   useEffect(() => {
@@ -66,50 +94,37 @@ export const Connectors: React.FC = () => {
     }
   }, [isInitialized, initializeConnectors, validateConnectorTokens])
 
-  // Sync connector
-  const handleSyncConnector = async (connector: Connector) => {
-    try {
-      const result = await SyncEngine.sync(connector.id)
-      if (result.success) {
-        successToast(t('Sync completed'))
-      } else {
-        errorToast(t('Sync failed'))
+  // Delete connector (called from modal)
+  const handleDeleteConnector = useCallback(
+    async (connectorId: string) => {
+      try {
+        await deleteConnector(connectorId)
+        handleCloseConnector()
+        successToast(t('Connector removed'))
+      } catch (error) {
+        console.error('Delete connector error:', error)
+        errorToast(t('Failed to remove connector'))
       }
-    } catch (error) {
-      console.error('Sync error:', error)
-      errorToast(t('Sync failed'))
-    }
-  }
-
-  // Open connector settings
-  const handleOpenSettings = (connector: Connector) => {
-    setSelectedConnector(connector)
-    setShowSettings(true)
-  }
-
-  // Delete connector
-  const handleDeleteConnector = async (connectorId: string) => {
-    try {
-      await deleteConnector(connectorId)
-      successToast(t('Connector removed'))
-    } catch (error) {
-      console.error('Delete connector error:', error)
-      errorToast(t('Failed to remove connector'))
-    }
-  }
+    },
+    [deleteConnector, handleCloseConnector, t],
+  )
 
   // Reconnect expired connector - delete and re-authenticate
-  const handleReconnect = async (connector: Connector) => {
-    // Delete the old connector first
-    try {
-      await deleteConnector(connector.id)
-    } catch (error) {
-      console.error('Failed to delete connector before reconnect:', error)
-    }
-    // Open wizard with the same provider pre-selected
-    setReconnectProvider(connector.provider as AppConnectorProvider)
-    setShowWizard(true)
-  }
+  const handleReconnect = useCallback(
+    async (connector: Connector) => {
+      // Delete the old connector first
+      try {
+        await deleteConnector(connector.id)
+      } catch (error) {
+        console.error('Failed to delete connector before reconnect:', error)
+      }
+      // Close modal and open wizard with the same provider pre-selected
+      handleCloseConnector()
+      setReconnectProvider(connector.provider as AppConnectorProvider)
+      setShowWizard(true)
+    },
+    [deleteConnector, handleCloseConnector],
+  )
 
   // Empty state
   const EmptyState = () => (
@@ -120,7 +135,7 @@ export const Connectors: React.FC = () => {
       <Title
         level={3}
         subtitle={t(
-          'Connect external services like Google Drive, Gmail, or Notion to import content into your knowledge base.',
+          'Connect external services to give your agents powerful tools for searching, reading, and interacting with your data.',
         )}
         subtitleClassName="max-w-md"
       >
@@ -172,22 +187,19 @@ export const Connectors: React.FC = () => {
       {!hasConnectors ? (
         <EmptyState />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {appConnectors.map((connector) => (
             <ConnectorCard
               key={connector.id}
               connector={connector}
-              onSync={() => handleSyncConnector(connector)}
-              onSettings={() => handleOpenSettings(connector)}
-              onDisconnect={() => handleDeleteConnector(connector.id)}
-              onReconnect={() => handleReconnect(connector)}
+              onClick={() => handleOpenConnector(connector)}
             />
           ))}
         </div>
       )}
 
       {/* Coming Soon: API Connectors */}
-      <div className="mt-12 opacity-50 pointer-events-none select-none">
+      {/* <div className="mt-12 opacity-50 pointer-events-none select-none">
         <Title level={3} subtitle={t('Connect to custom REST or GraphQL APIs')}>
           {t('API Connectors')}
         </Title>
@@ -195,10 +207,10 @@ export const Connectors: React.FC = () => {
           <Icon name="Code" className="w-8 h-8 text-default-400 mx-auto mb-2" />
           <p className="text-default-400">{t('Coming soon')}</p>
         </div>
-      </div>
+      </div> */}
 
       {/* Coming Soon: MCP Connectors */}
-      <div className="mt-12 opacity-50 pointer-events-none select-none">
+      {/* <div className="mt-12 opacity-50 pointer-events-none select-none">
         <Title
           level={3}
           subtitle={t('Connect to Model Context Protocol servers')}
@@ -212,7 +224,7 @@ export const Connectors: React.FC = () => {
           />
           <p className="text-default-400">{t('Coming soon')}</p>
         </div>
-      </div>
+      </div> */}
 
       {/* Connector Wizard Modal */}
       <ConnectorWizard
@@ -226,16 +238,13 @@ export const Connectors: React.FC = () => {
       />
 
       {/* Connector Settings Modal */}
-      {selectedConnector && (
-        <ConnectorSettingsModal
-          isOpen={showSettings}
-          onClose={() => {
-            setShowSettings(false)
-            setSelectedConnector(null)
-          }}
-          connector={selectedConnector}
-        />
-      )}
+      <ConnectorSettingsModal
+        isOpen={!!selectedConnector}
+        onClose={handleCloseConnector}
+        connector={selectedConnector}
+        onDisconnect={handleDeleteConnector}
+        onReconnect={handleReconnect}
+      />
     </div>
   )
 }

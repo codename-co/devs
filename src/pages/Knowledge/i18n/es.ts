@@ -130,6 +130,8 @@ export const es: I18n = {
   'No connectors yet': 'Aún no hay conectores',
   'Connect external services like Google Drive, Gmail, or Notion to import content into your knowledge base.':
     'Conecta servicios externos como Google Drive, Gmail o Notion para importar contenido a tu base de conocimientos.',
+  'Connect external services to give your agents powerful tools for searching, reading, and interacting with your data.':
+    'Conecta servicios externos para proporcionar a tus agentes herramientas potentes para buscar, leer e interactuar con tus datos.',
   'Add Connector': 'Añadir conector',
   'Manage your connected external services':
     'Gestiona tus servicios externos conectados',

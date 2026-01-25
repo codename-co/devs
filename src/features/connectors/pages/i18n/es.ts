@@ -35,14 +35,17 @@ export const es: I18n = {
   'Connector actions': 'Acciones del conector',
   Settings: 'Configuración',
   Disconnect: 'Desconectar',
+  Sync: 'Sincronizar',
+  'Sync disabled': 'Sincronización desactivada',
 
   // Empty state
+  'No connectors yet': 'Aún no hay conectores',
   'No app connectors yet': 'Aún no hay conectores de aplicaciones',
-  'Connect your Google Drive, Notion, Gmail and more to sync files to your knowledge base.':
-    'Conecta tu Google Drive, Notion, Gmail y más para sincronizar archivos a tu base de conocimientos.',
+  'Connect external services to give your agents powerful tools for searching, reading, and interacting with your data.':
+    'Conecta servicios externos para dar a tus agentes herramientas poderosas para buscar, leer e interactuar con tus datos.',
   'No API connectors yet': 'Aún no hay conectores de API',
-  'Connect custom REST or GraphQL APIs to integrate external data sources.':
-    'Conecta APIs REST o GraphQL personalizadas para integrar fuentes de datos externas.',
+  'Connect custom REST or GraphQL APIs to extend agent capabilities.':
+    'Conecta APIs REST o GraphQL personalizadas para ampliar las capacidades de los agentes.',
   'No MCP connectors yet': 'Aún no hay conectores MCP',
   'Connect Model Context Protocol servers to extend agent capabilities.':
     'Conecta servidores Model Context Protocol para ampliar las capacidades de los agentes.',
@@ -133,6 +136,9 @@ export const es: I18n = {
   '{name} Settings': 'Configuración de {name}',
   'Connected Account': 'Cuenta conectada',
   'Available Tools': 'Herramientas disponibles',
+  'Agent Tools': 'Herramientas de agentes',
+  'These tools are available to your agents for searching, reading, and interacting with your data.':
+    'Estas herramientas están disponibles para que tus agentes busquen, lean e interactúen con tus datos.',
   '{n} tools available for AI agents':
     '{n} herramientas disponibles para agentes IA',
   'Enable Sync': 'Activar sincronización',
@@ -142,6 +148,11 @@ export const es: I18n = {
   'Automatically sync new and updated content':
     'Sincronizar automáticamente contenido nuevo y actualizado',
   'Sync Settings': 'Configuración de sincronización',
+  'Knowledge Base Sync': 'Sincronización de base de conocimientos',
+  'Optionally sync content to your knowledge base':
+    'Opcionalmente sincroniza contenido a tu base de conocimientos',
+  Enabled: 'Activado',
+  Disabled: 'Desactivado',
   'Sync Interval (minutes)': 'Intervalo de sincronización (minutos)',
   'How often to check for changes': 'Con qué frecuencia verificar cambios',
   'Choose which folders to sync or sync everything':
@@ -153,6 +164,9 @@ export const es: I18n = {
   'Failed to save': 'Error al guardar',
   'Failed to save connector': 'Error al guardar el conector',
   Reconnect: 'Reconectar',
+  Close: 'Cerrar',
+  'Are you sure you want to disconnect this service? This will remove all synced data.':
+    '¿Estás seguro de que quieres desconectar este servicio? Esto eliminará todos los datos sincronizados.',
 
   // Configuration
   'Configure Connector': 'Configurar conector',

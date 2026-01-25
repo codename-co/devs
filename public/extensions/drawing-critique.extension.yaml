@@ -109,6 +109,8 @@ pages:
     import { Button, ButtonGroup, Card, CardBody, Tooltip, Divider, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Slider, Popover, PopoverTrigger, PopoverContent } from '@heroui/react'
     import { Icon } from '@devs/components'
 
+    const { t } = DEVS
+
     const CRITIQUE_STYLES = {
       encouraging: {
         label: 'styleEncouraging',
@@ -135,7 +137,7 @@ pages:
     const App = () => {
       const canvasRef = useRef(null)
       const [isDrawing, setIsDrawing] = useState(false)
-      const [critique, setCritique] = useState(window.DEVS.t('startDrawing'))
+      const [critique, setCritique] = useState(t('startDrawing'))
       const [isAnalyzing, setIsAnalyzing] = useState(false)
       const [brushSize, setBrushSize] = useState(5)
       const [brushColor, setBrushColor] = useState('#000000')
@@ -279,7 +281,7 @@ pages:
         const ctx = canvas.getContext('2d')
         ctx.fillStyle = '#ffffff'
         ctx.fillRect(0, 0, canvas.width, canvas.height)
-        setCritique(window.DEVS.t('canvasCleared'))
+        setCritique(t('canvasCleared'))
         lastAnalysisRef.current = ''
         strokeBufferRef.current = []
       }, [])
@@ -372,7 +374,7 @@ pages:
                     <DropdownTrigger>
                       <Button variant="light" size="sm" className="gap-1">
                         <Icon name="Palette" />
-                        <span className="text-xs hidden sm:inline">{window.DEVS.t('style')}</span>
+                        <span className="text-xs hidden sm:inline">{t('style')}</span>
                       </Button>
                     </DropdownTrigger>
                     <DropdownMenu
@@ -382,7 +384,7 @@ pages:
                       onSelectionChange={(keys) => setCritiqueStyle(Array.from(keys)[0])}
                     >
                       {Object.entries(CRITIQUE_STYLES).map(([key, config]) => (
-                        <DropdownItem key={key}>{window.DEVS.t(config.label)}</DropdownItem>
+                        <DropdownItem key={key}>{t(config.label)}</DropdownItem>
                       ))}
                     </DropdownMenu>
                   </Dropdown>
@@ -390,7 +392,7 @@ pages:
                   <Divider orientation="vertical" className="h-6" />
 
                   {/* Clear Button */}
-                  <Tooltip content={window.DEVS.t('clear')}>
+                  <Tooltip content={t('clear')}>
                     <Button isIconOnly variant="light" size="sm" color="danger" onPress={clearCanvas}>
                       <Icon name="Trash" />
                     </Button>
@@ -414,14 +416,14 @@ pages:
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <span style={{ fontSize: 18 }}>🎨</span>
-              <span style={{ fontWeight: 600, fontSize: 14 }}>{window.DEVS.t('artCritic')}</span>
+              <span style={{ fontWeight: 600, fontSize: 14 }}>{t('artCritic')}</span>
               {isAnalyzing && (
                 <span style={{
                   fontSize: 12,
                   background: 'rgba(255,255,255,0.2)',
                   padding: '2px 8px',
                   borderRadius: 12
-                }}>{window.DEVS.t('analyzing')}</span>
+                }}>{t('analyzing')}</span>
               )}
             </div>
             <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, opacity: 0.95 }}>{critique}</p>

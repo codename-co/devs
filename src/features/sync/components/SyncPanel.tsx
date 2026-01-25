@@ -4,7 +4,14 @@
  * Popover content for P2P sync settings.
  * Displays sync status, room sharing, and connection options.
  */
-import { Button, Input, RadioGroup, Snippet, Tooltip } from '@heroui/react'
+import {
+  Button,
+  Chip,
+  Input,
+  RadioGroup,
+  Snippet,
+  Tooltip,
+} from '@heroui/react'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -187,20 +194,29 @@ export function SyncPanel({ onClose }: SyncPanelProps) {
 
   return (
     <PageMenuPanel
-      title={t('Sync')}
+      title={
+        <span className="flex items-center">
+          {t('Sync')}
+          <Chip size="sm" variant="flat" className="ms-2 align-middle">
+            Beta
+          </Chip>
+        </span>
+      }
       actions={
-        <Tooltip content={t('Sync Settings')}>
-          <Button
-            size="sm"
-            variant="light"
-            isIconOnly
-            className="h-6 w-6 min-w-6"
-            onPress={handleOpenSettings}
-            aria-label={t('Sync Settings')}
-          >
-            <Icon name="Settings" className="h-4 w-4" />
-          </Button>
-        </Tooltip>
+        <>
+          <Tooltip content={t('Sync Settings')}>
+            <Button
+              size="sm"
+              variant="light"
+              isIconOnly
+              className="h-6 w-6 min-w-6"
+              onPress={handleOpenSettings}
+              aria-label={t('Sync Settings')}
+            >
+              <Icon name="Settings" className="h-4 w-4" />
+            </Button>
+          </Tooltip>
+        </>
       }
       status={{
         text: getStatusText(),

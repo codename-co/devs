@@ -399,8 +399,9 @@ export abstract class BaseAppConnectorProvider
       )
       const notifyWarning = await getNotifyWarning()
       notifyWarning({
-        title: 'Token Expired',
+        title: `${connector.provider}: Token expired`,
         description: 'Your access token has expired. Please reconnect.',
+        actionUrl: `/knowledge/connectors#connector/${connector.id}`,
       })
       return null
     }
@@ -460,9 +461,10 @@ export abstract class BaseAppConnectorProvider
 
       const notifyWarning = await getNotifyWarning()
       notifyWarning({
-        title: 'Token Refresh Failed',
+        title: `${connector.provider}: Token refresh failed`,
         description:
           'Could not refresh your access token. Please reconnect to continue.',
+        actionUrl: `/knowledge/connectors#connector/${connector.id}`,
       })
 
       // Update connector status to expired

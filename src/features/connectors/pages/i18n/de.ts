@@ -35,14 +35,17 @@ export const de: I18n = {
   'Connector actions': 'Konnektor-Aktionen',
   Settings: 'Einstellungen',
   Disconnect: 'Trennen',
+  Sync: 'Synchronisieren',
+  'Sync disabled': 'Synchronisierung deaktiviert',
 
   // Empty state
+  'No connectors yet': 'Noch keine Konnektoren',
   'No app connectors yet': 'Noch keine App-Konnektoren',
-  'Connect your Google Drive, Notion, Gmail and more to sync files to your knowledge base.':
-    'Verbinden Sie Ihr Google Drive, Notion, Gmail und mehr, um Dateien mit Ihrer Wissensdatenbank zu synchronisieren.',
+  'Connect external services to give your agents powerful tools for searching, reading, and interacting with your data.':
+    'Verbinden Sie externe Dienste, um Ihren Agenten leistungsstarke Werkzeuge zum Suchen, Lesen und Interagieren mit Ihren Daten zu geben.',
   'No API connectors yet': 'Noch keine API-Konnektoren',
-  'Connect custom REST or GraphQL APIs to integrate external data sources.':
-    'Verbinden Sie benutzerdefinierte REST- oder GraphQL-APIs, um externe Datenquellen zu integrieren.',
+  'Connect custom REST or GraphQL APIs to extend agent capabilities.':
+    'Verbinden Sie benutzerdefinierte REST- oder GraphQL-APIs, um die Fähigkeiten der Agenten zu erweitern.',
   'No MCP connectors yet': 'Noch keine MCP-Konnektoren',
   'Connect Model Context Protocol servers to extend agent capabilities.':
     'Verbinden Sie Model Context Protocol-Server, um die Fähigkeiten der Agenten zu erweitern.',
@@ -133,6 +136,9 @@ export const de: I18n = {
   '{name} Settings': '{name}-Einstellungen',
   'Connected Account': 'Verbundenes Konto',
   'Available Tools': 'Verfügbare Werkzeuge',
+  'Agent Tools': 'Agenten-Werkzeuge',
+  'These tools are available to your agents for searching, reading, and interacting with your data.':
+    'Diese Werkzeuge stehen Ihren Agenten zum Suchen, Lesen und Interagieren mit Ihren Daten zur Verfügung.',
   '{n} tools available for AI agents': '{n} Werkzeuge für KI-Agenten verfügbar',
   'Enable Sync': 'Synchronisierung aktivieren',
   'Enable Automatic Sync': 'Automatische Synchronisierung aktivieren',
@@ -141,6 +147,11 @@ export const de: I18n = {
   'Automatically sync new and updated content':
     'Neue und aktualisierte Inhalte automatisch synchronisieren',
   'Sync Settings': 'Synchronisierungseinstellungen',
+  'Knowledge Base Sync': 'Wissensdatenbank-Synchronisierung',
+  'Optionally sync content to your knowledge base':
+    'Synchronisieren Sie optional Inhalte mit Ihrer Wissensdatenbank',
+  Enabled: 'Aktiviert',
+  Disabled: 'Deaktiviert',
   'Sync Interval (minutes)': 'Synchronisierungsintervall (Minuten)',
   'How often to check for changes': 'Wie oft auf Änderungen prüfen',
   'Choose which folders to sync or sync everything':
@@ -152,6 +163,9 @@ export const de: I18n = {
   'Failed to save': 'Speichern fehlgeschlagen',
   'Failed to save connector': 'Konnektor konnte nicht gespeichert werden',
   Reconnect: 'Neu verbinden',
+  Close: 'Schließen',
+  'Are you sure you want to disconnect this service? This will remove all synced data.':
+    'Möchten Sie diese Verbindung wirklich trennen? Dadurch werden alle synchronisierten Daten entfernt.',
 
   // Configuration
   'Configure Connector': 'Konnektor konfigurieren',

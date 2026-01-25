@@ -68,7 +68,8 @@ export const KnowledgePage: React.FC = () => {
             aria-label="Knowledge base sections"
             variant="underlined"
             classNames={{
-              tabList: 'gap-6',
+              base: 'w-full max-w-full',
+              tabList: 'gap-6 overflow-x-auto scrollbar-hide max-w-full',
               cursor: 'w-full',
               tab: 'max-w-fit px-0 h-12',
             }}
@@ -128,7 +129,7 @@ export const KnowledgePage: React.FC = () => {
               title={
                 <div className="flex items-center gap-2">
                   <Icon name="Pin" className="w-5 h-5" />
-                  <span>{t('Saved')}</span>
+                  <span>{t('Pinned Messages')}</span>
                   {pinnedMessages.length > 0 && (
                     <Chip size="sm" variant="flat">
                       {pinnedMessages.length}

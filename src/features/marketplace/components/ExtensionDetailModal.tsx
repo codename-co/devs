@@ -463,106 +463,72 @@ export function ExtensionDetailModal({
                       </DropdownTrigger>
                       <DropdownMenu
                         aria-label="Extension actions"
-                        items={
-                          displayExtension.isCustom
-                            ? [
-                                {
-                                  key: 'preview',
-                                  icon: 'Eye',
-                                  label: t('Preview'),
-                                  action: () => setIsPreviewMode(true),
-                                },
-                                {
-                                  key: 'edit',
-                                  icon: 'EditPencil',
-                                  label: t('Edit'),
-                                  action: () => {
-                                    navigate(
-                                      url(
-                                        `/marketplace/extensions/${displayExtension.id}/edit`,
-                                      ),
-                                    )
-                                    onClose()
-                                  },
-                                },
-                                {
-                                  key: 'duplicate',
-                                  icon: 'Copy',
-                                  label: t('Duplicate & edit'),
-                                  action: () => {
-                                    navigate(
-                                      url(
-                                        `/marketplace/extensions/${displayExtension.id}/edit?duplicate=true`,
-                                      ),
-                                    )
-                                    onClose()
-                                  },
-                                },
-                                // Add uninstall option when extension is installed
-                                ...(installed
-                                  ? [
-                                      {
-                                        key: 'uninstall',
-                                        icon: 'Trash',
-                                        color: 'danger',
-                                        label: t('Uninstall'),
-                                        action: handleUninstall,
-                                      },
-                                    ]
-                                  : []),
-                                {
-                                  key: 'delete',
-                                  icon: 'Trash',
-                                  color: 'danger',
-                                  label: t('Delete'),
-                                  action: onDeleteModalOpen,
-                                },
-                              ]
-                            : [
-                                {
-                                  key: 'preview',
-                                  icon: 'Eye',
-                                  label: t('Preview'),
-                                  action: () => setIsPreviewMode(true),
-                                },
-                                {
-                                  key: 'duplicate',
-                                  icon: 'Copy',
-                                  label: t('Duplicate & edit'),
-                                  action: () => {
-                                    navigate(
-                                      url(
-                                        `/marketplace/extensions/${displayExtension.id}/edit?duplicate=true`,
-                                      ),
-                                    )
-                                    onClose()
-                                  },
-                                },
-                                // Add uninstall option when extension is installed
-                                ...(installed
-                                  ? [
-                                      {
-                                        key: 'uninstall',
-                                        icon: 'Trash',
-                                        color: 'danger',
-                                        label: t('Uninstall'),
-                                        action: handleUninstall,
-                                      },
-                                    ]
-                                  : []),
-                              ]
-                        }
+                        onAction={(key) => {
+                          switch (key) {
+                            case 'preview':
+                              setIsPreviewMode(true)
+                              break
+                            case 'edit':
+                              navigate(
+                                url(
+                                  `/marketplace/extensions/${displayExtension.id}/edit`,
+                                ),
+                              )
+                              break
+                            case 'duplicate':
+                              navigate(
+                                url(
+                                  `/marketplace/extensions/${displayExtension.id}/edit?duplicate=true`,
+                                ),
+                              )
+                              break
+                            case 'uninstall':
+                              handleUninstall()
+                              break
+                            case 'delete':
+                              onDeleteModalOpen()
+                              break
+                          }
+                        }}
                       >
-                        {(item) => (
+                        <DropdownItem
+                          key="preview"
+                          startContent={<Icon name="Eye" />}
+                        >
+                          {t('Preview')}
+                        </DropdownItem>
+                        {displayExtension.isCustom ? (
                           <DropdownItem
-                            key={item.key}
-                            startContent={<Icon name={item.icon as IconName} />}
-                            color={item.color as 'danger' | undefined}
-                            onPress={item.action}
+                            key="edit"
+                            startContent={<Icon name="EditPencil" />}
                           >
-                            {t(item.label as any)}
+                            {t('Edit')}
                           </DropdownItem>
-                        )}
+                        ) : null}
+                        <DropdownItem
+                          key="duplicate"
+                          startContent={<Icon name="Copy" />}
+                        >
+                          {t('Duplicate & edit')}
+                        </DropdownItem>
+                        {installed ? (
+                          <DropdownItem
+                            key="uninstall"
+                            startContent={<Icon name="Trash" />}
+                            color="danger"
+                          >
+                            {t('Uninstall')}
+                          </DropdownItem>
+                        ) : null}
+                        {displayExtension.isCustom ? (
+                          <DropdownItem
+                            key="delete"
+                            startContent={<Icon name="Trash" />}
+                            color="danger"
+                          >
+                            {t('Delete')}
+                          </DropdownItem>
+                        ) : null}
                       </DropdownMenu>
                     </Dropdown>
                   </ButtonGroup>

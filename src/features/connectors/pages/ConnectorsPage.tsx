@@ -9,8 +9,6 @@ import {
   ConnectorWizard,
   ConnectorSettingsModal,
 } from '../components'
-import { SyncEngine } from '../sync-engine'
-import { successToast, errorToast } from '@/lib/toast'
 import type {
   ConnectorCategory,
   Connector,
@@ -73,28 +71,6 @@ export function ConnectorsPage() {
     getApiConnectors,
     getMcpConnectors,
   ])
-
-  // Handle sync action
-  const handleSync = async (connector: Connector) => {
-    try {
-      // The SyncEngine handles status updates internally
-      const result = await SyncEngine.sync(connector.id)
-
-      if (result.success) {
-        successToast(
-          t('Sync completed'),
-          t('{n} items synced', { n: result.itemsSynced }),
-        )
-      } else {
-        const errorMessage = result.errors?.join(', ') || t('Unknown error')
-        errorToast(t('Sync failed'), errorMessage)
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : t('Unknown error')
-      errorToast(t('Sync failed'), errorMessage)
-    }
-  }
 
   // Handle disconnect action
   const handleDisconnect = async (connector: Connector) => {
@@ -205,9 +181,7 @@ export function ConnectorsPage() {
                   <ConnectorCard
                     key={connector.id}
                     connector={connector}
-                    onSync={() => handleSync(connector)}
-                    onDisconnect={() => handleDisconnect(connector)}
-                    onSettings={() => handleSettings(connector)}
+                    onClick={() => handleSettings(connector)}
                   />
                 ))}
               </div>
@@ -237,6 +211,11 @@ export function ConnectorsPage() {
           setSelectedConnector(null)
         }}
         connector={selectedConnector}
+        onDisconnect={async (connectorId) => {
+          await handleDisconnect({ id: connectorId } as Connector)
+          setShowSettings(false)
+          setSelectedConnector(null)
+        }}
       />
     </DefaultLayout>
   )
@@ -262,14 +241,14 @@ function EmptyState({
       icon: 'WebWindow',
       title: t('No app connectors yet'),
       description: t(
-        'Connect your Google Drive, Notion, Gmail and more to sync files to your knowledge base.',
+        'Connect external services to give your agents powerful tools for searching, reading, and interacting with your data.',
       ),
     },
     api: {
       icon: 'Code',
       title: t('No API connectors yet'),
       description: t(
-        'Connect custom REST or GraphQL APIs to integrate external data sources.',
+        'Connect custom REST or GraphQL APIs to extend agent capabilities.',
       ),
     },
     mcp: {
