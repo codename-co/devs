@@ -1,25 +1,26 @@
 name: E2E Tests
 
 on:
-  push:
-    branches: [main, develop]
-    paths-ignore:
-      - '.github/workflows/**'
-      - 'docs/**'
-      - 'compose.yaml'
-      - '*.md'
-      - 'LICENSE'
-  pull_request:
-    branches: [main]
-    paths-ignore:
-      - '.github/workflows/**'
-      - 'docs/**'
-      - 'compose.yaml'
-      - '*.md'
-      - 'LICENSE'
-  schedule:
-    # Run tests daily at 2 AM UTC to catch flaky tests
-    - cron: '0 2 * * *'
+  workflow_dispatch: # Manual trigger only
+  # push:
+  #   branches: [main, develop]
+  #   paths-ignore:
+  #     - '.github/workflows/**'
+  #     - 'docs/**'
+  #     - 'compose.yaml'
+  #     - '*.md'
+  #     - 'LICENSE'
+  # pull_request:
+  #   branches: [main]
+  #   paths-ignore:
+  #     - '.github/workflows/**'
+  #     - 'docs/**'
+  #     - 'compose.yaml'
+  #     - '*.md'
+  #     - 'LICENSE'
+  # schedule:
+  #   # Run tests daily at 2 AM UTC to catch flaky tests
+  #   - cron: '0 2 * * *'
 
 jobs:
   e2e-tests:
@@ -39,7 +40,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -82,7 +83,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -117,7 +118,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
