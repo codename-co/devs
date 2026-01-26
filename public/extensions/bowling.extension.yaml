@@ -1,7 +1,7 @@
 id: bowling
 type: app
 name: Bowling
-version: 0.5.4
+version: 0.5.5
 license: MIT
 icon: BowlingBall
 color: orange
@@ -35,7 +35,6 @@ i18n:
 pages:
   bowling: | # jsx
     import { useState, useEffect, useRef, useCallback } from 'react'
-    import { CircularProgress } from '@devs/components'
 
     const App = () => {
       const canvasRef = useRef(null)
@@ -155,9 +154,12 @@ pages:
           engine.setHardwareScalingLevel(1.5) // Render at 66% resolution
         }
         const scene = new BABYLON.Scene(engine)
-        // Disable auto-clear for performance
-        scene.autoClear = false
-        scene.autoClearDepthAndStencil = false
+        // Disable auto-clear for performance on high-end devices only
+        // Low-end devices need autoClear to prevent visual trails/ghosting
+        if (!isLowEndDevice) {
+          scene.autoClear = false
+          scene.autoClearDepthAndStencil = false
+        }
         sceneRef.current = scene
         console.log('Babylon scene created, lowEndDevice:', isLowEndDevice)
 
@@ -1112,63 +1114,56 @@ pages:
               target: new BABYLON.Vector3(ballPos.x, 0.3, ballPos.z + 3),
             }
           },
-          // Pin area circle - camera circles the pin area smoothly
+          // Pin area - calm close-up following the ball toward the pins
           pinsCircle: (ballPos, time) => {
-            const circleAngle = time * 0.5
-            const circleRadius = 9 + Math.sin(time * 0.2) * 1.5
+            // Stay slightly to the side of the ball, following it
             const cameraPos = new BABYLON.Vector3(
-              Math.sin(circleAngle) * circleRadius,
-              4 + Math.cos(time * 0.3) * 1,
-              12 + Math.cos(circleAngle) * circleRadius * 0.4,
+              ballPos.x + 2.5,
+              2.5,
+              ballPos.z - 4, // Stay behind the ball
             )
             return {
               position: cameraPos,
-              target: new BABYLON.Vector3(ballPos.x * 0.3, 0.4, 12),
+              target: new BABYLON.Vector3(ballPos.x, 0.3, 12.5), // Look at pin area
             }
           },
-          // Impact tracking - smoother movement around action
+          // Impact tracking - fixed view on pins area, no movement
           impactChaos: (actionCenter, time, intensity) => {
-            const chaosAngle = time * 1.2 * intensity
-            const chaosRadius = 6 + Math.sin(time * 0.8) * 1.5 * intensity
+            // Fixed camera position looking at the original pins location
             const cameraPos = new BABYLON.Vector3(
-              actionCenter.x + Math.sin(chaosAngle) * chaosRadius,
-              3.5 + Math.abs(Math.sin(time * 1)) * 1.5 * intensity,
-              actionCenter.z + Math.cos(chaosAngle) * chaosRadius * 0.5,
+              1.5, // Slightly to the right
+              2.5, // Low angle
+              7.5, // Fixed position in front of pins
             )
             return {
               position: cameraPos,
-              target: new BABYLON.Vector3(
-                actionCenter.x + Math.sin(time * 1.2) * 0.3 * intensity,
-                actionCenter.y,
-                actionCenter.z + Math.cos(time * 1) * 0.3 * intensity,
-              ),
+              target: new BABYLON.Vector3(0, 0.5, 12.5), // Always look at original pins center
             }
           },
-          // Sweeping aftermath - slow majestic orbit
+          // Sweeping aftermath - fixed view on pins area
           sweepingAftermath: (center, time) => {
-            const sweepAngle = time * 0.2
-            const sweepRadius = 12 + Math.sin(time * 0.15) * 2
+            // Fixed camera position, same as impact
             const cameraPos = new BABYLON.Vector3(
-              center.x + Math.sin(sweepAngle) * sweepRadius,
-              5 + Math.sin(time * 0.15) * 1.5,
-              center.z + Math.cos(sweepAngle) * sweepRadius * 0.5,
+              1.5,
+              2.5,
+              7.5,
             )
             return {
               position: cameraPos,
-              target: new BABYLON.Vector3(center.x, 0.5, center.z),
+              target: new BABYLON.Vector3(0, 0.4, 12.5), // Always look at original pins center
             }
           },
-          // Reverse dolly - camera moves backward smoothly
+          // Reverse dolly - camera pulls back behind the ball, looking forward
           reverseDolly: (ballPos, time) => {
-            const pullBack = time * 1
+            const pullBack = time * 1.5
             const cameraPos = new BABYLON.Vector3(
               Math.sin(time * 0.3) * 1.5,
               3.5 + Math.sin(time * 0.35) * 0.5,
-              ballPos.z + 10 + pullBack,
+              ballPos.z - 6 - pullBack, // Camera stays BEHIND the ball
             )
             return {
               position: cameraPos,
-              target: new BABYLON.Vector3(ballPos.x, ballPos.y, ballPos.z),
+              target: new BABYLON.Vector3(ballPos.x, ballPos.y, ballPos.z + 3), // Look ahead of ball
             }
           },
         }
@@ -1177,10 +1172,32 @@ pages:
         let currentCameraPos = new BABYLON.Vector3(0, 5, -8)
         let currentCameraTarget = new BABYLON.Vector3(0, 0, 0)
 
+        // Camera boundary constants - never go behind wall or pins
+        const CAMERA_MAX_Z = 16.5 // Back wall is at z=17.5, stay in front
+        const CAMERA_MIN_Z_NEAR_PINS = 11 // Don't go behind pins (at z≈12.5) when close to lane center
+
+        // Clamp camera position to valid bounds (never behind wall or pins)
+        const clampCameraPosition = (pos) => {
+          const clampedPos = pos.clone()
+          // Never go behind the back wall
+          clampedPos.z = Math.min(clampedPos.z, CAMERA_MAX_Z)
+          // When camera is near the lane center (x close to 0), don't go behind pins
+          const distFromCenter = Math.abs(clampedPos.x)
+          if (distFromCenter < 4) {
+            // Within lane width, be more restrictive
+            const maxZ = CAMERA_MIN_Z_NEAR_PINS + (distFromCenter / 4) * (CAMERA_MAX_Z - CAMERA_MIN_Z_NEAR_PINS)
+            clampedPos.z = Math.min(clampedPos.z, maxZ)
+          }
+          return clampedPos
+        }
+
         // Smooth camera blend function - DIRECT POSITION CONTROL
         scene.metadata.blendCameraTo = (targetSettings, blendSpeed = 0.04) => {
           const camera = cameraRef.current
           if (!camera) return
+
+          // Clamp target position to valid camera bounds
+          const clampedPosition = clampCameraPosition(targetSettings.position)
 
           // Smooth interpolation for cinematic movement
           const effectiveBlendSpeed = blendSpeed * 1.2
@@ -1188,7 +1205,7 @@ pages:
           // Interpolate camera position for actual movement
           currentCameraPos = BABYLON.Vector3.Lerp(
             currentCameraPos,
-            targetSettings.position,
+            clampedPosition,
             effectiveBlendSpeed,
           )
           currentCameraTarget = BABYLON.Vector3.Lerp(
@@ -1311,31 +1328,11 @@ pages:
               actionCenter.y = 0.5
             }
 
-            // Impact detection and phase transition
+            // Impact detection and phase transition - smooth, no dramatic effects
             if (nearPins && hasActivatedPins && !impactOccurredRef.current) {
               impactOccurredRef.current = true
               cinematicPhaseRef.current = 2 // Impact phase
               styleStartTime = now
-
-              // Dramatic impact effects
-              if (scene.metadata.vignetteEffect) {
-                scene.metadata.vignetteEffect.vignetteWeight = 6
-                setTimeout(() => {
-                  if (scene.metadata.vignetteEffect) {
-                    scene.metadata.vignetteEffect.vignetteWeight = 2.5
-                  }
-                }, 250)
-              }
-
-              // Flash glow on impact
-              if (scene.metadata.glowLayer) {
-                scene.metadata.glowLayer.intensity = 1.2
-                setTimeout(() => {
-                  if (scene.metadata.glowLayer) {
-                    scene.metadata.glowLayer.intensity = 0.6
-                  }
-                }, 180)
-              }
             }
 
             let targetSettings
@@ -1400,23 +1397,15 @@ pages:
                 blendSpeed = 0.05
                 break
 
-              case 2: // Impact - smooth tracking movement
+              case 2: // Impact - calm close-up view, no shake
                 const impactTime = styleTime
-                const impactIntensity = Math.max(0.3, 1 - impactTime * 0.25) // Slower decay
 
                 targetSettings = angles.impactChaos(
                   actionCenter,
                   totalTime,
-                  impactIntensity,
+                  1,
                 )
-                blendSpeed = 0.06
-
-                // Camera shake effect during first moments
-                if (impactTime < 0.6) {
-                  const shakeIntensity = 0.04 * (1 - impactTime / 0.6)
-                  camera.alpha += (Math.random() - 0.5) * shakeIntensity
-                  camera.beta += (Math.random() - 0.5) * shakeIntensity * 0.6
-                }
+                blendSpeed = 0.025 // Very slow blend for smooth transition
 
                 // Transition to aftermath after chaos settles
                 if (impactTime > 2) {
@@ -2110,14 +2099,6 @@ pages:
 
       return (
         <div className="fixed inset-0 w-screen h-screen overflow-hidden bg-black">
-          {/* Loading overlay */}
-          {!babylonLoaded && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 text-white gap-3 z-50">
-              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-              <CircularProgress aria-label="Loading…" size="lg" />
-            </div>
-          )}
-
           {/* Fullscreen 3D Canvas */}
           <canvas ref={canvasRef} className="w-full h-full block" />
 

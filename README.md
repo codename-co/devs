@@ -66,7 +66,7 @@ through a universally accessible, privacy-first platform.
 ### Deployment
 
 - [x] ⚙️ **Open-source**: Community-driven development and transparency.
-- [x] 🐳 **Docker-ready**: One-command self-hosting with an image of ~10MB ([registry](https://hub.docker.com/r/codename/devs)).
+- [x] 🐳 **Docker-ready**: One-command self-hosting with an image of ~60MB ([registry](https://hub.docker.com/r/codename/devs)).
 
 ## Self-Hosting
 
