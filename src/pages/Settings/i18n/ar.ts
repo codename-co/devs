@@ -110,6 +110,11 @@ export const ar: I18n = {
   'Auto Memory Learning': 'التعلم الآلي للذاكرة',
   'Automatically extract learnable information from conversations to build agent memory':
     'استخراج المعلومات القابلة للتعلم تلقائياً من المحادثات لبناء ذاكرة الوكيل',
+  'Global System Instructions': 'تعليمات النظام العامة',
+  "These instructions will be prepended to every agent's instructions":
+    'ستتم إضافة هذه التعليمات في بداية تعليمات كل وكيل',
+  'Enter global instructions that apply to all agents...':
+    'أدخل التعليمات العامة التي تنطبق على جميع الوكلاء...',
   'Show Context Panel': 'إظهار لوحة السياق',
   'Display the contextual information panel on the right side of the screen':
     'عرض لوحة المعلومات السياقية على الجانب الأيمن من الشاشة',

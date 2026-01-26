@@ -111,6 +111,11 @@ export const es: I18n = {
   'Auto Memory Learning': 'Aprendizaje automático de memoria',
   'Automatically extract learnable information from conversations to build agent memory':
     'Extraer automáticamente información aprendible de las conversaciones para construir la memoria del agente',
+  'Global System Instructions': 'Instrucciones globales del sistema',
+  "These instructions will be prepended to every agent's instructions":
+    'Estas instrucciones se añadirán al inicio de las instrucciones de cada agente',
+  'Enter global instructions that apply to all agents...':
+    'Ingrese instrucciones globales que apliquen a todos los agentes...',
   'Show Context Panel': 'Mostrar panel de contexto',
   'Display the contextual information panel on the right side of the screen':
     'Mostrar el panel de información contextual en el lado derecho de la pantalla',

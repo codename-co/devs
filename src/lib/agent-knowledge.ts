@@ -135,21 +135,40 @@ export async function getKnowledgeAttachments(
 }
 
 /**
- * Builds enhanced instructions for an agent by adding knowledge context reference
- * (for backward compatibility or when attachments aren't supported)
+ * Builds enhanced instructions for an agent by adding:
+ * 1. Global system instructions from user settings (if configured)
+ * 2. Knowledge context reference (for backward compatibility or when attachments aren't supported)
  */
 export async function buildAgentInstructions(
   baseInstructions: string,
   knowledgeItemIds?: string[],
 ): Promise<string> {
+  // Import userSettings lazily to avoid circular dependencies
+  const { userSettings } = await import('@/stores/userStore')
+  const globalSystemInstructions =
+    userSettings.getState().globalSystemInstructions
+
+  let enhancedInstructions = baseInstructions
+
+  // Prepend global system instructions if configured
+  if (globalSystemInstructions?.trim()) {
+    enhancedInstructions = `## Global Instructions
+
+${globalSystemInstructions.trim()}
+
+---
+
+${enhancedInstructions}`
+  }
+
   if (!knowledgeItemIds || knowledgeItemIds.length === 0) {
-    return baseInstructions
+    return enhancedInstructions
   }
 
   try {
     // Add a simple reference to knowledge base without content
     // The actual knowledge will be passed as attachments
-    const enhancedInstructions = `${baseInstructions}
+    enhancedInstructions = `${enhancedInstructions}
 
 ## Knowledge Base Context
 
@@ -160,6 +179,6 @@ ${CITATION_INSTRUCTIONS}`
     return enhancedInstructions
   } catch (error) {
     console.error('Failed to build enhanced instructions:', error)
-    return baseInstructions
+    return enhancedInstructions
   }
 }

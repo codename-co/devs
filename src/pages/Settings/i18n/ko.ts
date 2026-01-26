@@ -110,6 +110,11 @@ export const ko: I18n = {
   'Auto Memory Learning': '자동 메모리 학습',
   'Automatically extract learnable information from conversations to build agent memory':
     '대화에서 학습 가능한 정보를 자동으로 추출하여 에이전트 메모리 구축',
+  'Global System Instructions': '전역 시스템 지침',
+  "These instructions will be prepended to every agent's instructions":
+    '이 지침은 모든 에이전트의 지침 앞에 추가됩니다',
+  'Enter global instructions that apply to all agents...':
+    '모든 에이전트에 적용되는 전역 지침을 입력하세요...',
   'Show Context Panel': '컨텍스트 패널 표시',
   'Display the contextual information panel on the right side of the screen':
     '화면 오른쪽에 컨텍스트 정보 패널 표시',

@@ -11,6 +11,7 @@ import {
   Input,
   Select,
   SelectItem,
+  Textarea,
   Tooltip,
   Switch,
 } from '@heroui/react'
@@ -89,6 +90,12 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
   )
   const setAutoMemoryLearning = userSettings(
     (state) => state.setAutoMemoryLearning,
+  )
+  const globalSystemInstructions = userSettings(
+    (state) => state.globalSystemInstructions ?? '',
+  )
+  const setGlobalSystemInstructions = userSettings(
+    (state) => state.setGlobalSystemInstructions,
   )
 
   const handleLanguageChange = (newLanguage: Lang) => {
@@ -677,6 +684,29 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
                     'Only show your custom agents in the agent picker and agents page',
                   )}
                 </p>
+              </div>
+
+              <div className="mr-3">
+                <label className="text-sm font-medium text-default-600">
+                  {t('Global System Instructions')}
+                </label>
+                <p className="text-xs text-default-500 mb-2">
+                  {t(
+                    "These instructions will be prepended to every agent's instructions",
+                  )}
+                </p>
+                <Textarea
+                  placeholder={t(
+                    'Enter global instructions that apply to all agents...',
+                  )}
+                  value={globalSystemInstructions}
+                  onChange={(e) =>
+                    setGlobalSystemInstructions(e.target.value || undefined)
+                  }
+                  minRows={3}
+                  maxRows={10}
+                  className="max-w-xl"
+                />
               </div>
             </div>
           </AccordionItem>

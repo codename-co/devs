@@ -35,6 +35,8 @@ export interface UserSettings {
   liveAutoSpeak?: boolean // Auto-speak AI responses in Live mode (default: true)
   // Memory settings
   autoMemoryLearning?: boolean // Auto-learn from conversations (default: false)
+  // Global system instructions
+  globalSystemInstructions?: string // Global instructions injected into all agent prompts
 }
 
 const defaultSettings: UserSettings = {
@@ -63,6 +65,7 @@ interface UserSettingsStore extends UserSettings {
   setTTSProvider: (provider: TTSProviderType | undefined) => void
   setLiveAutoSpeak: (enabled: boolean) => void
   setAutoMemoryLearning: (enabled: boolean) => void
+  setGlobalSystemInstructions: (instructions: string | undefined) => void
   isDarkTheme: () => boolean
 }
 
@@ -99,6 +102,8 @@ export const userSettings = create<UserSettingsStore>()(
       setLiveAutoSpeak: (enabled: boolean) => set({ liveAutoSpeak: enabled }),
       setAutoMemoryLearning: (enabled: boolean) =>
         set({ autoMemoryLearning: enabled }),
+      setGlobalSystemInstructions: (instructions: string | undefined) =>
+        set({ globalSystemInstructions: instructions }),
       isDarkTheme: () => {
         const { theme } = get()
         if (theme === 'dark') return true
@@ -126,6 +131,7 @@ export const userSettings = create<UserSettingsStore>()(
         ttsProvider: state.ttsProvider,
         liveAutoSpeak: state.liveAutoSpeak,
         autoMemoryLearning: state.autoMemoryLearning,
+        globalSystemInstructions: state.globalSystemInstructions,
       }),
     },
   ),
