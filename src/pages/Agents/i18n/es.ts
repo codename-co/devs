@@ -46,6 +46,8 @@ export const es: I18n = {
   'No conversation history yet. Start chatting with this agent to build history.':
     "Pas d'historique de conversation pour le moment. Commencez à discuter avec cet agent pour créer un historique.",
   'No instructions defined.': 'No se han definido instrucciones.',
+  'Global system instructions are also applied':
+    'Las instrucciones globales del sistema también se aplican',
   '{count} messages': '{count} mensajes',
   Edit: 'Editar',
   Save: 'Guardar',

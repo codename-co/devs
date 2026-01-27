@@ -29,6 +29,7 @@ import { userSettings } from '@/stores/userStore'
 import { useLLMModelStore } from '@/stores/llmModelStore'
 import { PRODUCT } from '@/config/product'
 import { useBackgroundImage } from '@/hooks/useBackgroundImage'
+import { useHashHighlight } from '@/hooks/useHashHighlight'
 import {
   getCacheInfo,
   clearModelCache,
@@ -97,6 +98,76 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
   const setGlobalSystemInstructions = userSettings(
     (state) => state.setGlobalSystemInstructions,
   )
+
+  // Define valid accordion keys for each section
+  const mainAccordionKeys = [
+    'providers',
+    'general',
+    'conversational',
+    'security',
+  ]
+  const advancedAccordionKeys = ['sync', 'langfuse', 'easysetup', 'database']
+
+  // Use the hash highlight hook for element-level deep linking
+  // Hash format: #section or #section/element
+  const { activeSection, getHighlightClasses } = useHashHighlight()
+
+  // Accordion selection state based on URL hash
+  const [mainSelectedKeys, setMainSelectedKeys] = useState<Set<string>>(
+    new Set(),
+  )
+  const [advancedSelectedKeys, setAdvancedSelectedKeys] = useState<Set<string>>(
+    new Set(),
+  )
+
+  // Sync accordion state with active section from hash
+  useEffect(() => {
+    if (!activeSection) {
+      setMainSelectedKeys(new Set())
+      setAdvancedSelectedKeys(new Set())
+      return
+    }
+
+    if (mainAccordionKeys.includes(activeSection)) {
+      setMainSelectedKeys(new Set([activeSection]))
+      setAdvancedSelectedKeys(new Set())
+    } else if (advancedAccordionKeys.includes(activeSection)) {
+      setMainSelectedKeys(new Set())
+      setAdvancedSelectedKeys(new Set([activeSection]))
+    }
+  }, [activeSection])
+
+  // Handle main accordion selection change
+  const handleMainSelectionChange = (keys: 'all' | Set<React.Key>) => {
+    if (keys === 'all') return
+    const newKeys = new Set(Array.from(keys).map(String))
+    setMainSelectedKeys(newKeys)
+    setAdvancedSelectedKeys(new Set())
+
+    // Update URL hash
+    const selectedKey = Array.from(newKeys)[0]
+    if (selectedKey) {
+      navigate(`${location.pathname}#${selectedKey}`, { replace: true })
+    } else {
+      navigate(location.pathname, { replace: true })
+    }
+  }
+
+  // Handle advanced accordion selection change
+  const handleAdvancedSelectionChange = (keys: 'all' | Set<React.Key>) => {
+    if (keys === 'all') return
+    const newKeys = new Set(Array.from(keys).map(String))
+    setAdvancedSelectedKeys(newKeys)
+    setMainSelectedKeys(new Set())
+
+    // Update URL hash
+    const selectedKey = Array.from(newKeys)[0]
+    if (selectedKey) {
+      navigate(`${location.pathname}#${selectedKey}`, { replace: true })
+    } else {
+      navigate(location.pathname, { replace: true })
+    }
+  }
 
   const handleLanguageChange = (newLanguage: Lang) => {
     setLanguage(newLanguage)
@@ -443,7 +514,12 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
 
       <Container className={isModal ? 'px-4' : ''}>
         {/* LLM Providers - Most important, users need this first */}
-        <Accordion selectionMode="single" variant="bordered">
+        <Accordion
+          selectionMode="single"
+          variant="bordered"
+          selectedKeys={mainSelectedKeys}
+          onSelectionChange={handleMainSelectionChange}
+        >
           <AccordionItem
             key="providers"
             data-testid="llm-providers"
@@ -455,7 +531,13 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
             classNames={{ content: 'pl-8 mb-4' }}
           >
             <div className="space-y-4 p-2">
-              <div className="flex justify-end">
+              <div
+                id="add-provider"
+                className={getHighlightClasses(
+                  'add-provider',
+                  'flex justify-end p-2 -m-2',
+                )}
+              >
                 <Button
                   color="primary"
                   size="sm"
@@ -528,6 +610,7 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
           >
             <div className="space-y-6 p-2">
               <Select
+                id="interface-language"
                 label={t('Interface Language')}
                 selectedKeys={[lang]}
                 onSelectionChange={(keys) => {
@@ -536,7 +619,10 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
                     handleLanguageChange(selectedLang)
                   }
                 }}
-                className="max-w-xs mr-3"
+                className={getHighlightClasses(
+                  'interface-language',
+                  'max-w-xs mr-3',
+                )}
               >
                 {Object.entries(languages).map(([key, name]) => (
                   <SelectItem key={key} textValue={name}>
@@ -546,6 +632,7 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
               </Select>
 
               <Select
+                id="theme"
                 label={t('Theme')}
                 selectedKeys={[theme]}
                 onSelectionChange={(keys) => {
@@ -557,7 +644,7 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
                     setTheme(selectedTheme)
                   }
                 }}
-                className="max-w-xs mr-3"
+                className={getHighlightClasses('theme', 'max-w-xs mr-3')}
               >
                 <SelectItem key="system" textValue={t('System')}>
                   {t('System')}
@@ -571,14 +658,21 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
               </Select>
 
               <Input
+                id="platform-name"
                 label={t('Platform Name')}
                 placeholder={PRODUCT.displayName}
                 value={platformName || ''}
                 onChange={(e) => setPlatformName(e.target.value)}
-                className="max-w-xs mr-3"
+                className={getHighlightClasses(
+                  'platform-name',
+                  'max-w-xs mr-3',
+                )}
               />
 
-              <div>
+              <div
+                id="background-image"
+                className={getHighlightClasses('background-image', 'p-2 -m-2')}
+              >
                 <label className="text-sm font-medium text-default-600">
                   {t('Background Image')}
                 </label>
@@ -641,7 +735,13 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
             classNames={{ content: 'pl-8 mb-4' }}
           >
             <div className="space-y-6 p-2">
-              <div className="max-w-xs mr-3">
+              <div
+                id="speech-to-text"
+                className={getHighlightClasses(
+                  'speech-to-text',
+                  'max-w-xs mr-3 p-2 -m-2',
+                )}
+              >
                 <Switch
                   isSelected={speechToTextEnabled}
                   onChange={(e) => setSpeechToTextEnabled(e.target.checked)}
@@ -656,7 +756,13 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
                 </p>
               </div>
 
-              <div className="max-w-xs mr-3">
+              <div
+                id="auto-memory-learning"
+                className={getHighlightClasses(
+                  'auto-memory-learning',
+                  'max-w-xs mr-3 p-2 -m-2',
+                )}
+              >
                 <Switch
                   isSelected={autoMemoryLearning}
                   onChange={(e) => setAutoMemoryLearning(e.target.checked)}
@@ -671,7 +777,13 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
                 </p>
               </div>
 
-              <div className="max-w-xs mr-3">
+              <div
+                id="hide-default-agents"
+                className={getHighlightClasses(
+                  'hide-default-agents',
+                  'max-w-xs mr-3 p-2 -m-2',
+                )}
+              >
                 <Switch
                   isSelected={hideDefaultAgents}
                   onChange={(e) => setHideDefaultAgents(e.target.checked)}
@@ -686,7 +798,13 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
                 </p>
               </div>
 
-              <div className="mr-3">
+              <div
+                id="global-system-instructions"
+                className={getHighlightClasses(
+                  'global-system-instructions',
+                  'mr-3 p-2 -m-2',
+                )}
+              >
                 <label className="text-sm font-medium text-default-600">
                   {t('Global System Instructions')}
                 </label>
@@ -727,7 +845,13 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
                 )}
               </p>
 
-              <div className="flex flex-col gap-3">
+              <div
+                id="master-key"
+                className={getHighlightClasses(
+                  'master-key',
+                  'flex flex-col gap-3 p-2 -m-2',
+                )}
+              >
                 <div className="flex items-center gap-2">
                   <Input
                     label={t('Master Key')}
@@ -777,7 +901,12 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
           {t('Advanced Settings')}
         </Title>
 
-        <Accordion selectionMode="single" variant="bordered">
+        <Accordion
+          selectionMode="single"
+          variant="bordered"
+          selectedKeys={advancedSelectedKeys}
+          onSelectionChange={handleAdvancedSelectionChange}
+        >
           {/* Data & Sync */}
           <AccordionItem
             key="sync"

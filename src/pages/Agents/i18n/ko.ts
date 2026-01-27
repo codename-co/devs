@@ -45,6 +45,8 @@ export const ko: I18n = {
   'No conversation history yet. Start chatting with this agent to build history.':
     '아직 대화 기록이 없습니다. 이 에이전트와 대화를 시작하여 기록을 만드세요.',
   'No instructions defined.': '정의된 지침이 없습니다.',
+  'Global system instructions are also applied':
+    '전역 시스템 지침도 적용됩니다',
   '{count} messages': '{count}개의 메시지',
   Edit: '편집',
   Save: '저장',

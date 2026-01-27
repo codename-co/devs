@@ -43,6 +43,8 @@ export const ar: I18n = {
   'No conversation history yet. Start chatting with this agent to build history.':
     'لا يوجد سجل محادثات حتى الآن. ابدأ الدردشة مع هذا الوكيل لبناء السجل.',
   'No instructions defined.': 'لم يتم تعريف أي تعليمات.',
+  'Global system instructions are also applied':
+    'يتم تطبيق تعليمات النظام العامة أيضاً',
   '{count} messages': '{count} رسائل',
   Edit: 'تعديل',
   Save: 'حفظ',

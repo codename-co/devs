@@ -52,3 +52,7 @@ export { useEasySetup } from './useEasySetup'
 // OAuth hooks
 export { useOAuth } from './useOAuth'
 export type { OAuthStatus, OAuthState, UseOAuthReturn } from './useOAuth'
+
+// Navigation hooks
+export { useHashRoute } from './useHashRoute'
+export type { HashRouteState, UseHashRouteReturn } from './useHashRoute'

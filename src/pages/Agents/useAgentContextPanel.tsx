@@ -13,6 +13,7 @@ import {
   Tab,
   Tooltip,
 } from '@heroui/react'
+import { userSettings } from '@/stores/userStore'
 
 import {
   useContextualPanelStore,
@@ -331,7 +332,8 @@ const EditableSystemPromptWrapper = ({
   conversationId: string
   systemMessage: Message
 }) => {
-  const { t } = useI18n(localI18n)
+  const { t, lang } = useI18n(localI18n)
+  const url = useUrl(lang)
   const [isEditing, setIsEditing] = useState(false)
 
   // Update the panel block's headerAction when editing state changes
@@ -352,13 +354,32 @@ const EditableSystemPromptWrapper = ({
     })
   }, [isEditing, t])
 
+  const globalInstructions = userSettings(
+    (state) => state.globalSystemInstructions,
+  )
+
   return (
-    <EditableSystemPrompt
-      conversationId={conversationId}
-      systemMessage={systemMessage}
-      isEditing={isEditing}
-      onEditChange={setIsEditing}
-    />
+    <>
+      <EditableSystemPrompt
+        conversationId={conversationId}
+        systemMessage={systemMessage}
+        isEditing={isEditing}
+        onEditChange={setIsEditing}
+      />
+
+      {globalInstructions && (
+        <div className="pt-2 border-t border-default-200">
+          <Link
+            href={url('/settings#conversational/global-system-instructions')}
+            className="flex items-center gap-2 text-xs text-default-500 hover:text-primary transition-colors"
+          >
+            <Icon name="Settings" className="w-3 h-3" />
+            <span>{t('Global system instructions are also applied')}</span>
+            <Icon name="NavArrowRight" className="w-3 h-3" />
+          </Link>
+        </div>
+      )}
+    </>
   )
 }
 

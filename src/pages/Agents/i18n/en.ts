@@ -31,6 +31,7 @@ export const en = [
   'Current',
   'No conversation history yet. Start chatting with this agent to build history.',
   'No instructions defined.',
+  'Global system instructions are also applied',
   '{count} messages',
   'Edit',
   'Save',
