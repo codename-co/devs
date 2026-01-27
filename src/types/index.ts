@@ -1,11 +1,25 @@
 import { LanguageCode } from '@/i18n'
 import { IconName } from '@/lib/types'
 
+/**
+ * Available colors for agents
+ * Uses HeroUI semantic color names for consistent theming
+ */
+export type AgentColor =
+  | 'default'
+  | 'primary'
+  | 'secondary'
+  | 'success'
+  | 'warning'
+  | 'danger'
+
 export interface Agent {
   id: string
   slug: string // URL-friendly identifier, auto-generated from name, unique across all agents
   name: string
   icon?: IconName
+  color?: AgentColor // Color theme for the agent's icon/card
+  portrait?: string // Base64-encoded AI-generated portrait image
   desc?: string
   role: string
   instructions: string

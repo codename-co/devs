@@ -8,7 +8,7 @@ import {
 import { useState } from 'react'
 
 import { AgentPicker } from './AgentPicker'
-import { Icon } from '../Icon'
+import { AgentAvatar } from '../AgentAvatar'
 
 import { useI18n, type Lang } from '@/i18n'
 import { type Agent } from '@/types'
@@ -61,14 +61,13 @@ export function AgentSelector({
             size="sm"
             isDisabled={disabled}
           >
-            <Icon
-              name={selectedAgent.icon ?? 'User'}
-              size="md"
-              className="text-default-500 dark:text-default-600"
+            <AgentAvatar
+              agent={selectedAgent}
+              lang={lang}
+              size="sm"
+              showName={!isSmallWidth()}
+              nameClassName="hidden min-[36em]:inline-flex"
             />
-            <span className="hidden min-[36em]:inline-flex">
-              {selectedAgent.i18n?.[lang]?.name ?? selectedAgent.name}
-            </span>
           </Button>
         </PopoverTrigger>
         <PopoverContent>

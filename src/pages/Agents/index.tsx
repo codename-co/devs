@@ -34,7 +34,7 @@ import { AgentCard } from '@/components/AgentCard'
 import DefaultLayout from '@/layouts/Default'
 import { HeaderProps } from '@/lib/types'
 import { useNavigate } from 'react-router-dom'
-import { EditPencil, MoreVert, Trash, Voice } from 'iconoir-react'
+import { MoreVert, Trash, Voice } from 'iconoir-react'
 
 export const AgentsPage = () => {
   const [userAgents, setUserAgents] = useState<Agent[]>([])
@@ -43,7 +43,7 @@ export const AgentsPage = () => {
   const [activeTab, setActiveTab] = useState<
     'global-agents' | 'my-agents' | undefined
   >(undefined)
-  const [editingAgent, setEditingAgent] = useState<Agent | null>(null)
+  const [editingAgent, _setEditingAgent] = useState<Agent | null>(null)
   const [deletingAgent, setDeletingAgent] = useState<Agent | null>(null)
   const [selectedKnowledgeIds, setSelectedKnowledgeIds] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
@@ -51,11 +51,8 @@ export const AgentsPage = () => {
 
   const { t, url } = useI18n(localI18n)
   const navigate = useNavigate()
-  const {
-    isOpen: isKnowledgeModalOpen,
-    onOpen: onKnowledgeModalOpen,
-    onClose: onKnowledgeModalClose,
-  } = useDisclosure()
+  const { isOpen: isKnowledgeModalOpen, onClose: onKnowledgeModalClose } =
+    useDisclosure()
   const {
     isOpen: isDeleteModalOpen,
     onOpen: onDeleteModalOpen,
@@ -93,12 +90,6 @@ export const AgentsPage = () => {
 
   const handleStartLiveConversation = (agentSlug: string) => {
     navigate(url(`/live#${agentSlug}`))
-  }
-
-  const handleEditKnowledge = (agent: Agent) => {
-    setEditingAgent(agent)
-    setSelectedKnowledgeIds(agent.knowledgeItemIds || [])
-    onKnowledgeModalOpen()
   }
 
   const handleSaveKnowledge = async () => {
@@ -163,13 +154,13 @@ export const AgentsPage = () => {
     }
 
     return (
-      <div className="gap-3 columns columns-2 sm:columns-3 lg:columns-4">
+      <div className="gap-3 columns sm:columns-2">
         {agents.map((agent) => (
           <div key={agent.id} className="mb-3">
             <AgentCard
               id={agent.id}
-              showDetails
-              className="w-full"
+              // showDetails
+              className="w-full min-h-22"
               onPress={handleAgentClick}
               children={
                 <div className="absolute end-2 top-2">
@@ -189,13 +180,13 @@ export const AgentsPage = () => {
                       </DropdownItem>
                       {!isGlobal && agent.id.startsWith('custom-') ? (
                         <>
-                          <DropdownItem
+                          {/* <DropdownItem
                             key="edit"
                             startContent={<EditPencil className="w-4 h-4" />}
                             onPress={() => handleEditKnowledge(agent)}
                           >
                             {t('Edit Knowledge')}
-                          </DropdownItem>
+                          </DropdownItem> */}
                           <DropdownItem
                             key="delete"
                             className="text-danger"

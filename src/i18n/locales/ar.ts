@@ -538,6 +538,9 @@ export const ar: I18n = {
   // Agent Management
   'Edit Knowledge': 'تعديل المعرفة',
   'Edit Knowledge for {name}': 'تعديل المعرفة لـ {name}',
+  'Edit agent appearance': 'تعديل مظهر الوكيل',
+  'Edit Appearance': 'تعديل المظهر',
+  'Appearance updated successfully': 'تم تحديث المظهر بنجاح',
   'Save Changes': 'حفظ التغييرات',
   'Delete Agent': 'حذف الوكيل',
   'Are you sure you want to delete "{name}"? This action cannot be undone.':

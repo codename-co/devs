@@ -7,6 +7,9 @@ export interface HeaderProps {
   icon?: {
     name: IconName
     color?: string
+    image?: string // Base64-encoded image that supersedes icon when present
+    isEditable?: boolean
+    onEdit?: () => void
   }
   title?: string | React.ReactNode
   subtitle?: string | React.ReactNode

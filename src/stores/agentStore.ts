@@ -3,9 +3,10 @@ import { errorToast, successToast } from '@/lib/toast'
 import { db } from '@/lib/db'
 import { deleteFromYjs, syncToYjs } from '@/features/sync'
 import { slugify, generateUniqueSlug } from '@/lib/slugify'
-import { type Agent, type Tool } from '@/types'
+import { type Agent, type AgentColor, type Tool } from '@/types'
 import { Lang } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
+import { IconName } from '@/lib/types'
 
 type AgentJSON = Omit<Agent, 'createdAt' | 'updatedAt' | 'version' | 'tools'>
 
@@ -410,6 +411,9 @@ export async function createAgent(agentData: {
   tags?: string[]
   knowledgeItemIds?: string[]
   tools?: Tool[]
+  icon?: IconName
+  color?: AgentColor
+  portrait?: string
 }): Promise<Agent> {
   try {
     // Ensure database is initialized
@@ -433,6 +437,9 @@ export async function createAgent(agentData: {
       tags: agentData.tags,
       knowledgeItemIds: agentData.knowledgeItemIds,
       tools: agentData.tools || [],
+      icon: agentData.icon,
+      color: agentData.color,
+      portrait: agentData.portrait,
       createdAt: new Date(),
       updatedAt: new Date(),
     }

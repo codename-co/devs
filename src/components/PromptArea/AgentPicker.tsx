@@ -2,6 +2,7 @@ import { Listbox, ListboxSection, ListboxItem, Input } from '@heroui/react'
 import { type Agent } from '@/types'
 import { getAgentsByCategory } from '@/stores/agentStore'
 import { Icon } from '../Icon'
+import { AgentAvatar } from '../AgentAvatar'
 import { useI18n, type LanguageCode } from '@/i18n'
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { agentCategoryNames } from '@/lib/agents'
@@ -120,7 +121,7 @@ export function AgentPicker({
       <ListboxItem
         key={agent.id}
         description={agent.i18n?.[lang]?.desc ?? agent.desc ?? agent.role}
-        startContent={<Icon name={agent.icon ?? 'User'} size="lg" />}
+        startContent={<AgentAvatar agent={agent} size="md" />}
         className="truncate"
         textValue={agent.i18n?.[lang]?.name ?? agent.name}
       >

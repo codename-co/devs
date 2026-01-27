@@ -557,6 +557,9 @@ export const fr: I18n = {
   // Agent Management
   'Edit Knowledge': 'Modifier les connaissances',
   'Edit Knowledge for {name}': 'Modifier les connaissances pour {name}',
+  'Edit agent appearance': 'Modifier l’apparence de l’agent',
+  'Edit Appearance': 'Modifier l’apparence',
+  'Appearance updated successfully': 'Apparence mise à jour avec succès',
   'Save Changes': 'Enregistrer les modifications',
   'Delete Agent': 'Supprimer l’agent',
   'Are you sure you want to delete "{name}"? This action cannot be undone.':

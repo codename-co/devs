@@ -2,13 +2,11 @@
  * Tests for useHashRoute hook
  */
 import { act, renderHook } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { useHashRoute } from '@/hooks/useHashRoute'
 
 describe('useHashRoute', () => {
-  const originalLocation = window.location
-
   beforeEach(() => {
     // Reset hash before each test
     window.location.hash = ''

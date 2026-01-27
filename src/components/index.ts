@@ -1,4 +1,6 @@
 export * from './AboutModal'
+export * from './AgentAppearancePicker'
+export * from './AgentAvatar'
 export * from './AgentCard'
 export * from './AgentKnowledgePicker'
 export * from './AgentToolsPicker'

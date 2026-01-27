@@ -34,6 +34,9 @@ import { createAgent } from '@/stores/agentStore'
 import { LLMService, LLMMessage } from '@/lib/llm'
 import { CredentialService } from '@/lib/credential-service'
 import { buildAgentInstructions } from '@/lib/agent-knowledge'
+import { AgentAppearancePicker } from '@/components'
+import type { IconName } from '@/lib/types'
+import type { AgentColor } from '@/types'
 import localI18n from './i18n'
 
 interface AgentConfig {
@@ -121,6 +124,11 @@ export function AgentsNewPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+
+  // Appearance state
+  const [icon, setIcon] = useState<IconName | undefined>()
+  const [color, setColor] = useState<AgentColor | undefined>()
+  const [portrait, setPortrait] = useState<string | undefined>()
 
   // Chat state (for preview)
   const [messages, setMessages] = useState<Message[]>([])
@@ -226,6 +234,9 @@ export function AgentsNewPage() {
         tags: ['custom'],
         knowledgeItemIds: selectedKnowledgeIds,
         tools: selectedTools.length > 0 ? selectedTools : undefined,
+        icon,
+        color,
+        portrait,
       })
 
       setSuccess(true)
@@ -356,6 +367,9 @@ export function AgentsNewPage() {
     setTemperature(0.7)
     setSelectedKnowledgeIds([])
     setSelectedTools([])
+    setIcon(undefined)
+    setColor(undefined)
+    setPortrait(undefined)
     setError('')
     setSuccess(false)
     setMessages([])
@@ -535,6 +549,19 @@ export function AgentsNewPage() {
                       description={t(
                         "Detailed instructions for the agent's behavior",
                       )}
+                    />
+
+                    <AgentAppearancePicker
+                      icon={icon}
+                      color={color}
+                      portrait={portrait}
+                      name={name}
+                      role={role}
+                      instructions={instructions}
+                      onIconChange={setIcon}
+                      onColorChange={setColor}
+                      onPortraitChange={setPortrait}
+                      showPortraitOption={true}
                     />
 
                     <Accordion>

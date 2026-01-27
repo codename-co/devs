@@ -8,6 +8,7 @@ import { useContextualPanelStore } from '@/stores/contextualPanelStore'
 import { userSettings } from '@/stores/userStore'
 import { useNavigate } from 'react-router-dom'
 import {
+  Avatar,
   Button,
   Dropdown,
   DropdownItem,
@@ -142,16 +143,49 @@ export default function DefaultLayout({
                       </Tooltip>
                     )}
                     <Container className="relative">
-                      {header?.icon?.name && (
-                        <Icon
-                          size="3xl"
-                          name={header.icon.name as any}
-                          className={clsx(
-                            'mb-4 hidden xl:block',
-                            header.icon.color,
-                          )}
-                        />
-                      )}
+                      {header?.icon &&
+                        (header.icon.isEditable && header.icon.onEdit ? (
+                          <Tooltip content={t('Edit agent appearance')}>
+                            <button
+                              type="button"
+                              onClick={header.icon.onEdit}
+                              className="mb-4 hidden xl:block cursor-pointer hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-primary rounded-lg"
+                            >
+                              {header.icon.image ? (
+                                <Avatar
+                                  radius="full"
+                                  src={`data:image/png;base64,${header.icon.image}`}
+                                  alt=""
+                                  className="w-12 h-12"
+                                />
+                              ) : (
+                                <Icon
+                                  size="3xl"
+                                  name={header.icon.name as any}
+                                  className={clsx(header.icon.color)}
+                                />
+                              )}
+                            </button>
+                          </Tooltip>
+                        ) : header.icon.image ? (
+                          <Avatar
+                            radius="full"
+                            src={`data:image/png;base64,${header.icon.image}`}
+                            alt=""
+                            className={clsx(
+                              'w-12 h-12 rounded-xl object-cover mb-4 hidden xl:block',
+                            )}
+                          />
+                        ) : header.icon.name ? (
+                          <Icon
+                            size="3xl"
+                            name={header.icon.name as any}
+                            className={clsx(
+                              'mb-4 hidden xl:block',
+                              header.icon.color,
+                            )}
+                          />
+                        ) : null)}
                       {/* Header action buttons */}
                       <div className="absolute end-0 flex items-center gap-1 z-1">
                         {header?.cta && (

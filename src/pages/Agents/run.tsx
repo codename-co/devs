@@ -32,15 +32,17 @@ import {
   Widget,
   useTraceSources,
 } from '@/components'
+import { AgentAppearancePicker } from '@/components/AgentAppearancePicker'
 import DefaultLayout from '@/layouts/Default'
 import { Link } from 'react-router-dom'
 import type { HeaderProps, IconName } from '@/lib/types'
-import { getAgentById, getAgentBySlug } from '@/stores/agentStore'
+import { getAgentById, getAgentBySlug, updateAgent } from '@/stores/agentStore'
 import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
 import { usePinnedMessageStore } from '@/stores/pinnedMessageStore'
 import { useTraceStore } from '@/stores/traceStore'
 import {
   Agent,
+  AgentColor,
   Message,
   Artifact,
   AgentMemoryEntry,
@@ -1350,6 +1352,17 @@ export const AgentRunPage = () => {
   const [isPinning, setIsPinning] = useState(false)
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false)
 
+  // Appearance modal state
+  const {
+    isOpen: isAppearanceModalOpen,
+    onOpen: onAppearanceModalOpen,
+    onClose: onAppearanceModalClose,
+  } = useDisclosure()
+  const [editingIcon, setEditingIcon] = useState<IconName | undefined>()
+  const [editingColor, setEditingColor] = useState<AgentColor | undefined>()
+  const [editingPortrait, setEditingPortrait] = useState<string | undefined>()
+  const [isSavingAppearance, setIsSavingAppearance] = useState(false)
+
   const isConversationPristine = useMemo(
     () => !(Number(currentConversation?.messages.length) > 0),
     [currentConversation],
@@ -1544,14 +1557,55 @@ export const AgentRunPage = () => {
     ],
   )
 
+  const handleOpenAppearanceModal = useCallback(() => {
+    if (selectedAgent) {
+      setEditingIcon(selectedAgent.icon)
+      setEditingColor(selectedAgent.color)
+      setEditingPortrait(selectedAgent.portrait)
+      onAppearanceModalOpen()
+    }
+  }, [selectedAgent, onAppearanceModalOpen])
+
+  const handleSaveAppearance = useCallback(async () => {
+    if (!selectedAgent) return
+
+    setIsSavingAppearance(true)
+    try {
+      const updatedAgent = await updateAgent(selectedAgent.id, {
+        icon: editingIcon,
+        color: editingColor,
+        portrait: editingPortrait,
+      })
+      setSelectedAgent(updatedAgent)
+      successToast(t('Appearance updated successfully'))
+      onAppearanceModalClose()
+    } catch (error) {
+      console.error('Failed to update appearance:', error)
+      errorToast('Failed to update appearance')
+    } finally {
+      setIsSavingAppearance(false)
+    }
+  }, [
+    selectedAgent,
+    editingIcon,
+    editingColor,
+    editingPortrait,
+    t,
+    onAppearanceModalClose,
+  ])
+
   const header: HeaderProps = useMemo(
     () => ({
       icon: {
-        name: (selectedAgent?.icon as any) || 'Sparks',
+        name: selectedAgent?.icon ?? 'User',
         color:
           selectedAgent?.id === 'devs'
             ? ''
-            : 'text-warning-300 dark:text-warning-500',
+            : `text-${selectedAgent?.color ?? 'default'}-500 bg-${selectedAgent?.color ?? 'default'}-100 p-2 rounded-lg`,
+        image: selectedAgent?.portrait,
+        // Only allow editing for custom agents (ID starts with 'custom-')
+        isEditable: true,
+        onEdit: handleOpenAppearanceModal,
       },
       title: selectedAgent?.i18n?.[lang]?.name ?? selectedAgent?.name ?? '…',
       subtitle:
@@ -1568,6 +1622,9 @@ export const AgentRunPage = () => {
       selectedAgent?.icon,
       selectedAgent?.name,
       selectedAgent?.i18n,
+      selectedAgent?.id,
+      selectedAgent?.color,
+      handleOpenAppearanceModal,
       t,
       lang,
       url,
@@ -2346,6 +2403,51 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
               startContent={!isPinning && <Pin className="w-4 h-4" />}
             >
               {t('Pin it')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Appearance Edit Modal */}
+      <Modal
+        isOpen={isAppearanceModalOpen}
+        onClose={onAppearanceModalClose}
+        size="md"
+      >
+        <ModalContent>
+          <ModalHeader className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <Icon name="Palette" className="w-5 h-5 text-primary-500" />
+              {t('Edit Appearance')}
+            </div>
+          </ModalHeader>
+          <ModalBody>
+            {selectedAgent && (
+              <AgentAppearancePicker
+                icon={editingIcon}
+                color={editingColor}
+                portrait={editingPortrait}
+                name={selectedAgent.name}
+                role={selectedAgent.role}
+                instructions={selectedAgent.instructions}
+                onIconChange={setEditingIcon}
+                onColorChange={setEditingColor}
+                onPortraitChange={setEditingPortrait}
+                isDisabled={isSavingAppearance}
+                showPortraitOption={true}
+              />
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="light" onPress={onAppearanceModalClose}>
+              {t('Cancel')}
+            </Button>
+            <Button
+              color="primary"
+              onPress={handleSaveAppearance}
+              isLoading={isSavingAppearance}
+            >
+              {t('Save Changes')}
             </Button>
           </ModalFooter>
         </ModalContent>

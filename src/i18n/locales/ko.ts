@@ -536,6 +536,9 @@ export const ko: I18n = {
   // Agent Management
   'Edit Knowledge': '지식 편집',
   'Edit Knowledge for {name}': '{name}의 지식 편집',
+  'Edit agent appearance': '에이전트 외관 편집',
+  'Edit Appearance': '외관 편집',
+  'Appearance updated successfully': '외관이 성공적으로 업데이트되었습니다',
   'Save Changes': '변경 사항 저장',
   'Delete Agent': '에이전트 삭제',
   'Are you sure you want to delete "{name}"? This action cannot be undone.':

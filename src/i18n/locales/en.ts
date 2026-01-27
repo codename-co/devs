@@ -513,6 +513,9 @@ export const en = [
   // Agent Management
   'Edit Knowledge',
   'Edit Knowledge for {name}',
+  'Edit agent appearance',
+  'Edit Appearance',
+  'Appearance updated successfully',
   'Save Changes',
   'Delete Agent',
   'Are you sure you want to delete "{name}"? This action cannot be undone.',
