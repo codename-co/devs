@@ -215,6 +215,13 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
     }
 
     const baseUrl = this.normalizeBaseUrl(config.baseUrl)
+    console.log('[OPENAI-COMPATIBLE-PROVIDER] 🚀 Starting stream request:', {
+      endpoint: `${baseUrl}/chat/completions`,
+      model: config?.model || OpenAICompatibleProvider.DEFAULT_MODEL,
+      messagesCount: messages.length,
+      hasTools: !!config?.tools?.length,
+    })
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     }
@@ -244,6 +251,11 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
       body: JSON.stringify(requestBody),
     })
 
+    console.log('[OPENAI-COMPATIBLE-PROVIDER] 📡 Stream response:', {
+      status: response.status,
+      ok: response.ok,
+    })
+
     if (!response.ok) {
       const errorText = await response.text()
       throw new Error(
@@ -256,6 +268,7 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
 
     const decoder = new TextDecoder()
     let buffer = ''
+    let chunkCount = 0
 
     // Accumulate tool calls from streaming deltas
     const toolCallAccumulators: Map<number, ToolCallAccumulator> = new Map()
@@ -272,6 +285,10 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
         if (line.trim().startsWith('data: ')) {
           const data = line.slice(6).trim()
           if (data === '[DONE]') {
+            console.log(
+              '[OPENAI-COMPATIBLE-PROVIDER] ✅ Stream complete, chunks received:',
+              chunkCount,
+            )
             // If we accumulated tool calls, yield them as a special marker
             if (toolCallAccumulators.size > 0) {
               const toolCalls =
@@ -286,7 +303,10 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
             const delta = parsed.choices[0]?.delta
 
             // Handle content delta
-            if (delta?.content) yield delta.content
+            if (delta?.content) {
+              chunkCount++
+              yield delta.content
+            }
 
             // Handle tool call deltas
             if (delta?.tool_calls) {
@@ -297,10 +317,18 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
             }
           } catch (e) {
             // Skip invalid JSON
+            console.warn(
+              '[OPENAI-COMPATIBLE-PROVIDER] ⚠️ Failed to parse chunk:',
+              data,
+            )
           }
         }
       }
     }
+    console.log(
+      '[OPENAI-COMPATIBLE-PROVIDER] 🏁 Stream ended (no [DONE]), chunks received:',
+      chunkCount,
+    )
   }
 
   async validateApiKey(apiKey: string, baseUrl?: string): Promise<boolean> {

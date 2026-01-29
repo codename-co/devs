@@ -34,6 +34,7 @@ export {
   getModelIdsForProvider,
   getModel,
   getModelCapabilities,
+  getModelCapabilitiesAsync,
   findModelsWithCapabilities,
   findBestModel,
   modelHasCapabilities,

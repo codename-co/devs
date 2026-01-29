@@ -114,6 +114,10 @@ export const en = [
   '{n} models',
   'Search models...',
   'No models found',
+  'Click to load models',
+  'Loading models...',
+  'No models available',
+  'Check your server URL and connection',
   'Search agents…',
 
   // Model capabilities
@@ -122,6 +126,16 @@ export const en = [
   'High cost',
   'Vision',
   'Tools',
+  'Optimized for speed',
+  'Budget-friendly pricing',
+  'Premium pricing tier',
+  'Extended reasoning capabilities',
+  'Can analyze images',
+  'Function calling support',
+  'Free',
+  'Pricing per 1M tokens',
+  'Input',
+  'Output',
 
   // Service worker
   'New features are waiting',

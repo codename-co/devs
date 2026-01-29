@@ -123,6 +123,16 @@ export const ar: I18n = {
   'High cost': 'مرتفع التكلفة',
   Vision: 'رؤية',
   Tools: 'أدوات',
+  'Optimized for speed': 'مُحسّن للسرعة',
+  'Budget-friendly pricing': 'أسعار اقتصادية',
+  'Premium pricing tier': 'مستوى أسعار مميز',
+  'Extended reasoning capabilities': 'قدرات استدلال ممتدة',
+  'Can analyze images': 'يمكنه تحليل الصور',
+  'Function calling support': 'دعم استدعاء الوظائف',
+  Free: 'مجاني',
+  'Pricing per 1M tokens': 'السعر لكل 1M رمز',
+  Input: 'إدخال',
+  Output: 'إخراج',
 
   // Service worker
   'New features are waiting': 'ميزات جديدة في الانتظار',
@@ -747,4 +757,10 @@ export const ar: I18n = {
   Notifications: 'الإشعارات',
   'No notifications': 'لا توجد إشعارات',
   'Clear all': 'مسح الكل',
+
+  // Model Selector
+  'Click to load models': 'انقر لتحميل النماذج',
+  'Loading models...': 'جاري تحميل النماذج...',
+  'No models available': 'لا توجد نماذج متاحة',
+  'Check your server URL and connection': 'تحقق من عنوان URL للخادم والاتصال',
 } as const

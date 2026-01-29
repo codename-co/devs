@@ -9,6 +9,37 @@
  */
 
 // ============================================================================
+// Model ID Utilities
+// ============================================================================
+
+/**
+ * Extracts the raw model ID by stripping the provider prefix.
+ *
+ * Model IDs from models.dev come in format "provider/model-name" (e.g., "google/gemini-2.5-flash")
+ * but most provider APIs expect just the model name (e.g., "gemini-2.5-flash").
+ *
+ * Note: Some providers like OpenRouter and HuggingFace actually use the prefixed format,
+ * so this function should only be used for providers that need the stripped version.
+ *
+ * @param modelWithPrefix - The model ID that may contain a provider prefix
+ * @param defaultModel - The default model to use if modelWithPrefix is undefined
+ * @returns The model ID without the provider prefix
+ *
+ * @example
+ * stripModelPrefix('google/gemini-2.5-flash', 'gemini-2.0-flash') // Returns 'gemini-2.5-flash'
+ * stripModelPrefix('gemini-2.0-flash', 'gemini-2.0-flash') // Returns 'gemini-2.0-flash'
+ * stripModelPrefix(undefined, 'gemini-2.0-flash') // Returns 'gemini-2.0-flash'
+ */
+export function stripModelPrefix(
+  modelWithPrefix: string | undefined,
+  defaultModel: string,
+): string {
+  const model = modelWithPrefix || defaultModel
+  // Strip provider prefix if present (e.g., "google/gemini-2.5-flash" -> "gemini-2.5-flash")
+  return model.includes('/') ? model.split('/').slice(1).join('/') : model
+}
+
+// ============================================================================
 // Tool Definition Types
 // ============================================================================
 

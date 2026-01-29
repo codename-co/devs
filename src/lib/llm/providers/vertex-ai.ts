@@ -10,7 +10,12 @@ import {
   getUnsupportedDocumentMessage,
 } from '../attachment-processor'
 import { isPdf } from '../../document-converter'
-import { ToolCall, ToolDefinition, LLMConfigWithTools } from '../types'
+import {
+  ToolCall,
+  ToolDefinition,
+  LLMConfigWithTools,
+  stripModelPrefix,
+} from '../types'
 
 /**
  * Google Cloud Service Account JSON key structure
@@ -41,6 +46,13 @@ export class VertexAIProvider implements LLMProviderInterface {
   public static readonly DEFAULT_MODEL = 'gemini-2.5-flash'
 
   private tokenCache: Map<string, TokenCache> = new Map()
+
+  /**
+   * Gets the model ID with provider prefix stripped.
+   */
+  private getModelId(modelWithPrefix: string | undefined): string {
+    return stripModelPrefix(modelWithPrefix, VertexAIProvider.DEFAULT_MODEL)
+  }
 
   /**
    * Detect if the API key is a JSON service account key
@@ -366,7 +378,7 @@ export class VertexAIProvider implements LLMProviderInterface {
     config?: Partial<LLMConfig> & LLMConfigWithTools,
   ): Promise<LLMResponseWithTools> {
     const { endpoint, accessToken } = await this.getAuthInfo(config)
-    const model = config?.model || VertexAIProvider.DEFAULT_MODEL
+    const model = this.getModelId(config?.model)
 
     // Convert messages to Vertex AI format (may involve async document conversion)
     const contents = await Promise.all(
@@ -469,7 +481,7 @@ export class VertexAIProvider implements LLMProviderInterface {
     config?: Partial<LLMConfig> & LLMConfigWithTools,
   ): AsyncIterableIterator<string> {
     const { endpoint, accessToken } = await this.getAuthInfo(config)
-    const model = config?.model || VertexAIProvider.DEFAULT_MODEL
+    const model = this.getModelId(config?.model)
 
     // Convert messages to Vertex AI format (may involve async document conversion)
     const contents = await Promise.all(

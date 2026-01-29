@@ -9,7 +9,11 @@ import {
   formatTextAttachmentContent,
   getUnsupportedDocumentMessage,
 } from '../attachment-processor'
-import { LLMConfigWithTools, GroundingMetadata } from '../types'
+import {
+  LLMConfigWithTools,
+  GroundingMetadata,
+  stripModelPrefix,
+} from '../types'
 import {
   addToolsToRequestBody,
   parseToolCallsFromResponse,
@@ -37,6 +41,13 @@ export class GoogleProvider implements LLMProviderInterface {
   protected baseUrl = 'https://generativelanguage.googleapis.com/v1beta/openai'
   protected nativeBaseUrl = 'https://generativelanguage.googleapis.com/v1beta'
   public static readonly DEFAULT_MODEL = 'gemini-2.0-flash'
+
+  /**
+   * Gets the model ID with provider prefix stripped.
+   */
+  private getModelId(modelWithPrefix: string | undefined): string {
+    return stripModelPrefix(modelWithPrefix, GoogleProvider.DEFAULT_MODEL)
+  }
 
   // MIME types that Google Gemini supports for binary/vision processing
   private static readonly SUPPORTED_IMAGE_TYPES = [
@@ -235,7 +246,7 @@ export class GoogleProvider implements LLMProviderInterface {
     messages: LLMMessage[],
     config?: Partial<LLMConfig> & LLMConfigWithTools,
   ): Promise<LLMResponseWithTools> {
-    const model = config?.model || GoogleProvider.DEFAULT_MODEL
+    const model = this.getModelId(config?.model)
     const endpoint = `${this.nativeBaseUrl}/models/${model}:generateContent?key=${config?.apiKey}`
 
     console.log('[GOOGLE-PROVIDER] 🔍 Making grounded LLM request:', {
@@ -321,9 +332,10 @@ export class GoogleProvider implements LLMProviderInterface {
     }
 
     const endpoint = `${config?.baseUrl || this.baseUrl}/chat/completions`
+    const model = this.getModelId(config?.model)
     console.log('[GOOGLE-PROVIDER] 🚀 Making LLM request:', {
       endpoint,
-      model: config?.model || GoogleProvider.DEFAULT_MODEL,
+      model,
       messagesCount: messages.length,
       temperature: config?.temperature || 0.7,
       hasTools: !!config?.tools?.length,
@@ -336,7 +348,7 @@ export class GoogleProvider implements LLMProviderInterface {
 
     // Build request body
     const requestBody: Record<string, unknown> = {
-      model: config?.model || GoogleProvider.DEFAULT_MODEL,
+      model,
       messages: convertedMessages,
       temperature: config?.temperature || 0.7,
       max_tokens: config?.maxTokens,
@@ -388,7 +400,7 @@ export class GoogleProvider implements LLMProviderInterface {
     messages: LLMMessage[],
     config?: Partial<LLMConfig> & LLMConfigWithTools,
   ): AsyncIterableIterator<string> {
-    const model = config?.model || GoogleProvider.DEFAULT_MODEL
+    const model = this.getModelId(config?.model)
     const endpoint = `${this.nativeBaseUrl}/models/${model}:streamGenerateContent?alt=sse&key=${config?.apiKey}`
 
     console.log('[GOOGLE-PROVIDER] 🔍 Making streaming grounded request:', {
@@ -490,7 +502,7 @@ export class GoogleProvider implements LLMProviderInterface {
 
     // Build request body
     const requestBody: Record<string, unknown> = {
-      model: config?.model || GoogleProvider.DEFAULT_MODEL,
+      model: this.getModelId(config?.model),
       messages: convertedMessages,
       temperature: config?.temperature || 0.7,
       max_tokens: config?.maxTokens,

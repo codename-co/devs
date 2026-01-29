@@ -2,12 +2,7 @@ import { Alert } from '@heroui/react'
 import type { Lang } from '@/i18n'
 import type { IconName } from '@/lib/types'
 import type { LLMModel, LLMProvider } from '@/types'
-import {
-  AnthropicProvider,
-  LocalLLMProvider,
-  OpenAIProvider,
-  VertexAIProvider,
-} from '@/lib/llm'
+import { LocalLLMProvider } from '@/lib/llm'
 import { getModelsForProviderAsync } from '@/lib/llm/models'
 import { Icon } from '@/components'
 import {
@@ -161,26 +156,14 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
   {
     provider: 'openai',
     name: 'OpenAI',
-    models: getModelsForProviderAsync('openai').then((models) => [
-      {
-        id: OpenAIProvider.DEFAULT_MODEL,
-        capabilities: { vision: true, tools: true },
-      },
-      ...models.filter((m) => m.id !== OpenAIProvider.DEFAULT_MODEL),
-    ]),
+    models: getModelsForProviderAsync('openai'),
     icon: 'OpenAI',
     apiKeyPage: 'https://platform.openai.com/api-keys',
   },
   {
     provider: 'anthropic',
     name: 'Anthropic',
-    models: getModelsForProviderAsync('anthropic').then((models) => [
-      {
-        id: AnthropicProvider.DEFAULT_MODEL,
-        capabilities: { vision: true, tools: true },
-      },
-      ...models.filter((m) => m.id !== AnthropicProvider.DEFAULT_MODEL),
-    ]),
+    models: getModelsForProviderAsync('anthropic'),
     icon: 'Anthropic',
     apiKeyPage: 'https://console.anthropic.com/settings/keys',
   },
@@ -194,13 +177,7 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
   {
     provider: 'vertex-ai',
     name: 'Vertex AI',
-    models: getModelsForProviderAsync('vertex-ai').then((models) => [
-      {
-        id: VertexAIProvider.DEFAULT_MODEL,
-        capabilities: { fast: true, vision: true, tools: true },
-      },
-      ...models.filter((m) => m.id !== VertexAIProvider.DEFAULT_MODEL),
-    ]),
+    models: getModelsForProviderAsync('vertex-ai'),
     icon: 'GoogleCloud',
     apiKeyPlaceholder:
       'Paste JSON service account key or LOCATION:PROJECT_ID:ACCESS_TOKEN',

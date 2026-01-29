@@ -123,6 +123,16 @@ export const de: I18n = {
   'High cost': 'Teuer',
   Vision: 'Vision',
   Tools: 'Werkzeuge',
+  'Optimized for speed': 'Für Geschwindigkeit optimiert',
+  'Budget-friendly pricing': 'Budgetfreundliche Preise',
+  'Premium pricing tier': 'Premium-Preisstufe',
+  'Extended reasoning capabilities': 'Erweiterte Denkfähigkeiten',
+  'Can analyze images': 'Kann Bilder analysieren',
+  'Function calling support': 'Unterstützung für Funktionsaufrufe',
+  Free: 'Kostenlos',
+  'Pricing per 1M tokens': 'Preis pro 1M Tokens',
+  Input: 'Eingabe',
+  Output: 'Ausgabe',
 
   // Service worker
   'New features are waiting': 'Neue Funktionen warten',
@@ -764,4 +774,11 @@ export const de: I18n = {
   Notifications: 'Benachrichtigungen',
   'No notifications': 'Keine Benachrichtigungen',
   'Clear all': 'Alle löschen',
+
+  // Model Selector
+  'Click to load models': 'Klicken um Modelle zu laden',
+  'Loading models...': 'Lade Modelle...',
+  'No models available': 'Keine Modelle verfügbar',
+  'Check your server URL and connection':
+    'Überprüfen Sie Ihre Server-URL und Verbindung',
 } as const

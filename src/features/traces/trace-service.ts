@@ -1,6 +1,6 @@
 import { db } from '@/lib/db'
 import { syncToYjs, deleteFromYjs } from '@/features/sync'
-import { LLMConfig } from '@/types'
+import { LLMConfig, LLMProvider } from '@/types'
 import {
   estimateUsdCost,
   normalizeTokenUsage,
@@ -34,6 +34,10 @@ import {
 let pricingCatalog: Map<string, Pricing> | null = null
 let catalogLoadAttempted = false
 
+// Models.dev pricing cache
+let modelsDevPricing: Map<string, Pricing> | null = null
+let modelsDevLoadAttempted = false
+
 // Fallback pricing rates per 1M tokens (USD) when catalog is unavailable
 // These are conservative estimates as of January 2026
 const FALLBACK_PRICING: Record<string, { input: number; output: number }> = {
@@ -57,6 +61,132 @@ const FALLBACK_PRICING: Record<string, { input: number; output: number }> = {
   'mistral-small': { input: 0.2, output: 0.6 },
   // Default
   default: { input: 1, output: 3 },
+}
+
+/**
+ * Cloud providers that have pricing data in models.dev
+ */
+const CLOUD_PROVIDERS: LLMProvider[] = [
+  'openai',
+  'anthropic',
+  'google',
+  'mistral',
+  'openrouter',
+]
+
+/**
+ * Parse provider and model ID from a model string.
+ * Handles formats like "openai/gpt-4o" or just "gpt-4o".
+ *
+ * @param model - Model string, optionally with provider prefix
+ * @returns Object with parsed provider and modelId
+ */
+function parseProviderFromModel(model: string): {
+  provider: LLMProvider | null
+  modelId: string
+} {
+  // Check for provider prefix (e.g., "openai/gpt-4o")
+  const prefixMatch = model.match(
+    /^(openai|anthropic|google|mistral|deepseek|xai|openrouter)\/(.+)$/i,
+  )
+  if (prefixMatch) {
+    return {
+      provider: prefixMatch[1].toLowerCase() as LLMProvider,
+      modelId: prefixMatch[2],
+    }
+  }
+
+  // Try to infer provider from model name patterns
+  const lowerModel = model.toLowerCase()
+
+  if (
+    lowerModel.includes('gpt') ||
+    lowerModel.startsWith('o1') ||
+    lowerModel.startsWith('o3')
+  ) {
+    return { provider: 'openai', modelId: model }
+  }
+  if (lowerModel.includes('claude')) {
+    return { provider: 'anthropic', modelId: model }
+  }
+  if (lowerModel.includes('gemini')) {
+    return { provider: 'google', modelId: model }
+  }
+  if (
+    lowerModel.includes('mistral') ||
+    lowerModel.includes('codestral') ||
+    lowerModel.includes('pixtral')
+  ) {
+    return { provider: 'mistral', modelId: model }
+  }
+
+  // No provider detected
+  return { provider: null, modelId: model }
+}
+
+/**
+ * Load models.dev pricing data for common cloud providers.
+ * This fetches pricing from models.dev and caches it.
+ */
+async function loadModelsDevPricing(): Promise<void> {
+  if (modelsDevLoadAttempted) return
+  modelsDevLoadAttempted = true
+
+  try {
+    modelsDevPricing = new Map()
+    let totalModels = 0
+
+    // Load pricing for all cloud providers in parallel
+    const loadPromises = CLOUD_PROVIDERS.map(async (provider) => {
+      try {
+        // Import dynamically to get models for each provider
+        const { getEnhancedModelsForProvider } = await import(
+          '@/lib/llm/models'
+        )
+        const models = await getEnhancedModelsForProvider(provider)
+
+        for (const model of models) {
+          if (model.pricing) {
+            // Create cache key with provider prefix
+            const cacheKey = `${provider}/${model.id}`
+            modelsDevPricing!.set(
+              cacheKey,
+              pricingFromUsdPerMillion({
+                inputUsdPerMillion: model.pricing.inputPerMillion,
+                outputUsdPerMillion: model.pricing.outputPerMillion,
+              }),
+            )
+
+            // Also cache by model ID alone for unprefixed lookups
+            if (!modelsDevPricing!.has(model.id)) {
+              modelsDevPricing!.set(
+                model.id,
+                pricingFromUsdPerMillion({
+                  inputUsdPerMillion: model.pricing.inputPerMillion,
+                  outputUsdPerMillion: model.pricing.outputPerMillion,
+                }),
+              )
+            }
+
+            totalModels++
+          }
+        }
+      } catch (error) {
+        console.warn(
+          `[TraceService] Failed to load models.dev pricing for ${provider}:`,
+          error,
+        )
+      }
+    })
+
+    await Promise.all(loadPromises)
+
+    console.log(
+      `[TraceService] Loaded models.dev pricing for ${totalModels} models`,
+    )
+  } catch (error) {
+    console.warn('[TraceService] Failed to load models.dev pricing:', error)
+  }
 }
 
 /**
@@ -104,32 +234,67 @@ async function loadPricingCatalog(): Promise<void> {
     }
 
     console.log(
-      `[TraceService] Loaded pricing for ${pricingCatalog.size} models`,
+      `[TraceService] Loaded LiteLLM pricing for ${pricingCatalog.size} models`,
     )
   } catch (error) {
     console.warn('[TraceService] Failed to load pricing catalog:', error)
   }
+
+  // Also load models.dev pricing (non-blocking)
+  loadModelsDevPricing().catch((err) => {
+    console.warn('[TraceService] Failed to load models.dev pricing:', err)
+  })
 }
 
 /**
  * Get pricing for a model, with fallback to default pricing.
+ * Priority: models.dev (cached) > LiteLLM catalog > fallback hardcoded rates
  */
 function getPricingForModel(model: string): Pricing {
-  // Try exact match from catalog
+  const { provider, modelId } = parseProviderFromModel(model)
+
+  // 1. Try models.dev cache first (primary source)
+  if (modelsDevPricing) {
+    // Try with provider prefix
+    if (provider && modelsDevPricing.has(`${provider}/${modelId}`)) {
+      return modelsDevPricing.get(`${provider}/${modelId}`)!
+    }
+
+    // Try exact model match (unprefixed)
+    if (modelsDevPricing.has(modelId)) {
+      return modelsDevPricing.get(modelId)!
+    }
+
+    // Try original model string
+    if (modelsDevPricing.has(model)) {
+      return modelsDevPricing.get(model)!
+    }
+
+    // Try partial match on model ID
+    for (const key of modelsDevPricing.keys()) {
+      const keyModelId = key.includes('/') ? key.split('/')[1] : key
+      if (
+        keyModelId === modelId ||
+        keyModelId.includes(modelId) ||
+        modelId.includes(keyModelId)
+      ) {
+        return modelsDevPricing.get(key)!
+      }
+    }
+  }
+
+  // 2. Fall back to LiteLLM catalog
+  // Try exact match from LiteLLM catalog
   if (pricingCatalog?.has(model)) {
     return pricingCatalog.get(model)!
   }
 
   // Try normalized model name (without provider prefix)
-  const normalizedModel = model.replace(
-    /^(openai\/|anthropic\/|google\/|mistral\/|deepseek\/|xai\/)/,
-    '',
-  )
-  if (pricingCatalog?.has(normalizedModel)) {
-    return pricingCatalog.get(normalizedModel)!
+  if (pricingCatalog?.has(modelId)) {
+    return pricingCatalog.get(modelId)!
   }
 
-  // Find best matching key from catalog using partial match
+  // Find best matching key from LiteLLM catalog using partial match
   if (pricingCatalog) {
     let bestMatch: string | null = null
     let bestMatchLength = 0
@@ -148,7 +313,7 @@ function getPricingForModel(model: string): Pricing {
     }
   }
 
-  // Fall back to hardcoded pricing
+  // 3. Fall back to hardcoded pricing
   const fallbackKey = findFallbackPricingKey(model)
   const fallbackRate = FALLBACK_PRICING[fallbackKey]
 
@@ -286,9 +451,15 @@ export class TraceService {
       this.config = configs[0] || this.getDefaultConfig()
       this.initialized = true
 
-      // Load pricing catalog in background (non-blocking)
+      // Load pricing catalogs in background (non-blocking)
+      // models.dev is loaded via loadPricingCatalog -> loadModelsDevPricing
       loadPricingCatalog().catch((err) => {
         console.warn('[TraceService] Failed to load pricing catalog:', err)
+      })
+
+      // Also explicitly load models.dev pricing (primary source)
+      loadModelsDevPricing().catch((err) => {
+        console.warn('[TraceService] Failed to load models.dev pricing:', err)
       })
 
       console.log('[TraceService] Initialized', {

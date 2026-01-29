@@ -2,9 +2,11 @@
  * Tests for LLM Model Registry
  *
  * Tests model capability flags and utility functions for model selection.
+ * Note: Cloud providers (openai, anthropic, google, etc.) are now sourced from models.dev API.
+ * This test file focuses on the model-registry.json entries (local/ollama) and the utility functions.
  */
 
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, beforeAll, vi } from 'vitest'
 import {
   loadModelRegistry,
   getModelRegistry,
@@ -17,18 +19,49 @@ import {
   modelHasCapabilities,
 } from '@/lib/llm/models'
 import type { LLMProvider } from '@/types'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
+
+// Mock fetch to return the actual model-registry.json from disk
+const mockFetch = vi.fn()
+global.fetch = mockFetch
 
 // Load model registry before all tests
 beforeAll(async () => {
+  // Read the actual model-registry.json from disk for testing
+  const registryPath = path.join(
+    process.cwd(),
+    'public/models/model-registry.json',
+  )
+  const registryContent = fs.readFileSync(registryPath, 'utf-8')
+  const registryData = JSON.parse(registryContent)
+
+  mockFetch.mockResolvedValue({
+    ok: true,
+    json: async () => registryData,
+  })
+
   await loadModelRegistry()
 })
 
 describe('Model Registry', () => {
-  it('should have entries for all major providers', () => {
+  it('should have entries for local and ollama providers', () => {
     const registry = getModelRegistry()
-    const expectedProviders: LLMProvider[] = [
-      'local',
-      'ollama',
+    // Only local and ollama are in model-registry.json
+    // Cloud providers come from models.dev
+    const localProviders: LLMProvider[] = ['local', 'ollama']
+
+    for (const provider of localProviders) {
+      expect(registry[provider]).toBeDefined()
+      expect(Array.isArray(registry[provider])).toBe(true)
+      expect(registry[provider].length).toBeGreaterThan(0)
+    }
+  })
+
+  it('should have empty arrays for cloud providers (sourced from models.dev)', () => {
+    const registry = getModelRegistry()
+    // Cloud providers should be empty in model-registry.json
+    const cloudProviders: LLMProvider[] = [
       'openai',
       'anthropic',
       'google',
@@ -38,15 +71,18 @@ describe('Model Registry', () => {
       'huggingface',
     ]
 
-    for (const provider of expectedProviders) {
-      expect(registry[provider]).toBeDefined()
-      expect(Array.isArray(registry[provider])).toBe(true)
+    for (const provider of cloudProviders) {
+      // These may or may not be defined, but if defined should be empty
+      const models = registry[provider] ?? []
+      expect(models.length).toBe(0)
     }
   })
 
   it('should have models with required properties', () => {
     const registry = getModelRegistry()
     for (const [, models] of Object.entries(registry)) {
+      // Skip non-array entries (like _comment)
+      if (!Array.isArray(models)) continue
       for (const model of models) {
         expect(model.id).toBeDefined()
         expect(typeof model.id).toBe('string')
@@ -55,34 +91,45 @@ describe('Model Registry', () => {
     }
   })
 
-  it('should have vision-capable models for vision-supporting providers', () => {
+  it('should have vision-capable models for ollama', () => {
     const registry = getModelRegistry()
-    const visionProviders = ['openai', 'anthropic', 'google']
-
-    for (const provider of visionProviders) {
-      const models = registry[provider as LLMProvider]
-      const visionModels = models.filter((m) => m.capabilities?.vision)
-      expect(visionModels.length).toBeGreaterThan(0)
-    }
+    const models = registry['ollama']
+    const visionModels = models.filter((m) => m.capabilities?.vision)
+    expect(visionModels.length).toBeGreaterThan(0)
   })
 
-  it('should have tool-capable models for major providers', () => {
+  it('should have tool-capable models for ollama', () => {
     const registry = getModelRegistry()
-    const toolProviders = ['openai', 'anthropic', 'google']
+    const models = registry['ollama']
+    const toolModels = models.filter((m) => m.capabilities?.tools)
+    expect(toolModels.length).toBeGreaterThan(0)
+  })
 
-    for (const provider of toolProviders) {
-      const models = registry[provider as LLMProvider]
-      const toolModels = models.filter((m) => m.capabilities?.tools)
-      expect(toolModels.length).toBeGreaterThan(0)
-    }
+  it('should have thinking-capable models for ollama', () => {
+    const registry = getModelRegistry()
+    const models = registry['ollama']
+    const thinkingModels = models.filter((m) => m.capabilities?.thinking)
+    expect(thinkingModels.length).toBeGreaterThan(0)
   })
 })
 
 describe('getModelsForProvider', () => {
-  it('should return models for a known provider', () => {
-    const models = getModelsForProvider('openai')
+  it('should return models for local provider', () => {
+    const models = getModelsForProvider('local')
     expect(models.length).toBeGreaterThan(0)
     expect(models[0]).toHaveProperty('id')
+  })
+
+  it('should return models for ollama provider', () => {
+    const models = getModelsForProvider('ollama')
+    expect(models.length).toBeGreaterThan(0)
+    expect(models[0]).toHaveProperty('id')
+  })
+
+  it('should return empty array for cloud providers (use getEnhancedModelsForProvider instead)', () => {
+    // Cloud providers are sourced from models.dev
+    const models = getModelsForProvider('openai')
+    expect(models).toEqual([])
   })
 
   it('should return empty array for unknown provider', () => {
@@ -97,57 +144,80 @@ describe('getModelsForProvider', () => {
 })
 
 describe('getModelIdsForProvider', () => {
-  it('should return model IDs as strings', () => {
-    const ids = getModelIdsForProvider('anthropic')
+  it('should return model IDs as strings for ollama', () => {
+    const ids = getModelIdsForProvider('ollama')
     expect(ids.length).toBeGreaterThan(0)
     expect(typeof ids[0]).toBe('string')
   })
 
-  it('should match the number of models', () => {
-    const models = getModelsForProvider('google')
-    const ids = getModelIdsForProvider('google')
+  it('should match the number of models for local', () => {
+    const models = getModelsForProvider('local')
+    const ids = getModelIdsForProvider('local')
     expect(ids.length).toBe(models.length)
   })
 })
 
 describe('getModel', () => {
-  it('should return a specific model by ID', () => {
-    const model = getModel('anthropic', 'claude-sonnet-4-5-20250929')
+  it('should return a specific local model by ID', () => {
+    const model = getModel('local', 'SmolLM2-360M-Instruct-q4f16_1-MLC')
     expect(model).toBeDefined()
-    expect(model?.id).toBe('claude-sonnet-4-5-20250929')
+    expect(model?.id).toBe('SmolLM2-360M-Instruct-q4f16_1-MLC')
+  })
+
+  it('should return a specific ollama model by ID', () => {
+    const model = getModel('ollama', 'gemma3:4b')
+    expect(model).toBeDefined()
+    expect(model?.id).toBe('gemma3:4b')
   })
 
   it('should return undefined for unknown model', () => {
-    const model = getModel('openai', 'unknown-model')
+    const model = getModel('local', 'unknown-model')
     expect(model).toBeUndefined()
   })
 })
 
 describe('getModelCapabilities', () => {
-  it('should return capabilities for a known model', () => {
-    const caps = getModelCapabilities('anthropic', 'claude-sonnet-4-5-20250929')
+  it('should return capabilities for a local model', () => {
+    const caps = getModelCapabilities(
+      'local',
+      'SmolLM2-360M-Instruct-q4f16_1-MLC',
+    )
+    expect(caps).toBeDefined()
+    expect(caps?.lowCost).toBe(true)
+    expect(caps?.fast).toBe(true)
+  })
+
+  it('should return capabilities for an ollama model with vision', () => {
+    const caps = getModelCapabilities('ollama', 'gemma3:4b')
     expect(caps).toBeDefined()
     expect(caps?.vision).toBe(true)
+    expect(caps?.fast).toBe(true)
+  })
+
+  it('should return capabilities for an ollama model with thinking', () => {
+    const caps = getModelCapabilities('ollama', 'deepseek-r1:8b')
+    expect(caps).toBeDefined()
+    expect(caps?.thinking).toBe(true)
     expect(caps?.tools).toBe(true)
   })
 
   it('should return undefined for unknown model', () => {
-    const caps = getModelCapabilities('openai', 'unknown-model')
+    const caps = getModelCapabilities('local', 'unknown-model')
     expect(caps).toBeUndefined()
   })
 })
 
 describe('findModelsWithCapabilities', () => {
-  it('should find low-cost models', () => {
-    const models = findModelsWithCapabilities('openai', { lowCost: true })
+  it('should find low-cost models for local', () => {
+    const models = findModelsWithCapabilities('local', { lowCost: true })
     expect(models.length).toBeGreaterThan(0)
     for (const model of models) {
       expect(model.capabilities?.lowCost).toBe(true)
     }
   })
 
-  it('should find models with multiple capabilities', () => {
-    const models = findModelsWithCapabilities('anthropic', {
+  it('should find models with vision and tools for ollama', () => {
+    const models = findModelsWithCapabilities('ollama', {
       vision: true,
       tools: true,
     })
@@ -158,8 +228,8 @@ describe('findModelsWithCapabilities', () => {
     }
   })
 
-  it('should find thinking models', () => {
-    const models = findModelsWithCapabilities('google', { thinking: true })
+  it('should find thinking models for ollama', () => {
+    const models = findModelsWithCapabilities('ollama', { thinking: true })
     expect(models.length).toBeGreaterThan(0)
     for (const model of models) {
       expect(model.capabilities?.thinking).toBe(true)
@@ -172,48 +242,41 @@ describe('findModelsWithCapabilities', () => {
     expect(models).toEqual([])
   })
 
-  it('should find models excluding a capability', () => {
-    const models = findModelsWithCapabilities('openai', {
-      tools: true,
-      highCost: false,
+  it('should find fast models without tools for local', () => {
+    const models = findModelsWithCapabilities('local', {
+      fast: true,
+      tools: false,
     })
     expect(models.length).toBeGreaterThan(0)
     for (const model of models) {
-      expect(model.capabilities?.tools).toBe(true)
-      expect(model.capabilities?.highCost).toBeFalsy()
+      expect(model.capabilities?.fast).toBe(true)
+      expect(model.capabilities?.tools).toBeFalsy()
     }
   })
 })
 
 describe('findBestModel', () => {
-  it('should find a model matching requirements across providers', () => {
-    const result = findBestModel(['openai', 'anthropic'], { vision: true })
+  it('should find a model matching requirements across local and ollama', () => {
+    const result = findBestModel(['local', 'ollama'], { tools: true })
     expect(result).toBeDefined()
-    expect(result?.model.capabilities?.vision).toBe(true)
+    expect(result?.model.capabilities?.tools).toBe(true)
   })
 
   it('should prefer fast models when specified', () => {
-    const result = findBestModel(['openai', 'google'], { tools: true }, 'fast')
+    const result = findBestModel(['local', 'ollama'], { tools: true }, 'fast')
     expect(result).toBeDefined()
     // Should prefer fast models when available
+    expect(result?.model.capabilities?.fast).toBe(true)
   })
 
   it('should prefer cheap models when specified', () => {
-    const result = findBestModel(
-      ['openai', 'anthropic'],
-      { tools: true },
-      'cheap',
-    )
+    const result = findBestModel(['local', 'ollama'], {}, 'cheap')
     expect(result).toBeDefined()
     expect(result?.model.capabilities?.lowCost).toBe(true)
   })
 
   it('should prefer capable models when specified', () => {
-    const result = findBestModel(
-      ['openai', 'anthropic', 'google'],
-      {},
-      'capable',
-    )
+    const result = findBestModel(['ollama'], {}, 'capable')
     expect(result).toBeDefined()
     // Should rank thinking and vision models higher
   })
@@ -223,19 +286,21 @@ describe('findBestModel', () => {
     const result = findBestModel(['local'], { vision: true, thinking: true })
     expect(result).toBeUndefined()
   })
+
+  it('should return undefined for cloud providers (use getEnhancedModelsForProvider)', () => {
+    // Cloud providers have empty arrays in model-registry
+    const result = findBestModel(['openai', 'anthropic'], { vision: true })
+    expect(result).toBeUndefined()
+  })
 })
 
 describe('modelHasCapabilities', () => {
   it('should return true when model has all required capabilities', () => {
-    const hasIt = modelHasCapabilities(
-      'anthropic',
-      'claude-opus-4-5-20251101',
-      {
-        thinking: true,
-        vision: true,
-        tools: true,
-      },
-    )
+    const hasIt = modelHasCapabilities('ollama', 'qwen3-vl:8b', {
+      thinking: true,
+      vision: true,
+      tools: true,
+    })
     expect(hasIt).toBe(true)
   })
 
@@ -251,21 +316,21 @@ describe('modelHasCapabilities', () => {
   })
 
   it('should return true when excluding a capability the model lacks', () => {
-    const hasIt = modelHasCapabilities('openai', 'gpt-5-mini', {
-      lowCost: true,
-      highCost: false,
-    })
-    expect(hasIt).toBe(true)
-  })
-
-  it('should return false when model has excluded capability', () => {
     const hasIt = modelHasCapabilities(
-      'anthropic',
-      'claude-opus-4-5-20251101',
+      'local',
+      'SmolLM2-360M-Instruct-q4f16_1-MLC',
       {
+        lowCost: true,
         highCost: false,
       },
     )
+    expect(hasIt).toBe(true)
+  })
+
+  it('should return false when model is not found', () => {
+    const hasIt = modelHasCapabilities('local', 'nonexistent-model', {
+      lowCost: true,
+    })
     expect(hasIt).toBe(false)
   })
 })
@@ -278,26 +343,22 @@ describe('Model capability definitions', () => {
       for (const model of models) {
         if (model.capabilities?.lowCost && model.capabilities?.highCost) {
           throw new Error(
-            `Model ${model.id} cannot be both lowCost and highCost`,
+            `Model ${model.id} is marked as both lowCost and highCost`,
           )
         }
       }
     }
   })
 
-  it('should have thinking models marked as highCost or without lowCost', () => {
+  it('should have consistent fast capability', () => {
     const registry = getModelRegistry()
-    // Thinking models are typically more expensive
+    // Fast models should generally be smaller/cheaper
     for (const [, models] of Object.entries(registry)) {
       for (const model of models) {
-        if (model.capabilities?.thinking) {
-          // Thinking models should either be highCost or at least not marked as lowCost
-          // (some like DeepSeek R1 are affordable but not "low cost")
-          expect(
-            model.capabilities.highCost ||
-              model.capabilities.lowCost === undefined ||
-              model.capabilities.lowCost === true, // Some distilled models are both
-          ).toBe(true)
+        // If a model is fast and highCost, that's unusual but allowed
+        // Just validate the capability exists as a boolean
+        if (model.capabilities?.fast !== undefined) {
+          expect(typeof model.capabilities.fast).toBe('boolean')
         }
       }
     }

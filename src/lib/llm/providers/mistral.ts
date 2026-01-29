@@ -9,7 +9,7 @@ import {
   formatTextAttachmentContent,
   getUnsupportedDocumentMessage,
 } from '../attachment-processor'
-import { LLMConfigWithTools } from '../types'
+import { LLMConfigWithTools, stripModelPrefix } from '../types'
 import {
   addToolsToRequestBody,
   parseToolCallsFromResponse,
@@ -21,6 +21,14 @@ import {
 
 export class MistralProvider implements LLMProviderInterface {
   private baseUrl = 'https://api.mistral.ai/v1'
+  public static readonly DEFAULT_MODEL = 'mistral-medium'
+
+  /**
+   * Gets the model ID with provider prefix stripped.
+   */
+  private getModelId(modelWithPrefix: string | undefined): string {
+    return stripModelPrefix(modelWithPrefix, MistralProvider.DEFAULT_MODEL)
+  }
 
   /**
    * Convert message to Mistral format with attachment handling
@@ -101,7 +109,7 @@ export class MistralProvider implements LLMProviderInterface {
 
     // Build request body
     const requestBody: Record<string, unknown> = {
-      model: config?.model || 'mistral-medium',
+      model: this.getModelId(config?.model),
       messages: convertedMessages,
       temperature: config?.temperature || 0.7,
       max_tokens: config?.maxTokens,
@@ -154,7 +162,7 @@ export class MistralProvider implements LLMProviderInterface {
 
     // Build request body
     const requestBody: Record<string, unknown> = {
-      model: config?.model || 'mistral-medium',
+      model: this.getModelId(config?.model),
       messages: convertedMessages,
       temperature: config?.temperature || 0.7,
       max_tokens: config?.maxTokens,

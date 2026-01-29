@@ -121,6 +121,16 @@ export const ko: I18n = {
   'High cost': '고비용',
   Vision: '비전',
   Tools: '도구',
+  'Optimized for speed': '속도에 최적화됨',
+  'Budget-friendly pricing': '저렴한 가격',
+  'Premium pricing tier': '프리미엄 가격대',
+  'Extended reasoning capabilities': '확장된 추론 능력',
+  'Can analyze images': '이미지 분석 가능',
+  'Function calling support': '함수 호출 지원',
+  Free: '무료',
+  'Pricing per 1M tokens': '1M 토큰당 가격',
+  Input: '입력',
+  Output: '출력',
 
   // Service worker
   'New features are waiting': '새로운 기능이 기다리고 있습니다',
@@ -745,4 +755,10 @@ export const ko: I18n = {
   Notifications: '알림',
   'No notifications': '알림 없음',
   'Clear all': '모두 삭제',
+
+  // Model Selector
+  'Click to load models': '클릭하여 모델 로드',
+  'Loading models...': '모델 로딩 중...',
+  'No models available': '사용 가능한 모델 없음',
+  'Check your server URL and connection': '서버 URL과 연결을 확인하세요',
 } as const

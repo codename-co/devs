@@ -9,11 +9,18 @@ import {
   formatTextAttachmentContent,
   getUnsupportedDocumentMessage,
 } from '../attachment-processor'
-import { ToolCall, LLMConfigWithTools } from '../types'
+import { ToolCall, LLMConfigWithTools, stripModelPrefix } from '../types'
 
 export class OpenAIProvider implements LLMProviderInterface {
   protected baseUrl = 'https://api.openai.com/v1'
   public static readonly DEFAULT_MODEL = 'gpt-5-2025-08-07'
+
+  /**
+   * Gets the model ID with provider prefix stripped.
+   */
+  private getModelId(modelWithPrefix: string | undefined): string {
+    return stripModelPrefix(modelWithPrefix, OpenAIProvider.DEFAULT_MODEL)
+  }
 
   private async convertMessageToOpenAIFormat(
     message: LLMMessage,
@@ -87,9 +94,10 @@ export class OpenAIProvider implements LLMProviderInterface {
     config?: Partial<LLMConfig> & LLMConfigWithTools,
   ): Promise<LLMResponseWithTools> {
     const endpoint = `${config?.baseUrl || this.baseUrl}/chat/completions`
+    const model = this.getModelId(config?.model)
     console.log('[OPENAI-PROVIDER] 🚀 Making LLM request:', {
       endpoint,
-      model: config?.model || OpenAIProvider.DEFAULT_MODEL,
+      model,
       messagesCount: messages.length,
       temperature: config?.temperature || 0.7,
       hasTools: !!config?.tools?.length,
@@ -102,7 +110,7 @@ export class OpenAIProvider implements LLMProviderInterface {
 
     // Build request body
     const requestBody: Record<string, unknown> = {
-      model: config?.model || OpenAIProvider.DEFAULT_MODEL,
+      model,
       messages: convertedMessages,
       temperature: config?.temperature || 0.7,
       max_tokens: config?.maxTokens,
@@ -179,7 +187,7 @@ export class OpenAIProvider implements LLMProviderInterface {
 
     // Build request body
     const requestBody: Record<string, unknown> = {
-      model: config?.model || OpenAIProvider.DEFAULT_MODEL,
+      model: this.getModelId(config?.model),
       messages: convertedMessages,
       temperature: config?.temperature || 0.7,
       max_tokens: config?.maxTokens,

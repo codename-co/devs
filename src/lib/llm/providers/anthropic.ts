@@ -15,6 +15,7 @@ import {
   ToolCall,
   LLMConfigWithTools,
   GroundingMetadata,
+  stripModelPrefix,
 } from '../types'
 
 /**
@@ -30,6 +31,13 @@ export class AnthropicProvider implements LLMProviderInterface {
   private baseUrl = 'https://api.anthropic.com/v1'
   public static readonly DEFAULT_MODEL = 'claude-sonnet-4-5-20250929'
   public static readonly DEFAULT_MAX_TOKENS = 8192
+
+  /**
+   * Gets the model ID with provider prefix stripped.
+   */
+  private getModelId(modelWithPrefix: string | undefined): string {
+    return stripModelPrefix(modelWithPrefix, AnthropicProvider.DEFAULT_MODEL)
+  }
 
   /**
    * Convert OpenAI tool format to Anthropic tool format
@@ -168,9 +176,10 @@ export class AnthropicProvider implements LLMProviderInterface {
     const userMessages = convertedMessages.filter((m) => m !== null)
 
     const endpoint = `${config?.baseUrl || this.baseUrl}/messages`
+    const model = this.getModelId(config?.model)
     console.log('[ANTHROPIC-PROVIDER] 🚀 Making LLM request:', {
       endpoint,
-      model: config?.model || AnthropicProvider.DEFAULT_MODEL,
+      model,
       messagesCount: userMessages.length,
       hasSystemMessage: !!systemMessage,
       temperature: config?.temperature || 0.7,
@@ -180,7 +189,7 @@ export class AnthropicProvider implements LLMProviderInterface {
 
     // Build request body
     const requestBody: Record<string, unknown> = {
-      model: config?.model || AnthropicProvider.DEFAULT_MODEL,
+      model,
       system: systemMessage,
       messages: userMessages,
       temperature: config?.temperature || 0.7,
@@ -347,7 +356,7 @@ export class AnthropicProvider implements LLMProviderInterface {
 
     // Build request body
     const requestBody: Record<string, unknown> = {
-      model: config?.model || AnthropicProvider.DEFAULT_MODEL,
+      model: this.getModelId(config?.model),
       system: systemMessage,
       messages: userMessages,
       temperature: config?.temperature || 0.7,
