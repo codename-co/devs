@@ -3,7 +3,7 @@
 .env.local
 dist
 node_modules
-/coverage
+/coverage*
 /playwright-report
 /public/agents/manifest.json
 /public/agents/*.agent.json

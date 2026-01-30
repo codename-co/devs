@@ -519,6 +519,7 @@ export async function driveRead(
     const content = await provider.read(connector, params.file_id)
 
     let textContent: string | undefined
+    let binaryContent: string | undefined
     let contentType: 'text' | 'binary' | 'google_doc' = 'binary'
     let truncated = false
 
@@ -540,9 +541,44 @@ export async function driveRead(
           ? content.content
           : new TextDecoder().decode(content.content as ArrayBuffer)
       contentType = 'google_doc'
+    } else if (content.content instanceof ArrayBuffer) {
+      // Binary content - encode as base64
+      const bytes = new Uint8Array(content.content)
+      let binary = ''
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i])
+      }
+      const base64Content = btoa(binary)
+
+      // For PDFs, automatically perform OCR to extract text
+      if (content.mimeType === 'application/pdf') {
+        const filename = (content.metadata?.name as string) || 'document.pdf'
+        // Dynamically import to avoid loading pdfjs-dist at module load time
+        const { extractTextFromPdfContent } = await import(
+          '@/tools/plugins/text-ocr'
+        )
+        const ocrResult = await extractTextFromPdfContent(
+          base64Content,
+          filename,
+        )
+
+        if (ocrResult.success) {
+          textContent = ocrResult.text
+          contentType = 'text'
+        } else {
+          // OCR failed - return error message instead of binary
+          textContent = `[PDF text extraction failed: ${ocrResult.error}. The file may be a scanned document requiring image OCR.]`
+          contentType = 'text'
+        }
+      } else {
+        // Non-PDF binary content - still return base64 but with a warning
+        // Images and other binaries might need different handling
+        binaryContent = base64Content
+        contentType = 'binary'
+      }
     }
 
-    // Apply max_length truncation
+    // Apply max_length truncation for text content
     if (
       textContent &&
       params.max_length &&
@@ -568,6 +604,7 @@ export async function driveRead(
       found: true,
       file,
       content: textContent,
+      binary_content: binaryContent,
       content_type: contentType,
       truncated,
       connector: createConnectorMetadata(connector),
@@ -1696,7 +1733,33 @@ export async function onedriveRead(
     }
 
     let content = result.content
+    let contentType: 'text' | 'binary' =
+      result.contentType === 'binary' ? 'binary' : 'text'
     let truncated = false
+
+    // For PDFs, automatically perform OCR to extract text
+    if (
+      contentType === 'binary' &&
+      result.metadata?.mimeType === 'application/pdf' &&
+      typeof content === 'string'
+    ) {
+      const filename = result.metadata?.name || 'document.pdf'
+      // Dynamically import to avoid loading pdfjs-dist at module load time
+      const { extractTextFromPdfContent } = await import(
+        '@/tools/plugins/text-ocr'
+      )
+      const ocrResult = await extractTextFromPdfContent(content, filename)
+
+      if (ocrResult.success) {
+        content = ocrResult.text
+        contentType = 'text'
+      } else {
+        // OCR failed - return error message instead of binary
+        content = `[PDF text extraction failed: ${ocrResult.error}. The file may be a scanned document requiring image OCR.]`
+        contentType = 'text'
+      }
+    }
+
     if (params.max_length && content && content.length > params.max_length) {
       content = content.slice(0, params.max_length)
       truncated = true
@@ -1706,7 +1769,7 @@ export async function onedriveRead(
       found: true,
       file,
       content,
-      content_type: result.contentType === 'binary' ? 'binary' : 'text',
+      content_type: contentType,
       truncated,
       connector: createConnectorMetadata(connector),
     }

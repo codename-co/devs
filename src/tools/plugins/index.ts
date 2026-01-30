@@ -95,6 +95,10 @@ export type {
   ArxivError,
 } from './arxiv'
 
+// Text OCR tools
+export { textOcrPlugin, TEXT_OCR_TOOL_DEFINITION } from './text-ocr'
+export type { TextOcrParams, TextOcrResult, TextOcrError } from './text-ocr'
+
 // Connector tools - re-export all from connectors
 export * from './connectors'
 
@@ -115,6 +119,7 @@ import {
   wikidataSparqlPlugin,
 } from './wikidata'
 import { arxivSearchPlugin, arxivPaperPlugin } from './arxiv'
+import { textOcrPlugin } from './text-ocr'
 import { allConnectorPlugins } from './connectors'
 import type { ToolPlugin } from '../types'
 
@@ -142,6 +147,8 @@ export const corePlugins: ToolPlugin<any, any>[] = [
   wikidataSparqlPlugin,
   arxivSearchPlugin,
   arxivPaperPlugin,
+  // Utility
+  textOcrPlugin,
 ]
 
 /**
@@ -176,6 +183,7 @@ export const pluginsByCategory = {
     arxivSearchPlugin,
     arxivPaperPlugin,
   ],
+  utility: [textOcrPlugin],
   connector: allConnectorPlugins,
 } as const
 

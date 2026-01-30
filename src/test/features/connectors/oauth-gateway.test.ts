@@ -51,7 +51,7 @@ const mockOAuthConfigs: Record<string, any> = {
     tokenUrl: 'https://github.com/login/oauth/access_token',
     clientId: 'test-github-client-id',
     scopes: ['repo', 'read:user'],
-    pkceRequired: false,
+    pkceRequired: true,
   },
 }
 

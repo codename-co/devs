@@ -134,5 +134,8 @@ export const CODE_TOOL_NAMES = getPluginNamesByCategory('code')
 /** Names of presentation tools */
 export const PRESENTATION_TOOL_NAMES = getPluginNamesByCategory('presentation')
 
+/** Names of utility tools */
+export const UTILITY_TOOL_NAMES = getPluginNamesByCategory('utility')
+
 /** Names of connector tools */
 export const CONNECTOR_TOOL_NAMES = getPluginNamesByCategory('connector')

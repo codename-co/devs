@@ -33,7 +33,8 @@ export const driveSearchPlugin: ToolPlugin<
   metadata: {
     name: 'drive_search',
     displayName: 'Drive Search',
-    shortDescription: 'Search files in Google Drive',
+    shortDescription:
+      'Search files in Google Drive (returns metadata only, use the drive_read tool to get its content)',
     category: 'connector',
     tags: ['connector', 'drive', 'search', 'files'],
     icon: 'GoogleDrive',
@@ -56,9 +57,10 @@ export const driveReadPlugin: ToolPlugin<DriveReadParams, DriveReadResult> =
     metadata: {
       name: 'drive_read',
       displayName: 'Drive Read',
-      shortDescription: 'Read a specific file from Google Drive',
+      shortDescription:
+        'Read from a Google Drive file (PDFs are automatically OCR-processed to extract text)',
       category: 'connector',
-      tags: ['connector', 'drive', 'read', 'files'],
+      tags: ['connector', 'drive', 'read', 'files', 'content'],
       icon: 'GoogleDrive',
       estimatedDuration: 2000,
     },

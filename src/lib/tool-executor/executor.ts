@@ -1060,3 +1060,40 @@ export function areResearchToolsRegistered(): boolean {
 export function unregisterResearchTools(): void {
   unregisterCategoryFromLegacy('research', defaultRegistry)
 }
+
+// ============================================================================
+// Utility Tools Registration
+// ============================================================================
+
+/**
+ * Register all utility tools with the default registry.
+ * Call this during application initialization to enable utility tools (OCR, etc.).
+ *
+ * @example
+ * ```typescript
+ * import { registerUtilityTools } from '@/lib/tool-executor/executor'
+ *
+ * // In app initialization
+ * registerUtilityTools()
+ * ```
+ */
+export function registerUtilityTools(): void {
+  registerCategoryWithLegacy('utility', defaultRegistry)
+}
+
+/**
+ * Check if utility tools are registered.
+ *
+ * @returns true if all utility tools are registered
+ */
+export function areUtilityToolsRegistered(): boolean {
+  return isCategoryRegisteredInLegacy('utility', defaultRegistry)
+}
+
+/**
+ * Unregister all utility tools from the default registry.
+ * Useful for testing or when disabling utility features.
+ */
+export function unregisterUtilityTools(): void {
+  unregisterCategoryFromLegacy('utility', defaultRegistry)
+}

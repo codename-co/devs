@@ -6,6 +6,7 @@
  */
 
 import { Button } from '@heroui/react'
+import { WarningTriangle } from 'iconoir-react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { getProvider } from '../../providers/apps'
@@ -20,6 +21,7 @@ interface SuccessStepProps {
   provider: AppConnectorProvider
   accountInfo: AccountInfo | null
   selectedFolders: string[] | null
+  hasRefreshToken: boolean
   onStartSync: () => void
   onDone: () => void
 }
@@ -41,6 +43,7 @@ export function SuccessStep({
   provider,
   accountInfo,
   selectedFolders,
+  hasRefreshToken,
   onStartSync,
   onDone,
 }: SuccessStepProps) {
@@ -118,6 +121,25 @@ export function SuccessStep({
           )}
         </div>
       </div>
+
+      {/* Warning if no refresh token */}
+      {!hasRefreshToken && (
+        <div className="w-full max-w-sm bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-lg p-4 mb-6">
+          <div className="flex items-start gap-3">
+            <WarningTriangle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-warning-700 dark:text-warning-400 text-sm">
+                {t('Limited session')}
+              </p>
+              <p className="text-xs text-warning-600 dark:text-warning-500 mt-1">
+                {t(
+                  'Google did not provide a refresh token. Your session will expire in about 1 hour. To enable automatic token refresh, go to myaccount.google.com/permissions, revoke access to DEVS, then reconnect.',
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Actions */}
       <div className="flex gap-3">

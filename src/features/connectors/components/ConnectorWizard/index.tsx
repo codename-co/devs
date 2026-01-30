@@ -86,6 +86,7 @@ export function ConnectorWizard({
   const [accountInfo, setAccountInfo] = useState<AccountInfo | null>(null)
   const [selectedFolders, setSelectedFolders] = useState<string[] | null>(null)
   const [connectorId, setConnectorId] = useState<string | null>(null)
+  const [hasRefreshToken, setHasRefreshToken] = useState<boolean>(true)
 
   // OAuth hook
   const oauth = useOAuth(selectedProvider)
@@ -132,6 +133,7 @@ export function ConnectorWizard({
       result: OAuthResult,
       info: AccountInfo | null,
       folderIds: string[] | null,
+      enableSync: boolean = true,
     ) => {
       console.log('[ConnectorWizard] Creating connector with:', {
         provider,
@@ -191,7 +193,7 @@ export function ConnectorWizard({
           accountId: info?.id,
           accountEmail: info?.email,
           accountPicture: info?.picture,
-          syncEnabled: providerSyncSupported,
+          syncEnabled: providerSyncSupported && enableSync,
           syncFolders: folderIds || undefined,
           status: 'connected',
         })
@@ -206,8 +208,13 @@ export function ConnectorWizard({
 
         console.log('[ConnectorWizard] Connector created:', {
           id,
+          provider,
           encryptedTokenLength: encryptedToken.length,
           hasRefreshToken: !!encryptedRefreshToken,
+          encryptedRefreshTokenLength: encryptedRefreshToken?.length || 0,
+          hasRefreshIv: !!refreshIv,
+          hasRefreshSalt: !!refreshSalt,
+          tokenExpiresAt: tokenExpiresAt?.toISOString(),
         })
 
         return id
@@ -224,6 +231,7 @@ export function ConnectorWizard({
     async (result: OAuthResult, info: AccountInfo | null) => {
       setOauthResult(result)
       setAccountInfo(info)
+      setHasRefreshToken(!!result.refreshToken)
 
       // Check if provider supports sync - skip folders step if not
       const providerConfig = selectedProvider
@@ -259,7 +267,7 @@ export function ConnectorWizard({
 
   // Handle folder selection and create connector
   const handleFolderSelect = useCallback(
-    async (folderIds: string[] | null) => {
+    async (folderIds: string[] | null, enableSync: boolean = true) => {
       if (!selectedProvider || !oauthResult) {
         console.error('[ConnectorWizard] Missing data:', {
           selectedProvider,
@@ -275,6 +283,7 @@ export function ConnectorWizard({
           oauthResult,
           accountInfo,
           folderIds,
+          enableSync,
         )
         setSelectedFolders(folderIds)
         setConnectorId(id)
@@ -287,9 +296,9 @@ export function ConnectorWizard({
     [selectedProvider, oauthResult, accountInfo, createConnector],
   )
 
-  // Handle folder skip (sync everything)
+  // Handle folder skip (do not enable sync)
   const handleFolderSkip = useCallback(() => {
-    handleFolderSelect(null)
+    handleFolderSelect(null, false)
   }, [handleFolderSelect])
 
   // Handle start sync
@@ -428,6 +437,7 @@ export function ConnectorWizard({
                   provider={selectedProvider}
                   accountInfo={accountInfo}
                   selectedFolders={selectedFolders}
+                  hasRefreshToken={hasRefreshToken}
                   onStartSync={handleStartSync}
                   onDone={handleClose}
                 />

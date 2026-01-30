@@ -408,6 +408,8 @@ export interface DriveReadResult {
   file?: DriveFileSummary
   /** File content (for text-based files) */
   content?: string
+  /** Binary content as base64 (for binary files like PDFs, images, etc.) */
+  binary_content?: string
   /** Content type */
   content_type?: 'text' | 'binary' | 'google_doc'
   /** Whether content was truncated */
@@ -1565,7 +1567,11 @@ export const DRIVE_TOOL_DEFINITIONS: Record<DriveToolName, ToolDefinition> = {
     type: 'function',
     function: {
       name: 'drive_search',
-      description: `Search for files in connected Google Drive.
+      description: /* md */ `Search for files in connected Google Drive. Returns file METADATA only (names, IDs, dates) - NOT the file content.
+
+IMPORTANT: To read the actual content of files found, you MUST call drive_read with the file_id from these results. This is a two-step process:
+1. Use drive_search to find relevant files by name/query
+2. Use drive_read to get the actual text content from each relevant file
 
 Supports natural language and Drive query syntax:
 - "budget spreadsheet" - Natural language search
@@ -1574,7 +1580,8 @@ Supports natural language and Drive query syntax:
 - "modifiedTime > '2024-01-01'" - Date filter
 - "'folderId' in parents" - Files in specific folder
 - "starred" - Starred files
-- "trashed = false" - Exclude trashed files`,
+- "trashed = false" - Exclude trashed files
+`,
       parameters: {
         type: 'object',
         properties: {
@@ -1612,8 +1619,10 @@ Supports natural language and Drive query syntax:
       name: 'drive_read',
       description:
         'Read the content of a file from Google Drive. ' +
+        'Use this after drive_search to get the complete file content and extract relevant information. ' +
         'Works with text files, Google Docs, Sheets, and Slides (exported as text). ' +
-        'Binary files return metadata only.',
+        'PDFs are automatically processed with OCR to extract text content. ' +
+        'Other binary files (images, videos, etc.) are returned as base64-encoded data.',
       parameters: {
         type: 'object',
         properties: {
@@ -2721,7 +2730,7 @@ Supports natural language search:
       name: 'onedrive_read',
       description:
         'Read the content of a file from OneDrive. ' +
-        'Works with text files. Binary files return metadata only.',
+        'Works with text files. PDFs are automatically OCR-processed to extract text.',
       parameters: {
         type: 'object',
         properties: {

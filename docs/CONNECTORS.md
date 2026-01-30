@@ -1318,6 +1318,167 @@ VITE_OAUTH_REDIRECT_URI=https://your-app.com/oauth/callback
 
 ---
 
+## Token Refresh Architecture
+
+### Token Refresh Overview
+
+Token refresh is implemented across multiple layers to ensure resilient authentication:
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                    Token Refresh Flow                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   API Request → 401 Error → fetchWithAuth() intercepts         │
+│                                   │                             │
+│                                   ▼                             │
+│                         tryRefreshToken()                       │
+│                                   │                             │
+│                                   ▼                             │
+│                    Provider.refreshToken()                      │
+│                                   │                             │
+│                    ┌──────────────┴──────────────┐              │
+│                    │                             │              │
+│                    ▼                             ▼              │
+│            Has refresh_token?             No refresh_token      │
+│                    │                             │              │
+│                    ▼                             ▼              │
+│           Exchange for new              Throw error →           │
+│           access_token                  Show "Reconnect"        │
+│                    │                                            │
+│                    ▼                                            │
+│            Update connector                                     │
+│            in connectorStore                                    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Implementation Layers
+
+#### 1. Provider Layer (`BaseAppConnectorProvider`)
+
+Location: `src/features/connectors/connector-provider.ts`
+
+```typescript
+// fetchWithAuth() automatically handles 401 responses
+protected async fetchWithAuth(url: string, options: RequestInit = {}) {
+  // Try request with current token
+  const response = await fetch(url, { ...options, headers: authHeaders })
+
+  if (response.status === 401) {
+    // Attempt token refresh
+    const refreshed = await this.tryRefreshToken()
+    if (refreshed) {
+      // Retry with new token
+      return fetch(url, { ...options, headers: newAuthHeaders })
+    }
+    throw new Error('Token expired and refresh failed')
+  }
+
+  return response
+}
+```
+
+#### 2. Store Layer (`connectorStore`)
+
+Location: `src/stores/connectorStore.ts`
+
+- `refreshConnectorToken(connectorId)`: Updates connector with new token
+- `validateConnectorTokens()`: Checks all connectors on page visit
+
+#### 3. Sync Engine Layer
+
+Location: `src/features/connectors/sync-engine.ts`
+
+- Has its own `refreshConnectorToken()` for handling refresh during sync operations
+- Maintains sync state across token refreshes
+
+### Google OAuth Specifics
+
+Google only returns a `refresh_token` under specific conditions:
+
+1. **First authorization**: When the user has never authorized this app before
+2. **With `prompt=consent`**: Forces consent screen even if previously authorized
+3. **With `access_type=offline`**: Required to receive refresh tokens
+
+Both parameters are set in `oauth-gateway.ts`:
+
+```typescript
+authUrl.searchParams.set('access_type', 'offline')
+authUrl.searchParams.set('prompt', 'consent')
+```
+
+### Known Issues & Troubleshooting
+
+#### Issue: "Token Expired" Warning Appears After ~1 Hour
+
+**Cause**: Google did not return a `refresh_token` during OAuth authorization.
+
+**Why it happens**:
+
+- If the user previously authorized DEVS and then disconnected, Google may still have the old authorization on record
+- Google skips returning `refresh_token` if it considers the app "already authorized"
+- This can happen even with `prompt=consent` if Google's internal state differs
+
+**Solution**:
+
+1. Go to [myaccount.google.com/permissions](https://myaccount.google.com/permissions)
+2. Find "DEVS" in the list of third-party apps
+3. Click "Remove Access"
+4. Return to DEVS and reconnect the service
+
+**UI Warning**: When a connector is created without a refresh token, a warning banner is displayed in the success step:
+
+> "Google did not provide a refresh token. Your session will expire in about 1 hour..."
+
+#### Issue: Gmail Refresh Fails but Google Drive Works
+
+**Cause**: Separate OAuth authorizations for different Google services.
+
+**Explanation**: Even though both use the same Google account, each service (Gmail, Drive, Calendar) has its own OAuth authorization state. One service may have a valid refresh token while another doesn't.
+
+**Solution**: Revoke DEVS access completely at [myaccount.google.com/permissions](https://myaccount.google.com/permissions), then reconnect all Google services.
+
+#### Issue: Connector Works Initially, Then Stops
+
+**Timeline**: Works for ~1 hour, then API calls fail.
+
+**Diagnosis**:
+
+1. Check browser console for refresh token logging
+2. Look for `[Gmail] refreshToken called` or `[GoogleDrive] refreshToken called`
+3. If you see "No refresh token available", the connector needs to be reconnected
+
+**Prevention**: The ConnectorWizard now displays a warning when no refresh token is received, prompting users to revoke and reconnect.
+
+### Diagnostic Logging
+
+Debug logging has been added throughout the token refresh flow:
+
+```typescript
+// oauth-gateway.ts
+console.log('[OAuth] Token exchange response:', {
+  hasAccessToken: !!data.access_token,
+  hasRefreshToken: !!data.refresh_token,
+  expiresIn: data.expires_in,
+})
+
+// connector-provider.ts
+console.log('[fetchWithAuth] 401 received, attempting token refresh', {
+  connectorId: this.connectorId,
+  provider: this.config.id,
+})
+
+// gmail.ts / google-drive.ts
+console.log('[Provider] refreshToken called', {
+  hasRefreshToken: !!refreshToken,
+})
+```
+
+Enable these logs by viewing the browser console (F12 → Console tab) when testing connector functionality.
+
+---
+
 ## Testing Strategy
 
 ### Unit Tests (src/test/features/connectors/)

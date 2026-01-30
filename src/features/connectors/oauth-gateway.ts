@@ -158,7 +158,7 @@ const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
     tokenUrl: 'https://github.com/login/oauth/access_token',
     clientId: import.meta.env.VITE_GITHUB_CLIENT_ID || '',
     scopes: ['repo', 'read:user'],
-    pkceRequired: false,
+    pkceRequired: true,
   },
   'outlook-mail': {
     authUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
@@ -376,7 +376,7 @@ export class OAuthGateway {
     }
 
     // Provider-specific parameters
-    if (provider.startsWith('google')) {
+    if (provider.startsWith('google') || provider === 'gmail') {
       // Google-specific: request offline access for refresh token
       params.set('access_type', 'offline')
       params.set('prompt', 'consent')

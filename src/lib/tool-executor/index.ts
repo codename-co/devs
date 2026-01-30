@@ -35,4 +35,7 @@ export {
   registerResearchTools,
   areResearchToolsRegistered,
   unregisterResearchTools,
+  registerUtilityTools,
+  areUtilityToolsRegistered,
+  unregisterUtilityTools,
 } from './executor'
