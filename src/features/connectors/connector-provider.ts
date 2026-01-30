@@ -231,16 +231,14 @@ export abstract class BaseAppConnectorProvider
     const iv = localStorage.getItem(
       `${CONNECTOR_STORAGE_PREFIX}-${connector.id}-iv`,
     )
-    const salt = localStorage.getItem(
-      `${CONNECTOR_STORAGE_PREFIX}-${connector.id}-salt`,
-    )
+    // Salt is empty after migration to non-extractable keys
+    const salt =
+      localStorage.getItem(
+        `${CONNECTOR_STORAGE_PREFIX}-${connector.id}-salt`,
+      ) ?? ''
 
     if (!iv) {
       throw new MissingEncryptionMetadataError(connector.id, 'iv')
-    }
-
-    if (!salt) {
-      throw new MissingEncryptionMetadataError(connector.id, 'salt')
     }
 
     try {
@@ -280,13 +278,17 @@ export abstract class BaseAppConnectorProvider
         `${CONNECTOR_STORAGE_PREFIX}-${connector.id}-refresh-iv`,
       ) ??
       localStorage.getItem(`${CONNECTOR_STORAGE_PREFIX}-${connector.id}-iv`)
+    // Salt is empty after migration to non-extractable keys
     const salt =
       localStorage.getItem(
         `${CONNECTOR_STORAGE_PREFIX}-${connector.id}-refresh-salt`,
       ) ??
-      localStorage.getItem(`${CONNECTOR_STORAGE_PREFIX}-${connector.id}-salt`)
+      localStorage.getItem(
+        `${CONNECTOR_STORAGE_PREFIX}-${connector.id}-salt`,
+      ) ??
+      ''
 
-    if (!iv || !salt) {
+    if (!iv) {
       // If metadata is missing for refresh token, treat it as unavailable
       // rather than throwing an error (refresh tokens are optional)
       return null

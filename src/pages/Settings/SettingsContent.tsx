@@ -348,14 +348,12 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
   }
 
   const handleCopyMasterKey = async () => {
-    if (!masterKey) return
-
-    try {
-      await navigator.clipboard.writeText(masterKey)
-      successToast(t('Master key copied to clipboard'))
-    } catch (error) {
-      errorToast(t('Failed to copy master key'))
-    }
+    // Non-extractable keys cannot be copied - this is now a security feature
+    successToast(
+      t(
+        'Your encryption key is stored securely and cannot be extracted for maximum security',
+      ),
+    )
   }
 
   const handleRegenerateMasterKey = async () => {
@@ -841,7 +839,7 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
             <div className="space-y-4 p-2">
               <p className="text-sm text-default-500 mb-3">
                 {t(
-                  'Your master key is used to encrypt all sensitive data stored locally. Keep it safe and secure.',
+                  'Your encryption key is stored securely using non-extractable browser cryptography. The key cannot be read or exported—it can only be used for encryption operations.',
                 )}
               </p>
 
@@ -854,22 +852,34 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
               >
                 <div className="flex items-center gap-2">
                   <Input
-                    label={t('Master Key')}
-                    value={masterKey || ''}
+                    label={t('Encryption Key Status')}
+                    value={
+                      masterKey
+                        ? t('Secure (Non-extractable)')
+                        : t('Not initialized')
+                    }
                     readOnly
-                    type="password"
                     className="flex-1"
+                    startContent={
+                      <Icon
+                        name={masterKey ? 'CheckCircle' : 'WarningCircle'}
+                        className={`h-4 w-4 ${masterKey ? 'text-success' : 'text-warning'}`}
+                      />
+                    }
                     endContent={
                       <div className="flex gap-1">
-                        <Tooltip content={t('Copy to clipboard')}>
+                        <Tooltip
+                          content={t(
+                            'Non-extractable keys provide maximum security - they cannot be stolen even if an attacker gains access to your browser',
+                          )}
+                        >
                           <Button
                             isIconOnly
                             size="sm"
                             variant="light"
                             onPress={handleCopyMasterKey}
-                            isDisabled={!masterKey}
                           >
-                            <Icon name="Copy" className="h-4 w-4" />
+                            <Icon name="InfoCircle" className="h-4 w-4" />
                           </Button>
                         </Tooltip>
                       </div>

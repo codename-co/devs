@@ -13,9 +13,9 @@ export class CredentialService {
       if (!credential) return null
 
       const iv = localStorage.getItem(`${credentialId}-iv`)
-      const salt = localStorage.getItem(`${credentialId}-salt`)
+      const salt = localStorage.getItem(`${credentialId}-salt`) ?? '' // Salt is empty after migration to non-extractable keys
 
-      if (!iv || !salt) {
+      if (!iv) {
         console.error('Missing encryption metadata for credential')
         errorToast(
           'Missing encryption metadata for credential. Please reconfigure your LLM provider.',
@@ -41,6 +41,9 @@ export class CredentialService {
       }
     } catch (error) {
       console.error('Failed to decrypt credential:', error)
+      errorToast(
+        'Failed to decrypt API key. Your credential may be corrupted. Please reconfigure your LLM provider in Settings.',
+      )
       return null
     }
   }

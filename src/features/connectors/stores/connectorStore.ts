@@ -479,11 +479,13 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
             const iv = localStorage.getItem(
               `${CONNECTOR_STORAGE_PREFIX}-${connector.id}-iv`,
             )
-            const salt = localStorage.getItem(
-              `${CONNECTOR_STORAGE_PREFIX}-${connector.id}-salt`,
-            )
+            // Salt is empty after migration to non-extractable keys
+            const salt =
+              localStorage.getItem(
+                `${CONNECTOR_STORAGE_PREFIX}-${connector.id}-salt`,
+              ) ?? ''
 
-            if (iv && salt) {
+            if (iv) {
               try {
                 const token = await SecureStorage.decryptCredential(
                   connector.encryptedToken,

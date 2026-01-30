@@ -761,4 +761,15 @@ export const ko: I18n = {
   'Loading models...': '모델 로딩 중...',
   'No models available': '사용 가능한 모델 없음',
   'Check your server URL and connection': '서버 URL과 연결을 확인하세요',
+
+  // Security - Non-extractable CryptoKey
+  'Encryption Key Status': '암호화 키 상태',
+  'Secure (Non-extractable)': '안전함 (추출 불가)',
+  'Not initialized': '초기화되지 않음',
+  'Your encryption key is stored securely using non-extractable browser cryptography. The key cannot be read or exported—it can only be used for encryption operations.':
+    '암호화 키는 추출 불가능한 브라우저 암호화를 사용하여 안전하게 저장됩니다. 키는 읽거나 내보낼 수 없으며 암호화 작업에만 사용할 수 있습니다.',
+  'Non-extractable keys provide maximum security - they cannot be stolen even if an attacker gains access to your browser':
+    '추출 불가능한 키는 최대 보안을 제공합니다 - 공격자가 브라우저에 접근하더라도 도난당할 수 없습니다',
+  'Your encryption key is stored securely and cannot be extracted for maximum security':
+    '암호화 키는 최대 보안을 위해 안전하게 저장되며 추출할 수 없습니다',
 } as const

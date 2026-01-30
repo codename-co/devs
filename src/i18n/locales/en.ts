@@ -714,4 +714,12 @@ export const en = [
   'Notifications',
   'No notifications',
   'Clear all',
+
+  // Security - Non-extractable CryptoKey
+  'Encryption Key Status',
+  'Secure (Non-extractable)',
+  'Not initialized',
+  'Your encryption key is stored securely using non-extractable browser cryptography. The key cannot be read or exported—it can only be used for encryption operations.',
+  'Non-extractable keys provide maximum security - they cannot be stolen even if an attacker gains access to your browser',
+  'Your encryption key is stored securely and cannot be extracted for maximum security',
 ] as const

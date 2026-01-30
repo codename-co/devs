@@ -245,9 +245,9 @@ export async function createSetupData(
     credentials.map(async (cred) => {
       // Get encryption metadata from localStorage
       const iv = localStorage.getItem(`${cred.id}-iv`)
-      const salt = localStorage.getItem(`${cred.id}-salt`)
+      const salt = localStorage.getItem(`${cred.id}-salt`) ?? '' // Salt is empty after migration to non-extractable keys
 
-      if (!iv || !salt) {
+      if (!iv) {
         throw new Error(
           `Missing encryption metadata for credential ${cred.provider}`,
         )

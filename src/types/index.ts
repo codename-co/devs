@@ -553,3 +553,14 @@ export interface PinnedMessage {
   createdAt: Date
   updatedAt: Date
 }
+
+/**
+ * Non-extractable CryptoKey entry stored in IndexedDB
+ * The key itself cannot be read by JavaScript, only used for crypto operations
+ */
+export interface CryptoKeyEntry {
+  id: string // 'master' for the main encryption key
+  key: CryptoKey // Non-extractable CryptoKey object
+  createdAt: Date
+  migratedFromLocalStorage?: boolean // True if migrated from legacy localStorage master key
+}

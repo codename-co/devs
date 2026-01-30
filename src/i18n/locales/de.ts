@@ -781,4 +781,15 @@ export const de: I18n = {
   'No models available': 'Keine Modelle verfügbar',
   'Check your server URL and connection':
     'Überprüfen Sie Ihre Server-URL und Verbindung',
+
+  // Security - Non-extractable CryptoKey
+  'Encryption Key Status': 'Verschlüsselungsschlüssel-Status',
+  'Secure (Non-extractable)': 'Sicher (Nicht-extrahierbar)',
+  'Not initialized': 'Nicht initialisiert',
+  'Your encryption key is stored securely using non-extractable browser cryptography. The key cannot be read or exported—it can only be used for encryption operations.':
+    'Ihr Verschlüsselungsschlüssel wird sicher mit nicht-extrahierbarer Browser-Kryptographie gespeichert. Der Schlüssel kann nicht gelesen oder exportiert werden—er kann nur für Verschlüsselungsoperationen verwendet werden.',
+  'Non-extractable keys provide maximum security - they cannot be stolen even if an attacker gains access to your browser':
+    'Nicht-extrahierbare Schlüssel bieten maximale Sicherheit - sie können nicht gestohlen werden, selbst wenn ein Angreifer Zugriff auf Ihren Browser erhält',
+  'Your encryption key is stored securely and cannot be extracted for maximum security':
+    'Ihr Verschlüsselungsschlüssel wird sicher gespeichert und kann für maximale Sicherheit nicht extrahiert werden',
 } as const

@@ -26,9 +26,9 @@ class LangfuseService {
 
       // Decrypt the secret key
       const iv = localStorage.getItem(`${config.id}-iv`)
-      const salt = localStorage.getItem(`${config.id}-salt`)
+      const salt = localStorage.getItem(`${config.id}-salt`) ?? '' // Salt is empty after migration to non-extractable keys
 
-      if (!iv || !salt) {
+      if (!iv) {
         console.warn(
           '[Langfuse] Missing encryption metadata for config:',
           config.id,

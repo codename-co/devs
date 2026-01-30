@@ -763,4 +763,15 @@ export const ar: I18n = {
   'Loading models...': 'جاري تحميل النماذج...',
   'No models available': 'لا توجد نماذج متاحة',
   'Check your server URL and connection': 'تحقق من عنوان URL للخادم والاتصال',
+
+  // Security - Non-extractable CryptoKey
+  'Encryption Key Status': 'حالة مفتاح التشفير',
+  'Secure (Non-extractable)': 'آمن (غير قابل للاستخراج)',
+  'Not initialized': 'غير مهيأ',
+  'Your encryption key is stored securely using non-extractable browser cryptography. The key cannot be read or exported—it can only be used for encryption operations.':
+    'يتم تخزين مفتاح التشفير الخاص بك بشكل آمن باستخدام تشفير المتصفح غير القابل للاستخراج. لا يمكن قراءة المفتاح أو تصديره—يمكن استخدامه فقط لعمليات التشفير.',
+  'Non-extractable keys provide maximum security - they cannot be stolen even if an attacker gains access to your browser':
+    'توفر المفاتيح غير القابلة للاستخراج أقصى درجات الأمان - لا يمكن سرقتها حتى لو تمكن المهاجم من الوصول إلى متصفحك',
+  'Your encryption key is stored securely and cannot be extracted for maximum security':
+    'يتم تخزين مفتاح التشفير الخاص بك بشكل آمن ولا يمكن استخراجه لتحقيق أقصى درجات الأمان',
 } as const

@@ -14,6 +14,7 @@ import {
   MemoryLearningEvent,
   AgentMemoryDocument,
   PinnedMessage,
+  CryptoKeyEntry,
 } from '@/types'
 import { Connector, ConnectorSyncState } from '@/features/connectors/types'
 import { Battle } from '@/features/battle/types'
@@ -59,6 +60,8 @@ export interface DBStores {
   customExtensions: CustomExtension
   // Notification System
   notifications: Notification
+  // Crypto Keys System (non-extractable CryptoKey storage)
+  cryptoKeys: CryptoKeyEntry
 }
 
 export class Database {
@@ -66,7 +69,7 @@ export class Database {
   private initialized = false
 
   static DB_NAME = 'devs-ai-platform'
-  static DB_VERSION = 19
+  static DB_VERSION = 20
   static STORES: (keyof DBStores)[] = [
     'agents',
     'conversations',
@@ -100,6 +103,8 @@ export class Database {
     'customExtensions',
     // Notification System
     'notifications',
+    // Crypto Keys System
+    'cryptoKeys',
   ]
 
   isInitialized(): boolean {
@@ -774,6 +779,22 @@ export class Database {
               unique: false,
             })
             notificationsStore.createIndex('createdAt', 'createdAt', {
+              unique: false,
+            })
+          }
+        }
+
+        // Migration for version 20: Add Crypto Keys store for non-extractable CryptoKey storage
+        if (event.oldVersion < 20) {
+          console.log(
+            'Database migrated to version 20: Added Crypto Keys store for secure key storage',
+          )
+
+          if (!db.objectStoreNames.contains('cryptoKeys')) {
+            const cryptoKeysStore = db.createObjectStore('cryptoKeys', {
+              keyPath: 'id',
+            })
+            cryptoKeysStore.createIndex('createdAt', 'createdAt', {
               unique: false,
             })
           }
