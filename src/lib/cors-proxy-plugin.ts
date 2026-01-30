@@ -123,14 +123,19 @@ export function corsProxyPlugin(): Plugin {
             },
           })
 
-          // Set CORS headers
-          res.setHeader('Access-Control-Allow-Origin', origin || '*')
-          res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-          res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+          // Set CORS headers - only for validated origins
+          if (origin) {
+            res.setHeader('Access-Control-Allow-Origin', origin)
+            res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+          }
 
           // Handle preflight requests
           if (req.method === 'OPTIONS') {
             res.statusCode = 204
+            if (origin) {
+              res.setHeader('Access-Control-Max-Age', '86400')
+            }
             res.end()
             return
           }

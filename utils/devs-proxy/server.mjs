@@ -166,12 +166,14 @@ async function handleRequest(req, res) {
 
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
-    res.writeHead(204, {
-      'Access-Control-Allow-Origin': origin || '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Max-Age': '86400',
-    })
+    const headers = { 'Content-Length': '0' }
+    if (origin) {
+      headers['Access-Control-Allow-Origin'] = origin
+      headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+      headers['Access-Control-Allow-Headers'] = 'Content-Type'
+      headers['Access-Control-Max-Age'] = '86400'
+    }
+    res.writeHead(204, headers)
     res.end()
     return
   }
@@ -200,10 +202,11 @@ async function handleRequest(req, res) {
     const response = await fetchUrl(targetUrl)
 
     // Build response headers
-    const responseHeaders = {
-      'Access-Control-Allow-Origin': origin || '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+    const responseHeaders = {}
+    if (origin) {
+      responseHeaders['Access-Control-Allow-Origin'] = origin
+      responseHeaders['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+      responseHeaders['Access-Control-Allow-Headers'] = 'Content-Type'
     }
 
     // Forward response headers (excluding hop-by-hop)
@@ -217,10 +220,11 @@ async function handleRequest(req, res) {
     res.end(response.body)
   } catch {
     // Generic error response - no details logged for privacy
-    res.writeHead(500, {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': origin || '*',
-    })
+    const errorHeaders = { 'Content-Type': 'application/json' }
+    if (origin) {
+      errorHeaders['Access-Control-Allow-Origin'] = origin
+    }
+    res.writeHead(500, errorHeaders)
     res.end(JSON.stringify({ error: 'Proxy error' }))
   }
 }
