@@ -16,10 +16,11 @@ import {
 import { useCallback, useState } from 'react'
 
 import { Icon } from '../Icon'
+import { useScreenCapture } from './useScreenCapture'
 
 import { type LanguageCode } from '@/i18n/locales'
 import { type KnowledgeItem } from '@/types'
-import { db } from '@/lib/db'
+import { getAllKnowledgeItems } from '@/stores/knowledgeStore'
 import { getFileIcon } from '@/lib/utils'
 import { formatBytes } from '@/lib/format'
 import { useI18n } from '@/i18n'
@@ -30,12 +31,14 @@ interface AttachmentSelectorProps {
   lang: LanguageCode
   onFileUpload: () => void
   onKnowledgeFileSelect: (item: KnowledgeItem) => void
+  onScreenCapture?: (file: File) => void
 }
 
 export function AttachmentSelector({
   lang,
   onFileUpload,
   onKnowledgeFileSelect,
+  onScreenCapture,
 }: AttachmentSelectorProps) {
   const { t } = useI18n(lang as any)
 
@@ -45,19 +48,22 @@ export function AttachmentSelector({
   const [isMainDropdownOpen, setIsMainDropdownOpen] = useState(false)
   const [showConnectorWizard, setShowConnectorWizard] = useState(false)
 
-  const loadKnowledgeItems = useCallback(async () => {
+  // Screen capture hook
+  const {
+    isCapturing,
+    isSupported: isScreenCaptureSupported,
+    captureScreen,
+  } = useScreenCapture({
+    onCapture: (file) => {
+      onScreenCapture?.(file)
+      setIsMainDropdownOpen(false)
+    },
+  })
+
+  const loadKnowledgeItems = useCallback(() => {
     setLoadingKnowledge(true)
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      if (!db.hasStore('knowledgeItems')) {
-        setKnowledgeItems([])
-        return
-      }
-
-      const items = await db.getAll('knowledgeItems')
+      const items = getAllKnowledgeItems()
       // Only show files, not folders
       const fileItems = items.filter((item) => item.type === 'file')
       // Sort by most recently modified
@@ -204,6 +210,22 @@ export function AttachmentSelector({
               </PopoverContent>
             </Popover>
           </DropdownItem>
+          {isScreenCaptureSupported ? (
+            <DropdownItem
+              key="screenshot"
+              startContent={
+                isCapturing ? (
+                  <Spinner size="sm" />
+                ) : (
+                  <Icon name="Screenshot" size="sm" />
+                )
+              }
+              isDisabled={isCapturing}
+              onPress={captureScreen}
+            >
+              {isCapturing ? t('Capturing…') : t('Capture screen')}
+            </DropdownItem>
+          ) : null}
           <DropdownItem
             key="connectors"
             startContent={<Icon name="Plus" size="sm" />}

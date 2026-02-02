@@ -19,8 +19,12 @@ import {
 } from './connector-provider'
 import { SecureStorage } from '@/lib/crypto'
 import { useConnectorStore } from './stores'
-import { db } from '@/lib/db'
-import { syncToYjs, deleteFromYjs } from '@/features/sync'
+import {
+  getAllKnowledgeItemsAsync,
+  addKnowledgeItem,
+  updateKnowledgeItem,
+  deleteKnowledgeItem,
+} from '@/stores/knowledgeStore'
 import type { KnowledgeItem } from '@/types'
 import type {
   Connector,
@@ -617,10 +621,9 @@ export class SyncEngine {
   ): Promise<{ added: number; modified: number; deleted: number }> {
     const counts = { added: 0, modified: 0, deleted: 0 }
 
-    // Ensure database is initialized
-    if (!db.isInitialized()) {
-      await db.init()
-    }
+    // Ensure Yjs is ready
+    const { ensureReady } = await import('@/stores/knowledgeStore')
+    await ensureReady()
 
     // Process added items
     for (const item of changes.added) {
@@ -641,8 +644,7 @@ export class SyncEngine {
           if (contentChanged) {
             // Update existing item
             const mergedItem = mergeWithExisting(item, existing, connector)
-            await db.update('knowledgeItems', mergedItem)
-            syncToYjs('knowledgeItems', mergedItem)
+            updateKnowledgeItem(mergedItem)
             counts.modified++
           }
           // If content unchanged, skip
@@ -657,8 +659,7 @@ export class SyncEngine {
             )
           }
 
-          await db.add('knowledgeItems', knowledgeItem)
-          syncToYjs('knowledgeItems', knowledgeItem)
+          addKnowledgeItem(knowledgeItem)
           counts.added++
         }
       } catch (error) {
@@ -691,8 +692,7 @@ export class SyncEngine {
               )
             }
 
-            await db.update('knowledgeItems', mergedItem)
-            syncToYjs('knowledgeItems', mergedItem)
+            updateKnowledgeItem(mergedItem)
             counts.modified++
           }
         } else {
@@ -705,8 +705,7 @@ export class SyncEngine {
             )
           }
 
-          await db.add('knowledgeItems', knowledgeItem)
-          syncToYjs('knowledgeItems', knowledgeItem)
+          addKnowledgeItem(knowledgeItem)
           counts.added++
         }
       } catch (error) {
@@ -720,8 +719,7 @@ export class SyncEngine {
         const existing = await this.findExistingItem(connector.id, externalId)
 
         if (existing) {
-          await db.delete('knowledgeItems', existing.id)
-          deleteFromYjs('knowledgeItems', existing.id)
+          deleteKnowledgeItem(existing.id)
           counts.deleted++
         }
       } catch (error) {
@@ -746,7 +744,7 @@ export class SyncEngine {
     try {
       // Get all knowledge items and find matching one
       // Note: In a production system, you'd want an index on connectorId + externalId
-      const allItems = await db.getAll('knowledgeItems')
+      const allItems = await getAllKnowledgeItemsAsync()
 
       return allItems.find(
         (item) =>

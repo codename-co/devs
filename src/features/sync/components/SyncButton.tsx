@@ -14,6 +14,7 @@ import { SyncPanel } from './SyncPanel'
 import { useSyncStore } from '../stores/syncStore'
 import { PageMenuButton } from '@/components/PageMenuButton'
 import { useI18n } from '@/i18n'
+import { IconName } from '@/lib/types'
 
 export function SyncButton() {
   const { t } = useI18n()
@@ -28,7 +29,7 @@ export function SyncButton() {
   }, [initialize])
 
   // Determine icon based on state
-  const getIconName = () => {
+  const getIconName = (): IconName => {
     if (status === 'connected' || status === 'connecting') {
       return 'CloudSync'
     }

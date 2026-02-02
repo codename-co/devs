@@ -7,19 +7,21 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+import { SecureStorage } from '@/lib/crypto'
+
 import {
-  disableSync as disableSyncManager,
-  enableSync as enableSyncManager,
-  getLocalClientId,
+  whenReady,
+  enableSync as yjsEnableSync,
+  disableSync as yjsDisableSync,
+  onSyncStatusChange,
+  onSyncActivity,
+  getSyncStatus,
   getPeerCount,
   getPeers,
-  getRecentActivity,
-  getSyncStatus,
-  onSyncActivity,
-  onSyncStatusChange,
-} from '../lib/sync-manager'
-import { forceLoadDataToYjs, initSyncBridge } from '../lib/sync-bridge'
-import type { PeerInfo, SyncActivity, SyncStatus } from '../lib/sync-manager'
+  getLocalClientId,
+  preferences,
+} from '@/lib/yjs'
+import type { PeerInfo, SyncActivity, SyncStatus } from '@/lib/yjs'
 
 export type SyncMode = 'share' | 'join'
 
@@ -45,7 +47,7 @@ interface SyncState {
     password?: string,
     mode?: SyncMode,
   ) => Promise<void>
-  disableSync: () => void
+  disableSync: () => Promise<void>
   generateRoomId: () => string
 }
 
@@ -81,41 +83,39 @@ export const useSyncStore = create<SyncState>()(
 
         console.log('[SyncStore] Initializing...')
 
-        // Initialize sync bridge (Yjs + IndexedDB mirroring)
-        await initSyncBridge()
+        // Always initialize Yjs persistence to load existing data from IndexedDB
+        // This is needed for reactive hooks to work and to preserve existing user data
+        await whenReady
 
-        // Subscribe to sync status changes
-        onSyncStatusChange(({ connected, peerCount, peers }) => {
-          set({
-            status: connected ? 'connected' : 'connecting',
-            peerCount,
-            peers,
-            localClientId: getLocalClientId(),
-            lastSyncAt: connected ? new Date() : get().lastSyncAt,
-          })
-        })
-
-        // Subscribe to sync activity events
-        onSyncActivity((activity) => {
-          set((state) => ({
-            recentActivity: [activity, ...state.recentActivity].slice(0, 50),
-          }))
-        })
-
-        // Auto-reconnect if sync was previously enabled
         const { enabled, roomId } = get()
+
         if (enabled && roomId) {
-          console.log('[SyncStore] Auto-reconnecting to room:', roomId)
-          // Force load data before reconnecting
-          await forceLoadDataToYjs()
-          enableSyncManager({ roomId })
-          set({
-            status: getSyncStatus(),
-            peerCount: getPeerCount(),
-            peers: getPeers(),
-            localClientId: getLocalClientId(),
-            recentActivity: getRecentActivity(),
+          console.log('[SyncStore] Sync enabled, initializing P2P...')
+
+          // Subscribe to sync status changes
+          onSyncStatusChange(() => {
+            set({
+              status: getSyncStatus(),
+              peerCount: getPeerCount(),
+              peers: getPeers(),
+              localClientId: getLocalClientId(),
+              lastSyncAt:
+                getSyncStatus() === 'connected' ? new Date() : get().lastSyncAt,
+            })
           })
+
+          // Subscribe to sync activity events
+          onSyncActivity((activity) => {
+            set((state) => ({
+              recentActivity: [activity, ...state.recentActivity].slice(0, 50),
+            }))
+          })
+
+          // Auto-reconnect to room
+          console.log('[SyncStore] Auto-reconnecting to room:', roomId)
+          yjsEnableSync({ roomId })
+        } else {
+          console.log('[SyncStore] Sync not enabled, skipping P2P')
         }
 
         set({ initialized: true })
@@ -127,28 +127,81 @@ export const useSyncStore = create<SyncState>()(
         password?: string,
         mode?: SyncMode,
       ) => {
-        // Ensure persistence is ready
+        // Ensure store is initialized
         if (!get().initialized) {
           await get().initialize()
         }
 
-        // Force load all local data to Yjs before connecting
-        await forceLoadDataToYjs()
+        const effectiveMode = mode || get().mode || 'share'
 
-        enableSyncManager({ roomId, password })
+        console.log('[SyncStore] Enabling sync...', { mode: effectiveMode })
+
+        // Subscribe to sync status changes
+        onSyncStatusChange(() => {
+          set({
+            status: getSyncStatus(),
+            peerCount: getPeerCount(),
+            peers: getPeers(),
+            localClientId: getLocalClientId(),
+            lastSyncAt:
+              getSyncStatus() === 'connected' ? new Date() : get().lastSyncAt,
+          })
+        })
+
+        // Subscribe to sync activity events
+        onSyncActivity((activity) => {
+          set((state) => ({
+            recentActivity: [activity, ...state.recentActivity].slice(0, 50),
+          }))
+        })
+
+        // Only force load local data when SHARING (creating a new room)
+        // When JOINING an existing room, we want to receive remote data, not push local data
+        if (effectiveMode !== 'share') {
+          console.log(
+            '[SyncStore] Joining room - clearing preferences to prefer remote state',
+          )
+          preferences.clear()
+        }
+
+        // Enable sync encryption mode if password is provided
+        if (password) {
+          try {
+            await SecureStorage.enableSyncMode(password)
+          } catch (err) {
+            console.warn(
+              '[SyncStore] Failed to enable sync encryption mode (may be private browsing):',
+              err,
+            )
+          }
+        }
+
+        yjsEnableSync({ roomId, password })
         set({
           enabled: true,
           roomId,
-          mode: mode || get().mode || 'share',
-          status: getSyncStatus(),
-          peerCount: getPeerCount(),
-          peers: getPeers(),
-          localClientId: getLocalClientId(),
+          mode: effectiveMode,
+          status: 'connecting',
+          peerCount: 0,
+          peers: [],
+          localClientId: null,
         })
       },
 
-      disableSync: () => {
-        disableSyncManager()
+      disableSync: async () => {
+        // Disable sync encryption mode (re-encrypt with local key)
+        // May fail in private browsing mode - that's OK
+        try {
+          await SecureStorage.disableSyncMode()
+        } catch (err) {
+          console.warn(
+            '[SyncStore] Failed to disable sync encryption mode:',
+            err,
+          )
+        }
+
+        yjsDisableSync()
+
         set({
           enabled: false,
           roomId: null,

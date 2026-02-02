@@ -522,7 +522,7 @@ export function StudioPage() {
                 size="sm"
                 color="warning"
                 variant="flat"
-                onPress={() => navigate(url('/settings'))}
+                onPress={() => navigate(url('/settings#providers'))}
               >
                 {t('Go to Settings')}
               </Button>
@@ -583,7 +583,7 @@ export function StudioPage() {
                 size="sm"
                 color="warning"
                 variant="flat"
-                onPress={() => navigate(url('/settings'))}
+                onPress={() => navigate(url('/settings#providers'))}
               >
                 {t('Go to Settings')}
               </Button>
@@ -761,7 +761,7 @@ export function StudioPage() {
             >
               <Title
                 subtitle={t('Create stunning visuals with AI')}
-                className="text-2xl md:text-3xl font-bold mb-2 flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-2"
               >
                 <Icon
                   name={mediaType === 'video' ? 'MediaVideo' : 'MediaImagePlus'}

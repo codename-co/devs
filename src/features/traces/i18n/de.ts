@@ -135,6 +135,7 @@ export const de: I18n = {
   Cleared: 'Gelöscht',
   Saved: 'Gespeichert',
   'Clear All Traces': 'Alle Traces löschen',
+  'Delete all traces permanently': 'Alle Traces dauerhaft löschen',
   'Are you sure you want to delete all traces? This action cannot be undone.':
     'Sind Sie sicher, dass Sie alle Traces löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
   'Delete All': 'Alle löschen',

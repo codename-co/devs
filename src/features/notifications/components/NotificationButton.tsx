@@ -45,12 +45,7 @@ export function NotificationButton() {
       <Tooltip content={t('Notifications')} isDisabled={isOpen}>
         <span className="inline-flex">
           <PopoverTrigger>
-            <Button
-              variant="light"
-              isIconOnly
-              aria-label={t('Notifications')}
-              className="opacity-70 hover:opacity-100"
-            >
+            <Button aria-label={t('Notifications')}>
               <Badge
                 content={unreadCount > 99 ? '99+' : unreadCount}
                 color="danger"

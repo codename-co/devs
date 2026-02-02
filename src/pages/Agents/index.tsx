@@ -23,11 +23,10 @@ import { useEffect, useState } from 'react'
 import { useI18n } from '@/i18n'
 import localI18n from './i18n'
 import {
-  getAgentsSeparated,
+  useAgentsSeparated,
   updateAgent,
   softDeleteAgent,
 } from '@/stores/agentStore'
-import { userSettings } from '@/stores/userStore'
 import { type Agent } from '@/types'
 import { Container, Section, AgentKnowledgePicker, Icon } from '@/components'
 import { AgentCard } from '@/components/AgentCard'
@@ -37,9 +36,11 @@ import { useNavigate } from 'react-router-dom'
 import { MoreVert, Trash, Voice } from 'iconoir-react'
 
 export const AgentsPage = () => {
-  const [userAgents, setUserAgents] = useState<Agent[]>([])
-  const [globalAgents, setGlobalAgents] = useState<Agent[]>([])
-  const [loading, setLoading] = useState(true)
+  const {
+    customAgents: userAgents,
+    builtInAgents: globalAgents,
+    loading,
+  } = useAgentsSeparated()
   const [activeTab, setActiveTab] = useState<
     'global-agents' | 'my-agents' | undefined
   >(undefined)
@@ -59,30 +60,16 @@ export const AgentsPage = () => {
     onClose: onDeleteModalClose,
   } = useDisclosure()
 
-  const hideDefaultAgents = userSettings((state) => state.hideDefaultAgents)
-
-  const fetchAgents = async () => {
-    setLoading(true)
-    try {
-      const { customAgents, builtInAgents } = await getAgentsSeparated()
-
-      if (customAgents.length === 0 && builtInAgents.length > 0) {
+  // Set initial active tab based on agent counts
+  useEffect(() => {
+    if (!loading && activeTab === undefined) {
+      if (userAgents.length === 0 && globalAgents.length > 0) {
         setActiveTab('global-agents')
       } else {
         setActiveTab('my-agents')
       }
-      setUserAgents(customAgents)
-      setGlobalAgents(builtInAgents)
-    } catch (error) {
-      console.error('Error fetching agents:', error)
-    } finally {
-      setLoading(false)
     }
-  }
-
-  useEffect(() => {
-    fetchAgents()
-  }, [hideDefaultAgents])
+  }, [loading, userAgents.length, globalAgents.length, activeTab])
 
   const handleAgentClick = (agentSlug: string) => {
     navigate(url(`/agents/run#${agentSlug}`))
@@ -100,9 +87,6 @@ export const AgentsPage = () => {
       await updateAgent(editingAgent.id, {
         knowledgeItemIds: selectedKnowledgeIds,
       })
-
-      // Refresh agents list
-      await fetchAgents()
       onKnowledgeModalClose()
     } catch (error) {
       console.error('Error updating agent knowledge:', error)
@@ -122,8 +106,6 @@ export const AgentsPage = () => {
     setDeleting(true)
     try {
       await softDeleteAgent(deletingAgent.id)
-      // Refresh agents list
-      await fetchAgents()
       onDeleteModalClose()
       setDeletingAgent(null)
     } catch (error) {

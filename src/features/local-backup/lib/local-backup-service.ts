@@ -1,7 +1,7 @@
 /**
  * Folder Sync Service
  *
- * Bidirectional synchronization between IndexedDB and local file system.
+ * Bidirectional synchronization between Yjs and local file system.
  * Uses File System Access API for folder access.
  *
  * Features:
@@ -10,7 +10,32 @@
  * - Conflict resolution (last-write-wins)
  * - Debounced writes to prevent thrashing
  */
-import { db, Database } from '@/lib/db'
+import {
+  agents as agentsMap,
+  conversations as conversationsMap,
+  knowledge as knowledgeMap,
+  tasks as tasksMap,
+  memories as memoriesMap,
+  studioEntries as studioEntriesMap,
+  artifacts as artifactsMap,
+  credentials as credentialsMap,
+  connectors as connectorsMap,
+  battles as battlesMap,
+  workflows as workflowsMap,
+  pinnedMessages as pinnedMessagesMap,
+  memoryLearningEvents as memoryLearningEventsMap,
+  agentMemoryDocuments as agentMemoryDocumentsMap,
+  preferences as preferencesMap,
+} from '@/lib/yjs'
+// Import additional maps not exported from main module
+import {
+  connectorSyncStates as connectorSyncStatesMap,
+  traces as tracesMap,
+  spans as spansMap,
+  sharedContexts as sharedContextsMap,
+  installedExtensions as installedExtensionsMap,
+  customExtensions as customExtensionsMap,
+} from '@/lib/yjs/maps'
 import type { Agent, Conversation } from '@/types'
 import type { StudioEntry } from '@/features/studio/types'
 import {
@@ -148,8 +173,8 @@ class FolderSyncService {
    * Build agent slug lookup context for serialization
    */
   private async buildSerializeContext(): Promise<SerializeContext> {
-    // Refresh agent slug cache
-    const agents = await db.getAll('agents')
+    // Refresh agent slug cache from Yjs
+    const agents = Array.from(agentsMap.values())
     this.agentSlugCache.clear()
     for (const agent of agents) {
       if (agent.slug) {
@@ -368,7 +393,7 @@ class FolderSyncService {
 
       // Sync agents in parallel batches
       if (this.config.syncAgents) {
-        const agents = await db.getAll('agents')
+        const agents = Array.from(agentsMap.values())
         const activeAgents = agents.filter((a) => !a.deletedAt)
         stats.agents = activeAgents.length
         await this.processInParallelBatches(activeAgents, async (agent) => {
@@ -379,7 +404,7 @@ class FolderSyncService {
 
       // Sync conversations in parallel batches
       if (this.config.syncConversations) {
-        const conversations = await db.getAll('conversations')
+        const conversations = Array.from(conversationsMap.values())
         stats.conversations = conversations.length
         await this.processInParallelBatches(
           conversations,
@@ -396,7 +421,7 @@ class FolderSyncService {
 
       // Sync memories in parallel batches
       if (this.config.syncMemories) {
-        const memories = await db.getAll('agentMemories')
+        const memories = Array.from(memoriesMap.values())
         stats.memories = memories.length
         await this.processInParallelBatches(memories, async (memory) => {
           await this.writeEntityToFile(memory, memorySerializer, context)
@@ -406,7 +431,7 @@ class FolderSyncService {
 
       // Sync knowledge items in parallel batches
       if (this.config.syncKnowledge) {
-        const knowledgeItems = await db.getAll('knowledgeItems')
+        const knowledgeItems = Array.from(knowledgeMap.values())
         const fileItems = knowledgeItems.filter(
           (item) => item.type === 'file' && (item.content || item.transcript),
         )
@@ -419,7 +444,7 @@ class FolderSyncService {
 
       // Sync tasks in parallel batches
       if (this.config.syncTasks) {
-        const tasks = await db.getAll('tasks')
+        const tasks = Array.from(tasksMap.values())
         stats.tasks = tasks.length
         await this.processInParallelBatches(tasks, async (task) => {
           await this.writeEntityToFile(task, taskSerializer)
@@ -429,7 +454,7 @@ class FolderSyncService {
 
       // Sync studio entries in parallel batches
       if (this.config.syncStudio) {
-        const studioEntries = await db.getAll('studioEntries')
+        const studioEntries = Array.from(studioEntriesMap.values())
         stats.studio = studioEntries.length
         await this.processInParallelBatches(studioEntries, async (entry) => {
           await this.writeStudioEntryToFiles(entry)
@@ -489,14 +514,14 @@ class FolderSyncService {
           'agents',
           agentSerializer,
           async (agent) => {
-            const existing = await db.get('agents', agent.id)
+            const existing = agentsMap.get(agent.id)
             if (!existing) {
-              await db.add('agents', agent)
+              agentsMap.set(agent.id, agent)
             } else if (
               new Date(agent.updatedAt || agent.createdAt) >
               new Date(existing.updatedAt || existing.createdAt)
             ) {
-              await db.update('agents', agent)
+              agentsMap.set(agent.id, agent)
             }
           },
         )
@@ -508,13 +533,13 @@ class FolderSyncService {
           'conversations',
           conversationSerializer,
           async (conversation) => {
-            const existing = await db.get('conversations', conversation.id)
+            const existing = conversationsMap.get(conversation.id)
             if (!existing) {
-              await db.add('conversations', conversation)
+              conversationsMap.set(conversation.id, conversation)
             } else if (
               new Date(conversation.updatedAt) > new Date(existing.updatedAt)
             ) {
-              await db.update('conversations', conversation)
+              conversationsMap.set(conversation.id, conversation)
             }
           },
         )
@@ -924,16 +949,44 @@ class FolderSyncService {
     const filePath = filename
 
     try {
-      // Collect all database data
-      const dbData: Record<string, unknown[]> = {}
-      const stores = Database.STORES
+      // Collect all data from Yjs maps
+      // Each map entry: [storeName, map reference]
+      const yjsMapEntries: [
+        string,
+        { values: () => IterableIterator<unknown> },
+      ][] = [
+        ['agents', agentsMap],
+        ['conversations', conversationsMap],
+        ['knowledge', knowledgeMap],
+        ['tasks', tasksMap],
+        ['artifacts', artifactsMap],
+        ['memories', memoriesMap],
+        ['studioEntries', studioEntriesMap],
+        ['credentials', credentialsMap],
+        ['connectors', connectorsMap],
+        ['connectorSyncStates', connectorSyncStatesMap],
+        ['traces', tracesMap],
+        ['spans', spansMap],
+        ['battles', battlesMap],
+        ['workflows', workflowsMap],
+        ['pinnedMessages', pinnedMessagesMap],
+        // notifications are local-only, not included in backup
+        ['memoryLearningEvents', memoryLearningEventsMap],
+        ['agentMemoryDocuments', agentMemoryDocumentsMap],
+        ['sharedContexts', sharedContextsMap],
+        ['installedExtensions', installedExtensionsMap],
+        ['customExtensions', customExtensionsMap],
+        ['preferences', preferencesMap],
+      ]
 
-      for (const store of stores) {
+      const dbData: Record<string, unknown[]> = {}
+
+      for (const [storeName, map] of yjsMapEntries) {
         try {
-          dbData[store] = await db.getAll(store as any)
+          dbData[storeName] = Array.from(map.values())
         } catch (error) {
-          console.warn(`Failed to export store ${store}:`, error)
-          dbData[store] = []
+          console.warn(`Failed to export store ${storeName}:`, error)
+          dbData[storeName] = []
         }
       }
 
@@ -941,9 +994,8 @@ class FolderSyncService {
       const exportData = {
         _meta: {
           exportedAt: new Date().toISOString(),
-          dbName: Database.DB_NAME,
-          dbVersion: Database.DB_VERSION,
-          stores: stores.length,
+          source: 'yjs',
+          stores: yjsMapEntries.length,
           compressed: true,
         },
         ...dbData,
@@ -1110,13 +1162,13 @@ class FolderSyncService {
               fileMetadata,
             )
             if (memory) {
-              const existing = await db.get('agentMemories', memory.id)
+              const existing = memoriesMap.get(memory.id)
               if (!existing) {
-                await db.add('agentMemories', memory)
+                memoriesMap.set(memory.id, memory)
               } else if (
                 new Date(memory.updatedAt) > new Date(existing.updatedAt)
               ) {
-                await db.update('agentMemories', memory)
+                memoriesMap.set(memory.id, memory)
               }
 
               this.emitEvent({
@@ -1230,13 +1282,13 @@ class FolderSyncService {
             binaryContent,
           )
           if (item) {
-            const existing = await db.get('knowledgeItems', item.id)
+            const existing = knowledgeMap.get(item.id)
             if (!existing) {
-              await db.add('knowledgeItems', item)
+              knowledgeMap.set(item.id, item)
             } else if (
               new Date(item.lastModified) > new Date(existing.lastModified)
             ) {
-              await db.update('knowledgeItems', item)
+              knowledgeMap.set(item.id, item)
             }
 
             this.emitEvent({
@@ -1341,13 +1393,13 @@ class FolderSyncService {
 
             const task = taskSerializer.deserialize(content, name, fileMetadata)
             if (task) {
-              const existing = await db.get('tasks', task.id)
+              const existing = tasksMap.get(task.id)
               if (!existing) {
-                await db.add('tasks', task)
+                tasksMap.set(task.id, task)
               } else if (
                 new Date(task.updatedAt) > new Date(existing.updatedAt)
               ) {
-                await db.update('tasks', task)
+                tasksMap.set(task.id, task)
               }
 
               this.emitEvent({
@@ -1443,13 +1495,13 @@ class FolderSyncService {
               )
 
               if (entry) {
-                const existing = await db.get('studioEntries', entry.id)
+                const existing = studioEntriesMap.get(entry.id)
                 if (!existing) {
-                  await db.add('studioEntries', entry)
+                  studioEntriesMap.set(entry.id, entry)
                 } else if (
                   new Date(entry.createdAt) > new Date(existing.createdAt)
                 ) {
-                  await db.update('studioEntries', entry)
+                  studioEntriesMap.set(entry.id, entry)
                 }
 
                 this.emitEvent({

@@ -325,6 +325,7 @@ export const Icons = {
 
   // Simple icons
   Anthropic: SimpleIconToComponent(SimpleIcons['siAnthropic']),
+  Claude: SimpleIconToComponent(SimpleIcons['siClaude']),
   Dropbox: SimpleIconToComponent(SimpleIcons['siDropbox']),
   GitHub: SimpleIconToComponent(SimpleIcons['siGithub']),
   Gmail: SimpleIconToComponent(SimpleIcons['siGmail']),

@@ -133,6 +133,7 @@ export const ko: I18n = {
   Cleared: '지워짐',
   Saved: '저장됨',
   'Clear All Traces': '모든 추적 지우기',
+  'Delete all traces permanently': '모든 추적을 영구적으로 삭제',
   'Are you sure you want to delete all traces? This action cannot be undone.':
     '모든 추적을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.',
   'Delete All': '모두 삭제',

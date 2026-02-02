@@ -177,32 +177,11 @@ export function TracesPage() {
     <DefaultLayout
       header={header}
       pageMenuActions={
-        <>
-          <Tooltip content={t('Settings')} placement="bottom">
-            <Button
-              variant="light"
-              isIconOnly
-              aria-label={t('Settings')}
-              className="opacity-70 hover:opacity-100"
-              onPress={onConfigOpen}
-            >
-              <Icon name="Settings" size="sm" />
-            </Button>
-          </Tooltip>
-
-          <Tooltip content={t('Clear All')} placement="bottom">
-            <Button
-              variant="light"
-              isIconOnly
-              aria-label={t('Clear All')}
-              className="opacity-70 hover:opacity-100"
-              color="danger"
-              onPress={onClearOpen}
-            >
-              <Icon name="Trash" size="sm" />
-            </Button>
-          </Tooltip>
-        </>
+        <Tooltip content={t('Settings')} placement="bottom">
+          <Button aria-label={t('Settings')} onPress={onConfigOpen}>
+            <Icon name="Settings" size="sm" />
+          </Button>
+        </Tooltip>
       }
     >
       <Section>
@@ -293,6 +272,23 @@ export function TracesPage() {
               <SelectItem key="0.1">10%</SelectItem>
               <SelectItem key="0.01">1%</SelectItem>
             </Select>
+
+            <div className="pt-4 border-t border-divider">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-danger">
+                    {t('Clear All Traces')}
+                  </p>
+                  <p className="text-sm text-default-400">
+                    {t('Delete all traces permanently')}
+                  </p>
+                </div>
+                <Button color="danger" variant="flat" onPress={onClearOpen}>
+                  <Icon name="Trash" size="sm" />
+                  {t('Clear All')}
+                </Button>
+              </div>
+            </div>
           </ModalBody>
           <ModalFooter>
             <Button variant="flat" onPress={onConfigClose}>

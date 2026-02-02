@@ -1,5 +1,8 @@
-import { db } from '@/lib/db'
-import { syncToYjs, deleteFromYjs } from '@/features/sync'
+import {
+  traces as tracesMap,
+  spans as spansMap,
+  tracingConfig as tracingConfigMap,
+} from '@/lib/yjs/maps'
 import { LLMConfig, LLMProvider } from '@/types'
 import {
   estimateUsdCost,
@@ -446,8 +449,7 @@ export class TraceService {
     if (this.initialized) return
 
     try {
-      await db.init()
-      const configs = await db.getAll('tracingConfig')
+      const configs = Array.from(tracingConfigMap.values())
       this.config = configs[0] || this.getDefaultConfig()
       this.initialized = true
 
@@ -504,14 +506,13 @@ export class TraceService {
   static async updateConfig(
     config: Partial<TracingConfig>,
   ): Promise<TracingConfig> {
-    await db.init()
     const updated = {
       ...this.getDefaultConfig(),
       ...this.config,
       ...config,
       updatedAt: new Date(),
     }
-    await db.update('tracingConfig', updated)
+    tracingConfigMap.set(updated.id, updated)
     this.config = updated
     return updated
   }
@@ -589,24 +590,25 @@ export class TraceService {
     const spans = await this.getSpansForTrace(traceId)
     trace.spanCount = spans.length
 
-    // Calculate totals from LLM spans (token-based)
-    const llmSpans = spans.filter((s) => s.type === 'llm' && s.usage)
-    if (llmSpans.length > 0) {
-      trace.totalPromptTokens = llmSpans.reduce(
+    // Calculate totals from all spans that have usage data (tokens)
+    // This includes LLM spans, tool spans, and any other span type with token usage
+    const spansWithUsage = spans.filter((s) => s.usage)
+    if (spansWithUsage.length > 0) {
+      trace.totalPromptTokens = spansWithUsage.reduce(
         (sum, s) => sum + (s.usage?.promptTokens || 0),
         0,
       )
-      trace.totalCompletionTokens = llmSpans.reduce(
+      trace.totalCompletionTokens = spansWithUsage.reduce(
         (sum, s) => sum + (s.usage?.completionTokens || 0),
         0,
       )
       trace.totalTokens = trace.totalPromptTokens + trace.totalCompletionTokens
 
-      const totalInputCost = llmSpans.reduce(
+      const totalInputCost = spansWithUsage.reduce(
         (sum, s) => sum + (s.cost?.inputCost || 0),
         0,
       )
-      const totalOutputCost = llmSpans.reduce(
+      const totalOutputCost = spansWithUsage.reduce(
         (sum, s) => sum + (s.cost?.outputCost || 0),
         0,
       )
@@ -616,11 +618,12 @@ export class TraceService {
         totalCost: totalInputCost + totalOutputCost,
         currency: 'USD',
       }
+    }
 
-      // Set primary model from first LLM span
-      if (llmSpans[0]?.model) {
-        trace.primaryModel = llmSpans[0].model
-      }
+    // Set primary model from first LLM span (if any)
+    const llmSpans = spans.filter((s) => s.type === 'llm' && s.model)
+    if (llmSpans[0]?.model) {
+      trace.primaryModel = llmSpans[0].model
     }
 
     // Handle image generation spans (no tokens, but has model info and potential cost)
@@ -685,13 +688,10 @@ export class TraceService {
       }
     }
 
-    // Save to database if enabled
+    // Save to Yjs map if enabled
     if (this.isEnabled()) {
       try {
-        await db.init()
-        await db.add('traces', trace)
-        console.debug('[TraceService] Syncing trace to Yjs:', trace.id)
-        syncToYjs('traces', trace)
+        tracesMap.set(trace.id, trace)
       } catch (error) {
         console.error('[TraceService] Failed to save trace:', error)
       }
@@ -795,13 +795,10 @@ export class TraceService {
       }
     }
 
-    // Save to database if enabled
+    // Save to Yjs map if enabled
     if (this.isEnabled()) {
       try {
-        await db.init()
-        await db.add('spans', span)
-        console.debug('[TraceService] Syncing span to Yjs:', span.id)
-        syncToYjs('spans', span)
+        spansMap.set(span.id, span)
       } catch (error) {
         console.error('[TraceService] Failed to save span:', error)
       }
@@ -1003,8 +1000,7 @@ export class TraceService {
    * Get all traces with optional filtering
    */
   static async getTraces(filter?: TraceFilter): Promise<Trace[]> {
-    await db.init()
-    let traces = await db.getAll('traces')
+    let traces = Array.from(tracesMap.values())
 
     // Apply filters
     if (filter) {
@@ -1053,16 +1049,16 @@ export class TraceService {
    * Get a single trace by ID
    */
   static async getTrace(traceId: string): Promise<Trace | undefined> {
-    await db.init()
-    return db.get('traces', traceId)
+    return tracesMap.get(traceId)
   }
 
   /**
    * Get spans for a trace
    */
   static async getSpansForTrace(traceId: string): Promise<Span[]> {
-    await db.init()
-    const spans = await db.query('spans', 'traceId', traceId)
+    const spans = Array.from(spansMap.values()).filter(
+      (span) => span.traceId === traceId,
+    )
     // Sort by start time
     spans.sort(
       (a, b) =>
@@ -1075,45 +1071,33 @@ export class TraceService {
    * Get a single span by ID
    */
   static async getSpan(spanId: string): Promise<Span | undefined> {
-    await db.init()
-    return db.get('spans', spanId)
+    return spansMap.get(spanId)
   }
 
   /**
    * Delete a trace and its spans
    */
   static async deleteTrace(traceId: string): Promise<void> {
-    await db.init()
     // Delete spans first
     const spans = await this.getSpansForTrace(traceId)
     for (const span of spans) {
-      await db.delete('spans', span.id)
-      deleteFromYjs('spans', span.id)
+      spansMap.delete(span.id)
     }
     // Delete trace
-    await db.delete('traces', traceId)
-    deleteFromYjs('traces', traceId)
+    tracesMap.delete(traceId)
   }
 
   /**
    * Clear all traces and spans
    */
   static async clearAllTraces(): Promise<void> {
-    await db.init()
-    // Get all traces and spans to sync deletions
-    const traces = await db.getAll('traces')
-    const spans = await db.getAll('spans')
-
-    // Clear from DB
-    await db.clear('traces')
-    await db.clear('spans')
-
-    // Sync deletions to Yjs
-    for (const span of spans) {
-      deleteFromYjs('spans', span.id)
+    // Clear all traces
+    for (const id of tracesMap.keys()) {
+      tracesMap.delete(id)
     }
-    for (const trace of traces) {
-      deleteFromYjs('traces', trace.id)
+    // Clear all spans
+    for (const id of spansMap.keys()) {
+      spansMap.delete(id)
     }
   }
 
@@ -1127,8 +1111,7 @@ export class TraceService {
   static async getMetrics(
     period: 'hour' | 'day' | 'week' | 'month' | 'all' = 'day',
   ): Promise<TraceMetrics> {
-    await db.init()
-    const traces = await db.getAll('traces')
+    const traces = Array.from(tracesMap.values())
 
     // Calculate date range
     const now = new Date()
@@ -1243,8 +1226,7 @@ export class TraceService {
    * Get daily metrics for time-series charts
    */
   static async getDailyMetrics(days: number = 30): Promise<DailyMetrics[]> {
-    await db.init()
-    const traces = await db.getAll('traces')
+    const traces = Array.from(tracesMap.values())
 
     // Group by day
     const dailyMap = new Map<string, DailyMetrics>()
@@ -1319,8 +1301,7 @@ export class TraceService {
   static async cleanupOldTraces(): Promise<number> {
     if (!this.config?.retentionDays) return 0
 
-    await db.init()
-    const traces = await db.getAll('traces')
+    const traces = Array.from(tracesMap.values())
 
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - this.config.retentionDays)
@@ -1342,8 +1323,7 @@ export class TraceService {
   static async enforceMaxTraces(): Promise<number> {
     if (!this.config?.maxTraces) return 0
 
-    await db.init()
-    const traces = await db.getAll('traces')
+    const traces = Array.from(tracesMap.values())
 
     if (traces.length <= this.config.maxTraces) return 0
 

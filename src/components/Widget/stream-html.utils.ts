@@ -372,7 +372,9 @@ export const completeStreamingHtml = (html: string): string => {
     }
   }
 
-  console.debug('HTML Completion Issues:', foundIssues)
+  // if (foundIssues.length > 0) {
+  //   console.debug('HTML Completion Issues:', foundIssues)
+  // }
 
   return completed
   // return { completed, issues: foundIssues }

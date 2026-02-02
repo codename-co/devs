@@ -70,13 +70,7 @@ export const PageMenuButton = forwardRef<
       <Tooltip content={tooltipContent} isDisabled={tooltipDisabled}>
         <span className="inline-flex">
           <PopoverTrigger>
-            <Button
-              ref={ref}
-              variant="light"
-              isIconOnly
-              aria-label={ariaLabel}
-              className="opacity-70 hover:opacity-100"
-            >
+            <Button ref={ref} aria-label={ariaLabel}>
               <Icon
                 name={icon}
                 className={

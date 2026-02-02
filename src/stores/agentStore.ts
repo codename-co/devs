@@ -1,17 +1,24 @@
+import { useState, useEffect } from 'react'
+
 import { PRODUCT } from '@/config/product'
 import { errorToast, successToast } from '@/lib/toast'
-import { db } from '@/lib/db'
-import { deleteFromYjs, syncToYjs } from '@/features/sync'
 import { slugify, generateUniqueSlug } from '@/lib/slugify'
 import { type Agent, type AgentColor, type Tool } from '@/types'
 import { Lang } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
 import { IconName } from '@/lib/types'
+import {
+  agents,
+  whenReady,
+  transact,
+  useLiveMap,
+  useLiveValue,
+} from '@/lib/yjs'
 
 type AgentJSON = Omit<Agent, 'createdAt' | 'updatedAt' | 'version' | 'tools'>
 
-const agentCache = new Map<string, Agent>()
-const slugToIdMap = new Map<string, string>() // Maps slug to agent id for fast lookups
+// Cache for built-in agents loaded from JSON files
+const builtInAgentCache = new Map<string, Agent>()
 let agentsList: string[] | null = null
 
 const defaultDevsTeam: Agent = {
@@ -21,7 +28,7 @@ const defaultDevsTeam: Agent = {
   icon: 'Devs',
   desc: 'Autonomous multi-agent orchestrator for complex task delegation',
   role: 'Autonomous Task Orchestrator and Multi-Agent Team Coordinator',
-  instructions: `You are the ${PRODUCT.displayName} autonomous orchestration system. Your primary mission is to analyze user requests and coordinate teams of specialized agents to deliver complete, high-quality solutions without requiring human intervention.
+  instructions: /* md */ `You are the ${PRODUCT.displayName} autonomous orchestration system. Your primary mission is to analyze user requests and coordinate teams of specialized agents to deliver complete, high-quality solutions without requiring human intervention.
 
 ## Core Capabilities:
 
@@ -86,7 +93,8 @@ const defaultDevsTeam: Agent = {
 
 When a user provides a request, immediately trigger the autonomous orchestration process. Analyze the task, build the team, coordinate execution, validate results, and deliver comprehensive artifacts that fully satisfy all requirements.
 
-Your success is measured by delivering complete, high-quality solutions that meet all user requirements without requiring any intermediate human intervention.`,
+Your success is measured by delivering complete, high-quality solutions that meet all user requirements without requiring any intermediate human intervention.
+`,
   tags: ['orchestrator', 'autonomous', 'multi-agent', 'coordination'],
   createdAt: new Date(),
   i18n: {
@@ -113,45 +121,44 @@ Your success is measured by delivering complete, high-quality solutions that mee
   },
 }
 
-agentCache.set('devs', defaultDevsTeam)
-slugToIdMap.set('devs', 'devs')
+// Initialize the default DEVS agent in Yjs if not present
+whenReady.then(() => {
+  if (!agents.has('devs')) {
+    agents.set('devs', defaultDevsTeam)
+  }
+})
 
 /**
- * Get all existing slugs from cache and database
+ * Get all existing slugs from Yjs and built-in cache
  */
-async function getAllExistingSlugs(): Promise<Set<string>> {
+function getAllExistingSlugs(): Set<string> {
   const slugs = new Set<string>()
 
-  // Add slugs from cache
-  for (const agent of agentCache.values()) {
+  // Add slugs from built-in agents cache
+  for (const agent of builtInAgentCache.values()) {
     if (agent.slug) {
       slugs.add(agent.slug)
     }
   }
 
-  // Add slugs from database (custom agents)
-  try {
-    if (!db.isInitialized()) {
-      await db.init()
+  // Add slugs from Yjs (custom agents)
+  for (const agent of agents.values()) {
+    if (agent.slug && !agent.deletedAt) {
+      slugs.add(agent.slug)
     }
-    const customAgents = await db.getAll('agents')
-    for (const agent of customAgents) {
-      if (agent.slug) {
-        slugs.add(agent.slug)
-      }
-    }
-  } catch (error) {
-    console.error('Error fetching existing slugs:', error)
   }
 
   return slugs
 }
 
-async function loadAgent(agentId: string): Promise<Agent | null> {
+/**
+ * Load a built-in agent from JSON file
+ */
+async function loadBuiltInAgent(agentId: string): Promise<Agent | null> {
   if (!agentId) return null
 
-  if (agentCache.has(agentId)) {
-    return agentCache.get(agentId)!
+  if (builtInAgentCache.has(agentId)) {
+    return builtInAgentCache.get(agentId)!
   }
 
   if (agentId.startsWith('custom-')) {
@@ -174,8 +181,7 @@ async function loadAgent(agentId: string): Promise<Agent | null> {
       createdAt: new Date(),
     }
 
-    agentCache.set(agentId, agent)
-    slugToIdMap.set(agent.slug, agent.id)
+    builtInAgentCache.set(agentId, agent)
     return agent
   } catch (error) {
     console.error(`Error loading agent ${agentId}:`, error)
@@ -206,6 +212,8 @@ export async function getAvailableAgents(): Promise<string[]> {
 export async function loadAllAgents(options?: {
   includeDefaultAgents?: boolean
 }): Promise<Agent[]> {
+  await whenReady
+
   // Check user setting for hiding default agents
   const hideDefaultAgents = userSettings.getState().hideDefaultAgents
   const includeDefaults = options?.includeDefaultAgents ?? !hideDefaultAgents
@@ -216,7 +224,7 @@ export async function loadAllAgents(options?: {
     const agentIds = await getAvailableAgents()
     const builtInAgents = await Promise.all(
       agentIds.map((id) =>
-        id === 'devs' ? Promise.resolve(defaultDevsTeam) : loadAgent(id),
+        id === 'devs' ? Promise.resolve(defaultDevsTeam) : loadBuiltInAgent(id),
       ),
     )
     validBuiltInAgents = builtInAgents.filter(
@@ -224,111 +232,147 @@ export async function loadAllAgents(options?: {
     )
   }
 
-  // Load custom agents from IndexedDB
-  const customAgents = await loadCustomAgents()
+  // Get custom agents from Yjs (filter out deleted)
+  const customAgents = getAllCustomAgents()
 
   // Combine all agents
   return [...validBuiltInAgents, ...customAgents]
 }
 
-export async function getAgentById(id: string): Promise<Agent | null> {
+/**
+ * Get all custom agents from Yjs (excludes deleted)
+ */
+function getAllCustomAgents(): Agent[] {
+  return Array.from(agents.values()).filter(
+    (agent) => agent.id.startsWith('custom-') && !agent.deletedAt,
+  )
+}
+
+/**
+ * Get an agent by ID (sync when possible)
+ */
+export function getAgentById(id: string): Agent | undefined {
   if (id === 'devs') {
-    return defaultDevsTeam
+    return agents.get('devs') ?? defaultDevsTeam
   }
 
-  // Check cache first
-  if (agentCache.has(id)) {
-    return agentCache.get(id)!
+  // Check Yjs first (includes custom agents)
+  const yjsAgent = agents.get(id)
+  if (yjsAgent && !yjsAgent.deletedAt) {
+    return yjsAgent
   }
 
-  // Try loading from JSON files first
-  const jsonAgent = await loadAgent(id)
+  // Check built-in agent cache
+  if (builtInAgentCache.has(id)) {
+    return builtInAgentCache.get(id)
+  }
+
+  return undefined
+}
+
+/**
+ * Get an agent by ID (async version for backward compatibility)
+ * Tries built-in agents from JSON files if not in Yjs
+ */
+export async function getAgentByIdAsync(id: string): Promise<Agent | null> {
+  await whenReady
+
+  if (id === 'devs') {
+    return agents.get('devs') ?? defaultDevsTeam
+  }
+
+  // Check Yjs first (includes custom agents)
+  const yjsAgent = agents.get(id)
+  if (yjsAgent && !yjsAgent.deletedAt) {
+    return yjsAgent
+  }
+
+  // Check built-in agent cache
+  if (builtInAgentCache.has(id)) {
+    return builtInAgentCache.get(id)!
+  }
+
+  // Try loading from JSON files
+  const jsonAgent = await loadBuiltInAgent(id)
   if (jsonAgent) {
     return jsonAgent
-  }
-
-  // Try loading from IndexedDB for custom agents
-  try {
-    if (!db.isInitialized()) {
-      await db.init()
-    }
-    const customAgent = await db.get('agents', id)
-    if (customAgent) {
-      // Migrate agent without slug
-      if (!customAgent.slug) {
-        const existingSlugs = await getAllExistingSlugs()
-        const baseSlug = slugify(customAgent.name)
-        customAgent.slug = generateUniqueSlug(baseSlug, existingSlugs)
-        // Persist the generated slug
-        try {
-          await db.update('agents', customAgent)
-        } catch (updateError) {
-          console.warn(`Failed to persist slug for agent ${id}:`, updateError)
-        }
-      }
-      agentCache.set(id, customAgent)
-      slugToIdMap.set(customAgent.slug, customAgent.id)
-      return customAgent
-    }
-  } catch (error) {
-    console.error(`Error loading custom agent ${id}:`, error)
   }
 
   return null
 }
 
 /**
- * Get an agent by its slug
- * Falls back to ID-based lookup if slug not found
- *
- * @param slug - The agent's slug
- * @returns The agent or null if not found
+ * Get an agent by its slug (sync version)
  */
-export async function getAgentBySlug(slug: string): Promise<Agent | null> {
-  if (!slug) return null
-
-  // Check slug map cache first
-  if (slugToIdMap.has(slug)) {
-    const id = slugToIdMap.get(slug)!
-    return getAgentById(id)
-  }
+export function getAgentBySlug(slug: string): Agent | undefined {
+  if (!slug) return undefined
 
   // For 'devs' slug, return default agent
   if (slug === 'devs') {
-    return defaultDevsTeam
+    return agents.get('devs') ?? defaultDevsTeam
   }
 
-  // Search in cache
-  for (const agent of agentCache.values()) {
-    if (agent.slug === slug) {
-      slugToIdMap.set(slug, agent.id)
+  // Search in Yjs
+  for (const agent of agents.values()) {
+    if (agent.slug === slug && !agent.deletedAt) {
       return agent
     }
   }
 
-  // Search in database for custom agents
-  try {
-    if (!db.isInitialized()) {
-      await db.init()
+  // Search in built-in agent cache
+  for (const agent of builtInAgentCache.values()) {
+    if (agent.slug === slug) {
+      return agent
     }
-    const customAgents = await db.getAll('agents')
-    for (const agent of customAgents) {
-      if (agent.slug === slug) {
-        agentCache.set(agent.id, agent)
-        slugToIdMap.set(slug, agent.id)
-        return agent
-      }
-    }
-  } catch (error) {
-    console.error(`Error searching for agent by slug ${slug}:`, error)
   }
 
   // Fall back to ID-based lookup (for backward compatibility)
   return getAgentById(slug)
 }
 
+/**
+ * Get an agent by its slug (async version for backward compatibility)
+ */
+export async function getAgentBySlugAsync(slug: string): Promise<Agent | null> {
+  await whenReady
+
+  if (!slug) return null
+
+  // For 'devs' slug, return default agent
+  if (slug === 'devs') {
+    return agents.get('devs') ?? defaultDevsTeam
+  }
+
+  // Search in Yjs first
+  for (const agent of agents.values()) {
+    if (agent.slug === slug && !agent.deletedAt) {
+      return agent
+    }
+  }
+
+  // Search in built-in agent cache
+  for (const agent of builtInAgentCache.values()) {
+    if (agent.slug === slug) {
+      return agent
+    }
+  }
+
+  // Try loading all built-in agents and search
+  const agentIds = await getAvailableAgents()
+  for (const agentId of agentIds) {
+    if (agentId === 'devs') continue
+    const builtInAgent = await loadBuiltInAgent(agentId)
+    if (builtInAgent && builtInAgent.slug === slug) {
+      return builtInAgent
+    }
+  }
+
+  // Fall back to ID-based lookup (for backward compatibility)
+  return getAgentByIdAsync(slug)
+}
+
 export function getDefaultAgent(): Agent {
-  return defaultDevsTeam
+  return agents.get('devs') ?? defaultDevsTeam
 }
 
 export type AgentCategory =
@@ -416,13 +460,10 @@ export async function createAgent(agentData: {
   portrait?: string
 }): Promise<Agent> {
   try {
-    // Ensure database is initialized
-    if (!db.isInitialized()) {
-      await db.init()
-    }
+    await whenReady
 
     // Generate a unique slug from the name
-    const existingSlugs = await getAllExistingSlugs()
+    const existingSlugs = getAllExistingSlugs()
     const baseSlug = slugify(agentData.name)
     const uniqueSlug = generateUniqueSlug(baseSlug, existingSlugs)
 
@@ -444,15 +485,8 @@ export async function createAgent(agentData: {
       updatedAt: new Date(),
     }
 
-    // Save to IndexedDB
-    await db.add('agents', agent)
-
-    // Sync to Yjs for P2P sync
-    syncToYjs('agents', agent)
-
-    // Add to cache
-    agentCache.set(agent.id, agent)
-    slugToIdMap.set(agent.slug, agent.id)
+    // Save to Yjs (single source of truth)
+    agents.set(agent.id, agent)
 
     // Invalidate the agents list cache so it will be refreshed next time
     agentsList = null
@@ -475,13 +509,10 @@ export async function updateAgent(
   updates: Partial<Agent>,
 ): Promise<Agent> {
   try {
-    // Ensure database is initialized
-    if (!db.isInitialized()) {
-      await db.init()
-    }
+    await whenReady
 
     // Get current agent
-    const currentAgent = await getAgentById(agentId)
+    const currentAgent = getAgentById(agentId)
     if (!currentAgent) {
       throw new Error(`Agent with id ${agentId} not found`)
     }
@@ -489,7 +520,7 @@ export async function updateAgent(
     // Handle slug update if name changed
     let newSlug = currentAgent.slug
     if (updates.name && updates.name !== currentAgent.name) {
-      const existingSlugs = await getAllExistingSlugs()
+      const existingSlugs = getAllExistingSlugs()
       const baseSlug = slugify(updates.name)
       // Exclude current slug so we can keep it if the new base slug matches
       newSlug = generateUniqueSlug(baseSlug, existingSlugs, currentAgent.slug)
@@ -504,18 +535,8 @@ export async function updateAgent(
       updatedAt: new Date(),
     }
 
-    // Save to IndexedDB
-    await db.update('agents', updatedAgent)
-
-    // Sync to Yjs for P2P sync
-    syncToYjs('agents', updatedAgent)
-
-    // Update caches
-    if (currentAgent.slug !== updatedAgent.slug) {
-      slugToIdMap.delete(currentAgent.slug)
-    }
-    agentCache.set(agentId, updatedAgent)
-    slugToIdMap.set(updatedAgent.slug, agentId)
+    // Save to Yjs (single source of truth)
+    agents.set(agentId, updatedAgent)
 
     successToast('Agent updated successfully!')
 
@@ -530,48 +551,10 @@ export async function updateAgent(
   }
 }
 
+/**
+ * Delete an agent (soft delete via deletedAt)
+ */
 export async function deleteAgent(agentId: string): Promise<void> {
-  try {
-    // Prevent deletion of default agent
-    if (agentId === 'devs') {
-      throw new Error('Cannot delete the default agent')
-    }
-
-    // Ensure database is initialized
-    if (!db.isInitialized()) {
-      await db.init()
-    }
-
-    // Get agent to clean up slug mapping
-    const agent = agentCache.get(agentId)
-    if (agent?.slug) {
-      slugToIdMap.delete(agent.slug)
-    }
-
-    // Delete from IndexedDB
-    await db.delete('agents', agentId)
-
-    // Sync deletion to Yjs
-    deleteFromYjs('agents', agentId)
-
-    // Remove from cache
-    agentCache.delete(agentId)
-
-    // Invalidate the agents list cache
-    agentsList = null
-
-    successToast('Agent deleted successfully!')
-  } catch (error) {
-    console.error('Error deleting agent:', error)
-    errorToast(
-      'Failed to delete agent',
-      error instanceof Error ? error.message : 'Unknown error',
-    )
-    throw error
-  }
-}
-
-export async function softDeleteAgent(agentId: string): Promise<void> {
   try {
     // Prevent deletion of default agent
     if (agentId === 'devs') {
@@ -583,35 +566,23 @@ export async function softDeleteAgent(agentId: string): Promise<void> {
       throw new Error('Cannot delete built-in agents')
     }
 
-    // Ensure database is initialized
-    if (!db.isInitialized()) {
-      await db.init()
-    }
+    await whenReady
 
     // Get current agent
-    const currentAgent = await getAgentById(agentId)
+    const currentAgent = agents.get(agentId)
     if (!currentAgent) {
       throw new Error(`Agent with id ${agentId} not found`)
     }
 
-    // Mark agent as deleted by setting deletedAt
-    const updatedAgent: Agent = {
+    // Soft delete by setting deletedAt
+    const deletedAgent: Agent = {
       ...currentAgent,
       deletedAt: new Date(),
       updatedAt: new Date(),
     }
 
-    // Save to IndexedDB
-    await db.update('agents', updatedAgent)
-
-    // Sync soft delete to Yjs for P2P sync
-    syncToYjs('agents', updatedAgent)
-
-    // Remove from cache and slug map (so it won't appear in lists)
-    if (currentAgent.slug) {
-      slugToIdMap.delete(currentAgent.slug)
-    }
-    agentCache.delete(agentId)
+    // Save to Yjs (single source of truth)
+    agents.set(agentId, deletedAgent)
 
     // Invalidate the agents list cache
     agentsList = null
@@ -627,56 +598,62 @@ export async function softDeleteAgent(agentId: string): Promise<void> {
   }
 }
 
+/**
+ * Soft delete an agent (alias for deleteAgent for backward compatibility)
+ */
+export async function softDeleteAgent(agentId: string): Promise<void> {
+  return deleteAgent(agentId)
+}
+
+/**
+ * Restore a soft-deleted agent
+ */
+export async function restoreAgent(
+  agentId: string,
+): Promise<Agent | undefined> {
+  try {
+    await whenReady
+
+    const currentAgent = agents.get(agentId)
+    if (!currentAgent) {
+      throw new Error(`Agent with id ${agentId} not found`)
+    }
+
+    if (!currentAgent.deletedAt) {
+      // Agent is not deleted, return as-is
+      return currentAgent
+    }
+
+    // Remove deletedAt to restore
+    const restoredAgent: Agent = {
+      ...currentAgent,
+      deletedAt: undefined,
+      updatedAt: new Date(),
+    }
+
+    // Save to Yjs
+    agents.set(agentId, restoredAgent)
+
+    successToast('Agent restored successfully!')
+
+    return restoredAgent
+  } catch (error) {
+    console.error('Error restoring agent:', error)
+    errorToast(
+      'Failed to restore agent',
+      error instanceof Error ? error.message : 'Unknown error',
+    )
+    throw error
+  }
+}
+
+/**
+ * Get all agents (for backward compatibility, async version)
+ */
 export async function loadCustomAgents(): Promise<Agent[]> {
   try {
-    // Ensure database is initialized
-    if (!db.isInitialized()) {
-      await db.init()
-    }
-
-    // Get all agents from IndexedDB
-    const customAgents = await db.getAll('agents')
-
-    // Filter out soft-deleted agents (inferred from deletedAt)
-    const activeAgents = customAgents.filter((agent) => !agent.deletedAt)
-
-    // Migrate agents without slugs
-    const existingSlugs = new Set<string>()
-    // Collect existing slugs first
-    activeAgents.forEach((agent) => {
-      if (agent.slug) {
-        existingSlugs.add(agent.slug)
-      }
-    })
-
-    // Generate and persist slugs for agents without them
-    for (const agent of activeAgents) {
-      if (!agent.slug) {
-        const baseSlug = slugify(agent.name)
-        const uniqueSlug = generateUniqueSlug(baseSlug, existingSlugs)
-        agent.slug = uniqueSlug
-        existingSlugs.add(uniqueSlug)
-        // Persist the generated slug to the database
-        try {
-          await db.update('agents', agent)
-        } catch (updateError) {
-          console.warn(
-            `Failed to persist slug for agent ${agent.id}:`,
-            updateError,
-          )
-        }
-      }
-    }
-
-    // Add to cache and slug map
-    activeAgents.forEach((agent) => {
-      agentCache.set(agent.id, agent)
-      if (agent.slug) {
-        slugToIdMap.set(agent.slug, agent.id)
-      }
-    })
-
-    return activeAgents
+    await whenReady
+    return getAllCustomAgents()
   } catch (error) {
     console.error('Error loading custom agents:', error)
     return []
@@ -688,7 +665,7 @@ export async function loadBuiltInAgents(): Promise<Agent[]> {
   const agentIds = await getAvailableAgents()
   const builtInAgents = await Promise.all(
     agentIds.map((id) =>
-      id === 'devs' ? Promise.resolve(defaultDevsTeam) : loadAgent(id),
+      id === 'devs' ? Promise.resolve(defaultDevsTeam) : loadBuiltInAgent(id),
     ),
   )
   return builtInAgents.filter((agent): agent is Agent => agent !== null)
@@ -698,6 +675,8 @@ export async function getAgentsSeparated(): Promise<{
   customAgents: Agent[]
   builtInAgents: Agent[]
 }> {
+  await whenReady
+
   const hideDefaultAgents = userSettings.getState().hideDefaultAgents
   const [customAgents, builtInAgents] = await Promise.all([
     loadCustomAgents(),
@@ -716,9 +695,9 @@ export async function listAgentExamples(lang?: Lang): Promise<
     examples: { id: string; title?: string; prompt: string }[]
   }[]
 > {
-  const agents = await loadAllAgents()
+  const allAgents = await loadAllAgents()
 
-  return agents
+  return allAgents
     .filter((agent) => agent?.examples?.length)
     .map((agent) => ({
       agent,
@@ -737,3 +716,91 @@ export async function listAgentExamples(lang?: Lang): Promise<
       })),
     }))
 }
+
+/**
+ * Get all agents (sync) - returns custom agents from Yjs
+ */
+export function getAllAgents(): Agent[] {
+  return getAllCustomAgents()
+}
+
+/**
+ * Batch create multiple agents
+ */
+export async function batchCreateAgents(
+  agentsToCreate: Agent[],
+): Promise<void> {
+  await whenReady
+
+  transact(() => {
+    for (const agent of agentsToCreate) {
+      agents.set(agent.id, agent)
+    }
+  })
+
+  // Invalidate the agents list cache
+  agentsList = null
+}
+
+// ============================================================================
+// React Hooks
+// ============================================================================
+
+/**
+ * React hook to subscribe to all agents (custom agents from Yjs)
+ * Returns only non-deleted agents
+ */
+export function useAgents(): Agent[] {
+  const allAgents = useLiveMap(agents)
+  return allAgents.filter((agent) => !agent.deletedAt)
+}
+
+/**
+ * React hook to subscribe to a single agent by ID
+ * Returns undefined if not found or deleted
+ */
+export function useAgent(id: string | undefined): Agent | undefined {
+  const agent = useLiveValue(agents, id)
+  if (!agent || agent.deletedAt) {
+    // Check built-in agent cache
+    if (id && builtInAgentCache.has(id)) {
+      return builtInAgentCache.get(id)
+    }
+    return undefined
+  }
+  return agent
+}
+
+/**
+ * React hook to subscribe to agents separated into custom and built-in
+ * Returns { customAgents, builtInAgents, loading }
+ */
+export function useAgentsSeparated(): {
+  customAgents: Agent[]
+  builtInAgents: Agent[]
+  loading: boolean
+} {
+  const customAgents = useAgents()
+  const hideDefaultAgents = userSettings((state) => state.hideDefaultAgents)
+  const [builtInAgents, setBuiltInAgents] = useState<Agent[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (hideDefaultAgents) {
+      setBuiltInAgents([])
+      setLoading(false)
+    } else {
+      loadBuiltInAgents().then((agents) => {
+        setBuiltInAgents(agents)
+        setLoading(false)
+      })
+    }
+  }, [hideDefaultAgents])
+
+  return { customAgents, builtInAgents, loading }
+}
+
+/**
+ * React hook to check if Yjs data is ready
+ */
+export { useSyncReady } from '@/lib/yjs'

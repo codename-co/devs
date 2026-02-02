@@ -54,7 +54,7 @@ import { LLMService, type LLMMessage } from '@/lib/llm'
 import type { ToolDefinition, LLMConfigWithTools } from '@/lib/llm/types'
 import { CredentialService } from '@/lib/credential-service'
 import { successToast, errorToast } from '@/lib/toast'
-import { db } from '@/lib/db'
+import { customExtensions as customExtensionsMap } from '@/lib/yjs/maps'
 import type { HeaderProps, IconName } from '@/lib/types'
 import type {
   CustomExtension,
@@ -537,11 +537,8 @@ const App = () => {
             enabled: true,
           }
 
-          // Save to IndexedDB
-          if (!db.isInitialized()) {
-            await db.init()
-          }
-          await db.update('customExtensions', blankExtension)
+          // Save to Yjs
+          customExtensionsMap.set(blankExtension.id, blankExtension)
 
           // Reload custom extensions in the store
           await loadCustomExtensions()
@@ -588,11 +585,8 @@ const App = () => {
               enabled: true,
             }
 
-            // Save to IndexedDB
-            if (!db.isInitialized()) {
-              await db.init()
-            }
-            await db.update('customExtensions', duplicatedExtension)
+            // Save to Yjs
+            customExtensionsMap.set(duplicatedExtension.id, duplicatedExtension)
 
             // Reload custom extensions in the store
             await loadCustomExtensions()

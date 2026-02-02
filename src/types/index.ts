@@ -153,6 +153,18 @@ export interface Credential {
   id: string
   provider: LLMProvider
   encryptedApiKey: string
+  /**
+   * IV (Initialization Vector) for encryption.
+   * When stored in the object, enables cross-device sync of encrypted credentials.
+   * When undefined, IV is stored in localStorage (local-only mode).
+   */
+  iv?: string
+  /**
+   * Encryption mode used to encrypt this credential.
+   * - 'local': Encrypted with device-specific non-extractable key (NOT syncable)
+   * - 'sync': Encrypted with password-derived key (syncable across devices with same password)
+   */
+  encryptionMode?: 'local' | 'sync'
   /** @deprecated - model selection is now stored separately in selectedModels */
   model?: string
   baseUrl?: string
@@ -208,6 +220,7 @@ export type LLMProvider =
   | 'openrouter'
   | 'huggingface'
   | 'openai-compatible'
+  | 'claude-code'
   | 'custom'
   // Image generation providers
   | 'stability'

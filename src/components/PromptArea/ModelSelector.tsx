@@ -19,6 +19,10 @@ import { LLMService } from '@/lib/llm'
 import { getModel as getModelFromModelsDev } from '@/lib/models-dev'
 import type { NormalizedModel } from '@/lib/models-dev/types'
 import { CredentialService } from '@/lib/credential-service'
+import {
+  inferLocalModelCapabilities,
+  usesLocalInference,
+} from '@/lib/llm/models'
 
 import { type Lang, useI18n } from '@/i18n'
 import type {
@@ -133,6 +137,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
   }, [credentials, providerConfigs, resolvedModels])
 
   // Map DEVS provider to models.dev provider ID
+  // For vertex-ai, returns the base provider; use getModelsDevProviderIdForModel for model-specific lookup
   const getModelsDevProviderId = useCallback(
     (provider: LLMProvider): string | null => {
       const mapping: Partial<Record<LLMProvider, string>> = {
@@ -148,6 +153,26 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
     [],
   )
 
+  // Get the correct models.dev provider ID for a specific model
+  // Handles Vertex AI special case where Claude models use a different provider
+  const getModelsDevProviderIdForModel = useCallback(
+    (provider: LLMProvider, modelId: string): string | null => {
+      // For Vertex AI, Claude models use a different provider ID
+      if (provider === 'vertex-ai') {
+        const lowerModelId = modelId.toLowerCase()
+        if (
+          lowerModelId.includes('claude') ||
+          lowerModelId.includes('anthropic')
+        ) {
+          return 'google-vertex-anthropic'
+        }
+        return 'google-vertex'
+      }
+      return getModelsDevProviderId(provider)
+    },
+    [getModelsDevProviderId],
+  )
+
   // Strip provider prefix from model ID if present (e.g., "google/gemini-2.5" -> "gemini-2.5")
   const stripModelPrefix = useCallback((modelId: string): string => {
     const slashIndex = modelId.indexOf('/')
@@ -156,6 +181,17 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
     }
     return modelId
   }, [])
+
+  // Strip Vertex AI version suffix (e.g., "gemini-2.0-flash@20260101" -> "gemini-2.0-flash")
+  // Note: For Claude models on Vertex AI, models.dev INCLUDES the version suffix,
+  // so we should NOT strip it for those models
+  const stripVersionSuffix = useCallback(
+    (modelId: string, keepForAnthropicOnVertex = false): string => {
+      if (keepForAnthropicOnVertex) return modelId
+      return modelId.replace(/@\d{8,}$/, '')
+    },
+    [],
+  )
 
   // Helper to get cached model data
   const getCachedModelData = useCallback(
@@ -166,9 +202,17 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
     [modelDataCache],
   )
 
-  // Helper to get capabilities from cached model data
+  // Helper to get capabilities from cached model data or infer for local providers
   const getCachedCapabilities = useCallback(
     (provider: LLMProvider, modelId: string): ModelCapabilities | null => {
+      // For local/ollama/openai-compatible providers, use pattern-based capability inference
+      if (usesLocalInference(provider)) {
+        const caps = inferLocalModelCapabilities(modelId, provider)
+        // Return null if no capabilities were inferred (empty object)
+        return Object.keys(caps).length > 0 ? caps : null
+      }
+
+      // For cloud providers, use cached model data from models.dev
       const modelData = getCachedModelData(provider, modelId)
       if (!modelData) return null
       return {
@@ -187,10 +231,11 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
   useEffect(() => {
     if (!viewingProvider || viewingProvider.models.length === 0) return
 
-    const modelsDevProviderId = getModelsDevProviderId(
+    // Check if this provider uses models.dev at all
+    const baseProviderId = getModelsDevProviderId(
       viewingProvider.credential.provider,
     )
-    if (!modelsDevProviderId) return // Skip for local/ollama providers
+    if (!baseProviderId) return // Skip for local/ollama providers
 
     const loadModelData = async () => {
       const newCache: Record<string, NormalizedModel | null> = {}
@@ -201,8 +246,26 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
         if (modelDataCache[key] === undefined) {
           hasNew = true
           try {
+            // Get the correct models.dev provider ID for this specific model
+            // (handles Vertex AI Claude vs Gemini distinction)
+            const modelsDevProviderId = getModelsDevProviderIdForModel(
+              viewingProvider.credential.provider,
+              modelId,
+            )
+            if (!modelsDevProviderId) {
+              newCache[key] = null
+              continue
+            }
+            // For google-vertex-anthropic, models.dev includes the @YYYYMMDD suffix
+            // so we should NOT strip it for Claude models on Vertex AI
+            const isAnthropicOnVertex =
+              modelsDevProviderId === 'google-vertex-anthropic'
             // Strip provider prefix from model ID if present (e.g., "google/gemini-2.5" -> "gemini-2.5")
-            const strippedModelId = stripModelPrefix(modelId)
+            // Also strip Vertex AI version suffix for non-Anthropic models
+            const strippedModelId = stripVersionSuffix(
+              stripModelPrefix(modelId),
+              isAnthropicOnVertex,
+            )
             const modelData = await getModelFromModelsDev(
               modelsDevProviderId,
               strippedModelId,
@@ -224,7 +287,9 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
     viewingProvider,
     modelDataCache,
     getModelsDevProviderId,
+    getModelsDevProviderIdForModel,
     stripModelPrefix,
+    stripVersionSuffix,
   ])
 
   // Capability configuration for icons and tooltips
@@ -303,7 +368,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
         return (
           <div className="p-1">
             <div className="font-medium text-sm">
-              {displayModelName(modelId)}
+              {displayModelName(modelId, provider)}
             </div>
           </div>
         )
@@ -312,7 +377,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
       return (
         <div className="p-1 max-w-xs">
           <div className="font-medium text-sm mb-2">
-            {displayModelName(modelId)}
+            {displayModelName(modelId, provider)}
           </div>
 
           {/* Pricing section */}
@@ -449,7 +514,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
     if (!selectedProvider) return t('Select a model')
     const model =
       selectedModel || getSelectedModelForProvider(selectedProvider.provider)
-    if (model) return displayModelName(model)
+    if (model) return displayModelName(model, selectedProvider.provider)
     const config = providerConfigs.find(
       (p) => p.provider === selectedProvider.provider,
     )
@@ -563,7 +628,10 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
             {isSelected && currentModelForProvider ? (
               <div className="flex items-center gap-2">
                 <span className="text-xs text-default-500">
-                  {displayModelName(currentModelForProvider)}
+                  {displayModelName(
+                    currentModelForProvider,
+                    credential.provider,
+                  )}
                 </span>
                 {renderCapabilityIcons(
                   credential.provider,
@@ -573,7 +641,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
             ) : singleModel && !hasMultipleModels ? (
               <div className="flex items-center gap-2">
                 <span className="text-xs text-default-500">
-                  {displayModelName(singleModel)}
+                  {displayModelName(singleModel, credential.provider)}
                 </span>
                 {renderCapabilityIcons(credential.provider, singleModel)}
               </div>
@@ -741,7 +809,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
                 handleModelSelect(viewingProvider.credential.provider, model)
               }}
             >
-              {displayModelName(model)}
+              {displayModelName(model, viewingProvider.credential.provider)}
             </DropdownItem>
           )
         })}

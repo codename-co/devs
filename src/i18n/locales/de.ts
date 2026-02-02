@@ -83,16 +83,20 @@ export const de: I18n = {
   'Agent learned knowledge': 'Vom Agenten gelernte Kenntnisse',
   Files: 'Dateien',
   'Manage your files': 'Verwalten Sie Ihre Dateien',
-  'App configuration': 'App-Konfiguration',
   'Database management': 'Datenbankverwaltung',
   'Traces and Metrics': 'Traces und Metriken',
+  'Observe and analyze traces and metrics':
+    'Traces und Metriken beobachten und analysieren',
   Admin: 'Admin',
 
   // PromptArea
   'Need something done?': 'Benötigen Sie etwas?',
-  'More actions': 'Weitere Aktionen',
+  'Show extended actions': 'Erweiterte Aktionen anzeigen',
+  'Hide extended actions': 'Erweiterte Aktionen ausblenden',
   'Attach a file or image': 'Datei oder Bild anhängen',
   'Upload new file': 'Neue Datei hochladen',
+  'Capture screen': 'Bildschirm aufnehmen',
+  'Capturing…': 'Aufnahme läuft…',
   'Choose from knowledge base': 'Aus Wissensdatenbank auswählen',
   'No files found in knowledge base':
     'Keine Dateien in der Wissensdatenbank gefunden',
@@ -316,6 +320,7 @@ export const de: I18n = {
   'Total Sub-tasks': 'Unteraufgaben insgesamt',
 
   // Common actions
+  optional: 'optional',
   Retry: 'Wiederholen',
   Refresh: 'Aktualisieren',
   Close: 'Schließen',
@@ -588,7 +593,7 @@ export const de: I18n = {
 
   // Sync - Modes
   Create: 'Erstellen',
-  Join: 'Beitreten',
+  'Scan & Join': 'Scannen & Beitreten',
   Share: 'Teilen',
   'Start Sync': 'Sync starten',
   'Join Room': 'Beitreten',
@@ -621,8 +626,8 @@ export const de: I18n = {
     'Klicken Sie auf "Mit Geräten synchronisieren", um die Synchronisierung zu starten.',
   'Sync your data across devices in real-time.':
     'Synchronisieren Sie Ihre Daten zwischen Geräten in Echtzeit.',
-  'No server needed - data stays between your devices.':
-    'Kein Server erforderlich - Daten bleiben zwischen Ihren Geräten.',
+  'No server needed - data transits between your devices.':
+    'Kein Server erforderlich - Daten werden zwischen Ihren Geräten übertragen.',
 
   // Sync - Room/Code
   Code: 'Code',
@@ -635,6 +640,15 @@ export const de: I18n = {
   'Share this code or link with other devices:':
     'Teilen Sie diesen Code oder Link mit anderen Geräten:',
   'Sync Settings': 'Sync-Einstellungen',
+
+  // Sync - Room Password
+  'Room Password': 'Raum-Passwort',
+  'Sync password': 'Sync-Passwort',
+  'Enter the room password': 'Geben Sie das Raum-Passwort ein',
+  'Set a password to sync API keys across devices. All devices must use the same password.':
+    'Legen Sie ein Passwort fest, um API-Schlüssel geräteübergreifend zu synchronisieren. Alle Geräte müssen dasselbe Passwort verwenden.',
+  'Enter the same password used when creating the room to sync API keys.':
+    'Geben Sie das gleiche Passwort ein, das beim Erstellen des Raums verwendet wurde, um API-Schlüssel zu synchronisieren.',
 
   // Sync - QR Code
   'Or scan this QR Code:': 'Oder scannen Sie diesen QR-Code:',
@@ -651,11 +665,23 @@ export const de: I18n = {
   'Camera access denied': 'Kamerazugriff verweigert',
   'Unable to access camera. Please grant camera permissions.':
     'Kamera nicht zugänglich. Bitte erteilen Sie Kameraberechtigungen.',
+  'Try Again': 'Erneut versuchen',
+
+  // Sync - Password Protected
+  'Password Required': 'Passwort erforderlich',
+  'This room is password-protected. Enter the password to join.':
+    'Dieser Raum ist passwortgeschützt. Geben Sie das Passwort ein, um beizutreten.',
 
   // Sync - Secret Link
   'Share the secret link': 'Geheimen Link teilen',
   'Copy and share this unique link with your other device. Keep it private!':
     'Kopieren und teilen Sie diesen einzigartigen Link mit Ihrem anderen Gerät. Halten Sie ihn geheim!',
+
+  // Sync - Advanced
+  Advanced: 'Erweitert',
+  'Background Sync': 'Hintergrund-Synchronisation',
+  'Experimental: Prevents UI freezing during sync':
+    'Experimentell: Verhindert das Einfrieren der Benutzeroberfläche während der Synchronisation',
 
   // Sync - Peers
   'Status:': 'Status:',
@@ -781,6 +807,18 @@ export const de: I18n = {
   'No models available': 'Keine Modelle verfügbar',
   'Check your server URL and connection':
     'Überprüfen Sie Ihre Server-URL und Verbindung',
+
+  // LLM Provider Management
+  'This provider is already configured. Edit or delete the existing one first.':
+    'Dieser Anbieter ist bereits konfiguriert. Bearbeiten oder löschen Sie den bestehenden zuerst.',
+  'Invalid API key': 'Ungültiger API-Schlüssel',
+  'Provider added successfully': 'Anbieter erfolgreich hinzugefügt',
+  'Failed to add provider': 'Fehler beim Hinzufügen des Anbieters',
+  'Credential not found': 'Anmeldedaten nicht gefunden',
+  'Provider updated successfully': 'Anbieter erfolgreich aktualisiert',
+  'Failed to update provider': 'Fehler beim Aktualisieren des Anbieters',
+  'Provider deleted': 'Anbieter gelöscht',
+  'Failed to delete provider': 'Fehler beim Löschen des Anbieters',
 
   // Security - Non-extractable CryptoKey
   'Encryption Key Status': 'Verschlüsselungsschlüssel-Status',

@@ -127,7 +127,14 @@ export const TaskPage = () => {
       name: 'TriangleFlagTwoStripes',
       color: 'text-primary-300 dark:text-primary-600',
     },
-    title: task?.title || t('Task Details'),
+    title: (
+      <>
+        {task?.title || t('Task Details')}
+        <Chip size="sm" variant="flat" className="ml-2 align-middle">
+          Beta
+        </Chip>
+      </>
+    ),
     subtitle: task ? `${task.complexity} • ${task.status}` : undefined,
   }
 

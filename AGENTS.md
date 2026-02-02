@@ -89,9 +89,10 @@ graph TB
 **Agent Management** ([src/stores/agentStore.ts](src/stores/agentStore.ts))
 
 - Agent lifecycle: Discovery → Recruitment → Caching → Execution
-- Built-in agents from JSON + custom agents from IndexedDB
+- Built-in agents from JSON + custom agents from Yjs
 - Dynamic agent creation via agent-recruiter
 - Skill matching and role assignment
+- **Yjs-first storage**: Direct writes to Yjs maps, reactive hooks for UI
 
 #### Execution Strategies
 
@@ -251,7 +252,7 @@ graph LR
 **Core Components:**
 
 1. **AgentMemoryStore** ([src/stores/agentMemoryStore.ts](src/stores/agentMemoryStore.ts))
-   - Memory CRUD operations with IndexedDB persistence
+   - Memory CRUD operations with Yjs persistence
    - Learning event tracking
    - Memory document synthesis
    - Bulk operations and cleanup
@@ -448,15 +449,17 @@ DEVS includes a comprehensive tracing system for monitoring, analyzing, and debu
 
 ### 15. P2P Sync - Cross-Device Synchronization
 
-DEVS uses Yjs P2P for optional data synchronization across devices and users. See [docs/SYNC.md](docs/SYNC.md) for full documentation.
+DEVS uses a **Yjs-first architecture** where Yjs is the single source of truth for all application data. See [docs/SYNC.md](docs/SYNC.md) for full documentation.
 
 **Key Features:**
 
-- Offline-first with full local copy in IndexedDB
+- **Single source of truth**: Yjs document contains all data
+- Offline-first with automatic IndexedDB persistence via y-indexeddb
 - Privacy-preserving (no central server sees user data)
 - CRDT-based automatic conflict resolution
-- WebSocket-based sync with auto-reconnect
-- Firebase-like reactive hooks for instant UI updates
+- WebSocket-based P2P sync with auto-reconnect
+- Reactive hooks (`useLiveMap`, `useLiveValue`) for instant UI updates
+- Automatic migration from legacy IndexedDB
 
 ### 16. Marketplace - Platform Extension System
 
@@ -590,7 +593,12 @@ This ensures:
 
 ### Data Storage
 
-Storage is handled entirely in the browser using IndexedDB, ensuring data privacy and offline capability.
+Storage uses a **Yjs-first architecture** where Yjs is the single source of truth:
+
+- **Primary storage**: Yjs document with typed Y.Maps for all entities
+- **Persistence**: y-indexeddb automatically persists Yjs data to IndexedDB
+- **P2P sync**: y-websocket enables optional cross-device synchronization
+- **Legacy support**: Some browser-specific data (CryptoKeys, FileSystemHandles) remains in IndexedDB
 
 ### Data Schema
 
@@ -716,25 +724,41 @@ interface Checkpoint {
 
 ### State Management Architecture
 
-**Zustand Stores with IndexedDB Persistence:**
+**Yjs-First Stores:**
+
+All stores use Yjs as the single source of truth. Data is written directly to typed Y.Maps, and React hooks observe changes for instant reactivity.
+
+```typescript
+// Store pattern: Direct Yjs writes
+export function createAgent(data: AgentData): Agent {
+  const agent = { ...data, id: nanoid(), createdAt: new Date() }
+  agents.set(agent.id, agent) // Write to Yjs map
+  return agent
+}
+
+// React hooks observe Yjs directly
+export function useAgents(): Agent[] {
+  return useLiveMap(agents).filter((a) => !a.deletedAt)
+}
+```
 
 1. **TaskStore** ([src/stores/taskStore.ts](src/stores/taskStore.ts))
-   - Task lifecycle management
+   - Task lifecycle management via Yjs `tasks` map
    - Requirement validation integration
    - Step tracking and completion
 
 2. **AgentStore** ([src/stores/agentStore.ts](src/stores/agentStore.ts))
-   - Agent discovery and caching
+   - Agent discovery and caching via Yjs `agents` map
    - Custom agent CRUD operations
    - Team building support
 
 3. **ArtifactStore** ([src/stores/artifactStore.ts](src/stores/artifactStore.ts))
-   - Artifact lifecycle management
+   - Artifact lifecycle management via Yjs `artifacts` map
    - Requirement linking and dependency tracking
    - Versioning support
 
 4. **ConversationStore** ([src/stores/conversationStore.ts](src/stores/conversationStore.ts))
-   - Multi-agent conversation tracking
+   - Multi-agent conversation tracking via Yjs `conversations` map
    - Message history management
    - Title generation
 
@@ -749,7 +773,7 @@ interface Checkpoint {
    - Theme and language management
 
 7. **AgentMemoryStore** ([src/stores/agentMemoryStore.ts](src/stores/agentMemoryStore.ts))
-   - Agent memory CRUD operations
+   - Agent memory CRUD operations via Yjs `memories` map
    - Learning event management
    - Human review workflow
    - Memory retrieval with relevance scoring
@@ -757,10 +781,10 @@ interface Checkpoint {
 
 **Store Patterns:**
 
-- Database initialization checks
-- Optimistic updates with rollback
+- Direct Yjs map writes (no IndexedDB round-trip)
+- Reactive hooks via `useLiveMap` and `useLiveValue`
 - Error handling with toast notifications
-- Cache invalidation strategies
+- Automatic P2P sync when enabled
 
 ### Knowledge Base System
 

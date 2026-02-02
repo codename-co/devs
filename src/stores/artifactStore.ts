@@ -1,12 +1,22 @@
 import { create } from 'zustand'
-import { db } from '@/lib/db'
+import { artifacts, whenReady, isReady } from '@/lib/yjs'
 import type { Artifact } from '@/types'
 import { errorToast, successToast } from '@/lib/toast'
 
+/**
+ * Helper to get all artifacts from Yjs map
+ */
+function getAllArtifacts(): Artifact[] {
+  return Array.from(artifacts.values())
+}
+
 interface ArtifactStore {
-  artifacts: Artifact[]
+  // UI-only state (Zustand manages these)
   currentArtifact: Artifact | null
   isLoading: boolean
+
+  // Derived from Yjs - kept for API compatibility
+  artifacts: Artifact[]
 
   loadArtifacts: () => Promise<void>
   loadArtifact: (id: string) => Promise<void>
@@ -41,11 +51,11 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
   loadArtifacts: async () => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
-      const artifacts = await db.getAll('artifacts')
-      set({ artifacts, isLoading: false })
+      const allArtifacts = getAllArtifacts()
+      set({ artifacts: allArtifacts, isLoading: false })
     } catch (error) {
       errorToast('Failed to load artifacts', error)
       set({ isLoading: false })
@@ -55,10 +65,10 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
   loadArtifact: async (id: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
-      const artifact = await db.get('artifacts', id)
+      const artifact = artifacts.get(id)
       if (artifact) {
         set({ currentArtifact: artifact, isLoading: false })
       } else {
@@ -77,8 +87,8 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
   createArtifact: async (artifactData) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
 
       const artifact: Artifact = {
@@ -89,7 +99,7 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.add('artifacts', artifact)
+      artifacts.set(artifact.id, artifact)
 
       const updatedArtifacts = [...get().artifacts, artifact]
       set({
@@ -109,11 +119,11 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
   updateArtifact: async (id: string, updates: Partial<Artifact>) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
 
-      const artifact = await db.get('artifacts', id)
+      const artifact = artifacts.get(id)
       if (!artifact) {
         throw new Error('Artifact not found')
       }
@@ -129,10 +139,10 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('artifacts', updatedArtifact)
+      artifacts.set(id, updatedArtifact)
 
-      const { artifacts, currentArtifact } = get()
-      const updatedArtifacts = artifacts.map((a) =>
+      const { artifacts: currentArtifacts, currentArtifact } = get()
+      const updatedArtifacts = currentArtifacts.map((a) =>
         a.id === id ? updatedArtifact : a,
       )
 
@@ -151,13 +161,13 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
   deleteArtifact: async (id: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
-      await db.delete('artifacts', id)
+      artifacts.delete(id)
 
-      const { artifacts, currentArtifact } = get()
-      const updatedArtifacts = artifacts.filter((a) => a.id !== id)
+      const { artifacts: currentArtifacts, currentArtifact } = get()
+      const updatedArtifacts = currentArtifacts.filter((a) => a.id !== id)
 
       set({
         artifacts: updatedArtifacts,
@@ -175,11 +185,11 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
   linkToRequirement: async (artifactId: string, requirementId: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
 
-      const artifact = await db.get('artifacts', artifactId)
+      const artifact = artifacts.get(artifactId)
       if (!artifact) {
         throw new Error('Artifact not found')
       }
@@ -191,10 +201,10 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
           updatedAt: new Date(),
         }
 
-        await db.update('artifacts', updatedArtifact)
+        artifacts.set(artifactId, updatedArtifact)
 
-        const { artifacts, currentArtifact } = get()
-        const updatedArtifacts = artifacts.map((a) =>
+        const { artifacts: currentArtifacts, currentArtifact } = get()
+        const updatedArtifacts = currentArtifacts.map((a) =>
           a.id === artifactId ? updatedArtifact : a,
         )
 
@@ -218,11 +228,11 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
   unlinkFromRequirement: async (artifactId: string, requirementId: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
 
-      const artifact = await db.get('artifacts', artifactId)
+      const artifact = artifacts.get(artifactId)
       if (!artifact) {
         throw new Error('Artifact not found')
       }
@@ -233,10 +243,10 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('artifacts', updatedArtifact)
+      artifacts.set(artifactId, updatedArtifact)
 
-      const { artifacts, currentArtifact } = get()
-      const updatedArtifacts = artifacts.map((a) =>
+      const { artifacts: currentArtifacts, currentArtifact } = get()
+      const updatedArtifacts = currentArtifacts.map((a) =>
         a.id === artifactId ? updatedArtifact : a,
       )
 
@@ -257,11 +267,11 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
   addDependency: async (artifactId: string, dependencyId: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
 
-      const artifact = await db.get('artifacts', artifactId)
+      const artifact = artifacts.get(artifactId)
       if (!artifact) {
         throw new Error('Artifact not found')
       }
@@ -273,10 +283,10 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
           updatedAt: new Date(),
         }
 
-        await db.update('artifacts', updatedArtifact)
+        artifacts.set(artifactId, updatedArtifact)
 
-        const { artifacts, currentArtifact } = get()
-        const updatedArtifacts = artifacts.map((a) =>
+        const { artifacts: currentArtifacts, currentArtifact } = get()
+        const updatedArtifacts = currentArtifacts.map((a) =>
           a.id === artifactId ? updatedArtifact : a,
         )
 
@@ -300,11 +310,11 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
   removeDependency: async (artifactId: string, dependencyId: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
 
-      const artifact = await db.get('artifacts', artifactId)
+      const artifact = artifacts.get(artifactId)
       if (!artifact) {
         throw new Error('Artifact not found')
       }
@@ -315,10 +325,10 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('artifacts', updatedArtifact)
+      artifacts.set(artifactId, updatedArtifact)
 
-      const { artifacts, currentArtifact } = get()
-      const updatedArtifacts = artifacts.map((a) =>
+      const { artifacts: currentArtifacts, currentArtifact } = get()
+      const updatedArtifacts = currentArtifacts.map((a) =>
         a.id === artifactId ? updatedArtifact : a,
       )
 
@@ -339,11 +349,11 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
   addReviewer: async (artifactId: string, agentId: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
 
-      const artifact = await db.get('artifacts', artifactId)
+      const artifact = artifacts.get(artifactId)
       if (!artifact) {
         throw new Error('Artifact not found')
       }
@@ -356,10 +366,10 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
           updatedAt: new Date(),
         }
 
-        await db.update('artifacts', updatedArtifact)
+        artifacts.set(artifactId, updatedArtifact)
 
-        const { artifacts, currentArtifact } = get()
-        const updatedArtifacts = artifacts.map((a) =>
+        const { artifacts: currentArtifacts, currentArtifact } = get()
+        const updatedArtifacts = currentArtifacts.map((a) =>
           a.id === artifactId ? updatedArtifact : a,
         )
 

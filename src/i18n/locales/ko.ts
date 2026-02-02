@@ -82,16 +82,19 @@ export const ko: I18n = {
   'Agent learned knowledge': '에이전트가 학습한 지식',
   Files: '파일',
   'Manage your files': '파일 관리',
-  'App configuration': '앱 설정',
   'Database management': '데이터베이스 관리',
   'Traces and Metrics': '추적 및 메트릭',
+  'Observe and analyze traces and metrics': '추적 및 메트릭 관찰 및 분석',
   Admin: '관리자',
 
   // PromptArea
   'Need something done?': '무언가 필요하신가요?',
-  'More actions': '추가 작업',
+  'Show extended actions': '확장 작업 표시',
+  'Hide extended actions': '확장 작업 숨기기',
   'Attach a file or image': '파일이나 이미지를 첨부하세요',
   'Upload new file': '새 파일 업로드',
+  'Capture screen': '화면 캡처',
+  'Capturing…': '캡처 중…',
   'Choose from knowledge base': '지식 베이스에서 선택',
   'No files found in knowledge base': '지식 베이스에 파일이 없습니다',
   'Drop files here…': '여기에 파일을 드롭하세요…',
@@ -310,7 +313,8 @@ export const ko: I18n = {
   'Total Sub-tasks': '총 하위 작업',
 
   // Common actions
-  Retry: '다시 시도',
+  optional: '선택사항',
+  Retry: '재시도',
   Refresh: '새로고침',
   Close: '닫기',
   Edit: '수정',
@@ -576,7 +580,7 @@ export const ko: I18n = {
 
   // Sync - Modes
   Create: '생성',
-  Join: '참가',
+  'Scan & Join': '스캔 및 참가',
   Share: '공유',
   'Start Sync': '동기화 시작',
   'Join Room': '참가',
@@ -607,8 +611,8 @@ export const ko: I18n = {
     '"기기와 동기화"를 클릭하여 동기화를 시작하세요.',
   'Sync your data across devices in real-time.':
     '기기 간에 실시간으로 데이터를 동기화하세요.',
-  'No server needed - data stays between your devices.':
-    '서버가 필요 없습니다 - 데이터는 기기 사이에 머뭅니다.',
+  'No server needed - data transits between your devices.':
+    '서버가 필요 없습니다 - 데이터는 기기 간에 전송됩니다.',
 
   // Sync - Room/Code
   Code: '코드',
@@ -621,6 +625,15 @@ export const ko: I18n = {
   'Share this code or link with other devices:':
     '이 코드나 링크를 다른 기기와 공유하세요:',
   'Sync Settings': '동기화 설정',
+
+  // Sync - Room Password
+  'Room Password': '방 비밀번호',
+  'Sync password': '동기화 비밀번호',
+  'Enter the room password': '방 비밀번호를 입력하세요',
+  'Set a password to sync API keys across devices. All devices must use the same password.':
+    '기기 간 API 키를 동기화하려면 비밀번호를 설정하세요. 모든 기기에서 동일한 비밀번호를 사용해야 합니다.',
+  'Enter the same password used when creating the room to sync API keys.':
+    'API 키를 동기화하려면 방 생성 시 사용한 동일한 비밀번호를 입력하세요.',
 
   // Sync - QR Code
   'Or scan this QR Code:': '또는 이 QR 코드를 스캔하세요:',
@@ -636,11 +649,23 @@ export const ko: I18n = {
   'Camera access denied': '카메라 접근 거부됨',
   'Unable to access camera. Please grant camera permissions.':
     '카메라에 접근할 수 없습니다. 카메라 권한을 허용해 주세요.',
+  'Try Again': '다시 시도',
+
+  // Sync - Password Protected
+  'Password Required': '비밀번호 필요',
+  'This room is password-protected. Enter the password to join.':
+    '이 방은 비밀번호로 보호되어 있습니다. 참여하려면 비밀번호를 입력하세요.',
 
   // Sync - Secret Link
   'Share the secret link': '비밀 링크 공유',
   'Copy and share this unique link with your other device. Keep it private!':
     '이 고유한 링크를 다른 기기와 복사하여 공유하세요. 비공개로 유지하세요!',
+
+  // Sync - Advanced
+  Advanced: '고급',
+  'Background Sync': '백그라운드 동기화',
+  'Experimental: Prevents UI freezing during sync':
+    '실험적: 동기화 중 UI 멈춤 방지',
 
   // Sync - Peers
   'Status:': '상태:',
@@ -761,6 +786,18 @@ export const ko: I18n = {
   'Loading models...': '모델 로딩 중...',
   'No models available': '사용 가능한 모델 없음',
   'Check your server URL and connection': '서버 URL과 연결을 확인하세요',
+
+  // LLM Provider Management
+  'This provider is already configured. Edit or delete the existing one first.':
+    '이 제공자는 이미 구성되어 있습니다. 기존 것을 먼저 편집하거나 삭제하세요.',
+  'Invalid API key': '잘못된 API 키',
+  'Provider added successfully': '제공자가 성공적으로 추가되었습니다',
+  'Failed to add provider': '제공자 추가 실패',
+  'Credential not found': '자격 증명을 찾을 수 없습니다',
+  'Provider updated successfully': '제공자가 성공적으로 업데이트되었습니다',
+  'Failed to update provider': '제공자 업데이트 실패',
+  'Provider deleted': '제공자가 삭제되었습니다',
+  'Failed to delete provider': '제공자 삭제 실패',
 
   // Security - Non-extractable CryptoKey
   'Encryption Key Status': '암호화 키 상태',

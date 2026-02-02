@@ -3,7 +3,13 @@ import { useI18n } from '@/i18n'
 import Layout from '@/layouts/Default'
 
 export const PrivacyPage = () => {
-  const { t } = useI18n(localI18n)
+  const { t, lang } = useI18n(localI18n)
+
+  const lastUpdated = new Intl.DateTimeFormat(lang, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date('2026-02-01'))
 
   return (
     <Layout
@@ -21,12 +27,14 @@ export const PrivacyPage = () => {
         <Container className="markdown-content prose dark:prose-invert max-w-3xl">
           <h2>{t('Your Privacy Matters')}</h2>
           <p>
-            <strong>{t('Last updated: January 2026')}</strong>
+            <strong>{t(`Last updated: {date}`, { date: lastUpdated })}</strong>
           </p>
           <p>
-            {t(
-              'DEVS is designed with privacy as a core principle. All your data stays on your device.',
-            )}
+            <mark>
+              {t(
+                'DEVS is designed with privacy as a core principle. All your data stays on your device.',
+              )}
+            </mark>
           </p>
 
           <h3>{t('Data Collection')}</h3>
@@ -134,7 +142,7 @@ const localI18n = {
     'Privacy Policy',
     'How we handle your data',
     'Your Privacy Matters',
-    'Last updated: January 2026',
+    'Last updated: {date}',
     'DEVS is designed with privacy as a core principle. All your data stays on your device.',
     'Data Collection',
     'We do not collect any personal data.',
@@ -172,7 +180,7 @@ const localI18n = {
     'Privacy Policy': 'سياسة الخصوصية',
     'How we handle your data': 'كيف نتعامل مع بياناتك',
     'Your Privacy Matters': 'خصوصيتك مهمة',
-    'Last updated: January 2026': 'آخر تحديث: يناير 2026',
+    'Last updated: {date}': 'آخر تحديث: {date}',
     'DEVS is designed with privacy as a core principle. All your data stays on your device.':
       'تم تصميم DEVS مع الخصوصية كمبدأ أساسي. جميع بياناتك تبقى على جهازك.',
     'Data Collection': 'جمع البيانات',
@@ -225,7 +233,7 @@ const localI18n = {
     'Privacy Policy': 'Datenschutzerklärung',
     'How we handle your data': 'Wie wir mit Ihren Daten umgehen',
     'Your Privacy Matters': 'Ihre Privatsphäre ist uns wichtig',
-    'Last updated: January 2026': 'Zuletzt aktualisiert: Januar 2026',
+    'Last updated: {date}': 'Zuletzt aktualisiert: {date}',
     'DEVS is designed with privacy as a core principle. All your data stays on your device.':
       'DEVS wurde mit Datenschutz als Kernprinzip entwickelt. Alle Ihre Daten bleiben auf Ihrem Gerät.',
     'Data Collection': 'Datenerhebung',
@@ -283,7 +291,7 @@ const localI18n = {
     'Privacy Policy': 'Política de privacidad',
     'How we handle your data': 'Cómo manejamos tus datos',
     'Your Privacy Matters': 'Tu privacidad es importante',
-    'Last updated: January 2026': 'Última actualización: enero de 2026',
+    'Last updated: {date}': 'Última actualización: {date}',
     'DEVS is designed with privacy as a core principle. All your data stays on your device.':
       'DEVS está diseñado con la privacidad como principio fundamental. Todos tus datos permanecen en tu dispositivo.',
     'Data Collection': 'Recopilación de datos',
@@ -340,7 +348,7 @@ const localI18n = {
     'Privacy Policy': 'Politique de confidentialité',
     'How we handle your data': 'Comment nous traitons vos données',
     'Your Privacy Matters': 'Votre vie privée compte',
-    'Last updated: January 2026': 'Dernière mise à jour : janvier 2026',
+    'Last updated: {date}': 'Dernière mise à jour : {date}',
     'DEVS is designed with privacy as a core principle. All your data stays on your device.':
       'DEVS est conçu avec la confidentialité comme principe fondamental. Toutes vos données restent sur votre appareil.',
     'Data Collection': 'Collecte de données',
@@ -396,7 +404,7 @@ const localI18n = {
     'Privacy Policy': '개인정보 처리방침',
     'How we handle your data': '귀하의 데이터를 처리하는 방법',
     'Your Privacy Matters': '귀하의 개인정보는 소중합니다',
-    'Last updated: January 2026': '최종 업데이트: 2026년 1월',
+    'Last updated: {date}': '최종 업데이트: {date}',
     'DEVS is designed with privacy as a core principle. All your data stays on your device.':
       'DEVS는 개인정보 보호를 핵심 원칙으로 설계되었습니다. 모든 데이터는 귀하의 기기에만 저장됩니다.',
     'Data Collection': '데이터 수집',

@@ -1,6 +1,30 @@
 @import 'tailwindcss';
 @config "../../tailwind.config.js";
 
+@font-face {
+  font-family: 'Figtree';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/fonts/Figtree.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/EBGaramond.ttf') format('truetype');
+}
+
+:root {
+  font-family:
+    'Figtree',
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
 @layer base {
   :root {
     @apply scroll-smooth;
@@ -61,13 +85,21 @@
     text-decoration: none;
   }
 
+  mark {
+    @apply bg-yellow-200 text-yellow-950 dark:bg-yellow-500;
+    padding: 0.2em 0.4em;
+    margin: -0.2em -0.4em;
+    border-radius: 0.25rem;
+  }
+
   [role='section']:not(.section-blank):nth-child(odd) {
     @apply bg-default-50;
   }
 
   [role='heading'] {
-    font-family: Optima, Candara, 'Noto Sans', source-sans-pro, sans-serif;
-    font-weight: normal;
+    font-family: 'EB Garamond', serif;
+    font-optical-sizing: auto;
+    font-style: normal;
   }
 
   /* * {

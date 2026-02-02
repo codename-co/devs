@@ -12,7 +12,7 @@
  */
 
 import type { ToolCall, ToolDefinition, ParsedToolCall } from '@/lib/llm/types'
-import { TraceService } from '@/features/traces/trace-service'
+import { TraceService, estimateTokenCount } from '@/features/traces/trace-service'
 import type {
   ToolExecutionContext,
   ToolHandler,
@@ -461,15 +461,32 @@ export class KnowledgeToolExecutor implements ToolExecutor {
     const endSpanWithResult = async (result: ToolExecutionResult) => {
       if (span) {
         const isSuccess = result.success
+        const outputContent = isSuccess
+          ? (result as ToolExecutionSuccess).result
+          : (result as ToolExecutionError).error
+
+        // Estimate token usage based on input/output size
+        // This provides visibility into tool I/O even though tools don't use LLM tokens
+        const inputText = JSON.stringify(parsedArgs)
+        const outputText =
+          typeof outputContent === 'string'
+            ? outputContent
+            : JSON.stringify(outputContent)
+        const promptTokens = estimateTokenCount(inputText)
+        const completionTokens = estimateTokenCount(outputText)
+
         await TraceService.endSpan(span.id, {
           status: isSuccess ? 'completed' : 'error',
           statusMessage: isSuccess
             ? undefined
             : (result as ToolExecutionError).error,
           output: {
-            response: isSuccess
-              ? (result as ToolExecutionSuccess).result
-              : (result as ToolExecutionError).error,
+            response: outputContent,
+          },
+          usage: {
+            promptTokens,
+            completionTokens,
+            totalTokens: promptTokens + completionTokens,
           },
         })
       }

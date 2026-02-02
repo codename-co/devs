@@ -1,6 +1,12 @@
 import { create } from 'zustand'
-import { db } from '@/lib/db'
-import { deleteFromYjs, syncToYjs } from '@/features/sync'
+import {
+  memories,
+  memoryLearningEvents,
+  agentMemoryDocuments,
+  whenReady,
+  transact,
+  useLiveMap,
+} from '@/lib/yjs'
 
 // Feature toggles
 const ENABLE_KEYWORD_MATCHING = false
@@ -18,9 +24,71 @@ import { getT } from '@/i18n/utils'
 
 const t = getT()
 
+// =========================================================================
+// Helper functions for Yjs-First architecture
+// =========================================================================
+
+/**
+ * Get all memories from Yjs (excludes expired)
+ */
+function getAllMemories(): AgentMemoryEntry[] {
+  const now = new Date()
+  return Array.from(memories.values()).filter(
+    (m) => !m.expiresAt || new Date(m.expiresAt) > now,
+  )
+}
+
+/**
+ * Get a memory by ID from Yjs
+ */
+export function getMemoryById(id: string): AgentMemoryEntry | undefined {
+  return memories.get(id)
+}
+
+/**
+ * Get all memories for a specific agent (excludes expired)
+ */
+export function getMemoriesByAgentId(agentId: string): AgentMemoryEntry[] {
+  const now = new Date()
+  return Array.from(memories.values()).filter(
+    (m) =>
+      m.agentId === agentId && (!m.expiresAt || new Date(m.expiresAt) > now),
+  )
+}
+
+// =========================================================================
+// React Hook for reactive memory access
+// =========================================================================
+
+/**
+ * React hook to get all memories reactively
+ * Re-renders when any memory changes
+ */
+export function useMemories(): AgentMemoryEntry[] {
+  const allMemories = useLiveMap(memories)
+  const now = new Date()
+  return allMemories.filter((m) => !m.expiresAt || new Date(m.expiresAt) > now)
+}
+
+/**
+ * React hook to get memories for a specific agent reactively
+ */
+export function useAgentMemories(agentId: string): AgentMemoryEntry[] {
+  const allMemories = useLiveMap(memories)
+  const now = new Date()
+  return allMemories.filter(
+    (m) =>
+      m.agentId === agentId && (!m.expiresAt || new Date(m.expiresAt) > now),
+  )
+}
+
+// =========================================================================
+// Store Interface
+// =========================================================================
+
 interface AgentMemoryStore {
-  // State
-  memories: AgentMemoryEntry[]
+  // State (for learning events, memory documents, and UI state)
+  // Note: 'memories' state removed - use Yjs directly or useMemories() hook
   learningEvents: MemoryLearningEvent[]
   memoryDocuments: AgentMemoryDocument[]
   isLoading: boolean
@@ -111,7 +179,7 @@ interface AgentMemoryStore {
 }
 
 export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
-  memories: [],
+  // Note: 'memories' state removed - use Yjs directly or useMemories() hook
   learningEvents: [],
   memoryDocuments: [],
   isLoading: false,
@@ -124,20 +192,9 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
   loadMemoriesForAgent: async (agentId: string) => {
     set({ isLoading: true, currentAgentId: agentId })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      const allMemories = await db.getAll('agentMemories')
-      const agentMemories = allMemories.filter((m) => m.agentId === agentId)
-
-      // Filter out expired memories
-      const now = new Date()
-      const validMemories = agentMemories.filter(
-        (m) => !m.expiresAt || new Date(m.expiresAt) > now,
-      )
-
-      set({ memories: validMemories, isLoading: false })
+      await whenReady
+      // Memories are now in Yjs, just mark as loaded
+      set({ isLoading: false })
     } catch (error) {
       errorToast(t('Failed to load agent memories'), error)
       set({ isLoading: false })
@@ -147,19 +204,9 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
   loadAllMemories: async () => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      const allMemories = await db.getAll('agentMemories')
-
-      // Filter out expired memories
-      const now = new Date()
-      const validMemories = allMemories.filter(
-        (m) => !m.expiresAt || new Date(m.expiresAt) > now,
-      )
-
-      set({ memories: validMemories, isLoading: false })
+      await whenReady
+      // Memories are now in Yjs, just mark as loaded
+      set({ isLoading: false })
     } catch (error) {
       errorToast(t('Failed to load memories'), error)
       set({ isLoading: false })
@@ -169,9 +216,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
   createMemory: async (memoryData) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
+      await whenReady
 
       const memory: AgentMemoryEntry = {
         ...memoryData,
@@ -182,11 +227,10 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.add('agentMemories', memory)
-      syncToYjs('agentMemories', memory)
+      // Save to Yjs (single source of truth)
+      memories.set(memory.id, memory)
 
-      const updatedMemories = [...get().memories, memory]
-      set({ memories: updatedMemories, isLoading: false })
+      set({ isLoading: false })
 
       return memory
     } catch (error) {
@@ -199,11 +243,9 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
   updateMemory: async (id: string, updates: Partial<AgentMemoryEntry>) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
+      await whenReady
 
-      const existing = await db.get('agentMemories', id)
+      const existing = memories.get(id)
       if (!existing) {
         throw new Error('Memory not found')
       }
@@ -216,14 +258,10 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('agentMemories', updatedMemory)
-      syncToYjs('agentMemories', updatedMemory)
+      // Save to Yjs (single source of truth)
+      memories.set(id, updatedMemory)
 
-      const { memories } = get()
-      const updatedMemories = memories.map((m) =>
-        m.id === id ? updatedMemory : m,
-      )
-      set({ memories: updatedMemories, isLoading: false })
+      set({ isLoading: false })
     } catch (error) {
       errorToast(t('Failed to update memory'), error)
       set({ isLoading: false })
@@ -234,16 +272,12 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
   deleteMemory: async (id: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
+      await whenReady
 
-      await db.delete('agentMemories', id)
-      deleteFromYjs('agentMemories', id)
+      // Delete from Yjs (single source of truth)
+      memories.delete(id)
 
-      const { memories } = get()
-      const updatedMemories = memories.filter((m) => m.id !== id)
-      set({ memories: updatedMemories, isLoading: false })
+      set({ isLoading: false })
 
       successToast(t('Memory deleted'))
     } catch (error) {
@@ -259,11 +293,9 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
   loadLearningEventsForAgent: async (agentId: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
+      await whenReady
 
-      const allEvents = await db.getAll('memoryLearningEvents')
+      const allEvents = Array.from(memoryLearningEvents.values())
       const agentEvents = allEvents.filter((e) => e.agentId === agentId)
 
       set({ learningEvents: agentEvents, isLoading: false })
@@ -275,9 +307,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
 
   createLearningEvent: async (eventData) => {
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
+      await whenReady
 
       const event: MemoryLearningEvent = {
         ...eventData,
@@ -286,7 +316,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
         extractedAt: new Date(),
       }
 
-      await db.add('memoryLearningEvents', event)
+      memoryLearningEvents.set(event.id, event)
 
       const updatedEvents = [...get().learningEvents, event]
       set({ learningEvents: updatedEvents })
@@ -304,11 +334,9 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
     discardedReason?: string,
   ) => {
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
+      await whenReady
 
-      const existing = await db.get('memoryLearningEvents', id)
+      const existing = memoryLearningEvents.get(id)
       if (!existing) {
         throw new Error('Learning event not found')
       }
@@ -321,7 +349,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
         processedAt: new Date(),
       }
 
-      await db.update('memoryLearningEvents', updatedEvent)
+      memoryLearningEvents.set(id, updatedEvent)
 
       const { learningEvents } = get()
       const updatedEvents = learningEvents.map((e) =>
@@ -345,11 +373,9 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
 
   loadMemoryDocument: async (agentId: string) => {
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
+      await whenReady
 
-      const allDocs = await db.getAll('agentMemoryDocuments')
+      const allDocs = Array.from(agentMemoryDocuments.values())
       const doc = allDocs.find((d) => d.agentId === agentId)
 
       if (doc) {
@@ -368,11 +394,9 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
 
   createOrUpdateMemoryDocument: async (agentId, updates) => {
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
+      await whenReady
 
-      const allDocs = await db.getAll('agentMemoryDocuments')
+      const allDocs = Array.from(agentMemoryDocuments.values())
       const existing = allDocs.find((d) => d.agentId === agentId)
 
       if (existing) {
@@ -381,7 +405,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
           ...updates,
           updatedAt: new Date(),
         }
-        await db.update('agentMemoryDocuments', updatedDoc)
+        agentMemoryDocuments.set(existing.id, updatedDoc)
 
         const { memoryDocuments } = get()
         const updatedDocs = memoryDocuments.map((d) =>
@@ -418,7 +442,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
           createdAt: new Date(),
           updatedAt: new Date(),
         }
-        await db.add('agentMemoryDocuments', newDoc)
+        agentMemoryDocuments.set(newDoc.id, newDoc)
 
         const { memoryDocuments } = get()
         set({ memoryDocuments: [...memoryDocuments, newDoc] })
@@ -443,8 +467,8 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
   // =========================================================================
 
   getPendingReviewMemories: (agentId?: string) => {
-    const { memories } = get()
-    return memories.filter(
+    const allMemories = getAllMemories()
+    return allMemories.filter(
       (m) =>
         m.validationStatus === 'pending' &&
         (agentId ? m.agentId === agentId : true),
@@ -476,6 +500,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
     editedContent: string,
     reviewNotes?: string,
   ) => {
+    console.debug('.')
     await get().updateMemory(id, {
       content: editedContent,
       validationStatus: 'approved',
@@ -496,10 +521,10 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
     categories: MemoryCategory[] = [],
     limit: number = 20,
   ) => {
-    const { memories } = get()
+    const allMemories = getAllMemories()
 
     // Only return approved or auto-approved memories for context injection
-    const validatedMemories = memories.filter(
+    const validatedMemories = allMemories.filter(
       (m) =>
         m.agentId === agentId &&
         (m.validationStatus === 'approved' ||
@@ -557,13 +582,10 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
     categories: MemoryCategory[] = [],
     limit: number = 20,
   ) => {
-    // Ensure memories are loaded from IndexedDB
-    if (!db.isInitialized()) {
-      await db.init()
-    }
+    // Ensure Yjs is ready
+    await whenReady
 
-    // Load all memories from IndexedDB
-    const allMemories = await db.getAll('agentMemories')
+    const allMemories = getAllMemories()
     const now = new Date()
 
     // Filter to get validated, non-expired memories for this agent OR global memories
@@ -628,7 +650,7 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
 
   recordMemoryUsage: async (memoryId: string) => {
     try {
-      const memory = get().memories.find((m) => m.id === memoryId)
+      const memory = memories.get(memoryId)
       if (memory) {
         await get().updateMemory(memoryId, {
           lastUsedAt: new Date(),
@@ -645,8 +667,8 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
   // =========================================================================
 
   getMemoryStats: (agentId: string) => {
-    const { memories } = get()
-    const agentMemories = memories.filter((m) => m.agentId === agentId)
+    const allMemories = getAllMemories()
+    const agentMemories = allMemories.filter((m) => m.agentId === agentId)
 
     const byCategory: Record<MemoryCategory, number> = {
       fact: 0,
@@ -693,9 +715,25 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
   bulkApproveMemories: async (ids: string[]) => {
     set({ isLoading: true })
     try {
-      for (const id of ids) {
-        await get().approveMemory(id)
-      }
+      await whenReady
+
+      // Use transact for batched writes
+      transact(() => {
+        for (const id of ids) {
+          const existing = memories.get(id)
+          if (existing) {
+            memories.set(id, {
+              ...existing,
+              validationStatus: 'approved',
+              reviewedAt: new Date(),
+              reviewedBy: 'human',
+              version: existing.version + 1,
+              updatedAt: new Date(),
+            })
+          }
+        }
+      })
+
       successToast(t(`{count} memories approved`, { count: ids.length }))
     } catch (error) {
       errorToast(t('Failed to bulk approve memories'), error)
@@ -707,9 +745,25 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
   bulkRejectMemories: async (ids: string[]) => {
     set({ isLoading: true })
     try {
-      for (const id of ids) {
-        await get().rejectMemory(id)
-      }
+      await whenReady
+
+      // Use transact for batched writes
+      transact(() => {
+        for (const id of ids) {
+          const existing = memories.get(id)
+          if (existing) {
+            memories.set(id, {
+              ...existing,
+              validationStatus: 'rejected',
+              reviewedAt: new Date(),
+              reviewedBy: 'human',
+              version: existing.version + 1,
+              updatedAt: new Date(),
+            })
+          }
+        }
+      })
+
       successToast(t(`{count} memories rejected`, { count: ids.length }))
     } catch (error) {
       errorToast(t('Failed to bulk reject memories'), error)
@@ -721,23 +775,22 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
   cleanupExpiredMemories: async () => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
+      await whenReady
 
-      const { memories } = get()
+      const allMemories = Array.from(memories.values())
       const now = new Date()
-      const expiredIds = memories
+      const expiredIds = allMemories
         .filter((m) => m.expiresAt && new Date(m.expiresAt) < now)
         .map((m) => m.id)
 
-      for (const id of expiredIds) {
-        await db.delete('agentMemories', id)
-        deleteFromYjs('agentMemories', id)
-      }
+      // Use transact for batched deletes
+      transact(() => {
+        for (const id of expiredIds) {
+          memories.delete(id)
+        }
+      })
 
-      const validMemories = memories.filter((m) => !expiredIds.includes(m.id))
-      set({ memories: validMemories, isLoading: false })
+      set({ isLoading: false })
 
       if (expiredIds.length > 0) {
         console.log(`Cleaned up ${expiredIds.length} expired memories`)
@@ -770,11 +823,9 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
     categories: MemoryCategory[] = [],
     limit: number = 20,
   ) => {
-    if (!db.isInitialized()) {
-      await db.init()
-    }
+    await whenReady
 
-    const allMemories = await db.getAll('agentMemories')
+    const allMemories = getAllMemories()
     const now = new Date()
 
     // Filter to get global, validated, non-expired memories
@@ -833,3 +884,40 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
       .map((s) => s.memory)
   },
 }))
+
+// =========================================================================
+// Yjs Observers for P2P sync
+// =========================================================================
+
+/**
+ * Initialize Yjs observers for real-time sync.
+ * When memories or learning events are modified on another device,
+ * this ensures the Zustand store stays in sync.
+ */
+function initYjsObservers(): void {
+  // Observe learning events map for remote changes
+  memoryLearningEvents.observe(() => {
+    const currentAgentId = useAgentMemoryStore.getState().currentAgentId
+    if (currentAgentId) {
+      const allEvents = Array.from(memoryLearningEvents.values())
+      const agentEvents = allEvents.filter((e) => e.agentId === currentAgentId)
+      useAgentMemoryStore.setState({ learningEvents: agentEvents })
+    }
+  })
+
+  // Observe memory documents map for remote changes
+  agentMemoryDocuments.observe(() => {
+    const currentAgentId = useAgentMemoryStore.getState().currentAgentId
+    if (currentAgentId) {
+      const allDocs = Array.from(agentMemoryDocuments.values())
+      const agentDocs = allDocs.filter((d) => d.agentId === currentAgentId)
+      useAgentMemoryStore.setState({ memoryDocuments: agentDocs })
+    }
+  })
+
+  // Note: memories map uses useLiveMap() hook for reactivity
+  // so no observer needed for memories state
+}
+
+// Initialize observers when module loads
+initYjsObservers()

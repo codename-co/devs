@@ -513,6 +513,11 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                     lang={lang}
                     onFileUpload={handlePaperclipClick}
                     onKnowledgeFileSelect={handleKnowledgeFileSelect}
+                    onScreenCapture={(file) => {
+                      const newFiles = [...selectedFiles, file]
+                      setSelectedFiles(newFiles)
+                      onFilesChange?.(newFiles)
+                    }}
                   />
                 )}
 

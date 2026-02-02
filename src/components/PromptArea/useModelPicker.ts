@@ -2,6 +2,7 @@ import { useEffect, useCallback, useMemo } from 'react'
 import { useLLMModelStore } from '@/stores/llmModelStore'
 import { type IconName } from '@/lib/types'
 import type { LLMProvider, Credential } from '@/types'
+import { formatLocalModelName, usesLocalInference } from '@/lib/llm/models'
 
 // Provider icon mapping
 const PROVIDER_ICONS: Record<string, IconName> = {
@@ -16,6 +17,7 @@ const PROVIDER_ICONS: Record<string, IconName> = {
   huggingface: 'HuggingFace',
   custom: 'Server',
   'openai-compatible': 'Internet',
+  'claude-code': 'Anthropic', // Claude Code API uses Claude models
   // Image generation providers
   stability: 'SparksSolid',
   together: 'Puzzle',
@@ -42,8 +44,11 @@ interface UseModelPickerReturn {
   setSelectedModel: (provider: LLMProvider, model: string) => void
   /** Get icon for a provider */
   getProviderIcon: (provider: string) => IconName
-  /** Format model name for display */
-  displayModelName: (model: string | undefined) => string
+  /** Format model name for display. Pass provider for Ollama-specific formatting */
+  displayModelName: (
+    model: string | undefined,
+    provider?: LLMProvider,
+  ) => string
   /** Get the selected model for a specific provider */
   getSelectedModelForProvider: (provider: LLMProvider) => string | null
   /** @deprecated use selectedProviderId */
@@ -94,20 +99,36 @@ export function useModelPicker({
     return PROVIDER_ICONS[provider] || 'Server'
   }, [])
 
-  const displayModelName = useCallback((model: string | undefined): string => {
-    if (!model) return ''
+  const displayModelName = useCallback(
+    (model: string | undefined, provider?: LLMProvider): string => {
+      if (!model) return ''
 
-    // Handle common model name patterns and make them more readable
-    // Remove provider prefixes and common separators
-    return model
-      .replace(/.*\//, '') // Remove everything before last slash
-      .replace(/\s*\([^)]*\)\s*/g, ' ') // Remove any content in parentheses
-      .replace(/[_-]?\d{8}(?!\w)/g, '') // Remove date suffixes like -20240115 or _20240115
-      .replace(/(\d)[_-](\d)/g, '$1.$2') // Convert version separators to dots (e.g., 4-5 → 4.5)
-      .replace(/[_-]+/g, ' ') // Replace remaining underscores and hyphens with space
-      .replace(/\s+/g, ' ') // Collapse multiple spaces
-      .trim()
-  }, [])
+      // Use local model formatting for local/ollama/openai-compatible providers
+      if (provider && usesLocalInference(provider)) {
+        return formatLocalModelName(model)
+      }
+
+      // Vertex AI models benefit from the same formatting as local models
+      // First strip version suffix like @20260101, then format
+      if (provider === 'vertex-ai') {
+        const stripped = model.replace(/@\d{8,}$/, '')
+        return formatLocalModelName(stripped)
+      }
+
+      // Handle common model name patterns and make them more readable
+      // Remove provider prefixes and common separators
+      return model
+        .replace(/@\d{8,}$/, '') // Remove Vertex AI version suffixes like @20260101
+        .replace(/.*\//, '') // Remove everything before last slash
+        .replace(/\s*\([^)]*\)\s*/g, ' ') // Remove any content in parentheses
+        .replace(/[_-]?\d{8}(?!\w)/g, '') // Remove date suffixes like -20240115 or _20240115
+        .replace(/(\d)[_-](\d)/g, '$1.$2') // Convert version separators to dots (e.g., 4-5 → 4.5)
+        .replace(/[_-]+/g, ' ') // Replace remaining underscores and hyphens with space
+        .replace(/\s+/g, ' ') // Collapse multiple spaces
+        .trim()
+    },
+    [],
+  )
 
   const getSelectedModelForProvider = useCallback(
     (provider: LLMProvider): string | null => {

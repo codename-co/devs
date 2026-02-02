@@ -6,7 +6,7 @@ import DefaultLayout from '@/layouts/Default'
 import { useI18n, useUrl } from '@/i18n'
 import { Section, Container, Icon } from '@/components'
 import type { HeaderProps } from '@/lib/types'
-import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
+import { useAgentMemoryStore, useMemories } from '@/stores/agentMemoryStore'
 import { usePinnedMessageStore } from '@/stores/pinnedMessageStore'
 import { useConnectorStore } from '@/features/connectors/stores'
 import localI18n from './i18n'
@@ -23,6 +23,7 @@ export const KnowledgePage: React.FC = () => {
   const navigate = useNavigate()
 
   const { getPendingReviewMemories } = useAgentMemoryStore()
+  const memories = useMemories()
   const { pinnedMessages } = usePinnedMessageStore()
   const { getAppConnectors } = useConnectorStore()
 
@@ -34,8 +35,8 @@ export const KnowledgePage: React.FC = () => {
   // Main tab state - derived from path
   const mainTab = location.pathname.endsWith('/knowledge/memories')
     ? 'memories'
-    : location.pathname.endsWith('/knowledge/saved')
-      ? 'saved'
+    : location.pathname.endsWith('/knowledge/messages')
+      ? 'messages'
       : location.pathname.endsWith('/knowledge/connectors')
         ? 'connectors'
         : 'files'
@@ -106,40 +107,44 @@ export const KnowledgePage: React.FC = () => {
             </Tab>
 
             {/* Agent Memory Tab */}
-            <Tab
-              key="memories"
-              title={
-                <div className="flex items-center gap-2">
-                  <Icon name="Brain" className="w-5 h-5" />
-                  <span>{t('Agent Memory')}</span>
-                  {pendingMemories.length > 0 && (
-                    <Chip size="sm" variant="flat">
-                      {pendingMemories.length}
-                    </Chip>
-                  )}
-                </div>
-              }
-            >
-              <AgentMemories />
-            </Tab>
+            {memories.length > 0 && (
+              <Tab
+                key="memories"
+                title={
+                  <div className="flex items-center gap-2">
+                    <Icon name="Brain" className="w-5 h-5" />
+                    <span>{t('Agent Memory')}</span>
+                    {pendingMemories.length > 0 && (
+                      <Chip size="sm" variant="flat">
+                        {pendingMemories.length}
+                      </Chip>
+                    )}
+                  </div>
+                }
+              >
+                <AgentMemories />
+              </Tab>
+            )}
 
-            {/* Saved Tab - Pinned messages and bookmarks */}
-            <Tab
-              key="saved"
-              title={
-                <div className="flex items-center gap-2">
-                  <Icon name="Pin" className="w-5 h-5" />
-                  <span>{t('Pinned Messages')}</span>
-                  {pinnedMessages.length > 0 && (
-                    <Chip size="sm" variant="flat">
-                      {pinnedMessages.length}
-                    </Chip>
-                  )}
-                </div>
-              }
-            >
-              <PinnedMessages />
-            </Tab>
+            {/* Messages Tab - Pinned messages and bookmarks */}
+            {pinnedMessages.length > 0 && (
+              <Tab
+                key="messages"
+                title={
+                  <div className="flex items-center gap-2">
+                    <Icon name="Pin" className="w-5 h-5" />
+                    <span>{t('Pinned Messages')}</span>
+                    {pinnedMessages.length > 0 && (
+                      <Chip size="sm" variant="flat">
+                        {pinnedMessages.length}
+                      </Chip>
+                    )}
+                  </div>
+                }
+              >
+                <PinnedMessages />
+              </Tab>
+            )}
           </Tabs>
         </Container>
       </Section>

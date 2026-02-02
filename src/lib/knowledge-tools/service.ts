@@ -8,7 +8,11 @@
  * @module lib/knowledge-tools/service
  */
 
-import { db } from '@/lib/db'
+import {
+  getAllKnowledgeItemsAsync,
+  getKnowledgeItemAsync,
+  ensureReady as ensureYjsReady,
+} from '@/stores/knowledgeStore'
 import { LLMService } from '@/lib/llm'
 import { CredentialService } from '@/lib/credential-service'
 import type { LLMConfig, LLMProvider, KnowledgeItem } from '@/types'
@@ -52,22 +56,6 @@ const MAX_EXPANDED_TERMS = 20
 // ============================================================================
 // Helper Functions
 // ============================================================================
-
-/**
- * Ensures the database is initialized before operations.
- */
-async function ensureDbInitialized(): Promise<void> {
-  if (!db.isInitialized()) {
-    await db.init()
-  }
-}
-
-/**
- * Checks if the knowledgeItems store exists.
- */
-function hasKnowledgeStore(): boolean {
-  return db.hasStore('knowledgeItems')
-}
 
 /**
  * Normalizes text for search matching (lowercase, trim).
@@ -514,22 +502,11 @@ export async function searchKnowledge(
     trace_context,
   } = params
 
-  await ensureDbInitialized()
-
-  // Handle missing store gracefully
-  if (!hasKnowledgeStore()) {
-    return {
-      query,
-      total_searched: 0,
-      result_count: 0,
-      hits: [],
-      truncated: false,
-      duration_ms: performance.now() - startTime,
-    }
-  }
+  // Ensure Yjs is ready before accessing knowledge items
+  await ensureYjsReady()
 
   // Get all knowledge items
-  const allItems = await db.getAll('knowledgeItems')
+  const allItems = await getAllKnowledgeItemsAsync()
 
   // Filter to only files (not folders)
   let items = allItems.filter((item) => item.type === 'file')
@@ -666,23 +643,11 @@ export async function readDocument(
     offset = 0,
   } = params
 
-  await ensureDbInitialized()
-
-  // Handle missing store
-  if (!hasKnowledgeStore()) {
-    return {
-      found: false,
-      error: 'Knowledge store not initialized',
-      content: null,
-      content_type: null,
-      total_length: 0,
-      truncated: false,
-      offset: 0,
-    }
-  }
+  // Ensure Yjs is ready before accessing knowledge items
+  await ensureYjsReady()
 
   // Retrieve the document
-  const item = await db.get('knowledgeItems', document_id)
+  const item = await getKnowledgeItemAsync(document_id)
 
   if (!item) {
     return {
@@ -828,22 +793,11 @@ export async function listDocuments(
     offset = 0,
   } = params
 
-  await ensureDbInitialized()
-
-  // Handle missing store
-  if (!hasKnowledgeStore()) {
-    return {
-      parent: null,
-      items: [],
-      total_count: 0,
-      has_more: false,
-      offset: 0,
-      limit,
-    }
-  }
+  // Ensure Yjs is ready before accessing knowledge items
+  await ensureYjsReady()
 
   // Get all knowledge items
-  const allItems = await db.getAll('knowledgeItems')
+  const allItems = await getAllKnowledgeItemsAsync()
 
   // Get parent folder info
   let parent: ListDocumentsResult['parent'] = null
@@ -984,21 +938,11 @@ export async function getDocumentSummary(
 ): Promise<GetDocumentSummaryResult> {
   const { document_id, max_words = 200, focus } = params
 
-  await ensureDbInitialized()
-
-  // Handle missing store
-  if (!hasKnowledgeStore()) {
-    return {
-      found: false,
-      error: 'Knowledge store not initialized',
-      summary: null,
-      key_topics: [],
-      cached: false,
-    }
-  }
+  // Ensure Yjs is ready before accessing knowledge items
+  await ensureYjsReady()
 
   // Retrieve the document
-  const item = await db.get('knowledgeItems', document_id)
+  const item = await getKnowledgeItemAsync(document_id)
 
   if (!item) {
     return {

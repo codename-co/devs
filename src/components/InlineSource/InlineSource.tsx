@@ -4,7 +4,7 @@ import { Chip, Tooltip, useDisclosure } from '@heroui/react'
 
 import { Icon } from '@/components/Icon'
 import { ContentPreviewModal } from '@/components/ContentPreview'
-import { db } from '@/lib/db'
+import { getKnowledgeItem } from '@/stores/knowledgeStore'
 import type { KnowledgeItem } from '@/types'
 import type { Span } from '@/features/traces/types'
 import type { IconName } from '@/lib/types'
@@ -133,10 +133,10 @@ export const extractSourcesFromSpans = async (
           externalUrl = (metadata.externalUrl as string) || ''
         }
 
-        // Fallback: fetch from DB if name not in response
+        // Fallback: fetch from store if name not in response
         if (!name) {
           try {
-            const item = await db.get('knowledgeItems', documentId)
+            const item = getKnowledgeItem(documentId)
             if (item) {
               name = item.name
               externalUrl = item.externalUrl || ''
@@ -414,12 +414,12 @@ export const InlineCitation = memo(
       : `Source ${number}`
 
     // Fetch knowledge item when opening modal
-    const handleOpenPreview = useCallback(async () => {
+    const handleOpenPreview = useCallback(() => {
       if (!isKnowledgeSource || !source) return
 
       setIsLoading(true)
       try {
-        const item = await db.get('knowledgeItems', source.id)
+        const item = getKnowledgeItem(source.id)
         if (item) {
           setKnowledgeItem(item)
           onOpen()
@@ -604,12 +604,12 @@ export const InlineSource = memo(
     const isKnowledgeSource = source.type === 'knowledge' && !isExternal
 
     // Fetch knowledge item when opening modal
-    const handleOpenPreview = useCallback(async () => {
+    const handleOpenPreview = useCallback(() => {
       if (!isKnowledgeSource) return
 
       setIsLoading(true)
       try {
-        const item = await db.get('knowledgeItems', source.id)
+        const item = getKnowledgeItem(source.id)
         if (item) {
           setKnowledgeItem(item)
           onOpen()

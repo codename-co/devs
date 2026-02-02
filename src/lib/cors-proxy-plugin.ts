@@ -112,21 +112,59 @@ export function corsProxyPlugin(): Plugin {
         }
 
         try {
-          console.log(`[cors-proxy] Proxying: ${targetUrl}`)
+          console.log(`[cors-proxy] Proxying: ${req.method} ${targetUrl}`)
+
+          // Collect request body for POST/PUT requests
+          let body: Buffer | undefined
+          if (
+            req.method === 'POST' ||
+            req.method === 'PUT' ||
+            req.method === 'PATCH'
+          ) {
+            const chunks: Buffer[] = []
+            for await (const chunk of req) {
+              chunks.push(Buffer.from(chunk))
+            }
+            body = Buffer.concat(chunks)
+          }
+
+          // Forward specific headers from the original request
+          const forwardHeaders: Record<string, string> = {
+            'User-Agent':
+              'Mozilla/5.0 (compatible; DEVS-Proxy/1.0; +https://devs.new)',
+          }
+
+          // Forward Content-Type if present
+          if (req.headers['content-type']) {
+            forwardHeaders['Content-Type'] = req.headers[
+              'content-type'
+            ] as string
+          }
+
+          // Forward Authorization if present (for authenticated API requests)
+          if (req.headers['authorization']) {
+            forwardHeaders['Authorization'] = req.headers[
+              'authorization'
+            ] as string
+          }
 
           // Forward the request to the target URL
           const response = await fetch(targetUrl, {
             method: req.method || 'GET',
-            headers: {
-              'User-Agent':
-                'Mozilla/5.0 (compatible; DEVS-Proxy/1.0; +https://devs.new)',
-            },
+            headers: forwardHeaders,
+            body: body,
           })
 
           // Set CORS headers
           res.setHeader('Access-Control-Allow-Origin', origin || '*')
-          res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-          res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+          res.setHeader(
+            'Access-Control-Allow-Methods',
+            'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+          )
+          res.setHeader(
+            'Access-Control-Allow-Headers',
+            'Content-Type, Authorization',
+          )
 
           // Handle preflight requests
           if (req.method === 'OPTIONS') {

@@ -187,5 +187,99 @@ describe('Crypto Module', () => {
         expect(key).toBe(null)
       })
     })
+
+    describe('getEncryptionMode', () => {
+      beforeEach(() => {
+        SecureStorage.lock()
+        localStorage.clear()
+      })
+
+      afterEach(() => {
+        SecureStorage.lock()
+        localStorage.clear()
+      })
+
+      it('should return local mode by default', () => {
+        expect(SecureStorage.getEncryptionMode()).toBe('local')
+      })
+    })
+
+    describe('deriveSyncKey', () => {
+      it.skipIf(!hasCryptoSupport)(
+        'should derive the same key from the same password',
+        async () => {
+          const password = 'test-sync-password'
+
+          const key1 = await SecureStorage.deriveSyncKey(password)
+          const key2 = await SecureStorage.deriveSyncKey(password)
+
+          // Keys are CryptoKey objects, we can't compare them directly
+          // But we can verify they are valid CryptoKeys
+          expect(key1).toBeInstanceOf(CryptoKey)
+          expect(key2).toBeInstanceOf(CryptoKey)
+          expect(key1.algorithm.name).toBe('AES-GCM')
+          expect(key2.algorithm.name).toBe('AES-GCM')
+        },
+      )
+
+      it.skipIf(!hasCryptoSupport)(
+        'should derive keys that can encrypt and decrypt data consistently',
+        async () => {
+          const password = 'sync-password-123'
+          const plaintext = 'secret-api-key'
+
+          // Derive key
+          const syncKey = await SecureStorage.deriveSyncKey(password)
+
+          // Encrypt
+          const iv = crypto.getRandomValues(new Uint8Array(12))
+          const encoder = new TextEncoder()
+          const encrypted = await crypto.subtle.encrypt(
+            { name: 'AES-GCM', iv },
+            syncKey,
+            encoder.encode(plaintext),
+          )
+
+          // Derive another key from the same password (simulating another device)
+          const syncKey2 = await SecureStorage.deriveSyncKey(password)
+
+          // Decrypt with the second key
+          const decrypted = await crypto.subtle.decrypt(
+            { name: 'AES-GCM', iv },
+            syncKey2,
+            encrypted,
+          )
+
+          const decoder = new TextDecoder()
+          expect(decoder.decode(decrypted)).toBe(plaintext)
+        },
+      )
+
+      it.skipIf(!hasCryptoSupport)(
+        'should derive different keys from different passwords',
+        async () => {
+          const password1 = 'password-one'
+          const password2 = 'password-two'
+          const plaintext = 'test-data'
+
+          const key1 = await SecureStorage.deriveSyncKey(password1)
+          const key2 = await SecureStorage.deriveSyncKey(password2)
+
+          // Encrypt with key1
+          const iv = crypto.getRandomValues(new Uint8Array(12))
+          const encoder = new TextEncoder()
+          const encrypted = await crypto.subtle.encrypt(
+            { name: 'AES-GCM', iv },
+            key1,
+            encoder.encode(plaintext),
+          )
+
+          // Should fail to decrypt with key2
+          await expect(
+            crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key2, encrypted),
+          ).rejects.toThrow()
+        },
+      )
+    })
   })
 })

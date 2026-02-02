@@ -167,9 +167,9 @@ export const MarkdownRenderer = ({
             content.includes('```') && codeBlockCount % 2 !== 0
 
           if (hasIncompleteCodeBlock) {
-            console.debug(
-              '[MarkdownRenderer] Detected incomplete code block during streaming, using progressive fallback',
-            )
+            // console.debug(
+            //   '[MarkdownRenderer] Detected incomplete code block during streaming, using progressive fallback',
+            // )
 
             // Process any complete code blocks that exist before the incomplete one
             const completeCodeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g
@@ -329,12 +329,12 @@ export const MarkdownRenderer = ({
         // Configure marked for better formatting
         configureMarked()
 
-        console.debug(
-          '📝 PROCESSED MARKDOWN BEFORE PARSE:',
-          processedMarkdown.substring(0, 500),
-        )
+        // console.debug(
+        //   '📝 PROCESSED MARKDOWN BEFORE PARSE:',
+        //   processedMarkdown.substring(0, 500),
+        // )
         const html = await marked.parse(processedMarkdown)
-        console.debug('📄 HTML AFTER PARSE:', html.substring(0, 500))
+        // console.debug('📄 HTML AFTER PARSE:', html.substring(0, 500))
 
         setProcessedContent({ html, codeBlocks, thinkBlocks, mathBlocks })
       } catch (error) {

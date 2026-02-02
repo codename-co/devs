@@ -1,165 +1,103 @@
 /**
  * Notification Store
  *
- * Zustand store for managing notifications with IndexedDB persistence.
+ * Zustand store for managing notifications with localStorage persistence.
+ * Notifications are local-only and not synced across devices.
  */
 import { create } from 'zustand'
-import { db } from '@/lib/db'
+import { persist } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid'
 import type { Notification, NotificationStore } from '../types'
 
-export const useNotificationStore = create<NotificationStore>((set, get) => ({
-  // State
-  notifications: [],
-  isLoading: false,
-  isInitialized: false,
+// Maximum number of notifications to keep
+const MAX_NOTIFICATIONS = 100
 
-  // Initialize the store by loading notifications from IndexedDB
-  initialize: async () => {
-    const { isInitialized } = get()
-    if (isInitialized) return
+export const useNotificationStore = create<NotificationStore>()(
+  persist(
+    (set, get) => ({
+      // State
+      notifications: [],
+      isLoading: false,
+      isInitialized: true, // Always initialized since we use localStorage
 
-    set({ isLoading: true })
-    try {
-      await db.init()
-      const notifications = await db.getAll<'notifications'>('notifications')
-      // Sort by createdAt descending (newest first)
-      notifications.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      )
-      set({ notifications, isInitialized: true })
-    } catch (error) {
-      console.error('Failed to load notifications:', error)
-    } finally {
-      set({ isLoading: false })
-    }
-  },
+      // Initialize the store (no-op for localStorage, kept for API compatibility)
+      initialize: async () => {
+        // No-op - Zustand persist handles loading automatically
+      },
 
-  // Add a new notification
-  addNotification: async (notification) => {
-    const newNotification: Notification = {
-      id: uuidv4(),
-      ...notification,
-      read: false,
-      createdAt: new Date(),
-    }
+      // Add a new notification
+      addNotification: async (notification) => {
+        const newNotification: Notification = {
+          id: uuidv4(),
+          ...notification,
+          read: false,
+          createdAt: new Date(),
+        }
 
-    try {
-      await db.init()
-      await db.add('notifications', newNotification)
+        set((state) => {
+          // Keep only the most recent notifications
+          const updatedNotifications = [
+            newNotification,
+            ...state.notifications,
+          ].slice(0, MAX_NOTIFICATIONS)
+          return { notifications: updatedNotifications }
+        })
 
-      set((state) => ({
-        notifications: [newNotification, ...state.notifications],
-      }))
+        return newNotification
+      },
 
-      return newNotification
-    } catch (error) {
-      console.error('Failed to add notification:', error)
-      throw error
-    }
-  },
+      // Mark a single notification as read
+      markAsRead: async (id: string) => {
+        set((state) => ({
+          notifications: state.notifications.map((n) =>
+            n.id === id && !n.read
+              ? { ...n, read: true, readAt: new Date() }
+              : n,
+          ),
+        }))
+      },
 
-  // Mark a single notification as read
-  markAsRead: async (id: string) => {
-    const { notifications } = get()
-    const notification = notifications.find((n) => n.id === id)
-    if (!notification || notification.read) return
+      // Mark all notifications as read
+      markAllAsRead: async () => {
+        const now = new Date()
+        set((state) => ({
+          notifications: state.notifications.map((n) =>
+            n.read ? n : { ...n, read: true, readAt: now },
+          ),
+        }))
+      },
 
-    const updatedNotification: Notification = {
-      ...notification,
-      read: true,
-      readAt: new Date(),
-    }
+      // Delete a single notification
+      deleteNotification: async (id: string) => {
+        set((state) => ({
+          notifications: state.notifications.filter((n) => n.id !== id),
+        }))
+      },
 
-    try {
-      await db.init()
-      await db.update('notifications', updatedNotification)
+      // Clear all notifications
+      clearAll: async () => {
+        set({ notifications: [] })
+      },
 
-      set((state) => ({
-        notifications: state.notifications.map((n) =>
-          n.id === id ? updatedNotification : n,
-        ),
-      }))
-    } catch (error) {
-      console.error('Failed to mark notification as read:', error)
-      throw error
-    }
-  },
+      // Get unread count
+      getUnreadCount: () => {
+        const { notifications } = get()
+        return notifications.filter((n) => !n.read).length
+      },
 
-  // Mark all notifications as read
-  markAllAsRead: async () => {
-    const { notifications } = get()
-    const unreadNotifications = notifications.filter((n) => !n.read)
-    if (unreadNotifications.length === 0) return
-
-    const now = new Date()
-    const updatedNotifications = notifications.map((n) =>
-      n.read
-        ? n
-        : {
-            ...n,
-            read: true,
-            readAt: now,
-          },
-    )
-
-    try {
-      await db.init()
-      // Update all unread notifications in the database
-      await Promise.all(
-        updatedNotifications
-          .filter((n) => !notifications.find((orig) => orig.id === n.id)?.read)
-          .map((n) => db.update('notifications', n)),
-      )
-
-      set({ notifications: updatedNotifications })
-    } catch (error) {
-      console.error('Failed to mark all notifications as read:', error)
-      throw error
-    }
-  },
-
-  // Delete a single notification
-  deleteNotification: async (id: string) => {
-    try {
-      await db.init()
-      await db.delete('notifications', id)
-
-      set((state) => ({
-        notifications: state.notifications.filter((n) => n.id !== id),
-      }))
-    } catch (error) {
-      console.error('Failed to delete notification:', error)
-      throw error
-    }
-  },
-
-  // Clear all notifications
-  clearAll: async () => {
-    try {
-      await db.init()
-      await db.clear('notifications')
-
-      set({ notifications: [] })
-    } catch (error) {
-      console.error('Failed to clear notifications:', error)
-      throw error
-    }
-  },
-
-  // Get unread count
-  getUnreadCount: () => {
-    const { notifications } = get()
-    return notifications.filter((n) => !n.read).length
-  },
-
-  // Get total notification count
-  getNotificationCount: () => {
-    const { notifications } = get()
-    return notifications.length
-  },
-}))
+      // Get total notification count
+      getNotificationCount: () => {
+        const { notifications } = get()
+        return notifications.length
+      },
+    }),
+    {
+      name: 'devs-notifications',
+      // Only persist notifications array
+      partialize: (state) => ({ notifications: state.notifications }),
+    },
+  ),
+)
 
 // ============================================================================
 // Non-hook exports for use outside React components

@@ -1,4 +1,7 @@
-import { db } from './db'
+import {
+  getKnowledgeItemAsync,
+  ensureReady,
+} from '@/stores/knowledgeStore'
 import { KnowledgeItem } from '@/types'
 import { LLMMessageAttachment } from './llm'
 
@@ -47,16 +50,14 @@ export async function getKnowledgeAttachments(
   }
 
   try {
-    // Ensure database is initialized
-    if (!db.isInitialized()) {
-      await db.init()
-    }
+    // Ensure Yjs is ready
+    await ensureReady()
 
     // Get knowledge items
     const knowledgeItems: KnowledgeItem[] = []
     for (const id of knowledgeItemIds) {
       try {
-        const item = await db.get('knowledgeItems', id)
+        const item = await getKnowledgeItemAsync(id)
         if (item) {
           knowledgeItems.push(item)
         }

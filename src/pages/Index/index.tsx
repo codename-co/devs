@@ -283,6 +283,8 @@ export const IndexPage = () => {
             <motion.div {...motionVariants.title}>
               <Title
                 subtitle={t('Delegate complex tasks to your own AI teams')}
+                className="!text-2xl sm:!text-3xl md:!text-4xl"
+                subtitleClassName="text-md md:text-xl"
               >
                 {t('Let your agents take it from here')}
               </Title>
@@ -485,7 +487,7 @@ export const IndexPage = () => {
           </motion.div>
         </Section>
 
-        <footer className="absolute bottom-0 left-0 right-0 mt-auto py-6 flex justify-center gap-4 scale-90 text-sm *:text-default-400 dark:*:text-default-500">
+        <footer className="absolute bottom-12 md:bottom-0 left-0 right-0 mt-auto py-6 flex justify-center gap-4 scale-90 text-sm *:text-default-400 dark:*:text-default-500">
           <Link href={url('/terms')}>{t('Terms')}</Link>
           <Link href={url('/privacy')}>{t('Privacy')}</Link>
           {/* Open Source */}

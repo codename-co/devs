@@ -1,13 +1,12 @@
 /**
  * useStudioHistory Hook
  *
- * React hook for managing studio history with IndexedDB persistence.
- * Uses the main devs-ai-platform database for consistent data management.
+ * React hook for managing studio history with Yjs persistence.
+ * Uses Yjs maps for consistent data management.
  */
 
 import { useState, useCallback, useEffect } from 'react'
-import { db } from '@/lib/db'
-import { syncToYjs, deleteFromYjs } from '@/features/sync'
+import { studioEntries } from '@/lib/yjs'
 import { useFolderSyncStore } from '@/features/local-backup/stores/folderSyncStore'
 import { folderSyncService } from '@/features/local-backup/lib/local-backup-service'
 import {
@@ -23,9 +22,8 @@ const MAX_HISTORY_ENTRIES = 100
 /**
  * Get all history entries
  */
-async function getAllHistory(): Promise<StudioEntry[]> {
-  await db.init()
-  const entries = await db.getAll<'studioEntries'>('studioEntries')
+function getAllHistory(): StudioEntry[] {
+  const entries = Array.from(studioEntries.values())
   // Sort by date descending (newest first)
   return entries.sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
@@ -35,34 +33,27 @@ async function getAllHistory(): Promise<StudioEntry[]> {
 /**
  * Save a history entry
  */
-async function saveEntry(entry: StudioEntry): Promise<void> {
-  await db.init()
-  await db.update('studioEntries', entry)
-  console.debug('[StudioHistory] Syncing entry to Yjs:', entry.id)
-  syncToYjs('studioEntries', entry)
+function saveEntry(entry: StudioEntry): void {
+  console.debug('[StudioHistory] Saving entry to Yjs:', entry.id)
+  studioEntries.set(entry.id, entry)
 }
 
 /**
  * Delete a history entry
  */
-async function deleteEntry(id: string): Promise<void> {
-  await db.init()
-  await db.delete('studioEntries', id)
-  deleteFromYjs('studioEntries', id)
+function deleteEntry(id: string): void {
+  studioEntries.delete(id)
 }
 
 /**
  * Clear all history
  */
-async function clearAllHistory(): Promise<void> {
-  await db.init()
+function clearAllHistory(): void {
   // Get all entries to sync deletions
-  const entries = await db.getAll<'studioEntries'>('studioEntries')
-  // Clear from DB
-  await db.clear('studioEntries')
-  // Sync deletions to Yjs
+  const entries = Array.from(studioEntries.values())
+  // Clear all entries from Yjs
   for (const entry of entries) {
-    deleteFromYjs('studioEntries', entry.id)
+    studioEntries.delete(entry.id)
   }
 }
 
@@ -126,10 +117,22 @@ export function useStudioHistory(): UseStudioHistoryReturn {
     loadHistory()
   }, [])
 
+  // Subscribe to Yjs changes for P2P sync
+  useEffect(() => {
+    const observer = () => {
+      const entries = getAllHistory()
+      setHistory(entries)
+    }
+    studioEntries.observe(observer)
+    return () => {
+      studioEntries.unobserve(observer)
+    }
+  }, [])
+
   const loadHistory = useCallback(async () => {
     setIsLoading(true)
     try {
-      const entries = await getAllHistory()
+      const entries = getAllHistory()
       setHistory(entries)
     } catch (err) {
       console.error('Failed to load image history:', err)
@@ -157,7 +160,7 @@ export function useStudioHistory(): UseStudioHistoryReturn {
         createdAt: new Date(),
       }
 
-      await saveEntry(entry)
+      saveEntry(entry)
 
       // Trigger local backup sync
       triggerBackupSync()
@@ -177,7 +180,7 @@ export function useStudioHistory(): UseStudioHistoryReturn {
             .slice(MAX_HISTORY_ENTRIES - 1)
 
           // Delete from DB
-          toRemove.forEach((e) => deleteEntry(e.id).catch(console.error))
+          toRemove.forEach((e) => deleteEntry(e.id))
 
           return sorted.filter((e) => !toRemove.includes(e))
         }
@@ -238,7 +241,7 @@ export function useStudioHistory(): UseStudioHistoryReturn {
         createdAt: new Date(),
       }
 
-      await saveEntry(entry)
+      saveEntry(entry)
 
       // Trigger local backup sync
       triggerBackupSync()
@@ -258,7 +261,7 @@ export function useStudioHistory(): UseStudioHistoryReturn {
             .slice(MAX_HISTORY_ENTRIES - 1)
 
           // Delete from DB
-          toRemove.forEach((e) => deleteEntry(e.id).catch(console.error))
+          toRemove.forEach((e) => deleteEntry(e.id))
 
           return sorted.filter((e) => !toRemove.includes(e))
         }
@@ -280,12 +283,11 @@ export function useStudioHistory(): UseStudioHistoryReturn {
             : entry,
         )
 
-        // Save to DB
+        // Save to Yjs
         const entry = updated.find((e) => e.id === entryId)
         if (entry) {
           saveEntry(entry)
-            .then(() => triggerBackupSync())
-            .catch(console.error)
+          triggerBackupSync()
         }
 
         return updated
@@ -308,8 +310,7 @@ export function useStudioHistory(): UseStudioHistoryReturn {
         const entry = updated.find((e) => e.id === entryId)
         if (entry) {
           saveEntry(entry)
-            .then(() => triggerBackupSync())
-            .catch(console.error)
+          triggerBackupSync()
         }
 
         return updated
@@ -321,7 +322,7 @@ export function useStudioHistory(): UseStudioHistoryReturn {
   // Remove entry
   const removeEntry = useCallback(
     async (entryId: string) => {
-      await deleteEntry(entryId)
+      deleteEntry(entryId)
       setHistory((prev) => prev.filter((e) => e.id !== entryId))
       // Delete files from local backup
       folderSyncService.deleteStudioEntryFiles(entryId).catch(console.error)
@@ -344,7 +345,7 @@ export function useStudioHistory(): UseStudioHistoryReturn {
 
         // If no images left, delete the entire entry
         if (remainingImages.length === 0) {
-          deleteEntry(entryId).catch(console.error)
+          deleteEntry(entryId)
           // Delete all files from local backup
           folderSyncService.deleteStudioEntryFiles(entryId).catch(console.error)
           return prev.filter((e) => e.id !== entryId)
@@ -353,14 +354,11 @@ export function useStudioHistory(): UseStudioHistoryReturn {
         // Otherwise, update the entry with remaining images
         const updatedEntry = { ...entry, images: remainingImages }
         saveEntry(updatedEntry)
-          .then(() => {
-            // Delete the specific image file from local backup
-            folderSyncService
-              .deleteStudioImageFile(entryId, imageId)
-              .catch(console.error)
-            triggerBackupSync()
-          })
+        // Delete the specific image file from local backup
+        folderSyncService
+          .deleteStudioImageFile(entryId, imageId)
           .catch(console.error)
+        triggerBackupSync()
 
         const updated = [...prev]
         updated[entryIndex] = updatedEntry
@@ -384,7 +382,7 @@ export function useStudioHistory(): UseStudioHistoryReturn {
 
         // If no videos left, delete the entire entry
         if (remainingVideos.length === 0) {
-          deleteEntry(entryId).catch(console.error)
+          deleteEntry(entryId)
           // Delete all files from local backup
           folderSyncService.deleteStudioEntryFiles(entryId).catch(console.error)
           return prev.filter((e) => e.id !== entryId)
@@ -393,15 +391,12 @@ export function useStudioHistory(): UseStudioHistoryReturn {
         // Otherwise, update the entry with remaining videos
         const updatedEntry = { ...entry, videos: remainingVideos }
         saveEntry(updatedEntry)
-          .then(() => {
-            // Delete the specific video file from local backup
-            // Note: Videos are stored similarly to images in the entry folder
-            folderSyncService
-              .deleteStudioImageFile(entryId, videoId)
-              .catch(console.error)
-            triggerBackupSync()
-          })
+        // Delete the specific video file from local backup
+        // Note: Videos are stored similarly to images in the entry folder
+        folderSyncService
+          .deleteStudioImageFile(entryId, videoId)
           .catch(console.error)
+        triggerBackupSync()
 
         const updated = [...prev]
         updated[entryIndex] = updatedEntry
@@ -413,7 +408,7 @@ export function useStudioHistory(): UseStudioHistoryReturn {
 
   // Clear history
   const clearHistory = useCallback(async () => {
-    await clearAllHistory()
+    clearAllHistory()
     setHistory([])
     triggerBackupSync()
   }, [triggerBackupSync])

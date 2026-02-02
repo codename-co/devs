@@ -8,7 +8,7 @@
  * @module features/connectors/tools/service
  */
 
-import { db } from '@/lib/db'
+import { connectors as connectorsMap } from '@/lib/yjs/maps'
 import { ProviderRegistry } from '../provider-registry'
 import type { AppConnectorProviderInterface, Connector } from '../types'
 import type {
@@ -151,20 +151,10 @@ const DEFAULT_CALENDAR_DAYS = 30
 // ============================================================================
 
 /**
- * Ensures the database is initialized before operations.
- */
-async function ensureDbInitialized(): Promise<void> {
-  if (!db.isInitialized()) {
-    await db.init()
-  }
-}
-
-/**
  * Get a connector by ID, throwing if not found.
  */
-async function getConnector(connectorId: string): Promise<Connector> {
-  await ensureDbInitialized()
-  const connector = await db.get('connectors', connectorId)
+function getConnector(connectorId: string): Connector {
+  const connector = connectorsMap.get(connectorId)
   if (!connector) {
     throw new Error(`Connector not found: ${connectorId}`)
   }
@@ -233,7 +223,7 @@ function extractEmailBody(rawContent: string): string {
 export async function gmailSearch(
   params: GmailSearchParams,
 ): Promise<GmailSearchResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'gmail') {
     throw new Error(`Connector ${params.connector_id} is not a Gmail connector`)
@@ -279,7 +269,7 @@ export async function gmailSearch(
 export async function gmailRead(
   params: GmailReadParams,
 ): Promise<GmailReadResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'gmail') {
     throw new Error(`Connector ${params.connector_id} is not a Gmail connector`)
@@ -360,7 +350,7 @@ export async function gmailRead(
 export async function gmailListLabels(
   params: GmailListLabelsParams,
 ): Promise<GmailListLabelsResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'gmail') {
     throw new Error(`Connector ${params.connector_id} is not a Gmail connector`)
@@ -403,7 +393,7 @@ export async function gmailListLabels(
 export async function gmailCreateDraft(
   params: GmailCreateDraftParams,
 ): Promise<GmailCreateDraftResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'gmail') {
     throw new Error(`Connector ${params.connector_id} is not a Gmail connector`)
@@ -460,7 +450,7 @@ export async function gmailCreateDraft(
 export async function driveSearch(
   params: DriveSearchParams,
 ): Promise<DriveSearchResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'google-drive') {
     throw new Error(
@@ -505,7 +495,7 @@ export async function driveSearch(
 export async function driveRead(
   params: DriveReadParams,
 ): Promise<DriveReadResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'google-drive') {
     throw new Error(
@@ -627,7 +617,7 @@ export async function driveRead(
 export async function driveList(
   params: DriveListParams,
 ): Promise<DriveListResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'google-drive') {
     throw new Error(
@@ -675,7 +665,7 @@ export async function driveList(
 export async function calendarListEvents(
   params: CalendarListEventsParams,
 ): Promise<CalendarListEventsResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'google-calendar') {
     throw new Error(
@@ -740,7 +730,7 @@ export async function calendarListEvents(
 export async function calendarGetEvent(
   params: CalendarGetEventParams,
 ): Promise<CalendarGetEventResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'google-calendar') {
     throw new Error(
@@ -796,7 +786,7 @@ export async function calendarGetEvent(
 export async function calendarSearch(
   params: CalendarSearchParams,
 ): Promise<CalendarSearchResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'google-calendar') {
     throw new Error(
@@ -865,7 +855,7 @@ export async function calendarSearch(
 export async function tasksList(
   params: TasksListParams,
 ): Promise<TasksListResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'google-tasks') {
     throw new Error(
@@ -922,7 +912,7 @@ export async function tasksList(
 export async function tasksGet(
   params: TasksGetParams,
 ): Promise<TasksGetResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'google-tasks') {
     throw new Error(
@@ -975,7 +965,7 @@ export async function tasksGet(
 export async function tasksListTasklists(
   params: TasksListTasklistsParams,
 ): Promise<TasksListTasklistsResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'google-tasks') {
     throw new Error(
@@ -1019,7 +1009,7 @@ export async function tasksListTasklists(
 export async function notionSearch(
   params: NotionSearchParams,
 ): Promise<NotionSearchResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'notion') {
     throw new Error(
@@ -1077,7 +1067,7 @@ export async function notionSearch(
 export async function notionReadPage(
   params: NotionReadPageParams,
 ): Promise<NotionReadPageResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'notion') {
     throw new Error(
@@ -1142,7 +1132,7 @@ export async function notionReadPage(
 export async function notionQueryDatabase(
   params: NotionQueryDatabaseParams,
 ): Promise<NotionQueryDatabaseResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'notion') {
     throw new Error(
@@ -1197,7 +1187,7 @@ export async function notionQueryDatabase(
 export async function qontoListBusinessAccounts(
   params: QontoListBusinessAccountsParams,
 ): Promise<QontoListBusinessAccountsResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'qonto') {
     throw new Error(`Connector ${params.connector_id} is not a Qonto connector`)
@@ -1259,7 +1249,7 @@ export async function qontoListTransactions(
     )
   }
 
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'qonto') {
     throw new Error(`Connector ${params.connector_id} is not a Qonto connector`)
@@ -1322,7 +1312,7 @@ export async function qontoListTransactions(
 export async function qontoGetTransaction(
   params: QontoGetTransactionParams,
 ): Promise<QontoGetTransactionResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'qonto') {
     throw new Error(`Connector ${params.connector_id} is not a Qonto connector`)
@@ -1397,7 +1387,7 @@ export async function qontoGetTransaction(
 export async function qontoListStatements(
   params: QontoListStatementsParams,
 ): Promise<QontoListStatementsResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'qonto') {
     throw new Error(`Connector ${params.connector_id} is not a Qonto connector`)
@@ -1449,7 +1439,7 @@ export async function qontoListStatements(
 export async function qontoGetStatement(
   params: QontoGetStatementParams,
 ): Promise<QontoGetStatementResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'qonto') {
     throw new Error(`Connector ${params.connector_id} is not a Qonto connector`)
@@ -1496,7 +1486,7 @@ export async function qontoGetStatement(
 export async function outlookSearch(
   params: OutlookSearchParams,
 ): Promise<OutlookSearchResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'outlook-mail') {
     throw new Error(
@@ -1548,7 +1538,7 @@ export async function outlookSearch(
 export async function outlookRead(
   params: OutlookReadParams,
 ): Promise<OutlookReadResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'outlook-mail') {
     throw new Error(
@@ -1607,7 +1597,7 @@ export async function outlookRead(
 export async function outlookListFolders(
   params: OutlookListFoldersParams,
 ): Promise<OutlookListFoldersResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'outlook-mail') {
     throw new Error(
@@ -1650,7 +1640,7 @@ export async function outlookListFolders(
 export async function onedriveSearch(
   params: OneDriveSearchParams,
 ): Promise<OneDriveSearchResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'onedrive') {
     throw new Error(
@@ -1699,7 +1689,7 @@ export async function onedriveSearch(
 export async function onedriveRead(
   params: OneDriveReadParams,
 ): Promise<OneDriveReadResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'onedrive') {
     throw new Error(
@@ -1788,7 +1778,7 @@ export async function onedriveRead(
 export async function onedriveList(
   params: OneDriveListParams,
 ): Promise<OneDriveListResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'onedrive') {
     throw new Error(
@@ -1842,7 +1832,7 @@ export async function onedriveList(
 export async function slackSearch(
   params: SlackSearchParams,
 ): Promise<SlackSearchResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'slack') {
     throw new Error(`Connector ${params.connector_id} is not a Slack connector`)
@@ -1886,7 +1876,7 @@ export async function slackSearch(
 export async function slackListChannels(
   params: SlackListChannelsParams,
 ): Promise<SlackListChannelsResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'slack') {
     throw new Error(`Connector ${params.connector_id} is not a Slack connector`)
@@ -1929,7 +1919,7 @@ export async function slackListChannels(
 export async function slackReadChannel(
   params: SlackReadChannelParams,
 ): Promise<SlackReadChannelResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'slack') {
     throw new Error(`Connector ${params.connector_id} is not a Slack connector`)
@@ -1980,7 +1970,7 @@ export async function slackReadChannel(
 export async function dropboxSearch(
   params: DropboxSearchParams,
 ): Promise<DropboxSearchResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'dropbox') {
     throw new Error(
@@ -2031,7 +2021,7 @@ export async function dropboxSearch(
 export async function dropboxRead(
   params: DropboxReadParams,
 ): Promise<DropboxReadResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'dropbox') {
     throw new Error(
@@ -2092,7 +2082,7 @@ export async function dropboxRead(
 export async function dropboxList(
   params: DropboxListParams,
 ): Promise<DropboxListResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'dropbox') {
     throw new Error(
@@ -2144,7 +2134,7 @@ export async function dropboxList(
 export async function figmaListFiles(
   params: FigmaListFilesParams,
 ): Promise<FigmaListFilesResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'figma') {
     throw new Error(`Connector ${params.connector_id} is not a Figma connector`)
@@ -2191,7 +2181,7 @@ export async function figmaListFiles(
 export async function figmaGetFile(
   params: FigmaGetFileParams,
 ): Promise<FigmaGetFileResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'figma') {
     throw new Error(`Connector ${params.connector_id} is not a Figma connector`)
@@ -2247,7 +2237,7 @@ export async function figmaGetFile(
 export async function figmaGetComments(
   params: FigmaGetCommentsParams,
 ): Promise<FigmaGetCommentsResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'figma') {
     throw new Error(`Connector ${params.connector_id} is not a Figma connector`)
@@ -2297,7 +2287,7 @@ export async function figmaGetComments(
 export async function googleChatListSpaces(
   params: GoogleChatListSpacesParams,
 ): Promise<GoogleChatListSpacesResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'google-chat') {
     throw new Error(
@@ -2341,7 +2331,7 @@ export async function googleChatListSpaces(
 export async function googleChatReadMessages(
   params: GoogleChatReadMessagesParams,
 ): Promise<GoogleChatReadMessagesResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'google-chat') {
     throw new Error(
@@ -2393,7 +2383,7 @@ export async function googleChatReadMessages(
 export async function googleMeetListMeetings(
   params: GoogleMeetListMeetingsParams,
 ): Promise<GoogleMeetListMeetingsResult> {
-  const connector = await getConnector(params.connector_id)
+  const connector = getConnector(params.connector_id)
 
   if (connector.provider !== 'google-meet') {
     throw new Error(

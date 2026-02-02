@@ -36,7 +36,11 @@ import { AgentAppearancePicker } from '@/components/AgentAppearancePicker'
 import DefaultLayout from '@/layouts/Default'
 import { Link } from 'react-router-dom'
 import type { HeaderProps, IconName } from '@/lib/types'
-import { getAgentById, getAgentBySlug, updateAgent } from '@/stores/agentStore'
+import {
+  getAgentById,
+  getAgentBySlugAsync,
+  updateAgent,
+} from '@/stores/agentStore'
 import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
 import { usePinnedMessageStore } from '@/stores/pinnedMessageStore'
 import { useTraceStore } from '@/stores/traceStore'
@@ -56,7 +60,7 @@ import {
   type ResponseUpdate,
   type ResponseStatus,
 } from '@/lib/chat'
-import { db } from '@/lib/db'
+import { getKnowledgeItem } from '@/stores/knowledgeStore'
 import { copyRichText } from '@/lib/clipboard'
 import {
   learnFromMessage,
@@ -257,14 +261,13 @@ const ToolTimelineItem = memo(
       string | null
     >(null)
 
-    // Fetch document name from DB if we have an ID but no name from the span
+    // Fetch document name from store if we have an ID but no name from the span
     useEffect(() => {
       if (context?.documentId && !context.documentName) {
-        db.get('knowledgeItems', context.documentId).then((item) => {
-          if (item?.name) {
-            setResolvedDocumentName(item.name)
-          }
-        })
+        const item = getKnowledgeItem(context.documentId)
+        if (item?.name) {
+          setResolvedDocumentName(item.name)
+        }
       }
     }, [context?.documentId, context?.documentName])
 
@@ -1711,8 +1714,8 @@ export const AgentRunPage = () => {
       setNewlyLearnedMemories([])
 
       try {
-        // Load the specified agent by slug
-        const agent = await getAgentBySlug(agentSlug)
+        // Load the specified agent by slug (async version waits for Yjs initialization)
+        const agent = await getAgentBySlugAsync(agentSlug)
         if (!agent) {
           notifyError({
             title: 'Agent Not Found',

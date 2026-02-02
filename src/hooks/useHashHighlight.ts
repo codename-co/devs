@@ -112,7 +112,7 @@ export function useHashHighlight(
 
   // Parse hash format: #section or #section/element
   const parsedHash: ParsedHash = (() => {
-    if (!hash) return { section: null, element: null }
+    if (!hash) return { section: 'general', element: null }
     const slashIndex = hash.indexOf('/')
     if (slashIndex === -1) {
       // No slash: hash is just a section

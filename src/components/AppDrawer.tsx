@@ -7,11 +7,6 @@ import {
   ListboxSection,
   ScrollShadow,
   Tooltip,
-  DropdownMenu,
-  DropdownItem,
-  DropdownTrigger,
-  Dropdown,
-  DropdownSection,
   Popover,
   PopoverTrigger,
   PopoverContent,
@@ -1075,98 +1070,30 @@ const ExpandedDrawer = ({
             </Button>
           </Tooltip>
 
-          {/* More Menu */}
-          <Dropdown placement="top-end">
-            <DropdownTrigger>
-              <Button
-                isIconOnly
-                variant="light"
+          {/* Settings */}
+          <Tooltip
+            content={
+              <span className="flex items-center gap-2">
+                {t('Settings')}
+                <Kbd keys={['command']}>,</Kbd>
+              </span>
+            }
+            placement="top"
+          >
+            <Button
+              isIconOnly
+              variant="light"
+              size="sm"
+              onPress={() => navigate(url('/settings'))}
+              aria-label={t('Settings')}
+            >
+              <Icon
+                name="Settings"
+                className="text-gray-500 dark:text-gray-400"
                 size="sm"
-                aria-label={t('More')}
-              >
-                <Icon
-                  name="Menu"
-                  className="text-gray-500 dark:text-gray-400"
-                  size="sm"
-                />
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu aria-label={t('More')}>
-              <DropdownSection showDivider>
-                <DropdownItem
-                  key="language"
-                  startContent={<Icon name="Language" size="sm" />}
-                  endContent={
-                    <span className="text-tiny text-default-400 flex items-center gap-1">
-                      {languages[lang]}
-                      <Icon
-                        name="NavArrowRight"
-                        size="sm"
-                        className="w-3 h-3"
-                      />
-                    </span>
-                  }
-                  onPress={() => setIsLanguagePopoverOpen(true)}
-                  closeOnSelect={false}
-                >
-                  {t('Language')}
-                </DropdownItem>
-              </DropdownSection>
-              <DropdownSection showDivider>
-                <DropdownItem
-                  key="github"
-                  startContent={<Icon name="GitHub" size="sm" />}
-                  endContent={
-                    <Icon
-                      name="OpenNewWindow"
-                      size="sm"
-                      className="text-gray-400"
-                    />
-                  }
-                  onPress={() =>
-                    window.open(
-                      'https://github.com/codename-co/devs',
-                      '_blank',
-                      'noopener,noreferrer',
-                    )
-                  }
-                >
-                  {t('Open Source')}
-                </DropdownItem>
-              </DropdownSection>
-              <DropdownItem
-                key="privacy"
-                href={url('/privacy')}
-                startContent={<Icon name="Lock" size="sm" />}
-              >
-                {t('Privacy')}
-              </DropdownItem>
-              <DropdownItem
-                key="terms"
-                href={url('/terms')}
-                startContent={<Icon name="Page" size="sm" />}
-              >
-                {t('Terms')}
-              </DropdownItem>
-              {/* Version and Build Info */}
-              <DropdownItem
-                key="metadata"
-                isDisabled
-                classNames={{
-                  title: 'text-xs text-center',
-                }}
-              >
-                v{__APP_VERSION__}
-                <span className="mx-1">·</span>
-                <time dateTime={new Date(__BUILD_TIME__).toISOString()}>
-                  {new Date(__BUILD_TIME__).toLocaleString(lang, {
-                    dateStyle: 'short',
-                    timeStyle: 'short',
-                  })}
-                </time>
-              </DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
+              />
+            </Button>
+          </Tooltip>
         </div>
       </nav>
     </div>

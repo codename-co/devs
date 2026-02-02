@@ -1,11 +1,16 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Credential, LLMProvider, SelectedModels } from '@/types'
-import { db } from '@/lib/db'
 import { SecureStorage, isCryptoAvailable } from '@/lib/crypto'
 import { LLMService, LocalLLMProvider } from '@/lib/llm'
 import { successToast, errorToast } from '@/lib/toast'
-import { syncToYjs, deleteFromYjs } from '@/features/sync'
+import { credentials as credentialsYjs } from '@/lib/yjs'
+import { getT } from '@/i18n/utils'
+
+const t = getT()
+
+// Guard to prevent re-entrant loadCredentials calls (caused by migrations triggering Yjs observer)
+let isLoadingCredentials = false
 
 interface LLMModelStore {
   // Credential state - now one credential per provider
@@ -138,124 +143,167 @@ export const useLLMModelStore = create<LLMModelStore>()(
       },
 
       loadCredentials: async () => {
-        await db.init()
-        const creds = await db.getAll('credentials')
+        // Prevent re-entrant calls caused by migrations triggering Yjs observer
+        if (isLoadingCredentials) {
+          return
+        }
+        isLoadingCredentials = true
 
-        // Migration: consolidate multiple credentials per provider into one
-        // Keep the oldest credential per provider and migrate model selections
-        const providerMap = new Map<LLMProvider, Credential[]>()
+        try {
+          const creds = Array.from(credentialsYjs.values())
 
-        creds.forEach((cred) => {
-          const provider = cred.provider
-          if (!providerMap.has(provider)) {
-            providerMap.set(provider, [])
-          }
-          providerMap.get(provider)!.push(cred)
-        })
-
-        const migratedModels: SelectedModels = {}
-        const credentialsToDelete: string[] = []
-        const consolidatedCredentials: Credential[] = []
-
-        for (const [provider, providerCreds] of providerMap) {
-          // Sort by timestamp to keep the oldest one
-          const sorted = providerCreds.sort(
-            (a, b) =>
-              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+          // Debug logging for sync troubleshooting
+          console.log(
+            `[LLMModelStore] Loading ${creds.length} credentials from Yjs`,
           )
-
-          // Keep the oldest credential
-          const primaryCred = sorted[0]
-          consolidatedCredentials.push(primaryCred)
-
-          // If there's a model on the primary credential or any duplicate, use it
-          // Prefer the model from the credential with the lowest order (default)
-          const credsWithModels = sorted.filter((c) => c.model)
-          if (credsWithModels.length > 0) {
-            // Use the model from the default credential (lowest order)
-            const sortedByOrder = credsWithModels.sort(
-              (a, b) => (a.order ?? 999) - (b.order ?? 999),
+          creds.forEach((cred) => {
+            console.log(
+              `[LLMModelStore] Credential ${cred.id}: provider=${cred.provider}, hasIv=${!!cred.iv}`,
             )
-            migratedModels[provider] = sortedByOrder[0].model!
+          })
+
+          // Migration: Add IV to credential object if missing (for sync compatibility)
+          // This ensures older credentials work with the new sync system
+          for (const cred of creds) {
+            if (!cred.iv) {
+              const iv = localStorage.getItem(`${cred.id}-iv`)
+              if (iv) {
+                console.log(
+                  `[LLMModelStore] Migrating IV to credential object for ${cred.id}`,
+                )
+                credentialsYjs.set(cred.id, { ...cred, iv })
+              }
+            }
           }
 
-          // Mark duplicates for deletion
-          for (let i = 1; i < sorted.length; i++) {
-            credentialsToDelete.push(sorted[i].id)
-          }
-        }
+          // Re-read after migration
+          const migratedCreds = Array.from(credentialsYjs.values())
 
-        // Delete duplicate credentials
-        for (const id of credentialsToDelete) {
-          await db.delete('credentials', id)
-          deleteFromYjs('credentials', id)
-          localStorage.removeItem(`${id}-iv`)
-          localStorage.removeItem(`${id}-salt`)
-        }
+          // Migration: consolidate multiple credentials per provider into one
+          // Keep the oldest credential per provider and migrate model selections
+          const providerMap = new Map<LLMProvider, Credential[]>()
 
-        // Sort by order
-        const sortedCreds = consolidatedCredentials.sort((a, b) => {
-          if (a.order === undefined && b.order === undefined) return 0
-          if (a.order === undefined) return 1
-          if (b.order === undefined) return -1
-          return a.order - b.order
-        })
+          migratedCreds.forEach((cred) => {
+            const provider = cred.provider
+            if (!providerMap.has(provider)) {
+              providerMap.set(provider, [])
+            }
+            providerMap.get(provider)!.push(cred)
+          })
 
-        // If no credentials exist, create a default local provider
-        if (sortedCreds.length === 0 && isCryptoAvailable()) {
-          try {
-            const defaultModel = LocalLLMProvider.DEFAULT_MODEL
-            const keyToEncrypt = 'local-no-key'
+          const migratedModels: SelectedModels = {}
+          const credentialsToDelete: string[] = []
+          const consolidatedCredentials: Credential[] = []
 
-            const { encrypted, iv, salt } =
-              await SecureStorage.encryptCredential(keyToEncrypt)
+          for (const [provider, providerCreds] of providerMap) {
+            // Sort by timestamp to keep the oldest one
+            const sorted = providerCreds.sort(
+              (a, b) =>
+                new Date(a.timestamp).getTime() -
+                new Date(b.timestamp).getTime(),
+            )
 
-            const credential: Credential = {
-              id: `local-${Date.now()}`,
-              provider: 'local',
-              encryptedApiKey: encrypted,
-              timestamp: new Date(),
-              order: 0,
+            // Keep the oldest credential
+            const primaryCred = sorted[0]
+            consolidatedCredentials.push(primaryCred)
+
+            // If there's a model on the primary credential or any duplicate, use it
+            // Prefer the model from the credential with the lowest order (default)
+            const credsWithModels = sorted.filter((c) => c.model)
+            if (credsWithModels.length > 0) {
+              // Use the model from the default credential (lowest order)
+              const sortedByOrder = credsWithModels.sort(
+                (a, b) => (a.order ?? 999) - (b.order ?? 999),
+              )
+              migratedModels[provider] = sortedByOrder[0].model!
             }
 
-            localStorage.setItem(`${credential.id}-iv`, iv)
-            localStorage.setItem(`${credential.id}-salt`, salt)
-
-            await db.add('credentials', credential)
-            syncToYjs('credentials', credential)
-
-            // Set the default model for local provider
-            set((state) => ({
-              credentials: [credential],
-              selectedModels: { ...state.selectedModels, local: defaultModel },
-            }))
-            return
-          } catch (error) {
-            console.error('Failed to create default local provider:', error)
+            // Mark duplicates for deletion
+            for (let i = 1; i < sorted.length; i++) {
+              credentialsToDelete.push(sorted[i].id)
+            }
           }
-        }
 
-        // Update state with migrated models if any
-        const currentSelectedModels = get().selectedModels
-        const mergedModels = { ...currentSelectedModels }
-        for (const [provider, model] of Object.entries(migratedModels)) {
-          // Only set if not already set (don't override user's explicit selection)
-          if (!mergedModels[provider as LLMProvider]) {
-            mergedModels[provider as LLMProvider] = model
+          // Delete duplicate credentials
+          for (const id of credentialsToDelete) {
+            credentialsYjs.delete(id)
+            localStorage.removeItem(`${id}-iv`)
+            localStorage.removeItem(`${id}-salt`)
           }
-        }
 
-        set({ credentials: sortedCreds, selectedModels: mergedModels })
+          // Sort by order
+          const sortedCreds = consolidatedCredentials.sort((a, b) => {
+            if (a.order === undefined && b.order === undefined) return 0
+            if (a.order === undefined) return 1
+            if (b.order === undefined) return -1
+            return a.order - b.order
+          })
+
+          // If no credentials exist, create a default local provider
+          if (sortedCreds.length === 0 && isCryptoAvailable()) {
+            try {
+              const defaultModel = LocalLLMProvider.DEFAULT_MODEL
+              const keyToEncrypt = 'local-no-key'
+
+              const { encrypted, iv, salt, mode } =
+                await SecureStorage.encryptCredential(keyToEncrypt)
+
+              const credential: Credential = {
+                id: `local-${Date.now()}`,
+                provider: 'local',
+                encryptedApiKey: encrypted,
+                // Always store IV in credential object for sync compatibility
+                iv,
+                // Store encryption mode
+                encryptionMode: mode,
+                timestamp: new Date(),
+                order: 0,
+              }
+
+              // Also store IV in localStorage as backup
+              localStorage.setItem(`${credential.id}-iv`, iv)
+              if (salt) {
+                localStorage.setItem(`${credential.id}-salt`, salt)
+              }
+
+              credentialsYjs.set(credential.id, credential)
+
+              // Set the default model for local provider
+              set((state) => ({
+                credentials: [credential],
+                selectedModels: {
+                  ...state.selectedModels,
+                  local: defaultModel,
+                },
+              }))
+              return
+            } catch (error) {
+              console.error('Failed to create default local provider:', error)
+            }
+          }
+
+          // Update state with migrated models if any
+          const currentSelectedModels = get().selectedModels
+          const mergedModels = { ...currentSelectedModels }
+          for (const [provider, model] of Object.entries(migratedModels)) {
+            // Only set if not already set (don't override user's explicit selection)
+            if (!mergedModels[provider as LLMProvider]) {
+              mergedModels[provider as LLMProvider] = model
+            }
+          }
+
+          set({ credentials: sortedCreds, selectedModels: mergedModels })
+        } finally {
+          isLoadingCredentials = false
+        }
       },
 
       updateCredentialOrder: async (credentialId: string, newOrder: number) => {
         try {
-          await db.init()
-          const credential = await db.get('credentials', credentialId)
+          const credential = credentialsYjs.get(credentialId)
           if (credential) {
             const updatedCredential = { ...credential, order: newOrder }
-            await db.update('credentials', updatedCredential)
-            syncToYjs('credentials', updatedCredential)
+            credentialsYjs.set(credential.id, updatedCredential)
           }
         } catch (error) {
           console.error('Failed to update credential order:', error)
@@ -318,18 +366,23 @@ export const useLLMModelStore = create<LLMModelStore>()(
             apiKey || 'local-no-key',
           )
           if (!isValid) {
-            errorToast('Invalid API key')
+            errorToast(t('Invalid API key'))
             return false
           }
 
           // Encrypt and store credential
-          const { encrypted, iv, salt } =
+          const { encrypted, iv, salt, mode } =
             await SecureStorage.encryptCredential(apiKey)
 
           const credential: Credential = {
             id: `${provider}-${Date.now()}`,
             provider: provider as LLMProvider,
             encryptedApiKey: encrypted,
+            // Always store IV in credential object for sync compatibility
+            // This allows credentials to be synced and used on other devices
+            iv,
+            // Store the encryption mode so we know if it's syncable
+            encryptionMode: mode,
             baseUrl:
               provider === 'custom' ||
               provider === 'ollama' ||
@@ -340,8 +393,11 @@ export const useLLMModelStore = create<LLMModelStore>()(
             order: 0, // Set as default (first position)
           }
 
+          // Also store IV in localStorage as backup for local mode
           localStorage.setItem(`${credential.id}-iv`, iv)
-          localStorage.setItem(`${credential.id}-salt`, salt)
+          if (salt) {
+            localStorage.setItem(`${credential.id}-salt`, salt)
+          }
 
           // Update existing credentials to shift their order down
           for (let i = 0; i < credentials.length; i++) {
@@ -351,8 +407,7 @@ export const useLLMModelStore = create<LLMModelStore>()(
             }
           }
 
-          await db.add('credentials', credential)
-          syncToYjs('credentials', credential)
+          credentialsYjs.set(credential.id, credential)
 
           // If a model was provided, set it as the selected model for this provider
           if (model) {
@@ -361,10 +416,10 @@ export const useLLMModelStore = create<LLMModelStore>()(
 
           await loadCredentials()
 
-          successToast('Provider added successfully')
+          successToast(t('Provider added successfully'))
           return true
         } catch (error) {
-          errorToast('Failed to add provider')
+          errorToast(t('Failed to add provider'))
           console.error(error)
           return false
         }
@@ -376,10 +431,9 @@ export const useLLMModelStore = create<LLMModelStore>()(
         baseUrl?: string,
       ) => {
         try {
-          await db.init()
-          const credential = await db.get('credentials', id)
+          const credential = credentialsYjs.get(id)
           if (!credential) {
-            errorToast('Credential not found')
+            errorToast(t('Credential not found'))
             return false
           }
 
@@ -389,34 +443,39 @@ export const useLLMModelStore = create<LLMModelStore>()(
             apiKey || 'local-no-key',
           )
           if (!isValid) {
-            errorToast('Invalid API key')
+            errorToast(t('Invalid API key'))
             return false
           }
 
           // Encrypt the new API key
-          const { encrypted, iv, salt } =
+          const { encrypted, iv, salt, mode } =
             await SecureStorage.encryptCredential(apiKey)
 
           const updatedCredential: Credential = {
             ...credential,
             encryptedApiKey: encrypted,
+            // Always store IV in credential object for sync compatibility
+            iv,
+            // Update encryption mode
+            encryptionMode: mode,
             baseUrl: baseUrl ?? credential.baseUrl,
             timestamp: new Date(),
           }
 
-          // Update localStorage with new encryption metadata
+          // Also store IV in localStorage as backup
           localStorage.setItem(`${id}-iv`, iv)
-          localStorage.setItem(`${id}-salt`, salt)
+          if (salt) {
+            localStorage.setItem(`${id}-salt`, salt)
+          }
 
-          await db.update('credentials', updatedCredential)
-          syncToYjs('credentials', updatedCredential)
+          credentialsYjs.set(id, updatedCredential)
 
           await get().loadCredentials()
 
-          successToast('Provider updated successfully')
+          successToast(t('Provider updated successfully'))
           return true
         } catch (error) {
-          errorToast('Failed to update provider')
+          errorToast(t('Failed to update provider'))
           console.error(error)
           return false
         }
@@ -426,8 +485,7 @@ export const useLLMModelStore = create<LLMModelStore>()(
         try {
           const credential = get().credentials.find((c) => c.id === id)
 
-          await db.delete('credentials', id)
-          deleteFromYjs('credentials', id)
+          credentialsYjs.delete(id)
           localStorage.removeItem(`${id}-iv`)
           localStorage.removeItem(`${id}-salt`)
 
@@ -441,9 +499,9 @@ export const useLLMModelStore = create<LLMModelStore>()(
           }
 
           await get().loadCredentials()
-          successToast('Provider deleted')
+          successToast(t('Provider deleted'))
         } catch (error) {
-          errorToast('Failed to delete provider')
+          errorToast(t('Failed to delete provider'))
         }
       },
     }),
@@ -457,3 +515,22 @@ export const useLLMModelStore = create<LLMModelStore>()(
     },
   ),
 )
+
+// =========================================================================
+// Yjs Observers for P2P sync
+// =========================================================================
+
+/**
+ * Initialize Yjs observers for real-time sync.
+ * When credentials are modified on another device,
+ * this ensures the Zustand store stays in sync.
+ */
+function initYjsObservers(): void {
+  credentialsYjs.observe(() => {
+    // Reload credentials when Yjs map changes
+    useLLMModelStore.getState().loadCredentials()
+  })
+}
+
+// Initialize observers when module loads
+initYjsObservers()

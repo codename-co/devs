@@ -17,13 +17,14 @@ import {
 } from '@heroui/react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useI18n, useUrl, languages, type Lang } from '@/i18n'
-import { LLMProvider, Credential, LangfuseConfig } from '@/types'
-import { db } from '@/lib/db'
+import { LLMProvider, Credential } from '@/types'
+import {
+  langfuseConfig as langfuseConfigMap,
+  LangfuseConfigEntry,
+} from '@/lib/yjs/maps'
 import { SecureStorage } from '@/lib/crypto'
 import { Container, Icon, Title } from '@/components'
-import { EasySetupExport } from '@/components/EasySetup/EasySetupExport'
 import { useAddLLMProviderModal } from '@/components/AddLLMProviderModal'
-import { SyncSettings } from '@/features/sync'
 import { errorToast, successToast } from '@/lib/toast'
 import { userSettings } from '@/stores/userStore'
 import { useLLMModelStore } from '@/stores/llmModelStore'
@@ -64,9 +65,8 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
   const [isClearingCache, setIsClearingCache] = useState(false)
 
   // Langfuse state
-  const [langfuseConfig, setLangfuseConfig] = useState<LangfuseConfig | null>(
-    null,
-  )
+  const [langfuseConfig, setLangfuseConfig] =
+    useState<LangfuseConfigEntry | null>(null)
   const [langfuseHost, setLangfuseHost] = useState('')
   const [langfusePublicKey, setLangfusePublicKey] = useState('')
   const [langfuseSecretKey, setLangfuseSecretKey] = useState('')
@@ -101,12 +101,12 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
 
   // Define valid accordion keys for each section
   const mainAccordionKeys = [
-    'providers',
     'general',
+    'providers',
     'conversational',
     'security',
   ]
-  const advancedAccordionKeys = ['sync', 'langfuse', 'easysetup', 'database']
+  const advancedAccordionKeys = ['langfuse', 'easysetup', 'traces', 'database']
 
   // Use the hash highlight hook for element-level deep linking
   // Hash format: #section or #section/element
@@ -231,8 +231,7 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
 
   const loadLangfuseConfig = async () => {
     try {
-      await db.init()
-      const configs = await db.getAll('langfuse_config')
+      const configs = Array.from(langfuseConfigMap.values())
       const config = configs[0]
 
       if (config) {
@@ -273,7 +272,7 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
       const { encrypted, iv, salt } =
         await SecureStorage.encryptCredential(langfuseSecretKey)
 
-      const config: LangfuseConfig = {
+      const config: LangfuseConfigEntry = {
         id: langfuseConfig?.id || `langfuse-${Date.now()}`,
         host: langfuseHost,
         publicKey: langfusePublicKey,
@@ -286,9 +285,9 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
       localStorage.setItem(`${config.id}-salt`, salt)
 
       if (langfuseConfig) {
-        await db.update('langfuse_config', config)
+        langfuseConfigMap.set(config.id, config)
       } else {
-        await db.add('langfuse_config', config)
+        langfuseConfigMap.set(config.id, config)
       }
 
       setLangfuseConfig(config)
@@ -321,7 +320,7 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
     }
 
     try {
-      await db.delete('langfuse_config', langfuseConfig.id)
+      langfuseConfigMap.delete(langfuseConfig.id)
       localStorage.removeItem(`${langfuseConfig.id}-iv`)
       localStorage.removeItem(`${langfuseConfig.id}-salt`)
 
@@ -518,92 +517,13 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
           selectedKeys={mainSelectedKeys}
           onSelectionChange={handleMainSelectionChange}
         >
-          <AccordionItem
-            key="providers"
-            data-testid="llm-providers"
-            title={t('LLM Providers')}
-            subtitle={t(
-              'Choose your LLM provider, manage your API credentials',
-            )}
-            startContent={<Icon name="Brain" className="h-5 w-7" />}
-            classNames={{ content: 'pl-8 mb-4' }}
-          >
-            <div className="space-y-4 p-2">
-              <div
-                id="add-provider"
-                className={getHighlightClasses(
-                  'add-provider',
-                  'flex justify-end p-2 -m-2',
-                )}
-              >
-                <Button
-                  color="primary"
-                  size="sm"
-                  startContent={<Icon name="Plus" className="h-4 w-4" />}
-                  onPress={handleModalOpen}
-                  isDisabled={SecureStorage.isLocked()}
-                >
-                  {t('Add Provider')}
-                </Button>
-              </div>
-              <div className="space-y-3">
-                {credentials.length === 0 ? (
-                  <p className="text-center text-default-500 py-8">
-                    {t('No providers configured. Add one to get started.')}
-                  </p>
-                ) : (
-                  credentials.map((cred, index) => (
-                    <CredentialCard
-                      key={cred.id}
-                      credential={cred}
-                      index={index}
-                    />
-                  ))
-                )}
-              </div>
-
-              {cacheInfo && cacheInfo.size > 0 && (
-                <div className="mt-6 pt-6 border-t border-default-200">
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <p className="text-sm font-medium">
-                        {t('Local models cache')}
-                      </p>
-                      <p className="text-xs text-default-500">
-                        {t('{files} files cached ({size})', {
-                          files: cacheInfo.itemCount,
-                          size: formatBytes(cacheInfo.size, lang),
-                        })}
-                      </p>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="flat"
-                      color="danger"
-                      onPress={handleClearCache}
-                      isLoading={isClearingCache}
-                      startContent={<Icon name="Trash" className="h-4 w-4" />}
-                    >
-                      {t('Clear cache')}
-                    </Button>
-                  </div>
-                  <p className="text-xs text-default-500">
-                    {t(
-                      'Downloaded models are cached for 1 year to avoid re-downloading.',
-                    )}
-                  </p>
-                </div>
-              )}
-            </div>
-          </AccordionItem>
-
-          {/* Appearance - Personalization options */}
+          {/* Settings - Platform personalization options */}
           <AccordionItem
             key="general"
             data-testid="general-settings"
-            title={t('Appearance')}
+            title={t('Settings')}
             subtitle={t('Make the platform your own')}
-            startContent={<Icon name="DesignPencil" className="h-5 w-7" />}
+            startContent={<Icon name="Settings" className="h-5 w-7" />}
             classNames={{ content: 'pl-8 mb-4' }}
           >
             <div className="space-y-6 p-2">
@@ -720,6 +640,85 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
                   }}
                 />
               </div>
+            </div>
+          </AccordionItem>
+
+          <AccordionItem
+            key="providers"
+            data-testid="llm-providers"
+            title={t('LLM Providers')}
+            subtitle={t(
+              'Choose your LLM provider, manage your API credentials',
+            )}
+            startContent={<Icon name="Brain" className="h-5 w-7" />}
+            classNames={{ content: 'pl-8 mb-4' }}
+          >
+            <div className="space-y-4 p-2">
+              <div
+                id="add-provider"
+                className={getHighlightClasses(
+                  'add-provider',
+                  'flex justify-end p-2 -m-2',
+                )}
+              >
+                <Button
+                  color="primary"
+                  size="sm"
+                  startContent={<Icon name="Plus" className="h-4 w-4" />}
+                  onPress={handleModalOpen}
+                  isDisabled={SecureStorage.isLocked()}
+                >
+                  {t('Add Provider')}
+                </Button>
+              </div>
+              <div className="space-y-3">
+                {credentials.length === 0 ? (
+                  <p className="text-center text-default-500 py-8">
+                    {t('No providers configured. Add one to get started.')}
+                  </p>
+                ) : (
+                  credentials.map((cred, index) => (
+                    <CredentialCard
+                      key={cred.id}
+                      credential={cred}
+                      index={index}
+                    />
+                  ))
+                )}
+              </div>
+
+              {cacheInfo && cacheInfo.size > 0 && (
+                <div className="mt-6 pt-6 border-t border-default-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <p className="text-sm font-medium">
+                        {t('Local models cache')}
+                      </p>
+                      <p className="text-xs text-default-500">
+                        {t('{files} files cached ({size})', {
+                          files: cacheInfo.itemCount,
+                          size: formatBytes(cacheInfo.size, lang),
+                        })}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="flat"
+                      color="danger"
+                      onPress={handleClearCache}
+                      isLoading={isClearingCache}
+                      startContent={<Icon name="Trash" className="h-4 w-4" />}
+                    >
+                      {t('Clear cache')}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-default-500">
+                    {t(
+                      'Downloaded models are cached for 1 year to avoid re-downloading.',
+                    )}
+                  </p>
+                </div>
+              )}
             </div>
           </AccordionItem>
 
@@ -917,27 +916,6 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
           selectedKeys={advancedSelectedKeys}
           onSelectionChange={handleAdvancedSelectionChange}
         >
-          {/* Data & Sync */}
-          <AccordionItem
-            key="sync"
-            data-testid="sync-settings"
-            title={
-              <>
-                {t('Synchronization')}
-                <Chip size="sm" variant="flat" className="ml-2 align-middle">
-                  Beta
-                </Chip>
-              </>
-            }
-            subtitle={t(
-              'Sync your data across devices using peer-to-peer connection',
-            )}
-            startContent={<Icon name="RefreshDouble" className="h-5 w-7" />}
-            classNames={{ content: 'pl-8 mb-4' }}
-          >
-            <SyncSettings />
-          </AccordionItem>
-
           {/* Integrations - Langfuse */}
           <AccordionItem
             key="langfuse"
@@ -1045,7 +1023,7 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
             </div>
           </AccordionItem>
 
-          <AccordionItem
+          {/* <AccordionItem
             key="easysetup"
             data-testid="easy-setup"
             title={t('Share the platform')}
@@ -1056,7 +1034,17 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
             classNames={{ content: 'pl-8 mb-4' }}
           >
             <EasySetupExport />
-          </AccordionItem>
+          </AccordionItem> */}
+
+          <AccordionItem
+            key="traces"
+            data-testid="traces"
+            title={t('Traces and Metrics')}
+            subtitle={t('Observe and analyze traces and metrics')}
+            startContent={<Icon name="Activity" className="h-5 w-7" />}
+            indicator={<Icon name="ArrowRight" className="h-4 w-4" />}
+            onPress={() => navigate(url('/traces'))}
+          />
 
           <AccordionItem
             key="database"

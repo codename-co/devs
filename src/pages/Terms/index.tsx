@@ -3,7 +3,13 @@ import { useI18n } from '@/i18n'
 import Layout from '@/layouts/Default'
 
 export const TermsPage = () => {
-  const { t } = useI18n(localI18n)
+  const { t, lang } = useI18n(localI18n)
+
+  const lastUpdated = new Intl.DateTimeFormat(lang, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date('2026-01-29'))
 
   return (
     <Layout
@@ -21,7 +27,7 @@ export const TermsPage = () => {
         <Container className="markdown-content prose dark:prose-invert max-w-3xl">
           <h2>{t('Terms of Service')}</h2>
           <p>
-            <strong>{t('Last updated: January 2026')}</strong>
+            <strong>{t('Last updated: {date}', { date: lastUpdated })}</strong>
           </p>
           <p>{t('By using DEVS, you agree to these terms.')}</p>
 
@@ -88,7 +94,7 @@ const localI18n = {
   en: [
     'Terms of Service',
     'Usage terms and conditions',
-    'Last updated: January 2026',
+    'Last updated: {date}',
     'By using DEVS, you agree to these terms.',
     'License',
     'DEVS is open-source software released under the',
@@ -119,7 +125,7 @@ const localI18n = {
   ar: {
     'Terms of Service': 'شروط الخدمة',
     'Usage terms and conditions': 'شروط وأحكام الاستخدام',
-    'Last updated: January 2026': 'آخر تحديث: يناير 2026',
+    'Last updated: {date}': 'آخر تحديث: {date}',
     'By using DEVS, you agree to these terms.':
       'باستخدامك DEVS، فإنك توافق على هذه الشروط.',
     License: 'الترخيص',
@@ -161,7 +167,7 @@ const localI18n = {
   de: {
     'Terms of Service': 'Nutzungsbedingungen',
     'Usage terms and conditions': 'Nutzungsbedingungen und Konditionen',
-    'Last updated: January 2026': 'Zuletzt aktualisiert: Januar 2026',
+    'Last updated: {date}': 'Zuletzt aktualisiert: {date}',
     'By using DEVS, you agree to these terms.':
       'Durch die Nutzung von DEVS stimmen Sie diesen Bedingungen zu.',
     License: 'Lizenz',
@@ -205,7 +211,7 @@ const localI18n = {
   es: {
     'Terms of Service': 'Términos de servicio',
     'Usage terms and conditions': 'Términos y condiciones de uso',
-    'Last updated: January 2026': 'Última actualización: enero de 2026',
+    'Last updated: {date}': 'Última actualización: {date}',
     'By using DEVS, you agree to these terms.':
       'Al usar DEVS, aceptas estos términos.',
     License: 'Licencia',
@@ -249,7 +255,7 @@ const localI18n = {
   fr: {
     'Terms of Service': "Conditions d'utilisation",
     'Usage terms and conditions': "Termes et conditions d'utilisation",
-    'Last updated: January 2026': 'Dernière mise à jour : janvier 2026',
+    'Last updated: {date}': 'Dernière mise à jour : {date}',
     'By using DEVS, you agree to these terms.':
       'En utilisant DEVS, vous acceptez ces conditions.',
     License: 'Licence',
@@ -293,7 +299,7 @@ const localI18n = {
   ko: {
     'Terms of Service': '이용 약관',
     'Usage terms and conditions': '이용 조건 및 약관',
-    'Last updated: January 2026': '최종 업데이트: 2026년 1월',
+    'Last updated: {date}': '최종 업데이트: {date}',
     'By using DEVS, you agree to these terms.':
       'DEVS를 사용함으로써 귀하는 본 약관에 동의하게 됩니다.',
     License: '라이선스',

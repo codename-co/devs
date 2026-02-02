@@ -25,12 +25,7 @@ export {
   useStudioEntries,
   useStudioEntry,
   useFavoriteStudioEntries,
-  // Traces hooks
-  useTraces,
-  useTrace,
-  useSpans,
-  useSpan,
-  useTraceSpans,
+  // Note: Traces hooks removed - use useTraceStore from '@/stores/traceStore' instead
   // Utility hooks
   useFiltered,
   useSorted,

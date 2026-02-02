@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { Icon } from '@/components/Icon'
 import { useI18n } from '@/i18n'
-import type { SyncActivity } from '../lib/sync-manager'
+import type { SyncActivity } from '@/lib/yjs'
 
 interface SyncActivityDetailsProps {
   recentActivity: SyncActivity[]

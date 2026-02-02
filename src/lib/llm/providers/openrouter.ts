@@ -5,7 +5,7 @@ import {
 } from '../index'
 import { LLMConfig } from '@/types'
 import { convertMessagesToOpenAIFormat } from '../attachment-processor'
-import { LLMConfigWithTools } from '../types'
+import { LLMConfigWithTools, stripModelPrefix } from '../types'
 import {
   addToolsToRequestBody,
   parseToolCallsFromResponse,
@@ -17,6 +17,17 @@ import {
 
 export class OpenRouterProvider implements LLMProviderInterface {
   private baseUrl = 'https://openrouter.ai/api/v1'
+  public static readonly DEFAULT_MODEL = 'openai/gpt-4o-mini'
+
+  /**
+   * Gets the model ID with provider prefix stripped.
+   * OpenRouter model IDs are in the format "org/model", e.g., "moonshotai/kimi-k2".
+   * When stored in DEVS, they may have an "openrouter/" prefix, e.g., "openrouter/moonshotai/kimi-k2".
+   * This method strips only the first prefix, preserving the org/model format.
+   */
+  private getModelId(modelWithPrefix: string | undefined): string {
+    return stripModelPrefix(modelWithPrefix, OpenRouterProvider.DEFAULT_MODEL)
+  }
 
   async chat(
     messages: LLMMessage[],
@@ -27,7 +38,7 @@ export class OpenRouterProvider implements LLMProviderInterface {
 
     // Build request body
     const requestBody: Record<string, unknown> = {
-      model: config?.model || 'openai/gpt-3.5-turbo',
+      model: this.getModelId(config?.model),
       messages: convertedMessages,
       temperature: config?.temperature || 0.7,
       max_tokens: config?.maxTokens,
@@ -82,7 +93,7 @@ export class OpenRouterProvider implements LLMProviderInterface {
 
     // Build request body
     const requestBody: Record<string, unknown> = {
-      model: config?.model || 'openai/gpt-3.5-turbo',
+      model: this.getModelId(config?.model),
       messages: convertedMessages,
       temperature: config?.temperature || 0.7,
       max_tokens: config?.maxTokens,

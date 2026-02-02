@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardBody, Chip, Spinner } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
-import { Section, Container, Filter, FilterOption } from '@/components'
+import { Section, Container, Filter, FilterOption, Icon } from '@/components'
 import DefaultLayout from '@/layouts/Default'
 import { useTaskStore } from '@/stores/taskStore'
 import { Task } from '@/types'
@@ -25,7 +25,14 @@ export const TasksPage = () => {
       name: 'TriangleFlagTwoStripes',
       color: 'text-secondary-300',
     },
-    title: t('Tasks'),
+    title: (
+      <>
+        {t('Tasks')}
+        <Chip size="sm" variant="flat" className="ml-2 align-middle">
+          Beta
+        </Chip>
+      </>
+    ),
     subtitle: t('Manage and monitor tasks for your organization'),
     cta: {
       label: t('New Task'),
@@ -125,28 +132,42 @@ export const TasksPage = () => {
       <Section>
         <Container>
           {/* Status Filter */}
-          <div className="flex gap-2 mb-6">
-            <Filter
-              label={t('Filter by status')}
-              options={filterOptions}
-              selectedKey={statusFilter}
-              onSelectionChange={setStatusFilter}
-            />
-          </div>
+          {filteredTasks.length > 0 && (
+            <div className="flex gap-2 mb-6">
+              <Filter
+                label={t('Filter by status')}
+                options={filterOptions}
+                selectedKey={statusFilter}
+                onSelectionChange={setStatusFilter}
+              />
+            </div>
+          )}
 
           {/* Tasks List */}
           {filteredTasks.length === 0 ? (
-            <Card>
-              <CardBody className="text-center py-12">
-                <p className="text-lg text-default-500">
-                  {statusFilter === 'all'
-                    ? t('No tasks found')
-                    : t('No {status} tasks found', {
-                        status: statusFilter.replace('_', ' '),
-                      })}
-                </p>
-              </CardBody>
-            </Card>
+            <div className="flex flex-col items-center justify-center py-16 px-8">
+              <div className="w-16 h-16 rounded-full bg-default-100 flex items-center justify-center mb-4">
+                <Icon
+                  name="TriangleFlagTwoStripes"
+                  size="xl"
+                  className="text-default-400"
+                />
+              </div>
+              <p className="text-lg font-semibold mb-1">
+                {statusFilter === 'all'
+                  ? t('No tasks found')
+                  : t('No {status} tasks found', {
+                      status: t(
+                        statusFilter
+                          .replace('_', ' ')
+                          .replace(/\b\w/g, (c) => c.toUpperCase()) as any,
+                      ).toLowerCase(),
+                    })}
+              </p>
+              {/* <p className="text-sm text-default-500 text-center max-w-xs">
+                {t('Browse the marketplace to find useful extensions')}
+              </p> */}
+            </div>
           ) : (
             <div data-testid="task-list" className="space-y-2">
               {filteredTasks

@@ -1,4 +1,12 @@
-import { db } from '@/lib/db'
+import {
+  agents as agentsMap,
+  conversations as conversationsMap,
+  knowledge as knowledgeMap,
+  tasks as tasksMap,
+  memories as memoriesMap,
+  studioEntries as studioEntriesMap,
+  connectors as connectorsMap,
+} from '@/lib/yjs'
 import {
   getAvailableMethodologies,
   getMethodologyById,
@@ -177,32 +185,30 @@ async function searchAgents(query: string): Promise<SearchResult[]> {
       }
     }
 
-    // Get custom agents from IndexedDB
-    if (db.isInitialized() && db.hasStore('agents')) {
-      const customAgents = await db.getAll('agents')
-      for (const agent of customAgents) {
-        // Skip if already found in built-in
-        if (results.some((r) => r.id === agent.id)) continue
+    // Get custom agents from Yjs map
+    const customAgents = Array.from(agentsMap.values())
+    for (const agent of customAgents) {
+      // Skip if already found in built-in
+      if (results.some((r) => r.id === agent.id)) continue
 
-        const texts = [
-          agent.name,
-          agent.role,
-          agent.desc || '',
-          ...(agent.tags || []),
-        ]
-        if (matchesQuery(query, texts)) {
-          results.push({
-            id: agent.id,
-            type: 'agent',
-            title: agent.name,
-            subtitle: agent.role,
-            icon: TYPE_ICONS.agent,
-            color: TYPE_COLORS.agent,
-            href: `/agents/run#${agent.slug}`,
-            score: calculateScore(query, texts, 5),
-            timestamp: agent.createdAt,
-          })
-        }
+      const texts = [
+        agent.name,
+        agent.role,
+        agent.desc || '',
+        ...(agent.tags || []),
+      ]
+      if (matchesQuery(query, texts)) {
+        results.push({
+          id: agent.id,
+          type: 'agent',
+          title: agent.name,
+          subtitle: agent.role,
+          icon: TYPE_ICONS.agent,
+          color: TYPE_COLORS.agent,
+          href: `/agents/run#${agent.slug}`,
+          score: calculateScore(query, texts, 5),
+          timestamp: agent.createdAt,
+        })
       }
     }
   } catch (error) {
@@ -219,11 +225,8 @@ async function searchConversations(query: string): Promise<SearchResult[]> {
   const results: SearchResult[] = []
 
   try {
-    if (!db.isInitialized()) await db.init()
-    if (!db.hasStore('conversations')) return results
-
-    const conversations = await db.getAll('conversations')
-    for (const conv of conversations) {
+    const allConversations = Array.from(conversationsMap.values())
+    for (const conv of allConversations) {
       const texts = [conv.title || '', conv.summary || '']
       if (matchesQuery(query, texts)) {
         // Use stored agentSlug, fallback to looking up agent, then to agentId
@@ -260,11 +263,8 @@ async function searchMessages(query: string): Promise<SearchResult[]> {
   const results: SearchResult[] = []
 
   try {
-    if (!db.isInitialized()) await db.init()
-    if (!db.hasStore('conversations')) return results
-
-    const conversations = await db.getAll('conversations')
-    for (const conv of conversations) {
+    const allConversations = Array.from(conversationsMap.values())
+    for (const conv of allConversations) {
       // Use stored agentSlug, fallback to looking up agent, then to agentId
       let agentSlug = conv.agentSlug
       if (!agentSlug) {
@@ -307,11 +307,8 @@ async function searchTasks(query: string): Promise<SearchResult[]> {
   const results: SearchResult[] = []
 
   try {
-    if (!db.isInitialized()) await db.init()
-    if (!db.hasStore('tasks')) return results
-
-    const tasks = await db.getAll('tasks')
-    for (const task of tasks) {
+    const allTasks = Array.from(tasksMap.values())
+    for (const task of allTasks) {
       const texts = [task.title, task.description]
       if (matchesQuery(query, texts)) {
         results.push({
@@ -341,10 +338,7 @@ async function searchFiles(query: string): Promise<SearchResult[]> {
   const results: SearchResult[] = []
 
   try {
-    if (!db.isInitialized()) await db.init()
-    if (!db.hasStore('knowledgeItems')) return results
-
-    const items = await db.getAll('knowledgeItems')
+    const items = Array.from(knowledgeMap.values())
     for (const item of items) {
       const texts = [
         item.name,
@@ -380,11 +374,8 @@ async function searchMemories(query: string): Promise<SearchResult[]> {
   const results: SearchResult[] = []
 
   try {
-    if (!db.isInitialized()) await db.init()
-    if (!db.hasStore('agentMemories')) return results
-
-    const memories = await db.getAll('agentMemories')
-    for (const memory of memories) {
+    const allMemories = Array.from(memoriesMap.values())
+    for (const memory of allMemories) {
       const texts = [
         memory.title,
         memory.content,
@@ -481,11 +472,8 @@ async function searchConnectors(query: string): Promise<SearchResult[]> {
   const results: SearchResult[] = []
 
   try {
-    if (!db.isInitialized()) await db.init()
-    if (!db.hasStore('connectors')) return results
-
-    const connectors = await db.getAll('connectors')
-    for (const connector of connectors) {
+    const allConnectors = Array.from(connectorsMap.values())
+    for (const connector of allConnectors) {
       const texts = [connector.name, connector.provider, connector.category]
       if (matchesQuery(query, texts)) {
         results.push({
@@ -515,10 +503,7 @@ async function searchMedia(query: string): Promise<SearchResult[]> {
   const results: SearchResult[] = []
 
   try {
-    if (!db.isInitialized()) await db.init()
-    if (!db.hasStore('studioEntries')) return results
-
-    const entries = await db.getAll('studioEntries')
+    const entries = Array.from(studioEntriesMap.values())
     for (const entry of entries) {
       const texts = [
         entry.prompt,
@@ -656,7 +641,7 @@ const SEARCHABLE_PAGES: PageDefinition[] = [
     icon: 'Settings',
     color: 'default',
     nameKey: 'Settings',
-    descriptionKey: 'App configuration',
+    descriptionKey: 'Settings',
     keywords: ['config', 'preferences', 'options', 'llm', 'api', 'key'],
   },
   {
@@ -886,27 +871,14 @@ export function createDebouncedSearch(
  */
 export async function hasSearchableItems(): Promise<boolean> {
   try {
-    if (!db.isInitialized()) await db.init()
-
-    // Check for any user-generated content
-    const stores = [
-      'conversations',
-      'tasks',
-      'knowledgeItems',
-      'agentMemories',
-      'connectors',
-      'studioEntries',
-      'agents', // Custom agents
-    ] as const
-
-    for (const store of stores) {
-      if (db.hasStore(store)) {
-        const items = await db.getAll(store)
-        if (items.length > 0) {
-          return true
-        }
-      }
-    }
+    // Check for any user-generated content in Yjs maps
+    if (conversationsMap.size > 0) return true
+    if (tasksMap.size > 0) return true
+    if (knowledgeMap.size > 0) return true
+    if (memoriesMap.size > 0) return true
+    if (connectorsMap.size > 0) return true
+    if (studioEntriesMap.size > 0) return true
+    if (agentsMap.size > 0) return true
 
     return false
   } catch (error) {

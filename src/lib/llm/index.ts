@@ -403,6 +403,7 @@ import {
   OpenRouterProvider,
   HuggingFaceProvider,
   OpenAICompatibleProvider,
+  ClaudeCodeProvider,
   CustomProvider,
 } from './providers'
 
@@ -417,4 +418,5 @@ LLMService.registerProvider('mistral', new MistralProvider())
 LLMService.registerProvider('openrouter', new OpenRouterProvider())
 LLMService.registerProvider('huggingface', new HuggingFaceProvider())
 LLMService.registerProvider('openai-compatible', new OpenAICompatibleProvider())
+LLMService.registerProvider('claude-code', new ClaudeCodeProvider())
 LLMService.registerProvider('custom', new CustomProvider())

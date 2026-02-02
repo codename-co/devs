@@ -44,6 +44,7 @@ interface TokenCache {
 
 export class VertexAIProvider implements LLMProviderInterface {
   public static readonly DEFAULT_MODEL = 'gemini-2.5-flash'
+  private static readonly ANTHROPIC_VERSION = 'vertex-2023-10-16'
 
   private tokenCache: Map<string, TokenCache> = new Map()
 
@@ -52,6 +53,13 @@ export class VertexAIProvider implements LLMProviderInterface {
    */
   private getModelId(modelWithPrefix: string | undefined): string {
     return stripModelPrefix(modelWithPrefix, VertexAIProvider.DEFAULT_MODEL)
+  }
+
+  /**
+   * Check if the model is an Anthropic model (Claude)
+   */
+  private isAnthropicModel(model: string): boolean {
+    return model.startsWith('claude')
   }
 
   /**
@@ -241,12 +249,22 @@ export class VertexAIProvider implements LLMProviderInterface {
 
   /**
    * Get endpoint and auth info based on API key format
+   * @param config - LLM configuration
+   * @param model - The model being used (needed to determine correct region)
    */
-  private async getAuthInfo(config?: Partial<LLMConfig>): Promise<{
+  private async getAuthInfo(
+    config?: Partial<LLMConfig>,
+    model?: string,
+  ): Promise<{
     endpoint: string
     accessToken: string
   }> {
     const apiKey = config?.apiKey || ''
+
+    // Anthropic models require specific regions - default to us-east5
+    // Global region does NOT support Anthropic models
+    const isAnthropic = model && this.isAnthropicModel(model)
+    const defaultLocation = isAnthropic ? 'us-east5' : 'global'
 
     if (this.isJsonKey(apiKey)) {
       // JSON service account key
@@ -254,11 +272,15 @@ export class VertexAIProvider implements LLMProviderInterface {
       const accessToken =
         await this.getAccessTokenFromServiceAccount(serviceAccount)
 
-      // Default to us-central1 if no baseUrl specified
-      const location = 'us-central1'
+      const location = defaultLocation
+      // Anthropic models require regional endpoint: ${location}-aiplatform.googleapis.com
+      // Gemini models use the base endpoint: aiplatform.googleapis.com
+      const hostname = isAnthropic
+        ? `${location}-aiplatform.googleapis.com`
+        : 'aiplatform.googleapis.com'
       const endpoint =
         config?.baseUrl ||
-        `https://${location}-aiplatform.googleapis.com/v1/projects/${serviceAccount.project_id}/locations/${location}`
+        `https://${hostname}/v1/projects/${serviceAccount.project_id}/locations/${location}`
 
       return { endpoint, accessToken }
     } else {
@@ -274,9 +296,14 @@ export class VertexAIProvider implements LLMProviderInterface {
 
       const [location, projectId, ...tokenParts] = parts
       const accessToken = tokenParts.join(':') // In case token has colons
+      // Anthropic models require regional endpoint: ${location}-aiplatform.googleapis.com
+      // Gemini models use the base endpoint: aiplatform.googleapis.com
+      const hostname = isAnthropic
+        ? `${location}-aiplatform.googleapis.com`
+        : 'aiplatform.googleapis.com'
       const endpoint =
         config?.baseUrl ||
-        `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}`
+        `https://${hostname}/v1/projects/${projectId}/locations/${location}`
 
       return { endpoint, accessToken }
     }
@@ -373,16 +400,352 @@ export class VertexAIProvider implements LLMProviderInterface {
     }
   }
 
+  /**
+   * Convert message to Anthropic format for Vertex AI
+   * Anthropic via Vertex uses the standard Anthropic message format
+   */
+  private async convertMessageToAnthropicFormat(
+    message: LLMMessage,
+  ): Promise<any> {
+    const content: any[] = []
+
+    if (message.attachments && message.attachments.length > 0) {
+      const processedAttachments = await processAttachments(message.attachments)
+
+      for (const attachment of processedAttachments) {
+        if (attachment.type === 'image') {
+          content.push({
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: attachment.mimeType,
+              data: attachment.data,
+            },
+          })
+        } else if (
+          attachment.type === 'document' &&
+          isPdf(attachment.mimeType)
+        ) {
+          // PDFs supported natively by Claude
+          content.push({
+            type: 'document',
+            source: {
+              type: 'base64',
+              media_type: attachment.mimeType,
+              data: attachment.data,
+            },
+          })
+        } else if (attachment.type === 'text') {
+          content.push({
+            type: 'text',
+            text: formatTextAttachmentContent(attachment),
+          })
+        } else if (attachment.type === 'document') {
+          content.push({
+            type: 'text',
+            text: getUnsupportedDocumentMessage(attachment),
+          })
+        }
+      }
+    }
+
+    if (message.content.trim()) {
+      content.push({ type: 'text', text: message.content })
+    }
+
+    return {
+      role: message.role,
+      content:
+        content.length === 1 && content[0].type === 'text'
+          ? content[0].text
+          : content.length > 0
+            ? content
+            : '',
+    }
+  }
+
+  /**
+   * Convert OpenAI tool format to Anthropic tool format
+   */
+  private convertToolsToAnthropicFormat(tools: ToolDefinition[]): any[] {
+    return tools.map((tool) => ({
+      name: tool.function.name,
+      description: tool.function.description,
+      input_schema: tool.function.parameters,
+    }))
+  }
+
+  /**
+   * Make a chat request to Anthropic via Vertex AI
+   */
+  private async chatAnthropic(
+    messages: LLMMessage[],
+    config: (Partial<LLMConfig> & LLMConfigWithTools) | undefined,
+    endpoint: string,
+    accessToken: string,
+    model: string,
+  ): Promise<LLMResponseWithTools> {
+    // Extract system message if present
+    let systemMessage: string | undefined
+    const filteredMessages = messages.filter((msg) => {
+      if (msg.role === 'system') {
+        systemMessage = msg.content
+        return false
+      }
+      return true
+    })
+
+    // Convert messages to Anthropic format
+    const anthropicMessages = await Promise.all(
+      filteredMessages.map((msg) => this.convertMessageToAnthropicFormat(msg)),
+    )
+
+    // Build request body in Anthropic format
+    const requestBody: Record<string, unknown> = {
+      anthropic_version: VertexAIProvider.ANTHROPIC_VERSION,
+      messages: anthropicMessages,
+      max_tokens: config?.maxTokens || 4096,
+    }
+
+    if (config?.temperature !== undefined) {
+      requestBody.temperature = config.temperature
+    }
+
+    if (systemMessage) {
+      requestBody.system = systemMessage
+    }
+
+    // Add tools if provided (Anthropic format)
+    if (config?.tools && config.tools.length > 0) {
+      requestBody.tools = this.convertToolsToAnthropicFormat(config.tools)
+    }
+
+    const response = await fetch(
+      `${endpoint}/publishers/anthropic/models/${model}:rawPredict`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(requestBody),
+      },
+    )
+
+    if (!response.ok) {
+      const error = await response.text()
+      throw new Error(
+        `Vertex AI (Anthropic) API error: ${response.statusText} - ${error}`,
+      )
+    }
+
+    const data = await response.json()
+
+    // Parse Anthropic response format
+    let content = ''
+    const toolCalls: ToolCall[] = []
+
+    if (data.content && Array.isArray(data.content)) {
+      for (const block of data.content) {
+        if (block.type === 'text') {
+          content += block.text
+        } else if (block.type === 'tool_use') {
+          toolCalls.push({
+            id: block.id,
+            type: 'function',
+            function: {
+              name: block.name,
+              arguments: JSON.stringify(block.input || {}),
+            },
+          })
+        }
+      }
+    }
+
+    return {
+      content,
+      tool_calls: toolCalls.length > 0 ? toolCalls : undefined,
+      finish_reason:
+        data.stop_reason === 'end_turn'
+          ? 'stop'
+          : data.stop_reason === 'max_tokens'
+            ? 'length'
+            : data.stop_reason === 'tool_use'
+              ? 'tool_calls'
+              : 'stop',
+      usage: data.usage
+        ? {
+            promptTokens: data.usage.input_tokens,
+            completionTokens: data.usage.output_tokens,
+            totalTokens:
+              (data.usage.input_tokens || 0) + (data.usage.output_tokens || 0),
+          }
+        : undefined,
+    }
+  }
+
+  /**
+   * Stream chat from Anthropic via Vertex AI
+   */
+  private async *streamChatAnthropic(
+    messages: LLMMessage[],
+    config: (Partial<LLMConfig> & LLMConfigWithTools) | undefined,
+    endpoint: string,
+    accessToken: string,
+    model: string,
+  ): AsyncIterableIterator<string> {
+    // Extract system message if present
+    let systemMessage: string | undefined
+    const filteredMessages = messages.filter((msg) => {
+      if (msg.role === 'system') {
+        systemMessage = msg.content
+        return false
+      }
+      return true
+    })
+
+    // Convert messages to Anthropic format
+    const anthropicMessages = await Promise.all(
+      filteredMessages.map((msg) => this.convertMessageToAnthropicFormat(msg)),
+    )
+
+    // Build request body in Anthropic format
+    const requestBody: Record<string, unknown> = {
+      anthropic_version: VertexAIProvider.ANTHROPIC_VERSION,
+      messages: anthropicMessages,
+      max_tokens: config?.maxTokens || 4096,
+      stream: true,
+    }
+
+    if (config?.temperature !== undefined) {
+      requestBody.temperature = config.temperature
+    }
+
+    if (systemMessage) {
+      requestBody.system = systemMessage
+    }
+
+    // Add tools if provided (Anthropic format)
+    if (config?.tools && config.tools.length > 0) {
+      requestBody.tools = this.convertToolsToAnthropicFormat(config.tools)
+    }
+
+    const response = await fetch(
+      `${endpoint}/publishers/anthropic/models/${model}:streamRawPredict`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(requestBody),
+      },
+    )
+
+    if (!response.ok) {
+      const error = await response.text()
+      throw new Error(
+        `Vertex AI (Anthropic) API error: ${response.statusText} - ${error}`,
+      )
+    }
+
+    const reader = response.body?.getReader()
+    if (!reader) throw new Error('No response body')
+
+    const decoder = new TextDecoder()
+    let buffer = ''
+    const accumulatedToolCalls: ToolCall[] = []
+    let currentToolUse: { id: string; name: string; input: string } | null =
+      null
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop() || ''
+
+      for (const line of lines) {
+        if (line.trim().startsWith('data: ')) {
+          const data = line.slice(6).trim()
+          if (data === '[DONE]') continue
+
+          try {
+            const parsed = JSON.parse(data)
+
+            // Handle different event types from Anthropic streaming
+            if (parsed.type === 'content_block_start') {
+              if (parsed.content_block?.type === 'tool_use') {
+                currentToolUse = {
+                  id: parsed.content_block.id,
+                  name: parsed.content_block.name,
+                  input: '',
+                }
+              }
+            } else if (parsed.type === 'content_block_delta') {
+              if (parsed.delta?.type === 'text_delta') {
+                yield parsed.delta.text
+              } else if (
+                parsed.delta?.type === 'input_json_delta' &&
+                currentToolUse
+              ) {
+                currentToolUse.input += parsed.delta.partial_json || ''
+              }
+            } else if (parsed.type === 'content_block_stop') {
+              if (currentToolUse) {
+                accumulatedToolCalls.push({
+                  id: currentToolUse.id,
+                  type: 'function',
+                  function: {
+                    name: currentToolUse.name,
+                    arguments: currentToolUse.input || '{}',
+                  },
+                })
+                currentToolUse = null
+              }
+            }
+          } catch (e) {
+            // Skip invalid JSON
+          }
+        }
+      }
+    }
+
+    // Yield accumulated tool calls at the end
+    if (accumulatedToolCalls.length > 0) {
+      yield `\n__TOOL_CALLS__${JSON.stringify(accumulatedToolCalls)}`
+    }
+  }
+
   async chat(
     messages: LLMMessage[],
     config?: Partial<LLMConfig> & LLMConfigWithTools,
   ): Promise<LLMResponseWithTools> {
-    const { endpoint, accessToken } = await this.getAuthInfo(config)
     const model = this.getModelId(config?.model)
+    const { endpoint, accessToken } = await this.getAuthInfo(config, model)
+
+    // Route to Anthropic handler if using Claude models
+    if (this.isAnthropicModel(model)) {
+      return this.chatAnthropic(messages, config, endpoint, accessToken, model)
+    }
+
+    // Extract system message for Gemini (must be separate from contents)
+    let systemInstruction: string | undefined
+    const filteredMessages = messages.filter((msg) => {
+      if (msg.role === 'system') {
+        // Combine multiple system messages if present
+        systemInstruction = systemInstruction
+          ? `${systemInstruction}\n\n${msg.content}`
+          : msg.content
+        return false
+      }
+      return true
+    })
 
     // Convert messages to Vertex AI format (may involve async document conversion)
     const contents = await Promise.all(
-      messages.map((msg) => this.convertMessageToVertexFormat(msg)),
+      filteredMessages.map((msg) => this.convertMessageToVertexFormat(msg)),
     )
 
     // Build request body
@@ -411,6 +774,13 @@ export class VertexAIProvider implements LLMProviderInterface {
           threshold: 'BLOCK_MEDIUM_AND_ABOVE',
         },
       ],
+    }
+
+    // Add system instruction if present
+    if (systemInstruction) {
+      requestBody.systemInstruction = {
+        parts: [{ text: systemInstruction }],
+      }
     }
 
     // Add tools if provided (convert to Gemini format)
@@ -480,12 +850,37 @@ export class VertexAIProvider implements LLMProviderInterface {
     messages: LLMMessage[],
     config?: Partial<LLMConfig> & LLMConfigWithTools,
   ): AsyncIterableIterator<string> {
-    const { endpoint, accessToken } = await this.getAuthInfo(config)
     const model = this.getModelId(config?.model)
+    const { endpoint, accessToken } = await this.getAuthInfo(config, model)
+
+    // Route to Anthropic handler if using Claude models
+    if (this.isAnthropicModel(model)) {
+      yield* this.streamChatAnthropic(
+        messages,
+        config,
+        endpoint,
+        accessToken,
+        model,
+      )
+      return
+    }
+
+    // Extract system message for Gemini (must be separate from contents)
+    let systemInstruction: string | undefined
+    const filteredMessages = messages.filter((msg) => {
+      if (msg.role === 'system') {
+        // Combine multiple system messages if present
+        systemInstruction = systemInstruction
+          ? `${systemInstruction}\n\n${msg.content}`
+          : msg.content
+        return false
+      }
+      return true
+    })
 
     // Convert messages to Vertex AI format (may involve async document conversion)
     const contents = await Promise.all(
-      messages.map((msg) => this.convertMessageToVertexFormat(msg)),
+      filteredMessages.map((msg) => this.convertMessageToVertexFormat(msg)),
     )
 
     // Build request body
@@ -496,6 +891,13 @@ export class VertexAIProvider implements LLMProviderInterface {
         maxOutputTokens: config?.maxTokens,
         candidateCount: 1,
       },
+    }
+
+    // Add system instruction if present
+    if (systemInstruction) {
+      requestBody.systemInstruction = {
+        parts: [{ text: systemInstruction }],
+      }
     }
 
     // Add tools if provided (convert to Gemini format)
@@ -598,7 +1000,7 @@ export class VertexAIProvider implements LLMProviderInterface {
 
       const [location, projectId, ...tokenParts] = parts
       const accessToken = tokenParts.join(':')
-      const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}`
+      const endpoint = `https://aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}`
 
       // Try to list available models
       const response = await fetch(`${endpoint}/models`, {

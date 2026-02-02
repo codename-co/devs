@@ -99,39 +99,56 @@ const HOP_BY_HOP_HEADERS = new Set([
 /**
  * Fetch a URL and return the response.
  * No logging of the target URL for privacy.
+ *
+ * @param {string} targetUrl - The URL to fetch
+ * @param {Object} options - Request options
+ * @param {string} options.method - HTTP method (GET, POST, etc.)
+ * @param {Buffer|undefined} options.body - Request body for POST/PUT/PATCH
+ * @param {Object} options.headers - Headers to forward
  */
-async function fetchUrl(targetUrl) {
+async function fetchUrl(targetUrl, options = {}) {
   return new Promise((resolve, reject) => {
     const url = new URL(targetUrl)
     const protocol = url.protocol === 'https:' ? https : http
+    const method = options.method || 'GET'
 
-    const req = protocol.get(
-      targetUrl,
-      {
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (compatible; DEVS-Proxy/1.0; +https://devs.new)',
-        },
+    const requestOptions = {
+      method,
+      hostname: url.hostname,
+      port: url.port || (url.protocol === 'https:' ? 443 : 80),
+      path: url.pathname + url.search,
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (compatible; DEVS-Proxy/1.0; +https://devs.new)',
+        ...options.headers,
       },
-      (res) => {
-        const chunks = []
-        res.on('data', (chunk) => chunks.push(chunk))
-        res.on('end', () => {
-          resolve({
-            status: res.statusCode,
-            headers: res.headers,
-            body: Buffer.concat(chunks),
-          })
+    }
+
+    const req = protocol.request(requestOptions, (res) => {
+      const chunks = []
+      res.on('data', (chunk) => chunks.push(chunk))
+      res.on('end', () => {
+        resolve({
+          status: res.statusCode,
+          headers: res.headers,
+          body: Buffer.concat(chunks),
         })
-        res.on('error', reject)
-      },
-    )
+      })
+      res.on('error', reject)
+    })
 
     req.on('error', reject)
     req.setTimeout(30000, () => {
       req.destroy()
       reject(new Error('Request timeout'))
     })
+
+    // Write body for POST/PUT/PATCH requests
+    if (options.body) {
+      req.write(options.body)
+    }
+
+    req.end()
   })
 }
 
@@ -168,8 +185,8 @@ async function handleRequest(req, res) {
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': origin || '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       'Access-Control-Max-Age': '86400',
     })
     res.end()
@@ -197,13 +214,43 @@ async function handleRequest(req, res) {
   }
 
   try {
-    const response = await fetchUrl(targetUrl)
+    // Collect request body for POST/PUT/PATCH requests
+    let body
+    if (
+      req.method === 'POST' ||
+      req.method === 'PUT' ||
+      req.method === 'PATCH'
+    ) {
+      const chunks = []
+      for await (const chunk of req) {
+        chunks.push(chunk)
+      }
+      body = Buffer.concat(chunks)
+    }
+
+    // Build headers to forward
+    const forwardHeaders = {}
+    if (req.headers['content-type']) {
+      forwardHeaders['Content-Type'] = req.headers['content-type']
+    }
+    if (req.headers['authorization']) {
+      forwardHeaders['Authorization'] = req.headers['authorization']
+    }
+    if (body) {
+      forwardHeaders['Content-Length'] = body.length
+    }
+
+    const response = await fetchUrl(targetUrl, {
+      method: req.method,
+      body,
+      headers: forwardHeaders,
+    })
 
     // Build response headers
     const responseHeaders = {
       'Access-Control-Allow-Origin': origin || '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     }
 
     // Forward response headers (excluding hop-by-hop)

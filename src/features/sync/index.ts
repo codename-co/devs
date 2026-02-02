@@ -21,10 +21,8 @@ export type {
   Conversation,
   Credential,
   KnowledgeItem,
-  Span,
   StudioEntry,
   Task,
-  Trace,
   Workflow,
   Preferences,
   Secrets,
@@ -41,21 +39,13 @@ export {
   getMemoriesMap,
   getPreferencesMap,
   getSecretsMap,
-  getSpansMap,
   getStudioEntriesMap,
   getTasksMap,
-  getTracesMap,
   getWorkflowsMap,
 } from './lib/yjs-doc'
 
-// Persistence
-export {
-  clearPersistedData,
-  destroyPersistence,
-  getPersistence,
-  initPersistence,
-  isPersistenceReady,
-} from './lib/yjs-persistence'
+// Persistence (re-exported from @/lib/yjs)
+export { isReady, whenReady } from '@/lib/yjs'
 
 // Sync manager
 export {
@@ -82,14 +72,53 @@ export type {
   SyncStatus,
 } from './lib/sync-manager'
 
-// Sync bridge
+// ============================================================================
+// Re-exports from @/lib/yjs for gradual migration
+// ============================================================================
+
+// Typed Yjs maps (direct access)
 export {
-  deleteFromYjs,
-  forceLoadDataToYjs,
-  initSyncBridge,
-  onRemoteChange,
-  syncToYjs,
-} from './lib/sync-bridge'
+  agents,
+  conversations,
+  knowledge,
+  tasks,
+  artifacts,
+  memories,
+  credentials,
+  preferences,
+  workflows,
+  battles,
+  studioEntries,
+  pinnedMessages,
+  secrets,
+} from '@/lib/yjs'
+
+// Sync functions
+export {
+  enableSync as enableYjsSync,
+  disableSync as disableYjsSync,
+  getSyncStatus as getYjsSyncStatus,
+  getPeerCount as getYjsPeerCount,
+  getPeers as getYjsPeers,
+  getLocalClientId as getYjsLocalClientId,
+  isSyncEnabled as isYjsSyncEnabled,
+  onSyncActivity as onYjsSyncActivity,
+  onSyncStatusChange as onYjsSyncStatusChange,
+  getRecentActivity as getYjsRecentActivity,
+} from '@/lib/yjs'
+
+// Types from @/lib/yjs
+export type {
+  PeerInfo as YjsPeerInfo,
+  SyncActivity as YjsSyncActivity,
+  SyncConfig as YjsSyncConfig,
+  SyncStatus as YjsSyncStatus,
+  Preferences as YjsPreferences,
+  Workflow as YjsWorkflow,
+} from '@/lib/yjs'
+
+// React hooks
+export { useLiveMap, useLiveValue, useSyncReady } from '@/lib/yjs'
 
 // ============================================================================
 // Stores - State management
@@ -105,4 +134,3 @@ export type { SyncMode } from './stores/syncStore'
 export { PeerNetworkGraph } from './components/PeerNetworkGraph'
 export { SyncButton } from './components/SyncButton'
 export { SyncPanel } from './components/SyncPanel'
-export { SyncSettings } from './components/SyncSettings'

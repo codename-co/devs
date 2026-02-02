@@ -3,34 +3,27 @@
  *
  * Popover content for P2P sync settings.
  * Displays sync status, room sharing, and connection options.
+ * This is the main sync UI - no separate settings page needed.
  */
-import {
-  Button,
-  Chip,
-  Input,
-  RadioGroup,
-  Snippet,
-  Tooltip,
-} from '@heroui/react'
+import { Alert, Button, ButtonGroup, Chip, Input, Snippet } from '@heroui/react'
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
 
-import { CustomRadio } from './CustomRadio'
-import { useSyncStore, type SyncMode } from '../stores/syncStore'
+import { useSyncStore } from '../stores/syncStore'
 import { generateSetupQRCode } from '@/lib/qr-code'
 import { Icon } from '@/components/Icon'
 import { PageMenuPanel } from '@/components/PageMenuPanel'
-import { useI18n, useUrl } from '@/i18n'
+import { useI18n } from '@/i18n'
+
+/** Panel mode for UI state */
+type PanelMode = 'initial' | 'scanning' | 'password-prompt'
 
 export interface SyncPanelProps {
   /** Callback to close the panel/popover */
   onClose?: () => void
 }
 
-export function SyncPanel({ onClose }: SyncPanelProps) {
-  const { lang, t } = useI18n()
-  const url = useUrl(lang)
-  const navigate = useNavigate()
+export function SyncPanel(_props: SyncPanelProps) {
+  const { t } = useI18n()
 
   const {
     enabled,
@@ -42,18 +35,33 @@ export function SyncPanel({ onClose }: SyncPanelProps) {
     generateRoomId,
   } = useSyncStore()
 
-  const [selectedMode, setSelectedMode] = useState<SyncMode>('share')
-  const [joinCode, setJoinCode] = useState('')
+  // UI mode state
+  const [mode, setMode] = useState<PanelMode>('initial')
+
+  // Share form state
+  const [isPasswordProtected, setIsPasswordProtected] = useState(false)
+  const [password, setPassword] = useState('')
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false)
+  const [isEnabling, setIsEnabling] = useState(false)
+
+  // Join state (for password-protected rooms)
+  const [pendingJoinCode, setPendingJoinCode] = useState<string | null>(null)
+  const [joinPassword, setJoinPassword] = useState('')
+  const [isJoinPasswordVisible, setIsJoinPasswordVisible] = useState(false)
+
+  // QR code state
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null)
   const [qrCodeLoading, setQrCodeLoading] = useState(false)
   const qrCodeRef = useRef<string | null>(null)
-  const [isScannerOpen, setIsScannerOpen] = useState(false)
+
+  // QR scanner state
   const [scannerError, setScannerError] = useState<string | null>(null)
   const scannerRef = useRef<HTMLDivElement>(null)
-
   const html5QrCodeRef = useRef<any>(null)
 
-  const syncUrl = `${window.location.origin}${url('')}?join=${roomId}`
+  const syncUrl = roomId
+    ? `${window.location.origin}?join=${roomId}${isPasswordProtected ? '&protected=1' : ''}`
+    : ''
 
   // Generate QR code when sync is enabled
   useEffect(() => {
@@ -77,18 +85,17 @@ export function SyncPanel({ onClose }: SyncPanelProps) {
     }
   }, [enabled, roomId, status, syncUrl])
 
-  // Handle starting sync (share mode)
-  const handleStartSync = useCallback(async () => {
-    const newRoomId = generateRoomId()
-    await enableSync(newRoomId, undefined, 'share')
-  }, [generateRoomId, enableSync])
-
-  // Handle joining a room
-  const handleJoinRoom = useCallback(async () => {
-    if (!joinCode.trim()) return
-    await enableSync(joinCode.trim(), undefined, 'join')
-    setJoinCode('')
-  }, [joinCode, enableSync])
+  // Reset state when panel closes or sync is disabled
+  useEffect(() => {
+    if (!enabled) {
+      setMode('initial')
+      setPassword('')
+      setIsPasswordVisible(false)
+      setIsPasswordProtected(false)
+      setPendingJoinCode(null)
+      setJoinPassword('')
+    }
+  }, [enabled])
 
   // Stop QR scanner
   const stopScanner = useCallback(async () => {
@@ -101,13 +108,62 @@ export function SyncPanel({ onClose }: SyncPanelProps) {
       }
       html5QrCodeRef.current = null
     }
-    setIsScannerOpen(false)
+    setMode('initial')
     setScannerError(null)
   }, [])
 
-  // Start QR scanner
+  // Handle starting sync (share mode)
+  const handleStartSync = useCallback(async () => {
+    setIsEnabling(true)
+    try {
+      const newRoomId = generateRoomId()
+      await enableSync(
+        newRoomId,
+        isPasswordProtected ? password || undefined : undefined,
+        'share',
+      )
+    } finally {
+      setIsEnabling(false)
+    }
+  }, [generateRoomId, enableSync, password, isPasswordProtected])
+
+  // Handle joining a room with scanned/extracted code
+  const handleJoinRoom = useCallback(
+    async (roomCode: string, isProtected: boolean) => {
+      if (isProtected) {
+        // Room is password-protected, prompt for password
+        setPendingJoinCode(roomCode)
+        setMode('password-prompt')
+        return
+      }
+
+      // Join directly without password
+      setIsEnabling(true)
+      try {
+        await enableSync(roomCode, undefined, 'join')
+      } finally {
+        setIsEnabling(false)
+      }
+    },
+    [enableSync],
+  )
+
+  // Handle joining with password after prompt
+  const handleJoinWithPassword = useCallback(async () => {
+    if (!pendingJoinCode) return
+    setIsEnabling(true)
+    try {
+      await enableSync(pendingJoinCode, joinPassword || undefined, 'join')
+    } finally {
+      setIsEnabling(false)
+      setPendingJoinCode(null)
+      setJoinPassword('')
+    }
+  }, [pendingJoinCode, joinPassword, enableSync])
+
+  // Start QR scanner (for Join mode)
   const startScanner = useCallback(async () => {
-    setIsScannerOpen(true)
+    setMode('scanning')
     setScannerError(null)
 
     // Wait for the DOM element to be available
@@ -120,22 +176,25 @@ export function SyncPanel({ onClose }: SyncPanelProps) {
       const html5QrCode = new Html5Qrcode(scannerRef.current.id)
       html5QrCodeRef.current = html5QrCode
 
-      const onScanSuccess = (decodedText: string) => {
-        // Extract room ID from the scanned URL
+      const onScanSuccess = async (decodedText: string) => {
+        // Stop scanner first
+        await stopScanner()
+
+        // Extract room ID and protected flag from the scanned URL
         try {
           const scannedUrl = new URL(decodedText)
           const joinParam =
             scannedUrl.searchParams.get('join') ||
             scannedUrl.searchParams.get('room')
+          const isProtected = scannedUrl.searchParams.get('protected') === '1'
+
           if (joinParam) {
-            stopScanner()
-            enableSync(joinParam, undefined, 'join')
+            handleJoinRoom(joinParam, isProtected)
           }
         } catch {
           // If it's not a valid URL, try using it as a room ID directly
           if (decodedText.trim()) {
-            stopScanner()
-            enableSync(decodedText.trim(), undefined, 'join')
+            handleJoinRoom(decodedText.trim(), false)
           }
         }
       }
@@ -155,22 +214,20 @@ export function SyncPanel({ onClose }: SyncPanelProps) {
         t('Unable to access camera. Please grant camera permissions.'),
       )
     }
-  }, [stopScanner, enableSync, t])
+  }, [stopScanner, handleJoinRoom, t])
 
   // Cleanup scanner on unmount
   useEffect(() => {
     return () => {
       if (html5QrCodeRef.current) {
-        html5QrCodeRef.current.stop().catch(() => {})
+        try {
+          html5QrCodeRef.current.stop().catch(() => {})
+        } catch {
+          // Scanner might not be running (e.g., camera access denied)
+        }
       }
     }
   }, [])
-
-  // Handle navigate to full settings
-  const handleOpenSettings = useCallback(() => {
-    onClose?.()
-    navigate(url('/sync'))
-  }, [navigate, url, onClose])
 
   // Get status chip color
   const getStatusColor = () => {
@@ -192,6 +249,232 @@ export function SyncPanel({ onClose }: SyncPanelProps) {
     return t('Offline')
   }
 
+  // Render initial step with Share (with password toggle) and Join CTAs
+  const renderInitialStep = () => (
+    <div className="flex flex-col gap-3">
+      {/* Share section */}
+      <div className="flex flex-col gap-2">
+        <ButtonGroup fullWidth color="primary" variant="flat" size="sm">
+          <Button onPress={handleStartSync} isLoading={isEnabling}>
+            {t('Share')}
+          </Button>
+          <Button
+            isIconOnly
+            onPress={() => setIsPasswordProtected(!isPasswordProtected)}
+            className={isPasswordProtected ? 'bg-primary-200' : ''}
+          >
+            <Icon name={isPasswordProtected ? 'Lock' : 'LockSlash'} />
+          </Button>
+        </ButtonGroup>
+
+        {/* Inline password input when protection is enabled */}
+        {isPasswordProtected && (
+          <Input
+            value={password}
+            onValueChange={setPassword}
+            placeholder={t('Sync password')}
+            size="sm"
+            type={isPasswordVisible ? 'text' : 'password'}
+            description={t(
+              'Set a password to sync API keys across devices. All devices must use the same password.',
+            )}
+            endContent={
+              <button
+                type="button"
+                onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                className="focus:outline-none"
+              >
+                <Icon
+                  name={isPasswordVisible ? 'EyeClosed' : 'Eye'}
+                  className="h-4 w-4 text-default-400 pointer-events-none"
+                />
+              </button>
+            }
+          />
+        )}
+      </div>
+
+      {/* Join button - directly starts QR scanning */}
+      <Button
+        variant="bordered"
+        size="sm"
+        onPress={startScanner}
+        startContent={<Icon name="QrCode" />}
+      >
+        {t('Scan & Join')}
+      </Button>
+    </div>
+  )
+
+  // Render QR scanning mode
+  const renderScanningMode = () => (
+    <div className="flex flex-col gap-3">
+      {/* Back button */}
+      <Button
+        size="sm"
+        variant="light"
+        onPress={stopScanner}
+        startContent={<Icon name="ArrowLeft" className="h-4 w-4" />}
+        className="self-start -ms-2 -mt-1"
+      >
+        {t('Back')}
+      </Button>
+
+      {/* QR Scanner */}
+      <div className="flex flex-col gap-2">
+        {/* <span className="text-xs font-medium">{t('Scan QR Code')}</span> */}
+        {scannerError ? (
+          <Alert
+            color="danger"
+            variant="flat"
+            icon={<Icon name="VideoCameraOff" />}
+            title={t('Camera access denied')}
+            // endContent={
+            //   <Button
+            //     isIconOnly
+            //     size="sm"
+            //     variant="flat"
+            //     onPress={startScanner}
+            //   >
+            //     <Icon name="Refresh" aria-label={t('Try Again')} />
+            //   </Button>
+            // }
+          >
+            {scannerError}
+          </Alert>
+        ) : (
+          // <div className="flex flex-col items-center gap-2 p-3 bg-danger-50 rounded-lg">
+          //   <Icon name="WarningTriangle" className="h-6 w-6 text-danger" />
+          //   <p className="text-xs text-danger text-center">{scannerError}</p>
+          //   <Button size="sm" variant="flat" onPress={startScanner}>
+          //     {t('Try Again')}
+          //   </Button>
+          // </div>
+          <div className="flex flex-col items-center gap-1">
+            <div
+              id="sync-panel-qr-scanner"
+              ref={scannerRef}
+              className="w-full aspect-square rounded-lg overflow-hidden bg-black"
+            />
+            <p className="text-xs text-default-400">
+              {t('Point your camera at a sync QR code')}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+
+  // Render password prompt for protected rooms
+  const renderPasswordPrompt = () => (
+    <div className="flex flex-col gap-3">
+      {/* Back button */}
+      <Button
+        size="sm"
+        variant="light"
+        onPress={() => {
+          setPendingJoinCode(null)
+          setJoinPassword('')
+          setMode('initial')
+        }}
+        startContent={<Icon name="ArrowLeft" className="h-4 w-4" />}
+        className="self-start -ms-2 -mt-1"
+      >
+        {t('Back')}
+      </Button>
+
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-2 mb-2">
+          <Icon name="Lock" className="h-4 w-4 text-warning" />
+          <span className="text-sm font-medium">{t('Password Required')}</span>
+        </div>
+        <p className="text-xs text-default-500 mb-2">
+          {t('This room is password-protected. Enter the password to join.')}
+        </p>
+        <Input
+          value={joinPassword}
+          onValueChange={setJoinPassword}
+          placeholder={t('Enter the room password')}
+          size="sm"
+          type={isJoinPasswordVisible ? 'text' : 'password'}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleJoinWithPassword()
+          }}
+          endContent={
+            <button
+              type="button"
+              onClick={() => setIsJoinPasswordVisible(!isJoinPasswordVisible)}
+              className="focus:outline-none"
+            >
+              <Icon
+                name={isJoinPasswordVisible ? 'EyeClosed' : 'Eye'}
+                className="h-4 w-4 text-default-400 pointer-events-none"
+              />
+            </button>
+          }
+        />
+      </div>
+
+      <Button
+        color="primary"
+        variant="flat"
+        size="sm"
+        isLoading={isEnabling}
+        onPress={handleJoinWithPassword}
+      >
+        {t('Join Room')}
+      </Button>
+    </div>
+  )
+
+  // Render connected state
+  const renderConnectedState = () => (
+    <div className="flex flex-col gap-3">
+      {/* Room code snippet */}
+      {roomId && (
+        <div className="flex flex-col gap-2">
+          <span className="text-xs text-default-500">
+            {t('Share this code or link with other devices:')}
+          </span>
+          <Snippet
+            symbol=""
+            size="sm"
+            variant="bordered"
+            copyIcon={<Icon name="Copy" />}
+            tooltipProps={{ content: t('Copy to clipboard') }}
+            classNames={{
+              base: 'bg-default-50 border-default-200 w-full',
+              pre: 'whitespace-pre-wrap break-all max-h-8 overflow-y-hidden',
+            }}
+          >
+            {syncUrl}
+          </Snippet>
+        </div>
+      )}
+
+      {/* QR Code */}
+      {qrCodeLoading && (
+        <div className="flex items-center justify-center py-4">
+          <span className="text-xs text-default-400">
+            {t('Generating QR Code...')}
+          </span>
+        </div>
+      )}
+      {qrCodeDataUrl && !qrCodeLoading && (
+        <div className="flex flex-col items-center gap-2">
+          <span className="text-xs text-default-500">
+            {t('Or scan this QR Code:')}
+          </span>
+          <img
+            src={qrCodeDataUrl}
+            alt="Sync QR Code"
+            className="w-full h-full rounded-lg"
+          />
+        </div>
+      )}
+    </div>
+  )
+
   return (
     <PageMenuPanel
       title={
@@ -202,22 +485,6 @@ export function SyncPanel({ onClose }: SyncPanelProps) {
           </Chip>
         </span>
       }
-      actions={
-        <>
-          <Tooltip content={t('Sync Settings')}>
-            <Button
-              size="sm"
-              variant="light"
-              isIconOnly
-              className="h-6 w-6 min-w-6"
-              onPress={handleOpenSettings}
-              aria-label={t('Sync Settings')}
-            >
-              <Icon name="Settings" className="h-4 w-4" />
-            </Button>
-          </Tooltip>
-        </>
-      }
       status={{
         text: getStatusText(),
         color: getStatusColor(),
@@ -225,185 +492,25 @@ export function SyncPanel({ onClose }: SyncPanelProps) {
         closeLabel: t('Disconnect'),
       }}
       description={
-        !enabled ? (
+        !enabled && mode === 'initial' ? (
           <>
             {t('Sync your data across devices in real-time.')}{' '}
-            {t('No server needed - data stays between your devices.')}
+            {t('No server needed - data transits between your devices.')}
           </>
         ) : undefined
       }
     >
       {/* Not enabled state */}
       {!enabled && (
-        <div className="flex flex-col gap-3">
-          {/* Mode selector */}
-          <RadioGroup
-            value={selectedMode}
-            onValueChange={(v) => setSelectedMode(v as SyncMode)}
-            size="sm"
-          >
-            <CustomRadio
-              value="share"
-              size="sm"
-              description={t('Create a new sync room')}
-            >
-              {t('Share')}
-            </CustomRadio>
-            <CustomRadio
-              value="join"
-              size="sm"
-              description={t('Join an existing room')}
-            >
-              {t('Join')}
-            </CustomRadio>
-          </RadioGroup>
-
-          {/* Share mode */}
-          {selectedMode === 'share' && (
-            <Button
-              color="primary"
-              variant="flat"
-              size="sm"
-              onPress={handleStartSync}
-            >
-              {t('Start Sync')}
-            </Button>
-          )}
-
-          {/* Join mode */}
-          {selectedMode === 'join' && (
-            <div className="flex flex-col gap-2">
-              {/* QR Scanner Section */}
-              {isScannerOpen ? (
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium">
-                      {t('Scan QR Code')}
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="flat"
-                      color="danger"
-                      onPress={stopScanner}
-                      className="h-6 min-w-0 px-2"
-                    >
-                      {t('Stop Scanner')}
-                    </Button>
-                  </div>
-                  {scannerError ? (
-                    <div className="flex flex-col items-center gap-2 p-3 bg-danger-50 rounded-lg">
-                      <Icon
-                        name="WarningTriangle"
-                        className="h-6 w-6 text-danger"
-                      />
-                      <p className="text-xs text-danger text-center">
-                        {scannerError}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-1">
-                      <div
-                        id="sync-panel-qr-scanner"
-                        ref={scannerRef}
-                        className="w-full aspect-square rounded-lg overflow-hidden bg-black"
-                      />
-                      <p className="text-xs text-default-400">
-                        {t('Point your camera at a sync QR code')}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <Button
-                  variant="bordered"
-                  size="sm"
-                  onPress={startScanner}
-                  startContent={<Icon name="Camera" className="h-4 w-4" />}
-                  className="w-full"
-                >
-                  {t('Scan QR Code')}
-                </Button>
-              )}
-
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-px bg-default-200" />
-                <span className="text-xs text-default-400">{t('or')}</span>
-                <div className="flex-1 h-px bg-default-200" />
-              </div>
-
-              <div className="flex gap-2">
-                <Input
-                  size="sm"
-                  placeholder={t('Enter room code')}
-                  value={joinCode}
-                  onValueChange={setJoinCode}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleJoinRoom()
-                  }}
-                  className="flex-1"
-                />
-                <Button
-                  color="primary"
-                  variant="flat"
-                  size="sm"
-                  isDisabled={!joinCode.trim()}
-                  onPress={handleJoinRoom}
-                >
-                  {t('Join Room')}
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
+        <>
+          {mode === 'initial' && renderInitialStep()}
+          {mode === 'scanning' && renderScanningMode()}
+          {mode === 'password-prompt' && renderPasswordPrompt()}
+        </>
       )}
 
       {/* Enabled state */}
-      {enabled && (
-        <div className="flex flex-col gap-3">
-          {/* Room code snippet */}
-          {roomId && (
-            <div className="flex flex-col gap-2">
-              <span className="text-xs text-default-500">
-                {t('Share this code or link with other devices:')}
-              </span>
-              <Snippet
-                symbol=""
-                size="sm"
-                variant="bordered"
-                copyIcon={<Icon name="Copy" />}
-                tooltipProps={{ content: t('Copy to clipboard') }}
-                classNames={{
-                  base: 'bg-default-50 border-default-200 w-full',
-                  pre: 'whitespace-pre-wrap break-all max-h-8 overflow-y-hidden',
-                }}
-              >
-                {syncUrl}
-              </Snippet>
-            </div>
-          )}
-
-          {/* QR Code */}
-          {qrCodeLoading && (
-            <div className="flex items-center justify-center py-4">
-              <span className="text-xs text-default-400">
-                {t('Generating QR Code...')}
-              </span>
-            </div>
-          )}
-          {qrCodeDataUrl && !qrCodeLoading && (
-            <div className="flex flex-col items-center gap-2">
-              <span className="text-xs text-default-500">
-                {t('Or scan this QR Code:')}
-              </span>
-              <img
-                src={qrCodeDataUrl}
-                alt="Sync QR Code"
-                className="w-full h-full rounded-lg"
-              />
-            </div>
-          )}
-        </div>
-      )}
+      {enabled && renderConnectedState()}
     </PageMenuPanel>
   )
 }

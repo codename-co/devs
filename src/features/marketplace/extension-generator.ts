@@ -8,7 +8,7 @@
 
 import { LLMService, LLMMessage } from '@/lib/llm'
 import { CredentialService } from '@/lib/credential-service'
-import { db } from '@/lib/db'
+import { customExtensions as customExtensionsMap } from '@/lib/yjs/maps'
 import { errorToast, successToast } from '@/lib/toast'
 import type {
   ExtensionType,
@@ -190,11 +190,8 @@ export async function generateExtension(
       enabled: true,
     }
 
-    // Save to IndexedDB
-    if (!db.isInitialized()) {
-      await db.init()
-    }
-    await db.update('customExtensions', customExtension)
+    // Save to Yjs
+    customExtensionsMap.set(customExtension.id, customExtension)
 
     successToast('Extension created', `${customExtension.name} is ready to use`)
 
@@ -221,48 +218,32 @@ export async function generateExtension(
 /**
  * Get all custom extensions
  */
-export async function getCustomExtensions(): Promise<CustomExtension[]> {
-  if (!db.isInitialized()) {
-    await db.init()
-  }
-  return db.getAll('customExtensions')
+export function getCustomExtensions(): CustomExtension[] {
+  return Array.from(customExtensionsMap.values())
 }
 
 /**
  * Get a custom extension by ID
  */
-export async function getCustomExtension(
-  id: string,
-): Promise<CustomExtension | undefined> {
-  if (!db.isInitialized()) {
-    await db.init()
-  }
-  return db.get('customExtensions', id)
+export function getCustomExtension(id: string): CustomExtension | undefined {
+  return customExtensionsMap.get(id)
 }
 
 /**
  * Update a custom extension
  */
-export async function updateCustomExtension(
-  extension: CustomExtension,
-): Promise<void> {
-  if (!db.isInitialized()) {
-    await db.init()
-  }
+export function updateCustomExtension(extension: CustomExtension): void {
   extension.updatedAt = new Date()
-  await db.update('customExtensions', extension)
+  customExtensionsMap.set(extension.id, extension)
   successToast('Extension updated', `${extension.name} has been updated`)
 }
 
 /**
  * Delete a custom extension
  */
-export async function deleteCustomExtension(id: string): Promise<void> {
-  if (!db.isInitialized()) {
-    await db.init()
-  }
-  const extension = await db.get('customExtensions', id)
-  await db.delete('customExtensions', id)
+export function deleteCustomExtension(id: string): void {
+  const extension = customExtensionsMap.get(id)
+  customExtensionsMap.delete(id)
   if (extension) {
     successToast('Extension deleted', `${extension.name} has been removed`)
   }
@@ -271,18 +252,12 @@ export async function deleteCustomExtension(id: string): Promise<void> {
 /**
  * Toggle a custom extension's enabled state
  */
-export async function toggleCustomExtension(
-  id: string,
-  enabled: boolean,
-): Promise<void> {
-  if (!db.isInitialized()) {
-    await db.init()
-  }
-  const extension = await db.get('customExtensions', id)
+export function toggleCustomExtension(id: string, enabled: boolean): void {
+  const extension = customExtensionsMap.get(id)
   if (extension) {
     extension.enabled = enabled
     extension.updatedAt = new Date()
-    await db.update('customExtensions', extension)
+    customExtensionsMap.set(id, extension)
     successToast(
       enabled ? 'Extension enabled' : 'Extension disabled',
       extension.name,

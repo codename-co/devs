@@ -3,34 +3,29 @@ import { LLMConfig } from '@/types'
 import { convertMessagesToTextOnlyFormat } from '../attachment-processor'
 
 export class HuggingFaceProvider implements LLMProviderInterface {
-  private baseUrl = 'https://api-inference.huggingface.co/models'
+  private baseUrl = 'https://router.huggingface.co/v1'
 
   /**
-   * Format messages as a single prompt for HuggingFace models
-   * Uses text-only conversion for attachment handling
+   * Convert LLMMessage to OpenAI-compatible format
    */
-  private async formatMessages(messages: LLMMessage[]): Promise<string> {
-    // Convert to text-only format (handles attachments)
+  private async formatMessages(
+    messages: LLMMessage[],
+  ): Promise<Array<{ role: string; content: string }>> {
     const textMessages = await convertMessagesToTextOnlyFormat(messages)
-
-    // Convert chat messages to a single prompt for HF models
-    const formattedMessages = textMessages.map((msg) => {
-      if (msg.role === 'system') return `System: ${msg.content}`
-      if (msg.role === 'user') return `User: ${msg.content}`
-      if (msg.role === 'assistant') return `Assistant: ${msg.content}`
-      return msg.content
-    })
-    return formattedMessages.join('\n') + '\nAssistant:'
+    return textMessages.map((msg) => ({
+      role: msg.role,
+      content: msg.content,
+    }))
   }
 
   async chat(
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
   ): Promise<LLMResponse> {
-    const model = config?.model || 'meta-llama/Llama-2-7b-chat-hf'
-    const endpoint = config?.baseUrl || `${this.baseUrl}/${model}`
+    const model = config?.model || 'meta-llama/Llama-3.1-8B-Instruct'
+    const endpoint = config?.baseUrl || `${this.baseUrl}/chat/completions`
 
-    const formattedInput = await this.formatMessages(messages)
+    const formattedMessages = await this.formatMessages(messages)
 
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -39,12 +34,10 @@ export class HuggingFaceProvider implements LLMProviderInterface {
         Authorization: `Bearer ${config?.apiKey}`,
       },
       body: JSON.stringify({
-        inputs: formattedInput,
-        parameters: {
-          temperature: config?.temperature || 0.7,
-          max_new_tokens: config?.maxTokens || 512,
-          return_full_text: false,
-        },
+        model,
+        messages: formattedMessages,
+        temperature: config?.temperature || 0.7,
+        max_tokens: config?.maxTokens || 512,
       }),
     })
 
@@ -57,20 +50,15 @@ export class HuggingFaceProvider implements LLMProviderInterface {
 
     const data = await response.json()
 
-    // Handle different response formats
-    let content = ''
-    if (Array.isArray(data)) {
-      content = data[0]?.generated_text || ''
-    } else if (data.generated_text) {
-      content = data.generated_text
-    } else if (data[0]?.generated_text) {
-      content = data[0].generated_text
-    }
-
     return {
-      content,
-      // HuggingFace Inference API doesn't return token usage
-      usage: undefined,
+      content: data.choices?.[0]?.message?.content || '',
+      usage: data.usage
+        ? {
+            promptTokens: data.usage.prompt_tokens,
+            completionTokens: data.usage.completion_tokens,
+            totalTokens: data.usage.total_tokens,
+          }
+        : undefined,
     }
   }
 
@@ -78,10 +66,10 @@ export class HuggingFaceProvider implements LLMProviderInterface {
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
   ): AsyncIterableIterator<string> {
-    const model = config?.model || 'meta-llama/Llama-2-7b-chat-hf'
-    const endpoint = config?.baseUrl || `${this.baseUrl}/${model}`
+    const model = config?.model || 'meta-llama/Llama-3.1-8B-Instruct'
+    const endpoint = config?.baseUrl || `${this.baseUrl}/chat/completions`
 
-    const formattedInput = await this.formatMessages(messages)
+    const formattedMessages = await this.formatMessages(messages)
 
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -90,16 +78,10 @@ export class HuggingFaceProvider implements LLMProviderInterface {
         Authorization: `Bearer ${config?.apiKey}`,
       },
       body: JSON.stringify({
-        inputs: formattedInput,
-        parameters: {
-          temperature: config?.temperature || 0.7,
-          max_new_tokens: config?.maxTokens || 512,
-          return_full_text: false,
-        },
-        options: {
-          use_cache: false,
-          wait_for_model: true,
-        },
+        model,
+        messages: formattedMessages,
+        temperature: config?.temperature || 0.7,
+        max_tokens: config?.maxTokens || 512,
         stream: true,
       }),
     })
@@ -128,15 +110,15 @@ export class HuggingFaceProvider implements LLMProviderInterface {
       for (const line of lines) {
         if (line.trim().startsWith('data:')) {
           const data = line.slice(5).trim()
+          if (data === '[DONE]') continue
 
           try {
             const parsed = JSON.parse(data)
-            if (parsed.token?.text) {
-              yield parsed.token.text
-            } else if (parsed.generated_text) {
-              yield parsed.generated_text
+            const content = parsed.choices?.[0]?.delta?.content
+            if (content) {
+              yield content
             }
-          } catch (e) {
+          } catch {
             // Skip invalid JSON
           }
         }
@@ -146,24 +128,75 @@ export class HuggingFaceProvider implements LLMProviderInterface {
 
   async validateApiKey(apiKey: string): Promise<boolean> {
     try {
-      // Test with a simple model
-      const response = await fetch(`${this.baseUrl}/gpt2`, {
-        method: 'POST',
+      // Test with a simple request to the models endpoint
+      const response = await fetch(`${this.baseUrl}/models`, {
+        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${apiKey}`,
         },
-        body: JSON.stringify({
-          inputs: 'Test',
-          options: {
-            wait_for_model: false,
-          },
-        }),
       })
-      // 503 means model is loading, which is still a valid response
-      return response.ok || response.status === 503
+      return response.ok
     } catch {
       return false
     }
+  }
+
+  async getAvailableModels(config?: Partial<LLMConfig>): Promise<string[]> {
+    // Popular models available on HuggingFace Inference API
+    // These are curated for quality and availability
+    const popularModels = [
+      // Meta Llama models
+      'meta-llama/Llama-3.3-70B-Instruct',
+      'meta-llama/Llama-3.1-70B-Instruct',
+      'meta-llama/Llama-3.1-8B-Instruct',
+      // Mistral models
+      'mistralai/Mistral-7B-Instruct-v0.3',
+      'mistralai/Mixtral-8x7B-Instruct-v0.1',
+      // Microsoft Phi models
+      'microsoft/Phi-3.5-mini-instruct',
+      'microsoft/Phi-3-mini-4k-instruct',
+      // Qwen models
+      'Qwen/Qwen2.5-72B-Instruct',
+      'Qwen/Qwen2.5-7B-Instruct',
+      'Qwen/Qwen2.5-Coder-32B-Instruct',
+      // Google Gemma models
+      'google/gemma-2-27b-it',
+      'google/gemma-2-9b-it',
+      // DeepSeek models
+      'deepseek-ai/DeepSeek-R1-Distill-Qwen-32B',
+      // Cohere models
+      'CohereForAI/c4ai-command-r-plus',
+    ]
+
+    // Try to fetch models from the API if apiKey is provided
+    if (config?.apiKey) {
+      try {
+        const response = await fetch(`${this.baseUrl}/models`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${config.apiKey}`,
+          },
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          const apiModels = data.data?.map((model: any) => model.id) || []
+          // If API returns models, use those (but filter for chat-capable ones)
+          if (apiModels.length > 0) {
+            // Return API models, preferring the popular ones first
+            const popularSet = new Set(popularModels)
+            const sortedModels = [
+              ...apiModels.filter((m: string) => popularSet.has(m)),
+              ...apiModels.filter((m: string) => !popularSet.has(m)),
+            ]
+            return sortedModels.slice(0, 50) // Limit to 50 models
+          }
+        }
+      } catch {
+        // Fall through to return popular models
+      }
+    }
+
+    return popularModels
   }
 }

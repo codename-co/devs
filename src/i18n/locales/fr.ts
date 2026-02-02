@@ -86,16 +86,20 @@ export const fr: I18n = {
   'Agent learned knowledge': 'Connaissances apprises par l’agent',
   Files: 'Fichiers',
   'Manage your files': 'Gérer vos fichiers',
-  'App configuration': 'Configuration de l’application',
   'Database management': 'Gestion de la base de données',
   'Traces and Metrics': 'Traces et métriques',
+  'Observe and analyze traces and metrics':
+    'Observez et analysez les traces et métriques',
   Admin: 'Admin',
 
   // PromptArea
   'Need something done?': 'Besoin de quelque chose ?',
-  'More actions': 'Plus d’actions',
+  'Show extended actions': 'Afficher les actions étendues',
+  'Hide extended actions': 'Masquer les actions étendues',
   'Attach a file or image': 'Joindre un fichier ou une image',
   'Upload new file': 'Télécharger un nouveau fichier',
+  'Capture screen': 'Capturer l’écran',
+  'Capturing…': 'Capture en cours…',
   'Choose from knowledge base': 'Choisir dans la base de connaissances',
   'No files found in knowledge base':
     'Aucun fichier dans la base de connaissances',
@@ -317,6 +321,7 @@ export const fr: I18n = {
   'Total Sub-tasks': 'Total des sous-tâches',
 
   // Common actions
+  optional: 'optionnel',
   Retry: 'Réessayer',
   Refresh: 'Actualiser',
   Close: 'Fermer',
@@ -476,18 +481,18 @@ export const fr: I18n = {
   'Memory deleted': 'Souvenir supprimé',
   'Edited during review': 'Modifié pendant la révision',
   'Failed to load agent memories':
-    "Échec du chargement des souvenirs de l'agent",
+    'Échec du chargement des souvenirs de l’agent',
   'Failed to load memories': 'Échec du chargement des souvenirs',
   'Failed to create memory': 'Échec de la création du souvenir',
   'Failed to update memory': 'Échec de la mise à jour du souvenir',
   'Failed to delete memory': 'Échec de la suppression du souvenir',
   'Failed to load learning events':
-    "Échec du chargement des événements d'apprentissage",
+    'Échec du chargement des événements d’apprentissage',
   'Failed to update memory document':
     'Échec de la mise à jour du document de souvenirs',
   '{count} memories approved': '{count} souvenirs approuvés',
   'Failed to bulk approve memories':
-    "Échec de l'approbation en masse des souvenirs",
+    'Échec de l’approbation en masse des souvenirs',
   '{count} memories rejected': '{count} souvenirs rejetés',
   'Failed to bulk reject memories': 'Échec du rejet en masse des souvenirs',
   'Memory upgraded to global': 'Souvenir promu en global',
@@ -596,9 +601,9 @@ export const fr: I18n = {
 
   // Sync - Modes
   Create: 'Créer',
-  Join: 'Rejoindre',
+  'Scan & Join': 'Scanner et rejoindre',
   Share: 'Partager à un autre appareil',
-  'Start Sync': 'Démarrer la sync',
+  'Start Sync': 'Démarrer la synchro',
   'Join Room': 'Rejoindre',
 
   // Sync - Instructions
@@ -608,29 +613,29 @@ export const fr: I18n = {
   'Create a new sync room': 'Créer une nouvelle salle de sync',
   'Join an existing room': 'Rejoindre une salle existante',
   'Start sharing with other devices':
-    "Commencez à partager avec d'autres appareils",
+    'Commencez à partager avec d’autres appareils',
   'Connect to an existing device with a code':
     'Connectez-vous à un appareil existant avec un code',
-  'Synchronize with other devices': "Synchroniser avec d'autres appareils",
+  'Synchronize with other devices': 'Synchroniser avec d’autres appareils',
   'Join a device': 'Rejoindre un appareil',
   'Enter the code from another device, or use a sync link.':
-    "Entrez le code d'un autre appareil, ou utilisez un lien de synchronisation.",
+    'Entrez le code d’un autre appareil, ou utilisez un lien de synchronisation.',
   'Start syncing and invite others to join':
-    "Démarrez la synchronisation et invitez d'autres à rejoindre",
+    'Démarrez la synchronisation et invitez d’autres à rejoindre',
   'All connected devices sync in real-time as equal peers. Any device can read and write data.':
     'Tous les appareils connectés se synchronisent en temps réel en tant que pairs égaux. Tout appareil peut lire et écrire des données.',
   'Your data syncs with all peers. Everyone has equal access - changes from any device are shared instantly.':
-    "Vos données se synchronisent avec tous les pairs. Tout le monde a un accès égal - les modifications de n'importe quel appareil sont partagées instantanément.",
+    'Vos données se synchronisent avec tous les pairs. Tout le monde a un accès égal - les modifications de n’importe quel appareil sont partagées instantanément.',
   'Syncing with all connected peers. All devices are equal.':
     'Synchronisation avec tous les pairs connectés. Tous les appareils sont égaux.',
   'Sync active! Share the link or QR code with other devices to connect.':
-    "Synchronisation active ! Partagez le lien ou le QR code pour connecter d'autres appareils.",
+    'Synchronisation active ! Partagez le lien ou le QR code pour connecter d’autres appareils.',
   'Click "Synchronize with devices" to start syncing.':
     'Cliquez sur "Synchroniser avec les appareils" pour démarrer la synchronisation.',
   'Sync your data across devices in real-time.':
     'Synchronisez vos données entre appareils en temps réel.',
-  'No server needed - data stays between your devices.':
-    'Aucun serveur requis - les données restent entre vos appareils.',
+  'No server needed - data transits between your devices.':
+    'Aucun serveur requis - les données transitent entre vos appareils.',
 
   // Sync - Room/Code
   Code: 'Code',
@@ -644,6 +649,15 @@ export const fr: I18n = {
     'Partagez ce code ou lien avec vos autres appareils :',
   'Sync Settings': 'Paramètres de sync',
 
+  // Sync - Room Password
+  'Room Password': 'Mot de passe de la salle',
+  'Sync password': 'Mot de passe de synchro',
+  'Enter the room password': 'Entrez le mot de passe de la salle',
+  'Set a password to sync API keys across devices. All devices must use the same password.':
+    'Définissez un mot de passe pour synchroniser les clés API entre appareils. Tous les appareils doivent utiliser le même mot de passe.',
+  'Enter the same password used when creating the room to sync API keys.':
+    'Entrez le même mot de passe utilisé lors de la création de la salle pour synchroniser les clés API.',
+
   // Sync - QR Code
   'Or scan this QR Code:': 'Ou scannez ce QR Code :',
   'Generating QR Code...': 'Génération du QR Code...',
@@ -656,14 +670,26 @@ export const fr: I18n = {
     'Pointez votre caméra vers un QR code de synchronisation',
   'Use another device to scan this QR code to connect instantly.':
     'Utilisez un autre appareil pour scanner ce QR code et vous connecter instantanément.',
-  'Camera access denied': 'Accès à la caméra refusé',
+  'Camera access denied': 'Caméra non disponible',
   'Unable to access camera. Please grant camera permissions.':
-    "Impossible d'accéder à la caméra. Veuillez autoriser l'accès à la caméra.",
+    'Pour scanner un QR code, autorisez l’accès à la caméra.',
+  'Try Again': 'Réessayer',
+
+  // Sync - Password Protected
+  'Password Required': 'Mot de passe requis',
+  'This room is password-protected. Enter the password to join.':
+    'Cette salle est protégée par mot de passe. Entrez le mot de passe pour rejoindre.',
 
   // Sync - Secret Link
   'Share the secret link': 'Partagez le lien secret',
   'Copy and share this unique link with your other device. Keep it private!':
     'Copiez et partagez ce lien unique avec votre autre appareil. Gardez-le privé !',
+
+  // Sync - Advanced
+  Advanced: 'Avancé',
+  'Background Sync': 'Synchronisation en arrière-plan',
+  'Experimental: Prevents UI freezing during sync':
+    'Expérimental : Empêche le gel de l’interface pendant la synchronisation',
 
   // Sync - Peers
   'Status:': 'Statut :',
@@ -675,7 +701,7 @@ export const fr: I18n = {
   // Sync - Activity
   Sent: 'Envoyé',
   Received: 'Reçu',
-  'Activity Details': "Détails de l'activité",
+  'Activity Details': 'Détails de l’activité',
   'No activity': 'Aucune activité',
   'Data Activity': 'Activité des données',
   'Network Topology': 'Topologie du réseau',
@@ -683,7 +709,7 @@ export const fr: I18n = {
   bytes: 'octets',
   KB: 'Ko',
   MB: 'Mo',
-  'just now': "à l'instant",
+  'just now': 'à l’instant',
   ago: 'il y a',
   second: 'seconde',
   seconds: 'secondes',
@@ -697,10 +723,10 @@ export const fr: I18n = {
     'Pas de compte, pas de suivi, pas de stockage cloud. Vos données vous appartiennent.',
   'Work Offline': 'Travailler hors ligne',
   'Use the app without an internet connection. Your data is always available.':
-    "Utilisez l'application sans connexion internet. Vos données sont toujours disponibles.",
+    'Utilisez l’application sans connexion internet. Vos données sont toujours disponibles.',
   'Want to sync across devices?': 'Envie de synchroniser entre appareils ?',
   'Enable peer-to-peer sync to share data between your devices or with others. Data travels directly between devices.':
-    "Activez la synchronisation pair-à-pair pour partager des données entre vos appareils ou avec d'autres personnes. Les données transitent directement entre appareils.",
+    'Activez la synchronisation pair-à-pair pour partager des données entre vos appareils ou avec d’autres personnes. Les données transitent directement entre appareils.',
 
   // Sync - Misc
   or: 'ou',
@@ -783,7 +809,19 @@ export const fr: I18n = {
   'Loading models...': 'Chargement des modèles...',
   'No models available': 'Aucun modèle disponible',
   'Check your server URL and connection':
-    "Vérifiez l'URL de votre serveur et la connexion",
+    'Vérifiez l’URL de votre serveur et la connexion',
+  // LLM Provider Management
+  'This provider is already configured. Edit or delete the existing one first.':
+    'Ce fournisseur est déjà configuré. Modifiez ou supprimez l’existant d’abord.',
+  'Invalid API key': 'Clé API invalide',
+  'Provider added successfully': 'Fournisseur ajouté avec succès',
+  'Failed to add provider': 'Échec de l’ajout du fournisseur',
+  'Credential not found': 'Identifiant non trouvé',
+  'Provider updated successfully': 'Fournisseur mis à jour avec succès',
+  'Failed to update provider': 'Échec de la mise à jour du fournisseur',
+  'Provider deleted': 'Fournisseur supprimé',
+  'Failed to delete provider': 'Échec de la suppression du fournisseur',
+
   // Security - Non-extractable CryptoKey
   'Encryption Key Status': 'État de la clé de chiffrement',
   'Secure (Non-extractable)': 'Sécurisée (Non-extractible)',

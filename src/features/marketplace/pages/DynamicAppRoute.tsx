@@ -36,6 +36,13 @@ const SUPPORTED_LANG_CODES = Object.keys(languages)
 /**
  * Parse the URL path to extract the page key
  * Returns the page key that should match a key in any app's pages object
+ *
+ * The page key is the first path segment after the optional language prefix.
+ * Examples:
+ * - /translate → pageKey: "translate"
+ * - /translate/settings → pageKey: "translate" (subpath handled by app)
+ * - /fr/translate → lang: "fr", pageKey: "translate"
+ * - /fr/translate/settings → lang: "fr", pageKey: "translate"
  */
 function parseAppPath(pathname: string): {
   pageKey: string | null
@@ -55,14 +62,14 @@ function parseAppPath(pathname: string): {
     // /:lang/:pageKey/subpath...
     return {
       lang: pathParts[0],
-      pageKey: pathParts.slice(1).join('/') || null,
+      pageKey: pathParts[1] || null,
     }
   }
 
   // /:pageKey/subpath...
   return {
     lang: null,
-    pageKey: pathParts.join('/') || null,
+    pageKey: pathParts[0] || null,
   }
 }
 

@@ -28,7 +28,7 @@ import { PageMenuButton } from '@/components/PageMenuButton'
 import { PageMenuPanel } from '@/components/PageMenuPanel'
 import { useI18n } from '@/i18n'
 import { localI18n } from '../i18n'
-import { db, Database } from '@/lib/db'
+import * as yjsMaps from '@/lib/yjs/maps'
 
 /**
  * Check if File System Access API is supported
@@ -156,33 +156,62 @@ export function LocalBackupButton() {
   const handleDownloadBackup = useCallback(async () => {
     setIsDownloading(true)
     try {
-      await db.init()
+      // Export all Yjs maps to JSON
+      const exportData: Record<string, unknown[] | Record<string, unknown>> = {}
+      const mapNames = [
+        'agents',
+        'conversations',
+        'knowledge',
+        'tasks',
+        'artifacts',
+        'memories',
+        'preferences',
+        'credentials',
+        'studioEntries',
+        'workflows',
+        'battles',
+        'pinnedMessages',
+        'traces',
+        'spans',
+        'tracingConfig',
+        'connectors',
+        'connectorSyncStates',
+        'notifications',
+        'memoryLearningEvents',
+        'agentMemoryDocuments',
+        'sharedContexts',
+        'installedExtensions',
+        'customExtensions',
+        'langfuseConfig',
+      ] as const
 
-      const dbData: Record<string, unknown[]> = {}
-      const stores = Database.STORES
-
-      for (const store of stores) {
+      for (const mapName of mapNames) {
         try {
-          dbData[store] = await db.getAll(store as any)
+          const map = yjsMaps[mapName as keyof typeof yjsMaps]
+          if (map && typeof map.toJSON === 'function') {
+            const mapData = map.toJSON()
+            // Convert map object to array for backward compatibility
+            exportData[mapName] = Object.values(mapData)
+          }
         } catch (error) {
-          console.warn(`Failed to export store ${store}:`, error)
-          dbData[store] = []
+          console.warn(`Failed to export map ${mapName}:`, error)
+          exportData[mapName] = []
         }
       }
 
       // Add metadata
-      const exportData = {
+      const fullExportData = {
         _meta: {
           exportedAt: new Date().toISOString(),
-          dbName: Database.DB_NAME,
-          dbVersion: Database.DB_VERSION,
-          stores: stores.length,
+          source: 'yjs',
+          version: 1,
+          maps: mapNames.length,
           compressed: true,
         },
-        ...dbData,
+        ...exportData,
       }
 
-      const jsonString = JSON.stringify(exportData)
+      const jsonString = JSON.stringify(fullExportData)
 
       // Compress using native CompressionStream (gzip)
       const stream = new Blob([jsonString]).stream()

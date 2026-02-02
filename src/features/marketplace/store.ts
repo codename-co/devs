@@ -11,7 +11,11 @@
  */
 
 import { create } from 'zustand'
-import { db } from '@/lib/db'
+import {
+  installedExtensions,
+  customExtensions as customExtensionsMap,
+} from '@/lib/yjs/maps'
+import { whenReady } from '@/lib/yjs'
 import { errorToast, successToast } from '@/lib/toast'
 import type {
   MarketplaceExtension,
@@ -221,15 +225,12 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
     }
   },
 
-  // Load custom (AI-generated) extensions from IndexedDB
+  // Load custom (AI-generated) extensions from Yjs
   loadCustomExtensions: async () => {
     set({ isLoadingCustom: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      const customExtensions = await db.getAll('customExtensions')
+      await whenReady
+      const customExtensions = Array.from(customExtensionsMap.values())
       set({ customExtensions, isLoadingCustom: false })
     } catch (error) {
       set({ isLoadingCustom: false })
@@ -237,15 +238,12 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
     }
   },
 
-  // Load installed extensions from IndexedDB
+  // Load installed extensions from Yjs
   loadInstalledExtensions: async () => {
     set({ isLoadingInstalled: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      const extensions = await db.getAll('extensions')
+      await whenReady
+      const extensions = Array.from(installedExtensions.values())
       const installedMap = new Map<string, InstalledExtension>()
       for (const ext of extensions) {
         installedMap.set(ext.id, ext)
@@ -336,8 +334,8 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
       newInstalled.set(extensionId, installedExtension)
       set({ installed: newInstalled })
 
-      // Persist to IndexedDB
-      await db.update('extensions', installedExtension)
+      // Persist to Yjs
+      installedExtensions.set(extensionId, installedExtension)
 
       successToast(
         'Extension installed',
@@ -363,8 +361,8 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
       newInstalled.delete(extensionId)
       set({ installed: newInstalled })
 
-      // Remove from IndexedDB
-      await db.delete('extensions', extensionId)
+      // Remove from Yjs
+      installedExtensions.delete(extensionId)
 
       successToast(
         'Extension uninstalled',
@@ -431,8 +429,8 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
       newInstalled.set(extensionId, updatedInstalled)
       set({ installed: newInstalled })
 
-      // Persist to IndexedDB
-      await db.update('extensions', updatedInstalled)
+      // Persist to Yjs
+      installedExtensions.set(extensionId, updatedInstalled)
 
       successToast(
         'Extension updated',
@@ -458,7 +456,7 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
     newInstalled.set(extensionId, updated)
     set({ installed: newInstalled })
 
-    await db.update('extensions', updated)
+    installedExtensions.set(extensionId, updated)
   },
 
   // Disable an extension
@@ -476,7 +474,7 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
     newInstalled.set(extensionId, updated)
     set({ installed: newInstalled })
 
-    await db.update('extensions', updated)
+    installedExtensions.set(extensionId, updated)
   },
 
   // Delete a custom extension
@@ -488,7 +486,7 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
       const newInstalled = new Map(installed)
       newInstalled.delete(extensionId)
       set({ installed: newInstalled })
-      await db.delete('extensions', extensionId)
+      installedExtensions.delete(extensionId)
     }
 
     // Remove from custom extensions list
@@ -497,7 +495,7 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
     )
     set({ customExtensions: newCustomExtensions })
 
-    // Delete from database
+    // Delete from Yjs map
     await deleteCustomExtensionFromDb(extensionId)
   },
 
@@ -522,13 +520,13 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
     newInstalled.set(extensionId, updated)
     set({ installed: newInstalled })
 
-    await db.update('extensions', updated)
+    installedExtensions.set(extensionId, updated)
   },
 
   // Load full extension details by ID
   // Priority order:
   // 1. Installed extension (already contains full data)
-  // 2. Custom extension from IndexedDB
+  // 2. Custom extension from Yjs
   // 3. Fetch from marketplace (only for non-installed extensions)
   loadExtensionById: async (extensionId: string) => {
     const { installed } = get()
@@ -539,11 +537,8 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
       return installedExt.extension
     }
 
-    // Check custom extensions - fetch fresh from IndexedDB
-    if (!db.isInitialized()) {
-      await db.init()
-    }
-    const customExt = await db.get('customExtensions', extensionId)
+    // Check custom extensions from Yjs
+    const customExt = customExtensionsMap.get(extensionId)
     if (customExt) {
       // Convert to MarketplaceExtension format
       return {
@@ -574,10 +569,7 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
   // Used for displaying up-to-date metadata in the marketplace UI
   fetchExtensionFromRegistry: async (extensionId: string) => {
     // Check custom extensions first - these are user-created, not in registry
-    if (!db.isInitialized()) {
-      await db.init()
-    }
-    const customExt = await db.get('customExtensions', extensionId)
+    const customExt = customExtensionsMap.get(extensionId)
     if (customExt) {
       // Convert to MarketplaceExtension format
       return {
@@ -867,3 +859,37 @@ export function hasExtensionUpdate(extensionId: string): boolean {
 export function getMarketplaceVersion(extensionId: string): string | undefined {
   return useMarketplaceStore.getState().getMarketplaceVersion(extensionId)
 }
+
+// =============================================================================
+// YJS OBSERVERS FOR REAL-TIME SYNC
+// =============================================================================
+
+let yjsObserversInitialized = false
+
+/**
+ * Initialize Yjs observers for marketplace data sync.
+ * Called automatically when the module is imported.
+ */
+function initYjsObservers(): void {
+  if (yjsObserversInitialized) return
+  yjsObserversInitialized = true
+
+  // Observe installed extensions changes from other devices
+  installedExtensions.observe(() => {
+    const extensions = Array.from(installedExtensions.values())
+    const installedMap = new Map<string, InstalledExtension>()
+    for (const ext of extensions) {
+      installedMap.set(ext.id, ext)
+    }
+    useMarketplaceStore.setState({ installed: installedMap })
+  })
+
+  // Observe custom extensions changes from other devices
+  customExtensionsMap.observe(() => {
+    const customExtensions = Array.from(customExtensionsMap.values())
+    useMarketplaceStore.setState({ customExtensions })
+  })
+}
+
+// Initialize observers on module load
+initYjsObservers()

@@ -103,7 +103,6 @@ export const en = [
   'Enter the model name manually',
   'models available',
   'This provider is already configured',
-  'Once configured, all models from this provider will be available in the model selector.',
   'Conversational Features',
   'Configure how you interact with agents',
 ] as const

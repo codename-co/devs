@@ -14,7 +14,10 @@
  */
 
 import type { LLMModel, LLMProvider, ModelCapabilities } from '@/types'
-import { getModelsByProvider as getModelsDevByProvider } from '@/lib/models-dev'
+import {
+  getModelsByProvider as getModelsDevByProvider,
+  getModel as getModelsDevModel,
+} from '@/lib/models-dev'
 import type { NormalizedModel } from '@/lib/models-dev/types'
 
 // =============================================================================
@@ -64,13 +67,15 @@ export const MODELS_DEV_PROVIDER_MAP: Record<string, LLMProvider> = {
 }
 
 /**
- * Reverse mapping from DEVS LLMProvider to models.dev provider ID
+ * Reverse mapping from DEVS LLMProvider to models.dev provider ID(s).
+ * Some providers map to multiple models.dev providers (e.g., vertex-ai includes
+ * both Gemini models from 'google-vertex' and Claude models from 'google-vertex-anthropic').
  */
-const DEVS_TO_MODELS_DEV_MAP: Record<LLMProvider, string | null> = {
+const DEVS_TO_MODELS_DEV_MAP: Record<LLMProvider, string | string[] | null> = {
   openai: 'openai',
   anthropic: 'anthropic',
   google: 'google', // models.dev uses 'google' not 'google-genai'
-  'vertex-ai': 'google-vertex', // models.dev uses 'google-vertex'
+  'vertex-ai': ['google-vertex', 'google-vertex-anthropic'], // Gemini + Claude on Vertex AI
   mistral: 'mistral',
   openrouter: 'openrouter',
   // Local providers - not in models.dev
@@ -78,6 +83,7 @@ const DEVS_TO_MODELS_DEV_MAP: Record<LLMProvider, string | null> = {
   ollama: null,
   huggingface: null,
   'openai-compatible': null,
+  'claude-code': null, // Claude Code API - uses Claude models via local server
   custom: null,
   stability: null,
   replicate: null,
@@ -96,6 +102,392 @@ const CLOUD_PROVIDERS: LLMProvider[] = [
   'mistral',
   'openrouter',
 ]
+
+/**
+ * Providers that use local/pattern-based capability inference.
+ * These are providers where models are discovered dynamically at runtime.
+ */
+const LOCAL_INFERENCE_PROVIDERS: LLMProvider[] = [
+  'local',
+  'ollama',
+  'openai-compatible',
+  'huggingface',
+]
+
+/**
+ * Check if a provider uses local/pattern-based capability inference.
+ */
+export function usesLocalInference(provider: LLMProvider): boolean {
+  return LOCAL_INFERENCE_PROVIDERS.includes(provider)
+}
+
+// =============================================================================
+// Local Model Capability Inference Patterns
+// =============================================================================
+
+/**
+ * Pattern-based capability inference for models discovered at runtime.
+ * Maps model name patterns to their known capabilities.
+ * Used for local, ollama, and openai-compatible providers.
+ *
+ * Patterns are ordered by specificity - more specific patterns should come first.
+ * The base name (before :) is matched against these patterns.
+ */
+interface LocalModelCapabilityPattern {
+  /** Regex pattern to match model base name */
+  pattern: RegExp
+  /** Capabilities to assign when matched */
+  capabilities: ModelCapabilities
+}
+
+/**
+ * Capability patterns for common model families.
+ * Based on known capabilities of popular open-source models.
+ * Used for local, ollama, and openai-compatible providers.
+ */
+const LOCAL_MODEL_CAPABILITY_PATTERNS: LocalModelCapabilityPattern[] = [
+  // Vision-language models
+  { pattern: /^llava/i, capabilities: { vision: true } },
+  { pattern: /^bakllava/i, capabilities: { vision: true } },
+  { pattern: /^moondream/i, capabilities: { vision: true } },
+  { pattern: /^llama3\.2-vision/i, capabilities: { vision: true } },
+  { pattern: /^llama-3\.2-vision/i, capabilities: { vision: true } },
+  { pattern: /^minicpm-v/i, capabilities: { vision: true } },
+  { pattern: /^yi-vl/i, capabilities: { vision: true } },
+
+  // Gemma 3+ has vision
+  { pattern: /^gemma3/i, capabilities: { vision: true, fast: true } },
+  { pattern: /^gemma-3/i, capabilities: { vision: true, fast: true } },
+
+  // Qwen VL models
+  {
+    pattern: /^qwen.*vl/i,
+    capabilities: { vision: true, tools: true, thinking: true },
+  },
+  {
+    pattern: /^qwen3-vl/i,
+    capabilities: { vision: true, tools: true, thinking: true },
+  },
+
+  // Reasoning/thinking models
+  { pattern: /^deepseek-r1/i, capabilities: { thinking: true, tools: true } },
+  { pattern: /^qwq/i, capabilities: { thinking: true } },
+  { pattern: /^marco-o1/i, capabilities: { thinking: true } },
+  { pattern: /^skywork-o1/i, capabilities: { thinking: true } },
+
+  // Qwen 3 has thinking mode
+  { pattern: /^qwen3/i, capabilities: { thinking: true, tools: true } },
+  { pattern: /^qwen-3/i, capabilities: { thinking: true, tools: true } },
+
+  // Tool-capable models
+  { pattern: /^llama3\.1/i, capabilities: { tools: true } },
+  { pattern: /^llama-3\.1/i, capabilities: { tools: true } },
+  { pattern: /^llama3\.2/i, capabilities: { tools: true, fast: true } },
+  { pattern: /^llama-3\.2/i, capabilities: { tools: true, fast: true } },
+  { pattern: /^llama3\.3/i, capabilities: { tools: true } },
+  { pattern: /^llama-3\.3/i, capabilities: { tools: true } },
+  { pattern: /^llama4/i, capabilities: { tools: true, vision: true } },
+  { pattern: /^llama-4/i, capabilities: { tools: true, vision: true } },
+  { pattern: /^mistral-small/i, capabilities: { tools: true, vision: true } },
+  { pattern: /^mistral/i, capabilities: { tools: true } },
+  { pattern: /^mixtral/i, capabilities: { tools: true } },
+  {
+    pattern: /^ministral/i,
+    capabilities: { tools: true, vision: true, fast: true },
+  },
+  { pattern: /^devstral/i, capabilities: { tools: true } },
+  { pattern: /^command-r/i, capabilities: { tools: true } },
+  { pattern: /^granite/i, capabilities: { tools: true, fast: true } },
+  { pattern: /^hermes/i, capabilities: { tools: true } },
+  { pattern: /^nemotron/i, capabilities: { tools: true, thinking: true } },
+  { pattern: /^gpt-oss/i, capabilities: { tools: true, thinking: true } },
+
+  // Coder models
+  { pattern: /^qwen.*coder/i, capabilities: { tools: true } },
+  { pattern: /^deepseek-coder/i, capabilities: { tools: true } },
+  { pattern: /^codellama/i, capabilities: {} },
+  { pattern: /^starcoder/i, capabilities: {} },
+
+  // Small/fast models
+  { pattern: /^phi4-mini/i, capabilities: { fast: true, tools: true } },
+  { pattern: /^phi-4-mini/i, capabilities: { fast: true, tools: true } },
+  { pattern: /^phi4/i, capabilities: {} },
+  { pattern: /^phi-4/i, capabilities: {} },
+  { pattern: /^phi3/i, capabilities: { fast: true } },
+  { pattern: /^phi-3/i, capabilities: { fast: true } },
+  { pattern: /^phi\.?3\.?5/i, capabilities: { fast: true } },
+  { pattern: /^smollm/i, capabilities: { fast: true, lowCost: true } },
+  { pattern: /^tinyllama/i, capabilities: { fast: true, lowCost: true } },
+  { pattern: /^qwen2\.5.*1\.5b/i, capabilities: { fast: true } },
+
+  // Browser/ONNX-specific patterns (smaller models optimized for browser)
+  // These match anywhere in the name, not just at the start
+  { pattern: /onnx.*web/i, capabilities: { fast: true, lowCost: true } },
+  { pattern: /mlc$/i, capabilities: { fast: true, lowCost: true } },
+  { pattern: /onnx$/i, capabilities: { lowCost: true } },
+]
+
+/**
+ * Infers capabilities for a dynamically discovered local model.
+ * First checks the registry for an exact match, then falls back to pattern matching.
+ * Works for local, ollama, and openai-compatible providers.
+ *
+ * For browser models (ONNX, MLC, WebGPU), merges capabilities from multiple patterns:
+ * - Model family patterns (e.g., granite, qwen, llama)
+ * - Browser runtime patterns (e.g., onnx-web, mlc)
+ *
+ * @param modelId - The model ID (e.g., "llama3.2:3b", "llava:7b", "onnx-community/Qwen3-0.6B-ONNX")
+ * @param provider - The provider type (defaults to 'ollama' for backwards compatibility)
+ * @returns Inferred capabilities for the model
+ */
+export function inferLocalModelCapabilities(
+  modelId: string,
+  provider: LLMProvider = 'ollama',
+): ModelCapabilities {
+  // Strip repository path prefix (e.g., "onnx-community/")
+  const modelName = modelId.includes('/') ? modelId.split('/').pop()! : modelId
+  // Extract base name (before the size tag)
+  const baseName = modelName.split(':')[0].toLowerCase()
+
+  // First, check registry for exact match
+  const registry = getModelRegistry()
+  const providerModels = registry[provider]
+  const registryModel = providerModels?.find(
+    (m) =>
+      m.id.toLowerCase() === modelId.toLowerCase() ||
+      m.id.split(':')[0].toLowerCase() === baseName,
+  )
+  if (registryModel?.capabilities) {
+    return registryModel.capabilities
+  }
+
+  // For browser/local models, merge capabilities from ALL matching patterns
+  // This allows "granite-4.0-350m-ONNX-web" to get both granite capabilities AND onnx-web capabilities
+  const mergedCapabilities: ModelCapabilities = {}
+
+  for (const { pattern, capabilities } of LOCAL_MODEL_CAPABILITY_PATTERNS) {
+    if (pattern.test(baseName)) {
+      Object.assign(mergedCapabilities, capabilities)
+    }
+  }
+
+  // Return merged capabilities (may be empty if no patterns matched)
+  return mergedCapabilities
+}
+
+/**
+ * @deprecated Use inferLocalModelCapabilities instead
+ */
+export function inferOllamaCapabilities(modelId: string): ModelCapabilities {
+  return inferLocalModelCapabilities(modelId, 'ollama')
+}
+
+/**
+ * Infers capabilities for a dynamically discovered Ollama model (async version).
+ * First checks the models.dev registry for the 'ollama' provider, then falls back
+ * to local registry and pattern matching.
+ *
+ * @param modelId - The Ollama model ID (e.g., "llama3.2:3b", "llava:7b")
+ * @returns Inferred capabilities for the model
+ */
+export async function inferOllamaCapabilitiesAsync(
+  modelId: string,
+): Promise<ModelCapabilities> {
+  // Extract base name (before the size tag)
+  const baseName = modelId.split(':')[0].toLowerCase()
+
+  // First, try to get from models.dev ollama provider
+  try {
+    // Try exact match first
+    const exactMatch = await getModelsDevModel('ollama', modelId)
+    if (exactMatch) {
+      return normalizedModelToCapabilities(exactMatch)
+    }
+
+    // Try base name match (without size tag)
+    const baseMatch = await getModelsDevModel('ollama', baseName)
+    if (baseMatch) {
+      return normalizedModelToCapabilities(baseMatch)
+    }
+
+    // Get all ollama models and try fuzzy matching
+    const ollamaModels = await getModelsDevByProvider('ollama')
+    const matchedModel = ollamaModels.find(
+      (m) =>
+        m.id === `ollama/${modelId}` ||
+        m.id === `ollama/${baseName}` ||
+        m.id.endsWith(`/${baseName}`) ||
+        m.name.toLowerCase().includes(baseName),
+    )
+    if (matchedModel) {
+      return normalizedModelToCapabilities(matchedModel)
+    }
+  } catch (error) {
+    // models.dev fetch failed, fall back to sync method
+    console.warn(
+      '[models] models.dev lookup failed for ollama, using fallback:',
+      error,
+    )
+  }
+
+  // Fall back to sync method (local registry + pattern matching)
+  return inferLocalModelCapabilities(modelId, 'ollama')
+}
+
+/**
+ * Converts a NormalizedModel's capabilities to DEVS ModelCapabilities.
+ *
+ * @param model - The normalized model from models.dev
+ * @returns DEVS-compatible ModelCapabilities
+ */
+function normalizedModelToCapabilities(
+  model: NormalizedModel,
+): ModelCapabilities {
+  return {
+    vision: model.capabilities.vision,
+    tools: model.capabilities.tools,
+    thinking: model.capabilities.reasoning,
+    // lowCost: less than $1/M input tokens
+    lowCost: model.pricing.inputPerMillion < 1.0,
+    // highCost: more than $10/M input tokens
+    highCost: model.pricing.inputPerMillion > 10.0,
+    // Cannot determine speed from models.dev data
+    fast: false,
+  }
+}
+
+/**
+ * Gets a list of Ollama models with their inferred capabilities.
+ * Merges JIT-discovered models with registry data.
+ *
+ * @param discoveredModelIds - Model IDs discovered from Ollama /api/tags
+ * @returns Array of LLM models with capabilities
+ */
+export function getOllamaModelsWithCapabilities(
+  discoveredModelIds: string[],
+): LLMModel[] {
+  return discoveredModelIds.map((id) => ({
+    id,
+    name: formatOllamaModelName(id),
+    capabilities: inferOllamaCapabilities(id),
+  }))
+}
+
+/**
+ * Gets a list of Ollama models with their inferred capabilities (async version).
+ * Uses models.dev registry for more accurate capability detection.
+ *
+ * @param discoveredModelIds - Model IDs discovered from Ollama /api/tags
+ * @returns Promise resolving to array of LLM models with capabilities
+ */
+export async function getOllamaModelsWithCapabilitiesAsync(
+  discoveredModelIds: string[],
+): Promise<LLMModel[]> {
+  const models = await Promise.all(
+    discoveredModelIds.map(async (id) => ({
+      id,
+      name: await formatOllamaModelNameAsync(id),
+      capabilities: await inferOllamaCapabilitiesAsync(id),
+    })),
+  )
+  return models
+}
+
+/**
+ * Formats an Ollama model ID into a human-readable name.
+ * E.g., "llama3.2:3b" → "Llama 3.2 3B"
+ *
+ * @param modelId - The raw model ID
+ * @returns Formatted display name
+ */
+function formatOllamaModelName(modelId: string): string {
+  // Check registry for existing name
+  const registry = getModelRegistry()
+  const registryModel = registry.ollama?.find((m) => m.id === modelId)
+  if (registryModel?.name) {
+    return registryModel.name
+  }
+
+  // Format: capitalize parts, handle version numbers
+  return formatLocalModelName(modelId)
+}
+
+/**
+ * Formats an Ollama model ID into a human-readable name (async version).
+ * Checks models.dev for official names first.
+ *
+ * @param modelId - The raw model ID
+ * @returns Promise resolving to formatted display name
+ */
+async function formatOllamaModelNameAsync(modelId: string): Promise<string> {
+  const baseName = modelId.split(':')[0].toLowerCase()
+
+  // Try models.dev first
+  try {
+    const model = await getModelsDevModel('ollama', modelId)
+    if (model?.name) {
+      return model.name
+    }
+
+    const baseModel = await getModelsDevModel('ollama', baseName)
+    if (baseModel?.name) {
+      // Append size tag if present
+      const sizeTag = modelId.includes(':') ? modelId.split(':')[1] : null
+      return sizeTag
+        ? `${baseModel.name} ${sizeTag.toUpperCase()}`
+        : baseModel.name
+    }
+  } catch {
+    // Fall through to sync method
+  }
+
+  // Fall back to sync method
+  return formatOllamaModelName(modelId)
+}
+
+/**
+ * Formats a local model ID string into a pretty display name.
+ * Pure formatting function with no external lookups.
+ * Works for local, ollama, openai-compatible, and vertex-ai providers.
+ *
+ * @param modelId - The raw model ID (e.g., "llama3.2:3b", "onnx-community/Qwen3-0.6B-ONNX", "claude-3-7-sonnet")
+ * @returns Pretty display name (e.g., "Llama3.2 3B", "Qwen3 0.6B ONNX", "Claude 3.7 Sonnet")
+ */
+export function formatLocalModelName(modelId: string): string {
+  // Strip repository path prefix (e.g., "onnx-community/" or "huggingface/")
+  const baseName = modelId.includes('/') ? modelId.split('/').pop()! : modelId
+
+  // Convert version patterns like "3-7" or "3-5-20" to "3.7" or "3.5.20"
+  // Only match when surrounded by word boundaries or hyphens to avoid breaking "0.6B"
+  // Pattern: digit(s) followed by one or more (-digit(s)) groups, not followed by letters
+  const withVersions = baseName.replace(
+    /(?<=^|-)(\d+)(-\d+)+(?=-|$)/g,
+    (match) => match.replace(/-/g, '.'),
+  )
+
+  return withVersions
+    .split(/[:\-_]/)
+    .map((part) => {
+      // Keep size indicators uppercase
+      if (/^\d+[bmk]$/i.test(part)) {
+        return part.toUpperCase()
+      }
+      // Keep common suffixes uppercase
+      if (/^(onnx|mlc|web|gguf)$/i.test(part)) {
+        return part.toUpperCase()
+      }
+      // Capitalize first letter
+      return part.charAt(0).toUpperCase() + part.slice(1)
+    })
+    .join(' ')
+}
+
+/**
+ * @deprecated Use formatLocalModelName instead
+ */
+export function formatOllamaModelIdToPrettyName(modelId: string): string {
+  return formatLocalModelName(modelId)
+}
 
 // =============================================================================
 // Model Registry (from JSON)
@@ -130,6 +522,7 @@ const EMPTY_REGISTRY: ModelRegistry = {
   openrouter: [],
   huggingface: [],
   'openai-compatible': [],
+  'claude-code': [],
   custom: [],
   stability: [],
   replicate: [],
@@ -210,10 +603,27 @@ export async function getModelsForProviderAsync(
   }
 
   // For cloud providers, try models.dev first
-  const modelsDevProviderId = DEVS_TO_MODELS_DEV_MAP[provider]
-  if (modelsDevProviderId) {
+  const modelsDevProviderIds = DEVS_TO_MODELS_DEV_MAP[provider]
+  if (modelsDevProviderIds) {
     try {
-      const normalizedModels = await getModelsDevByProvider(modelsDevProviderId)
+      // Handle single provider ID or array of provider IDs
+      const providerIdArray = Array.isArray(modelsDevProviderIds)
+        ? modelsDevProviderIds
+        : [modelsDevProviderIds]
+
+      // Fetch models from all mapped providers in parallel
+      const allModelsArrays = await Promise.all(
+        providerIdArray.map((id) => getModelsDevByProvider(id)),
+      )
+
+      // Flatten and deduplicate by model ID
+      const seenIds = new Set<string>()
+      const normalizedModels = allModelsArrays.flat().filter((model) => {
+        if (seenIds.has(model.id)) return false
+        seenIds.add(model.id)
+        return true
+      })
+
       if (normalizedModels.length > 0) {
         return normalizedModels.map((model) => ({
           id: model.id,
@@ -446,13 +856,15 @@ function registryToEnhancedModel(model: LLMModel): EnhancedLLMModel {
 }
 
 /**
- * Gets the models.dev provider ID for a DEVS provider.
+ * Gets the models.dev provider ID(s) for a DEVS provider.
  *
  * @param provider - The DEVS LLM provider
- * @returns The models.dev provider ID, or null if not applicable
+ * @returns The models.dev provider ID(s), or null if not applicable
  */
-function getModelsDevProviderId(provider: LLMProvider): string | null {
-  return DEVS_TO_MODELS_DEV_MAP[provider] ?? null
+function getModelsDevProviderIds(provider: LLMProvider): string[] | null {
+  const mapping = DEVS_TO_MODELS_DEV_MAP[provider]
+  if (!mapping) return null
+  return Array.isArray(mapping) ? mapping : [mapping]
 }
 
 /**
@@ -474,10 +886,22 @@ export async function getEnhancedModelsForProvider(
   }
 
   // For cloud providers, try models.dev first
-  const modelsDevProviderId = getModelsDevProviderId(provider)
-  if (modelsDevProviderId) {
+  const modelsDevProviderIds = getModelsDevProviderIds(provider)
+  if (modelsDevProviderIds) {
     try {
-      const normalizedModels = await getModelsDevByProvider(modelsDevProviderId)
+      // Fetch models from all mapped providers in parallel
+      const allModelsArrays = await Promise.all(
+        modelsDevProviderIds.map((id) => getModelsDevByProvider(id)),
+      )
+
+      // Flatten and deduplicate by model ID
+      const seenIds = new Set<string>()
+      const normalizedModels = allModelsArrays.flat().filter((model) => {
+        if (seenIds.has(model.id)) return false
+        seenIds.add(model.id)
+        return true
+      })
+
       if (normalizedModels.length > 0) {
         return normalizedModels.map(normalizedToLLMModel)
       }
@@ -518,18 +942,26 @@ export async function getModelPricing(
     return undefined
   }
 
-  const modelsDevProviderId = getModelsDevProviderId(provider)
-  if (!modelsDevProviderId) {
+  const modelsDevProviderIds = getModelsDevProviderIds(provider)
+  if (!modelsDevProviderIds) {
     return undefined
   }
 
   try {
-    const models = await getModelsDevByProvider(modelsDevProviderId)
-    // Find the model by ID (models.dev uses full ID format: provider/model)
-    const model = models.find(
+    // Fetch models from all mapped providers in parallel
+    const allModelsArrays = await Promise.all(
+      modelsDevProviderIds.map((id) => getModelsDevByProvider(id)),
+    )
+    const allModels = allModelsArrays.flat()
+
+    // Find the model by ID across all provider models
+    const model = allModels.find(
       (m) =>
-        m.id === `${modelsDevProviderId}/${modelId}` ||
-        m.id.endsWith(`/${modelId}`),
+        m.id === modelId ||
+        m.id.endsWith(`/${modelId}`) ||
+        modelsDevProviderIds.some(
+          (providerId) => m.id === `${providerId}/${modelId}`,
+        ),
     )
 
     if (model) {

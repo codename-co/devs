@@ -230,6 +230,11 @@ export function decodeSetupData(encodedData: string): EasySetupData {
 }
 
 /**
+ * Providers that don't require API keys (local/browser-based)
+ */
+const NO_CREDENTIAL_PROVIDERS = ['local', 'ollama']
+
+/**
  * Create setup data from current configuration
  */
 export async function createSetupData(
@@ -243,6 +248,16 @@ export async function createSetupData(
 
   const decryptedCredentials = await Promise.all(
     credentials.map(async (cred) => {
+      // For local/browser providers that don't need API keys, skip decryption
+      if (NO_CREDENTIAL_PROVIDERS.includes(cred.provider)) {
+        return {
+          p: cred.provider,
+          k: '', // No API key needed for local providers
+          ...(cred.baseUrl && { b: cred.baseUrl }),
+          ...(cred.model && { m: cred.model }),
+        }
+      }
+
       // Get encryption metadata from localStorage
       const iv = localStorage.getItem(`${cred.id}-iv`)
       const salt = localStorage.getItem(`${cred.id}-salt`) ?? '' // Salt is empty after migration to non-extractable keys

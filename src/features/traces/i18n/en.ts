@@ -130,6 +130,7 @@ export const en = [
   'Cleared',
   'Saved',
   'Clear All Traces',
+  'Delete all traces permanently',
   'Are you sure you want to delete all traces? This action cannot be undone.',
   'Delete All',
   'Settings',

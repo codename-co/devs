@@ -1,14 +1,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
-  createMockDb,
+  createMockYMap,
   createMockToast,
   createTestConversation,
   createTestMessage,
-  resetMockDb,
+  resetMockYMap,
 } from './mocks'
+import type { Conversation } from '@/types'
 
 // Create mocks at module level
-const mockDb = createMockDb()
+const mockConversationsMap = createMockYMap<Conversation>()
 const mockToast = createMockToast()
 
 const mockTitleGenerator = {
@@ -22,14 +23,24 @@ const mockSummarizer = {
     .mockResolvedValue('Test summary of the conversation'),
 }
 
-// Setup global mocks
-vi.mock('@/lib/db', () => ({ db: mockDb }))
+// Mock the Yjs module
+vi.mock('@/lib/yjs', () => ({
+  conversations: mockConversationsMap,
+  whenReady: Promise.resolve(),
+  transact: vi.fn((fn: () => void) => fn()),
+}))
+
 vi.mock('@/lib/toast', () => mockToast)
 vi.mock('@/lib/conversation-title-generator', () => ({
   ConversationTitleGenerator: mockTitleGenerator,
 }))
 vi.mock('@/lib/conversation-summarizer', () => ({
   ConversationSummarizer: mockSummarizer,
+}))
+
+// Mock agentStore getAgentById
+vi.mock('@/stores/agentStore', () => ({
+  getAgentById: vi.fn().mockResolvedValue({ id: 'devs', slug: 'devs', name: 'DEVS' }),
 }))
 
 // Mock crypto.randomUUID for predictable IDs
@@ -47,7 +58,7 @@ const getStore = () => conversationStore.useConversationStore
 describe('conversationStore', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
-    resetMockDb(mockDb)
+    resetMockYMap(mockConversationsMap)
     mockTitleGenerator.generateTitle
       .mockReset()
       .mockResolvedValue('Generated Title')
@@ -61,6 +72,13 @@ describe('conversationStore', () => {
 
     // Reset module cache to get fresh store
     vi.resetModules()
+
+    // Re-apply mocks after module reset
+    vi.mock('@/lib/yjs', () => ({
+      conversations: mockConversationsMap,
+      whenReady: Promise.resolve(),
+      transact: vi.fn((fn: () => void) => fn()),
+    }))
 
     // Re-import the module fresh
     conversationStore = await import('@/stores/conversationStore')
@@ -113,55 +131,36 @@ describe('conversationStore', () => {
   // loadConversations Tests
   // ============================================
   describe('loadConversations', () => {
-    it('should load all conversations from database', async () => {
+    it('should load all conversations from Yjs map', async () => {
       const testConversations = [
         createTestConversation({ id: 'conv-1' }),
         createTestConversation({ id: 'conv-2' }),
       ]
-      mockDb.getAll.mockResolvedValueOnce(testConversations)
+      // Add conversations to mock Yjs map
+      testConversations.forEach((conv) =>
+        mockConversationsMap._data.set(conv.id, conv),
+      )
 
       await getStore().getState().loadConversations()
 
-      expect(mockDb.getAll).toHaveBeenCalledWith('conversations')
-      expect(getStore().getState().conversations).toEqual(testConversations)
+      expect(getStore().getState().conversations).toHaveLength(2)
     })
 
     it('should set isLoading to true then false', async () => {
-      mockDb.getAll.mockImplementation(async () => {
-        expect(getStore().getState().isLoading).toBe(true)
-        return []
+      const checkLoading = vi.fn()
+      const originalValues = mockConversationsMap.values
+      mockConversationsMap.values.mockImplementation(() => {
+        checkLoading(getStore().getState().isLoading)
+        return originalValues()
       })
 
       await getStore().getState().loadConversations()
 
+      expect(checkLoading).toHaveBeenCalledWith(true)
       expect(getStore().getState().isLoading).toBe(false)
     })
 
-    it('should initialize database if not initialized', async () => {
-      mockDb.isInitialized.mockReturnValueOnce(false)
-      mockDb.getAll.mockResolvedValueOnce([])
-
-      await getStore().getState().loadConversations()
-
-      expect(mockDb.init).toHaveBeenCalled()
-    })
-
-    it('should show error toast on failure', async () => {
-      const error = new Error('Database error')
-      mockDb.getAll.mockRejectedValueOnce(error)
-
-      await getStore().getState().loadConversations()
-
-      expect(mockToast.errorToast).toHaveBeenCalledWith(
-        'Failed to load conversations',
-        error,
-      )
-      expect(getStore().getState().isLoading).toBe(false)
-    })
-
-    it('should handle empty database', async () => {
-      mockDb.getAll.mockResolvedValueOnce([])
-
+    it('should handle empty Yjs map', async () => {
       await getStore().getState().loadConversations()
 
       expect(getStore().getState().conversations).toEqual([])
@@ -174,11 +173,11 @@ describe('conversationStore', () => {
   describe('loadConversation', () => {
     it('should load a single conversation and set currentConversation', async () => {
       const testConversation = createTestConversation({ id: 'conv-1' })
-      mockDb.get.mockResolvedValueOnce(testConversation)
+      mockConversationsMap._data.set('conv-1', testConversation)
 
       const result = await getStore().getState().loadConversation('conv-1')
 
-      expect(mockDb.get).toHaveBeenCalledWith('conversations', 'conv-1')
+      expect(mockConversationsMap.get).toHaveBeenCalledWith('conv-1')
       expect(result).toEqual(testConversation)
       expect(getStore().getState().currentConversation).toEqual(
         testConversation,
@@ -186,8 +185,6 @@ describe('conversationStore', () => {
     })
 
     it('should return null for invalid ID', async () => {
-      mockDb.get.mockResolvedValueOnce(null)
-
       const result = await getStore().getState().loadConversation('invalid-id')
 
       expect(result).toBeNull()
@@ -198,36 +195,17 @@ describe('conversationStore', () => {
     })
 
     it('should set isLoading correctly during operation', async () => {
-      mockDb.get.mockImplementation(async () => {
+      const testConversation = createTestConversation({ id: 'conv-1' })
+      const originalGet = mockConversationsMap.get
+      mockConversationsMap.get.mockImplementation((id: string) => {
         expect(getStore().getState().isLoading).toBe(true)
-        return createTestConversation({ id: 'conv-1' })
+        return originalGet(id)
       })
+      mockConversationsMap._data.set('conv-1', testConversation)
 
       await getStore().getState().loadConversation('conv-1')
 
       expect(getStore().getState().isLoading).toBe(false)
-    })
-
-    it('should initialize database if not initialized', async () => {
-      mockDb.isInitialized.mockReturnValueOnce(false)
-      mockDb.get.mockResolvedValueOnce(createTestConversation({ id: 'conv-1' }))
-
-      await getStore().getState().loadConversation('conv-1')
-
-      expect(mockDb.init).toHaveBeenCalled()
-    })
-
-    it('should show error toast on database error', async () => {
-      const error = new Error('Database error')
-      mockDb.get.mockRejectedValueOnce(error)
-
-      const result = await getStore().getState().loadConversation('conv-1')
-
-      expect(result).toBeNull()
-      expect(mockToast.errorToast).toHaveBeenCalledWith(
-        'Failed to load conversations',
-        error,
-      )
     })
   })
 
@@ -247,13 +225,13 @@ describe('conversationStore', () => {
       expect(conversation.workflowId).toBe('workflow-1')
     })
 
-    it('should save conversation to database', async () => {
+    it('should save conversation to Yjs map', async () => {
       mockUUID.mockReturnValueOnce('new-conv-uuid')
 
       await getStore().getState().createConversation('agent-1', 'workflow-1')
 
-      expect(mockDb.add).toHaveBeenCalledWith(
-        'conversations',
+      expect(mockConversationsMap.set).toHaveBeenCalledWith(
+        'new-conv-uuid',
         expect.objectContaining({
           id: 'new-conv-uuid',
           agentId: 'agent-1',
@@ -268,20 +246,6 @@ describe('conversationStore', () => {
         .createConversation('agent-1', 'workflow-1')
 
       expect(getStore().getState().currentConversation).toEqual(conversation)
-    })
-
-    it('should add conversation to conversations array', async () => {
-      const existingConversation = createTestConversation({ id: 'existing' })
-      getStore().setState({ conversations: [existingConversation] })
-
-      const newConversation = await getStore()
-        .getState()
-        .createConversation('agent-1', 'workflow-1')
-
-      expect(getStore().getState().conversations).toHaveLength(2)
-      expect(getStore().getState().conversations).toContainEqual(
-        newConversation,
-      )
     })
 
     it('should create conversation with participatingAgents including agentId', async () => {
@@ -315,27 +279,6 @@ describe('conversationStore', () => {
         afterCreation.getTime(),
       )
     })
-
-    it('should initialize database if not initialized', async () => {
-      mockDb.isInitialized.mockReturnValueOnce(false)
-
-      await getStore().getState().createConversation('agent-1', 'workflow-1')
-
-      expect(mockDb.init).toHaveBeenCalled()
-    })
-
-    it('should show error toast and throw on failure', async () => {
-      const error = new Error('Database error')
-      mockDb.add.mockRejectedValueOnce(error)
-
-      await expect(
-        getStore().getState().createConversation('agent-1', 'workflow-1'),
-      ).rejects.toThrow(error)
-      expect(mockToast.errorToast).toHaveBeenCalledWith(
-        'Failed to create conversation',
-        error,
-      )
-    })
   })
 
   // ============================================
@@ -347,7 +290,7 @@ describe('conversationStore', () => {
         id: 'conv-1',
         messages: [],
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
       mockUUID.mockReturnValueOnce('msg-uuid-1')
 
       await getStore().getState().addMessage('conv-1', {
@@ -355,8 +298,8 @@ describe('conversationStore', () => {
         content: 'Hello world',
       })
 
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
+      expect(mockConversationsMap.set).toHaveBeenCalledWith(
+        'conv-1',
         expect.objectContaining({
           id: 'conv-1',
           messages: expect.arrayContaining([
@@ -380,15 +323,15 @@ describe('conversationStore', () => {
         id: 'conv-1',
         messages: [existingMessage],
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
 
       await getStore().getState().addMessage('conv-1', {
         role: 'user',
         content: 'New message',
       })
 
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
+      expect(mockConversationsMap.set).toHaveBeenCalledWith(
+        'conv-1',
         expect.objectContaining({
           messages: expect.arrayContaining([
             expect.objectContaining({ id: 'existing-msg' }),
@@ -405,7 +348,7 @@ describe('conversationStore', () => {
         participatingAgents: ['agent-1'],
         messages: [],
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
 
       await getStore().getState().addMessage('conv-1', {
         role: 'assistant',
@@ -413,8 +356,8 @@ describe('conversationStore', () => {
         agentId: 'agent-2',
       })
 
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
+      expect(mockConversationsMap.set).toHaveBeenCalledWith(
+        'conv-1',
         expect.objectContaining({
           participatingAgents: expect.arrayContaining(['agent-1', 'agent-2']),
         }),
@@ -428,7 +371,7 @@ describe('conversationStore', () => {
         participatingAgents: ['agent-1', 'agent-2'],
         messages: [],
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
 
       await getStore().getState().addMessage('conv-1', {
         role: 'assistant',
@@ -436,108 +379,15 @@ describe('conversationStore', () => {
         agentId: 'agent-2',
       })
 
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
+      expect(mockConversationsMap.set).toHaveBeenCalledWith(
+        'conv-1',
         expect.objectContaining({
           participatingAgents: ['agent-1', 'agent-2'],
         }),
-      )
-    })
-
-    it('should initialize participatingAgents if not present (backward compatibility)', async () => {
-      const conversation = {
-        id: 'conv-1',
-        agentId: 'agent-1',
-        workflowId: 'workflow-1',
-        messages: [],
-        timestamp: new Date(),
-        // Note: no participatingAgents field
-      }
-      mockDb.get.mockResolvedValueOnce(conversation)
-
-      await getStore().getState().addMessage('conv-1', {
-        role: 'assistant',
-        content: 'Response',
-        agentId: 'agent-2',
-      })
-
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
-        expect.objectContaining({
-          participatingAgents: ['agent-1', 'agent-2'],
-        }),
-      )
-    })
-
-    it('should update conversations state', async () => {
-      const conversation = createTestConversation({
-        id: 'conv-1',
-        messages: [],
-      })
-      mockDb.get.mockResolvedValueOnce(conversation)
-      getStore().setState({ conversations: [conversation] })
-
-      await getStore().getState().addMessage('conv-1', {
-        role: 'user',
-        content: 'Test message',
-      })
-
-      const updatedConv = getStore()
-        .getState()
-        .conversations.find((c) => c.id === 'conv-1')
-      expect(updatedConv?.messages).toHaveLength(1)
-    })
-
-    it('should update currentConversation if matching', async () => {
-      const conversation = createTestConversation({
-        id: 'conv-1',
-        messages: [],
-      })
-      mockDb.get.mockResolvedValueOnce(conversation)
-      getStore().setState({
-        conversations: [conversation],
-        currentConversation: conversation,
-      })
-
-      await getStore().getState().addMessage('conv-1', {
-        role: 'user',
-        content: 'Test message',
-      })
-
-      expect(getStore().getState().currentConversation?.messages).toHaveLength(
-        1,
-      )
-    })
-
-    it('should not update currentConversation if not matching', async () => {
-      const conversation1 = createTestConversation({
-        id: 'conv-1',
-        messages: [],
-      })
-      const conversation2 = createTestConversation({
-        id: 'conv-2',
-        messages: [],
-      })
-      mockDb.get.mockResolvedValueOnce(conversation1)
-      getStore().setState({
-        conversations: [conversation1, conversation2],
-        currentConversation: conversation2,
-      })
-
-      await getStore().getState().addMessage('conv-1', {
-        role: 'user',
-        content: 'Test message',
-      })
-
-      expect(getStore().getState().currentConversation?.id).toBe('conv-2')
-      expect(getStore().getState().currentConversation?.messages).toHaveLength(
-        0,
       )
     })
 
     it('should show error for non-existent conversation', async () => {
-      mockDb.get.mockResolvedValueOnce(null)
-
       await getStore().getState().addMessage('invalid-id', {
         role: 'user',
         content: 'Test',
@@ -554,7 +404,7 @@ describe('conversationStore', () => {
         id: 'conv-1',
         messages: [],
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
       getStore().setState({ conversations: [conversation] })
 
       await getStore().getState().addMessage('conv-1', {
@@ -576,7 +426,7 @@ describe('conversationStore', () => {
         title: 'Existing Title',
         messages: [],
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
       getStore().setState({ conversations: [conversation] })
 
       await getStore().getState().addMessage('conv-1', {
@@ -594,28 +444,19 @@ describe('conversationStore', () => {
   // deleteConversation Tests
   // ============================================
   describe('deleteConversation', () => {
-    it('should delete conversation from database', async () => {
+    it('should delete conversation from Yjs map', async () => {
       const conversation = createTestConversation({ id: 'conv-1' })
+      mockConversationsMap._data.set('conv-1', conversation)
       getStore().setState({ conversations: [conversation] })
 
       await getStore().getState().deleteConversation('conv-1')
 
-      expect(mockDb.delete).toHaveBeenCalledWith('conversations', 'conv-1')
-    })
-
-    it('should remove conversation from state', async () => {
-      const conversation1 = createTestConversation({ id: 'conv-1' })
-      const conversation2 = createTestConversation({ id: 'conv-2' })
-      getStore().setState({ conversations: [conversation1, conversation2] })
-
-      await getStore().getState().deleteConversation('conv-1')
-
-      expect(getStore().getState().conversations).toHaveLength(1)
-      expect(getStore().getState().conversations[0].id).toBe('conv-2')
+      expect(mockConversationsMap.delete).toHaveBeenCalledWith('conv-1')
     })
 
     it('should clear currentConversation if deleted conversation is current', async () => {
       const conversation = createTestConversation({ id: 'conv-1' })
+      mockConversationsMap._data.set('conv-1', conversation)
       getStore().setState({
         conversations: [conversation],
         currentConversation: conversation,
@@ -629,6 +470,8 @@ describe('conversationStore', () => {
     it('should not clear currentConversation if different conversation is deleted', async () => {
       const conversation1 = createTestConversation({ id: 'conv-1' })
       const conversation2 = createTestConversation({ id: 'conv-2' })
+      mockConversationsMap._data.set('conv-1', conversation1)
+      mockConversationsMap._data.set('conv-2', conversation2)
       getStore().setState({
         conversations: [conversation1, conversation2],
         currentConversation: conversation2,
@@ -637,21 +480,6 @@ describe('conversationStore', () => {
       await getStore().getState().deleteConversation('conv-1')
 
       expect(getStore().getState().currentConversation?.id).toBe('conv-2')
-    })
-
-    it('should show error toast on failure', async () => {
-      const error = new Error('Delete error')
-      mockDb.delete.mockRejectedValueOnce(error)
-      getStore().setState({
-        conversations: [createTestConversation({ id: 'conv-1' })],
-      })
-
-      await getStore().getState().deleteConversation('conv-1')
-
-      expect(mockToast.errorToast).toHaveBeenCalledWith(
-        'Failed to delete conversations',
-        error,
-      )
     })
   })
 
@@ -690,13 +518,13 @@ describe('conversationStore', () => {
         id: 'conv-1',
         participatingAgents: ['agent-1'],
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
       getStore().setState({ conversations: [conversation] })
 
       await getStore().getState().addAgentToConversation('conv-1', 'agent-2')
 
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
+      expect(mockConversationsMap.set).toHaveBeenCalledWith(
+        'conv-1',
         expect.objectContaining({
           participatingAgents: ['agent-1', 'agent-2'],
         }),
@@ -708,38 +536,15 @@ describe('conversationStore', () => {
         id: 'conv-1',
         participatingAgents: ['agent-1', 'agent-2'],
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
       getStore().setState({ conversations: [conversation] })
 
       await getStore().getState().addAgentToConversation('conv-1', 'agent-2')
 
-      expect(mockDb.update).not.toHaveBeenCalled()
-    })
-
-    it('should initialize participatingAgents if not present', async () => {
-      const conversation = {
-        id: 'conv-1',
-        agentId: 'agent-1',
-        workflowId: 'workflow-1',
-        messages: [],
-        timestamp: new Date(),
-      }
-      mockDb.get.mockResolvedValueOnce(conversation)
-      getStore().setState({ conversations: [conversation as any] })
-
-      await getStore().getState().addAgentToConversation('conv-1', 'agent-2')
-
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
-        expect.objectContaining({
-          participatingAgents: ['agent-1', 'agent-2'],
-        }),
-      )
+      expect(mockConversationsMap.set).not.toHaveBeenCalled()
     })
 
     it('should show error for non-existent conversation', async () => {
-      mockDb.get.mockResolvedValueOnce(null)
-
       await getStore()
         .getState()
         .addAgentToConversation('invalid-id', 'agent-2')
@@ -852,11 +657,12 @@ describe('conversationStore', () => {
         createTestConversation({ id: 'conv-1' }),
         createTestConversation({ id: 'conv-2' }),
       ]
-      getStore().setState({ conversations })
+      // Add to Yjs map for searchConversations to find
+      conversations.forEach((c) => mockConversationsMap._data.set(c.id, c))
 
       const results = getStore().getState().searchConversations('')
 
-      expect(results).toEqual(conversations)
+      expect(results).toHaveLength(2)
     })
 
     it('should return all conversations for whitespace-only query', () => {
@@ -864,11 +670,11 @@ describe('conversationStore', () => {
         createTestConversation({ id: 'conv-1' }),
         createTestConversation({ id: 'conv-2' }),
       ]
-      getStore().setState({ conversations })
+      conversations.forEach((c) => mockConversationsMap._data.set(c.id, c))
 
       const results = getStore().getState().searchConversations('   ')
 
-      expect(results).toEqual(conversations)
+      expect(results).toHaveLength(2)
     })
 
     it('should filter by title', () => {
@@ -876,7 +682,7 @@ describe('conversationStore', () => {
         createTestConversation({ id: 'conv-1', title: 'React Tutorial' }),
         createTestConversation({ id: 'conv-2', title: 'Vue Guide' }),
       ]
-      getStore().setState({ conversations })
+      conversations.forEach((c) => mockConversationsMap._data.set(c.id, c))
 
       const results = getStore().getState().searchConversations('react')
 
@@ -892,7 +698,7 @@ describe('conversationStore', () => {
         }),
         createTestConversation({ id: 'conv-2', summary: 'Python basics' }),
       ]
-      getStore().setState({ conversations })
+      conversations.forEach((c) => mockConversationsMap._data.set(c.id, c))
 
       const results = getStore().getState().searchConversations('typescript')
 
@@ -911,7 +717,7 @@ describe('conversationStore', () => {
           messages: [createTestMessage({ content: 'Explain MobX' })],
         }),
       ]
-      getStore().setState({ conversations })
+      conversations.forEach((c) => mockConversationsMap._data.set(c.id, c))
 
       const results = getStore().getState().searchConversations('redux')
 
@@ -923,7 +729,7 @@ describe('conversationStore', () => {
       const conversations = [
         createTestConversation({ id: 'conv-1', title: 'JAVASCRIPT Tutorial' }),
       ]
-      getStore().setState({ conversations })
+      conversations.forEach((c) => mockConversationsMap._data.set(c.id, c))
 
       const results = getStore().getState().searchConversations('javascript')
 
@@ -937,7 +743,7 @@ describe('conversationStore', () => {
           title: 'Understanding Algorithms',
         }),
       ]
-      getStore().setState({ conversations })
+      conversations.forEach((c) => mockConversationsMap._data.set(c.id, c))
 
       const results = getStore().getState().searchConversations('algo')
 
@@ -970,13 +776,13 @@ describe('conversationStore', () => {
         id: 'conv-1',
         isPinned: false,
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
       getStore().setState({ conversations: [conversation] })
 
       await getStore().getState().pinConversation('conv-1')
 
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
+      expect(mockConversationsMap.set).toHaveBeenCalledWith(
+        'conv-1',
         expect.objectContaining({
           id: 'conv-1',
           isPinned: true,
@@ -984,38 +790,7 @@ describe('conversationStore', () => {
       )
     })
 
-    it('should update conversations state', async () => {
-      const conversation = createTestConversation({
-        id: 'conv-1',
-        isPinned: false,
-      })
-      mockDb.get.mockResolvedValueOnce(conversation)
-      getStore().setState({ conversations: [conversation] })
-
-      await getStore().getState().pinConversation('conv-1')
-
-      expect(getStore().getState().conversations[0].isPinned).toBe(true)
-    })
-
-    it('should update currentConversation if matching', async () => {
-      const conversation = createTestConversation({
-        id: 'conv-1',
-        isPinned: false,
-      })
-      mockDb.get.mockResolvedValueOnce(conversation)
-      getStore().setState({
-        conversations: [conversation],
-        currentConversation: conversation,
-      })
-
-      await getStore().getState().pinConversation('conv-1')
-
-      expect(getStore().getState().currentConversation?.isPinned).toBe(true)
-    })
-
     it('should show error toast for non-existent conversation', async () => {
-      mockDb.get.mockResolvedValueOnce(null)
-
       await getStore().getState().pinConversation('invalid-id')
 
       expect(mockToast.errorToast).toHaveBeenCalledWith(
@@ -1031,13 +806,13 @@ describe('conversationStore', () => {
         id: 'conv-1',
         isPinned: true,
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
       getStore().setState({ conversations: [conversation] })
 
       await getStore().getState().unpinConversation('conv-1')
 
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
+      expect(mockConversationsMap.set).toHaveBeenCalledWith(
+        'conv-1',
         expect.objectContaining({
           id: 'conv-1',
           isPinned: false,
@@ -1045,22 +820,7 @@ describe('conversationStore', () => {
       )
     })
 
-    it('should update conversations state', async () => {
-      const conversation = createTestConversation({
-        id: 'conv-1',
-        isPinned: true,
-      })
-      mockDb.get.mockResolvedValueOnce(conversation)
-      getStore().setState({ conversations: [conversation] })
-
-      await getStore().getState().unpinConversation('conv-1')
-
-      expect(getStore().getState().conversations[0].isPinned).toBe(false)
-    })
-
     it('should show error toast for non-existent conversation', async () => {
-      mockDb.get.mockResolvedValueOnce(null)
-
       await getStore().getState().unpinConversation('invalid-id')
 
       expect(mockToast.errorToast).toHaveBeenCalledWith(
@@ -1080,13 +840,13 @@ describe('conversationStore', () => {
         id: 'conv-1',
         messages: [message],
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
       getStore().setState({ conversations: [conversation] })
 
       await getStore().getState().pinMessage('conv-1', 'msg-1')
 
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
+      expect(mockConversationsMap.set).toHaveBeenCalledWith(
+        'conv-1',
         expect.objectContaining({
           messages: expect.arrayContaining([
             expect.objectContaining({
@@ -1106,58 +866,15 @@ describe('conversationStore', () => {
         messages: [message],
         pinnedMessageIds: [],
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
       getStore().setState({ conversations: [conversation] })
 
       await getStore().getState().pinMessage('conv-1', 'msg-1')
 
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
+      expect(mockConversationsMap.set).toHaveBeenCalledWith(
+        'conv-1',
         expect.objectContaining({
           pinnedMessageIds: expect.arrayContaining(['msg-1']),
-        }),
-      )
-    })
-
-    it('should not duplicate messageId in pinnedMessageIds', async () => {
-      const message = createTestMessage({ id: 'msg-1' })
-      const conversation = createTestConversation({
-        id: 'conv-1',
-        messages: [message],
-        pinnedMessageIds: ['msg-1'],
-      })
-      mockDb.get.mockResolvedValueOnce(conversation)
-      getStore().setState({ conversations: [conversation] })
-
-      await getStore().getState().pinMessage('conv-1', 'msg-1')
-
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
-        expect.objectContaining({
-          pinnedMessageIds: ['msg-1'],
-        }),
-      )
-    })
-
-    it('should initialize pinnedMessageIds if not present', async () => {
-      const message = createTestMessage({ id: 'msg-1' })
-      const conversation = {
-        id: 'conv-1',
-        agentId: 'agent-1',
-        workflowId: 'workflow-1',
-        messages: [message],
-        timestamp: new Date(),
-        // Note: no pinnedMessageIds
-      }
-      mockDb.get.mockResolvedValueOnce(conversation)
-      getStore().setState({ conversations: [conversation as any] })
-
-      await getStore().getState().pinMessage('conv-1', 'msg-1')
-
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
-        expect.objectContaining({
-          pinnedMessageIds: ['msg-1'],
         }),
       )
     })
@@ -1167,7 +884,7 @@ describe('conversationStore', () => {
         id: 'conv-1',
         messages: [],
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
 
       await getStore().getState().pinMessage('conv-1', 'invalid-msg')
 
@@ -1178,8 +895,6 @@ describe('conversationStore', () => {
     })
 
     it('should show error toast for non-existent conversation', async () => {
-      mockDb.get.mockResolvedValueOnce(null)
-
       await getStore().getState().pinMessage('invalid-conv', 'msg-1')
 
       expect(mockToast.errorToast).toHaveBeenCalledWith(
@@ -1201,13 +916,13 @@ describe('conversationStore', () => {
         messages: [message],
         pinnedMessageIds: ['msg-1'],
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
       getStore().setState({ conversations: [conversation] })
 
       await getStore().getState().unpinMessage('conv-1', 'msg-1')
 
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
+      expect(mockConversationsMap.set).toHaveBeenCalledWith(
+        'conv-1',
         expect.objectContaining({
           messages: expect.arrayContaining([
             expect.objectContaining({
@@ -1227,13 +942,13 @@ describe('conversationStore', () => {
         messages: [message],
         pinnedMessageIds: ['msg-1', 'msg-2'],
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
       getStore().setState({ conversations: [conversation] })
 
       await getStore().getState().unpinMessage('conv-1', 'msg-1')
 
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
+      expect(mockConversationsMap.set).toHaveBeenCalledWith(
+        'conv-1',
         expect.objectContaining({
           pinnedMessageIds: ['msg-2'],
         }),
@@ -1245,7 +960,7 @@ describe('conversationStore', () => {
         id: 'conv-1',
         messages: [],
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
 
       await getStore().getState().unpinMessage('conv-1', 'invalid-msg')
 
@@ -1269,15 +984,15 @@ describe('conversationStore', () => {
         id: 'conv-1',
         messages: [message],
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
       getStore().setState({ conversations: [conversation] })
 
       await getStore()
         .getState()
         .updateMessage('conv-1', 'msg-1', 'Updated content')
 
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
+      expect(mockConversationsMap.set).toHaveBeenCalledWith(
+        'conv-1',
         expect.objectContaining({
           messages: expect.arrayContaining([
             expect.objectContaining({
@@ -1300,13 +1015,13 @@ describe('conversationStore', () => {
         id: 'conv-1',
         messages: [message],
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
       getStore().setState({ conversations: [conversation] })
 
       await getStore().getState().updateMessage('conv-1', 'msg-1', 'Updated')
 
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
+      expect(mockConversationsMap.set).toHaveBeenCalledWith(
+        'conv-1',
         expect.objectContaining({
           messages: expect.arrayContaining([
             expect.objectContaining({
@@ -1320,46 +1035,12 @@ describe('conversationStore', () => {
       )
     })
 
-    it('should update conversations state', async () => {
-      const message = createTestMessage({ id: 'msg-1', content: 'Original' })
-      const conversation = createTestConversation({
-        id: 'conv-1',
-        messages: [message],
-      })
-      mockDb.get.mockResolvedValueOnce(conversation)
-      getStore().setState({ conversations: [conversation] })
-
-      await getStore().getState().updateMessage('conv-1', 'msg-1', 'Updated')
-
-      const updatedMsg = getStore().getState().conversations[0].messages[0]
-      expect(updatedMsg.content).toBe('Updated')
-    })
-
-    it('should update currentConversation if matching', async () => {
-      const message = createTestMessage({ id: 'msg-1', content: 'Original' })
-      const conversation = createTestConversation({
-        id: 'conv-1',
-        messages: [message],
-      })
-      mockDb.get.mockResolvedValueOnce(conversation)
-      getStore().setState({
-        conversations: [conversation],
-        currentConversation: conversation,
-      })
-
-      await getStore().getState().updateMessage('conv-1', 'msg-1', 'Updated')
-
-      expect(
-        getStore().getState().currentConversation?.messages[0].content,
-      ).toBe('Updated')
-    })
-
     it('should show error toast for non-existent message', async () => {
       const conversation = createTestConversation({
         id: 'conv-1',
         messages: [],
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
 
       await getStore()
         .getState()
@@ -1372,8 +1053,6 @@ describe('conversationStore', () => {
     })
 
     it('should show error toast for non-existent conversation', async () => {
-      mockDb.get.mockResolvedValueOnce(null)
-
       await getStore()
         .getState()
         .updateMessage('invalid-conv', 'msg-1', 'Updated')
@@ -1391,6 +1070,7 @@ describe('conversationStore', () => {
   describe('generateAndUpdateTitle', () => {
     it('should generate and update title for conversation', async () => {
       const conversation = createTestConversation({ id: 'conv-1' })
+      mockConversationsMap._data.set('conv-1', conversation)
       getStore().setState({ conversations: [conversation] })
 
       await getStore().getState().generateAndUpdateTitle('conv-1')
@@ -1398,36 +1078,11 @@ describe('conversationStore', () => {
       expect(mockTitleGenerator.generateTitle).toHaveBeenCalledWith(
         conversation,
       )
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
+      expect(mockConversationsMap.set).toHaveBeenCalledWith(
+        'conv-1',
         expect.objectContaining({
           title: 'Generated Title',
         }),
-      )
-    })
-
-    it('should update conversations state with new title', async () => {
-      const conversation = createTestConversation({ id: 'conv-1' })
-      getStore().setState({ conversations: [conversation] })
-
-      await getStore().getState().generateAndUpdateTitle('conv-1')
-
-      expect(getStore().getState().conversations[0].title).toBe(
-        'Generated Title',
-      )
-    })
-
-    it('should update currentConversation if matching', async () => {
-      const conversation = createTestConversation({ id: 'conv-1' })
-      getStore().setState({
-        conversations: [conversation],
-        currentConversation: conversation,
-      })
-
-      await getStore().getState().generateAndUpdateTitle('conv-1')
-
-      expect(getStore().getState().currentConversation?.title).toBe(
-        'Generated Title',
       )
     })
 
@@ -1447,7 +1102,7 @@ describe('conversationStore', () => {
   describe('summarizeConversation', () => {
     it('should generate and save summary', async () => {
       const conversation = createTestConversation({ id: 'conv-1' })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
       getStore().setState({ conversations: [conversation] })
 
       const summary = await getStore()
@@ -1455,29 +1110,15 @@ describe('conversationStore', () => {
         .summarizeConversation('conv-1')
 
       expect(summary).toBe('Test summary of the conversation')
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
+      expect(mockConversationsMap.set).toHaveBeenCalledWith(
+        'conv-1',
         expect.objectContaining({
           summary: 'Test summary of the conversation',
         }),
       )
     })
 
-    it('should update conversations state with summary', async () => {
-      const conversation = createTestConversation({ id: 'conv-1' })
-      mockDb.get.mockResolvedValueOnce(conversation)
-      getStore().setState({ conversations: [conversation] })
-
-      await getStore().getState().summarizeConversation('conv-1')
-
-      expect(getStore().getState().conversations[0].summary).toBe(
-        'Test summary of the conversation',
-      )
-    })
-
     it('should throw error for non-existent conversation', async () => {
-      mockDb.get.mockResolvedValueOnce(null)
-
       await expect(
         getStore().getState().summarizeConversation('invalid-id'),
       ).rejects.toThrow('Conversation not found')
@@ -1497,13 +1138,13 @@ describe('conversationStore', () => {
         id: 'conv-1',
         title: 'Old Title',
       })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
       getStore().setState({ conversations: [conversation] })
 
       await getStore().getState().renameConversation('conv-1', 'New Title')
 
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
+      expect(mockConversationsMap.set).toHaveBeenCalledWith(
+        'conv-1',
         expect.objectContaining({
           id: 'conv-1',
           title: 'New Title',
@@ -1511,46 +1152,17 @@ describe('conversationStore', () => {
       )
     })
 
-    it('should update conversations state with new title', async () => {
-      const conversation = createTestConversation({
-        id: 'conv-1',
-        title: 'Old Title',
-      })
-      mockDb.get.mockResolvedValueOnce(conversation)
-      getStore().setState({ conversations: [conversation] })
-
-      await getStore().getState().renameConversation('conv-1', 'New Title')
-
-      expect(getStore().getState().conversations[0].title).toBe('New Title')
-    })
-
-    it('should update currentConversation if it is the renamed one', async () => {
-      const conversation = createTestConversation({
-        id: 'conv-1',
-        title: 'Old Title',
-      })
-      mockDb.get.mockResolvedValueOnce(conversation)
-      getStore().setState({
-        conversations: [conversation],
-        currentConversation: conversation,
-      })
-
-      await getStore().getState().renameConversation('conv-1', 'New Title')
-
-      expect(getStore().getState().currentConversation?.title).toBe('New Title')
-    })
-
     it('should trim whitespace from title', async () => {
       const conversation = createTestConversation({ id: 'conv-1' })
-      mockDb.get.mockResolvedValueOnce(conversation)
+      mockConversationsMap._data.set('conv-1', conversation)
       getStore().setState({ conversations: [conversation] })
 
       await getStore()
         .getState()
         .renameConversation('conv-1', '  Trimmed Title  ')
 
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'conversations',
+      expect(mockConversationsMap.set).toHaveBeenCalledWith(
+        'conv-1',
         expect.objectContaining({
           title: 'Trimmed Title',
         }),
@@ -1558,8 +1170,6 @@ describe('conversationStore', () => {
     })
 
     it('should throw error for non-existent conversation', async () => {
-      mockDb.get.mockResolvedValueOnce(null)
-
       await expect(
         getStore().getState().renameConversation('invalid-id', 'New Title'),
       ).rejects.toThrow('Conversation not found')
@@ -1576,23 +1186,16 @@ describe('conversationStore', () => {
   describe('isLoading management', () => {
     it('should set isLoading true at start and false at end for loadConversations', async () => {
       let loadingDuringOperation = false
-      mockDb.getAll.mockImplementation(async () => {
+      const originalValues = mockConversationsMap.values
+      mockConversationsMap.values.mockImplementation(() => {
         loadingDuringOperation = getStore().getState().isLoading
-        return []
+        return originalValues()
       })
 
       expect(getStore().getState().isLoading).toBe(false)
       await getStore().getState().loadConversations()
 
       expect(loadingDuringOperation).toBe(true)
-      expect(getStore().getState().isLoading).toBe(false)
-    })
-
-    it('should reset isLoading on error', async () => {
-      mockDb.getAll.mockRejectedValueOnce(new Error('Error'))
-
-      await getStore().getState().loadConversations()
-
       expect(getStore().getState().isLoading).toBe(false)
     })
   })

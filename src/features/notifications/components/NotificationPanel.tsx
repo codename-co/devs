@@ -4,7 +4,7 @@
  * Displays the list of notifications with read/unread state,
  * action buttons, and empty state.
  */
-import { Button, Chip, ScrollShadow, Spinner } from '@heroui/react'
+import { Button, Chip, ScrollShadow, Spinner, Tooltip } from '@heroui/react'
 import { useNavigate } from 'react-router-dom'
 
 import { Icon } from '@/components'
@@ -116,9 +116,15 @@ function NotificationItem({
             </span>
           </div>
           {notification.description && (
-            <p className="text-xs text-default-500 mt-0.5 line-clamp-2">
-              {notification.description}
-            </p>
+            <Tooltip
+              content={notification.description}
+              placement="bottom"
+              className="text-tiny whitespace-pre"
+            >
+              <p className="text-xs text-default-500 mt-0.5 line-clamp-2">
+                {notification.description}
+              </p>
+            </Tooltip>
           )}
           {notification.actionLabel && (
             <Chip size="sm" variant="flat" color="primary" className="mt-2">

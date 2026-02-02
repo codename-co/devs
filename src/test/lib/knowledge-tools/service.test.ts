@@ -23,8 +23,29 @@ const extendedMockDb = {
   hasStore: vi.fn(() => true),
 }
 
+// Mock storage object for knowledge items (mutable reference)
+const mockKnowledgeStore = {
+  items: [] as KnowledgeItem[],
+}
+
 // Setup global mocks
 vi.mock('@/lib/db', () => ({ db: extendedMockDb }))
+
+// Mock the knowledge store - functions access mockKnowledgeStore.items
+vi.mock('@/stores/knowledgeStore', () => ({
+  getAllKnowledgeItemsAsync: vi.fn(async () => mockKnowledgeStore.items),
+  getKnowledgeItemAsync: vi.fn(async (id: string) =>
+    mockKnowledgeStore.items.find((item) => item.id === id),
+  ),
+  ensureReady: vi.fn(async () => {}),
+}))
+
+// Helper to set mock knowledge items
+function setMockItems(items: KnowledgeItem[]) {
+  mockKnowledgeStore.items = items
+  // Also update getAll for backward compatibility with some tests
+  extendedMockDb.getAll.mockResolvedValueOnce(items)
+}
 
 // Import after mocks are set up
 let service: typeof import('@/lib/knowledge-tools/service')
@@ -83,6 +104,9 @@ describe('Knowledge Tools Service', () => {
     extendedMockDb.hasStore.mockReturnValue(true)
     extendedMockDb.isInitialized.mockReturnValue(true)
 
+    // Reset mock knowledge items
+    mockKnowledgeStore.items = []
+
     // Reset module cache to clear internal state
     vi.resetModules()
 
@@ -92,6 +116,7 @@ describe('Knowledge Tools Service', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    mockKnowledgeStore.items = []
   })
 
   // ============================================
@@ -100,7 +125,7 @@ describe('Knowledge Tools Service', () => {
   describe('searchKnowledge', () => {
     describe('basic functionality', () => {
       it('should return empty results when no items exist', async () => {
-        extendedMockDb.getAll.mockResolvedValueOnce([])
+        setMockItems([])
 
         const result = await service.searchKnowledge({ query: 'test' })
 
@@ -128,7 +153,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.searchKnowledge({
           query: 'machine learning',
@@ -147,7 +172,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.searchKnowledge({
           query: 'machine learning',
@@ -168,7 +193,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.searchKnowledge({ query: 'testing' })
 
@@ -193,7 +218,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.searchKnowledge({ query: 'API' })
 
@@ -223,7 +248,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.searchKnowledge({
           query: 'test',
@@ -251,7 +276,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.searchKnowledge({
           query: 'test',
@@ -284,7 +309,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.searchKnowledge({
           query: 'test',
@@ -304,7 +329,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.searchKnowledge({
           query: 'Exact Match',
@@ -325,7 +350,7 @@ describe('Knowledge Tools Service', () => {
           }),
         )
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.searchKnowledge({
           query: 'test',
@@ -345,7 +370,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.searchKnowledge({
           query: 'test',
@@ -366,7 +391,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.searchKnowledge({ query: '' })
 
@@ -393,7 +418,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.searchKnowledge({ query: 'test' })
 
@@ -411,7 +436,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.searchKnowledge({
           query: '"machine learning"',
@@ -434,7 +459,7 @@ describe('Knowledge Tools Service', () => {
           content: 'This is the document content.',
         })
 
-        extendedMockDb.get.mockResolvedValueOnce(doc)
+        setMockItems([doc])
 
         const result = await service.readDocument({ document_id: 'doc-123' })
 
@@ -452,7 +477,7 @@ describe('Knowledge Tools Service', () => {
           fileType: 'document',
         })
 
-        extendedMockDb.get.mockResolvedValueOnce(doc)
+        setMockItems([doc])
 
         const result = await service.readDocument({
           document_id: 'doc-123',
@@ -472,7 +497,7 @@ describe('Knowledge Tools Service', () => {
           content: 'Content here',
         })
 
-        extendedMockDb.get.mockResolvedValueOnce(doc)
+        setMockItems([doc])
 
         const result = await service.readDocument({
           document_id: 'doc-123',
@@ -490,7 +515,7 @@ describe('Knowledge Tools Service', () => {
           transcript: 'Extracted text from PDF',
         })
 
-        extendedMockDb.get.mockResolvedValueOnce(doc)
+        setMockItems([doc])
 
         const result = await service.readDocument({ document_id: 'doc-123' })
 
@@ -508,7 +533,7 @@ describe('Knowledge Tools Service', () => {
           content: longContent,
         })
 
-        extendedMockDb.get.mockResolvedValueOnce(doc)
+        setMockItems([doc])
 
         const result = await service.readDocument({
           document_id: 'doc-123',
@@ -527,7 +552,7 @@ describe('Knowledge Tools Service', () => {
           content: 'ABCDEFGHIJ',
         })
 
-        extendedMockDb.get.mockResolvedValueOnce(doc)
+        setMockItems([doc])
 
         const result = await service.readDocument({
           document_id: 'doc-123',
@@ -545,7 +570,7 @@ describe('Knowledge Tools Service', () => {
           content: 'ABCDEFGHIJKLMNOP',
         })
 
-        extendedMockDb.get.mockResolvedValueOnce(doc)
+        setMockItems([doc])
 
         const result = await service.readDocument({
           document_id: 'doc-123',
@@ -574,7 +599,7 @@ describe('Knowledge Tools Service', () => {
       it('should return error for folder type', async () => {
         const folder = createKnowledgeFolder({ id: 'folder-123' })
 
-        extendedMockDb.get.mockResolvedValueOnce(folder)
+        setMockItems([folder])
 
         const result = await service.readDocument({ document_id: 'folder-123' })
 
@@ -583,14 +608,9 @@ describe('Knowledge Tools Service', () => {
         expect(result.content).toBeNull()
       })
 
-      it('should handle knowledge store not initialized', async () => {
-        extendedMockDb.hasStore.mockReturnValue(false)
-
-        const result = await service.readDocument({ document_id: 'doc-123' })
-
-        expect(result.found).toBe(false)
-        expect(result.error).toContain('not initialized')
-      })
+      // Note: With Yjs-first architecture, there's no IndexedDB store initialization check.
+      // The 'not initialized' case is handled by ensureYjsReady() which always succeeds.
+      // If a document doesn't exist, the result is simply 'Document not found'.
     })
 
     describe('content types', () => {
@@ -600,7 +620,7 @@ describe('Knowledge Tools Service', () => {
           content: 'Plain text content',
         })
 
-        extendedMockDb.get.mockResolvedValueOnce(doc)
+        setMockItems([doc])
 
         const result = await service.readDocument({ document_id: 'doc-123' })
 
@@ -613,7 +633,7 @@ describe('Knowledge Tools Service', () => {
           content: 'data:image/png;base64,iVBORw0KGgo=',
         })
 
-        extendedMockDb.get.mockResolvedValueOnce(doc)
+        setMockItems([doc])
 
         const result = await service.readDocument({ document_id: 'doc-123' })
 
@@ -634,7 +654,7 @@ describe('Knowledge Tools Service', () => {
           // Explicitly no content or transcript
         }
 
-        extendedMockDb.get.mockResolvedValueOnce(doc)
+        setMockItems([doc])
 
         const result = await service.readDocument({ document_id: 'doc-123' })
 
@@ -668,7 +688,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.listDocuments({})
 
@@ -697,7 +717,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.listDocuments({ folder_id: 'folder-1' })
 
@@ -729,7 +749,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.listDocuments({
           folder_id: 'folder-1',
@@ -748,7 +768,7 @@ describe('Knowledge Tools Service', () => {
           createKnowledgeFolder({ id: 'folder-1', name: 'Folder' }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.listDocuments({ type: 'file' })
 
@@ -761,7 +781,7 @@ describe('Knowledge Tools Service', () => {
           createKnowledgeFolder({ id: 'folder-1', name: 'Folder' }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.listDocuments({ type: 'folder' })
 
@@ -783,7 +803,7 @@ describe('Knowledge Tools Service', () => {
           createKnowledgeFolder({ id: 'folder-1', name: 'Folder' }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.listDocuments({ file_types: ['document'] })
 
@@ -797,7 +817,7 @@ describe('Knowledge Tools Service', () => {
           createKnowledgeItem({ id: 'doc-2', name: 'Untagged', tags: [] }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.listDocuments({ tags: ['work'] })
 
@@ -812,7 +832,7 @@ describe('Knowledge Tools Service', () => {
           createKnowledgeItem({ id: 'doc-1', name: 'Apple' }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.listDocuments({})
 
@@ -826,7 +846,7 @@ describe('Knowledge Tools Service', () => {
           createKnowledgeItem({ id: 'doc-2', name: 'Zebra' }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.listDocuments({
           sort_by: 'name',
@@ -854,7 +874,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.listDocuments({
           sort_by: 'lastModified',
@@ -870,7 +890,7 @@ describe('Knowledge Tools Service', () => {
           createKnowledgeItem({ id: 'doc-2', name: 'Large', size: 10000 }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.listDocuments({
           sort_by: 'size',
@@ -887,7 +907,7 @@ describe('Knowledge Tools Service', () => {
           createKnowledgeItem({ id: `doc-${i}`, name: `Doc ${i}` }),
         )
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.listDocuments({ limit: 5 })
 
@@ -901,7 +921,7 @@ describe('Knowledge Tools Service', () => {
           createKnowledgeItem({ id: `doc-${i}`, name: `Doc ${i}` }),
         )
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.listDocuments({ offset: 5 })
 
@@ -917,7 +937,7 @@ describe('Knowledge Tools Service', () => {
           }),
         )
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.listDocuments({
           offset: 5,
@@ -934,7 +954,7 @@ describe('Knowledge Tools Service', () => {
           createKnowledgeItem({ id: `doc-${i}`, name: `Doc ${i}` }),
         )
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.listDocuments({ limit: 10 })
 
@@ -944,7 +964,7 @@ describe('Knowledge Tools Service', () => {
 
     describe('edge cases', () => {
       it('should handle empty knowledge base', async () => {
-        extendedMockDb.getAll.mockResolvedValueOnce([])
+        setMockItems([])
 
         const result = await service.listDocuments({})
 
@@ -977,7 +997,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.listDocuments({})
 
@@ -1002,7 +1022,7 @@ describe('Knowledge Tools Service', () => {
             'The main focus is on practical applications.',
         })
 
-        extendedMockDb.get.mockResolvedValueOnce(doc)
+        setMockItems([doc])
 
         const result = await service.getDocumentSummary({
           document_id: 'doc-123',
@@ -1023,7 +1043,7 @@ describe('Knowledge Tools Service', () => {
             'Machine learning algorithms can be implemented in Python.',
         })
 
-        extendedMockDb.get.mockResolvedValueOnce(doc)
+        setMockItems([doc])
 
         const result = await service.getDocumentSummary({
           document_id: 'doc-123',
@@ -1042,7 +1062,7 @@ describe('Knowledge Tools Service', () => {
           size: 500,
         })
 
-        extendedMockDb.get.mockResolvedValueOnce(doc)
+        setMockItems([doc])
 
         const result = await service.getDocumentSummary({
           document_id: 'doc-123',
@@ -1059,7 +1079,7 @@ describe('Knowledge Tools Service', () => {
           content: 'Test content',
         })
 
-        extendedMockDb.get.mockResolvedValueOnce(doc)
+        setMockItems([doc])
 
         const result = await service.getDocumentSummary({
           document_id: 'doc-123',
@@ -1080,7 +1100,7 @@ describe('Knowledge Tools Service', () => {
           content: longContent,
         })
 
-        extendedMockDb.get.mockResolvedValueOnce(doc)
+        setMockItems([doc])
 
         const result = await service.getDocumentSummary({
           document_id: 'doc-123',
@@ -1103,7 +1123,7 @@ describe('Knowledge Tools Service', () => {
             'Security vulnerabilities should be addressed.',
         })
 
-        extendedMockDb.get.mockResolvedValueOnce(doc)
+        setMockItems([doc])
 
         const result = await service.getDocumentSummary({
           document_id: 'doc-123',
@@ -1131,7 +1151,7 @@ describe('Knowledge Tools Service', () => {
       it('should return error for folder type', async () => {
         const folder = createKnowledgeFolder({ id: 'folder-123' })
 
-        extendedMockDb.get.mockResolvedValueOnce(folder)
+        setMockItems([folder])
 
         const result = await service.getDocumentSummary({
           document_id: 'folder-123',
@@ -1154,7 +1174,7 @@ describe('Knowledge Tools Service', () => {
           // Explicitly no content or transcript
         }
 
-        extendedMockDb.get.mockResolvedValueOnce(doc)
+        setMockItems([doc])
 
         const result = await service.getDocumentSummary({
           document_id: 'doc-123',
@@ -1174,7 +1194,7 @@ describe('Knowledge Tools Service', () => {
           // No transcript - not yet processed
         })
 
-        extendedMockDb.get.mockResolvedValueOnce(doc)
+        setMockItems([doc])
 
         const result = await service.getDocumentSummary({
           document_id: 'doc-123',
@@ -1185,16 +1205,9 @@ describe('Knowledge Tools Service', () => {
         expect(result.summary).toBeNull()
       })
 
-      it('should handle knowledge store not initialized', async () => {
-        extendedMockDb.hasStore.mockReturnValue(false)
-
-        const result = await service.getDocumentSummary({
-          document_id: 'doc-123',
-        })
-
-        expect(result.found).toBe(false)
-        expect(result.error).toContain('not initialized')
-      })
+      // Note: With Yjs-first architecture, there's no IndexedDB store initialization check.
+      // The 'not initialized' case is handled by ensureYjsReady() which always succeeds.
+      // If a document doesn't exist, the result is simply 'Document not found'.
     })
   })
 
@@ -1333,7 +1346,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const mockLLMService = await import('@/lib/llm')
         vi.spyOn(mockLLMService.LLMService, 'chat').mockResolvedValueOnce({
@@ -1377,7 +1390,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         // Mock CredentialService to return active config
         const mockCredentialService = await import('@/lib/credential-service')
@@ -1416,7 +1429,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         // Mock CredentialService to return null (no config)
         const mockCredentialService = await import('@/lib/credential-service')
@@ -1443,7 +1456,7 @@ describe('Knowledge Tools Service', () => {
           }),
         ]
 
-        extendedMockDb.getAll.mockResolvedValueOnce(items)
+        setMockItems(items)
 
         const result = await service.searchKnowledge({
           query: 'test',

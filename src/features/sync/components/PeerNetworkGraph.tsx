@@ -5,7 +5,7 @@
  */
 import { Tooltip } from '@heroui/react'
 
-import type { PeerInfo } from '../lib/sync-manager'
+import type { PeerInfo } from '@/lib/yjs'
 
 interface PeerNetworkGraphProps {
   peers: PeerInfo[]

@@ -166,3 +166,72 @@ export function resetMockDb(mockDb: MockDb) {
   mockDb.update.mockReset().mockResolvedValue(undefined)
   mockDb.delete.mockReset().mockResolvedValue(undefined)
 }
+
+/**
+ * Mock Y.Map implementation for testing Yjs-First stores
+ */
+export interface MockYMap<T> {
+  _data: Map<string, T>
+  _observers: Set<() => void>
+  get: Mock<(id: string) => T | undefined>
+  set: Mock<(id: string, value: T) => void>
+  delete: Mock<(id: string) => void>
+  has: Mock<(id: string) => boolean>
+  values: Mock<() => IterableIterator<T>>
+  keys: Mock<() => IterableIterator<string>>
+  entries: Mock<() => IterableIterator<[string, T]>>
+  observe: Mock<(handler: () => void) => void>
+  unobserve: Mock<(handler: () => void) => void>
+}
+
+export function createMockYMap<T>(): MockYMap<T> {
+  const data = new Map<string, T>()
+  const observers = new Set<() => void>()
+
+  const notifyObservers = () => {
+    observers.forEach((handler) => handler())
+  }
+
+  const mockMap: MockYMap<T> = {
+    _data: data,
+    _observers: observers,
+    get: vi.fn((id: string) => data.get(id)),
+    set: vi.fn((id: string, value: T) => {
+      data.set(id, value)
+      notifyObservers()
+    }),
+    delete: vi.fn((id: string) => {
+      data.delete(id)
+      notifyObservers()
+    }),
+    has: vi.fn((id: string) => data.has(id)),
+    values: vi.fn(() => data.values()),
+    keys: vi.fn(() => data.keys()),
+    entries: vi.fn(() => data.entries()),
+    observe: vi.fn((handler: () => void) => {
+      observers.add(handler)
+    }),
+    unobserve: vi.fn((handler: () => void) => {
+      observers.delete(handler)
+    }),
+  }
+
+  return mockMap
+}
+
+/**
+ * Reset a mock Y.Map to empty state
+ */
+export function resetMockYMap<T>(mockMap: MockYMap<T>) {
+  mockMap._data.clear()
+  mockMap._observers.clear()
+  mockMap.get.mockClear()
+  mockMap.set.mockClear()
+  mockMap.delete.mockClear()
+  mockMap.has.mockClear()
+  mockMap.values.mockClear()
+  mockMap.keys.mockClear()
+  mockMap.entries.mockClear()
+  mockMap.observe.mockClear()
+  mockMap.unobserve.mockClear()
+}

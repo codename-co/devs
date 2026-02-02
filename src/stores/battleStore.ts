@@ -1,6 +1,5 @@
 import { create } from 'zustand'
-import { db } from '@/lib/db'
-import { deleteFromYjs, syncToYjs } from '@/features/sync'
+import { battles as battlesMap } from '@/lib/yjs'
 import { errorToast, successToast } from '@/lib/toast'
 import type {
   Battle,
@@ -59,10 +58,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
   loadBattles: async () => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-      const battles = await db.getAll('battles')
+      const battles = Array.from(battlesMap.values())
       set({ battles, isLoading: false })
     } catch (error) {
       errorToast('Failed to load battles', error)
@@ -73,10 +69,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
   loadBattle: async (id: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-      const battle = await db.get('battles', id)
+      const battle = battlesMap.get(id)
       if (battle) {
         set({ currentBattle: battle, isLoading: false })
       } else {
@@ -95,10 +88,6 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
   createBattle: async (config: BattleConfig) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
       const battle: Battle = {
         id: crypto.randomUUID(),
         status: 'setup',
@@ -119,8 +108,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.add('battles', battle)
-      syncToYjs('battles', battle)
+      battlesMap.set(battle.id, battle)
 
       const updatedBattles = [...get().battles, battle]
       set({
@@ -140,11 +128,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
   updateBattle: async (id: string, updates: Partial<Battle>) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      const battle = await db.get('battles', id)
+      const battle = battlesMap.get(id)
       if (!battle) {
         throw new Error('Battle not found')
       }
@@ -156,8 +140,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('battles', updatedBattle)
-      syncToYjs('battles', updatedBattle)
+      battlesMap.set(updatedBattle.id, updatedBattle)
 
       const { battles, currentBattle } = get()
       const updatedBattles = battles.map((b) =>
@@ -178,11 +161,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
   deleteBattle: async (id: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-      await db.delete('battles', id)
-      deleteFromYjs('battles', id)
+      battlesMap.delete(id)
 
       const { battles, currentBattle } = get()
       const updatedBattles = battles.filter((b) => b.id !== id)
@@ -203,11 +182,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
   startBattle: async (battleId: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      const battle = await db.get('battles', battleId)
+      const battle = battlesMap.get(battleId)
       if (!battle) {
         throw new Error('Battle not found')
       }
@@ -245,8 +220,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('battles', updatedBattle)
-      syncToYjs('battles', updatedBattle)
+      battlesMap.set(updatedBattle.id, updatedBattle)
 
       const { battles, currentBattle } = get()
       const updatedBattles = battles.map((b) =>
@@ -271,11 +245,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
   advanceToNextRound: async (battleId: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      const battle = await db.get('battles', battleId)
+      const battle = battlesMap.get(battleId)
       if (!battle) {
         throw new Error('Battle not found')
       }
@@ -300,8 +270,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
           updatedAt: new Date(),
         }
 
-        await db.update('battles', updatedBattle)
-        syncToYjs('battles', updatedBattle)
+        battlesMap.set(updatedBattle.id, updatedBattle)
 
         const { battles, currentBattle } = get()
         const updatedBattles = battles.map((b) =>
@@ -355,8 +324,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('battles', updatedBattle)
-      syncToYjs('battles', updatedBattle)
+      battlesMap.set(updatedBattle.id, updatedBattle)
 
       const { battles, currentBattle } = get()
       const updatedBattles = battles.map((b) =>
@@ -381,11 +349,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
   cancelBattle: async (battleId: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      const battle = await db.get('battles', battleId)
+      const battle = battlesMap.get(battleId)
       if (!battle) {
         throw new Error('Battle not found')
       }
@@ -396,8 +360,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('battles', updatedBattle)
-      syncToYjs('battles', updatedBattle)
+      battlesMap.set(updatedBattle.id, updatedBattle)
 
       const { battles, currentBattle } = get()
       const updatedBattles = battles.map((b) =>
@@ -422,11 +385,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
   startMatch: async (battleId: string, matchId: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      const battle = await db.get('battles', battleId)
+      const battle = battlesMap.get(battleId)
       if (!battle) {
         throw new Error('Battle not found')
       }
@@ -456,8 +415,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('battles', updatedBattle)
-      syncToYjs('battles', updatedBattle)
+      battlesMap.set(updatedBattle.id, updatedBattle)
 
       const { battles, currentBattle } = get()
       const updatedBattles = battles.map((b) =>
@@ -479,11 +437,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
 
   setMatchJudging: async (battleId: string, matchId: string) => {
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      const battle = await db.get('battles', battleId)
+      const battle = battlesMap.get(battleId)
       if (!battle) {
         throw new Error('Battle not found')
       }
@@ -510,8 +464,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('battles', updatedBattle)
-      syncToYjs('battles', updatedBattle)
+      battlesMap.set(updatedBattle.id, updatedBattle)
 
       const { battles, currentBattle } = get()
       const updatedBattles = battles.map((b) =>
@@ -537,11 +490,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
   ) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      const battle = await db.get('battles', battleId)
+      const battle = battlesMap.get(battleId)
       if (!battle) {
         throw new Error('Battle not found')
       }
@@ -578,8 +527,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('battles', updatedBattle)
-      syncToYjs('battles', updatedBattle)
+      battlesMap.set(updatedBattle.id, updatedBattle)
 
       const { battles, currentBattle } = get()
       const updatedBattles = battles.map((b) =>
@@ -608,11 +556,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
   ) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      const battle = await db.get('battles', battleId)
+      const battle = battlesMap.get(battleId)
       if (!battle) {
         throw new Error('Battle not found')
       }
@@ -639,8 +583,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('battles', updatedBattle)
-      syncToYjs('battles', updatedBattle)
+      battlesMap.set(updatedBattle.id, updatedBattle)
 
       const { battles, currentBattle } = get()
       const updatedBattles = battles.map((b) =>
@@ -662,10 +605,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
 
   getBattleById: async (id: string) => {
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-      return (await db.get('battles', id)) || null
+      return battlesMap.get(id) || null
     } catch (error) {
       errorToast('Failed to get battle', error)
       return null

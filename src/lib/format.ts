@@ -68,8 +68,16 @@ export function formatTimeAgo(date: Date, lang?: Lang): string {
  * - 1 month or more: show months ago (e.g., "3 months ago")
  */
 export function formatConversationDate(date: Date, lang?: Lang): string {
+  // Handle invalid or missing dates
+  const dateObj = date instanceof Date ? date : new Date(date)
+  const timestamp = dateObj.getTime()
+
+  if (!Number.isFinite(timestamp)) {
+    return '' // Return empty string for invalid dates
+  }
+
   const now = Date.now()
-  const diffInMs = now - date.getTime()
+  const diffInMs = now - timestamp
   const diffInDays = diffInMs / (1000 * 60 * 60 * 24)
 
   const rtf = new Intl.RelativeTimeFormat(lang ?? defaultLang, {
@@ -89,7 +97,7 @@ export function formatConversationDate(date: Date, lang?: Lang): string {
     // Show day name for 2-6 days ago
     return new Intl.DateTimeFormat(lang ?? defaultLang, {
       weekday: 'long',
-    }).format(date)
+    }).format(dateObj)
   }
 
   // 7 days to ~30 days: show weeks ago

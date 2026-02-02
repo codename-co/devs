@@ -19,7 +19,6 @@ import type {
 } from '@/types'
 import type { Battle } from '@/features/battle/types'
 import type { StudioEntry } from '@/features/studio/types'
-import type { Trace, Span } from '@/features/traces/types'
 
 // Re-export types for convenience (dates are strings at runtime after serialization)
 export type {
@@ -32,8 +31,6 @@ export type {
   Task,
   Battle,
   StudioEntry,
-  Trace,
-  Span,
 }
 
 /**
@@ -147,12 +144,6 @@ export function getStudioEntriesMap(): Y.Map<StudioEntry> {
   return getYDoc().getMap<StudioEntry>('studioEntries')
 }
 
-/** Get the traces map (id -> Trace) */
-export function getTracesMap(): Y.Map<Trace> {
-  return getYDoc().getMap<Trace>('traces')
-}
-
-/** Get the spans map (id -> Span) */
-export function getSpansMap(): Y.Map<Span> {
-  return getYDoc().getMap<Span>('spans')
-}
+// Note: Traces and spans are NOT synced via P2P.
+// They are local observability data stored only in IndexedDB via TraceService.
+// See SYNCED_STORES in sync-bridge.ts for the list of synced entities.

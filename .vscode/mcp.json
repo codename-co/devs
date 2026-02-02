@@ -13,7 +13,7 @@
     "io.github.ChromeDevTools/chrome-devtools-mcp": {
       "type": "stdio",
       "command": "npx",
-      "args": ["chrome-devtools-mcp@0.12.1", "--autoConnect", "--channel=beta"],
+      "args": ["chrome-devtools-mcp@0.12.1", "--port", "9222"],
       "gallery": "https://api.mcp.github.com",
       "version": "0.12.1"
     }

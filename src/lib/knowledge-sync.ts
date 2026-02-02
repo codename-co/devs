@@ -1,5 +1,14 @@
 import { db } from './db'
-import { syncToYjs, deleteFromYjs } from '@/features/sync'
+import {
+  getAllKnowledgeItems,
+  findKnowledgeItemByHash,
+  findKnowledgeItemByPath,
+  getKnowledgeItemsByWatchId,
+  addKnowledgeItem,
+  updateKnowledgeItem,
+  deleteKnowledgeItem,
+  ensureReady,
+} from '@/stores/knowledgeStore'
 import { KnowledgeItem, PersistedFolderWatcher, FileHandleEntry } from '@/types'
 
 export interface FolderWatcher {
@@ -116,8 +125,8 @@ class KnowledgeSyncService {
   // Check if content already exists by hash
   async isDuplicate(contentHash: string): Promise<KnowledgeItem | null> {
     try {
-      const allItems = await db.getAll('knowledgeItems')
-      return allItems.find((item) => item.contentHash === contentHash) || null
+      await ensureReady()
+      return findKnowledgeItemByHash(contentHash) || null
     } catch (error) {
       console.error('Error checking for duplicates:', error)
       return null
@@ -173,18 +182,10 @@ class KnowledgeSyncService {
         lastSyncCheck: new Date(),
       }
 
-      // Ensure database is ready
-      if (!db.isInitialized()) {
-        await db.init()
-      }
+      // Ensure Yjs is ready
+      await ensureReady()
 
-      if (!db.hasStore('knowledgeItems')) {
-        await (db as any).resetDatabase()
-      }
-
-      await db.add('knowledgeItems', item)
-      // Sync to Yjs for reactive UI updates
-      syncToYjs('knowledgeItems', item)
+      addKnowledgeItem(item)
       console.log(`Added new file: ${file.name}`)
       return item
     } catch (error) {
@@ -398,7 +399,7 @@ class KnowledgeSyncService {
             existingItem.lastModified >= new Date(file.lastModified)
           ) {
             // Update the lastSyncCheck timestamp even if file hasn't changed
-            await db.update('knowledgeItems', {
+            updateKnowledgeItem({
               ...existingItem,
               lastSyncCheck: new Date(),
             })
@@ -424,9 +425,7 @@ class KnowledgeSyncService {
               lastSyncCheck: new Date(),
             }
 
-            await db.update('knowledgeItems', updatedItem)
-            // Sync to Yjs for reactive UI updates
-            syncToYjs('knowledgeItems', updatedItem)
+            updateKnowledgeItem(updatedItem)
             console.log(`Updated existing file: ${file.name}`)
 
             // Track statistics and emit event
@@ -451,9 +450,7 @@ class KnowledgeSyncService {
                 path: fullPath,
                 watchId,
               }
-              await db.update('knowledgeItems', updatedItem)
-              // Sync to Yjs for reactive UI updates
-              syncToYjs('knowledgeItems', updatedItem)
+              updateKnowledgeItem(updatedItem)
               console.log(`Added new file from filesystem: ${file.name}`)
 
               // Track statistics and emit event
@@ -482,9 +479,7 @@ class KnowledgeSyncService {
               watchId,
               lastSyncCheck: new Date(),
             }
-            await db.add('knowledgeItems', folderItem)
-            // Sync to Yjs for reactive UI updates
-            syncToYjs('knowledgeItems', folderItem)
+            addKnowledgeItem(folderItem)
           }
 
           // Recursively process subdirectory
@@ -505,8 +500,8 @@ class KnowledgeSyncService {
   // Find knowledge item by path
   private async findItemByPath(path: string): Promise<KnowledgeItem | null> {
     try {
-      const allItems = await db.getAll('knowledgeItems')
-      return allItems.find((item) => item.path === path) || null
+      await ensureReady()
+      return findKnowledgeItemByPath(path) || null
     } catch (error) {
       console.error('Error finding item by path:', error)
       return null
@@ -516,8 +511,8 @@ class KnowledgeSyncService {
   // Get all files associated with a specific watcher
   private async getFilesByWatchId(watchId: string): Promise<KnowledgeItem[]> {
     try {
-      const allItems = await db.getAll('knowledgeItems')
-      return allItems.filter((item) => item.watchId === watchId)
+      await ensureReady()
+      return getKnowledgeItemsByWatchId(watchId)
     } catch (error) {
       console.error('Error getting files by watch ID:', error)
       return []
@@ -536,9 +531,7 @@ class KnowledgeSyncService {
       if (!processedPaths.has(item.path)) {
         // File was not found during sync - it was deleted
         try {
-          await db.delete('knowledgeItems', item.id)
-          // Sync deletion to Yjs for reactive UI updates
-          deleteFromYjs('knowledgeItems', item.id)
+          deleteKnowledgeItem(item.id)
           deletedCount++
           console.log(`Removed deleted file from sync: ${item.name}`)
 
@@ -656,7 +649,8 @@ class KnowledgeSyncService {
   // Clean up orphaned items (items whose folders are no longer watched)
   async cleanupOrphanedItems(): Promise<number> {
     try {
-      const allItems = await db.getAll('knowledgeItems')
+      await ensureReady()
+      const allItems = getAllKnowledgeItems()
       const activeWatchIds = new Set(Array.from(this.watchers.keys()))
 
       let cleanupCount = 0
@@ -666,7 +660,7 @@ class KnowledgeSyncService {
           item.watchId &&
           !activeWatchIds.has(item.watchId)
         ) {
-          await db.delete('knowledgeItems', item.id)
+          deleteKnowledgeItem(item.id)
           cleanupCount++
         }
       }
@@ -1012,15 +1006,14 @@ export const deleteFilesByWatchId = async (
   watchId: string,
 ): Promise<number> => {
   try {
-    const allItems = await db.getAll('knowledgeItems')
-    const itemsToDelete = allItems.filter((item) => item.watchId === watchId)
-    let deletedCount = 0
+    await ensureReady()
+    const itemsToDelete = getKnowledgeItemsByWatchId(watchId)
+    if (itemsToDelete.length === 0) return 0
+
     for (const item of itemsToDelete) {
-      await db.delete('knowledgeItems', item.id)
-      deleteFromYjs('knowledgeItems', item.id)
-      deletedCount++
+      deleteKnowledgeItem(item.id)
     }
-    return deletedCount
+    return itemsToDelete.length
   } catch (error) {
     console.error('Error deleting files by watch ID:', error)
     return 0

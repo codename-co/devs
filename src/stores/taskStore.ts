@@ -1,6 +1,5 @@
 import { create } from 'zustand'
-import { db } from '@/lib/db'
-import { deleteFromYjs, syncToYjs } from '@/features/sync'
+import { tasks, artifacts, whenReady, isReady } from '@/lib/yjs'
 import type { Task, Requirement, TaskStep } from '@/types'
 import { errorToast, successToast } from '@/lib/toast'
 import {
@@ -8,10 +7,27 @@ import {
   ValidationResult,
 } from '@/lib/requirement-validator'
 
+/**
+ * Helper to get all tasks from Yjs map
+ */
+function getAllTasks(): Task[] {
+  return Array.from(tasks.values())
+}
+
+/**
+ * Helper to get artifacts by task ID from Yjs
+ */
+function getArtifactsByTaskId(taskId: string) {
+  return Array.from(artifacts.values()).filter((a) => a.taskId === taskId)
+}
+
 interface TaskStore {
-  tasks: Task[]
+  // UI-only state (Zustand manages these)
   currentTask: Task | null
   isLoading: boolean
+
+  // Derived from Yjs - kept for API compatibility
+  tasks: Task[]
 
   loadTasks: () => Promise<void>
   loadTask: (id: string) => Promise<void>
@@ -74,11 +90,11 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   loadTasks: async () => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
-      const tasks = await db.getAll('tasks')
-      set({ tasks, isLoading: false })
+      const allTasks = getAllTasks()
+      set({ tasks: allTasks, isLoading: false })
     } catch (error) {
       errorToast('Failed to load tasks', error)
       set({ isLoading: false })
@@ -88,10 +104,10 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   loadTask: async (id: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
-      const task = await db.get('tasks', id)
+      const task = tasks.get(id)
       if (task) {
         set({ currentTask: task, isLoading: false })
       } else {
@@ -107,8 +123,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   createTask: async (taskData) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
 
       const task: Task = {
@@ -119,8 +135,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.add('tasks', task)
-      syncToYjs('tasks', task)
+      tasks.set(task.id, task)
 
       const updatedTasks = [...get().tasks, task]
       set({
@@ -140,11 +155,11 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   updateTask: async (id: string, updates: Partial<Task>) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
 
-      const task = await db.get('tasks', id)
+      const task = tasks.get(id)
       if (!task) {
         throw new Error('Task not found')
       }
@@ -156,11 +171,12 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('tasks', updatedTask)
-      syncToYjs('tasks', updatedTask)
+      tasks.set(id, updatedTask)
 
-      const { tasks, currentTask } = get()
-      const updatedTasks = tasks.map((t) => (t.id === id ? updatedTask : t))
+      const { tasks: currentTasks, currentTask } = get()
+      const updatedTasks = currentTasks.map((t) =>
+        t.id === id ? updatedTask : t,
+      )
 
       set({
         tasks: updatedTasks,
@@ -176,14 +192,13 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   deleteTask: async (id: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
-      await db.delete('tasks', id)
-      deleteFromYjs('tasks', id)
+      tasks.delete(id)
 
-      const { tasks, currentTask } = get()
-      const updatedTasks = tasks.filter((t) => t.id !== id)
+      const { tasks: currentTasks, currentTask } = get()
+      const updatedTasks = currentTasks.filter((t) => t.id !== id)
 
       set({
         tasks: updatedTasks,
@@ -204,11 +219,11 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   ) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
 
-      const task = await db.get('tasks', taskId)
+      const task = tasks.get(taskId)
       if (!task) {
         throw new Error('Task not found')
       }
@@ -225,10 +240,12 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('tasks', updatedTask)
+      tasks.set(taskId, updatedTask)
 
-      const { tasks, currentTask } = get()
-      const updatedTasks = tasks.map((t) => (t.id === taskId ? updatedTask : t))
+      const { tasks: currentTasks, currentTask } = get()
+      const updatedTasks = currentTasks.map((t) =>
+        t.id === taskId ? updatedTask : t,
+      )
 
       set({
         tasks: updatedTasks,
@@ -248,11 +265,11 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   ) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
 
-      const task = await db.get('tasks', taskId)
+      const task = tasks.get(taskId)
       if (!task) {
         throw new Error('Task not found')
       }
@@ -267,10 +284,12 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('tasks', updatedTask)
+      tasks.set(taskId, updatedTask)
 
-      const { tasks, currentTask } = get()
-      const updatedTasks = tasks.map((t) => (t.id === taskId ? updatedTask : t))
+      const { tasks: currentTasks, currentTask } = get()
+      const updatedTasks = currentTasks.map((t) =>
+        t.id === taskId ? updatedTask : t,
+      )
 
       set({
         tasks: updatedTasks,
@@ -301,48 +320,49 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
   getTaskHierarchy: async (taskId: string) => {
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
 
       // Ensure tasks are loaded
-      const { tasks } = get()
-      if (tasks.length === 0) {
+      const { tasks: currentTasks } = get()
+      if (currentTasks.length === 0) {
         await get().loadTasks()
       }
 
-      const currentTasks = get().tasks
-      const task = currentTasks.find((t) => t.id === taskId)
+      const allTasks = get().tasks
+      const task = allTasks.find((t) => t.id === taskId)
 
       if (!task) {
-        // Try loading from database
-        const taskFromDb = await db.get('tasks', taskId)
-        if (!taskFromDb) {
+        // Try loading from Yjs directly
+        const taskFromYjs = tasks.get(taskId)
+        if (!taskFromYjs) {
           throw new Error('Task not found')
         }
         return {
-          task: taskFromDb,
-          children: currentTasks.filter((t) => t.parentTaskId === taskId),
-          parent: taskFromDb.parentTaskId
-            ? currentTasks.find((t) => t.id === taskFromDb.parentTaskId) ||
-              (await db.get('tasks', taskFromDb.parentTaskId!))
+          task: taskFromYjs,
+          children: allTasks.filter((t) => t.parentTaskId === taskId),
+          parent: taskFromYjs.parentTaskId
+            ? allTasks.find((t) => t.id === taskFromYjs.parentTaskId) ||
+              tasks.get(taskFromYjs.parentTaskId!)
             : undefined,
-          siblings: taskFromDb.parentTaskId
-            ? currentTasks.filter(
+          siblings: taskFromYjs.parentTaskId
+            ? allTasks.filter(
                 (t) =>
-                  t.parentTaskId === taskFromDb.parentTaskId && t.id !== taskId,
+                  t.parentTaskId === taskFromYjs.parentTaskId &&
+                  t.id !== taskId,
               )
             : [],
         }
       }
 
-      const children = currentTasks.filter((t) => t.parentTaskId === taskId)
+      const children = allTasks.filter((t) => t.parentTaskId === taskId)
       const parent = task.parentTaskId
-        ? currentTasks.find((t) => t.id === task.parentTaskId) ||
-          (await db.get('tasks', task.parentTaskId!))
+        ? allTasks.find((t) => t.id === task.parentTaskId) ||
+          tasks.get(task.parentTaskId!)
         : undefined
       const siblings = task.parentTaskId
-        ? currentTasks.filter(
+        ? allTasks.filter(
             (t) => t.parentTaskId === task.parentTaskId && t.id !== taskId,
           )
         : []
@@ -368,13 +388,13 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         return task
       }
 
-      // If not in memory, load from database
-      if (!db.isInitialized()) {
-        await db.init()
+      // If not in memory, load from Yjs
+      if (!isReady()) {
+        await whenReady
       }
 
-      const taskFromDb = await db.get('tasks', id)
-      return taskFromDb || null
+      const taskFromYjs = tasks.get(id)
+      return taskFromYjs || null
     } catch (error) {
       console.error('Error getting task by ID:', error)
       errorToast('Failed to load task', error)
@@ -385,11 +405,11 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   addStep: async (taskId: string, step: Omit<TaskStep, 'id'>) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
 
-      const task = await db.get('tasks', taskId)
+      const task = tasks.get(taskId)
       if (!task) {
         throw new Error('Task not found')
       }
@@ -405,10 +425,12 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('tasks', updatedTask)
+      tasks.set(taskId, updatedTask)
 
-      const { tasks, currentTask } = get()
-      const updatedTasks = tasks.map((t) => (t.id === taskId ? updatedTask : t))
+      const { tasks: currentTasks, currentTask } = get()
+      const updatedTasks = currentTasks.map((t) =>
+        t.id === taskId ? updatedTask : t,
+      )
 
       set({
         tasks: updatedTasks,
@@ -424,11 +446,11 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   startStep: async (taskId: string, stepId: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
 
-      const task = await db.get('tasks', taskId)
+      const task = tasks.get(taskId)
       if (!task) {
         throw new Error('Task not found')
       }
@@ -446,10 +468,12 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('tasks', updatedTask)
+      tasks.set(taskId, updatedTask)
 
-      const { tasks, currentTask } = get()
-      const updatedTasks = tasks.map((t) => (t.id === taskId ? updatedTask : t))
+      const { tasks: currentTasks, currentTask } = get()
+      const updatedTasks = currentTasks.map((t) =>
+        t.id === taskId ? updatedTask : t,
+      )
 
       set({
         tasks: updatedTasks,
@@ -465,11 +489,11 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   completeStep: async (taskId: string, stepId: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
 
-      const task = await db.get('tasks', taskId)
+      const task = tasks.get(taskId)
       if (!task) {
         throw new Error('Task not found')
       }
@@ -496,10 +520,12 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('tasks', updatedTask)
+      tasks.set(taskId, updatedTask)
 
-      const { tasks, currentTask } = get()
-      const updatedTasks = tasks.map((t) => (t.id === taskId ? updatedTask : t))
+      const { tasks: currentTasks, currentTask } = get()
+      const updatedTasks = currentTasks.map((t) =>
+        t.id === taskId ? updatedTask : t,
+      )
 
       set({
         tasks: updatedTasks,
@@ -519,11 +545,11 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   ) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
 
-      const task = await db.get('tasks', taskId)
+      const task = tasks.get(taskId)
       if (!task) {
         throw new Error('Task not found')
       }
@@ -538,10 +564,12 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('tasks', updatedTask)
+      tasks.set(taskId, updatedTask)
 
-      const { tasks, currentTask } = get()
-      const updatedTasks = tasks.map((t) => (t.id === taskId ? updatedTask : t))
+      const { tasks: currentTasks, currentTask } = get()
+      const updatedTasks = currentTasks.map((t) =>
+        t.id === taskId ? updatedTask : t,
+      )
 
       set({
         tasks: updatedTasks,
@@ -560,19 +588,19 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
   validateRequirements: async (taskId: string): Promise<ValidationResult[]> => {
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
 
-      const task = await db.get('tasks', taskId)
+      const task = tasks.get(taskId)
       if (!task) {
         throw new Error('Task not found')
       }
 
-      const artifacts = await db.query('artifacts', 'taskId', taskId)
+      const taskArtifacts = getArtifactsByTaskId(taskId)
       const results = await requirementValidator.validateAllRequirements(
         task,
-        artifacts,
+        taskArtifacts,
       )
 
       return results
@@ -585,19 +613,19 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
   validateAndUpdateRequirements: async (taskId: string) => {
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
 
-      const task = await db.get('tasks', taskId)
+      const task = tasks.get(taskId)
       if (!task) {
         throw new Error('Task not found')
       }
 
-      const artifacts = await db.query('artifacts', 'taskId', taskId)
+      const taskArtifacts = getArtifactsByTaskId(taskId)
       const results = await requirementValidator.validateAllRequirements(
         task,
-        artifacts,
+        taskArtifacts,
       )
 
       // Update requirement statuses based on validation results
@@ -619,18 +647,20 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         return req
       })
 
-      // Update the task in database
+      // Update the task in Yjs
       const updatedTask = {
         ...task,
         requirements: updatedRequirements,
         updatedAt: new Date(),
       }
 
-      await db.update('tasks', updatedTask)
+      tasks.set(taskId, updatedTask)
 
       // Update in memory state
-      const { tasks, currentTask } = get()
-      const updatedTasks = tasks.map((t) => (t.id === taskId ? updatedTask : t))
+      const { tasks: currentTasks, currentTask } = get()
+      const updatedTasks = currentTasks.map((t) =>
+        t.id === taskId ? updatedTask : t,
+      )
 
       set({
         tasks: updatedTasks,
@@ -677,8 +707,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
   createTaskWithRequirements: async (taskData, userRequirement: string) => {
     try {
-      if (!db.isInitialized()) {
-        await db.init()
+      if (!isReady()) {
+        await whenReady
       }
 
       const taskId = crypto.randomUUID()
@@ -700,7 +730,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.add('tasks', task)
+      tasks.set(task.id, task)
 
       const updatedTasks = [...get().tasks, task]
       set({
@@ -716,3 +746,36 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     }
   },
 }))
+
+// =========================================================================
+// Yjs Observers for P2P sync
+// =========================================================================
+
+/**
+ * Initialize Yjs observers for real-time sync.
+ * When tasks/artifacts are modified on another device,
+ * this ensures the Zustand store stays in sync.
+ */
+function initYjsObservers(): void {
+  // Observe tasks map for remote changes
+  tasks.observe(() => {
+    const allTasks = getAllTasks()
+    useTaskStore.setState({ tasks: allTasks })
+  })
+
+  // Observe artifacts map for remote changes
+  artifacts.observe(() => {
+    // Artifacts are accessed via getArtifactsByTaskId, no separate state needed
+    // But we can trigger a re-render for current task if needed
+    const currentTask = useTaskStore.getState().currentTask
+    if (currentTask) {
+      const task = tasks.get(currentTask.id)
+      if (task) {
+        useTaskStore.setState({ currentTask: task })
+      }
+    }
+  })
+}
+
+// Initialize observers when module loads
+initYjsObservers()

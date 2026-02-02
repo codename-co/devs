@@ -74,7 +74,7 @@ export const AboutPage = () => {
     {
       step: 1,
       name: t('Configure your LLM provider'),
-      url: url('/settings'),
+      url: url('/settings#providers'),
       desc: t('Works with OpenAI, Anthropic, Google Gemini, and more'),
     },
     {

@@ -6,8 +6,10 @@ import {
 } from '@huggingface/transformers'
 import * as pdfjsLib from 'pdfjs-dist'
 import PostalMime from 'postal-mime'
-import { db } from '@/lib/db'
-import { syncToYjs } from '@/features/sync'
+import {
+  getKnowledgeItemAsync,
+  updateKnowledgeItem,
+} from '@/stores/knowledgeStore'
 import type { KnowledgeItem } from '@/types'
 
 // Configure PDF.js worker from unpkg CDN
@@ -154,9 +156,9 @@ class DocumentProcessorService {
     }
 
     // Update knowledge item status to pending
-    const item = await db.get('knowledgeItems', knowledgeItemId)
+    const item = await getKnowledgeItemAsync(knowledgeItemId)
     if (item) {
-      await db.update('knowledgeItems', {
+      updateKnowledgeItem({
         ...item,
         processingStatus: 'pending',
       })
@@ -195,9 +197,9 @@ class DocumentProcessorService {
         job.completedAt = new Date()
 
         // Update knowledge item with failed status
-        const item = await db.get('knowledgeItems', job.knowledgeItemId)
+        const item = await getKnowledgeItemAsync(job.knowledgeItemId)
         if (item) {
-          await db.update('knowledgeItems', {
+          updateKnowledgeItem({
             ...item,
             processingStatus: 'failed',
             processingError: job.error,
@@ -232,7 +234,7 @@ class DocumentProcessorService {
     })
 
     // Load knowledge item
-    const item = await db.get('knowledgeItems', job.knowledgeItemId)
+    const item = await getKnowledgeItemAsync(job.knowledgeItemId)
     if (!item) {
       throw new Error('Knowledge item not found')
     }
@@ -250,7 +252,7 @@ class DocumentProcessorService {
     }
 
     // Update status to processing
-    await db.update('knowledgeItems', {
+    updateKnowledgeItem({
       ...item,
       processingStatus: 'processing',
     })
@@ -273,7 +275,7 @@ class DocumentProcessorService {
     })
 
     // Re-fetch item to get latest state before updating
-    const currentItem = await db.get('knowledgeItems', job.knowledgeItemId)
+    const currentItem = await getKnowledgeItemAsync(job.knowledgeItemId)
     if (!currentItem) {
       throw new Error('Knowledge item not found after processing')
     }
@@ -287,9 +289,7 @@ class DocumentProcessorService {
       description: result.structuredContent?.title || currentItem.description,
     }
 
-    await db.update('knowledgeItems', updatedItem)
-    // Sync to Yjs for P2P sync and persistence
-    syncToYjs('knowledgeItems', updatedItem)
+    updateKnowledgeItem(updatedItem)
 
     job.status = 'completed'
     job.progress = 100

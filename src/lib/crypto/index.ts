@@ -129,11 +129,26 @@ export class CryptoService {
 
 /**
  * Secure storage using non-extractable CryptoKey stored in IndexedDB
+ * Supports two encryption modes:
+ * - 'local': Uses non-extractable CryptoKey stored in IndexedDB (default)
+ * - 'sync': Uses a key derived from room password via PBKDF2 (portable across devices)
  */
 export class SecureStorage {
   private static LEGACY_MASTER_KEY_KEY = 'devs_master_key'
   private static CRYPTO_KEY_ID = 'master'
-  private static cryptoKey: CryptoKey | null = null
+  private static ENCRYPTION_MODE_KEY = 'devs_encryption_mode'
+  private static SYNC_PASSWORD_HASH_KEY = 'devs_sync_password_hash'
+
+  // Fixed salt for deterministic key derivation in sync mode
+  // "DEVS-SYNC-SALT-V" in ASCII
+  private static SYNC_SALT = new Uint8Array([
+    0x44, 0x45, 0x56, 0x53, 0x2d, 0x53, 0x59, 0x4e, 0x43, 0x2d, 0x53, 0x41,
+    0x4c, 0x54, 0x2d, 0x56,
+  ])
+
+  private static encryptionMode: 'local' | 'sync' = 'local'
+  private static localKey: CryptoKey | null = null
+  private static syncKey: CryptoKey | null = null
   private static initPromise: Promise<void> | null = null
   private static encoder = new TextEncoder()
   private static decoder = new TextDecoder()
@@ -157,6 +172,12 @@ export class SecureStorage {
       throw new Error('Web Crypto API is not available')
     }
 
+    // Load encryption mode from localStorage
+    const storedMode = localStorage.getItem(this.ENCRYPTION_MODE_KEY)
+    if (storedMode === 'sync' || storedMode === 'local') {
+      this.encryptionMode = storedMode
+    }
+
     // Dynamically import db to avoid circular dependency
     const { db } = await import('@/lib/db')
     await db.init()
@@ -165,7 +186,15 @@ export class SecureStorage {
     try {
       const stored = await db.get('cryptoKeys', this.CRYPTO_KEY_ID)
       if (stored?.key) {
-        this.cryptoKey = stored.key
+        this.localKey = stored.key
+
+        // If we're in sync mode but don't have a sync key, we need the password
+        // The syncKey will be restored when enableSyncMode is called with the password
+        if (this.encryptionMode === 'local') {
+          return
+        }
+        // In sync mode, we need the password to derive the key
+        // The UI should call enableSyncMode with the password to restore the syncKey
         return
       }
     } catch {
@@ -198,7 +227,7 @@ export class SecureStorage {
 
     // Step 1: Generate new non-extractable key
     const newKey = await this.generateNonExtractableKey()
-    this.cryptoKey = newKey
+    this.localKey = newKey
 
     // Step 2: Re-encrypt all existing credentials
     try {
@@ -282,14 +311,14 @@ export class SecureStorage {
         const connectors = await db.getAll('connectors')
         for (const connector of connectors) {
           // Migrate access token
-          if (connector.encryptedAccessToken) {
+          if (connector.encryptedToken) {
             const iv = localStorage.getItem(`connector-${connector.id}-iv`)
             const salt = localStorage.getItem(`connector-${connector.id}-salt`)
 
             if (iv && salt) {
               try {
                 const decryptedToken = await CryptoService.decrypt(
-                  connector.encryptedAccessToken,
+                  connector.encryptedToken,
                   legacyMasterKey,
                   iv,
                   salt,
@@ -298,7 +327,7 @@ export class SecureStorage {
                 const { ciphertext, iv: newIv } =
                   await this.encryptWithCryptoKey(decryptedToken)
 
-                connector.encryptedAccessToken = ciphertext
+                connector.encryptedToken = ciphertext
                 localStorage.setItem(`connector-${connector.id}-iv`, newIv)
                 localStorage.removeItem(`connector-${connector.id}-salt`)
               } catch (error) {
@@ -382,7 +411,7 @@ export class SecureStorage {
     migrated: boolean,
   ): Promise<void> {
     const newKey = await this.generateNonExtractableKey()
-    this.cryptoKey = newKey
+    this.localKey = newKey
 
     await db.add('cryptoKeys', {
       id: this.CRYPTO_KEY_ID,
@@ -406,18 +435,30 @@ export class SecureStorage {
 
   /**
    * Encrypt data using the non-extractable CryptoKey directly
+   * Uses the active key based on current encryption mode
    */
   private static async encryptWithCryptoKey(
     plaintext: string,
   ): Promise<{ ciphertext: string; iv: string }> {
-    if (!this.cryptoKey) {
+    const activeKey = this.getActiveKey()
+    if (!activeKey) {
       throw new Error('SecureStorage not initialized')
     }
 
+    return this.encryptWithKey(plaintext, activeKey)
+  }
+
+  /**
+   * Generic encrypt with any key
+   */
+  private static async encryptWithKey(
+    plaintext: string,
+    key: CryptoKey,
+  ): Promise<{ ciphertext: string; iv: string }> {
     const iv = crypto.getRandomValues(new Uint8Array(12))
     const encrypted = await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv },
-      this.cryptoKey,
+      key,
       this.encoder.encode(plaintext),
     )
 
@@ -429,15 +470,28 @@ export class SecureStorage {
 
   /**
    * Decrypt data using the non-extractable CryptoKey directly
+   * Uses the active key based on current encryption mode
    */
   private static async decryptWithCryptoKey(
     ciphertext: string,
     iv: string,
   ): Promise<string> {
-    if (!this.cryptoKey) {
+    const activeKey = this.getActiveKey()
+    if (!activeKey) {
       throw new Error('SecureStorage not initialized')
     }
 
+    return this.decryptWithKey(ciphertext, iv, activeKey)
+  }
+
+  /**
+   * Generic decrypt with any key
+   */
+  private static async decryptWithKey(
+    ciphertext: string,
+    iv: string,
+    key: CryptoKey,
+  ): Promise<string> {
     const ivArray = new Uint8Array(
       atob(iv)
         .split('')
@@ -451,7 +505,7 @@ export class SecureStorage {
 
     const decrypted = await crypto.subtle.decrypt(
       { name: 'AES-GCM', iv: ivArray },
-      this.cryptoKey,
+      key,
       ciphertextArray,
     )
 
@@ -459,19 +513,34 @@ export class SecureStorage {
   }
 
   /**
+   * Get the active encryption key based on current mode
+   */
+  private static getActiveKey(): CryptoKey | null {
+    if (this.encryptionMode === 'sync' && this.syncKey) {
+      return this.syncKey
+    }
+    return this.localKey
+  }
+
+  /**
    * Encrypt a credential (API key, token, etc.)
-   * Returns ciphertext and IV (no salt needed with direct key)
+   * Returns ciphertext, IV, and encryption mode (no salt needed with direct key)
    */
   static async encryptCredential(
     credential: string,
-  ): Promise<{ encrypted: string; iv: string; salt: string }> {
+  ): Promise<{
+    encrypted: string
+    iv: string
+    salt: string
+    mode: 'local' | 'sync'
+  }> {
     await this.init()
 
     const { ciphertext, iv } = await this.encryptWithCryptoKey(credential)
 
     // Return empty salt for backward compatibility with existing code
     // New encryption doesn't need salt since we're using a direct key
-    return { encrypted: ciphertext, iv, salt: '' }
+    return { encrypted: ciphertext, iv, salt: '', mode: this.encryptionMode }
   }
 
   /**
@@ -551,11 +620,314 @@ export class SecureStorage {
   }
 
   /**
-   * Lock the secure storage (clear key from memory)
+   * Lock the secure storage (clear keys from memory)
    */
   static lock(): void {
-    this.cryptoKey = null
+    this.localKey = null
+    this.syncKey = null
     this.initPromise = null
+  }
+
+  /**
+   * Get the current encryption mode
+   */
+  static getEncryptionMode(): 'local' | 'sync' {
+    return this.encryptionMode
+  }
+
+  /**
+   * Derive a sync key from a room password using PBKDF2
+   * Uses a fixed salt for deterministic key derivation across devices
+   */
+  static async deriveSyncKey(roomPassword: string): Promise<CryptoKey> {
+    if (!isCryptoAvailable()) {
+      throw new Error('Web Crypto API is not available')
+    }
+
+    const passwordKey = await crypto.subtle.importKey(
+      'raw',
+      this.encoder.encode(roomPassword),
+      'PBKDF2',
+      false,
+      ['deriveKey'],
+    )
+
+    return crypto.subtle.deriveKey(
+      {
+        name: 'PBKDF2',
+        salt: this.SYNC_SALT.slice() as BufferSource,
+        iterations: 250000,
+        hash: 'SHA-256',
+      },
+      passwordKey,
+      { name: 'AES-GCM', length: 256 },
+      false, // Non-extractable
+      ['encrypt', 'decrypt'],
+    )
+  }
+
+  /**
+   * Enable sync mode with a room password
+   * Derives a new sync key and re-encrypts all credentials
+   */
+  static async enableSyncMode(roomPassword: string): Promise<void> {
+    await this.init()
+
+    if (!this.localKey) {
+      throw new Error('Local key not initialized')
+    }
+
+    // Derive sync key from password
+    const newSyncKey = await this.deriveSyncKey(roomPassword)
+
+    // Re-encrypt all credentials from local key to sync key
+    await this.reEncryptAllCredentials(this.localKey, newSyncKey, 'sync')
+
+    // Store sync key and update mode
+    this.syncKey = newSyncKey
+    this.encryptionMode = 'sync'
+
+    // Store password hash for validation on restore
+    const passwordHash = await CryptoService.hashPassword(roomPassword)
+    localStorage.setItem(this.SYNC_PASSWORD_HASH_KEY, passwordHash)
+    localStorage.setItem(this.ENCRYPTION_MODE_KEY, 'sync')
+
+    console.log('SecureStorage: Enabled sync mode')
+  }
+
+  /**
+   * Disable sync mode and switch back to local mode
+   * Re-encrypts all credentials with the local key
+   */
+  static async disableSyncMode(): Promise<void> {
+    await this.init()
+
+    if (!this.localKey) {
+      throw new Error('Local key not initialized')
+    }
+
+    if (this.encryptionMode !== 'sync' || !this.syncKey) {
+      // Already in local mode
+      return
+    }
+
+    // Re-encrypt all credentials from sync key to local key
+    await this.reEncryptAllCredentials(this.syncKey, this.localKey, 'local')
+
+    // Clear sync key and update mode
+    this.syncKey = null
+    this.encryptionMode = 'local'
+
+    localStorage.removeItem(this.SYNC_PASSWORD_HASH_KEY)
+    localStorage.setItem(this.ENCRYPTION_MODE_KEY, 'local')
+
+    console.log('SecureStorage: Disabled sync mode, switched to local mode')
+  }
+
+  /**
+   * Restore sync mode with a password (for when returning to an existing sync session)
+   * Validates the password against stored hash and derives the sync key
+   */
+  static async restoreSyncMode(roomPassword: string): Promise<boolean> {
+    const storedHash = localStorage.getItem(this.SYNC_PASSWORD_HASH_KEY)
+    if (!storedHash) {
+      return false
+    }
+
+    const passwordHash = await CryptoService.hashPassword(roomPassword)
+    if (passwordHash !== storedHash) {
+      return false
+    }
+
+    this.syncKey = await this.deriveSyncKey(roomPassword)
+    this.encryptionMode = 'sync'
+    return true
+  }
+
+  /**
+   * Re-encrypt all credentials from one key to another
+   * @param fromKey - The key to decrypt with
+   * @param toKey - The key to encrypt with
+   * @param targetMode - The encryption mode for the re-encrypted credentials
+   */
+  private static async reEncryptAllCredentials(
+    fromKey: CryptoKey,
+    toKey: CryptoKey,
+    targetMode: 'local' | 'sync',
+  ): Promise<void> {
+    const { db } = await import('@/lib/db')
+    const { credentials: credentialsYjs } = await import('@/lib/yjs')
+    await db.init()
+
+    // Re-encrypt credentials
+    try {
+      // Use Yjs as the source of truth for credentials
+      const credentialsList = Array.from(credentialsYjs.values())
+      console.log(
+        `[SecureStorage] Re-encrypting ${credentialsList.length} credentials to ${targetMode} mode`,
+      )
+
+      for (const credential of credentialsList) {
+        // IV can be in credential object (sync mode) or localStorage (local mode)
+        const iv = credential.iv || localStorage.getItem(`${credential.id}-iv`)
+        console.log(
+          `[SecureStorage] Credential ${credential.id}: iv from object=${!!credential.iv}, iv from localStorage=${!!localStorage.getItem(`${credential.id}-iv`)}`,
+        )
+
+        if (!iv || !credential.encryptedApiKey) {
+          console.log(
+            `[SecureStorage] Skipping credential ${credential.id}: missing iv=${!iv}, missing encryptedApiKey=${!credential.encryptedApiKey}`,
+          )
+          continue
+        }
+
+        try {
+          // Decrypt with old key
+          const decrypted = await this.decryptWithKey(
+            credential.encryptedApiKey,
+            iv,
+            fromKey,
+          )
+
+          // Re-encrypt with new key
+          const { ciphertext, iv: newIv } = await this.encryptWithKey(
+            decrypted,
+            toKey,
+          )
+
+          // Update credential with new ciphertext and IV
+          // Always store IV in object for sync compatibility
+          const updatedCredential = {
+            ...credential,
+            encryptedApiKey: ciphertext,
+            iv: newIv,
+            encryptionMode: targetMode,
+          }
+
+          console.log(
+            `[SecureStorage] Updating credential ${credential.id} with iv in object, mode=${targetMode}`,
+          )
+
+          // Update Yjs (source of truth)
+          credentialsYjs.set(credential.id, updatedCredential)
+
+          // Also store IV in localStorage as backup
+          localStorage.setItem(`${credential.id}-iv`, newIv)
+
+          console.log(
+            `[SecureStorage] Successfully re-encrypted credential ${credential.id}`,
+          )
+        } catch (error) {
+          console.error(
+            `Failed to re-encrypt credential ${credential.id}:`,
+            error,
+          )
+        }
+      }
+    } catch (error) {
+      console.error('Failed to re-encrypt credentials:', error)
+    }
+
+    // Re-encrypt Langfuse configs
+    try {
+      const langfuseConfigs = await db.getAll('langfuse_config')
+      for (const config of langfuseConfigs) {
+        const iv = localStorage.getItem(`${config.id}-iv`)
+        if (!iv || !config.encryptedSecretKey) continue
+
+        try {
+          const decrypted = await this.decryptWithKey(
+            config.encryptedSecretKey,
+            iv,
+            fromKey,
+          )
+
+          const { ciphertext, iv: newIv } = await this.encryptWithKey(
+            decrypted,
+            toKey,
+          )
+
+          await db.update('langfuse_config', {
+            ...config,
+            encryptedSecretKey: ciphertext,
+          })
+          localStorage.setItem(`${config.id}-iv`, newIv)
+        } catch (error) {
+          console.error('Failed to re-encrypt langfuse config:', error)
+        }
+      }
+    } catch {
+      // Langfuse config might not exist
+    }
+
+    // Re-encrypt connector tokens
+    try {
+      const connectors = await db.getAll('connectors')
+      for (const connector of connectors) {
+        // Re-encrypt access token
+        if (connector.encryptedToken) {
+          const iv = localStorage.getItem(`connector-${connector.id}-iv`)
+          if (iv) {
+            try {
+              const decrypted = await this.decryptWithKey(
+                connector.encryptedToken,
+                iv,
+                fromKey,
+              )
+
+              const { ciphertext, iv: newIv } = await this.encryptWithKey(
+                decrypted,
+                toKey,
+              )
+
+              connector.encryptedToken = ciphertext
+              localStorage.setItem(`connector-${connector.id}-iv`, newIv)
+            } catch (error) {
+              console.error(
+                `Failed to re-encrypt connector ${connector.id} access token:`,
+                error,
+              )
+            }
+          }
+        }
+
+        // Re-encrypt refresh token
+        if (connector.encryptedRefreshToken) {
+          const iv = localStorage.getItem(
+            `connector-${connector.id}-refresh-iv`,
+          )
+          if (iv) {
+            try {
+              const decrypted = await this.decryptWithKey(
+                connector.encryptedRefreshToken,
+                iv,
+                fromKey,
+              )
+
+              const { ciphertext, iv: newIv } = await this.encryptWithKey(
+                decrypted,
+                toKey,
+              )
+
+              connector.encryptedRefreshToken = ciphertext
+              localStorage.setItem(
+                `connector-${connector.id}-refresh-iv`,
+                newIv,
+              )
+            } catch (error) {
+              console.error(
+                `Failed to re-encrypt connector ${connector.id} refresh token:`,
+                error,
+              )
+            }
+          }
+        }
+
+        await db.update('connectors', connector)
+      }
+    } catch {
+      // Connectors might not exist
+    }
   }
 
   /**
@@ -571,7 +943,7 @@ export class SecureStorage {
    * Check if secure storage is locked
    */
   static isLocked(): boolean {
-    return this.cryptoKey === null
+    return this.localKey === null
   }
 
   /**
@@ -581,7 +953,7 @@ export class SecureStorage {
   static getMasterKey(): string | null {
     // Return a placeholder if initialized, null otherwise
     // This is for backward compatibility with UI that shows "master key"
-    if (this.cryptoKey) {
+    if (this.localKey) {
       return '[Non-extractable key stored securely in browser]'
     }
     return null

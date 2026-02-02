@@ -1,4 +1,7 @@
-import { db } from '@/lib/db'
+import {
+  agents as agentsMap,
+  credentials as credentialsMap,
+} from '@/lib/yjs/maps'
 import { Agent, Credential, LLMProvider } from '@/types'
 import { EasySetupData } from './easy-setup'
 import { nanoid } from 'nanoid'
@@ -13,8 +16,6 @@ export async function initializeEasySetup(
   decryptedData: { c: Array<{ p: string; k: string; m?: string; b?: string }> },
 ): Promise<void> {
   const { setPlatformName } = userSettings.getState()
-
-  await db.init()
 
   // Keep track of what was imported for success message
   let importedCounts = {
@@ -32,17 +33,15 @@ export async function initializeEasySetup(
       const { SecureStorage } = await import('@/lib/crypto')
 
       // Get existing credentials count to calculate order
-      const existingCredentials = await db.getAll('credentials')
+      const existingCredentials = Array.from(credentialsMap.values())
       const baseOrder = existingCredentials.length
 
       for (let i = 0; i < decryptedData.c.length; i++) {
         const credentialData = decryptedData.c[i]
 
         // Check if credential already exists for this provider
-        const existingCredentialsForProvider = await db.query(
-          'credentials',
-          'provider',
-          credentialData.p,
+        const existingCredentialsForProvider = existingCredentials.filter(
+          (c) => c.provider === credentialData.p,
         )
 
         if (existingCredentialsForProvider.length === 0) {
@@ -69,7 +68,7 @@ export async function initializeEasySetup(
             order: baseOrder + i,
           }
 
-          await db.add('credentials', credential)
+          credentialsMap.set(credentialId, credential)
           importedCounts.credentials++
 
           // Remember the first imported credential
@@ -84,7 +83,9 @@ export async function initializeEasySetup(
     if (setupData.p.a && setupData.p.a.length > 0) {
       for (const agentData of setupData.p.a) {
         // Check if agent already exists by name and role
-        const existingAgents = await db.query('agents', 'name', agentData.n)
+        const existingAgents = Array.from(agentsMap.values()).filter(
+          (a) => a.name === agentData.n,
+        )
         const isDuplicate = existingAgents.some(
           (agent) =>
             agent.role === agentData.r && agent.instructions === agentData.i,
@@ -109,7 +110,7 @@ export async function initializeEasySetup(
             createdAt: new Date(),
           }
 
-          await db.add('agents', agent)
+          agentsMap.set(agent.id, agent)
           importedCounts.agents++
         }
       }
@@ -192,14 +193,10 @@ export async function exportEasySetup(
     selectedAgentIds?: string[]
   },
 ): Promise<string> {
-  await db.init()
-
   try {
     // Get all data to export
-    const [allAgents, allCredentials] = await Promise.all([
-      db.getAll('agents'),
-      db.getAll('credentials'),
-    ])
+    const allAgents = Array.from(agentsMap.values())
+    const allCredentials = Array.from(credentialsMap.values())
     console.log(allAgents)
 
     // Filter agents based on selection

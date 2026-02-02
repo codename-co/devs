@@ -68,7 +68,7 @@ import {
   ARXIV_PAPER_TOOL_DEFINITION,
 } from '@/tools/plugins'
 import { getToolDefinitionsForProvider } from '@/features/connectors/tools'
-import { db } from '@/lib/db'
+import { connectors as connectorsMap } from '@/lib/yjs/maps'
 import type { Connector } from '@/features/connectors/types'
 
 // ============================================================================
@@ -169,13 +169,9 @@ function getAgentToolDefinitions(_agent: Agent): ToolDefinition[] {
  */
 async function getConnectorToolDefinitions(): Promise<ToolDefinition[]> {
   try {
-    if (!db.isInitialized()) {
-      await db.init()
-    }
-
-    const connectors = (await db.getAll('connectors')) as Connector[]
+    const connectors = Array.from(connectorsMap.values())
     console.log(
-      '▶ connectors from db:',
+      '▶ connectors from Yjs:',
       connectors.map((c) => ({
         id: c.id,
         provider: c.provider,
@@ -712,7 +708,8 @@ export const submitChat = async (
           conversationId: conversation.id,
         },
       )) {
-        console.debug('◁', chunk)
+        console.debug('◁')
+        // console.debug('◁', chunk)
         response += chunk
 
         // Only show content to user, not the tool call markers
@@ -845,12 +842,11 @@ export const submitChat = async (
     return { success: true }
   } catch (err) {
     console.error('Error calling LLM:', err)
+    const errorMessage = err instanceof Error ? err.message : String(err)
     notifyError({
       title: 'LLM Request Failed',
-      description: t(
-        'Failed to get response from LLM. Please try again later.',
-      ),
+      description: errorMessage,
     })
-    return { success: false, error: 'LLM call failed' }
+    return { success: false, error: errorMessage }
   }
 }

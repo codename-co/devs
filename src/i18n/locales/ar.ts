@@ -83,16 +83,19 @@ export const ar: I18n = {
   'Agent learned knowledge': 'المعرفة التي تعلمها الوكيل',
   Files: 'الملفات',
   'Manage your files': 'إدارة ملفاتك',
-  'App configuration': 'تكوين التطبيق',
   'Database management': 'إدارة قاعدة البيانات',
   'Traces and Metrics': 'التتبعات والقياسات',
+  'Observe and analyze traces and metrics': 'مراقبة وتحليل التتبعات والقياسات',
   Admin: 'المسؤول',
 
   // PromptArea
   'Need something done?': 'هل تحتاج إلى إنجاز شيء؟',
-  'More actions': 'المزيد من الإجراءات',
+  'Show extended actions': 'إظهار الإجراءات الموسعة',
+  'Hide extended actions': 'إخفاء الإجراءات الموسعة',
   'Attach a file or image': 'إرفاق ملف أو صورة',
   'Upload new file': 'رفع ملف جديد',
+  'Capture screen': 'التقاط الشاشة',
+  'Capturing…': 'جارٍ الالتقاط…',
   'Choose from knowledge base': 'اختر من قاعدة المعرفة',
   'No files found in knowledge base':
     'لم يتم العثور على ملفات في قاعدة المعرفة',
@@ -312,6 +315,7 @@ export const ar: I18n = {
   'Total Sub-tasks': 'إجمالي المهام الفرعية',
 
   // Common actions
+  optional: 'اختياري',
   Retry: 'إعادة المحاولة',
   Refresh: 'تحديث',
   Close: 'إغلاق',
@@ -578,7 +582,7 @@ export const ar: I18n = {
 
   // Sync - Modes
   Create: 'إنشاء',
-  Join: 'انضمام',
+  'Scan & Join': 'مسح والانضمام',
   Share: 'مشاركة',
   'Start Sync': 'بدء المزامنة',
   'Join Room': 'انضمام للغرفة',
@@ -609,8 +613,8 @@ export const ar: I18n = {
     'انقر على "مزامنة مع الأجهزة" لبدء المزامنة.',
   'Sync your data across devices in real-time.':
     'زامن بياناتك بين الأجهزة في الوقت الفعلي.',
-  'No server needed - data stays between your devices.':
-    'لا حاجة لخادم - البيانات تبقى بين أجهزتك.',
+  'No server needed - data transits between your devices.':
+    'لا حاجة إلى خادم - البيانات تنتقل بين أجهزتك.',
 
   // Sync - Room/Code
   Code: 'الرمز',
@@ -623,6 +627,15 @@ export const ar: I18n = {
   'Share this code or link with other devices:':
     'شارك هذا الرمز أو الرابط مع أجهزة أخرى:',
   'Sync Settings': 'إعدادات المزامنة',
+
+  // Sync - Room Password
+  'Room Password': 'كلمة مرور الغرفة',
+  'Sync password': 'كلمة مرور المزامنة',
+  'Enter the room password': 'أدخل كلمة مرور الغرفة',
+  'Set a password to sync API keys across devices. All devices must use the same password.':
+    'قم بتعيين كلمة مرور لمزامنة مفاتيح API عبر الأجهزة. يجب أن تستخدم جميع الأجهزة نفس كلمة المرور.',
+  'Enter the same password used when creating the room to sync API keys.':
+    'أدخل نفس كلمة المرور المستخدمة عند إنشاء الغرفة لمزامنة مفاتيح API.',
 
   // Sync - QR Code
   'Or scan this QR Code:': 'أو امسح رمز QR:',
@@ -638,11 +651,23 @@ export const ar: I18n = {
   'Camera access denied': 'تم رفض الوصول إلى الكاميرا',
   'Unable to access camera. Please grant camera permissions.':
     'تعذر الوصول إلى الكاميرا. يرجى منح أذونات الكاميرا.',
+  'Try Again': 'حاول مرة أخرى',
+
+  // Sync - Password Protected
+  'Password Required': 'كلمة المرور مطلوبة',
+  'This room is password-protected. Enter the password to join.':
+    'هذه الغرفة محمية بكلمة مرور. أدخل كلمة المرور للانضمام.',
 
   // Sync - Secret Link
   'Share the secret link': 'شارك الرابط السري',
   'Copy and share this unique link with your other device. Keep it private!':
     'انسخ وشارك هذا الرابط الفريد مع جهازك الآخر. احتفظ به خاصًا!',
+
+  // Sync - Advanced
+  Advanced: 'متقدم',
+  'Background Sync': 'المزامنة في الخلفية',
+  'Experimental: Prevents UI freezing during sync':
+    'تجريبي: يمنع تجمد واجهة المستخدم أثناء المزامنة',
 
   // Sync - Peers
   'Status:': 'الحالة:',
@@ -763,6 +788,18 @@ export const ar: I18n = {
   'Loading models...': 'جاري تحميل النماذج...',
   'No models available': 'لا توجد نماذج متاحة',
   'Check your server URL and connection': 'تحقق من عنوان URL للخادم والاتصال',
+
+  // LLM Provider Management
+  'This provider is already configured. Edit or delete the existing one first.':
+    'هذا المزود مُعدّ بالفعل. قم بتحرير أو حذف المزود الحالي أولاً.',
+  'Invalid API key': 'مفتاح API غير صالح',
+  'Provider added successfully': 'تمت إضافة المزود بنجاح',
+  'Failed to add provider': 'فشل في إضافة المزود',
+  'Credential not found': 'لم يتم العثور على بيانات الاعتماد',
+  'Provider updated successfully': 'تم تحديث المزود بنجاح',
+  'Failed to update provider': 'فشل في تحديث المزود',
+  'Provider deleted': 'تم حذف المزود',
+  'Failed to delete provider': 'فشل في حذف المزود',
 
   // Security - Non-extractable CryptoKey
   'Encryption Key Status': 'حالة مفتاح التشفير',

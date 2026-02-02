@@ -4,19 +4,17 @@ import type {
   BattleConfig,
   BattleJudgment,
 } from '@/features/battle/types'
-import { createMockDb, createMockToast, resetMockDb } from './mocks'
+import { createMockYMap, createMockToast, resetMockYMap } from './mocks'
 
 // Create mocks
-const mockDb = createMockDb()
+const mockBattlesMap = createMockYMap<Battle>()
 const mockToast = createMockToast()
 
 // Setup global mocks
-vi.mock('@/lib/db', () => ({ db: mockDb }))
-vi.mock('@/lib/toast', () => mockToast)
-vi.mock('@/features/sync', () => ({
-  syncToYjs: vi.fn(),
-  deleteFromYjs: vi.fn(),
+vi.mock('@/lib/yjs', () => ({
+  battles: mockBattlesMap,
 }))
+vi.mock('@/lib/toast', () => mockToast)
 
 // We need to dynamically import the module to reset its state between tests
 let battleStore: typeof import('@/stores/battleStore')
@@ -94,7 +92,7 @@ function createMockJudgment(winnerId: string): BattleJudgment {
 describe('battleStore', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
-    resetMockDb(mockDb)
+    resetMockYMap(mockBattlesMap)
 
     // Reset module cache to clear internal state
     vi.resetModules()
@@ -218,8 +216,8 @@ describe('battleStore', () => {
 
       await battleStore.useBattleStore.getState().createBattle(config)
 
-      expect(mockDb.add).toHaveBeenCalledWith(
-        'battles',
+      expect(mockBattlesMap.set).toHaveBeenCalledWith(
+        expect.any(String),
         expect.objectContaining({
           topic: config.topic,
           judgeAgentId: config.judgeAgentId,
@@ -282,11 +280,11 @@ describe('battleStore', () => {
         teamA: { name: 'Team A', agentIds: ['a1', 'a2'], color: 'blue' },
         teamB: { name: 'Team B', agentIds: ['b1', 'b2'], color: 'red' },
       })
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       await battleStore.useBattleStore.getState().startBattle(battle.id)
 
-      expect(mockDb.update).toHaveBeenCalled()
+      expect(mockBattlesMap.set).toHaveBeenCalled()
     })
 
     it('should throw if teams have different sizes', async () => {
@@ -294,7 +292,7 @@ describe('battleStore', () => {
         teamA: { name: 'Team A', agentIds: ['a1', 'a2', 'a3'], color: 'blue' },
         teamB: { name: 'Team B', agentIds: ['b1', 'b2'], color: 'red' },
       })
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       await expect(
         battleStore.useBattleStore.getState().startBattle(battle.id),
@@ -306,7 +304,7 @@ describe('battleStore', () => {
         teamA: { name: 'Team A', agentIds: [], color: 'blue' },
         teamB: { name: 'Team B', agentIds: [], color: 'red' },
       })
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       await expect(
         battleStore.useBattleStore.getState().startBattle(battle.id),
@@ -318,12 +316,12 @@ describe('battleStore', () => {
         teamA: { name: 'Team A', agentIds: ['a1', 'a2'], color: 'blue' },
         teamB: { name: 'Team B', agentIds: ['b1', 'b2'], color: 'red' },
       })
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       await battleStore.useBattleStore.getState().startBattle(battle.id)
 
-      const updateCall = mockDb.update.mock.calls[0]
-      const updatedBattle = updateCall[1] as Battle
+      const setCall = mockBattlesMap.set.mock.calls[0]
+      const updatedBattle = setCall[1] as Battle
 
       expect(updatedBattle.rounds).toHaveLength(1)
       expect(updatedBattle.rounds[0].matches).toHaveLength(2)
@@ -335,36 +333,36 @@ describe('battleStore', () => {
 
     it('should change status to in_progress', async () => {
       const battle = createMockBattle()
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       await battleStore.useBattleStore.getState().startBattle(battle.id)
 
-      const updateCall = mockDb.update.mock.calls[0]
-      const updatedBattle = updateCall[1] as Battle
+      const setCall = mockBattlesMap.set.mock.calls[0]
+      const updatedBattle = setCall[1] as Battle
 
       expect(updatedBattle.status).toBe('in_progress')
     })
 
     it('should set first round with roundNumber 1', async () => {
       const battle = createMockBattle()
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       await battleStore.useBattleStore.getState().startBattle(battle.id)
 
-      const updateCall = mockDb.update.mock.calls[0]
-      const updatedBattle = updateCall[1] as Battle
+      const setCall = mockBattlesMap.set.mock.calls[0]
+      const updatedBattle = setCall[1] as Battle
 
       expect(updatedBattle.rounds[0].roundNumber).toBe(1)
     })
 
     it('should set matches with pending status', async () => {
       const battle = createMockBattle()
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       await battleStore.useBattleStore.getState().startBattle(battle.id)
 
-      const updateCall = mockDb.update.mock.calls[0]
-      const updatedBattle = updateCall[1] as Battle
+      const setCall = mockBattlesMap.set.mock.calls[0]
+      const updatedBattle = setCall[1] as Battle
 
       updatedBattle.rounds[0].matches.forEach((match) => {
         expect(match.status).toBe('pending')
@@ -372,7 +370,7 @@ describe('battleStore', () => {
     })
 
     it('should throw if battle not found', async () => {
-      mockDb.get.mockResolvedValueOnce(null)
+      // Don't set up any battle data - the map is empty
 
       await expect(
         battleStore.useBattleStore.getState().startBattle('non-existent'),
@@ -381,12 +379,12 @@ describe('battleStore', () => {
 
     it('should generate unique IDs for matches', async () => {
       const battle = createMockBattle()
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       await battleStore.useBattleStore.getState().startBattle(battle.id)
 
-      const updateCall = mockDb.update.mock.calls[0]
-      const updatedBattle = updateCall[1] as Battle
+      const setCall = mockBattlesMap.set.mock.calls[0]
+      const updatedBattle = setCall[1] as Battle
 
       const matchIds = updatedBattle.rounds[0].matches.map((m) => m.id)
       const uniqueIds = new Set(matchIds)
@@ -417,7 +415,7 @@ describe('battleStore', () => {
           },
         ],
       })
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       const judgment = createMockJudgment('agent-1')
 
@@ -425,8 +423,8 @@ describe('battleStore', () => {
         .getState()
         .completeMatch(battle.id, 'match-1', 'agent-1', judgment)
 
-      const updateCall = mockDb.update.mock.calls[0]
-      const updatedBattle = updateCall[1] as Battle
+      const setCall = mockBattlesMap.set.mock.calls[0]
+      const updatedBattle = setCall[1] as Battle
       const match = updatedBattle.rounds[0].matches[0]
 
       expect(match.winnerId).toBe('agent-1')
@@ -452,7 +450,7 @@ describe('battleStore', () => {
           },
         ],
       })
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       const judgment = createMockJudgment('agent-1')
 
@@ -460,8 +458,8 @@ describe('battleStore', () => {
         .getState()
         .completeMatch(battle.id, 'match-1', 'agent-1', judgment)
 
-      const updateCall = mockDb.update.mock.calls[0]
-      const updatedBattle = updateCall[1] as Battle
+      const setCall = mockBattlesMap.set.mock.calls[0]
+      const updatedBattle = setCall[1] as Battle
       const match = updatedBattle.rounds[0].matches[0]
 
       expect(match.status).toBe('completed')
@@ -486,7 +484,7 @@ describe('battleStore', () => {
           },
         ],
       })
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       const judgment = createMockJudgment('agent-1')
 
@@ -494,8 +492,8 @@ describe('battleStore', () => {
         .getState()
         .completeMatch(battle.id, 'match-1', 'agent-1', judgment)
 
-      const updateCall = mockDb.update.mock.calls[0]
-      const updatedBattle = updateCall[1] as Battle
+      const setCall = mockBattlesMap.set.mock.calls[0]
+      const updatedBattle = setCall[1] as Battle
       const match = updatedBattle.rounds[0].matches[0]
 
       expect(match.completedAt).toBeInstanceOf(Date)
@@ -520,7 +518,7 @@ describe('battleStore', () => {
           },
         ],
       })
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       const judgment = createMockJudgment('agent-1')
 
@@ -528,8 +526,8 @@ describe('battleStore', () => {
         .getState()
         .completeMatch(battle.id, 'match-1', 'agent-1', judgment)
 
-      const updateCall = mockDb.update.mock.calls[0]
-      const updatedBattle = updateCall[1] as Battle
+      const setCall = mockBattlesMap.set.mock.calls[0]
+      const updatedBattle = setCall[1] as Battle
 
       expect(updatedBattle.rounds[0].status).toBe('completed')
     })
@@ -559,7 +557,7 @@ describe('battleStore', () => {
           },
         ],
       })
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       const judgment = createMockJudgment('agent-1')
 
@@ -567,14 +565,14 @@ describe('battleStore', () => {
         .getState()
         .completeMatch(battle.id, 'match-1', 'agent-1', judgment)
 
-      const updateCall = mockDb.update.mock.calls[0]
-      const updatedBattle = updateCall[1] as Battle
+      const setCall = mockBattlesMap.set.mock.calls[0]
+      const updatedBattle = setCall[1] as Battle
 
       expect(updatedBattle.rounds[0].status).toBe('in_progress')
     })
 
     it('should throw if battle not found', async () => {
-      mockDb.get.mockResolvedValueOnce(null)
+      // Don't set up any battle data - the map is empty
 
       const judgment = createMockJudgment('agent-1')
 
@@ -617,12 +615,12 @@ describe('battleStore', () => {
           },
         ],
       })
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       await battleStore.useBattleStore.getState().advanceToNextRound(battle.id)
 
-      const updateCall = mockDb.update.mock.calls[0]
-      const updatedBattle = updateCall[1] as Battle
+      const setCall = mockBattlesMap.set.mock.calls[0]
+      const updatedBattle = setCall[1] as Battle
 
       expect(updatedBattle.rounds).toHaveLength(2)
       expect(updatedBattle.rounds[1].roundNumber).toBe(2)
@@ -651,12 +649,12 @@ describe('battleStore', () => {
           },
         ],
       })
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       await battleStore.useBattleStore.getState().advanceToNextRound(battle.id)
 
-      const updateCall = mockDb.update.mock.calls[0]
-      const updatedBattle = updateCall[1] as Battle
+      const setCall = mockBattlesMap.set.mock.calls[0]
+      const updatedBattle = setCall[1] as Battle
 
       expect(updatedBattle.status).toBe('completed')
       expect(updatedBattle.championAgentId).toBe('agent-1')
@@ -682,7 +680,7 @@ describe('battleStore', () => {
           },
         ],
       })
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       await expect(
         battleStore.useBattleStore.getState().advanceToNextRound(battle.id),
@@ -694,7 +692,7 @@ describe('battleStore', () => {
         status: 'in_progress',
         rounds: [],
       })
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       await expect(
         battleStore.useBattleStore.getState().advanceToNextRound(battle.id),
@@ -735,12 +733,12 @@ describe('battleStore', () => {
           },
         ],
       })
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       await battleStore.useBattleStore.getState().advanceToNextRound(battle.id)
 
-      const updateCall = mockDb.update.mock.calls[0]
-      const updatedBattle = updateCall[1] as Battle
+      const setCall = mockBattlesMap.set.mock.calls[0]
+      const updatedBattle = setCall[1] as Battle
 
       expect(updatedBattle.rounds[1].matches).toHaveLength(2)
       // First match is regular
@@ -751,7 +749,7 @@ describe('battleStore', () => {
     })
 
     it('should throw if battle not found', async () => {
-      mockDb.get.mockResolvedValueOnce(null)
+      // Don't set up any battle data - the map is empty
 
       await expect(
         battleStore.useBattleStore
@@ -1130,7 +1128,8 @@ describe('battleStore', () => {
         createMockBattle({ id: 'battle-1' }),
         createMockBattle({ id: 'battle-2' }),
       ]
-      mockDb.getAll.mockResolvedValueOnce(mockBattles)
+      mockBattlesMap._data.set('battle-1', mockBattles[0])
+      mockBattlesMap._data.set('battle-2', mockBattles[1])
 
       await battleStore.useBattleStore.getState().loadBattles()
 
@@ -1139,7 +1138,7 @@ describe('battleStore', () => {
     })
 
     it('should set isLoading to false after loading', async () => {
-      mockDb.getAll.mockResolvedValueOnce([])
+      // Map is already empty from reset
 
       await battleStore.useBattleStore.getState().loadBattles()
 
@@ -1176,7 +1175,7 @@ describe('battleStore', () => {
       expect(state.currentBattle).toBeNull()
     })
 
-    it('should call db.delete', async () => {
+    it('should call mockBattlesMap.delete', async () => {
       const battle = createMockBattle({ id: 'battle-to-delete' })
       battleStore.useBattleStore.setState({ battles: [battle] })
 
@@ -1184,7 +1183,7 @@ describe('battleStore', () => {
         .getState()
         .deleteBattle('battle-to-delete')
 
-      expect(mockDb.delete).toHaveBeenCalledWith('battles', 'battle-to-delete')
+      expect(mockBattlesMap.delete).toHaveBeenCalledWith('battle-to-delete')
     })
   })
 
@@ -1203,12 +1202,12 @@ describe('battleStore', () => {
   describe('cancelBattle', () => {
     it('should set battle status to cancelled', async () => {
       const battle = createMockBattle({ status: 'in_progress' })
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       await battleStore.useBattleStore.getState().cancelBattle(battle.id)
 
-      const updateCall = mockDb.update.mock.calls[0]
-      const updatedBattle = updateCall[1] as Battle
+      const setCall = mockBattlesMap.set.mock.calls[0]
+      const updatedBattle = setCall[1] as Battle
 
       expect(updatedBattle.status).toBe('cancelled')
     })
@@ -1234,14 +1233,14 @@ describe('battleStore', () => {
           },
         ],
       })
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       await battleStore.useBattleStore
         .getState()
         .startMatch(battle.id, 'match-1')
 
-      const updateCall = mockDb.update.mock.calls[0]
-      const updatedBattle = updateCall[1] as Battle
+      const setCall = mockBattlesMap.set.mock.calls[0]
+      const updatedBattle = setCall[1] as Battle
 
       expect(updatedBattle.rounds[0].matches[0].status).toBe('in_progress')
     })
@@ -1265,14 +1264,14 @@ describe('battleStore', () => {
           },
         ],
       })
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       await battleStore.useBattleStore
         .getState()
         .startMatch(battle.id, 'match-1')
 
-      const updateCall = mockDb.update.mock.calls[0]
-      const updatedBattle = updateCall[1] as Battle
+      const setCall = mockBattlesMap.set.mock.calls[0]
+      const updatedBattle = setCall[1] as Battle
 
       expect(updatedBattle.rounds[0].matches[0].startedAt).toBeInstanceOf(Date)
     })
@@ -1296,14 +1295,14 @@ describe('battleStore', () => {
           },
         ],
       })
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       await battleStore.useBattleStore
         .getState()
         .startMatch(battle.id, 'match-1')
 
-      const updateCall = mockDb.update.mock.calls[0]
-      const updatedBattle = updateCall[1] as Battle
+      const setCall = mockBattlesMap.set.mock.calls[0]
+      const updatedBattle = setCall[1] as Battle
 
       expect(updatedBattle.rounds[0].status).toBe('in_progress')
     })
@@ -1329,14 +1328,14 @@ describe('battleStore', () => {
           },
         ],
       })
-      mockDb.get.mockResolvedValueOnce(battle)
+      mockBattlesMap._data.set(battle.id, battle)
 
       await battleStore.useBattleStore
         .getState()
         .setMatchConversation(battle.id, 'match-1', 'conversation-123')
 
-      const updateCall = mockDb.update.mock.calls[0]
-      const updatedBattle = updateCall[1] as Battle
+      const setCall = mockBattlesMap.set.mock.calls[0]
+      const updatedBattle = setCall[1] as Battle
 
       expect(updatedBattle.rounds[0].matches[0].conversationId).toBe(
         'conversation-123',

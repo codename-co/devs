@@ -13,8 +13,8 @@ import {
   getKnowledgeMap,
   getMemoriesMap,
   getTasksMap,
-  isPersistenceReady,
 } from '@/features/sync'
+import { isReady } from '@/lib/yjs'
 import { folderSyncService } from '../lib/local-backup-service'
 import { useFolderSyncStore } from '../stores/folderSyncStore'
 
@@ -70,9 +70,9 @@ export function useAutoBackup(): void {
 
     // Wait for persistence to be ready
     const waitForReady = () => {
-      if (!isPersistenceReady()) {
+      if (!isReady()) {
         const checkReady = setInterval(() => {
-          if (isPersistenceReady()) {
+          if (isReady()) {
             clearInterval(checkReady)
             setupObservers()
           }

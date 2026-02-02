@@ -1,6 +1,5 @@
 import { create } from 'zustand'
-import { db } from '@/lib/db'
-import { deleteFromYjs, syncToYjs } from '@/features/sync'
+import { pinnedMessages as pinnedMessagesMap } from '@/lib/yjs'
 import type { PinnedMessage } from '@/types'
 import { errorToast, successToast } from '@/lib/toast'
 
@@ -56,11 +55,7 @@ export const usePinnedMessageStore = create<PinnedMessageStore>((set, get) => ({
   loadPinnedMessages: async () => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      const allPinnedMessages = await db.getAll('pinnedMessages')
+      const allPinnedMessages = Array.from(pinnedMessagesMap.values())
       set({ pinnedMessages: allPinnedMessages, isLoading: false })
     } catch (error) {
       errorToast('Failed to load pinned messages', error)
@@ -71,11 +66,7 @@ export const usePinnedMessageStore = create<PinnedMessageStore>((set, get) => ({
   loadPinnedMessagesForAgent: async (agentId: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      const allPinnedMessages = await db.getAll('pinnedMessages')
+      const allPinnedMessages = Array.from(pinnedMessagesMap.values())
       const agentPinnedMessages = allPinnedMessages.filter(
         (pm) => pm.agentId === agentId,
       )
@@ -90,11 +81,7 @@ export const usePinnedMessageStore = create<PinnedMessageStore>((set, get) => ({
   loadPinnedMessagesForConversation: async (conversationId: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      const allPinnedMessages = await db.getAll('pinnedMessages')
+      const allPinnedMessages = Array.from(pinnedMessagesMap.values())
       const conversationPinnedMessages = allPinnedMessages.filter(
         (pm) => pm.conversationId === conversationId,
       )
@@ -109,10 +96,6 @@ export const usePinnedMessageStore = create<PinnedMessageStore>((set, get) => ({
   createPinnedMessage: async (pinnedMessageData) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
       const pinnedMessage: PinnedMessage = {
         ...pinnedMessageData,
         id: crypto.randomUUID(),
@@ -120,8 +103,7 @@ export const usePinnedMessageStore = create<PinnedMessageStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.add('pinnedMessages', pinnedMessage)
-      syncToYjs('pinnedMessages', pinnedMessage)
+      pinnedMessagesMap.set(pinnedMessage.id, pinnedMessage)
 
       const updatedPinnedMessages = [...get().pinnedMessages, pinnedMessage]
       set({ pinnedMessages: updatedPinnedMessages, isLoading: false })
@@ -138,11 +120,7 @@ export const usePinnedMessageStore = create<PinnedMessageStore>((set, get) => ({
   updatePinnedMessage: async (id: string, updates: Partial<PinnedMessage>) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      const existing = await db.get('pinnedMessages', id)
+      const existing = pinnedMessagesMap.get(id)
       if (!existing) {
         throw new Error('Pinned message not found')
       }
@@ -154,8 +132,7 @@ export const usePinnedMessageStore = create<PinnedMessageStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('pinnedMessages', updatedPinnedMessage)
-      syncToYjs('pinnedMessages', updatedPinnedMessage)
+      pinnedMessagesMap.set(id, updatedPinnedMessage)
 
       const { pinnedMessages } = get()
       const updatedPinnedMessages = pinnedMessages.map((pm) =>
@@ -174,12 +151,7 @@ export const usePinnedMessageStore = create<PinnedMessageStore>((set, get) => ({
   deletePinnedMessage: async (id: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      await db.delete('pinnedMessages', id)
-      deleteFromYjs('pinnedMessages', id)
+      pinnedMessagesMap.delete(id)
 
       const { pinnedMessages } = get()
       const updatedPinnedMessages = pinnedMessages.filter((pm) => pm.id !== id)
@@ -195,10 +167,6 @@ export const usePinnedMessageStore = create<PinnedMessageStore>((set, get) => ({
   deletePinnedMessageByMessageId: async (messageId: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
       // Find pinned message by messageId
       const { pinnedMessages } = get()
       const pinnedMessage = pinnedMessages.find(
@@ -206,8 +174,7 @@ export const usePinnedMessageStore = create<PinnedMessageStore>((set, get) => ({
       )
 
       if (pinnedMessage) {
-        await db.delete('pinnedMessages', pinnedMessage.id)
-        deleteFromYjs('pinnedMessages', pinnedMessage.id)
+        pinnedMessagesMap.delete(pinnedMessage.id)
 
         const updatedPinnedMessages = pinnedMessages.filter(
           (pm) => pm.id !== pinnedMessage.id,
@@ -286,13 +253,8 @@ export const usePinnedMessageStore = create<PinnedMessageStore>((set, get) => ({
     keywords: string[] = [],
     limit: number = 10,
   ) => {
-    // Ensure pinned messages are loaded from IndexedDB
-    if (!db.isInitialized()) {
-      await db.init()
-    }
-
-    // Load all pinned messages from IndexedDB
-    const allPinnedMessages = await db.getAll('pinnedMessages')
+    // Load all pinned messages from Yjs map
+    const allPinnedMessages = Array.from(pinnedMessagesMap.values())
 
     // Filter to get messages for this agent, excluding current conversation
     const relevantMessages = allPinnedMessages.filter(

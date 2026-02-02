@@ -32,7 +32,8 @@ import type {
 } from '@/types'
 import { useI18n, useUrl } from '@/i18n'
 import { successToast, errorToast } from '@/lib/toast'
-import { db } from '@/lib/db'
+import { getAllKnowledgeItems } from '@/stores/knowledgeStore'
+import { connectors as connectorsMap } from '@/lib/yjs/maps'
 import { formatBytes } from '@/lib/format'
 import { updateAgent } from '@/stores/agentStore'
 import localI18n from './i18n'
@@ -680,21 +681,10 @@ const AgentKnowledgeContent = ({
 
   // Load knowledge items
   useEffect(() => {
-    const loadKnowledgeItems = async () => {
+    const loadKnowledgeItems = () => {
       setIsLoading(true)
       try {
-        if (!db.isInitialized()) {
-          await db.init()
-        }
-
-        if (!db.hasStore('knowledgeItems')) {
-          setKnowledgeItems([])
-          setAllKnowledgeItems([])
-          setIsLoading(false)
-          return
-        }
-
-        const items = await db.getAll('knowledgeItems')
+        const items = getAllKnowledgeItems()
         // Only show files, not folders
         const fileItems = items.filter((item) => item.type === 'file')
         fileItems.sort(
@@ -1310,10 +1300,6 @@ const AgentToolsDisplay = (_props: { tools: Agent['tools'] }) => {
 
         // Load connector tools from active connectors
         try {
-          if (!db.isInitialized()) {
-            await db.init()
-          }
-
           const { getToolDefinitionsForProvider } = await import(
             '@/features/connectors/tools'
           )
@@ -1323,9 +1309,9 @@ const AgentToolsDisplay = (_props: { tools: Agent['tools'] }) => {
             provider: string
             status: string
           }
-          const connectors = (await db.getAll(
-            'connectors',
-          )) as ConnectorRecord[]
+          const connectors = Array.from(
+            connectorsMap.values(),
+          ) as ConnectorRecord[]
           const activeConnectors = connectors.filter((c) =>
             ['connected', 'syncing'].includes(c.status),
           )

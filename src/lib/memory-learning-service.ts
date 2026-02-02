@@ -10,7 +10,10 @@
 
 import { LLMService, LLMMessage } from '@/lib/llm'
 import { CredentialService } from '@/lib/credential-service'
-import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
+import {
+  useAgentMemoryStore,
+  getMemoriesByAgentId,
+} from '@/stores/agentMemoryStore'
 import { useConversationStore } from '@/stores/conversationStore'
 import { Lang, languages } from '@/i18n'
 import type {
@@ -581,14 +584,13 @@ export class MemoryLearningService {
       getPendingLearningEvents,
       createMemory,
       markLearningEventProcessed,
-      memories,
     } = useAgentMemoryStore.getState()
 
     const pendingEvents = getPendingLearningEvents(agentId)
     const createdMemories: AgentMemoryEntry[] = []
 
     // Get all existing memories for this agent (any status) to check for duplicates
-    const existingMemories = memories.filter((m) => m.agentId === agentId)
+    const existingMemories = getMemoriesByAgentId(agentId)
 
     for (const event of pendingEvents) {
       try {
@@ -643,15 +645,14 @@ export class MemoryLearningService {
   static async generateMemorySynthesis(
     agentId: string,
   ): Promise<SynthesisResult> {
-    const { memories, getMemoryStats, createOrUpdateMemoryDocument } =
+    const { getMemoryStats, createOrUpdateMemoryDocument } =
       useAgentMemoryStore.getState()
 
     // Get approved memories for this agent
-    const agentMemories = memories.filter(
+    const agentMemories = getMemoriesByAgentId(agentId).filter(
       (m) =>
-        m.agentId === agentId &&
-        (m.validationStatus === 'approved' ||
-          m.validationStatus === 'auto_approved'),
+        m.validationStatus === 'approved' ||
+        m.validationStatus === 'auto_approved',
     )
 
     if (agentMemories.length === 0) {
@@ -792,14 +793,13 @@ Use this context to provide more personalized and contextually relevant response
     agentId: string,
     delayHours: number = 24,
   ): Promise<number> {
-    const { memories, updateMemory } = useAgentMemoryStore.getState()
+    const { updateMemory } = useAgentMemoryStore.getState()
 
     const now = new Date()
     const cutoffDate = new Date(now.getTime() - delayHours * 60 * 60 * 1000)
 
-    const memoriesToAutoApprove = memories.filter(
+    const memoriesToAutoApprove = getMemoriesByAgentId(agentId).filter(
       (m) =>
-        m.agentId === agentId &&
         m.validationStatus === 'pending' &&
         m.confidence === 'high' &&
         new Date(m.learnedAt) < cutoffDate,

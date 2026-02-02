@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { db } from '@/lib/db'
+import { sharedContexts } from '@/lib/yjs/maps'
 import type { SharedContext } from '@/types'
 import { errorToast, successToast } from '@/lib/toast'
 
@@ -31,10 +31,7 @@ export const useContextStore = create<ContextStore>((set, get) => ({
   loadContexts: async () => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-      const contexts = await db.getAll('contexts')
+      const contexts = Array.from(sharedContexts.values())
 
       // Filter out expired contexts
       const now = new Date()
@@ -52,17 +49,13 @@ export const useContextStore = create<ContextStore>((set, get) => ({
   publishContext: async (contextData) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
       const context: SharedContext = {
         ...contextData,
         id: crypto.randomUUID(),
         createdAt: new Date(),
       }
 
-      await db.add('contexts', context)
+      sharedContexts.set(context.id, context)
 
       const updatedContexts = [...get().contexts, context]
       set({
@@ -81,11 +74,7 @@ export const useContextStore = create<ContextStore>((set, get) => ({
   updateContext: async (id: string, updates: Partial<SharedContext>) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      const context = await db.get('contexts', id)
+      const context = sharedContexts.get(id)
       if (!context) {
         throw new Error('Context not found')
       }
@@ -96,7 +85,7 @@ export const useContextStore = create<ContextStore>((set, get) => ({
         id,
       }
 
-      await db.update('contexts', updatedContext)
+      sharedContexts.set(id, updatedContext)
 
       const { contexts } = get()
       const updatedContexts = contexts.map((c) =>
@@ -116,10 +105,7 @@ export const useContextStore = create<ContextStore>((set, get) => ({
   deleteContext: async (id: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-      await db.delete('contexts', id)
+      sharedContexts.delete(id)
 
       const { contexts } = get()
       const updatedContexts = contexts.filter((c) => c.id !== id)
@@ -212,3 +198,26 @@ export const useContextStore = create<ContextStore>((set, get) => ({
     return get().getRelevantContexts(agentId, keywords)
   },
 }))
+
+// =========================================================================
+// Yjs Observers for P2P sync
+// =========================================================================
+
+/**
+ * Initialize Yjs observers for real-time sync.
+ * When contexts are modified on another device,
+ * this ensures the Zustand store stays in sync.
+ */
+function initYjsObservers(): void {
+  sharedContexts.observe(() => {
+    const contexts = Array.from(sharedContexts.values())
+    const now = new Date()
+    const validContexts = contexts.filter(
+      (ctx) => !ctx.expiryDate || ctx.expiryDate > now,
+    )
+    useContextStore.setState({ contexts: validContexts })
+  })
+}
+
+// Initialize observers when module loads
+initYjsObservers()

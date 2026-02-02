@@ -30,18 +30,16 @@ interface PresetGridProps {
   onClose?: () => void
 }
 
-const CATEGORY_CONFIG: Record<
-  PresetCategory,
-  { label: string; icon: string }
-> = {
-  style: { label: 'Styles', icon: '🎨' },
-  photography: { label: 'Photography', icon: '📸' },
-  illustration: { label: 'Illustration', icon: '✏️' },
-  'concept-art': { label: 'Concept Art', icon: '⚔️' },
-  marketing: { label: 'Marketing', icon: '📢' },
-  'social-media': { label: 'Social Media', icon: '📱' },
-  custom: { label: 'My Presets', icon: '⭐' },
-}
+const CATEGORY_CONFIG: Record<PresetCategory, { label: string; icon: string }> =
+  {
+    style: { label: 'Styles', icon: '🎨' },
+    photography: { label: 'Photography', icon: '📸' },
+    illustration: { label: 'Illustration', icon: '✏️' },
+    'concept-art': { label: 'Concept Art', icon: '⚔️' },
+    marketing: { label: 'Marketing', icon: '📢' },
+    'social-media': { label: 'Social Media', icon: '📱' },
+    custom: { label: 'My Presets', icon: '⭐' },
+  }
 
 export function PresetGrid({
   lang,
@@ -50,7 +48,7 @@ export function PresetGrid({
   activePreset,
   onSelectPreset,
   onDeletePreset,
-  onClose,
+  onClose: _onClose,
 }: PresetGridProps) {
   const { t } = useI18n(lang as any)
   const [searchQuery, setSearchQuery] = useState('')
@@ -62,11 +60,11 @@ export function PresetGrid({
 
     if (selectedCategory !== 'all' && selectedCategory !== 'custom') {
       filtered = filtered.filter((preset) =>
-        preset.tags?.some((tag) =>
-          CATEGORY_CONFIG[selectedCategory as PresetCategory]?.label
-            .toLowerCase()
-            .includes(tag) ||
-          tag.includes(selectedCategory),
+        preset.tags?.some(
+          (tag) =>
+            CATEGORY_CONFIG[selectedCategory as PresetCategory]?.label
+              .toLowerCase()
+              .includes(tag) || tag.includes(selectedCategory),
         ),
       )
     }
@@ -105,23 +103,15 @@ export function PresetGrid({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">{t('Image Presets')}</h2>
-        {onClose && (
-          <Button isIconOnly variant="light" size="sm" onPress={onClose}>
-            <Icon name="Xmark" size="sm" />
-          </Button>
-        )}
-      </div>
-
       {/* Search */}
       <Input
         type="search"
         placeholder={t('Search presets...')}
         value={searchQuery}
         onValueChange={setSearchQuery}
-        startContent={<Icon name="Search" size="sm" className="text-default-400" />}
+        startContent={
+          <Icon name="Search" size="sm" className="text-default-400" />
+        }
         className="mb-4"
         size="sm"
         isClearable

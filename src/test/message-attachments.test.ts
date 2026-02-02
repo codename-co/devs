@@ -1,22 +1,23 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import type { MessageAttachment } from '@/types'
+import type { MessageAttachment, Conversation } from '@/types'
+import { createMockYMap, resetMockYMap, createMockToast } from './stores/mocks'
 
-// Mock the dependencies
-const mockDb = {
-  isInitialized: vi.fn(() => true),
-  init: vi.fn().mockResolvedValue(undefined),
-  get: vi.fn().mockResolvedValue(null),
-  getAll: vi.fn().mockResolvedValue([]),
-  add: vi.fn().mockResolvedValue(undefined),
-  update: vi.fn().mockResolvedValue(undefined),
-  delete: vi.fn().mockResolvedValue(undefined),
-  hasStore: vi.fn().mockReturnValue(true),
-}
+// Create mocks at module level
+const mockConversationsMap = createMockYMap<Conversation>()
+const mockToast = createMockToast()
 
-vi.mock('@/lib/db', () => ({ db: mockDb }))
-vi.mock('@/lib/toast', () => ({
-  errorToast: vi.fn(),
-  successToast: vi.fn(),
+// Mock the Yjs module
+vi.mock('@/lib/yjs', () => ({
+  conversations: mockConversationsMap,
+  whenReady: Promise.resolve(),
+  transact: vi.fn((fn: () => void) => fn()),
+}))
+
+vi.mock('@/lib/toast', () => mockToast)
+
+// Mock agentStore getAgentById
+vi.mock('@/stores/agentStore', () => ({
+  getAgentById: vi.fn().mockResolvedValue({ id: 'test-agent', slug: 'test-agent', name: 'Test Agent' }),
 }))
 
 describe('MessageAttachment Type', () => {
@@ -218,11 +219,19 @@ describe('LLM Provider attachment format', () => {
 })
 
 describe('Conversation attachment persistence', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
-    mockDb.isInitialized.mockReturnValue(true)
-    mockDb.get.mockResolvedValue(null)
-    mockDb.getAll.mockResolvedValue([])
+    resetMockYMap(mockConversationsMap)
+
+    // Reset module cache to get fresh store
+    vi.resetModules()
+
+    // Re-apply mocks after module reset
+    vi.mock('@/lib/yjs', () => ({
+      conversations: mockConversationsMap,
+      whenReady: Promise.resolve(),
+      transact: vi.fn((fn: () => void) => fn()),
+    }))
   })
 
   afterEach(() => {
@@ -230,24 +239,21 @@ describe('Conversation attachment persistence', () => {
   })
 
   it('should include attachments in addMessage call', async () => {
-    // Reset modules to ensure fresh imports
-    vi.resetModules()
-
     const { useConversationStore } = await import('@/stores/conversationStore')
 
-    // Setup mock conversation
+    // Setup mock conversation in Yjs map
     const testConversation = {
       id: 'test-conv-1',
       agentId: 'test-agent',
-      agentSlug: 'test-agent', // Include agentSlug to avoid migration
+      agentSlug: 'test-agent',
       workflowId: 'test-workflow',
       participatingAgents: ['test-agent'],
       messages: [],
       timestamp: new Date(),
+      updatedAt: new Date(),
     }
 
-    mockDb.get.mockResolvedValue(testConversation)
-    mockDb.update.mockResolvedValue(undefined)
+    mockConversationsMap.set('test-conv-1', testConversation as Conversation)
 
     const store = useConversationStore.getState()
 
@@ -271,38 +277,37 @@ describe('Conversation attachment persistence', () => {
 
     await store.addMessage('test-conv-1', messageWithAttachments)
 
-    // Verify the update was called with attachment data
-    expect(mockDb.update).toHaveBeenCalled()
-    const updateCall = mockDb.update.mock.calls[0]
-    expect(updateCall[0]).toBe('conversations')
-
-    const updatedConversation = updateCall[1]
-    expect(updatedConversation.messages).toHaveLength(1)
-    expect(updatedConversation.messages[0].attachments).toBeDefined()
-    expect(updatedConversation.messages[0].attachments).toHaveLength(1)
-    expect(updatedConversation.messages[0].attachments[0].name).toBe('test.png')
+    // Verify the conversation was updated in Yjs map with attachment data
+    expect(mockConversationsMap.set).toHaveBeenCalled()
+    
+    // Get the updated conversation from the mock map
+    const updatedConversation = mockConversationsMap.get('test-conv-1')
+    expect(updatedConversation).toBeDefined()
+    expect(updatedConversation?.messages).toHaveLength(1)
+    expect(updatedConversation?.messages[0].attachments).toBeDefined()
+    expect(updatedConversation?.messages[0].attachments).toHaveLength(1)
+    expect(updatedConversation?.messages[0].attachments?.[0].name).toBe('test.png')
   })
 
   it('should preserve attachments when loading conversation history', async () => {
-    vi.resetModules()
-
     const { useConversationStore } = await import('@/stores/conversationStore')
 
-    // Setup conversation with message that has attachments
+    // Setup conversation with message that has attachments in Yjs map
     const conversationWithAttachments = {
       id: 'test-conv-2',
       agentId: 'test-agent',
+      agentSlug: 'test-agent',
       workflowId: 'test-workflow',
       participatingAgents: ['test-agent'],
       messages: [
         {
           id: 'msg-1',
-          role: 'user',
+          role: 'user' as const,
           content: 'Look at this image',
           timestamp: new Date(),
           attachments: [
             {
-              type: 'image',
+              type: 'image' as const,
               name: 'screenshot.png',
               data: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
               mimeType: 'image/png',
@@ -312,15 +317,16 @@ describe('Conversation attachment persistence', () => {
         },
         {
           id: 'msg-2',
-          role: 'assistant',
+          role: 'assistant' as const,
           content: 'I can see the image you uploaded.',
           timestamp: new Date(),
         },
       ],
       timestamp: new Date(),
+      updatedAt: new Date(),
     }
 
-    mockDb.get.mockResolvedValue(conversationWithAttachments)
+    mockConversationsMap.set('test-conv-2', conversationWithAttachments as Conversation)
 
     const store = useConversationStore.getState()
     const loadedConversation = await store.loadConversation('test-conv-2')

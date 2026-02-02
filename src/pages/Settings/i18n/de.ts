@@ -137,6 +137,4 @@ export const de: I18n = {
   'models available': 'Modelle verfügbar',
   'This provider is already configured':
     'Dieser Anbieter ist bereits konfiguriert',
-  'Once configured, all models from this provider will be available in the model selector.':
-    'Nach der Konfiguration werden alle Modelle dieses Anbieters im Modellselektor verfügbar sein.',
 } as const

@@ -12,6 +12,7 @@ import {
   type FolderSyncEvent,
 } from '../lib/local-backup-service'
 import { db } from '@/lib/db'
+import * as Y from '@/lib/yjs/maps'
 
 export interface SyncStats {
   agents: number
@@ -147,25 +148,25 @@ export const useFolderSyncStore = create<FolderSyncState>()(
         if (event.type === 'sync_complete') {
           try {
             const state = get()
+            // Use Yjs maps to compute sync stats
+            const agents = Array.from(Y.agents.values())
+            const conversations = Array.from(Y.conversations.values())
+            const memories = Array.from(Y.memories.values())
+            const knowledgeItems = Array.from(Y.knowledge.values())
+            const tasks = Array.from(Y.tasks.values())
+            const studioItems = Array.from(Y.studioEntries.values())
+
             const stats: SyncStats = {
               agents: state.syncAgents
-                ? (await db.getAll('agents')).filter((a) => !a.deletedAt).length
+                ? agents.filter((a) => !a.deletedAt).length
                 : 0,
-              conversations: state.syncConversations
-                ? (await db.getAll('conversations')).length
-                : 0,
-              memories: state.syncMemories
-                ? (await db.getAll('agentMemories')).length
-                : 0,
+              conversations: state.syncConversations ? conversations.length : 0,
+              memories: state.syncMemories ? memories.length : 0,
               knowledge: state.syncKnowledge
-                ? (await db.getAll('knowledgeItems')).filter(
-                    (k) => k.type === 'file',
-                  ).length
+                ? knowledgeItems.filter((k) => k.type === 'file').length
                 : 0,
-              tasks: state.syncTasks ? (await db.getAll('tasks')).length : 0,
-              studio: state.syncStudio
-                ? (await db.getAll('studioEntries')).length
-                : 0,
+              tasks: state.syncTasks ? tasks.length : 0,
+              studio: state.syncStudio ? studioItems.length : 0,
               fullExport: state.syncFullExport,
             }
             updates.syncStats = stats

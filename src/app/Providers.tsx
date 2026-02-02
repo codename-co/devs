@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import * as SyncModule from '@/features/sync'
 import { useAutoBackup, tryReconnectLocalBackup } from '@/features/local-backup'
 import { ServiceWorkerManager } from '@/lib/service-worker'
-import { db } from '@/lib/db'
+import { whenReady, migrateFromIndexedDB } from '@/lib/yjs'
 import { SecureStorage } from '@/lib/crypto'
 import { loadModelRegistry } from '@/lib/llm/models'
 import { successToast } from '@/lib/toast'
@@ -14,7 +14,6 @@ import { useSyncStore } from '@/features/sync'
 import { ServiceWorkerUpdatePrompt } from '@/components/ServiceWorkerUpdatePrompt'
 import { AddLLMProviderModal } from '@/components/AddLLMProviderModal'
 import { I18nProvider, useI18n } from '@/i18n'
-import localI18n from './i18n'
 
 // Expose sync debug tools in browser console
 ;(window as unknown as Record<string, unknown>).devsSync = {
@@ -35,7 +34,7 @@ function ProvidersInner({ children }: { children: React.ReactNode }) {
   const loadCredentials = useLLMModelStore((state) => state.loadCredentials)
   const initializeSync = useSyncStore((state) => state.initialize)
   const enableSync = useSyncStore((state) => state.enableSync)
-  const { t } = useI18n(localI18n)
+  const { t } = useI18n()
 
   // Handle ?join= parameter for P2P sync
   useEffect(() => {
@@ -66,8 +65,11 @@ function ProvidersInner({ children }: { children: React.ReactNode }) {
     // Initialize platform services
     const initializePlatform = async () => {
       try {
-        // Initialize database
-        await db.init()
+        // Wait for Yjs IndexedDB persistence to sync
+        await whenReady
+
+        // Run one-time migration from legacy IndexedDB to Yjs
+        await migrateFromIndexedDB()
 
         // Initialize secure storage
         await SecureStorage.init()

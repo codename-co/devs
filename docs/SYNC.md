@@ -2,53 +2,132 @@
 
 ## Overview
 
-DEVS uses **Yjs P2P** for optional data synchronization across devices and users. This approach aligns with our core principles: **offline-first**, **privacy-first**, and **simplicity**.
+DEVS uses a **Yjs-first architecture** where Yjs is the **single source of truth** for all application data. This approach eliminates the complexity of dual-storage sync while providing automatic CRDT-based conflict resolution and optional P2P synchronization.
 
-### Why Yjs P2P?
+### Why Yjs-First?
 
-| Requirement       | How Yjs Delivers                                  |
-| ----------------- | ------------------------------------------------- |
-| **Offline-first** | Full local copy in IndexedDB via `y-indexeddb`    |
-| **Privacy**       | No central server sees user data                  |
-| **Auto-merge**    | CRDTs = mathematically conflict-free              |
-| **Simplicity**    | Single library for sync + real-time collaboration |
-| **Future-proof**  | Already planned for P2P collaboration roadmap     |
+| Requirement       | How Yjs Delivers                                |
+| ----------------- | ----------------------------------------------- |
+| **Offline-first** | Full local copy via `y-indexeddb`               |
+| **Privacy**       | No central server sees user data                |
+| **Auto-merge**    | CRDTs = mathematically conflict-free            |
+| **Simplicity**    | Single source of truth, ~200 lines of core code |
+| **Reactivity**    | Components observe Yjs maps directly            |
+| **Future-proof**  | P2P collaboration built-in                      |
 
 ---
 
 ## Implementation Status
 
-> **Last updated:** January 2026
+> **Last updated:** February 2026
+
+### Architecture Overview
+
+```text
+┌───────────────────────────────────────────────────────────────────┐
+│                     YJS-FIRST ARCHITECTURE                       │
+│                                                                  │
+│   React ──► useLiveMap() ──► Yjs Y.Map ──► y-indexeddb          │
+│                                   │                              │
+│                                   ▼                              │
+│                            y-websocket                           │
+│                              (peers)                             │
+│                                                                  │
+│   Benefits:                                                      │
+│   • Single source of truth (Yjs)                                │
+│   • ~200 lines of core code                                     │
+│   • CRDT handles all conflicts automatically                    │
+│   • No race conditions — Yjs transactions are atomic            │
+│   • Simple initialization (await whenReady)                     │
+│   • No pending queues needed                                    │
+└───────────────────────────────────────────────────────────────────┘
+```
 
 ### High-Level Progress
 
-| Phase                     | Status         | Description                                     |
-| ------------------------- | -------------- | ----------------------------------------------- |
-| **Phase 1: Foundation**   | ✅ Done        | Yjs document, persistence, sync bridge          |
-| **Phase 2: P2P Sync**     | ✅ Done        | WebSocket sync, sync store, UI settings         |
-| **Phase 3: Relay Server** | 🟡 Partial     | Signaling server deployed, relay server pending |
-| **Phase 4: Multi-User**   | ⬜ Not Started | Workspace support                               |
-| **Phase 5: Polish**       | 🟡 Partial     | Basic settings UI done, tests pending           |
+| Phase                       | Status         | Description                                     |
+| --------------------------- | -------------- | ----------------------------------------------- |
+| **Phase 1: Yjs Core**       | ✅ Done        | Yjs document, persistence, typed maps           |
+| **Phase 2: Store Refactor** | ✅ Done        | All stores use Yjs as source of truth           |
+| **Phase 3: P2P Sync**       | ✅ Done        | WebSocket sync, sync UI, peer awareness         |
+| **Phase 4: Relay Server**   | 🟡 Partial     | Signaling server deployed, relay server pending |
+| **Phase 5: Multi-User**     | ⬜ Not Started | Workspace support                               |
 
 ### What's Working
 
-- ✅ Yjs document singleton with typed maps (`src/lib/sync/yjs-doc.ts`)
-- ✅ IndexedDB persistence via y-indexeddb (`src/lib/sync/yjs-persistence.ts`)
-- ✅ Sync bridge for IndexedDB ↔ Yjs mirroring (`src/lib/sync/sync-bridge.ts`)
-- ✅ WebSocket-based sync manager (`src/lib/sync/sync-manager.ts`)
-- ✅ Sync store with auto-reconnect (`src/stores/syncStore.ts`)
-- ✅ Sync settings UI component (`src/components/SyncSettings.tsx`)
-- ✅ Local WebSocket server (`utils/devs-wss/`)
-- ✅ Firebase-like reactive hooks (`src/hooks/useLive.ts`)
-- ✅ Components migrated to reactive hooks - Knowledge, Tasks, Agents pages now use instant updates
-- ✅ Sync status indicator in the AppDrawer
+- ✅ **Yjs-first data layer** (`src/lib/yjs/`) - Single source of truth
+- ✅ **Typed Y.Maps** for all entities (agents, conversations, tasks, etc.)
+- ✅ **IndexedDB persistence** via y-indexeddb
+- ✅ **Reactive hooks** (`useLiveMap`, `useLiveValue`) for instant UI updates
+- ✅ **WebSocket-based P2P sync** with auto-reconnect
+- ✅ **Sync settings UI** with status indicator
+- ✅ **Automatic data migration** from legacy IndexedDB
+- ✅ **All stores refactored** to use Yjs directly
+- ✅ **Yjs observers** for stores that maintain local Zustand/React state
 
 ### What's Pending
 
-- ⬜ Unit tests for sync modules
-- ⬜ Cloud-hosted signaling/relay servers
+- ⬜ Cloud-hosted relay server for async sync
 - ⬜ Multi-user workspace support
 - ⬜ E2E tests for sync functionality
+
+---
+
+### Yjs Observers Pattern
+
+Stores that maintain local state (Zustand or React `useState`) must observe Yjs maps to stay in sync when data changes from P2P sync. This ensures remote changes are reflected in the UI.
+
+**Stores with observers:**
+
+| Store/Hook              | Observed Maps                                           |
+| ----------------------- | ------------------------------------------------------- |
+| `agentStore`            | Uses `useLiveMap` (reactive by default)                 |
+| `conversationStore`     | `conversations` observer                                |
+| `taskStore`             | `tasks`, `artifacts` observers                          |
+| `contextStore`          | `sharedContexts` observer                               |
+| `llmModelStore`         | `credentials` observer                                  |
+| `agentMemoryStore`      | `memoryLearningEvents`, `agentMemoryDocuments` observer |
+| `userStore`             | `preferences` observer                                  |
+| `connectorStore`        | `connectors`, `connectorSyncStates` observers           |
+| `marketplace/store`     | `installedExtensions`, `customExtensions` observers     |
+| `useStudioHistory` hook | `studioEntries` observer                                |
+
+**Observer Pattern:**
+
+```typescript
+// At module level (store file)
+function initYjsObservers(): void {
+  myYjsMap.observe(() => {
+    // Update Zustand state when Yjs map changes
+    useMyStore.setState({ items: Array.from(myYjsMap.values()) })
+  })
+}
+initYjsObservers()
+
+// For React hooks (useEffect cleanup)
+useEffect(() => {
+  const observer = () => setItems(Array.from(myYjsMap.values()))
+  myYjsMap.observe(observer)
+  return () => myYjsMap.unobserve(observer)
+}, [])
+```
+
+**When NOT to use observers:**
+
+- Stores that use `useLiveMap`/`useLiveValue` hooks directly (already reactive)
+- Read-only access patterns that call Yjs on-demand
+
+---
+
+### Core Files
+
+| File                      | Purpose                                  |
+| ------------------------- | ---------------------------------------- |
+| `src/lib/yjs/doc.ts`      | Yjs document singleton with persistence  |
+| `src/lib/yjs/maps.ts`     | Typed Y.Map exports for all entities     |
+| `src/lib/yjs/sync.ts`     | WebSocket sync control (enable/disable)  |
+| `src/lib/yjs/reactive.ts` | React hooks for Yjs observation          |
+| `src/lib/yjs/migrate.ts`  | One-time migration from legacy IndexedDB |
 
 ---
 
@@ -136,24 +215,28 @@ CRDTs handle all conflicts automatically:
 - **Self-host**: Users can run their own servers using open-source code in `/utils/`
 - **Privacy**: Server code is open-source, auditable, and sees no decrypted data
 
-### 6. Firebase-like Instant Reactivity
+### 6. Instant Reactivity via Yjs Observation
 
-React components can subscribe directly to Yjs for instant UI updates:
+React components subscribe directly to Yjs maps for instant UI updates:
 
 ```typescript
-// Instead of async store pattern (laggy):
-const { items, loadItems } = useStore()
-useEffect(() => {
-  loadItems()
-}, [])
+// Reactive hooks observe Yjs directly:
+import { useLiveMap, useLiveValue } from '@/lib/yjs'
+import { agents, conversations } from '@/lib/yjs'
 
-// Use direct reactive hooks (instant):
-import { useConversations } from '@/hooks'
-const conversations = useConversations() // Updates instantly on remote changes
+// All agents (reactive)
+const allAgents = useLiveMap(agents)
+
+// Single agent by ID (reactive)
+const agent = useLiveValue(agents, agentId)
+
+// Store-level hooks (recommended)
+import { useAgents, useAgent } from '@/stores/agentStore'
+const agents = useAgents() // Updates instantly on any change
+const agent = useAgent(id) // Updates when this agent changes
 ```
 
-This bypasses the IndexedDB round-trip for reads, giving Firebase-like instant reactivity.
-See [YJS_REACT_INTEGRATION.md](./YJS_REACT_INTEGRATION.md) for full documentation.
+This provides Firebase-like instant reactivity without network round-trips.
 
 ---
 
@@ -251,22 +334,79 @@ const schema = {
 
 ### What Syncs vs. What Doesn't
 
-| Data                     | Syncs | Storage                                           |
-| ------------------------ | ----- | ------------------------------------------------- |
-| Agents (custom)          | ✅    | Yjs                                               |
-| Conversations            | ✅    | Yjs                                               |
-| Messages                 | ✅    | Yjs                                               |
-| Knowledge Base           | ✅    | Yjs                                               |
-| Tasks & Workflows        | ✅    | Yjs                                               |
-| Artifacts                | ✅    | Yjs                                               |
-| Agent Memories           | ✅    | Yjs                                               |
-| User Preferences         | ✅    | Yjs                                               |
-| LLM Provider Credentials | ✅    | Yjs (encrypted API keys)                          |
-| LLM Configurations       | ✅    | Yjs (provider, model, base URL)                   |
-| Studio Entries           | ✅    | Yjs (image generation history)                    |
-| Traces                   | ✅    | Yjs (LLM observability traces)                    |
-| Spans                    | ✅    | Yjs (LLM call details)                            |
-| **Master Key**           | ❌    | Local device only (encrypts local sensitive data) |
+| Data                     | Syncs | Storage                                                             |
+| ------------------------ | ----- | ------------------------------------------------------------------- |
+| Agents (custom)          | ✅    | Yjs                                                                 |
+| Conversations            | ✅    | Yjs                                                                 |
+| Messages                 | ✅    | Yjs                                                                 |
+| Knowledge Base           | ✅    | Yjs                                                                 |
+| Tasks & Workflows        | ✅    | Yjs                                                                 |
+| Artifacts                | ✅    | Yjs                                                                 |
+| Agent Memories           | ✅    | Yjs                                                                 |
+| User Preferences         | ✅    | Yjs                                                                 |
+| LLM Provider Credentials | ⚡    | Yjs (re-encrypted with room password when sync enabled)             |
+| LLM Configurations       | ✅    | Yjs (provider, model, base URL)                                     |
+| Studio Entries           | ✅    | Yjs (image generation history)                                      |
+| Traces                   | ✅    | Yjs (LLM observability traces)                                      |
+| Spans                    | ✅    | Yjs (LLM call details)                                              |
+| **Encryption Key**       | ❌    | Local: non-extractable CryptoKey / Sync: derived from room password |
+
+---
+
+## Credential Encryption Modes
+
+DEVS uses different encryption strategies depending on whether sync is enabled:
+
+### Local Mode (Default - Sync Disabled)
+
+When sync is disabled, credentials are encrypted with a **non-extractable CryptoKey** stored in IndexedDB:
+
+| Property     | Value                                           |
+| ------------ | ----------------------------------------------- |
+| Key Type     | AES-GCM 256-bit                                 |
+| Key Storage  | IndexedDB (browser-native)                      |
+| Extractable  | ❌ No - key material cannot be read or exported |
+| Cross-Device | ❌ No - unique per browser                      |
+| Security     | Maximum - resistant to XSS key theft            |
+
+**Implications**:
+
+- Credentials cannot be synced to other devices
+- Clearing browser data = credentials lost (must reconfigure LLM providers)
+- Local backup restore on different device = credentials won't decrypt
+
+### Sync Mode (Sync Enabled)
+
+When sync is enabled, credentials are re-encrypted with a key derived from your **room password**:
+
+| Property       | Value                                        |
+| -------------- | -------------------------------------------- |
+| Key Type       | AES-GCM 256-bit                              |
+| Key Derivation | PBKDF2 (250,000 iterations, SHA-256)         |
+| Extractable    | ❌ No - derived key is still non-extractable |
+| Cross-Device   | ✅ Yes - same password = same key            |
+| Security       | Strong - depends on password strength        |
+
+**Implications**:
+
+- Credentials sync and decrypt on any device with same room password
+- Backup restore works if you enable sync with same password
+- **Use a strong room password** - it protects your API keys
+
+### Mode Switching
+
+When you enable or disable sync, DEVS automatically re-encrypts all credentials:
+
+1. **Enable Sync**: Local key → Room password-derived key
+2. **Disable Sync**: Room password-derived key → New local key
+
+This happens transparently in the background. Your credentials remain secure throughout.
+
+### Security Recommendations
+
+1. **Strong Room Password**: Use 16+ characters with mixed case, numbers, symbols
+2. **Don't Share Passwords**: Each user should have their own sync room
+3. **Rotate Periodically**: Change room password if you suspect compromise
 
 ---
 

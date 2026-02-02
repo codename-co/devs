@@ -10,7 +10,7 @@ import { useState, useEffect } from 'react'
 
 import { Icon } from './Icon'
 import { getFileIcon } from '@/lib/utils'
-import { db } from '@/lib/db'
+import { getAllKnowledgeItems } from '@/stores/knowledgeStore'
 import { KnowledgeItem } from '@/types'
 import { formatBytes } from '@/lib/format'
 import { useI18n } from '@/i18n'
@@ -31,19 +31,9 @@ export function KnowledgeBasePicker({
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const loadKnowledgeItems = async () => {
+    const loadKnowledgeItems = () => {
       try {
-        if (!db.isInitialized()) {
-          await db.init()
-        }
-
-        if (!db.hasStore('knowledgeItems')) {
-          setKnowledgeItems([])
-          setLoading(false)
-          return
-        }
-
-        const items = await db.getAll('knowledgeItems')
+        const items = getAllKnowledgeItems()
         // Only show files, not folders
         const fileItems = items.filter((item) => item.type === 'file')
         // Sort by most recently modified

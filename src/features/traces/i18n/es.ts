@@ -134,6 +134,7 @@ export const es: I18n = {
   Cleared: 'Borrado',
   Saved: 'Guardado',
   'Clear All Traces': 'Borrar Todas las Trazas',
+  'Delete all traces permanently': 'Eliminar todas las trazas permanentemente',
   'Are you sure you want to delete all traces? This action cannot be undone.':
     '¿Está seguro de que desea eliminar todas las trazas? Esta acción no se puede deshacer.',
   'Delete All': 'Eliminar Todo',

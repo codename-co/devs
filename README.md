@@ -22,7 +22,7 @@ through a universally accessible, privacy-first platform.
 
 ### Artificial Intelligence
 
-- [x] 🤖 **LLM provider independence**: <abbr title="Bring Your Own Key">BYOK</abbr> support for OpenAI, Anthropic, Google Gemini, Mistral, Ollama, and custom endpoints.
+- [x] 🤖 **LLM provider independence**: <abbr title="Bring Your Own Key">BYOK</abbr> support for OpenAI, Anthropic, Google Gemini, Mistral, OpenRouter, Mistral AI, Hugging Face, Ollama, LM Studio and more.
 - [x] 🧠 **Local AI models**: Run HuggingFace open models directly in your browser.
 - [x] 💰 **Traces & Cost tracking**: LLM observability with real-time cost tracking and performance metrics.
 
@@ -31,14 +31,14 @@ through a universally accessible, privacy-first platform.
 - [x] 🤖 **AI Studio**: Pre-built agents, custom agent builder.
 - [x] 📝 **Methodologies**: <abbr title="8 Disciplines">8D</abbr>, <abbr title="A3 Problem Solving">A3</abbr>, Agile, <abbr title="Analysis, Objectives, Strategies, Tactics, Control">AOSTC</abbr>, <abbr title="Define, Measure, Analyze, Improve, Control">DMAIC</abbr>, <abbr title="Plan-Do-Check-Act">PDCA</abbr>, Scrum, <abbr title="You Only Live Once">YOLO</abbr>, and your own.
 - [x] 🧠 **Agent Memory**: Agents learn and remember information from conversations with human review.
-- [x] 🔧 **Tools**: Equip agents with capabilities like Wikipedia search, arXiv search, and custom integrations.
+- [x] 🔧 **Tools**: Equip agents with capabilities like Wikipedia search, arXiv search, calculator or code tools.
 - [ ] 🎯 **Intelligent orchestration**: Automated multi-agent task coordination with validation.
 - [ ] 🎭 **Hyper meta-prompting**: Multi-layered prompt generation for dynamic task handling.
 - [ ] 👥 **Dynamic team formation**: Mimicking human organizational structures.
 
 ### Integrations
 
-- [x] 🔗 **Connectors**: Integrations with Google Drive, Gmail, Calendar, Notion and more.
+- [x] 🔗 **Connectors**: Integrations with Google Drive, Gmail, Calendar, Dropbox, Notion, Slack, Figma and more.
 - [x] 🏪 **Marketplace**: Extensible platform with apps, agents, connectors, and tools.
 - [ ] 🎤 **Meeting Bot**: AI agents join Google Meet as real participants.
 
@@ -46,8 +46,8 @@ through a universally accessible, privacy-first platform.
 
 - [x] 🌐 **Browser-native**: The browser is the <abbr title="Operating System">OS</abbr>. Runs entirely in your browser, no server dependencies.
 - [x] 🛡️ **Privacy-first**: All data stays on your device, no tracking, no cookies.
-- [x] 🥷 **Offline capable**: Works without internet after initial load.
-- [x] 💾 **Local Backup**: Bidirectional sync to a local folder with human-readable Markdown files.
+- [x] 🥷 **Offline capable**: Works without Internet connection after initial load.
+- [x] 💾 **Local Backup**: Preserve your data with bidirectional sync to a local folder on your host, with human-readable Markdown files.
 
 ### User Experience
 

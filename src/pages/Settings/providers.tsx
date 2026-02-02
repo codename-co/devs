@@ -218,6 +218,7 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     models: getModelsForProviderAsync('huggingface'),
     icon: 'HuggingFace',
     apiKeyPage: 'https://huggingface.co/settings/tokens',
+    fetchModelsFromServer: true,
   },
   {
     provider: 'openai-compatible',
@@ -237,6 +238,55 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
             AI, Fireworks AI, and more.
             <br />
             API key is optional for local servers.
+          </p>
+        </div>
+      </Alert>
+    ),
+  },
+  {
+    provider: 'claude-code',
+    name: 'Claude Code API',
+    models: [
+      'claude-sonnet-4-5-20250929',
+      'claude-opus-4-5-20251101',
+      'claude-haiku-4-5-20251001',
+      'claude-sonnet-4-20250514',
+      'claude-opus-4-20250514',
+    ],
+    icon: 'Claude',
+    requiresBaseUrl: true,
+    optionalApiKey: true,
+    fetchModelsFromServer: true,
+    apiKeyPlaceholder: 'API key (optional for local servers)',
+    moreDetails: () => (
+      <Alert variant="faded">
+        <div className="flex flex-col gap-2">
+          <p className="font-medium">Connect to a Claude Code API Server</p>
+          <p className="text-sm text-default-600">
+            Claude Code API servers wrap the Claude Agent SDK and provide an
+            OpenAI-compatible endpoint. Supports session continuity and Claude
+            Code tools (Read, Write, Bash, etc.).
+            <br />
+            <br />
+            Servers:{' '}
+            <a
+              href="https://github.com/RichardAtCT/claude-code-openai-wrapper"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline"
+            >
+              claude-code-openai-wrapper
+            </a>{' '}
+            (Python) |{' '}
+            <a
+              href="https://github.com/zhanghandong/claude-code-api-rs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline"
+            >
+              claude-code-api-rs
+            </a>{' '}
+            (Rust)
           </p>
         </div>
       </Alert>

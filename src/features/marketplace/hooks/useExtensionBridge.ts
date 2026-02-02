@@ -12,6 +12,7 @@ import { LLMService } from '@/lib/llm'
 import { CredentialService } from '@/lib/credential-service'
 import { useNavigate } from 'react-router-dom'
 import { useI18n, useUrl } from '@/i18n'
+import type { Agent } from '@/types'
 
 export interface ConsoleEntry {
   id: string
@@ -172,8 +173,8 @@ export function useExtensionBridge({
             const { idOrSlug } = payload || {}
             const { getAgentById, getAgentBySlug, loadBuiltInAgents } =
               await import('@/stores/agentStore')
-            let agent =
-              (await getAgentById(idOrSlug)) || (await getAgentBySlug(idOrSlug))
+            let agent: Agent | null | undefined =
+              getAgentById(idOrSlug) || getAgentBySlug(idOrSlug)
             if (!agent) {
               const builtIn = await loadBuiltInAgents()
               agent =

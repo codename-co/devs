@@ -26,7 +26,7 @@ export interface TitleProps {
 }
 
 const defaultSizeForLevel = {
-  1: '3xl',
+  1: '4xl',
   2: '2xl',
   3: 'xl',
   4: 'lg',

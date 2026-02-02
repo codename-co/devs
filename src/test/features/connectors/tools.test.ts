@@ -16,14 +16,12 @@ import {
   getToolDefinitionsForProvider,
 } from '@/features/connectors/tools'
 
-// Mock the database and provider registry
-vi.mock('@/lib/db', () => ({
-  db: {
-    isInitialized: vi.fn(() => true),
-    init: vi.fn(),
-    get: vi.fn(),
-  },
-}))
+// Mock the Yjs maps and provider registry
+vi.mock('@/lib/yjs/maps', () => {
+  return {
+    connectors: new Map<string, Connector>(),
+  }
+})
 
 vi.mock('@/features/connectors/provider-registry', () => ({
   ProviderRegistry: {
@@ -380,22 +378,21 @@ describe('Connector Tools', () => {
 })
 
 describe('Connector Tools Service', () => {
-  let mockDb: {
-    isInitialized: ReturnType<typeof vi.fn>
-    init: ReturnType<typeof vi.fn>
-    get: ReturnType<typeof vi.fn>
-  }
   let mockProviderRegistry: { get: ReturnType<typeof vi.fn> }
   let mockProvider: Partial<AppConnectorProviderInterface>
+  let connectorsMap: Map<string, Connector>
 
   beforeEach(async () => {
+    // Get the mocked Yjs maps module
+    const yjsMaps = await import('@/lib/yjs/maps')
+    connectorsMap = yjsMaps.connectors as unknown as Map<string, Connector>
+    connectorsMap.clear()
+
     // Get mocked modules
-    const dbModule = await import('@/lib/db')
     const registryModule = await import(
       '@/features/connectors/provider-registry'
     )
 
-    mockDb = dbModule.db as unknown as typeof mockDb
     mockProviderRegistry =
       registryModule.ProviderRegistry as unknown as typeof mockProviderRegistry
 
@@ -430,7 +427,7 @@ describe('Connector Tools Service', () => {
     it('gmailSearch should call provider.search with correct parameters', async () => {
       const { gmailSearch } = await import('@/features/connectors/tools')
 
-      mockDb.get.mockResolvedValue(mockGmailConnector)
+      connectorsMap.set('gmail-connector-1', mockGmailConnector)
       mockProviderRegistry.get.mockResolvedValue(mockProvider)
 
       const mockSearchResult: SearchResult = {
@@ -463,7 +460,6 @@ describe('Connector Tools Service', () => {
         max_results: 5,
       })
 
-      expect(mockDb.get).toHaveBeenCalledWith('connectors', 'gmail-connector-1')
       expect(mockProviderRegistry.get).toHaveBeenCalledWith('gmail')
       expect(mockProvider.search).toHaveBeenCalledWith(
         mockGmailConnector,
@@ -486,7 +482,7 @@ describe('Connector Tools Service', () => {
         provider: 'google-drive',
       }
 
-      mockDb.get.mockResolvedValue(driveConnector)
+      connectorsMap.set('gmail-connector-1', driveConnector)
 
       await expect(
         gmailSearch({
@@ -505,7 +501,7 @@ describe('Connector Tools Service', () => {
         errorMessage: 'Token expired',
       }
 
-      mockDb.get.mockResolvedValue(errorConnector)
+      connectorsMap.set('gmail-connector-1', errorConnector)
 
       await expect(
         gmailSearch({
@@ -518,7 +514,7 @@ describe('Connector Tools Service', () => {
     it('gmailRead should fetch and parse email content', async () => {
       const { gmailRead } = await import('@/features/connectors/tools')
 
-      mockDb.get.mockResolvedValue(mockGmailConnector)
+      connectorsMap.set('gmail-connector-1', mockGmailConnector)
       mockProviderRegistry.get.mockResolvedValue(mockProvider)
 
       const rawEmail = `Subject: Important Meeting
@@ -561,7 +557,7 @@ Best regards`
     it('gmailListLabels should return system labels', async () => {
       const { gmailListLabels } = await import('@/features/connectors/tools')
 
-      mockDb.get.mockResolvedValue(mockGmailConnector)
+      connectorsMap.set('gmail-connector-1', mockGmailConnector)
 
       const result = await gmailListLabels({
         connector_id: 'gmail-connector-1',
@@ -591,7 +587,7 @@ Best regards`
     it('driveSearch should call provider.search and return file summaries', async () => {
       const { driveSearch } = await import('@/features/connectors/tools')
 
-      mockDb.get.mockResolvedValue(mockDriveConnector)
+      connectorsMap.set('drive-connector-1', mockDriveConnector)
       mockProviderRegistry.get.mockResolvedValue(mockProvider)
 
       const mockSearchResult: SearchResult = {
@@ -629,7 +625,7 @@ Best regards`
     it('driveList should list folder contents', async () => {
       const { driveList } = await import('@/features/connectors/tools')
 
-      mockDb.get.mockResolvedValue(mockDriveConnector)
+      connectorsMap.set('drive-connector-1', mockDriveConnector)
       mockProviderRegistry.get.mockResolvedValue(mockProvider)
 
       const mockListResult: ListResult = {
@@ -673,7 +669,7 @@ Best regards`
     it('should throw error when connector not found', async () => {
       const { gmailSearch } = await import('@/features/connectors/tools')
 
-      mockDb.get.mockResolvedValue(null)
+      // Don't add any connector to the map - simulates not found
 
       await expect(
         gmailSearch({
@@ -697,7 +693,7 @@ Best regards`
         updatedAt: new Date(),
       }
 
-      mockDb.get.mockResolvedValue(mockConnector)
+      connectorsMap.set('gmail-1', mockConnector)
       mockProviderRegistry.get.mockResolvedValue(mockProvider)
       ;(mockProvider.read as ReturnType<typeof vi.fn>).mockRejectedValue(
         new Error('Message not found'),

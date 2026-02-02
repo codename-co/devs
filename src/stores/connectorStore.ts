@@ -1,5 +1,8 @@
 import { create } from 'zustand'
-import { db } from '@/lib/db'
+import {
+  connectors as connectorsMap,
+  connectorSyncStates as syncStatesMap,
+} from '@/lib/yjs/maps'
 import type {
   Connector,
   ConnectorSyncState,
@@ -84,15 +87,11 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
 
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
+      // Load connectors from Yjs
+      const connectors = Array.from(connectorsMap.values())
 
-      // Load connectors
-      const connectors = await db.getAll('connectors')
-
-      // Load sync states
-      const syncStatesArray = await db.getAll('connectorSyncStates')
+      // Load sync states from Yjs
+      const syncStatesArray = Array.from(syncStatesMap.values())
       const syncStates = new Map<string, ConnectorSyncState>()
       for (const state of syncStatesArray) {
         syncStates.set(state.connectorId, state)
@@ -117,10 +116,6 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
   addConnector: async (connectorData) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
       const id = crypto.randomUUID()
       const now = new Date()
 
@@ -131,7 +126,7 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
         updatedAt: now,
       }
 
-      await db.add('connectors', connector)
+      connectorsMap.set(id, connector)
 
       const updatedConnectors = [...get().connectors, connector]
       set({ connectors: updatedConnectors, isLoading: false })
@@ -148,11 +143,7 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
   updateConnector: async (id: string, updates: Partial<Connector>) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      const existing = await db.get('connectors', id)
+      const existing = connectorsMap.get(id)
       if (!existing) {
         throw new Error('Connector not found')
       }
@@ -164,7 +155,7 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
         updatedAt: new Date(),
       }
 
-      await db.update('connectors', updatedConnector)
+      connectorsMap.set(id, updatedConnector)
 
       const { connectors } = get()
       const updatedConnectors = connectors.map((c) =>
@@ -181,18 +172,14 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
   deleteConnector: async (id: string) => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      // Delete connector
-      await db.delete('connectors', id)
+      // Delete connector from Yjs
+      connectorsMap.delete(id)
 
       // Also delete associated sync state
       const { syncStates } = get()
       const syncState = syncStates.get(id)
       if (syncState) {
-        await db.delete('connectorSyncStates', syncState.id)
+        syncStatesMap.delete(syncState.id)
       }
 
       // Update local state
@@ -256,10 +243,6 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
     options?: { silent?: boolean; skipPersist?: boolean },
   ) => {
     try {
-      if (!options?.skipPersist && !db.isInitialized()) {
-        await db.init()
-      }
-
       const { syncStates, connectors } = get()
       const existingState = syncStates.get(connectorId)
       const connector = connectors.find((c) => c.id === connectorId)
@@ -273,9 +256,9 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
           ...stateUpdates,
           connectorId,
         }
-        // Only persist to DB if skipPersist is not true
+        // Only persist to Yjs if skipPersist is not true
         if (!options?.skipPersist) {
-          await db.update('connectorSyncStates', updatedState)
+          syncStatesMap.set(updatedState.id, updatedState)
         }
       } else {
         // Create new sync state
@@ -289,9 +272,9 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
           status: 'idle',
           ...stateUpdates,
         }
-        // Only persist to DB if skipPersist is not true
+        // Only persist to Yjs if skipPersist is not true
         if (!options?.skipPersist) {
-          await db.add('connectorSyncStates', updatedState)
+          syncStatesMap.set(updatedState.id, updatedState)
         }
       }
 
@@ -364,15 +347,11 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
   refreshConnectors: async () => {
     set({ isLoading: true })
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
+      // Reload connectors from Yjs
+      const connectors = Array.from(connectorsMap.values())
 
-      // Reload connectors from database
-      const connectors = await db.getAll('connectors')
-
-      // Reload sync states
-      const syncStatesArray = await db.getAll('connectorSyncStates')
+      // Reload sync states from Yjs
+      const syncStatesArray = Array.from(syncStatesMap.values())
       const syncStates = new Map<string, ConnectorSyncState>()
       for (const state of syncStatesArray) {
         syncStates.set(state.connectorId, state)

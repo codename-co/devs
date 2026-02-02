@@ -16,12 +16,11 @@ import DemoPage from '@/pages/Demo/index.mdx'
 import HTMLdemoPage from '@/pages/Demo/html.mdx'
 import DiagramPage from '@/pages/Demo/diagram.mdx'
 import { PrivacyPage } from '@/pages/Privacy'
-import { SyncPage } from '@/pages/Sync'
 import { TermsPage } from '@/pages/Terms'
 import { KnowledgePage } from '@/pages/Knowledge'
-import { MethodologiesPage } from '@/pages/Methodologies/index'
-import { MethodologyNewPage } from '@/pages/Methodologies/new'
-import { MethodologyPage } from '@/pages/Methodologies/show'
+// import { MethodologiesPage } from '@/pages/Methodologies/index'
+// import { MethodologyNewPage } from '@/pages/Methodologies/new'
+// import { MethodologyPage } from '@/pages/Methodologies/show'
 import { OAuthCallbackPage } from '@/pages/OAuth'
 import { SettingsPage } from '@/pages/Settings'
 import { TaskPage } from '@/pages/Tasks/show'
@@ -62,17 +61,13 @@ const routes = {
   'knowledge/files': KnowledgePage,
   'knowledge/connectors': KnowledgePage,
   'knowledge/memories': KnowledgePage,
-  'knowledge/saved': KnowledgePage,
-  // Legacy route redirects
-  'knowledge/pinned': () => <Navigate to="/knowledge/saved" replace />,
-  'knowledge/sources': () => <Navigate to="/knowledge/connectors" replace />,
-  methodologies: MethodologiesPage,
-  'methodologies/new': MethodologyNewPage,
-  'methodologies/:methodologyId': MethodologyPage,
+  'knowledge/messages': KnowledgePage,
+  // methodologies: MethodologiesPage,
+  // 'methodologies/new': MethodologyNewPage,
+  // 'methodologies/:methodologyId': MethodologyPage,
   'oauth/callback': OAuthCallbackPage,
   privacy: PrivacyPage,
   settings: SettingsPage,
-  sync: SyncPage,
   task: TaskPage,
   tasks: TasksPage,
   'tasks/:taskId': TaskPage,

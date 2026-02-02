@@ -37,8 +37,8 @@ export const AgentCard = ({
   useEffect(() => {
     const loadAgent = async () => {
       try {
-        const agentData = await getAgentById(id)
-        setAgent(agentData)
+        const agentData = getAgentById(id)
+        setAgent(agentData ?? null)
       } catch (error) {
         console.error(`Error loading agent ${id}:`, error)
       } finally {

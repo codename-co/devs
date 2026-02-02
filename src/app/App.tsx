@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 
 import Router from '@/app/Router'
 import { Providers } from '@/app/Providers'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import '@/styles/globals.css'
 import 'katex/dist/katex.min.css'
 
@@ -12,11 +13,13 @@ const container = globalThis.document.getElementById('root')
 if (container) {
   const app = (
     <React.StrictMode>
-      <BrowserRouter>
-        <Providers>
-          <Router />
-        </Providers>
-      </BrowserRouter>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <Providers>
+            <Router />
+          </Providers>
+        </BrowserRouter>
+      </ErrorBoundary>
     </React.StrictMode>
   )
 

@@ -133,6 +133,7 @@ export const ar: I18n = {
   Cleared: 'ممسوح',
   Saved: 'محفوظ',
   'Clear All Traces': 'مسح جميع التتبعات',
+  'Delete all traces permanently': 'حذف جميع التتبعات نهائياً',
   'Are you sure you want to delete all traces? This action cannot be undone.':
     'هل أنت متأكد من حذف جميع التتبعات؟ لا يمكن التراجع عن هذا الإجراء.',
   'Delete All': 'حذف الكل',

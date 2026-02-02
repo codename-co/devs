@@ -52,12 +52,13 @@ const ASPECT_RATIOS: { value: AspectRatio; label: string; icon: string }[] = [
   { value: '21:9', label: 'Ultrawide', icon: '🎬' },
 ]
 
-const QUALITIES: { value: ImageQuality; label: string; description: string }[] = [
-  { value: 'draft', label: 'Draft', description: 'Fast, lower quality' },
-  { value: 'standard', label: 'Standard', description: 'Balanced quality' },
-  { value: 'hd', label: 'HD', description: 'High detail' },
-  { value: 'ultra', label: 'Ultra', description: 'Maximum quality' },
-]
+const QUALITIES: { value: ImageQuality; label: string; description: string }[] =
+  [
+    { value: 'draft', label: 'Draft', description: 'Fast, lower quality' },
+    { value: 'standard', label: 'Standard', description: 'Balanced quality' },
+    { value: 'hd', label: 'HD', description: 'High detail' },
+    { value: 'ultra', label: 'Ultra', description: 'Maximum quality' },
+  ]
 
 const STYLES: { value: ImageStyle; label: string }[] = [
   { value: 'none', label: 'None' },
@@ -123,7 +124,7 @@ export function SettingsPanel({
   onSettingsChange,
   onReset,
   onSaveAsPreset,
-  onClose,
+  onClose: _onClose,
   compact = false,
 }: SettingsPanelProps) {
   const { t } = useI18n(lang as any)
@@ -169,11 +170,6 @@ export function SettingsPanel({
               {t('Reset')}
             </Button>
           )}
-          {onClose && (
-            <Button isIconOnly size="sm" variant="light" onPress={onClose}>
-              <Icon name="Xmark" size="sm" />
-            </Button>
-          )}
         </div>
       </div>
 
@@ -202,8 +198,12 @@ export function SettingsPanel({
               <Button
                 key={ratio.value}
                 size="sm"
-                variant={settings.aspectRatio === ratio.value ? 'solid' : 'flat'}
-                color={settings.aspectRatio === ratio.value ? 'primary' : 'default'}
+                variant={
+                  settings.aspectRatio === ratio.value ? 'solid' : 'flat'
+                }
+                color={
+                  settings.aspectRatio === ratio.value ? 'primary' : 'default'
+                }
                 onPress={() => onSettingsChange({ aspectRatio: ratio.value })}
                 className="flex-col h-auto py-2"
               >
@@ -216,14 +216,18 @@ export function SettingsPanel({
 
         {/* Quality */}
         <div>
-          <label className="text-sm font-medium mb-2 block">{t('Quality')}</label>
+          <label className="text-sm font-medium mb-2 block">
+            {t('Quality')}
+          </label>
           <div className="grid grid-cols-4 gap-2">
             {QUALITIES.map((quality) => (
               <Button
                 key={quality.value}
                 size="sm"
                 variant={settings.quality === quality.value ? 'solid' : 'flat'}
-                color={settings.quality === quality.value ? 'primary' : 'default'}
+                color={
+                  settings.quality === quality.value ? 'primary' : 'default'
+                }
                 onPress={() => onSettingsChange({ quality: quality.value })}
               >
                 {quality.label}
@@ -258,9 +262,7 @@ export function SettingsPanel({
             minValue={1}
             maxValue={4}
             value={settings.count}
-            onChange={(value) =>
-              onSettingsChange({ count: value as number })
-            }
+            onChange={(value) => onSettingsChange({ count: value as number })}
             className="max-w-full"
           />
         </div>
@@ -272,7 +274,9 @@ export function SettingsPanel({
           key="advanced"
           aria-label="Advanced settings"
           title={
-            <span className="text-sm font-medium">{t('Advanced Settings')}</span>
+            <span className="text-sm font-medium">
+              {t('Advanced Settings')}
+            </span>
           }
         >
           <div className="space-y-4 pt-2">

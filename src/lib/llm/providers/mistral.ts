@@ -131,7 +131,15 @@ export class MistralProvider implements LLMProviderInterface {
     )
 
     if (!response.ok) {
-      throw new Error(`Mistral API error: ${response.statusText}`)
+      let errorMessage = response.statusText
+      try {
+        const errorData = await response.json()
+        errorMessage =
+          errorData.error?.message || JSON.stringify(errorData) || errorMessage
+      } catch {
+        // If we can't parse the error body, use statusText
+      }
+      throw new Error(`Mistral API error: ${errorMessage}`)
     }
 
     const data = await response.json()
@@ -185,7 +193,15 @@ export class MistralProvider implements LLMProviderInterface {
     )
 
     if (!response.ok) {
-      throw new Error(`Mistral API error: ${response.statusText}`)
+      let errorMessage = response.statusText
+      try {
+        const errorData = await response.json()
+        errorMessage =
+          errorData.error?.message || JSON.stringify(errorData) || errorMessage
+      } catch {
+        // If we can't parse the error body, use statusText
+      }
+      throw new Error(`Mistral API error: ${errorMessage}`)
     }
 
     const reader = response.body?.getReader()

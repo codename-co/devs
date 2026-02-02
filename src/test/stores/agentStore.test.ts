@@ -1,19 +1,42 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import type { Agent } from '@/types'
 import {
-  createMockDb,
   createMockToast,
   createTestAgent,
-  resetMockDb,
 } from './mocks'
 
 // Create mocks
-const mockDb = createMockDb()
 const mockToast = createMockToast()
 const mockFetch = vi.fn()
 
-// Setup global mocks
-vi.mock('@/lib/db', () => ({ db: mockDb }))
+// Mock Yjs agents map - use a real Map for testing
+const mockAgentsMap = new Map<string, Agent>()
+
+// Mock Yjs module
+vi.mock('@/lib/yjs', () => {
+  return {
+    agents: {
+      get: (id: string) => mockAgentsMap.get(id),
+      set: (id: string, value: Agent) => mockAgentsMap.set(id, value),
+      has: (id: string) => mockAgentsMap.has(id),
+      delete: (id: string) => mockAgentsMap.delete(id),
+      values: () => mockAgentsMap.values(),
+      keys: () => mockAgentsMap.keys(),
+      entries: () => mockAgentsMap.entries(),
+      forEach: (fn: (value: Agent, key: string) => void) => mockAgentsMap.forEach(fn),
+      [Symbol.iterator]: () => mockAgentsMap[Symbol.iterator](),
+      observe: vi.fn(),
+      unobserve: vi.fn(),
+    },
+    whenReady: Promise.resolve(),
+    isReady: () => true,
+    transact: <T>(fn: () => T): T => fn(),
+    useLiveMap: vi.fn(() => Array.from(mockAgentsMap.values())),
+    useLiveValue: vi.fn((_map: unknown, id: string) => mockAgentsMap.get(id)),
+    useSyncReady: vi.fn(() => true),
+  }
+})
+
 vi.mock('@/lib/toast', () => mockToast)
 
 // Mock global fetch
@@ -22,14 +45,42 @@ global.fetch = mockFetch
 // We need to dynamically import the module to reset its state between tests
 let agentStore: typeof import('@/stores/agentStore')
 
+// Helper to reset the mock agents map
+function resetMockAgentsMap() {
+  mockAgentsMap.clear()
+}
+
 describe('agentStore', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
-    resetMockDb(mockDb)
+    resetMockAgentsMap()
     mockFetch.mockReset()
 
     // Reset module cache to clear internal state (agentCache, agentsList)
     vi.resetModules()
+
+    // Re-mock the yjs module after reset
+    vi.doMock('@/lib/yjs', () => ({
+      agents: {
+        get: (id: string) => mockAgentsMap.get(id),
+        set: (id: string, value: Agent) => mockAgentsMap.set(id, value),
+        has: (id: string) => mockAgentsMap.has(id),
+        delete: (id: string) => mockAgentsMap.delete(id),
+        values: () => mockAgentsMap.values(),
+        keys: () => mockAgentsMap.keys(),
+        entries: () => mockAgentsMap.entries(),
+        forEach: (fn: (value: Agent, key: string) => void) => mockAgentsMap.forEach(fn),
+        [Symbol.iterator]: () => mockAgentsMap[Symbol.iterator](),
+        observe: vi.fn(),
+        unobserve: vi.fn(),
+      },
+      whenReady: Promise.resolve(),
+      isReady: () => true,
+      transact: <T>(fn: () => T): T => fn(),
+      useLiveMap: vi.fn(() => Array.from(mockAgentsMap.values())),
+      useLiveValue: vi.fn((_map: unknown, id: string) => mockAgentsMap.get(id)),
+      useSyncReady: vi.fn(() => true),
+    }))
 
     // Re-import the module fresh
     agentStore = await import('@/stores/agentStore')
@@ -93,14 +144,14 @@ describe('agentStore', () => {
   // getAgentById Tests
   // ============================================
   describe('getAgentById', () => {
-    it('should return devs agent for id "devs"', async () => {
-      const agent = await agentStore.getAgentById('devs')
+    it('should return devs agent for id "devs"', () => {
+      const agent = agentStore.getAgentById('devs')
 
       expect(agent).toBeDefined()
       expect(agent?.id).toBe('devs')
     })
 
-    it('should return cached agent if available', async () => {
+    it('should return cached built-in agent if available', async () => {
       // First call loads from JSON
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -113,64 +164,55 @@ describe('agentStore', () => {
         }),
       })
 
-      const agent1 = await agentStore.getAgentById('test-agent')
-      const agent2 = await agentStore.getAgentById('test-agent')
+      // Use getAgentByIdAsync to load from JSON
+      const agent1 = await agentStore.getAgentByIdAsync('test-agent')
+      // Second call should use cache
+      const agent2 = await agentStore.getAgentByIdAsync('test-agent')
 
       // Fetch should only be called once
       expect(mockFetch).toHaveBeenCalledTimes(1)
-      expect(agent1).toBe(agent2)
+      expect(agent1).toEqual(agent2)
     })
 
-    it('should load from IndexedDB for custom agents', async () => {
+    it('should load custom agents from Yjs', () => {
       const customAgent = createTestAgent({
         id: 'custom-123',
         name: 'Custom Agent',
       })
 
-      mockDb.get.mockResolvedValueOnce(customAgent)
+      // Add agent to Yjs mock
+      mockAgentsMap.set('custom-123', customAgent)
 
-      const agent = await agentStore.getAgentById('custom-123')
+      const agent = agentStore.getAgentById('custom-123')
 
-      expect(mockDb.get).toHaveBeenCalledWith('agents', 'custom-123')
       expect(agent).toBeDefined()
       expect(agent?.id).toBe('custom-123')
     })
 
-    it('should return null for non-existent agent', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 404,
+    it('should return undefined for non-existent agent', () => {
+      const agent = agentStore.getAgentById('non-existent')
+
+      expect(agent).toBeUndefined()
+    })
+
+    it('should not return soft-deleted agents', () => {
+      const deletedAgent = createTestAgent({
+        id: 'custom-deleted',
+        name: 'Deleted Agent',
+        deletedAt: new Date(),
       })
-      mockDb.get.mockResolvedValueOnce(null)
 
-      const agent = await agentStore.getAgentById('non-existent')
+      mockAgentsMap.set('custom-deleted', deletedAgent)
 
-      expect(agent).toBeNull()
+      const agent = agentStore.getAgentById('custom-deleted')
+
+      expect(agent).toBeUndefined()
     })
 
-    it('should initialize database if not initialized', async () => {
-      mockDb.isInitialized.mockReturnValue(false)
-      const customAgent = createTestAgent({ id: 'custom-456' })
-      mockDb.get.mockResolvedValueOnce(customAgent)
+    it('should handle empty id', () => {
+      const agent = agentStore.getAgentById('')
 
-      await agentStore.getAgentById('custom-456')
-
-      expect(mockDb.init).toHaveBeenCalled()
-    })
-
-    it('should handle database errors gracefully', async () => {
-      mockFetch.mockResolvedValueOnce({ ok: false, status: 404 })
-      mockDb.get.mockRejectedValueOnce(new Error('DB Error'))
-
-      const agent = await agentStore.getAgentById('custom-error')
-
-      expect(agent).toBeNull()
-    })
-
-    it('should handle empty id', async () => {
-      const agent = await agentStore.getAgentById('')
-
-      expect(agent).toBeNull()
+      expect(agent).toBeUndefined()
     })
   })
 
@@ -279,9 +321,8 @@ describe('agentStore', () => {
         }),
       })
 
-      // Mock custom agents
-      const customAgent = createTestAgent({ id: 'custom-1', name: 'Custom 1' })
-      mockDb.getAll.mockResolvedValueOnce([customAgent])
+      // Add custom agent to Yjs mock
+      mockAgentsMap.set('custom-1', createTestAgent({ id: 'custom-1', name: 'Custom 1' }))
 
       const agents = await agentStore.loadAllAgents()
 
@@ -303,8 +344,6 @@ describe('agentStore', () => {
         ok: false,
         status: 404,
       })
-
-      mockDb.getAll.mockResolvedValueOnce([])
 
       const agents = await agentStore.loadAllAgents()
 
@@ -335,21 +374,19 @@ describe('agentStore', () => {
       expect(agent.updatedAt).toBeInstanceOf(Date)
     })
 
-    it('should save agent to IndexedDB', async () => {
+    it('should save agent to Yjs', async () => {
       const agentData = {
-        name: 'DB Agent',
+        name: 'Yjs Agent',
         role: 'Saved Role',
       }
 
-      await agentStore.createAgent(agentData)
+      const agent = await agentStore.createAgent(agentData)
 
-      expect(mockDb.add).toHaveBeenCalledWith(
-        'agents',
-        expect.objectContaining({
-          name: 'DB Agent',
-          role: 'Saved Role',
-        }),
-      )
+      // Check that agent was saved to the Yjs mock map
+      expect(mockAgentsMap.has(agent.id)).toBe(true)
+      const savedAgent = mockAgentsMap.get(agent.id)
+      expect(savedAgent?.name).toBe('Yjs Agent')
+      expect(savedAgent?.role).toBe('Saved Role')
     })
 
     it('should show success toast on creation', async () => {
@@ -361,30 +398,6 @@ describe('agentStore', () => {
       await agentStore.createAgent(agentData)
 
       expect(mockToast.successToast).toHaveBeenCalled()
-    })
-
-    it('should initialize database if not initialized', async () => {
-      mockDb.isInitialized.mockReturnValue(false)
-
-      await agentStore.createAgent({
-        name: 'Init Agent',
-        role: 'Role',
-      })
-
-      expect(mockDb.init).toHaveBeenCalled()
-    })
-
-    it('should handle database errors', async () => {
-      mockDb.add.mockRejectedValueOnce(new Error('DB Write Error'))
-
-      await expect(
-        agentStore.createAgent({
-          name: 'Error Agent',
-          role: 'Role',
-        }),
-      ).rejects.toThrow()
-
-      expect(mockToast.errorToast).toHaveBeenCalled()
     })
 
     it('should include optional fields when provided', async () => {
@@ -425,7 +438,7 @@ describe('agentStore', () => {
         id: 'custom-update',
         name: 'Original Name',
       })
-      mockDb.get.mockResolvedValueOnce(existingAgent)
+      mockAgentsMap.set('custom-update', existingAgent)
 
       const updated = await agentStore.updateAgent('custom-update', {
         name: 'Updated Name',
@@ -433,12 +446,13 @@ describe('agentStore', () => {
 
       expect(updated.name).toBe('Updated Name')
       expect(updated.id).toBe('custom-update')
-      expect(mockDb.update).toHaveBeenCalled()
+      // Verify the update was saved to Yjs
+      expect(mockAgentsMap.get('custom-update')?.name).toBe('Updated Name')
     })
 
     it('should preserve agent ID during update', async () => {
       const existingAgent = createTestAgent({ id: 'custom-preserve' })
-      mockDb.get.mockResolvedValueOnce(existingAgent)
+      mockAgentsMap.set('custom-preserve', existingAgent)
 
       const updated = await agentStore.updateAgent('custom-preserve', {
         id: 'should-not-change',
@@ -454,7 +468,7 @@ describe('agentStore', () => {
         id: 'custom-timestamp',
         updatedAt: oldDate,
       })
-      mockDb.get.mockResolvedValueOnce(existingAgent)
+      mockAgentsMap.set('custom-timestamp', existingAgent)
 
       const updated = await agentStore.updateAgent('custom-timestamp', {
         name: 'Time Test',
@@ -465,9 +479,6 @@ describe('agentStore', () => {
     })
 
     it('should throw error for non-existent agent', async () => {
-      mockDb.get.mockResolvedValueOnce(null)
-      mockFetch.mockResolvedValueOnce({ ok: false, status: 404 })
-
       await expect(
         agentStore.updateAgent('non-existent', { name: 'Test' }),
       ).rejects.toThrow('Agent with id non-existent not found')
@@ -475,23 +486,11 @@ describe('agentStore', () => {
 
     it('should show success toast on update', async () => {
       const existingAgent = createTestAgent({ id: 'custom-toast-update' })
-      mockDb.get.mockResolvedValueOnce(existingAgent)
+      mockAgentsMap.set('custom-toast-update', existingAgent)
 
       await agentStore.updateAgent('custom-toast-update', { name: 'New' })
 
       expect(mockToast.successToast).toHaveBeenCalled()
-    })
-
-    it('should handle database errors', async () => {
-      const existingAgent = createTestAgent({ id: 'custom-db-error' })
-      mockDb.get.mockResolvedValueOnce(existingAgent)
-      mockDb.update.mockRejectedValueOnce(new Error('Update failed'))
-
-      await expect(
-        agentStore.updateAgent('custom-db-error', { name: 'Test' }),
-      ).rejects.toThrow()
-
-      expect(mockToast.errorToast).toHaveBeenCalled()
     })
   })
 
@@ -505,34 +504,36 @@ describe('agentStore', () => {
       )
     })
 
-    it('should delete custom agent from IndexedDB', async () => {
+    it('should prevent deletion of built-in agents', async () => {
+      await expect(agentStore.deleteAgent('writer')).rejects.toThrow(
+        'Cannot delete built-in agents',
+      )
+    })
+
+    it('should soft delete custom agent in Yjs', async () => {
+      const customAgent = createTestAgent({ id: 'custom-delete' })
+      mockAgentsMap.set('custom-delete', customAgent)
+
       await agentStore.deleteAgent('custom-delete')
 
-      expect(mockDb.delete).toHaveBeenCalledWith('agents', 'custom-delete')
+      // Check that agent was soft-deleted
+      const deletedAgent = mockAgentsMap.get('custom-delete')
+      expect(deletedAgent?.deletedAt).toBeInstanceOf(Date)
     })
 
     it('should show success toast on deletion', async () => {
+      const customAgent = createTestAgent({ id: 'custom-toast-delete' })
+      mockAgentsMap.set('custom-toast-delete', customAgent)
+
       await agentStore.deleteAgent('custom-toast-delete')
 
       expect(mockToast.successToast).toHaveBeenCalled()
     })
 
-    it('should show error toast on failure', async () => {
-      mockDb.delete.mockRejectedValueOnce(new Error('Delete failed'))
-
+    it('should throw error for non-existent agent', async () => {
       await expect(
-        agentStore.deleteAgent('custom-error-delete'),
-      ).rejects.toThrow()
-
-      expect(mockToast.errorToast).toHaveBeenCalled()
-    })
-
-    it('should initialize database if not initialized', async () => {
-      mockDb.isInitialized.mockReturnValue(false)
-
-      await agentStore.deleteAgent('custom-init-delete')
-
-      expect(mockDb.init).toHaveBeenCalled()
+        agentStore.deleteAgent('custom-non-existent'),
+      ).rejects.toThrow('Agent with id custom-non-existent not found')
     })
   })
 
@@ -554,23 +555,15 @@ describe('agentStore', () => {
 
     it('should set deletedAt on custom agent', async () => {
       const customAgent = createTestAgent({ id: 'custom-soft-delete' })
-      mockDb.get.mockResolvedValueOnce(customAgent)
+      mockAgentsMap.set('custom-soft-delete', customAgent)
 
       await agentStore.softDeleteAgent('custom-soft-delete')
 
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'agents',
-        expect.objectContaining({
-          id: 'custom-soft-delete',
-          deletedAt: expect.any(Date),
-        }),
-      )
+      const deletedAgent = mockAgentsMap.get('custom-soft-delete')
+      expect(deletedAgent?.deletedAt).toBeInstanceOf(Date)
     })
 
     it('should throw error for non-existent agent', async () => {
-      mockDb.get.mockResolvedValueOnce(null)
-      mockFetch.mockResolvedValueOnce({ ok: false, status: 404 })
-
       await expect(
         agentStore.softDeleteAgent('custom-non-existent'),
       ).rejects.toThrow('Agent with id custom-non-existent not found')
@@ -578,7 +571,7 @@ describe('agentStore', () => {
 
     it('should show success toast on soft deletion', async () => {
       const customAgent = createTestAgent({ id: 'custom-soft-toast' })
-      mockDb.get.mockResolvedValueOnce(customAgent)
+      mockAgentsMap.set('custom-soft-toast', customAgent)
 
       await agentStore.softDeleteAgent('custom-soft-toast')
 
@@ -591,19 +584,12 @@ describe('agentStore', () => {
         id: 'custom-soft-time',
         updatedAt: oldDate,
       })
-      mockDb.get.mockResolvedValueOnce(customAgent)
+      mockAgentsMap.set('custom-soft-time', customAgent)
 
       await agentStore.softDeleteAgent('custom-soft-time')
 
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'agents',
-        expect.objectContaining({
-          updatedAt: expect.any(Date),
-        }),
-      )
-
-      const updateCall = mockDb.update.mock.calls[0][1] as Agent
-      expect(updateCall.updatedAt?.getTime()).toBeGreaterThan(oldDate.getTime())
+      const deletedAgent = mockAgentsMap.get('custom-soft-time')
+      expect(deletedAgent?.updatedAt?.getTime()).toBeGreaterThan(oldDate.getTime())
     })
   })
 
@@ -611,30 +597,24 @@ describe('agentStore', () => {
   // loadCustomAgents Tests
   // ============================================
   describe('loadCustomAgents', () => {
-    it('should load custom agents from IndexedDB', async () => {
-      const customAgents = [
-        createTestAgent({ id: 'custom-1', name: 'Agent 1' }),
-        createTestAgent({ id: 'custom-2', name: 'Agent 2' }),
-      ]
-      mockDb.getAll.mockResolvedValueOnce(customAgents)
+    it('should load custom agents from Yjs', async () => {
+      mockAgentsMap.set('custom-1', createTestAgent({ id: 'custom-1', name: 'Agent 1' }))
+      mockAgentsMap.set('custom-2', createTestAgent({ id: 'custom-2', name: 'Agent 2' }))
 
       const agents = await agentStore.loadCustomAgents()
 
       expect(agents).toHaveLength(2)
-      expect(agents[0].id).toBe('custom-1')
-      expect(agents[1].id).toBe('custom-2')
+      expect(agents.some(a => a.id === 'custom-1')).toBe(true)
+      expect(agents.some(a => a.id === 'custom-2')).toBe(true)
     })
 
     it('should filter out soft-deleted agents', async () => {
-      const customAgents = [
-        createTestAgent({ id: 'custom-active', name: 'Active' }),
-        createTestAgent({
-          id: 'custom-deleted',
-          name: 'Deleted',
-          deletedAt: new Date(),
-        }),
-      ]
-      mockDb.getAll.mockResolvedValueOnce(customAgents)
+      mockAgentsMap.set('custom-active', createTestAgent({ id: 'custom-active', name: 'Active' }))
+      mockAgentsMap.set('custom-deleted', createTestAgent({
+        id: 'custom-deleted',
+        name: 'Deleted',
+        deletedAt: new Date(),
+      }))
 
       const agents = await agentStore.loadCustomAgents()
 
@@ -642,34 +622,11 @@ describe('agentStore', () => {
       expect(agents[0].id).toBe('custom-active')
     })
 
-    it('should return empty array on database error', async () => {
-      mockDb.getAll.mockRejectedValueOnce(new Error('DB Error'))
-
+    it('should return empty array when no custom agents', async () => {
+      // No agents in mock map
       const agents = await agentStore.loadCustomAgents()
 
       expect(agents).toEqual([])
-    })
-
-    it('should initialize database if not initialized', async () => {
-      mockDb.isInitialized.mockReturnValue(false)
-      mockDb.getAll.mockResolvedValueOnce([])
-
-      await agentStore.loadCustomAgents()
-
-      expect(mockDb.init).toHaveBeenCalled()
-    })
-
-    it('should cache loaded agents', async () => {
-      const customAgent = createTestAgent({ id: 'custom-cache' })
-      mockDb.getAll.mockResolvedValueOnce([customAgent])
-
-      await agentStore.loadCustomAgents()
-
-      // Now getting the agent should use cache
-      mockDb.get.mockResolvedValueOnce(customAgent) // Fallback
-      const agent = await agentStore.getAgentById('custom-cache')
-
-      expect(agent?.id).toBe('custom-cache')
     })
   })
 
@@ -719,8 +676,6 @@ describe('agentStore', () => {
           tags: ['unknown'],
         }),
       })
-
-      mockDb.getAll.mockResolvedValueOnce([])
     })
 
     it('should group agents by first tag', async () => {
@@ -781,9 +736,8 @@ describe('agentStore', () => {
         }),
       })
 
-      // Mock custom agents
-      const customAgent = createTestAgent({ id: 'custom-sep' })
-      mockDb.getAll.mockResolvedValueOnce([customAgent])
+      // Add custom agent to Yjs mock
+      mockAgentsMap.set('custom-sep', createTestAgent({ id: 'custom-sep' }))
 
       const { customAgents, builtInAgents } =
         await agentStore.getAgentsSeparated()
@@ -801,8 +755,7 @@ describe('agentStore', () => {
         }),
       })
 
-      const customAgent = createTestAgent({ id: 'custom-only' })
-      mockDb.getAll.mockResolvedValueOnce([customAgent])
+      mockAgentsMap.set('custom-only', createTestAgent({ id: 'custom-only' }))
 
       const { builtInAgents } = await agentStore.getAgentsSeparated()
 
@@ -816,8 +769,6 @@ describe('agentStore', () => {
           agents: [],
         }),
       })
-
-      mockDb.getAll.mockResolvedValueOnce([])
 
       const { customAgents } = await agentStore.getAgentsSeparated()
 
@@ -839,7 +790,9 @@ describe('agentStore', () => {
       ])
 
       expect(agent1.id).not.toBe(agent2.id)
-      expect(mockDb.add).toHaveBeenCalledTimes(2)
+      // Both should be in Yjs
+      expect(mockAgentsMap.has(agent1.id)).toBe(true)
+      expect(mockAgentsMap.has(agent2.id)).toBe(true)
     })
 
     it('should handle agent with special characters in name', async () => {
@@ -901,16 +854,12 @@ describe('agentStore', () => {
 
     it('should generate unique slugs for duplicate names', async () => {
       // First agent with name "Test Agent"
-      mockDb.getAll.mockResolvedValue([])
       const agent1 = await agentStore.createAgent({
         name: 'Test Agent',
         role: 'Role 1',
       })
 
-      // Mock existing agents to include first agent
-      mockDb.getAll.mockResolvedValue([agent1])
-
-      // Second agent with same name
+      // Second agent with same name should get unique slug
       const agent2 = await agentStore.createAgent({
         name: 'Test Agent',
         role: 'Role 2',
@@ -929,41 +878,40 @@ describe('agentStore', () => {
       expect(agent.slug).toBe('cafe-resume-agent')
     })
 
-    it('should get agent by slug', async () => {
+    it('should get agent by slug', () => {
       const customAgent = createTestAgent({
         id: 'custom-123',
         slug: 'my-agent-slug',
         name: 'My Agent',
       })
 
-      mockDb.getAll.mockResolvedValue([customAgent])
+      mockAgentsMap.set('custom-123', customAgent)
 
-      const agent = await agentStore.getAgentBySlug('my-agent-slug')
+      const agent = agentStore.getAgentBySlug('my-agent-slug')
 
       expect(agent).toBeDefined()
       expect(agent?.slug).toBe('my-agent-slug')
     })
 
-    it('should return devs agent for "devs" slug', async () => {
-      const agent = await agentStore.getAgentBySlug('devs')
+    it('should return devs agent for "devs" slug', () => {
+      const agent = agentStore.getAgentBySlug('devs')
 
       expect(agent).toBeDefined()
       expect(agent?.id).toBe('devs')
       expect(agent?.slug).toBe('devs')
     })
 
-    it('should fall back to ID lookup if slug not found', async () => {
+    it('should fall back to ID lookup if slug not found', () => {
       const customAgent = createTestAgent({
         id: 'custom-123',
         slug: 'agent-slug',
         name: 'Test Agent',
       })
 
-      mockDb.get.mockResolvedValue(customAgent)
-      mockDb.getAll.mockResolvedValue([])
+      mockAgentsMap.set('custom-123', customAgent)
 
       // Lookup by ID should still work
-      const agent = await agentStore.getAgentBySlug('custom-123')
+      const agent = agentStore.getAgentBySlug('custom-123')
 
       expect(agent).toBeDefined()
       expect(agent?.id).toBe('custom-123')
@@ -976,8 +924,7 @@ describe('agentStore', () => {
         name: 'Old Name',
       })
 
-      mockDb.get.mockResolvedValue(customAgent)
-      mockDb.getAll.mockResolvedValue([customAgent])
+      mockAgentsMap.set('custom-123', customAgent)
 
       const updatedAgent = await agentStore.updateAgent('custom-123', {
         name: 'New Name',
@@ -993,7 +940,7 @@ describe('agentStore', () => {
         name: 'Original Name',
       })
 
-      mockDb.get.mockResolvedValue(customAgent)
+      mockAgentsMap.set('custom-123', customAgent)
 
       const updatedAgent = await agentStore.updateAgent('custom-123', {
         role: 'New Role',
@@ -1001,55 +948,6 @@ describe('agentStore', () => {
 
       expect(updatedAgent.slug).toBe('original-slug')
       expect(updatedAgent.name).toBe('Original Name')
-    })
-
-    it('should migrate agents without slugs when loading custom agents', async () => {
-      // Agent without slug (pre-migration data)
-      const legacyAgent = {
-        id: 'custom-legacy',
-        name: 'Legacy Agent',
-        role: 'Test Role',
-        instructions: 'Test instructions',
-        tags: ['test'],
-        createdAt: new Date(),
-      }
-
-      mockDb.getAll.mockResolvedValue([legacyAgent])
-
-      const agents = await agentStore.loadCustomAgents()
-
-      expect(agents).toHaveLength(1)
-      expect(agents[0].slug).toBe('legacy-agent')
-      // Should persist the generated slug
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'agents',
-        expect.objectContaining({ slug: 'legacy-agent' }),
-      )
-    })
-
-    it('should migrate agent without slug when getting by ID', async () => {
-      // Agent without slug (pre-migration data)
-      const legacyAgent = {
-        id: 'custom-legacy-id',
-        name: 'Legacy By ID',
-        role: 'Test Role',
-        instructions: 'Test instructions',
-        tags: ['test'],
-        createdAt: new Date(),
-      }
-
-      mockDb.get.mockResolvedValue(legacyAgent)
-      mockDb.getAll.mockResolvedValue([])
-
-      const agent = await agentStore.getAgentById('custom-legacy-id')
-
-      expect(agent).toBeDefined()
-      expect(agent?.slug).toBe('legacy-by-id')
-      // Should persist the generated slug
-      expect(mockDb.update).toHaveBeenCalledWith(
-        'agents',
-        expect.objectContaining({ slug: 'legacy-by-id' }),
-      )
     })
   })
 })

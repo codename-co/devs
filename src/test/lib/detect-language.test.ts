@@ -114,7 +114,8 @@ describe('detect-language', () => {
 
     it('should handle empty path for non-default languages', () => {
       expect(buildLanguageUrl('', 'fr')).toBe('/fr')
-      expect(buildLanguageUrl('/', 'de')).toBe('/de/')
+      // For '/' path, we strip trailing slash for consistency (home page = /de)
+      expect(buildLanguageUrl('/', 'de')).toBe('/de')
     })
 
     it('should remove existing language prefix before adding new one', () => {

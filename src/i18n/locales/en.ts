@@ -83,16 +83,19 @@ export const en = [
   'Agent learned knowledge',
   'Files',
   'Manage your files',
-  'App configuration',
   'Database management',
   'Traces and Metrics',
+  'Observe and analyze traces and metrics',
   'Admin',
 
   // PromptArea
   'Need something done?',
-  'More actions',
+  'Show extended actions',
+  'Hide extended actions',
   'Attach a file or image',
   'Upload new file',
+  'Capture screen',
+  'Capturing…',
   'Choose from knowledge base',
   'No files found in knowledge base',
   'Drop files here…',
@@ -292,6 +295,7 @@ export const en = [
   'Total Sub-tasks',
 
   // Common actions
+  'optional',
   'Retry',
   'Refresh',
   'Close',
@@ -557,7 +561,7 @@ export const en = [
 
   // Sync - Modes
   'Create',
-  'Join',
+  'Scan & Join',
   'Share',
   'Start Sync',
   'Join Room',
@@ -580,7 +584,7 @@ export const en = [
   'Sync active! Share the link or QR code with other devices to connect.',
   'Click "Synchronize with devices" to start syncing.',
   'Sync your data across devices in real-time.',
-  'No server needed - data stays between your devices.',
+  'No server needed - data transits between your devices.',
 
   // Sync - Room/Code
   'Code',
@@ -594,6 +598,13 @@ export const en = [
   'Copy to clipboard',
   'Sync Settings',
 
+  // Sync - Room Password
+  'Room Password',
+  'Sync password',
+  'Enter the room password',
+  'Set a password to sync API keys across devices. All devices must use the same password.',
+  'Enter the same password used when creating the room to sync API keys.',
+
   // Sync - QR Code
   'Or scan this QR Code:',
   'Generating QR Code...',
@@ -603,6 +614,11 @@ export const en = [
   'Scan the QR Code',
   'Stop Scanner',
   'Point your camera at a sync QR code',
+  'Try Again',
+
+  // Sync - Password Protected
+  'Password Required',
+  'This room is password-protected. Enter the password to join.',
   'Use another device to scan this QR code to connect instantly.',
   'Camera access denied',
   'Unable to access camera. Please grant camera permissions.',
@@ -610,6 +626,11 @@ export const en = [
   // Sync - Secret Link
   'Share the secret link',
   'Copy and share this unique link with your other device. Keep it private!',
+
+  // Sync - Advanced
+  'Advanced',
+  'Background Sync',
+  'Experimental: Prevents UI freezing during sync',
 
   // Sync - Peers
   'Status:',
@@ -714,6 +735,17 @@ export const en = [
   'Notifications',
   'No notifications',
   'Clear all',
+
+  // LLM Provider Management
+  'This provider is already configured. Edit or delete the existing one first.',
+  'Invalid API key',
+  'Provider added successfully',
+  'Failed to add provider',
+  'Credential not found',
+  'Provider updated successfully',
+  'Failed to update provider',
+  'Provider deleted',
+  'Failed to delete provider',
 
   // Security - Non-extractable CryptoKey
   'Encryption Key Status',

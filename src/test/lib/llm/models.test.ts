@@ -17,6 +17,13 @@ import {
   findModelsWithCapabilities,
   findBestModel,
   modelHasCapabilities,
+  inferOllamaCapabilities,
+  inferOllamaCapabilitiesAsync,
+  getOllamaModelsWithCapabilities,
+  getOllamaModelsWithCapabilitiesAsync,
+  inferLocalModelCapabilities,
+  formatLocalModelName,
+  usesLocalInference,
 } from '@/lib/llm/models'
 import type { LLMProvider } from '@/types'
 import * as fs from 'node:fs'
@@ -362,5 +369,274 @@ describe('Model capability definitions', () => {
         }
       }
     }
+  })
+})
+
+describe('inferOllamaCapabilities', () => {
+  it('should infer vision capability for llava models', () => {
+    const caps = inferOllamaCapabilities('llava:7b')
+    expect(caps.vision).toBe(true)
+  })
+
+  it('should infer thinking capability for deepseek-r1 models', () => {
+    const caps = inferOllamaCapabilities('deepseek-r1:8b')
+    expect(caps.thinking).toBe(true)
+    expect(caps.tools).toBe(true)
+  })
+
+  it('should infer tools capability for llama3.2 models', () => {
+    const caps = inferOllamaCapabilities('llama3.2:3b')
+    expect(caps.tools).toBe(true)
+    expect(caps.fast).toBe(true)
+  })
+
+  it('should infer vision and fast for gemma3 models', () => {
+    const caps = inferOllamaCapabilities('gemma3:4b')
+    expect(caps.vision).toBe(true)
+    expect(caps.fast).toBe(true)
+  })
+
+  it('should return empty capabilities for unknown models', () => {
+    const caps = inferOllamaCapabilities('unknown-model:1b')
+    expect(Object.keys(caps).length).toBe(0)
+  })
+
+  it('should be case-insensitive', () => {
+    const caps1 = inferOllamaCapabilities('LLaVA:7b')
+    const caps2 = inferOllamaCapabilities('llava:7b')
+    expect(caps1.vision).toBe(true)
+    expect(caps2.vision).toBe(true)
+  })
+})
+
+describe('inferOllamaCapabilitiesAsync', () => {
+  it('should return capabilities for known models', async () => {
+    const caps = await inferOllamaCapabilitiesAsync('llava:7b')
+    expect(caps.vision).toBe(true)
+  })
+
+  it('should fall back to pattern matching when models.dev fails', async () => {
+    const caps = await inferOllamaCapabilitiesAsync('deepseek-r1:14b')
+    expect(caps.thinking).toBe(true)
+    expect(caps.tools).toBe(true)
+  })
+
+  it('should handle unknown models gracefully', async () => {
+    const caps = await inferOllamaCapabilitiesAsync('unknown-model:1b')
+    expect(
+      Object.keys(caps).filter((k) => caps[k as keyof typeof caps]),
+    ).toHaveLength(0)
+  })
+})
+
+describe('getOllamaModelsWithCapabilities', () => {
+  it('should return models with inferred capabilities', () => {
+    const modelIds = ['llava:7b', 'deepseek-r1:8b', 'llama3.2:3b']
+    const models = getOllamaModelsWithCapabilities(modelIds)
+
+    expect(models).toHaveLength(3)
+    expect(models[0].id).toBe('llava:7b')
+    expect(models[0].capabilities?.vision).toBe(true)
+    expect(models[1].id).toBe('deepseek-r1:8b')
+    expect(models[1].capabilities?.thinking).toBe(true)
+    expect(models[2].id).toBe('llama3.2:3b')
+    expect(models[2].capabilities?.tools).toBe(true)
+  })
+
+  it('should generate human-readable names', () => {
+    const models = getOllamaModelsWithCapabilities(['llama3.2:3b'])
+    expect(models[0].name).toContain('Llama')
+    expect(models[0].name).toContain('3B')
+  })
+})
+
+describe('getOllamaModelsWithCapabilitiesAsync', () => {
+  it('should return models with inferred capabilities', async () => {
+    const modelIds = ['llava:7b', 'deepseek-r1:8b']
+    const models = await getOllamaModelsWithCapabilitiesAsync(modelIds)
+
+    expect(models).toHaveLength(2)
+    expect(models[0].id).toBe('llava:7b')
+    expect(models[0].capabilities?.vision).toBe(true)
+    expect(models[1].id).toBe('deepseek-r1:8b')
+    expect(models[1].capabilities?.thinking).toBe(true)
+  })
+
+  it('should handle empty array', async () => {
+    const models = await getOllamaModelsWithCapabilitiesAsync([])
+    expect(models).toHaveLength(0)
+  })
+})
+
+describe('inferLocalModelCapabilities', () => {
+  it('should infer capabilities for ollama provider', () => {
+    const caps = inferLocalModelCapabilities('llava:7b', 'ollama')
+    expect(caps.vision).toBe(true)
+  })
+
+  it('should infer capabilities for local provider', () => {
+    const caps = inferLocalModelCapabilities('gemma3:4b', 'local')
+    expect(caps.vision).toBe(true)
+    expect(caps.fast).toBe(true)
+  })
+
+  it('should infer capabilities for openai-compatible provider', () => {
+    const caps = inferLocalModelCapabilities(
+      'deepseek-r1:32b',
+      'openai-compatible',
+    )
+    expect(caps.thinking).toBe(true)
+    expect(caps.tools).toBe(true)
+  })
+
+  it('should work with different provider types', () => {
+    // Same model should get same capabilities regardless of provider
+    const ollama = inferLocalModelCapabilities('qwen3:8b', 'ollama')
+    const local = inferLocalModelCapabilities('qwen3:8b', 'local')
+    const compatible = inferLocalModelCapabilities(
+      'qwen3:8b',
+      'openai-compatible',
+    )
+
+    expect(ollama.thinking).toBe(true)
+    expect(local.thinking).toBe(true)
+    expect(compatible.thinking).toBe(true)
+  })
+
+  it('should strip repository path prefix for local browser models', () => {
+    const caps = inferLocalModelCapabilities(
+      'onnx-community/Qwen3-0.6B-ONNX',
+      'local',
+    )
+    expect(caps.thinking).toBe(true)
+    expect(caps.tools).toBe(true)
+  })
+
+  it('should infer capabilities for ONNX-web models', () => {
+    const caps = inferLocalModelCapabilities(
+      'onnx-community/granite-4.0-350m-ONNX-web',
+      'local',
+    )
+    expect(caps.fast).toBe(true)
+    expect(caps.lowCost).toBe(true)
+  })
+
+  it('should infer capabilities for MLC models', () => {
+    const caps = inferLocalModelCapabilities(
+      'SmolLM2-360M-Instruct-q4f16_1-MLC',
+      'local',
+    )
+    expect(caps.fast).toBe(true)
+    expect(caps.lowCost).toBe(true)
+  })
+
+  it('should infer capabilities for SmolLM models', () => {
+    const caps = inferLocalModelCapabilities(
+      'onnx-community/SmolLM2-135M-Instruct-ONNX',
+      'local',
+    )
+    expect(caps.fast).toBe(true)
+    expect(caps.lowCost).toBe(true)
+  })
+})
+
+describe('formatLocalModelName', () => {
+  it('should format model names with colons', () => {
+    expect(formatLocalModelName('llama3.2:3b')).toBe('Llama3.2 3B')
+  })
+
+  it('should format model names with hyphens', () => {
+    expect(formatLocalModelName('deepseek-r1')).toBe('Deepseek R1')
+  })
+
+  it('should convert hyphen-separated version numbers to dots', () => {
+    expect(formatLocalModelName('claude-3-7-sonnet')).toBe('Claude 3.7 Sonnet')
+    expect(formatLocalModelName('gemini-2-0-flash')).toBe('Gemini 2.0 Flash')
+    expect(formatLocalModelName('model-1-2-3-name')).toBe('Model 1.2.3 Name')
+  })
+
+  it('should format model names with underscores', () => {
+    expect(formatLocalModelName('some_model_name')).toBe('Some Model Name')
+  })
+
+  it('should uppercase size indicators', () => {
+    expect(formatLocalModelName('model:7b')).toBe('Model 7B')
+    expect(formatLocalModelName('model:32k')).toBe('Model 32K')
+    expect(formatLocalModelName('model:1m')).toBe('Model 1M')
+  })
+
+  it('should strip repository path prefix', () => {
+    expect(formatLocalModelName('onnx-community/Qwen3-0.6B-ONNX')).toBe(
+      'Qwen3 0.6B ONNX',
+    )
+    expect(
+      formatLocalModelName('onnx-community/granite-4.0-350m-ONNX-web'),
+    ).toBe('Granite 4.0 350M ONNX WEB')
+  })
+
+  it('should uppercase common suffixes', () => {
+    expect(formatLocalModelName('model-ONNX')).toBe('Model ONNX')
+    expect(formatLocalModelName('model-MLC')).toBe('Model MLC')
+    expect(formatLocalModelName('model-web')).toBe('Model WEB')
+    expect(formatLocalModelName('model-gguf')).toBe('Model GGUF')
+  })
+})
+
+describe('usesLocalInference', () => {
+  it('should return true for local providers', () => {
+    expect(usesLocalInference('local')).toBe(true)
+    expect(usesLocalInference('ollama')).toBe(true)
+    expect(usesLocalInference('openai-compatible')).toBe(true)
+    expect(usesLocalInference('huggingface')).toBe(true)
+  })
+
+  it('should return false for cloud providers', () => {
+    expect(usesLocalInference('openai')).toBe(false)
+    expect(usesLocalInference('anthropic')).toBe(false)
+    expect(usesLocalInference('google')).toBe(false)
+    expect(usesLocalInference('mistral')).toBe(false)
+  })
+})
+
+describe('inferLocalModelCapabilities for HuggingFace models', () => {
+  it('should infer capabilities for Llama models', () => {
+    const caps = inferLocalModelCapabilities(
+      'meta-llama/Llama-3.3-70B-Instruct',
+      'huggingface',
+    )
+    expect(caps.tools).toBe(true)
+  })
+
+  it('should infer capabilities for Qwen models with thinking', () => {
+    const caps = inferLocalModelCapabilities(
+      'Qwen/Qwen3-72B-Instruct',
+      'huggingface',
+    )
+    expect(caps.thinking).toBe(true)
+    expect(caps.tools).toBe(true)
+  })
+
+  it('should infer capabilities for Mistral models', () => {
+    const caps = inferLocalModelCapabilities(
+      'mistralai/Mistral-7B-Instruct-v0.3',
+      'huggingface',
+    )
+    expect(caps.tools).toBe(true)
+  })
+
+  it('should infer capabilities for DeepSeek R1 models', () => {
+    const caps = inferLocalModelCapabilities(
+      'deepseek-ai/DeepSeek-R1-Distill-Qwen-32B',
+      'huggingface',
+    )
+    expect(caps.thinking).toBe(true)
+  })
+
+  it('should infer capabilities for Phi models', () => {
+    const caps = inferLocalModelCapabilities(
+      'microsoft/Phi-3.5-mini-instruct',
+      'huggingface',
+    )
+    expect(caps.fast).toBe(true)
   })
 })

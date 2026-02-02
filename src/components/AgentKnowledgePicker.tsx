@@ -17,7 +17,7 @@ import {
 } from '@heroui/react'
 import { useState, useEffect, useMemo } from 'react'
 
-import { db } from '@/lib/db'
+import { getAllKnowledgeItems } from '@/stores/knowledgeStore'
 import { KnowledgeItem } from '@/types'
 import { Icon } from '@/components/Icon'
 import { formatBytes } from '@/lib/format'
@@ -48,19 +48,9 @@ export function AgentKnowledgePicker({
     loadKnowledgeItems()
   }, [])
 
-  const loadKnowledgeItems = async () => {
+  const loadKnowledgeItems = () => {
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
-      if (!db.hasStore('knowledgeItems')) {
-        setKnowledgeItems([])
-        setLoading(false)
-        return
-      }
-
-      const items = await db.getAll('knowledgeItems')
+      const items = getAllKnowledgeItems()
       // Only show files, not folders
       const fileItems = items.filter((item) => item.type === 'file')
       fileItems.sort(

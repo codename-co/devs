@@ -551,29 +551,58 @@ private static async coordinateTeamExecution(
 
 ## Database Architecture
 
-### IndexedDB Schema
+### Yjs-First Architecture
+
+DEVS uses **Yjs as the single source of truth** for all application data. This eliminates the complexity of dual-storage sync and provides automatic CRDT-based conflict resolution.
+
+```mermaid
+graph TB
+    subgraph "Yjs-First Architecture"
+        React[React Components]
+        Hooks[useLiveMap / useLiveValue]
+        YDoc[Yjs Y.Doc]
+        YMaps[Typed Y.Maps]
+        Persist[y-indexeddb]
+        Sync[y-websocket]
+    end
+
+    React --> Hooks
+    Hooks --> YMaps
+    YMaps --> YDoc
+    YDoc --> Persist
+    YDoc --> Sync
+    Sync --> Peers[Other Devices]
+```
+
+**Key Benefits:**
+
+- **Single source of truth**: Yjs document contains all data
+- **Automatic persistence**: y-indexeddb handles local storage
+- **CRDT conflict resolution**: No manual merge logic needed
+- **Instant reactivity**: Components observe Yjs maps directly
+- **P2P sync ready**: Enable sync with one function call
+
+### Data Schema
 
 ```mermaid
 erDiagram
     AGENTS ||--o{ CONVERSATIONS : "participates in"
     AGENTS ||--o{ ARTIFACTS : "creates"
     AGENTS ||--o{ KNOWLEDGE_ITEMS : "has access to"
+    AGENTS ||--o{ MEMORIES : "learns"
 
     TASKS ||--o{ ARTIFACTS : "produces"
     TASKS ||--o{ TASKS : "has subtasks"
-    TASKS ||--o{ CONTEXTS : "generates"
 
     CONVERSATIONS ||--o{ MESSAGES : "contains"
 
-    KNOWLEDGE_ITEMS ||--o{ FOLDER_WATCHERS : "synced by"
-
     AGENTS {
         string id PK
+        string slug UK
         string name
         string role
         string instructions
         array tags
-        array knowledgeItemIds
         date createdAt
     }
 
@@ -584,7 +613,6 @@ erDiagram
         string status
         string complexity
         string assignedAgentId FK
-        string parentTaskId FK
         array requirements
         array dependencies
         date createdAt
@@ -597,7 +625,6 @@ erDiagram
         string type
         string content
         string status
-        array validates
         date createdAt
     }
 
@@ -610,40 +637,61 @@ erDiagram
         string path
         date createdAt
     }
+
+    MEMORIES {
+        string id PK
+        string agentId FK
+        string category
+        string title
+        string content
+        string confidence
+        date learnedAt
+    }
 ```
 
-### Store Configuration
+### Yjs Document Structure
+
+All application data is stored in typed Y.Maps within a single Yjs document (`src/lib/yjs/`):
 
 ```typescript
-const DB_STORES = [
-  'agents', // Agent definitions
-  'conversations', // Chat histories
-  'knowledgeItems', // Knowledge base
-  'folderWatchers', // Sync configurations
-  'credentials', // Encrypted API keys
-  'artifacts', // Task deliverables
-  'tasks', // Task management
-  'contexts', // Shared contexts
-  'langfuse_config', // Observability config
-]
+// src/lib/yjs/maps.ts
+export const agents = ydoc.getMap<Agent>('agents')
+export const conversations = ydoc.getMap<Conversation>('conversations')
+export const knowledge = ydoc.getMap<KnowledgeItem>('knowledge')
+export const tasks = ydoc.getMap<Task>('tasks')
+export const artifacts = ydoc.getMap<Artifact>('artifacts')
+export const memories = ydoc.getMap<AgentMemoryEntry>('memories')
+export const workflows = ydoc.getMap<Workflow>('workflows')
+export const preferences = ydoc.getMap<unknown>('preferences')
+export const credentials = ydoc.getMap<unknown>('credentials')
 ```
 
-### Database Operations
+### Store Pattern
+
+Stores use Yjs maps directly instead of IndexedDB:
 
 ```typescript
-class Database {
-  async init(): Promise<void>
-  async add<T>(storeName: T, data: DBStores[T]): Promise<string>
-  async get<T>(storeName: T, id: string): Promise<DBStores[T]>
-  async update<T>(storeName: T, data: DBStores[T]): Promise<void>
-  async delete<T>(storeName: T, id: string): Promise<void>
-  async query<T>(
-    storeName: T,
-    index: string,
-    value: any,
-  ): Promise<DBStores[T][]>
+// ✅ Yjs-first pattern (current)
+export function createAgent(data: AgentData): Agent {
+  const agent = { ...data, id: nanoid(), createdAt: new Date() }
+  agents.set(agent.id, agent) // Direct Yjs write
+  return agent
+}
+
+// React hooks observe Yjs changes
+export function useAgents(): Agent[] {
+  return useLiveMap(agents).filter((a) => !a.deletedAt)
 }
 ```
+
+### Legacy IndexedDB Support
+
+Some browser-specific data that cannot be serialized to Yjs remains in IndexedDB:
+
+- **CryptoKeys**: Non-extractable browser encryption keys
+- **FileSystemHandles**: File System API handles for folder watching
+- **Traces**: Performance-sensitive local analytics data
+- **Connector sync states**: OAuth tokens and sync cursors
 
 ---
 
@@ -980,6 +1028,8 @@ The DEVS AI Platform represents a sophisticated, privacy-first approach to AI ag
 - **Privacy-First**: All data processing happens locally
 - **Extensible Framework**: Plugin architecture for agents and providers
 - **Observable System**: Built-in telemetry and monitoring capabilities
+- **Yjs-First Data Layer**: Single source of truth with automatic CRDT conflict resolution
+- **P2P Sync Ready**: Optional cross-device synchronization without central servers
 
 ### Future Considerations
 

@@ -1,0 +1,1150 @@
+id: methodologies
+name: Methodologies
+version: 1.0.0
+type: app
+license: MIT
+icon: Strategy
+color: success
+description: Browse and explore task execution methodologies for AI agent orchestration.
+author:
+  name: Arnaud Leymet
+  url: https://arnley.com
+privacyPolicy: https://devs.new/privacy
+source: https://github.com/codename-co/devs/blob/main/public/extensions/methodologies.extension.yaml
+
+i18n:
+  en:
+    name: Methodologies
+    description: Browse and explore task execution methodologies for AI agent orchestration.
+    messages:
+      title: Methodologies
+      subtitle: Reproduce real-world task execution methodologies
+      loading: Loading...
+      noMethodologies: No methodologies found
+      searchPlaceholder: Search methodologies...
+      viewDetails: View Details
+      phases: Phases
+      phase: phase
+      overview: Overview
+      roles: Roles
+      details: Details
+      ceremonies: Ceremonies
+      api: API
+      graphicalRepresentation: Graphical Representation
+      domains: Domains
+      tags: Tags
+      optional: Optional
+      repeatable: Repeatable
+      parallelizable: Parallelizable
+      task: task
+      tasks: tasks
+      entryCriteria: Entry Criteria
+      exitCriteria: Exit Criteria
+      phaseDuration: Phase Duration
+      estimated: Estimated
+      minimum: Minimum
+      maximum: Maximum
+      phaseArtifacts: Phase Artifacts
+      inputs: Inputs
+      outputs: Outputs
+      agentRequirements: Agent Requirements
+      skills: Skills
+      minExperience: Min Experience
+      roleDistribution: Role Distribution
+      required: Required
+      responsibilities: Responsibilities
+      requiredSkills: Required Skills
+      optionalSkills: Optional Skills
+      teamComposition: Team Composition
+      minimumTeamSize: Minimum team size
+      maximumTeamSize: Maximum team size
+      communicationPatterns: Communication Patterns
+      from: From
+      to: To
+      type: Type
+      contextTypes: Context types
+      decisionAuthority: Decision Authority
+      decision: Decision
+      authority: Authority
+      requiresConsensus: Requires consensus
+      consensusRoles: Consensus roles
+      yes: Yes
+      no: No
+      configuration: Configuration
+      maximumIterations: Maximum Iterations
+      timeBox: Time Box
+      strict: Strict
+      flexible: Flexible
+      qualityGates: Quality Gates
+      enabled: Enabled
+      disabled: Disabled
+      autoRetry: Auto Retry
+      maxRetries: Max Retries
+      parallelization: Parallelization
+      maxConcurrentTasks: Max Concurrent Tasks
+      maxConcurrentAgents: Max Concurrent Agents
+      convergence: Convergence
+      metric: Metric
+      threshold: Threshold
+      operator: Operator
+      executionStrategy: Execution Strategy
+      strategy: Strategy
+      phaseOrder: Phase Order
+      loops: Loops
+      branches: Branches
+      failureHandling: Failure Handling
+      fallbackPhase: Fallback Phase
+      maxIterations: Max Iterations
+      condition: Condition
+      truePhase: True Phase
+      falsePhase: False Phase
+      artifactFlow: Artifact Flow
+      artifactTypes: Artifact Types
+      format: Format
+      validationRules: Validation Rules
+      errorMessage: Error Message
+      templates: Templates
+      duration: Duration
+      participants: Participants
+      timing: Timing
+      objectives: Objectives
+      download: Download
+      backToList: Back to methodologies
+      promptUsing: Prompt using this methodology
+      useMethodology: 'Use the {name} methodology to complete this task:'
+      complexity_simple: Simple
+      complexity_moderate: Moderate
+      complexity_complex: Complex
+      complexity_expert: Expert
+      type_sequential: Sequential
+      type_parallel: Parallel
+      type_iterative: Iterative
+      type_hierarchical: Hierarchical
+      type_event-driven: Event-driven
+      type_time-boxed: Time-boxed
+      type_hybrid: Hybrid
+      type_parallel-sequential: Parallel-Sequential
+      type_conditional: Conditional
+      type_nested: Nested
+      timing_phase-start: Phase start
+      timing_phase-end: Phase end
+      timing_daily: Daily
+      timing_periodic: Periodic
+      timing_on-demand: On demand
+      exp_junior: Junior
+      exp_mid: Mid
+      exp_senior: Senior
+      exp_expert: Expert
+      auth_observer: Observer
+      auth_contributor: Contributor
+      auth_reviewer: Reviewer
+      auth_approver: Approver
+      auth_leader: Leader
+      comm_direct: Direct
+      comm_broadcast: Broadcast
+      comm_request-response: Request-Response
+      comm_publish-subscribe: Publish-Subscribe
+      ctx_decision: Decision
+      ctx_finding: Finding
+      ctx_resource: Resource
+      ctx_constraint: Constraint
+      ctx_requirement: Requirement
+      fail_abort: Abort
+      fail_retry: Retry
+      fail_skip: Skip
+      fail_fallback: Fallback
+  fr:
+    name: Méthodologies
+    description: Parcourez et explorez les méthodologies d'exécution de tâches pour l'orchestration d'agents IA.
+    messages:
+      title: Méthodologies
+      subtitle: Reproduire les méthodologies d'exécution de tâches du monde réel
+      loading: Chargement...
+      noMethodologies: Aucune méthodologie trouvée
+      searchPlaceholder: Rechercher des méthodologies...
+      viewDetails: Voir les détails
+      phases: Phases
+      phase: phase
+      overview: Aperçu
+      roles: Rôles
+      details: Détails
+      ceremonies: Cérémonies
+      api: API
+      graphicalRepresentation: Représentation graphique
+      domains: Domaines
+      tags: Étiquettes
+      optional: Optionnel
+      repeatable: Répétable
+      parallelizable: Parallélisable
+      task: tâche
+      tasks: tâches
+      entryCriteria: Critères d'entrée
+      exitCriteria: Critères de sortie
+      phaseDuration: Durée de la phase
+      estimated: Estimé
+      minimum: Minimum
+      maximum: Maximum
+      phaseArtifacts: Artefacts de phase
+      inputs: Entrées
+      outputs: Sorties
+      agentRequirements: Exigences des agents
+      skills: Compétences
+      minExperience: Expérience min.
+      roleDistribution: Répartition des rôles
+      required: Requis
+      responsibilities: Responsabilités
+      requiredSkills: Compétences requises
+      optionalSkills: Compétences optionnelles
+      teamComposition: Composition de l'équipe
+      minimumTeamSize: Taille minimale de l'équipe
+      maximumTeamSize: Taille maximale de l'équipe
+      communicationPatterns: Modèles de communication
+      from: De
+      to: À
+      type: Type
+      contextTypes: Types de contexte
+      decisionAuthority: Autorité de décision
+      decision: Décision
+      authority: Autorité
+      requiresConsensus: Requiert un consensus
+      consensusRoles: Rôles de consensus
+      yes: Oui
+      no: Non
+      configuration: Configuration
+      maximumIterations: Itérations maximales
+      timeBox: Délai fixe
+      strict: Strict
+      flexible: Flexible
+      qualityGates: Portes de qualité
+      enabled: Activé
+      disabled: Désactivé
+      autoRetry: Réessai auto
+      maxRetries: Tentatives max
+      parallelization: Parallélisation
+      maxConcurrentTasks: Tâches concurrentes max
+      maxConcurrentAgents: Agents concurrents max
+      convergence: Convergence
+      metric: Métrique
+      threshold: Seuil
+      operator: Opérateur
+      executionStrategy: Stratégie d'exécution
+      strategy: Stratégie
+      phaseOrder: Ordre des phases
+      loops: Boucles
+      branches: Branches
+      failureHandling: Gestion des échecs
+      fallbackPhase: Phase de secours
+      maxIterations: Itérations max
+      condition: Condition
+      truePhase: Phase vraie
+      falsePhase: Phase fausse
+      artifactFlow: Flux d'artefacts
+      artifactTypes: Types d'artefacts
+      format: Format
+      validationRules: Règles de validation
+      errorMessage: Message d'erreur
+      templates: Modèles
+      duration: Durée
+      participants: Participants
+      timing: Moment
+      objectives: Objectifs
+      download: Télécharger
+      backToList: Retour aux méthodologies
+      promptUsing: Utiliser cette méthodologie
+      useMethodology: 'Utilise la méthodologie {name} pour accomplir cette tâche :'
+      complexity_simple: Simple
+      complexity_moderate: Modéré
+      complexity_complex: Complexe
+      complexity_expert: Expert
+      type_sequential: Séquentiel
+      type_parallel: Parallèle
+      type_iterative: Itératif
+      type_hierarchical: Hiérarchique
+      type_event-driven: Événementiel
+      type_time-boxed: Délai fixe
+      type_hybrid: Hybride
+      type_parallel-sequential: Parallèle-Séquentiel
+      type_conditional: Conditionnel
+      type_nested: Imbriqué
+      timing_phase-start: Début de phase
+      timing_phase-end: Fin de phase
+      timing_daily: Quotidien
+      timing_periodic: Périodique
+      timing_on-demand: À la demande
+      exp_junior: Junior
+      exp_mid: Intermédiaire
+      exp_senior: Senior
+      exp_expert: Expert
+      auth_observer: Observateur
+      auth_contributor: Contributeur
+      auth_reviewer: Examinateur
+      auth_approver: Approbateur
+      auth_leader: Leader
+      comm_direct: Direct
+      comm_broadcast: Diffusion
+      comm_request-response: Requête-Réponse
+      comm_publish-subscribe: Publication-Abonnement
+      ctx_decision: Décision
+      ctx_finding: Découverte
+      ctx_resource: Ressource
+      ctx_constraint: Contrainte
+      ctx_requirement: Exigence
+      fail_abort: Abandonner
+      fail_retry: Réessayer
+      fail_skip: Ignorer
+      fail_fallback: Secours
+  es:
+    name: Metodologías
+    description: Explore las metodologías de ejecución de tareas para la orquestación de agentes de IA.
+    messages:
+      title: Metodologías
+      subtitle: Reproducir metodologías de ejecución de tareas del mundo real
+      loading: Cargando...
+      noMethodologies: No se encontraron metodologías
+      searchPlaceholder: Buscar metodologías...
+      viewDetails: Ver detalles
+      phases: Fases
+      phase: fase
+      overview: Resumen
+      roles: Roles
+      details: Detalles
+      ceremonies: Ceremonias
+      api: API
+      graphicalRepresentation: Representación gráfica
+      domains: Dominios
+      tags: Etiquetas
+      optional: Opcional
+      repeatable: Repetible
+      parallelizable: Paralelizable
+      task: tarea
+      tasks: tareas
+      backToList: Volver a metodologías
+      promptUsing: Usar esta metodología
+      useMethodology: 'Usa la metodología {name} para completar esta tarea:'
+  de:
+    name: Methoden
+    description: Durchsuchen und erkunden Sie Aufgabenausführungsmethoden für die KI-Agenten-Orchestrierung.
+    messages:
+      title: Methoden
+      subtitle: Reproduzieren Sie reale Aufgabenausführungsmethoden
+      loading: Laden...
+      noMethodologies: Keine Methoden gefunden
+      searchPlaceholder: Methoden suchen...
+      viewDetails: Details anzeigen
+      phases: Phasen
+      phase: Phase
+      overview: Übersicht
+      roles: Rollen
+      details: Details
+      ceremonies: Zeremonien
+      api: API
+      backToList: Zurück zu Methoden
+      promptUsing: Diese Methode verwenden
+      useMethodology: 'Verwende die {name}-Methode, um diese Aufgabe zu erledigen:'
+  ko:
+    name: 방법론
+    description: AI 에이전트 오케스트레이션을 위한 작업 실행 방법론을 탐색하세요.
+    messages:
+      title: 방법론
+      subtitle: 실제 작업 실행 방법론 재현
+      loading: 로딩 중...
+      noMethodologies: 방법론을 찾을 수 없습니다
+      searchPlaceholder: 방법론 검색...
+      viewDetails: 상세 보기
+      phases: 단계
+      phase: 단계
+      overview: 개요
+      roles: 역할
+      details: 세부사항
+      ceremonies: 의식
+      api: API
+      backToList: 방법론 목록으로
+      promptUsing: 이 방법론 사용하기
+      useMethodology: '{name} 방법론을 사용하여 이 작업을 완료하세요:'
+  ar:
+    name: المنهجيات
+    description: تصفح واستكشف منهجيات تنفيذ المهام لتنسيق وكلاء الذكاء الاصطناعي.
+    messages:
+      title: المنهجيات
+      subtitle: إعادة إنتاج منهجيات تنفيذ المهام في العالم الحقيقي
+      loading: جاري التحميل...
+      noMethodologies: لم يتم العثور على منهجيات
+      searchPlaceholder: البحث في المنهجيات...
+      viewDetails: عرض التفاصيل
+      phases: المراحل
+      phase: مرحلة
+      overview: نظرة عامة
+      roles: الأدوار
+      details: التفاصيل
+      ceremonies: الاحتفالات
+      api: API
+      backToList: العودة إلى المنهجيات
+      promptUsing: استخدم هذه المنهجية
+      useMethodology: 'استخدم منهجية {name} لإكمال هذه المهمة:'
+
+pages:
+  'methodologies': | # jsx
+    import { useState, useEffect, useMemo } from 'react';
+    import { Card, CardBody, Chip, Spinner, Input, Section, Container, Pagination } from '@devs/components';
+
+    const { t, navigate } = DEVS;
+
+    // Cache for methodologies
+    let methodologyCache = new Map();
+    let methodologiesList = null;
+
+    async function getAvailableMethodologies() {
+      if (methodologiesList !== null) return methodologiesList;
+      try {
+        const response = await fetch('/methodologies/manifest.json');
+        if (!response.ok) throw new Error(`Failed to fetch manifest: ${response.status}`);
+        const manifest = await response.json();
+        methodologiesList = manifest.methodologies || [];
+        return methodologiesList;
+      } catch (error) {
+        console.error('Error fetching methodologies manifest:', error);
+        return [];
+      }
+    }
+
+    async function loadMethodology(id) {
+      if (methodologyCache.has(id)) return methodologyCache.get(id);
+      try {
+        const response = await fetch(`/methodologies/${id}.methodology.json`);
+        if (!response.ok) return null;
+        const methodology = await response.json();
+        methodologyCache.set(id, methodology);
+        return methodology;
+      } catch (error) {
+        console.error(`Error loading methodology ${id}:`, error);
+        return null;
+      }
+    }
+
+    async function loadAllMethodologies() {
+      const ids = await getAvailableMethodologies();
+      const results = await Promise.all(ids.map(id => loadMethodology(id)));
+      return results.filter(m => m !== null);
+    }
+
+    const getComplexityColor = (complexity) => {
+      switch (complexity) {
+        case 'simple': return 'success';
+        case 'moderate': return 'primary';
+        case 'complex': return 'warning';
+        case 'expert': return 'danger';
+        default: return 'default';
+      }
+    };
+
+    const App = () => {
+      const [methodologies, setMethodologies] = useState([]);
+      const [isLoading, setIsLoading] = useState(true);
+      const [searchQuery, setSearchQuery] = useState('');
+      const [currentPage, setCurrentPage] = useState(1);
+      const itemsPerPage = 20;
+      const lang = window.DEVS.context?.language || 'en';
+
+      useEffect(() => {
+        loadAllMethodologies().then(data => {
+          setMethodologies(data);
+          setIsLoading(false);
+        });
+      }, []);
+
+      const filteredMethodologies = useMemo(() => {
+        let filtered = methodologies;
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase();
+          filtered = methodologies.filter(m => {
+            const name = m.metadata.i18n?.[lang]?.name || m.metadata.name;
+            const desc = m.metadata.i18n?.[lang]?.description || m.metadata.description || '';
+            const tags = m.metadata.tags?.join(' ') || '';
+            return name.toLowerCase().includes(query) ||
+                   desc.toLowerCase().includes(query) ||
+                   tags.toLowerCase().includes(query);
+          });
+        }
+        return filtered.sort((a, b) => {
+          const aName = a.metadata.i18n?.[lang]?.name || a.metadata.name;
+          const bName = b.metadata.i18n?.[lang]?.name || b.metadata.name;
+          return aName.localeCompare(bName);
+        });
+      }, [methodologies, searchQuery, lang]);
+
+      const totalPages = Math.ceil(filteredMethodologies.length / itemsPerPage);
+      const paginatedMethodologies = useMemo(() => {
+        const start = (currentPage - 1) * itemsPerPage;
+        return filteredMethodologies.slice(start, start + itemsPerPage);
+      }, [filteredMethodologies, currentPage]);
+
+      const handleSelect = (id) => {
+        navigate(`/methodologies/show#${id}`);
+      };
+
+      if (isLoading) {
+        return (
+          <Section>
+            <Container>
+              <div className="flex justify-center items-center py-12">
+                <Spinner size="lg" />
+              </div>
+            </Container>
+          </Section>
+        );
+      }
+
+      return (
+        <Section>
+          <Container>
+            <div className="mb-6">
+              <Input
+                placeholder={t('searchPlaceholder')}
+                value={searchQuery}
+                onValueChange={setSearchQuery}
+                isClearable
+                onClear={() => setSearchQuery('')}
+                classNames={{ inputWrapper: 'bg-default-100' }}
+              />
+            </div>
+
+            {filteredMethodologies.length === 0 ? (
+              <Card>
+                <CardBody className="text-center py-12">
+                  <p className="text-lg text-default-500">{t('noMethodologies')}</p>
+                </CardBody>
+              </Card>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  {paginatedMethodologies.map((methodology) => {
+                    const name = methodology.metadata.i18n?.[lang]?.name || methodology.metadata.name;
+                    const title = methodology.metadata.i18n?.[lang]?.title || methodology.metadata.title;
+                    const description = methodology.metadata.i18n?.[lang]?.description || methodology.metadata.description;
+
+                    return (
+                      <Card
+                        key={methodology.metadata.id}
+                        isPressable
+                        isHoverable
+                        shadow="none"
+                        className="transition-transform w-full"
+                        onPress={() => handleSelect(methodology.metadata.id)}
+                      >
+                        <CardBody className="py-4">
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <h3 className="text-base font-medium">
+                                  {name}
+                                  {title && <span className="text-default-500"> · {title}</span>}
+                                </h3>
+                                <div className="hidden sm:flex items-center gap-2">
+                                  <Chip size="sm" variant="flat">{methodology.metadata.type}</Chip>
+                                  {methodology.metadata.complexity && (
+                                    <Chip size="sm" color={getComplexityColor(methodology.metadata.complexity)} variant="flat">
+                                      {t(`complexity_${methodology.metadata.complexity}`) || methodology.metadata.complexity}
+                                    </Chip>
+                                  )}
+                                </div>
+                              </div>
+                              {description && (
+                                <p className="text-sm text-default-500 truncate">{description}</p>
+                              )}
+                              {methodology.metadata.tags && methodology.metadata.tags.length > 0 && (
+                                <div className="hidden sm:flex gap-1 mt-2 flex-wrap">
+                                  {methodology.metadata.tags.slice(0, 3).map(tag => (
+                                    <Chip key={tag} size="sm" variant="dot" color="default">{tag}</Chip>
+                                  ))}
+                                  {methodology.metadata.tags.length > 3 && (
+                                    <Chip size="sm" variant="flat" color="default">+{methodology.metadata.tags.length - 3}</Chip>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            <div className="text-right text-sm text-default-400">
+                              {methodology.phases?.length || 0} {t('phases').toLowerCase()}
+                            </div>
+                          </div>
+                        </CardBody>
+                      </Card>
+                    );
+                  })}
+                </div>
+
+                {totalPages > 1 && (
+                  <div className="flex justify-center mt-6">
+                    <Pagination
+                      total={totalPages}
+                      page={currentPage}
+                      onChange={setCurrentPage}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </Container>
+        </Section>
+      );
+    }
+
+  'methodologies/show': | # jsx
+    import { useState, useEffect, useMemo } from 'react';
+    import { Card, CardBody, Chip, Spinner, Button, Tabs, Tab, Accordion, AccordionItem, Section, Container, Link } from '@devs/components';
+
+    const { t, navigate, context } = window.DEVS;
+    const lang = context?.language || 'en';
+
+    // Get methodology ID from URL params
+    const getMethodologyId = () => window.location.hash.substring(1) || null;
+
+    // Cache for methodologies
+    let methodologyCache = new Map();
+
+    async function loadMethodology(id) {
+      if (methodologyCache.has(id)) return methodologyCache.get(id);
+      try {
+        const response = await fetch(`/methodologies/${id}.methodology.json`);
+        if (!response.ok) return null;
+        const methodology = await response.json();
+        methodologyCache.set(id, methodology);
+        return methodology;
+      } catch (error) {
+        console.error(`Error loading methodology ${id}:`, error);
+        return null;
+      }
+    }
+
+    const getComplexityColor = (complexity) => {
+      switch (complexity) {
+        case 'simple': return 'success';
+        case 'moderate': return 'primary';
+        case 'complex': return 'warning';
+        case 'expert': return 'danger';
+        default: return 'default';
+      }
+    };
+
+    const formatDuration = (minutes) => {
+      if (minutes < 60) return `${minutes}m`;
+      if (minutes < 1440) return `${Math.round(minutes / 60)}h`;
+      return `${Math.round(minutes / 1440)}d`;
+    };
+
+    // Generate Mermaid diagram from methodology phases
+    const generateMermaidDiagram = (methodology) => {
+      if (!methodology.phases || methodology.phases.length === 0) return '';
+      let diagram = 'stateDiagram-v2\n';
+      const phases = methodology.phases;
+      phases.forEach((phase, idx) => {
+        const alias = `Phase${idx + 1}`;
+        const label = phase.name.replace(/"/g, "'");
+        diagram += `    ${alias}: ${label}\n`;
+      });
+      diagram += `    [*] --> Phase1\n`;
+      for (let i = 0; i < phases.length - 1; i++) {
+        diagram += `    Phase${i + 1} --> Phase${i + 2}\n`;
+      }
+      diagram += `    Phase${phases.length} --> [*]\n`;
+      return diagram;
+    };
+
+    const MermaidDiagram = ({ code }) => {
+      const [svg, setSvg] = useState('');
+
+      useEffect(() => {
+        if (!code) return;
+        import('https://esm.sh/mermaid@11?external=react,react-dom').then(({ default: mermaid }) => {
+          mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
+          mermaid.render('mermaid-diagram', code).then(({ svg }) => setSvg(svg));
+        }).catch(console.error);
+      }, [code]);
+
+      if (!svg) return <Spinner size="sm" />;
+      return <div className="overflow-auto" dangerouslySetInnerHTML={{ __html: svg }} />;
+    };
+
+    const App = () => {
+      const [methodology, setMethodology] = useState(null);
+      const [isLoading, setIsLoading] = useState(true);
+      const [selectedKeys, setSelectedKeys] = useState(new Set());
+
+      const methodologyId = getMethodologyId();
+
+      useEffect(() => {
+        if (!methodologyId) {
+          navigate('/methodologies');
+          return;
+        }
+        loadMethodology(methodologyId).then(data => {
+          if (!data) {
+            navigate('/methodologies');
+            return;
+          }
+          setMethodology(data);
+          setIsLoading(false);
+        });
+      }, [methodologyId]);
+
+      const name = useMemo(() => methodology?.metadata.i18n?.[lang]?.name || methodology?.metadata.name, [methodology, lang]);
+      const description = useMemo(() => methodology?.metadata.i18n?.[lang]?.description || methodology?.metadata.description, [methodology, lang]);
+      const title = useMemo(() => methodology?.metadata.i18n?.[lang]?.title || methodology?.metadata.title, [methodology, lang]);
+      const diagramCode = useMemo(() => {
+        if (!methodology) return '';
+        return methodology.metadata.diagram || generateMermaidDiagram(methodology);
+      }, [methodology]);
+
+      if (isLoading) {
+        return (
+          <Section>
+            <Container>
+              <div className="flex justify-center items-center py-12">
+                <Spinner size="lg" />
+              </div>
+            </Container>
+          </Section>
+        );
+      }
+
+      if (!methodology) return null;
+
+      return (
+        <>
+          {/* Header */}
+          <Section>
+            <Container>
+              <div className="flex items-center gap-2 mb-4">
+                <Button
+                  variant="light"
+                  size="sm"
+                  onPress={() => navigate('/methodologies')}
+                >
+                  ← {t('backToList')}
+                </Button>
+              </div>
+
+              <h1 className="text-2xl font-bold mb-2">{name}{title && ` · ${title}`}</h1>
+
+              <div className="flex items-center gap-2 flex-wrap mb-4">
+                <Chip size="sm" variant="flat" color="primary">
+                  {t(`type_${methodology.metadata.type}`) || methodology.metadata.type}
+                </Chip>
+                {methodology.metadata.complexity && (
+                  <Chip size="sm" variant="flat" color={getComplexityColor(methodology.metadata.complexity)}>
+                    {t(`complexity_${methodology.metadata.complexity}`) || methodology.metadata.complexity}
+                  </Chip>
+                )}
+                {methodology.metadata.version && (
+                  <Chip size="sm" variant="dot" color="default">v{methodology.metadata.version}</Chip>
+                )}
+                {methodology.metadata.origin && (
+                  <Chip size="sm" variant="dot" color="warning">{methodology.metadata.origin}</Chip>
+                )}
+              </div>
+
+              {description && <p className="text-default-700 text-lg mb-4">{description}</p>}
+
+              {methodology.metadata.domains && methodology.metadata.domains.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-semibold mb-2">{t('domains')}</h4>
+                  <div className="flex gap-2 flex-wrap">
+                    {methodology.metadata.domains.map(domain => (
+                      <Chip key={domain} size="sm" variant="flat">{domain}</Chip>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {methodology.metadata.tags && methodology.metadata.tags.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-semibold mb-2">{t('tags')}</h4>
+                  <div className="flex gap-2 flex-wrap">
+                    {methodology.metadata.tags.map(tag => (
+                      <Chip key={tag} size="sm" variant="dot">{tag}</Chip>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <Button
+                as={Link}
+                color="primary"
+                href={`/#p=${encodeURIComponent(t('useMethodology').replace('{name}', name))}%0A`}
+              >
+                {t('promptUsing')}
+              </Button>
+            </Container>
+          </Section>
+
+          {/* Tabs */}
+          <Tabs
+            aria-label="Methodology sections"
+            variant="underlined"
+            classNames={{
+              base: 'flex place-self-center w-full max-w-4xl',
+              tab: 'py-6',
+              tabList: 'gap-6 w-full relative rounded-none py-0',
+            }}
+          >
+            {/* Overview Tab */}
+            <Tab key="overview" title={t('overview')}>
+              <Section>
+                <Container>
+                  {diagramCode && (
+                    <div className="mb-6">
+                      <MermaidDiagram code={diagramCode} />
+                    </div>
+                  )}
+
+                  <h2 className="text-xl font-semibold mb-4">{t('phases')}</h2>
+                  <Accordion
+                    variant="shadow"
+                    selectedKeys={selectedKeys}
+                    onSelectionChange={setSelectedKeys}
+                  >
+                    {methodology.phases.map((phase, index) => (
+                      <AccordionItem
+                        key={`phase-${index}-${phase.name.toLowerCase().replace(/\s+/g, '-')}`}
+                        aria-label={phase.name}
+                        title={phase.name}
+                        subtitle={`${phase.tasks?.length || 0} ${(phase.tasks?.length || 0) === 1 ? t('task') : t('tasks')}`}
+                        classNames={{ content: 'pl-4' }}
+                        startContent={
+                          <span className="text-sm font-mono text-default-400 mx-4">{index + 1}</span>
+                        }
+                      >
+                        {phase.description && <div className="mb-4">{phase.description}</div>}
+
+                        {phase.tasks && phase.tasks.length > 0 && (
+                          <div className="mb-4">
+                            <p className="text-xs font-semibold text-default-500 mb-2">{t('tasks')}:</p>
+                            <ol className="ml-4 list-decimal">
+                              {phase.tasks.map(task => (
+                                <li key={task.id} className="py-2">
+                                  <h4>{task.title}</h4>
+                                  {task.description && <p className="text-sm text-default-600">{task.description}</p>}
+                                </li>
+                              ))}
+                            </ol>
+                          </div>
+                        )}
+
+                        <div className="flex gap-2 flex-wrap mb-4">
+                          {phase.optional && <Chip size="sm" variant="flat" color="warning">{t('optional')}</Chip>}
+                          {phase.repeatable && <Chip size="sm" variant="flat" color="secondary">{t('repeatable')}</Chip>}
+                          {phase.parallelizable && <Chip size="sm" variant="flat" color="primary">{t('parallelizable')}</Chip>}
+                        </div>
+
+                        {phase.duration && (
+                          <div className="mb-4">
+                            <p className="text-xs font-semibold text-default-500 mb-1">{t('phaseDuration')}:</p>
+                            <div className="flex gap-2">
+                              {phase.duration.estimated && <Chip size="sm" variant="flat">{t('estimated')}: {formatDuration(phase.duration.estimated)}</Chip>}
+                              {phase.duration.min && <Chip size="sm" variant="dot">{t('minimum')}: {formatDuration(phase.duration.min)}</Chip>}
+                              {phase.duration.max && <Chip size="sm" variant="dot">{t('maximum')}: {formatDuration(phase.duration.max)}</Chip>}
+                            </div>
+                          </div>
+                        )}
+
+                        {phase.entryCriteria && phase.entryCriteria.length > 0 && (
+                          <div className="mb-4">
+                            <p className="text-xs font-semibold text-default-500 mb-1">{t('entryCriteria')}:</p>
+                            <ul className="text-sm text-default-600 list-disc list-inside">
+                              {phase.entryCriteria.map((c, i) => <li key={i}>{c.description || c.type}</li>)}
+                            </ul>
+                          </div>
+                        )}
+
+                        {phase.exitCriteria && phase.exitCriteria.length > 0 && (
+                          <div className="mb-4">
+                            <p className="text-xs font-semibold text-default-500 mb-1">{t('exitCriteria')}:</p>
+                            <ul className="text-sm text-default-600 list-disc list-inside">
+                              {phase.exitCriteria.map((c, i) => <li key={i}>{c.description || c.type}</li>)}
+                            </ul>
+                          </div>
+                        )}
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </Container>
+              </Section>
+            </Tab>
+
+            {/* Roles Tab */}
+            {Boolean(methodology.agentCoordination?.roles?.length) && (
+              <Tab key="roles" title={t('roles')}>
+                <Section>
+                  <Container>
+                    <h2 className="text-xl font-semibold mb-4">{t('roleDistribution')}</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {methodology.agentCoordination.roles.map(role => {
+                        const isRequired = methodology.agentCoordination?.teamComposition?.required?.includes(role.id);
+                        return (
+                          <Card key={role.id}>
+                            <CardBody>
+                              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                <h4 className="font-semibold">{role.name}</h4>
+                                {role.authority && <Chip size="sm" variant="flat">{t(`auth_${role.authority}`) || role.authority}</Chip>}
+                                {role.experienceLevel && <Chip size="sm" variant="flat" color="secondary">{t(`exp_${role.experienceLevel}`) || role.experienceLevel}</Chip>}
+                                {isRequired && <Chip size="sm" variant="flat" color="danger">{t('required')}</Chip>}
+                              </div>
+                              {role.description && <p className="text-sm text-default-600 mb-2">{role.description}</p>}
+                              {role.responsibilities && role.responsibilities.length > 0 && (
+                                <div className="mb-2">
+                                  <p className="text-xs font-semibold text-default-500 mb-1">{t('responsibilities')}:</p>
+                                  <ul className="text-sm text-default-500 list-disc list-inside">
+                                    {role.responsibilities.map((r, i) => <li key={i}>{r}</li>)}
+                                  </ul>
+                                </div>
+                              )}
+                              {role.requiredSkills && role.requiredSkills.length > 0 && (
+                                <div className="mb-2">
+                                  <p className="text-xs font-semibold text-default-500 mb-1">{t('requiredSkills')}:</p>
+                                  <div className="flex gap-1 flex-wrap">
+                                    {role.requiredSkills.map(skill => <Chip key={skill} size="sm" variant="flat" color="success">{skill}</Chip>)}
+                                  </div>
+                                </div>
+                              )}
+                            </CardBody>
+                          </Card>
+                        );
+                      })}
+                    </div>
+
+                    {methodology.agentCoordination?.teamComposition && (
+                      <div className="mt-6">
+                        <h3 className="text-lg font-semibold mb-4">{t('teamComposition')}</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {methodology.agentCoordination.teamComposition.minSize && (
+                            <Card>
+                              <CardBody>
+                                <p className="text-sm text-default-600">{t('minimumTeamSize')}</p>
+                                <p className="text-2xl font-semibold">{methodology.agentCoordination.teamComposition.minSize}</p>
+                              </CardBody>
+                            </Card>
+                          )}
+                          {methodology.agentCoordination.teamComposition.maxSize && (
+                            <Card>
+                              <CardBody>
+                                <p className="text-sm text-default-600">{t('maximumTeamSize')}</p>
+                                <p className="text-2xl font-semibold">{methodology.agentCoordination.teamComposition.maxSize}</p>
+                              </CardBody>
+                            </Card>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {methodology.agentCoordination?.communicationPatterns && methodology.agentCoordination.communicationPatterns.length > 0 && (
+                      <div className="mt-6">
+                        <h3 className="text-lg font-semibold mb-4">{t('communicationPatterns')}</h3>
+                        <div className="space-y-3">
+                          {methodology.agentCoordination.communicationPatterns.map((pattern, idx) => {
+                            const fromRole = methodology.agentCoordination.roles?.find(r => r.id === pattern.from);
+                            const toRole = methodology.agentCoordination.roles?.find(r => r.id === pattern.to);
+                            return (
+                              <Card key={idx}>
+                                <CardBody>
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                      <p className="text-sm text-default-600">{t('from')}</p>
+                                      <p className="font-semibold">{fromRole?.name || pattern.from}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm text-default-600">{t('to')}</p>
+                                      <p className="font-semibold">{toRole?.name || pattern.to}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm text-default-600">{t('type')}</p>
+                                      <Chip size="sm" variant="flat">{t(`comm_${pattern.type}`) || pattern.type}</Chip>
+                                    </div>
+                                  </div>
+                                  {pattern.contextTypes && pattern.contextTypes.length > 0 && (
+                                    <div className="mt-3">
+                                      <p className="text-sm text-default-600 mb-2">{t('contextTypes')}</p>
+                                      <div className="flex gap-2 flex-wrap">
+                                        {pattern.contextTypes.map(ct => <Chip key={ct} size="sm" variant="dot">{t(`ctx_${ct}`) || ct}</Chip>)}
+                                      </div>
+                                    </div>
+                                  )}
+                                </CardBody>
+                              </Card>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </Container>
+                </Section>
+              </Tab>
+            )}
+
+            {/* Details Tab */}
+            <Tab key="details" title={t('details')}>
+              <Section>
+                <Container>
+                  {methodology.configuration && (
+                    <div className="mb-6">
+                      <h2 className="text-xl font-semibold mb-4">{t('configuration')}</h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {methodology.configuration.maxIterations && (
+                          <Card>
+                            <CardBody>
+                              <p className="text-sm text-default-600">{t('maximumIterations')}</p>
+                              <p className="text-2xl font-semibold">{methodology.configuration.maxIterations}</p>
+                            </CardBody>
+                          </Card>
+                        )}
+                        {methodology.configuration.timeBox && (
+                          <Card>
+                            <CardBody>
+                              <p className="text-sm text-default-600 mb-2">{t('timeBox')}</p>
+                              <p className="text-lg font-semibold">{methodology.configuration.timeBox.duration} {methodology.configuration.timeBox.unit}</p>
+                              {methodology.configuration.timeBox.strict !== undefined && (
+                                <Chip size="sm" variant="flat" color={methodology.configuration.timeBox.strict ? 'warning' : 'default'}>
+                                  {methodology.configuration.timeBox.strict ? t('strict') : t('flexible')}
+                                </Chip>
+                              )}
+                            </CardBody>
+                          </Card>
+                        )}
+                        {methodology.configuration.qualityGates && (
+                          <Card>
+                            <CardBody>
+                              <p className="text-sm text-default-600 mb-2">{t('qualityGates')}</p>
+                              <Chip size="sm" variant="flat" color={methodology.configuration.qualityGates.enabled ? 'success' : 'default'}>
+                                {methodology.configuration.qualityGates.enabled ? t('enabled') : t('disabled')}
+                              </Chip>
+                              {methodology.configuration.qualityGates.autoRetry !== undefined && (
+                                <p className="text-sm text-default-500 mt-1">{t('autoRetry')}: {methodology.configuration.qualityGates.autoRetry ? t('yes') : t('no')}</p>
+                              )}
+                              {methodology.configuration.qualityGates.maxRetries !== undefined && (
+                                <p className="text-sm text-default-500">{t('maxRetries')}: {methodology.configuration.qualityGates.maxRetries}</p>
+                              )}
+                            </CardBody>
+                          </Card>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {methodology.execution && (
+                    <div className="mb-6">
+                      <h2 className="text-xl font-semibold mb-4">{t('executionStrategy')}</h2>
+                      <Card>
+                        <CardBody>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-sm text-default-600">{t('strategy')}</p>
+                              <Chip size="sm" variant="flat" color="primary">{t(`type_${methodology.execution.strategy}`) || methodology.execution.strategy}</Chip>
+                            </div>
+                            {methodology.execution.failureHandling && (
+                              <div>
+                                <p className="text-sm text-default-600">{t('failureHandling')}</p>
+                                <Chip size="sm" variant="flat" color="warning">{t(`fail_${methodology.execution.failureHandling.strategy}`) || methodology.execution.failureHandling.strategy}</Chip>
+                                {methodology.execution.failureHandling.fallbackPhase && (
+                                  <p className="text-xs text-default-500 mt-1">{t('fallbackPhase')}: {methodology.execution.failureHandling.fallbackPhase}</p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </CardBody>
+                      </Card>
+                    </div>
+                  )}
+
+                  {methodology.artifactFlow?.artifactTypes && methodology.artifactFlow.artifactTypes.length > 0 && (
+                    <div className="mb-6">
+                      <h2 className="text-xl font-semibold mb-4">{t('artifactTypes')}</h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {methodology.artifactFlow.artifactTypes.map(artifact => (
+                          <Card key={artifact.id}>
+                            <CardBody>
+                              <h4 className="font-semibold text-lg">{artifact.name}</h4>
+                              {artifact.description && <p className="text-sm text-default-600 mt-1">{artifact.description}</p>}
+                              <div className="flex gap-2 mt-2">
+                                <Chip size="sm" variant="flat" color="primary">{t('format')}: {artifact.format}</Chip>
+                              </div>
+                            </CardBody>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </Container>
+              </Section>
+            </Tab>
+
+            {/* Ceremonies Tab */}
+            {methodology.ceremonies && methodology.ceremonies.length > 0 && (
+              <Tab key="ceremonies" title={t('ceremonies')}>
+                <Section>
+                  <Container>
+                    <h2 className="text-xl font-semibold mb-4">{t('ceremonies')}</h2>
+                    <div className="space-y-3">
+                      {methodology.ceremonies.map(ceremony => (
+                        <Card key={ceremony.id}>
+                          <CardBody>
+                            <div className="flex items-start justify-between mb-3">
+                              <div>
+                                <h4 className="font-semibold text-lg">{ceremony.name}</h4>
+                                {ceremony.description && <p className="text-sm text-default-600 mt-1">{ceremony.description}</p>}
+                              </div>
+                              {ceremony.duration && <Chip size="sm" variant="flat">{formatDuration(ceremony.duration)}</Chip>}
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                              <div>
+                                <p className="text-sm text-default-600 mb-1">{t('timing')}</p>
+                                <Chip size="sm" variant="flat">{t(`timing_${ceremony.timing}`) || ceremony.timing}</Chip>
+                              </div>
+                              {ceremony.participants && ceremony.participants.length > 0 && (
+                                <div>
+                                  <p className="text-sm text-default-600 mb-1">{t('participants')}</p>
+                                  <div className="flex gap-1 flex-wrap">
+                                    {ceremony.participants.map(p => {
+                                      const role = methodology.agentCoordination?.roles?.find(r => r.id === p);
+                                      return <Chip key={p} size="sm" variant="dot">{role?.name || p}</Chip>;
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            {ceremony.objectives && ceremony.objectives.length > 0 && (
+                              <div>
+                                <p className="text-sm text-default-600 mb-1">{t('objectives')}</p>
+                                <ul className="text-sm text-default-700 list-disc list-inside">
+                                  {ceremony.objectives.map((obj, i) => <li key={i}>{obj}</li>)}
+                                </ul>
+                              </div>
+                            )}
+                          </CardBody>
+                        </Card>
+                      ))}
+                    </div>
+                  </Container>
+                </Section>
+              </Tab>
+            )}
+
+            {/* API Tab */}
+            <Tab key="api" title={t('api')}>
+              <Section>
+                <Container>
+                  <Button
+                    as={Link}
+                    variant="flat"
+                    href={`/methodologies/${methodology.metadata.id}.methodology.json`}
+                    target="_blank"
+                  >
+                    {t('download')}
+                  </Button>
+                  <pre className="mt-4 p-4 bg-default-100 rounded-lg overflow-auto text-xs">
+                    {JSON.stringify(methodology, null, 2)}
+                  </pre>
+                </Container>
+              </Section>
+            </Tab>
+          </Tabs>
+        </>
+      );
+    }

@@ -8,6 +8,7 @@ import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
 
 import { getYDoc } from './yjs-doc'
+import { errorToast, successToast } from '@/lib/toast'
 
 // Default WebSocket server URL
 const getDefaultServerUrl = (): string => {
@@ -15,6 +16,48 @@ const getDefaultServerUrl = (): string => {
 }
 
 let wsProvider: WebsocketProvider | null = null
+
+// Track if cleanup listener is registered
+let cleanupListenerRegistered = false
+
+/**
+ * Gracefully disconnect WebSocket on page unload to prevent Firefox warnings
+ * about interrupted connections during page load
+ */
+function handlePageUnload(): void {
+  if (wsProvider) {
+    console.log('[Sync] Page unloading, disconnecting WebSocket gracefully')
+    wsProvider.disconnect()
+  }
+}
+
+/**
+ * Register cleanup listener for page unload events
+ */
+function registerCleanupListener(): void {
+  if (cleanupListenerRegistered) return
+  
+  // Use pagehide for better browser support (including mobile)
+  // pagehide fires before beforeunload and is more reliable
+  window.addEventListener('pagehide', handlePageUnload)
+  
+  // Also listen to beforeunload as a fallback
+  window.addEventListener('beforeunload', handlePageUnload)
+  
+  cleanupListenerRegistered = true
+}
+
+/**
+ * Unregister cleanup listener
+ */
+function unregisterCleanupListener(): void {
+  if (!cleanupListenerRegistered) return
+  
+  window.removeEventListener('pagehide', handlePageUnload)
+  window.removeEventListener('beforeunload', handlePageUnload)
+  
+  cleanupListenerRegistered = false
+}
 
 export interface SyncConfig {
   roomId: string
@@ -42,9 +85,11 @@ type SyncEventCallback = (status: {
 }) => void
 
 type SyncActivityCallback = (activity: SyncActivity) => void
+type InitialSyncCallback = () => void
 
 let statusCallback: SyncEventCallback | null = null
 let activityCallback: SyncActivityCallback | null = null
+let initialSyncCallback: InitialSyncCallback | null = null
 
 // Track recent sync activity for visualization
 const recentActivity: SyncActivity[] = []
@@ -67,6 +112,9 @@ export function enableSync(config: SyncConfig): void {
 
   wsProvider = new WebsocketProvider(serverUrl, config.roomId, ydoc)
 
+  // Register cleanup listener to gracefully disconnect on page unload
+  registerCleanupListener()
+
   // Connection status events
   wsProvider.on('status', (event: { status: string }) => {
     console.log('[Sync] Connection status:', event.status)
@@ -75,7 +123,27 @@ export function enableSync(config: SyncConfig): void {
 
   wsProvider.on('sync', (isSynced: boolean) => {
     console.log('[Sync] Synced:', isSynced)
+    
+    // Log detailed sync state for debugging document divergence issues
+    if (isSynced) {
+      const stateVector = Y.encodeStateVector(ydoc)
+      console.log('[Sync] State vector size:', stateVector.length, 'bytes')
+      console.log('[Sync] Y.Doc clientID:', ydoc.clientID)
+      console.log('[Sync] Preferences map size:', ydoc.getMap('preferences').size)
+      console.log('[Sync] Preferences map keys:', Array.from(ydoc.getMap('preferences').keys()))
+    }
+    
     notifyStatus()
+    if (isSynced) {
+      successToast('Sync connected successfully!')
+      // Notify initial sync callback
+      if (initialSyncCallback) {
+        console.log('[Sync] Calling initial sync callback')
+        initialSyncCallback()
+      }
+    } else {
+      errorToast('Sync disconnected.')
+    }
   })
 
   // Track awareness changes (peers joining/leaving)
@@ -85,16 +153,15 @@ export function enableSync(config: SyncConfig): void {
 
   // Debug: observe ALL changes to the doc and track activity
   ydoc.on('update', (update: Uint8Array, origin: unknown) => {
-    console.debug(
-      '[Sync] Y.Doc update, origin:',
-      origin,
-      'size:',
-      update.length,
-      'bytes',
+    const isRemote = origin === wsProvider
+    console.log(
+      '[Sync] Y.Doc update:',
+      'origin=' + (origin === wsProvider ? 'wsProvider' : origin === null ? 'null' : 'other'),
+      'isRemote=' + isRemote,
+      'size=' + update.length + 'bytes'
     )
 
     // Track sync activity
-    const isRemote = origin === wsProvider
     const activity: SyncActivity = {
       type: isRemote ? 'received' : 'sent',
       bytes: update.length,
@@ -200,6 +267,7 @@ export function disableSync(): void {
     console.log('[Sync] Disabling sync')
     wsProvider.destroy()
     wsProvider = null
+    unregisterCleanupListener()
     notifyStatus()
   }
 }
@@ -280,6 +348,17 @@ export function onSyncStatusChange(callback: SyncEventCallback): () => void {
   }
 }
 
+/**
+ * Subscribe to initial sync completion
+ * Called once when WebSocket sync is first established after connecting
+ */
+export function onInitialSync(callback: InitialSyncCallback): () => void {
+  initialSyncCallback = callback
+  return () => {
+    initialSyncCallback = null
+  }
+}
+
 function notifyStatus(): void {
   if (statusCallback) {
     statusCallback({
@@ -295,4 +374,11 @@ function notifyStatus(): void {
  */
 export function getProvider(): WebsocketProvider | null {
   return wsProvider
+}
+
+/**
+ * Get the current room name for debugging
+ */
+export function getCurrentRoom(): string | null {
+  return wsProvider?.roomname ?? null
 }

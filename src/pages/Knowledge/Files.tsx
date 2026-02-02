@@ -33,8 +33,13 @@ import {
   Xmark,
 } from 'iconoir-react'
 
-import { db } from '@/lib/db'
-import { deleteFromYjs } from '@/features/sync'
+import {
+  getKnowledgeItem,
+  getAllKnowledgeItems,
+  deleteKnowledgeItem,
+  deleteKnowledgeItems,
+  updateKnowledgeItem,
+} from '@/stores/knowledgeStore'
 import { KnowledgeItem } from '@/types'
 import { useKnowledge, useSyncReady } from '@/hooks'
 import {
@@ -344,12 +349,11 @@ export const Files: React.FC = () => {
     const hash = location.hash.replace('#', '')
     if (hash) {
       // Load the knowledge item by ID and open the preview modal
-      db.get('knowledgeItems', hash).then((item) => {
-        if (item) {
-          setPreviewItem(item)
-          onPreviewOpen()
-        }
-      })
+      const item = getKnowledgeItem(hash)
+      if (item) {
+        setPreviewItem(item)
+        onPreviewOpen()
+      }
     }
   }, [location.hash, onPreviewOpen])
 
@@ -460,15 +464,12 @@ export const Files: React.FC = () => {
 
               // Update preview item if it's the one that was just processed
               if (completedJob) {
-                db.get('knowledgeItems', completedJob.itemId).then(
-                  (updatedItem) => {
-                    if (updatedItem) {
-                      setPreviewItem((current) =>
-                        current?.id === updatedItem.id ? updatedItem : current,
-                      )
-                    }
-                  },
-                )
+                const updatedItem = getKnowledgeItem(completedJob.itemId)
+                if (updatedItem) {
+                  setPreviewItem((current) =>
+                    current?.id === updatedItem.id ? updatedItem : current,
+                  )
+                }
               }
               break
 
@@ -507,7 +508,7 @@ export const Files: React.FC = () => {
           'manual',
         )
         if (result) {
-          const allItems = await db.getAll('knowledgeItems')
+          const allItems = getAllKnowledgeItems()
           const isDupe =
             allItems.filter((item) => item.contentHash === result.contentHash)
               .length > 1
@@ -648,13 +649,9 @@ export const Files: React.FC = () => {
     }
   }, [])
 
-  const deleteItem = async (id: string) => {
+  const deleteItem = (id: string) => {
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-      await db.delete('knowledgeItems', id)
-      deleteFromYjs('knowledgeItems', id)
+      deleteKnowledgeItem(id)
       // Remove from selection if selected
       setSelectedItems((prev) => {
         const next = new Set(prev)
@@ -667,16 +664,10 @@ export const Files: React.FC = () => {
     }
   }
 
-  const deleteSelectedItems = async () => {
+  const deleteSelectedItems = () => {
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
       const itemsToDelete = Array.from(selectedItems)
-      for (const id of itemsToDelete) {
-        await db.delete('knowledgeItems', id)
-        deleteFromYjs('knowledgeItems', id)
-      }
+      deleteKnowledgeItems(itemsToDelete)
       setSelectedItems(new Set())
       onBulkDeleteModalClose()
       successToast(
@@ -742,14 +733,10 @@ export const Files: React.FC = () => {
     onEditModalOpen()
   }
 
-  const saveItemChanges = async () => {
+  const saveItemChanges = () => {
     if (!selectedItem) return
 
     try {
-      if (!db.isInitialized()) {
-        await db.init()
-      }
-
       const updatedItem: KnowledgeItem = {
         ...selectedItem,
         name: editForm.name,
@@ -761,7 +748,7 @@ export const Files: React.FC = () => {
         lastModified: new Date(),
       }
 
-      await db.update('knowledgeItems', updatedItem)
+      updateKnowledgeItem(updatedItem)
       // Knowledge items update automatically via reactive hooks
       onEditModalClose()
     } catch (error) {
@@ -1377,7 +1364,7 @@ export const Files: React.FC = () => {
               await documentProcessor.queueProcessing(itemId)
               successToast(t('Document queued for processing'))
               // Refresh the preview item to show updated status
-              const updatedItem = await db.get('knowledgeItems', itemId)
+              const updatedItem = getKnowledgeItem(itemId)
               if (updatedItem) {
                 setPreviewItem(updatedItem)
               }

@@ -30,6 +30,7 @@ graph LR
 - **Human-Readable Format**: Markdown files with YAML frontmatter
 - **Full Database Export**: Complete JSON backup for disaster recovery
 - **Privacy-First**: All data stays on your device—no cloud services
+- **Credential Portability**: Encrypted API keys can be restored depending on encryption mode (see [Credential Portability](#credential-portability))
 
 ## Architecture
 
@@ -252,6 +253,44 @@ export function useAutoBackup(): void {
   // Triggers debounced sync (2 seconds) on any change
 }
 ```
+
+## Credential Portability
+
+Local backups include encrypted LLM provider credentials. Whether these credentials can be restored depends on your encryption mode:
+
+### Sync Mode Backups (Portable)
+
+If sync was enabled when the backup was created:
+- Credentials are encrypted with your room password
+- ✅ Restore on any device by enabling sync with the same password
+- ✅ Restore on same device after browser data clear
+- The backup metadata includes `encryptionMode: 'sync'`
+
+### Local Mode Backups (Non-Portable)
+
+If sync was disabled when the backup was created:
+- Credentials are encrypted with a device-specific key
+- ❌ Cannot restore on a different device
+- ❌ Cannot restore after clearing browser data
+- The backup metadata includes `encryptionMode: 'local'`
+
+### Restoring Backups
+
+When importing a backup:
+
+| Backup Mode | Current Mode | Result |
+|-------------|--------------|--------|
+| `sync` | `sync` (same password) | ✅ Credentials restored |
+| `sync` | `sync` (different password) | ❌ Credentials fail to decrypt |
+| `sync` | `local` | ⚠️ Prompt to enable sync |
+| `local` | Any | ⚠️ Credentials skipped - must reconfigure |
+
+### Best Practices
+
+1. **Enable sync before backing up** if you want portable credentials
+2. **Document your room password** securely (password manager recommended)
+3. **Test restores** on a secondary device before relying on backups
+4. **Export settings separately** - LLM provider URLs and model selections restore; only API keys need reconfiguration
 
 ## Usage
 

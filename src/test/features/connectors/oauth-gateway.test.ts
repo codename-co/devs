@@ -316,7 +316,7 @@ describe('OAuthGateway', () => {
 
       expect(config).toBeDefined()
       expect(config.authUrl).toBe('https://github.com/login/oauth/authorize')
-      expect(config.pkceRequired).toBe(false)
+      expect(config.pkceRequired).toBe(true)
     })
 
     it('should throw for invalid provider', () => {

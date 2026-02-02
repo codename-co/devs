@@ -10,8 +10,6 @@ import {
   Textarea,
   Card,
   CardBody,
-  Link,
-  Alert,
 } from '@heroui/react'
 import { create } from 'zustand'
 
@@ -219,13 +217,14 @@ export function AddLLMProviderModal({ lang }: AddLLMProviderModalProps) {
                           providerConfig?.apiKeyPage ? (
                             <>
                               {t('Get your API key from')}{' '}
-                              <Link
+                              <a
                                 href={providerConfig.apiKeyPage}
                                 target="_blank"
-                                size="sm"
+                                rel="noopener noreferrer"
+                                className="text-primary text-sm hover:underline"
                               >
                                 {providerConfig.apiKeyPage}
-                              </Link>
+                              </a>
                             </>
                           ) : undefined
                         }
@@ -244,13 +243,14 @@ export function AddLLMProviderModal({ lang }: AddLLMProviderModalProps) {
                           providerConfig?.apiKeyPage ? (
                             <>
                               {t('Get your API key from')}{' '}
-                              <Link
+                              <a
                                 href={providerConfig.apiKeyPage}
                                 target="_blank"
-                                size="sm"
+                                rel="noopener noreferrer"
+                                className="text-primary text-sm hover:underline"
                               >
                                 {providerConfig.apiKeyPage}
-                              </Link>
+                              </a>
                             </>
                           ) : undefined
                         }
@@ -258,14 +258,6 @@ export function AddLLMProviderModal({ lang }: AddLLMProviderModalProps) {
                     ))}
 
                   {providerConfig?.moreDetails?.()}
-
-                  <Alert variant="faded" className="mt-4">
-                    <p className="text-sm">
-                      {t(
-                        'Once configured, all models from this provider will be available in the model selector.',
-                      )}
-                    </p>
-                  </Alert>
                 </div>
               )}
             </ModalBody>
