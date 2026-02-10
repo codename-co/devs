@@ -375,11 +375,12 @@ export function ConversationPage() {
                                 <p className="text-sm text-default-500 mt-0.5">
                                   {getAgentName(conversation.agentId)}
                                 </p>
-                                {conversation.summary && typeof conversation.summary === 'string' && (
-                                  <p className="text-xs text-default-400 mt-1 line-clamp-2">
-                                    {conversation.summary.substring(0, 150)}...
-                                  </p>
-                                )}
+                                {conversation.summary &&
+                                  typeof conversation.summary === 'string' && (
+                                    <p className="text-xs text-default-400 mt-1 line-clamp-2">
+                                      {conversation.summary.substring(0, 150)}…
+                                    </p>
+                                  )}
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
                                 <Button

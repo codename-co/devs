@@ -144,7 +144,7 @@ function deserialize(
   // Parse messages from body
   const messages: Message[] = []
   const messageRegex =
-    /## (👤|🤖|⚙️|💬) (\w+) — (\d{1,2}:\d{2}(?: [AP]M)?)(?: 📌)?\n\n([\s\S]*?)(?=\n\n---\n\n## |$)/g
+    /## (👤|🤖|⚙️|💬) (.+?) — (\d{1,2}:\d{2}(?: [AP]M)?)(?: 📌)?\n\n([\s\S]*?)(?=\n\n---\n\n## |$)/g
   let match
 
   while ((match = messageRegex.exec(body)) !== null) {
