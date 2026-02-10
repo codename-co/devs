@@ -418,7 +418,7 @@ export const submitChat = async (
         description: t(
           'No LLM provider configured. Please configure one in Settings.',
         ),
-        actionUrl: '/settings',
+        actionUrl: '/settings/#providers',
         actionLabel: 'Open Settings',
       })
       return { success: false, error: 'No LLM provider configured' }

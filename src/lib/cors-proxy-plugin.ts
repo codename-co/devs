@@ -156,7 +156,7 @@ export function corsProxyPlugin(): Plugin {
           })
 
           // Set CORS headers
-          res.setHeader('Access-Control-Allow-Origin', origin || '*')
+          res.setHeader('Access-Control-Allow-Origin', origin)
           res.setHeader(
             'Access-Control-Allow-Methods',
             'GET, POST, PUT, PATCH, DELETE, OPTIONS',
@@ -169,6 +169,9 @@ export function corsProxyPlugin(): Plugin {
           // Handle preflight requests
           if (req.method === 'OPTIONS') {
             res.statusCode = 204
+            if (origin) {
+              res.setHeader('Access-Control-Max-Age', '86400')
+            }
             res.end()
             return
           }
