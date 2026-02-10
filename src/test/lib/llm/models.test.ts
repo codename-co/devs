@@ -640,3 +640,144 @@ describe('inferLocalModelCapabilities for HuggingFace models', () => {
     expect(caps.fast).toBe(true)
   })
 })
+
+describe('inferLocalModelCapabilities for image/video generation models', () => {
+  // Image generation models
+  it('should infer imageGeneration for z-image models', () => {
+    const caps = inferLocalModelCapabilities('z-image', 'openai-compatible')
+    expect(caps.imageGeneration).toBe(true)
+  })
+
+  it('should infer imageGeneration for z-image-turbo', () => {
+    const caps = inferLocalModelCapabilities(
+      'z-image-turbo',
+      'openai-compatible',
+    )
+    expect(caps.imageGeneration).toBe(true)
+  })
+
+  it('should infer imageGeneration for FLUX models', () => {
+    const caps = inferLocalModelCapabilities('flux-1-schnell', 'ollama')
+    expect(caps.imageGeneration).toBe(true)
+  })
+
+  it('should infer imageGeneration for SDXL models', () => {
+    const caps = inferLocalModelCapabilities('sdxl-turbo', 'openai-compatible')
+    expect(caps.imageGeneration).toBe(true)
+  })
+
+  it('should infer imageGeneration for stable-diffusion models', () => {
+    const caps = inferLocalModelCapabilities(
+      'stable-diffusion-3.5-large',
+      'openai-compatible',
+    )
+    expect(caps.imageGeneration).toBe(true)
+  })
+
+  it('should infer imageGeneration for sd-prefixed models', () => {
+    const caps = inferLocalModelCapabilities('sd3.5-turbo', 'openai-compatible')
+    expect(caps.imageGeneration).toBe(true)
+  })
+
+  it('should infer imageGeneration for dall-e models', () => {
+    const caps = inferLocalModelCapabilities('dall-e-3', 'openai-compatible')
+    expect(caps.imageGeneration).toBe(true)
+  })
+
+  it('should infer imageGeneration for playground models', () => {
+    const caps = inferLocalModelCapabilities(
+      'playground-v2.5',
+      'openai-compatible',
+    )
+    expect(caps.imageGeneration).toBe(true)
+  })
+
+  it('should infer imageGeneration for dreamshaper models', () => {
+    const caps = inferLocalModelCapabilities('dreamshaper-8', 'ollama')
+    expect(caps.imageGeneration).toBe(true)
+  })
+
+  it('should infer imageGeneration for juggernaut models', () => {
+    const caps = inferLocalModelCapabilities('juggernaut-xl-v9', 'ollama')
+    expect(caps.imageGeneration).toBe(true)
+  })
+
+  it('should infer imageGeneration for pixart models', () => {
+    const caps = inferLocalModelCapabilities(
+      'pixart-sigma',
+      'openai-compatible',
+    )
+    expect(caps.imageGeneration).toBe(true)
+  })
+
+  it('should infer imageGeneration for imagen models', () => {
+    const caps = inferLocalModelCapabilities(
+      'imagen-4.0-generate-001',
+      'openai-compatible',
+    )
+    expect(caps.imageGeneration).toBe(true)
+  })
+
+  it('should infer imageGeneration for kolors models', () => {
+    const caps = inferLocalModelCapabilities('kolors-v1', 'openai-compatible')
+    expect(caps.imageGeneration).toBe(true)
+  })
+
+  // Video generation models
+  it('should infer videoGeneration for cogvideo models', () => {
+    const caps = inferLocalModelCapabilities(
+      'cogvideox-5b',
+      'openai-compatible',
+    )
+    expect(caps.videoGeneration).toBe(true)
+  })
+
+  it('should infer videoGeneration for wan models', () => {
+    const caps = inferLocalModelCapabilities('wan-2.1-t2v', 'ollama')
+    expect(caps.videoGeneration).toBe(true)
+  })
+
+  it('should infer videoGeneration for hunyuan-video models', () => {
+    const caps = inferLocalModelCapabilities(
+      'hunyuan-video-large',
+      'openai-compatible',
+    )
+    expect(caps.videoGeneration).toBe(true)
+  })
+
+  it('should infer videoGeneration for stable-video models', () => {
+    const caps = inferLocalModelCapabilities(
+      'stable-video-diffusion',
+      'openai-compatible',
+    )
+    expect(caps.videoGeneration).toBe(true)
+  })
+
+  it('should infer videoGeneration for mochi models', () => {
+    const caps = inferLocalModelCapabilities('mochi-1', 'openai-compatible')
+    expect(caps.videoGeneration).toBe(true)
+  })
+
+  it('should infer videoGeneration for ltx-video models', () => {
+    const caps = inferLocalModelCapabilities(
+      'ltx-video-v1',
+      'openai-compatible',
+    )
+    expect(caps.videoGeneration).toBe(true)
+  })
+
+  // Negative tests - regular LLMs should NOT have image/video generation
+  it('should NOT infer imageGeneration for LLM models', () => {
+    const llama = inferLocalModelCapabilities('llama3.2:3b', 'ollama')
+    expect(llama.imageGeneration).toBeUndefined()
+    expect(llama.videoGeneration).toBeUndefined()
+
+    const qwen = inferLocalModelCapabilities('qwen3:8b', 'ollama')
+    expect(qwen.imageGeneration).toBeUndefined()
+    expect(qwen.videoGeneration).toBeUndefined()
+
+    const deepseek = inferLocalModelCapabilities('deepseek-r1:32b', 'ollama')
+    expect(deepseek.imageGeneration).toBeUndefined()
+    expect(deepseek.videoGeneration).toBeUndefined()
+  })
+})

@@ -3,6 +3,10 @@
  *
  * Zustand store for managing sync state and settings.
  * Persists sync configuration to localStorage.
+ *
+ * Password is **mandatory** for all sync sessions (E2E encryption).
+ * The password itself is never persisted — on app restart the user must
+ * re-enter it before re-connecting to the room.
  */
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
@@ -30,6 +34,16 @@ interface SyncState {
   enabled: boolean
   roomId: string | null
   mode: SyncMode | null
+  /** True when a previous session exists but needs password re-entry */
+  needsPasswordReentry: boolean
+
+  /**
+   * Room ID extracted from a `?join=` URL.
+   * When set, the SyncPasswordModal is displayed as a fullscreen
+   * non-closeable overlay requiring the user to enter the room password
+   * before any sync can proceed.
+   */
+  pendingJoinRoomId: string | null
 
   // Runtime state
   status: SyncStatus
@@ -44,11 +58,15 @@ interface SyncState {
   initialize: () => Promise<void>
   enableSync: (
     roomId: string,
-    password?: string,
+    password: string,
     mode?: SyncMode,
   ) => Promise<void>
   disableSync: () => Promise<void>
   generateRoomId: () => string
+  /** Queue a room ID for the password modal flow (from ?join= URLs) */
+  setPendingJoinRoomId: (roomId: string | null) => void
+  /** Clear password re-entry requirement (after disconnect or re-entry) */
+  clearPasswordReentry: () => void
 }
 
 /**
@@ -68,8 +86,10 @@ export const useSyncStore = create<SyncState>()(
       enabled: false,
       roomId: null,
       mode: null,
+      needsPasswordReentry: false,
 
-      // Runtime
+      // Runtime (not persisted)
+      pendingJoinRoomId: null,
       status: 'disabled',
       peerCount: 0,
       peers: [],
@@ -90,30 +110,13 @@ export const useSyncStore = create<SyncState>()(
         const { enabled, roomId } = get()
 
         if (enabled && roomId) {
-          console.log('[SyncStore] Sync enabled, initializing P2P...')
-
-          // Subscribe to sync status changes
-          onSyncStatusChange(() => {
-            set({
-              status: getSyncStatus(),
-              peerCount: getPeerCount(),
-              peers: getPeers(),
-              localClientId: getLocalClientId(),
-              lastSyncAt:
-                getSyncStatus() === 'connected' ? new Date() : get().lastSyncAt,
-            })
-          })
-
-          // Subscribe to sync activity events
-          onSyncActivity((activity) => {
-            set((state) => ({
-              recentActivity: [activity, ...state.recentActivity].slice(0, 50),
-            }))
-          })
-
-          // Auto-reconnect to room
-          console.log('[SyncStore] Auto-reconnecting to room:', roomId)
-          yjsEnableSync({ roomId })
+          // A previous sync session exists but the password is not persisted.
+          // Mark that the user needs to re-enter their password before
+          // we can reconnect.
+          console.log(
+            '[SyncStore] Sync was enabled — waiting for password re-entry',
+          )
+          set({ needsPasswordReentry: true })
         } else {
           console.log('[SyncStore] Sync not enabled, skipping P2P')
         }
@@ -122,11 +125,11 @@ export const useSyncStore = create<SyncState>()(
         console.log('[SyncStore] Initialized')
       },
 
-      enableSync: async (
-        roomId: string,
-        password?: string,
-        mode?: SyncMode,
-      ) => {
+      enableSync: async (roomId: string, password: string, mode?: SyncMode) => {
+        if (!password) {
+          throw new Error('Password is required for E2E encrypted sync')
+        }
+
         // Ensure store is initialized
         if (!get().initialized) {
           await get().initialize()
@@ -164,23 +167,23 @@ export const useSyncStore = create<SyncState>()(
           preferences.clear()
         }
 
-        // Enable sync encryption mode if password is provided
-        if (password) {
-          try {
-            await SecureStorage.enableSyncMode(password)
-          } catch (err) {
-            console.warn(
-              '[SyncStore] Failed to enable sync encryption mode (may be private browsing):',
-              err,
-            )
-          }
+        // Enable sync encryption mode with password (for credential encryption)
+        try {
+          await SecureStorage.enableSyncMode(password, roomId)
+        } catch (err) {
+          console.warn(
+            '[SyncStore] Failed to enable sync encryption mode (may be private browsing):',
+            err,
+          )
         }
 
-        yjsEnableSync({ roomId, password })
+        await yjsEnableSync({ roomId, password })
         set({
           enabled: true,
           roomId,
           mode: effectiveMode,
+          needsPasswordReentry: false,
+          pendingJoinRoomId: null,
           status: 'connecting',
           peerCount: 0,
           peers: [],
@@ -206,6 +209,8 @@ export const useSyncStore = create<SyncState>()(
           enabled: false,
           roomId: null,
           mode: null,
+          needsPasswordReentry: false,
+          pendingJoinRoomId: null,
           status: 'disabled',
           peerCount: 0,
           peers: [],
@@ -219,6 +224,14 @@ export const useSyncStore = create<SyncState>()(
         set({ roomId })
         return roomId
       },
+
+      setPendingJoinRoomId: (roomId: string | null) => {
+        set({ pendingJoinRoomId: roomId })
+      },
+
+      clearPasswordReentry: () => {
+        set({ needsPasswordReentry: false })
+      },
     }),
     {
       name: 'devs-sync-settings',
@@ -226,6 +239,7 @@ export const useSyncStore = create<SyncState>()(
         enabled: state.enabled,
         roomId: state.roomId,
         mode: state.mode,
+        needsPasswordReentry: state.needsPasswordReentry,
       }),
     },
   ),

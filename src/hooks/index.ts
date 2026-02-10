@@ -8,12 +8,15 @@
 export {
   // Data hooks
   useConversations,
+  useDecryptedConversations,
   useConversation,
   useAgents,
   useAllAgents,
   useAgent,
   useKnowledge,
   useKnowledgeItem,
+  useDecryptedKnowledge,
+  useDecryptedKnowledgeItem,
   useTasks,
   useTask,
   useMemories,

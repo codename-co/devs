@@ -62,7 +62,7 @@ export function stringifyFrontmatter<T extends object>(
  * - Ensure non-empty result
  */
 export function sanitizeFilename(str: string, maxLength = 50): string {
-  const sanitized = str
+  const sanitized = String(str ?? '')
     .toLowerCase()
     .replace(/[^\w\s-]/g, '') // Remove special chars
     .replace(/\s+/g, '-') // Spaces to hyphens
@@ -79,23 +79,35 @@ export function sanitizeFilename(str: string, maxLength = 50): string {
 }
 
 /**
+ * Coerce a value to a Date instance.
+ * After Yjs migration, dates may be stored as ISO strings, timestamps, or plain objects
+ * instead of proper Date instances.
+ */
+function toDate(value: unknown): Date {
+  if (value instanceof Date) return value
+  if (typeof value === 'string' || typeof value === 'number')
+    return new Date(value)
+  return new Date()
+}
+
+/**
  * Format a date for display in files
  */
-export function formatDate(date: Date | string | undefined | null): string {
+export function formatDate(
+  date: Date | string | number | undefined | null,
+): string {
   if (!date) return new Date().toISOString()
-  const d = typeof date === 'string' ? new Date(date) : date
-  return d.toISOString()
+  return toDate(date).toISOString()
 }
 
 /**
  * Format a date for filename (YYYY-MM-DD)
  */
 export function formatDateForFilename(
-  date: Date | string | undefined | null,
+  date: Date | string | number | undefined | null,
 ): string {
   if (!date) return new Date().toISOString().split('T')[0]
-  const d = typeof date === 'string' ? new Date(date) : date
-  return d.toISOString().split('T')[0]
+  return toDate(date).toISOString().split('T')[0]
 }
 
 /**
@@ -108,8 +120,11 @@ export function parseDate(dateStr: string): Date {
 /**
  * Format time for display in conversation messages
  */
-export function formatTime(date: Date | string, locale = 'en'): string {
-  const d = typeof date === 'string' ? new Date(date) : date
+export function formatTime(
+  date: Date | string | number,
+  locale = 'en',
+): string {
+  const d = toDate(date)
   return d.toLocaleTimeString(locale, {
     hour: 'numeric',
     minute: '2-digit',
@@ -119,8 +134,11 @@ export function formatTime(date: Date | string, locale = 'en'): string {
 /**
  * Format full datetime for display
  */
-export function formatDateTime(date: Date | string, locale = 'en'): string {
-  const d = typeof date === 'string' ? new Date(date) : date
+export function formatDateTime(
+  date: Date | string | number,
+  locale = 'en',
+): string {
+  const d = toDate(date)
   return d.toLocaleString(locale, {
     year: 'numeric',
     month: 'short',

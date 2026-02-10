@@ -668,10 +668,29 @@ export const es: I18n = {
   'Password Required': 'Contraseña requerida',
   'This room is password-protected. Enter the password to join.':
     'Esta sala está protegida con contraseña. Ingresa la contraseña para unirte.',
+  'Set a password for E2E encryption. All devices must use the same password to sync.':
+    'Establece una contraseña para el cifrado de extremo a extremo. Todos los dispositivos deben usar la misma contraseña para sincronizar.',
+  'Enter Sync Password': 'Ingresa la contraseña de sincronización',
+  'Reconnect to Sync Room': 'Reconectar a la sala de sincronización',
+  'This sync room is encrypted. Enter the password set by the room creator to join.':
+    'Esta sala de sincronización está cifrada. Ingresa la contraseña establecida por el creador de la sala para unirte.',
+  'Your previous sync session requires the room password to reconnect. Enter your password to resume syncing.':
+    'Tu sesión de sincronización anterior requiere la contraseña de la sala para reconectar. Ingresa tu contraseña para reanudar la sincronización.',
+  'Failed to connect. Please check your password and try again.':
+    'Error al conectar. Por favor, verifica tu contraseña e inténtalo de nuevo.',
+
   // Sync - Secret Link
   'Share the secret link': 'Comparte el enlace secreto',
   'Copy and share this unique link with your other device. Keep it private!':
     '¡Copia y comparte este enlace único con tu otro dispositivo. Mantenlo privado!',
+
+  // Sync - Password Strength
+  Strength: 'Fortaleza',
+  weak: 'débil',
+  fair: 'aceptable',
+  good: 'buena',
+  strong: 'fuerte',
+  'very-strong': 'muy fuerte',
 
   // Sync - Advanced
   Advanced: 'Avanzado',

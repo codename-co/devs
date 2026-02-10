@@ -51,6 +51,8 @@ const IMAGE_PRICING: Record<string, number> = {
   'together-default': 0.005,
   // Fal.ai
   'fal-default': 0.01,
+  // Hugging Face
+  'huggingface-default': 0.005,
   // Default fallback
   default: 0.02,
 }
@@ -212,6 +214,256 @@ class OpenAIImageProvider implements ImageProviderInterface {
     if (ratio > 1.5) return '1792x1024' // Landscape
     if (ratio < 0.67) return '1024x1792' // Portrait
     return '1024x1024' // Square
+  }
+}
+
+/**
+ * OpenAI-Compatible Provider (LM Studio, LocalAI, vLLM, etc.)
+ *
+ * Handles two scenarios:
+ * 1. Server supports /images/generations endpoint (standard OpenAI Images API)
+ * 2. Fallback to /chat/completions for servers that only support chat
+ *
+ * Also normalizes the base URL to ensure /v1 is appended when missing.
+ */
+class OpenAICompatibleImageProvider implements ImageProviderInterface {
+  /**
+   * Normalize base URL to ensure /v1 is present.
+   * Handles URLs like:
+   * - http://localhost:4444 -> http://localhost:4444/v1
+   * - http://localhost:4444/ -> http://localhost:4444/v1
+   * - http://localhost:4444/v1 -> http://localhost:4444/v1
+   * - http://localhost:4444/v1/ -> http://localhost:4444/v1
+   * - http://localhost:4444/v2 -> http://localhost:4444/v2 (preserved)
+   */
+  private normalizeBaseUrl(baseUrl: string): string {
+    let url = baseUrl.replace(/\/+$/, '')
+    if (!/\/v\d+$/.test(url)) {
+      url = `${url}/v1`
+    }
+    return url
+  }
+
+  async generate(
+    prompt: string,
+    settings: ImageGenerationSettings,
+    config: ImageProviderConfig,
+  ): Promise<GeneratedImage[]> {
+    if (!config.baseUrl) {
+      throw new Error(
+        'Base URL is required for OpenAI-compatible image generation',
+      )
+    }
+
+    const baseUrl = this.normalizeBaseUrl(config.baseUrl)
+    const dimensions = getDimensionsFromSettings(settings)
+    const ratio = dimensions.width / dimensions.height
+    const size =
+      ratio > 1.5 ? '1792x1024' : ratio < 0.67 ? '1024x1792' : '1024x1024'
+
+    // Try the standard /images/generations endpoint first
+    try {
+      const images = await this.tryImagesEndpoint(
+        baseUrl,
+        prompt,
+        settings,
+        config,
+        size,
+      )
+      return images
+    } catch (imagesError: any) {
+      // If the endpoint is not found or unsupported, fall back to chat completions
+      const isEndpointError =
+        imagesError.message?.includes('Unexpected endpoint') ||
+        imagesError.message?.includes('404') ||
+        imagesError.message?.includes('Not Found') ||
+        imagesError.message?.includes('not found') ||
+        imagesError.message?.includes('not supported') ||
+        imagesError.status === 404
+
+      if (!isEndpointError) {
+        // Re-throw if it's a different kind of error (auth, rate limit, etc.)
+        throw imagesError
+      }
+
+      console.warn(
+        `[Studio] /images/generations not supported, falling back to /chat/completions`,
+      )
+
+      // Fall back to chat completions
+      return this.tryChatCompletions(baseUrl, prompt, settings, config, size)
+    }
+  }
+
+  /**
+   * Try the standard OpenAI /images/generations endpoint
+   */
+  private async tryImagesEndpoint(
+    baseUrl: string,
+    prompt: string,
+    settings: ImageGenerationSettings,
+    config: ImageProviderConfig,
+    size: string,
+  ): Promise<GeneratedImage[]> {
+    const response = await fetch(`${baseUrl}/images/generations`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${config.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: config.model || 'default',
+        prompt,
+        n: Math.min(settings.count, 1),
+        size,
+        response_format: 'b64_json',
+      }),
+    })
+
+    const data = await response.json().catch(() => ({}))
+
+    // Handle error responses — some servers (LM Studio) return HTTP 200
+    // with an error body instead of a proper 4xx status code
+    if (!response.ok || data.error) {
+      const errMsg =
+        typeof data.error === 'string'
+          ? data.error
+          : data.error?.message || `API error: ${response.statusText}`
+      const errObj = new Error(errMsg)
+      ;(errObj as any).status = response.status
+      throw errObj
+    }
+
+    if (!data.data || !Array.isArray(data.data)) {
+      throw new Error('Unexpected response format: missing data array')
+    }
+
+    return data.data.map((item: any, index: number) => ({
+      id: `compat-${Date.now()}-${index}`,
+      requestId: '',
+      url: item.url || `data:image/png;base64,${item.b64_json}`,
+      base64: item.b64_json,
+      width: parseInt(size.split('x')[0]),
+      height: parseInt(size.split('x')[1]),
+      format: 'png' as const,
+      revisedPrompt: item.revised_prompt,
+      createdAt: new Date(),
+    }))
+  }
+
+  /**
+   * Fallback: use /chat/completions to generate images.
+   * Many OpenAI-compatible servers (LM Studio, Ollama, etc.) serve image
+   * models through the chat completions endpoint. The model returns the
+   * image as a base64 data URI in the assistant message content.
+   */
+  private async tryChatCompletions(
+    baseUrl: string,
+    prompt: string,
+    _settings: ImageGenerationSettings,
+    config: ImageProviderConfig,
+    size: string,
+  ): Promise<GeneratedImage[]> {
+    const response = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${config.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: config.model || 'default',
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        max_tokens: 1,
+      }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}))
+      throw new Error(
+        error.error?.message ||
+          error.error ||
+          `Chat completions API error: ${response.statusText}`,
+      )
+    }
+
+    const data = await response.json()
+    const images: GeneratedImage[] = []
+    const content = data.choices?.[0]?.message?.content
+
+    if (!content) {
+      throw new Error('No content in chat completions response')
+    }
+
+    // Try to extract base64 images from the response content.
+    // Models may return: data:image/...;base64,DATA  or  raw base64.
+    const dataUriRegex = /data:image\/([\w+]+);base64,([A-Za-z0-9+/=\s]+)/g
+    let match: RegExpExecArray | null
+    let idx = 0
+
+    while ((match = dataUriRegex.exec(content)) !== null) {
+      const format = match[1] === 'jpeg' ? 'jpg' : match[1]
+      const base64 = match[2].replace(/\s/g, '')
+      images.push({
+        id: `compat-chat-${Date.now()}-${idx}`,
+        requestId: '',
+        url: `data:image/${match[1]};base64,${base64}`,
+        base64,
+        width: parseInt(size.split('x')[0]),
+        height: parseInt(size.split('x')[1]),
+        format: format as any,
+        createdAt: new Date(),
+      })
+      idx++
+    }
+
+    // If no data URI found, check if the whole content is raw base64
+    if (images.length === 0) {
+      const trimmed = content.trim()
+      if (/^[A-Za-z0-9+/=\s]{100,}$/.test(trimmed)) {
+        const base64 = trimmed.replace(/\s/g, '')
+        images.push({
+          id: `compat-chat-${Date.now()}-0`,
+          requestId: '',
+          url: `data:image/png;base64,${base64}`,
+          base64,
+          width: parseInt(size.split('x')[0]),
+          height: parseInt(size.split('x')[1]),
+          format: 'png' as const,
+          createdAt: new Date(),
+        })
+      }
+    }
+
+    if (images.length === 0) {
+      throw new Error(
+        'The model did not return any image data. This model may not support image generation.',
+      )
+    }
+
+    return images
+  }
+
+  async validateApiKey(
+    apiKey: string,
+    config?: ImageProviderConfig,
+  ): Promise<boolean> {
+    try {
+      const baseUrl = config?.baseUrl
+        ? this.normalizeBaseUrl(config.baseUrl)
+        : ''
+      if (!baseUrl) return false
+      const response = await fetch(`${baseUrl}/models`, {
+        headers: { Authorization: `Bearer ${apiKey}` },
+      })
+      return response.ok
+    } catch {
+      return false
+    }
   }
 }
 
@@ -875,6 +1127,141 @@ class GoogleImageProvider implements ImageProviderInterface {
   }
 }
 
+/**
+ * Hugging Face Inference API Provider
+ *
+ * Uses the HuggingFace router for text-to-image generation.
+ * Supports any model hosted on HuggingFace that implements the text-to-image pipeline.
+ *
+ * API endpoint: POST https://router.huggingface.co/hf-inference/models/{model_id}
+ * Request: { inputs: "prompt", parameters: { ... } }
+ * Response: raw image bytes
+ */
+class HuggingFaceImageProvider implements ImageProviderInterface {
+  private baseUrl = 'https://router.huggingface.co/hf-inference/models'
+
+  async generate(
+    prompt: string,
+    settings: ImageGenerationSettings,
+    config: ImageProviderConfig,
+  ): Promise<GeneratedImage[]> {
+    const model = config.model || 'black-forest-labs/FLUX.1-schnell'
+    const dimensions = getDimensionsFromSettings(settings)
+    const negativePrompt = generateNegativePrompt(
+      settings.negativePrompt,
+      settings,
+    )
+
+    const parameters: Record<string, any> = {}
+
+    if (settings.guidanceScale) {
+      parameters.guidance_scale = settings.guidanceScale
+    }
+    if (negativePrompt) {
+      parameters.negative_prompt = negativePrompt
+    }
+    if (dimensions.width) {
+      parameters.width = dimensions.width
+    }
+    if (dimensions.height) {
+      parameters.height = dimensions.height
+    }
+    if (settings.seed !== undefined) {
+      parameters.seed = settings.seed
+    }
+
+    // Map quality to inference steps
+    const steps =
+      settings.quality === 'draft'
+        ? 10
+        : settings.quality === 'ultra'
+          ? 50
+          : settings.quality === 'hd'
+            ? 35
+            : 25
+    parameters.num_inference_steps = steps
+
+    const apiUrl = `${config.baseUrl || this.baseUrl}/${model}`
+
+    // Generate images sequentially (HF inference returns one image per call)
+    const images: GeneratedImage[] = []
+    const count = Math.min(settings.count, 4)
+
+    for (let i = 0; i < count; i++) {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${config.apiKey}`,
+        },
+        body: JSON.stringify({
+          inputs: prompt,
+          parameters:
+            Object.keys(parameters).length > 0 ? parameters : undefined,
+        }),
+      })
+
+      if (!response.ok) {
+        // Try to parse error as JSON, fallback to text
+        let errorMessage: string
+        try {
+          const errorData = await response.json()
+          errorMessage =
+            errorData.error || errorData.message || response.statusText
+        } catch {
+          errorMessage = await response.text().catch(() => response.statusText)
+        }
+        throw new Error(`Hugging Face API error: ${errorMessage}`)
+      }
+
+      // Response is raw image bytes
+      const contentType = response.headers.get('content-type') || 'image/jpeg'
+      const blob = await response.blob()
+      const arrayBuffer = await blob.arrayBuffer()
+      const uint8Array = new Uint8Array(arrayBuffer)
+
+      // Convert to base64
+      let binary = ''
+      for (let j = 0; j < uint8Array.length; j++) {
+        binary += String.fromCharCode(uint8Array[j])
+      }
+      const base64 = btoa(binary)
+
+      // Determine format from content type
+      const format = contentType.includes('png')
+        ? 'png'
+        : contentType.includes('webp')
+          ? 'webp'
+          : 'jpg'
+
+      images.push({
+        id: `huggingface-${Date.now()}-${i}`,
+        requestId: '',
+        url: `data:${contentType};base64,${base64}`,
+        base64,
+        width: dimensions.width,
+        height: dimensions.height,
+        format: format as 'png' | 'jpg' | 'webp',
+        size: blob.size,
+        createdAt: new Date(),
+      })
+    }
+
+    return images
+  }
+
+  async validateApiKey(apiKey: string): Promise<boolean> {
+    try {
+      const response = await fetch('https://huggingface.co/api/whoami-v2', {
+        headers: { Authorization: `Bearer ${apiKey}` },
+      })
+      return response.ok
+    } catch {
+      return false
+    }
+  }
+}
+
 // =============================================================================
 // Image Generation Service
 // =============================================================================
@@ -893,6 +1280,12 @@ export class ImageGenerationService {
     this.providers.set('replicate', new ReplicateImageProvider())
     this.providers.set('together', new TogetherImageProvider())
     this.providers.set('fal', new FalImageProvider())
+    this.providers.set('huggingface', new HuggingFaceImageProvider())
+    // OpenAI-compatible providers (LM Studio, LocalAI, vLLM, etc.)
+    // Use dedicated provider with URL normalization and /chat/completions fallback
+    this.providers.set('openai-compatible', new OpenAICompatibleImageProvider())
+    this.providers.set('custom', new OpenAICompatibleImageProvider())
+    this.providers.set('ollama', new OpenAICompatibleImageProvider())
   }
 
   /**

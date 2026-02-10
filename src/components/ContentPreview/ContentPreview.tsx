@@ -15,11 +15,24 @@ import { useI18n } from '@/i18n'
 import { Icon } from '@/components/Icon'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import { formatBytes } from '@/lib/format'
+import { safeString } from '@/lib/crypto/content-encryption'
 import {
   getKnowledgeItemIcon,
   getKnowledgeItemColor,
 } from '@/lib/knowledge-utils'
 import type { KnowledgeItem, Artifact } from '@/types'
+import {
+  parseCSV,
+  detectDelimiter,
+  CSV_MAX_VISIBLE_ROWS,
+  inferColumnTypes,
+  toBooleanValue,
+  formatNumber,
+  formatDate,
+  compareCells,
+  TYPE_BADGE,
+  type ColumnType,
+} from '@/lib/csv'
 import localI18n from './i18n'
 
 // =============================================================================
@@ -90,6 +103,24 @@ const isHTMLContent = (mimeType?: string): boolean => {
  */
 const isEMLContent = (mimeType?: string): boolean => {
   return mimeType === 'message/rfc822'
+}
+
+/**
+ * Detect if content is a CSV/TSV file based on mimeType or name
+ */
+const isCSVContent = (mimeType?: string, name?: string): boolean => {
+  const csvMimeTypes = [
+    'text/csv',
+    'text/tab-separated-values',
+    'application/csv',
+    'application/vnd.ms-excel', // Sometimes used for CSV
+  ]
+  if (mimeType && csvMimeTypes.includes(mimeType)) return true
+  if (name) {
+    const ext = name.split('.').pop()?.toLowerCase()
+    return ext === 'csv' || ext === 'tsv'
+  }
+  return false
 }
 
 /**
@@ -730,6 +761,202 @@ const EMLPreview = ({ content, name }: { content: string; name: string }) => {
   )
 }
 
+// =============================================================================
+// CSV Parsing & Preview
+// =============================================================================
+
+// --- Cell renderer -----------------------------------------------------------
+
+const CellValue = ({
+  raw,
+  colType,
+  lang,
+}: {
+  raw: string
+  colType: ColumnType
+  lang: string
+}) => {
+  if (raw.trim() === '') {
+    return <span className="text-default-300">—</span>
+  }
+
+  switch (colType) {
+    case 'boolean': {
+      const checked = toBooleanValue(raw)
+      return (
+        <span
+          className={clsx(
+            'inline-flex items-center justify-center w-5 h-5 rounded',
+            checked
+              ? 'bg-success-100 text-success-600'
+              : 'bg-default-100 text-default-400',
+          )}
+        >
+          {checked ? '✓' : '✗'}
+        </span>
+      )
+    }
+    case 'number':
+      return (
+        <span className="font-mono tabular-nums">
+          {formatNumber(raw, lang)}
+        </span>
+      )
+    case 'date':
+      return <span className="whitespace-nowrap">{formatDate(raw, lang)}</span>
+    default:
+      return <>{raw}</>
+  }
+}
+
+/**
+ * Tabular data preview for CSV/TSV files
+ */
+const CSVPreview = ({ content, name }: { content: string; name: string }) => {
+  const { lang, t } = useI18n(localI18n)
+  const [sortColumnIndex, setSortColumnIndex] = useState<number | null>(null)
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+
+  const parsed = useMemo(() => {
+    const isTSV = name.toLowerCase().endsWith('.tsv')
+    const delimiter = isTSV ? '\t' : detectDelimiter(content)
+    const rows = parseCSV(content, delimiter)
+
+    if (rows.length === 0)
+      return { headers: [], dataRows: [], totalRows: 0, columnTypes: [] }
+
+    const headers = rows[0]
+    const dataRows = rows.slice(1)
+    const columnTypes = inferColumnTypes(dataRows, headers.length)
+
+    return { headers, dataRows, totalRows: dataRows.length, columnTypes }
+  }, [content, name])
+
+  const sortedRows = useMemo(() => {
+    if (sortColumnIndex === null) return parsed.dataRows
+
+    const colType = parsed.columnTypes[sortColumnIndex] ?? 'string'
+    return [...parsed.dataRows].sort((a, b) =>
+      compareCells(
+        a[sortColumnIndex] ?? '',
+        b[sortColumnIndex] ?? '',
+        colType,
+        sortDirection,
+      ),
+    )
+  }, [parsed.dataRows, parsed.columnTypes, sortColumnIndex, sortDirection])
+
+  const visibleRows = sortedRows.slice(0, CSV_MAX_VISIBLE_ROWS)
+  const isTruncated = sortedRows.length > CSV_MAX_VISIBLE_ROWS
+
+  const handleSort = (colIndex: number) => {
+    if (sortColumnIndex === colIndex) {
+      setSortDirection((d) => (d === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortColumnIndex(colIndex)
+      setSortDirection('asc')
+    }
+  }
+
+  if (parsed.headers.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center text-default-500">
+        <Icon name="Document" className="w-12 h-12 mb-3 opacity-50" />
+        <p>{t('No tabular data found')}</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-2">
+      {/* Stats bar */}
+      <div className="flex items-center gap-3 text-xs text-default-500">
+        <span>
+          {parsed.totalRows} {t('rows')} &times; {parsed.headers.length}{' '}
+          {t('columns')}
+        </span>
+        {isTruncated && (
+          <Chip size="sm" variant="flat" color="warning">
+            {t('Showing first {count} rows').replace(
+              '{count}',
+              String(CSV_MAX_VISIBLE_ROWS),
+            )}
+          </Chip>
+        )}
+      </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto rounded-lg border border-default-200">
+        <table className="w-full text-sm border-collapse">
+          <thead>
+            <tr className="bg-default-100">
+              <th className="px-3 py-2 text-left text-xs font-medium text-default-500 border-b border-default-200 w-12">
+                #
+              </th>
+              {parsed.headers.map((header, i) => {
+                const colType = parsed.columnTypes[i] ?? 'string'
+                const badge = TYPE_BADGE[colType]
+                const isSorted = sortColumnIndex === i
+                return (
+                  <th
+                    key={i}
+                    className="px-3 py-2 text-left text-xs font-semibold text-default-700 border-b border-default-200 cursor-pointer hover:bg-default-200 transition-colors select-none whitespace-nowrap"
+                    onClick={() => handleSort(i)}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className="text-[10px] text-default-400"
+                        title={colType}
+                      >
+                        {badge.label}
+                      </span>
+                      <span>{header || `Column ${i + 1}`}</span>
+                      {isSorted && (
+                        <span className="text-primary text-[10px]">
+                          {sortDirection === 'asc' ? '▲' : '▼'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                )
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {visibleRows.map((row, rowIdx) => (
+              <tr
+                key={rowIdx}
+                className="border-b border-default-100 hover:bg-default-50 transition-colors"
+              >
+                <td className="px-3 py-1.5 text-xs text-default-400 font-mono">
+                  {rowIdx + 1}
+                </td>
+                {parsed.headers.map((_, colIdx) => {
+                  const colType = parsed.columnTypes[colIdx] ?? 'string'
+                  const raw = row[colIdx] ?? ''
+                  return (
+                    <td
+                      key={colIdx}
+                      className={clsx(
+                        'px-3 py-1.5 max-w-xs truncate',
+                        colType === 'number' && 'text-right',
+                        colType === 'boolean' && 'text-center',
+                      )}
+                      title={raw}
+                    >
+                      <CellValue raw={raw} colType={colType} lang={lang} />
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 /**
  * Text/Markdown content preview
  */
@@ -1026,7 +1253,9 @@ const MetadataSection = ({
           <Divider />
           <div>
             <span className="text-default-500">{t('Description')}:</span>
-            <p className="mt-1 text-default-700">{knowledgeItem.description}</p>
+            <p className="mt-1 text-default-700">
+              {safeString(knowledgeItem.description)}
+            </p>
           </div>
         </>
       )}
@@ -1063,7 +1292,7 @@ const TranscriptSection = ({
             </span>
           )}
         </div>
-        <TextPreview content={transcript} format="text" />
+        <TextPreview content={safeString(transcript)} format="text" />
       </div>
     )
   }
@@ -1160,7 +1389,7 @@ export const ContentPreview = (
   const artifact = !isKnowledge ? (item as Artifact) : null
 
   const mimeType = knowledgeItem?.mimeType
-  const content = knowledgeItem?.content || artifact?.content || ''
+  const content = safeString(knowledgeItem?.content) || artifact?.content || ''
   const name = knowledgeItem?.name || artifact?.title || ''
 
   const hasImagePreview =
@@ -1171,6 +1400,8 @@ export const ContentPreview = (
   const hasPDFPreview = isKnowledge && isPDFContent(mimeType) && !!content
   const hasHTMLPreview = isKnowledge && isHTMLContent(mimeType) && !!content
   const hasEMLPreview = isKnowledge && isEMLContent(mimeType) && !!content
+  const hasCSVPreview =
+    !!content && isCSVContent(mimeType, knowledgeItem?.name || artifact?.title)
   const isExtractable = isKnowledge && isExtractableDocument(mimeType)
 
   // For text content: show if it's readable text (not base64 binary)
@@ -1181,6 +1412,7 @@ export const ContentPreview = (
     !hasAudioPreview &&
     !hasHTMLPreview &&
     !hasEMLPreview &&
+    !hasCSVPreview &&
     !isExtractable
 
   // For artifacts, always show text content
@@ -1198,6 +1430,7 @@ export const ContentPreview = (
       hasPDFPreview ||
       hasHTMLPreview ||
       hasEMLPreview ||
+      hasCSVPreview ||
       showTextContent
     ) {
       tabs.push({ key: 'preview', label: t('Preview'), icon: 'MediaImage' })
@@ -1219,6 +1452,7 @@ export const ContentPreview = (
     hasPDFPreview,
     hasHTMLPreview,
     hasEMLPreview,
+    hasCSVPreview,
     showTextContent,
     isExtractable,
     t,
@@ -1373,12 +1607,15 @@ export const ContentPreview = (
 
             {hasEMLPreview && <EMLPreview content={content} name={name} />}
 
+            {hasCSVPreview && <CSVPreview content={content} name={name} />}
+
             {!hasImagePreview &&
               !hasVideoPreview &&
               !hasAudioPreview &&
               !hasPDFPreview &&
               !hasHTMLPreview &&
               !hasEMLPreview &&
+              !hasCSVPreview &&
               showTextContent && (
                 <TextPreview
                   content={content}

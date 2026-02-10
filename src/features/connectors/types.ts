@@ -222,6 +222,8 @@ export interface Connector {
   // App connectors (OAuth)
   encryptedToken?: string
   encryptedRefreshToken?: string
+  tokenIv?: string // IV for access token encryption (synced via Yjs)
+  refreshTokenIv?: string // IV for refresh token encryption (synced via Yjs)
   tokenExpiresAt?: Date
   scopes?: string[]
   accountId?: string // For linking related services (e.g., Google)

@@ -60,6 +60,7 @@ import {
   type ResponseUpdate,
   type ResponseStatus,
 } from '@/lib/chat'
+import { userSettings } from '@/stores/userStore'
 import { getKnowledgeItem } from '@/stores/knowledgeStore'
 import { copyRichText } from '@/lib/clipboard'
 import {
@@ -767,14 +768,24 @@ TimelineToolsDisplay.displayName = 'TimelineToolsDisplay'
  */
 const MessageContentWithSources = memo(
   ({
-    content,
+    content: rawContent,
     detectContentType,
     traceIds,
   }: {
-    content: string
+    content: string | Array<{ type: string; text?: string }>
     detectContentType: (content: string) => string
     traceIds: string[]
   }) => {
+    // Normalize content to string - it can be an array for multi-part messages
+    const content =
+      typeof rawContent === 'string'
+        ? rawContent
+        : Array.isArray(rawContent)
+          ? rawContent
+              .filter((p) => p.type === 'text' && p.text)
+              .map((p) => p.text)
+              .join('\n')
+          : String(rawContent ?? '')
     const { citedSources } = useTraceSources({
       traceIds,
       loadTrace: useTraceStore.getState().loadTrace,
@@ -1318,6 +1329,7 @@ export const AgentRunPage = () => {
     createConversation,
     loadConversation,
     clearCurrentConversation,
+    updateQuickReplies: persistQuickReplies,
   } = useConversationStore()
 
   const { artifacts, loadArtifacts } = useArtifactStore()
@@ -1340,7 +1352,7 @@ export const AgentRunPage = () => {
     AgentMemoryEntry[]
   >([])
 
-  // Quick replies state
+  // Quick replies state - initialized from persisted conversation data
   const [quickReplies, setQuickReplies] = useState<string[]>([])
   const [isGeneratingReplies, setIsGeneratingReplies] = useState(false)
 
@@ -1734,6 +1746,10 @@ export const AgentRunPage = () => {
             if (loadedConversation?.messages) {
               setConversationMessages(loadedConversation.messages)
             }
+            // Restore persisted quick replies
+            if (loadedConversation?.quickReplies?.length) {
+              setQuickReplies(loadedConversation.quickReplies)
+            }
           } catch (error) {
             console.warn(
               `Conversation ${conversationId} not found, will create new one when user sends first message`,
@@ -1745,6 +1761,7 @@ export const AgentRunPage = () => {
           clearCurrentConversation()
           setConversationMessages([])
           setNewlyLearnedMemories([]) // Clear learned memories for new conversation
+          setQuickReplies([]) // Clear quick replies for new conversation
         }
 
         // Check for pending prompt from Index page
@@ -1882,6 +1899,10 @@ export const AgentRunPage = () => {
     async (lastAssistantMessage: string, recentMessages: Message[]) => {
       if (!selectedAgent) return
 
+      // Check if suggestions are enabled in settings
+      const { suggestionsEnabled } = userSettings.getState()
+      if (suggestionsEnabled === false) return
+
       setIsGeneratingReplies(true)
       setQuickReplies([])
 
@@ -1938,7 +1959,14 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
         if (jsonMatch) {
           const suggestions = JSON.parse(jsonMatch[0]) as string[]
           if (Array.isArray(suggestions) && suggestions.length > 0) {
-            setQuickReplies(suggestions.slice(0, 3))
+            const trimmed = suggestions.slice(0, 3)
+            setQuickReplies(trimmed)
+            // Persist to conversation
+            const convId =
+              useConversationStore.getState().currentConversation?.id
+            if (convId) {
+              persistQuickReplies(convId, trimmed)
+            }
           }
         }
       } catch (error) {
@@ -2043,6 +2071,10 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
 
       // Clear quick replies when starting new message
       setQuickReplies([])
+      const convId = useConversationStore.getState().currentConversation?.id
+      if (convId) {
+        persistQuickReplies(convId, [])
+      }
 
       let finalResponse = ''
       await submitChat({

@@ -228,9 +228,10 @@ export abstract class BaseAppConnectorProvider
       )
     }
 
-    const iv = localStorage.getItem(
-      `${CONNECTOR_STORAGE_PREFIX}-${connector.id}-iv`,
-    )
+    // Prefer IV from Yjs (synced across devices), fall back to localStorage
+    const iv =
+      connector.tokenIv ??
+      localStorage.getItem(`${CONNECTOR_STORAGE_PREFIX}-${connector.id}-iv`)
     // Salt is empty after migration to non-extractable keys
     const salt =
       localStorage.getItem(
@@ -272,11 +273,13 @@ export abstract class BaseAppConnectorProvider
       return null
     }
 
-    // Refresh tokens may use separate or shared encryption metadata
+    // Prefer IV from Yjs, then localStorage with refresh-iv, then shared iv
     const iv =
+      connector.refreshTokenIv ??
       localStorage.getItem(
         `${CONNECTOR_STORAGE_PREFIX}-${connector.id}-refresh-iv`,
       ) ??
+      connector.tokenIv ??
       localStorage.getItem(`${CONNECTOR_STORAGE_PREFIX}-${connector.id}-iv`)
     // Salt is empty after migration to non-extractable keys
     const salt =
@@ -301,10 +304,16 @@ export abstract class BaseAppConnectorProvider
         salt,
       )
     } catch (error) {
-      throw new TokenDecryptionError(
-        connector.id,
-        error instanceof Error ? error : new Error(String(error)),
+      // Treat decryption failure as "no refresh token available" rather than
+      // throwing — this allows the caller to fall back gracefully (e.g. ask
+      // the user to reconnect) instead of surfacing a cryptic error.
+      // This can happen when the CryptoKey was regenerated, the DB was
+      // restored from backup, or the token came from another device.
+      console.warn(
+        `[ConnectorProvider] Failed to decrypt refresh token for ${connector.id}, treating as unavailable:`,
+        error instanceof Error ? error.message : error,
       )
+      return null
     }
   }
 
@@ -826,6 +835,8 @@ export function buildConnectorStorageKey(
 
 /**
  * Store encryption metadata for a connector's token.
+ * Writes IVs to both the Yjs connector object (for cross-device sync)
+ * and localStorage (for backward compatibility).
  *
  * @param connectorId - The connector ID
  * @param iv - The initialization vector (base64)
@@ -839,6 +850,8 @@ export function storeEncryptionMetadata(
   isRefreshToken = false,
 ): void {
   const prefix = isRefreshToken ? 'refresh-' : ''
+
+  // Write to localStorage (backward compat)
   localStorage.setItem(
     buildConnectorStorageKey(connectorId, `${prefix}iv` as 'iv' | 'refresh-iv'),
     iv,
@@ -850,6 +863,27 @@ export function storeEncryptionMetadata(
     ),
     salt,
   )
+
+  // Also write IV to the Yjs connector object for cross-device sync (GAP-4)
+  try {
+    // Lazy import to avoid circular dependency
+    import('@/lib/yjs/maps')
+      .then(({ connectors: connectorsYjsMap }) => {
+        const existing = connectorsYjsMap.get(connectorId)
+        if (existing) {
+          const ivField = isRefreshToken ? 'refreshTokenIv' : 'tokenIv'
+          connectorsYjsMap.set(connectorId, {
+            ...existing,
+            [ivField]: iv,
+          })
+        }
+      })
+      .catch(() => {
+        // Yjs map might not be initialized yet during migration
+      })
+  } catch {
+    // Non-critical — localStorage still has the IV
+  }
 }
 
 /**

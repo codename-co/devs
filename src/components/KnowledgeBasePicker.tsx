@@ -13,6 +13,7 @@ import { getFileIcon } from '@/lib/utils'
 import { getAllKnowledgeItems } from '@/stores/knowledgeStore'
 import { KnowledgeItem } from '@/types'
 import { formatBytes } from '@/lib/format'
+import { safeString } from '@/lib/crypto/content-encryption'
 import { useI18n } from '@/i18n'
 
 interface KnowledgeBasePickerProps extends Omit<DropdownMenuProps, 'children'> {
@@ -87,10 +88,11 @@ export function KnowledgeBasePicker({
   const orderedTypes = typeOrder.filter((type) => itemsByType[type]?.length > 0)
 
   const renderPreview = (item: KnowledgeItem) => {
-    if (item.fileType === 'image' && item.content?.startsWith('data:image/')) {
+    const contentStr = safeString(item.content)
+    if (item.fileType === 'image' && contentStr.startsWith('data:image/')) {
       return (
         <Image
-          src={item.content}
+          src={contentStr}
           alt={item.name}
           className="w-8 h-8 rounded object-cover"
           loading="lazy"
@@ -101,10 +103,10 @@ export function KnowledgeBasePicker({
     // For text files, show a text snippet
     if (
       item.fileType === 'text' &&
-      item.content &&
-      !item.content.startsWith('data:')
+      contentStr &&
+      !contentStr.startsWith('data:')
     ) {
-      const snippet = item.content.substring(0, 50).replace(/\n/g, ' ')
+      const snippet = contentStr.substring(0, 50).replace(/\n/g, ' ')
       return (
         <div className="flex flex-col">
           <Icon name={getFileIcon(item.mimeType || '') as any} size="lg" />

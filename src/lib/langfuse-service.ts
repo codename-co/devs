@@ -1,6 +1,6 @@
 import { Langfuse } from 'langfuse'
 import { SecureStorage } from './crypto'
-import { db } from './db'
+import { langfuseConfig } from '@/lib/yjs'
 
 class LangfuseService {
   private static client: Langfuse | null = null
@@ -9,8 +9,7 @@ class LangfuseService {
   static async initializeClient() {
     try {
       console.debug('[Langfuse] Initializing client…')
-      await db.init()
-      const configs = await db.getAll('langfuse_config')
+      const configs = Array.from(langfuseConfig.values())
       const config = configs[0]
 
       console.debug('[Langfuse] Found config:', !!config, config?.enabled)

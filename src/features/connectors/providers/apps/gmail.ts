@@ -84,7 +84,7 @@ const GMAIL_SCOPE = [
 const DEFAULT_PAGE_SIZE = 50
 
 /** Maximum messages to batch fetch at once */
-const BATCH_SIZE = 50
+const BATCH_SIZE = 10
 
 // =============================================================================
 // Types

@@ -36,11 +36,7 @@ export function PageMenu({ supplementalActions }: PageMenuProps = {}) {
       <ButtonGroup variant="light" isIconOnly>
         {supplementalActions}
       </ButtonGroup>
-      <ButtonGroup
-        variant="light"
-        isIconOnly
-        className="opacity-70 *:hover:opacity-100"
-      >
+      <ButtonGroup className="opacity-70 *:hover:opacity-100">
         <NotificationButton />
 
         {/* Show SyncButton by default when sync is enabled */}
@@ -51,6 +47,8 @@ export function PageMenu({ supplementalActions }: PageMenuProps = {}) {
           <>
             <Tooltip content={t('Traces and Metrics')}>
               <Button
+                isIconOnly
+                variant="light"
                 aria-label={t('Traces and Metrics')}
                 onPress={() => navigate(url('/traces'))}
               >
@@ -72,6 +70,8 @@ export function PageMenu({ supplementalActions }: PageMenuProps = {}) {
           }
         >
           <Button
+            isIconOnly
+            variant="light"
             aria-label={
               showExtendedActions
                 ? t('Hide extended actions')

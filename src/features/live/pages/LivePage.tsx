@@ -8,7 +8,7 @@ import type { STTProviderType, TTSProviderType } from '../lib/types'
 import { VoiceSettingsPanel } from '../components/VoiceSettingsPanel'
 import DefaultLayout from '@/layouts/Default'
 import { userSettings } from '@/stores/userStore'
-import { getAgentBySlug, getDefaultAgent } from '@/stores/agentStore'
+import { getAgentBySlugAsync, getDefaultAgent } from '@/stores/agentStore'
 import { useConversationStore } from '@/stores/conversationStore'
 import { CredentialService } from '@/lib/credential-service'
 import { LLMService, type LLMMessage } from '@/lib/llm'
@@ -71,7 +71,7 @@ export const LivePage = () => {
     const loadAgent = async () => {
       setIsAgentLoading(true)
       try {
-        const agent = await getAgentBySlug(agentSlug)
+        const agent = await getAgentBySlugAsync(agentSlug)
         if (agent) {
           setSelectedAgent(agent)
         } else {

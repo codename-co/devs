@@ -1,8 +1,10 @@
+import { useEffect } from 'react'
 import { Navigate, Outlet, Route, Routes, useParams } from 'react-router-dom'
 
 import { LocalLLMLoadingIndicator } from '@/components'
 import { LanguageRedirect } from '@/components/LanguageRedirect'
 import { defaultLang, I18nProvider, Lang, langs } from '@/i18n'
+import { userSettings } from '@/stores/userStore'
 import { StudioPage } from '@/features/studio/pages/StudioPage'
 import { CardBattlePage } from '@/features/battle'
 import { IndexPage } from '@/pages/Index'
@@ -132,6 +134,18 @@ const RootLayout = () => (
 const LanguagePath = () => {
   const params = useParams()
   const lang = (params.lang as Lang) || defaultLang
+
+  // Sync userSettings.language with the URL-based language so that
+  // components rendered outside the inner I18nProvider (e.g. AddLLMProviderModal)
+  // also use the correct language.
+  useEffect(() => {
+    if (langs.includes(lang)) {
+      const currentLang = userSettings.getState().language
+      if (currentLang !== lang) {
+        userSettings.getState().setLanguage(lang)
+      }
+    }
+  }, [lang])
 
   // If the lang param is not a valid language, it might be a dynamic app route like /translate
   // Let DynamicAppRoute handle it instead of showing 404

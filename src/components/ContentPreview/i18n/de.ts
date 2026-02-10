@@ -56,4 +56,9 @@ export const de = [
   // Browser support
   'Ihr Browser unterstützt keine Videowiedergabe.',
   'Ihr Browser unterstützt keine Audiowiedergabe.',
+  // CSV / Tabular data
+  'Keine tabellarischen Daten gefunden',
+  'Zeilen',
+  'Spalten',
+  'Erste {count} Zeilen angezeigt',
 ] as const

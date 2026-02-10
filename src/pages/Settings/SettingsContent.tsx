@@ -92,6 +92,12 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
   const setAutoMemoryLearning = userSettings(
     (state) => state.setAutoMemoryLearning,
   )
+  const suggestionsEnabled = userSettings(
+    (state) => state.suggestionsEnabled ?? true,
+  )
+  const setSuggestionsEnabled = userSettings(
+    (state) => state.setSuggestionsEnabled,
+  )
   const globalSystemInstructions = userSettings(
     (state) => state.globalSystemInstructions ?? '',
   )
@@ -775,6 +781,27 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
               </div>
 
               <div
+                id="quick-reply-suggestions"
+                className={getHighlightClasses(
+                  'quick-reply-suggestions',
+                  'max-w-xs mr-3 p-2 -m-2',
+                )}
+              >
+                <Switch
+                  isSelected={suggestionsEnabled}
+                  onChange={(e) => setSuggestionsEnabled(e.target.checked)}
+                  size="sm"
+                >
+                  {t('Quick Reply Suggestions')}
+                </Switch>
+                <p className="text-xs text-default-500 mt-1 ml-7">
+                  {t(
+                    'Show AI-generated follow-up suggestions after each assistant response',
+                  )}
+                </p>
+              </div>
+
+              <div
                 id="hide-default-agents"
                 className={getHighlightClasses(
                   'hide-default-agents',
@@ -888,6 +915,7 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
 
                 <div className="flex gap-2">
                   <Button
+                    size="sm"
                     variant="flat"
                     color="warning"
                     onPress={handleRegenerateMasterKey}

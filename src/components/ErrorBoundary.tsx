@@ -50,27 +50,6 @@ export class ErrorBoundary extends React.Component<
     this.setState({ hasError: false, error: null, errorInfo: null })
   }
 
-  handleClearDataAndReload = async () => {
-    try {
-      // Clear IndexedDB
-      const databases = await indexedDB.databases()
-      for (const db of databases) {
-        if (db.name) {
-          indexedDB.deleteDatabase(db.name)
-        }
-      }
-      // Clear localStorage
-      localStorage.clear()
-      // Clear sessionStorage
-      sessionStorage.clear()
-      // Reload
-      window.location.reload()
-    } catch (e) {
-      console.error('Failed to clear data:', e)
-      window.location.reload()
-    }
-  }
-
   render() {
     if (this.state.hasError) {
       // If a custom fallback is provided, use it
@@ -150,17 +129,6 @@ export class ErrorBoundary extends React.Component<
                   Try again
                 </Button>
               </div>
-
-              <Button
-                color="danger"
-                variant="light"
-                size="sm"
-                onPress={this.handleClearDataAndReload}
-                startContent={<Icon name="Trash" className="w-4 h-4" />}
-                className="w-full"
-              >
-                Clear all data and reload
-              </Button>
 
               <p className="text-xs text-default-400 text-center">
                 If the problem persists, try clearing your browser data or

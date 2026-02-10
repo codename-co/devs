@@ -40,7 +40,29 @@ vi.mock('@/lib/conversation-summarizer', () => ({
 
 // Mock agentStore getAgentById
 vi.mock('@/stores/agentStore', () => ({
-  getAgentById: vi.fn().mockResolvedValue({ id: 'devs', slug: 'devs', name: 'DEVS' }),
+  getAgentById: vi
+    .fn()
+    .mockResolvedValue({ id: 'devs', slug: 'devs', name: 'DEVS' }),
+}))
+
+// Mock content encryption to pass through plaintext (SecureStorage not available in tests)
+vi.mock('@/lib/crypto/content-encryption', () => ({
+  encryptField: vi.fn(async (plaintext: string) => plaintext),
+  decryptField: vi.fn(async (field: unknown) => field),
+  isEncryptedField: vi.fn(() => false),
+  encryptFields: vi.fn(async <T extends object>(obj: T) => obj),
+  decryptFields: vi.fn(async <T extends object>(obj: T) => obj),
+  encryptStringArray: vi.fn(async (arr: string[] | undefined) => arr),
+  decryptStringArray: vi.fn(async (arr: unknown[] | undefined) => arr),
+  encryptAttachments: vi.fn(async <T>(attachments: T[]) => attachments ?? []),
+  decryptAttachments: vi.fn(async <T>(attachments: T[]) => attachments ?? []),
+  safeString: (value: unknown, fallback: string = '') => {
+    if (typeof value === 'string') return value
+    return fallback
+  },
+  MESSAGE_ENCRYPTED_FIELDS: ['content', 'pinnedDescription'] as const,
+  CONVERSATION_ENCRYPTED_FIELDS: ['summary', 'title'] as const,
+  ATTACHMENT_ENCRYPTED_FIELDS: ['data', 'name'] as const,
 }))
 
 // Mock crypto.randomUUID for predictable IDs

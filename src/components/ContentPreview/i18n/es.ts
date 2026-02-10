@@ -56,4 +56,9 @@ export const es = [
   // Browser support
   'Tu navegador no soporta la reproducción de video.',
   'Tu navegador no soporta la reproducción de audio.',
+  // CSV / Tabular data
+  'No se encontraron datos tabulares',
+  'filas',
+  'columnas',
+  'Mostrando las primeras {count} filas',
 ] as const

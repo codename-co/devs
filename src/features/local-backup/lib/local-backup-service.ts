@@ -36,7 +36,13 @@ import {
   installedExtensions as installedExtensionsMap,
   customExtensions as customExtensionsMap,
 } from '@/lib/yjs/maps'
-import type { Agent, Conversation } from '@/types'
+import type {
+  Agent,
+  AgentMemoryEntry,
+  Conversation,
+  KnowledgeItem,
+  Message,
+} from '@/types'
 import type { StudioEntry } from '@/features/studio/types'
 import {
   agentSerializer,
@@ -47,6 +53,152 @@ import {
   studioSerializer,
 } from './serializers'
 import type { Serializer, SerializeContext } from './serializers/types'
+import {
+  decryptFields,
+  encryptFields,
+  CONVERSATION_ENCRYPTED_FIELDS,
+  MESSAGE_ENCRYPTED_FIELDS,
+  MEMORY_ENCRYPTED_FIELDS,
+  KNOWLEDGE_ENCRYPTED_FIELDS,
+  decryptStringArray,
+  encryptStringArray,
+  decryptAttachments,
+  encryptAttachments,
+  type EncryptedField,
+} from '@/lib/crypto/content-encryption'
+
+// ============================================================================
+// Encryption/Decryption Helpers for Local Backup
+// ============================================================================
+
+/**
+ * Decrypt a conversation for file export.
+ * Decrypts title, summary, message content, attachments, and quickReplies.
+ */
+async function decryptConversationForExport(
+  conv: Conversation,
+): Promise<Conversation> {
+  try {
+    const decryptedMessages = await Promise.all(
+      conv.messages.map(async (msg) => {
+        const decryptedMsg = (await decryptFields(msg, [
+          ...MESSAGE_ENCRYPTED_FIELDS,
+        ])) as Message
+        if (msg.attachments && msg.attachments.length > 0) {
+          decryptedMsg.attachments = await decryptAttachments(msg.attachments)
+        }
+        return decryptedMsg
+      }),
+    )
+    const result = { ...conv, messages: decryptedMessages as Message[] }
+    if (conv.quickReplies && conv.quickReplies.length > 0) {
+      result.quickReplies = (await decryptStringArray(
+        conv.quickReplies as (string | EncryptedField)[],
+      )) as string[]
+    }
+    return decryptFields(result, [
+      ...CONVERSATION_ENCRYPTED_FIELDS,
+    ]) as Promise<Conversation>
+  } catch (error) {
+    console.warn(
+      '[LocalBackup] Failed to decrypt conversation, using as-is:',
+      error,
+    )
+    return conv
+  }
+}
+
+/**
+ * Encrypt a conversation for Yjs import.
+ */
+async function encryptConversationForImport(
+  conv: Conversation,
+): Promise<Conversation> {
+  try {
+    const encryptedMessages = await Promise.all(
+      conv.messages.map(async (msg) => {
+        const encryptedMsg = (await encryptFields(msg, [
+          ...MESSAGE_ENCRYPTED_FIELDS,
+        ])) as Message
+        if (msg.attachments && msg.attachments.length > 0) {
+          encryptedMsg.attachments = await encryptAttachments(msg.attachments)
+        }
+        return encryptedMsg
+      }),
+    )
+    const result = { ...conv, messages: encryptedMessages as Message[] }
+    if (conv.quickReplies && conv.quickReplies.length > 0) {
+      result.quickReplies = (await encryptStringArray(
+        conv.quickReplies,
+      )) as string[]
+    }
+    return encryptFields(result, [
+      ...CONVERSATION_ENCRYPTED_FIELDS,
+    ]) as Promise<Conversation>
+  } catch {
+    return conv
+  }
+}
+
+/**
+ * Decrypt a memory entry for file export.
+ */
+async function decryptMemoryForExport(
+  memory: AgentMemoryEntry,
+): Promise<AgentMemoryEntry> {
+  try {
+    return decryptFields(memory, [
+      ...MEMORY_ENCRYPTED_FIELDS,
+    ]) as Promise<AgentMemoryEntry>
+  } catch {
+    return memory
+  }
+}
+
+/**
+ * Encrypt a memory entry for Yjs import.
+ */
+async function encryptMemoryForImport(
+  memory: AgentMemoryEntry,
+): Promise<AgentMemoryEntry> {
+  try {
+    return encryptFields(memory, [
+      ...MEMORY_ENCRYPTED_FIELDS,
+    ]) as Promise<AgentMemoryEntry>
+  } catch {
+    return memory
+  }
+}
+
+/**
+ * Decrypt a knowledge item for file export.
+ */
+async function decryptKnowledgeForExport(
+  item: KnowledgeItem,
+): Promise<KnowledgeItem> {
+  try {
+    return decryptFields(item, [
+      ...KNOWLEDGE_ENCRYPTED_FIELDS,
+    ]) as Promise<KnowledgeItem>
+  } catch {
+    return item
+  }
+}
+
+/**
+ * Encrypt a knowledge item for Yjs import.
+ */
+async function encryptKnowledgeForImport(
+  item: KnowledgeItem,
+): Promise<KnowledgeItem> {
+  try {
+    return encryptFields(item, [
+      ...KNOWLEDGE_ENCRYPTED_FIELDS,
+    ]) as Promise<KnowledgeItem>
+  } catch {
+    return item
+  }
+}
 
 // Debounce delay for writes (ms)
 const WRITE_DEBOUNCE_MS = 1_000
@@ -402,15 +554,16 @@ class FolderSyncService {
         })
       }
 
-      // Sync conversations in parallel batches
+      // Sync conversations in parallel batches (decrypt before writing)
       if (this.config.syncConversations) {
         const conversations = Array.from(conversationsMap.values())
         stats.conversations = conversations.length
         await this.processInParallelBatches(
           conversations,
           async (conversation) => {
+            const decrypted = await decryptConversationForExport(conversation)
             await this.writeEntityToFile(
-              conversation,
+              decrypted,
               conversationSerializer,
               context,
             )
@@ -419,17 +572,18 @@ class FolderSyncService {
         )
       }
 
-      // Sync memories in parallel batches
+      // Sync memories in parallel batches (decrypt before writing)
       if (this.config.syncMemories) {
         const memories = Array.from(memoriesMap.values())
         stats.memories = memories.length
         await this.processInParallelBatches(memories, async (memory) => {
-          await this.writeEntityToFile(memory, memorySerializer, context)
+          const decrypted = await decryptMemoryForExport(memory)
+          await this.writeEntityToFile(decrypted, memorySerializer, context)
           this.clearDirty('memory', memory.id)
         })
       }
 
-      // Sync knowledge items in parallel batches
+      // Sync knowledge items in parallel batches (decrypt before writing)
       if (this.config.syncKnowledge) {
         const knowledgeItems = Array.from(knowledgeMap.values())
         const fileItems = knowledgeItems.filter(
@@ -437,7 +591,8 @@ class FolderSyncService {
         )
         stats.knowledge = fileItems.length
         await this.processInParallelBatches(fileItems, async (item) => {
-          await this.writeKnowledgeItemToFiles(item)
+          const decrypted = await decryptKnowledgeForExport(item)
+          await this.writeKnowledgeItemToFiles(decrypted)
           this.clearDirty('knowledge', item.id)
         })
       }
@@ -527,19 +682,20 @@ class FolderSyncService {
         )
       }
 
-      // Read conversations
+      // Read conversations (encrypt before storing in Yjs)
       if (this.config.syncConversations) {
         await this.readEntitiesFromFiles<Conversation>(
           'conversations',
           conversationSerializer,
           async (conversation) => {
+            const encrypted = await encryptConversationForImport(conversation)
             const existing = conversationsMap.get(conversation.id)
             if (!existing) {
-              conversationsMap.set(conversation.id, conversation)
+              conversationsMap.set(conversation.id, encrypted)
             } else if (
               new Date(conversation.updatedAt) > new Date(existing.updatedAt)
             ) {
-              conversationsMap.set(conversation.id, conversation)
+              conversationsMap.set(conversation.id, encrypted)
             }
           },
         )
@@ -990,6 +1146,25 @@ class FolderSyncService {
         }
       }
 
+      // Decrypt encrypted entities so the export contains readable data
+      if (dbData.conversations) {
+        dbData.conversations = await Promise.all(
+          (dbData.conversations as Conversation[]).map(
+            decryptConversationForExport,
+          ),
+        )
+      }
+      if (dbData.memories) {
+        dbData.memories = await Promise.all(
+          (dbData.memories as AgentMemoryEntry[]).map(decryptMemoryForExport),
+        )
+      }
+      if (dbData.knowledge) {
+        dbData.knowledge = await Promise.all(
+          (dbData.knowledge as KnowledgeItem[]).map(decryptKnowledgeForExport),
+        )
+      }
+
       // Add metadata
       const exportData = {
         _meta: {
@@ -1162,13 +1337,15 @@ class FolderSyncService {
               fileMetadata,
             )
             if (memory) {
+              // Encrypt before storing in Yjs
+              const encrypted = await encryptMemoryForImport(memory)
               const existing = memoriesMap.get(memory.id)
               if (!existing) {
-                memoriesMap.set(memory.id, memory)
+                memoriesMap.set(memory.id, encrypted)
               } else if (
                 new Date(memory.updatedAt) > new Date(existing.updatedAt)
               ) {
-                memoriesMap.set(memory.id, memory)
+                memoriesMap.set(memory.id, encrypted)
               }
 
               this.emitEvent({
@@ -1282,13 +1459,15 @@ class FolderSyncService {
             binaryContent,
           )
           if (item) {
+            // Encrypt before storing in Yjs
+            const encrypted = await encryptKnowledgeForImport(item)
             const existing = knowledgeMap.get(item.id)
             if (!existing) {
-              knowledgeMap.set(item.id, item)
+              knowledgeMap.set(item.id, encrypted)
             } else if (
               new Date(item.lastModified) > new Date(existing.lastModified)
             ) {
-              knowledgeMap.set(item.id, item)
+              knowledgeMap.set(item.id, encrypted)
             }
 
             this.emitEvent({

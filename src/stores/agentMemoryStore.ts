@@ -21,6 +21,11 @@ import type {
 } from '@/types'
 import { errorToast, successToast } from '@/lib/toast'
 import { getT } from '@/i18n/utils'
+import {
+  encryptFields,
+  decryptFields,
+  MEMORY_ENCRYPTED_FIELDS,
+} from '@/lib/crypto/content-encryption'
 
 const t = getT()
 
@@ -39,20 +44,52 @@ function getAllMemories(): AgentMemoryEntry[] {
 }
 
 /**
- * Get a memory by ID from Yjs
+ * Get a memory by ID from Yjs (raw, may be encrypted).
+ * For decrypted content, use {@link getMemoryByIdDecrypted}.
  */
 export function getMemoryById(id: string): AgentMemoryEntry | undefined {
   return memories.get(id)
 }
 
 /**
- * Get all memories for a specific agent (excludes expired)
+ * Get all memories for a specific agent (excludes expired, raw).
+ * For decrypted content, use {@link getMemoriesByAgentIdDecrypted}.
  */
 export function getMemoriesByAgentId(agentId: string): AgentMemoryEntry[] {
   const now = new Date()
   return Array.from(memories.values()).filter(
     (m) =>
       m.agentId === agentId && (!m.expiresAt || new Date(m.expiresAt) > now),
+  )
+}
+
+/**
+ * Get a memory by ID with content decrypted.
+ */
+export async function getMemoryByIdDecrypted(
+  id: string,
+): Promise<AgentMemoryEntry | undefined> {
+  const entry = memories.get(id)
+  if (!entry) return undefined
+  return decryptFields(entry, [
+    ...MEMORY_ENCRYPTED_FIELDS,
+  ]) as Promise<AgentMemoryEntry>
+}
+
+/**
+ * Get all memories for a specific agent with content decrypted.
+ */
+export async function getMemoriesByAgentIdDecrypted(
+  agentId: string,
+): Promise<AgentMemoryEntry[]> {
+  const raw = getMemoriesByAgentId(agentId)
+  return Promise.all(
+    raw.map(
+      (m) =>
+        decryptFields(m, [
+          ...MEMORY_ENCRYPTED_FIELDS,
+        ]) as Promise<AgentMemoryEntry>,
+    ),
   )
 }
 
@@ -227,8 +264,13 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
         updatedAt: new Date(),
       }
 
+      // Encrypt content fields before saving to Yjs
+      const encrypted = await encryptFields(memory, [
+        ...MEMORY_ENCRYPTED_FIELDS,
+      ])
+
       // Save to Yjs (single source of truth)
-      memories.set(memory.id, memory)
+      memories.set(memory.id, encrypted as unknown as AgentMemoryEntry)
 
       set({ isLoading: false })
 
@@ -250,16 +292,26 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
         throw new Error('Memory not found')
       }
 
+      // Decrypt existing to merge with updates (so we re-encrypt the full object)
+      const decrypted = (await decryptFields(existing, [
+        ...MEMORY_ENCRYPTED_FIELDS,
+      ])) as AgentMemoryEntry
+
       const updatedMemory: AgentMemoryEntry = {
-        ...existing,
+        ...decrypted,
         ...updates,
         id,
         version: existing.version + 1,
         updatedAt: new Date(),
       }
 
+      // Encrypt content fields before saving to Yjs
+      const encrypted = await encryptFields(updatedMemory, [
+        ...MEMORY_ENCRYPTED_FIELDS,
+      ])
+
       // Save to Yjs (single source of truth)
-      memories.set(id, updatedMemory)
+      memories.set(id, encrypted as unknown as AgentMemoryEntry)
 
       set({ isLoading: false })
     } catch (error) {
@@ -541,10 +593,12 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
         score += 1
       }
 
-      // Keyword match
+      // Keyword match (content may be encrypted — use typeof checks)
       if (ENABLE_KEYWORD_MATCHING) {
+        const titleText = typeof m.title === 'string' ? m.title : ''
+        const contentText = typeof m.content === 'string' ? m.content : ''
         const memoryText =
-          `${m.title} ${m.content} ${(m.tags || []).join(' ')} ${(m.keywords || []).join(' ')}`.toLowerCase()
+          `${titleText} ${contentText} ${(m.tags || []).join(' ')} ${(m.keywords || []).join(' ')}`.toLowerCase()
         keywords.forEach((keyword) => {
           if (memoryText.includes(keyword.toLowerCase())) {
             score += 2
@@ -610,10 +664,12 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
         score += 1
       }
 
-      // Keyword match
+      // Keyword match (content may be encrypted — use typeof checks)
       if (ENABLE_KEYWORD_MATCHING) {
+        const titleText = typeof m.title === 'string' ? m.title : ''
+        const contentText = typeof m.content === 'string' ? m.content : ''
         const memoryText =
-          `${m.title} ${m.content} ${(m.tags || []).join(' ')} ${(m.keywords || []).join(' ')}`.toLowerCase()
+          `${titleText} ${contentText} ${(m.tags || []).join(' ')} ${(m.keywords || []).join(' ')}`.toLowerCase()
         keywords.forEach((keyword) => {
           if (memoryText.includes(keyword.toLowerCase())) {
             score += 2
@@ -850,10 +906,12 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
         score += 1
       }
 
-      // Keyword match
+      // Keyword match (content may be encrypted — use typeof checks)
       if (ENABLE_KEYWORD_MATCHING) {
+        const titleText = typeof m.title === 'string' ? m.title : ''
+        const contentText = typeof m.content === 'string' ? m.content : ''
         const memoryText =
-          `${m.title} ${m.content} ${(m.tags || []).join(' ')} ${(m.keywords || []).join(' ')}`.toLowerCase()
+          `${titleText} ${contentText} ${(m.tags || []).join(' ')} ${(m.keywords || []).join(' ')}`.toLowerCase()
         keywords.forEach((keyword) => {
           if (memoryText.includes(keyword.toLowerCase())) {
             score += 2

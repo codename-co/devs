@@ -5,14 +5,18 @@
  * Displays sync status, room sharing, and connection options.
  * This is the main sync UI - no separate settings page needed.
  */
-import { Alert, Button, ButtonGroup, Chip, Input, Snippet } from '@heroui/react'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { Alert, Button, Chip, Input, Snippet } from '@heroui/react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 
 import { useSyncStore } from '../stores/syncStore'
 import { generateSetupQRCode } from '@/lib/qr-code'
 import { Icon } from '@/components/Icon'
 import { PageMenuPanel } from '@/components/PageMenuPanel'
 import { useI18n } from '@/i18n'
+import {
+  evaluatePasswordStrength,
+  type PasswordStrengthResult,
+} from '@/lib/crypto/password-strength'
 
 /** Panel mode for UI state */
 type PanelMode = 'initial' | 'scanning' | 'password-prompt'
@@ -38,8 +42,7 @@ export function SyncPanel(_props: SyncPanelProps) {
   // UI mode state
   const [mode, setMode] = useState<PanelMode>('initial')
 
-  // Share form state
-  const [isPasswordProtected, setIsPasswordProtected] = useState(false)
+  // Share form state — password is always required
   const [password, setPassword] = useState('')
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const [isEnabling, setIsEnabling] = useState(false)
@@ -48,6 +51,12 @@ export function SyncPanel(_props: SyncPanelProps) {
   const [pendingJoinCode, setPendingJoinCode] = useState<string | null>(null)
   const [joinPassword, setJoinPassword] = useState('')
   const [isJoinPasswordVisible, setIsJoinPasswordVisible] = useState(false)
+
+  // Password strength evaluation
+  const passwordStrength: PasswordStrengthResult = useMemo(
+    () => evaluatePasswordStrength(password),
+    [password],
+  )
 
   // QR code state
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null)
@@ -59,9 +68,8 @@ export function SyncPanel(_props: SyncPanelProps) {
   const scannerRef = useRef<HTMLDivElement>(null)
   const html5QrCodeRef = useRef<any>(null)
 
-  const syncUrl = roomId
-    ? `${window.location.origin}?join=${roomId}${isPasswordProtected ? '&protected=1' : ''}`
-    : ''
+  // Sync URL — password is always required so no extra flag needed
+  const syncUrl = roomId ? `${window.location.origin}?join=${roomId}` : ''
 
   // Generate QR code when sync is enabled
   useEffect(() => {
@@ -91,7 +99,6 @@ export function SyncPanel(_props: SyncPanelProps) {
       setMode('initial')
       setPassword('')
       setIsPasswordVisible(false)
-      setIsPasswordProtected(false)
       setPendingJoinCode(null)
       setJoinPassword('')
     }
@@ -112,48 +119,35 @@ export function SyncPanel(_props: SyncPanelProps) {
     setScannerError(null)
   }, [])
 
-  // Handle starting sync (share mode)
+  // Handle starting sync (share mode) — password is always required
   const handleStartSync = useCallback(async () => {
+    if (!password.trim()) return
     setIsEnabling(true)
     try {
       const newRoomId = generateRoomId()
-      await enableSync(
-        newRoomId,
-        isPasswordProtected ? password || undefined : undefined,
-        'share',
-      )
+      await enableSync(newRoomId, password.trim(), 'share')
     } finally {
       setIsEnabling(false)
     }
-  }, [generateRoomId, enableSync, password, isPasswordProtected])
+  }, [generateRoomId, enableSync, password])
 
   // Handle joining a room with scanned/extracted code
+  // All rooms are password-protected — always prompt for password
   const handleJoinRoom = useCallback(
-    async (roomCode: string, isProtected: boolean) => {
-      if (isProtected) {
-        // Room is password-protected, prompt for password
-        setPendingJoinCode(roomCode)
-        setMode('password-prompt')
-        return
-      }
-
-      // Join directly without password
-      setIsEnabling(true)
-      try {
-        await enableSync(roomCode, undefined, 'join')
-      } finally {
-        setIsEnabling(false)
-      }
+    async (roomCode: string, _isProtected: boolean) => {
+      // Always prompt for password since all rooms require E2E encryption
+      setPendingJoinCode(roomCode)
+      setMode('password-prompt')
     },
-    [enableSync],
+    [],
   )
 
   // Handle joining with password after prompt
   const handleJoinWithPassword = useCallback(async () => {
-    if (!pendingJoinCode) return
+    if (!pendingJoinCode || !joinPassword.trim()) return
     setIsEnabling(true)
     try {
-      await enableSync(pendingJoinCode, joinPassword || undefined, 'join')
+      await enableSync(pendingJoinCode, joinPassword.trim(), 'join')
     } finally {
       setIsEnabling(false)
       setPendingJoinCode(null)
@@ -180,16 +174,15 @@ export function SyncPanel(_props: SyncPanelProps) {
         // Stop scanner first
         await stopScanner()
 
-        // Extract room ID and protected flag from the scanned URL
+        // Extract room ID from the scanned URL
         try {
           const scannedUrl = new URL(decodedText)
           const joinParam =
             scannedUrl.searchParams.get('join') ||
             scannedUrl.searchParams.get('room')
-          const isProtected = scannedUrl.searchParams.get('protected') === '1'
 
           if (joinParam) {
-            handleJoinRoom(joinParam, isProtected)
+            handleJoinRoom(joinParam, true)
           }
         } catch {
           // If it's not a valid URL, try using it as a room ID directly
@@ -249,53 +242,80 @@ export function SyncPanel(_props: SyncPanelProps) {
     return t('Offline')
   }
 
-  // Render initial step with Share (with password toggle) and Join CTAs
+  // Render initial step with Share (with mandatory password) and Join CTAs
   const renderInitialStep = () => (
     <div className="flex flex-col gap-3">
-      {/* Share section */}
+      {/* Share section — password always required */}
       <div className="flex flex-col gap-2">
-        <ButtonGroup fullWidth color="primary" variant="flat" size="sm">
-          <Button onPress={handleStartSync} isLoading={isEnabling}>
-            {t('Share')}
-          </Button>
-          <Button
-            isIconOnly
-            onPress={() => setIsPasswordProtected(!isPasswordProtected)}
-            className={isPasswordProtected ? 'bg-primary-200' : ''}
-          >
-            <Icon name={isPasswordProtected ? 'Lock' : 'LockSlash'} />
-          </Button>
-        </ButtonGroup>
+        <Input
+          value={password}
+          onValueChange={setPassword}
+          placeholder={t('Sync password')}
+          size="sm"
+          type={isPasswordVisible ? 'text' : 'password'}
+          autoComplete="new-password"
+          description={
+            password
+              ? `${t('Strength')}: ${t(passwordStrength.level)} — ${t(
+                  'Set a password for E2E encryption. All devices must use the same password to sync.',
+                )}`
+              : t(
+                  'Set a password for E2E encryption. All devices must use the same password to sync.',
+                )
+          }
+          isRequired
+          color={
+            password
+              ? passwordStrength.meetsMinimum
+                ? 'success'
+                : 'warning'
+              : undefined
+          }
+          onKeyDown={(e) => {
+            if (
+              e.key === 'Enter' &&
+              password.trim() &&
+              passwordStrength.meetsMinimum
+            )
+              handleStartSync()
+          }}
+          startContent={
+            <Icon
+              name="Lock"
+              className="h-4 w-4 text-default-400 pointer-events-none"
+            />
+          }
+          endContent={
+            <button
+              type="button"
+              onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+              className="focus:outline-none"
+            >
+              <Icon
+                name={isPasswordVisible ? 'EyeClosed' : 'Eye'}
+                className="h-4 w-4 text-default-400 pointer-events-none"
+              />
+            </button>
+          }
+        />
 
-        {/* Inline password input when protection is enabled */}
-        {isPasswordProtected && (
-          <Input
-            value={password}
-            onValueChange={setPassword}
-            placeholder={t('Sync password')}
-            size="sm"
-            type={isPasswordVisible ? 'text' : 'password'}
-            description={t(
-              'Set a password to sync API keys across devices. All devices must use the same password.',
-            )}
-            endContent={
-              <button
-                type="button"
-                onClick={() => setIsPasswordVisible(!isPasswordVisible)}
-                className="focus:outline-none"
-              >
-                <Icon
-                  name={isPasswordVisible ? 'EyeClosed' : 'Eye'}
-                  className="h-4 w-4 text-default-400 pointer-events-none"
-                />
-              </button>
-            }
-          />
-        )}
+        <Button
+          fullWidth
+          color="primary"
+          variant="flat"
+          size="sm"
+          onPress={handleStartSync}
+          isLoading={isEnabling}
+          isDisabled={!password.trim() || !passwordStrength.meetsMinimum}
+          startContent={<Icon name="Lock" />}
+        >
+          {t('Share')}
+        </Button>
       </div>
 
       {/* Join button - directly starts QR scanning */}
       <Button
+        fullWidth
         variant="bordered"
         size="sm"
         onPress={startScanner}
@@ -354,7 +374,7 @@ export function SyncPanel(_props: SyncPanelProps) {
             <div
               id="sync-panel-qr-scanner"
               ref={scannerRef}
-              className="w-full aspect-square rounded-lg overflow-hidden bg-black"
+              className="w-full aspect-square rounded-lg overflow-hidden bg-black [&_video]:w-full [&_video]:h-full [&_video]:object-cover"
             />
             <p className="text-xs text-default-400">
               {t('Point your camera at a sync QR code')}
@@ -397,6 +417,7 @@ export function SyncPanel(_props: SyncPanelProps) {
           placeholder={t('Enter the room password')}
           size="sm"
           type={isJoinPasswordVisible ? 'text' : 'password'}
+          autoComplete="new-password"
           onKeyDown={(e) => {
             if (e.key === 'Enter') handleJoinWithPassword()
           }}
@@ -420,6 +441,7 @@ export function SyncPanel(_props: SyncPanelProps) {
         variant="flat"
         size="sm"
         isLoading={isEnabling}
+        isDisabled={!joinPassword.trim()}
         onPress={handleJoinWithPassword}
       >
         {t('Join Room')}

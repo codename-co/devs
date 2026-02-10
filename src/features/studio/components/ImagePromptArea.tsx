@@ -12,11 +12,6 @@ import {
   type TextAreaProps,
   Tooltip,
   Spinner,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  DropdownSection,
 } from '@heroui/react'
 import {
   forwardRef,
@@ -41,12 +36,11 @@ import {
   ImagePreset,
   ImageProvider,
   ImageModel,
-  IMAGE_MODELS_BY_PROVIDER,
   MediaType,
   VideoProvider,
   VideoModel,
-  VIDEO_MODELS_BY_PROVIDER,
 } from '../types'
+import { StudioModelSelector } from './StudioModelSelector'
 import localI18n from '../i18n'
 
 interface ImagePromptAreaProps
@@ -420,7 +414,12 @@ export const ImagePromptArea = forwardRef<
           placeholder={
             isDragOver
               ? t('Drop reference image here…')
-              : placeholder || t('Describe the image you want to create…')
+              : placeholder ||
+                (mediaType === 'video'
+                  ? t('Describe the video you want to create…')
+                  : mediaType === 'music'
+                    ? t('Describe the music you want to create…')
+                    : t('Describe the image you want to create…'))
           }
           size="lg"
           value={prompt}
@@ -521,129 +520,28 @@ export const ImagePromptArea = forwardRef<
                 </span>
               )}
 
-              {/* Image model selector dropdown */}
-              {mediaType === 'image' && availableProviders.length > 0 && (
-                <Dropdown>
-                  <DropdownTrigger>
-                    <Button
-                      size="sm"
-                      variant="light"
-                      className="min-w-0 px-2 h-8"
-                      endContent={<Icon name="NavArrowDown" size="sm" />}
-                    >
-                      <span className="text-xs truncate max-w-24">
-                        {model
-                          ? IMAGE_MODELS_BY_PROVIDER[
-                              provider || 'openai'
-                            ]?.find((m) => m.id === model)?.name || model
-                          : t('Select model')}
-                      </span>
-                    </Button>
-                  </DropdownTrigger>
-                  <DropdownMenu
-                    aria-label={t('Select image model')}
-                    selectionMode="single"
-                    selectedKeys={
-                      model ? new Set([`${provider}:${model}`]) : new Set()
-                    }
-                    onSelectionChange={(keys) => {
-                      const key = Array.from(keys)[0] as string
-                      if (key) {
-                        const [prov, ...modelParts] = key.split(':')
-                        const modelId = modelParts.join(':') as ImageModel
-                        onModelChange?.(prov as ImageProvider, modelId)
-                      }
-                    }}
-                  >
-                    {availableProviders.map((prov) => (
-                      <DropdownSection
-                        key={prov}
-                        title={prov.charAt(0).toUpperCase() + prov.slice(1)}
-                        showDivider={
-                          availableProviders.indexOf(prov) <
-                          availableProviders.length - 1
-                        }
-                      >
-                        {IMAGE_MODELS_BY_PROVIDER[prov]?.map((m) => (
-                          <DropdownItem
-                            key={`${prov}:${m.id}`}
-                            description={m.description}
-                          >
-                            {m.name}
-                          </DropdownItem>
-                        )) || []}
-                      </DropdownSection>
-                    ))}
-                  </DropdownMenu>
-                </Dropdown>
-              )}
-
-              {/* Video model selector dropdown */}
-              {mediaType === 'video' && availableVideoProviders.length > 0 && (
-                <Dropdown>
-                  <DropdownTrigger>
-                    <Button
-                      size="sm"
-                      variant="light"
-                      className="min-w-0 px-2 h-8"
-                      endContent={<Icon name="NavArrowDown" size="sm" />}
-                    >
-                      <span className="text-xs truncate max-w-24">
-                        {videoModel
-                          ? VIDEO_MODELS_BY_PROVIDER[
-                              videoProvider || 'google'
-                            ]?.find((m) => m.id === videoModel)?.name ||
-                            videoModel
-                          : t('Select video model')}
-                      </span>
-                    </Button>
-                  </DropdownTrigger>
-                  <DropdownMenu
-                    aria-label={t('Select video model')}
-                    selectionMode="single"
-                    selectedKeys={
-                      videoModel
-                        ? new Set([`${videoProvider}:${videoModel}`])
-                        : new Set()
-                    }
-                    onSelectionChange={(keys) => {
-                      const key = Array.from(keys)[0] as string
-                      if (key) {
-                        const [prov, ...modelParts] = key.split(':')
-                        const modelId = modelParts.join(':') as VideoModel
-                        onVideoModelChange?.(prov as VideoProvider, modelId)
-                      }
-                    }}
-                  >
-                    {availableVideoProviders.map((prov) => (
-                      <DropdownSection
-                        key={prov}
-                        title={prov.charAt(0).toUpperCase() + prov.slice(1)}
-                        showDivider={
-                          availableVideoProviders.indexOf(prov) <
-                          availableVideoProviders.length - 1
-                        }
-                      >
-                        {VIDEO_MODELS_BY_PROVIDER[prov]?.map((m) => (
-                          <DropdownItem
-                            key={`${prov}:${m.id}`}
-                            description={m.description}
-                          >
-                            {m.name}
-                          </DropdownItem>
-                        )) || []}
-                      </DropdownSection>
-                    ))}
-                  </DropdownMenu>
-                </Dropdown>
-              )}
+              {/* Model selector (unified for both image and video) */}
+              <StudioModelSelector
+                lang={lang}
+                mediaType={mediaType}
+                provider={provider}
+                model={model}
+                availableProviders={availableProviders}
+                onModelChange={onModelChange}
+                videoProvider={videoProvider}
+                videoModel={videoModel}
+                availableVideoProviders={availableVideoProviders}
+                onVideoModelChange={onVideoModelChange}
+              />
 
               <ButtonGroup variant="flat">
                 <Tooltip
                   content={
                     mediaType === 'video'
                       ? t('Generate video')
-                      : t('Generate image')
+                      : mediaType === 'music'
+                        ? t('Generate music')
+                        : t('Generate image')
                   }
                   placement="bottom"
                 >

@@ -5,6 +5,9 @@ type I18n = Record<(typeof en)[number], string>
 export const ko: I18n = {
   Studio: '스튜디오',
   'Create stunning visuals with AI': 'AI로 멋진 비주얼을 만들어보세요',
+  'Create stunning images with AI': 'AI로 멋진 이미지를 만들어보세요',
+  'Create stunning videos with AI': 'AI로 멋진 비디오를 만들어보세요',
+  'Create stunning music with AI': 'AI로 멋진 음악을 만들어보세요',
   Generate: '생성',
   'Image presets': '이미지 프리셋',
   'Image settings': '이미지 설정',
@@ -86,6 +89,7 @@ export const ko: I18n = {
   Image: '이미지',
   Video: '비디오',
   'Describe the video you want to create…': '만들고 싶은 비디오를 설명하세요…',
+  'Describe the music you want to create…': '만들고 싶은 음악을 설명하세요…',
   'No videos yet': '아직 비디오가 없습니다',
   'Video generated successfully': '비디오가 성공적으로 생성되었습니다',
   'Failed to generate video': '비디오 생성에 실패했습니다',
@@ -96,6 +100,7 @@ export const ko: I18n = {
   Duration: '재생 시간',
   'Select video model': '비디오 모델 선택',
   'Generate video': '비디오 생성',
+  'Generate music': '음악 생성',
   videos: '비디오',
   'Copy prompt': '프롬프트 복사',
   'Starting video generation...': '비디오 생성 시작 중...',
@@ -131,4 +136,11 @@ export const ko: I18n = {
   'Are you sure you want to permanently delete this media? This action cannot be undone.':
     '이 미디어를 영구적으로 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.',
   'Media deleted': '미디어가 삭제되었습니다',
+  'Add provider': '공급자 추가',
+  'Loading models...': '모델 로딩 중...',
+  'No models found': '모델을 찾을 수 없습니다',
+  'No image/video generation models detected':
+    '이미지/비디오 생성 모델이 감지되지 않았습니다',
+  // Music generation
+  Music: '음악',
 }

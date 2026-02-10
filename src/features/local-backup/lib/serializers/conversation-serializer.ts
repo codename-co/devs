@@ -213,9 +213,10 @@ function deserialize(
 
 function getFilename(conversation: Conversation): string {
   const dateStr = formatDateForFilename(conversation.timestamp)
-  const titleSlug = conversation.title
-    ? sanitizeFilename(conversation.title, 40)
-    : shortHash(conversation.id)
+  const titleSlug =
+    typeof conversation.title === 'string' && conversation.title
+      ? sanitizeFilename(conversation.title, 40)
+      : shortHash(conversation.id)
   return `${dateStr}_${titleSlug}${EXTENSION}`
 }
 

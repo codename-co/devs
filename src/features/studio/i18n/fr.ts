@@ -5,7 +5,13 @@ type I18n = Record<(typeof en)[number], string>
 export const fr: I18n = {
   Studio: 'Studio',
   'Create stunning visuals with AI':
+    "Créez des visuels époustouflants avec l'IA",
+  'Create stunning images with AI':
     "Créez des images époustouflantes avec l'IA",
+  'Create stunning videos with AI':
+    "Créez des vidéos époustouflantes avec l'IA",
+  'Create stunning music with AI':
+    "Créez de la musique époustouflante avec l'IA",
   Generate: 'Générer',
   'Image presets': "Préréglages d'image",
   'Image settings': "Paramètres d'image",
@@ -90,6 +96,8 @@ export const fr: I18n = {
   Video: 'Vidéo',
   'Describe the video you want to create…':
     'Décrivez la vidéo que vous souhaitez créer…',
+  'Describe the music you want to create…':
+    'Décrivez la musique que vous souhaitez créer…',
   'No videos yet': 'Aucune vidéo pour le moment',
   'Video generated successfully': 'Vidéo générée avec succès',
   'Failed to generate video': 'Échec de la génération de la vidéo',
@@ -100,6 +108,7 @@ export const fr: I18n = {
   Duration: 'Durée',
   'Select video model': 'Sélectionner un modèle vidéo',
   'Generate video': 'Générer une vidéo',
+  'Generate music': 'Générer de la musique',
   videos: 'vidéos',
   'Copy prompt': 'Copier le prompt',
   'Starting video generation...': 'Démarrage de la génération vidéo...',
@@ -135,4 +144,11 @@ export const fr: I18n = {
   'Are you sure you want to permanently delete this media? This action cannot be undone.':
     'Êtes-vous sûr de vouloir supprimer définitivement ce média ? Cette action est irréversible.',
   'Media deleted': 'Média supprimé',
+  'Add provider': 'Ajouter un fournisseur',
+  'Loading models...': 'Chargement des modèles...',
+  'No models found': 'Aucun modèle trouvé',
+  'No image/video generation models detected':
+    "Aucun modèle de génération d'image/vidéo détecté",
+  // Music generation
+  Music: 'Musique',
 }

@@ -33,6 +33,8 @@ export interface SyncedSettings {
   liveAutoSpeak?: boolean
   // Memory settings
   autoMemoryLearning?: boolean
+  // Suggestions
+  suggestionsEnabled?: boolean
   // Global system instructions
   globalSystemInstructions?: string
 }
@@ -57,6 +59,7 @@ export interface UserSettings extends SyncedSettings, LocalSettings {}
 
 const defaultSyncedSettings: SyncedSettings = {
   hideDefaultAgents: false,
+  suggestionsEnabled: true,
 }
 
 const defaultLocalSettings: LocalSettings = {
@@ -106,6 +109,7 @@ interface UserSettingsStore extends UserSettings {
   setTTSProvider: (provider: TTSProviderType | undefined) => void
   setLiveAutoSpeak: (enabled: boolean) => void
   setAutoMemoryLearning: (enabled: boolean) => void
+  setSuggestionsEnabled: (enabled: boolean) => void
   setGlobalSystemInstructions: (instructions: string | undefined) => void
 
   // Local settings setters (localStorage only)
@@ -172,6 +176,10 @@ export const userSettings = create<UserSettingsStore>()(
       setAutoMemoryLearning: (enabled: boolean) => {
         setSyncedSetting('autoMemoryLearning', enabled)
         set({ autoMemoryLearning: enabled })
+      },
+      setSuggestionsEnabled: (enabled: boolean) => {
+        setSyncedSetting('suggestionsEnabled', enabled)
+        set({ suggestionsEnabled: enabled })
       },
       setGlobalSystemInstructions: (instructions: string | undefined) => {
         setSyncedSetting('globalSystemInstructions', instructions)

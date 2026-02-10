@@ -657,11 +657,29 @@ export const ar: I18n = {
   'Password Required': 'كلمة المرور مطلوبة',
   'This room is password-protected. Enter the password to join.':
     'هذه الغرفة محمية بكلمة مرور. أدخل كلمة المرور للانضمام.',
+  'Set a password for E2E encryption. All devices must use the same password to sync.':
+    'قم بتعيين كلمة مرور للتشفير من طرف إلى طرف. يجب أن تستخدم جميع الأجهزة نفس كلمة المرور للمزامنة.',
+  'Enter Sync Password': 'أدخل كلمة مرور المزامنة',
+  'Reconnect to Sync Room': 'إعادة الاتصال بغرفة المزامنة',
+  'This sync room is encrypted. Enter the password set by the room creator to join.':
+    'غرفة المزامنة هذه مشفرة. أدخل كلمة المرور التي حددها منشئ الغرفة للانضمام.',
+  'Your previous sync session requires the room password to reconnect. Enter your password to resume syncing.':
+    'تتطلب جلسة المزامنة السابقة كلمة مرور الغرفة لإعادة الاتصال. أدخل كلمة المرور لاستئناف المزامنة.',
+  'Failed to connect. Please check your password and try again.':
+    'فشل الاتصال. يرجى التحقق من كلمة المرور والمحاولة مرة أخرى.',
 
   // Sync - Secret Link
   'Share the secret link': 'شارك الرابط السري',
   'Copy and share this unique link with your other device. Keep it private!':
     'انسخ وشارك هذا الرابط الفريد مع جهازك الآخر. احتفظ به خاصًا!',
+
+  // Sync - Password Strength
+  Strength: 'القوة',
+  weak: 'ضعيف',
+  fair: 'مقبول',
+  good: 'جيد',
+  strong: 'قوي',
+  'very-strong': 'قوي جداً',
 
   // Sync - Advanced
   Advanced: 'متقدم',

@@ -191,16 +191,6 @@ export const AgentsPage = () => {
     )
   }
 
-  if (loading) {
-    return (
-      <Container>
-        <div className="flex justify-center items-center h-64">
-          <Spinner size="lg" />
-        </div>
-      </Container>
-    )
-  }
-
   const header: HeaderProps = {
     color: 'bg-warning-50',
     icon: {
@@ -214,6 +204,20 @@ export const AgentsPage = () => {
       href: url('/agents/new'),
       icon: 'Plus',
     },
+  }
+
+  if (loading) {
+    return (
+      <DefaultLayout title={t('Agents')} header={header}>
+        <Section>
+          <Container>
+            <div className="flex justify-center items-center h-64">
+              <Spinner size="lg" />
+            </div>
+          </Container>
+        </Section>
+      </DefaultLayout>
+    )
   }
 
   return (

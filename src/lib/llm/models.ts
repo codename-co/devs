@@ -220,6 +220,38 @@ const LOCAL_MODEL_CAPABILITY_PATTERNS: LocalModelCapabilityPattern[] = [
   { pattern: /^tinyllama/i, capabilities: { fast: true, lowCost: true } },
   { pattern: /^qwen2\.5.*1\.5b/i, capabilities: { fast: true } },
 
+  // Image generation models
+  { pattern: /^z-image/i, capabilities: { imageGeneration: true } },
+  { pattern: /^flux/i, capabilities: { imageGeneration: true } },
+  { pattern: /^sdxl/i, capabilities: { imageGeneration: true } },
+  { pattern: /^sd[\d.-]/i, capabilities: { imageGeneration: true } },
+  { pattern: /^stable-diffusion/i, capabilities: { imageGeneration: true } },
+  { pattern: /^dall-e/i, capabilities: { imageGeneration: true } },
+  { pattern: /^playground/i, capabilities: { imageGeneration: true } },
+  { pattern: /^kandinsky/i, capabilities: { imageGeneration: true } },
+  { pattern: /^ideogram/i, capabilities: { imageGeneration: true } },
+  { pattern: /^cogview/i, capabilities: { imageGeneration: true } },
+  { pattern: /^imagen/i, capabilities: { imageGeneration: true } },
+  { pattern: /^dreamshaper/i, capabilities: { imageGeneration: true } },
+  { pattern: /^juggernaut/i, capabilities: { imageGeneration: true } },
+  { pattern: /^realvis/i, capabilities: { imageGeneration: true } },
+  { pattern: /^proteus/i, capabilities: { imageGeneration: true } },
+  { pattern: /^pixart/i, capabilities: { imageGeneration: true } },
+  { pattern: /^kolors/i, capabilities: { imageGeneration: true } },
+  { pattern: /^hunyuan-image/i, capabilities: { imageGeneration: true } },
+  { pattern: /^aura-flow/i, capabilities: { imageGeneration: true } },
+  { pattern: /^omnigen/i, capabilities: { imageGeneration: true } },
+
+  // Video generation models
+  { pattern: /^cogvideo/i, capabilities: { videoGeneration: true } },
+  { pattern: /^wan/i, capabilities: { videoGeneration: true } },
+  { pattern: /^hunyuan.*video/i, capabilities: { videoGeneration: true } },
+  { pattern: /^stable-video/i, capabilities: { videoGeneration: true } },
+  { pattern: /^mochi/i, capabilities: { videoGeneration: true } },
+  { pattern: /^luma/i, capabilities: { videoGeneration: true } },
+  { pattern: /^ltx-video/i, capabilities: { videoGeneration: true } },
+  { pattern: /^animatediff/i, capabilities: { videoGeneration: true } },
+
   // Browser/ONNX-specific patterns (smaller models optimized for browser)
   // These match anywhere in the name, not just at the start
   { pattern: /onnx.*web/i, capabilities: { fast: true, lowCost: true } },

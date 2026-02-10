@@ -644,7 +644,7 @@ export class SyncEngine {
           if (contentChanged) {
             // Update existing item
             const mergedItem = mergeWithExisting(item, existing, connector)
-            updateKnowledgeItem(mergedItem)
+            await updateKnowledgeItem(mergedItem)
             counts.modified++
           }
           // If content unchanged, skip
@@ -659,7 +659,7 @@ export class SyncEngine {
             )
           }
 
-          addKnowledgeItem(knowledgeItem)
+          await addKnowledgeItem(knowledgeItem)
           counts.added++
         }
       } catch (error) {
@@ -692,7 +692,7 @@ export class SyncEngine {
               )
             }
 
-            updateKnowledgeItem(mergedItem)
+            await updateKnowledgeItem(mergedItem)
             counts.modified++
           }
         } else {
@@ -705,7 +705,7 @@ export class SyncEngine {
             )
           }
 
-          addKnowledgeItem(knowledgeItem)
+          await addKnowledgeItem(knowledgeItem)
           counts.added++
         }
       } catch (error) {

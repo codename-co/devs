@@ -20,8 +20,9 @@ import {
   type SearchResultType,
   createDebouncedSearch,
 } from './search-engine'
-import { useConversations, useTasks } from '@/hooks'
+import { useDecryptedConversations, useTasks } from '@/hooks'
 import { formatConversationDate } from '@/lib/format'
+import { safeString } from '@/lib/crypto/content-encryption'
 import type { Conversation, Task } from '@/types'
 
 const localI18n = {
@@ -251,7 +252,7 @@ export function GlobalSearch() {
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Load recent conversations and tasks for default view
-  const conversations = useConversations()
+  const conversations = useDecryptedConversations()
   const tasks = useTasks()
 
   // Create debounced search
@@ -395,10 +396,12 @@ export function GlobalSearch() {
         id: conv.id,
         type: 'conversation' as const,
         title:
-          conv.title ||
-          conv.messages?.[0]?.content?.substring(0, 50) ||
+          safeString(conv.title) ||
+          (typeof conv.messages?.[0]?.content === 'string'
+            ? conv.messages[0].content.substring(0, 50)
+            : undefined) ||
           'Untitled',
-        subtitle: conv.summary?.substring(0, 100),
+        subtitle: safeString(conv.summary)?.substring(0, 100),
         href: `/agents/run#${conv.agentSlug || conv.agentId}/${conv.id}`,
         date: new Date(conv.updatedAt || conv.timestamp),
       })),

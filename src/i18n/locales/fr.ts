@@ -602,7 +602,7 @@ export const fr: I18n = {
   // Sync - Modes
   Create: 'Créer',
   'Scan & Join': 'Scanner et rejoindre',
-  Share: 'Partager à un autre appareil',
+  Share: 'Partager',
   'Start Sync': 'Démarrer la synchro',
   'Join Room': 'Rejoindre',
 
@@ -679,11 +679,29 @@ export const fr: I18n = {
   'Password Required': 'Mot de passe requis',
   'This room is password-protected. Enter the password to join.':
     'Cette salle est protégée par mot de passe. Entrez le mot de passe pour rejoindre.',
+  'Set a password for E2E encryption. All devices must use the same password to sync.':
+    'Définissez un mot de passe pour le chiffrement de bout en bout. Tous les appareils doivent utiliser le même mot de passe pour se synchroniser.',
+  'Enter Sync Password': 'Entrez le mot de passe de synchronisation',
+  'Reconnect to Sync Room': 'Se reconnecter à la salle de synchronisation',
+  'This sync room is encrypted. Enter the password set by the room creator to join.':
+    'Cette salle de synchronisation est chiffrée. Entrez le mot de passe défini par le créateur de la salle pour rejoindre.',
+  'Your previous sync session requires the room password to reconnect. Enter your password to resume syncing.':
+    'Votre session de synchronisation précédente nécessite le mot de passe de la salle pour se reconnecter. Entrez votre mot de passe pour reprendre la synchronisation.',
+  'Failed to connect. Please check your password and try again.':
+    'Échec de la connexion. Veuillez vérifier votre mot de passe et réessayer.',
 
   // Sync - Secret Link
   'Share the secret link': 'Partagez le lien secret',
   'Copy and share this unique link with your other device. Keep it private!':
     'Copiez et partagez ce lien unique avec votre autre appareil. Gardez-le privé !',
+
+  // Sync - Password Strength
+  Strength: 'Force',
+  weak: 'faible',
+  fair: 'passable',
+  good: 'bon',
+  strong: 'fort',
+  'very-strong': 'très fort',
 
   // Sync - Advanced
   Advanced: 'Avancé',

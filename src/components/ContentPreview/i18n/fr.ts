@@ -56,4 +56,9 @@ export const fr = [
   // Browser support
   'Votre navigateur ne prend pas en charge la lecture vidéo.',
   'Votre navigateur ne prend pas en charge la lecture audio.',
+  // CSV / Tabular data
+  'Aucune donnée tabulaire trouvée',
+  'lignes',
+  'colonnes',
+  'Affichage des {count} premières lignes',
 ] as const

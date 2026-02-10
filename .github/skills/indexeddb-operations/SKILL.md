@@ -22,7 +22,7 @@ class DevsDatabase extends Dexie {
   // ... other tables
 
   constructor() {
-    super('devs-db')
+    super('devs-ai-platform')
 
     this.version(1).stores({
       agents: 'id, slug, name, *tags, createdAt, deletedAt',
@@ -198,7 +198,7 @@ When adding new tables or modifying schemas:
 ```typescript
 class DevsDatabase extends Dexie {
   constructor() {
-    super('devs-db')
+    super('devs-ai-platform')
 
     // Original schema
     this.version(1).stores({

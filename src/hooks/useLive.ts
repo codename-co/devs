@@ -31,6 +31,11 @@ import {
   useSyncReady,
 } from '@/lib/yjs'
 import { loadBuiltInAgents } from '@/stores/agentStore'
+import {
+  decryptFields,
+  KNOWLEDGE_ENCRYPTED_FIELDS,
+  CONVERSATION_ENCRYPTED_FIELDS,
+} from '@/lib/crypto/content-encryption'
 // Re-export agent hooks from agentStore (they handle built-in agent cache)
 export { useAgents, useAgent } from '@/stores/agentStore'
 import type {
@@ -56,15 +61,46 @@ export { useLiveMap, useLiveValue, useSyncReady }
 
 /**
  * Subscribe to all conversations with instant reactivity.
+ * Returns raw data (may contain encrypted title/summary fields).
  */
 export function useConversations(): Conversation[] {
   return useLiveMap(conversations)
 }
 
 /**
+ * Subscribe to all conversations with metadata (title, summary) decrypted.
+ * Async decryption runs in a useEffect; returns empty array on first render.
+ */
+export function useDecryptedConversations(): Conversation[] {
+  const rawConversations = useLiveMap(conversations)
+  const [decrypted, setDecrypted] = useState<Conversation[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+    Promise.all(
+      rawConversations.map(
+        (conv) =>
+          decryptFields(conv, [
+            ...CONVERSATION_ENCRYPTED_FIELDS,
+          ]) as Promise<Conversation>,
+      ),
+    ).then((result) => {
+      if (!cancelled) setDecrypted(result)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [rawConversations])
+
+  return decrypted
+}
+
+/**
  * Subscribe to a single conversation with instant reactivity.
  */
-export function useConversation(id: string | undefined): Conversation | undefined {
+export function useConversation(
+  id: string | undefined,
+): Conversation | undefined {
   return useLiveValue(conversations, id)
 }
 
@@ -103,6 +139,7 @@ export function useAllAgents(): Agent[] {
 
 /**
  * Subscribe to all knowledge items with instant reactivity.
+ * Returns raw data (may contain encrypted content fields).
  */
 export function useKnowledge(): KnowledgeItem[] {
   return useLiveMap(knowledge)
@@ -110,9 +147,71 @@ export function useKnowledge(): KnowledgeItem[] {
 
 /**
  * Subscribe to a single knowledge item with instant reactivity.
+ * Returns raw data (may contain encrypted content fields).
  */
-export function useKnowledgeItem(id: string | undefined): KnowledgeItem | undefined {
+export function useKnowledgeItem(
+  id: string | undefined,
+): KnowledgeItem | undefined {
   return useLiveValue(knowledge, id)
+}
+
+/**
+ * Subscribe to all knowledge items with content decrypted.
+ * Async decryption runs in a useEffect; returns empty array on first render.
+ */
+export function useDecryptedKnowledge(): KnowledgeItem[] {
+  const rawItems = useLiveMap(knowledge)
+  const [decrypted, setDecrypted] = useState<KnowledgeItem[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+    Promise.all(
+      rawItems.map(
+        (item) =>
+          decryptFields(item, [
+            ...KNOWLEDGE_ENCRYPTED_FIELDS,
+          ]) as Promise<KnowledgeItem>,
+      ),
+    ).then((result) => {
+      if (!cancelled) setDecrypted(result)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [rawItems])
+
+  return decrypted
+}
+
+/**
+ * Subscribe to a single knowledge item with content decrypted.
+ * Async decryption runs in a useEffect; returns undefined until decrypted.
+ */
+export function useDecryptedKnowledgeItem(
+  id: string | undefined,
+): KnowledgeItem | undefined {
+  const rawItem = useLiveValue(knowledge, id)
+  const [decrypted, setDecrypted] = useState<KnowledgeItem | undefined>()
+
+  useEffect(() => {
+    let cancelled = false
+    if (!rawItem) {
+      setDecrypted(undefined)
+      return
+    }
+    ;(
+      decryptFields(rawItem, [
+        ...KNOWLEDGE_ENCRYPTED_FIELDS,
+      ]) as Promise<KnowledgeItem>
+    ).then((result) => {
+      if (!cancelled) setDecrypted(result)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [rawItem])
+
+  return decrypted
 }
 
 // ============================================================================
@@ -145,7 +244,9 @@ export function useMemories(): AgentMemoryEntry[] {
   const allMemories = useLiveMap(memories)
   return useMemo(() => {
     const now = new Date()
-    return allMemories.filter((m) => !m.expiresAt || new Date(m.expiresAt) > now)
+    return allMemories.filter(
+      (m) => !m.expiresAt || new Date(m.expiresAt) > now,
+    )
   }, [allMemories])
 }
 
@@ -153,14 +254,17 @@ export function useMemories(): AgentMemoryEntry[] {
  * Subscribe to memories for a specific agent.
  * Filters out expired memories.
  */
-export function useAgentMemories(agentId: string | undefined): AgentMemoryEntry[] {
+export function useAgentMemories(
+  agentId: string | undefined,
+): AgentMemoryEntry[] {
   const allMemories = useLiveMap(memories)
 
   return useMemo(() => {
     if (!agentId) return []
     const now = new Date()
     return allMemories.filter(
-      (m) => m.agentId === agentId && (!m.expiresAt || new Date(m.expiresAt) > now),
+      (m) =>
+        m.agentId === agentId && (!m.expiresAt || new Date(m.expiresAt) > now),
     )
   }, [allMemories, agentId])
 }
@@ -208,7 +312,9 @@ export function useStudioEntries(): StudioEntry[] {
 /**
  * Subscribe to a single studio entry with instant reactivity.
  */
-export function useStudioEntry(id: string | undefined): StudioEntry | undefined {
+export function useStudioEntry(
+  id: string | undefined,
+): StudioEntry | undefined {
   return useLiveValue(studioEntries, id)
 }
 

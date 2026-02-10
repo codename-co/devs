@@ -13,7 +13,7 @@
 /**
  * Type of media being generated
  */
-export type MediaType = 'image' | 'video'
+export type MediaType = 'image' | 'video' | 'music'
 
 // =============================================================================
 // Image Generation Providers
@@ -29,6 +29,10 @@ export type ImageProvider =
   | 'replicate' // Replicate (various models)
   | 'together' // Together AI
   | 'fal' // Fal.ai
+  | 'huggingface' // Hugging Face Inference API
+  | 'openai-compatible' // LM Studio, LocalAI, vLLM, etc.
+  | 'custom' // Custom endpoint
+  | 'ollama' // Ollama
 
 /**
  * Supported video generation providers
@@ -68,6 +72,11 @@ export type ImageModel =
   // Replicate
   | 'stability-ai/sdxl'
   | 'bytedance/sdxl-lightning-4step'
+  // Hugging Face
+  | 'black-forest-labs/FLUX.1-schnell'
+  | 'stabilityai/stable-diffusion-xl-base-1.0'
+  // Custom / OpenAI-compatible models (arbitrary model IDs)
+  | (string & {})
 
 /**
  * Video model identifier
@@ -116,10 +125,14 @@ export function getDefaultVideoModelForProvider(
 
 /**
  * Available models per provider
+ * Note: Dynamic providers (openai-compatible, custom, ollama) fetch models from the server
+ * and are not included here.
  */
-export const IMAGE_MODELS_BY_PROVIDER: Record<
-  ImageProvider,
-  { id: ImageModel; name: string; description?: string }[]
+export const IMAGE_MODELS_BY_PROVIDER: Partial<
+  Record<
+    ImageProvider,
+    { id: ImageModel; name: string; description?: string }[]
+  >
 > = {
   openai: [
     {
@@ -219,6 +232,18 @@ export const IMAGE_MODELS_BY_PROVIDER: Record<
       description: '4-step fast generation',
     },
   ],
+  huggingface: [
+    {
+      id: 'black-forest-labs/FLUX.1-schnell',
+      name: 'FLUX.1 Schnell',
+      description: 'Fast, high-quality generation',
+    },
+    {
+      id: 'stabilityai/stable-diffusion-xl-base-1.0',
+      name: 'SDXL Base',
+      description: 'Stable Diffusion XL',
+    },
+  ],
 }
 
 /**
@@ -228,7 +253,7 @@ export function getDefaultModelForProvider(
   provider: ImageProvider,
 ): ImageModel {
   const models = IMAGE_MODELS_BY_PROVIDER[provider]
-  return models[0]?.id || 'dall-e-3'
+  return models?.[0]?.id || 'dall-e-3'
 }
 
 /**

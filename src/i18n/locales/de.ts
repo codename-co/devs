@@ -671,11 +671,29 @@ export const de: I18n = {
   'Password Required': 'Passwort erforderlich',
   'This room is password-protected. Enter the password to join.':
     'Dieser Raum ist passwortgeschützt. Geben Sie das Passwort ein, um beizutreten.',
+  'Set a password for E2E encryption. All devices must use the same password to sync.':
+    'Legen Sie ein Passwort für die Ende-zu-Ende-Verschlüsselung fest. Alle Geräte müssen dasselbe Passwort zur Synchronisation verwenden.',
+  'Enter Sync Password': 'Sync-Passwort eingeben',
+  'Reconnect to Sync Room': 'Erneut mit Sync-Raum verbinden',
+  'This sync room is encrypted. Enter the password set by the room creator to join.':
+    'Dieser Sync-Raum ist verschlüsselt. Geben Sie das vom Ersteller festgelegte Passwort ein, um beizutreten.',
+  'Your previous sync session requires the room password to reconnect. Enter your password to resume syncing.':
+    'Ihre vorherige Sync-Sitzung erfordert das Raum-Passwort zur erneuten Verbindung. Geben Sie Ihr Passwort ein, um die Synchronisation fortzusetzen.',
+  'Failed to connect. Please check your password and try again.':
+    'Verbindung fehlgeschlagen. Bitte überprüfen Sie Ihr Passwort und versuchen Sie es erneut.',
 
   // Sync - Secret Link
   'Share the secret link': 'Geheimen Link teilen',
   'Copy and share this unique link with your other device. Keep it private!':
     'Kopieren und teilen Sie diesen einzigartigen Link mit Ihrem anderen Gerät. Halten Sie ihn geheim!',
+
+  // Sync - Password Strength
+  Strength: 'Stärke',
+  weak: 'schwach',
+  fair: 'mäßig',
+  good: 'gut',
+  strong: 'stark',
+  'very-strong': 'sehr stark',
 
   // Sync - Advanced
   Advanced: 'Erweitert',

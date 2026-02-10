@@ -91,6 +91,7 @@ export interface Conversation {
   isPinned?: boolean // Whether this conversation is starred/pinned
   summary?: string // AI-generated conversation summary
   pinnedMessageIds?: string[] // Array of pinned message IDs for quick lookup
+  quickReplies?: string[] // Persisted quick reply suggestions for the last assistant message
 }
 
 export interface KnowledgeItem {
@@ -195,6 +196,10 @@ export interface ModelCapabilities {
   vision?: boolean
   /** Supports function/tool calling */
   tools?: boolean
+  /** Can generate images from text prompts (e.g., FLUX, Stable Diffusion, z-image) */
+  imageGeneration?: boolean
+  /** Can generate videos from text/image prompts (e.g., CogVideoX, Wan, HunyuanVideo) */
+  videoGeneration?: boolean
 }
 
 /**

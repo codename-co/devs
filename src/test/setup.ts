@@ -1,11 +1,10 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
+import { webcrypto } from 'node:crypto'
 
-// Mock crypto.randomUUID for tests
+// Polyfill Web Crypto API for jsdom (provides crypto.subtle + randomUUID)
 Object.defineProperty(global, 'crypto', {
-  value: {
-    randomUUID: () => 'test-uuid-' + Math.random().toString(36).substr(2, 9),
-  },
+  value: webcrypto,
   writable: true,
 })
 

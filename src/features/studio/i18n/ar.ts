@@ -5,7 +5,13 @@ type I18n = Record<(typeof en)[number], string>
 export const ar: I18n = {
   Studio: 'ستوديو',
   'Create stunning visuals with AI':
+    'أنشئ وسائط مذهلة باستخدام الذكاء الاصطناعي',
+  'Create stunning images with AI':
     'أنشئ صورًا مذهلة باستخدام الذكاء الاصطناعي',
+  'Create stunning videos with AI':
+    'أنشئ فيديوهات مذهلة باستخدام الذكاء الاصطناعي',
+  'Create stunning music with AI':
+    'أنشئ موسيقى مذهلة باستخدام الذكاء الاصطناعي',
   Generate: 'توليد',
   'Image presets': 'إعدادات الصور المسبقة',
   'Image settings': 'إعدادات الصورة',
@@ -87,6 +93,7 @@ export const ar: I18n = {
   Image: 'صورة',
   Video: 'فيديو',
   'Describe the video you want to create…': 'صف الفيديو الذي تريد إنشاءه…',
+  'Describe the music you want to create…': 'صف الموسيقى التي تريد إنشاءها…',
   'No videos yet': 'لا توجد فيديوهات بعد',
   'Video generated successfully': 'تم إنشاء الفيديو بنجاح',
   'Failed to generate video': 'فشل في إنشاء الفيديو',
@@ -97,6 +104,7 @@ export const ar: I18n = {
   Duration: 'المدة',
   'Select video model': 'اختر نموذج الفيديو',
   'Generate video': 'إنشاء فيديو',
+  'Generate music': 'إنشاء موسيقى',
   videos: 'فيديوهات',
   'Copy prompt': 'نسخ التعليمات',
   'Starting video generation...': 'بدء إنشاء الفيديو...',
@@ -132,4 +140,11 @@ export const ar: I18n = {
   'Are you sure you want to permanently delete this media? This action cannot be undone.':
     'هل أنت متأكد من أنك تريد حذف هذه الوسائط نهائياً؟ لا يمكن التراجع عن هذا الإجراء.',
   'Media deleted': 'تم حذف الوسائط',
+  'Add provider': 'إضافة مزود',
+  'Loading models...': 'جاري تحميل النماذج...',
+  'No models found': 'لم يتم العثور على نماذج',
+  'No image/video generation models detected':
+    'لم يتم اكتشاف نماذج لتوليد الصور/الفيديو',
+  // Music generation
+  Music: 'موسيقى',
 }

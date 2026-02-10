@@ -36,6 +36,7 @@ import {
 import { useLLMModelStore } from '@/stores/llmModelStore'
 import { userSettings } from '@/stores/userStore'
 import { CredentialService } from '@/lib/credential-service'
+import { useSyncReady } from '@/hooks'
 
 import { ImagePromptArea } from '../components/ImagePromptArea'
 import { PresetGrid } from '../components/PresetGrid'
@@ -342,11 +343,17 @@ export function StudioPage() {
   // Get credentials from the LLM model store
   const credentials = useLLMModelStore((state) => state.credentials)
   const loadCredentials = useLLMModelStore((state) => state.loadCredentials)
+  const isSyncReady = useSyncReady()
 
-  // Load credentials on mount
+  // Load credentials once Yjs has hydrated from IndexedDB
+  // Without this gate, loadCredentials may run before Yjs has data,
+  // creating a default local provider and blocking the Yjs observer
+  // from re-loading the real credentials via the isLoadingCredentials guard.
   useEffect(() => {
-    loadCredentials()
-  }, [loadCredentials])
+    if (isSyncReady) {
+      loadCredentials()
+    }
+  }, [isSyncReady, loadCredentials])
 
   // Get available image providers from stored credentials
   const { availableProviders, providerCredentials } = useMemo<{
@@ -360,6 +367,10 @@ export function StudioPage() {
       'replicate',
       'together',
       'fal',
+      'huggingface',
+      'openai-compatible',
+      'custom',
+      'ollama',
     ]
     const availableProvs = credentials
       .filter((c) => imageProviders.includes(c.provider as ImageProvider))
@@ -486,6 +497,7 @@ export function StudioPage() {
       provider: selectedProvider,
       apiKey: config.apiKey || '',
       model: selectedModel,
+      baseUrl: config.baseUrl,
     }
   }, [selectedProvider, selectedModel, providerCredentials])
 
@@ -760,11 +772,23 @@ export function StudioPage() {
               })}
             >
               <Title
-                subtitle={t('Create stunning visuals with AI')}
+                subtitle={
+                  mediaType === 'video'
+                    ? t('Create stunning videos with AI')
+                    : mediaType === 'music'
+                      ? t('Create stunning music with AI')
+                      : t('Create stunning images with AI')
+                }
                 className="flex items-center justify-center gap-2"
               >
                 <Icon
-                  name={mediaType === 'video' ? 'MediaVideo' : 'MediaImagePlus'}
+                  name={
+                    mediaType === 'video'
+                      ? 'MediaVideo'
+                      : mediaType === 'music'
+                        ? 'MusicDoubleNote'
+                        : 'MediaImagePlus'
+                  }
                   size="3xl"
                   className="text-danger"
                 />

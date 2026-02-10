@@ -58,4 +58,9 @@ export const ko = [
   // Browser support
   '브라우저가 동영상 재생을 지원하지 않습니다.',
   '브라우저가 오디오 재생을 지원하지 않습니다.',
+  // CSV / Tabular data
+  '표 형식 데이터를 찾을 수 없습니다',
+  '행',
+  '열',
+  '처음 {count}개 행 표시',
 ] as const

@@ -603,6 +603,7 @@ export const en = [
   'Sync password',
   'Enter the room password',
   'Set a password to sync API keys across devices. All devices must use the same password.',
+  'Set a password for E2E encryption. All devices must use the same password to sync.',
   'Enter the same password used when creating the room to sync API keys.',
 
   // Sync - QR Code
@@ -616,9 +617,15 @@ export const en = [
   'Point your camera at a sync QR code',
   'Try Again',
 
-  // Sync - Password Protected
+  // Sync - Password Protected / E2E Encryption
   'Password Required',
   'This room is password-protected. Enter the password to join.',
+  'Enter Sync Password',
+  'Reconnect to Sync Room',
+  'This sync room is encrypted. Enter the password set by the room creator to join.',
+  'Your previous sync session requires the room password to reconnect. Enter your password to resume syncing.',
+  'Failed to connect. Please check your password and try again.',
+  'Reconnect',
   'Use another device to scan this QR code to connect instantly.',
   'Camera access denied',
   'Unable to access camera. Please grant camera permissions.',
@@ -626,6 +633,14 @@ export const en = [
   // Sync - Secret Link
   'Share the secret link',
   'Copy and share this unique link with your other device. Keep it private!',
+
+  // Sync - Password Strength
+  'Strength',
+  'weak',
+  'fair',
+  'good',
+  'strong',
+  'very-strong',
 
   // Sync - Advanced
   'Advanced',

@@ -86,6 +86,8 @@ export const en = [
   'Only show your custom agents in the agent picker and agents page',
   'Auto Memory Learning',
   'Automatically extract learnable information from conversations to build agent memory',
+  'Quick Reply Suggestions',
+  'Show AI-generated follow-up suggestions after each assistant response',
   'Global System Instructions',
   "These instructions will be prepended to every agent's instructions",
   'Enter global instructions that apply to all agents...',

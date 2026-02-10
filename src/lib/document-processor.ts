@@ -158,7 +158,7 @@ class DocumentProcessorService {
     // Update knowledge item status to pending
     const item = await getKnowledgeItemAsync(knowledgeItemId)
     if (item) {
-      updateKnowledgeItem({
+      await updateKnowledgeItem({
         ...item,
         processingStatus: 'pending',
       })
@@ -199,7 +199,7 @@ class DocumentProcessorService {
         // Update knowledge item with failed status
         const item = await getKnowledgeItemAsync(job.knowledgeItemId)
         if (item) {
-          updateKnowledgeItem({
+          await updateKnowledgeItem({
             ...item,
             processingStatus: 'failed',
             processingError: job.error,
@@ -252,7 +252,7 @@ class DocumentProcessorService {
     }
 
     // Update status to processing
-    updateKnowledgeItem({
+    await updateKnowledgeItem({
       ...item,
       processingStatus: 'processing',
     })
@@ -289,7 +289,7 @@ class DocumentProcessorService {
       description: result.structuredContent?.title || currentItem.description,
     }
 
-    updateKnowledgeItem(updatedItem)
+    await updateKnowledgeItem(updatedItem)
 
     job.status = 'completed'
     job.progress = 100

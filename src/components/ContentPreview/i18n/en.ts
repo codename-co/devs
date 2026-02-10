@@ -58,4 +58,9 @@ export const en = [
   // Browser support
   'Your browser does not support video playback.',
   'Your browser does not support audio playback.',
+  // CSV / Tabular data
+  'No tabular data found',
+  'rows',
+  'columns',
+  'Showing first {count} rows',
 ] as const

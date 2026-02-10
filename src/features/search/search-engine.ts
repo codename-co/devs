@@ -8,6 +8,13 @@ import {
   connectors as connectorsMap,
 } from '@/lib/yjs'
 import {
+  decryptFields,
+  CONVERSATION_ENCRYPTED_FIELDS,
+  MESSAGE_ENCRYPTED_FIELDS,
+  MEMORY_ENCRYPTED_FIELDS,
+  KNOWLEDGE_ENCRYPTED_FIELDS,
+} from '@/lib/crypto/content-encryption'
+import {
   getAvailableMethodologies,
   getMethodologyById,
 } from '@/stores/methodologiesStore'
@@ -142,6 +149,15 @@ function calculateScore(
 }
 
 /**
+ * Safely convert a value to a string, returning '' for encrypted fields or non-string values.
+ * Prevents {ct, iv} encrypted objects from being used as text.
+ */
+function safeStr(value: unknown): string {
+  if (typeof value === 'string') return value
+  return ''
+}
+
+/**
  * Check if text matches query (diacritic-insensitive)
  */
 function matchesQuery(query: string, texts: string[]): boolean {
@@ -226,8 +242,16 @@ async function searchConversations(query: string): Promise<SearchResult[]> {
 
   try {
     const allConversations = Array.from(conversationsMap.values())
-    for (const conv of allConversations) {
-      const texts = [conv.title || '', conv.summary || '']
+    // Decrypt conversation metadata (title, summary) for searching
+    const decryptedConversations = await Promise.all(
+      allConversations.map((conv) =>
+        decryptFields(conv, [...CONVERSATION_ENCRYPTED_FIELDS]),
+      ),
+    )
+    for (const conv of decryptedConversations) {
+      const title = safeStr(conv.title)
+      const summary = safeStr(conv.summary)
+      const texts = [title, summary]
       if (matchesQuery(query, texts)) {
         // Use stored agentSlug, fallback to looking up agent, then to agentId
         let agentSlug = conv.agentSlug
@@ -239,8 +263,8 @@ async function searchConversations(query: string): Promise<SearchResult[]> {
         results.push({
           id: conv.id,
           type: 'conversation',
-          title: conv.title || 'Untitled conversation',
-          subtitle: conv.summary?.slice(0, 100),
+          title: title || 'Untitled conversation',
+          subtitle: summary?.slice(0, 100),
           icon: TYPE_ICONS.conversation,
           color: TYPE_COLORS.conversation,
           href: `/agents/run#${agentSlug}/${conv.id}`,
@@ -264,7 +288,22 @@ async function searchMessages(query: string): Promise<SearchResult[]> {
 
   try {
     const allConversations = Array.from(conversationsMap.values())
-    for (const conv of allConversations) {
+    // Decrypt conversation metadata for display in subtitles
+    const decryptedConversations = await Promise.all(
+      allConversations.map(async (conv) => {
+        const decryptedConv = await decryptFields(conv, [
+          ...CONVERSATION_ENCRYPTED_FIELDS,
+        ])
+        // Also decrypt message content
+        const decryptedMessages = await Promise.all(
+          conv.messages.map((msg) =>
+            decryptFields(msg, [...MESSAGE_ENCRYPTED_FIELDS]),
+          ),
+        )
+        return { ...decryptedConv, messages: decryptedMessages }
+      }),
+    )
+    for (const conv of decryptedConversations) {
       // Use stored agentSlug, fallback to looking up agent, then to agentId
       let agentSlug = conv.agentSlug
       if (!agentSlug) {
@@ -272,17 +311,20 @@ async function searchMessages(query: string): Promise<SearchResult[]> {
         agentSlug = agent?.slug || conv.agentId
       }
 
+      const convTitle = safeStr(conv.title)
+
       for (const msg of conv.messages) {
         if (msg.role === 'system') continue // Skip system messages
 
-        const texts = [msg.content]
+        const content = safeStr(msg.content)
+        if (!content) continue
+        const texts = [content]
         if (matchesQuery(query, texts)) {
           results.push({
             id: msg.id,
             type: 'message',
-            title:
-              msg.content.slice(0, 80) + (msg.content.length > 80 ? '...' : ''),
-            subtitle: `In: ${conv.title || 'Conversation'}`,
+            title: content.slice(0, 80) + (content.length > 80 ? '...' : ''),
+            subtitle: `In: ${convTitle || 'Conversation'}`,
             icon: TYPE_ICONS.message,
             color: TYPE_COLORS.message,
             href: `/agents/run#${agentSlug}/${conv.id}`,
@@ -339,19 +381,25 @@ async function searchFiles(query: string): Promise<SearchResult[]> {
 
   try {
     const items = Array.from(knowledgeMap.values())
-    for (const item of items) {
+    // Decrypt knowledge item fields (name, description, content)
+    const decryptedItems = await Promise.all(
+      items.map((item) => decryptFields(item, [...KNOWLEDGE_ENCRYPTED_FIELDS])),
+    )
+    for (const item of decryptedItems) {
+      const name = safeStr(item.name)
+      const description = safeStr(item.description)
       const texts = [
-        item.name,
-        item.description || '',
-        item.path,
+        name,
+        description,
+        safeStr(item.path),
         ...(item.tags || []),
       ]
       if (matchesQuery(query, texts)) {
         results.push({
           id: item.id,
           type: 'file',
-          title: item.name,
-          subtitle: item.path,
+          title: name,
+          subtitle: safeStr(item.path),
           icon: item.type === 'folder' ? 'Folder' : 'Document',
           color: TYPE_COLORS.file,
           href: `/knowledge/files#${item.id}`,
@@ -375,10 +423,18 @@ async function searchMemories(query: string): Promise<SearchResult[]> {
 
   try {
     const allMemories = Array.from(memoriesMap.values())
-    for (const memory of allMemories) {
+    // Decrypt memory fields (title, content)
+    const decryptedMemories = await Promise.all(
+      allMemories.map((memory) =>
+        decryptFields(memory, [...MEMORY_ENCRYPTED_FIELDS]),
+      ),
+    )
+    for (const memory of decryptedMemories) {
+      const title = safeStr(memory.title)
+      const content = safeStr(memory.content)
       const texts = [
-        memory.title,
-        memory.content,
+        title,
+        content,
         ...(memory.keywords || []),
         ...(memory.tags || []),
       ]
@@ -386,7 +442,7 @@ async function searchMemories(query: string): Promise<SearchResult[]> {
         results.push({
           id: memory.id,
           type: 'memory',
-          title: memory.title,
+          title: title,
           subtitle: `${memory.category} · ${memory.confidence}`,
           icon: TYPE_ICONS.memory,
           color: TYPE_COLORS.memory,

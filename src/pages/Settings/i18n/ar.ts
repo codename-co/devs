@@ -110,6 +110,9 @@ export const ar: I18n = {
   'Auto Memory Learning': 'التعلم الآلي للذاكرة',
   'Automatically extract learnable information from conversations to build agent memory':
     'استخراج المعلومات القابلة للتعلم تلقائياً من المحادثات لبناء ذاكرة الوكيل',
+  'Quick Reply Suggestions': 'اقتراحات الرد السريع',
+  'Show AI-generated follow-up suggestions after each assistant response':
+    'عرض اقتراحات المتابعة المولّدة بالذكاء الاصطناعي بعد كل استجابة للمساعد',
   'Global System Instructions': 'تعليمات النظام العامة',
   "These instructions will be prepended to every agent's instructions":
     'ستتم إضافة هذه التعليمات في بداية تعليمات كل وكيل',

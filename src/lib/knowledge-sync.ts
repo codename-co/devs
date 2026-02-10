@@ -185,7 +185,7 @@ class KnowledgeSyncService {
       // Ensure Yjs is ready
       await ensureReady()
 
-      addKnowledgeItem(item)
+      await addKnowledgeItem(item)
       console.log(`Added new file: ${file.name}`)
       return item
     } catch (error) {
@@ -399,7 +399,7 @@ class KnowledgeSyncService {
             existingItem.lastModified >= new Date(file.lastModified)
           ) {
             // Update the lastSyncCheck timestamp even if file hasn't changed
-            updateKnowledgeItem({
+            await updateKnowledgeItem({
               ...existingItem,
               lastSyncCheck: new Date(),
             })
@@ -425,7 +425,7 @@ class KnowledgeSyncService {
               lastSyncCheck: new Date(),
             }
 
-            updateKnowledgeItem(updatedItem)
+            await updateKnowledgeItem(updatedItem)
             console.log(`Updated existing file: ${file.name}`)
 
             // Track statistics and emit event
@@ -450,7 +450,7 @@ class KnowledgeSyncService {
                 path: fullPath,
                 watchId,
               }
-              updateKnowledgeItem(updatedItem)
+              await updateKnowledgeItem(updatedItem)
               console.log(`Added new file from filesystem: ${file.name}`)
 
               // Track statistics and emit event
@@ -479,7 +479,7 @@ class KnowledgeSyncService {
               watchId,
               lastSyncCheck: new Date(),
             }
-            addKnowledgeItem(folderItem)
+            await addKnowledgeItem(folderItem)
           }
 
           // Recursively process subdirectory

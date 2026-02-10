@@ -471,7 +471,7 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
             await ProviderRegistry.getAppProvider(provider)
 
           if (providerInstance.validateToken && connector.encryptedToken) {
-            const iv = localStorage.getItem(
+            const iv = connector.tokenIv ?? localStorage.getItem(
               `${CONNECTOR_STORAGE_PREFIX}-${connector.id}-iv`,
             )
             // Salt is empty after migration to non-extractable keys

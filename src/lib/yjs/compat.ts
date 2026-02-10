@@ -1,18 +1,22 @@
 /**
- * Yjs Compatibility Layer
+ * @module yjs/compat
  *
- * Provides function-style getters for backward compatibility with code
- * that uses the old yjs-doc.ts API. New code should import maps directly.
+ * Yjs Compatibility Layer (Deprecated)
  *
- * @deprecated Use direct map imports from './maps' instead.
+ * Before the Yjs-first refactor, consumers obtained Y.Map references
+ * through **function-style getters** (e.g. `getAgentsMap()`).  This
+ * module preserves those getters so that existing call-sites keep
+ * working — but all new code should import the map constants directly.
+ *
+ * @deprecated Import the typed map constants from `'@/lib/yjs'` instead.
  *
  * @example
  * ```ts
- * // Old style (deprecated)
+ * // ❌ Old style (deprecated) — still works but avoid in new code
  * import { getAgentsMap } from '@/lib/yjs/compat'
  * const agents = getAgentsMap()
  *
- * // New style (preferred)
+ * // ✅ New style (preferred)
  * import { agents } from '@/lib/yjs'
  * ```
  */
@@ -33,47 +37,47 @@ import {
   secrets,
 } from './maps'
 
-// Re-export types for convenience
+// Re-export types so callers migrating from compat don't need a second import
 export type { Preferences, Workflow } from './maps'
 
-/** @deprecated Use `ydoc` directly instead */
+/** @deprecated Use `import { ydoc } from '@/lib/yjs'` instead. */
 export const getYDoc = () => ydoc
 
-/** @deprecated Use `agents` directly instead */
+/** @deprecated Use `import { agents } from '@/lib/yjs'` instead. */
 export const getAgentsMap = () => agents
 
-/** @deprecated Use `conversations` directly instead */
+/** @deprecated Use `import { conversations } from '@/lib/yjs'` instead. */
 export const getConversationsMap = () => conversations
 
-/** @deprecated Use `knowledge` directly instead */
+/** @deprecated Use `import { knowledge } from '@/lib/yjs'` instead. */
 export const getKnowledgeMap = () => knowledge
 
-/** @deprecated Use `tasks` directly instead */
+/** @deprecated Use `import { tasks } from '@/lib/yjs'` instead. */
 export const getTasksMap = () => tasks
 
-/** @deprecated Use `artifacts` directly instead */
+/** @deprecated Use `import { artifacts } from '@/lib/yjs'` instead. */
 export const getArtifactsMap = () => artifacts
 
-/** @deprecated Use `memories` directly instead */
+/** @deprecated Use `import { memories } from '@/lib/yjs'` instead. */
 export const getMemoriesMap = () => memories
 
-/** @deprecated Use `preferences` directly instead */
+/** @deprecated Use `import { preferences } from '@/lib/yjs'` instead. */
 export const getPreferencesMap = () => preferences
 
-/** @deprecated Use `credentials` directly instead */
+/** @deprecated Use `import { credentials } from '@/lib/yjs'` instead. */
 export const getCredentialsMap = () => credentials
 
-/** @deprecated Use `credentials` directly instead */
+/** @deprecated Use `import { credentials } from '@/lib/yjs'` instead. */
 export const getSecretsMap = () => secrets
 
-/** @deprecated Use `studioEntries` directly instead */
+/** @deprecated Use `import { studioEntries } from '@/lib/yjs'` instead. */
 export const getStudioEntriesMap = () => studioEntries
 
-/** @deprecated Use `workflows` directly instead */
+/** @deprecated Use `import { workflows } from '@/lib/yjs'` instead. */
 export const getWorkflowsMap = () => workflows
 
-/** @deprecated Use `battles` directly instead */
+/** @deprecated Use `import { battles } from '@/lib/yjs'` instead. */
 export const getBattlesMap = () => battles
 
-/** @deprecated Use `pinnedMessages` directly instead */
+/** @deprecated Use `import { pinnedMessages } from '@/lib/yjs'` instead. */
 export const getPinnedMessagesMap = () => pinnedMessages

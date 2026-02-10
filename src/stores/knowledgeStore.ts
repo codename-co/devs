@@ -4,15 +4,18 @@
  * This store provides CRUD operations for knowledge items using Yjs as the
  * single source of truth. IndexedDB persistence is handled by the Yjs layer.
  *
+ * Content fields (content, transcript, description) are encrypted at rest
+ * using AES-GCM-256 via the content-encryption service.
+ *
  * @example
  * ```ts
  * import { addKnowledgeItem, getKnowledgeItem, deleteKnowledgeItem } from '@/stores/knowledgeStore'
  *
- * // Add a knowledge item
+ * // Add a knowledge item (encrypts content automatically)
  * await addKnowledgeItem(item)
  *
- * // Get a knowledge item
- * const item = getKnowledgeItem(id)
+ * // Get a knowledge item (returns encrypted — use decrypted variant for plaintext)
+ * const item = await getKnowledgeItemDecrypted(id)
  *
  * // Delete a knowledge item
  * deleteKnowledgeItem(id)
@@ -21,21 +24,27 @@
 
 import { knowledge, transact, isReady, whenReady } from '@/lib/yjs'
 import type { KnowledgeItem } from '@/types'
+import {
+  encryptFields,
+  decryptFields,
+  KNOWLEDGE_ENCRYPTED_FIELDS,
+} from '@/lib/crypto/content-encryption'
 
 // ============================================================================
-// Read Operations
+// Read Operations (raw — may return encrypted data)
 // ============================================================================
 
 /**
- * Get a knowledge item by ID.
- * Returns undefined if not found.
+ * Get a knowledge item by ID (raw, may be encrypted).
+ * For decrypted content, use {@link getKnowledgeItemDecrypted}.
  */
 export function getKnowledgeItem(id: string): KnowledgeItem | undefined {
   return knowledge.get(id)
 }
 
 /**
- * Get all knowledge items.
+ * Get all knowledge items (raw, may be encrypted).
+ * For decrypted content, use {@link getAllKnowledgeItemsDecrypted}.
  */
 export function getAllKnowledgeItems(): KnowledgeItem[] {
   return Array.from(knowledge.values())
@@ -44,14 +53,18 @@ export function getAllKnowledgeItems(): KnowledgeItem[] {
 /**
  * Find a knowledge item by path.
  */
-export function findKnowledgeItemByPath(path: string): KnowledgeItem | undefined {
+export function findKnowledgeItemByPath(
+  path: string,
+): KnowledgeItem | undefined {
   return getAllKnowledgeItems().find((item) => item.path === path)
 }
 
 /**
  * Find a knowledge item by content hash (for deduplication).
  */
-export function findKnowledgeItemByHash(contentHash: string): KnowledgeItem | undefined {
+export function findKnowledgeItemByHash(
+  contentHash: string,
+): KnowledgeItem | undefined {
   return getAllKnowledgeItems().find((item) => item.contentHash === contentHash)
 }
 
@@ -63,26 +76,64 @@ export function getKnowledgeItemsByWatchId(watchId: string): KnowledgeItem[] {
 }
 
 // ============================================================================
-// Write Operations
+// Decrypted Read Operations
+// ============================================================================
+
+/**
+ * Get a knowledge item by ID with content decrypted.
+ * Returns undefined if not found.
+ */
+export async function getKnowledgeItemDecrypted(
+  id: string,
+): Promise<KnowledgeItem | undefined> {
+  const item = knowledge.get(id)
+  if (!item) return undefined
+  return decryptFields(item, [
+    ...KNOWLEDGE_ENCRYPTED_FIELDS,
+  ]) as Promise<KnowledgeItem>
+}
+
+/**
+ * Get all knowledge items with content decrypted.
+ */
+export async function getAllKnowledgeItemsDecrypted(): Promise<
+  KnowledgeItem[]
+> {
+  const items = Array.from(knowledge.values())
+  return Promise.all(
+    items.map(
+      (item) =>
+        decryptFields(item, [
+          ...KNOWLEDGE_ENCRYPTED_FIELDS,
+        ]) as Promise<KnowledgeItem>,
+    ),
+  )
+}
+
+// ============================================================================
+// Write Operations (encrypt content before storing)
 // ============================================================================
 
 /**
  * Add a new knowledge item.
- * Uses transact() for batched writes.
+ * Encrypts content fields before storing in Yjs.
  */
-export function addKnowledgeItem(item: KnowledgeItem): void {
+export async function addKnowledgeItem(item: KnowledgeItem): Promise<void> {
+  const encrypted = await encryptFields(item, [...KNOWLEDGE_ENCRYPTED_FIELDS])
   transact(() => {
-    knowledge.set(item.id, item)
+    knowledge.set(item.id, encrypted as unknown as KnowledgeItem)
   })
 }
 
 /**
  * Update an existing knowledge item.
+ * Encrypts content fields before storing in Yjs.
  * Creates the item if it doesn't exist.
  */
-export function updateKnowledgeItem(item: KnowledgeItem): void {
+export async function updateKnowledgeItem(item: KnowledgeItem): Promise<void> {
+  const encrypted = await encryptFields(item, [...KNOWLEDGE_ENCRYPTED_FIELDS])
   transact(() => {
-    knowledge.set(item.id, item)
+    knowledge.set(item.id, encrypted as unknown as KnowledgeItem)
   })
 }
 
@@ -140,16 +191,20 @@ export async function ensureReady(): Promise<void> {
 
 /**
  * Get a knowledge item by ID, waiting for Yjs to be ready first.
+ * Returns decrypted content.
  */
-export async function getKnowledgeItemAsync(id: string): Promise<KnowledgeItem | undefined> {
+export async function getKnowledgeItemAsync(
+  id: string,
+): Promise<KnowledgeItem | undefined> {
   await ensureReady()
-  return getKnowledgeItem(id)
+  return getKnowledgeItemDecrypted(id)
 }
 
 /**
  * Get all knowledge items, waiting for Yjs to be ready first.
+ * Returns decrypted content.
  */
 export async function getAllKnowledgeItemsAsync(): Promise<KnowledgeItem[]> {
   await ensureReady()
-  return getAllKnowledgeItems()
+  return getAllKnowledgeItemsDecrypted()
 }

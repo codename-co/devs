@@ -17,7 +17,33 @@ vi.mock('@/lib/toast', () => mockToast)
 
 // Mock agentStore getAgentById
 vi.mock('@/stores/agentStore', () => ({
-  getAgentById: vi.fn().mockResolvedValue({ id: 'test-agent', slug: 'test-agent', name: 'Test Agent' }),
+  getAgentById: vi
+    .fn()
+    .mockResolvedValue({
+      id: 'test-agent',
+      slug: 'test-agent',
+      name: 'Test Agent',
+    }),
+}))
+
+// Mock content encryption to pass through plaintext (SecureStorage not available in tests)
+vi.mock('@/lib/crypto/content-encryption', () => ({
+  encryptField: vi.fn(async (plaintext: string) => plaintext),
+  decryptField: vi.fn(async (field: unknown) => field),
+  isEncryptedField: vi.fn(() => false),
+  encryptFields: vi.fn(async <T extends object>(obj: T) => obj),
+  decryptFields: vi.fn(async <T extends object>(obj: T) => obj),
+  encryptStringArray: vi.fn(async (arr: string[] | undefined) => arr),
+  decryptStringArray: vi.fn(async (arr: unknown[] | undefined) => arr),
+  encryptAttachments: vi.fn(async <T>(attachments: T[]) => attachments ?? []),
+  decryptAttachments: vi.fn(async <T>(attachments: T[]) => attachments ?? []),
+  safeString: (value: unknown, fallback: string = '') => {
+    if (typeof value === 'string') return value
+    return fallback
+  },
+  MESSAGE_ENCRYPTED_FIELDS: ['content', 'pinnedDescription'] as const,
+  CONVERSATION_ENCRYPTED_FIELDS: ['summary', 'title'] as const,
+  ATTACHMENT_ENCRYPTED_FIELDS: ['data', 'name'] as const,
 }))
 
 describe('MessageAttachment Type', () => {
@@ -279,14 +305,16 @@ describe('Conversation attachment persistence', () => {
 
     // Verify the conversation was updated in Yjs map with attachment data
     expect(mockConversationsMap.set).toHaveBeenCalled()
-    
+
     // Get the updated conversation from the mock map
     const updatedConversation = mockConversationsMap.get('test-conv-1')
     expect(updatedConversation).toBeDefined()
     expect(updatedConversation?.messages).toHaveLength(1)
     expect(updatedConversation?.messages[0].attachments).toBeDefined()
     expect(updatedConversation?.messages[0].attachments).toHaveLength(1)
-    expect(updatedConversation?.messages[0].attachments?.[0].name).toBe('test.png')
+    expect(updatedConversation?.messages[0].attachments?.[0].name).toBe(
+      'test.png',
+    )
   })
 
   it('should preserve attachments when loading conversation history', async () => {
@@ -326,7 +354,10 @@ describe('Conversation attachment persistence', () => {
       updatedAt: new Date(),
     }
 
-    mockConversationsMap.set('test-conv-2', conversationWithAttachments as Conversation)
+    mockConversationsMap.set(
+      'test-conv-2',
+      conversationWithAttachments as Conversation,
+    )
 
     const store = useConversationStore.getState()
     const loadedConversation = await store.loadConversation('test-conv-2')

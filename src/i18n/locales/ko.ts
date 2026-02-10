@@ -655,11 +655,29 @@ export const ko: I18n = {
   'Password Required': '비밀번호 필요',
   'This room is password-protected. Enter the password to join.':
     '이 방은 비밀번호로 보호되어 있습니다. 참여하려면 비밀번호를 입력하세요.',
+  'Set a password for E2E encryption. All devices must use the same password to sync.':
+    '종단간 암호화를 위한 비밀번호를 설정하세요. 모든 기기가 동일한 비밀번호를 사용해야 동기화됩니다.',
+  'Enter Sync Password': '동기화 비밀번호 입력',
+  'Reconnect to Sync Room': '동기화 방에 다시 연결',
+  'This sync room is encrypted. Enter the password set by the room creator to join.':
+    '이 동기화 방은 암호화되어 있습니다. 방 생성자가 설정한 비밀번호를 입력하여 참여하세요.',
+  'Your previous sync session requires the room password to reconnect. Enter your password to resume syncing.':
+    '이전 동기화 세션에 다시 연결하려면 방 비밀번호가 필요합니다. 동기화를 재개하려면 비밀번호를 입력하세요.',
+  'Failed to connect. Please check your password and try again.':
+    '연결에 실패했습니다. 비밀번호를 확인하고 다시 시도하세요.',
 
   // Sync - Secret Link
   'Share the secret link': '비밀 링크 공유',
   'Copy and share this unique link with your other device. Keep it private!':
     '이 고유한 링크를 다른 기기와 복사하여 공유하세요. 비공개로 유지하세요!',
+
+  // Sync - Password Strength
+  Strength: '강도',
+  weak: '약함',
+  fair: '보통',
+  good: '양호',
+  strong: '강함',
+  'very-strong': '매우 강함',
 
   // Sync - Advanced
   Advanced: '고급',

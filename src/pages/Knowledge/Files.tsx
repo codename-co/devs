@@ -34,14 +34,14 @@ import {
 } from 'iconoir-react'
 
 import {
-  getKnowledgeItem,
+  getKnowledgeItemDecrypted,
   getAllKnowledgeItems,
   deleteKnowledgeItem,
   deleteKnowledgeItems,
   updateKnowledgeItem,
 } from '@/stores/knowledgeStore'
 import { KnowledgeItem } from '@/types'
-import { useKnowledge, useSyncReady } from '@/hooks'
+import { useDecryptedKnowledge, useSyncReady } from '@/hooks'
 import {
   Title,
   MultiFilter,
@@ -52,6 +52,7 @@ import {
   ContentPreviewModal,
 } from '@/components'
 import { useI18n } from '@/i18n'
+import { safeString } from '@/lib/crypto/content-encryption'
 import {
   knowledgeSync,
   watchFolder,
@@ -115,8 +116,8 @@ export const Files: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
 
-  // Use reactive hook for instant updates (no async loading needed)
-  const rawKnowledgeItems = useKnowledge()
+  // Use reactive hook for instant updates with decrypted content
+  const rawKnowledgeItems = useDecryptedKnowledge()
   const isSyncReady = useSyncReady()
   const { connectors, initialize: initializeConnectors } = useConnectorStore()
 
@@ -349,11 +350,12 @@ export const Files: React.FC = () => {
     const hash = location.hash.replace('#', '')
     if (hash) {
       // Load the knowledge item by ID and open the preview modal
-      const item = getKnowledgeItem(hash)
-      if (item) {
-        setPreviewItem(item)
-        onPreviewOpen()
-      }
+      getKnowledgeItemDecrypted(hash).then((item) => {
+        if (item) {
+          setPreviewItem(item)
+          onPreviewOpen()
+        }
+      })
     }
   }, [location.hash, onPreviewOpen])
 
@@ -464,12 +466,15 @@ export const Files: React.FC = () => {
 
               // Update preview item if it's the one that was just processed
               if (completedJob) {
-                const updatedItem = getKnowledgeItem(completedJob.itemId)
-                if (updatedItem) {
-                  setPreviewItem((current) =>
-                    current?.id === updatedItem.id ? updatedItem : current,
-                  )
-                }
+                getKnowledgeItemDecrypted(completedJob.itemId).then(
+                  (updatedItem) => {
+                    if (updatedItem) {
+                      setPreviewItem((current) =>
+                        current?.id === updatedItem.id ? updatedItem : current,
+                      )
+                    }
+                  },
+                )
               }
               break
 
@@ -727,13 +732,13 @@ export const Files: React.FC = () => {
     setSelectedItem(item)
     setEditForm({
       name: item.name,
-      description: item.description || '',
+      description: safeString(item.description),
       tags: item.tags?.join(', ') || '',
     })
     onEditModalOpen()
   }
 
-  const saveItemChanges = () => {
+  const saveItemChanges = async () => {
     if (!selectedItem) return
 
     try {
@@ -748,7 +753,7 @@ export const Files: React.FC = () => {
         lastModified: new Date(),
       }
 
-      updateKnowledgeItem(updatedItem)
+      await updateKnowledgeItem(updatedItem)
       // Knowledge items update automatically via reactive hooks
       onEditModalClose()
     } catch (error) {
@@ -1172,7 +1177,7 @@ export const Files: React.FC = () => {
                                 )}
                                 {item.description && (
                                   <p className="text-sm text-default-600 mt-1 truncate">
-                                    {item.description}
+                                    {safeString(item.description)}
                                   </p>
                                 )}
                                 {item.tags && item.tags.length > 0 && (
@@ -1364,7 +1369,7 @@ export const Files: React.FC = () => {
               await documentProcessor.queueProcessing(itemId)
               successToast(t('Document queued for processing'))
               // Refresh the preview item to show updated status
-              const updatedItem = getKnowledgeItem(itemId)
+              const updatedItem = await getKnowledgeItemDecrypted(itemId)
               if (updatedItem) {
                 setPreviewItem(updatedItem)
               }

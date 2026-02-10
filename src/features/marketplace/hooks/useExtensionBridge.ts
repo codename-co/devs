@@ -150,9 +150,9 @@ export function useExtensionBridge({
 
           case 'DEVS_AGENTS_LIST': {
             const { loadBuiltInAgents } = await import('@/stores/agentStore')
-            const { db } = await import('@/lib/db')
+            const { agents: agentsMap } = await import('@/lib/yjs')
             const builtIn = await loadBuiltInAgents()
-            const custom = await db.getAll('agents')
+            const custom = Array.from(agentsMap.values())
             const customIds = new Set(custom.map((a) => a.id))
             const agents = [
               ...builtIn.filter((a) => !customIds.has(a.id) && !a.deletedAt),

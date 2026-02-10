@@ -114,6 +114,9 @@ export const fr: I18n = {
   'Auto Memory Learning': 'Apprentissage automatique de la mémoire',
   'Automatically extract learnable information from conversations to build agent memory':
     'Extraire automatiquement les informations exploitables des conversations pour construire la mémoire des agents',
+  'Quick Reply Suggestions': 'Suggestions de réponse rapide',
+  'Show AI-generated follow-up suggestions after each assistant response':
+    'Afficher des suggestions de suivi générées par l’IA après chaque réponse de l’assistant',
   'Global System Instructions': 'Instructions système globales',
   "These instructions will be prepended to every agent's instructions":
     'Ces instructions seront ajoutées au début des instructions de chaque agent',

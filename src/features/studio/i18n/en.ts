@@ -1,6 +1,9 @@
 export const en = [
   'Studio',
   'Create stunning visuals with AI',
+  'Create stunning images with AI',
+  'Create stunning videos with AI',
+  'Create stunning music with AI',
   'Generate',
   'Image presets',
   'Image settings',
@@ -80,6 +83,7 @@ export const en = [
   'Image',
   'Video',
   'Describe the video you want to create…',
+  'Describe the music you want to create…',
   'No videos yet',
   'Video generated successfully',
   'Failed to generate video',
@@ -89,6 +93,7 @@ export const en = [
   'Duration',
   'Select video model',
   'Generate video',
+  'Generate music',
   'videos',
   'Copy prompt',
   'Starting video generation...',
@@ -123,4 +128,10 @@ export const en = [
   'Delete media',
   'Are you sure you want to permanently delete this media? This action cannot be undone.',
   'Media deleted',
+  'Add provider',
+  'Loading models...',
+  'No models found',
+  'No image/video generation models detected',
+  // Music generation
+  'Music',
 ] as const

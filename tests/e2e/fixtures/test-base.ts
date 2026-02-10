@@ -32,7 +32,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     // Clear IndexedDB
     await page.evaluate(() => {
       return new Promise<void>((resolve) => {
-        const deleteReq = indexedDB.deleteDatabase('devs-db')
+        const deleteReq = indexedDB.deleteDatabase('devs-ai-platform')
         deleteReq.onsuccess = () => resolve()
         deleteReq.onerror = () => resolve() // Continue even if deletion fails
         deleteReq.onblocked = () => resolve() // Continue even if blocked

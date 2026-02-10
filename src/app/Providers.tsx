@@ -1,19 +1,19 @@
 import { HeroUIProvider } from '@heroui/react'
 import { useHref, useNavigate, useSearchParams } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import * as SyncModule from '@/features/sync'
 import { useAutoBackup, tryReconnectLocalBackup } from '@/features/local-backup'
 import { ServiceWorkerManager } from '@/lib/service-worker'
 import { whenReady, migrateFromIndexedDB } from '@/lib/yjs'
 import { SecureStorage } from '@/lib/crypto'
 import { loadModelRegistry } from '@/lib/llm/models'
-import { successToast } from '@/lib/toast'
 import { userSettings } from '@/stores/userStore'
 import { useLLMModelStore } from '@/stores/llmModelStore'
 import { useSyncStore } from '@/features/sync'
+import { SyncPasswordModal } from '@/features/sync/components/SyncPasswordModal'
 import { ServiceWorkerUpdatePrompt } from '@/components/ServiceWorkerUpdatePrompt'
 import { AddLLMProviderModal } from '@/components/AddLLMProviderModal'
-import { I18nProvider, useI18n } from '@/i18n'
+import { I18nProvider } from '@/i18n'
 
 // Expose sync debug tools in browser console
 ;(window as unknown as Record<string, unknown>).devsSync = {
@@ -28,38 +28,34 @@ console.log('[Dev] Sync debug tools available at window.devsSync')
 
 /** Inner component that uses i18n hooks - must be rendered inside I18nProvider */
 function ProvidersInner({ children }: { children: React.ReactNode }) {
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
   const theme = userSettings((state) => state.theme)
   const lang = userSettings((state) => state.language)
   const loadCredentials = useLLMModelStore((state) => state.loadCredentials)
   const initializeSync = useSyncStore((state) => state.initialize)
-  const enableSync = useSyncStore((state) => state.enableSync)
-  const { t } = useI18n()
+  const setPendingJoinRoomId = useSyncStore((state) => state.setPendingJoinRoomId)
 
   // Handle ?join= parameter for P2P sync
+  // Instead of auto-joining, set the pending room ID so the
+  // SyncPasswordModal appears and the user enters the password first.
+  const joinHandledRef = useRef(false)
   useEffect(() => {
+    if (joinHandledRef.current) return
     const joinRoomId = searchParams.get('join')
     if (joinRoomId) {
-      // Remove the join parameter from URL
-      const newSearchParams = new URLSearchParams(searchParams)
-      newSearchParams.delete('join')
-      setSearchParams(newSearchParams, { replace: true })
+      joinHandledRef.current = true
 
-      // Initialize and connect to the sync room
-      const joinSyncRoom = async () => {
-        try {
-          console.log('[Providers] Joining sync room:', joinRoomId)
-          await initializeSync()
-          await enableSync(joinRoomId, undefined, 'join')
-          console.log('[Providers] Successfully joined sync room')
-          successToast(t('Successfully joined sync room'))
-        } catch (error) {
-          console.error('[Providers] Failed to join sync room:', error)
-        }
-      }
-      joinSyncRoom()
+      console.log('[Providers] Sync join requested — showing password modal for room:', joinRoomId)
+      // Set the pending room ID so the password modal opens
+      setPendingJoinRoomId(joinRoomId)
+
+      // Clean the URL using History API directly to avoid triggering
+      // a React Router re-render that would dismiss the password modal
+      const url = new URL(window.location.href)
+      url.searchParams.delete('join')
+      window.history.replaceState(null, '', url.pathname + url.search + url.hash)
     }
-  }, [searchParams, setSearchParams, initializeSync, enableSync, t])
+  }, [searchParams, setPendingJoinRoomId])
 
   useEffect(() => {
     // Initialize platform services
@@ -143,6 +139,7 @@ function ProvidersInner({ children }: { children: React.ReactNode }) {
       </main>
       <ServiceWorkerUpdatePrompt />
       <AddLLMProviderModal lang={lang} />
+      <SyncPasswordModal />
     </>
   )
 }

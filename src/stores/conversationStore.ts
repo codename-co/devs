@@ -4,6 +4,104 @@ import type { Conversation, Message } from '@/types'
 import { errorToast } from '@/lib/toast'
 import { ConversationTitleGenerator } from '@/lib/conversation-title-generator'
 import { getAgentById } from '@/stores/agentStore'
+import {
+  encryptFields,
+  decryptFields,
+  encryptField,
+  MESSAGE_ENCRYPTED_FIELDS,
+  CONVERSATION_ENCRYPTED_FIELDS,
+  encryptStringArray,
+  decryptStringArray,
+  encryptAttachments,
+  decryptAttachments,
+  safeString,
+} from '@/lib/crypto/content-encryption'
+
+// ============================================================================
+// Encryption Helpers
+// ============================================================================
+
+/**
+ * Encrypt a conversation's content fields for storage in Yjs.
+ * Encrypts message.content and pinnedDescription, message attachments (data + name),
+ * conversation.summary, conversation.title, and quickReplies.
+ */
+async function encryptConversationForStorage(
+  conv: Conversation,
+): Promise<Conversation> {
+  const encryptedMessages = await Promise.all(
+    conv.messages.map(async (msg) => {
+      // Encrypt flat string fields (content, pinnedDescription)
+      const encryptedMsg = (await encryptFields(msg, [
+        ...MESSAGE_ENCRYPTED_FIELDS,
+      ])) as Message
+      // Encrypt attachment data + name
+      if (msg.attachments && msg.attachments.length > 0) {
+        encryptedMsg.attachments = await encryptAttachments(msg.attachments)
+      }
+      return encryptedMsg
+    }),
+  )
+  const result = { ...conv, messages: encryptedMessages as Message[] }
+  // Encrypt quickReplies (string array)
+  if (conv.quickReplies && conv.quickReplies.length > 0) {
+    result.quickReplies = (await encryptStringArray(
+      conv.quickReplies,
+    )) as string[]
+  }
+  // Encrypt conversation-level fields (summary, title)
+  return encryptFields(result, [
+    ...CONVERSATION_ENCRYPTED_FIELDS,
+  ]) as Promise<Conversation>
+}
+
+/**
+ * Decrypt a conversation's content fields after reading from Yjs.
+ * Handles backward compatibility: unencrypted data passes through unchanged.
+ */
+async function decryptConversationFromStorage(
+  conv: Conversation,
+): Promise<Conversation> {
+  const decryptedMessages = await Promise.all(
+    conv.messages.map(async (msg) => {
+      // Decrypt flat string fields (content, pinnedDescription)
+      const decryptedMsg = (await decryptFields(msg, [
+        ...MESSAGE_ENCRYPTED_FIELDS,
+      ])) as Message
+      // Decrypt attachment data + name
+      if (msg.attachments && msg.attachments.length > 0) {
+        decryptedMsg.attachments = await decryptAttachments(msg.attachments)
+      }
+      return decryptedMsg
+    }),
+  )
+  const result = { ...conv, messages: decryptedMessages as Message[] }
+  // Decrypt quickReplies
+  if (conv.quickReplies && conv.quickReplies.length > 0) {
+    result.quickReplies = (await decryptStringArray(
+      conv.quickReplies as (
+        | string
+        | import('@/lib/crypto/content-encryption').EncryptedField
+      )[],
+    )) as string[]
+  }
+  // Decrypt conversation-level fields (summary, title)
+  return decryptFields(result, [
+    ...CONVERSATION_ENCRYPTED_FIELDS,
+  ]) as Promise<Conversation>
+}
+
+/**
+ * Lightweight decryption of conversation metadata (title, summary) for sidebar display.
+ * Does NOT decrypt message content or attachments — much faster for list rendering.
+ */
+async function decryptConversationMetadata(
+  conv: Conversation,
+): Promise<Conversation> {
+  return decryptFields(conv, [
+    ...CONVERSATION_ENCRYPTED_FIELDS,
+  ]) as Promise<Conversation>
+}
 
 // ============================================================================
 // Helper: Get all conversations from Yjs map
@@ -73,6 +171,12 @@ interface ConversationStore {
     conversationId: string,
     newTitle: string,
   ) => Promise<void>
+
+  // Quick replies
+  updateQuickReplies: (
+    conversationId: string,
+    quickReplies: string[],
+  ) => Promise<void>
 }
 
 export const useConversationStore = create<ConversationStore>((set, get) => {
@@ -81,15 +185,24 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
     const allConversations = getAllConversations()
     const { currentConversation } = get()
 
-    // Update currentConversation if it changed in Yjs
-    const updatedCurrent = currentConversation
-      ? conversations.get(currentConversation.id) ?? null
-      : null
-
-    set({
-      conversations: allConversations,
-      currentConversation: updatedCurrent,
+    // Decrypt metadata (title, summary) for sidebar display
+    Promise.all(
+      allConversations.map((conv) => decryptConversationMetadata(conv)),
+    ).then((decryptedList) => {
+      set({ conversations: decryptedList })
     })
+
+    // If current conversation changed in Yjs, async-decrypt and update state
+    if (currentConversation) {
+      const rawUpdated = conversations.get(currentConversation.id)
+      if (rawUpdated) {
+        decryptConversationFromStorage(rawUpdated).then((decrypted) => {
+          set({ currentConversation: decrypted })
+        })
+      } else {
+        set({ currentConversation: null })
+      }
+    }
   })
 
   return {
@@ -106,7 +219,11 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
         await whenReady
 
         const allConversations = getAllConversations()
-        set({ conversations: allConversations, isLoading: false })
+        // Decrypt metadata (title, summary) for sidebar display
+        const decryptedList = await Promise.all(
+          allConversations.map((conv) => decryptConversationMetadata(conv)),
+        )
+        set({ conversations: decryptedList, isLoading: false })
       } catch (error) {
         errorToast('Failed to load conversations', error)
         set({ isLoading: false })
@@ -121,23 +238,31 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
 
         const conversation = conversations.get(id)
         if (conversation) {
+          // Decrypt content fields from storage
+          const decrypted = await decryptConversationFromStorage(conversation)
+
           // Migrate legacy conversations: backfill agentSlug if missing
-          if (!conversation.agentSlug && conversation.agentId) {
-            const agent = await getAgentById(conversation.agentId)
+          if (!decrypted.agentSlug && decrypted.agentId) {
+            const agent = await getAgentById(decrypted.agentId)
             if (agent?.slug) {
               const updatedConversation = {
-                ...conversation,
+                ...decrypted,
                 agentSlug: agent.slug,
               }
-              // Persist the migration to Yjs
-              conversations.set(id, updatedConversation)
-              set({ currentConversation: updatedConversation, isLoading: false })
+              // Persist the migration to Yjs (re-encrypt)
+              const encrypted =
+                await encryptConversationForStorage(updatedConversation)
+              conversations.set(id, encrypted)
+              set({
+                currentConversation: updatedConversation,
+                isLoading: false,
+              })
               return updatedConversation
             }
           }
 
-          set({ currentConversation: conversation, isLoading: false })
-          return conversation
+          set({ currentConversation: decrypted, isLoading: false })
+          return decrypted
         } else {
           errorToast(
             'Conversation not found',
@@ -214,16 +339,32 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
           timestamp: new Date(),
         }
 
-        // Clone for immutability
+        // Encrypt the new message content and pinnedDescription for Yjs storage
+        const encryptedMessage = (await encryptFields(newMessage, [
+          ...MESSAGE_ENCRYPTED_FIELDS,
+        ])) as Message
+
+        // Encrypt attachments (data + name) if present
+        if (newMessage.attachments && newMessage.attachments.length > 0) {
+          encryptedMessage.attachments = await encryptAttachments(
+            newMessage.attachments,
+          )
+        }
+
+        // Clone for immutability — work with the raw (encrypted) conversation from Yjs
         const updatedConversation = { ...conversation }
 
         // If this is an assistant message with an agentId, add agent to participating agents
         if (message.role === 'assistant' && message.agentId) {
           // Initialize participatingAgents if it doesn't exist (backward compatibility)
           if (!updatedConversation.participatingAgents) {
-            updatedConversation.participatingAgents = [updatedConversation.agentId]
+            updatedConversation.participatingAgents = [
+              updatedConversation.agentId,
+            ]
           }
-          if (!updatedConversation.participatingAgents.includes(message.agentId)) {
+          if (
+            !updatedConversation.participatingAgents.includes(message.agentId)
+          ) {
             updatedConversation.participatingAgents = [
               ...updatedConversation.participatingAgents,
               message.agentId,
@@ -231,20 +372,33 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
           }
         }
 
-        updatedConversation.messages = [...conversation.messages, newMessage]
+        // Add encrypted message to the array (existing messages already encrypted)
+        updatedConversation.messages = [
+          ...conversation.messages,
+          encryptedMessage,
+        ]
         updatedConversation.updatedAt = new Date()
 
-        // Write to Yjs
+        // Write encrypted conversation to Yjs
         conversations.set(conversationId, updatedConversation)
 
+        // For Zustand state, use the decrypted version from existing state + plaintext new message
         const { currentConversation } = get()
-        set({
-          currentConversation:
-            currentConversation?.id === conversationId
-              ? updatedConversation
-              : currentConversation,
-          isLoading: false,
-        })
+        if (currentConversation?.id === conversationId) {
+          const decryptedState = {
+            ...currentConversation,
+            ...(!currentConversation.participatingAgents
+              ? {}
+              : {
+                  participatingAgents: updatedConversation.participatingAgents,
+                }),
+            messages: [...currentConversation.messages, newMessage],
+            updatedAt: updatedConversation.updatedAt,
+          }
+          set({ currentConversation: decryptedState, isLoading: false })
+        } else {
+          set({ isLoading: false })
+        }
 
         // Generate title if this is the first user message and no title exists
         if (message.role === 'user' && !updatedConversation.title) {
@@ -310,7 +464,9 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
 
         // Initialize participatingAgents if it doesn't exist (backward compatibility)
         if (!updatedConversation.participatingAgents) {
-          updatedConversation.participatingAgents = [updatedConversation.agentId]
+          updatedConversation.participatingAgents = [
+            updatedConversation.agentId,
+          ]
         }
 
         if (!updatedConversation.participatingAgents.includes(agentId)) {
@@ -340,9 +496,10 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
     },
 
     getConversationTitle: (conversation: Conversation) => {
-      // Use stored title if available
-      if (conversation.title) {
-        return conversation.title
+      // Use stored title if available and it is a string (not an encrypted field)
+      const title = safeString(conversation.title)
+      if (title) {
+        return title
       }
 
       // Fallback to first user message truncation (legacy behavior)
@@ -350,7 +507,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
         (msg) => msg.role === 'user',
       )
 
-      if (firstUserMessage) {
+      if (firstUserMessage && typeof firstUserMessage.content === 'string') {
         // Truncate to 50 characters for title
         const title = firstUserMessage.content.slice(0, 50)
         return title.length < firstUserMessage.content.length
@@ -373,18 +530,25 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
         }
 
         // Generate title using LLM
-        const title = await ConversationTitleGenerator.generateTitle(conversation)
+        const title =
+          await ConversationTitleGenerator.generateTitle(conversation)
 
-        // Update conversation with generated title
-        const updatedConversation = { ...conversation, title }
+        // Encrypt title for Yjs storage
+        const encryptedTitle = await encryptField(title)
+        const updatedConversation = {
+          ...conversation,
+          title: (encryptedTitle ?? title) as unknown as string,
+        }
 
         // Write to Yjs
         conversations.set(conversationId, updatedConversation)
 
-        // Update currentConversation if needed
+        // Update currentConversation with plaintext title
         const { currentConversation } = get()
         if (currentConversation?.id === conversationId) {
-          set({ currentConversation: updatedConversation })
+          set({
+            currentConversation: { ...currentConversation, title },
+          })
         }
       } catch (error) {
         console.error('Failed to generate conversation title:', error)
@@ -414,15 +578,22 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
           return
         }
 
-        const updatedConversation = { ...conversation, title }
+        // Encrypt title for Yjs storage
+        const encryptedTitle = await encryptField(title)
+        const updatedConversation = {
+          ...conversation,
+          title: (encryptedTitle ?? title) as unknown as string,
+        }
 
         // Write to Yjs
         conversations.set(conversationId, updatedConversation)
 
-        // Update currentConversation if needed
+        // Update currentConversation with plaintext title
         const { currentConversation } = get()
         if (currentConversation?.id === conversationId) {
-          set({ currentConversation: updatedConversation })
+          set({
+            currentConversation: { ...currentConversation, title },
+          })
         }
       } catch (error) {
         console.error('Failed to generate title for new message:', error)
@@ -446,19 +617,27 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
 
       const lowerQuery = query.toLowerCase()
       return allConversations.filter((conversation) => {
-        // Search in title
-        if (conversation.title?.toLowerCase().includes(lowerQuery)) {
+        // Search in title (skip if encrypted — typeof check)
+        if (
+          typeof conversation.title === 'string' &&
+          conversation.title.toLowerCase().includes(lowerQuery)
+        ) {
           return true
         }
 
-        // Search in summary
-        if (conversation.summary?.toLowerCase().includes(lowerQuery)) {
+        // Search in summary (skip if encrypted — typeof check)
+        if (
+          typeof conversation.summary === 'string' &&
+          conversation.summary.toLowerCase().includes(lowerQuery)
+        ) {
           return true
         }
 
-        // Search in message content
-        return conversation.messages.some((message) =>
-          message.content.toLowerCase().includes(lowerQuery),
+        // Search in message content (skip encrypted messages — typeof check)
+        return conversation.messages.some(
+          (message) =>
+            typeof message.content === 'string' &&
+            message.content.toLowerCase().includes(lowerQuery),
         )
       })
     },
@@ -654,11 +833,14 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
           throw new Error('Message not found')
         }
 
-        // Clone conversation and messages for immutability
+        // Encrypt the new content for Yjs storage
+        const encryptedContent = await encryptField(content)
+
+        // Clone conversation and messages — update with encrypted content for Yjs
         const updatedMessages = [...conversation.messages]
         updatedMessages[messageIndex] = {
           ...updatedMessages[messageIndex],
-          content,
+          content: (encryptedContent ?? content) as unknown as string,
         }
 
         const updatedConversation = {
@@ -667,12 +849,26 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
           updatedAt: new Date(),
         }
 
-        // Write to Yjs
+        // Write encrypted to Yjs
         conversations.set(conversationId, updatedConversation)
 
+        // For Zustand state, use plaintext content
         const { currentConversation } = get()
         if (currentConversation?.id === conversationId) {
-          set({ currentConversation: updatedConversation })
+          const stateMessages = [...currentConversation.messages]
+          if (messageIndex < stateMessages.length) {
+            stateMessages[messageIndex] = {
+              ...stateMessages[messageIndex],
+              content,
+            }
+          }
+          set({
+            currentConversation: {
+              ...currentConversation,
+              messages: stateMessages,
+              updatedAt: updatedConversation.updatedAt,
+            },
+          })
         }
       } catch (error) {
         errorToast('Failed to update message', error)
@@ -692,27 +888,40 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
           throw new Error('Conversation not found')
         }
 
+        // Decrypt conversation for the summarizer to work with plaintext
+        const decrypted = await decryptConversationFromStorage(conversation)
+
         // Dynamically import the summarizer to avoid circular dependencies
         const { ConversationSummarizer } = await import(
           '@/lib/conversation-summarizer'
         )
 
         const summary =
-          await ConversationSummarizer.summarizeConversation(conversation)
+          await ConversationSummarizer.summarizeConversation(decrypted)
 
-        // Update conversation with summary
+        // Encrypt the summary for Yjs storage
+        const encryptedSummary = await encryptField(summary)
+
+        // Update conversation with encrypted summary in Yjs
         const updatedConversation = {
           ...conversation,
-          summary,
+          summary: (encryptedSummary ?? summary) as unknown as string,
           updatedAt: new Date(),
         }
 
-        // Write to Yjs
+        // Write encrypted to Yjs
         conversations.set(conversationId, updatedConversation)
 
+        // For Zustand state, use plaintext summary
         const { currentConversation } = get()
         if (currentConversation?.id === conversationId) {
-          set({ currentConversation: updatedConversation })
+          set({
+            currentConversation: {
+              ...currentConversation,
+              summary,
+              updatedAt: updatedConversation.updatedAt,
+            },
+          })
         }
 
         return summary
@@ -735,23 +944,65 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
           throw new Error('Conversation not found')
         }
 
-        // Update conversation with new title
+        const trimmedTitle = newTitle.trim()
+
+        // Encrypt title for Yjs storage
+        const encryptedTitle = await encryptField(trimmedTitle)
         const updatedConversation = {
           ...conversation,
-          title: newTitle.trim(),
+          title: (encryptedTitle ?? trimmedTitle) as unknown as string,
           updatedAt: new Date(),
         }
 
         // Write to Yjs
         conversations.set(conversationId, updatedConversation)
 
+        // For Zustand state, use plaintext title
         const { currentConversation } = get()
         if (currentConversation?.id === conversationId) {
-          set({ currentConversation: updatedConversation })
+          set({
+            currentConversation: {
+              ...currentConversation,
+              title: trimmedTitle,
+              updatedAt: updatedConversation.updatedAt,
+            },
+          })
         }
       } catch (error) {
         errorToast('Failed to rename conversation', error)
         throw error
+      }
+    },
+
+    updateQuickReplies: async (
+      conversationId: string,
+      quickReplies: string[],
+    ) => {
+      const conversation = conversations.get(conversationId)
+      if (!conversation) return
+
+      // Encrypt quickReplies for Yjs storage
+      const encryptedReplies =
+        quickReplies.length > 0
+          ? ((await encryptStringArray(quickReplies)) as string[])
+          : undefined
+
+      const updatedConversation = {
+        ...conversation,
+        quickReplies: encryptedReplies,
+      }
+
+      conversations.set(conversationId, updatedConversation)
+
+      // For Zustand state, use plaintext quickReplies
+      const { currentConversation } = get()
+      if (currentConversation?.id === conversationId) {
+        set({
+          currentConversation: {
+            ...currentConversation,
+            quickReplies: quickReplies.length > 0 ? quickReplies : undefined,
+          },
+        })
       }
     },
   }

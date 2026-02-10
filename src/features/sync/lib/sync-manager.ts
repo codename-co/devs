@@ -7,6 +7,9 @@
 import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
 
+import { deriveEncryptionKey } from '@/lib/yjs/crypto'
+import { createEncryptedWebSocketClass } from '@/lib/yjs/encrypted-ws'
+
 import { getYDoc } from './yjs-doc'
 import { errorToast, successToast } from '@/lib/toast'
 
@@ -36,14 +39,14 @@ function handlePageUnload(): void {
  */
 function registerCleanupListener(): void {
   if (cleanupListenerRegistered) return
-  
+
   // Use pagehide for better browser support (including mobile)
   // pagehide fires before beforeunload and is more reliable
   window.addEventListener('pagehide', handlePageUnload)
-  
+
   // Also listen to beforeunload as a fallback
   window.addEventListener('beforeunload', handlePageUnload)
-  
+
   cleanupListenerRegistered = true
 }
 
@@ -52,16 +55,16 @@ function registerCleanupListener(): void {
  */
 function unregisterCleanupListener(): void {
   if (!cleanupListenerRegistered) return
-  
+
   window.removeEventListener('pagehide', handlePageUnload)
   window.removeEventListener('beforeunload', handlePageUnload)
-  
+
   cleanupListenerRegistered = false
 }
 
 export interface SyncConfig {
   roomId: string
-  password?: string
+  password: string
   serverUrl?: string
 }
 
@@ -95,10 +98,53 @@ let initialSyncCallback: InitialSyncCallback | null = null
 const recentActivity: SyncActivity[] = []
 const MAX_ACTIVITY_ENTRIES = 50
 
+/** Number of PBKDF2 iterations — meets OWASP 2023 recommendation (≥210K for SHA-256). */
+const PBKDF2_ITERATIONS = 210_000
+
+/**
+ * Derive the actual WebSocket room name using PBKDF2-SHA-256.
+ * This ensures different passwords result in different rooms on the
+ * signalling server, and brute-forcing weak passwords is expensive.
+ */
+async function deriveRoomName(
+  roomId: string,
+  password: string,
+): Promise<string> {
+  const encoder = new TextEncoder()
+
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits'],
+  )
+
+  const salt = encoder.encode(`devs-sync:${roomId.length}:${roomId}`)
+
+  const derivedBits = await crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      salt,
+      iterations: PBKDF2_ITERATIONS,
+      hash: 'SHA-256',
+    },
+    keyMaterial,
+    256,
+  )
+
+  const hashArray = new Uint8Array(derivedBits)
+  return Array.from(hashArray, (b) => b.toString(16).padStart(2, '0')).join('')
+}
+
 /**
  * Enable sync with the given configuration
  */
-export function enableSync(config: SyncConfig): void {
+export async function enableSync(config: SyncConfig): Promise<void> {
+  if (!config.password) {
+    throw new Error('[Sync] Password is required for sync')
+  }
+
   if (wsProvider) {
     disableSync()
   }
@@ -106,11 +152,26 @@ export function enableSync(config: SyncConfig): void {
   const ydoc = getYDoc()
   const serverUrl = config.serverUrl || getDefaultServerUrl()
 
-  console.log('[Sync] Enabling sync for room:', config.roomId)
+  // Derive room name and encryption key in parallel (both use PBKDF2).
+  const [effectiveRoom, encryptionKey] = await Promise.all([
+    deriveRoomName(config.roomId, config.password),
+    deriveEncryptionKey(config.password, config.roomId),
+  ])
+
+  const EncryptedWS = createEncryptedWebSocketClass(encryptionKey)
+
+  console.log(
+    '[Sync] Enabling E2E encrypted sync for room:',
+    config.roomId,
+    '(room:',
+    effectiveRoom.slice(0, 12) + '…)',
+  )
   console.log('[Sync] Server URL:', serverUrl)
   console.log('[Sync] Y.Doc clientID:', ydoc.clientID)
 
-  wsProvider = new WebsocketProvider(serverUrl, config.roomId, ydoc)
+  wsProvider = new WebsocketProvider(serverUrl, effectiveRoom, ydoc, {
+    WebSocketPolyfill: EncryptedWS as unknown as typeof WebSocket,
+  })
 
   // Register cleanup listener to gracefully disconnect on page unload
   registerCleanupListener()
@@ -123,16 +184,22 @@ export function enableSync(config: SyncConfig): void {
 
   wsProvider.on('sync', (isSynced: boolean) => {
     console.log('[Sync] Synced:', isSynced)
-    
+
     // Log detailed sync state for debugging document divergence issues
     if (isSynced) {
       const stateVector = Y.encodeStateVector(ydoc)
       console.log('[Sync] State vector size:', stateVector.length, 'bytes')
       console.log('[Sync] Y.Doc clientID:', ydoc.clientID)
-      console.log('[Sync] Preferences map size:', ydoc.getMap('preferences').size)
-      console.log('[Sync] Preferences map keys:', Array.from(ydoc.getMap('preferences').keys()))
+      console.log(
+        '[Sync] Preferences map size:',
+        ydoc.getMap('preferences').size,
+      )
+      console.log(
+        '[Sync] Preferences map keys:',
+        Array.from(ydoc.getMap('preferences').keys()),
+      )
     }
-    
+
     notifyStatus()
     if (isSynced) {
       successToast('Sync connected successfully!')
@@ -156,9 +223,14 @@ export function enableSync(config: SyncConfig): void {
     const isRemote = origin === wsProvider
     console.log(
       '[Sync] Y.Doc update:',
-      'origin=' + (origin === wsProvider ? 'wsProvider' : origin === null ? 'null' : 'other'),
+      'origin=' +
+        (origin === wsProvider
+          ? 'wsProvider'
+          : origin === null
+            ? 'null'
+            : 'other'),
       'isRemote=' + isRemote,
-      'size=' + update.length + 'bytes'
+      'size=' + update.length + 'bytes',
     )
 
     // Track sync activity

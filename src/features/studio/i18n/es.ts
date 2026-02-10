@@ -4,7 +4,11 @@ type I18n = Record<(typeof en)[number], string>
 
 export const es: I18n = {
   Studio: 'Estudio',
-  'Create stunning visuals with AI': 'Crea imágenes impresionantes con IA',
+  'Create stunning visuals with AI':
+    'Crea contenido visual impresionante con IA',
+  'Create stunning images with AI': 'Crea imágenes impresionantes con IA',
+  'Create stunning videos with AI': 'Crea videos impresionantes con IA',
+  'Create stunning music with AI': 'Crea música impresionante con IA',
   Generate: 'Generar',
   'Image presets': 'Ajustes preestablecidos de imagen',
   'Image settings': 'Configuración de imagen',
@@ -89,6 +93,8 @@ export const es: I18n = {
   Video: 'Video',
   'Describe the video you want to create…':
     'Describe el video que quieres crear…',
+  'Describe the music you want to create…':
+    'Describe la música que quieres crear…',
   'No videos yet': 'Aún no hay videos',
   'Video generated successfully': 'Video generado con éxito',
   'Failed to generate video': 'Error al generar el video',
@@ -99,6 +105,7 @@ export const es: I18n = {
   Duration: 'Duración',
   'Select video model': 'Seleccionar modelo de video',
   'Generate video': 'Generar video',
+  'Generate music': 'Generar música',
   videos: 'videos',
   'Copy prompt': 'Copiar prompt',
   'Starting video generation...': 'Iniciando generación de video...',
@@ -134,4 +141,11 @@ export const es: I18n = {
   'Are you sure you want to permanently delete this media? This action cannot be undone.':
     '¿Estás seguro de que deseas eliminar permanentemente este medio? Esta acción no se puede deshacer.',
   'Media deleted': 'Medio eliminado',
+  'Add provider': 'Agregar proveedor',
+  'Loading models...': 'Cargando modelos...',
+  'No models found': 'No se encontraron modelos',
+  'No image/video generation models detected':
+    'No se detectaron modelos de generación de imagen/video',
+  // Music generation
+  Music: 'Música',
 }
