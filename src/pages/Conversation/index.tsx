@@ -21,7 +21,7 @@ import {
 import { Search, Star, StarSolid, MoreVert } from 'iconoir-react'
 
 import { useConversationStore } from '@/stores/conversationStore'
-import { useConversations, useAgents, useSyncReady } from '@/hooks'
+import { useDecryptedConversations, useAgents, useSyncReady } from '@/hooks'
 import DefaultLayout from '@/layouts/Default'
 import type { Conversation } from '@/types'
 import { useI18n } from '@/i18n'
@@ -40,8 +40,8 @@ export function ConversationPage() {
   const { t, url, lang } = useI18n()
   const navigate = useNavigate()
 
-  // Use reactive hook for instant updates (no async loading needed)
-  const conversations = useConversations()
+  // Use reactive hook for instant updates with decrypted metadata
+  const conversations = useDecryptedConversations()
   const agents = useAgents()
   const isSyncReady = useSyncReady()
 
@@ -195,17 +195,25 @@ export function ConversationPage() {
     if (searchQuery && searchQuery.trim() !== '') {
       const lowerQuery = searchQuery.toLowerCase()
       filtered = filtered.filter((conversation) => {
-        // Search in title
-        if (conversation.title?.toLowerCase().includes(lowerQuery)) {
+        // Search in title (skip if encrypted — typeof check)
+        if (
+          typeof conversation.title === 'string' &&
+          conversation.title.toLowerCase().includes(lowerQuery)
+        ) {
           return true
         }
-        // Search in summary
-        if (conversation.summary?.toLowerCase().includes(lowerQuery)) {
+        // Search in summary (skip if encrypted — typeof check)
+        if (
+          typeof conversation.summary === 'string' &&
+          conversation.summary.toLowerCase().includes(lowerQuery)
+        ) {
           return true
         }
-        // Search in message content
-        return conversation.messages.some((message) =>
-          message.content.toLowerCase().includes(lowerQuery),
+        // Search in message content (skip encrypted messages — typeof check)
+        return conversation.messages.some(
+          (message) =>
+            typeof message.content === 'string' &&
+            message.content.toLowerCase().includes(lowerQuery),
         )
       })
     }
