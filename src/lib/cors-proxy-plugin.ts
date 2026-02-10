@@ -156,7 +156,9 @@ export function corsProxyPlugin(): Plugin {
           })
 
           // Set CORS headers
-          res.setHeader('Access-Control-Allow-Origin', origin)
+          if (origin) {
+            res.setHeader('Access-Control-Allow-Origin', origin)
+          }
           res.setHeader(
             'Access-Control-Allow-Methods',
             'GET, POST, PUT, PATCH, DELETE, OPTIONS',
