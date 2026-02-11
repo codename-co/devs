@@ -55,7 +55,9 @@ import {
 import type { Serializer, SerializeContext } from './serializers/types'
 import {
   decryptFields,
+  decryptField,
   encryptFields,
+  isEncryptedField,
   CONVERSATION_ENCRYPTED_FIELDS,
   MESSAGE_ENCRYPTED_FIELDS,
   MEMORY_ENCRYPTED_FIELDS,
@@ -66,6 +68,7 @@ import {
   encryptAttachments,
   type EncryptedField,
 } from '@/lib/crypto/content-encryption'
+import { SecureStorage } from '@/lib/crypto'
 
 // ============================================================================
 // Encryption/Decryption Helpers for Local Backup
@@ -135,7 +138,11 @@ async function encryptConversationForImport(
     return encryptFields(result, [
       ...CONVERSATION_ENCRYPTED_FIELDS,
     ]) as Promise<Conversation>
-  } catch {
+  } catch (error) {
+    console.warn(
+      '[LocalBackup] Failed to encrypt conversation for import, storing as plaintext:',
+      error instanceof Error ? error.message : error,
+    )
     return conv
   }
 }
@@ -662,6 +669,24 @@ class FolderSyncService {
     this.emitEvent({ type: 'sync_start' })
     console.info('[LocalBackup] Sync from files started')
 
+    // Ensure SecureStorage is initialized before encrypting imported content.
+    // Without this, encrypt calls self-initialize but failures are caught
+    // silently per-field, leading to plaintext or empty content in Yjs.
+    try {
+      await SecureStorage.init()
+    } catch (error) {
+      console.error(
+        '[LocalBackup] SecureStorage not available, skipping sync from files:',
+        error,
+      )
+      this.isSyncing = false
+      this.emitEvent({
+        type: 'sync_error',
+        error: 'SecureStorage not available for encryption',
+      })
+      return
+    }
+
     try {
       // Read agents
       if (this.config.syncAgents) {
@@ -696,6 +721,35 @@ class FolderSyncService {
               new Date(conversation.updatedAt) > new Date(existing.updatedAt)
             ) {
               conversationsMap.set(conversation.id, encrypted)
+            } else if (
+              // When timestamps match, prefer the version with more messages
+              // (backup may have messages that were lost in-app due to stream errors)
+              new Date(conversation.updatedAt).getTime() ===
+                new Date(existing.updatedAt).getTime() &&
+              conversation.messages.length > (existing.messages?.length ?? 0)
+            ) {
+              conversationsMap.set(conversation.id, encrypted)
+            } else if (existing) {
+              // Check if existing conversation has messages encrypted with a lost/rotated key.
+              // If decryption fails, the backup file (plaintext) is the only recovery source.
+              const encryptedMsg = existing.messages?.find((msg) =>
+                isEncryptedField(
+                  (msg as unknown as Record<string, unknown>).content,
+                ),
+              )
+              if (encryptedMsg) {
+                try {
+                  await decryptField(
+                    (encryptedMsg as unknown as Record<string, unknown>)
+                      .content as EncryptedField,
+                  )
+                } catch {
+                  console.warn(
+                    `[LocalBackup] Existing conversation ${conversation.id} has undecryptable messages, re-importing from backup`,
+                  )
+                  conversationsMap.set(conversation.id, encrypted)
+                }
+              }
             }
           },
         )

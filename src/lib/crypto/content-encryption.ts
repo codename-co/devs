@@ -178,9 +178,13 @@ export async function decryptFields<T extends object>(
       try {
         const decrypted = await decryptField(value)
         return { fieldName, decrypted }
-      } catch {
+      } catch (error) {
         // Decryption failed (wrong key, uninitialised SecureStorage, etc.).
         // Replace with empty string so the field is never rendered as an object.
+        console.warn(
+          `[ContentEncryption] Failed to decrypt field "${fieldName}":`,
+          error instanceof Error ? error.message : error,
+        )
         return { fieldName, decrypted: '' }
       }
     }

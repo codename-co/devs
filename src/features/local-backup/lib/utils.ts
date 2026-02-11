@@ -19,7 +19,10 @@ export function parseFrontmatter<T>(content: string): {
   body: string
 } | null {
   // Strip UTF-8 BOM if present
-  const cleanContent = content.startsWith(UTF8_BOM) ? content.slice(1) : content
+  let cleanContent = content.startsWith(UTF8_BOM) ? content.slice(1) : content
+
+  // Normalize CRLF → LF for cross-platform compatibility
+  cleanContent = cleanContent.replace(/\r\n/g, '\n')
 
   const match = cleanContent.match(FRONTMATTER_REGEX)
   if (!match) {

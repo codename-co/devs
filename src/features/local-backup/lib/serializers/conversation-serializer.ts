@@ -143,9 +143,11 @@ function deserialize(
 
   // Parse messages from body
   const messages: Message[] = []
+  // Match ⚙ with or without variation selector U+FE0F
   const messageRegex =
-    /## (👤|🤖|⚙️|💬) (.+?) — (\d{1,2}:\d{2}(?: [AP]M)?)(?: 📌)?\n\n([\s\S]*?)(?=\n\n---\n\n## |$)/g
+    /## (👤|🤖|⚙\uFE0F?|💬) (.+?) — (\d{1,2}:\d{2}(?: [AP]M)?)(?: 📌)?\n\n([\s\S]*?)(?=\n\n---\n\n## |$)/g
   let match
+  let messageIndex = 0
 
   while ((match = messageRegex.exec(body)) !== null) {
     const emoji = match[1]
@@ -156,7 +158,7 @@ function deserialize(
     // Determine role from emoji
     let role: 'user' | 'assistant' | 'system' = 'assistant'
     if (emoji === '👤') role = 'user'
-    else if (emoji === '⚙️') role = 'system'
+    else if (emoji === '⚙️' || emoji === '⚙') role = 'system'
 
     // Extract content without attachments details
     let cleanContent = messageContent
@@ -181,7 +183,7 @@ function deserialize(
     }
 
     const message: Message = {
-      id: `msg-${shortHash(cleanContent + timeStr)}`,
+      id: `msg-${shortHash(cleanContent + timeStr + messageIndex)}`,
       role,
       content: cleanContent,
       timestamp: baseDate,
@@ -191,6 +193,7 @@ function deserialize(
     }
 
     messages.push(message)
+    messageIndex++
   }
 
   const conversation: Conversation = {

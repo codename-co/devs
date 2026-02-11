@@ -195,7 +195,11 @@ export class SecureStorage {
       return this.initPromise
     }
 
-    this.initPromise = this._init()
+    this.initPromise = this._init().catch((error) => {
+      // Reset so subsequent calls can retry instead of returning the cached rejection
+      this.initPromise = null
+      throw error
+    })
     return this.initPromise
   }
 
