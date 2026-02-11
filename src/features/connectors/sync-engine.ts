@@ -17,6 +17,7 @@ import {
   AuthenticationError,
   storeEncryptionMetadata,
 } from './connector-provider'
+import { sanitizeErrorMessage } from './sanitizer'
 import { SecureStorage } from '@/lib/crypto'
 import { useConnectorStore } from './stores'
 import {
@@ -391,11 +392,12 @@ export class SyncEngine {
         duration: Date.now() - startTime,
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error)
+      const errorMessage = sanitizeErrorMessage(
+        error instanceof Error ? error.message : String(error),
+      )
       errors.push(errorMessage)
 
-      log.error(`Sync failed for connector ${connectorId}:`, error)
+      log.error(`Sync failed for connector ${connectorId}:`, errorMessage)
 
       // Update job status
       job.status = 'failed'
@@ -407,7 +409,7 @@ export class SyncEngine {
       await store.setConnectorStatus(connectorId, 'error', errorMessage)
       await store.updateSyncState(connectorId, {
         status: 'error',
-        errorMessage,
+        errorMessage: sanitizeErrorMessage(errorMessage),
       })
 
       return {

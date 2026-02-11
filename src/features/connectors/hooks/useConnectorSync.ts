@@ -4,6 +4,7 @@ import { infoToast, successToast, errorToast } from '@/lib/toast'
 import type { ConnectorSyncState, AppConnectorProvider } from '../types'
 import { getProvider } from '../providers/apps'
 import { SyncEngine } from '../sync-engine'
+import { sanitizeErrorMessage } from '../sanitizer'
 
 interface UseConnectorSyncOptions {
   /** Show toast notifications for sync events */
@@ -158,10 +159,14 @@ export function useConnectorSync(
       const errorMessage = err instanceof Error ? err.message : 'Unknown error'
 
       // Update states with error
-      await setConnectorStatus(connectorId, 'error', errorMessage)
+      await setConnectorStatus(
+        connectorId,
+        'error',
+        sanitizeErrorMessage(errorMessage),
+      )
       await updateSyncState(connectorId, {
         status: 'error',
-        errorMessage,
+        errorMessage: sanitizeErrorMessage(errorMessage),
       })
 
       // Show error toast

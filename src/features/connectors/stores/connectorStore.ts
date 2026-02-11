@@ -14,6 +14,7 @@ import { infoToast } from '@/lib/toast'
 import { notifyError, notifySuccess } from '@/features/notifications'
 import { ProviderRegistry } from '@/features/connectors/provider-registry'
 import { SecureStorage } from '@/lib/crypto'
+import { sanitizeErrorMessage } from '@/features/connectors/sanitizer'
 import {
   CONNECTOR_STORAGE_PREFIX,
   storeEncryptionMetadata,
@@ -356,7 +357,9 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
 
         // Sync failed - use persistent notification for investigation
         if (stateUpdates.status === 'error' && previousStatus === 'syncing') {
-          const errorMsg = stateUpdates.errorMessage || 'Unknown error'
+          const errorMsg = sanitizeErrorMessage(
+            stateUpdates.errorMessage || 'Unknown error',
+          )
           notifyError({
             title: 'Sync Failed',
             description: `Failed to sync ${providerName}: ${errorMsg}`,
@@ -389,7 +392,7 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
     try {
       const updates: Partial<Connector> = {
         status,
-        errorMessage: errorMessage || undefined,
+        errorMessage: sanitizeErrorMessage(errorMessage) || undefined,
       }
 
       // If status is connected, clear error message
@@ -471,9 +474,11 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
             await ProviderRegistry.getAppProvider(provider)
 
           if (providerInstance.validateToken && connector.encryptedToken) {
-            const iv = connector.tokenIv ?? localStorage.getItem(
-              `${CONNECTOR_STORAGE_PREFIX}-${connector.id}-iv`,
-            )
+            const iv =
+              connector.tokenIv ??
+              localStorage.getItem(
+                `${CONNECTOR_STORAGE_PREFIX}-${connector.id}-iv`,
+              )
             // Salt is empty after migration to non-extractable keys
             const salt =
               localStorage.getItem(
@@ -513,17 +518,21 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
 
         // Attempt automatic token refresh if needed
         if (needsRefresh) {
-          console.log(
-            `[ConnectorStore] ${refreshReason} for ${connector.provider}, attempting refresh...`,
-          )
+          if (import.meta.env.DEV) {
+            console.log(
+              `[ConnectorStore] ${refreshReason} for ${connector.provider}, attempting refresh...`,
+            )
+          }
 
           const refreshed = await refreshConnectorToken(connector.id)
 
           if (!refreshed) {
             // Refresh failed, mark as expired
-            console.log(
-              `[ConnectorStore] Token refresh failed for ${connector.provider}, marking as expired`,
-            )
+            if (import.meta.env.DEV) {
+              console.log(
+                `[ConnectorStore] Token refresh failed for ${connector.provider}, marking as expired`,
+              )
+            }
             await updateConnector(connector.id, {
               status: 'expired',
               errorMessage:
@@ -533,10 +542,12 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
         }
       } catch (error) {
         // Log error but don't fail the whole validation
-        console.warn(
-          `[ConnectorStore] Failed to validate token for ${connector.provider}:`,
-          error,
-        )
+        if (import.meta.env.DEV) {
+          console.warn(
+            `[ConnectorStore] Failed to validate token for ${connector.provider}:`,
+            error,
+          )
+        }
       }
     })
 
@@ -568,9 +579,11 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
     }
 
     try {
-      console.log(
-        `[ConnectorStore] Attempting token refresh for ${connector.provider}`,
-      )
+      if (import.meta.env.DEV) {
+        console.log(
+          `[ConnectorStore] Attempting token refresh for ${connector.provider}`,
+        )
+      }
 
       const provider = connector.provider as AppConnectorProvider
       const providerInstance = await ProviderRegistry.getAppProvider(provider)
@@ -602,15 +615,19 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
       // Store new encryption metadata
       storeEncryptionMetadata(connector.id, iv, salt, false)
 
-      console.log(
-        `[ConnectorStore] Token refreshed successfully for ${connector.provider}`,
-      )
+      if (import.meta.env.DEV) {
+        console.log(
+          `[ConnectorStore] Token refreshed successfully for ${connector.provider}`,
+        )
+      }
       return true
     } catch (error) {
-      console.error(
-        `[ConnectorStore] Failed to refresh token for ${connector.provider}:`,
-        error,
-      )
+      if (import.meta.env.DEV) {
+        console.error(
+          `[ConnectorStore] Failed to refresh token for ${connector.provider}:`,
+          error,
+        )
+      }
       return false
     }
   },

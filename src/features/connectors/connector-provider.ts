@@ -7,6 +7,7 @@
  */
 
 import { SecureStorage } from '@/lib/crypto'
+import { sanitizeErrorMessage } from './sanitizer'
 import type {
   Connector,
   ConnectorProviderConfig,
@@ -309,10 +310,12 @@ export abstract class BaseAppConnectorProvider
       // the user to reconnect) instead of surfacing a cryptic error.
       // This can happen when the CryptoKey was regenerated, the DB was
       // restored from backup, or the token came from another device.
-      console.warn(
-        `[ConnectorProvider] Failed to decrypt refresh token for ${connector.id}, treating as unavailable:`,
-        error instanceof Error ? error.message : error,
-      )
+      if (import.meta.env.DEV) {
+        console.warn(
+          `[ConnectorProvider] Failed to decrypt refresh token for ${connector.id}, treating as unavailable:`,
+          error instanceof Error ? error.message : error,
+        )
+      }
       return null
     }
   }
@@ -418,9 +421,11 @@ export abstract class BaseAppConnectorProvider
     }
 
     try {
-      console.log(
-        `[ConnectorProvider] Attempting token refresh for ${connector.provider}`,
-      )
+      if (import.meta.env.DEV) {
+        console.log(
+          `[ConnectorProvider] Attempting token refresh for ${connector.provider}`,
+        )
+      }
 
       // Refresh the token using the provider's implementation
       const refreshResult = await this.refreshToken(connector)
@@ -459,16 +464,20 @@ export abstract class BaseAppConnectorProvider
         errorMessage: undefined,
       })
 
-      console.log(
-        `[ConnectorProvider] Token refreshed successfully for ${connector.provider}`,
-      )
+      if (import.meta.env.DEV) {
+        console.log(
+          `[ConnectorProvider] Token refreshed successfully for ${connector.provider}`,
+        )
+      }
 
       return updatedConnector
     } catch (error) {
-      console.error(
-        `[ConnectorProvider] Failed to refresh token for ${connector.provider}:`,
-        error,
-      )
+      if (import.meta.env.DEV) {
+        console.error(
+          `[ConnectorProvider] Failed to refresh token for ${connector.provider}:`,
+          error,
+        )
+      }
 
       const notifyWarning = await getNotifyWarning()
       notifyWarning({
@@ -517,7 +526,9 @@ export abstract class BaseAppConnectorProvider
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Unknown error')
-      throw new Error(`HTTP ${response.status}: ${errorText}`)
+      throw new Error(
+        `HTTP ${response.status}: ${sanitizeErrorMessage(errorText)}`,
+      )
     }
 
     return response.json() as Promise<T>
@@ -580,7 +591,9 @@ export abstract class BaseAppConnectorProvider
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Unknown error')
-      throw new Error(`HTTP ${response.status}: ${errorText}`)
+      throw new Error(
+        `HTTP ${response.status}: ${sanitizeErrorMessage(errorText)}`,
+      )
     }
 
     return response.json() as Promise<T>

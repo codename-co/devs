@@ -3,7 +3,25 @@
  *
  * This module defines all types related to external service connectors,
  * including OAuth-based app connectors, custom API connectors, and MCP connectors.
+ *
+ * ## Data Sensitivity Classification
+ *
+ * All fields that handle sensitive data are annotated with `@sensitivity` tags:
+ * - **critical**: Must be encrypted at rest, never logged (tokens, secrets)
+ * - **high**: Encrypt or restrict access, avoid logging (PII, encryption metadata)
+ * - **medium**: Basic access control, audit logging (user content, sync cursors)
+ * - **low**: Standard handling (display names, status, config metadata)
  */
+
+// =============================================================================
+// Data Sensitivity Classification
+// =============================================================================
+
+/**
+ * Classification levels for sensitive data in the connector system.
+ * Used to enforce appropriate protection for each data field.
+ */
+export type DataSensitivity = 'critical' | 'high' | 'medium' | 'low'
 
 // =============================================================================
 // Connector Categories & Providers
@@ -70,9 +88,12 @@ export type ConnectorStatus = 'connected' | 'error' | 'expired'
 export interface OAuthConfig {
   authUrl: string
   tokenUrl: string
+  /** @sensitivity high - reveals granted permissions */
   scopes: string[]
+  /** @sensitivity high - OAuth client identifier */
   clientId: string
-  clientSecret?: string // Required for some providers (Google) even in SPA
+  /** @sensitivity critical - must be kept server-side; empty on client */
+  clientSecret?: string
   pkceRequired: boolean
   /** Use HTTP Basic Auth for token exchange instead of client_secret in body (required by Notion) */
   useBasicAuth?: boolean
@@ -84,7 +105,9 @@ export interface OAuthConfig {
 export interface ApiConfig {
   baseUrl: string
   authType: 'bearer' | 'api-key' | 'basic' | 'none'
+  /** @sensitivity critical - encrypted API credential */
   encryptedCredential?: string
+  /** @sensitivity high - may contain auth headers */
   headers?: Record<string, string>
 }
 
@@ -220,15 +243,23 @@ export interface Connector {
   name: string // User-defined display name
 
   // App connectors (OAuth)
+  /** @sensitivity critical - AES-GCM encrypted OAuth access token */
   encryptedToken?: string
+  /** @sensitivity critical - AES-GCM encrypted OAuth refresh token */
   encryptedRefreshToken?: string
-  tokenIv?: string // IV for access token encryption (synced via Yjs)
-  refreshTokenIv?: string // IV for refresh token encryption (synced via Yjs)
+  /** @sensitivity high - initialization vector for token decryption */
+  tokenIv?: string
+  /** @sensitivity high - initialization vector for refresh token decryption */
+  refreshTokenIv?: string
   tokenExpiresAt?: Date
+  /** @sensitivity high - reveals granted OAuth permissions */
   scopes?: string[]
-  accountId?: string // For linking related services (e.g., Google)
-  accountEmail?: string // Display purposes
-  accountPicture?: string // User avatar URL from userinfo endpoint
+  /** @sensitivity high - external account identifier (PII) */
+  accountId?: string
+  /** @sensitivity high - user email address (PII, synced via P2P) */
+  accountEmail?: string
+  /** @sensitivity medium - user avatar URL (indirect PII) */
+  accountPicture?: string
 
   // API connectors
   apiConfig?: ApiConfig
@@ -238,11 +269,13 @@ export interface Connector {
 
   // Sync configuration
   syncEnabled: boolean
-  syncFolders?: string[] // Selected folders/databases to sync
+  /** @sensitivity medium - reveals user's selected external folders */
+  syncFolders?: string[]
   syncInterval?: number // Minutes between syncs (default: 30)
 
   // Status
   status: ConnectorStatus
+  /** @sensitivity medium - may contain provider error details; must be sanitized */
   errorMessage?: string
   lastSyncAt?: Date
 
@@ -261,11 +294,13 @@ export interface Connector {
 export interface ConnectorSyncState {
   id: string
   connectorId: string
-  cursor: string | null // Provider-specific delta token
+  /** @sensitivity medium - provider-specific delta token; may reveal sync position */
+  cursor: string | null
   lastSyncAt: Date
   itemsSynced: number
   syncType: 'full' | 'delta'
   status: 'idle' | 'syncing' | 'error'
+  /** @sensitivity medium - must be sanitized before storage */
   errorMessage?: string
 }
 
@@ -275,19 +310,29 @@ export interface ConnectorSyncState {
 
 /**
  * Result from OAuth authentication flow
+ *
+ * Contains plaintext tokens — must be encrypted via SecureStorage
+ * immediately after receipt. Never persist or log this object directly.
  */
 export interface OAuthResult {
+  /** @sensitivity critical - plaintext access token; encrypt immediately */
   accessToken: string
+  /** @sensitivity critical - plaintext refresh token; encrypt immediately */
   refreshToken?: string
   expiresIn?: number
+  /** @sensitivity high - reveals granted permissions */
   scope: string
   tokenType: string
 }
 
 /**
  * Result from token refresh
+ *
+ * Contains a plaintext token — must be encrypted via SecureStorage
+ * immediately after receipt. Never persist or log.
  */
 export interface TokenRefreshResult {
+  /** @sensitivity critical - plaintext access token; encrypt immediately */
   accessToken: string
   expiresIn?: number
 }
@@ -296,17 +341,24 @@ export interface TokenRefreshResult {
  * Account information from OAuth provider
  */
 export interface AccountInfo {
+  /** @sensitivity high - external account identifier */
   id: string
+  /** @sensitivity high - user email (PII) */
   email?: string
+  /** @sensitivity high - user display name (PII) */
   name?: string
+  /** @sensitivity medium - user avatar URL (indirect PII) */
   picture?: string
 }
 
 /**
  * Pending OAuth state during authentication
+ *
+ * Transient in-memory state — cleaned up after OAuth flow completes or times out.
  */
 export interface PendingOAuthState {
   provider: AppConnectorProvider
+  /** @sensitivity critical - PKCE code verifier; must never be logged or persisted */
   codeVerifier: string
   timestamp: number
 }
