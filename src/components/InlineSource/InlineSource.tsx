@@ -433,7 +433,7 @@ export const InlineCitation = memo(
 
     const citationContent = (
       <span
-        className={`align-text-top inline-flex items-center gap-0.5 h-5 px-1.5 text-xs font-medium rounded bg-default-100 dark:bg-default-50 text-default-700 dark:text-default-600 cursor-pointer transition-opacity hover:opacity-70 ${isLoading ? 'opacity-50' : ''}`}
+        className={`align-text-top inline-flex items-center gap-0.5 h-5 px-1.5 text-xs font-medium rounded bg-default-100 dark:bg-default-50 text-default-700 dark:text-default-600 cursor-pointer transition-opacity hover:opacity-70 select-none ${isLoading ? 'opacity-50' : ''}`}
         onClick={onClick}
       >
         <Icon name={icon as IconName} size="sm" />
@@ -560,7 +560,7 @@ export const SemanticCitation = memo(
 
     const citationContent = (
       <span
-        className={`align-text-top inline-flex items-center gap-0.5 h-5 px-1.5 text-xs font-medium rounded transition-opacity hover:opacity-70 ${colorClasses}`}
+        className={`align-text-top inline-flex items-center gap-0.5 h-5 px-1.5 text-xs font-medium rounded transition-opacity hover:opacity-70 select-none ${colorClasses}`}
       >
         <Icon name={icon} size="sm" />
         <span>{displayLabel}</span>
@@ -651,7 +651,7 @@ export const InlineSource = memo(
             rel="noopener noreferrer"
             size="sm"
             variant="flat"
-            className="cursor-pointer hover:opacity-80 transition-opacity text-tiny gap-1"
+            className="cursor-pointer hover:opacity-80 transition-opacity text-tiny gap-1 select-none"
             startContent={<Icon name={icon as any} className="w-3 h-3" />}
           >
             {displayContent}
@@ -679,7 +679,7 @@ export const InlineSource = memo(
             isDisabled={isLoading}
             size="sm"
             variant="flat"
-            className="cursor-pointer hover:opacity-80 transition-opacity text-tiny gap-1"
+            className="cursor-pointer hover:opacity-80 transition-opacity text-tiny gap-1 select-none"
             startContent={<Icon name={icon as any} className="w-3 h-3" />}
           >
             {displayContent}
