@@ -423,6 +423,10 @@ export class GoogleDriveProvider extends BaseAppConnectorProvider {
 
     params.set('q', queryParts.join(' and '))
 
+    // Include files from Shared Drives (formerly Team Drives)
+    params.set('supportsAllDrives', 'true')
+    params.set('includeItemsFromAllDrives', 'true')
+
     return params
   }
 
@@ -482,7 +486,7 @@ export class GoogleDriveProvider extends BaseAppConnectorProvider {
    */
   async read(connector: Connector, externalId: string): Promise<ContentResult> {
     // First, get file metadata to determine the type
-    const metadataUrl = `${DRIVE_API_BASE}/files/${encodeURIComponent(externalId)}?fields=${encodeURIComponent(FILE_FIELDS)}`
+    const metadataUrl = `${DRIVE_API_BASE}/files/${encodeURIComponent(externalId)}?fields=${encodeURIComponent(FILE_FIELDS)}&supportsAllDrives=true`
     const metadata = await this.fetchJson<DriveFile>(connector, metadataUrl)
 
     // Check if this is a Google Docs format that needs export
@@ -493,7 +497,7 @@ export class GoogleDriveProvider extends BaseAppConnectorProvider {
 
     if (exportConfig) {
       // Export Google Docs to a downloadable format
-      const exportUrl = `${DRIVE_API_BASE}/files/${encodeURIComponent(externalId)}/export?mimeType=${encodeURIComponent(exportConfig.exportMimeType)}`
+      const exportUrl = `${DRIVE_API_BASE}/files/${encodeURIComponent(externalId)}/export?mimeType=${encodeURIComponent(exportConfig.exportMimeType)}&supportsAllDrives=true`
       const response = await this.fetchWithAuth(connector, exportUrl)
 
       if (!response.ok) {
@@ -504,7 +508,7 @@ export class GoogleDriveProvider extends BaseAppConnectorProvider {
       mimeType = exportConfig.exportMimeType
     } else {
       // Download regular file content
-      const downloadUrl = `${DRIVE_API_BASE}/files/${encodeURIComponent(externalId)}?alt=media`
+      const downloadUrl = `${DRIVE_API_BASE}/files/${encodeURIComponent(externalId)}?alt=media&supportsAllDrives=true`
       const response = await this.fetchWithAuth(connector, downloadUrl)
 
       if (!response.ok) {
@@ -552,6 +556,8 @@ export class GoogleDriveProvider extends BaseAppConnectorProvider {
       fields: LIST_FIELDS,
       pageSize: '50',
       q: searchQuery,
+      supportsAllDrives: 'true',
+      includeItemsFromAllDrives: 'true',
     })
 
     const url = `${DRIVE_API_BASE}/files?${params.toString()}`
@@ -586,7 +592,7 @@ export class GoogleDriveProvider extends BaseAppConnectorProvider {
 
     if (!cursor) {
       // Get the initial start page token
-      const startTokenUrl = `${DRIVE_API_BASE}/changes/startPageToken`
+      const startTokenUrl = `${DRIVE_API_BASE}/changes/startPageToken?supportsAllDrives=true`
       const startTokenData = await this.fetchJson<DriveStartPageTokenResponse>(
         connector,
         startTokenUrl,
@@ -601,6 +607,8 @@ export class GoogleDriveProvider extends BaseAppConnectorProvider {
       fields: CHANGES_FIELDS,
       pageSize: '100',
       includeRemoved: 'true',
+      supportsAllDrives: 'true',
+      includeItemsFromAllDrives: 'true',
     })
 
     const url = `${DRIVE_API_BASE}/changes?${params.toString()}`
