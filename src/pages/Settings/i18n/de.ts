@@ -117,6 +117,9 @@ export const de: I18n = {
   'Quick Reply Suggestions': 'Schnellantwort-Vorschläge',
   'Show AI-generated follow-up suggestions after each assistant response':
     'KI-generierte Folgevorschläge nach jeder Assistentenantwort anzeigen',
+  'Web Search Grounding': 'Web-Suchverankerung',
+  'Allow AI models to search the web for up-to-date information (supported by Google Gemini and Anthropic Claude)':
+    'KI-Modellen erlauben, das Web nach aktuellen Informationen zu durchsuchen (unterstützt von Google Gemini und Anthropic Claude)',
   'Global System Instructions': 'Globale Systemanweisungen',
   "These instructions will be prepended to every agent's instructions":
     'Diese Anweisungen werden den Anweisungen jedes Agenten vorangestellt',

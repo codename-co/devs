@@ -630,6 +630,14 @@ export class WorkflowOrchestrator {
         throw new Error('No LLM provider configured')
       }
 
+      // Apply web search grounding setting
+      const { enableWebSearchGrounding } = (
+        await import('@/stores/userStore')
+      ).userSettings.getState()
+      if (enableWebSearchGrounding) {
+        ;(config as any).enableWebSearch = true
+      }
+
       // Get knowledge attachments for the agent
       const knowledgeAttachments = await getKnowledgeAttachments(
         agent.knowledgeItemIds,

@@ -113,6 +113,9 @@ export const ko: I18n = {
   'Quick Reply Suggestions': '빠른 답변 제안',
   'Show AI-generated follow-up suggestions after each assistant response':
     '각 어시스턴트 응답 후 AI가 생성한 후속 제안 표시',
+  'Web Search Grounding': '웹 검색 기반 응답',
+  'Allow AI models to search the web for up-to-date information (supported by Google Gemini and Anthropic Claude)':
+    'AI 모델이 최신 정보를 위해 웹을 검색할 수 있도록 허용 (Google Gemini 및 Anthropic Claude 지원)',
   'Global System Instructions': '전역 시스템 지침',
   "These instructions will be prepended to every agent's instructions":
     '이 지침은 모든 에이전트의 지침 앞에 추가됩니다',

@@ -35,6 +35,8 @@ export interface SyncedSettings {
   autoMemoryLearning?: boolean
   // Suggestions
   suggestionsEnabled?: boolean
+  // Web search grounding
+  enableWebSearchGrounding?: boolean
   // Global system instructions
   globalSystemInstructions?: string
 }
@@ -60,6 +62,7 @@ export interface UserSettings extends SyncedSettings, LocalSettings {}
 const defaultSyncedSettings: SyncedSettings = {
   hideDefaultAgents: false,
   suggestionsEnabled: true,
+  enableWebSearchGrounding: true,
 }
 
 const defaultLocalSettings: LocalSettings = {
@@ -110,6 +113,7 @@ interface UserSettingsStore extends UserSettings {
   setLiveAutoSpeak: (enabled: boolean) => void
   setAutoMemoryLearning: (enabled: boolean) => void
   setSuggestionsEnabled: (enabled: boolean) => void
+  setEnableWebSearchGrounding: (enabled: boolean) => void
   setGlobalSystemInstructions: (instructions: string | undefined) => void
 
   // Local settings setters (localStorage only)
@@ -180,6 +184,10 @@ export const userSettings = create<UserSettingsStore>()(
       setSuggestionsEnabled: (enabled: boolean) => {
         setSyncedSetting('suggestionsEnabled', enabled)
         set({ suggestionsEnabled: enabled })
+      },
+      setEnableWebSearchGrounding: (enabled: boolean) => {
+        setSyncedSetting('enableWebSearchGrounding', enabled)
+        set({ enableWebSearchGrounding: enabled })
       },
       setGlobalSystemInstructions: (instructions: string | undefined) => {
         setSyncedSetting('globalSystemInstructions', instructions)

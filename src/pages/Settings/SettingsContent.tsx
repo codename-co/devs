@@ -98,6 +98,12 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
   const setSuggestionsEnabled = userSettings(
     (state) => state.setSuggestionsEnabled,
   )
+  const enableWebSearchGrounding = userSettings(
+    (state) => state.enableWebSearchGrounding ?? true,
+  )
+  const setEnableWebSearchGrounding = userSettings(
+    (state) => state.setEnableWebSearchGrounding,
+  )
   const globalSystemInstructions = userSettings(
     (state) => state.globalSystemInstructions ?? '',
   )
@@ -797,6 +803,29 @@ export const SettingsContent = ({ isModal = false }: SettingsContentProps) => {
                 <p className="text-xs text-default-500 mt-1 ml-7">
                   {t(
                     'Show AI-generated follow-up suggestions after each assistant response',
+                  )}
+                </p>
+              </div>
+
+              <div
+                id="web-search-grounding"
+                className={getHighlightClasses(
+                  'web-search-grounding',
+                  'max-w-xs mr-3 p-2 -m-2',
+                )}
+              >
+                <Switch
+                  isSelected={enableWebSearchGrounding}
+                  onChange={(e) =>
+                    setEnableWebSearchGrounding(e.target.checked)
+                  }
+                  size="sm"
+                >
+                  {t('Web Search Grounding')}
+                </Switch>
+                <p className="text-xs text-default-500 mt-1 ml-7">
+                  {t(
+                    'Allow AI models to search the web for up-to-date information (supported by Google Gemini and Anthropic Claude)',
                   )}
                 </p>
               </div>

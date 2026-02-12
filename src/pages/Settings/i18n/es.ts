@@ -114,6 +114,9 @@ export const es: I18n = {
   'Quick Reply Suggestions': 'Sugerencias de respuesta rápida',
   'Show AI-generated follow-up suggestions after each assistant response':
     'Mostrar sugerencias de seguimiento generadas por IA después de cada respuesta del asistente',
+  'Web Search Grounding': 'Búsqueda web integrada',
+  'Allow AI models to search the web for up-to-date information (supported by Google Gemini and Anthropic Claude)':
+    'Permitir que los modelos de IA busquen información actualizada en la web (compatible con Google Gemini y Anthropic Claude)',
   'Global System Instructions': 'Instrucciones globales del sistema',
   "These instructions will be prepended to every agent's instructions":
     'Estas instrucciones se añadirán al inicio de las instrucciones de cada agente',

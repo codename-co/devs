@@ -1,4 +1,5 @@
 import { LLMService, LLMMessage, ToolDefinition, ToolCall } from '@/lib/llm'
+import type { GroundingMetadata } from '@/lib/llm/types'
 import { CredentialService } from '@/lib/credential-service'
 import { useConversationStore } from '@/stores/conversationStore'
 import { getDefaultAgent } from '@/stores/agentStore'
@@ -240,30 +241,81 @@ async function getConnectorToolDefinitions(): Promise<ToolDefinition[]> {
 }
 
 /**
- * Parse tool calls from streaming response.
+ * Parse tool calls and grounding metadata from streaming response.
  * Tool calls are emitted as __TOOL_CALLS__[...json...] at the end of stream.
+ * Grounding metadata is emitted as __GROUNDING_METADATA__{...json...} at the end of stream.
  */
 function parseToolCallsFromStream(response: string): {
   content: string
   toolCalls: ToolCall[]
+  groundingMetadata?: GroundingMetadata
 } {
+  let content = response
+  let toolCalls: ToolCall[] = []
+  let groundingMetadata: GroundingMetadata | undefined
+
+  // Extract grounding metadata (appears at end of stream from Google provider)
+  const groundingMarker = '__GROUNDING_METADATA__'
+  const groundingIndex = content.indexOf(groundingMarker)
+  if (groundingIndex !== -1) {
+    const groundingJson = content.substring(
+      groundingIndex + groundingMarker.length,
+    )
+    content = content.substring(0, groundingIndex)
+    try {
+      groundingMetadata = JSON.parse(groundingJson) as GroundingMetadata
+    } catch (error) {
+      console.error('Failed to parse grounding metadata from stream:', error)
+    }
+  }
+
+  // Extract tool calls
   const toolCallMarker = '__TOOL_CALLS__'
-  const markerIndex = response.indexOf(toolCallMarker)
-
-  if (markerIndex === -1) {
-    return { content: response, toolCalls: [] }
+  const markerIndex = content.indexOf(toolCallMarker)
+  if (markerIndex !== -1) {
+    const toolCallsJson = content.substring(markerIndex + toolCallMarker.length)
+    content = content.substring(0, markerIndex)
+    try {
+      toolCalls = JSON.parse(toolCallsJson) as ToolCall[]
+    } catch (error) {
+      console.error('Failed to parse tool calls from stream:', error)
+    }
   }
 
-  const content = response.substring(0, markerIndex)
-  const toolCallsJson = response.substring(markerIndex + toolCallMarker.length)
+  return { content, toolCalls, groundingMetadata }
+}
 
-  try {
-    const toolCalls = JSON.parse(toolCallsJson) as ToolCall[]
-    return { content, toolCalls }
-  } catch (error) {
-    console.error('Failed to parse tool calls from stream:', error)
-    return { content: response, toolCalls: [] }
+/**
+ * Format grounding metadata web results as a markdown sources section.
+ * Appends a formatted list of source links to the content.
+ */
+function formatGroundingSources(
+  content: string,
+  metadata: GroundingMetadata,
+): string {
+  if (
+    !metadata.isGrounded ||
+    !metadata.webResults ||
+    metadata.webResults.length === 0
+  ) {
+    return content
   }
+
+  // Deduplicate by URL
+  const seen = new Set<string>()
+  const uniqueResults = metadata.webResults.filter((r) => {
+    if (seen.has(r.url)) return false
+    seen.add(r.url)
+    return true
+  })
+
+  if (uniqueResults.length === 0) return content
+
+  const sourcesSection = uniqueResults
+    .map((r, i) => `${i + 1}. [${r.title || r.url}](${r.url})`)
+    .join('\n')
+
+  return `${content.trimEnd()}\n\n---\n**Sources:**\n${sourcesSection}`
 }
 
 /**
@@ -684,10 +736,19 @@ export const submitChat = async (
     )
     const hasTools = allToolDefinitions.length > 0
 
+    // Check if web search grounding is enabled in user settings
+    const { enableWebSearchGrounding } = (
+      await import('@/stores/userStore')
+    ).userSettings.getState()
+
     // Build config with tools if the agent has any enabled
-    const llmConfig = hasTools
-      ? { ...config, tools: allToolDefinitions, tool_choice: 'auto' as const }
-      : config
+    const llmConfig = {
+      ...config,
+      ...(hasTools
+        ? { tools: allToolDefinitions, tool_choice: 'auto' as const }
+        : {}),
+      ...(enableWebSearchGrounding ? { enableWebSearch: true } : {}),
+    }
 
     // Call the LLM service with streaming and handle tool calls
     let response = ''
@@ -717,9 +778,17 @@ export const submitChat = async (
         onResponseUpdate({ type: 'content', content })
       }
 
-      // Parse the final response for tool calls
-      const { content, toolCalls } = parseToolCallsFromStream(response)
+      // Parse the final response for tool calls and grounding metadata
+      const { content, toolCalls, groundingMetadata } =
+        parseToolCallsFromStream(response)
       finalContent = content
+
+      // If grounding metadata has web results, append formatted sources
+      if (groundingMetadata) {
+        finalContent = formatGroundingSources(finalContent, groundingMetadata)
+        // Update the UI with the final content including sources
+        onResponseUpdate({ type: 'content', content: finalContent })
+      }
 
       // If no tool calls, we're done
       if (toolCalls.length === 0) {

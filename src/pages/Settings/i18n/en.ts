@@ -88,6 +88,8 @@ export const en = [
   'Automatically extract learnable information from conversations to build agent memory',
   'Quick Reply Suggestions',
   'Show AI-generated follow-up suggestions after each assistant response',
+  'Web Search Grounding',
+  'Allow AI models to search the web for up-to-date information (supported by Google Gemini and Anthropic Claude)',
   'Global System Instructions',
   "These instructions will be prepended to every agent's instructions",
   'Enter global instructions that apply to all agents...',
