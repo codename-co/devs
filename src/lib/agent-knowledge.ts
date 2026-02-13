@@ -1,7 +1,4 @@
-import {
-  getKnowledgeItemAsync,
-  ensureReady,
-} from '@/stores/knowledgeStore'
+import { getKnowledgeItemAsync, ensureReady } from '@/stores/knowledgeStore'
 import { KnowledgeItem } from '@/types'
 import { LLMMessageAttachment } from './llm'
 
@@ -74,6 +71,27 @@ export async function getKnowledgeAttachments(
     const attachments: LLMMessageAttachment[] = []
 
     for (const item of knowledgeItems) {
+      // For documents (especially PDFs), prefer the extracted transcript over raw binary.
+      // Sending raw PDFs can fail with some providers (e.g. Google: "The document has no pages")
+      // if the PDF is empty, corrupt, or has no renderable pages.
+      if (item.fileType === 'document' && item.transcript) {
+        // Use the processed transcript text instead of the raw document binary
+        const encoder = new TextEncoder()
+        const utf8Bytes = encoder.encode(item.transcript)
+        const binaryString = Array.from(utf8Bytes, (byte) =>
+          String.fromCharCode(byte),
+        ).join('')
+        const data = btoa(binaryString)
+
+        attachments.push({
+          type: 'text',
+          name: item.name,
+          data: data,
+          mimeType: 'text/plain',
+        })
+        continue
+      }
+
       if (item.content) {
         let attachmentType: 'image' | 'document' | 'text' = 'text'
         let data = item.content
@@ -103,6 +121,17 @@ export async function getKnowledgeAttachments(
             if (base64Match) {
               data = base64Match[1]
             }
+          }
+
+          // Validate document data: skip empty or clearly invalid PDFs
+          if (
+            item.mimeType === 'application/pdf' &&
+            (!data || data.length < 20)
+          ) {
+            console.warn(
+              `[AGENT-KNOWLEDGE] Skipping PDF "${item.name}" - data appears empty or invalid (${data?.length || 0} bytes)`,
+            )
+            continue
           }
         } else {
           // Text file
