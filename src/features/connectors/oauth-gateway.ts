@@ -26,6 +26,9 @@ import type {
 /** Timeout for OAuth flows (5 minutes) */
 const AUTH_TIMEOUT_MS = 5 * 60 * 1000
 
+/** BroadcastChannel name for OAuth callback communication */
+const OAUTH_BROADCAST_CHANNEL = 'devs-oauth-callback'
+
 /** Popup window dimensions */
 const POPUP_WIDTH = 500
 const POPUP_HEIGHT = 700
@@ -548,10 +551,15 @@ export class OAuthGateway {
 
   /**
    * Wait for the OAuth callback from the popup window
-   * Listens for postMessage from the callback page
+   * Uses both postMessage and BroadcastChannel to handle COOP restrictions.
+   *
+   * When OAuth providers (Google, etc.) enforce Cross-Origin-Opener-Policy,
+   * the window.opener link is permanently severed during the redirect chain.
+   * BroadcastChannel works across same-origin contexts without needing
+   * a window reference, making it immune to COOP restrictions.
    *
    * @param popup - The popup window reference
-   * @param _expectedState - The state parameter to match (verified by caller)
+   * @param expectedState - The state parameter to match (verified by caller)
    * @returns Promise resolving to the authorization code and state
    */
   private static waitForCallback(
@@ -560,62 +568,75 @@ export class OAuthGateway {
   ): Promise<{ code: string; receivedState: string }> {
     return new Promise((resolve, reject) => {
       const startTime = Date.now()
+      let coopBlocked = false
 
-      // Listen for message from popup
-      const handleMessage = (event: MessageEvent) => {
-        // Verify origin
-        if (event.origin !== window.location.origin) {
-          return
-        }
-
+      // Process an incoming OAuth callback message from any channel
+      const processCallbackMessage = (
+        data: Record<string, string>,
+        source: string,
+      ) => {
         // Check if this is an OAuth callback message
-        if (event.data?.type !== 'oauth_callback') {
+        if (data?.type !== 'oauth_callback') {
           return
         }
 
         // IMPORTANT: Only process messages for OUR state
         // This prevents issues when multiple OAuth flows are started (e.g., React Strict Mode)
-        if (event.data.state && event.data.state !== expectedState) {
+        if (data.state && data.state !== expectedState) {
           console.log('[OAuthGateway] Ignoring callback for different state:', {
-            receivedState: event.data.state,
+            receivedState: data.state,
             expectedState,
+            source,
           })
           return
         }
 
-        console.log('[OAuthGateway] Received callback message:', {
-          hasCode: !!event.data.code,
-          hasState: !!event.data.state,
-          receivedState: event.data.state,
-          expectedState,
-          statesMatch: event.data.state === expectedState,
+        console.log(`[OAuthGateway] Received callback via ${source}:`, {
+          hasCode: !!data.code,
+          hasState: !!data.state,
         })
 
         cleanup()
 
-        if (event.data.error) {
+        if (data.error) {
           reject(
-            new Error(
-              event.data.error_description || event.data.error || 'OAuth error',
-            ),
+            new Error(data.error_description || data.error || 'OAuth error'),
           )
           return
         }
 
-        if (!event.data.code) {
+        if (!data.code) {
           reject(new Error('No authorization code received'))
           return
         }
 
         resolve({
-          code: event.data.code,
-          receivedState: event.data.state,
+          code: data.code,
+          receivedState: data.state,
         })
       }
 
-      // Check if popup is closed
-      // Note: COOP (Cross-Origin-Opener-Policy) may block window.closed access
-      // We wrap this in try-catch to handle gracefully
+      // 1. Listen via postMessage (works when window.opener is available)
+      const handleMessage = (event: MessageEvent) => {
+        if (event.origin !== window.location.origin) {
+          return
+        }
+        processCallbackMessage(event.data, 'postMessage')
+      }
+
+      // 2. Listen via BroadcastChannel (works even when COOP severs window.opener)
+      let broadcastChannel: BroadcastChannel | null = null
+      try {
+        broadcastChannel = new BroadcastChannel(OAUTH_BROADCAST_CHANNEL)
+        broadcastChannel.onmessage = (event: MessageEvent) => {
+          processCallbackMessage(event.data, 'BroadcastChannel')
+        }
+      } catch {
+        // BroadcastChannel not supported - fall back to postMessage only
+        console.warn('[OAuthGateway] BroadcastChannel not supported')
+      }
+
+      // Check if popup is closed (best-effort, COOP may block this)
       const checkClosed = setInterval(() => {
         try {
           if (popup.closed) {
@@ -623,8 +644,14 @@ export class OAuthGateway {
             reject(new Error('Authentication cancelled'))
           }
         } catch {
-          // COOP blocks access to popup.closed - rely on postMessage instead
-          // The flow will complete via postMessage or timeout
+          // COOP blocks access to popup.closed
+          // Log once and rely on BroadcastChannel + timeout instead
+          if (!coopBlocked) {
+            coopBlocked = true
+            console.info(
+              '[OAuthGateway] COOP blocks popup.closed access, relying on BroadcastChannel fallback',
+            )
+          }
         }
         // Timeout check
         if (Date.now() - startTime > AUTH_TIMEOUT_MS) {
@@ -636,6 +663,10 @@ export class OAuthGateway {
       const cleanup = () => {
         window.removeEventListener('message', handleMessage)
         clearInterval(checkClosed)
+        if (broadcastChannel) {
+          broadcastChannel.close()
+          broadcastChannel = null
+        }
       }
 
       window.addEventListener('message', handleMessage)
