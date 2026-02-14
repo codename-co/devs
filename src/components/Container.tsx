@@ -20,7 +20,7 @@ export const Container = forwardRef<HTMLDivElement, ContainerProps>(
       <div
         ref={ref}
         role="container"
-        className={`${sizeClasses[size] || 'max-w-4xl'} my-6 space-y-6 gap-6 mx-auto ${className}`.trim()}
+        className={`${sizeClasses[size] || 'max-w-4xl'} folded-landscape:max-w-none my-6 space-y-6 gap-6 mx-auto ${className}`.trim()}
         style={style}
       >
         {children}

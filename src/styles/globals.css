@@ -1,6 +1,24 @@
 @import 'tailwindcss';
 @config "../../tailwind.config.js";
 
+@custom-variant folded {
+  @media (device-posture: folded) {
+    @slot;
+  }
+}
+
+@custom-variant folded-portrait {
+  @media (device-posture: folded) and (orientation: portrait) {
+    @slot;
+  }
+}
+
+@custom-variant folded-landscape {
+  @media (device-posture: folded) and (orientation: landscape) {
+    @slot;
+  }
+}
+
 @font-face {
   font-family: 'Figtree';
   font-style: normal;

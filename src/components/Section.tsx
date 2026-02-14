@@ -26,7 +26,7 @@ export const Section = forwardRef<HTMLElement, SectionProps>(
         style={style}
       >
         <div
-          className={`${sizeClasses[size] || 'max-w-4xl'} mx-auto my-6 space-y-6 gap-6 ${className}`.trim()}
+          className={`${sizeClasses[size] || 'max-w-4xl'} folded-landscape:max-w-none mx-auto my-6 space-y-6 gap-6 ${className}`.trim()}
         >
           {children}
         </div>

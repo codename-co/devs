@@ -16,5 +16,8 @@
     "devs/.vscode/mcp.json: io.github.upstash/context7": {
       "allowedModels": ["copilot/claude-sonnet-4.5"]
     }
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
   }
 }

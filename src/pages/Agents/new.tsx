@@ -386,7 +386,7 @@ export function AgentsNewPage() {
     <DefaultLayout title={String(header.title)} header={header}>
       <Section>
         <Container>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 folded-landscape:grid-cols-2 gap-8">
             {/* Left Side - Agent Creation */}
             <div className="space-y-6">
               <Tabs

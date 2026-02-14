@@ -150,7 +150,7 @@ export const ArenaPage = () => {
 
     // Battle in progress - show bracket and current match
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 folded-landscape:grid-cols-2 gap-6">
         <div className="space-y-4">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Icon name="Strategy" className="w-5 h-5 text-primary" />

@@ -1,4 +1,4 @@
-import { Icon, PageMenuButton, Section } from '@/components'
+import { Icon, PageMenuButton } from '@/components'
 import { AgentSelector } from '@/components/PromptArea/AgentSelector'
 import { useI18n } from '@/i18n'
 import localI18n from '../i18n'
@@ -402,9 +402,9 @@ export const LivePage = () => {
         </>
       }
     >
-      <Section mainClassName="flex flex-col items-center justify-end min-h-full gap-8 relative pb-16">
-        {/* Voice waveform visualization - Full width background */}
-        <div className="absolute inset-0 flex items-center pointer-events-none overflow-hidden">
+      <div className="flex flex-col items-center justify-end h-[calc(100dvh-4rem)] w-full gap-8 relative overflow-hidden pb-16 folded-portrait:h-dvh">
+        {/* Waveform panel - background by default, top half when folded */}
+        <div className="absolute inset-0 flex items-center pointer-events-none overflow-hidden folded-portrait:relative folded-portrait:inset-auto folded-portrait:w-full folded-portrait:h-[env(viewport-segment-height_0_0,50%)] folded-portrait:min-h-[env(viewport-segment-height_0_0,50%)] folded-portrait:max-h-[env(viewport-segment-height_0_0,50%)]">
           <VoiceWaveform
             isActive={isRecording || isSpeaking}
             width={2000}
@@ -439,94 +439,101 @@ export const LivePage = () => {
           </div>
         )}
 
-        {/* AI Response display */}
-        {aiResponse && (
-          <div className="text-center text-xl font-medium px-4 max-w-4xl relative z-10 text-primary-600 dark:text-primary-400">
-            {aiResponse}
+        {/* Actions panel - overlaid by default, bottom half when folded */}
+        <div className="contents folded-portrait:flex folded-portrait:flex-col folded-portrait:items-center folded-portrait:justify-center folded-portrait:h-[env(viewport-segment-height_0_1,50%)] folded-portrait:min-h-[env(viewport-segment-height_0_1,50%)] folded-portrait:gap-4">
+          {/* AI Response display */}
+          {aiResponse && (
+            <div className="text-center text-xl font-medium px-4 max-w-4xl relative z-10 text-primary-600 dark:text-primary-400 line-clamp-6">
+              {aiResponse}
+            </div>
+          )}
+
+          {/* Transcript / User speech display */}
+          <div className="text-center text-2xl font-medium min-h-16 px-4 max-w-4xl relative z-10">
+            {isRecording && transcript ? (
+              <span className="text-default-700">{transcript}</span>
+            ) : isGenerating ? (
+              <span className="text-default-400 animate-pulse">
+                {t('Thinking…')}
+              </span>
+            ) : isRecording ? (
+              <span className="text-default-400">{t('Listening…')}</span>
+            ) : (
+              transcript && (
+                <span className="text-default-500">{transcript}</span>
+              )
+            )}
           </div>
-        )}
 
-        {/* Transcript / User speech display */}
-        <div className="text-center text-2xl font-medium min-h-16 px-4 max-w-4xl relative z-10">
-          {isRecording && transcript ? (
-            <span className="text-default-700">{transcript}</span>
-          ) : isGenerating ? (
-            <span className="text-default-400 animate-pulse">
-              {t('Thinking…')}
-            </span>
-          ) : isRecording ? (
-            <span className="text-default-400">{t('Listening…')}</span>
-          ) : (
-            transcript && <span className="text-default-500">{transcript}</span>
-          )}
-        </div>
+          {/* Main controls */}
+          <div className="flex justify-center items-center gap-4 w-full relative z-10">
+            {/* Stop generation button */}
+            {isGenerating && (
+              <Tooltip content={t('Stop')} placement="top">
+                <Button
+                  isIconOnly
+                  color="danger"
+                  radius="full"
+                  variant="ghost"
+                  size="lg"
+                  onPress={() => setIsGenerating(false)}
+                  className="min-w-16 min-h-16"
+                >
+                  <Icon name="X" size="2xl" />
+                </Button>
+              </Tooltip>
+            )}
 
-        {/* Main controls */}
-        <div className="flex justify-center items-center gap-4 w-full relative z-10">
-          {/* Stop generation button */}
-          {isGenerating && (
-            <Tooltip content={t('Stop')} placement="top">
+            {/* TTS Play button - for AI response */}
+            {aiResponse && isTTSReady && !isGenerating && (
+              <Tooltip
+                content={
+                  isSpeaking ? t('Stop speaking') : t('Speak transcript')
+                }
+                placement="top"
+              >
+                <Button
+                  isIconOnly
+                  color={isSpeaking ? 'warning' : 'secondary'}
+                  radius="full"
+                  variant="ghost"
+                  size="lg"
+                  onPress={handleSpeak}
+                  className="min-w-16 min-h-16"
+                >
+                  <Icon name={isSpeaking ? 'Pause' : 'Voice'} size="2xl" />
+                </Button>
+              </Tooltip>
+            )}
+
+            {/* Main record button */}
+            <Tooltip content={t('Speak to microphone')} placement="bottom">
               <Button
                 isIconOnly
-                color="danger"
+                color={isRecording ? 'primary' : 'default'}
+                isDisabled={!isSupported || isGenerating}
                 radius="full"
                 variant="ghost"
                 size="lg"
-                onPress={() => setIsGenerating(false)}
-                className="min-w-16 min-h-16"
+                onPress={toggleRecording}
+                className="min-w-48 min-h-48"
               >
-                <Icon name="X" size="2xl" />
+                {isRecording ? (
+                  <Icon name="DevsAnimated" size="5xl" className="devs-whole" />
+                ) : isLoading || isGenerating ? (
+                  <Icon
+                    name="RefreshDouble"
+                    size="4xl"
+                    className="animate-spin"
+                  />
+                ) : (
+                  <Icon name="Voice" size="4xl" />
+                )}
               </Button>
             </Tooltip>
-          )}
-
-          {/* TTS Play button - for AI response */}
-          {aiResponse && isTTSReady && !isGenerating && (
-            <Tooltip
-              content={isSpeaking ? t('Stop speaking') : t('Speak transcript')}
-              placement="top"
-            >
-              <Button
-                isIconOnly
-                color={isSpeaking ? 'warning' : 'secondary'}
-                radius="full"
-                variant="ghost"
-                size="lg"
-                onPress={handleSpeak}
-                className="min-w-16 min-h-16"
-              >
-                <Icon name={isSpeaking ? 'Pause' : 'Voice'} size="2xl" />
-              </Button>
-            </Tooltip>
-          )}
-
-          {/* Main record button */}
-          <Tooltip content={t('Speak to microphone')} placement="bottom">
-            <Button
-              isIconOnly
-              color={isRecording ? 'primary' : 'default'}
-              isDisabled={!isSupported || isGenerating}
-              radius="full"
-              variant="ghost"
-              size="lg"
-              onPress={toggleRecording}
-              className="min-w-48 min-h-48"
-            >
-              {isRecording ? (
-                <Icon name="DevsAnimated" size="5xl" className="devs-whole" />
-              ) : isLoading || isGenerating ? (
-                <Icon
-                  name="RefreshDouble"
-                  size="4xl"
-                  className="animate-spin"
-                />
-              ) : (
-                <Icon name="Voice" size="4xl" />
-              )}
-            </Button>
-          </Tooltip>
+          </div>
         </div>
-      </Section>
+      </div>
     </DefaultLayout>
   )
 }
