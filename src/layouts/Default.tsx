@@ -245,7 +245,7 @@ export default function DefaultLayout({
               <PageMenu supplementalActions={pageMenuActions} />
 
               <div
-                className={`flex-1 flex flex-col pb-14 md:pb-0 ${className ?? ''}`}
+                className={`flex-1 flex flex-col pb-14 md:pb-0 [&>*:last-child]:flex-1 ${className ?? ''}`}
               >
                 {children}
               </div>
