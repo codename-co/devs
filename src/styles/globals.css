@@ -85,6 +85,12 @@
     text-decoration: none;
   }
 
+  @media (hover: none) and (pointer: coarse) {
+    kbd {
+      display: none;
+    }
+  }
+
   mark {
     @apply bg-yellow-200 text-yellow-950 dark:bg-yellow-500;
     padding: 0.2em 0.4em;
