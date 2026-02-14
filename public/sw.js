@@ -590,8 +590,36 @@ self.addEventListener('fetch', (event) => {
 
     if (isHTMLRequest || isSchemaJSON || isExtensionsManifest) {
       // Network-first for HTML and schema JSON to ensure users get latest version
+      // Normalize URL to prevent mixed content errors from trailing-slash
+      // redirects behind TLS-terminating proxies (server runs on HTTP
+      // and constructs Location header with http:// protocol)
+      let fetchRequest = event.request
+      if (isHTMLRequest) {
+        const normalizedUrl = new URL(event.request.url)
+        let modified = false
+
+        // Upgrade insecure requests
+        if (normalizedUrl.protocol === 'http:') {
+          normalizedUrl.protocol = 'https:'
+          modified = true
+        }
+
+        // Add trailing slash to directory-like paths to prevent server redirects
+        if (
+          !normalizedUrl.pathname.endsWith('/') &&
+          !normalizedUrl.pathname.includes('.')
+        ) {
+          normalizedUrl.pathname += '/'
+          modified = true
+        }
+
+        if (modified) {
+          fetchRequest = new Request(normalizedUrl.toString(), event.request)
+        }
+      }
+
       event.respondWith(
-        fetch(event.request)
+        fetch(fetchRequest)
           .then((response) => {
             // Cache the new version
             if (response.ok) {
