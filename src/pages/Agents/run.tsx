@@ -1302,6 +1302,115 @@ const InlineMemoryDisplay = memo(
 
 InlineMemoryDisplay.displayName = 'InlineMemoryDisplay'
 
+// ============================================================================
+// Recent Conversations Component
+// ============================================================================
+
+const RecentConversations = memo(
+  ({
+    agent,
+    url,
+    t,
+  }: {
+    agent: Agent
+    lang: string
+    url: (path: string) => string
+    t: (key: any, vars?: any) => string
+  }) => {
+    const { conversations, loadConversations } = useConversationStore()
+    const [recentConversations, setRecentConversations] = useState<
+      {
+        id: string
+        title: string
+        messageCount: number
+        updatedAt: Date | null
+      }[]
+    >([])
+
+    useEffect(() => {
+      const load = async () => {
+        if (conversations.length === 0) {
+          await loadConversations()
+        }
+
+        const { conversations: loaded } = useConversationStore.getState()
+        const safeTime = (v: any) => {
+          if (!v) return 0
+          const d = new Date(v)
+          return isNaN(d.getTime()) ? 0 : d.getTime()
+        }
+        const agentConvs = loaded
+          .filter(
+            (conv) =>
+              (conv.agentId === agent.id ||
+                conv.participatingAgents?.includes(agent.id)) &&
+              conv.messages?.length > 0,
+          )
+          .sort((a, b) => {
+            const timeA = safeTime(a.updatedAt) || safeTime(a.timestamp)
+            const timeB = safeTime(b.updatedAt) || safeTime(b.timestamp)
+            return timeB - timeA
+          })
+          .slice(0, 3)
+          .map((conv) => {
+            const firstContent = conv.messages?.[0]?.content
+            const preview =
+              typeof firstContent === 'string'
+                ? firstContent.substring(0, 60)
+                : null
+            const ts = safeTime(conv.updatedAt) || safeTime(conv.timestamp)
+            return {
+              id: conv.id,
+              title: conv.title || preview || '…',
+              messageCount: conv.messages?.length || 0,
+              updatedAt: ts ? new Date(ts) : null,
+            }
+          })
+
+        setRecentConversations(agentConvs)
+      }
+      load()
+    }, [agent.id, conversations.length, loadConversations])
+
+    if (recentConversations.length === 0) return null
+
+    return (
+      <div className="mb-6">
+        <h3 className="text-sm font-medium text-default-500 mb-3">
+          {t('Recent conversations')}
+        </h3>
+        <div className="flex gap-2 flex-wrap">
+          {recentConversations.map((conv) => (
+            <Button
+              key={conv.id}
+              as={Link}
+              to={url(`/agents/run#${agent.slug}/${conv.id}`)}
+              variant="ghost"
+              size="md"
+              className="inline-flex justify-start"
+              endContent={
+                <Icon
+                  name="NavArrowRight"
+                  size="md"
+                  className="text-default-500"
+                />
+              }
+            >
+              <span className="font-semibold">
+                {conv.title.length > 60
+                  ? conv.title.substring(0, 60) + '…'
+                  : conv.title}
+              </span>
+            </Button>
+          ))}
+        </div>
+      </div>
+    )
+  },
+)
+
+RecentConversations.displayName = 'RecentConversations'
+
 export const AgentRunPage = () => {
   const { t, lang, url } = useI18n(localI18n)
   const location = useLocation()
@@ -2319,6 +2428,16 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
                   )}
                 </div>
               )}
+
+            {/* Recent conversations */}
+            {isConversationPristine && selectedAgent && (
+              <RecentConversations
+                agent={selectedAgent}
+                lang={lang}
+                url={url}
+                t={t}
+              />
+            )}
 
             {/* Example prompts for new conversations */}
             {isConversationPristine &&

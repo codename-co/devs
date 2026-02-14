@@ -186,4 +186,6 @@ export const fr: I18n = {
     'Informations pertinentes trouvées, traitement…',
   'Using tools…': 'Utilisation des outils…',
   'Using tool: {tool}…': "Utilisation de l'outil : {tool}…",
+  // Recent conversations
+  'Recent conversations': 'Conversations récentes',
 } as const

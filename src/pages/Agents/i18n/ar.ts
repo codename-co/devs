@@ -179,4 +179,6 @@ export const ar: I18n = {
     'تم العثور على معلومات ذات صلة، جارٍ المعالجة…',
   'Using tools…': 'جارٍ استخدام الأدوات…',
   'Using tool: {tool}…': 'جارٍ استخدام الأداة: {tool}…',
+  // Recent conversations
+  'Recent conversations': 'المحادثات الأخيرة',
 } as const

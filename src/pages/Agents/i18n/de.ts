@@ -188,4 +188,6 @@ export const de: I18n = {
     'Relevante Informationen gefunden, wird verarbeitet…',
   'Using tools…': 'Verwende Tools…',
   'Using tool: {tool}…': 'Verwende Tool: {tool}…',
+  // Recent conversations
+  'Recent conversations': 'Letzte Unterhaltungen',
 } as const

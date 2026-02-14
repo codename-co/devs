@@ -183,4 +183,6 @@ export const ko: I18n = {
   'Found relevant information, processing…': '관련 정보를 찾았습니다, 처리 중…',
   'Using tools…': '도구 사용 중…',
   'Using tool: {tool}…': '{tool} 도구 사용 중…',
+  // Recent conversations
+  'Recent conversations': '최근 대화',
 } as const

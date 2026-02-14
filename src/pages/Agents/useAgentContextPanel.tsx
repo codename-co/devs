@@ -173,9 +173,12 @@ export const useAgentContextPanel = (
           ) : (
             <div className="space-y-2">
               {agentConversations.map((conv) => {
+                const firstContent = conv.messages?.[0]?.content
                 const title =
                   conv.title ||
-                  conv.messages?.[0]?.content?.substring(0, 50) ||
+                  (typeof firstContent === 'string'
+                    ? firstContent.substring(0, 50)
+                    : null) ||
                   '…'
                 const messageCount = conv.messages?.length || 0
                 const isCurrentConversation = conv.id === conversationId

@@ -155,4 +155,6 @@ export const en = [
   'Found relevant information, processing…',
   'Using tools…',
   'Using tool: {tool}…',
+  // Recent conversations
+  'Recent conversations',
 ] as const
