@@ -1,4 +1,11 @@
-import globals from '@/styles/globals.css?raw'
+import _globals from '@/styles/globals.css?raw'
+
+// Strip Tailwind-specific directives from globals CSS for use in extension iframes.
+// The @tailwindcss/browser CDN script already provides Tailwind processing, and leaving
+// @import 'tailwindcss' would cause the browser to resolve it as a relative URL (e.g. /fr/tailwindcss → 404).
+const globals = _globals
+  .replace(/@import\s+['"]tailwindcss['"];?\s*/g, '')
+  .replace(/@config\s+[^;]+;?\s*/g, '')
 
 /**
  * Marketplace Utilities
@@ -530,7 +537,7 @@ export function generateAppPageHtml(
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   ${consoleScript}
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.18"></script>
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.28.6/babel.min.js"></script>
   ${babelPatch}
   <script type="importmap">
@@ -541,7 +548,7 @@ export function generateAppPageHtml(
         "react-dom/client": "https://esm.sh/preact@10/compat/client?standalone",
         "react/jsx-runtime": "https://esm.sh/preact@10/jsx-runtime",
         "framer-motion": "https://esm.sh/framer-motion?standalone&external=react,react-dom",
-        "@heroui/react": "https://esm.sh/@heroui/react?standalone&external=react,react-dom",
+        "@heroui/react": "https://esm.sh/@heroui/react@2.8.7?standalone&external=react,react-dom",
         "@devs/components": "/extensions/components/index.js"
       }
     }
