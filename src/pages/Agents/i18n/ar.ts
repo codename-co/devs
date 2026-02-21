@@ -87,7 +87,7 @@ export const ar: I18n = {
   'Generate Agent': 'إنشاء الوكيل',
   'Generating...': 'جارٍ الإنشاء...',
   'Or configure manually': 'أو التكوين يدوياً',
-  'No LLM provider configured. Please configure one in Settings.':
+  'No AI provider configured. Please configure one in Settings.':
     'لم يتم تكوين مزود LLM. يرجى تكوين واحد في الإعدادات.',
   'Failed to generate agent configuration. Please try again.':
     'فشل في إنشاء تكوين الوكيل. يرجى المحاولة مرة أخرى.',

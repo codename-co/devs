@@ -179,7 +179,7 @@ export const EasySetupModal = ({
 
           {decryptedData?.c && (
             <div>
-              <h4 className="font-medium mb-2">{t('LLM Providers')}</h4>
+              <h4 className="font-medium mb-2">{t('AI Providers')}</h4>
               <div className="space-y-1">
                 {decryptedData.c.map((cred: any, index: number) => (
                   <div key={index} className="flex items-center gap-2 text-sm">

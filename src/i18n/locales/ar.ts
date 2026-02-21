@@ -30,6 +30,7 @@ export const ar: I18n = {
   'Conversations history': 'سجل المحادثات',
   APPLICATIONS: 'التطبيقات',
   Marketplace: 'المتجر',
+  Skills: 'المهارات',
   Verified: 'موثق',
   'Start a conversation': 'بدء محادثة',
   Search: 'بحث',
@@ -84,7 +85,7 @@ export const ar: I18n = {
   Files: 'الملفات',
   'Manage your files': 'إدارة ملفاتك',
   'Database management': 'إدارة قاعدة البيانات',
-  'Traces and Metrics': 'التتبعات والقياسات',
+  Traces: 'التتبعات',
   'Observe and analyze traces and metrics': 'مراقبة وتحليل التتبعات والقياسات',
   Admin: 'المسؤول',
 
@@ -114,7 +115,7 @@ export const ar: I18n = {
   'Time-Boxed': 'محدد بوقت',
   Hybrid: 'هجين',
   'Select a model': 'اختر نموذجاً',
-  'Add LLM provider': 'إضافة مزود LLM',
+  'Add AI provider': 'إضافة مزود LLM',
   '{n} models': '{n} نماذج',
   'Search models...': 'البحث عن نماذج...',
   'No models found': 'لم يتم العثور على نماذج',
@@ -147,7 +148,7 @@ export const ar: I18n = {
   'Page not found': 'الصفحة غير موجودة',
 
   // LLM Integration
-  'No LLM provider configured. Please [configure one in Settings]({path}).':
+  'No AI provider configured. Please [configure one in Settings]({path}).':
     'لم يتم تكوين مزود LLM. يرجى [تكوين واحد في الإعدادات]({path}).',
 
   // MarkdownRenderer
@@ -233,7 +234,7 @@ export const ar: I18n = {
   'Open Source': 'مفتوح المصدر',
   '{license} licensed. Built by the community, for the community.':
     'مرخص بموجب {license}. بُني من قبل المجتمع، للمجتمع.',
-  'Configure your LLM provider': 'تكوين مزود LLM الخاص بك',
+  'Configure your AI provider': 'تكوين مزود LLM الخاص بك',
   'Describe your task': 'صف مهمتك',
   'Be as detailed as possible to get the best results':
     'كن مفصلاً قدر الإمكان للحصول على أفضل النتائج',
@@ -253,7 +254,7 @@ export const ar: I18n = {
   'Is my data private?': 'هل بياناتي خاصة؟',
   'Yes! All data processing happens locally in your browser. We do not collect or store any of your data.':
     'نعم! تتم معالجة جميع البيانات محلياً في متصفحك. نحن لا نجمع أو نخزن أياً من بياناتك.',
-  'Which LLM providers are supported?': 'ما هي مزودات LLM المدعومة؟',
+  'Which AI providers are supported?': 'ما هي مزودات LLM المدعومة؟',
   'We support {llmList}, and any provider compatible with the OpenAI API spec.':
     'نحن ندعم {llmList}، وأي مزود متوافق مع مواصفات OpenAI API.',
   'Do I need to install anything?': 'هل أحتاج إلى تثبيت شيء؟',
@@ -385,7 +386,7 @@ export const ar: I18n = {
   'Share the platform': 'مشاركة المنصة',
   'Export the platform settings to another device or share it with others':
     'تصدير إعدادات المنصة إلى جهاز آخر أو مشاركتها مع الآخرين',
-  'Export your current agents and LLM provider settings and share it via URL or QR code.':
+  'Export your current agents and AI provider settings and share it via URL or QR code.':
     'تصدير وكلائك الحاليين وإعدادات مزود LLM ومشاركتها عبر رابط أو رمز QR.',
   'Include my {n} agents': 'تضمين وكلائي ({n})',
   'Now you can share the platform configuration…':

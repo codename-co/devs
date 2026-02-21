@@ -1,2 +1,1 @@
-export { TracesPage } from './TracesPage'
-export { TraceShowPage } from './TraceShowPage'
+// TracesPage and TraceShowPage are now embedded in SettingsContent

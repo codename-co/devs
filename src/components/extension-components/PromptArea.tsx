@@ -50,7 +50,7 @@ type TranslationKey =
   | 'Select a model'
   | 'Search models...'
   | 'No models found'
-  | 'Add LLM provider'
+  | 'Add AI provider'
   | 'Back'
   | 'Available Agents'
   | 'Scientists'
@@ -88,7 +88,7 @@ const translations: Record<LanguageCode, Record<TranslationKey, string>> = {
     'Select a model': 'Select a model',
     'Search models...': 'Search models...',
     'No models found': 'No models found',
-    'Add LLM provider': 'Add LLM provider',
+    'Add AI provider': 'Add AI provider',
     Back: 'Back',
     'Available Agents': 'Available Agents',
     Scientists: 'Scientists',
@@ -126,7 +126,7 @@ const translations: Record<LanguageCode, Record<TranslationKey, string>> = {
     'Select a model': 'Sélectionner un modèle',
     'Search models...': 'Rechercher des modèles...',
     'No models found': 'Aucun modèle trouvé',
-    'Add LLM provider': 'Ajouter un fournisseur LLM',
+    'Add AI provider': 'Ajouter un fournisseur LLM',
     Back: 'Retour',
     'Available Agents': 'Agents disponibles',
     Scientists: 'Scientifiques',
@@ -163,7 +163,7 @@ const translations: Record<LanguageCode, Record<TranslationKey, string>> = {
     'Select a model': 'Modell auswählen',
     'Search models...': 'Modelle suchen...',
     'No models found': 'Keine Modelle gefunden',
-    'Add LLM provider': 'LLM-Anbieter hinzufügen',
+    'Add AI provider': 'LLM-Anbieter hinzufügen',
     Back: 'Zurück',
     'Available Agents': 'Verfügbare Agenten',
     Scientists: 'Wissenschaftler',
@@ -200,7 +200,7 @@ const translations: Record<LanguageCode, Record<TranslationKey, string>> = {
     'Select a model': 'Seleccionar un modelo',
     'Search models...': 'Buscar modelos...',
     'No models found': 'No se encontraron modelos',
-    'Add LLM provider': 'Agregar proveedor LLM',
+    'Add AI provider': 'Agregar proveedor LLM',
     Back: 'Atrás',
     'Available Agents': 'Agentes disponibles',
     Scientists: 'Científicos',
@@ -237,7 +237,7 @@ const translations: Record<LanguageCode, Record<TranslationKey, string>> = {
     'Select a model': 'اختر نموذجاً',
     'Search models...': 'البحث عن نماذج...',
     'No models found': 'لم يتم العثور على نماذج',
-    'Add LLM provider': 'إضافة مزود LLM',
+    'Add AI provider': 'إضافة مزود LLM',
     Back: 'رجوع',
     'Available Agents': 'الوكلاء المتاحون',
     Scientists: 'العلماء',
@@ -273,7 +273,7 @@ const translations: Record<LanguageCode, Record<TranslationKey, string>> = {
     'Select a model': '모델 선택',
     'Search models...': '모델 검색...',
     'No models found': '모델을 찾을 수 없습니다',
-    'Add LLM provider': 'LLM 공급자 추가',
+    'Add AI provider': 'LLM 공급자 추가',
     Back: '뒤로',
     'Available Agents': '사용 가능한 에이전트',
     Scientists: '과학자',

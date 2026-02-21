@@ -4,7 +4,7 @@ type I18n = Record<(typeof en)[number], string>
 
 export const ar: I18n = {
   // Page titles
-  'Traces and Metrics': 'التتبع والمقاييس',
+  Traces: 'التتبعات',
   'Trace Details': 'تفاصيل التتبع',
   Dashboard: 'لوحة التحكم',
   'LLM Observability': 'مراقبة LLM',

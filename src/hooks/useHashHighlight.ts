@@ -21,9 +21,11 @@ interface UseHashHighlightOptions {
 }
 
 interface ParsedHash {
-  /** The section part (before /) or the full hash if no / present */
+  /** The page part (first segment, e.g., "settings") */
+  page: string | null
+  /** The section part (second segment, e.g., "conversational") */
   section: string | null
-  /** The element part (after /) or null if no / present */
+  /** The element part (third segment, e.g., "global-system-instructions") */
   element: string | null
 }
 
@@ -41,13 +43,18 @@ interface UseHashHighlightReturn {
    */
   parsedHash: ParsedHash
   /**
+   * The page from the hash (first segment).
+   * Format: #page/section/element -> returns "page"
+   */
+  activePage: string | null
+  /**
    * The section from the hash (for accordion/tab control).
-   * Format: #section or #section/element -> returns "section"
+   * Format: #page/section or #page/section/element -> returns "section"
    */
   activeSection: string | null
   /**
    * The element from the hash (for highlighting).
-   * Format: #section/element -> returns "element"
+   * Format: #page/section/element -> returns "element"
    */
   activeElement: string | null
   /**
@@ -73,15 +80,17 @@ interface UseHashHighlightReturn {
  * Hook for handling URL hash-based element highlighting.
  * Automatically scrolls to and highlights elements when navigating via hash links.
  *
- * Hash format: #section or #section/element
- * - #section - Opens/activates a section (e.g., accordion)
- * - #section/element - Opens section AND highlights the element
+ * Hash format: #page/section or #page/section/element
+ * - #page - Identifies the page (e.g., "settings")
+ * - #page/section - Opens/activates a section (e.g., accordion)
+ * - #page/section/element - Opens section AND highlights the element
  *
  * @example
  * ```tsx
- * // URL: /settings#conversational/global-system-instructions
+ * // URL: /#settings/conversational/global-system-instructions
  * const { activeSection, getHighlightClasses } = useHashHighlight()
  *
+ * // activePage = "settings" (page identifier)
  * // activeSection = "conversational" (use for accordion control)
  * // activeElement = "global-system-instructions" (auto-highlighted)
  *
@@ -110,21 +119,27 @@ export function useHashHighlight(
 
   const hash = location.hash.replace('#', '')
 
-  // Parse hash format: #section or #section/element
+  // Parse hash format: #page/section or #page/section/element
   const parsedHash: ParsedHash = (() => {
-    if (!hash) return { section: 'general', element: null }
-    const slashIndex = hash.indexOf('/')
-    if (slashIndex === -1) {
-      // No slash: hash is just a section
-      return { section: hash, element: null }
+    if (!hash) return { page: null, section: 'general', element: null }
+    const segments = hash.split('/')
+    if (segments.length === 1) {
+      // Single segment: just a page
+      return { page: segments[0] || null, section: 'general', element: null }
     }
-    // Has slash: split into section and element
+    if (segments.length === 2) {
+      // Two segments: page/section
+      return { page: segments[0] || null, section: segments[1] || null, element: null }
+    }
+    // Three+ segments: page/section/element
     return {
-      section: hash.substring(0, slashIndex) || null,
-      element: hash.substring(slashIndex + 1) || null,
+      page: segments[0] || null,
+      section: segments[1] || null,
+      element: segments.slice(2).join('/') || null,
     }
   })()
 
+  const activePage = parsedHash.page
   const activeSection = parsedHash.section
   const activeElement = parsedHash.element
 
@@ -184,6 +199,7 @@ export function useHashHighlight(
     highlightedElement,
     hash,
     parsedHash,
+    activePage,
     activeSection,
     activeElement,
     isHighlighted,

@@ -6,9 +6,7 @@ import { LanguageRedirect } from '@/components/LanguageRedirect'
 import { defaultLang, I18nProvider, Lang, langs } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
 import { StudioPage } from '@/features/studio/pages/StudioPage'
-import { CardBattlePage } from '@/features/battle'
 import { IndexPage } from '@/pages/Index'
-import { DatabasePage } from '@/pages/admin/Database'
 import { AgentsNewPage } from '@/pages/Agents/new'
 import { AgentRunPage } from '@/pages/Agents/run'
 import { AgentsStartPage } from '@/pages/Agents/start'
@@ -20,22 +18,17 @@ import DiagramPage from '@/pages/Demo/diagram.mdx'
 import { PrivacyPage } from '@/pages/Privacy'
 import { TermsPage } from '@/pages/Terms'
 import { KnowledgePage } from '@/pages/Knowledge'
-// import { MethodologiesPage } from '@/pages/Methodologies/index'
-// import { MethodologyNewPage } from '@/pages/Methodologies/new'
-// import { MethodologyPage } from '@/pages/Methodologies/show'
 import { OAuthCallbackPage } from '@/pages/OAuth'
-import { SettingsPage } from '@/pages/Settings'
 import { TaskPage } from '@/pages/Tasks/show'
 import { TasksPage } from '@/pages/Tasks'
 import { LivePage } from '@/features/live'
-import { ArenaPage } from '@/pages/Arena'
-import { TracesPage, TraceShowPage } from '@/features/traces'
 import {
   MarketplacePage,
   DynamicAppRoute,
   NewExtensionPage,
   ExtensionEditorPage,
 } from '@/features/marketplace/pages'
+import { SkillsPage } from '@/features/skills'
 
 /**
  * Redirect component for /connectors -> /knowledge/connectors
@@ -44,14 +37,13 @@ const ConnectorsRedirect = () => <Navigate to="/knowledge/connectors" replace />
 
 const routes = {
   index: IndexPage,
-  'admin/database': DatabasePage,
   agents: AgentsPage,
   'agents/run': AgentRunPage,
+  'agents/run/:agentSlug': AgentRunPage,
+  'agents/run/:agentSlug/:conversationId': AgentRunPage,
   'agents/new': AgentsNewPage,
   'agents/start': AgentsStartPage,
-  arena2: CardBattlePage,
-  'arena2/classic': ArenaPage,
-  'arena2/match/:battleId': ArenaPage,
+  'agents/start/:agentSlug': AgentsStartPage,
   // Redirect /connectors to /knowledge/connectors
   connectors: ConnectorsRedirect,
   conversations: ConversationPage,
@@ -69,18 +61,14 @@ const routes = {
   // 'methodologies/:methodologyId': MethodologyPage,
   'oauth/callback': OAuthCallbackPage,
   privacy: PrivacyPage,
-  settings: SettingsPage,
+  skills: SkillsPage,
   task: TaskPage,
   tasks: TasksPage,
   'tasks/:taskId': TaskPage,
   terms: TermsPage,
-  traces: TracesPage,
-  'traces/logs': TracesPage,
   marketplace: MarketplacePage,
   'marketplace/new': NewExtensionPage,
   'marketplace/extensions/:extensionId/edit': ExtensionEditorPage,
-  'traces/sessions': TracesPage,
-  'traces/logs/:traceId': TraceShowPage,
   live: LivePage,
   '*': DynamicAppRoute,
 }

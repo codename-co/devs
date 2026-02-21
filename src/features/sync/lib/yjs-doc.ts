@@ -129,7 +129,7 @@ export function getSecretsMap(): Y.Map<Credential> {
   return getYDoc().getMap<Credential>('secrets')
 }
 
-/** Get the credentials map (encrypted API credentials for LLM providers) */
+/** Get the credentials map (encrypted API credentials for AI providers) */
 export function getCredentialsMap(): Y.Map<Credential> {
   return getYDoc().getMap<Credential>('credentials')
 }

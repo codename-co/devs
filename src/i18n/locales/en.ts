@@ -28,6 +28,7 @@ export const en = [
   'Studio',
   'APPLICATIONS',
   'Marketplace',
+  'Skills',
   'Verified',
   'Start a conversation',
   'Select model',
@@ -84,7 +85,7 @@ export const en = [
   'Files',
   'Manage your files',
   'Database management',
-  'Traces and Metrics',
+  'Traces',
   'Observe and analyze traces and metrics',
   'Admin',
 
@@ -113,7 +114,7 @@ export const en = [
   'Time-Boxed',
   'Hybrid',
   'Select a model',
-  'Add LLM provider',
+  'Add AI provider',
   '{n} models',
   'Search models...',
   'No models found',
@@ -149,7 +150,7 @@ export const en = [
   'Page not found',
 
   // LLM Integration
-  'No LLM provider configured. Please [configure one in Settings]({path}).',
+  'No AI provider configured. Please [configure one in Settings]({path}).',
 
   // MarkdownRenderer
   'Thinking…',
@@ -223,7 +224,7 @@ export const en = [
   'Works without internet after initial load.',
   'Open Source',
   '{license} licensed. Built by the community, for the community.',
-  'Configure your LLM provider',
+  'Configure your AI provider',
   'Describe your task',
   'Be as detailed as possible to get the best results',
   'Watch AI agents collaborate',
@@ -238,7 +239,7 @@ export const en = [
   'FAQ',
   'Is my data private?',
   'Yes! All data processing happens locally in your browser. We do not collect or store any of your data.',
-  'Which LLM providers are supported?',
+  'Which AI providers are supported?',
   'We support {llmList}, and any provider compatible with the OpenAI API spec.',
   'Do I need to install anything?',
   'No installation is required. The app runs entirely in your web browser.',
@@ -364,7 +365,7 @@ export const en = [
   // Sharing
   'Share the platform',
   'Export the platform settings to another device or share it with others',
-  'Export your current agents and LLM provider settings and share it via URL or QR code.',
+  'Export your current agents and AI provider settings and share it via URL or QR code.',
   'Include my {n} agents',
   'Now you can share the platform configuration…',
   'Either with this URL:',

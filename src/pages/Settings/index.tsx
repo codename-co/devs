@@ -18,7 +18,7 @@ export const SettingsPage = () => {
       color: 'text-default-300 dark:text-default-400',
     },
     subtitle: t(
-      'Configure LLM providers, models and platform defaults for your organization',
+      'Configure AI providers, models and platform defaults for your organization',
     ),
   }
 

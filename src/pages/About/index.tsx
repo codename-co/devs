@@ -73,8 +73,8 @@ export const AboutPage = () => {
   const how = [
     {
       step: 1,
-      name: t('Configure your LLM provider'),
-      url: url('/settings#providers'),
+      name: t('Configure your AI provider'),
+      url: url('/#settings/providers'),
       desc: t('Works with OpenAI, Anthropic, Google Gemini, and more'),
     },
     {
@@ -186,7 +186,7 @@ export const AboutPage = () => {
             </div>
             <div>
               <h4 className="font-medium text-sm mb-1">
-                {t('Which LLM providers are supported?')}
+                {t('Which AI providers are supported?')}
               </h4>
               <p className="text-xs text-default-600">
                 {t(

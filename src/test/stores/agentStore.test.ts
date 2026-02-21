@@ -12,6 +12,24 @@ const mockFetch = vi.fn()
 // Mock Yjs agents map - use a real Map for testing
 const mockAgentsMap = new Map<string, Agent>()
 
+// Simple mock Y.Map factory for maps we don't directly test
+function createMockYMap() {
+  const map = new Map()
+  return {
+    get: (k: string) => map.get(k),
+    set: (k: string, v: unknown) => map.set(k, v),
+    has: (k: string) => map.has(k),
+    delete: (k: string) => map.delete(k),
+    values: () => map.values(),
+    keys: () => map.keys(),
+    entries: () => map.entries(),
+    forEach: (fn: (v: unknown, k: string) => void) => map.forEach(fn),
+    [Symbol.iterator]: () => map[Symbol.iterator](),
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+  }
+}
+
 // Mock Yjs module
 vi.mock('@/lib/yjs', () => {
   return {
@@ -28,6 +46,8 @@ vi.mock('@/lib/yjs', () => {
       observe: vi.fn(),
       unobserve: vi.fn(),
     },
+    preferences: createMockYMap(),
+    skills: createMockYMap(),
     whenReady: Promise.resolve(),
     isReady: () => true,
     transact: <T>(fn: () => T): T => fn(),
@@ -74,6 +94,8 @@ describe('agentStore', () => {
         observe: vi.fn(),
         unobserve: vi.fn(),
       },
+      preferences: createMockYMap(),
+      skills: createMockYMap(),
       whenReady: Promise.resolve(),
       isReady: () => true,
       transact: <T>(fn: () => T): T => fn(),

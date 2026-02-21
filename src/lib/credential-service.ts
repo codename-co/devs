@@ -78,7 +78,7 @@ export class CredentialService {
           credential: { ...credential, encryptedApiKey: '[REDACTED]' },
         })
         errorToast(
-          'Missing encryption metadata for credential. Please reconfigure your LLM provider.',
+          'Missing encryption metadata for credential. Please reconfigure your AI provider.',
         )
         return null
       }
@@ -105,7 +105,7 @@ export class CredentialService {
         )
       } else {
         errorToast(
-          'Failed to decrypt API key. Your credential may be corrupted. Please reconfigure your LLM provider in Settings.',
+          'Failed to decrypt API key. Your credential may be corrupted. Please reconfigure your AI provider in Settings.',
         )
       }
       return null

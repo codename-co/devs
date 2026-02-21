@@ -1,1 +1,1 @@
-export const en = ['LLM Providers'] as const
+export const en = ['AI Providers'] as const

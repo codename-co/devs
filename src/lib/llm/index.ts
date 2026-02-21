@@ -132,7 +132,7 @@ class LLMProgressTracker {
 }
 
 /**
- * Interface for LLM provider implementations.
+ * Interface for AI provider implementations.
  * Defines methods for chat and streaming chat functionality.
  *
  * Example usage:

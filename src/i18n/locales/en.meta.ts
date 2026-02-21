@@ -11,7 +11,7 @@ export const en_meta = {
   Settings: {
     title: 'Platform Settings',
     description:
-      'Configure LLM providers, models and platform defaults for your organization',
+      'Configure AI providers, models and platform defaults for your organization',
   },
   Methodologies: {
     title: 'Methodologies',

@@ -43,8 +43,8 @@ export const fr: I18n = {
   'Auto-speak responses': 'Lecture automatique des réponses',
   'Automatically speak AI responses using TTS':
     "Lire automatiquement les réponses de l'IA avec la synthèse vocale",
-  'No LLM provider configured': 'Aucun fournisseur LLM configuré',
-  'Please configure an LLM provider in Settings to use voice chat.':
+  'No AI provider configured': 'Aucun fournisseur LLM configuré',
+  'Please configure an AI provider in Settings to use voice chat.':
     'Veuillez configurer un fournisseur LLM dans les paramètres pour utiliser le chat vocal.',
   Send: 'Envoyer',
   'Listening…': 'Écoute en cours…',

@@ -1037,4 +1037,49 @@ describe('Tool Executor', () => {
       expect(defaultExecutor.registry).toBe(defaultRegistry)
     })
   })
+
+  // ============================================
+  // Skill Tools Registration Tests
+  // ============================================
+  describe('Skill Tools Registration', () => {
+    it('should register all skill tools', () => {
+      const {
+        defaultRegistry,
+        registerSkillTools,
+        areSkillToolsRegistered,
+      } = executorModule
+
+      // Clear any existing tools
+      defaultRegistry.clear()
+
+      expect(areSkillToolsRegistered()).toBe(false)
+
+      registerSkillTools()
+
+      expect(areSkillToolsRegistered()).toBe(true)
+      expect(defaultRegistry.has('activate_skill')).toBe(true)
+      expect(defaultRegistry.has('read_skill_file')).toBe(true)
+      expect(defaultRegistry.has('run_skill_script')).toBe(true)
+    })
+
+    it('should unregister all skill tools', () => {
+      const {
+        defaultRegistry,
+        registerSkillTools,
+        unregisterSkillTools,
+        areSkillToolsRegistered,
+      } = executorModule
+
+      defaultRegistry.clear()
+      registerSkillTools()
+      expect(areSkillToolsRegistered()).toBe(true)
+
+      unregisterSkillTools()
+
+      expect(areSkillToolsRegistered()).toBe(false)
+      expect(defaultRegistry.has('activate_skill')).toBe(false)
+      expect(defaultRegistry.has('read_skill_file')).toBe(false)
+      expect(defaultRegistry.has('run_skill_script')).toBe(false)
+    })
+  })
 })

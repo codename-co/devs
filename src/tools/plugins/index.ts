@@ -99,6 +99,15 @@ export type {
 export { textOcrPlugin, TEXT_OCR_TOOL_DEFINITION } from './text-ocr'
 export type { TextOcrParams, TextOcrResult, TextOcrError } from './text-ocr'
 
+// Skill tools
+export {
+  activateSkillPlugin,
+  readSkillFilePlugin,
+  runSkillScriptPlugin,
+  skillPlugins,
+  SKILL_TOOL_DEFINITIONS,
+} from './skill-tools'
+
 // Connector tools - re-export all from connectors
 export * from './connectors'
 
@@ -120,6 +129,7 @@ import {
 } from './wikidata'
 import { arxivSearchPlugin, arxivPaperPlugin } from './arxiv'
 import { textOcrPlugin } from './text-ocr'
+import { activateSkillPlugin, readSkillFilePlugin, runSkillScriptPlugin } from './skill-tools'
 import { allConnectorPlugins } from './connectors'
 import type { ToolPlugin } from '../types'
 
@@ -149,6 +159,10 @@ export const corePlugins: ToolPlugin<any, any>[] = [
   arxivPaperPlugin,
   // Utility
   textOcrPlugin,
+  // Agent Skills
+  activateSkillPlugin,
+  readSkillFilePlugin,
+  runSkillScriptPlugin,
 ]
 
 /**
@@ -184,6 +198,7 @@ export const pluginsByCategory = {
     arxivPaperPlugin,
   ],
   utility: [textOcrPlugin],
+  skill: [activateSkillPlugin, readSkillFilePlugin, runSkillScriptPlugin],
   connector: allConnectorPlugins,
 } as const
 

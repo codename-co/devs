@@ -91,7 +91,7 @@ export const ko: I18n = {
   'Generate Agent': '에이전트 생성',
   'Generating...': '생성 중...',
   'Or configure manually': '또는 수동으로 구성',
-  'No LLM provider configured. Please configure one in Settings.':
+  'No AI provider configured. Please configure one in Settings.':
     'LLM 제공자가 구성되지 않았습니다. 설정에서 구성해 주세요.',
   'Failed to generate agent configuration. Please try again.':
     '에이전트 구성 생성에 실패했습니다. 다시 시도해 주세요.',

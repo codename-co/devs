@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useLLMModelStore } from '@/stores/llmModelStore'
 import { type IconName } from '@/lib/types'
 import type { LLMProvider, Credential } from '@/types'
@@ -65,12 +65,12 @@ export function useModelPicker({
   const {
     credentials,
     selectedProviderId,
+    selectedProviderType,
     selectedModels,
     setSelectedProviderId,
     setSelectedModel,
     getSelectedProvider,
     getSelectedModel,
-    loadCredentials,
     // Legacy
     selectedCredentialId,
     setSelectedCredentialId,
@@ -79,21 +79,21 @@ export function useModelPicker({
 
   const selectedProvider = useMemo(
     () => getSelectedProvider(),
-    [credentials, selectedProviderId],
+    [credentials, selectedProviderId, selectedProviderType],
   )
   const selectedModel = useMemo(
     () => getSelectedModel(),
-    [selectedModels, selectedProviderId, credentials],
+    [selectedModels, selectedProviderId, selectedProviderType, credentials],
   )
   const selectedCredential = useMemo(
     () => getSelectedCredential(),
     [credentials, selectedCredentialId],
   )
 
-  // Load credentials on mount
-  useEffect(() => {
-    loadCredentials()
-  }, [loadCredentials])
+  // Credentials are loaded by Providers.tsx after Yjs is ready.
+  // Do NOT call loadCredentials() here — it would run before Yjs
+  // persistence has synced, see empty credentials, and create an
+  // unwanted default local provider that overrides the user's choice.
 
   const getProviderIcon = useCallback((provider: string): IconName => {
     return PROVIDER_ICONS[provider] || 'Server'

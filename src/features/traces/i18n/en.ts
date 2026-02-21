@@ -1,6 +1,6 @@
 export const en = [
   // Page titles
-  'Traces and Metrics',
+  'Traces',
   'Trace Details',
   'Dashboard',
   'LLM Observability',

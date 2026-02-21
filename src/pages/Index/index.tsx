@@ -170,7 +170,7 @@ export const IndexPage = () => {
     }
 
     // Navigate to the agent run page using slug
-    navigate(url(`/agents/run#${agent.slug}`))
+    navigate(url(`/agents/run/${agent.slug}`))
 
     // Clear the prompt and files
     setPrompt('')
@@ -492,8 +492,15 @@ export const IndexPage = () => {
           <Link href={url('/privacy')}>{t('Privacy')}</Link>
           {/* Open Source */}
           <Link href="https://github.com/codename-co/devs">
-            <Icon name="GitHub" size="sm" className="me-1" />
-            {t('Open Source')}
+            <a
+              href="https://github.com/codename-co/devs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center"
+            >
+              <Icon name="GitHub" size="sm" className="me-1" />
+              {t('Open Source')}
+            </a>
           </Link>
         </footer>
       </DefaultLayout>

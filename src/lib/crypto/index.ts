@@ -618,25 +618,32 @@ export class SecureStorage {
         })
         return result
       } catch (error) {
-        // If decryption fails, we might have a credential that wasn't properly migrated
-        // This can happen if: 1) migration failed silently, 2) DB was restored from backup
-        console.warn(
-          'Failed to decrypt with non-extractable key, checking for legacy format...',
-          error,
-        )
+        // Decryption failed — most common cause is a CryptoKey mismatch
+        // (key regenerated, DB restored from backup, or P2P sync from another device)
+        if (import.meta.env.DEV) {
+          console.warn(
+            '[SecureStorage] Credential decryption failed (key mismatch or corruption):',
+            error,
+          )
+        }
+
+        CryptoAuditLog.log('decrypt_credential', false, {
+          detail: 'key_mismatch',
+          error: error instanceof Error ? error.message : String(error),
+        })
 
         // Try legacy decryption if we still have the master key
         // Note: Without salt, we can't use PBKDF2, so this is a last resort
         if (legacyMasterKey) {
-          // Check if there's a salt stored with a different key pattern
-          // (some older versions may have stored differently)
-          console.warn(
-            'Cannot try legacy decryption without salt. The credential may need to be re-configured.',
-          )
+          if (import.meta.env.DEV) {
+            console.warn(
+              '[SecureStorage] Cannot try legacy decryption without salt.',
+            )
+          }
         }
 
         throw new Error(
-          'Failed to decrypt credential. The credential may be corrupted or from an incompatible version. Please reconfigure the associated service.',
+          'Failed to decrypt credential. The encryption key may have changed (e.g. after a browser data reset or on a different device). Please reconfigure the associated service.',
         )
       }
     }

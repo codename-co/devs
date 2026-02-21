@@ -863,11 +863,11 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
               <DropdownItem
                 key="settings"
                 startContent={<Icon name="Plus" size="sm" />}
-                textValue={t('Add LLM provider')}
+                textValue={t('Add AI provider')}
                 onPress={openAddProviderModal}
                 closeOnSelect
               >
-                {t('Add LLM provider')}
+                {t('Add AI provider')}
               </DropdownItem>
             </DropdownSection>
           </>

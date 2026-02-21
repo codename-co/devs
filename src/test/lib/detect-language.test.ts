@@ -70,7 +70,7 @@ describe('detect-language', () => {
 
     it('should return false for paths without language prefix', () => {
       expect(hasLanguagePrefix('/agents')).toBe(false)
-      expect(hasLanguagePrefix('/settings')).toBe(false)
+      expect(hasLanguagePrefix('/#settings')).toBe(false)
       expect(hasLanguagePrefix('/knowledge/files')).toBe(false)
     })
 
@@ -96,7 +96,7 @@ describe('detect-language', () => {
   describe('buildLanguageUrl', () => {
     it('should return path as-is for default language (en)', () => {
       expect(buildLanguageUrl('/agents', 'en')).toBe('/agents')
-      expect(buildLanguageUrl('/settings', 'en')).toBe('/settings')
+      expect(buildLanguageUrl('/#settings', 'en')).toBe('/#settings')
     })
 
     it('should return root for empty path with default language', () => {
@@ -106,7 +106,7 @@ describe('detect-language', () => {
 
     it('should add language prefix for non-default languages', () => {
       expect(buildLanguageUrl('/agents', 'fr')).toBe('/fr/agents')
-      expect(buildLanguageUrl('/settings', 'de')).toBe('/de/settings')
+      expect(buildLanguageUrl('/#settings', 'de')).toBe('/de/settings')
       expect(buildLanguageUrl('/knowledge/files', 'es')).toBe(
         '/es/knowledge/files',
       )
@@ -120,15 +120,15 @@ describe('detect-language', () => {
 
     it('should remove existing language prefix before adding new one', () => {
       expect(buildLanguageUrl('/fr/agents', 'de')).toBe('/de/agents')
-      expect(buildLanguageUrl('/es/settings', 'fr')).toBe('/fr/settings')
+      expect(buildLanguageUrl('/es/#settings', 'fr')).toBe('/fr/settings')
     })
 
     it('should handle query strings and hashes', () => {
       expect(buildLanguageUrl('/agents?tab=all', 'fr')).toBe(
         '/fr/agents?tab=all',
       )
-      expect(buildLanguageUrl('/settings#appearance', 'de')).toBe(
-        '/de/settings#appearance',
+      expect(buildLanguageUrl('/#settings/appearance', 'de')).toBe(
+        '/de/#settings/appearance',
       )
     })
   })

@@ -38,4 +38,7 @@ export {
   registerUtilityTools,
   areUtilityToolsRegistered,
   unregisterUtilityTools,
+  registerSkillTools,
+  areSkillToolsRegistered,
+  unregisterSkillTools,
 } from './executor'

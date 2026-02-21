@@ -890,7 +890,7 @@ function registryToEnhancedModel(model: LLMModel): EnhancedLLMModel {
 /**
  * Gets the models.dev provider ID(s) for a DEVS provider.
  *
- * @param provider - The DEVS LLM provider
+ * @param provider - The DEVS AI provider
  * @returns The models.dev provider ID(s), or null if not applicable
  */
 function getModelsDevProviderIds(provider: LLMProvider): string[] | null {
@@ -905,7 +905,7 @@ function getModelsDevProviderIds(provider: LLMProvider): string[] | null {
  * For local providers (local, ollama), uses model-registry.json.
  * Falls back to model-registry.json if models.dev fails.
  *
- * @param provider - The LLM provider to get models for
+ * @param provider - The AI provider to get models for
  * @returns Array of enhanced LLM models
  */
 export async function getEnhancedModelsForProvider(
@@ -954,7 +954,7 @@ export async function getEnhancedModelsForProvider(
  * Gets pricing information for a specific model.
  * Fetches from models.dev for cloud providers, returns undefined for local models.
  *
- * @param provider - The LLM provider
+ * @param provider - The AI provider
  * @param modelId - The model identifier
  * @returns Pricing information per million tokens, or undefined if not available
  */
@@ -1017,7 +1017,7 @@ export async function getModelPricing(
  * Gets an enhanced model by provider and ID.
  * Fetches from models.dev for cloud providers, falls back to registry.
  *
- * @param provider - The LLM provider
+ * @param provider - The AI provider
  * @param modelId - The model identifier
  * @returns The enhanced model, or undefined if not found
  */

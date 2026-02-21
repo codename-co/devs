@@ -194,7 +194,7 @@ async function searchAgents(query: string): Promise<SearchResult[]> {
           subtitle: agent.role,
           icon: TYPE_ICONS.agent,
           color: TYPE_COLORS.agent,
-          href: `/agents/run#${agent.slug}`,
+          href: `/agents/run/${agent.slug}`,
           score: calculateScore(query, texts, 5), // Base score for agents
           timestamp: agent.createdAt,
         })
@@ -221,7 +221,7 @@ async function searchAgents(query: string): Promise<SearchResult[]> {
           subtitle: agent.role,
           icon: TYPE_ICONS.agent,
           color: TYPE_COLORS.agent,
-          href: `/agents/run#${agent.slug}`,
+          href: `/agents/run/${agent.slug}`,
           score: calculateScore(query, texts, 5),
           timestamp: agent.createdAt,
         })
@@ -267,9 +267,9 @@ async function searchConversations(query: string): Promise<SearchResult[]> {
           subtitle: summary?.slice(0, 100),
           icon: TYPE_ICONS.conversation,
           color: TYPE_COLORS.conversation,
-          href: `/agents/run#${agentSlug}/${conv.id}`,
+          href: `/agents/run/${agentSlug}/${conv.id}`,
           score: calculateScore(query, texts, 3),
-          timestamp: conv.updatedAt,
+          timestamp: conv.updatedAt ? new Date(conv.updatedAt) : undefined,
         })
       }
     }
@@ -327,9 +327,9 @@ async function searchMessages(query: string): Promise<SearchResult[]> {
             subtitle: `In: ${convTitle || 'Conversation'}`,
             icon: TYPE_ICONS.message,
             color: TYPE_COLORS.message,
-            href: `/agents/run#${agentSlug}/${conv.id}`,
+            href: `/agents/run/${agentSlug}/${conv.id}`,
             score: calculateScore(query, texts, 1),
-            timestamp: msg.timestamp,
+            timestamp: msg.timestamp ? new Date(msg.timestamp) : undefined,
             parentId: conv.id,
           })
         }
@@ -693,7 +693,7 @@ const SEARCHABLE_PAGES: PageDefinition[] = [
   },
   {
     id: 'page-settings',
-    href: '/settings',
+    href: '/#settings',
     icon: 'Settings',
     color: 'default',
     nameKey: 'Settings',
@@ -702,10 +702,10 @@ const SEARCHABLE_PAGES: PageDefinition[] = [
   },
   {
     id: 'page-traces',
-    href: '/traces',
+    href: '/#settings/traces',
     icon: 'Activity',
     color: 'default',
-    nameKey: 'Traces and Metrics',
+    nameKey: 'Traces',
     keywords: ['logs', 'analytics', 'monitoring', 'debug', 'performance'],
   },
   {

@@ -29,6 +29,7 @@ export const ko: I18n = {
   'Conversations history': '대화 기록',
   APPLICATIONS: '애플리케이션',
   Marketplace: '마켓플레이스',
+  Skills: '스킬',
   Verified: '인증됨',
   'Start a conversation': '대화 시작',
   Search: '검색',
@@ -83,7 +84,7 @@ export const ko: I18n = {
   Files: '파일',
   'Manage your files': '파일 관리',
   'Database management': '데이터베이스 관리',
-  'Traces and Metrics': '추적 및 메트릭',
+  Traces: '추적',
   'Observe and analyze traces and metrics': '추적 및 메트릭 관찰 및 분석',
   Admin: '관리자',
 
@@ -112,7 +113,7 @@ export const ko: I18n = {
   'Time-Boxed': '시간 제한',
   Hybrid: '하이브리드',
   'Select a model': '모델 선택',
-  'Add LLM provider': 'LLM 공급자 추가',
+  'Add AI provider': 'LLM 공급자 추가',
   '{n} models': '{n}개 모델',
   'Search models...': '모델 검색...',
   'No models found': '모델을 찾을 수 없습니다',
@@ -145,7 +146,7 @@ export const ko: I18n = {
   'Page not found': '페이지를 찾을 수 없습니다',
 
   // LLM Integration
-  'No LLM provider configured. Please [configure one in Settings]({path}).':
+  'No AI provider configured. Please [configure one in Settings]({path}).':
     '구성된 LLM 공급자가 없습니다. [설정에서 하나 구성하세요]({path}).',
 
   // MarkdownRenderer
@@ -232,7 +233,7 @@ export const ko: I18n = {
   'Open Source': '오픈 소스',
   '{license} licensed. Built by the community, for the community.':
     '{license} 라이선스. 커뮤니티에 의해, 커뮤니티를 위해 구축됨.',
-  'Configure your LLM provider': 'LLM 공급자 구성',
+  'Configure your AI provider': 'LLM 공급자 구성',
   'Describe your task': '작업 설명',
   'Be as detailed as possible to get the best results':
     '최상의 결과를 얻으려면 가능한 한 상세하게 설명하세요',
@@ -252,7 +253,7 @@ export const ko: I18n = {
   'Is my data private?': '내 데이터는 안전한가요?',
   'Yes! All data processing happens locally in your browser. We do not collect or store any of your data.':
     '네! 모든 데이터 처리는 브라우저에서 로컬로 발생합니다. 우리는 귀하의 데이터를 수집하거나 저장하지 않습니다.',
-  'Which LLM providers are supported?': '어떤 LLM 공급자가 지원되나요?',
+  'Which AI providers are supported?': '어떤 LLM 공급자가 지원되나요?',
   'We support {llmList}, and any provider compatible with the OpenAI API spec.':
     '{llmList} 및 OpenAI API 규격과 호환되는 모든 공급자를 지원합니다.',
   'Do I need to install anything?': '설치해야 할 것이 있나요?',
@@ -383,7 +384,7 @@ export const ko: I18n = {
   'Share the platform': '플랫폼 공유',
   'Export the platform settings to another device or share it with others':
     '플랫폼 설정을 다른 장치로 내보내거나 다른 사람과 공유합니다.',
-  'Export your current agents and LLM provider settings and share it via URL or QR code.':
+  'Export your current agents and AI provider settings and share it via URL or QR code.':
     '현재 에이전트 및 LLM 공급자 설정을 내보내고 URL 또는 QR 코드를 통해 공유합니다.',
   'Include my {n} agents': '내 {n} 에이전트 포함',
   'Now you can share the platform configuration…':

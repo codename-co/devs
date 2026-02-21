@@ -4,7 +4,7 @@ type I18n = Record<(typeof en)[number], string>
 
 export const es: I18n = {
   'Platform Settings': 'Configuración de la plataforma',
-  'Configure LLM providers, models and platform defaults for your organization':
+  'Configure AI providers, models and platform defaults for your organization':
     'Configurar proveedores de LLM, modelos y valores predeterminados de la plataforma para su organización',
   Appearance: 'Apariencia',
   'Choose your preferred language': 'Elija su idioma preferido',
@@ -23,8 +23,8 @@ export const es: I18n = {
   'Failed to regenerate master key': 'Error al regenerar la clave maestra',
   'Your master key is used to encrypt all sensitive data stored locally. Keep it safe and secure.':
     'Su clave maestra se utiliza para cifrar todos los datos sensibles almacenados localmente. Mantenla segura.',
-  'LLM Providers': 'Proveedores de LLM',
-  'Choose your LLM provider, manage your API credentials':
+  'AI Providers': 'Proveedores de LLM',
+  'Choose your AI provider, manage your API credentials':
     'Elija su proveedor de LLM, gestione sus credenciales de API',
   'Add Provider': 'Agregar proveedor',
   'No providers configured. Add one to get started.':
@@ -105,7 +105,8 @@ export const es: I18n = {
   'Hide Default Agents': 'Ocultar agentes predeterminados',
   'Only show your custom agents in the agent picker and agents page':
     'Mostrar solo sus agentes personalizados en el selector de agentes y la página de agentes',
-  'Conversational Features': 'Funciones de conversación',
+  Features: 'Funciones',
+  Voice: 'Voz',
   'Configure how you interact with agents':
     'Configure cómo interactúa con los agentes',
   'Auto Memory Learning': 'Aprendizaje automático de memoria',
@@ -140,4 +141,50 @@ export const es: I18n = {
     'Introduzca el nombre del modelo manualmente',
   'models available': 'modelos disponibles',
   'This provider is already configured': 'Este proveedor ya está configurado',
+  Computer: 'Ordenador',
+  'Sandbox runtimes and system resources':
+    'Runtimes sandbox y recursos del sistema',
+  'Sandbox Runtimes': 'Runtimes Sandbox',
+  Running: 'En ejecución',
+  Executing: 'Ejecutando',
+  Loading: 'Cargando',
+  Idle: 'Inactivo',
+  Error: 'Error',
+  Start: 'Iniciar',
+  Stop: 'Detener',
+  'Pre-load the {runtime} runtime': 'Precargar el runtime de {runtime}',
+  'Terminate the {runtime} runtime': 'Terminar el runtime de {runtime}',
+  'Run a test snippet in the {runtime} sandbox':
+    'Ejecutar un fragmento de prueba en el sandbox {runtime}',
+  Try: 'Probar',
+  'Isolated code execution environments running entirely in WebAssembly. Python uses a Web Worker; JavaScript runs in a lightweight QuickJS VM.':
+    'Entornos de ejecución de código aislados que funcionan enteramente en WebAssembly. Python usa un Web Worker; JavaScript se ejecuta en una VM QuickJS ligera.',
+  CPU: 'CPU',
+  '{used} / {total} cores': '{used} / {total} núcleos',
+  'CPU usage': 'Uso de CPU',
+  Memory: 'Memoria',
+  'Memory usage': 'Uso de memoria',
+  Storage: 'Almacenamiento',
+  'Storage usage': 'Uso de almacenamiento',
+  'Device Information': 'Información del dispositivo',
+  Device: 'Dispositivo',
+  'GPU Vendor': 'Fabricante GPU',
+  'GPU Renderer': 'Renderizador GPU',
+  WebGPU: 'WebGPU',
+  Supported: 'Soportado',
+  'Not Supported': 'No soportado',
+  'Local LLM (Browser)': 'LLM local (navegador)',
+  'Runs AI models entirely in your browser using WebGPU. No data is sent to external servers.':
+    'Ejecuta modelos de IA completamente en su navegador usando WebGPU. No se envían datos a servidores externos.',
+  'Default Model': 'Modelo predeterminado',
+  'Loaded Model': 'Modelo cargado',
+  'No model loaded': 'Ningún modelo cargado',
+  Unload: 'Descargar',
+  'Unload model to free memory': 'Descargar modelo para liberar memoria',
+  'WebGPU is not supported on this device. Local LLM inference requires a WebGPU-compatible browser.':
+    'WebGPU no es compatible con este dispositivo. La inferencia LLM local requiere un navegador compatible con WebGPU.',
+  'Your device has less than 8GB of RAM. Local inference may be slow or unavailable for larger models.':
+    'Su dispositivo tiene menos de 8 GB de RAM. La inferencia local puede ser lenta o no estar disponible para modelos más grandes.',
+
+  'System Resources': 'Recursos del sistema',
 } as const

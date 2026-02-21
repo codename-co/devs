@@ -112,6 +112,7 @@ export {
   notifications,
   installedExtensions,
   customExtensions,
+  skills,
 } from './maps'
 export type { Preferences, Workflow, LangfuseConfigEntry } from './maps'
 

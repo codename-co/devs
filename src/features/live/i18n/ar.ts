@@ -42,8 +42,8 @@ export const ar: I18n = {
   'Auto-speak responses': 'قراءة الردود تلقائياً',
   'Automatically speak AI responses using TTS':
     'قراءة ردود الذكاء الاصطناعي تلقائياً باستخدام تحويل النص إلى كلام',
-  'No LLM provider configured': 'لم يتم تكوين مزود LLM',
-  'Please configure an LLM provider in Settings to use voice chat.':
+  'No AI provider configured': 'لم يتم تكوين مزود LLM',
+  'Please configure an AI provider in Settings to use voice chat.':
     'يرجى تكوين مزود LLM في الإعدادات لاستخدام الدردشة الصوتية.',
   Send: 'إرسال',
   'Listening…': 'جارٍ الاستماع…',

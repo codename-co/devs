@@ -161,7 +161,7 @@ export const battleService = {
     // Get LLM configuration
     const config = await CredentialService.getActiveConfig()
     if (!config) {
-      throw new Error('No LLM provider configured')
+      throw new Error('No AI provider configured')
     }
 
     // Create a new conversation for this battle
@@ -321,7 +321,7 @@ export const battleService = {
     // Get LLM configuration
     const config = await CredentialService.getActiveConfig()
     if (!config) {
-      throw new Error('No LLM provider configured')
+      throw new Error('No AI provider configured')
     }
 
     // Extract agent IDs from the conversation

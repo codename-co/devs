@@ -32,6 +32,7 @@ export type ToolCategory =
   | 'research' // Research tools (Wikipedia, arXiv, etc.)
   | 'connector' // External service integrations
   | 'utility' // General utility tools
+  | 'skill' // Agent Skills (SkillsMP / GitHub)
   | 'custom' // User-defined tools
 
 // ============================================================================

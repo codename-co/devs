@@ -310,12 +310,9 @@ export abstract class BaseAppConnectorProvider
       // the user to reconnect) instead of surfacing a cryptic error.
       // This can happen when the CryptoKey was regenerated, the DB was
       // restored from backup, or the token came from another device.
-      if (import.meta.env.DEV) {
-        console.warn(
-          `[ConnectorProvider] Failed to decrypt refresh token for ${connector.id}, treating as unavailable:`,
-          error instanceof Error ? error.message : error,
-        )
-      }
+      console.warn(
+        `[ConnectorProvider] Refresh token for connector ${connector.id} cannot be decrypted (encryption key may have changed). Reconnection required.`,
+      )
       return null
     }
   }

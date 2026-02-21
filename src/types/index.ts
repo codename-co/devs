@@ -70,10 +70,10 @@ export interface Message {
   role: 'user' | 'assistant' | 'system'
   agentId?: string // Which agent sent this message (for assistant messages)
   content: string
-  timestamp: Date
+  timestamp: Date | string
   isPinned?: boolean // Whether this message is pinned
   pinnedDescription?: string // Short AI-generated description when pinned
-  pinnedAt?: Date // When the message was pinned
+  pinnedAt?: Date | string // When the message was pinned
   attachments?: MessageAttachment[] // File attachments for this message
   traceIds?: string[] // Trace IDs for operations performed to generate this message
 }
@@ -84,8 +84,8 @@ export interface Conversation {
   agentSlug?: string // Primary agent slug (for URL generation)
   participatingAgents: string[] // All agents that have participated in this conversation
   workflowId: string
-  timestamp: Date // Creation timestamp (createdAt)
-  updatedAt: Date // Last modification timestamp, used for sorting
+  timestamp: Date | string // Creation timestamp (createdAt)
+  updatedAt: Date | string // Last modification timestamp, used for sorting
   messages: Message[]
   title?: string // Auto-generated title from LLM summarization
   isPinned?: boolean // Whether this conversation is starred/pinned
@@ -581,4 +581,83 @@ export interface CryptoKeyEntry {
   key: CryptoKey // Non-extractable CryptoKey object
   createdAt: Date
   migratedFromLocalStorage?: boolean // True if migrated from legacy localStorage master key
+}
+
+// ============================================================================
+// Agent Skills
+// ============================================================================
+
+/**
+ * A script file bundled with an Agent Skill.
+ * Contains the source code and detected metadata.
+ */
+export interface SkillScript {
+  /** Relative path within the skill directory, e.g. "scripts/analyze.py" */
+  path: string
+  /** Script source code */
+  content: string
+  /** Detected programming language */
+  language: 'python' | 'bash' | 'javascript' | 'other'
+  /** Packages required by the script (auto-extracted from imports) */
+  requiredPackages?: string[]
+}
+
+/**
+ * A reference or asset file bundled with an Agent Skill.
+ */
+export interface SkillFile {
+  /** Relative path within the skill directory, e.g. "references/REFERENCE.md" */
+  path: string
+  /** File content (text or base64 for binary) */
+  content: string
+  /** MIME type of the file */
+  mimeType?: string
+}
+
+/**
+ * An installed Agent Skill stored in Yjs.
+ *
+ * Represents a skill that has been fetched from GitHub and installed
+ * locally for use by agents.
+ */
+export interface InstalledSkill {
+  /** Unique skill identifier (SkillsMP ID or custom slug) */
+  id: string
+  /** Skill name from SKILL.md frontmatter */
+  name: string
+  /** Description from SKILL.md frontmatter */
+  description: string
+  /** GitHub author / owner */
+  author: string
+  /** License from frontmatter */
+  license?: string
+  /** Additional metadata from frontmatter */
+  metadata?: Record<string, string>
+
+  /** Full SKILL.md body content (markdown instructions) */
+  skillMdContent: string
+  /** Fetched Python/Bash/JS scripts */
+  scripts: SkillScript[]
+  /** Reference documents */
+  references: SkillFile[]
+  /** Static resources (templates, images, data files) */
+  assets: SkillFile[]
+
+  /** Source GitHub repository URL */
+  githubUrl: string
+  /** Popularity indicator from SkillsMP */
+  stars: number
+  /** When the skill was installed */
+  installedAt: Date
+  /** When the skill was last updated */
+  updatedAt: Date
+  /** When we last checked for updates */
+  lastCheckedAt?: Date
+  /** Whether the skill is currently enabled */
+  enabled: boolean
+
+  /** Which agents have this skill (empty array = all agents) */
+  assignedAgentIds: string[]
+  /** Whether to always inject instructions vs. match-based activation */
+  autoActivate: boolean
 }

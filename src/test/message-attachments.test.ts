@@ -9,6 +9,8 @@ const mockToast = createMockToast()
 // Mock the Yjs module
 vi.mock('@/lib/yjs', () => ({
   conversations: mockConversationsMap,
+  preferences: { get: vi.fn(), set: vi.fn(), has: vi.fn(), observe: vi.fn(), unobserve: vi.fn() },
+  skills: { get: vi.fn(), set: vi.fn(), has: vi.fn(), values: vi.fn(() => []), observe: vi.fn(), unobserve: vi.fn() },
   whenReady: Promise.resolve(),
   transact: vi.fn((fn: () => void) => fn()),
 }))
@@ -255,6 +257,8 @@ describe('Conversation attachment persistence', () => {
     // Re-apply mocks after module reset
     vi.mock('@/lib/yjs', () => ({
       conversations: mockConversationsMap,
+      preferences: { get: vi.fn(), set: vi.fn(), has: vi.fn(), observe: vi.fn(), unobserve: vi.fn() },
+      skills: { get: vi.fn(), set: vi.fn(), has: vi.fn(), values: vi.fn(() => []), observe: vi.fn(), unobserve: vi.fn() },
       whenReady: Promise.resolve(),
       transact: vi.fn((fn: () => void) => fn()),
     }))

@@ -93,7 +93,7 @@ export const fr: I18n = {
   'Generate Agent': "Générer l'agent",
   'Generating...': 'Génération...',
   'Or configure manually': 'Ou configurer manuellement',
-  'No LLM provider configured. Please configure one in Settings.':
+  'No AI provider configured. Please configure one in Settings.':
     'Aucun fournisseur LLM configuré. Veuillez en configurer un dans les Paramètres.',
   'Failed to generate agent configuration. Please try again.':
     "Échec de la génération de la configuration de l'agent. Veuillez réessayer.",

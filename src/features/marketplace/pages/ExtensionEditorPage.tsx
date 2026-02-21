@@ -107,7 +107,7 @@ const localI18n = {
     'Console output will appear here',
     "Describe what you'd like to change...",
     "Your extension has been created! You can preview it, edit the code directly, or describe changes you'd like me to make.",
-    'No LLM provider configured',
+    'No AI provider configured',
     'Sorry, I encountered an error: {error}',
     'Unknown error',
     'Code applied successfully!',
@@ -170,7 +170,7 @@ const localI18n = {
       'Décrivez ce que vous souhaitez modifier...',
     "Your extension has been created! You can preview it, edit the code directly, or describe changes you'd like me to make.":
       'Votre extension a été créée ! Vous pouvez la prévisualiser, modifier le code directement, ou décrire les modifications que vous souhaitez.',
-    'No LLM provider configured': 'Aucun fournisseur LLM configuré',
+    'No AI provider configured': 'Aucun fournisseur LLM configuré',
     'Sorry, I encountered an error: {error}':
       "Désolé, j'ai rencontré une erreur : {error}",
     'Unknown error': 'Erreur inconnue',
@@ -971,7 +971,7 @@ const App = () => {
       try {
         const config = await CredentialService.getActiveConfig()
         if (!config) {
-          throw new Error(t('No LLM provider configured'))
+          throw new Error(t('No AI provider configured'))
         }
 
         const contextPrompt = /* md */ `

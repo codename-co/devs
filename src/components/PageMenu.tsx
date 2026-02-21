@@ -45,12 +45,12 @@ export function PageMenu({ supplementalActions }: PageMenuProps = {}) {
         {/* Extended Actions */}
         {showExtendedActions && (
           <>
-            <Tooltip content={t('Traces and Metrics')}>
+            <Tooltip content={t('Traces')}>
               <Button
                 isIconOnly
                 variant="light"
-                aria-label={t('Traces and Metrics')}
-                onPress={() => navigate(url('/traces'))}
+                aria-label={t('Traces')}
+                onPress={() => navigate(url('/#settings/traces'))}
               >
                 <Icon name="Activity" size="sm" />
               </Button>
@@ -94,8 +94,6 @@ export function PageMenu({ supplementalActions }: PageMenuProps = {}) {
  * Hook to register global Cmd+, (Mac) or Ctrl+, (Windows/Linux) keyboard shortcut for settings
  */
 function useSettingsShortcut(): void {
-  const { lang } = useI18n()
-  const url = useUrl(lang)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -103,12 +101,12 @@ function useSettingsShortcut(): void {
       // Cmd+, (Mac) or Ctrl+, (Windows/Linux)
       if ((e.metaKey || e.ctrlKey) && e.key === ',') {
         e.preventDefault()
-        navigate(url('/settings'))
+        navigate(`${window.location.pathname}#settings`, { replace: true })
       }
     }
 
     // Use capture phase to ensure shortcut works even when focus is in form fields
     document.addEventListener('keydown', handleKeyDown, true)
     return () => document.removeEventListener('keydown', handleKeyDown, true)
-  }, [navigate, url])
+  }, [navigate])
 }

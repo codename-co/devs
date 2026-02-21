@@ -4,7 +4,7 @@ type I18n = Record<(typeof en)[number], string>
 
 export const ko: I18n = {
   // Page titles
-  'Traces and Metrics': '추적 및 지표',
+  Traces: '추적',
   'Trace Details': '추적 세부정보',
   Dashboard: '대시보드',
   'LLM Observability': 'LLM 관측성',

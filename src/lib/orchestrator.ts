@@ -492,7 +492,7 @@ export class WorkflowOrchestrator {
 
       const config = await CredentialService.getActiveConfig()
       if (!config) {
-        throw new Error('No LLM provider configured')
+        throw new Error('No AI provider configured')
       }
 
       const messages: LLMMessage[] = [
@@ -627,7 +627,7 @@ export class WorkflowOrchestrator {
 
       const config = await CredentialService.getActiveConfig()
       if (!config) {
-        throw new Error('No LLM provider configured')
+        throw new Error('No AI provider configured')
       }
 
       // Apply web search grounding setting
@@ -649,6 +649,7 @@ export class WorkflowOrchestrator {
       const enhancedInstructions = await buildAgentInstructions(
         baseInstructions,
         agent.knowledgeItemIds,
+        agent.id,
       )
 
       const messages: LLMMessage[] = [
@@ -748,7 +749,7 @@ export class WorkflowOrchestrator {
       const artifacts = await ArtifactManager.getArtifactsByTask(task.id)
       const config = await CredentialService.getActiveConfig()
       if (!config) {
-        throw new Error('No LLM provider configured')
+        throw new Error('No AI provider configured')
       }
 
       const validationPrompt = `

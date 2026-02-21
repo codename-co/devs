@@ -126,7 +126,7 @@ export function useExtensionBridge({
               response = {
                 success: false,
                 error:
-                  'No LLM provider configured. Please add credentials in Settings.',
+                  'No AI provider configured. Please add credentials in Settings.',
               }
               break
             }
@@ -371,7 +371,7 @@ export function useExtensionBridge({
               response = {
                 success: false,
                 error:
-                  'No LLM provider configured. Please add credentials in Settings.',
+                  'No AI provider configured. Please add credentials in Settings.',
               }
               break
             }
@@ -429,7 +429,7 @@ export function useExtensionBridge({
               response = {
                 success: false,
                 error:
-                  'No LLM provider configured. Please add credentials in Settings.',
+                  'No AI provider configured. Please add credentials in Settings.',
               }
               break
             }

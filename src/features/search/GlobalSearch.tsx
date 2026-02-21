@@ -402,7 +402,7 @@ export function GlobalSearch() {
             : undefined) ||
           'Untitled',
         subtitle: safeString(conv.summary)?.substring(0, 100),
-        href: `/agents/run#${conv.agentSlug || conv.agentId}/${conv.id}`,
+        href: `/agents/run/${conv.agentSlug || conv.agentId}/${conv.id}`,
         date: new Date(conv.updatedAt || conv.timestamp),
       })),
     ]

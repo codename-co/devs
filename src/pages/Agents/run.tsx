@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback, memo } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   Accordion,
   AccordionItem,
@@ -405,7 +405,7 @@ const ToolTimelineItem = memo(
         <Tooltip content={t('View trace details')}>
           <Button
             as={Link}
-            to={`/traces/logs/${span.traceId}`}
+            to={`${location.pathname}${location.search}#settings/traces`}
             size="sm"
             variant="light"
             isIconOnly
@@ -1384,7 +1384,7 @@ const RecentConversations = memo(
             <Button
               key={conv.id}
               as={Link}
-              to={url(`/agents/run#${agent.slug}/${conv.id}`)}
+              to={url(`/agents/run/${agent.slug}/${conv.id}`)}
               variant="ghost"
               size="md"
               className="inline-flex justify-start"
@@ -1738,7 +1738,7 @@ export const AgentRunPage = () => {
         selectedAgent?.role,
       cta: {
         label: t('New chat'),
-        href: url(`/agents/start#${selectedAgent?.slug}`),
+        href: url(`/agents/start/${selectedAgent?.slug}`),
         icon: 'Plus',
       },
     }),
@@ -1755,28 +1755,16 @@ export const AgentRunPage = () => {
     ],
   )
 
-  // Parse the hash to get agentSlug and optional conversationId
-  const parseHash = useCallback(() => {
-    const hash = location.hash.replace('#', '')
-    // Check if there's a query string in the hash (e.g., #agentSlug/convId?message=msgId)
-    const [hashPart, queryPart] = hash.split('?')
-    const parts = hashPart.split('/')
+  // Read agentSlug and conversationId from URL path params
+  const params = useParams<{ agentSlug?: string; conversationId?: string }>()
+  const agentSlug = params.agentSlug || 'devs'
+  const conversationId = params.conversationId || null
 
-    // Parse query parameters
-    const queryParams = new URLSearchParams(queryPart || '')
-    const targetMessageId = queryParams.get('message')
-
-    return {
-      agentSlug: parts[0] || 'devs',
-      conversationId: parts[1] || null,
-      targetMessageId,
-    }
-  }, [location.hash])
-
-  const { agentSlug, conversationId, targetMessageId } = useMemo(
-    () => parseHash(),
-    [parseHash],
-  )
+  // Read optional query parameter (e.g., ?message=msgId)
+  const targetMessageId = useMemo(() => {
+    const searchParams = new URLSearchParams(location.search)
+    return searchParams.get('message')
+  }, [location.search])
 
   // Helper function to detect content type
   const detectContentType = useCallback((content: string) => {
@@ -1959,26 +1947,26 @@ export const AgentRunPage = () => {
     }
   }, [targetMessageId, conversationMessages.length, isLoading])
 
-  // Update URL hash when conversation ID becomes available
+  // Update URL path when conversation ID becomes available
   // Only update when there's no conversationId in the URL yet (new conversation created)
   useEffect(() => {
     if (currentConversation?.id && selectedAgent?.slug) {
-      // Read hash directly to check current URL state
-      // Note: We intentionally read location.hash inside the effect (not in deps)
-      // to avoid infinite loops when navigate() updates the hash
-      const hash = location.hash.replace('#', '')
-      const [hashPart] = hash.split('?')
-      const parts = hashPart.split('/')
-      const urlConversationId = parts[1] || null
-
-      // Only update hash if there's no conversation ID in the URL yet
+      // Only update path if there's no conversation ID in the URL yet
       // This prevents navigation loops when switching between existing conversations
-      if (!urlConversationId) {
-        const newHash = `#${selectedAgent.slug}/${currentConversation.id}`
-        navigate(newHash, { replace: true })
+      if (!conversationId) {
+        navigate(
+          url(`/agents/run/${selectedAgent.slug}/${currentConversation.id}`),
+          { replace: true },
+        )
       }
     }
-  }, [currentConversation?.id, selectedAgent?.slug, navigate])
+  }, [
+    currentConversation?.id,
+    selectedAgent?.slug,
+    navigate,
+    conversationId,
+    url,
+  ])
 
   // Load artifacts on mount
   useEffect(() => {

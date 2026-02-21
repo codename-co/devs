@@ -186,7 +186,7 @@ export const useAgentContextPanel = (
                 return (
                   <Link
                     key={conv.id}
-                    href={url(`/agents/run#${agent.slug}/${conv.id}`)}
+                    href={url(`/agents/run/${agent.slug}/${conv.id}`)}
                     className="block"
                   >
                     <Card
@@ -374,7 +374,7 @@ const EditableSystemPromptWrapper = ({
       {globalInstructions && (
         <div className="pt-2 border-t border-default-200">
           <Link
-            href={url('/settings#conversational/global-system-instructions')}
+            href={url('/#settings/conversational/global-system-instructions')}
             className="flex items-center gap-2 text-xs text-default-500 hover:text-primary transition-colors"
           >
             <Icon name="Settings" className="w-3 h-3" />
@@ -1058,7 +1058,7 @@ const AgentContextTabs = ({
                   <Link
                     key={pm.id}
                     href={url(
-                      `/agents/run#${agent.slug}/${pm.conversationId}?message=${pm.messageId}`,
+                      `/agents/run/${agent.slug}/${pm.conversationId}?message=${pm.messageId}`,
                     )}
                     className="block"
                   >
@@ -1105,6 +1105,7 @@ type ToolCategory =
   | 'presentation'
   | 'research'
   | 'connector'
+  | 'skill'
 
 /**
  * Infer icon from tool name based on provider prefix patterns.
@@ -1159,11 +1160,18 @@ const CATEGORY_LABELS: Record<ToolCategory, string> = {
   presentation: 'Presentation',
   research: 'Research',
   connector: 'Connectors',
+  skill: 'Skills',
 }
 
 const CATEGORY_ICONS: Record<
   ToolCategory,
-  'PageSearch' | 'MathBook' | 'Code' | 'Presentation' | 'Book' | 'Puzzle'
+  | 'PageSearch'
+  | 'MathBook'
+  | 'Code'
+  | 'Presentation'
+  | 'Book'
+  | 'Puzzle'
+  | 'OpenBook'
 > = {
   knowledge: 'PageSearch',
   math: 'MathBook',
@@ -1171,6 +1179,7 @@ const CATEGORY_ICONS: Record<
   presentation: 'Presentation',
   research: 'Book',
   connector: 'Puzzle',
+  skill: 'OpenBook',
 }
 
 interface AllToolInfo {
@@ -1301,6 +1310,28 @@ const AgentToolsDisplay = (_props: { tools: Agent['tools'] }) => {
           console.warn('Failed to load research tools:', error)
         }
 
+        // Add skill tools (if skills are enabled)
+        try {
+          const { SKILL_TOOL_DEFINITIONS } = await import('@/tools/plugins')
+          const { getEnabledSkills } = await import('@/stores/skillStore')
+
+          const enabledSkills = getEnabledSkills()
+          if (enabledSkills.length > 0) {
+            for (const def of Object.values(SKILL_TOOL_DEFINITIONS)) {
+              const name = def.function.name
+              toolsList.push({
+                name,
+                description: def.function.description,
+                category: 'skill',
+                icon: 'OpenBook',
+                label: formatToolLabel(name),
+              })
+            }
+          }
+        } catch (error) {
+          console.warn('Failed to load skill tools:', error)
+        }
+
         // Load connector tools from active connectors
         try {
           const { getToolDefinitionsForProvider } = await import(
@@ -1387,6 +1418,7 @@ const AgentToolsDisplay = (_props: { tools: Agent['tools'] }) => {
     'code',
     'presentation',
     'research',
+    'skill',
     'connector',
   ]
 

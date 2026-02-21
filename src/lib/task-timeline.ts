@@ -96,7 +96,7 @@ export const buildTimelineEvents = async (
       events.push({
         id: `message-${message.id}`,
         type: 'message',
-        timestamp: message.timestamp,
+        timestamp: new Date(message.timestamp),
         title: message.role === 'user' ? 'User Message' : 'Agent Response',
         // description:
         //   message.content.substring(0, 100) +

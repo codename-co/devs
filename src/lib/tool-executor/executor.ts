@@ -1114,3 +1114,33 @@ export function areUtilityToolsRegistered(): boolean {
 export function unregisterUtilityTools(): void {
   unregisterCategoryFromLegacy('utility', defaultRegistry)
 }
+
+// ============================================================================
+// Skill Tools Registration
+// ============================================================================
+
+/**
+ * Register all skill tools with the default registry.
+ * Call this during application initialization to enable Agent Skill tools
+ * (activate_skill, read_skill_file, run_skill_script).
+ */
+export function registerSkillTools(): void {
+  registerCategoryWithLegacy('skill', defaultRegistry)
+}
+
+/**
+ * Check if skill tools are registered.
+ *
+ * @returns true if all skill tools are registered
+ */
+export function areSkillToolsRegistered(): boolean {
+  return isCategoryRegisteredInLegacy('skill', defaultRegistry)
+}
+
+/**
+ * Unregister all skill tools from the default registry.
+ * Useful for testing or when disabling skill features.
+ */
+export function unregisterSkillTools(): void {
+  unregisterCategoryFromLegacy('skill', defaultRegistry)
+}

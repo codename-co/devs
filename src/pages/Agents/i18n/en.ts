@@ -68,7 +68,7 @@ export const en = [
   'Generate Agent',
   'Generating...',
   'Or configure manually',
-  'No LLM provider configured. Please configure one in Settings.',
+  'No AI provider configured. Please configure one in Settings.',
   'Failed to generate agent configuration. Please try again.',
   'Generated configuration is missing required fields.',
   'Failed to generate agent. Please try again.',

@@ -1,6 +1,7 @@
 import { getKnowledgeItemAsync, ensureReady } from '@/stores/knowledgeStore'
 import { KnowledgeItem } from '@/types'
 import { LLMMessageAttachment } from './llm'
+import { buildSkillInstructions } from '@/lib/skills/skill-prompt'
 
 /**
  * Citation format instructions for LLM to use when citing knowledge sources.
@@ -172,6 +173,7 @@ export async function getKnowledgeAttachments(
 export async function buildAgentInstructions(
   baseInstructions: string,
   knowledgeItemIds?: string[],
+  agentId?: string,
 ): Promise<string> {
   // Import userSettings lazily to avoid circular dependencies
   const { userSettings } = await import('@/stores/userStore')
@@ -189,6 +191,18 @@ ${globalSystemInstructions.trim()}
 ---
 
 ${enhancedInstructions}`
+  }
+
+  // Append skill catalog & instructions if any skills are installed
+  try {
+    const skillInstructions = buildSkillInstructions(agentId)
+    if (skillInstructions) {
+      enhancedInstructions = `${enhancedInstructions}
+
+${skillInstructions}`
+    }
+  } catch (error) {
+    console.warn('Failed to build skill instructions:', error)
   }
 
   if (!knowledgeItemIds || knowledgeItemIds.length === 0) {

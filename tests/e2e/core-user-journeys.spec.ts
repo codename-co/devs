@@ -101,8 +101,8 @@ test.describe('Core User Journeys', () => {
     await page.goto('/agents')
     await expect(page).toHaveURL(/\/agents/)
 
-    await page.goto('/settings')
-    await expect(page).toHaveURL(/\/settings/)
+    await page.goto('/#settings')
+    await expect(page).toHaveURL(/\/#settings/)
 
     // Use browser back
     await page.goBack()

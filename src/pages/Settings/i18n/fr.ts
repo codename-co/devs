@@ -4,7 +4,7 @@ type I18n = Record<(typeof en)[number], string>
 
 export const fr: I18n = {
   'Platform Settings': 'Paramètres de la plateforme',
-  'Configure LLM providers, models and platform defaults for your organization':
+  'Configure AI providers, models and platform defaults for your organization':
     'Configurez les fournisseurs de LLM, les modèles et les paramètres par défaut de la plateforme pour votre organisation',
   Appearance: 'Apparence',
   'Choose your preferred language': 'Choisissez votre langue préférée',
@@ -25,9 +25,9 @@ export const fr: I18n = {
     'Échec de la régénération de la clé maîtresse',
   'Your master key is used to encrypt all sensitive data stored locally. Keep it safe and secure.':
     'Votre clé maîtresse est utilisée pour chiffrer toutes les données sensibles stockées localement. Gardez-la en sécurité.',
-  'LLM Providers': 'Fournisseurs LLM',
-  'Choose your LLM provider, manage your API credentials':
-    'Choisissez votre fournisseur LLM, gérez vos identifiants API',
+  'AI Providers': 'Fournisseurs IA',
+  'Choose your AI provider, manage your API credentials':
+    'Choisissez votre fournisseur IA, gérez vos identifiants API',
   'Add Provider': 'Ajouter un fournisseur',
   'No providers configured. Add one to get started.':
     'Aucun fournisseur configuré. Ajoutez-en un pour commencer.',
@@ -108,7 +108,8 @@ export const fr: I18n = {
   'Hide Default Agents': 'Masquer les agents par défaut',
   'Only show your custom agents in the agent picker and agents page':
     "Afficher uniquement vos agents personnalisés dans le sélecteur d'agents et la page des agents",
-  'Conversational Features': 'Fonctionnalités conversationnelles',
+  Features: 'Fonctionnalités',
+  Voice: 'Voix',
   'Configure how you interact with agents':
     'Configurez la façon dont vous interagissez avec les agents',
   'Auto Memory Learning': 'Apprentissage automatique de la mémoire',
@@ -142,4 +143,50 @@ export const fr: I18n = {
   'Enter the model name manually': 'Entrez le nom du modèle manuellement',
   'models available': 'modèles disponibles',
   'This provider is already configured': 'Ce fournisseur est déjà configuré',
+  Computer: 'Ordinateur',
+  'Sandbox runtimes and system resources':
+    'Runtimes sandbox et ressources système',
+  'Sandbox Runtimes': 'Runtimes Sandbox',
+  Running: 'En cours',
+  Executing: 'En exécution',
+  Loading: 'Chargement',
+  Idle: 'Inactif',
+  Error: 'Erreur',
+  Start: 'Démarrer',
+  Stop: 'Arrêter',
+  'Pre-load the {runtime} runtime': 'Pré-charger le runtime {runtime}',
+  'Terminate the {runtime} runtime': 'Terminer le runtime {runtime}',
+  'Run a test snippet in the {runtime} sandbox':
+    'Exécuter un extrait de test dans le sandbox {runtime}',
+  Try: 'Essayer',
+  'Isolated code execution environments running entirely in WebAssembly. Python uses a Web Worker; JavaScript runs in a lightweight QuickJS VM.':
+    'Environnements d\u2019exécution de code isolés fonctionnant entièrement en WebAssembly. Python utilise un Web Worker\u00a0; JavaScript tourne dans une VM QuickJS légère.',
+  CPU: 'CPU',
+  '{used} / {total} cores': '{used} / {total} cœurs',
+  'CPU usage': 'Utilisation CPU',
+  Memory: 'Mémoire',
+  'Memory usage': 'Utilisation mémoire',
+  Storage: 'Stockage',
+  'Storage usage': 'Utilisation stockage',
+  'Device Information': 'Informations sur l\u2019appareil',
+  Device: 'Appareil',
+  'GPU Vendor': 'Fabricant GPU',
+  'GPU Renderer': 'Rendu GPU',
+  WebGPU: 'WebGPU',
+  Supported: 'Supporté',
+  'Not Supported': 'Non supporté',
+  'Local LLM (Browser)': 'LLM local (navigateur)',
+  'Runs AI models entirely in your browser using WebGPU. No data is sent to external servers.':
+    'Exécute des modèles IA entièrement dans votre navigateur via WebGPU. Aucune donnée n\u2019est envoyée à des serveurs externes.',
+  'Default Model': 'Modèle par défaut',
+  'Loaded Model': 'Modèle chargé',
+  'No model loaded': 'Aucun modèle chargé',
+  Unload: 'Décharger',
+  'Unload model to free memory': 'Décharger le modèle pour libérer la mémoire',
+  'WebGPU is not supported on this device. Local LLM inference requires a WebGPU-compatible browser.':
+    'WebGPU n\u2019est pas supporté sur cet appareil. L\u2019inférence LLM locale nécessite un navigateur compatible WebGPU.',
+  'Your device has less than 8GB of RAM. Local inference may be slow or unavailable for larger models.':
+    'Votre appareil dispose de moins de 8 Go de RAM. L\u2019inférence locale peut être lente ou indisponible pour les modèles volumineux.',
+
+  'System Resources': 'Ressources système',
 } as const

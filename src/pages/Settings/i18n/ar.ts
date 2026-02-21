@@ -4,7 +4,7 @@ type I18n = Record<(typeof en)[number], string>
 
 export const ar: I18n = {
   'Platform Settings': 'إعدادات المنصة',
-  'Configure LLM providers, models and platform defaults for your organization':
+  'Configure AI providers, models and platform defaults for your organization':
     'تكوين مزودات LLM والنماذج والإعدادات الافتراضية للمنصة لمؤسستك',
   Appearance: 'المظهر',
   'Choose your preferred language': 'اختر لغتك المفضلة',
@@ -23,8 +23,8 @@ export const ar: I18n = {
   'Failed to regenerate master key': 'فشل إعادة إنشاء المفتاح الرئيسي',
   'Your master key is used to encrypt all sensitive data stored locally. Keep it safe and secure.':
     'يُستخدم المفتاح الرئيسي لتشفير جميع البيانات الحساسة المخزنة محلياً. احتفظ به آمناً.',
-  'LLM Providers': 'مزودات LLM',
-  'Choose your LLM provider, manage your API credentials':
+  'AI Providers': 'مزودات LLM',
+  'Choose your AI provider, manage your API credentials':
     'اختر مزود LLM الخاص بك، وأدر بيانات اعتماد API',
   'Add Provider': 'إضافة مزود',
   'No providers configured. Add one to get started.':
@@ -105,7 +105,8 @@ export const ar: I18n = {
   'Hide Default Agents': 'إخفاء الوكلاء الافتراضيين',
   'Only show your custom agents in the agent picker and agents page':
     'إظهار الوكلاء المخصصين فقط في منتقي الوكلاء وصفحة الوكلاء',
-  'Conversational Features': 'ميزات المحادثة',
+  Features: 'الميزات',
+  Voice: 'الصوت',
   'Configure how you interact with agents': 'قم بتكوين كيفية تفاعلك مع الوكلاء',
   'Auto Memory Learning': 'التعلم الآلي للذاكرة',
   'Automatically extract learnable information from conversations to build agent memory':
@@ -138,4 +139,49 @@ export const ar: I18n = {
   'Enter the model name manually': 'أدخل اسم النموذج يدوياً',
   'models available': 'نماذج متاحة',
   'This provider is already configured': 'هذا المزود مُعدّ بالفعل',
+  Computer: 'الحاسوب',
+  'Sandbox runtimes and system resources': 'بيئات تشغيل العزل وموارد النظام',
+  'Sandbox Runtimes': 'بيئات تشغيل العزل',
+  Running: 'قيد التشغيل',
+  Executing: 'قيد التنفيذ',
+  Loading: 'جاري التحميل',
+  Idle: 'خامل',
+  Error: 'خطأ',
+  Start: 'تشغيل',
+  Stop: 'إيقاف',
+  'Pre-load the {runtime} runtime': 'تحميل بيئة {runtime} مسبقاً',
+  'Terminate the {runtime} runtime': 'إنهاء بيئة تشغيل {runtime}',
+  'Run a test snippet in the {runtime} sandbox':
+    'تشغيل مقتطف اختباري في بيئة {runtime} المعزولة',
+  Try: 'تجربة',
+  'Isolated code execution environments running entirely in WebAssembly. Python uses a Web Worker; JavaScript runs in a lightweight QuickJS VM.':
+    'بيئات تنفيذ شيفرة معزولة تعمل بالكامل في WebAssembly. يستخدم Python عامل ويب؛ ويعمل JavaScript في آلة QuickJS افتراضية خفيفة.',
+  CPU: 'المعالج',
+  '{used} / {total} cores': '{used} / {total} أنوية',
+  'CPU usage': 'استخدام المعالج',
+  Memory: 'الذاكرة',
+  'Memory usage': 'استخدام الذاكرة',
+  Storage: 'التخزين',
+  'Storage usage': 'استخدام التخزين',
+  'Device Information': 'معلومات الجهاز',
+  Device: 'الجهاز',
+  'GPU Vendor': 'مصنّع GPU',
+  'GPU Renderer': 'معالج GPU',
+  WebGPU: 'WebGPU',
+  Supported: 'مدعوم',
+  'Not Supported': 'غير مدعوم',
+  'Local LLM (Browser)': 'LLM محلي (المتصفح)',
+  'Runs AI models entirely in your browser using WebGPU. No data is sent to external servers.':
+    'يشغّل نماذج الذكاء الاصطناعي بالكامل في متصفحك باستخدام WebGPU. لا يتم إرسال بيانات إلى خوادم خارجية.',
+  'Default Model': 'النموذج الافتراضي',
+  'Loaded Model': 'النموذج المحمّل',
+  'No model loaded': 'لا يوجد نموذج محمّل',
+  Unload: 'إلغاء التحميل',
+  'Unload model to free memory': 'إلغاء تحميل النموذج لتحرير الذاكرة',
+  'WebGPU is not supported on this device. Local LLM inference requires a WebGPU-compatible browser.':
+    'WebGPU غير مدعوم على هذا الجهاز. يتطلب استدلال LLM المحلي متصفحاً متوافقاً مع WebGPU.',
+  'Your device has less than 8GB of RAM. Local inference may be slow or unavailable for larger models.':
+    'جهازك يحتوي على أقل من 8 جيجابايت من الذاكرة. قد يكون الاستدلال المحلي بطيئاً أو غير متاح للنماذج الأكبر.',
+
+  'System Resources': 'موارد النظام',
 } as const

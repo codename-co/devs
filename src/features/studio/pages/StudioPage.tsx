@@ -534,7 +534,7 @@ export function StudioPage() {
                 size="sm"
                 color="warning"
                 variant="flat"
-                onPress={() => navigate(url('/settings#providers'))}
+                onPress={() => navigate(url('/#settings/providers'))}
               >
                 {t('Go to Settings')}
               </Button>
@@ -595,7 +595,7 @@ export function StudioPage() {
                 size="sm"
                 color="warning"
                 variant="flat"
-                onPress={() => navigate(url('/settings#providers'))}
+                onPress={() => navigate(url('/#settings/providers'))}
               >
                 {t('Go to Settings')}
               </Button>

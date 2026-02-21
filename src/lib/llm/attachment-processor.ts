@@ -1,8 +1,8 @@
 /**
- * Shared attachment processing utilities for LLM providers
+ * Shared attachment processing utilities for AI providers
  *
  * Provides common functionality for handling document attachments
- * across different LLM provider implementations.
+ * across different AI provider implementations.
  */
 
 import {

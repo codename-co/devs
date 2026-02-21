@@ -31,6 +31,7 @@ export const fr: I18n = {
   Studio: 'Studio',
   APPLICATIONS: 'APPLICATIONS',
   Marketplace: 'Marketplace',
+  Skills: 'Compétences',
   Verified: 'Vérifié',
   'Start a conversation': 'Démarrer une conversation',
   'Select model': 'Sélectionner le modèle',
@@ -87,7 +88,7 @@ export const fr: I18n = {
   Files: 'Fichiers',
   'Manage your files': 'Gérer vos fichiers',
   'Database management': 'Gestion de la base de données',
-  'Traces and Metrics': 'Traces et métriques',
+  Traces: 'Traces',
   'Observe and analyze traces and metrics':
     'Observez et analysez les traces et métriques',
   Admin: 'Admin',
@@ -118,7 +119,7 @@ export const fr: I18n = {
   'Time-Boxed': 'Temps limité',
   Hybrid: 'Hybride',
   'Select a model': 'Sélectionner un modèle',
-  'Add LLM provider': 'Ajouter un fournisseur LLM',
+  'Add AI provider': 'Ajouter un fournisseur LLM',
   '{n} models': '{n} modèles',
   'Search models...': 'Rechercher des modèles...',
   'No models found': 'Aucun modèle trouvé',
@@ -151,7 +152,7 @@ export const fr: I18n = {
   'Page not found': 'Page non trouvée',
 
   // LLM Integration
-  'No LLM provider configured. Please [configure one in Settings]({path}).':
+  'No AI provider configured. Please [configure one in Settings]({path}).':
     'Aucun fournisseur LLM configuré. Veuillez [en configurer un dans les Paramètres]({path}).',
 
   // MarkdownRenderer
@@ -238,7 +239,7 @@ export const fr: I18n = {
   'Open Source': 'Open Source',
   '{license} licensed. Built by the community, for the community.':
     'Sous licence {license}. Construit par la communauté, pour la communauté.',
-  'Configure your LLM provider': 'Configurez votre fournisseur LLM',
+  'Configure your AI provider': 'Configurez votre fournisseur LLM',
   'Describe your task': 'Décrivez votre tâche',
   'Be as detailed as possible to get the best results':
     'Soyez aussi détaillé que possible pour obtenir les meilleurs résultats',
@@ -258,8 +259,8 @@ export const fr: I18n = {
   'Is my data private?': 'Mes données sont-elles privées ?',
   'Yes! All data processing happens locally in your browser. We do not collect or store any of your data.':
     'Oui ! Tout le traitement des données se fait localement dans votre navigateur. Nous ne collectons ni ne stockons aucune de vos données.',
-  'Which LLM providers are supported?':
-    'Quels fournisseurs LLM sont pris en charge ?',
+  'Which AI providers are supported?':
+    'Quels fournisseurs d’IA sont pris en charge ?',
   'We support {llmList}, and any provider compatible with the OpenAI API spec.':
     'Nous prenons en charge {llmList}, et tout fournisseur compatible avec la spécification API OpenAI.',
   'Do I need to install anything?': 'Dois-je installer quelque chose ?',
@@ -393,7 +394,7 @@ export const fr: I18n = {
   'Share the platform': 'Partager la plateforme',
   'Export the platform settings to another device or share it with others':
     'Exporter les paramètres de la plateforme vers un autre appareil ou les partager avec d’autres',
-  'Export your current agents and LLM provider settings and share it via URL or QR code.':
+  'Export your current agents and AI provider settings and share it via URL or QR code.':
     'Exporter vos agents actuels et les paramètres du fournisseur LLM et les partager via URL ou QR Code.',
   'Include my {n} agents': 'Inclure mes {n} agents',
   'Now you can share the platform configuration…':

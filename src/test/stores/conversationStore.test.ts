@@ -294,10 +294,10 @@ describe('conversationStore', () => {
       const afterCreation = new Date()
 
       expect(conversation.timestamp).toBeInstanceOf(Date)
-      expect(conversation.timestamp.getTime()).toBeGreaterThanOrEqual(
+      expect(new Date(conversation.timestamp).getTime()).toBeGreaterThanOrEqual(
         beforeCreation.getTime(),
       )
-      expect(conversation.timestamp.getTime()).toBeLessThanOrEqual(
+      expect(new Date(conversation.timestamp).getTime()).toBeLessThanOrEqual(
         afterCreation.getTime(),
       )
     })

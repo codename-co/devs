@@ -164,7 +164,7 @@ export function AgentsNewPage() {
       const config = await CredentialService.getActiveConfig()
       if (!config) {
         throw new Error(
-          t('No LLM provider configured. Please configure one in Settings.'),
+          t('No AI provider configured. Please configure one in Settings.'),
         )
       }
 
@@ -285,7 +285,7 @@ export function AgentsNewPage() {
       const config = await CredentialService.getActiveConfig()
       if (!config) {
         throw new Error(
-          'No LLM provider configured. Please configure one in Settings.',
+          'No AI provider configured. Please configure one in Settings.',
         )
       }
 
@@ -342,7 +342,7 @@ export function AgentsNewPage() {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : 'Sorry, I encountered an error. Please make sure you have configured an LLM provider in Settings.'
+          : 'Sorry, I encountered an error. Please make sure you have configured an AI provider in Settings.'
 
       setMessages((prev) =>
         prev.map((msg) =>
@@ -687,7 +687,7 @@ export function AgentsNewPage() {
                             />
                           )}
                           <p className="text-xs opacity-70 mt-1">
-                            {message.timestamp.toLocaleTimeString()}
+                            {new Date(message.timestamp).toLocaleTimeString()}
                           </p>
                         </div>
                       </div>

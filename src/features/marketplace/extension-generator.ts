@@ -104,7 +104,7 @@ export async function generateExtension(
   if (!config) {
     return {
       success: false,
-      error: 'No LLM provider configured. Please add credentials in Settings.',
+      error: 'No AI provider configured. Please add credentials in Settings.',
     }
   }
 

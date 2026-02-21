@@ -42,8 +42,8 @@ export const ko: I18n = {
   'Auto-speak responses': '자동 응답 읽기',
   'Automatically speak AI responses using TTS':
     'TTS를 사용하여 AI 응답을 자동으로 읽기',
-  'No LLM provider configured': 'LLM 제공자가 구성되지 않음',
-  'Please configure an LLM provider in Settings to use voice chat.':
+  'No AI provider configured': 'LLM 제공자가 구성되지 않음',
+  'Please configure an AI provider in Settings to use voice chat.':
     '음성 채팅을 사용하려면 설정에서 LLM 제공자를 구성하세요.',
   Send: '보내기',
   'Listening…': '듣는 중…',

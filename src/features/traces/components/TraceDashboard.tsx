@@ -100,7 +100,7 @@ export function TraceDashboard({
       )}
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <MetricCard
           title={t('Total Requests')}
           value={displayMetrics.totalTraces.toLocaleString()}
@@ -108,13 +108,13 @@ export function TraceDashboard({
           icon="ChatLines"
           color="primary"
         />
-        <MetricCard
+        {/* <MetricCard
           title={t('Success Rate')}
           value={`${(100 - displayMetrics.errorRate).toFixed(1)}%`}
           subtitle={`${displayMetrics.errorTraces} errors`}
           icon="CheckCircle"
           color={displayMetrics.errorRate > 10 ? 'danger' : 'success'}
-        />
+        /> */}
         <MetricCard
           title={t('Total Tokens')}
           value={formatNumber(displayMetrics.totalTokens)}
@@ -129,10 +129,6 @@ export function TraceDashboard({
           icon="PiggyBank"
           color="warning"
         />
-      </div>
-
-      {/* Performance Metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MetricCard
           title={t('Avg Duration')}
           value={formatDuration(displayMetrics.averageDuration)}
@@ -154,13 +150,13 @@ export function TraceDashboard({
           icon="Timer"
           color="default"
         />
-        <MetricCard
+        {/* <MetricCard
           title="P99"
           value={formatDuration(displayMetrics.p99Duration)}
           subtitle={t('{n}th percentile', { n: 99 })}
           icon="Timer"
           color="default"
-        />
+        /> */}
       </div>
 
       {/* Charts Row */}
@@ -249,11 +245,11 @@ function MetricCard({ title, value, subtitle, icon, color }: MetricCardProps) {
             <p className="text-xs text-default-400 uppercase tracking-wider">
               {title}
             </p>
-            <p className="text-2xl font-bold mt-1">{value}</p>
+            <p className="text-2xl mt-1">{value}</p>
             <p className="text-xs text-default-400 mt-1">{subtitle}</p>
           </div>
           <div className={`p-2 rounded-lg ${colorClasses[color]}`}>
-            <Icon name={icon} className="w-5 h-5" />
+            <Icon name={icon} size="md" />
           </div>
         </div>
       </CardBody>

@@ -31,8 +31,8 @@ export const en = [
   'Stop',
   'Auto-speak responses',
   'Automatically speak AI responses using TTS',
-  'No LLM provider configured',
-  'Please configure an LLM provider in Settings to use voice chat.',
+  'No AI provider configured',
+  'Please configure an AI provider in Settings to use voice chat.',
   'Send',
   'Listening…',
 ] as const

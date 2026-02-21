@@ -270,7 +270,7 @@ export const ko: I18n = {
   Send: '보내기',
   'AI-suggested code changes are automatically applied':
     'AI가 제안한 코드 변경 사항이 자동으로 적용됩니다',
-  'No LLM provider configured': 'LLM 제공자가 구성되지 않았습니다',
+  'No AI provider configured': 'LLM 제공자가 구성되지 않았습니다',
   'Unknown error': '알 수 없는 오류',
   'Sorry, I encountered an error: {error}':
     '죄송합니다, 오류가 발생했습니다: {error}',

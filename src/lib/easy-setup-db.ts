@@ -166,7 +166,7 @@ function buildSuccessMessage(
 
   if (counts.credentials > 0) {
     parts.push(
-      `${counts.credentials} LLM provider${counts.credentials > 1 ? 's' : ''}`,
+      `${counts.credentials} AI provider${counts.credentials > 1 ? 's' : ''}`,
     )
   }
 

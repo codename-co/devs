@@ -500,13 +500,18 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
                   refreshReason = 'Token validation failed (revoked or invalid)'
                 }
               } catch (decryptError) {
-                console.error(
-                  `[ConnectorStore] Token decryption failed for ${connector.provider}:`,
-                  decryptError,
+                console.warn(
+                  `[ConnectorStore] Token decryption failed for ${connector.provider} — encryption key may have changed. Marking as expired.`,
                 )
-                // Can't validate without decrypting, mark as needing refresh
-                needsRefresh = true
-                refreshReason = 'Token decryption failed'
+                // If the access token can't be decrypted, the refresh token
+                // won't be decryptable either (same key). Skip the futile
+                // refresh attempt and mark as expired directly.
+                await updateConnector(connector.id, {
+                  status: 'expired',
+                  errorMessage:
+                    'Encryption key has changed. Please disconnect and reconnect this service.',
+                })
+                return
               }
             } else {
               console.warn(

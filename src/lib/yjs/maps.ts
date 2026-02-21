@@ -45,6 +45,7 @@ import type {
   MemoryLearningEvent,
   AgentMemoryDocument,
   SharedContext,
+  InstalledSkill,
 } from '@/types'
 import type { Battle } from '@/features/battle/types'
 import type { StudioEntry } from '@/features/studio/types'
@@ -154,7 +155,7 @@ export const memories = ydoc.getMap<AgentMemoryEntry>('memories')
 /** User preferences (theme, language, extended settings) — typically a single `"main"` entry. */
 export const preferences = ydoc.getMap<Preferences>('preferences')
 
-/** Encrypted LLM provider credentials — keyed by `Credential.id`. */
+/** Encrypted AI provider credentials — keyed by `Credential.id`. */
 export const credentials = ydoc.getMap<Credential>('credentials')
 
 // ---------------------------------------------------------------------------
@@ -213,6 +214,9 @@ export const installedExtensions = ydoc.getMap<InstalledExtension>(
 
 /** Custom (AI-generated) extensions created by the user — keyed by `CustomExtension.id`. */
 export const customExtensions = ydoc.getMap<CustomExtension>('customExtensions')
+
+/** Installed Agent Skills from SkillsMP / GitHub — keyed by `InstalledSkill.id`. */
+export const skills = ydoc.getMap<InstalledSkill>('skills')
 
 /**
  * Langfuse integration configuration.

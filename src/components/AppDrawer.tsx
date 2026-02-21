@@ -19,6 +19,7 @@ import { Icon } from './Icon'
 import { Title } from './Title'
 import { ProgressIndicator } from './ProgressIndicator'
 import { AboutModal } from './AboutModal'
+import { SettingsModal } from './SettingsModal'
 import {
   GlobalSearch,
   useGlobalSearchShortcut,
@@ -29,7 +30,7 @@ import { PRODUCT } from '@/config/product'
 import clsx from 'clsx'
 import { useState, useEffect, memo, useMemo } from 'react'
 import { cn, isCurrentPath } from '@/lib/utils'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useConversationStore } from '@/stores/conversationStore'
 import {
   useMarketplaceStore,
@@ -60,7 +61,7 @@ const AgentList = () => {
               <ListboxItem
                 key={agent.id}
                 className="dark:text-gray-200 dark:hover:text-grey-500"
-                href={`/agents/run#${agent.slug}`}
+                href={`/agents/run/${agent.slug}`}
                 textValue={agent.name}
               >
                 <div className="flex items-center gap-2">
@@ -246,8 +247,22 @@ export const AppDrawer = memo(() => {
 
   const openSearch = useSearchStore((state) => state.open)
 
+  const navigate = useNavigate()
+  const location = useLocation()
+
   const [isMobile, setIsMobile] = useState(false)
   const [hasSearchable, setHasSearchable] = useState(false)
+
+  // Derive settings modal visibility from URL hash (e.g. #settings, #settings/providers)
+  const showSettingsModal = location.hash.startsWith('#settings')
+
+  const openSettings = () => {
+    navigate(`${location.pathname}#settings`, { replace: true })
+  }
+
+  const closeSettings = () => {
+    navigate(location.pathname, { replace: true })
+  }
 
   // Load conversations count
   const conversationsCount = useConversationStore(
@@ -314,6 +329,7 @@ export const AppDrawer = memo(() => {
         <CollapsedDrawer
           className="drawer-collapsed"
           onOpenSearch={openSearch}
+          onOpenSettings={openSettings}
           hasConversations={conversationsCount > 0}
           hasSearchable={hasSearchable}
           installedApps={installedApps}
@@ -322,6 +338,7 @@ export const AppDrawer = memo(() => {
         <ExpandedDrawer
           className="drawer-expanded"
           onOpenSearch={openSearch}
+          onOpenSettings={openSettings}
           hasConversations={conversationsCount > 0}
           hasSearchable={hasSearchable}
           installedApps={installedApps}
@@ -331,6 +348,9 @@ export const AppDrawer = memo(() => {
 
         {/* Global Search Modal - rendered at AppDrawer level */}
         <GlobalSearch />
+
+        {/* Settings Modal */}
+        <SettingsModal isOpen={showSettingsModal} onClose={closeSettings} />
 
         <style>{
           /* CSS */ `
@@ -360,12 +380,14 @@ AppDrawer.displayName = 'AppDrawer'
 const CollapsedDrawer = ({
   className,
   onOpenSearch,
+  onOpenSettings,
   hasConversations,
   installedApps,
   lang,
 }: {
   className?: string
   onOpenSearch: () => void
+  onOpenSettings: () => void
   hasConversations: boolean
   hasSearchable: boolean
   installedApps: InstalledExtension[]
@@ -602,6 +624,21 @@ const CollapsedDrawer = ({
                 )
               })
             }
+            <Tooltip content={t('Skills')} placement="right">
+              <Button
+                as={Link}
+                href={url('/skills')}
+                isIconOnly
+                variant="light"
+                className={cn(
+                  'w-full text-violet-500 dark:text-violet-400 [.is-active]:bg-default-100',
+                  isCurrentPath('/skills') && 'is-active',
+                )}
+                aria-label={t('Skills')}
+              >
+                <Icon name="OpenBook" />
+              </Button>
+            </Tooltip>
             <Tooltip content={t('Marketplace')} placement="right">
               <Button
                 as={Link}
@@ -634,9 +671,24 @@ const CollapsedDrawer = ({
         </div>
       </div>
 
-      {/* Progress indicator at bottom */}
+      {/* Progress indicator and settings at bottom */}
       <div className="mt-auto pt-4 hidden lg:flex flex-col items-center gap-2">
         <ProgressIndicator />
+        <Tooltip content={t('Settings')} placement="right">
+          <Button
+            isIconOnly
+            variant="light"
+            size="sm"
+            onPress={onOpenSettings}
+            aria-label={t('Settings')}
+          >
+            <Icon
+              name="Settings"
+              className="text-gray-500 dark:text-gray-400"
+              size="sm"
+            />
+          </Button>
+        </Tooltip>
       </div>
     </div>
   )
@@ -645,12 +697,14 @@ const CollapsedDrawer = ({
 const ExpandedDrawer = ({
   className,
   onOpenSearch,
+  onOpenSettings,
   hasConversations,
   installedApps,
   lang,
 }: {
   className?: string
   onOpenSearch: () => void
+  onOpenSettings: () => void
   hasConversations: boolean
   hasSearchable: boolean
   installedApps: InstalledExtension[]
@@ -938,6 +992,23 @@ const ExpandedDrawer = ({
                   )
                 }),
                 <ListboxItem
+                  key="skills"
+                  href={url('/skills')}
+                  variant="faded"
+                  className={cn(
+                    'dark:text-gray-200 [.is-active]:bg-default-100',
+                    isCurrentPath('/skills') && 'is-active',
+                  )}
+                  startContent={
+                    <Icon
+                      name="OpenBook"
+                      className="text-violet-500 dark:text-violet-400"
+                    />
+                  }
+                >
+                  {t('Skills')}
+                </ListboxItem>,
+                <ListboxItem
                   key="marketplace"
                   href={url('/marketplace')}
                   variant="faded"
@@ -1084,7 +1155,7 @@ const ExpandedDrawer = ({
               isIconOnly
               variant="light"
               size="sm"
-              onPress={() => navigate(url('/settings'))}
+              onPress={onOpenSettings}
               aria-label={t('Settings')}
             >
               <Icon

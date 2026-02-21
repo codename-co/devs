@@ -2,14 +2,15 @@
  * Code Tool Plugin (Execute)
  *
  * A tool plugin that provides JavaScript code execution capabilities.
- * Executes code in a QuickJS WebAssembly sandbox for maximum security.
+ * Routes through the unified Sandbox for QuickJS WebAssembly execution.
  *
  * @module tools/plugins/execute
  */
 
 import { createToolPlugin } from '../registry'
 import type { ToolPlugin } from '../types'
-import { execute, CODE_TOOL_DEFINITIONS } from '@/lib/code-tools/service'
+import { sandbox } from '@/lib/sandbox'
+import { CODE_TOOL_DEFINITIONS } from '@/lib/code-tools/types'
 import type {
   ExecuteParams,
   ExecuteResult,
@@ -24,7 +25,7 @@ import type {
  * Execute tool plugin for JavaScript code execution.
  *
  * This tool enables LLM agents to run JavaScript code safely
- * in a QuickJS WebAssembly sandbox.
+ * in a QuickJS WebAssembly sandbox via the unified Sandbox.
  *
  * Features:
  * - Full ES2020 JavaScript support
@@ -64,7 +65,48 @@ export const executePlugin: ToolPlugin<
       throw new Error('Aborted')
     }
 
-    return execute(args)
+    // Route through the unified sandbox
+    const result = await sandbox.execute({
+      language: 'javascript',
+      code: args.code,
+      context: args.input != null ? { input: args.input } : undefined,
+      timeout: args.timeout,
+    })
+
+    // Map SandboxResult back to the legacy ExecuteResult | ExecuteError format
+    if (result.success) {
+      // Parse the result back to a native JS value if possible
+      let nativeResult: unknown = result.result
+      try {
+        if (result.result !== undefined && result.result !== 'undefined') {
+          nativeResult = JSON.parse(result.result)
+        }
+      } catch {
+        // Keep as string if not parseable
+      }
+
+      return {
+        result: nativeResult,
+        formatted: result.result ?? 'undefined',
+        console: result.console.map((e) => ({
+          type: e.type as 'log' | 'warn' | 'error' | 'info' | 'debug',
+          args: e.args,
+          timestamp: e.timestamp,
+        })),
+        executionTime: result.executionTimeMs,
+      } satisfies ExecuteResult
+    } else {
+      const errorType = result.errorType ?? 'runtime'
+      return {
+        error: (errorType === 'memory' ? 'runtime' : errorType) as ExecuteError['error'],
+        message: result.error ?? 'Execution failed',
+        console: result.console.map((e) => ({
+          type: e.type as 'log' | 'warn' | 'error' | 'info' | 'debug',
+          args: e.args,
+          timestamp: e.timestamp,
+        })),
+      } satisfies ExecuteError
+    }
   },
   validate: (args): ExecuteParams => {
     const params = args as ExecuteParams

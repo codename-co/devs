@@ -54,6 +54,8 @@ import {
   arePresentationToolsRegistered,
   registerResearchTools,
   areResearchToolsRegistered,
+  registerSkillTools,
+  areSkillToolsRegistered,
 } from '@/lib/tool-executor'
 import { KNOWLEDGE_TOOL_DEFINITIONS } from '@/lib/knowledge-tools'
 import { MATH_TOOL_DEFINITIONS } from '@/lib/math-tools'
@@ -67,10 +69,12 @@ import {
   WIKIDATA_SPARQL_TOOL_DEFINITION,
   ARXIV_SEARCH_TOOL_DEFINITION,
   ARXIV_PAPER_TOOL_DEFINITION,
+  SKILL_TOOL_DEFINITIONS,
 } from '@/tools/plugins'
 import { getToolDefinitionsForProvider } from '@/features/connectors/tools'
 import { connectors as connectorsMap } from '@/lib/yjs/maps'
 import type { Connector } from '@/features/connectors/types'
+import { getEnabledSkills } from '@/stores/skillStore'
 
 // ============================================================================
 // Tool Helpers
@@ -109,6 +113,10 @@ const TOOL_STATUS_I18N_KEYS: Record<string, string> = {
   notion_search: 'Searching Notion',
   notion_read_page: 'Reading Notion page',
   notion_query_database: 'Querying Notion database',
+  // Skill tools
+  activate_skill: 'Activating skill',
+  read_skill_file: 'Reading skill file',
+  run_skill_script: 'Running skill script',
 }
 
 /**
@@ -146,8 +154,8 @@ function getToolStatusI18nKey(toolCalls: ToolCall[]): string {
  * This ensures pre-existing agents and new agents alike can use tools.
  */
 function getAgentToolDefinitions(_agent: Agent): ToolDefinition[] {
-  // Return all knowledge, math, code, presentation, and research tools - they are universally available to all agents
-  return [
+  // Return all knowledge, math, code, presentation, research, and skill tools - they are universally available to all agents
+  const tools: ToolDefinition[] = [
     ...Object.values(KNOWLEDGE_TOOL_DEFINITIONS),
     ...Object.values(MATH_TOOL_DEFINITIONS),
     ...Object.values(CODE_TOOL_DEFINITIONS),
@@ -161,6 +169,14 @@ function getAgentToolDefinitions(_agent: Agent): ToolDefinition[] {
     ARXIV_SEARCH_TOOL_DEFINITION,
     ARXIV_PAPER_TOOL_DEFINITION,
   ]
+
+  // Add skill tools only if there are enabled skills
+  const enabledSkills = getEnabledSkills()
+  if (enabledSkills.length > 0) {
+    tools.push(...Object.values(SKILL_TOOL_DEFINITIONS))
+  }
+
+  return tools
 }
 
 /**
@@ -365,6 +381,11 @@ async function executeToolCalls(
     registerResearchTools()
   }
 
+  // Ensure skill tools are registered
+  if (!areSkillToolsRegistered()) {
+    registerSkillTools()
+  }
+
   // Create a trace for the tool execution batch
   const trace = TraceService.startTrace({
     name: `Tools: ${toolCalls.map((tc) => tc.function.name).join(', ')}`,
@@ -468,12 +489,12 @@ export const submitChat = async (
       notifyError({
         title: 'LLM Configuration Required',
         description: t(
-          'No LLM provider configured. Please configure one in Settings.',
+          'No AI provider configured. Please configure one in Settings.',
         ),
         actionUrl: '/settings/#providers',
         actionLabel: 'Open Settings',
       })
-      return { success: false, error: 'No LLM provider configured' }
+      return { success: false, error: 'No AI provider configured' }
     }
 
     const agent = selectedAgent || getDefaultAgent()
@@ -614,6 +635,7 @@ export const submitChat = async (
     const enhancedInstructions = await buildAgentInstructions(
       baseInstructions,
       agent.knowledgeItemIds,
+      agent.id,
     )
 
     // Get relevant memories for this agent and prompt

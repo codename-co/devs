@@ -10,7 +10,6 @@ import {
   TableCell,
   Chip,
   Spinner,
-  Button,
   Card,
   CardBody,
   Input,
@@ -54,7 +53,6 @@ export function TraceList({
   traces,
   isLoading,
   onSelectTrace,
-  onDeleteTrace,
 }: TraceListProps) {
   const { t, lang } = useI18n(localI18n)
   const [searchQuery, setSearchQuery] = useState('')
@@ -82,30 +80,18 @@ export function TraceList({
     return `${(ms / 60000).toFixed(1)}min`
   }
 
-  const formatDate = (date: Date) => {
-    const d = new Date(date)
-    const now = new Date()
-    const diff = now.getTime() - d.getTime()
-    const mins = Math.floor(diff / 60000)
-    const hours = Math.floor(diff / 3600000)
-    const days = Math.floor(diff / 86400000)
-
-    if (mins < 1) return t('Just now')
-
-    const rtf = new Intl.RelativeTimeFormat(lang, {
-      numeric: 'auto',
-      style: 'short',
-    })
-    if (mins < 60) return rtf.format(-mins, 'minute')
-    if (hours < 24) return rtf.format(-hours, 'hour')
-    if (days < 7) return rtf.format(-days, 'day')
-    return d.toLocaleDateString(lang)
-  }
-
   const formatCost = (cost?: { totalCost: number } | number) => {
     if (cost === undefined || cost === null) return '-'
     const value = typeof cost === 'number' ? cost : cost.totalCost
-    return `$${value.toFixed(4)}`
+    return Intl.NumberFormat(lang, {
+      style: 'currency',
+      currency: 'USD',
+      currencyDisplay: 'narrowSymbol',
+      compactDisplay: 'short',
+      minimumFractionDigits: 4,
+      maximumFractionDigits: 4,
+    }).format(value)
+    // return `$${value.toFixed(4)}`
   }
 
   // Group traces by session
@@ -238,13 +224,13 @@ export function TraceList({
 
   const columns = [
     { key: 'name', label: t('Name') },
-    { key: 'conversation', label: t('Conversation') },
-    { key: 'duration', label: t('Duration') },
+    // { key: 'conversation', label: t('Conversation') },
+    // { key: 'duration', label: t('Duration') },
     { key: 'tokens', label: t('Tokens') },
     { key: 'cost', label: t('Cost') },
-    { key: 'time', label: t('Started') },
+    // { key: 'time', label: t('Started') },
     { key: 'status', label: t('Status') },
-    { key: 'actions', label: '' },
+    // { key: 'actions', label: '' },
   ]
 
   if (isLoading) {
@@ -278,7 +264,7 @@ export function TraceList({
           value={searchQuery}
           onValueChange={setSearchQuery}
           startContent={
-            <Icon name="Search" className="w-4 h-4 text-default-400" />
+            <Icon name="Search" size="sm" className="text-default-400" />
           }
           className="max-w-xs"
           size="sm"
@@ -309,7 +295,7 @@ export function TraceList({
       {filteredSessions.length === 0 ? (
         <Card>
           <CardBody className="flex flex-col items-center justify-center py-12">
-            <Icon name="Search" className="w-12 h-12 text-default-300 mb-4" />
+            <Icon name="Search" size="sm" className="text-default-300 mb-4" />
             <p className="text-default-400">
               {t('No sessions found matching your search')}
             </p>
@@ -318,7 +304,7 @@ export function TraceList({
       ) : (
         <Accordion
           selectionMode="multiple"
-          variant="bordered"
+          // variant="bordered"
           selectedKeys={expandedKeys}
           onSelectionChange={(keys) =>
             setExpandedKeys(new Set(keys as Set<string>))
@@ -345,7 +331,7 @@ export function TraceList({
                             ? 'ChatBubble'
                             : 'ChatLines'
                   }
-                  size="lg"
+                  size="md"
                   className={
                     session.isVideoSession
                       ? 'text-violet-500 dark:text-violet-400'
@@ -362,11 +348,15 @@ export function TraceList({
               title={
                 <div className="flex items-center justify-between w-full pr-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex flex-col">
+                    {/* <div className="flex flex-col">
                       <span className="text-xs text-default-400">
                         {session.displayName}, {formatDate(session.startTime)}
                       </span>
-                    </div>
+                    </div> */}
+                    <span className="flex items-center gap-1 text-xs text-default-500">
+                      <Icon name="ChatBubble" size="sm" />
+                      {session.totalTraces} {t('requests')}
+                    </span>
                   </div>
                   {/* <div className="flex items-center gap-3">
                     <div className="flex flex-col">
@@ -383,11 +373,7 @@ export function TraceList({
                   <div className="flex items-center gap-4">
                     <div className="hidden md:flex items-center gap-3 text-xs text-default-500">
                       <span className="flex items-center gap-1">
-                        <Icon name="ChatBubble" className="w-3 h-3" />
-                        {session.totalTraces} {t('requests')}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Icon name="Timer" className="w-3 h-3" />
+                        <Icon name="Timer" size="sm" />
                         {formatDuration(session.duration)}
                       </span>
                       <span>
@@ -404,7 +390,7 @@ export function TraceList({
                       color={getStatusColor(session.status)}
                       variant="flat"
                     >
-                      {session.status}
+                      {/* {session.status} */}
                     </Chip>
                   </div>
                 </div>
@@ -434,7 +420,7 @@ export function TraceList({
                 aria-label={`${session.displayName} traces`}
                 selectionMode="none"
                 classNames={{
-                  wrapper: 'shadow-none border border-default-200',
+                  wrapper: 'shadow-none',
                 }}
               >
                 <TableHeader columns={columns}>
@@ -457,14 +443,14 @@ export function TraceList({
                       <TableCell>
                         <div className="flex flex-col">
                           <span className="font-medium text-sm">
-                            {trace.name}
+                            {trace.primaryModel?.model}
                           </span>
                           <span className="text-xs text-default-400">
                             {trace.id.slice(0, 12)}...
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         <div className="flex flex-col">
                           <span className="text-sm">
                             {trace.primaryModel?.model || '-'}
@@ -473,12 +459,12 @@ export function TraceList({
                             {trace.primaryModel?.provider || '-'}
                           </span>
                         </div>
-                      </TableCell>
-                      <TableCell>
+                      </TableCell> */}
+                      {/* <TableCell>
                         <span className="text-sm">
                           {formatDuration(trace.duration)}
                         </span>
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell>
                         <span className="text-sm">
                           {trace.totalTokens?.toLocaleString() || '-'}
@@ -489,21 +475,21 @@ export function TraceList({
                           {formatCost(trace.totalCost)}
                         </span>
                       </TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         <span className="text-sm text-default-500">
                           {formatDate(trace.startTime)}
                         </span>
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell>
                         <Chip
                           size="sm"
                           color={getStatusColor(trace.status)}
                           variant="flat"
                         >
-                          {trace.status}
+                          {/* {trace.status} */}
                         </Chip>
                       </TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         <Button
                           isIconOnly
                           size="sm"
@@ -513,9 +499,9 @@ export function TraceList({
                             onDeleteTrace?.(trace.id)
                           }}
                         >
-                          <Icon name="Trash" className="w-4 h-4" />
+                          <Icon name="Trash" size="sm" />
                         </Button>
-                      </TableCell>
+                      </TableCell> */}
                     </TableRow>
                   ))}
                 </TableBody>

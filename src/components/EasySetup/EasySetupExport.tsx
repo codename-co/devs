@@ -70,7 +70,7 @@ export const EasySetupExport = () => {
     <div className="space-y-4">
       <Alert icon={<Icon name="LightBulbOn" />} variant="faded">
         {t(
-          'Export your current agents and LLM provider settings and share it via URL or QR code.',
+          'Export your current agents and AI provider settings and share it via URL or QR code.',
         )}
       </Alert>
 

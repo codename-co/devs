@@ -429,6 +429,77 @@ function calculateCost(usage: TokenUsage, model: string): CostEstimate {
   }
 }
 
+// ============================================================================
+// Date Serialization Helpers
+// ============================================================================
+
+/**
+ * Convert a value that may be a Date, ISO string, or Yjs-corrupted {} back to
+ * a proper Date. Yjs/lib0 serializes Date objects as {} (empty object) because
+ * Date has no enumerable own properties — so after a page reload, all Date
+ * fields retrieved from Yjs come back as {} instead of Date instances.
+ */
+function deserializeDate(value: unknown): Date | undefined {
+  if (!value) return undefined
+  if (value instanceof Date) return isNaN(value.getTime()) ? undefined : value
+  if (typeof value === 'string' || typeof value === 'number') {
+    const d = new Date(value as string | number)
+    return isNaN(d.getTime()) ? undefined : d
+  }
+  // {} (corrupted Yjs Date) → undefined
+  return undefined
+}
+
+/** Serialize a Date field to an ISO string for safe Yjs storage. */
+function serializeDate(d: Date | undefined): string | undefined {
+  if (!d || !(d instanceof Date)) return d as unknown as string | undefined
+  return d.toISOString()
+}
+
+/** Serialize a Trace for Yjs storage, converting Date fields to ISO strings. */
+function serializeTrace(trace: Trace): Trace {
+  return {
+    ...trace,
+    startTime: serializeDate(trace.startTime) as unknown as Date,
+    endTime: serializeDate(trace.endTime) as unknown as Date,
+    createdAt: serializeDate(trace.createdAt) as unknown as Date,
+    updatedAt: serializeDate(trace.updatedAt) as unknown as Date,
+  }
+}
+
+/** Deserialize a Trace from Yjs, converting ISO string dates back to Date objects. */
+function deserializeTrace(raw: Trace): Trace {
+  return {
+    ...raw,
+    startTime: deserializeDate(raw.startTime as unknown) ?? new Date(0),
+    endTime: deserializeDate(raw.endTime as unknown),
+    createdAt: deserializeDate(raw.createdAt as unknown) ?? new Date(0),
+    updatedAt: deserializeDate(raw.updatedAt as unknown) ?? new Date(0),
+  }
+}
+
+/** Serialize a Span for Yjs storage, converting Date fields to ISO strings. */
+function serializeSpan(span: Span): Span {
+  return {
+    ...span,
+    startTime: serializeDate(span.startTime) as unknown as Date,
+    endTime: serializeDate(span.endTime) as unknown as Date,
+    createdAt: serializeDate(span.createdAt) as unknown as Date,
+    updatedAt: serializeDate(span.updatedAt) as unknown as Date,
+  }
+}
+
+/** Deserialize a Span from Yjs, converting ISO string dates back to Date objects. */
+function deserializeSpan(raw: Span): Span {
+  return {
+    ...raw,
+    startTime: deserializeDate(raw.startTime as unknown) ?? new Date(0),
+    endTime: deserializeDate(raw.endTime as unknown),
+    createdAt: deserializeDate(raw.createdAt as unknown) ?? new Date(0),
+    updatedAt: deserializeDate(raw.updatedAt as unknown) ?? new Date(0),
+  }
+}
+
 /**
  * Active traces and spans being tracked
  */
@@ -691,7 +762,9 @@ export class TraceService {
     // Save to Yjs map if enabled
     if (this.isEnabled()) {
       try {
-        tracesMap.set(trace.id, trace)
+        // Serialize Date fields to ISO strings — Yjs/lib0 cannot round-trip
+        // Date objects (they come back as {} after reload via IndexedDB).
+        tracesMap.set(trace.id, serializeTrace(trace))
       } catch (error) {
         console.error('[TraceService] Failed to save trace:', error)
       }
@@ -798,7 +871,9 @@ export class TraceService {
     // Save to Yjs map if enabled
     if (this.isEnabled()) {
       try {
-        spansMap.set(span.id, span)
+        // Serialize Date fields to ISO strings — Yjs/lib0 cannot round-trip
+        // Date objects (they come back as {} after reload via IndexedDB).
+        spansMap.set(span.id, serializeSpan(span))
       } catch (error) {
         console.error('[TraceService] Failed to save span:', error)
       }
@@ -1000,7 +1075,7 @@ export class TraceService {
    * Get all traces with optional filtering
    */
   static async getTraces(filter?: TraceFilter): Promise<Trace[]> {
-    let traces = Array.from(tracesMap.values())
+    let traces = Array.from(tracesMap.values()).map(deserializeTrace)
 
     // Apply filters
     if (filter) {
@@ -1049,16 +1124,17 @@ export class TraceService {
    * Get a single trace by ID
    */
   static async getTrace(traceId: string): Promise<Trace | undefined> {
-    return tracesMap.get(traceId)
+    const raw = tracesMap.get(traceId)
+    return raw ? deserializeTrace(raw) : undefined
   }
 
   /**
    * Get spans for a trace
    */
   static async getSpansForTrace(traceId: string): Promise<Span[]> {
-    const spans = Array.from(spansMap.values()).filter(
-      (span) => span.traceId === traceId,
-    )
+    const spans = Array.from(spansMap.values())
+      .map(deserializeSpan)
+      .filter((span) => span.traceId === traceId)
     // Sort by start time
     spans.sort(
       (a, b) =>
@@ -1071,7 +1147,8 @@ export class TraceService {
    * Get a single span by ID
    */
   static async getSpan(spanId: string): Promise<Span | undefined> {
-    return spansMap.get(spanId)
+    const raw = spansMap.get(spanId)
+    return raw ? deserializeSpan(raw) : undefined
   }
 
   /**
@@ -1111,7 +1188,7 @@ export class TraceService {
   static async getMetrics(
     period: 'hour' | 'day' | 'week' | 'month' | 'all' = 'day',
   ): Promise<TraceMetrics> {
-    const traces = Array.from(tracesMap.values())
+    const traces = Array.from(tracesMap.values()).map(deserializeTrace)
 
     // Calculate date range
     const now = new Date()
@@ -1226,7 +1303,7 @@ export class TraceService {
    * Get daily metrics for time-series charts
    */
   static async getDailyMetrics(days: number = 30): Promise<DailyMetrics[]> {
-    const traces = Array.from(tracesMap.values())
+    const traces = Array.from(tracesMap.values()).map(deserializeTrace)
 
     // Group by day
     const dailyMap = new Map<string, DailyMetrics>()
@@ -1301,7 +1378,7 @@ export class TraceService {
   static async cleanupOldTraces(): Promise<number> {
     if (!this.config?.retentionDays) return 0
 
-    const traces = Array.from(tracesMap.values())
+    const traces = Array.from(tracesMap.values()).map(deserializeTrace)
 
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - this.config.retentionDays)
@@ -1323,7 +1400,7 @@ export class TraceService {
   static async enforceMaxTraces(): Promise<number> {
     if (!this.config?.maxTraces) return 0
 
-    const traces = Array.from(tracesMap.values())
+    const traces = Array.from(tracesMap.values()).map(deserializeTrace)
 
     if (traces.length <= this.config.maxTraces) return 0
 

@@ -85,12 +85,18 @@ export function sanitizeFilename(str: string, maxLength = 50): string {
  * Coerce a value to a Date instance.
  * After Yjs migration, dates may be stored as ISO strings, timestamps, or plain objects
  * instead of proper Date instances.
+ *
+ * NOTE: Yjs binary encoding turns JavaScript Date objects into empty plain objects {}.
+ * For those unrecognized types, we return epoch 0 (not the current time) to avoid
+ * polluting backup files with incorrect "now" timestamps.
  */
 function toDate(value: unknown): Date {
-  if (value instanceof Date) return value
+  if (value instanceof Date && !isNaN(value.getTime())) return value
   if (typeof value === 'string' || typeof value === 'number')
     return new Date(value)
-  return new Date()
+  // Unknown type (e.g. {} from Yjs Date encoding bug): use epoch 0 as a
+  // clearly-invalid sentinel rather than silently claiming "right now"
+  return new Date(0)
 }
 
 /**

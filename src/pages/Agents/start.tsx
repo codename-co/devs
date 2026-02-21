@@ -1,18 +1,16 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 export const AgentsStartPage = () => {
   const navigate = useNavigate()
+  const { agentSlug } = useParams<{ agentSlug?: string }>()
 
   useEffect(() => {
-    const path = (location.pathname + location.hash).replace(
-      /\/start#/,
-      '/run#',
-    )
+    const path = agentSlug ? `/agents/run/${agentSlug}` : '/agents/run'
     navigate(path, {
       replace: true,
     })
-  }, [])
+  }, [agentSlug])
 
   return null
 }

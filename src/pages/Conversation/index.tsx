@@ -35,6 +35,7 @@ import {
 } from '@/components'
 import { successToast } from '@/lib/toast'
 import { formatConversationDate, formatDate } from '@/lib/format'
+import { isDate } from '@/lib/date'
 
 export function ConversationPage() {
   const { t, url, lang } = useI18n()
@@ -109,7 +110,7 @@ export function ConversationPage() {
       const agentSlug = agent?.slug || conversation.agentId // fallback to id
 
       // Navigate to the agent run page with the conversation
-      navigate(url(`/agents/run#${agentSlug}/${conversationId}`))
+      navigate(url(`/agents/run/${agentSlug}/${conversationId}`))
     } catch (error) {
       console.error('Failed to load conversation:', error)
       setSelectedConversation(null)
@@ -270,7 +271,8 @@ export function ConversationPage() {
     // Group remaining conversations by date
     const dateGroups: Map<string, Conversation[]> = new Map()
     for (const conversation of unpinnedConversations) {
-      const date = new Date(conversation.timestamp)
+      const rawDate = conversation.updatedAt ?? conversation.timestamp
+      const date = isDate(rawDate) ? new Date(rawDate) : new Date('1970-01-01') // fallback for missing or invalid timestamp
       const dateKey = formatConversationDate(date, lang)
 
       if (!dateGroups.has(dateKey)) {
@@ -283,6 +285,35 @@ export function ConversationPage() {
     for (const [label, conversations] of dateGroups) {
       groups.push({ label, conversations })
     }
+
+    groups.sort((a, b) => {
+      // Pinned group should always come first
+      if (a.label === t('Pinned')) return -1
+      if (b.label === t('Pinned')) return 1
+
+      // For date groups, sort by most recent conversation in each group
+      const aLatest = a.conversations.reduce((latest, c) => {
+        const time = c.updatedAt
+          ? c.updatedAt instanceof Date
+            ? c.updatedAt.getTime()
+            : new Date(c.updatedAt).getTime()
+          : c.timestamp instanceof Date
+            ? c.timestamp.getTime()
+            : new Date(c.timestamp).getTime()
+        return time > latest ? time : latest
+      }, 0)
+      const bLatest = b.conversations.reduce((latest, c) => {
+        const time = c.updatedAt
+          ? c.updatedAt instanceof Date
+            ? c.updatedAt.getTime()
+            : new Date(c.updatedAt).getTime()
+          : c.timestamp instanceof Date
+            ? c.timestamp.getTime()
+            : new Date(c.timestamp).getTime()
+        return time > latest ? time : latest
+      }, 0)
+      return bLatest - aLatest
+    })
 
     return groups
   }, [paginatedConversations, lang, t])

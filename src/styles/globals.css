@@ -441,6 +441,16 @@ body {
   }
 }
 
+/* Bottom-placed modals should have no bottom border radius (flush with viewport edge) */
+@media (max-width: 639px) {
+  [data-placement^='bottom'] {
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    margin-bottom: 0 !important;
+    margin: 0;
+  }
+}
+
 /* TODO: Hack to hide the toaster region. */
 [role='region'][data-react-aria-top-layer='true'] {
   display: inline;

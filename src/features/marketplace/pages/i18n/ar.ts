@@ -266,7 +266,7 @@ export const ar: I18n = {
   Send: 'إرسال',
   'AI-suggested code changes are automatically applied':
     'يتم تطبيق تغييرات الكود المقترحة من الذكاء الاصطناعي تلقائياً',
-  'No LLM provider configured': 'لم يتم تكوين مزود LLM',
+  'No AI provider configured': 'لم يتم تكوين مزود LLM',
   'Unknown error': 'خطأ غير معروف',
   'Sorry, I encountered an error: {error}': 'عذراً، واجهت خطأ: {error}',
   'Code applied successfully!': 'تم تطبيق الكود بنجاح!',

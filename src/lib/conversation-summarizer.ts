@@ -36,13 +36,14 @@ Provide the summary in markdown format:`
       const config = await CredentialService.getActiveConfig()
       if (!config) {
         console.warn(
-          'No LLM provider configured for summarization, using fallback',
+          'No AI provider configured for summarization, using fallback',
         )
         return this.createFallbackSummary(conversation)
       }
 
       // Prepare conversation content
-      const conversationContent = this.formatConversationForSummary(conversation)
+      const conversationContent =
+        this.formatConversationForSummary(conversation)
 
       // If conversation is too short, use fallback
       if (conversation.messages.filter((m) => m.role !== 'system').length < 3) {
@@ -134,7 +135,7 @@ Provide the summary in markdown format:`
 
 **First Message**: ${this.truncateText(firstUserMessage, 200)}
 
-**Date**: ${conversation.timestamp.toLocaleDateString()}
+**Date**: ${new Date(conversation.timestamp).toLocaleDateString()}
 
 *This is an auto-generated summary. For more detailed information, please review the full conversation.*`
   }

@@ -102,7 +102,7 @@ Original Prompt: {prompt}`
     try {
       const config = await CredentialService.getActiveConfig()
       if (!config) {
-        throw new Error('No LLM provider configured')
+        throw new Error('No AI provider configured')
       }
 
       const messages: LLMMessage[] = [

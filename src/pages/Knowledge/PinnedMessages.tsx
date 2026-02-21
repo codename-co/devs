@@ -136,7 +136,7 @@ export const PinnedMessages: React.FC = () => {
                       onPress={() => {
                         navigate(
                           url(
-                            `/agents/run#${getAgentSlug(pinnedMessage.agentId)}/${pinnedMessage.conversationId}`,
+                            `/agents/run/${getAgentSlug(pinnedMessage.agentId)}/${pinnedMessage.conversationId}`,
                           ),
                         )
                       }}

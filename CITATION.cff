@@ -4,6 +4,6 @@ authors:
   - family-names: 'Leymet'
     given-names: 'Arnaud'
 title: 'DEVS'
-version: 0.5.11
-date-released: 2026-02-14
+version: 0.6.0
+date-released: 2026-02-21
 url: 'https://github.com/codename-co/devs'

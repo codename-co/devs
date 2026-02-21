@@ -1,6 +1,4 @@
-import { Modal, ModalContent, ModalHeader, ModalBody } from '@heroui/react'
-import { useI18n } from '@/i18n'
-import { Icon } from './Icon'
+import { Modal, ModalContent, ModalBody } from '@heroui/react'
 
 // Lazy load the settings content to avoid circular dependencies
 import { lazy, Suspense } from 'react'
@@ -16,13 +14,11 @@ interface SettingsModalProps {
 }
 
 export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
-  const { t } = useI18n()
-
   return (
     <Modal
-      size="4xl"
+      size="3xl"
       scrollBehavior="inside"
-      placement="center"
+      placement="bottom-center"
       isOpen={isOpen}
       onClose={onClose}
       backdrop="blur"
@@ -30,13 +26,10 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
         base: 'max-h-[90vh]',
         body: 'p-0',
       }}
+      hideCloseButton={false}
     >
       <ModalContent>
-        <ModalHeader className="flex items-center gap-2 border-b border-default-200">
-          <Icon name="Settings" className="h-5 w-5 text-default-400" />
-          <span>{t('Settings')}</span>
-        </ModalHeader>
-        <ModalBody className="py-4">
+        <ModalBody className="p-0 min-h-[500px]">
           <Suspense
             fallback={
               <div className="flex items-center justify-center py-8">

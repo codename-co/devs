@@ -44,7 +44,7 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * Local LLM provider using transformers.js and WebGPU
+ * Local AI provider using transformers.js and WebGPU
  * Runs models entirely in the browser without server dependencies
  */
 export class LocalLLMProvider implements LLMProviderInterface {
@@ -230,7 +230,15 @@ export class LocalLLMProvider implements LLMProviderInterface {
     }
 
     // Clean up any trailing special tokens
-    const stopTokens = ['<|endoftext|>', '</s>', '<|end|>', '<|eot_id|>', '<|assistant|>', '<|user|>', '<|system|>']
+    const stopTokens = [
+      '<|endoftext|>',
+      '</s>',
+      '<|end|>',
+      '<|eot_id|>',
+      '<|assistant|>',
+      '<|user|>',
+      '<|system|>',
+    ]
     for (const token of stopTokens) {
       const tokenIndex = response.indexOf(token)
       if (tokenIndex !== -1) {

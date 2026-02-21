@@ -104,10 +104,27 @@ async function decryptConversationMetadata(
 }
 
 // ============================================================================
+// Helper: Normalize a date value that may have been corrupted by Yjs binary
+// serialization (Date objects have no enumerable properties, so Yjs encodes
+// them as empty plain objects {} which survive as {} after page reload).
+// ============================================================================
+function normalizeYjsDate(value: unknown): string | Date {
+  if (value instanceof Date && !isNaN(value.getTime())) return value.toISOString()
+  if (typeof value === 'string' || typeof value === 'number') return value as string
+  // Yjs encoded the Date as {} — return epoch 0 (clearly invalid, but safe; avoids
+  // claiming this conversation was created "right now" which would corrupt backups)
+  return new Date(0).toISOString()
+}
+
+// ============================================================================
 // Helper: Get all conversations from Yjs map
 // ============================================================================
 function getAllConversations(): Conversation[] {
-  return Array.from(conversations.values())
+  return Array.from(conversations.values()).map((conv) => ({
+    ...conv,
+    timestamp: normalizeYjsDate(conv.timestamp),
+    updatedAt: normalizeYjsDate(conv.updatedAt),
+  }))
 }
 
 // ============================================================================
@@ -290,7 +307,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
 
         // Create conversation without initial system message
         // The system prompt will be dynamically built and added by chat.ts when messages are sent
-        const now = new Date()
+        const now = new Date().toISOString()
         const conversation: Conversation = {
           id: crypto.randomUUID(),
           agentId,
@@ -336,7 +353,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
         const newMessage: Message = {
           ...message,
           id: crypto.randomUUID(),
-          timestamp: new Date(),
+          timestamp: new Date().toISOString(),
         }
 
         // Encrypt the new message content and pinnedDescription for Yjs storage
@@ -377,7 +394,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
           ...conversation.messages,
           encryptedMessage,
         ]
-        updatedConversation.updatedAt = new Date()
+        updatedConversation.updatedAt = new Date().toISOString()
 
         // Write encrypted conversation to Yjs
         conversations.set(conversationId, updatedConversation)
@@ -728,7 +745,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
         updatedMessages[messageIndex] = {
           ...updatedMessages[messageIndex],
           isPinned: true,
-          pinnedAt: new Date(),
+          pinnedAt: new Date().toISOString(),
         }
 
         // Add to pinnedMessageIds array if not present
@@ -743,7 +760,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
           ...conversation,
           messages: updatedMessages,
           pinnedMessageIds,
-          updatedAt: new Date(),
+          updatedAt: new Date().toISOString(),
         }
 
         // Write to Yjs
@@ -793,7 +810,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
           ...conversation,
           messages: updatedMessages,
           pinnedMessageIds,
-          updatedAt: new Date(),
+          updatedAt: new Date().toISOString(),
         }
 
         // Write to Yjs
@@ -846,7 +863,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
         const updatedConversation = {
           ...conversation,
           messages: updatedMessages,
-          updatedAt: new Date(),
+          updatedAt: new Date().toISOString(),
         }
 
         // Write encrypted to Yjs
@@ -906,7 +923,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
         const updatedConversation = {
           ...conversation,
           summary: (encryptedSummary ?? summary) as unknown as string,
-          updatedAt: new Date(),
+          updatedAt: new Date().toISOString(),
         }
 
         // Write encrypted to Yjs
@@ -951,7 +968,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
         const updatedConversation = {
           ...conversation,
           title: (encryptedTitle ?? trimmedTitle) as unknown as string,
-          updatedAt: new Date(),
+          updatedAt: new Date().toISOString(),
         }
 
         // Write to Yjs

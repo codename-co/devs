@@ -233,7 +233,7 @@ export const en = [
   "Describe what you'd like to change...",
   'Send',
   'AI-suggested code changes are automatically applied',
-  'No LLM provider configured',
+  'No AI provider configured',
   'Unknown error',
   'Sorry, I encountered an error: {error}',
   'Code applied successfully!',

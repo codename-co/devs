@@ -4,7 +4,7 @@ type I18n = Record<(typeof en)[number], string>
 
 export const de: I18n = {
   'Platform Settings': 'Plattformeinstellungen',
-  'Configure LLM providers, models and platform defaults for your organization':
+  'Configure AI providers, models and platform defaults for your organization':
     'Konfigurieren Sie LLM-Anbieter, Modelle und Plattform-Standardeinstellungen für Ihre Organisation',
   Appearance: 'Erscheinungsbild',
   'Choose your preferred language': 'Wählen Sie Ihre bevorzugte Sprache',
@@ -25,8 +25,8 @@ export const de: I18n = {
     'Hauptschlüssel konnte nicht neu generiert werden',
   'Your master key is used to encrypt all sensitive data stored locally. Keep it safe and secure.':
     'Ihr Hauptschlüssel wird verwendet, um alle lokal gespeicherten sensiblen Daten zu verschlüsseln. Bewahren Sie ihn sicher auf.',
-  'LLM Providers': 'LLM-Anbieter',
-  'Choose your LLM provider, manage your API credentials':
+  'AI Providers': 'LLM-Anbieter',
+  'Choose your AI provider, manage your API credentials':
     'Wählen Sie Ihren LLM-Anbieter, verwalten Sie Ihre API-Anmeldedaten',
   'Add Provider': 'Anbieter hinzufügen',
   'No providers configured. Add one to get started.':
@@ -108,7 +108,8 @@ export const de: I18n = {
   'Hide Default Agents': 'Standard-Agenten ausblenden',
   'Only show your custom agents in the agent picker and agents page':
     'Nur Ihre benutzerdefinierten Agenten im Agenten-Auswahl und auf der Agentenseite anzeigen',
-  'Conversational Features': 'Konversationsfunktionen',
+  Features: 'Funktionen',
+  Voice: 'Sprache',
   'Configure how you interact with agents':
     'Konfigurieren Sie, wie Sie mit Agenten interagieren',
   'Auto Memory Learning': 'Automatisches Gedächtnislernen',
@@ -143,4 +144,50 @@ export const de: I18n = {
   'models available': 'Modelle verfügbar',
   'This provider is already configured':
     'Dieser Anbieter ist bereits konfiguriert',
+  Computer: 'Computer',
+  'Sandbox runtimes and system resources':
+    'Sandbox-Laufzeiten und Systemressourcen',
+  'Sandbox Runtimes': 'Sandbox-Laufzeiten',
+  Running: 'Läuft',
+  Executing: 'Wird ausgeführt',
+  Loading: 'Wird geladen',
+  Idle: 'Inaktiv',
+  Error: 'Fehler',
+  Start: 'Starten',
+  Stop: 'Stoppen',
+  'Pre-load the {runtime} runtime': '{runtime}-Laufzeit vorladen',
+  'Terminate the {runtime} runtime': '{runtime}-Laufzeit beenden',
+  'Run a test snippet in the {runtime} sandbox':
+    'Testschnipsel in der {runtime}-Sandbox ausführen',
+  Try: 'Testen',
+  'Isolated code execution environments running entirely in WebAssembly. Python uses a Web Worker; JavaScript runs in a lightweight QuickJS VM.':
+    'Isolierte Code-Ausführungsumgebungen, die vollständig in WebAssembly laufen. Python nutzt einen Web Worker; JavaScript läuft in einer leichtgewichtigen QuickJS-VM.',
+  CPU: 'CPU',
+  '{used} / {total} cores': '{used} / {total} Kerne',
+  'CPU usage': 'CPU-Auslastung',
+  Memory: 'Speicher',
+  'Memory usage': 'Speicherauslastung',
+  Storage: 'Speicherplatz',
+  'Storage usage': 'Speicherplatzauslastung',
+  'Device Information': 'Geräteinformationen',
+  Device: 'Gerät',
+  'GPU Vendor': 'GPU-Hersteller',
+  'GPU Renderer': 'GPU-Renderer',
+  WebGPU: 'WebGPU',
+  Supported: 'Unterstützt',
+  'Not Supported': 'Nicht unterstützt',
+  'Local LLM (Browser)': 'Lokales LLM (Browser)',
+  'Runs AI models entirely in your browser using WebGPU. No data is sent to external servers.':
+    'Führt KI-Modelle vollständig in Ihrem Browser mit WebGPU aus. Es werden keine Daten an externe Server gesendet.',
+  'Default Model': 'Standardmodell',
+  'Loaded Model': 'Geladenes Modell',
+  'No model loaded': 'Kein Modell geladen',
+  Unload: 'Entladen',
+  'Unload model to free memory': 'Modell entladen, um Speicher freizugeben',
+  'WebGPU is not supported on this device. Local LLM inference requires a WebGPU-compatible browser.':
+    'WebGPU wird auf diesem Gerät nicht unterstützt. Lokale LLM-Inferenz erfordert einen WebGPU-kompatiblen Browser.',
+  'Your device has less than 8GB of RAM. Local inference may be slow or unavailable for larger models.':
+    'Ihr Gerät hat weniger als 8 GB RAM. Lokale Inferenz kann langsam sein oder für größere Modelle nicht verfügbar.',
+
+  'System Resources': 'Systemressourcen',
 } as const

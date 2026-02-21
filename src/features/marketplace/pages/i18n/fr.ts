@@ -272,7 +272,7 @@ export const fr: I18n = {
   Send: 'Envoyer',
   'AI-suggested code changes are automatically applied':
     "Les modifications de code suggérées par l'IA sont appliquées automatiquement",
-  'No LLM provider configured': 'Aucun fournisseur LLM configuré',
+  'No AI provider configured': 'Aucun fournisseur LLM configuré',
   'Unknown error': 'Erreur inconnue',
   'Sorry, I encountered an error: {error}':
     "Désolé, j'ai rencontré une erreur : {error}",

@@ -19,7 +19,7 @@ interface LLMMessage {
 }
 
 interface LLMOptions {
-  /** LLM provider (e.g., 'openai', 'anthropic', 'google') */
+  /** AI provider (e.g., 'openai', 'anthropic', 'google') */
   provider?: string;
   /** Model ID (e.g., 'gpt-4', 'claude-3-opus') */
   model?: string;

@@ -72,7 +72,7 @@ export const AgentsPage = () => {
   }, [loading, userAgents.length, globalAgents.length, activeTab])
 
   const handleAgentClick = (agentSlug: string) => {
-    navigate(url(`/agents/run#${agentSlug}`))
+    navigate(url(`/agents/run/${agentSlug}`))
   }
 
   const handleStartLiveConversation = (agentSlug: string) => {

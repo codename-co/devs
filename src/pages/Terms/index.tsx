@@ -83,7 +83,7 @@ export const TermsPage = () => {
           <ul>
             <li>{t('Your API keys and their associated costs')}</li>
             <li>{t('Content you generate using the platform')}</li>
-            <li>{t('Compliance with LLM provider terms of service')}</li>
+            <li>{t('Compliance with AI provider terms of service')}</li>
             <li>{t('Ensuring generated content meets your local laws')}</li>
           </ul>
 
@@ -183,7 +183,7 @@ const localI18n = {
     'You are responsible for:',
     'Your API keys and their associated costs',
     'Content you generate using the platform',
-    'Compliance with LLM provider terms of service',
+    'Compliance with AI provider terms of service',
     'Ensuring generated content meets your local laws',
     'External Connectors',
     'When connecting external services (Gmail, Google Drive, Notion, etc.):',
@@ -244,7 +244,7 @@ const localI18n = {
       'مفاتيح API الخاصة بك وتكاليفها المرتبطة',
     'Content you generate using the platform':
       'المحتوى الذي تنشئه باستخدام المنصة',
-    'Compliance with LLM provider terms of service': 'الامتثال لشروط مزودي LLM',
+    'Compliance with AI provider terms of service': 'الامتثال لشروط مزودي LLM',
     'Ensuring generated content meets your local laws':
       'ضمان أن المحتوى المولد يلتزم بقوانينك المحلية',
     'External Connectors': 'الموصلات الخارجية',
@@ -315,7 +315,7 @@ const localI18n = {
       'Ihre API-Schlüssel und die damit verbundenen Kosten',
     'Content you generate using the platform':
       'Inhalte, die Sie mit der Plattform generieren',
-    'Compliance with LLM provider terms of service':
+    'Compliance with AI provider terms of service':
       'Einhaltung der Bedingungen der LLM-Anbieter',
     'Ensuring generated content meets your local laws':
       'Sicherstellung, dass generierte Inhalte Ihren lokalen Gesetzen entsprechen',
@@ -388,7 +388,7 @@ const localI18n = {
       'Tus claves API y sus costes asociados',
     'Content you generate using the platform':
       'El contenido que generes usando la plataforma',
-    'Compliance with LLM provider terms of service':
+    'Compliance with AI provider terms of service':
       'Cumplimiento de los términos de los proveedores LLM',
     'Ensuring generated content meets your local laws':
       'Asegurarte de que el contenido generado cumpla tus leyes locales',
@@ -461,8 +461,8 @@ const localI18n = {
       'Vos clés API et leurs coûts associés',
     'Content you generate using the platform':
       'Le contenu que vous générez avec la plateforme',
-    'Compliance with LLM provider terms of service':
-      'La conformité avec les conditions des fournisseurs LLM',
+    'Compliance with AI provider terms of service':
+      'La conformité avec les conditions des fournisseurs IA',
     'Ensuring generated content meets your local laws':
       "S'assurer que le contenu généré respecte vos lois locales",
     'External Connectors': 'Connecteurs externes',
@@ -532,7 +532,7 @@ const localI18n = {
     'You are responsible for:': '귀하는 다음에 대해 책임이 있습니다:',
     'Your API keys and their associated costs': '귀하의 API 키 및 관련 비용',
     'Content you generate using the platform': '플랫폼을 통해 생성한 콘텐츠',
-    'Compliance with LLM provider terms of service': 'LLM 공급자 약관 준수',
+    'Compliance with AI provider terms of service': 'LLM 공급자 약관 준수',
     'Ensuring generated content meets your local laws':
       '생성된 콘텐츠가 귀하의 현지 법률을 준수하는지 확인',
     'External Connectors': '외부 커넥터',

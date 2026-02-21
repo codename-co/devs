@@ -4,7 +4,7 @@ import type { Credential, LLMProvider, SelectedModels } from '@/types'
 import { SecureStorage, isCryptoAvailable } from '@/lib/crypto'
 import { LLMService, LocalLLMProvider } from '@/lib/llm'
 import { successToast, errorToast } from '@/lib/toast'
-import { credentials as credentialsYjs } from '@/lib/yjs'
+import { credentials as credentialsYjs, isReady } from '@/lib/yjs'
 import { getT } from '@/i18n/utils'
 
 const t = getT()
@@ -17,6 +17,8 @@ interface LLMModelStore {
   credentials: Credential[]
   // Selected provider ID
   selectedProviderId: string | null
+  // Selected provider type (persisted for instant display before credentials load)
+  selectedProviderType: LLMProvider | null
   // Selected model per provider
   selectedModels: SelectedModels
   // Legacy field for backwards compatibility
@@ -57,19 +59,39 @@ export const useLLMModelStore = create<LLMModelStore>()(
     (set, get) => ({
       credentials: [],
       selectedProviderId: null,
+      selectedProviderType: null,
       selectedModels: {},
       selectedCredentialId: null,
 
-      setSelectedProviderId: (id: string | null) =>
-        set({ selectedProviderId: id, selectedCredentialId: id }),
+      setSelectedProviderId: (id: string | null) => {
+        // Resolve provider type from the credential for persistence
+        const credential = id
+          ? get().credentials.find((c) => c.id === id)
+          : null
+        set({
+          selectedProviderId: id,
+          selectedCredentialId: id,
+          selectedProviderType: credential?.provider ?? get().selectedProviderType,
+        })
+      },
 
       setSelectedModel: (provider: LLMProvider, model: string) =>
         set((state) => ({
           selectedModels: { ...state.selectedModels, [provider]: model },
+          // Also track the provider type for the active selection
+          selectedProviderType: provider,
         })),
 
-      setSelectedCredentialId: (id: string | null) =>
-        set({ selectedCredentialId: id, selectedProviderId: id }),
+      setSelectedCredentialId: (id: string | null) => {
+        const credential = id
+          ? get().credentials.find((c) => c.id === id)
+          : null
+        set({
+          selectedCredentialId: id,
+          selectedProviderId: id,
+          selectedProviderType: credential?.provider ?? get().selectedProviderType,
+        })
+      },
 
       getCredentialForProvider: (provider: LLMProvider) => {
         const { credentials } = get()
@@ -77,7 +99,7 @@ export const useLLMModelStore = create<LLMModelStore>()(
       },
 
       getSelectedProvider: () => {
-        const { selectedProviderId, credentials } = get()
+        const { selectedProviderId, selectedProviderType, credentials } = get()
 
         // If no specific provider is selected, use the default (first one)
         if (!selectedProviderId && credentials.length > 0) {
@@ -88,24 +110,49 @@ export const useLLMModelStore = create<LLMModelStore>()(
         const selected = credentials.find((c) => c.id === selectedProviderId)
 
         // If selected provider doesn't exist anymore, fallback to default
+        // Note: do NOT call set() here — getters must be side-effect-free
+        // to avoid silently overwriting the user's selection during renders.
         if (!selected && credentials.length > 0) {
-          set({ selectedProviderId: credentials[0].id })
           return credentials[0]
+        }
+
+        // Before credentials load, return a minimal credential from persisted info
+        // so the UI can display the correct model name and provider icon immediately
+        if (!selected && selectedProviderId && selectedProviderType) {
+          return {
+            id: selectedProviderId,
+            provider: selectedProviderType,
+            encryptedApiKey: '',
+            timestamp: new Date(),
+          } as Credential
         }
 
         return selected || null
       },
 
       getSelectedModel: (provider?: LLMProvider) => {
-        const { selectedModels, credentials, selectedProviderId } = get()
+        const {
+          selectedModels,
+          credentials,
+          selectedProviderId,
+          selectedProviderType,
+        } = get()
 
         // Determine which provider to get model for
+        // MUST be consistent with getSelectedProvider() fallback logic
         let targetProvider = provider
         if (!targetProvider) {
-          const selectedCred = credentials.find(
-            (c) => c.id === selectedProviderId,
-          )
-          targetProvider = selectedCred?.provider || credentials[0]?.provider
+          if (selectedProviderId) {
+            const selectedCred = credentials.find(
+              (c) => c.id === selectedProviderId,
+            )
+            targetProvider = selectedCred?.provider
+          }
+          if (!targetProvider) {
+            // Match getSelectedProvider's fallback: credentials[0] when no explicit selection
+            targetProvider =
+              credentials[0]?.provider || selectedProviderType || undefined
+          }
         }
 
         if (!targetProvider) return null
@@ -131,11 +178,9 @@ export const useLLMModelStore = create<LLMModelStore>()(
         const selected = creds.find((c) => c.id === id)
 
         // If selected credential doesn't exist anymore, fallback to default
+        // Note: do NOT call set() here — getters must be side-effect-free
+        // to avoid silently overwriting the user's selection during renders.
         if (!selected && creds.length > 0) {
-          set({
-            selectedProviderId: creds[0].id,
-            selectedCredentialId: creds[0].id,
-          })
           return creds[0]
         }
 
@@ -239,8 +284,12 @@ export const useLLMModelStore = create<LLMModelStore>()(
             return a.order - b.order
           })
 
-          // If no credentials exist, create a default local provider
-          if (sortedCreds.length === 0 && isCryptoAvailable()) {
+          // If no credentials exist, create a default local provider.
+          // Only do this when Yjs persistence is fully synced — otherwise
+          // we'd see an empty map before IndexedDB has loaded and
+          // mistakenly create a local provider that overrides the user's
+          // real default.
+          if (sortedCreds.length === 0 && isCryptoAvailable() && isReady()) {
             try {
               const defaultModel = LocalLLMProvider.DEFAULT_MODEL
               const keyToEncrypt = 'local-no-key'
@@ -275,6 +324,8 @@ export const useLLMModelStore = create<LLMModelStore>()(
                   ...state.selectedModels,
                   local: defaultModel,
                 },
+                selectedProviderType:
+                  state.selectedProviderType ?? ('local' as LLMProvider),
               }))
               return
             } catch (error) {
@@ -332,6 +383,14 @@ export const useLLMModelStore = create<LLMModelStore>()(
             await updateCredentialOrder(credentials[i].id, newOrder)
           }
         }
+
+        // Update selected provider to the new default
+        const newDefault = credentials[credentialIndex]
+        set({
+          selectedProviderId: newDefault.id,
+          selectedCredentialId: newDefault.id,
+          selectedProviderType: newDefault.provider,
+        })
 
         // Reload credentials
         await loadCredentials()
@@ -413,6 +472,13 @@ export const useLLMModelStore = create<LLMModelStore>()(
           if (model) {
             setSelectedModel(provider as LLMProvider, model)
           }
+
+          // Select the newly added provider as the active one
+          set({
+            selectedProviderId: credential.id,
+            selectedCredentialId: credential.id,
+            selectedProviderType: provider as LLMProvider,
+          })
 
           await loadCredentials()
 
@@ -510,6 +576,7 @@ export const useLLMModelStore = create<LLMModelStore>()(
       partialize: (state) => ({
         selectedCredentialId: state.selectedCredentialId,
         selectedProviderId: state.selectedProviderId,
+        selectedProviderType: state.selectedProviderType,
         selectedModels: state.selectedModels,
       }),
     },

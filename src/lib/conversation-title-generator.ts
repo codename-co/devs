@@ -47,7 +47,7 @@ Respond with ONLY the title, nothing else.`
       const config = await CredentialService.getActiveConfig()
       if (!config) {
         console.warn(
-          'No LLM provider configured for title generation, using fallback',
+          'No AI provider configured for title generation, using fallback',
         )
         return this.createFallbackTitle(content)
       }

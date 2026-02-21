@@ -68,7 +68,7 @@ Respond with ONLY the comma-separated keywords in ${languageName}, nothing else.
       const config = await CredentialService.getActiveConfig()
       if (!config) {
         console.warn(
-          'No LLM provider configured for description generation, using fallback',
+          'No AI provider configured for description generation, using fallback',
         )
         return this.createFallbackDescription(messageContent)
       }

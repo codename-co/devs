@@ -168,7 +168,7 @@ export const LivePage = () => {
         // Get the active LLM configuration
         const config = await CredentialService.getActiveConfig()
         if (!config) {
-          console.error('No LLM provider configured')
+          console.error('No AI provider configured')
           setIsGenerating(false)
           return
         }

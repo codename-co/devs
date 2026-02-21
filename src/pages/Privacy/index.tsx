@@ -1,6 +1,7 @@
 import { Container, Section } from '@/components'
 import { useI18n } from '@/i18n'
 import Layout from '@/layouts/Default'
+import { exportDatabase } from '@/lib/db/export'
 
 export const PrivacyPage = () => {
   const { t, lang } = useI18n(localI18n)
@@ -145,7 +146,7 @@ export const PrivacyPage = () => {
           <h3>{t('Third-Party Services')}</h3>
           <p>
             {t(
-              'When you configure LLM providers (OpenAI, Anthropic, Google, etc.), your prompts are sent directly to those services. Please review their respective privacy policies.',
+              'When you configure AI providers (OpenAI, Anthropic, Google, etc.), your prompts are sent directly to those services. Please review their respective privacy policies.',
             )}
           </p>
 
@@ -186,9 +187,7 @@ export const PrivacyPage = () => {
           </ul>
 
           <h3>{t('Observability (Optional)')}</h3>
-          <p>
-            {t('DEVS supports optional LLM observability integration:')}
-          </p>
+          <p>{t('DEVS supports optional LLM observability integration:')}</p>
           <ul>
             <li>
               {t(
@@ -212,7 +211,15 @@ export const PrivacyPage = () => {
           <ul>
             <li>
               {t('Export all your data at any time:')}{' '}
-              <a href="/admin/database">{t('Database Administration')}</a>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  exportDatabase()
+                }}
+              >
+                {t('Export Database')}
+              </a>
             </li>
             <li>{t('Delete all data by clearing browser storage')}</li>
             <li>{t('Use the app completely offline after initial load')}</li>
@@ -266,7 +273,7 @@ const localI18n = {
     'You can disconnect any connector and revoke access at any time',
     'Imported content (emails, files, events) is encrypted at rest on your device',
     'Third-Party Services',
-    'When you configure LLM providers (OpenAI, Anthropic, Google, etc.), your prompts are sent directly to those services. Please review their respective privacy policies.',
+    'When you configure AI providers (OpenAI, Anthropic, Google, etc.), your prompts are sent directly to those services. Please review their respective privacy policies.',
     'P2P Sync (Optional)',
     'DEVS offers an optional peer-to-peer sync feature to synchronize your data across devices:',
     'Sync is opt-in and disabled by default',
@@ -284,7 +291,7 @@ const localI18n = {
     'Your Control',
     'You can:',
     'Export all your data at any time:',
-    'Database Administration',
+    'Export Database',
     'Delete all data by clearing browser storage',
     'Use the app completely offline after initial load',
     'Contact',
@@ -341,7 +348,7 @@ const localI18n = {
     'Imported content (emails, files, events) is encrypted at rest on your device':
       'يتم تشفير المحتوى المستورد (رسائل البريد الإلكتروني، الملفات، الأحداث) أثناء التخزين على جهازك',
     'Third-Party Services': 'خدمات الطرف الثالث',
-    'When you configure LLM providers (OpenAI, Anthropic, Google, etc.), your prompts are sent directly to those services. Please review their respective privacy policies.':
+    'When you configure AI providers (OpenAI, Anthropic, Google, etc.), your prompts are sent directly to those services. Please review their respective privacy policies.':
       'عند تكوين مزودي LLM (OpenAI، Anthropic، Google، إلخ)، يتم إرسال مطالباتك مباشرة إلى تلك الخدمات. يرجى مراجعة سياسات الخصوصية الخاصة بهم.',
     'P2P Sync (Optional)': 'مزامنة P2P (اختيارية)',
     'DEVS offers an optional peer-to-peer sync feature to synchronize your data across devices:':
@@ -372,7 +379,7 @@ const localI18n = {
     'Your Control': 'تحكمك',
     'You can:': 'يمكنك:',
     'Export all your data at any time:': 'تصدير جميع بياناتك في أي وقت:',
-    'Database Administration': 'إدارة قاعدة البيانات',
+    'Export Database': 'تصدير قاعدة البيانات',
     'Delete all data by clearing browser storage':
       'حذف جميع البيانات عن طريق مسح تخزين المتصفح',
     'Use the app completely offline after initial load':
@@ -435,7 +442,7 @@ const localI18n = {
     'Imported content (emails, files, events) is encrypted at rest on your device':
       'Importierte Inhalte (E-Mails, Dateien, Termine) werden im Ruhezustand auf Ihrem Gerät verschlüsselt',
     'Third-Party Services': 'Drittanbieterdienste',
-    'When you configure LLM providers (OpenAI, Anthropic, Google, etc.), your prompts are sent directly to those services. Please review their respective privacy policies.':
+    'When you configure AI providers (OpenAI, Anthropic, Google, etc.), your prompts are sent directly to those services. Please review their respective privacy policies.':
       'Wenn Sie LLM-Anbieter (OpenAI, Anthropic, Google, etc.) konfigurieren, werden Ihre Prompts direkt an diese Dienste gesendet. Bitte prüfen Sie deren jeweilige Datenschutzrichtlinien.',
     'P2P Sync (Optional)': 'P2P-Synchronisation (Optional)',
     'DEVS offers an optional peer-to-peer sync feature to synchronize your data across devices:':
@@ -467,7 +474,7 @@ const localI18n = {
     'You can:': 'Sie können:',
     'Export all your data at any time:':
       'Exportieren Sie jederzeit alle Ihre Daten:',
-    'Database Administration': 'Datenbankverwaltung',
+    'Export Database': 'Datenbank exportieren',
     'Delete all data by clearing browser storage':
       'Löschen Sie alle Daten, indem Sie den Browser-Speicher leeren',
     'Use the app completely offline after initial load':
@@ -529,7 +536,7 @@ const localI18n = {
     'Imported content (emails, files, events) is encrypted at rest on your device':
       'El contenido importado (correos, archivos, eventos) se cifra en reposo en tu dispositivo',
     'Third-Party Services': 'Servicios de terceros',
-    'When you configure LLM providers (OpenAI, Anthropic, Google, etc.), your prompts are sent directly to those services. Please review their respective privacy policies.':
+    'When you configure AI providers (OpenAI, Anthropic, Google, etc.), your prompts are sent directly to those services. Please review their respective privacy policies.':
       'Cuando configuras proveedores LLM (OpenAI, Anthropic, Google, etc.), tus prompts se envían directamente a esos servicios. Por favor, revisa sus respectivas políticas de privacidad.',
     'P2P Sync (Optional)': 'Sincronización P2P (Opcional)',
     'DEVS offers an optional peer-to-peer sync feature to synchronize your data across devices:':
@@ -561,7 +568,7 @@ const localI18n = {
     'You can:': 'Puedes:',
     'Export all your data at any time:':
       'Exportar todos tus datos en cualquier momento:',
-    'Database Administration': 'Administración de base de datos',
+    'Export Database': 'Exportar base de datos',
     'Delete all data by clearing browser storage':
       'Eliminar todos los datos borrando el almacenamiento del navegador',
     'Use the app completely offline after initial load':
@@ -598,40 +605,40 @@ const localI18n = {
       'Pour les préférences utilisateur, les paramètres et les métadonnées de chiffrement',
     'Encryption & Data Security': 'Chiffrement et sécurité des données',
     'DEVS encrypts your sensitive data at rest using industry-standard encryption:':
-      'DEVS chiffre vos données sensibles au repos avec un chiffrement conforme aux standards de l\'industrie :',
+      "DEVS chiffre vos données sensibles au repos avec un chiffrement conforme aux standards de l'industrie :",
     'API keys and OAuth tokens are encrypted with AES-GCM 256-bit using non-extractable keys that cannot be read or exported by JavaScript':
-      'Les clés API et les tokens OAuth sont chiffrés avec AES-GCM 256-bit à l\'aide de clés non extractibles qui ne peuvent être ni lues ni exportées par JavaScript',
+      "Les clés API et les tokens OAuth sont chiffrés avec AES-GCM 256-bit à l'aide de clés non extractibles qui ne peuvent être ni lues ni exportées par JavaScript",
     'Sensitive content (conversations, knowledge base, agent memories) is encrypted at the field level before storage':
-      'Le contenu sensible (conversations, base de connaissances, mémoires d\'agents) est chiffré au niveau du champ avant le stockage',
+      "Le contenu sensible (conversations, base de connaissances, mémoires d'agents) est chiffré au niveau du champ avant le stockage",
     'All encryption uses the browser-native Web Crypto API — no third-party cryptographic libraries':
       'Tout le chiffrement utilise la Web Crypto API native du navigateur — aucune bibliothèque cryptographique tierce',
     'Encryption keys are device-bound and cannot be recovered if lost — back up your data regularly':
-      'Les clés de chiffrement sont liées à l\'appareil et ne peuvent pas être récupérées en cas de perte — sauvegardez régulièrement vos données',
+      "Les clés de chiffrement sont liées à l'appareil et ne peuvent pas être récupérées en cas de perte — sauvegardez régulièrement vos données",
     'External Connectors': 'Connecteurs externes',
     'When you connect external services (Gmail, Google Drive, Calendar, Notion, etc.):':
       'Lorsque vous connectez des services externes (Gmail, Google Drive, Calendar, Notion, etc.) :',
     'Authentication uses OAuth 2.0 with PKCE — DEVS never sees or stores your passwords':
-      'L\'authentification utilise OAuth 2.0 avec PKCE — DEVS ne voit et ne stocke jamais vos mots de passe',
+      "L'authentification utilise OAuth 2.0 avec PKCE — DEVS ne voit et ne stocke jamais vos mots de passe",
     'Access and refresh tokens are encrypted at rest with AES-GCM-256':
-      'Les tokens d\'accès et de rafraîchissement sont chiffrés au repos avec AES-GCM-256',
+      "Les tokens d'accès et de rafraîchissement sont chiffrés au repos avec AES-GCM-256",
     'Tokens are decrypted in-memory only for the duration of each API call, then discarded':
       'Les tokens sont déchiffrés en mémoire uniquement le temps de chaque appel API, puis supprimés',
     'DEVS requests minimum necessary permissions (read-only where possible)':
       'DEVS demande les permissions minimales nécessaires (lecture seule lorsque possible)',
     'You can disconnect any connector and revoke access at any time':
-      'Vous pouvez déconnecter n\'importe quel connecteur et révoquer l\'accès à tout moment',
+      "Vous pouvez déconnecter n'importe quel connecteur et révoquer l'accès à tout moment",
     'Imported content (emails, files, events) is encrypted at rest on your device':
       'Le contenu importé (e-mails, fichiers, événements) est chiffré au repos sur votre appareil',
     'Third-Party Services': 'Services tiers',
-    'When you configure LLM providers (OpenAI, Anthropic, Google, etc.), your prompts are sent directly to those services. Please review their respective privacy policies.':
-      'Lorsque vous configurez des fournisseurs LLM (OpenAI, Anthropic, Google, etc.), vos prompts sont envoyés directement à ces services. Veuillez consulter leurs politiques de confidentialité respectives.',
+    'When you configure AI providers (OpenAI, Anthropic, Google, etc.), your prompts are sent directly to those services. Please review their respective privacy policies.':
+      'Lorsque vous configurez des fournisseurs IA (OpenAI, Anthropic, Google, etc.), vos prompts sont envoyés directement à ces services. Veuillez consulter leurs politiques de confidentialité respectives.',
     'P2P Sync (Optional)': 'Synchronisation P2P (Optionnelle)',
     'DEVS offers an optional peer-to-peer sync feature to synchronize your data across devices:':
       'DEVS offre une fonction optionnelle de synchronisation pair-à-pair pour synchroniser vos données entre vos appareils :',
     'Sync is opt-in and disabled by default':
       'La synchronisation est optionnelle et désactivée par défaut',
     'All sync data is encrypted per-message with AES-GCM-256 using a key derived from your room password (PBKDF2 with 210,000 iterations)':
-      'Toutes les données de synchronisation sont chiffrées par message avec AES-GCM-256 à l\'aide d\'une clé dérivée de votre mot de passe de salon (PBKDF2 avec 210 000 itérations)',
+      "Toutes les données de synchronisation sont chiffrées par message avec AES-GCM-256 à l'aide d'une clé dérivée de votre mot de passe de salon (PBKDF2 avec 210 000 itérations)",
     'A signaling server (wss://signal.devs.new) is used only for WebSocket connection relay':
       'Un serveur de signalisation (wss://signal.devs.new) est utilisé uniquement pour le relais de connexions WebSocket',
     'The signaling server sees only: derived room identifiers (opaque hashes) and encrypted binary payloads':
@@ -644,18 +651,18 @@ const localI18n = {
       'Vous pouvez héberger votre propre serveur de signalisation pour une confidentialité maximale',
     'Observability (Optional)': 'Observabilité (Optionnelle)',
     'DEVS supports optional LLM observability integration:':
-      'DEVS prend en charge l\'intégration optionnelle d\'observabilité LLM :',
+      "DEVS prend en charge l'intégration optionnelle d'observabilité LLM :",
     'Disabled by default — you must explicitly configure it in Settings':
       'Désactivée par défaut — vous devez la configurer explicitement dans les Paramètres',
     'When enabled, LLM prompts and responses are sent to your configured Langfuse instance':
-      'Lorsqu\'elle est activée, les prompts et réponses LLM sont envoyés à votre instance Langfuse configurée',
+      "Lorsqu'elle est activée, les prompts et réponses LLM sont envoyés à votre instance Langfuse configurée",
     'No observability data is sent to our servers — traces go to your own endpoint':
-      'Aucune donnée d\'observabilité n\'est envoyée à nos serveurs — les traces vont vers votre propre endpoint',
+      "Aucune donnée d'observabilité n'est envoyée à nos serveurs — les traces vont vers votre propre endpoint",
     'Your Control': 'Votre contrôle',
     'You can:': 'Vous pouvez :',
     'Export all your data at any time:':
       'Exporter toutes vos données à tout moment :',
-    'Database Administration': 'Administration de la base de données',
+    'Export Database': 'Exporter la base de données',
     'Delete all data by clearing browser storage':
       'Supprimer toutes les données en vidant le stockage du navigateur',
     'Use the app completely offline after initial load':
@@ -715,7 +722,7 @@ const localI18n = {
     'Imported content (emails, files, events) is encrypted at rest on your device':
       '가져온 콘텐츠(이메일, 파일, 일정)는 기기에서 저장 시 암호화됩니다',
     'Third-Party Services': '타사 서비스',
-    'When you configure LLM providers (OpenAI, Anthropic, Google, etc.), your prompts are sent directly to those services. Please review their respective privacy policies.':
+    'When you configure AI providers (OpenAI, Anthropic, Google, etc.), your prompts are sent directly to those services. Please review their respective privacy policies.':
       'OpenAI, Anthropic, Google 등 LLM 공급자를 설정하면 프롬프트가 해당 서비스로 직접 전송됩니다. 각 서비스의 개인정보 처리방침을 확인하세요.',
     'P2P Sync (Optional)': 'P2P 동기화 (선택사항)',
     'DEVS offers an optional peer-to-peer sync feature to synchronize your data across devices:':
@@ -746,7 +753,7 @@ const localI18n = {
     'Your Control': '귀하의 제어권',
     'You can:': '다음이 가능합니다:',
     'Export all your data at any time:': '언제든지 모든 데이터 내보내기:',
-    'Database Administration': '데이터베이스 관리',
+    'Export Database': '데이터베이스 내보내기',
     'Delete all data by clearing browser storage':
       '브라우저 저장소를 비워 모든 데이터 삭제',
     'Use the app completely offline after initial load':

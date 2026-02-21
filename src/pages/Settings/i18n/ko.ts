@@ -4,7 +4,7 @@ type I18n = Record<(typeof en)[number], string>
 
 export const ko: I18n = {
   'Platform Settings': '플랫폼 설정',
-  'Configure LLM providers, models and platform defaults for your organization':
+  'Configure AI providers, models and platform defaults for your organization':
     '조직을 위한 LLM 공급자, 모델 및 플랫폼의 기본 설정을 구성합니다.',
   Appearance: '외관',
   'Choose your preferred language': '선호하는 언어를 선택하세요',
@@ -24,8 +24,8 @@ export const ko: I18n = {
   'Failed to regenerate master key': '마스터 키 재생성에 실패했습니다',
   'Your master key is used to encrypt all sensitive data stored locally. Keep it safe and secure.':
     '귀하의 마스터 키는 로컬에 저장된 모든 민감한 데이터를 암호화하는 데 사용됩니다. 안전하게 보관하세요.',
-  'LLM Providers': 'LLM 공급자',
-  'Choose your LLM provider, manage your API credentials':
+  'AI Providers': 'LLM 공급자',
+  'Choose your AI provider, manage your API credentials':
     'LLM 공급자를 선택하고 API 자격 증명을 관리하세요',
   'Add Provider': '공급자 추가',
   'No providers configured. Add one to get started.':
@@ -104,7 +104,8 @@ export const ko: I18n = {
   'Hide Default Agents': '기본 에이전트 숨기기',
   'Only show your custom agents in the agent picker and agents page':
     '에이전트 선택기 및 에이전트 페이지에서 사용자 정의 에이전트만 표시',
-  'Conversational Features': '대화 기능',
+  Features: '기능',
+  Voice: '음성',
   'Configure how you interact with agents':
     '에이전트와 상호 작용하는 방식을 구성합니다',
   'Auto Memory Learning': '자동 메모리 학습',
@@ -138,4 +139,49 @@ export const ko: I18n = {
   'Enter the model name manually': '모델 이름을 수동으로 입력하세요',
   'models available': '사용 가능한 모델',
   'This provider is already configured': '이 제공업체는 이미 구성되어 있습니다',
+  Computer: '컴퓨터',
+  'Sandbox runtimes and system resources': '샌드박스 런타임 및 시스템 리소스',
+  'Sandbox Runtimes': '샌드박스 런타임',
+  Running: '실행 중',
+  Executing: '실행 중',
+  Loading: '로딩 중',
+  Idle: '대기 중',
+  Error: '오류',
+  Start: '시작',
+  Stop: '중지',
+  'Pre-load the {runtime} runtime': '{runtime} 런타임 사전 로드',
+  'Terminate the {runtime} runtime': '{runtime} 런타임 종료',
+  'Run a test snippet in the {runtime} sandbox':
+    '{runtime} 샌드박스에서 테스트 코드 실행',
+  Try: '시도',
+  'Isolated code execution environments running entirely in WebAssembly. Python uses a Web Worker; JavaScript runs in a lightweight QuickJS VM.':
+    'WebAssembly에서 완전히 실행되는 격리된 코드 실행 환경. Python은 Web Worker를 사용하고, JavaScript는 경량 QuickJS VM에서 실행됩니다.',
+  CPU: 'CPU',
+  '{used} / {total} cores': '{used} / {total} 코어',
+  'CPU usage': 'CPU 사용량',
+  Memory: '메모리',
+  'Memory usage': '메모리 사용량',
+  Storage: '저장소',
+  'Storage usage': '저장소 사용량',
+  'Device Information': '장치 정보',
+  Device: '장치',
+  'GPU Vendor': 'GPU 제조사',
+  'GPU Renderer': 'GPU 렌더러',
+  WebGPU: 'WebGPU',
+  Supported: '지원됨',
+  'Not Supported': '지원되지 않음',
+  'Local LLM (Browser)': '로컬 LLM (브라우저)',
+  'Runs AI models entirely in your browser using WebGPU. No data is sent to external servers.':
+    'WebGPU를 사용하여 브라우저에서 AI 모델을 완전히 실행합니다. 외부 서버로 데이터가 전송되지 않습니다.',
+  'Default Model': '기본 모델',
+  'Loaded Model': '로드된 모델',
+  'No model loaded': '로드된 모델 없음',
+  Unload: '언로드',
+  'Unload model to free memory': '메모리 해제를 위해 모델 언로드',
+  'WebGPU is not supported on this device. Local LLM inference requires a WebGPU-compatible browser.':
+    '이 장치에서 WebGPU가 지원되지 않습니다. 로컬 LLM 추론에는 WebGPU 호환 브라우저가 필요합니다.',
+  'Your device has less than 8GB of RAM. Local inference may be slow or unavailable for larger models.':
+    '장치에 8GB 미만의 RAM이 있습니다. 로컬 추론이 느리거나 큰 모델에 사용할 수 없을 수 있습니다.',
+
+  'System Resources': '시스템 리소스',
 } as const
