@@ -71,7 +71,8 @@ export const useLLMModelStore = create<LLMModelStore>()(
         set({
           selectedProviderId: id,
           selectedCredentialId: id,
-          selectedProviderType: credential?.provider ?? get().selectedProviderType,
+          selectedProviderType:
+            credential?.provider ?? get().selectedProviderType,
         })
       },
 
@@ -89,7 +90,8 @@ export const useLLMModelStore = create<LLMModelStore>()(
         set({
           selectedCredentialId: id,
           selectedProviderId: id,
-          selectedProviderType: credential?.provider ?? get().selectedProviderType,
+          selectedProviderType:
+            credential?.provider ?? get().selectedProviderType,
         })
       },
 

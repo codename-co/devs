@@ -109,8 +109,10 @@ async function decryptConversationMetadata(
 // them as empty plain objects {} which survive as {} after page reload).
 // ============================================================================
 function normalizeYjsDate(value: unknown): string | Date {
-  if (value instanceof Date && !isNaN(value.getTime())) return value.toISOString()
-  if (typeof value === 'string' || typeof value === 'number') return value as string
+  if (value instanceof Date && !isNaN(value.getTime()))
+    return value.toISOString()
+  if (typeof value === 'string' || typeof value === 'number')
+    return value as string
   // Yjs encoded the Date as {} — return epoch 0 (clearly invalid, but safe; avoids
   // claiming this conversation was created "right now" which would corrupt backups)
   return new Date(0).toISOString()

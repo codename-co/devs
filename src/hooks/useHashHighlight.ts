@@ -129,7 +129,11 @@ export function useHashHighlight(
     }
     if (segments.length === 2) {
       // Two segments: page/section
-      return { page: segments[0] || null, section: segments[1] || null, element: null }
+      return {
+        page: segments[0] || null,
+        section: segments[1] || null,
+        element: null,
+      }
     }
     // Three+ segments: page/section/element
     return {
