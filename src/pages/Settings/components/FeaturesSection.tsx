@@ -69,13 +69,13 @@ export function FeaturesSection() {
             onChange={(e) => setSuggestionsEnabled(e.target.checked)}
             size="sm"
           >
-            {t('Quick Reply Suggestions')}
+            <p>{t('Quick Reply Suggestions')}</p>
+            <p className="text-xs text-default-500 mt-1 ml-7">
+              {t(
+                'Show AI-generated follow-up suggestions after each assistant response',
+              )}
+            </p>
           </Switch>
-          <p className="text-xs text-default-500 mt-1 ml-7">
-            {t(
-              'Show AI-generated follow-up suggestions after each assistant response',
-            )}
-          </p>
         </div>
 
         <div

@@ -405,7 +405,7 @@ const ToolTimelineItem = memo(
         <Tooltip content={t('View trace details')}>
           <Button
             as={Link}
-            to={`${location.pathname}${location.search}#settings/traces`}
+            to={`${location.pathname}${location.search}#settings/traces/logs/${span.traceId}`} // Link to trace logs with span ID in hash
             size="sm"
             variant="light"
             isIconOnly
