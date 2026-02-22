@@ -15,6 +15,7 @@ import { ConversationPage } from '@/pages/Conversation'
 import DemoPage from '@/pages/Demo/index.mdx'
 import HTMLdemoPage from '@/pages/Demo/html.mdx'
 import DiagramPage from '@/pages/Demo/diagram.mdx'
+import { CodeSandboxPage } from '@/pages/Demo/CodeSandbox'
 import { PrivacyPage } from '@/pages/Privacy'
 import { TermsPage } from '@/pages/Terms'
 import { OAuthCallbackPage } from '@/pages/OAuth'
@@ -39,6 +40,7 @@ const routes = {
   'agents/start/:agentSlug': AgentsStartPage,
   conversations: ConversationPage,
   demo: DemoPage,
+  'demo/code': CodeSandboxPage,
   'demo/diagram': DiagramPage,
   'demo/html': HTMLdemoPage,
   studio: StudioPage,
