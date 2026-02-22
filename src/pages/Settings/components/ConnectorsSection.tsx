@@ -30,7 +30,7 @@ export function ConnectorsSection() {
   const { t } = useI18n(localI18n)
   const navigate = useNavigate()
   const location = useLocation()
-  const { activeElement, getHighlightClasses } = useHashHighlight()
+  const { activeElement } = useHashHighlight()
 
   const [selectedTab] = useState<ConnectorCategory>('app')
 

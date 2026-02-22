@@ -27,7 +27,6 @@ import {
 import { fetchSkillFromGitHub } from '@/lib/skills/github-fetcher'
 import { searchSkills } from '@/lib/skills/skillsmp-client'
 import type { SkillSearchResult } from '@/lib/skills/skillsmp-client'
-import { getSkillCompatibility } from '@/lib/skills/skill-prompt'
 import type { InstalledSkill } from '@/types'
 import skillsI18n from '@/features/skills/pages/i18n'
 
@@ -149,7 +148,6 @@ function SkillListCard({
   onClick: () => void
 }) {
   const { t } = useI18n(skillsI18n)
-  const compat = getSkillCompatibility(skill)
 
   return (
     <Card isPressable onPress={onClick} shadow="sm">
