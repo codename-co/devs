@@ -1,43 +1,45 @@
 /**
  * ConnectorsSection — Settings section for managing external service connectors.
  *
+ * Uses hash-based sub-routing:
+ *   #settings/connectors       → list view
+ *   #settings/connectors/new   → add-connector wizard
+ *   #settings/connectors/:id   → existing connector settings
+ *
  * Displays:
  *  - OAuth-based app connectors (Google Drive, Gmail, Notion, etc.)
  *  - API connectors (coming soon)
  *  - MCP server connectors (coming soon)
  */
 
-import { useState, useEffect, useMemo } from 'react'
-import { Tabs, Tab, Button, Spinner } from '@heroui/react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { Button, Spinner } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
+import { useHashHighlight } from '@/hooks/useHashHighlight'
 import { useConnectorStore } from '@/features/connectors/stores'
 import { ConnectorCard } from '@/features/connectors/components'
 import { ConnectorWizardInline } from '@/features/connectors/components/ConnectorWizardInline'
 import { ConnectorSettingsInline } from '@/features/connectors/components/ConnectorSettingsInline'
-import type {
-  ConnectorCategory,
-  Connector,
-  AppConnectorProvider,
-} from '@/features/connectors/types'
+import type { ConnectorCategory } from '@/features/connectors/types'
 import type { IconName } from '@/lib/types'
 import localI18n from '@/features/connectors/pages/i18n'
 
-type ViewState =
-  | { kind: 'list' }
-  | { kind: 'wizard'; provider: AppConnectorProvider | null }
-  | { kind: 'settings'; connector: Connector }
-
 export function ConnectorsSection() {
   const { t } = useI18n(localI18n)
-  const [selectedTab, setSelectedTab] = useState<ConnectorCategory>('app')
-  const [view, setView] = useState<ViewState>({ kind: 'list' })
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { activeElement } = useHashHighlight()
+
+  const [selectedTab] = useState<ConnectorCategory>('app')
 
   const {
     connectors,
     isLoading,
     isInitialized,
     initialize,
+    getConnector,
     getAppConnectors,
     getApiConnectors,
     getMcpConnectors,
@@ -71,50 +73,76 @@ export function ConnectorsSection() {
     getMcpConnectors,
   ])
 
+  // --- Sub-route helpers ------------------------------------------------
+  const navigateToList = useCallback(() => {
+    navigate(`${location.pathname}#settings/connectors`, { replace: true })
+  }, [navigate, location.pathname])
+
+  const navigateToNew = useCallback(() => {
+    navigate(`${location.pathname}#settings/connectors/new`, { replace: true })
+  }, [navigate, location.pathname])
+
+  const navigateToConnector = useCallback(
+    (connectorId: string) => {
+      navigate(`${location.pathname}#settings/connectors/${connectorId}`, {
+        replace: true,
+      })
+    },
+    [navigate, location.pathname],
+  )
+
+  // --- Handlers ---------------------------------------------------------
   const handleDisconnect = async (connectorId: string) => {
     await deleteConnector(connectorId)
-    setView({ kind: 'list' })
+    navigateToList()
   }
 
-  const handleSettings = (connector: Connector) => {
-    setView({ kind: 'settings', connector })
-  }
-
-  const handleAddConnector = () => {
-    setView({ kind: 'wizard', provider: null })
-  }
-
-  const handleBackToList = () => {
-    setView({ kind: 'list' })
-  }
-
-  // Render the inline wizard view
-  if (view.kind === 'wizard') {
+  // --- Sub-route: /new  (wizard) ----------------------------------------
+  if (activeElement === 'new') {
     return (
       <div data-testid="connectors-settings">
         <ConnectorWizardInline
           category={selectedTab}
-          initialProvider={view.provider}
-          onClose={handleBackToList}
+          initialProvider={null}
+          onClose={navigateToList}
         />
       </div>
     )
   }
 
-  // Render the inline settings view
-  if (view.kind === 'settings') {
+  // --- Sub-route: /:connectorId  (settings) ----------------------------
+  if (activeElement) {
+    const connector = getConnector(activeElement)
+
+    if (!connector) {
+      // Unknown connector id — fall back to list
+      return (
+        <div data-testid="connectors-settings">
+          <div className="flex flex-col items-center justify-center py-12 text-center gap-4">
+            <Icon name="WarningTriangle" className="w-8 h-8 text-warning" />
+            <p className="text-default-500 text-sm">
+              {t('Connector not found')}
+            </p>
+            <Button size="sm" variant="flat" onPress={navigateToList}>
+              {t('Back to connectors')}
+            </Button>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div data-testid="connectors-settings">
         <ConnectorSettingsInline
-          connector={view.connector}
-          onClose={handleBackToList}
+          connector={connector}
+          onClose={navigateToList}
           onDisconnect={handleDisconnect}
         />
       </div>
     )
   }
 
-  // Render the default list view
+  // --- Default sub-route: list view ------------------------------------
   return (
     <div data-testid="connectors-settings">
       {/* Header with Add Button */}
@@ -122,63 +150,7 @@ export function ConnectorsSection() {
         <p className="text-default-500 text-sm">
           {t('Sync files and data from your favorite apps and services.')}
         </p>
-        <Button
-          color="primary"
-          size="sm"
-          startContent={<Icon name="Plus" className="w-4 h-4" />}
-          onPress={handleAddConnector}
-        >
-          {t('Add Connector')}
-        </Button>
       </div>
-
-      {/* Category Tabs */}
-      <Tabs
-        selectedKey={selectedTab}
-        onSelectionChange={(key) => setSelectedTab(key as ConnectorCategory)}
-        aria-label="Connector categories"
-        variant="underlined"
-        classNames={{
-          tabList:
-            'gap-6 w-full relative rounded-none p-0 border-b border-divider',
-          cursor: 'w-full bg-primary',
-          tab: 'max-w-fit px-0 h-12',
-          tabContent: 'group-data-[selected=true]:text-primary',
-        }}
-      >
-        <Tab
-          key="app"
-          title={
-            <div className="flex items-center gap-2">
-              <Icon name="WebWindow" className="w-4 h-4" />
-              <span>{t('Apps')}</span>
-              {getAppConnectors().length > 0 && (
-                <span className="text-xs bg-default-100 px-2 py-0.5 rounded-full">
-                  {getAppConnectors().length}
-                </span>
-              )}
-            </div>
-          }
-        />
-        {/* <Tab
-          key="api"
-          title={
-            <div className="flex items-center gap-2">
-              <Icon name="Code" className="w-4 h-4" />
-              <span>{t('APIs')}</span>
-            </div>
-          }
-        />
-        <Tab
-          key="mcp"
-          title={
-            <div className="flex items-center gap-2">
-              <Icon name="Server" className="w-4 h-4" />
-              <span>{t('MCPs')}</span>
-            </div>
-          }
-        /> */}
-      </Tabs>
 
       {/* Content Area */}
       <div className="mt-6">
@@ -187,16 +159,25 @@ export function ConnectorsSection() {
             <Spinner size="lg" />
           </div>
         ) : currentConnectors.length === 0 ? (
-          <EmptyState category={selectedTab} onAdd={handleAddConnector} />
+          <EmptyState category={selectedTab} onAdd={navigateToNew} />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
             {currentConnectors.map((connector) => (
               <ConnectorCard
                 key={connector.id}
                 connector={connector}
-                onClick={() => handleSettings(connector)}
+                onClick={() => navigateToConnector(connector.id)}
               />
             ))}
+
+            <Button
+              color="primary"
+              size="sm"
+              startContent={<Icon name="Plus" className="w-4 h-4" />}
+              onPress={navigateToNew}
+            >
+              {t('Add Connector')}
+            </Button>
           </div>
         )}
       </div>

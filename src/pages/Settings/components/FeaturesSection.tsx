@@ -70,7 +70,7 @@ export function FeaturesSection() {
             size="sm"
           >
             <p>{t('Quick Reply Suggestions')}</p>
-            <p className="text-xs text-default-500 mt-1 ml-7">
+            <p className="text-xs text-default-500">
               {t(
                 'Show AI-generated follow-up suggestions after each assistant response',
               )}

@@ -192,6 +192,10 @@ export const es: I18n = {
   'Your session has expired. Please disconnect and reconnect this service. To avoid this in the future, revoke access at myaccount.google.com/permissions before reconnecting.':
     'Tu sesión ha expirado. Por favor desconecta y vuelve a conectar este servicio. Para evitar esto en el futuro, revoca el acceso en myaccount.google.com/permissions antes de reconectarte.',
 
+  // Sub-route errors
+  'Connector not found': 'Conector no encontrado',
+  'Back to connectors': 'Volver a conectores',
+
   // Common
   Cancel: 'Cancelar',
   Done: 'Listo',

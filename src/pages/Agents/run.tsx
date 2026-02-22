@@ -51,6 +51,7 @@ import {
   Artifact,
   AgentMemoryEntry,
   MemoryCategory,
+  InstalledSkill,
 } from '@/types'
 import type { Trace, Span } from '@/features/traces/types'
 import { errorToast, successToast } from '@/lib/toast'
@@ -1865,17 +1866,22 @@ export const AgentRunPage = () => {
         const pendingPrompt = sessionStorage.getItem('pendingPrompt')
         const pendingAgentData = sessionStorage.getItem('pendingAgent')
         const pendingFilesData = sessionStorage.getItem('pendingFiles')
+        const pendingSkillsData = sessionStorage.getItem('pendingSkills')
 
         if (pendingPrompt && pendingAgentData) {
           const pendingAgent = JSON.parse(pendingAgentData)
           const pendingFiles = pendingFilesData
             ? JSON.parse(pendingFilesData)
             : []
+          const pendingSkills = pendingSkillsData
+            ? JSON.parse(pendingSkillsData)
+            : undefined
 
           // Clear the session storage
           sessionStorage.removeItem('pendingPrompt')
           sessionStorage.removeItem('pendingAgent')
           sessionStorage.removeItem('pendingFiles')
+          sessionStorage.removeItem('pendingSkills')
 
           // Set the prompt and auto-submit if the agent matches
           if (pendingAgent.id === agent.id) {
@@ -1883,7 +1889,12 @@ export const AgentRunPage = () => {
 
             // Auto-submit after a short delay to ensure everything is loaded
             setTimeout(() => {
-              handleAutoSubmit(pendingPrompt, agent, pendingFiles)
+              handleAutoSubmit(
+                pendingPrompt,
+                agent,
+                pendingFiles,
+                pendingSkills,
+              )
             }, 100)
           }
         }
@@ -2086,6 +2097,7 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
         size: number
         data: string
       }> = [],
+      skills?: Array<{ name: string; skillMdContent: string }>,
     ) => {
       if (isSending) return
 
@@ -2102,6 +2114,7 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
         includeHistory: true,
         clearResponseAfterSubmit: true,
         attachments: files,
+        activatedSkills: skills,
         lang,
         t,
         onResponseUpdate: (update: ResponseUpdate) => {
@@ -2145,7 +2158,12 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
   }, [])
 
   const onSubmit = useCallback(
-    async (cleanedPrompt?: string, mentionedAgent?: Agent) => {
+    async (
+      cleanedPrompt?: string,
+      mentionedAgent?: Agent,
+      _mentionedMethodology?: unknown,
+      mentionedSkills?: InstalledSkill[],
+    ) => {
       const promptToUse = cleanedPrompt ?? prompt
       // Use mentioned agent if provided, otherwise fall back to selected agent
       const agentToUse = mentionedAgent || selectedAgent
@@ -2173,6 +2191,12 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
         persistQuickReplies(convId, [])
       }
 
+      // Build activated skills from /mentions
+      const activatedSkills = mentionedSkills?.map((skill) => ({
+        name: skill.name,
+        skillMdContent: skill.skillMdContent || skill.description,
+      }))
+
       let finalResponse = ''
       await submitChat({
         prompt: promptToUse,
@@ -2181,6 +2205,7 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
         includeHistory: true,
         clearResponseAfterSubmit: true,
         attachments: filesData,
+        activatedSkills,
         lang,
         t,
         onResponseUpdate: (update: ResponseUpdate) => {

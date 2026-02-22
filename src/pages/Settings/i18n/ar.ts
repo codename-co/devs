@@ -184,4 +184,12 @@ export const ar: I18n = {
     'جهازك يحتوي على أقل من 8 جيجابايت من الذاكرة. قد يكون الاستدلال المحلي بطيئاً أو غير متاح للنماذج الأكبر.',
 
   'System Resources': 'موارد النظام',
+  Skills: 'المهارات',
+  'Discover, install, and manage specialized skills for your agents':
+    'اكتشف وثبّت وأدِر المهارات المتخصصة لوكلائك',
+  'Agent Memory': 'ذاكرة الوكلاء',
+  'Pinned Messages': 'الرسائل المثبتة',
+  General: 'عام',
+  Extend: 'توسيع',
+  Monitor: 'مراقبة',
 } as const

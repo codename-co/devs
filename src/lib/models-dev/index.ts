@@ -247,6 +247,76 @@ export function normalizeModel(
 }
 
 // =============================================================================
+// Sorting
+// =============================================================================
+
+/**
+ * Sorts normalized models by release date (most recent first).
+ * If no models have a release date, returns the array unsorted.
+ */
+function sortModelsByRecency(models: NormalizedModel[]): NormalizedModel[] {
+  const hasAnyReleaseDate = models.some((m) => m.metadata.releaseDate)
+  if (!hasAnyReleaseDate) return models
+
+  return models.sort((a, b) => {
+    const dateA = a.metadata.releaseDate || ''
+    const dateB = b.metadata.releaseDate || ''
+    return dateB.localeCompare(dateA)
+  })
+}
+
+// =============================================================================
+// Deduplication
+// =============================================================================
+
+/**
+ * Regex matching date-stamped model IDs.
+ * Matches IDs ending with -YYYYMMDD or -YYYY-MM-DD.
+ * E.g., "anthropic/claude-opus-4-5-20251101" or "openai/gpt-4o-2024-05-13"
+ */
+const DATE_STAMP_REGEX = /-(\d{4})(\d{2})(\d{2})$|-(\d{4}-\d{2}-\d{2})$/
+
+/**
+ * Extracts the base model ID by stripping a trailing date stamp.
+ * Returns null if the ID has no date stamp.
+ *
+ * Examples:
+ *   "anthropic/claude-opus-4-5-20251101" → "anthropic/claude-opus-4-5"
+ *   "openai/gpt-4o-2024-05-13"          → "openai/gpt-4o"
+ *   "anthropic/claude-opus-4-5"          → null (no date stamp)
+ */
+function getBaseIdWithoutDate(id: string): string | null {
+  const match = id.match(DATE_STAMP_REGEX)
+  if (!match) return null
+  return id.slice(0, match.index!)
+}
+
+/**
+ * Removes duplicate models that are date-stamped variants of alias models.
+ *
+ * The models.dev API often includes both:
+ * - A "latest" alias: e.g., "claude-opus-4-5" or "claude-3-7-sonnet-latest"
+ * - A date-stamped version: e.g., "claude-opus-4-5-20251101"
+ *
+ * This function keeps the alias and removes the dated variant when both exist.
+ * Models without a matching alias (standalone dated versions) are kept.
+ */
+function deduplicateModels(models: NormalizedModel[]): NormalizedModel[] {
+  const allIds = new Set(models.map((m) => m.id))
+
+  return models.filter((model) => {
+    const baseId = getBaseIdWithoutDate(model.id)
+    // Not a dated variant — always keep
+    if (!baseId) return true
+
+    // Dated variant — keep only if no alias exists
+    // Check for: base ID ("claude-opus-4-5") or base + "-latest" ("claude-3-7-sonnet-latest")
+    const hasAlias = allIds.has(baseId) || allIds.has(`${baseId}-latest`)
+    return !hasAlias
+  })
+}
+
+// =============================================================================
 // Public API
 // =============================================================================
 
@@ -307,7 +377,7 @@ export async function getAllModels(): Promise<NormalizedModel[]> {
     }
   }
 
-  return models
+  return sortModelsByRecency(deduplicateModels(models))
 }
 
 /**
@@ -336,7 +406,7 @@ export async function getModelsByProvider(
     }
   }
 
-  return models
+  return sortModelsByRecency(deduplicateModels(models))
 }
 
 /**

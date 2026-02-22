@@ -87,9 +87,9 @@ Do NOT activate a skill unless the user's request clearly benefits from it.`)
   if (autoActivated.length > 0) {
     for (const skill of autoActivated) {
       parts.push(`
-<active_skill name="${escapeXml(skill.name)}">
+[ACTIVE_SKILL: ${escapeXml(skill.name)}]
 ${skill.skillMdContent}
-</active_skill>`)
+[/ACTIVE_SKILL]`)
     }
   }
 

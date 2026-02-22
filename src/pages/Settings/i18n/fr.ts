@@ -189,4 +189,12 @@ export const fr: I18n = {
     'Votre appareil dispose de moins de 8 Go de RAM. L\u2019inférence locale peut être lente ou indisponible pour les modèles volumineux.',
 
   'System Resources': 'Ressources système',
+  Skills: 'Compétences',
+  'Discover, install, and manage specialized skills for your agents':
+    'Découvrez, installez et gérez des compétences spécialisées pour vos agents',
+  'Agent Memory': 'Mémoire des agents',
+  'Pinned Messages': 'Messages épinglés',
+  General: 'Général',
+  Extend: 'Étendre',
+  Monitor: 'Surveiller',
 } as const

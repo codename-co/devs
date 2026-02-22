@@ -5,12 +5,8 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
+  DropdownSection,
   Image,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  Listbox,
-  ListboxItem,
   Spinner,
 } from '@heroui/react'
 import { useCallback, useState } from 'react'
@@ -19,18 +15,22 @@ import { Icon } from '../Icon'
 import { useScreenCapture } from './useScreenCapture'
 
 import { type LanguageCode } from '@/i18n/locales'
-import { type KnowledgeItem } from '@/types'
+import { type KnowledgeItem, type InstalledSkill } from '@/types'
 import { getAllKnowledgeItems } from '@/stores/knowledgeStore'
+import { getEnabledSkills } from '@/stores/skillStore'
 import { getFileIcon } from '@/lib/utils'
 import { formatBytes } from '@/lib/format'
-import { useI18n } from '@/i18n'
+import { useI18n, useUrl } from '@/i18n'
 import { getProviders } from '@/features/connectors'
-import { ConnectorWizard } from '@/features/connectors/components'
+import { useNavigate } from 'react-router-dom'
+
+type ViewMode = 'main' | 'knowledge' | 'skills'
 
 interface AttachmentSelectorProps {
   lang: LanguageCode
   onFileUpload: () => void
   onKnowledgeFileSelect: (item: KnowledgeItem) => void
+  onSkillSelect?: (skill: InstalledSkill) => void
   onScreenCapture?: (file: File) => void
 }
 
@@ -38,15 +38,19 @@ export function AttachmentSelector({
   lang,
   onFileUpload,
   onKnowledgeFileSelect,
+  onSkillSelect,
   onScreenCapture,
 }: AttachmentSelectorProps) {
   const { t } = useI18n(lang as any)
+  const url = useUrl(lang)
+  const navigate = useNavigate()
 
   const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([])
   const [loadingKnowledge, setLoadingKnowledge] = useState(false)
-  const [isKnowledgePopoverOpen, setIsKnowledgePopoverOpen] = useState(false)
   const [isMainDropdownOpen, setIsMainDropdownOpen] = useState(false)
-  const [showConnectorWizard, setShowConnectorWizard] = useState(false)
+  const [skillItems, setSkillItems] = useState<InstalledSkill[]>([])
+  // View mode: 'main' shows attachment options, 'knowledge' shows files, 'skills' shows skills
+  const [viewMode, setViewMode] = useState<ViewMode>('main')
 
   // Screen capture hook
   const {
@@ -96,13 +100,32 @@ export function AttachmentSelector({
     return <Icon name={getFileIcon(item.mimeType || '') as any} size="sm" />
   }, [])
 
+  const loadSkillItems = useCallback(() => {
+    try {
+      const items = getEnabledSkills()
+      // Sort by name
+      items.sort((a, b) => a.name.localeCompare(b.name))
+      setSkillItems(items)
+    } catch (error) {
+      console.error('Error loading skills:', error)
+      setSkillItems([])
+    }
+  }, [])
+
   const handleKnowledgeItemSelect = useCallback(
     (item: KnowledgeItem) => {
       onKnowledgeFileSelect(item)
-      setIsKnowledgePopoverOpen(false)
       setIsMainDropdownOpen(false)
     },
     [onKnowledgeFileSelect],
+  )
+
+  const handleSkillSelect = useCallback(
+    (skill: InstalledSkill) => {
+      onSkillSelect?.(skill)
+      setIsMainDropdownOpen(false)
+    },
+    [onSkillSelect],
   )
 
   const handleUpload = useCallback(() => {
@@ -110,159 +133,264 @@ export function AttachmentSelector({
     setIsMainDropdownOpen(false)
   }, [onFileUpload])
 
+  // Reset view mode when dropdown closes
+  const handleDropdownOpenChange = useCallback((isOpen: boolean) => {
+    setIsMainDropdownOpen(isOpen)
+    if (!isOpen) {
+      setViewMode('main')
+    }
+  }, [])
+
+  // Render knowledge items for the drill-down view
+  const renderKnowledgeItems = () => {
+    if (loadingKnowledge) {
+      return (
+        <DropdownItem
+          key="loading"
+          isReadOnly
+          textValue="Loading"
+          className="cursor-default"
+        >
+          <div className="flex items-center gap-2 py-2">
+            <Spinner size="sm" />
+            <span className="text-default-500">
+              {t('Loading agent and conversation…')}
+            </span>
+          </div>
+        </DropdownItem>
+      )
+    }
+
+    if (knowledgeItems.length === 0) {
+      return (
+        <DropdownItem
+          key="empty"
+          isReadOnly
+          textValue="No files"
+          className="cursor-default"
+        >
+          <div className="flex items-center gap-2 py-2 text-default-500 text-sm">
+            <Icon name="QuestionMark" size="sm" />
+            {t('No files found in knowledge base')}
+          </div>
+        </DropdownItem>
+      )
+    }
+
+    return (
+      <>
+        {knowledgeItems.slice(0, 10).map((item) => (
+          <DropdownItem
+            key={item.id}
+            startContent={renderKnowledgePreview(item)}
+            endContent={
+              <Chip size="sm" variant="flat" className="text-xs">
+                {formatBytes(item.size || 0, lang)}
+              </Chip>
+            }
+            textValue={item.name}
+            closeOnSelect
+            onPress={() => handleKnowledgeItemSelect(item)}
+          >
+            <div className="flex flex-col gap-0.5">
+              <span className="font-medium truncate max-w-40">{item.name}</span>
+              <span className="text-xs text-default-500 truncate max-w-40">
+                {item.path.replace(/^\//, '')}
+              </span>
+            </div>
+          </DropdownItem>
+        ))}
+      </>
+    )
+  }
+
+  // Render skill items for the drill-down view
+  const renderSkillItems = () => {
+    if (skillItems.length === 0) {
+      return (
+        <DropdownItem
+          key="empty"
+          isReadOnly
+          textValue="No skills"
+          className="cursor-default"
+        >
+          <div className="flex items-center gap-2 py-2 text-default-500 text-sm">
+            <Icon name="QuestionMark" size="sm" />
+            {t('No skills installed')}
+          </div>
+        </DropdownItem>
+      )
+    }
+
+    return (
+      <>
+        {skillItems.map((skill) => (
+          <DropdownItem
+            key={skill.id}
+            startContent={<Icon name="Puzzle" size="sm" />}
+            textValue={skill.name}
+            closeOnSelect
+            onPress={() => handleSkillSelect(skill)}
+          >
+            <div className="flex flex-col gap-0.5">
+              <span className="font-medium truncate max-w-48">
+                {skill.name}
+              </span>
+              <span className="text-xs text-default-500 truncate max-w-48">
+                {skill.description}
+              </span>
+            </div>
+          </DropdownItem>
+        ))}
+      </>
+    )
+  }
+
   return (
     <>
       <Dropdown
         placement="bottom-start"
         className="bg-white dark:bg-default-50 dark:text-white"
         isOpen={isMainDropdownOpen}
-        onOpenChange={setIsMainDropdownOpen}
+        onOpenChange={handleDropdownOpenChange}
       >
         <DropdownTrigger>
           <Button isIconOnly radius="md" variant="bordered" size="sm">
             <Icon name="Plus" />
           </Button>
         </DropdownTrigger>
-        <DropdownMenu aria-label="File attachment options">
-          <DropdownItem
-            key="upload"
-            startContent={<Icon name="Attachment" size="sm" />}
-            onPress={handleUpload}
-          >
-            {t('Upload new file')}
-          </DropdownItem>
-          <DropdownItem
-            key="knowledge"
-            isReadOnly
-            textValue={t('Choose from knowledge base')}
-            className="p-0"
-          >
-            <Popover
-              placement="right-start"
-              isOpen={isKnowledgePopoverOpen}
-              onOpenChange={(open) => {
-                setIsKnowledgePopoverOpen(open)
-                if (open) {
-                  loadKnowledgeItems()
-                }
-              }}
-              offset={12}
-            >
-              <PopoverTrigger>
-                <div className="flex items-center justify-between w-full px-2 py-1.5 cursor-pointer hover:bg-default-100 rounded-md">
-                  <div className="flex items-center gap-2">
-                    <Icon name="Folder" size="sm" />
-                    <span>{t('Choose from knowledge base')}</span>
-                  </div>
-                  <Icon name="NavArrowRight" size="sm" />
-                </div>
-              </PopoverTrigger>
-              <PopoverContent className="">
-                {loadingKnowledge ? (
-                  <div className="flex items-center justify-center gap-2 p-4">
-                    <Spinner size="sm" />
-                    <span className="text-sm text-default-500">
-                      {t('Loading agent and conversation…')}
-                    </span>
-                  </div>
-                ) : knowledgeItems.length === 0 ? (
-                  <div className="flex items-center gap-2 p-4 text-default-500 text-sm">
-                    <Icon name="QuestionMark" size="sm" />
-                    {t('No files found in knowledge base')}
-                  </div>
-                ) : (
-                  <Listbox
-                    aria-label={t('Choose from knowledge base')}
-                    className="p-1"
-                    onAction={(key) => {
-                      const item = knowledgeItems.find(
-                        (item) => item.id === String(key),
+        <DropdownMenu
+          aria-label="File attachment options"
+          selectionMode="none"
+          closeOnSelect={false}
+          className="max-h-80 overflow-y-auto w-64"
+        >
+          {viewMode === 'main' ? (
+            <>
+              <DropdownSection>
+                <DropdownItem
+                  key="upload"
+                  startContent={<Icon name="Attachment" size="sm" />}
+                  onPress={handleUpload}
+                  closeOnSelect
+                >
+                  {t('Upload new file')}
+                </DropdownItem>
+                <DropdownItem
+                  key="knowledge"
+                  startContent={<Icon name="Folder" size="sm" />}
+                  endContent={
+                    <Icon
+                      name="NavArrowRight"
+                      size="sm"
+                      className="text-default-400"
+                    />
+                  }
+                  textValue={t('Choose from knowledge base')}
+                  closeOnSelect={false}
+                  onPress={() => {
+                    loadKnowledgeItems()
+                    setViewMode('knowledge')
+                  }}
+                >
+                  {t('Choose from knowledge base')}
+                </DropdownItem>
+                <DropdownItem
+                  key="skills"
+                  startContent={<Icon name="Puzzle" size="sm" />}
+                  endContent={
+                    <Icon
+                      name="NavArrowRight"
+                      size="sm"
+                      className="text-default-400"
+                    />
+                  }
+                  textValue={t('Choose from skills')}
+                  closeOnSelect={false}
+                  onPress={() => {
+                    loadSkillItems()
+                    setViewMode('skills')
+                  }}
+                >
+                  {t('Choose from skills')}
+                </DropdownItem>
+                {isScreenCaptureSupported ? (
+                  <DropdownItem
+                    key="screenshot"
+                    startContent={
+                      isCapturing ? (
+                        <Spinner size="sm" />
+                      ) : (
+                        <Icon name="Screenshot" size="sm" />
                       )
-                      if (item) {
-                        handleKnowledgeItemSelect(item)
-                      }
-                    }}
+                    }
+                    isDisabled={isCapturing}
+                    onPress={captureScreen}
+                    closeOnSelect
                   >
-                    {knowledgeItems.slice(0, 10).map((item) => (
-                      <ListboxItem
-                        key={item.id}
-                        startContent={renderKnowledgePreview(item)}
-                        endContent={
-                          <Chip size="sm" variant="flat" className="text-xs">
-                            {formatBytes(item.size || 0, lang)}
-                          </Chip>
-                        }
-                        description={
-                          <div className="text-xs text-default-500 truncate max-w-40">
-                            {item.path.replace(/^\//, '')}
+                    {isCapturing ? t('Capturing…') : t('Capture screen')}
+                  </DropdownItem>
+                ) : null}
+                <DropdownItem
+                  key="connectors"
+                  startContent={<Icon name="Plus" size="sm" />}
+                  endContent={
+                    <div className="flex items-center -space-x-0.5">
+                      {getProviders()
+                        .slice(0, 5)
+                        .map((provider, index) => (
+                          <div
+                            key={provider.name}
+                            className="w-5 h-5 rounded-full bg-white dark:bg-default-100 flex items-center justify-center border border-default-200 -ml-1.5"
+                            style={{
+                              zIndex: getProviders().length - index,
+                            }}
+                          >
+                            <Icon
+                              name={provider.icon as any}
+                              className="w-3 h-3"
+                            />
                           </div>
-                        }
-                        textValue={item.name}
-                        className="py-1"
-                      >
-                        <div className="font-medium truncate max-w-40">
-                          {item.name}
-                        </div>
-                      </ListboxItem>
-                    ))}
-                  </Listbox>
-                )}
-              </PopoverContent>
-            </Popover>
-          </DropdownItem>
-          {isScreenCaptureSupported ? (
-            <DropdownItem
-              key="screenshot"
-              startContent={
-                isCapturing ? (
-                  <Spinner size="sm" />
-                ) : (
-                  <Icon name="Screenshot" size="sm" />
-                )
-              }
-              isDisabled={isCapturing}
-              onPress={captureScreen}
-            >
-              {isCapturing ? t('Capturing…') : t('Capture screen')}
-            </DropdownItem>
-          ) : null}
-          <DropdownItem
-            key="connectors"
-            startContent={<Icon name="Plus" size="sm" />}
-            endContent={
-              <div className="flex items-center -space-x-0.5">
-                {getProviders()
-                  .slice(0, 5)
-                  .map((provider, index) => (
-                    <div
-                      key={provider.name}
-                      className="w-5 h-5 rounded-full bg-white dark:bg-default-100 flex items-center justify-center border border-default-200 -ml-1.5"
-                      style={{
-                        zIndex: getProviders().length - index,
-                      }}
-                    >
-                      <Icon name={provider.icon as any} className="w-3 h-3" />
+                        ))}
                     </div>
-                  ))}
-              </div>
-            }
-            textValue={t('Add connectors')}
-            onPress={() => {
-              setShowConnectorWizard(true)
-              setIsMainDropdownOpen(false)
-            }}
-          >
-            {t('Add connectors')}
-          </DropdownItem>
+                  }
+                  textValue={t('Add connectors')}
+                  closeOnSelect
+                  onPress={() => {
+                    navigate(url('#settings/connectors/new'))
+                    setIsMainDropdownOpen(false)
+                  }}
+                >
+                  {t('Add connectors')}
+                </DropdownItem>
+              </DropdownSection>
+            </>
+          ) : (
+            <>
+              <DropdownSection showDivider>
+                <DropdownItem
+                  key="back"
+                  startContent={<Icon name="ArrowLeft" size="sm" />}
+                  textValue={t('Back')}
+                  closeOnSelect={false}
+                  onPress={() => setViewMode('main')}
+                >
+                  <span className="font-medium">
+                    {viewMode === 'knowledge'
+                      ? t('Choose from knowledge base')
+                      : t('Choose from skills')}
+                  </span>
+                </DropdownItem>
+              </DropdownSection>
+              <DropdownSection>
+                {viewMode === 'knowledge'
+                  ? renderKnowledgeItems()
+                  : renderSkillItems()}
+              </DropdownSection>
+            </>
+          )}
         </DropdownMenu>
       </Dropdown>
-
-      {/* Connector Wizard Modal - rendered outside Dropdown to prevent unmounting */}
-      <ConnectorWizard
-        isOpen={showConnectorWizard}
-        onClose={() => setShowConnectorWizard(false)}
-        category="app"
-      />
     </>
   )
 }

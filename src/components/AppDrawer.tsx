@@ -449,7 +449,7 @@ const CollapsedDrawer = ({
                 <Icon name="Search" />
               </Button>
             </Tooltip>
-            <Tooltip content={t('Knowledge')} placement="right">
+            {/* <Tooltip content={t('Knowledge')} placement="right">
               <Button
                 as={Link}
                 href={url('/knowledge')}
@@ -464,7 +464,7 @@ const CollapsedDrawer = ({
               >
                 <Icon name="Book" />
               </Button>
-            </Tooltip>
+            </Tooltip> */}
             <Tooltip content={t('Agents')} placement="right">
               <Button
                 as={Link}
@@ -624,21 +624,6 @@ const CollapsedDrawer = ({
                 )
               })
             }
-            <Tooltip content={t('Skills')} placement="right">
-              <Button
-                as={Link}
-                href={url('/skills')}
-                isIconOnly
-                variant="light"
-                className={cn(
-                  'w-full text-violet-500 dark:text-violet-400 [.is-active]:bg-default-100',
-                  isCurrentPath('/skills') && 'is-active',
-                )}
-                aria-label={t('Skills')}
-              >
-                <Icon name="OpenBook" />
-              </Button>
-            </Tooltip>
             <Tooltip content={t('Marketplace')} placement="right">
               <Button
                 as={Link}
@@ -808,7 +793,7 @@ const ExpandedDrawer = ({
               >
                 {t('Search')}
               </ListboxItem>
-              <ListboxItem
+              {/* <ListboxItem
                 href={url('/knowledge')}
                 variant="faded"
                 color="primary"
@@ -824,7 +809,7 @@ const ExpandedDrawer = ({
                 }
               >
                 {t('Knowledge')}
-              </ListboxItem>
+              </ListboxItem> */}
               <ListboxItem
                 href={url('/agents')}
                 variant="faded"
@@ -991,23 +976,6 @@ const ExpandedDrawer = ({
                     </ListboxItem>
                   )
                 }),
-                <ListboxItem
-                  key="skills"
-                  href={url('/skills')}
-                  variant="faded"
-                  className={cn(
-                    'dark:text-gray-200 [.is-active]:bg-default-100',
-                    isCurrentPath('/skills') && 'is-active',
-                  )}
-                  startContent={
-                    <Icon
-                      name="OpenBook"
-                      className="text-violet-500 dark:text-violet-400"
-                    />
-                  }
-                >
-                  {t('Skills')}
-                </ListboxItem>,
                 <ListboxItem
                   key="marketplace"
                   href={url('/marketplace')}

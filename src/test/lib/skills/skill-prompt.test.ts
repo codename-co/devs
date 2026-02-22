@@ -164,10 +164,10 @@ describe('skill-prompt', () => {
 
       const instructions = buildSkillInstructions()
 
-      expect(instructions).toContain('<active_skill name="always-on">')
+      expect(instructions).toContain('[ACTIVE_SKILL: always-on]')
       expect(instructions).toContain('# Always')
       expect(instructions).toContain('Do this always')
-      expect(instructions).toContain('</active_skill>')
+      expect(instructions).toContain('[/ACTIVE_SKILL]')
     })
 
     it('should NOT inject content for non-auto-activated skills', () => {
@@ -184,7 +184,7 @@ describe('skill-prompt', () => {
       const instructions = buildSkillInstructions()
 
       expect(instructions).not.toContain('secret instructions')
-      expect(instructions).not.toContain('<active_skill')
+      expect(instructions).not.toContain('[ACTIVE_SKILL')
     })
   })
 

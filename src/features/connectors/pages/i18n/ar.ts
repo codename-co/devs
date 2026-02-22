@@ -188,6 +188,10 @@ export const ar: I18n = {
   'Your session has expired. Please disconnect and reconnect this service. To avoid this in the future, revoke access at myaccount.google.com/permissions before reconnecting.':
     'انتهت جلستك. يرجى قطع الاتصال وإعادة الاتصال بهذه الخدمة. لتجنب ذلك في المستقبل، ألغِ الوصول على myaccount.google.com/permissions قبل إعادة الاتصال.',
 
+  // Sub-route errors
+  'Connector not found': 'الموصل غير موجود',
+  'Back to connectors': 'العودة إلى الموصلات',
+
   // Common
   Cancel: 'إلغاء',
   Done: 'تم',

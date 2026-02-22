@@ -184,4 +184,12 @@ export const ko: I18n = {
     '장치에 8GB 미만의 RAM이 있습니다. 로컬 추론이 느리거나 큰 모델에 사용할 수 없을 수 있습니다.',
 
   'System Resources': '시스템 리소스',
+  Skills: '스킬',
+  'Discover, install, and manage specialized skills for your agents':
+    '에이전트를 위한 전문 스킬을 발견, 설치 및 관리하세요',
+  'Agent Memory': '에이전트 메모리',
+  'Pinned Messages': '고정된 메시지',
+  General: '일반',
+  Extend: '확장',
+  Monitor: '모니터링',
 } as const

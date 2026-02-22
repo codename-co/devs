@@ -192,6 +192,10 @@ export const de: I18n = {
   'Your session has expired. Please disconnect and reconnect this service. To avoid this in the future, revoke access at myaccount.google.com/permissions before reconnecting.':
     'Ihre Sitzung ist abgelaufen. Bitte trennen Sie diesen Dienst und verbinden Sie ihn erneut. Um dies in Zukunft zu vermeiden, widerrufen Sie den Zugriff unter myaccount.google.com/permissions, bevor Sie sich erneut verbinden.',
 
+  // Sub-route errors
+  'Connector not found': 'Konnektor nicht gefunden',
+  'Back to connectors': 'Zurück zu Konnektoren',
+
   // Common
   Cancel: 'Abbrechen',
   Done: 'Fertig',

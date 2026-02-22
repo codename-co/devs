@@ -632,6 +632,306 @@ describe('data retrieval functions', () => {
       expect(models.length).toBe(2)
       expect(models.every((m) => m.providerId === 'openai')).toBe(true)
     })
+
+    it('should return models sorted by release_date most recent first', async () => {
+      const sortedResponse = {
+        openai: createValidProvider(
+          {},
+          {
+            'gpt-4o': createValidModel({
+              id: 'gpt-4o',
+              name: 'GPT-4o',
+              release_date: '2024-05-13',
+            }),
+            'gpt-4o-mini': createValidModel({
+              id: 'gpt-4o-mini',
+              name: 'GPT-4o mini',
+              release_date: '2024-07-18',
+            }),
+            'gpt-3.5-turbo': createValidModel({
+              id: 'gpt-3.5-turbo',
+              name: 'GPT-3.5 Turbo',
+              release_date: '2023-03-01',
+            }),
+          },
+        ),
+      }
+
+      mockDB.setStore('models-dev-api', {
+        data: sortedResponse,
+        fetchedAt: Date.now(),
+      })
+
+      const models = await getModelsByProvider('openai')
+      expect(models.length).toBe(3)
+      expect(models[0].id).toBe('openai/gpt-4o-mini')
+      expect(models[1].id).toBe('openai/gpt-4o')
+      expect(models[2].id).toBe('openai/gpt-3.5-turbo')
+    })
+  })
+
+  describe('getAllModels sorting', () => {
+    it('should return all models sorted by release_date most recent first', async () => {
+      const sortedResponse = {
+        openai: createValidProvider(
+          {},
+          {
+            'gpt-4o': createValidModel({
+              id: 'gpt-4o',
+              name: 'GPT-4o',
+              release_date: '2024-05-13',
+            }),
+          },
+        ),
+        anthropic: createValidProvider(
+          {
+            id: 'anthropic',
+            name: 'Anthropic',
+            npm: '@ai-sdk/anthropic',
+            env: ['ANTHROPIC_API_KEY'],
+            doc: 'https://docs.anthropic.com',
+          },
+          {
+            'claude-3-5-sonnet': createValidModel({
+              id: 'claude-3-5-sonnet',
+              name: 'Claude 3.5 Sonnet',
+              release_date: '2024-10-22',
+            }),
+            'claude-3-opus': createValidModel({
+              id: 'claude-3-opus',
+              name: 'Claude 3 Opus',
+              release_date: '2024-02-29',
+            }),
+          },
+        ),
+      }
+
+      mockDB.setStore('models-dev-api', {
+        data: sortedResponse,
+        fetchedAt: Date.now(),
+      })
+
+      const models = await getAllModels()
+      expect(models.length).toBe(3)
+      expect(models[0].id).toBe('anthropic/claude-3-5-sonnet')
+      expect(models[1].id).toBe('openai/gpt-4o')
+      expect(models[2].id).toBe('anthropic/claude-3-opus')
+    })
+  })
+
+  describe('deduplication', () => {
+    it('should remove date-stamped models when alias exists (Anthropic pattern)', async () => {
+      const dedupResponse = {
+        anthropic: createValidProvider(
+          {
+            id: 'anthropic',
+            name: 'Anthropic',
+            npm: '@ai-sdk/anthropic',
+            env: ['ANTHROPIC_API_KEY'],
+            doc: 'https://docs.anthropic.com',
+          },
+          {
+            'claude-opus-4-5': createValidModel({
+              id: 'claude-opus-4-5',
+              name: 'Claude Opus 4.5 (latest)',
+              release_date: '2024-11-01',
+            }),
+            'claude-opus-4-5-20251101': createValidModel({
+              id: 'claude-opus-4-5-20251101',
+              name: 'Claude Opus 4.5',
+              release_date: '2024-11-01',
+            }),
+            'claude-3-opus-20240229': createValidModel({
+              id: 'claude-3-opus-20240229',
+              name: 'Claude Opus 3',
+              release_date: '2024-02-29',
+            }),
+          },
+        ),
+      }
+
+      mockDB.setStore('models-dev-api', {
+        data: dedupResponse,
+        fetchedAt: Date.now(),
+      })
+
+      const models = await getModelsByProvider('anthropic')
+      const ids = models.map((m) => m.id)
+
+      // Alias kept, dated variant removed
+      expect(ids).toContain('anthropic/claude-opus-4-5')
+      expect(ids).not.toContain('anthropic/claude-opus-4-5-20251101')
+      // Standalone dated model kept (no alias exists)
+      expect(ids).toContain('anthropic/claude-3-opus-20240229')
+      expect(models.length).toBe(2)
+    })
+
+    it('should remove date-stamped models when -latest alias exists', async () => {
+      const dedupResponse = {
+        anthropic: createValidProvider(
+          {
+            id: 'anthropic',
+            name: 'Anthropic',
+            npm: '@ai-sdk/anthropic',
+            env: ['ANTHROPIC_API_KEY'],
+            doc: 'https://docs.anthropic.com',
+          },
+          {
+            'claude-3-7-sonnet-latest': createValidModel({
+              id: 'claude-3-7-sonnet-latest',
+              name: 'Claude Sonnet 3.7 (latest)',
+              release_date: '2025-02-19',
+            }),
+            'claude-3-7-sonnet-20250219': createValidModel({
+              id: 'claude-3-7-sonnet-20250219',
+              name: 'Claude Sonnet 3.7',
+              release_date: '2025-02-19',
+            }),
+          },
+        ),
+      }
+
+      mockDB.setStore('models-dev-api', {
+        data: dedupResponse,
+        fetchedAt: Date.now(),
+      })
+
+      const models = await getModelsByProvider('anthropic')
+      const ids = models.map((m) => m.id)
+
+      expect(ids).toContain('anthropic/claude-3-7-sonnet-latest')
+      expect(ids).not.toContain('anthropic/claude-3-7-sonnet-20250219')
+      expect(models.length).toBe(1)
+    })
+
+    it('should remove date-stamped OpenAI models when base alias exists', async () => {
+      const dedupResponse = {
+        openai: createValidProvider(
+          {},
+          {
+            'gpt-4o': createValidModel({
+              id: 'gpt-4o',
+              name: 'GPT-4o',
+              release_date: '2024-11-20',
+            }),
+            'gpt-4o-2024-05-13': createValidModel({
+              id: 'gpt-4o-2024-05-13',
+              name: 'GPT-4o (2024-05-13)',
+              release_date: '2024-05-13',
+            }),
+            'gpt-4o-2024-11-20': createValidModel({
+              id: 'gpt-4o-2024-11-20',
+              name: 'GPT-4o (2024-11-20)',
+              release_date: '2024-11-20',
+            }),
+          },
+        ),
+      }
+
+      mockDB.setStore('models-dev-api', {
+        data: dedupResponse,
+        fetchedAt: Date.now(),
+      })
+
+      const models = await getModelsByProvider('openai')
+      const ids = models.map((m) => m.id)
+
+      expect(ids).toContain('openai/gpt-4o')
+      expect(ids).not.toContain('openai/gpt-4o-2024-05-13')
+      expect(ids).not.toContain('openai/gpt-4o-2024-11-20')
+      expect(models.length).toBe(1)
+    })
+
+    it('should keep standalone date-stamped models with no alias', async () => {
+      const dedupResponse = {
+        anthropic: createValidProvider(
+          {
+            id: 'anthropic',
+            name: 'Anthropic',
+            npm: '@ai-sdk/anthropic',
+            env: ['ANTHROPIC_API_KEY'],
+            doc: 'https://docs.anthropic.com',
+          },
+          {
+            'claude-3-5-sonnet-20241022': createValidModel({
+              id: 'claude-3-5-sonnet-20241022',
+              name: 'Claude Sonnet 3.5 v2',
+              release_date: '2024-10-22',
+            }),
+            'claude-3-5-sonnet-20240620': createValidModel({
+              id: 'claude-3-5-sonnet-20240620',
+              name: 'Claude Sonnet 3.5',
+              release_date: '2024-06-20',
+            }),
+          },
+        ),
+      }
+
+      mockDB.setStore('models-dev-api', {
+        data: dedupResponse,
+        fetchedAt: Date.now(),
+      })
+
+      const models = await getModelsByProvider('anthropic')
+      // Both kept since neither has an alias counterpart
+      // (no "claude-3-5-sonnet" or "claude-3-5-sonnet-latest" exists)
+      expect(models.length).toBe(2)
+    })
+
+    it('should deduplicate across providers in getAllModels', async () => {
+      const dedupResponse = {
+        openai: createValidProvider(
+          {},
+          {
+            'gpt-4o': createValidModel({
+              id: 'gpt-4o',
+              name: 'GPT-4o',
+              release_date: '2024-11-20',
+            }),
+            'gpt-4o-2024-11-20': createValidModel({
+              id: 'gpt-4o-2024-11-20',
+              name: 'GPT-4o (2024-11-20)',
+              release_date: '2024-11-20',
+            }),
+          },
+        ),
+        anthropic: createValidProvider(
+          {
+            id: 'anthropic',
+            name: 'Anthropic',
+            npm: '@ai-sdk/anthropic',
+            env: ['ANTHROPIC_API_KEY'],
+            doc: 'https://docs.anthropic.com',
+          },
+          {
+            'claude-opus-4-5': createValidModel({
+              id: 'claude-opus-4-5',
+              name: 'Claude Opus 4.5 (latest)',
+              release_date: '2024-11-01',
+            }),
+            'claude-opus-4-5-20251101': createValidModel({
+              id: 'claude-opus-4-5-20251101',
+              name: 'Claude Opus 4.5',
+              release_date: '2024-11-01',
+            }),
+          },
+        ),
+      }
+
+      mockDB.setStore('models-dev-api', {
+        data: dedupResponse,
+        fetchedAt: Date.now(),
+      })
+
+      const models = await getAllModels()
+      const ids = models.map((m) => m.id)
+
+      expect(ids).toContain('openai/gpt-4o')
+      expect(ids).not.toContain('openai/gpt-4o-2024-11-20')
+      expect(ids).toContain('anthropic/claude-opus-4-5')
+      expect(ids).not.toContain('anthropic/claude-opus-4-5-20251101')
+      expect(models.length).toBe(2)
+    })
   })
 
   describe('getModel', () => {

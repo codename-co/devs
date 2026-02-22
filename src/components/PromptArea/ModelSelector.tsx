@@ -12,7 +12,6 @@ import {
 } from '@heroui/react'
 
 import { Icon } from '../Icon'
-import { useAddLLMProviderModal } from '../AddLLMProviderModal'
 import { useModelPicker } from './useModelPicker'
 import { PROVIDERS, getModelIds } from '@/pages/Settings/providers'
 import { LLMService } from '@/lib/llm'
@@ -24,7 +23,7 @@ import {
   usesLocalInference,
 } from '@/lib/llm/models'
 
-import { type Lang, useI18n } from '@/i18n'
+import { type Lang, useI18n, useUrl } from '@/i18n'
 import type {
   LLMProvider,
   Credential,
@@ -32,6 +31,7 @@ import type {
   LLMModel,
 } from '@/types'
 import type { IconName } from '@/lib/types'
+import { useNavigate } from 'react-router-dom'
 
 interface ModelSelectorProps {
   lang: Lang
@@ -45,7 +45,8 @@ interface ProviderWithModels {
 
 export function ModelSelector({ lang }: ModelSelectorProps) {
   const { t } = useI18n(lang as any)
-  const openAddProviderModal = useAddLLMProviderModal((state) => state.open)
+  const url = useUrl(lang)
+  const navigate = useNavigate()
 
   const {
     credentials,
@@ -864,7 +865,9 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
                 key="settings"
                 startContent={<Icon name="Plus" size="sm" />}
                 textValue={t('Add AI provider')}
-                onPress={openAddProviderModal}
+                onPress={() => {
+                  navigate(url('#settings/providers/new'))
+                }}
                 closeOnSelect
               >
                 {t('Add AI provider')}

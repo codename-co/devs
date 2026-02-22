@@ -25,11 +25,13 @@ import { AgentMentionPopover } from './AgentMentionPopover'
 import { useAgentMention } from './useAgentMention'
 import { MethodologyMentionPopover } from './MethodologyMentionPopover'
 import { useMethodologyMention } from './useMethodologyMention'
+import { SkillMentionPopover } from './SkillMentionPopover'
+import { useSkillMention } from './useSkillMention'
 
 import { useI18n } from '@/i18n'
 import { type LanguageCode } from '@/i18n/locales'
 import { cn } from '@/lib/utils'
-import { type Agent, type KnowledgeItem } from '@/types'
+import { type Agent, type KnowledgeItem, type InstalledSkill } from '@/types'
 import type { Methodology } from '@/types/methodology.types'
 import { getDefaultAgent } from '@/stores/agentStore'
 import {
@@ -47,11 +49,13 @@ export interface PromptAreaProps
     cleanedPrompt?: string,
     mentionedAgent?: Agent,
     mentionedMethodology?: Methodology,
+    mentionedSkills?: InstalledSkill[],
   ) => void
   onSubmitTask?: (
     cleanedPrompt?: string,
     mentionedAgent?: Agent,
     mentionedMethodology?: Methodology,
+    mentionedSkills?: InstalledSkill[],
   ) => void
   isSending?: boolean
   onFilesChange?: (files: File[]) => void
@@ -157,6 +161,22 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       onPromptChange: handlePromptChange,
     })
 
+    // Skill mention hook for / autocomplete
+    const {
+      showMentionPopover: showSkillMentionPopover,
+      filteredSkills,
+      selectedIndex: skillSelectedIndex,
+      handleMentionSelect: handleSkillMentionSelect,
+      handleKeyNavigation: handleSkillKeyNavigation,
+      closeMentionPopover: closeSkillMentionPopover,
+      extractMentionedSkills,
+      removeMentionsFromPrompt: removeSkillMentionsFromPrompt,
+    } = useSkillMention({
+      lang,
+      prompt,
+      onPromptChange: handlePromptChange,
+    })
+
     useEffect(() => {
       setPrompt(defaultPrompt)
       onValueChange?.(defaultPrompt)
@@ -216,6 +236,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
           cleanedPrompt?: string,
           mentionedAgent?: Agent,
           mentionedMethodology?: Methodology,
+          mentionedSkills?: InstalledSkill[],
         ) => void,
       ) => {
         if (!submitFn) return
@@ -242,9 +263,13 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
           onMethodologyChange?.(mentionedMethodology)
         }
 
-        // Remove @mentions and #mentions from the prompt before submission
+        // Extract mentioned skills for activation in the conversation
+        const mentionedSkills = extractMentionedSkills()
+
+        // Remove @mentions, #mentions and /mentions from the prompt before submission
         let cleanedPrompt = removeAgentMentionsFromPrompt(prompt)
         cleanedPrompt = removeMethodologyMentionsFromPrompt(cleanedPrompt)
+        cleanedPrompt = removeSkillMentionsFromPrompt(cleanedPrompt)
 
         // Update local state (for UI consistency)
         if (cleanedPrompt !== prompt) {
@@ -255,21 +280,30 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         // Close mention popovers if open
         closeAgentMentionPopover()
         closeMethodologyMentionPopover()
+        closeSkillMentionPopover()
 
-        // Pass the cleaned prompt and mentioned agent/methodology directly to the submit function
-        submitFn(cleanedPrompt, mentionedAgent, mentionedMethodology)
+        // Pass the cleaned prompt, mentioned agent/methodology, and activated skills to the submit function
+        submitFn(
+          cleanedPrompt,
+          mentionedAgent,
+          mentionedMethodology,
+          mentionedSkills.length > 0 ? mentionedSkills : undefined,
+        )
       },
       [
         prompt,
         extractMentionedAgents,
         extractMentionedMethodologies,
+        extractMentionedSkills,
         removeAgentMentionsFromPrompt,
         removeMethodologyMentionsFromPrompt,
+        removeSkillMentionsFromPrompt,
         onAgentChange,
         onMethodologyChange,
         onValueChange,
         closeAgentMentionPopover,
         closeMethodologyMentionPopover,
+        closeSkillMentionPopover,
       ],
     )
 
@@ -285,6 +319,11 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
           return
         }
 
+        // Handle skill mention popover keyboard navigation
+        if (handleSkillKeyNavigation(event)) {
+          return
+        }
+
         if (event.key === 'Enter' && !event.shiftKey) {
           event.preventDefault()
           handleSubmitWithMentions(onSubmitToAgent)
@@ -294,6 +333,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       [
         handleAgentKeyNavigation,
         handleMethodologyKeyNavigation,
+        handleSkillKeyNavigation,
         handleSubmitWithMentions,
         onSubmitToAgent,
         onKeyDown,
@@ -367,6 +407,21 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         } catch (error) {
           console.error('Error converting knowledge item to file:', error)
         }
+      },
+      [selectedFiles, onFilesChange],
+    )
+
+    const handleSkillSelect = useCallback(
+      (skill: InstalledSkill) => {
+        // Convert skill SKILL.md content to a File attachment
+        const content = skill.skillMdContent || skill.description
+        const blob = new Blob([content], { type: 'text/markdown' })
+        const file = new File([blob], `${skill.name}.skill.md`, {
+          type: 'text/markdown',
+        })
+        const newFiles = [...selectedFiles, file]
+        setSelectedFiles(newFiles)
+        onFilesChange?.(newFiles)
       },
       [selectedFiles, onFilesChange],
     )
@@ -457,6 +512,17 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
             />
           )}
 
+          {/* Skill mention autocomplete popover */}
+          {showSkillMentionPopover && (
+            <SkillMentionPopover
+              lang={lang}
+              skills={filteredSkills}
+              selectedIndex={skillSelectedIndex}
+              onSelect={handleSkillMentionSelect}
+              onClose={closeSkillMentionPopover}
+            />
+          )}
+
           {/* Hidden file input */}
           <input
             ref={fileInputRef}
@@ -513,6 +579,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                     lang={lang}
                     onFileUpload={handlePaperclipClick}
                     onKnowledgeFileSelect={handleKnowledgeFileSelect}
+                    onSkillSelect={handleSkillSelect}
                     onScreenCapture={(file) => {
                       const newFiles = [...selectedFiles, file]
                       setSelectedFiles(newFiles)

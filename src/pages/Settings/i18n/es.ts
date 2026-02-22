@@ -187,4 +187,12 @@ export const es: I18n = {
     'Su dispositivo tiene menos de 8 GB de RAM. La inferencia local puede ser lenta o no estar disponible para modelos más grandes.',
 
   'System Resources': 'Recursos del sistema',
+  Skills: 'Habilidades',
+  'Discover, install, and manage specialized skills for your agents':
+    'Descubre, instala y gestiona habilidades especializadas para tus agentes',
+  'Agent Memory': 'Memoria de agentes',
+  'Pinned Messages': 'Mensajes fijados',
+  General: 'General',
+  Extend: 'Ampliar',
+  Monitor: 'Monitorear',
 } as const

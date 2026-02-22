@@ -149,4 +149,11 @@ export const en = [
   'WebGPU is not supported on this device. Local LLM inference requires a WebGPU-compatible browser.',
   'Your device has less than 8GB of RAM. Local inference may be slow or unavailable for larger models.',
   'System Resources',
+  'Skills',
+  'Discover, install, and manage specialized skills for your agents',
+  'Agent Memory',
+  'Pinned Messages',
+  'General',
+  'Extend',
+  'Monitor',
 ] as const

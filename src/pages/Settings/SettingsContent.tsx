@@ -8,32 +8,48 @@ import { errorToast, successToast } from '@/lib/toast'
 import { useHashHighlight } from '@/hooks/useHashHighlight'
 import localI18n from './i18n'
 import {
+  AgentMemoriesSection,
   ConnectorsSection,
   DeviceSection,
   FeaturesSection,
   GeneralSection,
   LangfuseSection,
+  PinnedMessagesSection,
   ProvidersSection,
   SecuritySection,
+  SkillsSection,
   TracesSection,
 } from './components'
+import { FilesSection } from '@/pages/Knowledge/components'
 
 type SectionKey =
   | 'general'
   | 'providers'
   | 'connectors'
   | 'features'
+  | 'skills'
+  | 'knowledge'
+  | 'memories'
+  | 'messages'
   | 'security'
   | 'computer'
   | 'langfuse'
   | 'traces'
   | 'database'
 
+type SectionGroup = 'general' | 'extend' | 'monitor'
+
 interface SectionDef {
   key: SectionKey
   label: string
   icon: string
+  group: SectionGroup
   navigateTo?: string
+}
+
+interface SectionGroupDef {
+  key: SectionGroup
+  label: string
 }
 
 interface SettingsContentProps {
@@ -54,6 +70,10 @@ export const SettingsContent = (_props: SettingsContentProps) => {
     'providers',
     'connectors',
     'features',
+    'skills',
+    'knowledge',
+    'memories',
+    'messages',
     'security',
     'computer',
     'langfuse',
@@ -75,16 +95,52 @@ export const SettingsContent = (_props: SettingsContentProps) => {
     }
   }, [activeSection])
 
+  // Group definitions for the sidebar menu
+  const groups: SectionGroupDef[] = [
+    { key: 'general', label: t('General') },
+    { key: 'extend', label: t('Extend') },
+    { key: 'monitor', label: t('Monitor') },
+  ]
+
   // Section definitions for the sidebar menu
   const sections: SectionDef[] = [
-    { key: 'general', label: t('Settings'), icon: 'Settings' },
-    { key: 'providers', label: t('AI Providers'), icon: 'Brain' },
-    { key: 'connectors', label: t('Connectors'), icon: 'Puzzle' },
-    { key: 'features', label: t('Features'), icon: 'Cube' },
-    // { key: 'security', label: t('Secure Storage'), icon: 'Lock' },
-    { key: 'computer', label: t('Device'), icon: 'Computer' },
-    // { key: 'langfuse', label: 'Langfuse', icon: 'Langfuse' },
-    { key: 'traces', label: t('Traces'), icon: 'Activity' },
+    {
+      key: 'general',
+      label: t('Settings'),
+      icon: 'Settings',
+      group: 'general',
+    },
+    {
+      key: 'providers',
+      label: t('AI Providers'),
+      icon: 'Brain',
+      group: 'general',
+    },
+    { key: 'features', label: t('Features'), icon: 'Cube', group: 'general' },
+    {
+      key: 'connectors',
+      label: t('Connectors'),
+      icon: 'EvPlug',
+      group: 'extend',
+    },
+    { key: 'skills', label: t('Skills'), icon: 'Puzzle', group: 'extend' },
+    { key: 'knowledge', label: t('Knowledge'), icon: 'Book', group: 'extend' },
+    {
+      key: 'memories',
+      label: t('Agent Memory'),
+      icon: 'Brain',
+      group: 'extend',
+    },
+    {
+      key: 'messages',
+      label: t('Pinned Messages'),
+      icon: 'Pin',
+      group: 'extend',
+    },
+    // { key: 'security', label: t('Secure Storage'), icon: 'Lock', group: 'general' },
+    { key: 'computer', label: t('Device'), icon: 'Computer', group: 'monitor' },
+    // { key: 'langfuse', label: 'Langfuse', icon: 'Langfuse', group: 'monitor' },
+    { key: 'traces', label: t('Traces'), icon: 'Activity', group: 'monitor' },
   ]
 
   const handleSectionClick = (section: SectionDef) => {
@@ -126,6 +182,14 @@ export const SettingsContent = (_props: SettingsContentProps) => {
         return <ConnectorsSection />
       case 'features':
         return <FeaturesSection />
+      case 'skills':
+        return <SkillsSection />
+      case 'knowledge':
+        return <FilesSection />
+      case 'memories':
+        return <AgentMemoriesSection />
+      case 'messages':
+        return <PinnedMessagesSection />
       case 'security':
         return <SecuritySection />
       case 'computer':
@@ -183,37 +247,50 @@ export const SettingsContent = (_props: SettingsContentProps) => {
       {/* Left sidebar menu (hidden on narrow screens) */}
       <nav className="hidden md:block w-48 shrink-0 border-e border-default-200 overflow-y-auto">
         <h2 className="text-lg font-bold px-4 py-4">{t('Settings')}</h2>
-        <ul className="flex flex-col gap-0.5 px-2 pb-4">
-          {sections.map((section) => {
-            const isActive = activeKey === section.key
-            const isExternal = !!section.navigateTo
+        <div className="flex flex-col gap-4 px-2 pb-4">
+          {groups.map((group) => {
+            const groupSections = sections.filter((s) => s.group === group.key)
+            if (groupSections.length === 0) return null
             return (
-              <li key={section.key}>
-                <button
-                  type="button"
-                  onClick={() => handleSectionClick(section)}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-left ${
-                    isActive
-                      ? 'bg-primary/10 text-primary font-medium'
-                      : 'text-default-600 hover:bg-default-100'
-                  }`}
-                >
-                  <Icon
-                    name={section.icon as any}
-                    className="h-4 w-4 shrink-0"
-                  />
-                  <span className="truncate">{section.label}</span>
-                  {isExternal && (
-                    <Icon
-                      name="ArrowRight"
-                      className="h-3 w-3 ml-auto shrink-0 text-default-400"
-                    />
-                  )}
-                </button>
-              </li>
+              <div key={group.key}>
+                <h3 className="text-xs font-semibold text-default-400 uppercase tracking-wider px-3 mb-1">
+                  {group.label}
+                </h3>
+                <ul className="flex flex-col gap-0.5">
+                  {groupSections.map((section) => {
+                    const isActive = activeKey === section.key
+                    const isExternal = !!section.navigateTo
+                    return (
+                      <li key={section.key}>
+                        <button
+                          type="button"
+                          onClick={() => handleSectionClick(section)}
+                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-left ${
+                            isActive
+                              ? 'bg-primary/10 text-primary font-medium'
+                              : 'text-default-600 hover:bg-default-100'
+                          }`}
+                        >
+                          <Icon
+                            name={section.icon as any}
+                            className="h-4 w-4 shrink-0"
+                          />
+                          <span className="truncate">{section.label}</span>
+                          {isExternal && (
+                            <Icon
+                              name="ArrowRight"
+                              className="h-3 w-3 ml-auto shrink-0 text-default-400"
+                            />
+                          )}
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
             )
           })}
-        </ul>
+        </div>
       </nav>
 
       {/* Right content panel */}

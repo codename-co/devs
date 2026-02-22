@@ -104,6 +104,8 @@ export const fr: I18n = {
   'Choose from knowledge base': 'Choisir dans la base de connaissances',
   'No files found in knowledge base':
     'Aucun fichier dans la base de connaissances',
+  'Choose from skills': 'Utiliser des compétences',
+  'No skills installed': 'Aucune compétence installée',
   'Drop files here…': 'Déposez des fichiers ici…',
   'Speak to microphone': 'Dicter au microphone',
   'Send prompt': 'Envoyer le prompt',
@@ -111,6 +113,8 @@ export const fr: I18n = {
   'No agents found': 'Aucun agent trouvé',
   'Select a methodology': 'Sélectionner une méthodologie',
   'No methodologies found': 'Aucune méthodologie trouvée',
+  'Select a skill': 'Sélectionner une compétence',
+  'No skills found': 'Aucune compétence trouvée',
   Sequential: 'Séquentiel',
   Parallel: 'Parallèle',
   'Event-Driven': 'Événementiel',

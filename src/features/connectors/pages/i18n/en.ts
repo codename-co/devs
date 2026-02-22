@@ -157,6 +157,10 @@ export const en = [
   'Google did not provide a refresh token. Your session will expire in about 1 hour. To enable automatic token refresh, go to myaccount.google.com/permissions, revoke access to DEVS, then reconnect.',
   'Your session has expired. Please disconnect and reconnect this service. To avoid this in the future, revoke access at myaccount.google.com/permissions before reconnecting.',
 
+  // Sub-route errors
+  'Connector not found',
+  'Back to connectors',
+
   // Common
   'Cancel',
   'Close',

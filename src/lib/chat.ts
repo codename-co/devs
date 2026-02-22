@@ -448,6 +448,8 @@ export interface ChatSubmitOptions {
     size: number
     data: string // base64 encoded
   }>
+  /** Skills explicitly activated by the user via /mention in the prompt */
+  activatedSkills?: Array<{ name: string; skillMdContent: string }>
   lang: Lang
   t: any
   /** Callback for response updates - receives either content or status updates */
@@ -471,6 +473,7 @@ export const submitChat = async (
     includeHistory = false,
     clearResponseAfterSubmit = false,
     attachments = [],
+    activatedSkills = [],
     lang,
     t,
     onResponseUpdate,
@@ -652,8 +655,27 @@ export const submitChat = async (
     // Citation instructions are always included since tools are always available
     const hasKnowledgeItems =
       agent.knowledgeItemIds && agent.knowledgeItemIds.length > 0
+
+    // Build active skill instructions from user-mentioned /skills
+    let activeSkillInstructions = ''
+    if (activatedSkills.length > 0) {
+      const skillBlocks = activatedSkills
+        .map(
+          (skill) =>
+            `[ACTIVE_SKILL: ${skill.name}]\n${skill.skillMdContent}\n[/ACTIVE_SKILL]`,
+        )
+        .join('\n\n')
+      activeSkillInstructions = `## User-Activated Skills
+
+The user has explicitly requested the following skill(s). Follow their instructions carefully to complete the task.
+
+${skillBlocks}`
+    }
+
     const instructionParts = [
       enhancedInstructions,
+      // Inject user-activated skill instructions
+      activeSkillInstructions,
       // Inject memory context if available
       memoryContext,
       // Inject pinned messages context if available

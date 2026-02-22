@@ -100,6 +100,8 @@ export const ar: I18n = {
   'Choose from knowledge base': 'اختر من قاعدة المعرفة',
   'No files found in knowledge base':
     'لم يتم العثور على ملفات في قاعدة المعرفة',
+  'Choose from skills': 'اختر من المهارات',
+  'No skills installed': 'لا توجد مهارات مثبتة',
   'Drop files here…': 'أسقط الملفات هنا…',
   'Speak to microphone': 'التحدث إلى الميكروفون',
   'Send prompt': 'إرسال الطلب',
@@ -107,6 +109,8 @@ export const ar: I18n = {
   'No agents found': 'لم يتم العثور على وكلاء',
   'Select a methodology': 'اختر منهجية',
   'No methodologies found': 'لم يتم العثور على منهجيات',
+  'Select a skill': 'اختر مهارة',
+  'No skills found': 'لم يتم العثور على مهارات',
   Sequential: 'متسلسل',
   Parallel: 'متوازي',
   'Event-Driven': 'مدفوع بالأحداث',

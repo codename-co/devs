@@ -5,7 +5,7 @@ import { EasySetupModal } from '@/components/EasySetup/EasySetupModal'
 import DefaultLayout from '@/layouts/Default'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Agent } from '@/types'
+import { Agent, InstalledSkill } from '@/types'
 import { useTaskStore } from '@/stores/taskStore'
 import { errorToast } from '@/lib/toast'
 import { useBackgroundImage } from '@/hooks/useBackgroundImage'
@@ -143,6 +143,8 @@ export const IndexPage = () => {
   const onSubmitToAgent = async (
     cleanedPrompt?: string,
     mentionedAgent?: Agent,
+    _mentionedMethodology?: unknown,
+    mentionedSkills?: InstalledSkill[],
   ) => {
     const promptToUse = cleanedPrompt ?? prompt
     if (!promptToUse.trim() || isSending) return
@@ -167,6 +169,15 @@ export const IndexPage = () => {
         })),
       )
       sessionStorage.setItem('pendingFiles', JSON.stringify(filesData))
+    }
+
+    // Store activated skills for the agent run page
+    if (mentionedSkills && mentionedSkills.length > 0) {
+      const skillsData = mentionedSkills.map((skill) => ({
+        name: skill.name,
+        skillMdContent: skill.skillMdContent || skill.description,
+      }))
+      sessionStorage.setItem('pendingSkills', JSON.stringify(skillsData))
     }
 
     // Navigate to the agent run page using slug

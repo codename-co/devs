@@ -189,6 +189,10 @@ export const ko: I18n = {
   'Your session has expired. Please disconnect and reconnect this service. To avoid this in the future, revoke access at myaccount.google.com/permissions before reconnecting.':
     '세션이 만료되었습니다. 이 서비스의 연결을 끊고 다시 연결해 주세요. 향후 이를 방지하려면 다시 연결하기 전에 myaccount.google.com/permissions에서 액세스를 취소하세요.',
 
+  // Sub-route errors
+  'Connector not found': '커넥터를 찾을 수 없습니다',
+  'Back to connectors': '커넥터로 돌아가기',
+
   // Common
   Cancel: '취소',
   Done: '완료',

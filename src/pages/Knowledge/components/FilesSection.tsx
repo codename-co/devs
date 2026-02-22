@@ -906,12 +906,13 @@ export function FilesSection() {
             <div className="flex flex-col items-center space-y-4">
               <Upload className="w-12 h-12 text-default-400" />
               <div>
-                <p className="text-md mb-2">
+                <p className="text-sm mb-2">
                   {t('Drag & drop files here, or click to select')}
                 </p>
                 <div className="flex gap-3 justify-center">
                   <Button
                     data-testid="upload-files-button"
+                    size="sm"
                     color="primary"
                     variant="flat"
                     startContent={<SubmitDocument className="w-4 h-4" />}
@@ -921,6 +922,7 @@ export function FilesSection() {
                   </Button>
                   <Button
                     data-testid="upload-folder-button"
+                    size="sm"
                     color="secondary"
                     variant="flat"
                     startContent={<Folder className="w-4 h-4" />}
