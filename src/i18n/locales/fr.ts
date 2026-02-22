@@ -103,9 +103,8 @@ export const fr: I18n = {
   'Upload new file': 'Télécharger un nouveau fichier',
   'Capture screen': 'Capturer l’écran',
   'Capturing…': 'Capture en cours…',
-  'Choose from knowledge base': 'Choisir dans la base de connaissances',
-  'No files found in knowledge base':
-    'Aucun fichier dans la base de connaissances',
+  'Choose from knowledge base': 'Choisir une connaissance',
+  'No files found in knowledge base': 'Aucun fichier connaissance',
   'Choose from skills': 'Utiliser des compétences',
   'No skills installed': 'Aucune compétence installée',
   'Drop files here…': 'Déposez des fichiers ici…',
@@ -548,8 +547,6 @@ export const fr: I18n = {
   'Pinned Messages': 'Messages épinglés',
   Thinking: 'Réflexion',
   'No pinned messages': 'Aucun message épinglé',
-  'Messages you pin will appear here for quick reference.':
-    'Les messages que vous épinglez apparaîtront ici pour un accès rapide.',
   'View conversation': 'Voir la conversation',
   'From conversation with {agentName}': 'De la conversation avec {agentName}',
   'Filter by agent': 'Filtrer par agent',

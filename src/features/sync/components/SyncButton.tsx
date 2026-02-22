@@ -10,14 +10,16 @@
 import { Popover, PopoverContent } from '@heroui/react'
 import { useState, useEffect } from 'react'
 
-import { SyncPanel } from './SyncPanel'
 import { useSyncStore } from '../stores/syncStore'
 import { PageMenuButton } from '@/components/PageMenuButton'
-import { useI18n } from '@/i18n'
+import { useI18n, useUrl } from '@/i18n'
 import { IconName } from '@/lib/types'
+import { useNavigate } from 'react-router-dom'
 
 export function SyncButton() {
-  const { t } = useI18n()
+  const { lang, t } = useI18n()
+  const navigate = useNavigate()
+  const url = useUrl(lang)
 
   const { enabled, status, peerCount, initialize } = useSyncStore()
 
@@ -48,6 +50,10 @@ export function SyncButton() {
   const isConnecting = status === 'connecting'
   const isConnected = status === 'connected'
 
+  const openSettings = () => {
+    navigate(url(`#settings/sync`))
+  }
+
   return (
     <Popover
       placement="bottom"
@@ -61,10 +67,9 @@ export function SyncButton() {
         isActive={isConnecting}
         showBadge={isConnected && peerCount > 0}
         tooltipDisabled={isPopoverOpen}
+        onClick={openSettings}
       />
-      <PopoverContent>
-        <SyncPanel onClose={() => setIsPopoverOpen(false)} />
-      </PopoverContent>
+      <PopoverContent />
     </Popover>
   )
 }

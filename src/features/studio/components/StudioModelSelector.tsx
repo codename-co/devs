@@ -57,7 +57,7 @@ const PROVIDER_ICONS: Record<string, IconName> = {
   huggingface: 'HuggingFace',
   'openai-compatible': 'Internet',
   custom: 'Internet',
-  ollama: 'Cpu',
+  ollama: 'Ollama',
 }
 
 // Provider display names

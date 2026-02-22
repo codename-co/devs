@@ -541,8 +541,6 @@ export const de: I18n = {
   'Pinned Messages': 'Angeheftete Nachrichten',
   Thinking: 'Denkt nach',
   'No pinned messages': 'Keine angehefteten Nachrichten',
-  'Messages you pin will appear here for quick reference.':
-    'Die Nachrichten, die Sie anheften, werden hier zur schnellen Referenz angezeigt.',
   'View conversation': 'Konversation anzeigen',
   'From conversation with {agentName}': 'Aus der Konversation mit {agentName}',
   'Filter by agent': 'Nach Agent filtern',

@@ -98,7 +98,7 @@ export function ConnectorsSection() {
   }
 
   // --- Sub-route: /new  (wizard) ----------------------------------------
-  if (activeElement === 'new') {
+  if (activeElement === 'add') {
     return (
       <div data-testid="connectors-settings">
         <ConnectorWizardInline
@@ -150,23 +150,6 @@ export function ConnectorsSection() {
         <p className="text-default-500 text-sm">
           {t('Sync files and data from your favorite apps and services.')}
         </p>
-        <div
-          id="add-connector"
-          className={getHighlightClasses(
-            'add-connector',
-            'absolute top-0 right-0 flex justify-end',
-          )}
-        >
-          <Button
-            color="primary"
-            size="sm"
-            variant="flat"
-            startContent={<Icon name="Plus" className="w-4 h-4" />}
-            onPress={navigateToAdd}
-          >
-            {t('Add Connector')}
-          </Button>
-        </div>
       </div>
 
       {/* Content Area */}
@@ -187,14 +170,15 @@ export function ConnectorsSection() {
               />
             ))}
 
-            {/* <Button
+            <Button
               color="primary"
               size="sm"
+              variant="flat"
               startContent={<Icon name="Plus" className="w-4 h-4" />}
               onPress={navigateToAdd}
             >
               {t('Add Connector')}
-            </Button> */}
+            </Button>
           </div>
         )}
       </div>

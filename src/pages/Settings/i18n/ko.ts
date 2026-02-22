@@ -195,4 +195,18 @@ export const ko: I18n = {
   Configure: '구성',
   Personalize: '개인화',
   Observe: '관찰',
+  'How to connect': '연결 방법',
+  'Open {provider}': '{provider} 열기',
+  "Sign in or create an account on the provider's website.":
+    '공급자 웹사이트에서 로그인하거나 계정을 만드세요.',
+  'Create a new API key in your account dashboard.':
+    '계정 대시보드에서 새 API 키를 만드세요.',
+  'Copy the key and come back here to paste it below.':
+    '키를 복사하고 여기로 돌아와서 아래에 붙여넣으세요.',
+  'Enter your credentials': '자격 증명 입력',
+  'Your key is stored locally and encrypted. It never leaves your device.':
+    '키는 로컬에 암호화되어 저장됩니다. 기기를 벗어나지 않습니다.',
+  Preserve: '보존',
+  'Local Backup': '로컬 백업',
+  Sync: '동기화',
 } as const

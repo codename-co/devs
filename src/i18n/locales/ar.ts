@@ -529,8 +529,6 @@ export const ar: I18n = {
   'Pinned Messages': 'الرسائل المثبتة',
   Thinking: 'يفكر',
   'No pinned messages': 'لا توجد رسائل مثبتة',
-  'Messages you pin will appear here for quick reference.':
-    'الرسائل التي تقوم بتثبيتها ستظهر هنا للرجوع السريع.',
   'View conversation': 'عرض المحادثة',
   'From conversation with {agentName}': 'من المحادثة مع {agentName}',
   'Filter by agent': 'تصفية حسب الوكيل',

@@ -26,7 +26,6 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
         base: 'max-h-[90vh] overflow-hidden',
         body: 'p-0',
       }}
-      hideCloseButton
     >
       <ModalContent>
         <ModalBody className="p-0 min-h-[500px]">

@@ -302,7 +302,7 @@ export const AgentMemories: React.FC = () => {
 
   return (
     <>
-      <div className="space-y-6">
+      <div className="space-y-3">
         {/* Description */}
         <p className="text-sm text-default-500">
           {t(

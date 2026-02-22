@@ -93,12 +93,12 @@ export function ProvidersList() {
 
     return (
       <Card
-        className={`flex flex-row justify-between p-4 transition-all duration-200 hover:shadow-md ${
+        className={`flex flex-row justify-between p-4 ${
           /* isDefault ? 'ring-2 ring-primary ring-opacity-50' : */ ''
         }`}
       >
-        <div className="flex items-center gap-8 px-4">
-          <Icon name={provider?.icon as any} className="h-5 w-5" />
+        <div className="flex items-center gap-4 px-2">
+          <Icon name={provider?.icon as any} size="md" />
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <p className="font-medium">{provider?.name}</p>
@@ -139,10 +139,7 @@ export function ProvidersList() {
     <div data-testid="llm-providers" className="space-y-4">
       <div
         id="add-provider"
-        className={getHighlightClasses(
-          'add-provider',
-          'absolute top-0 right-0 flex justify-end',
-        )}
+        className={getHighlightClasses('add-provider', 'flex justify-end')}
       >
         <Button
           color="primary"

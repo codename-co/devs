@@ -20,7 +20,7 @@ import { getAllKnowledgeItems } from '@/stores/knowledgeStore'
 import { getEnabledSkills } from '@/stores/skillStore'
 import { getFileIcon } from '@/lib/utils'
 import { formatBytes } from '@/lib/format'
-import { useI18n, useUrl } from '@/i18n'
+import { useI18n } from '@/i18n'
 import { getProviders } from '@/features/connectors'
 import { useNavigate } from 'react-router-dom'
 
@@ -42,7 +42,6 @@ export function AttachmentSelector({
   onScreenCapture,
 }: AttachmentSelectorProps) {
   const { t } = useI18n(lang as any)
-  const url = useUrl(lang)
   const navigate = useNavigate()
 
   const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([])
@@ -212,7 +211,7 @@ export function AttachmentSelector({
       textValue={t('Manage knowledge')}
       closeOnSelect
       onPress={() => {
-        navigate(url('#settings/knowledge'))
+        navigate(`${location.pathname}#settings/knowledge`)
         setIsMainDropdownOpen(false)
       }}
     >
@@ -270,7 +269,7 @@ export function AttachmentSelector({
       textValue={t('Manage skills')}
       closeOnSelect
       onPress={() => {
-        navigate(url('#settings/skills'))
+        navigate(`${location.pathname}#settings/skills`)
         setIsMainDropdownOpen(false)
       }}
     >
@@ -389,7 +388,7 @@ export function AttachmentSelector({
                   textValue={t('Add connectors')}
                   closeOnSelect
                   onPress={() => {
-                    navigate(url('#settings/connectors/add'))
+                    navigate(`${location.pathname}#settings/connectors/add`)
                     setIsMainDropdownOpen(false)
                   }}
                 >

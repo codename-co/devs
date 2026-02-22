@@ -31,6 +31,8 @@ export interface PageMenuButtonProps {
   shortcutKeys?: ('command' | 'ctrl' | 'shift' | 'alt' | 'option')[]
   /** Optional shortcut key letter */
   shortcutKey?: string
+  /** Optional onClick handler for the button */
+  onClick?: () => void
 }
 
 /**
@@ -53,6 +55,7 @@ export const PageMenuButton = forwardRef<
       tooltipDisabled,
       shortcutKeys,
       shortcutKey,
+      onClick,
     },
     ref,
   ) => {
@@ -70,7 +73,13 @@ export const PageMenuButton = forwardRef<
       <Tooltip content={tooltipContent} isDisabled={tooltipDisabled}>
         <span className="inline-flex">
           <PopoverTrigger>
-            <Button ref={ref} isIconOnly variant="light" aria-label={ariaLabel}>
+            <Button
+              ref={ref}
+              isIconOnly
+              variant="light"
+              aria-label={ariaLabel}
+              onClick={onClick}
+            >
               <Icon
                 name={icon}
                 className={

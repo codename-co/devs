@@ -1,7 +1,14 @@
 /**
- * ProviderForm — Configuration form for adding a new LLM provider credential.
+ * ProviderForm — Guided setup for adding a new LLM provider credential.
  *
  * Route: #settings/providers/add/{provider}
+ *
+ * Split-screen layout:
+ *  - Left panel (dark):  guidance steps, provider info, external link
+ *  - Right panel (white): credential inputs, validation, CTA
+ *
+ * Falls back to a single-column form when the provider has no guidance to show
+ * (e.g. local, ollama, custom).
  */
 
 import { useState } from 'react'
@@ -12,7 +19,6 @@ import { useI18n } from '@/i18n'
 import type { LLMProvider } from '@/types'
 import { errorToast } from '@/lib/toast'
 import { useLLMModelStore } from '@/stores/llmModelStore'
-import type { IconName } from '@/lib/types'
 import localI18n from '../i18n'
 import { PROVIDERS } from '../providers'
 
@@ -33,6 +39,9 @@ export function ProviderForm({ provider }: ProviderFormProps) {
   const [isValidating, setIsValidating] = useState(false)
 
   const providerConfig = PROVIDERS(lang, t).find((p) => p.provider === provider)
+
+  const needsApiKey = !providerConfig?.noApiKey
+  const hasGuidance = !!providerConfig?.apiKeyPage
 
   const handleSubmit = async () => {
     if (!providerConfig) return
@@ -80,14 +89,50 @@ export function ProviderForm({ provider }: ProviderFormProps) {
     return null
   }
 
-  return (
-    <div data-testid="llm-providers" className="space-y-4">
-      <div className="flex items-center gap-2">
-        <Icon name={providerConfig.icon as IconName} className="h-5 w-5" />
-        <span className="font-medium">{providerConfig.name}</span>
+  /* ── Guidance panel (left / top on mobile) ── */
+  const guidancePanel = hasGuidance ? (
+    <div className="flex flex-col justify-between h-full rounded-xl bg-default-100 dark:bg-default-50 p-6 space-y-4">
+      <h3 className="font-semibold leading-tight">{t('How to connect')}</h3>
+      {/* Steps */}
+      <ol className="space-y-2 list-decimal list-inside text-sm text-default-700">
+        <li>{t("Sign in or create an account on the provider's website.")}</li>
+        <li>{t('Create a new API key in your account dashboard.')}</li>
+        <li>{t('Copy the key and come back here to paste it below.')}</li>
+      </ol>
+      {/* Provider-specific details (e.g. Vertex AI auth options) */}
+      {providerConfig.moreDetails?.()}
+      {/* CTA to open provider website — anchored to the bottom */}
+      <Button
+        as="a"
+        href={providerConfig.apiKeyPage}
+        target="_blank"
+        rel="noopener noreferrer"
+        color="primary"
+        variant="flat"
+        className="w-full"
+        startContent={<Icon name="OpenInBrowser" className="w-4 h-4" />}
+      >
+        {t('Open {provider}', { provider: providerConfig.name })}
+      </Button>
+    </div>
+  ) : (
+    providerConfig.moreDetails && (
+      <div className="h-full rounded-xl bg-default-100 dark:bg-default-50 p-6 space-y-4">
+        {providerConfig.moreDetails()}
       </div>
+    )
+  )
 
-      <div className="space-y-4">
+  /* ── Form panel (right / bottom on mobile) ── */
+  const formPanel = (
+    <div className="flex flex-col justify-between h-full">
+      <div className="space-y-5">
+        {/* Header */}
+        <h3 className="font-semibold text-base">
+          {t('Enter your credentials')}
+        </h3>
+
+        {/* Ollama: server URL */}
         {providerConfig.provider === 'ollama' && (
           <Input
             label={t('Server URL')}
@@ -98,6 +143,7 @@ export function ProviderForm({ provider }: ProviderFormProps) {
           />
         )}
 
+        {/* Base URL for compatible / custom providers */}
         {providerConfig.requiresBaseUrl && (
           <Input
             label={t('Base URL')}
@@ -108,8 +154,8 @@ export function ProviderForm({ provider }: ProviderFormProps) {
           />
         )}
 
-        {!providerConfig.noApiKey &&
-          providerConfig.provider !== 'ollama' &&
+        {/* API Key input */}
+        {needsApiKey &&
           (providerConfig.multilineApiKey ? (
             <Textarea
               label={t('API Key')}
@@ -119,21 +165,6 @@ export function ProviderForm({ provider }: ProviderFormProps) {
               minRows={3}
               maxRows={8}
               isRequired={!providerConfig.optionalApiKey}
-              description={
-                providerConfig.apiKeyPage ? (
-                  <>
-                    {t('Get your API key from')}{' '}
-                    <a
-                      href={providerConfig.apiKeyPage}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary text-sm hover:underline"
-                    >
-                      {providerConfig.apiKeyPage}
-                    </a>
-                  </>
-                ) : undefined
-              }
             />
           ) : (
             <Input
@@ -143,43 +174,46 @@ export function ProviderForm({ provider }: ProviderFormProps) {
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               isRequired={!providerConfig.optionalApiKey}
-              description={
-                providerConfig.apiKeyPage ? (
-                  <>
-                    {t('Get your API key from')}{' '}
-                    <a
-                      href={providerConfig.apiKeyPage}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary text-sm hover:underline"
-                    >
-                      {providerConfig.apiKeyPage}
-                    </a>
-                  </>
-                ) : undefined
-              }
             />
           ))}
 
-        {providerConfig.moreDetails?.()}
-
-        <div className="flex justify-end gap-2 pt-2">
-          <Button
-            color="primary"
-            size="sm"
-            onPress={handleSubmit}
-            isLoading={isValidating}
-            isDisabled={
-              (!apiKey &&
-                !providerConfig.noApiKey &&
-                !providerConfig.optionalApiKey) ||
-              (providerConfig.requiresBaseUrl && !baseUrl)
-            }
-          >
-            {t('Validate & Add')}
-          </Button>
-        </div>
+        {/* Privacy reassurance */}
+        {needsApiKey && (
+          <p className="flex items-center gap-1.5 text-xs text-default-400">
+            <Icon name="Lock" className="w-3 h-3" />
+            {t(
+              'Your key is stored locally and encrypted. It never leaves your device.',
+            )}
+          </p>
+        )}
       </div>
+
+      {/* Submit — anchored to the bottom */}
+      <div className="flex justify-end pt-2">
+        <Button
+          color="primary"
+          onPress={handleSubmit}
+          isLoading={isValidating}
+          isDisabled={
+            (!apiKey &&
+              !providerConfig.noApiKey &&
+              !providerConfig.optionalApiKey) ||
+            (providerConfig.requiresBaseUrl && !baseUrl)
+          }
+        >
+          {t('Validate & Add')}
+        </Button>
+      </div>
+    </div>
+  )
+
+  return (
+    <div
+      data-testid="llm-providers"
+      className="flex flex-col gap-4 h-full justify-between"
+    >
+      <div>{guidancePanel}</div>
+      <div>{formPanel}</div>
     </div>
   )
 }

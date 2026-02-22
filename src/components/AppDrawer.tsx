@@ -380,7 +380,6 @@ AppDrawer.displayName = 'AppDrawer'
 const CollapsedDrawer = ({
   className,
   onOpenSearch,
-  onOpenSettings,
   hasConversations,
   installedApps,
   lang,
@@ -656,24 +655,9 @@ const CollapsedDrawer = ({
         </div>
       </div>
 
-      {/* Progress indicator and settings at bottom */}
+      {/* Progress indicator at bottom */}
       <div className="mt-auto pt-4 hidden lg:flex flex-col items-center gap-2">
         <ProgressIndicator />
-        <Tooltip content={t('Settings')} placement="right">
-          <Button
-            isIconOnly
-            variant="light"
-            size="sm"
-            onPress={onOpenSettings}
-            aria-label={t('Settings')}
-          >
-            <Icon
-              name="Settings"
-              className="text-gray-500 dark:text-gray-400"
-              size="sm"
-            />
-          </Button>
-        </Tooltip>
       </div>
     </div>
   )

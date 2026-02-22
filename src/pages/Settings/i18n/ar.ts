@@ -195,4 +195,18 @@ export const ar: I18n = {
   Configure: 'تهيئة',
   Personalize: 'تخصيص',
   Observe: 'مراقبة',
+  'How to connect': 'كيفية الاتصال',
+  'Open {provider}': 'فتح {provider}',
+  "Sign in or create an account on the provider's website.":
+    'سجّل الدخول أو أنشئ حساباً على موقع المزود.',
+  'Create a new API key in your account dashboard.':
+    'أنشئ مفتاح API جديداً في لوحة تحكم حسابك.',
+  'Copy the key and come back here to paste it below.':
+    'انسخ المفتاح وعُد هنا للصقه أدناه.',
+  'Enter your credentials': 'أدخل بيانات اعتمادك',
+  'Your key is stored locally and encrypted. It never leaves your device.':
+    'يتم تخزين مفتاحك محلياً وتشفيره. لن يغادر جهازك أبداً.',
+  Preserve: 'حفظ',
+  'Local Backup': 'نسخة احتياطية محلية',
+  Sync: 'مزامنة',
 } as const

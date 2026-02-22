@@ -1,5 +1,6 @@
 export { SkillSearch } from './SkillSearch'
 export { SkillCard } from './SkillCard'
 export { SkillDetailModal } from './SkillDetailModal'
+export { SkillSettingsInline } from './SkillSettingsInline'
 export { InstalledSkills } from './InstalledSkills'
 export { TrySkillRunner } from './TrySkillRunner'

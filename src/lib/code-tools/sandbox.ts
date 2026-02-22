@@ -149,7 +149,7 @@ export async function executeInSandbox(
         const inputJson = JSON.stringify(input)
         const inputResult = vm.evalCode(`(${inputJson})`)
         if (inputResult.error) {
-          const errorMessage = vm.dump(inputResult.error)
+          const errorMessage = extractErrorMessage(vm.dump(inputResult.error))
           inputResult.error.dispose()
           return {
             success: false,
@@ -169,12 +169,12 @@ export async function executeInSandbox(
       const result = vm.evalCode(wrappedCode)
 
       if (result.error) {
-        const errorMessage = vm.dump(result.error)
+        const errorMessage = extractErrorMessage(vm.dump(result.error))
         result.error.dispose()
-        const errorType = classifyError(String(errorMessage))
+        const errorType = classifyError(errorMessage)
         return {
           success: false,
-          error: String(errorMessage),
+          error: errorMessage,
           errorType,
           console: consoleLogs,
         }
@@ -240,6 +240,28 @@ __result__;
   ${code}
 })();
 `
+}
+
+/**
+ * Extract a string message from a dumped QuickJS error value.
+ * `vm.dump()` on an error handle often returns an object like
+ * `{ message: string, stack?: string }` rather than a plain string.
+ */
+function extractErrorMessage(dumped: unknown): string {
+  if (typeof dumped === 'string') return dumped
+  if (
+    dumped !== null &&
+    typeof dumped === 'object' &&
+    'message' in dumped &&
+    typeof (dumped as Record<string, unknown>).message === 'string'
+  ) {
+    return (dumped as Record<string, unknown>).message as string
+  }
+  try {
+    return JSON.stringify(dumped)
+  } catch {
+    return String(dumped)
+  }
 }
 
 /**

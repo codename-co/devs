@@ -11,7 +11,6 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useSyncStore } from '../stores/syncStore'
 import { generateSetupQRCode } from '@/lib/qr-code'
 import { Icon } from '@/components/Icon'
-import { PageMenuPanel } from '@/components/PageMenuPanel'
 import { useI18n } from '@/i18n'
 import {
   evaluatePasswordStrength,
@@ -498,30 +497,29 @@ export function SyncPanel(_props: SyncPanelProps) {
   )
 
   return (
-    <PageMenuPanel
-      title={
-        <span className="flex items-center">
-          {t('Sync')}
-          <Chip size="sm" variant="flat" className="ms-2 align-middle">
-            Beta
+    <div className="flex flex-col gap-3">
+      {/* Status chip */}
+      {(enabled || status !== 'disabled') && (
+        <div className="flex items-center gap-2">
+          <Chip
+            size="sm"
+            variant="flat"
+            color={getStatusColor()}
+            onClose={enabled ? disableSync : undefined}
+          >
+            {getStatusText()}
           </Chip>
-        </span>
-      }
-      status={{
-        text: getStatusText(),
-        color: getStatusColor(),
-        onClose: enabled ? disableSync : undefined,
-        closeLabel: t('Disconnect'),
-      }}
-      description={
-        !enabled && mode === 'initial' ? (
-          <>
-            {t('Sync your data across devices in real-time.')}{' '}
-            {t('No server needed - data transits between your devices.')}
-          </>
-        ) : undefined
-      }
-    >
+        </div>
+      )}
+
+      {/* Description */}
+      {!enabled && mode === 'initial' && (
+        <p className="text-sm text-default-500">
+          {t('Sync your data across devices in real-time.')}{' '}
+          {t('No server needed - data transits between your devices.')}
+        </p>
+      )}
+
       {/* Not enabled state */}
       {!enabled && (
         <>
@@ -533,6 +531,6 @@ export function SyncPanel(_props: SyncPanelProps) {
 
       {/* Enabled state */}
       {enabled && renderConnectedState()}
-    </PageMenuPanel>
+    </div>
   )
 }

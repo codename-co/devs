@@ -198,4 +198,18 @@ export const es: I18n = {
   Configure: 'Configurar',
   Personalize: 'Personalizar',
   Observe: 'Observar',
+  'How to connect': 'Cómo conectarse',
+  'Open {provider}': 'Abrir {provider}',
+  "Sign in or create an account on the provider's website.":
+    'Inicie sesión o cree una cuenta en el sitio web del proveedor.',
+  'Create a new API key in your account dashboard.':
+    'Cree una nueva clave API en el panel de su cuenta.',
+  'Copy the key and come back here to paste it below.':
+    'Copie la clave y vuelva aquí para pegarla a continuación.',
+  'Enter your credentials': 'Ingrese sus credenciales',
+  'Your key is stored locally and encrypted. It never leaves your device.':
+    'Su clave se almacena localmente y se cifra. Nunca sale de su dispositivo.',
+  Preserve: 'Conservar',
+  'Local Backup': 'Copia de seguridad local',
+  Sync: 'Sincronización',
 } as const

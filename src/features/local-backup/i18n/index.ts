@@ -61,6 +61,13 @@ export const localI18n = {
     'Stop',
     'Download Backup',
     'Your browser does not support automatic folder sync. You can download a backup file instead.',
+    'selected',
+    'in database',
+    'backed up',
+    'Backed up',
+    'Not yet backed up',
+    'Last backup summary',
+    'Dismiss',
   ] as const,
   fr: {
     'Local Backup': 'Sauvegarde locale',
@@ -114,7 +121,7 @@ export const localI18n = {
     'Files are stored as readable Markdown':
       'Les fichiers sont stockés en Markdown lisible',
     'Preview files in Finder, sync with Git, or edit externally':
-      'Prévisualisez dans Finder, synchronisez avec Git, ou modifiez externement',
+      'Prévisualisez dans Finder, synchronisez avec Git, ou éditez en externe',
     'Backup Error': 'Erreur de sauvegarde',
     'Recent Activity': 'Activité récente',
     'No activity yet': 'Aucune activité',
@@ -129,6 +136,13 @@ export const localI18n = {
     'Download Backup': 'Télécharger la sauvegarde',
     'Your browser does not support automatic folder sync. You can download a backup file instead.':
       'Votre navigateur ne prend pas en charge la synchronisation automatique des dossiers. Vous pouvez télécharger un fichier de sauvegarde à la place.',
+    selected: 'sélectionné(s)',
+    'in database': 'en base',
+    'backed up': 'sauvegardé(s)',
+    'Backed up': 'Sauvegardé',
+    'Not yet backed up': 'Pas encore sauvegardé',
+    'Last backup summary': 'Résumé de la dernière sauvegarde',
+    Dismiss: 'Fermer',
   },
   es: {
     'Local Backup': 'Copia de seguridad local',
@@ -196,6 +210,13 @@ export const localI18n = {
     'Download Backup': 'Descargar copia',
     'Your browser does not support automatic folder sync. You can download a backup file instead.':
       'Tu navegador no admite la sincronización automática de carpetas. Puedes descargar un archivo de copia de seguridad en su lugar.',
+    selected: 'seleccionados',
+    'in database': 'en base de datos',
+    'backed up': 'respaldados',
+    'Backed up': 'Respaldado',
+    'Not yet backed up': 'Aún no respaldado',
+    'Last backup summary': 'Resumen de la última copia',
+    Dismiss: 'Cerrar',
   },
   de: {
     'Local Backup': 'Lokale Sicherung',
@@ -263,6 +284,13 @@ export const localI18n = {
     'Download Backup': 'Sicherung herunterladen',
     'Your browser does not support automatic folder sync. You can download a backup file instead.':
       'Ihr Browser unterstützt keine automatische Ordnersynchronisation. Sie können stattdessen eine Sicherungsdatei herunterladen.',
+    selected: 'ausgewählt',
+    'in database': 'in Datenbank',
+    'backed up': 'gesichert',
+    'Backed up': 'Gesichert',
+    'Not yet backed up': 'Noch nicht gesichert',
+    'Last backup summary': 'Zusammenfassung der letzten Sicherung',
+    Dismiss: 'Schließen',
   },
   ar: {
     'Local Backup': 'نسخ احتياطي محلي',
@@ -329,6 +357,13 @@ export const localI18n = {
     'Download Backup': 'تحميل النسخة الاحتياطية',
     'Your browser does not support automatic folder sync. You can download a backup file instead.':
       'متصفحك لا يدعم المزامنة التلقائية للمجلدات. يمكنك تحميل ملف النسخ الاحتياطي بدلاً من ذلك.',
+    selected: 'محدد',
+    'in database': 'في قاعدة البيانات',
+    'backed up': 'تم نسخها',
+    'Backed up': 'تم النسخ',
+    'Not yet backed up': 'لم يتم النسخ بعد',
+    'Last backup summary': 'ملخص آخر نسخة احتياطية',
+    Dismiss: 'إغلاق',
   },
   ko: {
     'Local Backup': '로컬 백업',
@@ -395,5 +430,12 @@ export const localI18n = {
     'Download Backup': '백업 다운로드',
     'Your browser does not support automatic folder sync. You can download a backup file instead.':
       '브라우저가 자동 폴더 동기화를 지원하지 않습니다. 대신 백업 파일을 다운로드할 수 있습니다.',
+    selected: '선택됨',
+    'in database': '데이터베이스',
+    'backed up': '백업됨',
+    'Backed up': '백업 완료',
+    'Not yet backed up': '아직 백업되지 않음',
+    'Last backup summary': '마지막 백업 요약',
+    Dismiss: '닫기',
   },
 }

@@ -42,6 +42,7 @@ import type {
 } from '../types'
 import { getToolDefinitionsForProvider } from '../tools'
 import localI18n from '../pages/i18n'
+import { useSettingsLabel } from '@/pages/Settings/SettingsContext'
 import { CustomRadio } from '@/features/sync/components/CustomRadio'
 
 // =============================================================================
@@ -89,6 +90,9 @@ export function ConnectorSettingsInline({
   const provider = connector.provider as AppConnectorProvider | undefined
   const config = provider ? getProvider(provider) : null
   const isUrlInputMode = config?.folderPickerType === 'url-input'
+
+  // Push connector name + icon into the Settings header breadcrumb
+  useSettingsLabel(config?.name || connector.name, config?.icon as any)
 
   // Get selected folder names for summary
   const selectedFolderNames = useMemo(() => {
@@ -359,36 +363,6 @@ export function ConnectorSettingsInline({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header with back button */}
-      <div className="flex items-center gap-3 mb-4">
-        <Button
-          isIconOnly
-          variant="light"
-          size="sm"
-          onPress={onClose}
-          aria-label={t('Back')}
-        >
-          <Icon name="ArrowLeft" className="w-4 h-4" />
-        </Button>
-        {config && (
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: `${config.color}20` }}
-          >
-            <Icon
-              name={config.icon as any}
-              className="w-4 h-4"
-              style={{ color: config.color }}
-            />
-          </div>
-        )}
-        <span className="text-base font-semibold flex-1">
-          {t('{name} Settings', {
-            name: config?.name || connector.name,
-          })}
-        </span>
-      </div>
-
       {/* Content */}
       <div className="flex-1 min-h-0 overflow-y-auto space-y-4">
         {/* Account Info */}

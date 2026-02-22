@@ -1,4 +1,3 @@
-import { Alert } from '@heroui/react'
 import type { Lang } from '@/i18n'
 import type { IconName } from '@/lib/types'
 import type { LLMModel, LLMProvider } from '@/types'
@@ -52,97 +51,95 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     noApiKey: true,
     noServerUrl: true,
     moreDetails: () => (
-      <Alert variant="faded">
-        <div className="flex flex-col gap-2">
-          <p className="font-medium">
-            {t('Local LLMs run entirely in your browser')}
-          </p>
-          <p className="text-sm text-default-600">
-            {t(
-              'No data is sent to external servers. Download happens at first use.',
-            )}
-            <br />
-            <details>
-              <summary>
-                {t('Requirements:')}
+      <>
+        <p className="font-medium">
+          {t('Local LLMs run entirely in your browser')}
+        </p>
+        <p className="text-sm text-default-600">
+          {t(
+            'No data is sent to external servers. Download happens at first use.',
+          )}
+          <br />
+          <details>
+            <summary>
+              {t('Requirements:')}
+              <Icon
+                name={
+                  isWebGPUSupported() && Number(availableMemory) >= 8
+                    ? 'CheckCircle'
+                    : 'PcNoEntry'
+                }
+                color={
+                  isWebGPUSupported() && Number(availableMemory) >= 8
+                    ? 'green'
+                    : 'red'
+                }
+                className="inline h-4 w-4 ml-1"
+              />
+            </summary>
+            <ul>
+              <li>
+                <Icon
+                  name={isWebGPUSupported() ? 'CheckCircle' : 'PcNoEntry'}
+                  color={isWebGPUSupported() ? 'green' : 'red'}
+                  className="inline h-4 w-4 mr-1"
+                />
+                {t('WebGPU support')}
+              </li>
+              <li>
                 <Icon
                   name={
-                    isWebGPUSupported() && Number(availableMemory) >= 8
-                      ? 'CheckCircle'
-                      : 'PcNoEntry'
+                    Number(availableMemory) >= 8 ? 'CheckCircle' : 'PcNoEntry'
                   }
-                  color={
-                    isWebGPUSupported() && Number(availableMemory) >= 8
-                      ? 'green'
-                      : 'red'
-                  }
-                  className="inline h-4 w-4 ml-1"
+                  color={Number(availableMemory) >= 8 ? 'green' : 'red'}
+                  className="inline h-4 w-4 mr-1"
                 />
-              </summary>
-              <ul>
-                <li>
-                  <Icon
-                    name={isWebGPUSupported() ? 'CheckCircle' : 'PcNoEntry'}
-                    color={isWebGPUSupported() ? 'green' : 'red'}
-                    className="inline h-4 w-4 mr-1"
-                  />
-                  {t('WebGPU support')}
-                </li>
-                <li>
-                  <Icon
-                    name={
-                      Number(availableMemory) >= 8 ? 'CheckCircle' : 'PcNoEntry'
-                    }
-                    color={Number(availableMemory) >= 8 ? 'green' : 'red'}
-                    className="inline h-4 w-4 mr-1"
-                  />
-                  {t('At least 8GB of RAM')}
-                </li>
-                <li>
-                  <Icon name="QuestionMark" className="inline h-4 w-4 mr-1" />
-                  {t('Storage space for model files (2-4GB)')}
-                </li>
-              </ul>
-            </details>
-            <details>
-              <summary>
-                {t('Your device:')} {deviceName()},{' '}
-                {formatBytes(Number(availableMemory) * 1_000_000_000, lang)}＋
-              </summary>
+                {t('At least 8GB of RAM')}
+              </li>
+              <li>
+                <Icon name="QuestionMark" className="inline h-4 w-4 mr-1" />
+                {t('Storage space for model files (2-4GB)')}
+              </li>
+            </ul>
+          </details>
+          <details>
+            <summary>
+              {t('Your device:')} {deviceName()},{' '}
+              {formatBytes(Number(availableMemory) * 1_000_000_000, lang)}＋
+            </summary>
 
-              <ul>
-                {getVideoCardInfo()?.brand && (
-                  <li>
-                    {t('Brand: {brand}', {
-                      brand: getVideoCardInfo()?.brand,
-                    })}
-                  </li>
-                )}
-                {getVideoCardInfo()?.model && (
-                  <li>
-                    {t('Model: {model}', {
-                      model: getVideoCardInfo()?.model,
-                    })}
-                  </li>
-                )}
+            <ul>
+              {getVideoCardInfo()?.brand && (
                 <li>
-                  {t('Memory: {memory} or more (imprecise)', {
-                    memory: formatBytes(
-                      Number(availableMemory) * 1_000_000_000,
-                      lang,
-                    ),
+                  {t('Brand: {brand}', {
+                    brand: getVideoCardInfo()?.brand,
                   })}
                 </li>
+              )}
+              {getVideoCardInfo()?.model && (
                 <li>
-                  {t('Vendor: {vendor}', {
-                    vendor: getVideoCardInfo()?.vendor,
+                  {t('Model: {model}', {
+                    model: getVideoCardInfo()?.model,
                   })}
                 </li>
-              </ul>
-            </details>
-          </p>
-        </div>
-      </Alert>
+              )}
+              <li>
+                {t('Memory: {memory} or more (imprecise)', {
+                  memory: formatBytes(
+                    Number(availableMemory) * 1_000_000_000,
+                    lang,
+                  ),
+                })}
+              </li>
+              <li>
+                {t('Vendor: {vendor}', {
+                  vendor: getVideoCardInfo()?.vendor,
+                })}
+              </li>
+            </ul>
+          </details>
+        </p>
+      </>
     ),
   },
   {
@@ -152,6 +149,7 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     icon: 'Ollama',
     noApiKey: true,
     apiKeyPlaceholder: 'http://localhost:11434',
+    apiKeyPage: 'https://docs.ollama.com/quickstart#api',
   },
   {
     provider: 'openai',
@@ -184,18 +182,12 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     apiKeyPage: 'https://console.cloud.google.com/iam-admin/serviceaccounts',
     multilineApiKey: true,
     moreDetails: () => (
-      <Alert variant="faded">
-        <div className="flex flex-col gap-2">
-          <p className="font-medium">Authentication Options</p>
-          <p className="text-sm text-default-600">
-            <strong>Option 1 (Recommended):</strong> Paste the entire JSON
-            content from a Service Account key file.
-            <br />
-            <strong>Option 2:</strong> Use format{' '}
-            <code>LOCATION:PROJECT_ID:ACCESS_TOKEN</code>
-          </p>
-        </div>
-      </Alert>
+      <>
+        <p className="font-medium">Alternative authentication option</p>
+        <p className="text-sm text-default-600">
+          Use format <code>LOCATION:PROJECT_ID:ACCESS_TOKEN</code>
+        </p>
+      </>
     ),
   },
   {
@@ -230,17 +222,15 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     fetchModelsFromServer: true,
     apiKeyPlaceholder: 'sk-... (optional)',
     moreDetails: () => (
-      <Alert variant="faded">
-        <div className="flex flex-col gap-2">
-          <p className="font-medium">Connect to any OpenAI-compatible API</p>
-          <p className="text-sm text-default-600">
-            Works with LM Studio, LocalAI, vLLM, Text Generation WebUI, Together
-            AI, Fireworks AI, and more.
-            <br />
-            API key is optional for local servers.
-          </p>
-        </div>
-      </Alert>
+      <>
+        <p className="font-medium">Connect to any OpenAI-compatible API</p>
+        <p className="text-sm text-default-600">
+          Works with LM Studio, LocalAI, vLLM, Text Generation WebUI, Together
+          AI, Fireworks AI, and more.
+          <br />
+          API key is optional for local servers.
+        </p>
+      </>
     ),
   },
   {
@@ -259,37 +249,35 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     fetchModelsFromServer: true,
     apiKeyPlaceholder: 'API key (optional for local servers)',
     moreDetails: () => (
-      <Alert variant="faded">
-        <div className="flex flex-col gap-2">
-          <p className="font-medium">Connect to a Claude Code API Server</p>
-          <p className="text-sm text-default-600">
-            Claude Code API servers wrap the Claude Agent SDK and provide an
-            OpenAI-compatible endpoint. Supports session continuity and Claude
-            Code tools (Read, Write, Bash, etc.).
-            <br />
-            <br />
-            Servers:{' '}
-            <a
-              href="https://github.com/RichardAtCT/claude-code-openai-wrapper"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary underline"
-            >
-              claude-code-openai-wrapper
-            </a>{' '}
-            (Python) |{' '}
-            <a
-              href="https://github.com/zhanghandong/claude-code-api-rs"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary underline"
-            >
-              claude-code-api-rs
-            </a>{' '}
-            (Rust)
-          </p>
-        </div>
-      </Alert>
+      <>
+        <p className="font-medium">Connect to a Claude Code API Server</p>
+        <p className="text-sm text-default-600">
+          Claude Code API servers wrap the Claude Agent SDK and provide an
+          OpenAI-compatible endpoint. Supports session continuity and Claude
+          Code tools (Read, Write, Bash, etc.).
+          <br />
+          <br />
+          Servers:{' '}
+          <a
+            href="https://github.com/RichardAtCT/claude-code-openai-wrapper"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline"
+          >
+            claude-code-openai-wrapper
+          </a>{' '}
+          (Python) |{' '}
+          <a
+            href="https://github.com/zhanghandong/claude-code-api-rs"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline"
+          >
+            claude-code-api-rs
+          </a>{' '}
+          (Rust)
+        </p>
+      </>
     ),
   },
   {
@@ -311,17 +299,6 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     ],
     icon: 'SparksSolid',
     apiKeyPage: 'https://platform.stability.ai/account/keys',
-    moreDetails: () => (
-      <Alert variant="faded">
-        <div className="flex flex-col gap-2">
-          <p className="font-medium">Image Generation Provider</p>
-          <p className="text-sm text-default-600">
-            Stability AI provides Stable Diffusion models for high-quality image
-            generation.
-          </p>
-        </div>
-      </Alert>
-    ),
   },
   {
     provider: 'together',
@@ -334,17 +311,6 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     ],
     icon: 'Puzzle',
     apiKeyPage: 'https://api.together.xyz/settings/api-keys',
-    moreDetails: () => (
-      <Alert variant="faded">
-        <div className="flex flex-col gap-2">
-          <p className="font-medium">Image Generation Provider</p>
-          <p className="text-sm text-default-600">
-            Together AI provides FLUX and Stable Diffusion models for image
-            generation.
-          </p>
-        </div>
-      </Alert>
-    ),
   },
   {
     provider: 'fal',
@@ -352,16 +318,6 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     models: ['fal-ai/flux-pro', 'fal-ai/flux/dev', 'fal-ai/flux/schnell'],
     icon: 'LightBulbOn',
     apiKeyPage: 'https://fal.ai/dashboard/keys',
-    moreDetails: () => (
-      <Alert variant="faded">
-        <div className="flex flex-col gap-2">
-          <p className="font-medium">Image Generation Provider</p>
-          <p className="text-sm text-default-600">
-            Fal.ai provides fast FLUX models for image generation.
-          </p>
-        </div>
-      </Alert>
-    ),
   },
   {
     provider: 'replicate',
@@ -369,15 +325,5 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     models: ['stability-ai/sdxl', 'bytedance/sdxl-lightning-4step'],
     icon: 'RefreshDouble',
     apiKeyPage: 'https://replicate.com/account/api-tokens',
-    moreDetails: () => (
-      <Alert variant="faded">
-        <div className="flex flex-col gap-2">
-          <p className="font-medium">Image Generation Provider</p>
-          <p className="text-sm text-default-600">
-            Replicate provides various image generation models including SDXL.
-          </p>
-        </div>
-      </Alert>
-    ),
   },
 ]

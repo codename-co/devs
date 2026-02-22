@@ -7,6 +7,8 @@ import {
   Tabs,
   Tab,
   Tooltip,
+  Breadcrumbs,
+  BreadcrumbItem,
 } from '@heroui/react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useI18n } from '@/i18n'
@@ -15,6 +17,7 @@ import { Icon } from '@/components'
 import { errorToast, successToast } from '@/lib/toast'
 import { useHashHighlight } from '@/hooks/useHashHighlight'
 import localI18n from './i18n'
+import { SettingsProvider, useSettingsLabelInfo } from './SettingsContext'
 import {
   AgentMemoriesSection,
   ConnectorsSection,
@@ -22,10 +25,12 @@ import {
   FeaturesSection,
   GeneralSection,
   LangfuseSection,
+  LocalBackupSection,
   PinnedMessagesSection,
   ProvidersSection,
   SecuritySection,
   SkillsSection,
+  SyncSection,
   TracesSection,
 } from './components'
 import { FilesSection } from '@/pages/Knowledge/components'
@@ -45,8 +50,15 @@ type SectionKey =
   | 'langfuse'
   | 'traces'
   | 'database'
+  | 'local-backup'
+  | 'sync'
 
-type SectionGroup = 'configure' | 'personalize' | 'extend' | 'observe'
+type SectionGroup =
+  | 'configure'
+  | 'personalize'
+  | 'extend'
+  | 'preserve'
+  | 'observe'
 
 interface SectionDef {
   key: SectionKey
@@ -66,7 +78,16 @@ interface SettingsContentProps {
 }
 
 export const SettingsContent = (_props: SettingsContentProps) => {
+  return (
+    <SettingsProvider>
+      <SettingsContentInner />
+    </SettingsProvider>
+  )
+}
+
+const SettingsContentInner = () => {
   const { t } = useI18n(localI18n)
+  const labelInfo = useSettingsLabelInfo()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -88,6 +109,8 @@ export const SettingsContent = (_props: SettingsContentProps) => {
     'langfuse',
     'traces',
     'database',
+    'local-backup',
+    'sync',
   ]
 
   // Use the hash highlight hook for element-level deep linking
@@ -109,6 +132,7 @@ export const SettingsContent = (_props: SettingsContentProps) => {
     { key: 'configure', label: t('Configure') },
     { key: 'personalize', label: t('Personalize') },
     { key: 'extend', label: t('Extend') },
+    { key: 'preserve', label: t('Preserve') },
     { key: 'observe', label: t('Observe') },
   ]
 
@@ -153,6 +177,18 @@ export const SettingsContent = (_props: SettingsContentProps) => {
       group: 'extend',
     },
     // { key: 'security', label: t('Secure Storage'), icon: 'Lock', group: 'configure' },
+    {
+      key: 'local-backup',
+      label: t('Local Backup'),
+      icon: 'FloppyDisk',
+      group: 'preserve',
+    },
+    {
+      key: 'sync',
+      label: t('Sync'),
+      icon: 'CloudSync',
+      group: 'preserve',
+    },
     { key: 'computer', label: t('Device'), icon: 'Computer', group: 'observe' },
     // { key: 'langfuse', label: 'Langfuse', icon: 'Langfuse', group: 'observe' },
     { key: 'traces', label: t('Traces'), icon: 'Activity', group: 'observe' },
@@ -217,6 +253,10 @@ export const SettingsContent = (_props: SettingsContentProps) => {
         return <LangfuseSection />
       case 'traces':
         return <TracesSection />
+      case 'local-backup':
+        return <LocalBackupSection />
+      case 'sync':
+        return <SyncSection />
       default:
         return null
     }
@@ -267,7 +307,7 @@ export const SettingsContent = (_props: SettingsContentProps) => {
 
       {/* Left sidebar menu (hidden on narrow screens) */}
       <nav className="hidden md:block w-48 shrink-0 border-e border-default-200 overflow-y-auto bg-default-50">
-        <h2 className="text-lg font-bold px-4 py-4">{t('Settings')}</h2>
+        <h2 className="text-lg font-medium px-4 py-4">{t('Settings')}</h2>
         <div className="flex flex-col gap-4 px-2 pb-4">
           {groups.map((group) => {
             const groupSections = sections.filter((s) => s.group === group.key)
@@ -288,7 +328,7 @@ export const SettingsContent = (_props: SettingsContentProps) => {
                           onClick={() => handleSectionClick(section)}
                           className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-left ${
                             isActive
-                              ? 'bg-primary/10 text-primary font-medium'
+                              ? 'bg-default-200 font-medium'
                               : 'text-default-600 hover:bg-default-100'
                           }`}
                         >
@@ -354,34 +394,52 @@ export const SettingsContent = (_props: SettingsContentProps) => {
         {/* Section header + content */}
         {currentSection && !currentSection.navigateTo && (
           <div className="px-6 py-4">
-            <div className="relative">
-              <h3 className="text-lg font-semibold mb-1 flex items-center gap-2">
-                {activeElement && (
+            <h3 className="mb-1 flex items-center gap-2">
+              {/* {activeElement && (
                   <button
                     type="button"
-                    onClick={() => {
-                      // Navigate one level up: remove last segment from element
-                      const segments = activeElement.split('/')
-                      const parentElement =
-                        segments.length > 1
-                          ? segments.slice(0, -1).join('/')
-                          : null
-                      const parentHash = parentElement
-                        ? `#settings/${currentSection.key}/${parentElement}`
-                        : `#settings/${currentSection.key}`
-                      navigate(`${location.pathname}${parentHash}`, {
-                        replace: true,
-                      })
-                    }}
                     className="text-default-500 hover:text-default-800 transition-colors"
                   >
                     <Icon name="NavArrowLeft" className="h-5 w-5" />
                   </button>
+                )} */}
+              <Breadcrumbs size="lg" className="font-semibold">
+                <BreadcrumbItem
+                  onClick={() => {
+                    if (!activeElement) return
+
+                    // Navigate one level up: remove last segment from element
+                    const segments = activeElement.split('/')
+                    const parentElement =
+                      segments.length > 1
+                        ? segments.slice(0, -1).join('/')
+                        : null
+                    const parentHash = parentElement
+                      ? `#settings/${currentSection.key}/${parentElement}`
+                      : `#settings/${currentSection.key}`
+                    navigate(`${location.pathname}${parentHash}`, {
+                      replace: true,
+                    })
+                  }}
+                >
+                  {currentSection.label}
+                </BreadcrumbItem>
+
+                {labelInfo && (
+                  <BreadcrumbItem>
+                    {labelInfo.icon && (
+                      <Icon
+                        name={labelInfo.icon}
+                        size="sm"
+                        className="me-1 inline"
+                      />
+                    )}
+                    {labelInfo.label}
+                  </BreadcrumbItem>
                 )}
-                {currentSection.label}
-              </h3>
-              <div className="mt-4 h-full">{renderSectionContent()}</div>
-            </div>
+              </Breadcrumbs>
+            </h3>
+            <div className="mt-4 h-full">{renderSectionContent()}</div>
           </div>
         )}
       </div>

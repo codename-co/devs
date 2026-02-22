@@ -509,7 +509,6 @@ export const en = [
   'Brief description of why this is important...',
   'Pinned Messages',
   'No pinned messages',
-  'Messages you pin will appear here for quick reference.',
   'View conversation',
   'From conversation with {agentName}',
   'Filter by agent',

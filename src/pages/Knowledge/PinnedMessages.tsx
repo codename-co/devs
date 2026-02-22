@@ -70,38 +70,39 @@ export const PinnedMessages: React.FC = () => {
   )
 
   return (
-    <div className="space-y-6">
-      <div
-        id="agent-filter"
-        className={getHighlightClasses(
-          'agent-filter',
-          'absolute top-0 right-0 flex justify-end',
-        )}
-      >
-        {/* Agent Filter */}
-        <Select
-          size="sm"
-          // label={t('Filter by agent')}
-          placeholder={t('All agents')}
-          selectedKeys={pinnedAgentFilter === 'all' ? [] : [pinnedAgentFilter]}
-          onSelectionChange={(keys) => {
-            const selected = Array.from(keys)[0] as string
-            setPinnedAgentFilter(selected || 'all')
-          }}
-          className="min-w-48 max-w-3xs"
-        >
-          {agents.map((agent) => (
-            <SelectItem key={agent.id}>{agent.name}</SelectItem>
-          ))}
-        </Select>
-      </div>
-
+    <div className="space-y-3">
       {/* Description */}
       <p className="text-sm text-default-500">
         {t(
           'Pinned messages are important information that need to be accessible by agents during future conversations.',
         )}
       </p>
+
+      {filteredPinnedMessages.length > 0 && (
+        <div
+          id="agent-filter"
+          className={getHighlightClasses('agent-filter', 'flex justify-end')}
+        >
+          {/* Agent Filter */}
+          <Select
+            size="sm"
+            // label={t('Filter by agent')}
+            placeholder={t('All agents')}
+            selectedKeys={
+              pinnedAgentFilter === 'all' ? [] : [pinnedAgentFilter]
+            }
+            onSelectionChange={(keys) => {
+              const selected = Array.from(keys)[0] as string
+              setPinnedAgentFilter(selected || 'all')
+            }}
+            className="min-w-48 max-w-3xs"
+          >
+            {agents.map((agent) => (
+              <SelectItem key={agent.id}>{agent.name}</SelectItem>
+            ))}
+          </Select>
+        </div>
+      )}
 
       {/* Pinned Messages List */}
       {isPinnedLoading ? (
@@ -111,10 +112,7 @@ export const PinnedMessages: React.FC = () => {
       ) : filteredPinnedMessages.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-default-400">
           <Pin className="w-12 h-12 mb-4 opacity-50" />
-          <p className="text-lg font-medium mb-2">{t('No pinned messages')}</p>
-          <p className="text-sm text-center max-w-md">
-            {t('Messages you pin will appear here for quick reference.')}
-          </p>
+          <p className="text-md mb-2">{t('No pinned messages')}</p>
         </div>
       ) : (
         <div className="space-y-4">

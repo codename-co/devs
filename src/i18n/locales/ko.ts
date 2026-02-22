@@ -527,8 +527,6 @@ export const ko: I18n = {
   'Pinned Messages': '고정된 메시지',
   Thinking: '생각 중',
   'No pinned messages': '고정된 메시지 없음',
-  'Messages you pin will appear here for quick reference.':
-    '고정한 메시지가 여기에 빠른 참조를 위해 표시됩니다.',
   'View conversation': '대화 보기',
   'From conversation with {agentName}': '{agentName}와의 대화에서',
   'Filter by agent': '에이전트별 필터',

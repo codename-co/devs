@@ -12,7 +12,6 @@ import { useI18n } from '@/i18n'
 import { useConnectorStore } from '../stores'
 import { useOAuth } from '@/hooks/useOAuth'
 import { SecureStorage } from '@/lib/crypto'
-import { Icon } from '@/components'
 import { ProviderGrid } from './ConnectorWizard/ProviderGrid'
 import { OAuthStep } from './ConnectorWizard/OAuthStep'
 import { FolderPicker } from './ConnectorWizard/FolderPicker'
@@ -27,6 +26,7 @@ import type {
   AccountInfo,
 } from '../types'
 import localI18n from '../pages/i18n'
+import { useSettingsLabel } from '@/pages/Settings/SettingsContext'
 
 // =============================================================================
 // Types
@@ -97,6 +97,11 @@ export function ConnectorWizardInline({
         return t('Add Connector')
     }
   }, [step, selectedProvider, t])
+
+  const title = getStepTitle()
+
+  // Push the dynamic step title into the Settings header breadcrumb
+  useSettingsLabel(title)
 
   // Handle provider selection
   const handleProviderSelect = useCallback((provider: AppConnectorProvider) => {
@@ -293,28 +298,6 @@ export function ConnectorWizardInline({
     <div className="flex flex-col h-full">
       {/* Header with back button and progress */}
       <div className="flex flex-col gap-3 mb-4">
-        <div className="flex items-center gap-3">
-          {step !== 'success' && (
-            <Button
-              isIconOnly
-              variant="light"
-              size="sm"
-              onPress={handleBack}
-              aria-label={t('Back')}
-            >
-              <Icon name="ArrowLeft" className="w-4 h-4" />
-            </Button>
-          )}
-          <span className="text-base font-semibold flex-1">
-            {getStepTitle()}
-          </span>
-          <span className="text-xs text-default-400">
-            {t('Step {current} of {total}', {
-              current: currentStepIndex + 1,
-              total: STEPS.length,
-            })}
-          </span>
-        </div>
         <Progress
           value={progressValue}
           size="sm"

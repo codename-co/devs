@@ -23,7 +23,7 @@ import {
   usesLocalInference,
 } from '@/lib/llm/models'
 
-import { type Lang, useI18n, useUrl } from '@/i18n'
+import { type Lang, useI18n } from '@/i18n'
 import type {
   LLMProvider,
   Credential,
@@ -45,7 +45,6 @@ interface ProviderWithModels {
 
 export function ModelSelector({ lang }: ModelSelectorProps) {
   const { t } = useI18n(lang as any)
-  const url = useUrl(lang)
   const navigate = useNavigate()
 
   const {
@@ -866,7 +865,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
                 startContent={<Icon name="Plus" size="sm" />}
                 textValue={t('Add AI provider')}
                 onPress={() => {
-                  navigate(url('#settings/providers/add'))
+                  navigate(`${location.pathname}#settings/providers/add`)
                 }}
                 closeOnSelect
               >
