@@ -57,7 +57,9 @@ export const fr: I18n = {
   'Filter conversations': 'Filtrer les conversations',
   Knowledge: 'Connaissances',
   Connectors: 'Connecteurs',
-  'Add connectors': 'Ajouter des connecteurs',
+  'Add connectors': 'Ajouter un connecteur',
+  'Manage knowledge': 'Gérer les connaissances',
+  'Manage skills': 'Gérer les compétences',
   'New chat': 'Nouvel échange',
   AGENTS: 'AGENTS',
   CONVERSATIONS: 'CONVERSATIONS',
@@ -425,7 +427,7 @@ export const fr: I18n = {
   'Create Memory': 'Créer mémoire',
   'Generate Synthesis': 'Générer la synthèse',
   'Total Memories': 'Total des souvenirs',
-  'Pending Review': 'En attente de revue',
+  'Pending Review': 'Attente de revue',
   'High Confidence': 'Haute confiance',
   'Low Confidence': 'Faible confiance',
   Approved: 'Approuvés',
@@ -433,6 +435,13 @@ export const fr: I18n = {
   'No memories pending review': 'Aucun souvenir en attente de revue',
   'No memories pending review for this agent':
     'Aucun souvenir en attente de revue pour cet agent',
+  'Agent memories are pieces of information that an agent can store and recall to inform its decisions and actions. They can be facts, preferences, behaviors, relationships, or any other relevant information about the agent or its environment.':
+    'Les mémoires d’un agent sont des informations qu’il peut stocker et rappeler pour guider ses décisions et actions. Il peut s’agir de faits, préférences, comportements, relations ou toute autre information pertinente sur l’agent ou son environnement.',
+  'Memories will appear here once they are approved from the review queue.':
+    'Les souvenirs apparaîtront ici une fois approuvés depuis la file d’attente de revue.',
+  'No memories match this filter': 'Aucun souvenir ne correspond à ce filtre',
+  'Generate a synthesis to create a summary of all approved memories for this agent.':
+    'Générez une synthèse pour créer un résumé de tous les souvenirs approuvés pour cet agent.',
   'No approved memories yet': 'Aucun souvenir approuvé pour le moment',
   'Select an agent to view their memory synthesis':
     'Sélectionnez un agent pour voir sa synthèse de mémoire',
@@ -554,6 +563,10 @@ export const fr: I18n = {
   'Conversation renamed successfully': 'Conversation renommée avec succès',
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     'Aucun message épinglé pour le moment. Épinglez des messages importants de vos conversations pour les rendre disponibles ici.',
+  'Pinned messages are important information that need to be accessible by agents during future conversations.':
+    'Les messages épinglés sont des informations importantes qui doivent être accessibles aux agents lors des futures conversations.',
+  'Upload files or sync folders to build your knowledge base. Supported file types include documents, images, and text files.':
+    'Téléversez des fichiers ou synchronisez des dossiers pour construire votre base de connaissances. Les types de fichiers pris en charge incluent les documents, images et fichiers texte.',
 
   // Knowledge Base - Folder Watching
   'Stop syncing': 'Arrêter la synchronisation',

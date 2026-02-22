@@ -197,4 +197,7 @@ export const fr: I18n = {
   General: 'Général',
   Extend: 'Étendre',
   Monitor: 'Surveiller',
+  Configure: 'Configurer',
+  Personalize: 'Personnaliser',
+  Observe: 'Observer',
 } as const

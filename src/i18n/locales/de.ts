@@ -54,7 +54,9 @@ export const de: I18n = {
   'Filter conversations': 'Unterhaltungen filtern',
   Knowledge: 'Wissen',
   Connectors: 'Konnektoren',
-  'Add connectors': 'Konnektoren hinzufügen',
+  'Add connectors': 'Konnektor hinzufügen',
+  'Manage knowledge': 'Wissen verwalten',
+  'Manage skills': 'Skills verwalten',
   'New chat': 'Neuer Chat',
   AGENTS: 'AGENTEN',
   CONVERSATIONS: 'UNTERHALTUNGEN',
@@ -423,7 +425,7 @@ export const de: I18n = {
   'Create Memory': 'Erinnerung erstellen',
   'Generate Synthesis': 'Synthese generieren',
   'Total Memories': 'Gesamte Erinnerungen',
-  'Pending Review': 'Ausstehende Überprüfung',
+  'Pending Review': 'Überprüfung',
   'High Confidence': 'Hohe Konfidenz',
   'Low Confidence': 'Niedrige Konfidenz',
   Approved: 'Genehmigt',
@@ -431,6 +433,14 @@ export const de: I18n = {
   'No memories pending review': 'Keine Erinnerungen zur Überprüfung ausstehend',
   'No memories pending review for this agent':
     'Keine Erinnerungen zur Überprüfung für diesen Agenten ausstehend',
+  'Agent memories are pieces of information that an agent can store and recall to inform its decisions and actions. They can be facts, preferences, behaviors, relationships, or any other relevant information about the agent or its environment.':
+    'Agenten-Erinnerungen sind Informationen, die ein Agent speichern und abrufen kann, um seine Entscheidungen und Aktionen zu unterstützen. Es können Fakten, Präferenzen, Verhaltensweisen, Beziehungen oder andere relevante Informationen über den Agenten oder seine Umgebung sein.',
+  'Memories will appear here once they are approved from the review queue.':
+    'Erinnerungen werden hier angezeigt, sobald sie aus der Überprüfungswarteschlange genehmigt wurden.',
+  'No memories match this filter':
+    'Keine Erinnerungen entsprechen diesem Filter',
+  'Generate a synthesis to create a summary of all approved memories for this agent.':
+    'Erstellen Sie eine Synthese, um eine Zusammenfassung aller genehmigten Erinnerungen für diesen Agenten zu erstellen.',
   'No approved memories yet': 'Noch keine genehmigten Erinnerungen',
   'Select an agent to view their memory synthesis':
     'Wählen Sie einen Agenten aus, um dessen Gedächtnissynthese anzuzeigen',
@@ -546,6 +556,10 @@ export const de: I18n = {
   'Conversation renamed successfully': 'Unterhaltung erfolgreich umbenannt',
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     'Noch keine angehefteten Nachrichten. Heften Sie wichtige Nachrichten aus Konversationen an, um sie hier verfügbar zu machen.',
+  'Pinned messages are important information that need to be accessible by agents during future conversations.':
+    'Angeheftete Nachrichten sind wichtige Informationen, die für Agenten während zukünftiger Gespräche zugänglich sein müssen.',
+  'Upload files or sync folders to build your knowledge base. Supported file types include documents, images, and text files.':
+    'Laden Sie Dateien hoch oder synchronisieren Sie Ordner, um Ihre Wissensdatenbank aufzubauen. Unterstützte Dateitypen sind Dokumente, Bilder und Textdateien.',
   // Knowledge Base - Folder Watching
   'Stop syncing': 'Synchronisierung beenden',
   Reconnect: 'Wiederverbinden',

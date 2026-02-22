@@ -49,7 +49,7 @@ import localI18n from '../i18n'
 // Provider icon mapping (subset relevant to Studio)
 const PROVIDER_ICONS: Record<string, IconName> = {
   openai: 'OpenAI',
-  google: 'Google',
+  google: 'Gemini',
   stability: 'SparksSolid',
   together: 'Puzzle',
   fal: 'LightBulbOn',
@@ -84,7 +84,7 @@ const DYNAMIC_MODEL_PROVIDERS = new Set([
 // Models.dev provider ID mapping for enrichment
 const MODELS_DEV_PROVIDER_MAP: Partial<Record<ImageProvider, string>> = {
   openai: 'openai',
-  google: 'google',
+  google: 'gemini',
 }
 
 // Models.dev model ID mapping (Studio model ID → models.dev model ID)

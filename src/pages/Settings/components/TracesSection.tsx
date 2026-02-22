@@ -171,11 +171,6 @@ export function TracesSection() {
     navigateToHash(`settings/traces/logs/${traceId}`)
   }
 
-  const handleBackFromTraceDetail = () => {
-    clearCurrentTrace()
-    navigateToHash('settings/traces/logs')
-  }
-
   const handleDeleteTrace = async (traceId: string) => {
     try {
       await deleteTrace(traceId)
@@ -259,26 +254,11 @@ export function TracesSection() {
           <h3 className="text-lg font-medium text-default-600 mb-4">
             {tTraces('Trace not found')}
           </h3>
-          <Button
-            variant="flat"
-            startContent={<Icon name="NavArrowLeft" className="w-4 h-4" />}
-            onPress={handleBackFromTraceDetail}
-          >
-            {tTraces('Back to Traces')}
-          </Button>
         </div>
       )
     }
     return (
       <div data-testid="trace-detail" className="space-y-4">
-        <Button
-          variant="flat"
-          size="sm"
-          startContent={<Icon name="NavArrowLeft" className="w-4 h-4" />}
-          onPress={handleBackFromTraceDetail}
-        >
-          {tTraces('Back to Traces')}
-        </Button>
         <TraceDetail trace={currentTrace} spans={currentSpans} />
       </div>
     )

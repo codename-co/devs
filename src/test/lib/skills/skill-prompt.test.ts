@@ -41,8 +41,7 @@ function makeSkill(overrides: Partial<InstalledSkill> = {}): InstalledSkill {
     references: overrides.references ?? [],
     assets: overrides.assets ?? [],
     githubUrl:
-      overrides.githubUrl ??
-      'https://github.com/test/repo/tree/main/.agent',
+      overrides.githubUrl ?? 'https://github.com/test/repo/tree/main/.agent',
     stars: overrides.stars ?? 10,
     installedAt: overrides.installedAt ?? now,
     updatedAt: overrides.updatedAt ?? now,
@@ -88,7 +87,11 @@ describe('skill-prompt', () => {
     it('should escape XML special characters', () => {
       mockSkillsMap.set(
         's1',
-        makeSkill({ id: 's1', name: 'test & <demo>', description: 'a "quoted" skill' }),
+        makeSkill({
+          id: 's1',
+          name: 'test & <demo>',
+          description: 'a "quoted" skill',
+        }),
       )
 
       const xml = buildSkillCatalogXml()
@@ -138,10 +141,7 @@ describe('skill-prompt', () => {
     })
 
     it('should contain the catalog + activation instructions', () => {
-      mockSkillsMap.set(
-        's1',
-        makeSkill({ id: 's1', name: 'my-skill' }),
-      )
+      mockSkillsMap.set('s1', makeSkill({ id: 's1', name: 'my-skill' }))
 
       const instructions = buildSkillInstructions()
 
@@ -217,9 +217,7 @@ describe('skill-prompt', () => {
 
     it('should count Bash scripts', () => {
       const skill = makeSkill({
-        scripts: [
-          { path: 'run.sh', language: 'bash', content: 'echo hi' },
-        ],
+        scripts: [{ path: 'run.sh', language: 'bash', content: 'echo hi' }],
       })
 
       const result = getSkillCompatibility(skill)
@@ -230,7 +228,11 @@ describe('skill-prompt', () => {
     it('should count JavaScript scripts', () => {
       const skill = makeSkill({
         scripts: [
-          { path: 'index.js', language: 'javascript', content: 'console.log("hi")' },
+          {
+            path: 'index.js',
+            language: 'javascript',
+            content: 'console.log("hi")',
+          },
         ],
       })
 

@@ -1,5 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Button, Card, CardBody, Input, Tabs, Tab } from '@heroui/react'
+import {
+  Button,
+  Card,
+  CardBody,
+  Input,
+  Tabs,
+  Tab,
+  Tooltip,
+} from '@heroui/react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useI18n } from '@/i18n'
 import { SecureStorage } from '@/lib/crypto'
@@ -21,6 +29,7 @@ import {
   TracesSection,
 } from './components'
 import { FilesSection } from '@/pages/Knowledge/components'
+import { IconName } from '@/lib/types'
 
 type SectionKey =
   | 'general'
@@ -37,12 +46,12 @@ type SectionKey =
   | 'traces'
   | 'database'
 
-type SectionGroup = 'general' | 'extend' | 'monitor'
+type SectionGroup = 'configure' | 'personalize' | 'extend' | 'observe'
 
 interface SectionDef {
   key: SectionKey
   label: string
-  icon: string
+  icon: IconName
   group: SectionGroup
   navigateTo?: string
 }
@@ -83,7 +92,7 @@ export const SettingsContent = (_props: SettingsContentProps) => {
 
   // Use the hash highlight hook for element-level deep linking
   // Hash format: #page/section or #page/section/element
-  const { activeSection } = useHashHighlight()
+  const { activeSection, activeElement } = useHashHighlight()
 
   // Active section in the sidebar
   const [activeKey, setActiveKey] = useState<SectionKey>('general')
@@ -97,9 +106,10 @@ export const SettingsContent = (_props: SettingsContentProps) => {
 
   // Group definitions for the sidebar menu
   const groups: SectionGroupDef[] = [
-    { key: 'general', label: t('General') },
+    { key: 'configure', label: t('Configure') },
+    { key: 'personalize', label: t('Personalize') },
     { key: 'extend', label: t('Extend') },
-    { key: 'monitor', label: t('Monitor') },
+    { key: 'observe', label: t('Observe') },
   ]
 
   // Section definitions for the sidebar menu
@@ -108,39 +118,44 @@ export const SettingsContent = (_props: SettingsContentProps) => {
       key: 'general',
       label: t('Settings'),
       icon: 'Settings',
-      group: 'general',
+      group: 'configure',
     },
     {
       key: 'providers',
       label: t('AI Providers'),
-      icon: 'Brain',
-      group: 'general',
+      icon: 'SparksSolid',
+      group: 'configure',
     },
-    { key: 'features', label: t('Features'), icon: 'Cube', group: 'general' },
+    { key: 'features', label: t('Features'), icon: 'Cube', group: 'configure' },
+    {
+      key: 'knowledge',
+      label: t('Files'),
+      icon: 'Document',
+      group: 'personalize',
+    },
+    {
+      key: 'memories',
+      label: t('Memory'),
+      icon: 'Brain',
+      group: 'personalize',
+    },
+    {
+      key: 'messages',
+      label: t('Messages'),
+      icon: 'Pin',
+      group: 'personalize',
+    },
+    { key: 'skills', label: t('Skills'), icon: 'Puzzle', group: 'extend' },
     {
       key: 'connectors',
       label: t('Connectors'),
       icon: 'EvPlug',
       group: 'extend',
     },
-    { key: 'skills', label: t('Skills'), icon: 'Puzzle', group: 'extend' },
-    { key: 'knowledge', label: t('Knowledge'), icon: 'Book', group: 'extend' },
-    {
-      key: 'memories',
-      label: t('Agent Memory'),
-      icon: 'Brain',
-      group: 'extend',
-    },
-    {
-      key: 'messages',
-      label: t('Pinned Messages'),
-      icon: 'Pin',
-      group: 'extend',
-    },
-    // { key: 'security', label: t('Secure Storage'), icon: 'Lock', group: 'general' },
-    { key: 'computer', label: t('Device'), icon: 'Computer', group: 'monitor' },
-    // { key: 'langfuse', label: 'Langfuse', icon: 'Langfuse', group: 'monitor' },
-    { key: 'traces', label: t('Traces'), icon: 'Activity', group: 'monitor' },
+    // { key: 'security', label: t('Secure Storage'), icon: 'Lock', group: 'configure' },
+    { key: 'computer', label: t('Device'), icon: 'Computer', group: 'observe' },
+    // { key: 'langfuse', label: 'Langfuse', icon: 'Langfuse', group: 'observe' },
+    { key: 'traces', label: t('Traces'), icon: 'Activity', group: 'observe' },
   ]
 
   const handleSectionClick = (section: SectionDef) => {
@@ -222,9 +237,10 @@ export const SettingsContent = (_props: SettingsContentProps) => {
           }}
           variant="underlined"
           size="sm"
+          fullWidth
           classNames={{
-            tabList: 'gap-2 overflow-x-auto scrollbar-hide flex-nowrap p-0',
-            tab: 'whitespace-nowrap flex-none w-auto min-w-fit px-2',
+            tabList: 'py-0 me-6',
+            tab: 'px-1',
           }}
         >
           {sections.map((section) => (
@@ -232,11 +248,16 @@ export const SettingsContent = (_props: SettingsContentProps) => {
               key={section.key}
               title={
                 <div className="flex items-center gap-1.5">
-                  <Icon
-                    name={section.icon as any}
-                    className="h-3.5 w-3.5 shrink-0"
-                  />
-                  <span>{section.label}</span>
+                  <Tooltip
+                    content={section.label}
+                    placement="top"
+                    classNames={{ base: 'text-xs' }}
+                  >
+                    <Icon
+                      name={section.icon as any}
+                      className="h-3.5 w-3.5 shrink-0"
+                    />
+                  </Tooltip>
                 </div>
               }
             />
@@ -245,7 +266,7 @@ export const SettingsContent = (_props: SettingsContentProps) => {
       </div>
 
       {/* Left sidebar menu (hidden on narrow screens) */}
-      <nav className="hidden md:block w-48 shrink-0 border-e border-default-200 overflow-y-auto">
+      <nav className="hidden md:block w-48 shrink-0 border-e border-default-200 overflow-y-auto bg-default-50">
         <h2 className="text-lg font-bold px-4 py-4">{t('Settings')}</h2>
         <div className="flex flex-col gap-4 px-2 pb-4">
           {groups.map((group) => {
@@ -333,10 +354,34 @@ export const SettingsContent = (_props: SettingsContentProps) => {
         {/* Section header + content */}
         {currentSection && !currentSection.navigateTo && (
           <div className="px-6 py-4">
-            <h3 className="text-lg font-semibold mb-1">
-              {currentSection.label}
-            </h3>
-            <div className="mt-4">{renderSectionContent()}</div>
+            <div className="relative">
+              <h3 className="text-lg font-semibold mb-1 flex items-center gap-2">
+                {activeElement && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // Navigate one level up: remove last segment from element
+                      const segments = activeElement.split('/')
+                      const parentElement =
+                        segments.length > 1
+                          ? segments.slice(0, -1).join('/')
+                          : null
+                      const parentHash = parentElement
+                        ? `#settings/${currentSection.key}/${parentElement}`
+                        : `#settings/${currentSection.key}`
+                      navigate(`${location.pathname}${parentHash}`, {
+                        replace: true,
+                      })
+                    }}
+                    className="text-default-500 hover:text-default-800 transition-colors"
+                  >
+                    <Icon name="NavArrowLeft" className="h-5 w-5" />
+                  </button>
+                )}
+                {currentSection.label}
+              </h3>
+              <div className="mt-4 h-full">{renderSectionContent()}</div>
+            </div>
           </div>
         )}
       </div>

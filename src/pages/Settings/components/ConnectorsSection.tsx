@@ -3,7 +3,7 @@
  *
  * Uses hash-based sub-routing:
  *   #settings/connectors       → list view
- *   #settings/connectors/new   → add-connector wizard
+ *   #settings/connectors/add   → add-connector wizard
  *   #settings/connectors/:id   → existing connector settings
  *
  * Displays:
@@ -30,7 +30,7 @@ export function ConnectorsSection() {
   const { t } = useI18n(localI18n)
   const navigate = useNavigate()
   const location = useLocation()
-  const { activeElement } = useHashHighlight()
+  const { activeElement, getHighlightClasses } = useHashHighlight()
 
   const [selectedTab] = useState<ConnectorCategory>('app')
 
@@ -78,8 +78,8 @@ export function ConnectorsSection() {
     navigate(`${location.pathname}#settings/connectors`, { replace: true })
   }, [navigate, location.pathname])
 
-  const navigateToNew = useCallback(() => {
-    navigate(`${location.pathname}#settings/connectors/new`, { replace: true })
+  const navigateToAdd = useCallback(() => {
+    navigate(`${location.pathname}#settings/connectors/add`, { replace: true })
   }, [navigate, location.pathname])
 
   const navigateToConnector = useCallback(
@@ -150,6 +150,23 @@ export function ConnectorsSection() {
         <p className="text-default-500 text-sm">
           {t('Sync files and data from your favorite apps and services.')}
         </p>
+        <div
+          id="add-connector"
+          className={getHighlightClasses(
+            'add-connector',
+            'absolute top-0 right-0 flex justify-end',
+          )}
+        >
+          <Button
+            color="primary"
+            size="sm"
+            variant="flat"
+            startContent={<Icon name="Plus" className="w-4 h-4" />}
+            onPress={navigateToAdd}
+          >
+            {t('Add Connector')}
+          </Button>
+        </div>
       </div>
 
       {/* Content Area */}
@@ -159,7 +176,7 @@ export function ConnectorsSection() {
             <Spinner size="lg" />
           </div>
         ) : currentConnectors.length === 0 ? (
-          <EmptyState category={selectedTab} onAdd={navigateToNew} />
+          <EmptyState category={selectedTab} onAdd={navigateToAdd} />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
             {currentConnectors.map((connector) => (
@@ -170,14 +187,14 @@ export function ConnectorsSection() {
               />
             ))}
 
-            <Button
+            {/* <Button
               color="primary"
               size="sm"
               startContent={<Icon name="Plus" className="w-4 h-4" />}
-              onPress={navigateToNew}
+              onPress={navigateToAdd}
             >
               {t('Add Connector')}
-            </Button>
+            </Button> */}
           </div>
         )}
       </div>

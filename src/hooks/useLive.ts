@@ -35,6 +35,7 @@ import {
   decryptFields,
   KNOWLEDGE_ENCRYPTED_FIELDS,
   CONVERSATION_ENCRYPTED_FIELDS,
+  MEMORY_ENCRYPTED_FIELDS,
 } from '@/lib/crypto/content-encryption'
 // Re-export agent hooks from agentStore (they handle built-in agent cache)
 export { useAgents, useAgent } from '@/stores/agentStore'
@@ -251,6 +252,34 @@ export function useMemories(): AgentMemoryEntry[] {
 }
 
 /**
+ * Subscribe to all agent memories with title/content decrypted.
+ * Async decryption runs in a useEffect; returns empty array on first render.
+ */
+export function useDecryptedMemories(): AgentMemoryEntry[] {
+  const rawMemories = useMemories()
+  const [decrypted, setDecrypted] = useState<AgentMemoryEntry[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+    Promise.all(
+      rawMemories.map(
+        (m) =>
+          decryptFields(m, [
+            ...MEMORY_ENCRYPTED_FIELDS,
+          ]) as Promise<AgentMemoryEntry>,
+      ),
+    ).then((result) => {
+      if (!cancelled) setDecrypted(result)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [rawMemories])
+
+  return decrypted
+}
+
+/**
  * Subscribe to memories for a specific agent.
  * Filters out expired memories.
  */
@@ -267,6 +296,36 @@ export function useAgentMemories(
         m.agentId === agentId && (!m.expiresAt || new Date(m.expiresAt) > now),
     )
   }, [allMemories, agentId])
+}
+
+/**
+ * Subscribe to memories for a specific agent with title/content decrypted.
+ * Async decryption runs in a useEffect; returns empty array on first render.
+ */
+export function useDecryptedAgentMemories(
+  agentId: string | undefined,
+): AgentMemoryEntry[] {
+  const rawMemories = useAgentMemories(agentId)
+  const [decrypted, setDecrypted] = useState<AgentMemoryEntry[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+    Promise.all(
+      rawMemories.map(
+        (m) =>
+          decryptFields(m, [
+            ...MEMORY_ENCRYPTED_FIELDS,
+          ]) as Promise<AgentMemoryEntry>,
+      ),
+    ).then((result) => {
+      if (!cancelled) setDecrypted(result)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [rawMemories])
+
+  return decrypted
 }
 
 // ============================================================================

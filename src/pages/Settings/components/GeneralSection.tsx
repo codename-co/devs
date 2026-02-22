@@ -52,7 +52,7 @@ export function GeneralSection() {
   }
 
   return (
-    <div data-testid="general-settings" className="space-y-6">
+    <div data-testid="general-settings" className="space-y-8 space-x-4">
       <Select
         id="interface-language"
         label={t('Interface Language')}
@@ -63,7 +63,7 @@ export function GeneralSection() {
             handleLanguageChange(selectedLang)
           }
         }}
-        className={getHighlightClasses('interface-language', 'max-w-xs')}
+        className={getHighlightClasses('interface-language', 'max-w-3xs')}
       >
         {Object.entries(languages).map(([key, name]) => (
           <SelectItem key={key} textValue={name}>
@@ -85,7 +85,7 @@ export function GeneralSection() {
             setTheme(selectedTheme)
           }
         }}
-        className={getHighlightClasses('theme', 'max-w-xs')}
+        className={getHighlightClasses('theme', 'max-w-3xs')}
       >
         <SelectItem key="system" textValue={t('System')}>
           {t('System')}
@@ -104,46 +104,57 @@ export function GeneralSection() {
         placeholder={PRODUCT.displayName}
         value={platformName || ''}
         onChange={(e) => setPlatformName(e.target.value)}
-        className={getHighlightClasses('platform-name', 'max-w-xs')}
+        className={getHighlightClasses('platform-name', 'max-w-3xs')}
       />
 
       <div
         id="background-image"
         className={getHighlightClasses('background-image', 'p-2 -m-2')}
       >
-        <label className="text-sm font-medium text-default-600">
-          {t('Background Image')}
-        </label>
-        <p className="text-xs text-default-500 mb-3">
-          {t('Set a custom background image for the home page')}
-        </p>
-        <div className="flex gap-3 items-center">
-          <Button
-            variant="flat"
-            color="primary"
-            size="sm"
-            startContent={<Icon name="PagePlus" className="h-4 w-4" />}
-            onPress={() =>
-              document.getElementById('background-image-input')?.click()
-            }
-          >
-            {backgroundImage
-              ? t('Change Background')
-              : t('Upload Background')}
-          </Button>
+        <div className="flex items-start gap-6">
+          <div className="flex-1">
+            <label className="text-sm font-medium text-default-600">
+              {t('Background Image')}
+            </label>
+            <p className="text-xs text-default-500 mb-3">
+              {t('Set a custom background image for the home page')}
+            </p>
+            <div className="flex gap-3 items-center">
+              <Button
+                variant="flat"
+                // color="primary"
+                size="sm"
+                startContent={<Icon name="PagePlus" className="h-4 w-4" />}
+                onPress={() =>
+                  document.getElementById('background-image-input')?.click()
+                }
+              >
+                {backgroundImage
+                  ? t('Change Background')
+                  : t('Upload Background')}
+              </Button>
+              {backgroundImage && (
+                <Button
+                  variant="flat"
+                  color="danger"
+                  size="sm"
+                  startContent={<Icon name="Trash" className="h-4 w-4" />}
+                  onPress={() => {
+                    setBackgroundImage(undefined)
+                    successToast(t('Background image removed'))
+                  }}
+                >
+                  {t('Remove')}
+                </Button>
+              )}
+            </div>
+          </div>
           {backgroundImage && (
-            <Button
-              variant="flat"
-              color="danger"
-              size="sm"
-              startContent={<Icon name="Trash" className="h-4 w-4" />}
-              onPress={() => {
-                setBackgroundImage(undefined)
-                successToast(t('Background image removed'))
-              }}
-            >
-              {t('Remove')}
-            </Button>
+            <img
+              src={backgroundImage}
+              alt={t('Background Image')}
+              className="w-24 h-24 rounded-lg object-cover border border-default-200 shadow-sm shrink-0"
+            />
           )}
         </div>
         <input

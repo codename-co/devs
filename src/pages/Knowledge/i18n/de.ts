@@ -73,7 +73,7 @@ export const de: I18n = {
   'All agents': 'Alle Agenten',
   'Generate Synthesis': 'Synthese generieren',
   'Total Memories': 'Gesamte Erinnerungen',
-  'Pending Review': 'Ausstehende Überprüfung',
+  'Pending Review': 'Überprüfung',
   'High Confidence': 'Hohe Zuversicht',
   'Low Confidence': 'Geringe Zuversicht',
   Facts: 'Fakten',

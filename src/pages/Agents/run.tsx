@@ -1504,7 +1504,9 @@ export const AgentRunPage = () => {
           // First ensure memories are loaded from DB
           await loadMemoriesForAgent(selectedAgent.id)
           // Then get pending review memories filtered by current conversation
-          const pendingMemories = getPendingReviewMemories(selectedAgent.id)
+          const pendingMemories = await getPendingReviewMemories(
+            selectedAgent.id,
+          )
           const conversationMemories = pendingMemories.filter((m) =>
             m.sourceConversationIds?.includes(currentConversation.id),
           )

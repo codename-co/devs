@@ -192,4 +192,7 @@ export const ko: I18n = {
   General: '일반',
   Extend: '확장',
   Monitor: '모니터링',
+  Configure: '구성',
+  Personalize: '개인화',
+  Observe: '관찰',
 } as const

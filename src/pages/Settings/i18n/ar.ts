@@ -192,4 +192,7 @@ export const ar: I18n = {
   General: 'عام',
   Extend: 'توسيع',
   Monitor: 'مراقبة',
+  Configure: 'تهيئة',
+  Personalize: 'تخصيص',
+  Observe: 'مراقبة',
 } as const

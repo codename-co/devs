@@ -21,11 +21,13 @@ import { useAgents } from '@/hooks'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import { useI18n, useUrl } from '@/i18n'
 import { Icon } from '@/components'
+import { useHashHighlight } from '@/hooks/useHashHighlight'
 
 export const PinnedMessages: React.FC = () => {
   const { lang, t } = useI18n()
   const url = useUrl(lang)
   const navigate = useNavigate()
+  const { getHighlightClasses } = useHashHighlight()
 
   // Use reactive hook for instant updates
   const agents = useAgents()
@@ -68,24 +70,38 @@ export const PinnedMessages: React.FC = () => {
   )
 
   return (
-    <div className="py-6">
-      {/* Agent Filter */}
-      <div className="flex gap-4 mb-6">
+    <div className="space-y-6">
+      <div
+        id="agent-filter"
+        className={getHighlightClasses(
+          'agent-filter',
+          'absolute top-0 right-0 flex justify-end',
+        )}
+      >
+        {/* Agent Filter */}
         <Select
-          label={t('Filter by agent')}
+          size="sm"
+          // label={t('Filter by agent')}
           placeholder={t('All agents')}
           selectedKeys={pinnedAgentFilter === 'all' ? [] : [pinnedAgentFilter]}
           onSelectionChange={(keys) => {
             const selected = Array.from(keys)[0] as string
             setPinnedAgentFilter(selected || 'all')
           }}
-          className="max-w-xs"
+          className="min-w-48 max-w-3xs"
         >
           {agents.map((agent) => (
             <SelectItem key={agent.id}>{agent.name}</SelectItem>
           ))}
         </Select>
       </div>
+
+      {/* Description */}
+      <p className="text-sm text-default-500">
+        {t(
+          'Pinned messages are important information that need to be accessible by agents during future conversations.',
+        )}
+      </p>
 
       {/* Pinned Messages List */}
       {isPinnedLoading ? (
@@ -117,9 +133,9 @@ export const PinnedMessages: React.FC = () => {
                       {new Date(pinnedMessage.pinnedAt).toLocaleDateString()}
                     </span>
                   </div>
-                  <p className="font-medium text-sm">
+                  {/* <p className="font-medium text-sm">
                     {pinnedMessage.description}
-                  </p>
+                  </p> */}
                 </div>
                 <Dropdown>
                   <DropdownTrigger>
@@ -156,7 +172,7 @@ export const PinnedMessages: React.FC = () => {
                 </Dropdown>
               </CardHeader>
               <CardBody className="pt-0">
-                <div className="bg-default-100 rounded-lg p-3 max-h-48 overflow-y-auto">
+                <div className="bg-default-100 rounded-lg p-3 max-h-32 overflow-y-auto">
                   <MarkdownRenderer
                     content={pinnedMessage.content}
                     className="prose dark:prose-invert prose-sm"

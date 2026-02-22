@@ -167,7 +167,7 @@ interface AgentMemoryStore {
   updateSynthesis: (agentId: string, synthesis: string) => Promise<void>
 
   // Human Review
-  getPendingReviewMemories: (agentId?: string) => AgentMemoryEntry[]
+  getPendingReviewMemories: (agentId?: string) => Promise<AgentMemoryEntry[]>
   approveMemory: (id: string, reviewNotes?: string) => Promise<void>
   rejectMemory: (id: string, reviewNotes?: string) => Promise<void>
   editAndApproveMemory: (
@@ -518,12 +518,20 @@ export const useAgentMemoryStore = create<AgentMemoryStore>((set, get) => ({
   // Human Review
   // =========================================================================
 
-  getPendingReviewMemories: (agentId?: string) => {
+  getPendingReviewMemories: async (agentId?: string) => {
     const allMemories = getAllMemories()
-    return allMemories.filter(
+    const filtered = allMemories.filter(
       (m) =>
         m.validationStatus === 'pending' &&
         (agentId ? m.agentId === agentId : true),
+    )
+    return Promise.all(
+      filtered.map(
+        (m) =>
+          decryptFields(m, [
+            ...MEMORY_ENCRYPTED_FIELDS,
+          ]) as Promise<AgentMemoryEntry>,
+      ),
     )
   },
 

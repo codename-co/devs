@@ -881,9 +881,19 @@ export function FilesSection() {
     return <Icon name={iconName} size="lg" className={`text-${color}`} />
   }
 
+  const isEmptyState =
+    watchedFolders.length === 0 && rawKnowledgeItems.length === 0
+
   return (
     <>
-      <div className="py-6">
+      <div className="gap-y-6 h-full flex flex-col">
+        {/* Description */}
+        <p className="text-sm text-default-500">
+          {t(
+            'Upload files or sync folders to build your knowledge base. Supported file types include documents, images, and text files.',
+          )}
+        </p>
+
         {/* Upload Area */}
         <div
           data-testid="upload-area"
@@ -891,7 +901,7 @@ export function FilesSection() {
             dragActive
               ? 'border-primary bg-primary/10'
               : 'border-default-300 hover:border-primary/50'
-          }`}
+          } ${isEmptyState ? 'flex-1 flex items-center justify-center' : ''}`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}

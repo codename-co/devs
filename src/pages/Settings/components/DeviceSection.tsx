@@ -231,7 +231,7 @@ export function DeviceSection() {
         <h4 className="text-sm font-medium text-default-700 mb-3">
           {t('Device Information')}
         </h4>
-        <div className="space-y-2">
+        <div className="ms-6 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-sm text-default-600">{t('Device')}</span>
             <span className="text-sm text-default-500">{deviceName()}</span>
@@ -283,90 +283,91 @@ export function DeviceSection() {
         <h4 className="text-sm font-medium text-default-700 mb-3">
           {t('System Resources')}
         </h4>
-
-        {/* CPU */}
-        {resources && (
-          <div className="mb-3">
-            <div className="flex items-center justify-between mb-1">
-              <span className="flex gap-2 items-center text-sm text-default-600">
-                <Icon name="Cpu" size="sm" />
-                {t('CPU')}
-              </span>
-              <span className="text-xs text-default-500">
-                {t('{used} / {total} cores', {
-                  used: resources.cpuInUse,
-                  total: resources.cpuCores,
-                })}
-              </span>
+        <div className="ms-6">
+          {/* CPU */}
+          {resources && (
+            <div className="mb-3">
+              <div className="flex items-center justify-between mb-1">
+                <span className="flex gap-2 items-center text-sm text-default-600">
+                  <Icon name="Cpu" size="sm" />
+                  {t('CPU')}
+                </span>
+                <span className="text-xs text-default-500">
+                  {t('{used} / {total} cores', {
+                    used: resources.cpuInUse,
+                    total: resources.cpuCores,
+                  })}
+                </span>
+              </div>
+              <Progress
+                size="sm"
+                value={
+                  resources.cpuCores > 0
+                    ? (resources.cpuInUse / resources.cpuCores) * 100
+                    : 0
+                }
+                color={resources.cpuInUse > 0 ? 'primary' : 'default'}
+                aria-label={t('CPU usage')}
+              />
             </div>
-            <Progress
-              size="sm"
-              value={
-                resources.cpuCores > 0
-                  ? (resources.cpuInUse / resources.cpuCores) * 100
-                  : 0
-              }
-              color={resources.cpuInUse > 0 ? 'primary' : 'default'}
-              aria-label={t('CPU usage')}
-            />
-          </div>
-        )}
+          )}
 
-        {/* Memory */}
-        {resources && resources.memoryTotal > 0 && (
-          <div className="mb-3">
-            <div className="flex items-center justify-between mb-1">
-              <span className="flex gap-2 items-center text-sm text-default-600">
-                <Icon name="ElectronicsChip" size="sm" />
-                {t('Memory')}
-              </span>
-              <span className="text-xs text-default-500">
-                {formatBytes(resources.memoryUsed, lang)} /{' '}
-                {formatBytes(resources.memoryTotal, lang)}
-              </span>
+          {/* Memory */}
+          {resources && resources.memoryTotal > 0 && (
+            <div className="mb-3">
+              <div className="flex items-center justify-between mb-1">
+                <span className="flex gap-2 items-center text-sm text-default-600">
+                  <Icon name="ElectronicsChip" size="sm" />
+                  {t('Memory')}
+                </span>
+                <span className="text-xs text-default-500">
+                  {formatBytes(resources.memoryUsed, lang)} /{' '}
+                  {formatBytes(resources.memoryTotal, lang)}
+                </span>
+              </div>
+              <Progress
+                size="sm"
+                value={(resources.memoryUsed / resources.memoryTotal) * 100}
+                color={
+                  resources.memoryUsed / resources.memoryTotal > 0.85
+                    ? 'danger'
+                    : resources.memoryUsed / resources.memoryTotal > 0.6
+                      ? 'warning'
+                      : 'primary'
+                }
+                aria-label={t('Memory usage')}
+              />
             </div>
-            <Progress
-              size="sm"
-              value={(resources.memoryUsed / resources.memoryTotal) * 100}
-              color={
-                resources.memoryUsed / resources.memoryTotal > 0.85
-                  ? 'danger'
-                  : resources.memoryUsed / resources.memoryTotal > 0.6
-                    ? 'warning'
-                    : 'primary'
-              }
-              aria-label={t('Memory usage')}
-            />
-          </div>
-        )}
+          )}
 
-        {/* Storage */}
-        {resources && resources.storageTotal > 0 && (
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <span className="flex gap-2 items-center text-sm text-default-600">
-                <Icon name="HardDrive" size="sm" />
-                {t('Storage')}
-              </span>
-              <span className="text-xs text-default-500">
-                {formatBytes(resources.storageUsed, lang)} /{' '}
-                {formatBytes(resources.storageTotal, lang)}
-              </span>
+          {/* Storage */}
+          {resources && resources.storageTotal > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="flex gap-2 items-center text-sm text-default-600">
+                  <Icon name="HardDrive" size="sm" />
+                  {t('Storage')}
+                </span>
+                <span className="text-xs text-default-500">
+                  {formatBytes(resources.storageUsed, lang)} /{' '}
+                  {formatBytes(resources.storageTotal, lang)}
+                </span>
+              </div>
+              <Progress
+                size="sm"
+                value={(resources.storageUsed / resources.storageTotal) * 100}
+                color={
+                  resources.storageUsed / resources.storageTotal > 0.85
+                    ? 'danger'
+                    : resources.storageUsed / resources.storageTotal > 0.6
+                      ? 'warning'
+                      : 'primary'
+                }
+                aria-label={t('Storage usage')}
+              />
             </div>
-            <Progress
-              size="sm"
-              value={(resources.storageUsed / resources.storageTotal) * 100}
-              color={
-                resources.storageUsed / resources.storageTotal > 0.85
-                  ? 'danger'
-                  : resources.storageUsed / resources.storageTotal > 0.6
-                    ? 'warning'
-                    : 'primary'
-              }
-              aria-label={t('Storage usage')}
-            />
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Sandbox Runtimes */}
@@ -380,30 +381,37 @@ export function DeviceSection() {
           )}
         </p>
 
-        <div className="space-y-3">
-          {RUNTIME_META.map(({ language, label, engine }) => {
-            const state = runtimeStates[language]
-            const isExecuting = state === 'executing'
+        <div className="ms-6">
+          <div className="space-y-3">
+            {RUNTIME_META.map(({ language, label, engine }) => {
+              const state = runtimeStates[language]
+              const isExecuting = state === 'executing'
 
-            return (
-              <div key={language} className="space-y-0">
-                <div className="flex items-center justify-between rounded-lg border border-default-200 px-4 py-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-default-700">
-                          {label}
+              return (
+                <div key={language} className="space-y-0">
+                  <div className="flex items-center justify-between rounded-lg border border-default-200 px-4 py-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-default-700">
+                            {label}
+                          </span>
+                          <Chip
+                            size="sm"
+                            color={stateColor(state)}
+                            variant="dot"
+                          >
+                            {t(stateLabel(state))}
+                          </Chip>
+                        </div>
+                        <span className="text-xs text-default-400">
+                          {engine}
                         </span>
-                        <Chip size="sm" color={stateColor(state)} variant="dot">
-                          {t(stateLabel(state))}
-                        </Chip>
                       </div>
-                      <span className="text-xs text-default-400">{engine}</span>
                     </div>
-                  </div>
 
-                  <div className="flex gap-2 shrink-0 ml-4">
-                    {/* {canWarmup && !isRunning && !isLoadingRuntime && (
+                    <div className="flex gap-2 shrink-0 ml-4">
+                      {/* {canWarmup && !isRunning && !isLoadingRuntime && (
                       <Tooltip
                         content={t('Pre-load the {runtime} runtime', {
                           runtime: label,
@@ -442,40 +450,43 @@ export function DeviceSection() {
                         </Button>
                       </Tooltip>
                     )} */}
-                    <Tooltip
-                      content={t(
-                        'Run a test snippet in the {runtime} sandbox',
-                        { runtime: label },
-                      )}
-                    >
-                      <Button
-                        size="sm"
-                        variant="light"
-                        color="secondary"
-                        onPress={() => handleTry(language)}
-                        isDisabled={isExecuting || tryingLanguage === language}
-                        isLoading={tryingLanguage === language}
+                      <Tooltip
+                        content={t(
+                          'Run a test snippet in the {runtime} sandbox',
+                          { runtime: label },
+                        )}
                       >
-                        {t('Try')}
-                      </Button>
-                    </Tooltip>
+                        <Button
+                          size="sm"
+                          variant="light"
+                          color="secondary"
+                          onPress={() => handleTry(language)}
+                          isDisabled={
+                            isExecuting || tryingLanguage === language
+                          }
+                          isLoading={tryingLanguage === language}
+                        >
+                          {t('Try')}
+                        </Button>
+                      </Tooltip>
+                    </div>
                   </div>
-                </div>
 
-                {tryResults[language] && (
-                  <div
-                    className={`mt-2 rounded-md px-3 py-2 font-mono text-xs ${
-                      tryResults[language]!.success
-                        ? 'bg-success-50 text-success-700 dark:bg-success-900/20 dark:text-success-400'
-                        : 'bg-danger-50 text-danger-700 dark:bg-danger-900/20 dark:text-danger-400'
-                    }`}
-                  >
-                    {tryResults[language]!.output}
-                  </div>
-                )}
-              </div>
-            )
-          })}
+                  {tryResults[language] && (
+                    <div
+                      className={`mt-2 rounded-md px-3 py-2 font-mono text-xs ${
+                        tryResults[language]!.success
+                          ? 'bg-success-50 text-success-700 dark:bg-success-900/20 dark:text-success-400'
+                          : 'bg-danger-50 text-danger-700 dark:bg-danger-900/20 dark:text-danger-400'
+                      }`}
+                    >
+                      {tryResults[language]!.output}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
     </div>

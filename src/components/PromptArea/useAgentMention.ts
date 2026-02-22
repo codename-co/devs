@@ -27,8 +27,10 @@ interface AgentMentionResult {
   removeMentionsFromPrompt: (text: string) => string
 }
 
-// Regex to detect @mentions - matches @ followed by word characters
+// Regex to detect @mentions while typing:
+// Matches @word characters (simple) or @[text inside brackets (bracket syntax for multi-word names)
 const MENTION_REGEX = /@(\w*)$/
+const BRACKET_MENTION_REGEX = /@\[([^\]]*)$/
 
 export function useAgentMention({
   lang,
@@ -63,9 +65,19 @@ export function useAgentMention({
 
   // Detect @ mentions while typing
   useEffect(() => {
-    // Find if there's an active mention being typed
-    const match = prompt.match(MENTION_REGEX)
+    // First check for bracket syntax: @[partial name
+    const bracketMatch = prompt.match(BRACKET_MENTION_REGEX)
+    if (bracketMatch) {
+      const query = bracketMatch[1] || ''
+      setMentionQuery(query)
+      setMentionStartIndex(prompt.length - bracketMatch[0].length)
+      setShowMentionPopover(true)
+      setSelectedIndex(0)
+      return
+    }
 
+    // Then check for simple syntax: @partial
+    const match = prompt.match(MENTION_REGEX)
     if (match) {
       const query = match[1] || ''
       setMentionQuery(query)
@@ -85,12 +97,14 @@ export function useAgentMention({
       if (mentionStartIndex === -1) return
 
       const agentName = agent.i18n?.[lang]?.name ?? agent.name
-      // Replace the partial @mention with the full agent name
+      // Replace the partial @mention with the full agent name in bracket syntax
       const beforeMention = prompt.substring(0, mentionStartIndex)
-      const afterMention = prompt.substring(
-        mentionStartIndex + 1 + mentionQuery.length,
-      )
-      const newPrompt = `${beforeMention}@${agentName} ${afterMention}`
+      // Account for bracket char if user was typing @[query
+      const isBracket = prompt[mentionStartIndex + 1] === '['
+      const mentionLen = (isBracket ? 2 : 1) + mentionQuery.length
+      const afterMention = prompt.substring(mentionStartIndex + mentionLen)
+      // Use @[Name] format to properly support names with spaces
+      const newPrompt = `${beforeMention}@[${agentName}] ${afterMention}`
 
       onPromptChange(newPrompt)
       setShowMentionPopover(false)
@@ -153,22 +167,32 @@ export function useAgentMention({
   // Extract all mentioned agents from the prompt
   const extractMentionedAgents = useCallback((): Agent[] => {
     const mentions: Agent[] = []
-    // Use matchAll to find @mentions at word boundaries (not inside emails)
-    const matches = prompt.matchAll(/(^|[\s])@(\w+)/g)
 
-    for (const match of matches) {
+    // First, extract @[Multi Word Name] bracket mentions
+    const bracketMatches = prompt.matchAll(/(^|[\s])@\[([^\]]+)\]/g)
+    for (const match of bracketMatches) {
       const mentionName = match[2].toLowerCase()
+      const agent = availableAgents.find((a) => {
+        const name = (a.i18n?.[lang]?.name ?? a.name).toLowerCase()
+        const id = a.id.toLowerCase()
+        return name === mentionName || id === mentionName
+      })
+      if (agent && !mentions.find((m) => m.id === agent.id)) {
+        mentions.push(agent)
+      }
+    }
 
-      // Find matching agent by name or id (case-insensitive, ignoring spaces)
+    // Also extract simple @SingleWord mentions for backward compatibility
+    const simpleMatches = prompt.matchAll(/(^|[\s])@(\w+)/g)
+    for (const match of simpleMatches) {
+      const mentionName = match[2].toLowerCase()
       const agent = availableAgents.find((a) => {
         const name = (a.i18n?.[lang]?.name ?? a.name)
           .toLowerCase()
           .replace(/\s+/g, '')
         const id = a.id.toLowerCase()
-        // Match name (without spaces) or id
         return name === mentionName || id === mentionName
       })
-
       if (agent && !mentions.find((m) => m.id === agent.id)) {
         mentions.push(agent)
       }
@@ -180,8 +204,9 @@ export function useAgentMention({
   // Remove all @mentions from the prompt
   const removeMentionsFromPrompt = useCallback((text: string): string => {
     // Replace @mentions with empty string, cleaning up extra spaces
-    // Only match @mentions at word boundaries (not inside emails like user@domain.com)
+    // Handle both @[Multi Word] bracket syntax and @SingleWord simple syntax
     return text
+      .replace(/(^|[\s])@\[[^\]]+\]\s*/g, '$1')
       .replace(/(^|[\s])@[\w]+\s*/g, '$1')
       .replace(/\s+/g, ' ')
       .trim()

@@ -204,6 +204,22 @@ export function AttachmentSelector({
     )
   }
 
+  // Render the "Manage knowledge" footer item
+  const renderManageKnowledge = () => (
+    <DropdownItem
+      key="manage-knowledge"
+      startContent={<Icon name="Settings" size="sm" />}
+      textValue={t('Manage knowledge')}
+      closeOnSelect
+      onPress={() => {
+        navigate(url('#settings/knowledge'))
+        setIsMainDropdownOpen(false)
+      }}
+    >
+      {t('Manage knowledge')}
+    </DropdownItem>
+  )
+
   // Render skill items for the drill-down view
   const renderSkillItems = () => {
     if (skillItems.length === 0) {
@@ -245,6 +261,22 @@ export function AttachmentSelector({
       </>
     )
   }
+
+  // Render the "Manage skills" footer item
+  const renderManageSkills = () => (
+    <DropdownItem
+      key="manage-skills"
+      startContent={<Icon name="Settings" size="sm" />}
+      textValue={t('Manage skills')}
+      closeOnSelect
+      onPress={() => {
+        navigate(url('#settings/skills'))
+        setIsMainDropdownOpen(false)
+      }}
+    >
+      {t('Manage skills')}
+    </DropdownItem>
+  )
 
   return (
     <>
@@ -337,7 +369,7 @@ export function AttachmentSelector({
                   endContent={
                     <div className="flex items-center -space-x-0.5">
                       {getProviders()
-                        .slice(0, 5)
+                        .slice(0, 4)
                         .map((provider, index) => (
                           <div
                             key={provider.name}
@@ -357,7 +389,7 @@ export function AttachmentSelector({
                   textValue={t('Add connectors')}
                   closeOnSelect
                   onPress={() => {
-                    navigate(url('#settings/connectors/new'))
+                    navigate(url('#settings/connectors/add'))
                     setIsMainDropdownOpen(false)
                   }}
                 >
@@ -382,10 +414,15 @@ export function AttachmentSelector({
                   </span>
                 </DropdownItem>
               </DropdownSection>
-              <DropdownSection>
+              <DropdownSection showDivider>
                 {viewMode === 'knowledge'
                   ? renderKnowledgeItems()
                   : renderSkillItems()}
+              </DropdownSection>
+              <DropdownSection>
+                {viewMode === 'knowledge'
+                  ? renderManageKnowledge()
+                  : renderManageSkills()}
               </DropdownSection>
             </>
           )}

@@ -6,7 +6,6 @@ import {
   CardHeader,
   Checkbox,
   Chip,
-  Divider,
   Input,
   Modal,
   ModalContent,
@@ -26,14 +25,20 @@ import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
 import { MemoryReviewList } from '@/components/MemoryReview'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import { generateMemorySynthesis } from '@/lib/memory-learning-service'
-import { useAgentMemories, useAgents, useMemories } from '@/hooks'
+import {
+  useDecryptedAgentMemories,
+  useAgents,
+  useDecryptedMemories,
+} from '@/hooks'
 import type {
   AgentMemoryEntry,
   MemoryCategory,
   MemoryConfidence,
 } from '@/types'
 import { useI18n } from '@/i18n'
-import { Icon } from '@/components'
+import { MultiFilter, Icon } from '@/components'
+import type { MultiFilterSelection } from '@/components'
+import { useHashHighlight } from '@/hooks/useHashHighlight'
 
 export const categoryLabels: Record<MemoryCategory, string> = {
   fact: 'Facts',
@@ -53,19 +58,25 @@ const confidenceColors: Record<MemoryConfidence, string> = {
 
 export const AgentMemories: React.FC = () => {
   const { t } = useI18n()
+  const { getHighlightClasses } = useHashHighlight()
 
-  // Use reactive hooks for instant updates
-  const allMemories = useMemories()
+  // Use reactive hooks with decrypted content for display
+  const allMemories = useDecryptedMemories()
   const agents = useAgents()
-  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null)
+  const [filterSelection, setFilterSelection] = useState<MultiFilterSelection>({
+    agent: 'all',
+    category: 'all',
+  })
+  const selectedAgentId =
+    filterSelection.agent === 'all' ? null : filterSelection.agent
+  const filterCategory = (filterSelection.category || 'all') as
+    | MemoryCategory
+    | 'all'
   const [memoryTab, setMemoryTab] = useState<string>('review')
-  const [filterCategory, setFilterCategory] = useState<MemoryCategory | 'all'>(
-    'all',
-  )
   const [isGeneratingSynthesis, setIsGeneratingSynthesis] = useState(false)
 
   // Get memories for selected agent using reactive hook
-  const agentMemories = useAgentMemories(selectedAgentId || undefined)
+  const agentMemories = useDecryptedAgentMemories(selectedAgentId || undefined)
 
   // Decide which memories to use based on selection
   const memories = selectedAgentId ? agentMemories : allMemories
@@ -291,38 +302,40 @@ export const AgentMemories: React.FC = () => {
 
   return (
     <>
-      <div className="py-6">
-        {/* Agent Selector */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <Select
-            label={t('Select Agent')}
-            placeholder={t('All agents')}
-            selectedKeys={selectedAgentId ? [selectedAgentId] : []}
-            onSelectionChange={(keys) => {
-              const selected = Array.from(keys)[0] as string
-              setSelectedAgentId(selected || null)
-            }}
-            className="max-w-xs"
-          >
-            {agents.map((agent) => (
-              <SelectItem key={agent.id}>{agent.name}</SelectItem>
-            ))}
-          </Select>
+      <div className="space-y-6">
+        {/* Description */}
+        <p className="text-sm text-default-500">
+          {t(
+            'Agent memories are pieces of information that an agent can store and recall to inform its decisions and actions. They can be facts, preferences, behaviors, relationships, or any other relevant information about the agent or its environment.',
+          )}
+        </p>
 
+        {/* Toolbar: Agent selector + Actions */}
+        <div
+          id="agent-filter"
+          className={getHighlightClasses(
+            'agent-filter',
+            'flex flex-col sm:flex-row items-start sm:items-center gap-3',
+          )}
+        >
           {selectedAgentId && (
-            <div className="flex gap-2 items-end">
+            <div className="flex gap-2">
               <Button
+                size="sm"
                 color="secondary"
                 variant="flat"
-                startContent={<Icon name="Plus" className="w-4 h-4" />}
+                startContent={<Icon name="Plus" className="w-3.5 h-3.5" />}
                 onPress={onMemoryCreateOpen}
               >
                 {t('Create Memory')}
               </Button>
               <Button
+                size="sm"
                 color="primary"
                 variant="flat"
-                startContent={<Icon name="RefreshDouble" className="w-4 h-4" />}
+                startContent={
+                  <Icon name="RefreshDouble" className="w-3.5 h-3.5" />
+                }
                 onPress={handleGenerateSynthesis}
                 isLoading={isGeneratingSynthesis}
               >
@@ -330,256 +343,253 @@ export const AgentMemories: React.FC = () => {
               </Button>
             </div>
           )}
+
+          {/* Stats chips */}
+          {stats && selectedAgentId && (
+            <div className="flex flex-wrap gap-2 sm:ml-auto">
+              <Chip size="sm" variant="flat">
+                {stats.total} {t('Total Memories')}
+              </Chip>
+              {stats.pendingReview > 0 && (
+                <Chip size="sm" variant="flat" color="warning">
+                  {stats.pendingReview} {t('Pending Review')}
+                </Chip>
+              )}
+              {(stats.byConfidence.high ?? 0) > 0 && (
+                <Chip size="sm" variant="flat" color="success">
+                  {stats.byConfidence.high} {t('High Confidence')}
+                </Chip>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Statistics */}
-        {stats && selectedAgentId && (
-          <Card className="mb-6">
-            <CardBody>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold">{stats.total}</p>
-                  <p className="text-sm text-default-500">
-                    {t('Total Memories')}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-warning">
-                    {stats.pendingReview}
-                  </p>
-                  <p className="text-sm text-default-500">
-                    {t('Pending Review')}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-success">
-                    {stats.byConfidence.high}
-                  </p>
-                  <p className="text-sm text-default-500">
-                    {t('High Confidence')}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-danger">
-                    {stats.byConfidence.low}
-                  </p>
-                  <p className="text-sm text-default-500">
-                    {t('Low Confidence')}
-                  </p>
-                </div>
-              </div>
-
-              <Divider className="my-4" />
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(stats.byCategory).map(
-                  ([category, count]) =>
-                    count > 0 && (
-                      <Chip key={category} size="sm" variant="flat">
-                        {t(categoryLabels[category as MemoryCategory] as any)}:{' '}
-                        {count}
-                      </Chip>
-                    ),
-                )}
-              </div>
-            </CardBody>
-          </Card>
-        )}
-
-        {/* Memory Sub-Tabs */}
-        <Tabs
-          selectedKey={memoryTab}
-          onSelectionChange={(key) => setMemoryTab(key as string)}
-          aria-label="Memory management tabs"
-        >
-          {/* Review Tab */}
-          <Tab
-            key="review"
-            title={
-              <div className="flex items-center gap-2">
-                <Icon name="Clock" className="w-4 h-4" />
-                <span>{t('Pending Review')}</span>
-                {pendingMemories.length > 0 && (
-                  <Chip size="sm" color="warning" variant="solid">
-                    {pendingMemories.length}
-                  </Chip>
-                )}
-              </div>
-            }
+        {/* Tabs */}
+        <div className="flex justify-between gap-4">
+          <Tabs
+            size="sm"
+            selectedKey={memoryTab}
+            onSelectionChange={(key) => setMemoryTab(key as string)}
+            aria-label="Memory management tabs"
           >
-            <div className="py-4">
-              {isMemoryLoading ? (
-                <div className="flex justify-center py-8">
-                  <Spinner size="lg" />
-                </div>
-              ) : (
-                <MemoryReviewList
-                  memories={pendingMemories}
-                  onApprove={approveMemory}
-                  onReject={rejectMemory}
-                  onEdit={editAndApproveMemory}
-                  onBulkApprove={bulkApproveMemories}
-                  onBulkReject={bulkRejectMemories}
-                  isLoading={isMemoryLoading}
-                  emptyMessage={
-                    selectedAgentId
-                      ? t('No memories pending review for this agent')
-                      : t('No memories pending review')
-                  }
-                />
-              )}
-            </div>
-          </Tab>
-
-          {/* Approved Memories Tab */}
-          <Tab
-            key="approved"
-            title={
-              <div className="flex items-center gap-2">
-                <Icon name="Check" className="w-4 h-4" />
-                <span>{t('Approved')}</span>
-              </div>
-            }
-          >
-            <div className="py-4">
-              {/* Category Filter */}
-              <div className="flex gap-2 mb-4">
-                <Select
-                  label={t('Filter by category')}
-                  selectedKeys={[filterCategory]}
-                  onSelectionChange={(keys) => {
-                    const selected = Array.from(keys)[0] as
-                      | MemoryCategory
-                      | 'all'
-                    setFilterCategory(selected)
-                  }}
-                  className="max-w-xs"
-                  size="sm"
-                  startContent={<Icon name="Search" className="w-4 h-4" />}
-                  items={[
-                    { key: 'all', label: 'All Categories' },
-                    ...Object.entries(categoryLabels).map(([key, label]) => ({
-                      key,
-                      label,
-                    })),
-                  ]}
-                >
-                  {(item) => (
-                    <SelectItem key={item.key}>
-                      {t(item.label as any)}
-                    </SelectItem>
+            {/* Review Tab */}
+            <Tab
+              key="review"
+              title={
+                <div className="flex items-center gap-2">
+                  <Icon name="Clock" size="sm" className="hidden lg:inline" />
+                  <span>{t('Pending Review')}</span>
+                  {pendingMemories.length > 0 && (
+                    <Chip size="sm" color="warning" variant="solid">
+                      {pendingMemories.length}
+                    </Chip>
                   )}
-                </Select>
-              </div>
+                </div>
+              }
+            />
 
-              {isMemoryLoading ? (
-                <div className="flex justify-center py-8">
-                  <Spinner size="lg" />
+            {/* Approved Memories Tab */}
+            <Tab
+              key="approved"
+              title={
+                <div className="flex items-center gap-2">
+                  <Icon name="Check" size="sm" className="hidden lg:inline" />
+                  <span>{t('Approved')}</span>
+                  {approvedMemories.length > 0 && (
+                    <Chip size="sm" variant="flat">
+                      {approvedMemories.length}
+                    </Chip>
+                  )}
                 </div>
-              ) : approvedMemories.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-default-400">
-                  <Icon name="Brain" className="w-12 h-12 mb-4 opacity-50" />
-                  <p>{t('No approved memories yet')}</p>
-                </div>
-              ) : (
-                <div className="grid gap-3">
-                  {approvedMemories.map((memory) => (
-                    <MemoryCard
-                      key={memory.id}
-                      memory={memory}
-                      onEdit={() => openMemoryEditModal(memory)}
-                      onDelete={() => confirmDeleteMemory(memory.id)}
-                      onToggleGlobal={async () => {
-                        if (memory.isGlobal) {
-                          await downgradeFromGlobal(memory.id)
-                        } else {
-                          await upgradeToGlobal(memory.id)
-                        }
-                      }}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </Tab>
+              }
+            />
 
-          {/* Synthesis Tab */}
-          <Tab
-            key="synthesis"
-            title={
-              <div className="flex items-center gap-2">
-                <Icon name="Brain" className="w-4 h-4" />
-                <span>{t('Synthesis')}</span>
-              </div>
-            }
-            isDisabled={!selectedAgentId}
-          >
-            <div className="py-4">
-              {!selectedAgentId ? (
-                <div className="flex flex-col items-center justify-center py-12 text-default-400">
-                  <p>{t('Select an agent to view their memory synthesis')}</p>
+            {/* Synthesis Tab */}
+            <Tab
+              key="synthesis"
+              title={
+                <div className="flex items-center gap-2">
+                  <Icon name="Brain" size="sm" className="hidden lg:inline" />
+                  <span>{t('Synthesis')}</span>
                 </div>
-              ) : memoryDocument?.synthesis ? (
-                <Card>
-                  <CardHeader className="flex justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold">
-                        {t('Memory Synthesis for {agent}', {
-                          agent: selectedAgent?.name || selectedAgentId,
-                        })}
-                      </h3>
-                      <p className="text-sm text-default-500">
-                        {t('Last updated: {date}', {
-                          date: new Date(
-                            memoryDocument.lastSynthesisAt,
-                          ).toLocaleString(),
-                        })}
-                      </p>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="flat"
-                      startContent={
-                        <Icon name="Download" className="w-4 h-4" />
-                      }
-                      onPress={() => {
-                        const blob = new Blob([memoryDocument.synthesis], {
-                          type: 'text/markdown',
-                        })
-                        const blobUrl = URL.createObjectURL(blob)
-                        const a = document.createElement('a')
-                        a.href = blobUrl
-                        a.download = `${selectedAgent?.name || 'agent'}-memory-synthesis.md`
-                        a.click()
-                        URL.revokeObjectURL(blobUrl)
-                      }}
-                    >
-                      {t('Export')}
-                    </Button>
-                  </CardHeader>
-                  <CardBody>
-                    <MarkdownRenderer content={memoryDocument.synthesis} />
-                  </CardBody>
-                </Card>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-default-400">
-                  <Icon name="Brain" className="w-12 h-12 mb-4 opacity-50" />
-                  <p className="mb-4">{t('No synthesis generated yet')}</p>
-                  <Button
-                    color="primary"
-                    onPress={handleGenerateSynthesis}
-                    isLoading={isGeneratingSynthesis}
-                    startContent={
-                      <Icon name="RefreshDouble" className="w-4 h-4" />
-                    }
-                  >
-                    {t('Generate Synthesis')}
-                  </Button>
-                </div>
-              )}
-            </div>
-          </Tab>
-        </Tabs>
+              }
+              isDisabled={!selectedAgentId}
+            />
+          </Tabs>
+          <MultiFilter
+            label=" "
+            sections={[
+              {
+                key: 'agent',
+                title: t('Filter by agent'),
+                options: [
+                  { key: 'all', label: t('All agents') },
+                  ...agents.map((agent) => ({
+                    key: agent.id,
+                    label: agent.name,
+                  })),
+                ],
+              },
+              {
+                key: 'category',
+                title: t('Filter by category'),
+                options: [
+                  { key: 'all', label: t('All Categories') },
+                  ...Object.entries(categoryLabels).map(([key, label]) => ({
+                    key,
+                    label: t(label as any),
+                  })),
+                ],
+              },
+            ]}
+            selectedKeys={filterSelection}
+            onSelectionChange={setFilterSelection}
+          />
+        </div>
       </div>
+
+      {memoryTab === 'review' && (
+        <div className="py-4">
+          {isMemoryLoading ? (
+            <div className="flex justify-center py-8">
+              <Spinner size="lg" />
+            </div>
+          ) : (
+            <MemoryReviewList
+              memories={pendingMemories}
+              onApprove={approveMemory}
+              onReject={rejectMemory}
+              onEdit={editAndApproveMemory}
+              onBulkApprove={bulkApproveMemories}
+              onBulkReject={bulkRejectMemories}
+              isLoading={isMemoryLoading}
+              emptyMessage={
+                selectedAgentId
+                  ? t('No memories pending review for this agent')
+                  : t('No memories pending review')
+              }
+            />
+          )}
+        </div>
+      )}
+
+      {memoryTab === 'approved' && (
+        <div className="py-4 space-y-4">
+          {isMemoryLoading ? (
+            <div className="flex justify-center py-8">
+              <Spinner size="lg" />
+            </div>
+          ) : approvedMemories.length === 0 && filterCategory === 'all' ? (
+            <div className="flex flex-col items-center justify-center py-16 text-default-400">
+              <Icon name="Brain" className="w-12 h-12 mb-4 opacity-50" />
+              <p className="text-lg font-medium mb-2">
+                {t('No approved memories yet')}
+              </p>
+              <p className="text-sm text-center max-w-md">
+                {t(
+                  'Memories will appear here once they are approved from the review queue.',
+                )}
+              </p>
+            </div>
+          ) : approvedMemories.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-default-400">
+              <Icon name="FilterAlt" className="w-10 h-10 mb-3 opacity-50" />
+              <p className="text-sm">{t('No memories match this filter')}</p>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {approvedMemories.map((memory) => (
+                <MemoryCard
+                  key={memory.id}
+                  memory={memory}
+                  onEdit={() => openMemoryEditModal(memory)}
+                  onDelete={() => confirmDeleteMemory(memory.id)}
+                  onToggleGlobal={async () => {
+                    if (memory.isGlobal) {
+                      await downgradeFromGlobal(memory.id)
+                    } else {
+                      await upgradeToGlobal(memory.id)
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {memoryTab === 'synthesis' && (
+        <div className="py-4">
+          {!selectedAgentId ? (
+            <div className="flex flex-col items-center justify-center py-16 text-default-400">
+              <Icon name="Brain" className="w-12 h-12 mb-4 opacity-50" />
+              <p className="text-lg font-medium mb-2">
+                {t('Select an agent to view their memory synthesis')}
+              </p>
+            </div>
+          ) : memoryDocument?.synthesis ? (
+            <Card>
+              <CardHeader className="flex justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold">
+                    {t('Memory Synthesis for {agent}', {
+                      agent: selectedAgent?.name || selectedAgentId,
+                    })}
+                  </h3>
+                  <p className="text-sm text-default-500">
+                    {t('Last updated: {date}', {
+                      date: new Date(
+                        memoryDocument.lastSynthesisAt,
+                      ).toLocaleString(),
+                    })}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="flat"
+                  startContent={<Icon name="Download" className="w-4 h-4" />}
+                  onPress={() => {
+                    const blob = new Blob([memoryDocument.synthesis], {
+                      type: 'text/markdown',
+                    })
+                    const blobUrl = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = blobUrl
+                    a.download = `${selectedAgent?.name || 'agent'}-memory-synthesis.md`
+                    a.click()
+                    URL.revokeObjectURL(blobUrl)
+                  }}
+                >
+                  {t('Export')}
+                </Button>
+              </CardHeader>
+              <CardBody>
+                <MarkdownRenderer content={memoryDocument.synthesis} />
+              </CardBody>
+            </Card>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 text-default-400">
+              <Icon name="Brain" className="w-12 h-12 mb-4 opacity-50" />
+              <p className="text-lg font-medium mb-2">
+                {t('No synthesis generated yet')}
+              </p>
+              <p className="text-sm text-center max-w-md mb-4">
+                {t(
+                  'Generate a synthesis to create a summary of all approved memories for this agent.',
+                )}
+              </p>
+              <Button
+                color="primary"
+                onPress={handleGenerateSynthesis}
+                isLoading={isGeneratingSynthesis}
+                startContent={<Icon name="RefreshDouble" className="w-4 h-4" />}
+              >
+                {t('Generate Synthesis')}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Delete Memory Confirmation Modal */}
       <Modal isOpen={isDeleteOpen} onClose={onDeleteClose}>
@@ -809,11 +819,11 @@ function MemoryCard({
   const confidenceColor = confidenceColors[memory.confidence] || 'default'
 
   return (
-    <Card className="w-full">
-      <CardBody className="flex flex-row gap-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <h4 className="font-semibold">{memory.title}</h4>
+    <Card className="w-full group" shadow="sm">
+      <CardBody className="flex flex-row gap-4 py-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <h4 className="font-semibold text-sm truncate">{memory.title}</h4>
             <Chip size="sm" variant="flat" color={confidenceColor as any}>
               {t((memory.confidence || 'medium') as any)}
             </Chip>
@@ -831,23 +841,42 @@ function MemoryCard({
               </Chip>
             )}
           </div>
-          <p className="text-sm text-default-600 mb-2">{memory.content}</p>
-          <div className="flex flex-wrap gap-1">
-            {(memory.keywords || []).slice(0, 5).map((keyword) => (
-              <Chip key={keyword} size="sm" variant="flat" className="text-xs">
-                {keyword}
-              </Chip>
-            ))}
-          </div>
-          <p className="text-xs text-default-400 mt-2">
-            {t('Learned: {date}', {
-              date: new Date(memory.learnedAt).toLocaleDateString(),
-            })}
-            {memory.usageCount > 0 &&
-              ` • ${t('Used {count} times', { count: memory.usageCount })}`}
+          <p className="text-sm text-default-600 mb-2 line-clamp-2">
+            {memory.content}
           </p>
+          <div className="flex items-center gap-3 text-xs text-default-400">
+            <span>
+              {t('Learned: {date}', {
+                date: new Date(memory.learnedAt).toLocaleDateString(),
+              })}
+            </span>
+            {memory.usageCount > 0 && (
+              <span>
+                {t('Used {count} times', { count: memory.usageCount })}
+              </span>
+            )}
+            {(memory.keywords || []).length > 0 && (
+              <div className="flex gap-1">
+                {memory.keywords.slice(0, 3).map((keyword) => (
+                  <Chip
+                    key={keyword}
+                    size="sm"
+                    variant="flat"
+                    className="text-xs"
+                  >
+                    {keyword}
+                  </Chip>
+                ))}
+                {memory.keywords.length > 3 && (
+                  <span className="text-default-400">
+                    +{memory.keywords.length - 3}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-        <div className="flex flex-col justify-center gap-1">
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button
             isIconOnly
             size="sm"

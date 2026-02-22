@@ -171,7 +171,7 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     provider: 'google',
     name: 'Google Gemini',
     models: getModelsForProviderAsync('google'),
-    icon: 'Google',
+    icon: 'Gemini',
     apiKeyPage: 'https://aistudio.google.com/apikey',
   },
   {

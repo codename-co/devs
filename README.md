@@ -70,11 +70,27 @@ through a universally accessible, privacy-first platform.
 
 ## Self-Hosting
 
+<details open>
+<summary>
+
+### 🐳 Docker
+
+</summary>
+
 ```shell
 docker run -d -p 80:80 codename/devs
 ```
 
 Then open <http://localhost> in your browser.
+
+</details>
+
+<details open>
+<summary>
+
+### 🐳 Docker compose
+
+</summary>
 
 Alternatively, check out the [compose.yaml](compose.yaml) file for a Docker Compose setup.
 
@@ -87,6 +103,8 @@ services:
 ```
 
 See <https://hub.docker.com/r/codename/devs> for more details.
+
+</details>
 
 ## Contributing
 

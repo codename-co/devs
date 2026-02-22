@@ -154,6 +154,9 @@ export const en = [
   'Agent Memory',
   'Pinned Messages',
   'General',
-  'Extend',
   'Monitor',
+  'Configure',
+  'Personalize',
+  'Extend',
+  'Observe',
 ] as const

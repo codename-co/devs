@@ -12,8 +12,6 @@ import {
   ModalBody,
   ModalFooter,
   useDisclosure,
-  Divider,
-  Tooltip,
   CardFooter,
   ButtonGroup,
 } from '@heroui/react'
@@ -132,7 +130,7 @@ export function MemoryReviewCard({
         <CardHeader className="flex flex-row items-start justify-between gap-3 pb-0">
           <div className="flex flex-col gap-1">
             <h4 className="text-md font-semibold">{memory.title}</h4>
-            <div className="flex flex-wrap gap-2">
+            {/* <div className="flex flex-wrap gap-2">
               <Chip
                 size="sm"
                 variant="flat"
@@ -156,7 +154,7 @@ export function MemoryReviewCard({
                   {t(confidenceInfo.label as any)}
                 </Chip>
               </Tooltip>
-            </div>
+            </div> */}
           </div>
           <span className="text-xs text-default-400">
             {formatDate(memory.learnedAt)}
@@ -166,7 +164,7 @@ export function MemoryReviewCard({
         <CardBody className="gap-3">
           <p className="text-sm text-default-600">{memory.content}</p>
 
-          {memory.keywords.length > 0 && (
+          {/* {memory.keywords.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {memory.keywords.map((keyword) => (
                 <Chip
@@ -179,9 +177,8 @@ export function MemoryReviewCard({
                 </Chip>
               ))}
             </div>
-          )}
+          )} */}
         </CardBody>
-        <Divider />
 
         <CardFooter>
           <ButtonGroup variant="flat" size="sm">
@@ -204,8 +201,7 @@ export function MemoryReviewCard({
               {t('Edit')}
             </Button>
             <Button
-              color="success"
-              variant="solid"
+              color="primary"
               startContent={<Icon name="Check" className="w-4 h-4" />}
               onPress={handleApprove}
               isLoading={actionLoading === 'approve'}

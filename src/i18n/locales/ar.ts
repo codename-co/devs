@@ -55,6 +55,8 @@ export const ar: I18n = {
   Knowledge: 'المعرفة',
   Connectors: 'الموصلات',
   'Add connectors': 'إضافة موصلات',
+  'Manage knowledge': 'إدارة المعرفة',
+  'Manage skills': 'إدارة المهارات',
   'New chat': 'محادثة جديدة',
   AGENTS: 'الوكلاء',
   CONVERSATIONS: 'المحادثات',
@@ -425,6 +427,13 @@ export const ar: I18n = {
   'No memories pending review': 'لا توجد ذكريات قيد المراجعة',
   'No memories pending review for this agent':
     'لا توجد ذكريات قيد المراجعة لهذا الوكيل',
+  'Agent memories are pieces of information that an agent can store and recall to inform its decisions and actions. They can be facts, preferences, behaviors, relationships, or any other relevant information about the agent or its environment.':
+    'ذكريات الوكيل هي معلومات يمكن للوكيل تخزينها واسترجاعها لاتخاذ قراراته وإجراءاته. يمكن أن تكون حقائق أو تفضيلات أو سلوكيات أو علاقات أو أي معلومات أخرى ذات صلة بالوكيل أو بيئته.',
+  'Memories will appear here once they are approved from the review queue.':
+    'ستظهر الذكريات هنا بمجرد الموافقة عليها من قائمة المراجعة.',
+  'No memories match this filter': 'لا توجد ذكريات تطابق هذا الفلتر',
+  'Generate a synthesis to create a summary of all approved memories for this agent.':
+    'أنشئ توليفًا لإنشاء ملخص لجميع الذكريات المعتمدة لهذا الوكيل.',
   'No approved memories yet': 'لا توجد ذكريات معتمدة بعد',
   'Select an agent to view their memory synthesis':
     'اختر وكيلاً لعرض توليف ذاكرته',
@@ -535,6 +544,10 @@ export const ar: I18n = {
   'Conversation renamed successfully': 'تم إعادة تسمية المحادثة بنجاح',
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     'لا توجد رسائل مثبتة بعد. قم بتثبيت الرسائل المهمة من المحادثات لجعلها متاحة هنا.',
+  'Pinned messages are important information that need to be accessible by agents during future conversations.':
+    'الرسائل المثبتة هي معلومات مهمة يجب أن تكون متاحة للوكلاء أثناء المحادثات المستقبلية.',
+  'Upload files or sync folders to build your knowledge base. Supported file types include documents, images, and text files.':
+    'ارفع ملفات أو زامن مجلدات لبناء قاعدة معرفتك. تشمل أنواع الملفات المدعومة المستندات والصور والملفات النصية.',
 
   // Knowledge Base - Folder Watching
   'Stop syncing': 'إيقاف المزامنة',

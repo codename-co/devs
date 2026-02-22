@@ -16,6 +16,7 @@ export interface FilterOption<T = string> {
   label: string
   count?: number
   icon?: IconName
+  hidden?: boolean
 }
 
 export interface FilterSection<T = string> {
@@ -133,7 +134,7 @@ export function Filter<T extends string = string>({
         color={hasActiveFilter ? 'primary' : color}
         startContent={<Icon name="Filter" className="w-4 h-4" />}
       >
-        {selectedOption?.label || label}
+        {selectedOption?.hidden ? '' : selectedOption?.label || label}
         {shouldShowCountInButton && selectedOption?.count !== undefined && (
           <span className="ml-1 text-xs opacity-70">
             ({selectedOption.count})

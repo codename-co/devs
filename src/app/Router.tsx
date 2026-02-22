@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Navigate, Outlet, Route, Routes, useParams } from 'react-router-dom'
+import { Outlet, Route, Routes, useParams } from 'react-router-dom'
 
 import { LocalLLMLoadingIndicator } from '@/components'
 import { LanguageRedirect } from '@/components/LanguageRedirect'
@@ -17,7 +17,6 @@ import HTMLdemoPage from '@/pages/Demo/html.mdx'
 import DiagramPage from '@/pages/Demo/diagram.mdx'
 import { PrivacyPage } from '@/pages/Privacy'
 import { TermsPage } from '@/pages/Terms'
-import { KnowledgePage } from '@/pages/Knowledge'
 import { OAuthCallbackPage } from '@/pages/OAuth'
 import { TaskPage } from '@/pages/Tasks/show'
 import { TasksPage } from '@/pages/Tasks'
@@ -28,12 +27,6 @@ import {
   NewExtensionPage,
   ExtensionEditorPage,
 } from '@/features/marketplace/pages'
-import { SkillsPage } from '@/features/skills'
-
-/**
- * Redirect component for /connectors -> /knowledge/connectors
- */
-const ConnectorsRedirect = () => <Navigate to="/knowledge/connectors" replace />
 
 const routes = {
   index: IndexPage,
@@ -44,24 +37,13 @@ const routes = {
   'agents/new': AgentsNewPage,
   'agents/start': AgentsStartPage,
   'agents/start/:agentSlug': AgentsStartPage,
-  // Redirect /connectors to /knowledge/connectors
-  connectors: ConnectorsRedirect,
   conversations: ConversationPage,
   demo: DemoPage,
   'demo/diagram': DiagramPage,
   'demo/html': HTMLdemoPage,
   studio: StudioPage,
-  knowledge: KnowledgePage,
-  'knowledge/files': KnowledgePage,
-  'knowledge/connectors': KnowledgePage,
-  'knowledge/memories': KnowledgePage,
-  'knowledge/messages': KnowledgePage,
-  // methodologies: MethodologiesPage,
-  // 'methodologies/new': MethodologyNewPage,
-  // 'methodologies/:methodologyId': MethodologyPage,
   'oauth/callback': OAuthCallbackPage,
   privacy: PrivacyPage,
-  skills: SkillsPage,
   task: TaskPage,
   tasks: TasksPage,
   'tasks/:taskId': TaskPage,

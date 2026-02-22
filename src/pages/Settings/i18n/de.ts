@@ -198,4 +198,7 @@ export const de: I18n = {
   General: 'Allgemein',
   Extend: 'Erweitern',
   Monitor: 'Überwachen',
+  Configure: 'Konfigurieren',
+  Personalize: 'Personalisieren',
+  Observe: 'Beobachten',
 } as const

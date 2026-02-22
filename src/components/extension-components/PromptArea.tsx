@@ -112,7 +112,7 @@ const translations: Record<LanguageCode, Record<TranslationKey, string>> = {
       "Chargement de l'agent et de la conversation…",
     'No files found in knowledge base':
       'Aucun fichier dans la base de connaissances',
-    'Add connectors': 'Ajouter des connecteurs',
+    'Add connectors': 'Ajouter un connecteur',
     'No methodologies found': 'Aucune méthodologie trouvée',
     'Select a methodology': 'Sélectionner une méthodologie',
     'Search agents…': 'Rechercher un agent…',
@@ -149,7 +149,7 @@ const translations: Record<LanguageCode, Record<TranslationKey, string>> = {
     'Loading agent and conversation…': 'Lade Agent und Unterhaltung…',
     'No files found in knowledge base':
       'Keine Dateien in der Wissensdatenbank gefunden',
-    'Add connectors': 'Konnektoren hinzufügen',
+    'Add connectors': 'Konnektor hinzufügen',
     'No methodologies found': 'Keine Methodiken gefunden',
     'Select a methodology': 'Methodik auswählen',
     'Search agents…': 'Agenten suchen…',

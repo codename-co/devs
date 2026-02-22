@@ -23,10 +23,10 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
       onClose={onClose}
       backdrop="blur"
       classNames={{
-        base: 'max-h-[90vh]',
+        base: 'max-h-[90vh] overflow-hidden',
         body: 'p-0',
       }}
-      hideCloseButton={false}
+      hideCloseButton
     >
       <ModalContent>
         <ModalBody className="p-0 min-h-[500px]">

@@ -144,7 +144,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
       const mapping: Partial<Record<LLMProvider, string>> = {
         openai: 'openai',
         anthropic: 'anthropic',
-        google: 'google',
+        google: 'gemini',
         'vertex-ai': 'google-vertex',
         mistral: 'mistral',
         openrouter: 'openrouter',
@@ -866,7 +866,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
                 startContent={<Icon name="Plus" size="sm" />}
                 textValue={t('Add AI provider')}
                 onPress={() => {
-                  navigate(url('#settings/providers/new'))
+                  navigate(url('#settings/providers/add'))
                 }}
                 closeOnSelect
               >

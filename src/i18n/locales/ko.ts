@@ -54,6 +54,8 @@ export const ko: I18n = {
   Knowledge: '지식',
   Connectors: '커넥터',
   'Add connectors': '커넥터 추가',
+  'Manage knowledge': '지식 관리',
+  'Manage skills': '스킬 관리',
   'New chat': '새로운 채팅',
   AGENTS: '에이전트',
   CONVERSATIONS: '대화',
@@ -423,6 +425,13 @@ export const ko: I18n = {
   'No memories pending review': '검토 대기 중인 기억 없음',
   'No memories pending review for this agent':
     '이 에이전트에 대해 검토 대기 중인 기억 없음',
+  'Agent memories are pieces of information that an agent can store and recall to inform its decisions and actions. They can be facts, preferences, behaviors, relationships, or any other relevant information about the agent or its environment.':
+    '에이전트 기억은 에이전트가 결정과 행동에 참고하기 위해 저장하고 회상할 수 있는 정보입니다. 사실, 선호도, 행동, 관계 또는 에이전트나 환경에 대한 기타 관련 정보가 될 수 있습니다.',
+  'Memories will appear here once they are approved from the review queue.':
+    '검토 대기열에서 승인되면 기억이 여기에 표시됩니다.',
+  'No memories match this filter': '이 필터와 일치하는 기억 없음',
+  'Generate a synthesis to create a summary of all approved memories for this agent.':
+    '이 에이전트의 모든 승인된 기억에 대한 요약을 만들려면 종합을 생성하세요.',
   'No approved memories yet': '아직 승인된 기억 없음',
   'Select an agent to view their memory synthesis':
     '기억 종합을 보려면 에이전트를 선택하세요',
@@ -533,6 +542,10 @@ export const ko: I18n = {
   'Conversation renamed successfully': '대화 이름이 변경되었습니다',
   'No pinned messages yet. Pin important messages from conversations to make them available here.':
     '아직 고정된 메시지가 없습니다. 대화에서 중요한 메시지를 고정하여 여기에서 사용할 수 있게 하세요.',
+  'Pinned messages are important information that need to be accessible by agents during future conversations.':
+    '고정된 메시지는 향후 대화 중 에이전트가 접근할 수 있어야 하는 중요한 정보입니다.',
+  'Upload files or sync folders to build your knowledge base. Supported file types include documents, images, and text files.':
+    '파일을 업로드하거나 폴더를 동기화하여 지식 기반을 구축하세요. 지원되는 파일 유형에는 문서, 이미지 및 텍스트 파일이 포함됩니다.',
 
   // Knowledge Base - Folder Watching
   'Stop syncing': '동기화 중지',
