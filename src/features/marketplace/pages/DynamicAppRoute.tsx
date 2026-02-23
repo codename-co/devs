@@ -15,7 +15,7 @@
  * - /:lang/settings (localized page)
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Button, Spinner, Tooltip } from '@heroui/react'
 
@@ -24,7 +24,6 @@ import { Container, Icon, Section } from '@/components'
 import { useI18n, languages } from '@/i18n'
 import localI18n from './i18n'
 import { useMarketplaceStore } from '../store'
-import { NotFoundPage } from '@/pages/NotFound'
 import { getExtensionColorClass } from '../utils'
 import { ExtensionPreview } from '../components'
 import type { HeaderProps } from '@/lib/types'
@@ -78,6 +77,7 @@ export function DynamicAppRoute() {
   const navigate = useNavigate()
   const { lang, t } = useI18n(localI18n)
   const [hasInitialized, setHasInitialized] = useState(false)
+  const loadCalledRef = useRef(false)
 
   const installed = useMarketplaceStore((state) => state.installed)
   const installedApps = useMemo(
@@ -130,12 +130,25 @@ export function DynamicAppRoute() {
   // No need to fetch from the network; the installed extension is the source of truth
   const ext = installedApp?.extension
 
-  // Load extensions on mount
+  // Load extensions on mount – use a ref guard so this runs exactly once
+  // regardless of whether the Zustand action references are considered stable.
   useEffect(() => {
+    if (loadCalledRef.current) return
+    loadCalledRef.current = true
     Promise.all([loadExtensions(), loadInstalledExtensions()]).finally(() =>
       setHasInitialized(true),
     )
   }, [loadExtensions, loadInstalledExtensions])
+
+  // When initialisation is done and no matching app exists, go home.
+  // Rendering <NotFoundPage /> would navigate to the parent URL, which may
+  // also be unknown and would remount DynamicAppRoute, causing a cascade of
+  // network requests and console logs.
+  useEffect(() => {
+    if (hasInitialized && !isLoadingInstalled && (!installedApp || !pageKey)) {
+      navigate('/', { replace: true })
+    }
+  }, [hasInitialized, isLoadingInstalled, installedApp, pageKey, navigate])
 
   // Get localized metadata
   const localizedName = ext?.i18n?.[lang as LanguageCode]?.name || ext?.name
@@ -160,9 +173,9 @@ export function DynamicAppRoute() {
     )
   }
 
-  // If no matching app found, show NotFound
+  // If no matching app found, render nothing while the navigate effect fires.
   if (!installedApp || !pageKey || !ext) {
-    return <NotFoundPage />
+    return null
   }
 
   // Check if update is available for this extension
