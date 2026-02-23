@@ -85,7 +85,11 @@ export function AttachmentSelector({
   }, [])
 
   const renderKnowledgePreview = useCallback((item: KnowledgeItem) => {
-    if (item.fileType === 'image' && item.content?.startsWith('data:image/')) {
+    if (
+      item.fileType === 'image' &&
+      typeof item.content === 'string' &&
+      item.content.startsWith('data:image/')
+    ) {
       return (
         <Image
           src={item.content}

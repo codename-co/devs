@@ -34,6 +34,7 @@ import { cn } from '@/lib/utils'
 import { type Agent, type KnowledgeItem, type InstalledSkill } from '@/types'
 import type { Methodology } from '@/types/methodology.types'
 import { getDefaultAgent } from '@/stores/agentStore'
+import { getKnowledgeItemDecrypted } from '@/stores/knowledgeStore'
 import {
   isLandscape,
   isMobileDevice,
@@ -379,26 +380,46 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       async (item: KnowledgeItem) => {
         // Convert KnowledgeItem to File for consistency
         try {
-          let fileData: BlobPart
-          let mimeType = item.mimeType || 'application/octet-stream'
+          // Always fetch the decrypted version — the item passed from AttachmentSelector
+          // may have encrypted content fields (EncryptedField objects, not strings)
+          const decryptedItem = await getKnowledgeItemDecrypted(item.id)
+          const resolved = decryptedItem ?? item
 
-          if (item.content?.startsWith('data:')) {
+          let fileData: BlobPart
+          let mimeType = resolved.mimeType || 'application/octet-stream'
+          // content is typed as string but binary connector files may store ArrayBuffer at runtime
+          const rawContent = resolved.content as unknown
+
+          if (rawContent instanceof ArrayBuffer) {
+            // Handle raw binary content stored by connectors (e.g., Google Drive, Dropbox)
+            fileData = new Blob([rawContent], { type: mimeType })
+          } else if (
+            typeof rawContent === 'string' &&
+            rawContent.startsWith('data:')
+          ) {
             // Handle data URLs (for images and binary files)
-            const response = await fetch(item.content)
+            const response = await fetch(rawContent)
             fileData = await response.blob()
             // Extract mime type from data URL if available
-            const dataUrlMatch = item.content.match(/^data:([^;]+)/)
+            const dataUrlMatch = rawContent.match(/^data:([^;]+)/)
             if (dataUrlMatch) {
               mimeType = dataUrlMatch[1]
             }
+          } else if (typeof rawContent === 'string') {
+            // Plain text content
+            fileData = new Blob([rawContent], { type: mimeType })
           } else {
-            // Handle text content
-            fileData = new Blob([item.content || ''], { type: mimeType })
+            console.warn(
+              '[PromptArea] Unknown content type for knowledge item:',
+              typeof rawContent,
+              item.name,
+            )
+            return
           }
 
-          const file = new File([fileData], item.name, {
+          const file = new File([fileData], resolved.name, {
             type: mimeType,
-            lastModified: new Date(item.lastModified).getTime(),
+            lastModified: new Date(resolved.lastModified).getTime(),
           })
 
           const newFiles = [...selectedFiles, file]

@@ -95,58 +95,86 @@ export async function getKnowledgeAttachments(
 
       if (item.content) {
         let attachmentType: 'image' | 'document' | 'text' = 'text'
-        let data = item.content
 
-        // Determine attachment type based on file type and content
-        if (
-          item.fileType === 'image' &&
-          item.content.startsWith('data:image/')
-        ) {
-          attachmentType = 'image'
-          // Extract base64 data without the data URL prefix
-          const base64Match = item.content.match(
-            /^data:image\/[^;]+;base64,(.+)$/,
+        // content is typed as string but binary connector files may store ArrayBuffer at runtime
+        const rawContent = item.content as unknown
+
+        let data: string
+
+        if (rawContent instanceof ArrayBuffer) {
+          // Binary content from connectors (e.g., Google Drive PDFs, Dropbox files)
+          const bytes = new Uint8Array(rawContent)
+          const binaryString = Array.from(bytes, (b) =>
+            String.fromCharCode(b),
+          ).join('')
+          data = btoa(binaryString)
+          attachmentType =
+            item.fileType === 'image'
+              ? 'image'
+              : item.fileType === 'document'
+                ? 'document'
+                : 'text'
+        } else if (typeof rawContent !== 'string') {
+          // Unknown content type — skip
+          console.warn(
+            `[AGENT-KNOWLEDGE] Unexpected content type for "${item.name}": ${typeof rawContent}`,
           )
-          if (base64Match) {
-            data = base64Match[1]
-          }
-        } else if (item.fileType === 'document') {
-          attachmentType = 'document'
-          // For documents, if content doesn't start with data:, it's likely text
-          if (!item.content.startsWith('data:')) {
-            // Encode text content as base64
-            data = btoa(item.content)
-          } else {
-            // Extract base64 data from data URL
-            const base64Match = item.content.match(/^data:[^;]+;base64,(.+)$/)
-            if (base64Match) {
-              data = base64Match[1]
-            }
-          }
-
-          // Validate document data: skip empty or clearly invalid PDFs
-          if (
-            item.mimeType === 'application/pdf' &&
-            (!data || data.length < 20)
-          ) {
-            console.warn(
-              `[AGENT-KNOWLEDGE] Skipping PDF "${item.name}" - data appears empty or invalid (${data?.length || 0} bytes)`,
-            )
-            continue
-          }
+          continue
         } else {
-          // Text file
-          attachmentType = 'text'
-          if (!item.content.startsWith('data:')) {
-            // Plain text, encode as base64
-            data = btoa(item.content)
-          } else {
-            // Extract base64 data from data URL
-            const base64Match = item.content.match(/^data:[^;]+;base64,(.+)$/)
+          data = rawContent
+
+          // Determine attachment type based on file type and content
+          if (
+            item.fileType === 'image' &&
+            rawContent.startsWith('data:image/')
+          ) {
+            attachmentType = 'image'
+            // Extract base64 data without the data URL prefix
+            const base64Match = rawContent.match(
+              /^data:image\/[^;]+;base64,(.+)$/,
+            )
             if (base64Match) {
               data = base64Match[1]
             }
+          } else if (item.fileType === 'document') {
+            attachmentType = 'document'
+            // For documents, if content doesn't start with data:, it's likely text
+            if (!rawContent.startsWith('data:')) {
+              // Encode text content as base64
+              data = btoa(rawContent)
+            } else {
+              // Extract base64 data from data URL
+              const base64Match = rawContent.match(/^data:[^;]+;base64,(.+)$/)
+              if (base64Match) {
+                data = base64Match[1]
+              }
+            }
+          } else {
+            // Text file
+            attachmentType = 'text'
+            if (!rawContent.startsWith('data:')) {
+              // Plain text, encode as base64
+              data = btoa(rawContent)
+            } else {
+              // Extract base64 data from data URL
+              const base64Match = rawContent.match(/^data:[^;]+;base64,(.+)$/)
+              if (base64Match) {
+                data = base64Match[1]
+              }
+            }
           }
+        }
+
+        // Validate document data: skip empty or clearly invalid PDFs
+        if (
+          attachmentType === 'document' &&
+          item.mimeType === 'application/pdf' &&
+          (!data || data.length < 20)
+        ) {
+          console.warn(
+            `[AGENT-KNOWLEDGE] Skipping PDF "${item.name}" - data appears empty or invalid (${data?.length || 0} bytes)`,
+          )
+          continue
         }
 
         attachments.push({
