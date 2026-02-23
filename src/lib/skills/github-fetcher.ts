@@ -59,25 +59,128 @@ interface GitHubContentEntry {
  * when extracting dependencies from skill scripts.
  */
 export const PYTHON_STDLIB_MODULES = new Set([
-  'os', 'sys', 'json', 're', 'pathlib', 'datetime', 'collections', 'typing',
-  'io', 'math', 'csv', 'urllib', 'http', 'hashlib', 'base64', 'functools',
-  'itertools', 'subprocess', 'shutil', 'tempfile', 'glob', 'argparse',
-  'logging', 'unittest', 'copy', 'string', 'textwrap', 'abc', 'dataclasses',
-  'enum', 'time', 'random', 'struct', 'socket', 'select', 'signal',
-  'threading', 'multiprocessing', 'queue', 'contextlib', 'operator',
-  'weakref', 'types', 'inspect', 'dis', 'gc', 'traceback', 'warnings',
-  'atexit', 'pprint', 'statistics', 'decimal', 'fractions', 'cmath',
-  'array', 'bisect', 'heapq', 'codecs', 'locale', 'gettext', 'unicodedata',
-  'difflib', 'fnmatch', 'fileinput', 'stat', 'posixpath', 'ntpath',
-  'genericpath', 'linecache', 'tokenize', 'keyword', 'token', 'pdb',
-  'profile', 'pstats', 'timeit', 'trace', 'pickle', 'shelve', 'dbm',
-  'sqlite3', 'zlib', 'gzip', 'bz2', 'lzma', 'zipfile', 'tarfile',
-  'configparser', 'tomllib', 'netrc', 'plistlib', 'xmlrpc', 'html',
-  'xml', 'email', 'mailbox', 'mimetypes', 'binascii', 'quopri', 'uu',
-  'secrets', 'hmac', 'ssl', 'ftplib', 'poplib', 'imaplib', 'smtplib',
-  'uuid', 'telnetlib', 'xmlrpc', 'ipaddress', 'asyncio', 'concurrent',
-  'ctypes', 'platform', 'errno', 'faulthandler', 'site', 'sysconfig',
-  '__future__', 'builtins', '_thread',
+  'os',
+  'sys',
+  'json',
+  're',
+  'pathlib',
+  'datetime',
+  'collections',
+  'typing',
+  'io',
+  'math',
+  'csv',
+  'urllib',
+  'http',
+  'hashlib',
+  'base64',
+  'functools',
+  'itertools',
+  'subprocess',
+  'shutil',
+  'tempfile',
+  'glob',
+  'argparse',
+  'logging',
+  'unittest',
+  'copy',
+  'string',
+  'textwrap',
+  'abc',
+  'dataclasses',
+  'enum',
+  'time',
+  'random',
+  'struct',
+  'socket',
+  'select',
+  'signal',
+  'threading',
+  'multiprocessing',
+  'queue',
+  'contextlib',
+  'operator',
+  'weakref',
+  'types',
+  'inspect',
+  'dis',
+  'gc',
+  'traceback',
+  'warnings',
+  'atexit',
+  'pprint',
+  'statistics',
+  'decimal',
+  'fractions',
+  'cmath',
+  'array',
+  'bisect',
+  'heapq',
+  'codecs',
+  'locale',
+  'gettext',
+  'unicodedata',
+  'difflib',
+  'fnmatch',
+  'fileinput',
+  'stat',
+  'posixpath',
+  'ntpath',
+  'genericpath',
+  'linecache',
+  'tokenize',
+  'keyword',
+  'token',
+  'pdb',
+  'profile',
+  'pstats',
+  'timeit',
+  'trace',
+  'pickle',
+  'shelve',
+  'dbm',
+  'sqlite3',
+  'zlib',
+  'gzip',
+  'bz2',
+  'lzma',
+  'zipfile',
+  'tarfile',
+  'configparser',
+  'tomllib',
+  'netrc',
+  'plistlib',
+  'xmlrpc',
+  'html',
+  'xml',
+  'email',
+  'mailbox',
+  'mimetypes',
+  'binascii',
+  'quopri',
+  'uu',
+  'secrets',
+  'hmac',
+  'ssl',
+  'ftplib',
+  'poplib',
+  'imaplib',
+  'smtplib',
+  'uuid',
+  'telnetlib',
+  'xmlrpc',
+  'ipaddress',
+  'asyncio',
+  'concurrent',
+  'ctypes',
+  'platform',
+  'errno',
+  'faulthandler',
+  'site',
+  'sysconfig',
+  '__future__',
+  'builtins',
+  '_thread',
 ])
 
 const EXTENSION_TO_LANGUAGE: Record<string, SkillScript['language']> = {
@@ -161,7 +264,7 @@ export function parseGitHubUrl(url: string): ParsedGitHubUrl {
 
   throw new Error(
     `Invalid GitHub URL format: ${url}. Expected a GitHub repository URL ` +
-    '(e.g. https://github.com/owner/repo/tree/branch/path)',
+      '(e.g. https://github.com/owner/repo/tree/branch/path)',
   )
 }
 
@@ -233,9 +336,7 @@ export function parseFrontmatter(raw: string): {
 
     // Nested key:value (indented under a parent key)
     if (nestedKey && lineIndent >= 2) {
-      const nestedMatch = trimmed.match(
-        /^\s+(\w[\w.-]*)\s*:\s*"?([^"]*)"?\s*$/,
-      )
+      const nestedMatch = trimmed.match(/^\s+(\w[\w.-]*)\s*:\s*"?([^"]*)"?\s*$/)
       if (nestedMatch) {
         nestedObject![nestedMatch[1]] = nestedMatch[2].trim()
         continue
@@ -328,7 +429,11 @@ export function extractPythonPackages(source: string): string[] {
     const importMatch = trimmed.match(/^import\s+(.+)$/)
     if (importMatch) {
       for (const part of importMatch[1].split(',')) {
-        const mod = part.trim().split(/\s+as\s+/)[0].split('.')[0].trim()
+        const mod = part
+          .trim()
+          .split(/\s+as\s+/)[0]
+          .split('.')[0]
+          .trim()
         if (mod && !PYTHON_STDLIB_MODULES.has(mod)) {
           packages.add(mod)
         }
@@ -395,9 +500,7 @@ export async function fetchRawContent(
   const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${filePath}`
   const res = await fetch(url)
   if (!res.ok) {
-    throw new Error(
-      `Failed to fetch raw content (${res.status}) from ${url}`,
-    )
+    throw new Error(`Failed to fetch raw content (${res.status}) from ${url}`)
   }
   return res.text()
 }
@@ -448,14 +551,20 @@ export async function fetchAllFilesInDirectory(
 // Main Entry Point
 // ============================================================================
 
+/** Well-known subdirectory names that have dedicated handling. */
+const KNOWN_SUBDIRS = new Set(['scripts', 'references', 'assets'])
+
 /**
  * Fetch a complete skill from GitHub given its directory URL.
  *
  * This is the primary function for downloading a skill. It:
  * 1. Parses the GitHub URL to extract owner/repo/branch/path
- * 2. Fetches SKILL.md and parses its YAML frontmatter
- * 3. Fetches scripts/, references/, and assets/ directories in parallel
- * 4. Detects languages and extracts Python package dependencies
+ * 2. Lists the root directory to discover **all** files and folders
+ * 3. Fetches SKILL.md and parses its YAML frontmatter
+ * 4. Fetches scripts/, references/, and assets/ directories in parallel
+ * 5. Fetches any additional root-level files (e.g. pptxgenjs.md, editing.md)
+ *    and extra subdirectories — these are treated as references
+ * 6. Detects languages and extracts Python package dependencies
  *
  * @param githubUrl - GitHub directory URL (e.g. https://github.com/org/repo/tree/main/skill-name)
  * @returns Complete skill data ready for installation
@@ -466,7 +575,10 @@ export async function fetchSkillFromGitHub(
 ): Promise<FetchedSkill> {
   const { owner, repo, branch, path } = parseGitHubUrl(githubUrl)
 
-  // 1. Fetch SKILL.md
+  // 1. List the root directory to discover all entries
+  const rootEntries = await fetchGitHubDirectory(owner, repo, path)
+
+  // 2. Fetch SKILL.md
   const rawSkillMd = await fetchRawContent(
     owner,
     repo,
@@ -475,14 +587,42 @@ export async function fetchSkillFromGitHub(
   )
   const { frontmatter: manifest } = parseFrontmatter(rawSkillMd)
 
-  // 2. Fetch optional sub-directories in parallel
-  const [scriptFiles, referenceFiles, assetFiles] = await Promise.all([
-    fetchAllFilesInDirectory(owner, repo, branch, `${path}/scripts`),
-    fetchAllFilesInDirectory(owner, repo, branch, `${path}/references`),
-    fetchAllFilesInDirectory(owner, repo, branch, `${path}/assets`),
-  ])
+  // 3. Classify root entries
+  const extraFileEntries: GitHubContentEntry[] = []
+  const extraDirEntries: GitHubContentEntry[] = []
 
-  // 3. Build scripts with language detection & package extraction
+  for (const entry of rootEntries) {
+    if (entry.type === 'file' && entry.name !== 'SKILL.md') {
+      extraFileEntries.push(entry)
+    } else if (entry.type === 'dir' && !KNOWN_SUBDIRS.has(entry.name)) {
+      extraDirEntries.push(entry)
+    }
+  }
+
+  // 4. Fetch known sub-directories + extra root files + extra dirs in parallel
+  const [scriptFiles, referenceFiles, assetFiles, ...extraResults] =
+    await Promise.all([
+      fetchAllFilesInDirectory(owner, repo, branch, `${path}/scripts`),
+      fetchAllFilesInDirectory(owner, repo, branch, `${path}/references`),
+      fetchAllFilesInDirectory(owner, repo, branch, `${path}/assets`),
+      // Fetch each extra root-level file
+      ...extraFileEntries.map(async (entry) => {
+        const content = await fetchRawContent(owner, repo, branch, entry.path)
+        return [{ path: entry.path, content }] as {
+          path: string
+          content: string
+        }[]
+      }),
+      // Recursively fetch each extra subdirectory
+      ...extraDirEntries.map((entry) =>
+        fetchAllFilesInDirectory(owner, repo, branch, entry.path),
+      ),
+    ])
+
+  // 5. Flatten extra results into a single array
+  const extraFiles = extraResults.flat()
+
+  // 6. Build scripts with language detection & package extraction
   const scripts: SkillScript[] = scriptFiles.map((f) => {
     const language = detectLanguage(f.path)
     const script: SkillScript = { path: f.path, content: f.content, language }
@@ -493,13 +633,16 @@ export async function fetchSkillFromGitHub(
     return script
   })
 
-  // 4. Build references & assets
-  const references: SkillFile[] = referenceFiles.map((f) => ({
-    path: f.path,
-    content: f.content,
-    mimeType: detectMimeType(f.path),
-  }))
+  // 7. Build references (canonical dir + extra root-level files & dirs)
+  const references: SkillFile[] = [...referenceFiles, ...extraFiles].map(
+    (f) => ({
+      path: f.path,
+      content: f.content,
+      mimeType: detectMimeType(f.path),
+    }),
+  )
 
+  // 8. Build assets
   const assets: SkillFile[] = assetFiles.map((f) => ({
     path: f.path,
     content: f.content,

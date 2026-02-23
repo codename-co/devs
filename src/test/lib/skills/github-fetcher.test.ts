@@ -2,18 +2,18 @@
  * Tests for GitHub Content Fetcher — Agent Skills
  *
  * This tests the pure/sync utility functions (parseGitHubUrl, parseFrontmatter,
- * detectLanguage, detectMimeType, extractPythonPackages). Network-dependent
- * functions (fetchGitHubDirectory, fetchRawContent, fetchSkillFromGitHub)
- * are tested via integration / E2E.
+ * detectLanguage, detectMimeType, extractPythonPackages) and the main
+ * fetchSkillFromGitHub function (with mocked fetch).
  */
 
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
   parseGitHubUrl,
   parseFrontmatter,
   detectLanguage,
   detectMimeType,
   extractPythonPackages,
+  fetchSkillFromGitHub,
   PYTHON_STDLIB_MODULES,
 } from '@/lib/skills/github-fetcher'
 
@@ -48,10 +48,12 @@ describe('parseGitHubUrl', () => {
     expect(() => parseGitHubUrl('https://github.com/owner/repo')).toThrow(
       'Invalid GitHub URL format',
     )
-    expect(() => parseGitHubUrl('https://gitlab.com/owner/repo/tree/main/x')).toThrow(
+    expect(() =>
+      parseGitHubUrl('https://gitlab.com/owner/repo/tree/main/x'),
+    ).toThrow('Invalid GitHub URL format')
+    expect(() => parseGitHubUrl('not-a-url')).toThrow(
       'Invalid GitHub URL format',
     )
-    expect(() => parseGitHubUrl('not-a-url')).toThrow('Invalid GitHub URL format')
   })
 
   it('should handle paths with multiple segments', () => {
@@ -330,5 +332,373 @@ describe('PYTHON_STDLIB_MODULES', () => {
     expect(PYTHON_STDLIB_MODULES.has('requests')).toBe(false)
     expect(PYTHON_STDLIB_MODULES.has('numpy')).toBe(false)
     expect(PYTHON_STDLIB_MODULES.has('flask')).toBe(false)
+  })
+})
+
+// ── fetchSkillFromGitHub (mocked fetch) ──
+
+describe('fetchSkillFromGitHub', () => {
+  const originalFetch = globalThis.fetch
+
+  beforeEach(() => {
+    globalThis.fetch = vi.fn()
+  })
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch
+  })
+
+  /**
+   * Helper: build a mock Response object.
+   */
+  function mockResponse(body: unknown, ok = true, status = 200) {
+    return {
+      ok,
+      status,
+      json: () => Promise.resolve(body),
+      text: () =>
+        Promise.resolve(typeof body === 'string' ? body : JSON.stringify(body)),
+    } as unknown as Response
+  }
+
+  const SKILL_MD = `---
+name: pptx
+description: Create and edit PowerPoint presentations
+license: MIT
+---
+# PPTX Skill
+
+Use this skill for presentations.`
+
+  it('should fetch root-level files alongside SKILL.md as references', async () => {
+    const mockFetch = globalThis.fetch as ReturnType<typeof vi.fn>
+
+    // Root directory listing — includes SKILL.md + extra .md files + known dirs
+    const rootDirListing = [
+      {
+        name: 'SKILL.md',
+        path: 'skills/pptx/SKILL.md',
+        type: 'file',
+        download_url: null,
+        size: 200,
+      },
+      {
+        name: 'editing.md',
+        path: 'skills/pptx/editing.md',
+        type: 'file',
+        download_url: null,
+        size: 500,
+      },
+      {
+        name: 'pptxgenjs.md',
+        path: 'skills/pptx/pptxgenjs.md',
+        type: 'file',
+        download_url: null,
+        size: 800,
+      },
+      {
+        name: 'scripts',
+        path: 'skills/pptx/scripts',
+        type: 'dir',
+        download_url: null,
+        size: 0,
+      },
+    ]
+
+    // scripts/ directory listing
+    const scriptsDirListing = [
+      {
+        name: 'convert.py',
+        path: 'skills/pptx/scripts/convert.py',
+        type: 'file',
+        download_url: null,
+        size: 100,
+      },
+    ]
+
+    mockFetch.mockImplementation((url: string) => {
+      // GitHub API — directory listings
+      if (url.includes('api.github.com/repos') && url.endsWith('skills/pptx')) {
+        return Promise.resolve(mockResponse(rootDirListing))
+      }
+      if (
+        url.includes('api.github.com/repos') &&
+        url.endsWith('skills/pptx/scripts')
+      ) {
+        return Promise.resolve(mockResponse(scriptsDirListing))
+      }
+      // references/ and assets/ → 404 (don't exist)
+      if (url.includes('api.github.com/repos')) {
+        return Promise.resolve(
+          mockResponse({ message: 'Not Found' }, false, 404),
+        )
+      }
+
+      // raw.githubusercontent.com — file content
+      if (
+        url.includes('raw.githubusercontent.com') &&
+        url.endsWith('SKILL.md')
+      ) {
+        return Promise.resolve(mockResponse(SKILL_MD))
+      }
+      if (
+        url.includes('raw.githubusercontent.com') &&
+        url.endsWith('editing.md')
+      ) {
+        return Promise.resolve(
+          mockResponse('# Editing Guide\n\nHow to edit pptx files.'),
+        )
+      }
+      if (
+        url.includes('raw.githubusercontent.com') &&
+        url.endsWith('pptxgenjs.md')
+      ) {
+        return Promise.resolve(
+          mockResponse('# PptxGenJS Docs\n\nAPI reference.'),
+        )
+      }
+      if (
+        url.includes('raw.githubusercontent.com') &&
+        url.endsWith('convert.py')
+      ) {
+        return Promise.resolve(mockResponse('import pptx\nprint("hello")'))
+      }
+
+      return Promise.resolve(mockResponse('Not found', false, 404))
+    })
+
+    const result = await fetchSkillFromGitHub(
+      'https://github.com/anthropics/skills/tree/main/skills/pptx',
+    )
+
+    // Verify manifest
+    expect(result.manifest.name).toBe('pptx')
+    expect(result.manifest.description).toBe(
+      'Create and edit PowerPoint presentations',
+    )
+
+    // Verify scripts were fetched
+    expect(result.scripts).toHaveLength(1)
+    expect(result.scripts[0].path).toBe('skills/pptx/scripts/convert.py')
+    expect(result.scripts[0].language).toBe('python')
+    expect(result.scripts[0].requiredPackages).toEqual(['pptx'])
+
+    // Verify root-level .md files are in references
+    expect(result.references).toHaveLength(2)
+    const refPaths = result.references.map((r) => r.path)
+    expect(refPaths).toContain('skills/pptx/editing.md')
+    expect(refPaths).toContain('skills/pptx/pptxgenjs.md')
+
+    const editingRef = result.references.find((r) =>
+      r.path.endsWith('editing.md'),
+    )!
+    expect(editingRef.content).toContain('Editing Guide')
+    expect(editingRef.mimeType).toBe('text/markdown')
+
+    const pptxRef = result.references.find((r) =>
+      r.path.endsWith('pptxgenjs.md'),
+    )!
+    expect(pptxRef.content).toContain('PptxGenJS Docs')
+  })
+
+  it('should fetch extra subdirectories not in the known set', async () => {
+    const mockFetch = globalThis.fetch as ReturnType<typeof vi.fn>
+
+    const rootDirListing = [
+      {
+        name: 'SKILL.md',
+        path: 'skills/demo/SKILL.md',
+        type: 'file',
+        download_url: null,
+        size: 200,
+      },
+      {
+        name: 'templates',
+        path: 'skills/demo/templates',
+        type: 'dir',
+        download_url: null,
+        size: 0,
+      },
+    ]
+
+    const templatesDirListing = [
+      {
+        name: 'base.html',
+        path: 'skills/demo/templates/base.html',
+        type: 'file',
+        download_url: null,
+        size: 100,
+      },
+    ]
+
+    mockFetch.mockImplementation((url: string) => {
+      if (url.includes('api.github.com/repos') && url.endsWith('skills/demo')) {
+        return Promise.resolve(mockResponse(rootDirListing))
+      }
+      if (
+        url.includes('api.github.com/repos') &&
+        url.endsWith('skills/demo/templates')
+      ) {
+        return Promise.resolve(mockResponse(templatesDirListing))
+      }
+      if (url.includes('api.github.com/repos')) {
+        return Promise.resolve(
+          mockResponse({ message: 'Not Found' }, false, 404),
+        )
+      }
+      if (
+        url.includes('raw.githubusercontent.com') &&
+        url.endsWith('SKILL.md')
+      ) {
+        return Promise.resolve(mockResponse(SKILL_MD))
+      }
+      if (
+        url.includes('raw.githubusercontent.com') &&
+        url.endsWith('base.html')
+      ) {
+        return Promise.resolve(
+          mockResponse('<html><body>Template</body></html>'),
+        )
+      }
+      return Promise.resolve(mockResponse('Not found', false, 404))
+    })
+
+    const result = await fetchSkillFromGitHub(
+      'https://github.com/owner/repo/tree/main/skills/demo',
+    )
+
+    // templates/ is not a known subdir, so its files appear in references
+    expect(result.references).toHaveLength(1)
+    expect(result.references[0].path).toBe('skills/demo/templates/base.html')
+    expect(result.references[0].content).toContain('Template')
+    expect(result.references[0].mimeType).toBe('text/html')
+  })
+
+  it('should work with a skill that only has SKILL.md (no extra files)', async () => {
+    const mockFetch = globalThis.fetch as ReturnType<typeof vi.fn>
+
+    const rootDirListing = [
+      {
+        name: 'SKILL.md',
+        path: 'skills/simple/SKILL.md',
+        type: 'file',
+        download_url: null,
+        size: 200,
+      },
+    ]
+
+    mockFetch.mockImplementation((url: string) => {
+      if (
+        url.includes('api.github.com/repos') &&
+        url.endsWith('skills/simple')
+      ) {
+        return Promise.resolve(mockResponse(rootDirListing))
+      }
+      if (url.includes('api.github.com/repos')) {
+        return Promise.resolve(
+          mockResponse({ message: 'Not Found' }, false, 404),
+        )
+      }
+      if (
+        url.includes('raw.githubusercontent.com') &&
+        url.endsWith('SKILL.md')
+      ) {
+        return Promise.resolve(mockResponse(SKILL_MD))
+      }
+      return Promise.resolve(mockResponse('Not found', false, 404))
+    })
+
+    const result = await fetchSkillFromGitHub(
+      'https://github.com/owner/repo/tree/main/skills/simple',
+    )
+
+    expect(result.manifest.name).toBe('pptx')
+    expect(result.scripts).toHaveLength(0)
+    expect(result.references).toHaveLength(0)
+    expect(result.assets).toHaveLength(0)
+  })
+
+  it('should merge canonical references/ with root-level files', async () => {
+    const mockFetch = globalThis.fetch as ReturnType<typeof vi.fn>
+
+    const rootDirListing = [
+      {
+        name: 'SKILL.md',
+        path: 'skills/mixed/SKILL.md',
+        type: 'file',
+        download_url: null,
+        size: 200,
+      },
+      {
+        name: 'guide.md',
+        path: 'skills/mixed/guide.md',
+        type: 'file',
+        download_url: null,
+        size: 300,
+      },
+      {
+        name: 'references',
+        path: 'skills/mixed/references',
+        type: 'dir',
+        download_url: null,
+        size: 0,
+      },
+    ]
+
+    const referencesDirListing = [
+      {
+        name: 'API.md',
+        path: 'skills/mixed/references/API.md',
+        type: 'file',
+        download_url: null,
+        size: 400,
+      },
+    ]
+
+    mockFetch.mockImplementation((url: string) => {
+      if (
+        url.includes('api.github.com/repos') &&
+        url.endsWith('skills/mixed')
+      ) {
+        return Promise.resolve(mockResponse(rootDirListing))
+      }
+      if (
+        url.includes('api.github.com/repos') &&
+        url.endsWith('skills/mixed/references')
+      ) {
+        return Promise.resolve(mockResponse(referencesDirListing))
+      }
+      if (url.includes('api.github.com/repos')) {
+        return Promise.resolve(
+          mockResponse({ message: 'Not Found' }, false, 404),
+        )
+      }
+      if (
+        url.includes('raw.githubusercontent.com') &&
+        url.endsWith('SKILL.md')
+      ) {
+        return Promise.resolve(mockResponse(SKILL_MD))
+      }
+      if (
+        url.includes('raw.githubusercontent.com') &&
+        url.endsWith('guide.md')
+      ) {
+        return Promise.resolve(mockResponse('# Guide\n\nExtra guide.'))
+      }
+      if (url.includes('raw.githubusercontent.com') && url.endsWith('API.md')) {
+        return Promise.resolve(mockResponse('# API Reference\n\nEndpoints.'))
+      }
+      return Promise.resolve(mockResponse('Not found', false, 404))
+    })
+
+    const result = await fetchSkillFromGitHub(
+      'https://github.com/owner/repo/tree/main/skills/mixed',
+    )
+
+    // Both canonical references/ and root-level files should be in references
+    expect(result.references).toHaveLength(2)
+    const refPaths = result.references.map((r) => r.path)
+    expect(refPaths).toContain('skills/mixed/references/API.md')
+    expect(refPaths).toContain('skills/mixed/guide.md')
   })
 })
