@@ -572,6 +572,14 @@ self.addEventListener('fetch', (event) => {
       return
     }
 
+    // Don't intercept cross-origin requests that aren't LLM or HuggingFace APIs
+    // (those are handled above). This prevents the SW from modifying external
+    // API calls like OAuth token exchanges (e.g. Vertex AI service account auth).
+    const isSameOrigin = url.origin === self.location.origin
+    if (!isSameOrigin) {
+      return
+    }
+
     // Skip caching for model registry - always fetch fresh
     if (url.pathname === '/models/model-registry.json') {
       return
