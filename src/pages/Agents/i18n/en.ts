@@ -157,4 +157,6 @@ export const en = [
   'Using tool: {tool}…',
   // Recent conversations
   'Recent conversations',
+  // Step tracker
+  'No details available',
 ] as const

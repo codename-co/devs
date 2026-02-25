@@ -1,6 +1,6 @@
 import { marked } from 'marked'
 import katex from 'katex'
-import React, { JSX, useEffect, useMemo, useState } from 'react'
+import React, { JSX, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   type CodeBlockType,
@@ -22,6 +22,8 @@ interface MarkdownRendererProps {
   renderWidgets?: boolean
   /** Sources for inline citation rendering */
   sources?: SourceInfo[]
+  /** Whether the content is actively streaming — enables throttled re-parsing */
+  isStreaming?: boolean
 }
 
 interface CodeBlock {
@@ -48,6 +50,7 @@ export const MarkdownRenderer = ({
   className = '',
   renderWidgets = true,
   sources = [],
+  isStreaming = false,
 }: MarkdownRendererProps) => {
   const [processedContent, setProcessedContent] = useState<{
     html: string
@@ -92,214 +95,131 @@ export const MarkdownRenderer = ({
     })
   }
 
+  // Throttle markdown parsing during streaming to avoid re-parsing on every token.
+  // When streaming, we wait THROTTLE_MS after the last content change before re-parsing.
+  // When not streaming, we parse immediately.
+  const THROTTLE_MS = 60
+  const throttleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const latestContentRef = useRef(content)
+  latestContentRef.current = content
+
   useEffect(() => {
-    const renderMarkdown = async () => {
-      try {
-        const codeBlocks: CodeBlock[] = []
-        const thinkBlocks: ThinkBlock[] = []
-        let processedMarkdown = content
+    return () => {
+      if (throttleTimerRef.current) clearTimeout(throttleTimerRef.current)
+    }
+  }, [])
 
-        // Preprocess display math: Convert $$...$$ to placeholders
-        const mathBlocks: { id: string; latex: string }[] = []
-        let mathBlockIndex = 0
+  useEffect(() => {
+    const doRender = () => renderMarkdown(latestContentRef.current)
 
-        // Match $$...$$ blocks (display math)
-        processedMarkdown = processedMarkdown.replace(
-          /\$\$([\s\S]*?)\$\$/g,
-          (_match, latex) => {
-            const id = `math-block-${mathBlockIndex++}`
-            mathBlocks.push({ id, latex: latex.trim() })
-            return `<div data-math-block-id="${id}"></div>`
-          },
-        )
+    if (isStreaming) {
+      // Throttle during streaming
+      if (throttleTimerRef.current) clearTimeout(throttleTimerRef.current)
+      throttleTimerRef.current = setTimeout(doRender, THROTTLE_MS)
+    } else {
+      // Immediate parse when not streaming (historical messages, final content)
+      if (throttleTimerRef.current) {
+        clearTimeout(throttleTimerRef.current)
+        throttleTimerRef.current = null
+      }
+      doRender()
+    }
+  }, [content, isStreaming])
 
-        // Preprocess inline math: Convert $...$ to `$...$` so marked treats it as code
-        // Use a more robust regex that handles special characters in LaTeX
-        processedMarkdown = processedMarkdown.replace(
-          /\$([^$\n]+?)\$/g,
-          (_match, expr) => `\`$$${expr}$$\``,
-        )
+  const renderMarkdown = async (contentToRender: string) => {
+    try {
+      const codeBlocks: CodeBlock[] = []
+      const thinkBlocks: ThinkBlock[] = []
+      let processedMarkdown = contentToRender
 
-        // Process <think> tags first
-        const thinkTagRegex = /<think>([\s\S]*?)<\/think>/g
-        const incompleteThinkRegex = /<think>([\s\S]*)$/
-        let thinkMatch
-        let thinkIndex = 0
+      // Preprocess display math: Convert $$...$$ to placeholders
+      const mathBlocks: { id: string; latex: string }[] = []
+      let mathBlockIndex = 0
 
-        // First, process complete think tags
-        while ((thinkMatch = thinkTagRegex.exec(content)) !== null) {
-          const [fullMatch, thinkContent] = thinkMatch
-          const blockId = `think-block-${thinkIndex++}`
+      // Match $$...$$ blocks (display math)
+      processedMarkdown = processedMarkdown.replace(
+        /\$\$([\s\S]*?)\$\$/g,
+        (_match, latex) => {
+          const id = `math-block-${mathBlockIndex++}`
+          mathBlocks.push({ id, latex: latex.trim() })
+          return `<div data-math-block-id="${id}"></div>`
+        },
+      )
 
-          // Replace with a placeholder
-          const placeholder = `<div data-think-block-id="${blockId}"></div>`
-          processedMarkdown = processedMarkdown.replace(fullMatch, placeholder)
+      // Preprocess inline math: Convert $...$ to `$...$` so marked treats it as code
+      // Use a more robust regex that handles special characters in LaTeX
+      processedMarkdown = processedMarkdown.replace(
+        /\$([^$\n]+?)\$/g,
+        (_match, expr) => `\`$$${expr}$$\``,
+      )
 
-          thinkBlocks.push({
-            id: blockId,
-            content: thinkContent.trim(),
-            processing: false, // Complete blocks are not processing
-          })
-        }
+      // Process <think> tags first
+      const thinkTagRegex = /<think>([\s\S]*?)<\/think>/g
+      const incompleteThinkRegex = /<think>([\s\S]*)$/
+      let thinkMatch
+      let thinkIndex = 0
 
-        // Check for incomplete think tag at the end
-        const incompleteThinkMatch = incompleteThinkRegex.exec(content)
-        if (incompleteThinkMatch) {
-          const [fullMatch, thinkContent] = incompleteThinkMatch
-          const blockId = `think-block-${thinkIndex++}`
+      // First, process complete think tags
+      while ((thinkMatch = thinkTagRegex.exec(contentToRender)) !== null) {
+        const [fullMatch, thinkContent] = thinkMatch
+        const blockId = `think-block-${thinkIndex++}`
 
-          // Replace with a placeholder
-          const placeholder = `<div data-think-block-id="${blockId}"></div>`
-          processedMarkdown = processedMarkdown.replace(fullMatch, placeholder)
+        // Replace with a placeholder
+        const placeholder = `<div data-think-block-id="${blockId}"></div>`
+        processedMarkdown = processedMarkdown.replace(fullMatch, placeholder)
 
-          thinkBlocks.push({
-            id: blockId,
-            content: thinkContent.trim(),
-            processing: true, // Incomplete blocks are still processing
-          })
-        }
+        thinkBlocks.push({
+          id: blockId,
+          content: thinkContent.trim(),
+          processing: false, // Complete blocks are not processing
+        })
+      }
 
-        if (renderWidgets) {
-          // Check for incomplete code blocks during streaming
-          const codeBlockMatches = content.match(/```/g)
-          const codeBlockCount = codeBlockMatches?.length || 0
-          const hasIncompleteCodeBlock =
-            content.includes('```') && codeBlockCount % 2 !== 0
+      // Check for incomplete think tag at the end
+      const incompleteThinkMatch = incompleteThinkRegex.exec(contentToRender)
+      if (incompleteThinkMatch) {
+        const [fullMatch, thinkContent] = incompleteThinkMatch
+        const blockId = `think-block-${thinkIndex++}`
 
-          if (hasIncompleteCodeBlock) {
-            // console.debug(
-            //   '[MarkdownRenderer] Detected incomplete code block during streaming, using progressive fallback',
-            // )
+        // Replace with a placeholder
+        const placeholder = `<div data-think-block-id="${blockId}"></div>`
+        processedMarkdown = processedMarkdown.replace(fullMatch, placeholder)
 
-            // Process any complete code blocks that exist before the incomplete one
-            const completeCodeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g
-            let match
-            let blockIndex = 0
+        thinkBlocks.push({
+          id: blockId,
+          content: thinkContent.trim(),
+          processing: true, // Incomplete blocks are still processing
+        })
+      }
 
-            // Extract complete code blocks
-            while ((match = completeCodeBlockRegex.exec(content)) !== null) {
-              const [fullMatch, language, code] = match
-              const blockId = `code-block-${blockIndex++}`
+      if (renderWidgets) {
+        // Check for incomplete code blocks during streaming
+        const codeBlockMatches = contentToRender.match(/```/g)
+        const codeBlockCount = codeBlockMatches?.length || 0
+        const hasIncompleteCodeBlock =
+          contentToRender.includes('```') && codeBlockCount % 2 !== 0
 
-              // Detect if this is a specialized code block
-              const specializedType = detectSpecializedCodeType(code, language)
+        if (hasIncompleteCodeBlock) {
+          // console.debug(
+          //   '[MarkdownRenderer] Detected incomplete code block during streaming, using progressive fallback',
+          // )
 
-              if (specializedType) {
-                // Replace with a placeholder that we'll process later
-                const placeholder = `<div data-code-block-id="${blockId}"></div>`
-                processedMarkdown = processedMarkdown.replace(
-                  fullMatch,
-                  placeholder,
-                )
-
-                codeBlocks.push({
-                  id: blockId,
-                  code: code.trim(),
-                  language,
-                  type: 'specialized',
-                  specializedType,
-                })
-              } else {
-                // Keep regular code blocks as-is for normal markdown processing
-                codeBlocks.push({
-                  id: blockId,
-                  code: code.trim(),
-                  language,
-                  type: 'regular',
-                })
-              }
-            }
-
-            // Handle the incomplete code block - check if it's an ABC block
-            const incompletePartStart = content.lastIndexOf('```')
-            const beforeIncomplete = content.substring(0, incompletePartStart)
-            const incompletePart = content.substring(incompletePartStart)
-
-            // Extract language and partial code from incomplete block
-            const incompleteMatch = incompletePart.match(
-              /```(\w+)?\n?([\s\S]*)$/,
-            )
-            if (incompleteMatch) {
-              const [, incompleteLanguage, incompleteCode] = incompleteMatch
-              const partialSpecializedType = detectSpecializedCodeType(
-                incompleteCode,
-                incompleteLanguage,
-              )
-
-              // If it's a specialized block (like ABC), render it immediately as incomplete
-              if (partialSpecializedType) {
-                const incompleteBlockId = `code-block-${blockIndex++}`
-                const placeholder = `<div data-code-block-id="${incompleteBlockId}"></div>`
-
-                codeBlocks.push({
-                  id: incompleteBlockId,
-                  code: incompleteCode.trim(),
-                  language: incompleteLanguage,
-                  type: 'specialized',
-                  specializedType: partialSpecializedType,
-                })
-
-                // Configure marked for better formatting
-                configureMarked()
-
-                const beforeHtml = await marked.parse(beforeIncomplete)
-
-                setProcessedContent({
-                  html: beforeHtml + placeholder,
-                  codeBlocks,
-                  thinkBlocks,
-                  mathBlocks,
-                })
-                return
-              }
-            }
-
-            // Fallback for non-specialized incomplete blocks
-            // Configure marked for better formatting
-            configureMarked()
-
-            const beforeHtml =
-              codeBlocks.length > 0
-                ? await marked.parse(
-                    beforeIncomplete.substring(
-                      0,
-                      beforeIncomplete.lastIndexOf('```'),
-                    ),
-                  )
-                : await marked.parse(beforeIncomplete)
-
-            const incompleteHtml = incompletePart.replace(/\n/g, '<br>')
-
-            setProcessedContent({
-              html: beforeHtml + incompleteHtml,
-              codeBlocks,
-              thinkBlocks,
-              mathBlocks,
-            })
-            return
-          }
-
-          // Extract and process complete code blocks
-          const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g
+          // Process any complete code blocks that exist before the incomplete one
+          const completeCodeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g
           let match
           let blockIndex = 0
 
-          while ((match = codeBlockRegex.exec(content)) !== null) {
+          // Extract complete code blocks
+          while (
+            (match = completeCodeBlockRegex.exec(contentToRender)) !== null
+          ) {
             const [fullMatch, language, code] = match
             const blockId = `code-block-${blockIndex++}`
-
-            // Check if this is a math block (KaTeX)
-            const isMathBlock =
-              !language && code.trim().match(/^\$\$[\s\S]*\$\$$/)
 
             // Detect if this is a specialized code block
             const specializedType = detectSpecializedCodeType(code, language)
 
-            if (isMathBlock) {
-              // Leave math blocks in the markdown for KaTeX processing
-              // Don't extract them
-              continue
-            } else if (specializedType) {
+            if (specializedType) {
               // Replace with a placeholder that we'll process later
               const placeholder = `<div data-code-block-id="${blockId}"></div>`
               processedMarkdown = processedMarkdown.replace(
@@ -324,33 +244,146 @@ export const MarkdownRenderer = ({
               })
             }
           }
+
+          // Handle the incomplete code block - check if it's an ABC block
+          const incompletePartStart = contentToRender.lastIndexOf('```')
+          const beforeIncomplete = contentToRender.substring(
+            0,
+            incompletePartStart,
+          )
+          const incompletePart = contentToRender.substring(incompletePartStart)
+
+          // Extract language and partial code from incomplete block
+          const incompleteMatch = incompletePart.match(/```(\w+)?\n?([\s\S]*)$/)
+          if (incompleteMatch) {
+            const [, incompleteLanguage, incompleteCode] = incompleteMatch
+            const partialSpecializedType = detectSpecializedCodeType(
+              incompleteCode,
+              incompleteLanguage,
+            )
+
+            // If it's a specialized block (like ABC), render it immediately as incomplete
+            if (partialSpecializedType) {
+              const incompleteBlockId = `code-block-${blockIndex++}`
+              const placeholder = `<div data-code-block-id="${incompleteBlockId}"></div>`
+
+              codeBlocks.push({
+                id: incompleteBlockId,
+                code: incompleteCode.trim(),
+                language: incompleteLanguage,
+                type: 'specialized',
+                specializedType: partialSpecializedType,
+              })
+
+              // Configure marked for better formatting
+              configureMarked()
+
+              const beforeHtml = await marked.parse(beforeIncomplete)
+
+              setProcessedContent({
+                html: beforeHtml + placeholder,
+                codeBlocks,
+                thinkBlocks,
+                mathBlocks,
+              })
+              return
+            }
+          }
+
+          // Fallback for non-specialized incomplete blocks
+          // Configure marked for better formatting
+          configureMarked()
+
+          const beforeHtml =
+            codeBlocks.length > 0
+              ? await marked.parse(
+                  beforeIncomplete.substring(
+                    0,
+                    beforeIncomplete.lastIndexOf('```'),
+                  ),
+                )
+              : await marked.parse(beforeIncomplete)
+
+          const incompleteHtml = incompletePart.replace(/\n/g, '<br>')
+
+          setProcessedContent({
+            html: beforeHtml + incompleteHtml,
+            codeBlocks,
+            thinkBlocks,
+            mathBlocks,
+          })
+          return
         }
 
-        // Configure marked for better formatting
-        configureMarked()
+        // Extract and process complete code blocks
+        const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g
+        let match
+        let blockIndex = 0
 
-        // console.debug(
-        //   '📝 PROCESSED MARKDOWN BEFORE PARSE:',
-        //   processedMarkdown.substring(0, 500),
-        // )
-        const html = await marked.parse(processedMarkdown)
-        // console.debug('📄 HTML AFTER PARSE:', html.substring(0, 500))
+        while ((match = codeBlockRegex.exec(contentToRender)) !== null) {
+          const [fullMatch, language, code] = match
+          const blockId = `code-block-${blockIndex++}`
 
-        setProcessedContent({ html, codeBlocks, thinkBlocks, mathBlocks })
-      } catch (error) {
-        console.error('Error rendering markdown:', error)
-        // Fallback to plain text if markdown parsing fails
-        setProcessedContent({
-          html: content.replace(/\n/g, '<br>'),
-          codeBlocks: [],
-          thinkBlocks: [],
-          mathBlocks: [],
-        })
+          // Check if this is a math block (KaTeX)
+          const isMathBlock =
+            !language && code.trim().match(/^\$\$[\s\S]*\$\$$/)
+
+          // Detect if this is a specialized code block
+          const specializedType = detectSpecializedCodeType(code, language)
+
+          if (isMathBlock) {
+            // Leave math blocks in the markdown for KaTeX processing
+            // Don't extract them
+            continue
+          } else if (specializedType) {
+            // Replace with a placeholder that we'll process later
+            const placeholder = `<div data-code-block-id="${blockId}"></div>`
+            processedMarkdown = processedMarkdown.replace(
+              fullMatch,
+              placeholder,
+            )
+
+            codeBlocks.push({
+              id: blockId,
+              code: code.trim(),
+              language,
+              type: 'specialized',
+              specializedType,
+            })
+          } else {
+            // Keep regular code blocks as-is for normal markdown processing
+            codeBlocks.push({
+              id: blockId,
+              code: code.trim(),
+              language,
+              type: 'regular',
+            })
+          }
+        }
       }
-    }
 
-    renderMarkdown()
-  }, [content])
+      // Configure marked for better formatting
+      configureMarked()
+
+      // console.debug(
+      //   '📝 PROCESSED MARKDOWN BEFORE PARSE:',
+      //   processedMarkdown.substring(0, 500),
+      // )
+      const html = await marked.parse(processedMarkdown)
+      // console.debug('📄 HTML AFTER PARSE:', html.substring(0, 500))
+
+      setProcessedContent({ html, codeBlocks, thinkBlocks, mathBlocks })
+    } catch (error) {
+      console.error('Error rendering markdown:', error)
+      // Fallback to plain text if markdown parsing fails
+      setProcessedContent({
+        html: contentToRender.replace(/\n/g, '<br>'),
+        codeBlocks: [],
+        thinkBlocks: [],
+        mathBlocks: [],
+      })
+    }
+  }
 
   const markdownStyles = {
     // Basic styling for markdown elements
@@ -619,5 +652,15 @@ export const MarkdownRenderer = ({
     )
   }, [processedContent, className, sources, processCitations])
 
-  return renderedContent
+  return (
+    <>
+      {renderedContent}
+      {isStreaming && (
+        <span
+          className="inline-block w-[3px] h-[1.1em] bg-primary-500 align-text-bottom ml-0.5 animate-pulse"
+          aria-hidden="true"
+        />
+      )}
+    </>
+  )
 }

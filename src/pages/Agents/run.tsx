@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback, memo } from 'react'
+import { useEffect, useState, useMemo, useCallback, memo, useRef } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   Accordion,
@@ -33,7 +33,7 @@ import {
   useTraceSources,
 } from '@/components'
 import { AgentAppearancePicker } from '@/components/AgentAppearancePicker'
-import DefaultLayout from '@/layouts/Default'
+import RunLayout from '@/layouts/Run'
 import { Link } from 'react-router-dom'
 import type { HeaderProps, IconName } from '@/lib/types'
 import {
@@ -73,6 +73,14 @@ import { useConversationStore } from '@/stores/conversationStore'
 import { useArtifactStore } from '@/stores/artifactStore'
 import { categoryLabels } from '../Knowledge/AgentMemories'
 import { useAgentContextPanel } from './useAgentContextPanel'
+import {
+  ConversationStepTracker,
+  type ConversationStep,
+  createStepFromStatus,
+  completeLastStep,
+  addToolDataToStep,
+  messageStepsToConversationSteps,
+} from './ConversationStepTracker'
 import localI18n from './i18n'
 
 // Timeline item types for interleaving messages and memories
@@ -114,11 +122,18 @@ const TOOL_DISPLAY_NAMES: Record<string, string> = {
   notion_search: 'Searching Notion',
   notion_read_page: 'Reading Notion page',
   notion_query_database: 'Querying Notion database',
+  // Skill tools
+  activate_skill: 'Activating skill',
+  run_skill_script: 'Running skill script',
+  read_skill_file: 'Reading skill file',
 }
 
 /** Get appropriate icon for tool type */
 const getToolIcon = (toolName: string): IconName => {
   if (toolName === 'execute') return 'Code'
+  if (toolName === 'activate_skill') return 'OpenBook'
+  if (toolName === 'run_skill_script') return 'Play'
+  if (toolName === 'read_skill_file') return 'Page'
   if (toolName.includes('search')) return 'Search'
   if (toolName.includes('read') || toolName.includes('document')) return 'Page'
   if (toolName.includes('list') || toolName.includes('browse')) return 'Folder'
@@ -772,10 +787,12 @@ const MessageContentWithSources = memo(
     content: rawContent,
     detectContentType,
     traceIds,
+    isStreaming = false,
   }: {
     content: string | Array<{ type: string; text?: string }>
     detectContentType: (content: string) => string
     traceIds: string[]
+    isStreaming?: boolean
   }) => {
     // Normalize content to string - it can be an array for multi-part messages
     const content =
@@ -805,6 +822,7 @@ const MessageContentWithSources = memo(
               content={content}
               className="prose dark:prose-invert"
               sources={citedSources}
+              isStreaming={isStreaming}
             />
           )}
         </div>
@@ -831,6 +849,8 @@ const MessageDisplay = memo(
     onLearnClick,
     isLearning,
     conversationId,
+    isStreaming = false,
+    liveSteps,
   }: {
     message: Message
     selectedAgent: Agent | null
@@ -841,6 +861,8 @@ const MessageDisplay = memo(
     onLearnClick: (message: Message) => void
     isLearning: boolean
     conversationId: string | undefined
+    isStreaming?: boolean
+    liveSteps?: ConversationStep[]
   }) => {
     const { t } = useI18n(localI18n)
     const [messageAgent, setMessageAgent] = useState<Agent | null>(null)
@@ -857,6 +879,14 @@ const MessageDisplay = memo(
 
     const showPinButton = message.role === 'assistant' && conversationId
     const showLearnButton = message.role === 'assistant' && conversationId
+
+    // Use live steps during streaming, persisted steps for historical messages
+    const steps =
+      isStreaming && liveSteps
+        ? liveSteps
+        : message.steps?.length
+          ? messageStepsToConversationSteps(message.steps)
+          : []
 
     return (
       <div
@@ -919,19 +949,28 @@ const MessageDisplay = memo(
               </Chip>
             </div>
           )}
-          {/* Tool calls timeline - shown BEFORE response since tools execute first */}
-          {message.role === 'assistant' &&
-            message.traceIds &&
-            message.traceIds.length > 0 && (
-              <TimelineToolsDisplay traceIds={message.traceIds} />
-            )}
-          <MessageContentWithSources
-            content={message.content}
-            detectContentType={detectContentType}
-            traceIds={message.traceIds || []}
-          />
+          {/* Conversation steps - live during streaming, persisted for historical */}
+          {message.role === 'assistant' && steps.length > 0 && (
+            <ConversationStepTracker
+              steps={steps}
+              className="mb-2"
+              traceIds={message.traceIds}
+            />
+          )}
+          {message.content ? (
+            <MessageContentWithSources
+              content={message.content}
+              detectContentType={detectContentType}
+              traceIds={message.traceIds || []}
+              isStreaming={isStreaming}
+            />
+          ) : isStreaming && steps.length === 0 ? (
+            <div className="flex items-center gap-1 py-2">
+              <Spinner size="sm" classNames={{ wrapper: 'w-4 h-4' }} />
+            </div>
+          ) : null}
           {/* Assistant message action buttons */}
-          {message.role === 'assistant' && (
+          {!isStreaming && message.role === 'assistant' && (
             <div className="mt-2 flex flex-wrap items-center gap-1">
               <Tooltip content={t('Copy the answer')}>
                 <Button
@@ -1422,9 +1461,12 @@ export const AgentRunPage = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
   const [response, setResponse] = useState<string>('')
-  const [currentStatus, setCurrentStatus] = useState<ResponseStatus | null>(
+  const [_currentStatus, setCurrentStatus] = useState<ResponseStatus | null>(
     null,
   )
+  const [conversationSteps, setConversationSteps] = useState<
+    ConversationStep[]
+  >([])
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [conversationMessages, setConversationMessages] = useState<Message[]>(
     [],
@@ -1492,6 +1534,61 @@ export const AgentRunPage = () => {
     () => !(Number(currentConversation?.messages.length) > 0),
     [currentConversation],
   )
+
+  // ── Auto-scroll during streaming ──────────────────────────────────────
+  const streamingEndRef = useRef<HTMLDivElement | null>(null)
+  const userHasScrolledUpRef = useRef(false)
+  const isAutoScrollingRef = useRef(false)
+  const abortControllerRef = useRef<AbortController | null>(null)
+
+  // Track user scroll intent: disengage when they scroll up, re-engage when
+  // they scroll back near the bottom.  We ignore scroll events fired by our
+  // own programmatic scrollTo (guarded by isAutoScrollingRef).
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!isSending) return
+      // Skip events caused by our own programmatic scroll
+      if (isAutoScrollingRef.current) return
+
+      const scrollBottom = window.innerHeight + window.scrollY
+      const docHeight = document.documentElement.scrollHeight
+      const distanceFromBottom = docHeight - scrollBottom
+
+      if (distanceFromBottom > 150) {
+        // User scrolled away — hand control to them
+        userHasScrolledUpRef.current = true
+      } else {
+        // User scrolled back to the bottom — re-engage auto-scroll
+        userHasScrolledUpRef.current = false
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [isSending])
+
+  // Reset scroll lock when a new message starts streaming
+  useEffect(() => {
+    if (isSending) {
+      userHasScrolledUpRef.current = false
+    }
+  }, [isSending])
+
+  // Scroll to the very bottom as streaming content changes.
+  // Uses instant scrollTo so we keep up with fast token output.
+  useEffect(() => {
+    if (isSending && !userHasScrolledUpRef.current && streamingEndRef.current) {
+      isAutoScrollingRef.current = true
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'instant',
+      })
+      // Clear the guard after the browser has flushed the scroll event
+      requestAnimationFrame(() => {
+        isAutoScrollingRef.current = false
+      })
+    }
+  }, [isSending, response, conversationSteps])
 
   // Load pending review memories when agent/conversation loads
   // Filter to only show memories from the current conversation
@@ -2106,7 +2203,11 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
       setIsSending(true)
       setResponse('')
       setCurrentStatus(null)
+      setConversationSteps([])
       setPrompt('')
+
+      const controller = new AbortController()
+      abortControllerRef.current = controller
 
       let finalResponse = ''
       await submitChat({
@@ -2119,23 +2220,41 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
         activatedSkills: skills,
         lang,
         t,
+        signal: controller.signal,
         onResponseUpdate: (update: ResponseUpdate) => {
           if (update.type === 'content') {
             finalResponse = update.content
             setResponse(update.content)
-            setCurrentStatus(null) // Clear status when content arrives
+            setCurrentStatus(null)
+            // Mark previous running step as completed when content arrives
+            setConversationSteps((prev) => completeLastStep(prev))
+          } else if (update.type === 'tool_results') {
+            // Attach tool I/O data to the last running step
+            setConversationSteps((prev) =>
+              addToolDataToStep(prev, update.toolCalls),
+            )
           } else {
             setCurrentStatus(update.status)
+            // Complete previous running step before adding new one
+            setConversationSteps((prev) => {
+              const completed = completeLastStep(prev)
+              return [...completed, createStepFromStatus(update.status)]
+            })
           }
         },
         onPromptClear: () => setPrompt(''),
         onResponseClear: () => {
-          setResponse('')
-          setCurrentStatus(null)
+          // No-op: streaming state is cleared after isSending becomes false
+          // to avoid a flash between clearing and the saved message appearing
         },
       })
 
+      // Clear all streaming state together so React batches the update
+      abortControllerRef.current = null
       setIsSending(false)
+      setResponse('')
+      setCurrentStatus(null)
+      setConversationSteps([])
 
       // Generate quick replies after response completes
       if (finalResponse) {
@@ -2199,6 +2318,12 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
         skillMdContent: skill.skillMdContent || skill.description,
       }))
 
+      // Reset steps for new message
+      setConversationSteps([])
+
+      const controller = new AbortController()
+      abortControllerRef.current = controller
+
       let finalResponse = ''
       await submitChat({
         prompt: promptToUse,
@@ -2210,25 +2335,42 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
         activatedSkills,
         lang,
         t,
+        signal: controller.signal,
         onResponseUpdate: (update: ResponseUpdate) => {
           if (update.type === 'content') {
             finalResponse = update.content
             setResponse(update.content)
-            setCurrentStatus(null) // Clear status when content arrives
+            setCurrentStatus(null)
+            // Mark previous running step as completed when content arrives
+            setConversationSteps((prev) => completeLastStep(prev))
+          } else if (update.type === 'tool_results') {
+            // Attach tool I/O data to the last running step
+            setConversationSteps((prev) =>
+              addToolDataToStep(prev, update.toolCalls),
+            )
           } else {
             setCurrentStatus(update.status)
+            // Complete previous running step before adding new one
+            setConversationSteps((prev) => {
+              const completed = completeLastStep(prev)
+              return [...completed, createStepFromStatus(update.status)]
+            })
           }
         },
         onPromptClear: () => setPrompt(''),
         onResponseClear: () => {
-          setResponse('')
-          setCurrentStatus(null)
+          // No-op: streaming state is cleared after isSending becomes false
+          // to avoid a flash between clearing and the saved message appearing
         },
       })
 
-      // Clear files after submission
+      // Clear files and all streaming state together so React batches the update
+      abortControllerRef.current = null
       setSelectedFiles([])
       setIsSending(false)
+      setResponse('')
+      setCurrentStatus(null)
+      setConversationSteps([])
 
       // Generate quick replies after response completes
       if (finalResponse) {
@@ -2247,6 +2389,18 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
       generateQuickReplies,
     ],
   )
+
+  // ── Stop / abort handler ─────────────────────────────────────────────
+  const handleStop = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+    }
+    setIsSending(false)
+    setResponse('')
+    setCurrentStatus(null)
+    setConversationSteps([])
+  }, [])
 
   // Create memory action handlers to avoid repetition
   const memoryActions = useMemo(
@@ -2290,15 +2444,37 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
       timestamp: new Date(memory.learnedAt),
     }))
 
+    const items = [...messageItems, ...memoryItems]
+
+    // Add virtual streaming message during active sending
+    if (isSending && (response || conversationSteps.length > 0)) {
+      items.push({
+        type: 'message' as const,
+        data: {
+          id: '__streaming__',
+          role: 'assistant' as const,
+          content: response || '',
+          timestamp: new Date(),
+          agentId: selectedAgent?.id,
+        } as Message,
+        timestamp: new Date(),
+      })
+    }
+
     // Combine and sort by timestamp
-    return [...messageItems, ...memoryItems].sort(
-      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
-    )
-  }, [conversationMessages, newlyLearnedMemories])
+    return items.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+  }, [
+    conversationMessages,
+    newlyLearnedMemories,
+    isSending,
+    response,
+    conversationSteps,
+    selectedAgent?.id,
+  ])
 
   if (isLoading) {
     return (
-      <DefaultLayout header={header}>
+      <RunLayout header={header}>
         <Section mainClassName="text-center">
           <div className="flex flex-col items-center justify-center min-h-[50vh]">
             <Spinner size="lg" color="primary" />
@@ -2307,14 +2483,14 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
             </p>
           </div>
         </Section>
-      </DefaultLayout>
+      </RunLayout>
     )
   }
 
   return (
-    <DefaultLayout title={selectedAgent?.name} header={header}>
+    <RunLayout title={selectedAgent?.name} header={header}>
       <div className="px-6 lg:px-8 pb-16">
-        <div className="max-w-4xl mx-auto py-6">
+        <Section mainClassName="bg-transparent" size={2}>
           <Container>
             {/* Display timeline: messages and memories interleaved by timestamp */}
             {timelineItems.length > 0 && (
@@ -2332,6 +2508,12 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
                       onLearnClick={handleLearnClick}
                       isLearning={learningMessageId === item.data.id}
                       conversationId={currentConversation?.id}
+                      isStreaming={item.data.id === '__streaming__'}
+                      liveSteps={
+                        item.data.id === '__streaming__'
+                          ? conversationSteps
+                          : undefined
+                      }
                     />
                   ) : (
                     <InlineMemoryDisplay
@@ -2344,59 +2526,8 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
                     />
                   ),
                 )}
-
-                {/* Display streaming response */}
-                {(response || currentStatus) && (
-                  <div
-                    aria-hidden="false"
-                    tabIndex={0}
-                    className="flex w-full gap-3"
-                  >
-                    <div className="relative flex-none">
-                      <div className="border-1 border-default-300 dark:border-default-200 flex h-7 w-7 items-center justify-center rounded-full">
-                        <Icon
-                          name={(selectedAgent?.icon as any) || 'Sparks'}
-                          className="w-4 h-4 text-default-600"
-                        />
-                      </div>
-                    </div>
-                    <div className="rounded-medium text-foreground group relative w-full overflow-hidden font-medium bg-transparent px-1 py-0">
-                      <div className="text-small">
-                        <div className="prose prose-neutral text-medium break-words">
-                          {response &&
-                            (detectContentType(response) ===
-                            'marpit-presentation' ? (
-                              <Widget
-                                type="marpit"
-                                language="yaml"
-                                code={response}
-                              />
-                            ) : (
-                              <MarkdownRenderer
-                                content={response}
-                                className="prose dark:prose-invert prose-sm"
-                              />
-                            ))}
-                          {/* Display status with icon */}
-                          {currentStatus && (
-                            <div className="flex items-center gap-2 mt-2 text-default-500 italic">
-                              <Icon
-                                name={currentStatus.icon}
-                                className="w-4 h-4 animate-pulse"
-                              />
-                              <span>
-                                {t(
-                                  currentStatus.i18nKey as any,
-                                  currentStatus.vars,
-                                )}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {/* Scroll sentinel — auto-scroll targets this during streaming */}
+                <div ref={streamingEndRef} aria-hidden="true" />
               </div>
             )}
 
@@ -2498,17 +2629,18 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
                 </div>
               )}
           </Container>
-        </div>
+        </Section>
 
         <PromptArea
           lang={lang}
           autoFocus={!conversationId}
-          className="max-w-4xl mx-auto sticky bottom-20 md:bottom-4"
+          className="!max-w-2xl mx-auto sticky bottom-20 md:bottom-4"
           value={prompt}
           onValueChange={setPrompt}
           onSubmitToAgent={onSubmit}
           onFilesChange={setSelectedFiles}
           isSending={isSending}
+          onStop={handleStop}
           selectedAgent={selectedAgent}
           onAgentChange={setSelectedAgent}
           disabledAgentPicker
@@ -2621,6 +2753,6 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </DefaultLayout>
+    </RunLayout>
   )
 }

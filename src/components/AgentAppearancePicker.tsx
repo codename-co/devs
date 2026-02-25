@@ -12,7 +12,7 @@ import {
   ScrollShadow,
 } from '@heroui/react'
 
-import { Icon, Icons } from '@/components'
+import { Icon, Icons } from '@/components/Icon'
 import { IconName } from '@/lib/types'
 import { AgentColor } from '@/types'
 import { AgentPortraitService } from '@/lib/agent-portrait-service'

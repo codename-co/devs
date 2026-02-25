@@ -171,6 +171,17 @@ export function GeneralSection() {
           }}
         />
       </div>
+
+      <footer className="flex flex-row gap-3 items-baseline absolute end-0 bottom-0 p-4 text-xs opacity-50 justify-end">
+        <span>{PRODUCT.displayName}</span>
+        <span>{__APP_VERSION__}</span>
+        <time dateTime={new Date(__BUILD_TIME__).toISOString()}>
+          {new Date(__BUILD_TIME__).toLocaleString(lang, {
+            dateStyle: 'short',
+            timeStyle: 'short',
+          })}
+        </time>
+      </footer>
     </div>
   )
 }

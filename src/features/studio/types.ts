@@ -25,6 +25,7 @@ export type MediaType = 'image' | 'video' | 'music'
 export type ImageProvider =
   | 'openai' // DALL-E 3
   | 'google' // Google Gemini
+  | 'vertex-ai' // Google Vertex AI (Gemini / Imagen via service account)
   | 'stability' // Stability AI (Stable Diffusion)
   | 'replicate' // Replicate (various models)
   | 'together' // Together AI
@@ -37,7 +38,9 @@ export type ImageProvider =
 /**
  * Supported video generation providers
  */
-export type VideoProvider = 'google' // Google Veo
+export type VideoProvider =
+  | 'google' // Google Veo
+  | 'vertex-ai' // Google Veo via Vertex AI (service account)
 
 /**
  * Image model identifier
@@ -94,6 +97,23 @@ export const VIDEO_MODELS_BY_PROVIDER: Record<
   VideoProvider,
   { id: VideoModel; name: string; description?: string }[]
 > = {
+  'vertex-ai': [
+    {
+      id: 'veo-3.1-generate-preview',
+      name: 'Veo 3.1 (Vertex AI)',
+      description: 'Best quality, 720p/1080p/4K with audio',
+    },
+    {
+      id: 'veo-3.1-fast-generate-preview',
+      name: 'Veo 3.1 Fast (Vertex AI)',
+      description: 'Fast generation, optimized for speed',
+    },
+    {
+      id: 'veo-2-generate-001',
+      name: 'Veo 2 (Vertex AI)',
+      description: 'Stable, 720p/1080p',
+    },
+  ],
   google: [
     {
       id: 'veo-3.1-generate-preview',
@@ -145,6 +165,33 @@ export const IMAGE_MODELS_BY_PROVIDER: Partial<
       id: 'gpt-image-1',
       name: 'GPT Image',
       description: 'Native GPT image generation',
+    },
+  ],
+  'vertex-ai': [
+    {
+      id: 'gemini-3-pro-image-preview',
+      name: 'Gemini 3 Pro Image (Vertex AI)',
+      description: 'Professional quality, up to 4K, thinking-enabled',
+    },
+    {
+      id: 'gemini-2.5-flash-image',
+      name: 'Gemini 2.5 Flash Image (Vertex AI)',
+      description: 'Fast image generation',
+    },
+    {
+      id: 'imagen-4.0-generate-001',
+      name: 'Imagen 4.0 (Vertex AI)',
+      description: 'High quality Imagen model',
+    },
+    {
+      id: 'imagen-4.0-ultra-generate-001',
+      name: 'Imagen 4.0 Ultra (Vertex AI)',
+      description: 'Highest quality Imagen model',
+    },
+    {
+      id: 'imagen-4.0-fast-generate-001',
+      name: 'Imagen 4.0 Fast (Vertex AI)',
+      description: 'Fast Imagen generation',
     },
   ],
   google: [

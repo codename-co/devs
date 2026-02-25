@@ -286,6 +286,7 @@ export function AttachmentSelector({
       <Dropdown
         placement="bottom-start"
         className="bg-white dark:bg-default-50 dark:text-white"
+        shouldBlockScroll={false}
         isOpen={isMainDropdownOpen}
         onOpenChange={handleDropdownOpenChange}
       >

@@ -55,7 +55,7 @@ export const Tabbar = ({ className = '' }) => {
         // data-color="primary"
         title={
           <Tooltip content={t('New chat')} placement="top">
-            <Icon name="ChatPlusIn" size="lg" />
+            <Icon name="PlusCircleSolid" size="lg" />
           </Tooltip>
         }
         href={url('')}

@@ -30,7 +30,7 @@
 @font-face {
   font-family: 'EB Garamond';
   font-style: normal;
-  font-weight: 600;
+  font-weight: 400;
   font-display: swap;
   src: url('/fonts/EBGaramond.ttf') format('truetype');
 }
@@ -116,9 +116,9 @@
     border-radius: 0.25rem;
   }
 
-  [role='section']:not(.section-blank):nth-child(odd) {
+  /* [role='section']:not(.section-blank):nth-child(odd) {
     @apply bg-default-50;
-  }
+  } */
 
   [role='heading'] {
     font-family: 'EB Garamond', serif;

@@ -696,7 +696,7 @@ print("Done.")
 from collections import Counter, defaultdict, namedtuple
 
 # Counter
-words = "the quick brown fox jumps over the lazy dog the fox".split()
+words = "the quick brown fox jumps over the lazy dog".split()
 word_counts = Counter(words)
 print(f"Top 3: {word_counts.most_common(3)}")
 

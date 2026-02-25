@@ -22,6 +22,7 @@ import {
 } from './prompt-compiler'
 import { TraceService } from '@/features/traces/trace-service'
 import { CostEstimate } from '@/features/traces/types'
+import { getVertexAIAuthInfo } from '@/lib/llm/vertex-ai-auth'
 
 // =============================================================================
 // Image Generation Pricing (USD per image)
@@ -1263,6 +1264,418 @@ class HuggingFaceImageProvider implements ImageProviderInterface {
 }
 
 // =============================================================================
+// Vertex AI Image Provider
+// =============================================================================
+
+/**
+ * Google Vertex AI Image Provider
+ *
+ * Uses service account key authentication to access Gemini and Imagen models
+ * via the Vertex AI API (aiplatform.googleapis.com).
+ *
+ * Supports two model families:
+ * - Gemini models (gemini-*): Use generateContent endpoint, same format as Google AI
+ * - Imagen models (imagen-*): Use predict endpoint with Imagen-specific format
+ */
+class VertexAIImageProvider implements ImageProviderInterface {
+  /**
+   * Detect whether a model is an Imagen model (vs Gemini)
+   */
+  private isImagenModel(model: string): boolean {
+    return model.startsWith('imagen')
+  }
+
+  async generate(
+    prompt: string,
+    settings: ImageGenerationSettings,
+    config: ImageProviderConfig,
+  ): Promise<GeneratedImage[]> {
+    const model = config.model || 'gemini-2.5-flash-image'
+    const auth = await getVertexAIAuthInfo(
+      config.apiKey,
+      'us-central1',
+      config.baseUrl,
+    )
+
+    if (this.isImagenModel(model)) {
+      return this.generateWithImagen(prompt, settings, model, auth)
+    }
+    return this.generateWithGemini(prompt, settings, model, auth)
+  }
+
+  /**
+   * Generate images using Gemini models on Vertex AI
+   */
+  private async generateWithGemini(
+    prompt: string,
+    settings: ImageGenerationSettings,
+    model: string,
+    auth: { endpoint: string; accessToken: string },
+  ): Promise<GeneratedImage[]> {
+    // Build parts array with text prompt and optional reference images
+    const parts: Array<
+      { text: string } | { inlineData: { mimeType: string; data: string } }
+    > = []
+
+    parts.push({ text: prompt })
+
+    if (settings.referenceImages && settings.referenceImages.length > 0) {
+      for (const image of settings.referenceImages) {
+        parts.push({
+          inlineData: {
+            mimeType: image.mimeType,
+            data: image.base64,
+          },
+        })
+      }
+    } else if (
+      settings.referenceImageBase64 &&
+      settings.referenceImageMimeType
+    ) {
+      parts.push({
+        inlineData: {
+          mimeType: settings.referenceImageMimeType,
+          data: settings.referenceImageBase64,
+        },
+      })
+    }
+
+    const generationConfig: Record<string, any> = {
+      responseModalities: ['TEXT', 'IMAGE'],
+    }
+
+    const imageConfig: Record<string, string> = {}
+    if (settings.aspectRatio && settings.aspectRatio !== '1:1') {
+      imageConfig.aspectRatio = settings.aspectRatio
+    }
+    if (model === 'gemini-3-pro-image-preview') {
+      const imageSize =
+        settings.quality === 'ultra'
+          ? '4K'
+          : settings.quality === 'hd'
+            ? '2K'
+            : '1K'
+      imageConfig.imageSize = imageSize
+    }
+    if (Object.keys(imageConfig).length > 0) {
+      generationConfig.imageConfig = imageConfig
+    }
+
+    const url = `${auth.endpoint}/publishers/google/models/${model}:generateContent`
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${auth.accessToken}`,
+      },
+      body: JSON.stringify({
+        contents: [{ parts }],
+        generationConfig,
+      }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}))
+      throw new Error(
+        error.error?.message || `Vertex AI API error: ${response.statusText}`,
+      )
+    }
+
+    const data = await response.json()
+    const images: GeneratedImage[] = []
+
+    for (const candidate of data.candidates || []) {
+      for (const part of candidate.content?.parts || []) {
+        if (part.inlineData?.mimeType?.startsWith('image/')) {
+          const mimeType = part.inlineData.mimeType
+          const format = mimeType.includes('png')
+            ? 'png'
+            : mimeType.includes('jpeg')
+              ? 'jpg'
+              : 'png'
+          images.push({
+            id: `vertex-ai-${Date.now()}-${images.length}`,
+            requestId: '',
+            url: `data:${mimeType};base64,${part.inlineData.data}`,
+            base64: part.inlineData.data,
+            width: 1024,
+            height: 1024,
+            format: format as 'png' | 'jpg' | 'webp',
+            createdAt: new Date(),
+          })
+        }
+      }
+    }
+
+    if (images.length === 0) {
+      const textParts = data.candidates?.[0]?.content?.parts?.filter(
+        (p: any) => p.text,
+      )
+      if (textParts?.length > 0) {
+        throw new Error(
+          `Model returned text instead of image. The model "${model}" may not support image generation on Vertex AI.`,
+        )
+      }
+      throw new Error(
+        'No images were generated. Ensure you are using a model that supports image generation.',
+      )
+    }
+
+    return images
+  }
+
+  /**
+   * Generate images using Imagen models on Vertex AI
+   */
+  private async generateWithImagen(
+    prompt: string,
+    settings: ImageGenerationSettings,
+    model: string,
+    auth: { endpoint: string; accessToken: string },
+  ): Promise<GeneratedImage[]> {
+    // Imagen uses the predict endpoint
+    const url = `${auth.endpoint}/publishers/google/models/${model}:predict`
+
+    const instance: Record<string, any> = { prompt }
+
+    // Add reference image for image-to-image
+    if (settings.referenceImageBase64 && settings.referenceImageMimeType) {
+      instance.image = {
+        bytesBase64Encoded: settings.referenceImageBase64,
+      }
+    }
+
+    const parameters: Record<string, any> = {
+      sampleCount: Math.min(settings.count, 4),
+    }
+
+    if (settings.aspectRatio && settings.aspectRatio !== '1:1') {
+      parameters.aspectRatio = settings.aspectRatio
+    }
+
+    if (settings.negativePrompt) {
+      parameters.negativePrompt = settings.negativePrompt
+    }
+
+    if (settings.seed !== undefined) {
+      parameters.seed = settings.seed
+    }
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${auth.accessToken}`,
+      },
+      body: JSON.stringify({
+        instances: [instance],
+        parameters,
+      }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}))
+      throw new Error(
+        error.error?.message ||
+          `Vertex AI Imagen API error: ${response.statusText}`,
+      )
+    }
+
+    const data = await response.json()
+    const images: GeneratedImage[] = []
+
+    for (const prediction of data.predictions || []) {
+      if (prediction.bytesBase64Encoded) {
+        const mimeType = prediction.mimeType || 'image/png'
+        const format = mimeType.includes('png')
+          ? 'png'
+          : mimeType.includes('jpeg')
+            ? 'jpg'
+            : 'png'
+        images.push({
+          id: `vertex-ai-imagen-${Date.now()}-${images.length}`,
+          requestId: '',
+          url: `data:${mimeType};base64,${prediction.bytesBase64Encoded}`,
+          base64: prediction.bytesBase64Encoded,
+          width: 1024,
+          height: 1024,
+          format: format as 'png' | 'jpg' | 'webp',
+          createdAt: new Date(),
+        })
+      }
+    }
+
+    if (images.length === 0) {
+      throw new Error(
+        'No images were generated. The model may have filtered the content or encountered an error.',
+      )
+    }
+
+    return images
+  }
+
+  /**
+   * Stream images using Gemini models on Vertex AI
+   */
+  async *streamGenerate(
+    prompt: string,
+    settings: ImageGenerationSettings,
+    config: ImageProviderConfig,
+  ): AsyncIterable<GeneratedImage> {
+    const model = config.model || 'gemini-2.5-flash-image'
+
+    // Imagen models do not support streaming
+    if (this.isImagenModel(model)) {
+      const images = await this.generate(prompt, settings, config)
+      for (const image of images) {
+        yield image
+      }
+      return
+    }
+
+    const auth = await getVertexAIAuthInfo(
+      config.apiKey,
+      'us-central1',
+      config.baseUrl,
+    )
+
+    const parts: Array<
+      { text: string } | { inlineData: { mimeType: string; data: string } }
+    > = []
+    parts.push({ text: prompt })
+
+    if (settings.referenceImages && settings.referenceImages.length > 0) {
+      for (const image of settings.referenceImages) {
+        parts.push({
+          inlineData: { mimeType: image.mimeType, data: image.base64 },
+        })
+      }
+    } else if (
+      settings.referenceImageBase64 &&
+      settings.referenceImageMimeType
+    ) {
+      parts.push({
+        inlineData: {
+          mimeType: settings.referenceImageMimeType,
+          data: settings.referenceImageBase64,
+        },
+      })
+    }
+
+    const generationConfig: Record<string, any> = {
+      responseModalities: ['TEXT', 'IMAGE'],
+    }
+    const imageConfig: Record<string, string> = {}
+    if (settings.aspectRatio && settings.aspectRatio !== '1:1') {
+      imageConfig.aspectRatio = settings.aspectRatio
+    }
+    if (model === 'gemini-3-pro-image-preview') {
+      const imageSize =
+        settings.quality === 'ultra'
+          ? '4K'
+          : settings.quality === 'hd'
+            ? '2K'
+            : '1K'
+      imageConfig.imageSize = imageSize
+    }
+    if (Object.keys(imageConfig).length > 0) {
+      generationConfig.imageConfig = imageConfig
+    }
+
+    const url = `${auth.endpoint}/publishers/google/models/${model}:streamGenerateContent?alt=sse`
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${auth.accessToken}`,
+      },
+      body: JSON.stringify({
+        contents: [{ parts }],
+        generationConfig,
+      }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}))
+      throw new Error(
+        error.error?.message || `Vertex AI API error: ${response.statusText}`,
+      )
+    }
+
+    const reader = response.body?.getReader()
+    if (!reader) throw new Error('No response body')
+
+    const decoder = new TextDecoder()
+    let buffer = ''
+    let imageCount = 0
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop() || ''
+
+      for (const line of lines) {
+        if (line.trim().startsWith('data: ')) {
+          const data = line.slice(6).trim()
+          if (data === '[DONE]' || !data) continue
+
+          try {
+            const parsed = JSON.parse(data)
+            for (const candidate of parsed.candidates || []) {
+              for (const part of candidate.content?.parts || []) {
+                if (part.inlineData?.mimeType?.startsWith('image/')) {
+                  const mimeType = part.inlineData.mimeType
+                  const format = mimeType.includes('png')
+                    ? 'png'
+                    : mimeType.includes('jpeg')
+                      ? 'jpg'
+                      : 'png'
+
+                  yield {
+                    id: `vertex-ai-stream-${Date.now()}-${imageCount++}`,
+                    requestId: '',
+                    url: `data:${mimeType};base64,${part.inlineData.data}`,
+                    base64: part.inlineData.data,
+                    width: 1024,
+                    height: 1024,
+                    format: format as 'png' | 'jpg' | 'webp',
+                    createdAt: new Date(),
+                  }
+                }
+              }
+            }
+          } catch {
+            // Skip invalid JSON chunks
+          }
+        }
+      }
+    }
+  }
+
+  supportsStreaming = true
+
+  async validateApiKey(apiKey: string): Promise<boolean> {
+    try {
+      const auth = await getVertexAIAuthInfo(apiKey, 'us-central1')
+      const response = await fetch(
+        `${auth.endpoint}/publishers/google/models`,
+        {
+          headers: { Authorization: `Bearer ${auth.accessToken}` },
+        },
+      )
+      return response.ok
+    } catch {
+      return false
+    }
+  }
+}
+
+// =============================================================================
 // Image Generation Service
 // =============================================================================
 
@@ -1276,6 +1689,7 @@ export class ImageGenerationService {
   static {
     this.providers.set('openai', new OpenAIImageProvider())
     this.providers.set('google', new GoogleImageProvider())
+    this.providers.set('vertex-ai', new VertexAIImageProvider())
     this.providers.set('stability', new StabilityImageProvider())
     this.providers.set('replicate', new ReplicateImageProvider())
     this.providers.set('together', new TogetherImageProvider())

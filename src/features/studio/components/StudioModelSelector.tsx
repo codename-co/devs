@@ -50,6 +50,7 @@ import localI18n from '../i18n'
 const PROVIDER_ICONS: Record<string, IconName> = {
   openai: 'OpenAI',
   google: 'Gemini',
+  'vertex-ai': 'Gemini',
   stability: 'SparksSolid',
   together: 'Puzzle',
   fal: 'LightBulbOn',
@@ -64,6 +65,7 @@ const PROVIDER_ICONS: Record<string, IconName> = {
 const PROVIDER_NAMES: Record<string, string> = {
   openai: 'OpenAI',
   google: 'Google',
+  'vertex-ai': 'Vertex AI',
   stability: 'Stability AI',
   together: 'Together AI',
   fal: 'Fal.ai',
@@ -85,6 +87,7 @@ const DYNAMIC_MODEL_PROVIDERS = new Set([
 const MODELS_DEV_PROVIDER_MAP: Partial<Record<ImageProvider, string>> = {
   openai: 'openai',
   google: 'gemini',
+  'vertex-ai': 'gemini',
 }
 
 // Models.dev model ID mapping (Studio model ID → models.dev model ID)

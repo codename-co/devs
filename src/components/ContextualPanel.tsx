@@ -95,7 +95,7 @@ const CollapsedPanel = ({ className }: { className?: string }) => {
 
   return (
     <div
-      className={`w-18 mt-24 p-4 h-full z-50 flex flex-col transition-all duration-200 ${className} pointer-events-none`}
+      className={`w-18 mt-18 p-4 h-full z-50 flex flex-col transition-all duration-200 ${className} pointer-events-none`}
     >
       <div className="flex flex-col items-center">
         <Tooltip content={t('Expand sidebar')} placement="left">
@@ -104,7 +104,7 @@ const CollapsedPanel = ({ className }: { className?: string }) => {
             isIconOnly
             variant="light"
             onPress={toggleCollapsed}
-            className="backdrop-blur-xs backdrop-brightness-120 pointer-events-auto"
+            className="md:me-4 backdrop-blur-xs backdrop-brightness-120 pointer-events-auto"
             aria-label={t('Expand sidebar')}
           >
             <Icon
@@ -145,7 +145,7 @@ const ExpandedPanel = ({ className }: { className?: string }) => {
 
   return (
     <div
-      className={`fixed w-96 bg-background dark:bg-content1 p-3 border-s border-default-200 dark:border-default-200 h-full flex flex-col overflow-y-auto ${className}`}
+      className={`w-96 bg-background dark:bg-content1 rounded-xl mt-4 p-1 flex flex-col overflow-y-auto ${className}`}
     >
       <ScrollShadow
         hideScrollBar

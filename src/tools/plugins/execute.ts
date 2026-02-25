@@ -1,8 +1,9 @@
 /**
  * Code Tool Plugin (Execute)
  *
- * A tool plugin that provides JavaScript code execution capabilities.
- * Routes through the unified Sandbox for QuickJS WebAssembly execution.
+ * A polyglot tool plugin that provides code execution capabilities.
+ * Routes through the unified Sandbox — QuickJS for JavaScript,
+ * Pyodide for Python.
  *
  * @module tools/plugins/execute
  */
@@ -16,21 +17,24 @@ import type {
   ExecuteResult,
   ExecuteError,
 } from '@/lib/code-tools/types'
+import { MAX_TIMEOUTS } from '@/lib/sandbox/types'
+import type { SandboxLanguage } from '@/lib/sandbox/types'
 
 // ============================================================================
 // Execute Tool Plugin
 // ============================================================================
 
 /**
- * Execute tool plugin for JavaScript code execution.
+ * Execute tool plugin for polyglot code execution.
  *
- * This tool enables LLM agents to run JavaScript code safely
- * in a QuickJS WebAssembly sandbox via the unified Sandbox.
+ * This tool enables LLM agents to run JavaScript or Python code
+ * safely in WASM sandboxes via the unified Sandbox.
  *
  * Features:
- * - Full ES2020 JavaScript support
+ * - JavaScript: Full ES2020 via QuickJS
+ * - Python: CPython 3.x via Pyodide with PyPI package support
  * - Complete isolation (no DOM, network, or filesystem access)
- * - Console output capture
+ * - Console / stdout capture
  * - Input data passing
  * - Configurable timeout
  *
@@ -50,10 +54,10 @@ export const executePlugin: ToolPlugin<
   metadata: {
     name: 'execute',
     displayName: 'Execute Code',
-    shortDescription: 'Run JavaScript code in a secure sandbox',
+    shortDescription: 'Run JavaScript or Python code in a secure sandbox',
     icon: 'Terminal',
     category: 'code',
-    tags: ['code', 'javascript', 'execution', 'sandbox', 'compute'],
+    tags: ['code', 'javascript', 'python', 'execution', 'sandbox', 'compute'],
     enabledByDefault: false,
     estimatedDuration: 5000,
     requiresConfirmation: false,
@@ -65,11 +69,14 @@ export const executePlugin: ToolPlugin<
       throw new Error('Aborted')
     }
 
+    const language: SandboxLanguage = args.language ?? 'javascript'
+
     // Route through the unified sandbox
     const result = await sandbox.execute({
-      language: 'javascript',
+      language,
       code: args.code,
       context: args.input != null ? { input: args.input } : undefined,
+      packages: language === 'python' ? args.packages : undefined,
       timeout: args.timeout,
     })
 
@@ -98,7 +105,9 @@ export const executePlugin: ToolPlugin<
     } else {
       const errorType = result.errorType ?? 'runtime'
       return {
-        error: (errorType === 'memory' ? 'runtime' : errorType) as ExecuteError['error'],
+        error: (errorType === 'memory'
+          ? 'runtime'
+          : errorType) as ExecuteError['error'],
         message: result.error ?? 'Execution failed',
         console: result.console.map((e) => ({
           type: e.type as 'log' | 'warn' | 'error' | 'info' | 'debug',
@@ -119,12 +128,32 @@ export const executePlugin: ToolPlugin<
       throw new Error('Code cannot be empty')
     }
 
+    // Validate language
+    const language: SandboxLanguage = params.language ?? 'javascript'
+    if (!['javascript', 'python'].includes(language)) {
+      throw new Error(
+        `Unsupported language: "${language}". Supported: javascript, python`,
+      )
+    }
+
+    // Validate timeout against language-specific limits
     if (params.timeout !== undefined) {
       if (typeof params.timeout !== 'number' || params.timeout < 0) {
         throw new Error('Timeout must be a positive number')
       }
-      if (params.timeout > 30000) {
-        throw new Error('Timeout cannot exceed 30000ms')
+      const maxTimeout = MAX_TIMEOUTS[language]
+      if (params.timeout > maxTimeout) {
+        throw new Error(`Timeout cannot exceed ${maxTimeout}ms for ${language}`)
+      }
+    }
+
+    // Validate packages (Python only)
+    if (params.packages !== undefined) {
+      if (!Array.isArray(params.packages)) {
+        throw new Error('Packages must be an array of strings')
+      }
+      if (params.packages.some((p) => typeof p !== 'string')) {
+        throw new Error('Each package must be a string')
       }
     }
 

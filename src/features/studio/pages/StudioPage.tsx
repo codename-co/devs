@@ -363,6 +363,7 @@ export function StudioPage() {
     const imageProviders: ImageProvider[] = [
       'openai',
       'google',
+      'vertex-ai',
       'stability',
       'replicate',
       'together',
@@ -387,17 +388,24 @@ export function StudioPage() {
     }
   }, [credentials])
 
-  // Get available video providers from stored credentials (currently only Google)
+  // Get available video providers from stored credentials (Google and Vertex AI)
   const availableVideoProviders = useMemo<VideoProvider[]>(() => {
-    // Video generation uses Google Veo which requires a Google API key
-    const hasGoogle = credentials.some((c) => c.provider === 'google')
-    return hasGoogle ? ['google'] : []
+    const videoProvs: VideoProvider[] = []
+    // Video generation uses Google Veo which requires a Google or Vertex AI key
+    if (credentials.some((c) => c.provider === 'google')) {
+      videoProvs.push('google')
+    }
+    if (credentials.some((c) => c.provider === 'vertex-ai')) {
+      videoProvs.push('vertex-ai')
+    }
+    return videoProvs
   }, [credentials])
 
-  // Initialize video provider/model when Google credentials are available
+  // Initialize video provider/model when credentials are available
   useEffect(() => {
     if (availableVideoProviders.length > 0 && !selectedVideoProvider) {
-      setSelectedVideoProvider('google')
+      const defaultProvider = availableVideoProviders[0]
+      setSelectedVideoProvider(defaultProvider)
       setSelectedVideoModel('veo-3.1-generate-preview')
     }
   }, [availableVideoProviders, selectedVideoProvider])
@@ -501,21 +509,24 @@ export function StudioPage() {
     }
   }, [selectedProvider, selectedModel, providerCredentials])
 
-  // Get video provider config (uses Google credentials)
+  // Get video provider config (uses Google or Vertex AI credentials)
   const getVideoProviderConfig = useCallback(async () => {
-    // Video generation currently only supports Google
-    const googleCred = providerCredentials.get('google')
-    if (!googleCred) return null
+    if (!selectedVideoProvider) return null
 
-    const config = await CredentialService.getDecryptedConfig(googleCred.id)
+    // Find the credential matching the selected video provider
+    const cred = credentials.find((c) => c.provider === selectedVideoProvider)
+    if (!cred) return null
+
+    const config = await CredentialService.getDecryptedConfig(cred.id)
     if (!config) return null
 
     return {
-      provider: 'google' as VideoProvider,
+      provider: selectedVideoProvider as VideoProvider,
       apiKey: config.apiKey || '',
       model: selectedVideoModel || ('veo-3.1-generate-preview' as VideoModel),
+      baseUrl: config.baseUrl,
     }
-  }, [providerCredentials, selectedVideoModel])
+  }, [credentials, selectedVideoProvider, selectedVideoModel])
 
   // Handle generation (image or video)
   const handleGenerate = useCallback(

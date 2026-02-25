@@ -65,6 +65,32 @@ export interface MessageAttachment {
   size?: number
 }
 
+/** A serializable processing step recorded during message generation */
+export interface MessageStep {
+  /** Unique step id */
+  id: string
+  /** Icon name (from iconoir-react) */
+  icon: string
+  /** i18n translation key */
+  i18nKey: string
+  /** Optional i18n interpolation variables */
+  vars?: Record<string, string | number>
+  /** Step status */
+  status: 'running' | 'completed' | 'failed'
+  /** Timestamp (ms) when the step started */
+  startedAt: number
+  /** Timestamp (ms) when the step completed */
+  completedAt?: number
+  /** Optional LLM-generated title */
+  title?: string
+  /** Tool calls executed during this step (name, parsed input, raw output) */
+  toolCalls?: Array<{
+    name: string
+    input: Record<string, unknown>
+    output?: string
+  }>
+}
+
 export interface Message {
   id: string
   role: 'user' | 'assistant' | 'system'
@@ -76,6 +102,7 @@ export interface Message {
   pinnedAt?: Date | string // When the message was pinned
   attachments?: MessageAttachment[] // File attachments for this message
   traceIds?: string[] // Trace IDs for operations performed to generate this message
+  steps?: MessageStep[] // Processing steps recorded during message generation
 }
 
 export interface Conversation {
@@ -240,6 +267,8 @@ export interface LLMConfig {
   baseUrl?: string
   temperature?: number
   maxTokens?: number
+  /** Abort signal for cancelling in-flight requests */
+  signal?: AbortSignal
 }
 
 export interface Tool {

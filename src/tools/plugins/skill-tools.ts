@@ -4,20 +4,18 @@
  * Tool plugins that enable LLM agents to interact with installed Agent Skills:
  * - `activate_skill` — Load full SKILL.md instructions for a specialized task
  * - `read_skill_file` — Read reference or asset files from a skill
- * - `run_skill_script` — Execute Python scripts in a sandboxed code runner
+ * - `run_skill_script` — Execute Python or JavaScript scripts via the polyglot Sandbox
+ *
+ * All executable scripts route through `sandbox.execute()` from `@/lib/sandbox`,
+ * which dispatches to Pyodide (Python) or QuickJS (JavaScript) WASM runtimes.
+ * Bash scripts are returned as readable text for the LLM to interpret.
  *
  * @module tools/plugins/skill-tools
  */
 
 import { createToolPlugin } from '../registry'
-import {
-  getSkillByName,
-  getEnabledSkills,
-} from '@/stores/skillStore'
-import {
-  sandbox,
-  checkPackageCompatibility,
-} from '@/lib/sandbox'
+import { getSkillByName, getEnabledSkills } from '@/stores/skillStore'
+import { sandbox, checkPackageCompatibility } from '@/lib/sandbox'
 import {
   resolveInputFiles,
   processOutputFiles,
@@ -78,7 +76,7 @@ export const activateSkillPlugin: ToolPlugin<ActivateSkillArgs, string> =
       function: {
         name: 'activate_skill',
         description:
-          'Load the full instructions for a specialized skill. Call this when a user\'s task matches one of the skills listed in <available_skills>. Returns the complete SKILL.md body with detailed step-by-step guidance.',
+          "Load the full instructions for a specialized skill. Call this when a user's task matches one of the skills listed in <available_skills>. Returns the complete SKILL.md body with detailed step-by-step guidance.",
         parameters: {
           type: 'object',
           properties: {
@@ -161,7 +159,8 @@ export const readSkillFilePlugin: ToolPlugin<ReadSkillFileArgs, string> =
     metadata: {
       name: 'read_skill_file',
       displayName: 'Read Skill File',
-      shortDescription: 'Read a reference or asset file from an installed skill',
+      shortDescription:
+        'Read a reference or asset file from an installed skill',
       icon: 'Page',
       category: 'skill',
       tags: ['skill', 'agent-skill'],
@@ -226,13 +225,18 @@ export const readSkillFilePlugin: ToolPlugin<ReadSkillFileArgs, string> =
 // ============================================================================
 
 /**
- * Tool that executes a Python script bundled with an installed skill.
+ * Tool that executes a Python or JavaScript script bundled with an installed skill.
  *
- * Runs the script in a Pyodide Web Worker (sandboxed code runner) with:
- * - Automatic PyPI package installation via micropip
- * - Virtual filesystem for input/output files
+ * Routes through the polyglot Sandbox (`@/lib/sandbox`):
+ * - Python → Pyodide Web Worker with automatic PyPI package installation
+ * - JavaScript → QuickJS Web Worker with ES2020 support
+ * - Bash → returned as readable text (not executable)
+ *
+ * Features:
+ * - Virtual filesystem for input/output files via file-bridge
  * - stdout/stderr capture
- * - Configurable timeout
+ * - Configurable timeout (60s Python, 30s JavaScript)
+ * - Package compatibility checking (Python)
  *
  * Requires user confirmation before execution (requiresConfirmation: true).
  */
@@ -242,10 +246,17 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
       name: 'run_skill_script',
       displayName: 'Run Skill Script',
       shortDescription:
-        'Execute a Python script from an installed skill in a sandboxed environment',
+        'Execute a Python or JavaScript script from an installed skill in a sandboxed environment',
       icon: 'Play',
       category: 'skill',
-      tags: ['skill', 'agent-skill', 'python', 'execution', 'sandbox'],
+      tags: [
+        'skill',
+        'agent-skill',
+        'python',
+        'javascript',
+        'execution',
+        'sandbox',
+      ],
       enabledByDefault: true,
       estimatedDuration: 30_000,
       requiresConfirmation: true,
@@ -255,9 +266,10 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
       function: {
         name: 'run_skill_script',
         description:
-          'Execute a Python script bundled with an installed Agent Skill. ' +
-          'The script runs in an isolated Python 3.11 environment (Pyodide WebAssembly) ' +
-          'with automatic PyPI package installation. Supports file input/output via a ' +
+          'Execute a Python or JavaScript script bundled with an installed Agent Skill. ' +
+          'Python scripts run in an isolated Python 3.11 environment (Pyodide WebAssembly) ' +
+          'with automatic PyPI package installation. JavaScript scripts run in an isolated ' +
+          'QuickJS WebAssembly environment. Both support file input/output via a ' +
           'virtual filesystem. Use after activating a skill to run its scripts.',
         parameters: {
           type: 'object',
@@ -298,8 +310,7 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
                   },
                   knowledge_item_id: {
                     type: 'string',
-                    description:
-                      'ID of a knowledge item to mount at this path',
+                    description: 'ID of a knowledge item to mount at this path',
                   },
                   content: {
                     type: 'string',
@@ -308,8 +319,7 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
                   encoding: {
                     type: 'string',
                     enum: ['text', 'base64'],
-                    description:
-                      'Encoding of inline content (default: "text")',
+                    description: 'Encoding of inline content (default: "text")',
                   },
                 },
                 required: ['path'],
@@ -359,23 +369,25 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
       }
 
       // ── Validate script language ──────────────────────────────
-      if (script.language !== 'python') {
+      const executableLanguages = ['python', 'javascript']
+      if (!executableLanguages.includes(script.language)) {
         if (script.language === 'bash') {
           return (
             `This is a Bash script and cannot be executed directly in the browser.\n\n` +
             `**Script content** (\`${script.path}\`):\n\`\`\`bash\n${script.content}\n\`\`\`\n\n` +
             `You can read this script and follow its logic to accomplish the task manually, ` +
-            `or translate the relevant parts to Python and re-run with \`run_skill_script\`.`
+            `or translate the relevant parts to Python or JavaScript and re-run with \`run_skill_script\`.`
           )
         }
         throw new Error(
           `Script "${script.path}" is written in ${script.language} and cannot ` +
-            `be executed in the sandboxed code runner. Only Python scripts are supported.`,
+            `be executed in the sandboxed code runner. Supported languages: Python, JavaScript.`,
         )
       }
 
-      // ── Check package compatibility ───────────────────────────
-      const packages = script.requiredPackages ?? []
+      // ── Check package compatibility (Python only) ─────────────
+      const packages =
+        script.language === 'python' ? (script.requiredPackages ?? []) : []
       const incompatible = packages.filter(
         (pkg) => checkPackageCompatibility(pkg) === 'incompatible',
       )
@@ -399,29 +411,30 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
             argv.push(flag, String(value))
           }
         }
-        console.debug(`[run_skill_script] sys.argv will be: ${JSON.stringify(argv)}`)
+        console.debug(
+          `[run_skill_script] sys.argv will be: ${JSON.stringify(argv)}`,
+        )
       }
 
       // ── Resolve input files ───────────────────────────────────
-      const fileRefs: FileReference[] = (args.input_files ?? []).map(
-        (f) => {
-          if (f.knowledge_item_id) {
-            return {
-              path: f.path,
-              knowledgeItemId: f.knowledge_item_id,
-            }
-          }
+      const fileRefs: FileReference[] = (args.input_files ?? []).map((f) => {
+        if (f.knowledge_item_id) {
           return {
             path: f.path,
-            content: f.content ?? '',
-            encoding: f.encoding ?? 'text',
+            knowledgeItemId: f.knowledge_item_id,
           }
-        },
-      )
+        }
+        return {
+          path: f.path,
+          content: f.content ?? '',
+          encoding: f.encoding ?? 'text',
+        }
+      })
       const inputFiles = await resolveInputFiles(fileRefs)
 
       // ── Execute in sandbox ────────────────────────────────────
-      context.onProgress?.(0.1, 'Initializing Python environment…')
+      const langLabel = script.language === 'python' ? 'Python' : 'JavaScript'
+      context.onProgress?.(0.1, `Initializing ${langLabel} environment…`)
 
       const unsubscribe = sandbox.onProgress((event) => {
         if (event.type === 'loading') {
@@ -433,12 +446,12 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
 
       try {
         const result = await sandbox.execute({
-          language: 'python',
+          language: script.language as 'python' | 'javascript',
           code: script.content,
           context: args.arguments,
           packages,
           files: inputFiles,
-          timeout: 60_000,
+          timeout: script.language === 'python' ? 60_000 : 30_000,
           traceId: skill.id,
           label: script.path,
         })

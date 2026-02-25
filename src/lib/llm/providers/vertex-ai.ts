@@ -639,6 +639,7 @@ export class VertexAIProvider implements LLMProviderInterface {
           Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify(requestBody),
+        signal: config?.signal,
       },
     )
 
@@ -914,6 +915,7 @@ export class VertexAIProvider implements LLMProviderInterface {
           Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify(requestBody),
+        signal: config?.signal,
       },
     )
 

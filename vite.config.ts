@@ -10,7 +10,13 @@ import { defineConfig, loadEnv, type Plugin } from 'vite'
 import { createMpaPlugin, type Page } from 'vite-plugin-virtual-mpa'
 
 import { PRODUCT } from './src/config/product'
-import { defaultLang, type Lang, langs, meta } from './src/i18n/locales'
+import {
+  defaultLang,
+  type Lang,
+  langs,
+  languages,
+  meta,
+} from './src/i18n/locales'
 import { cacheVersionPlugin } from './src/lib/cache-version-plugin'
 import { corsProxyPlugin } from './src/lib/cors-proxy-plugin'
 import { oauthProxyPlugin } from './src/lib/oauth-proxy-plugin'
@@ -67,6 +73,7 @@ const pages = langs.reduce((acc, lang = defaultLang) => {
       entry,
       data: {
         lang,
+        language: languages[lang],
         title: _title,
         description: _description,
       },

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="<%= lang %>">
+<html lang="<%= lang %>" translate="no">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -15,6 +15,7 @@
     <!-- SEO Meta Tags -->
     <meta name="robots" content="index, follow" />
     <meta name="author" content="DEVS" />
+    <meta name="language" content="<%= language %>" />
     <meta name="theme-color" content="#000000" />
     <link rel="canonical" href="https://devs.new" />
 
@@ -82,7 +83,7 @@
       }
     </script>
   </head>
-  <body class="bg-background dark:bg-content1 text-foreground rtl:*">
+  <body class="text-foreground rtl:*">
     <div id="root"></div>
     <script type="module" src="/src/app/App.tsx"></script>
   </body>

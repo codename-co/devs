@@ -1,4 +1,3 @@
-export * from './AboutModal'
 export * from './AgentAppearancePicker'
 export * from './AgentAvatar'
 export * from './AgentCard'

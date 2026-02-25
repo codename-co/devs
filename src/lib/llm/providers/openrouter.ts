@@ -115,6 +115,7 @@ export class OpenRouterProvider implements LLMProviderInterface {
           'X-Title': 'DEVS AI Platform',
         },
         body: JSON.stringify(requestBody),
+        signal: config?.signal,
       },
     )
 

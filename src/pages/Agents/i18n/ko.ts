@@ -185,4 +185,5 @@ export const ko: I18n = {
   'Using tool: {tool}…': '{tool} 도구 사용 중…',
   // Recent conversations
   'Recent conversations': '최근 대화',
+  'No details available': '세부 정보 없음',
 } as const

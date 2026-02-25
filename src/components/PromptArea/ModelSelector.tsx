@@ -828,6 +828,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
     <Dropdown
       placement="bottom-start"
       className="bg-white dark:bg-default-50 dark:text-white"
+      shouldBlockScroll={false}
       onOpenChange={handleDropdownOpenChange}
     >
       <DropdownTrigger>

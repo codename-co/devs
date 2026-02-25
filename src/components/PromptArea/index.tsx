@@ -59,6 +59,7 @@ export interface PromptAreaProps
     mentionedSkills?: InstalledSkill[],
   ) => void
   isSending?: boolean
+  onStop?: () => void
   onFilesChange?: (files: File[]) => void
   defaultPrompt?: string
   onAgentChange?: (agent: Agent | null) => void
@@ -717,6 +718,22 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                         }
                       >
                         <Icon name="ArrowRight" size="sm" />
+                      </Button>
+                    </Tooltip>
+                  )}
+
+                  {props.isSending && props.onStop && (
+                    <Tooltip content={t('Stop generating')} placement="bottom">
+                      <Button
+                        data-testid="stop-button"
+                        isIconOnly
+                        color="danger"
+                        radius="md"
+                        variant="solid"
+                        size="sm"
+                        onPress={props.onStop}
+                      >
+                        <Icon name="Square" size="sm" />
                       </Button>
                     </Tooltip>
                   )}

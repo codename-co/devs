@@ -190,4 +190,5 @@ export const es: I18n = {
   'Using tool: {tool}…': 'Usando herramienta: {tool}…',
   // Recent conversations
   'Recent conversations': 'Conversaciones recientes',
+  'No details available': 'No hay detalles disponibles',
 } as const

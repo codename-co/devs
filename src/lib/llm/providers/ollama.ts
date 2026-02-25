@@ -162,6 +162,7 @@ export class OllamaProvider implements LLMProviderInterface {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(requestBody),
+      signal: config?.signal,
     })
 
     if (!response.ok) {

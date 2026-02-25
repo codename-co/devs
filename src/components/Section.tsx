@@ -4,13 +4,15 @@ export interface SectionProps {
   children?: React.ReactNode
   className?: string
   mainClassName?: string
-  size?: 4 | 5 | 6 | 7
+  size?: 2 | 3 | 4 | 5 | 6 | 7
   style?: React.CSSProperties
 }
 
 export const Section = forwardRef<HTMLElement, SectionProps>(
   ({ children, className = '', mainClassName = '', size = 4, style }, ref) => {
     const sizeClasses: Record<number, string> = {
+      2: 'max-w-2xl',
+      3: 'max-w-3xl',
       4: 'max-w-4xl',
       5: 'max-w-5xl',
       6: 'max-w-6xl',

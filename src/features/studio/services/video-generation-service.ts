@@ -18,6 +18,7 @@ import {
 import { TraceService } from '@/features/traces/trace-service'
 import { CostEstimate } from '@/features/traces/types'
 import { errorToast } from '@/lib/toast'
+import { getVertexAIAuthInfo } from '@/lib/llm/vertex-ai-auth'
 
 // =============================================================================
 // Video Generation Pricing (USD per video)
@@ -396,6 +397,249 @@ class GoogleVeoProvider implements VideoProviderInterface {
 }
 
 // =============================================================================
+// Vertex AI Veo Provider
+// =============================================================================
+
+/**
+ * Vertex AI Veo Video Provider
+ *
+ * Uses service account key authentication to access Veo models
+ * via the Vertex AI API (aiplatform.googleapis.com).
+ * Same Veo models as the Google provider but with service account auth.
+ */
+class VertexAIVeoProvider implements VideoProviderInterface {
+  async startGeneration(
+    prompt: string,
+    settings: VideoGenerationSettings,
+    config: VideoProviderConfig,
+  ): Promise<{ operationName: string }> {
+    const model = config.model || 'veo-3.1-generate-preview'
+    const auth = await getVertexAIAuthInfo(
+      config.apiKey,
+      'us-central1',
+      config.baseUrl,
+    )
+
+    const instance: Record<string, any> = { prompt }
+
+    if (settings.referenceImageBase64 && settings.referenceImageMimeType) {
+      instance.image = {
+        bytesBase64Encoded: settings.referenceImageBase64,
+        mimeType: settings.referenceImageMimeType,
+      }
+    }
+
+    if (settings.lastFrameBase64 && settings.lastFrameMimeType) {
+      instance.lastFrame = {
+        bytesBase64Encoded: settings.lastFrameBase64,
+        mimeType: settings.lastFrameMimeType,
+      }
+    }
+
+    const parameters: Record<string, any> = { sampleCount: 1 }
+
+    if (settings.duration) {
+      parameters.durationSeconds = settings.duration
+    }
+    if (settings.aspectRatio) {
+      parameters.aspectRatio = settings.aspectRatio
+    }
+    if (settings.resolution) {
+      parameters.resolution = settings.resolution
+    }
+    if (settings.personGeneration) {
+      parameters.personGeneration = settings.personGeneration
+    }
+    if (settings.negativePrompt) {
+      parameters.negativePrompt = settings.negativePrompt
+    }
+
+    const finalRequestBody: Record<string, any> = {
+      instances: [instance],
+    }
+    if (Object.keys(parameters).length > 0) {
+      finalRequestBody.parameters = parameters
+    }
+
+    const url = `${auth.endpoint}/publishers/google/models/${model}:predictLongRunning`
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${auth.accessToken}`,
+      },
+      body: JSON.stringify(finalRequestBody),
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}))
+      throw new Error(
+        error.error?.message ||
+          `Vertex AI Veo API error: ${response.statusText}`,
+      )
+    }
+
+    const data = await response.json()
+    if (!data.name) {
+      throw new Error('No operation name returned from Vertex AI Veo API')
+    }
+
+    return { operationName: data.name }
+  }
+
+  async pollOperation(
+    operationName: string,
+    config: VideoProviderConfig,
+  ): Promise<{
+    done: boolean
+    videos?: GeneratedVideo[]
+    error?: string
+  }> {
+    const auth = await getVertexAIAuthInfo(
+      config.apiKey,
+      'us-central1',
+      config.baseUrl,
+    )
+
+    // The operation name is a full resource path; use the base Vertex AI URL
+    const baseUrl = auth.endpoint.split('/projects/')[0]
+    const response = await fetch(`${baseUrl}/${operationName}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${auth.accessToken}`,
+      },
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}))
+      throw new Error(
+        error.error?.message ||
+          `Vertex AI Veo API error: ${response.statusText}`,
+      )
+    }
+
+    const data = await response.json()
+
+    if (data.error) {
+      return {
+        done: true,
+        error: data.error.message || 'Video generation failed',
+      }
+    }
+
+    if (!data.done) {
+      return { done: false }
+    }
+
+    const generateVideoResponse = data.response?.generateVideoResponse
+    if (generateVideoResponse?.raiMediaFilteredCount > 0) {
+      const reasons = generateVideoResponse.raiMediaFilteredReasons || []
+      const errorMessage =
+        reasons.length > 0
+          ? reasons.join('. ')
+          : 'Content was filtered due to safety guidelines.'
+      errorToast('Video generation blocked', errorMessage)
+      return { done: true, error: errorMessage }
+    }
+
+    const videos: GeneratedVideo[] = []
+    const generatedSamples = generateVideoResponse?.generatedSamples || []
+
+    for (const genSample of generatedSamples) {
+      if (genSample.video) {
+        const downloaded = await this.downloadVideo(genSample.video, config)
+        const isPortrait =
+          (generateVideoResponse?.aspectRatio || '16:9') === '9:16'
+        const resolution = generateVideoResponse?.resolution || '720p'
+
+        videos.push({
+          id: `vertex-ai-veo-${Date.now()}-${videos.length}`,
+          requestId: '',
+          url: downloaded.url,
+          blob: downloaded.blob,
+          width: this.getDimension(resolution, isPortrait, 'width'),
+          height: this.getDimension(resolution, isPortrait, 'height'),
+          duration: generateVideoResponse?.durationSeconds || 8,
+          format: 'mp4',
+          hasAudio: true,
+          seed: genSample.seed,
+          createdAt: new Date(),
+        })
+      }
+    }
+
+    return { done: true, videos }
+  }
+
+  async downloadVideo(
+    videoFile: any,
+    config: VideoProviderConfig,
+  ): Promise<{ url: string; blob: Blob }> {
+    const auth = await getVertexAIAuthInfo(
+      config.apiKey,
+      'us-central1',
+      config.baseUrl,
+    )
+
+    let downloadUrl: string
+    if (videoFile.uri) {
+      downloadUrl = videoFile.uri
+    } else if (videoFile.name) {
+      const baseUrl = auth.endpoint.split('/projects/')[0]
+      downloadUrl = `${baseUrl}/${videoFile.name}:download`
+    } else {
+      throw new Error('No video URI or name available for download')
+    }
+
+    const response = await fetch(downloadUrl, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${auth.accessToken}`,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to download video: ${response.statusText}`)
+    }
+
+    const blob = await response.blob()
+    const url = URL.createObjectURL(blob)
+    return { url, blob }
+  }
+
+  async validateApiKey(apiKey: string): Promise<boolean> {
+    try {
+      const auth = await getVertexAIAuthInfo(apiKey, 'us-central1')
+      const response = await fetch(
+        `${auth.endpoint}/publishers/google/models`,
+        {
+          headers: { Authorization: `Bearer ${auth.accessToken}` },
+        },
+      )
+      return response.ok
+    } catch {
+      return false
+    }
+  }
+
+  private getDimension(
+    resolution: string,
+    isPortrait: boolean,
+    axis: 'width' | 'height',
+  ): number {
+    const landscape: Record<string, [number, number]> = {
+      '4k': [3840, 2160],
+      '1080p': [1920, 1080],
+      '720p': [1280, 720],
+    }
+    const dims = landscape[resolution] || landscape['720p']
+    const [w, h] = isPortrait ? [dims[1], dims[0]] : dims
+    return axis === 'width' ? w : h
+  }
+}
+
+// =============================================================================
 // Video Generation Service
 // =============================================================================
 
@@ -408,6 +652,7 @@ export class VideoGenerationService {
   // Initialize default providers
   static {
     this.providers.set('google', new GoogleVeoProvider())
+    this.providers.set('vertex-ai', new VertexAIVeoProvider())
   }
 
   /**

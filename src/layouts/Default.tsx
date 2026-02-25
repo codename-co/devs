@@ -89,13 +89,9 @@ export default function DefaultLayout({
     const currentPath = location.pathname
     const pathSegments = currentPath.split('/').filter(Boolean)
 
-    if (pathSegments.length > 1) {
-      pathSegments.pop()
-      const parentPath = '/' + pathSegments.join('/')
-      navigate(parentPath)
-    } else {
-      navigate(-1)
-    }
+    pathSegments.pop()
+    const parentPath = '/' + pathSegments.join('/')
+    navigate(parentPath)
   }
 
   const metaTitle = [
@@ -106,11 +102,14 @@ export default function DefaultLayout({
     .join(' · ')
 
   return (
-    <div className="flex-grow w-full" dir={direction}>
+    <div
+      className="flex-grow w-full bg-[rgb(244,247,249)] dark:bg-default-50"
+      dir={direction}
+    >
       <title children={metaTitle} />
       <div className="flex relative min-h-screen">
         <AppDrawer />
-        <div className="flex flex-col-reverse w-full relative">
+        <div className="bg-background dark:bg-transparent md:m-4 md:rounded-xl flex flex-col-reverse w-full relative">
           <Tabbar className="md:hidden" />
 
           <main
@@ -121,7 +120,7 @@ export default function DefaultLayout({
               {(header || showBackButton) && (
                 <div
                   className={clsx(
-                    'pb-2 mb-0 bg-default-50 dark:bg-default-100',
+                    'pb-2 mb-0 bg-default-50 dark:bg-default-100 rounded-t-xl',
                     header?.color,
                   )}
                 >

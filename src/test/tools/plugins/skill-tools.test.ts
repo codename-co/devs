@@ -88,8 +88,7 @@ function makeSkill(overrides: Partial<InstalledSkill> = {}): InstalledSkill {
     references: overrides.references ?? [],
     assets: overrides.assets ?? [],
     githubUrl:
-      overrides.githubUrl ??
-      'https://github.com/test/repo/tree/main/.agent',
+      overrides.githubUrl ?? 'https://github.com/test/repo/tree/main/.agent',
     stars: overrides.stars ?? 10,
     installedAt: overrides.installedAt ?? now,
     updatedAt: overrides.updatedAt ?? now,
@@ -99,7 +98,9 @@ function makeSkill(overrides: Partial<InstalledSkill> = {}): InstalledSkill {
   }
 }
 
-function makeContext(overrides: Partial<ToolExecutionContext> = {}): ToolExecutionContext {
+function makeContext(
+  overrides: Partial<ToolExecutionContext> = {},
+): ToolExecutionContext {
   return {
     agentId: 'agent-1',
     conversationId: 'conv-1',
@@ -133,9 +134,15 @@ describe('skill-tools', () => {
       expect(SKILL_TOOL_DEFINITIONS.activate_skill).toBeDefined()
       expect(SKILL_TOOL_DEFINITIONS.read_skill_file).toBeDefined()
       expect(SKILL_TOOL_DEFINITIONS.run_skill_script).toBeDefined()
-      expect(SKILL_TOOL_DEFINITIONS.activate_skill.function.name).toBe('activate_skill')
-      expect(SKILL_TOOL_DEFINITIONS.read_skill_file.function.name).toBe('read_skill_file')
-      expect(SKILL_TOOL_DEFINITIONS.run_skill_script.function.name).toBe('run_skill_script')
+      expect(SKILL_TOOL_DEFINITIONS.activate_skill.function.name).toBe(
+        'activate_skill',
+      )
+      expect(SKILL_TOOL_DEFINITIONS.read_skill_file.function.name).toBe(
+        'read_skill_file',
+      )
+      expect(SKILL_TOOL_DEFINITIONS.run_skill_script.function.name).toBe(
+        'run_skill_script',
+      )
     })
 
     it('all skill plugins should have category "skill"', () => {
@@ -173,7 +180,10 @@ describe('skill-tools', () => {
     })
 
     it('should throw when skill is disabled', async () => {
-      mockSkillsMap.set('s1', makeSkill({ id: 's1', name: 'pdf', enabled: false }))
+      mockSkillsMap.set(
+        's1',
+        makeSkill({ id: 's1', name: 'pdf', enabled: false }),
+      )
       const ctx = makeContext()
       await expect(
         runSkillScriptPlugin.handler(
@@ -214,6 +224,62 @@ describe('skill-tools', () => {
       expect(result).toContain('Bash script')
       expect(result).toContain('cannot be executed directly')
       expect(result).toContain('#!/bin/bash')
+    })
+
+    it('should execute a JavaScript script via the sandbox', async () => {
+      const jsScript = makeScript({
+        path: 'scripts/transform.js',
+        language: 'javascript',
+        content: 'export default [1,2,3].reduce((a,b) => a+b, 0)',
+      })
+      mockSkillsMap.set(
+        's1',
+        makeSkill({ id: 's1', name: 'transform-skill', scripts: [jsScript] }),
+      )
+      mockExecute.mockResolvedValue({
+        success: true,
+        result: '6',
+        stdout: '',
+        stderr: '',
+        console: [],
+        executionTimeMs: 10,
+        language: 'javascript',
+      })
+
+      const ctx = makeContext()
+      const result = await runSkillScriptPlugin.handler(
+        { skill_name: 'transform-skill', script_path: 'scripts/transform.js' },
+        ctx,
+      )
+
+      expect(result).toContain('executed successfully')
+      expect(result).toContain('6')
+      expect(mockExecute).toHaveBeenCalledWith(
+        expect.objectContaining({
+          language: 'javascript',
+          code: 'export default [1,2,3].reduce((a,b) => a+b, 0)',
+          timeout: 30_000,
+        }),
+      )
+    })
+
+    it('should throw for unsupported script languages', async () => {
+      const rubyScript = makeScript({
+        path: 'scripts/run.rb',
+        language: 'other' as any,
+        content: 'puts "hello"',
+      })
+      mockSkillsMap.set(
+        's1',
+        makeSkill({ id: 's1', name: 'ruby-skill', scripts: [rubyScript] }),
+      )
+      const ctx = makeContext()
+      await expect(
+        runSkillScriptPlugin.handler(
+          { skill_name: 'ruby-skill', script_path: 'scripts/run.rb' },
+          ctx,
+        ),
+      ).rejects.toThrow('Supported languages: Python, JavaScript')
     })
 
     it('should execute a Python script successfully', async () => {
@@ -343,9 +409,7 @@ describe('skill-tools', () => {
         {
           skill_name: 'pdf',
           script_path: 'scripts/analyze.py',
-          input_files: [
-            { path: 'data.csv', knowledge_item_id: 'kb-123' },
-          ],
+          input_files: [{ path: 'data.csv', knowledge_item_id: 'kb-123' }],
         },
         ctx,
       )
@@ -369,7 +433,11 @@ describe('skill-tools', () => {
         console: [],
         executionTimeMs: 200,
         outputFiles: [
-          { path: '/output/result.csv', content: 'x,y\n1,2', encoding: 'text' as const },
+          {
+            path: '/output/result.csv',
+            content: 'x,y\n1,2',
+            encoding: 'text' as const,
+          },
         ],
         language: 'python',
       })

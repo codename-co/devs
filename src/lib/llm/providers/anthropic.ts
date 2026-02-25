@@ -405,6 +405,7 @@ export class AnthropicProvider implements LLMProviderInterface {
           'anthropic-dangerous-direct-browser-access': 'true',
         },
         body: JSON.stringify(requestBody),
+        signal: config?.signal,
       },
     )
 

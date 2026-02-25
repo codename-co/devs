@@ -37,7 +37,7 @@ import { FilesSection } from '@/pages/Knowledge/components'
 import { IconName } from '@/lib/types'
 
 type SectionKey =
-  | 'general'
+  | ''
   | 'providers'
   | 'connectors'
   | 'features'
@@ -96,7 +96,7 @@ const SettingsContentInner = () => {
 
   // All section keys for hash matching
   const allSectionKeys: SectionKey[] = [
-    'general',
+    '',
     'providers',
     'connectors',
     'features',
@@ -118,7 +118,7 @@ const SettingsContentInner = () => {
   const { activeSection, activeElement } = useHashHighlight()
 
   // Active section in the sidebar
-  const [activeKey, setActiveKey] = useState<SectionKey>('general')
+  const [activeKey, setActiveKey] = useState<SectionKey>('')
 
   // Sync active section with URL hash
   useEffect(() => {
@@ -139,7 +139,7 @@ const SettingsContentInner = () => {
   // Section definitions for the sidebar menu
   const sections: SectionDef[] = [
     {
-      key: 'general',
+      key: '',
       label: t('Settings'),
       icon: 'Settings',
       group: 'configure',
@@ -200,7 +200,10 @@ const SettingsContentInner = () => {
       return
     }
     setActiveKey(section.key)
-    navigate(`${location.pathname}#settings/${section.key}`, { replace: true })
+    navigate(
+      `${location.pathname}#settings${section.key ?? `/${section.key}`}`,
+      { replace: true },
+    )
   }
 
   useEffect(() => {
@@ -225,7 +228,7 @@ const SettingsContentInner = () => {
   // Render section content based on the active key
   const renderSectionContent = () => {
     switch (activeKey) {
-      case 'general':
+      case '':
         return <GeneralSection />
       case 'providers':
         return <ProvidersSection />
@@ -306,7 +309,7 @@ const SettingsContentInner = () => {
       </div>
 
       {/* Left sidebar menu (hidden on narrow screens) */}
-      <nav className="hidden md:block w-48 shrink-0 border-e border-default-200 overflow-y-auto bg-default-50">
+      <nav className="hidden md:block max-w-48 shrink-0 border-e border-default-200 overflow-x-hidden overflow-y-auto bg-default-50">
         <h2 className="text-lg font-medium px-4 py-4">{t('Settings')}</h2>
         <div className="flex flex-col gap-4 px-2 pb-4">
           {groups.map((group) => {
@@ -393,7 +396,7 @@ const SettingsContentInner = () => {
 
         {/* Section header + content */}
         {currentSection && !currentSection.navigateTo && (
-          <div className="px-6 py-4">
+          <div className="px-6 py-4 h-full">
             <h3 className="mb-1 flex items-center gap-2">
               {/* {activeElement && (
                   <button
@@ -439,7 +442,7 @@ const SettingsContentInner = () => {
                 )}
               </Breadcrumbs>
             </h3>
-            <div className="mt-4 h-full">{renderSectionContent()}</div>
+            <div className="mt-4">{renderSectionContent()}</div>
           </div>
         )}
       </div>

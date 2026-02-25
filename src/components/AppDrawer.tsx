@@ -18,7 +18,6 @@ import { userSettings } from '@/stores/userStore'
 import { Icon } from './Icon'
 import { Title } from './Title'
 import { ProgressIndicator } from './ProgressIndicator'
-import { AboutModal } from './AboutModal'
 import { SettingsModal } from './SettingsModal'
 import {
   GlobalSearch,
@@ -32,53 +31,224 @@ import { useState, useEffect, memo, useMemo } from 'react'
 import { cn, isCurrentPath } from '@/lib/utils'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useConversationStore } from '@/stores/conversationStore'
+import { getAgentById } from '@/stores/agentStore'
+import { useAgents } from '@/stores/agentStore'
+import { useSkills } from '@/stores/skillStore'
 import {
   useMarketplaceStore,
   type InstalledExtension,
 } from '@/features/marketplace'
 import { getAppPrimaryPageUrl } from '@/features/marketplace/store'
 import { getExtensionColorClass } from '@/features/marketplace/utils'
+import {
+  useLiveMap,
+  useSyncReady,
+  tasks as taskMap,
+  knowledge as knowledgeMap,
+  studioEntries as studioMap,
+  connectors as connectorMap,
+} from '@/lib/yjs'
+import type { IconName } from '@/lib/types'
+import { toEpoch } from '@/lib/date'
 
-const AgentList = () => {
-  const { lang, t } = useI18n()
+// ── Recent Activity types & helpers ──────────────────────────────────────────
+
+interface ActivityItem {
+  id: string
+  type:
+    | 'conversation'
+    | 'task'
+    | 'agent'
+    | 'file'
+    | 'studio'
+    | 'connector'
+    | 'skill'
+  name: string
+  icon: IconName
+  href: string
+  timestamp: number // ms since epoch for sorting
+}
+
+const ACTIVITY_ICONS: Record<ActivityItem['type'], IconName> = {
+  conversation: 'ChatBubble',
+  task: 'TriangleFlagTwoStripes',
+  agent: 'Sparks',
+  file: 'Page',
+  studio: 'MediaImagePlus',
+  connector: 'DataTransferBoth',
+  skill: 'Puzzle',
+}
+
+const useRecentActivity = (lang: LanguageCode): ActivityItem[] => {
   const url = useUrl(lang)
+  const conversations = useConversationStore((s) => s.conversations)
+  const getTitle = useConversationStore((s) => s.getConversationTitle)
+  const allTasks = useLiveMap(taskMap)
+  const agents = useAgents()
+  const allKnowledge = useLiveMap(knowledgeMap)
+  const allStudio = useLiveMap(studioMap)
+  const allConnectors = useLiveMap(connectorMap)
+  const allSkills = useSkills()
 
-  // TODO: Fetch agents from store or API
-  const agents: any[] = []
+  // Force a re-render once Yjs has finished hydrating from IndexedDB.
+  // Without this, useLiveMap hooks may return stale (empty) snapshots
+  // because the Y.Map.observe() events fired before React could process them.
+  const yjsReady = useSyncReady()
 
-  if (agents.length === 0) {
-    return null
-  }
+  return useMemo(() => {
+    const items: ActivityItem[] = []
+
+    // Conversations
+    for (const c of conversations) {
+      const ts = toEpoch(c.updatedAt) || toEpoch(c.timestamp)
+      if (!ts) continue
+      const agent = c.agentId ? getAgentById(c.agentId) : undefined
+      const slug = c.agentSlug || agent?.slug || 'devs'
+      items.push({
+        id: `conv-${c.id}`,
+        type: 'conversation',
+        name: getTitle(c) || 'Untitled',
+        icon: ACTIVITY_ICONS.conversation,
+        href: url(`/agents/run/${slug}/${c.id}`),
+        timestamp: ts,
+      })
+    }
+
+    // Tasks
+    for (const t of allTasks) {
+      const ts = toEpoch((t as any).updatedAt) || toEpoch((t as any).createdAt)
+      if (!ts) continue
+      items.push({
+        id: `task-${(t as any).id}`,
+        type: 'task',
+        name: (t as any).title || 'Untitled task',
+        icon: ACTIVITY_ICONS.task,
+        href: url(`/tasks/${(t as any).id}`),
+        timestamp: ts,
+      })
+    }
+
+    // Agents (custom only — useAgents filters deleted)
+    for (const a of agents) {
+      const ts = toEpoch(a.updatedAt) || toEpoch(a.createdAt)
+      if (!ts) continue
+      items.push({
+        id: `agent-${a.id}`,
+        type: 'agent',
+        name: a.name,
+        icon: ACTIVITY_ICONS.agent,
+        href: url(`/agents/run/${a.slug}`),
+        timestamp: ts,
+      })
+    }
+
+    // Knowledge / files
+    for (const k of allKnowledge) {
+      const ki = k as any
+      if (ki.type === 'folder') continue
+      const ts = toEpoch(ki.lastModified) || toEpoch(ki.createdAt)
+      if (!ts) continue
+      items.push({
+        id: `file-${ki.id}`,
+        type: 'file',
+        name: ki.name || 'Untitled file',
+        icon: ACTIVITY_ICONS.file,
+        href: url(`/knowledge`),
+        timestamp: ts,
+      })
+    }
+
+    // Studio entries
+    for (const s of allStudio) {
+      const si = s as any
+      const ts = toEpoch(si.createdAt)
+      if (!ts) continue
+      const label =
+        si.prompt?.length > 40
+          ? si.prompt.slice(0, 40) + '…'
+          : si.prompt || 'Generation'
+      items.push({
+        id: `studio-${si.id}`,
+        type: 'studio',
+        name: label,
+        icon: ACTIVITY_ICONS.studio,
+        href: url(`/studio`),
+        timestamp: ts,
+      })
+    }
+
+    // Connectors
+    for (const c of allConnectors) {
+      const ci = c as any
+      const ts =
+        toEpoch(ci.lastSyncAt) || toEpoch(ci.updatedAt) || toEpoch(ci.createdAt)
+      if (!ts) continue
+      items.push({
+        id: `conn-${ci.id}`,
+        type: 'connector',
+        name: ci.name || ci.provider || 'Connector',
+        icon: ACTIVITY_ICONS.connector,
+        href: url(`/#settings/connectors`),
+        timestamp: ts,
+      })
+    }
+
+    // Installed skills
+    for (const sk of allSkills) {
+      const ts = toEpoch(sk.updatedAt) || toEpoch(sk.installedAt)
+      if (!ts) continue
+      items.push({
+        id: `skill-${sk.id}`,
+        type: 'skill',
+        name: sk.name,
+        icon: ACTIVITY_ICONS.skill,
+        href: url(`/#settings/skills`),
+        timestamp: ts,
+      })
+    }
+
+    // Sort descending by timestamp and take top 10
+    items.sort((a, b) => b.timestamp - a.timestamp)
+    return items.slice(0, 10)
+  }, [
+    conversations,
+    getTitle,
+    allTasks,
+    agents,
+    allKnowledge,
+    allStudio,
+    allConnectors,
+    allSkills,
+    url,
+    yjsReady,
+  ])
+}
+
+const RecentActivity = ({ lang }: { lang: LanguageCode }) => {
+  const { t } = useI18n()
+  const items = useRecentActivity(lang)
+
+  if (items.length === 0) return null
 
   return (
-    <Listbox aria-label={t('Agents')}>
-      <ListboxSection title={t('AGENTS')}>
-        {[
-          ...(agents
-            .reverse?.()
-            .slice(0, 5)
-            .map((agent) => (
-              <ListboxItem
-                key={agent.id}
-                className="dark:text-gray-200 dark:hover:text-grey-500"
-                href={`/agents/run/${agent.slug}`}
-                textValue={agent.name}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="truncate">{agent.name}</span>
-                </div>
-              </ListboxItem>
-            )) ?? []),
-          agents.length > 0 && (
-            <ListboxItem
-              key="view-all"
-              className="dark:text-gray-200 dark:hover:text-grey-500"
-              href={url('/agents')}
-            >
-              {t('View all agents')}
-            </ListboxItem>
-          ),
-        ].filter((item) => !!item)}
+    <Listbox aria-label={t('Recent activity')} variant="flat">
+      <ListboxSection
+        title={t('Recent activity')}
+        classNames={{ heading: 'ms-[4px]' }}
+      >
+        {items.map((item) => (
+          <ListboxItem
+            key={item.id}
+            href={item.href}
+            variant="faded"
+            startContent={<Icon name={item.icon} size="sm" />}
+            textValue={item.name}
+          >
+            <span className="truncate text-ellipsis text-small">
+              {item.name}
+            </span>
+          </ListboxItem>
+        ))}
       </ListboxSection>
     </Listbox>
   )
@@ -317,7 +487,8 @@ export const AppDrawer = memo(() => {
   return (
     <aside
       className={clsx(
-        'pointer-events-none flex-0 h-full md:h-screen z-50 fixed md:relative dark:bg-default-50',
+        'pointer-events-none flex-0 h-full md:h-screen z-50 fixed md:relative',
+        !isCollapsed && '-me-4',
       )}
     >
       <div
@@ -397,7 +568,7 @@ const CollapsedDrawer = ({
 
   return (
     <div
-      className={`group w-18 p-2 lg:p-4 h-full z-50 flex flex-col transition-all duration-200 border-e border-transparent hover:bg-gray-50 dark:hover:bg-content1 hover:border-default-200 ${className} hover:pointer-events-auto`}
+      className={`group w-18 p-4 lg:p-4 h-full z-50 flex flex-col transition-all duration-200 border-e border-transparent hover:bg-background dark:hover:bg-content1 hover:border-default-200 ${className} hover:pointer-events-auto`}
     >
       <div className="flex flex-col items-center overflow-y-auto overflow-x-hidden no-scrollbar">
         <Tooltip content={t('Expand sidebar')} placement="right">
@@ -686,7 +857,6 @@ const ExpandedDrawer = ({
   const isDarkTheme = userSettings((state) => state.isDarkTheme())
   const setTheme = userSettings((state) => state.setTheme)
   const setLanguage = userSettings((state) => state.setLanguage)
-  const [showAboutModal, setShowAboutModal] = useState(false)
   const [isLanguagePopoverOpen, setIsLanguagePopoverOpen] = useState(false)
 
   // Register Cmd/Ctrl + Shift + L shortcut for theme toggle
@@ -707,13 +877,29 @@ const ExpandedDrawer = ({
 
   return (
     <div
-      className={`fixed w-64 bg-gray-50 dark:bg-content1 p-3 border-e border-default-200 dark:border-default-200 h-full flex flex-col ${className}`}
+      className={`bg-[rgb(244,247,249)] dark:bg-default-50 fixed w-64 py-3 px-2 h-full flex flex-col ${className}`}
     >
       <ScrollShadow
         hideScrollBar
         className="pointer-events-auto flex flex-col overflow-y-auto flex-1 p-0.5"
       >
-        <div className="mb-3.5 flex items-center p-0.5">
+        <div className="mb-3.5 flex items-center p-0.5 justify-between">
+          <Link href={url('')}>
+            <Icon
+              name="Devs"
+              className="text-primary-300 dark:text-white ms-3 me-1.5"
+            />
+            <Title
+              level={3}
+              as="span"
+              size="lg"
+              data-testid="platform-name"
+              aria-label={customPlatformName || PRODUCT.name}
+            >
+              {customPlatformName || PRODUCT.displayName}
+            </Title>
+          </Link>
+
           {/* <Tooltip content={t('Collapse sidebar')} placement="right"> */}
           <Button
             data-testid="menu-button-collapse"
@@ -728,176 +914,96 @@ const ExpandedDrawer = ({
             />
           </Button>
           {/* </Tooltip> */}
-          <Link href={url('')}>
-            <Title
-              level={3}
-              as="span"
-              size="lg"
-              data-testid="platform-name"
-              aria-label={customPlatformName || PRODUCT.name}
-            >
-              {customPlatformName || PRODUCT.displayName}
-            </Title>
-          </Link>
         </div>
 
         {/* Navigation */}
-        <nav className="mb-4">
+        <nav>
           <Listbox aria-label={t('Main navigation')} variant="flat">
-            <ListboxSection showDivider>
-              <ListboxItem
-                href={url('')}
-                variant="faded"
-                color="primary"
-                className="dark:text-gray-200 dark:hover:text-primary-500 [.is-active]:bg-primary-50"
-                startContent={
-                  <Icon
-                    name="ChatPlusIn"
-                    className="text-primary-400 dark:text-white"
-                  />
-                }
-                textValue={t('New chat')}
-              >
-                {t('New chat')}
-              </ListboxItem>
-
-              {/* Search Button - conditionally rendered */}
-              <ListboxItem
-                variant="faded"
-                className="dark:text-gray-200 dark:hover:text-primary-500 [.is-active]:bg-primary-50"
-                startContent={
-                  <Icon name="Search" className="text-default-700" />
-                }
-                endContent={
-                  <Kbd keys={['command']} className="ms-auto text-xs">
-                    K
-                  </Kbd>
-                }
-                onPress={onOpenSearch}
-              >
-                {t('Search')}
-              </ListboxItem>
-              {/* <ListboxItem
-                href={url('/knowledge')}
-                variant="faded"
-                color="primary"
-                className={cn(
-                  'dark:text-gray-200 dark:hover:text-primary-600 [.is-active]:bg-default-100',
-                  isCurrentPath('/knowledge') && 'is-active',
-                )}
-                startContent={
-                  <Icon
-                    name="Book"
-                    className="text-primary dark:text-primary-600"
-                  />
-                }
-              >
-                {t('Knowledge')}
-              </ListboxItem> */}
-              <ListboxItem
-                href={url('/agents')}
-                variant="faded"
-                color="warning"
-                className={cn(
-                  'dark:text-gray-200 dark:hover:text-warning-500 [.is-active]:bg-default-100',
-                  isCurrentPath('/agents') && 'is-active',
-                )}
-                startContent={<Icon name="Sparks" className="text-warning" />}
-                // endContent={
-                //   <Tooltip content={t('New Agent')} placement="right">
-                //     <span
-                //       role="button"
-                //       tabIndex={0}
-                //       className="inline-flex items-center justify-center w-6 h-6 rounded-small bg-warning/20 text-warning hover:bg-warning/30 cursor-pointer transition-colors"
-                //       aria-label={t('New Agent')}
-                //       onClick={(e) => {
-                //         e.preventDefault()
-                //         e.stopPropagation()
-                //         navigate(url('/agents/new'))
-                //       }}
-                //       onKeyDown={(e) => {
-                //         if (e.key === 'Enter' || e.key === ' ') {
-                //           e.preventDefault()
-                //           e.stopPropagation()
-                //           navigate(url('/agents/new'))
-                //         }
-                //       }}
-                //     >
-                //       <Icon name="Plus" />
-                //     </span>
-                //   </Tooltip>
-                // }
-                textValue={t('Agents')}
-              >
-                {t('Agents')}
-              </ListboxItem>
-              <ListboxItem
-                href={url('/tasks')}
-                variant="faded"
-                color="secondary"
-                className={cn(
-                  'dark:text-gray-200 dark:hover:text-secondary-600 [.is-active]:bg-default-100',
-                  isCurrentPath('/tasks') && 'is-active',
-                )}
-                startContent={
-                  <Icon
-                    name="TriangleFlagTwoStripes"
-                    className="text-secondary dark:text-secondary-600"
-                  />
-                }
-                // endContent={
-                //   <Tooltip content={t('New Task')} placement="right">
-                //     <span
-                //       role="button"
-                //       tabIndex={0}
-                //       className="inline-flex items-center justify-center w-6 h-6 rounded-small bg-secondary/20 text-secondary hover:bg-secondary/30 cursor-pointer transition-colors"
-                //       aria-label={t('New Task')}
-                //       onClick={(e) => {
-                //         e.preventDefault()
-                //         e.stopPropagation()
-                //         navigate(url(''))
-                //       }}
-                //       onKeyDown={(e) => {
-                //         if (e.key === 'Enter' || e.key === ' ') {
-                //           e.preventDefault()
-                //           e.stopPropagation()
-                //           navigate(url(''))
-                //         }
-                //       }}
-                //     >
-                //       <Icon name="Plus" />
-                //     </span>
-                //   </Tooltip>
-                // }
-              >
-                {t('Tasks')}
-              </ListboxItem>
-              <ListboxItem
-                href={url('/conversations')}
-                variant="faded"
-                className={cn(
-                  '[.is-active]:bg-default-100',
-                  isCurrentPath('/conversations') && 'is-active',
-                  !hasConversations && 'hidden',
-                )}
-                startContent={
-                  <Icon
-                    name="ChatBubble"
-                    className="text-gray-500 dark:text-gray-400"
-                  />
-                }
-              >
-                {t('Conversations')}
-              </ListboxItem>
-            </ListboxSection>
-
-            <ListboxSection
-              title={t('APPLICATIONS')}
-              classNames={{
-                heading: 'ms-[34px]',
-              }}
-            >
+            <ListboxSection>
               {[
+                <ListboxItem
+                  key="new-chat"
+                  href={url('')}
+                  variant="faded"
+                  color="primary"
+                  className="dark:text-gray-200 dark:hover:text-primary-500 [.is-active]:bg-primary-50"
+                  startContent={
+                    <Icon
+                      name="ChatPlusIn"
+                      className="text-primary-400 dark:text-white"
+                    />
+                  }
+                  textValue={t('New chat')}
+                >
+                  {t('New chat')}
+                </ListboxItem>,
+                // Search Button
+                <ListboxItem
+                  key="search"
+                  variant="faded"
+                  className="dark:text-gray-200 dark:hover:text-primary-500 [.is-active]:bg-primary-50"
+                  startContent={
+                    <Icon name="Search" className="text-default-700" />
+                  }
+                  endContent={
+                    <Kbd keys={['command']} className="ms-auto text-xs">
+                      K
+                    </Kbd>
+                  }
+                  onPress={onOpenSearch}
+                >
+                  {t('Search')}
+                </ListboxItem>,
+                <ListboxItem
+                  key="agents"
+                  href={url('/agents')}
+                  variant="faded"
+                  color="warning"
+                  className={cn(
+                    'dark:text-gray-200 dark:hover:text-warning-500 [.is-active]:bg-default-100',
+                    isCurrentPath('/agents') && 'is-active',
+                  )}
+                  startContent={<Icon name="Sparks" className="text-warning" />}
+                  textValue={t('Agents')}
+                >
+                  {t('Agents')}
+                </ListboxItem>,
+                <ListboxItem
+                  key="tasks"
+                  href={url('/tasks')}
+                  variant="faded"
+                  color="secondary"
+                  className={cn(
+                    'dark:text-gray-200 dark:hover:text-secondary-600 [.is-active]:bg-default-100',
+                    isCurrentPath('/tasks') && 'is-active',
+                  )}
+                  startContent={
+                    <Icon
+                      name="TriangleFlagTwoStripes"
+                      className="text-secondary dark:text-secondary-600"
+                    />
+                  }
+                >
+                  {t('Tasks')}
+                </ListboxItem>,
+                <ListboxItem
+                  key="conversations"
+                  href={url('/conversations')}
+                  variant="faded"
+                  className={cn(
+                    '[.is-active]:bg-default-100',
+                    isCurrentPath('/conversations') && 'is-active',
+                    !hasConversations && 'hidden',
+                  )}
+                  startContent={
+                    <Icon
+                      name="ChatBubble"
+                      className="text-gray-500 dark:text-gray-400"
+                    />
+                  }
+                >
+                  {t('Conversations')}
+                </ListboxItem>,
                 <ListboxItem
                   key="studio"
                   href={url('/studio')}
@@ -936,7 +1042,6 @@ const ExpandedDrawer = ({
                 ...installedApps.map((installedApp) => {
                   const ext = installedApp.extension
                   const extPath = getAppPrimaryPageUrl(ext.id)
-                  // Get localized name if available
                   const localizedName =
                     ext.i18n?.[lang as keyof typeof ext.i18n]?.name || ext.name
                   const iconColorClass = getExtensionColorClass(ext.color)
@@ -979,9 +1084,7 @@ const ExpandedDrawer = ({
             </ListboxSection>
           </Listbox>
 
-          <AgentList />
-          {/* <TaskList /> */}
-          {/* <ConversationList /> */}
+          <RecentActivity lang={lang} />
         </nav>
 
         {/* Upgrade Action - Desktop */}
@@ -999,10 +1102,6 @@ const ExpandedDrawer = ({
       {/* Bottom navigation */}
       <nav className="pointer-events-auto w-full flex flex-col mt-4 gap-2">
         {/* Progress indicator and Organization/Product name at bottom */}
-        <AboutModal
-          isOpen={showAboutModal}
-          onClose={() => setShowAboutModal(false)}
-        />
 
         {/* Language Selector Popover */}
         <Popover
@@ -1055,18 +1154,10 @@ const ExpandedDrawer = ({
 
         {/* Quick Actions Bar */}
         <div className="flex items-center justify-between gap-1 px-1">
-          {/* About */}
-          <Tooltip content={t('About')} placement="top">
-            <Button
-              isIconOnly
-              variant="light"
-              size="sm"
-              onPress={() => setShowAboutModal(true)}
-              aria-label={t('About')}
-            >
-              <ProgressIndicator />
-            </Button>
-          </Tooltip>
+          {/* Progress Indicator */}
+          {/* <div className="flex items-center">
+            <ProgressIndicator />
+          </div> */}
 
           {/* Theme Toggle */}
           <Tooltip

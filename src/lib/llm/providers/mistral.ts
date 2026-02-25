@@ -189,6 +189,7 @@ export class MistralProvider implements LLMProviderInterface {
           Authorization: `Bearer ${config?.apiKey}`,
         },
         body: JSON.stringify(requestBody),
+        signal: config?.signal,
       },
     )
 

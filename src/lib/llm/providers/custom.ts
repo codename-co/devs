@@ -78,6 +78,7 @@ export class CustomProvider implements LLMProviderInterface {
         max_tokens: config.maxTokens,
         stream: true,
       }),
+      signal: config?.signal,
     })
 
     if (!response.ok) {

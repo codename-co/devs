@@ -12,14 +12,13 @@ import { useState, useEffect } from 'react'
 
 import { useSyncStore } from '../stores/syncStore'
 import { PageMenuButton } from '@/components/PageMenuButton'
-import { useI18n, useUrl } from '@/i18n'
+import { useI18n } from '@/i18n'
 import { IconName } from '@/lib/types'
 import { useNavigate } from 'react-router-dom'
 
 export function SyncButton() {
-  const { lang, t } = useI18n()
+  const { t } = useI18n()
   const navigate = useNavigate()
-  const url = useUrl(lang)
 
   const { enabled, status, peerCount, initialize } = useSyncStore()
 
@@ -51,7 +50,7 @@ export function SyncButton() {
   const isConnected = status === 'connected'
 
   const openSettings = () => {
-    navigate(url(`#settings/sync`))
+    navigate(`${location.pathname}${location.search}#settings/sync`)
   }
 
   return (

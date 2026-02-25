@@ -7,7 +7,7 @@ import { buildPinnedContextForChat } from '@/stores/pinnedMessageStore'
 import { TraceService } from '@/features/traces/trace-service'
 import { ModelInfo } from '@/features/traces/types'
 import { WorkflowOrchestrator } from '@/lib/orchestrator'
-import { Agent, Message } from '@/types'
+import { Agent, Message, MessageStep } from '@/types'
 import { notifyError } from '@/features/notifications'
 import type { IconName } from '@/lib/types'
 
@@ -25,10 +25,18 @@ export interface ResponseStatus {
   vars?: Record<string, string | number>
 }
 
-/** Response update can be either plain content or a status update */
+/** Tool call result data for step tracking */
+export interface ToolCallResult {
+  name: string
+  input: Record<string, unknown>
+  output?: string
+}
+
+/** Response update can be content, a status update, or tool results */
 export type ResponseUpdate =
   | { type: 'content'; content: string }
   | { type: 'status'; status: ResponseStatus }
+  | { type: 'tool_results'; toolCalls: ToolCallResult[] }
 import {
   getKnowledgeAttachments,
   buildAgentInstructions,
@@ -456,6 +464,8 @@ export interface ChatSubmitOptions {
   onResponseUpdate: (update: ResponseUpdate) => void
   onPromptClear: () => void
   onResponseClear?: () => void
+  /** AbortSignal for cancelling in-flight LLM requests */
+  signal?: AbortSignal
 }
 
 export interface ChatSubmitResult {
@@ -479,6 +489,7 @@ export const submitChat = async (
     onResponseUpdate,
     onPromptClear,
     onResponseClear,
+    signal,
   } = options
 
   if (!prompt.trim()) {
@@ -533,6 +544,16 @@ export const submitChat = async (
           },
         })
 
+        const orchestrationSteps: MessageStep[] = [
+          {
+            id: `step-orch-${Date.now()}`,
+            icon: 'Rocket',
+            i18nKey: 'Starting autonomous task orchestration…',
+            status: 'running',
+            startedAt: Date.now(),
+          },
+        ]
+
         const result = await WorkflowOrchestrator.orchestrateTask(prompt)
 
         const orchestrationReport = [
@@ -565,11 +586,16 @@ export const submitChat = async (
 
         onResponseUpdate({ type: 'content', content: orchestrationReport })
 
+        // Finalize orchestration step
+        orchestrationSteps[0].status = 'completed'
+        orchestrationSteps[0].completedAt = Date.now()
+
         // Save the orchestration report as assistant message
         await addMessage(conversation.id, {
           role: 'assistant',
           content: orchestrationReport,
           agentId: agent.id,
+          steps: orchestrationSteps,
         })
 
         // Clear the prompt after successful orchestration
@@ -792,12 +818,15 @@ ${skillBlocks}`
         ? { tools: allToolDefinitions, tool_choice: 'auto' as const }
         : {}),
       ...(enableWebSearchGrounding ? { enableWebSearch: true } : {}),
+      ...(signal ? { signal } : {}),
     }
 
     // Call the LLM service with streaming and handle tool calls
     let response = ''
     let finalContent = ''
     let toolIterations = 0
+    let chatStepCounter = 0
+    const messageSteps: MessageStep[] = []
     const workingMessages = [...messages]
 
     // Tool execution loop - continues until we get a response without tool calls
@@ -858,6 +887,21 @@ ${skillBlocks}`
         },
       })
 
+      // Track step for persistence
+      const prevToolStep = messageSteps.find((s) => s.status === 'running')
+      if (prevToolStep) {
+        prevToolStep.status = 'completed'
+        prevToolStep.completedAt = Date.now()
+      }
+      chatStepCounter++
+      messageSteps.push({
+        id: `step-${Date.now()}-${chatStepCounter}`,
+        icon: 'Tools',
+        i18nKey: toolStatusKey,
+        status: 'running',
+        startedAt: Date.now(),
+      })
+
       // Execute the tool calls
       const { results: toolResults } = await executeToolCalls(toolCalls, {
         agentId: agent.id,
@@ -871,6 +915,30 @@ ${skillBlocks}`
       })
 
       console.log('🔧 Tool results:', toolResults)
+
+      // Build per-tool-call I/O data for step tracking
+      const stepToolCalls: ToolCallResult[] = toolCalls.map((tc, idx) => {
+        let parsedInput: Record<string, unknown> = {}
+        try {
+          parsedInput = JSON.parse(tc.function.arguments || '{}')
+        } catch {
+          parsedInput = { raw: tc.function.arguments }
+        }
+        return {
+          name: tc.function.name,
+          input: parsedInput,
+          output: toolResults[idx]?.result,
+        }
+      })
+
+      // Attach tool data to the current running step (for persistence)
+      const currentStep = messageSteps.find((s) => s.status === 'running')
+      if (currentStep) {
+        currentStep.toolCalls = stepToolCalls
+      }
+
+      // Emit tool results so the streaming UI can display them
+      onResponseUpdate({ type: 'tool_results', toolCalls: stepToolCalls })
 
       // Add assistant message with tool calls to the conversation
       // Note: We need to format this as the LLM expects for tool results
@@ -892,17 +960,39 @@ ${skillBlocks}`
 
       // Update display to show we're continuing
       onResponseUpdate({ type: 'content', content: finalContent })
-      onResponseUpdate({
-        type: 'status',
-        status: {
-          icon: 'Book',
-          i18nKey: 'Found relevant information, processing…',
-        },
-      })
+      // onResponseUpdate({
+      //   type: 'status',
+      //   status: {
+      //     icon: 'Book',
+      //     i18nKey: 'Found relevant information, processing…',
+      //   },
+      // })
+
+      // Track step for persistence
+      const prevInfoStep = messageSteps.find((s) => s.status === 'running')
+      if (prevInfoStep) {
+        prevInfoStep.status = 'completed'
+        prevInfoStep.completedAt = Date.now()
+      }
+      chatStepCounter++
+      // messageSteps.push({
+      //   id: `step-${Date.now()}-${chatStepCounter}`,
+      //   icon: 'Book',
+      //   i18nKey: 'Found relevant information, processing…',
+      //   status: 'running',
+      //   startedAt: Date.now(),
+      // })
     }
 
     if (toolIterations >= MAX_TOOL_ITERATIONS) {
       console.warn('⚠️ Max tool iterations reached')
+    }
+
+    // Finalize any remaining running steps
+    const lastRunningStep = messageSteps.find((s) => s.status === 'running')
+    if (lastRunningStep) {
+      lastRunningStep.status = 'completed'
+      lastRunningStep.completedAt = Date.now()
     }
 
     const timeend = Date.now()
@@ -924,6 +1014,7 @@ ${skillBlocks}`
       content: finalContent,
       agentId: agent.id,
       ...(allTraceIds.length > 0 && { traceIds: allTraceIds }),
+      ...(messageSteps.length > 0 && { steps: messageSteps }),
     })
 
     // Clear the prompt after successful submission
@@ -954,6 +1045,11 @@ ${skillBlocks}`
 
     return { success: true }
   } catch (err) {
+    // Handle user-initiated abort gracefully
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      console.log('🛑 Chat request aborted by user')
+      return { success: false, error: 'aborted' }
+    }
     console.error('Error calling LLM:', err)
     const errorMessage = err instanceof Error ? err.message : String(err)
     notifyError({

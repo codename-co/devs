@@ -249,6 +249,7 @@ export class OpenAICompatibleProvider implements LLMProviderInterface {
       method: 'POST',
       headers,
       body: JSON.stringify(requestBody),
+      signal: config?.signal,
     })
 
     console.log('[OPENAI-COMPATIBLE-PROVIDER] 📡 Stream response:', {

@@ -431,6 +431,7 @@ export class GoogleProvider implements LLMProviderInterface {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(requestBody),
+      signal: config?.signal,
     })
 
     if (!response.ok) {
@@ -521,6 +522,7 @@ export class GoogleProvider implements LLMProviderInterface {
           Authorization: `Bearer ${config?.apiKey}`,
         },
         body: JSON.stringify(requestBody),
+        signal: config?.signal,
       },
     )
 

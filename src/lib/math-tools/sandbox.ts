@@ -59,13 +59,10 @@ const BLOCKED_KEYWORDS = [
   'history',
   'navigator',
   'screen',
-  'crypto',
   'Blob',
   'File',
   'FileReader',
   'URL',
-  'atob',
-  'btoa',
 ]
 
 /** Allowed Math properties and methods */

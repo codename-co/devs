@@ -84,6 +84,7 @@ export class HuggingFaceProvider implements LLMProviderInterface {
         max_tokens: config?.maxTokens || 512,
         stream: true,
       }),
+      signal: config?.signal,
     })
 
     if (!response.ok) {

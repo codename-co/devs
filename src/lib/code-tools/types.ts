@@ -1,14 +1,15 @@
 /**
  * Code Tools Types
  *
- * This module defines types for the code execution tool.
- * The execute tool allows LLM agents to run JavaScript code
- * in a QuickJS WebAssembly sandbox for maximum security.
+ * This module defines types for the polyglot code execution tool.
+ * The execute tool allows LLM agents to run JavaScript or Python code
+ * in WASM-isolated sandboxes (QuickJS for JS, Pyodide for Python).
  *
  * @module lib/code-tools/types
  */
 
 import type { ToolDefinition } from '@/lib/llm/types'
+import type { SandboxLanguage } from '@/lib/sandbox/types'
 
 // ============================================================================
 // Execute Tool Types
@@ -16,33 +17,31 @@ import type { ToolDefinition } from '@/lib/llm/types'
 
 /**
  * Parameters for the execute tool.
- * Executes JavaScript code in a WASM-sandboxed environment.
+ * Executes code in a WASM-sandboxed environment (JavaScript via QuickJS,
+ * Python via Pyodide).
  */
 export interface ExecuteParams {
   /**
-   * The JavaScript code to execute.
-   * Runs in QuickJS WebAssembly sandbox with full ES2020 support.
+   * The code to execute in the chosen language.
    *
-   * Supports:
-   * - Variable declarations (let, const, var)
-   * - Functions and arrow functions
-   * - Async/await
-   * - Loops (for, while, do-while)
-   * - Conditionals (if/else, switch)
-   * - Array and object operations
-   * - Math operations
-   * - String manipulation
-   * - Promises
-   * - JSON operations
+   * **JavaScript** (QuickJS, ES2020):
+   * - Use `export default <value>` to return a result
+   * - Console methods captured and returned
+   * - No DOM, network, filesystem, or Node.js APIs
    *
-   * Does NOT support (by design, for security):
-   * - DOM access (document, window)
-   * - Network requests (fetch, XMLHttpRequest)
-   * - File system access
-   * - Web APIs (URL, URLSearchParams, Blob, FormData, etc.)
-   * - Node.js modules (require, process, Buffer, etc.)
+   * **Python** (Pyodide, CPython 3.x):
+   * - Use `print()` for output
+   * - Full standard library available
+   * - Install packages via the `packages` parameter
+   * - No network or filesystem access
    */
   code: string
+
+  /**
+   * Language to execute. Defaults to 'javascript' for backwards compatibility.
+   * @default 'javascript'
+   */
+  language?: SandboxLanguage
 
   /**
    * Optional input data to pass to the code.
@@ -51,9 +50,18 @@ export interface ExecuteParams {
   input?: unknown
 
   /**
+   * Packages to install before running (Python only).
+   * Uses micropip to install from PyPI.
+   * Ignored for JavaScript.
+   *
+   * @example ['numpy', 'pandas']
+   */
+  packages?: string[]
+
+  /**
    * Maximum execution time in milliseconds.
-   * QuickJS enforces strict timeout limits.
-   * @default 5000
+   * Defaults: JS 5 000 ms, Python 60 000 ms.
+   * Limits:  JS 30 000 ms, Python 300 000 ms.
    */
   timeout?: number
 }
@@ -120,44 +128,65 @@ export const CODE_TOOL_DEFINITIONS: Record<CodeToolName, ToolDefinition> = {
     type: 'function',
     function: {
       name: 'execute',
-      description: `Execute JavaScript code in a secure QuickJS WebAssembly sandbox.
+      description: `Execute code in a secure WASM sandbox. Supports JavaScript (QuickJS) and Python (Pyodide).
 
 The code runs in complete isolation with no access to browser APIs, network, or file system.
-Use 'export default <value>' to return a result from your code.
-Console methods (log, warn, error, info, debug) are captured and returned.
+Console output and print() statements are captured and returned.
 The 'input' variable contains any data passed via the input parameter.
 
-IMPORTANT: Web APIs like URL, URLSearchParams, fetch, Blob are NOT available.
-Use the built-in parseURL(urlString) helper to parse URLs.
+**JavaScript** (default):
+- Use 'export default <value>' to return a result
+- Full ES2020 support
+- IMPORTANT: Web APIs like URL, URLSearchParams, fetch, Blob are NOT available
+- Use the built-in parseURL(urlString) helper to parse URLs
 
-Example:
+**Python**:
+- Use print() for output
+- Full standard library (math, json, collections, itertools, etc.)
+- Install PyPI packages via the 'packages' parameter (e.g. ["numpy", "pandas"])
+- Packages are installed once and cached for subsequent calls
+
+Examples:
 \`\`\`javascript
-// Simple calculation
+// JavaScript — simple calculation
 const sum = [1, 2, 3, 4, 5].reduce((a, b) => a + b, 0);
-console.log('Sum:', sum);
 export default sum;
+\`\`\`
 
-// With input data (if input = { numbers: [1,2,3] })
-const result = input.numbers.map(n => n * 2);
-export default result;
+\`\`\`python
+# Python — with numpy
+import numpy as np
+matrix = np.eye(3)
+print(matrix)
+print("det =", np.linalg.det(matrix))
 \`\`\``,
       parameters: {
         type: 'object',
         properties: {
           code: {
             type: 'string',
-            description:
-              'The JavaScript code to execute. Use "export default <value>" to return a result.',
+            description: 'The code to execute in the chosen language.',
+          },
+          language: {
+            type: 'string',
+            enum: ['javascript', 'python'],
+            description: 'Language to execute. Defaults to "javascript".',
           },
           input: {
             type: 'object',
             description:
               'Optional input data available as the "input" variable in the code.',
           },
+          packages: {
+            type: 'array',
+            items: { type: 'string' },
+            description:
+              'Python packages to install before execution (e.g. ["numpy", "pandas"]). Ignored for JavaScript.',
+          },
           timeout: {
             type: 'number',
             description:
-              'Maximum execution time in milliseconds (default: 5000, max: 30000).',
+              'Maximum execution time in ms. Defaults: JS 5000, Python 60000. Limits: JS 30000, Python 300000.',
           },
         },
         required: ['code'],

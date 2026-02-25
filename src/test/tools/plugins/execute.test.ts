@@ -1,7 +1,8 @@
 /**
  * Execute Tool Plugin Tests
  *
- * Tests for the execute (code) tool plugin.
+ * Tests for the execute (code) tool plugin — polyglot support
+ * for JavaScript and Python.
  *
  * @module test/tools/plugins/execute.test
  */
@@ -26,9 +27,10 @@ describe('executePlugin', () => {
       expect(executePlugin.metadata.category).toBe('code')
     })
 
-    it('should have code-related tags', () => {
+    it('should have code-related tags including python', () => {
       expect(executePlugin.metadata.tags).toContain('code')
       expect(executePlugin.metadata.tags).toContain('javascript')
+      expect(executePlugin.metadata.tags).toContain('python')
       expect(executePlugin.metadata.tags).toContain('sandbox')
     })
 
@@ -50,6 +52,18 @@ describe('executePlugin', () => {
       const params = executePlugin.definition.function.parameters
       expect(params.required).toContain('code')
     })
+
+    it('should have language parameter with enum', () => {
+      const props = executePlugin.definition.function.parameters.properties
+      expect(props.language).toBeDefined()
+      expect(props.language.enum).toEqual(['javascript', 'python'])
+    })
+
+    it('should have packages parameter', () => {
+      const props = executePlugin.definition.function.parameters.properties
+      expect(props.packages).toBeDefined()
+      expect(props.packages.type).toBe('array')
+    })
   })
 
   describe('registration', () => {
@@ -69,8 +83,24 @@ describe('executePlugin', () => {
   })
 
   describe('validate', () => {
-    it('should pass valid params', () => {
+    it('should pass valid JS params (no language = default)', () => {
       const params = { code: 'export default 1 + 1' }
+
+      expect(() => executePlugin.validate!(params)).not.toThrow()
+    })
+
+    it('should pass valid JS params with explicit language', () => {
+      const params = { code: 'export default 42', language: 'javascript' }
+
+      expect(() => executePlugin.validate!(params)).not.toThrow()
+    })
+
+    it('should pass valid Python params', () => {
+      const params = {
+        code: 'print("hello")',
+        language: 'python',
+        packages: ['numpy'],
+      }
 
       expect(() => executePlugin.validate!(params)).not.toThrow()
     })
@@ -89,6 +119,14 @@ describe('executePlugin', () => {
       )
     })
 
+    it('should throw for unsupported language', () => {
+      const params = { code: '1+1', language: 'ruby' }
+
+      expect(() => executePlugin.validate!(params)).toThrow(
+        'Unsupported language',
+      )
+    })
+
     it('should throw for invalid timeout', () => {
       const params = { code: '1+1', timeout: -100 }
 
@@ -97,11 +135,53 @@ describe('executePlugin', () => {
       )
     })
 
-    it('should throw for excessive timeout', () => {
-      const params = { code: '1+1', timeout: 60000 }
+    it('should throw for excessive JS timeout', () => {
+      const params = { code: '1+1', language: 'javascript', timeout: 60000 }
 
       expect(() => executePlugin.validate!(params)).toThrow(
-        'Timeout cannot exceed 30000ms',
+        'Timeout cannot exceed 30000ms for javascript',
+      )
+    })
+
+    it('should allow higher timeout for Python', () => {
+      const params = {
+        code: 'print(1)',
+        language: 'python',
+        timeout: 60000,
+      }
+
+      expect(() => executePlugin.validate!(params)).not.toThrow()
+    })
+
+    it('should throw for excessive Python timeout', () => {
+      const params = {
+        code: 'print(1)',
+        language: 'python',
+        timeout: 400000,
+      }
+
+      expect(() => executePlugin.validate!(params)).toThrow(
+        'Timeout cannot exceed 300000ms for python',
+      )
+    })
+
+    it('should throw for invalid packages type', () => {
+      const params = { code: '1', language: 'python', packages: 'numpy' }
+
+      expect(() => executePlugin.validate!(params)).toThrow(
+        'Packages must be an array',
+      )
+    })
+
+    it('should throw for non-string package entries', () => {
+      const params = {
+        code: '1',
+        language: 'python',
+        packages: ['numpy', 123],
+      }
+
+      expect(() => executePlugin.validate!(params)).toThrow(
+        'Each package must be a string',
       )
     })
   })

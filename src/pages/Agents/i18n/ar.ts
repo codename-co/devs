@@ -181,4 +181,5 @@ export const ar: I18n = {
   'Using tool: {tool}…': 'جارٍ استخدام الأداة: {tool}…',
   // Recent conversations
   'Recent conversations': 'المحادثات الأخيرة',
+  'No details available': 'لا توجد تفاصيل متاحة',
 } as const

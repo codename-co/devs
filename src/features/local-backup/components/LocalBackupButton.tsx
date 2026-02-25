@@ -12,7 +12,7 @@ import {
   useFolderSyncStore,
 } from '../stores/folderSyncStore'
 import { PageMenuButton } from '@/components/PageMenuButton'
-import { useI18n, useUrl } from '@/i18n'
+import { useI18n } from '@/i18n'
 import { localI18n } from '../i18n'
 import { useNavigate } from 'react-router-dom'
 
@@ -24,9 +24,8 @@ function isFileSystemAccessSupported(): boolean {
 }
 
 export function LocalBackupButton() {
-  const { t, lang } = useI18n(localI18n)
+  const { t } = useI18n(localI18n)
   const navigate = useNavigate()
-  const url = useUrl(lang)
   const { isEnabled, isSyncing, basePath } = useFolderSyncStore()
 
   const [_needsPermission, setNeedsPermission] = useState(false)
@@ -68,7 +67,7 @@ export function LocalBackupButton() {
   }
 
   const openSettings = () => {
-    navigate(url(`#settings/local-backup`))
+    navigate(`${location.pathname}${location.search}#settings/local-backup`)
   }
 
   return (

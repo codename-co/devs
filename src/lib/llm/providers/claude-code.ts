@@ -241,6 +241,7 @@ export class ClaudeCodeProvider implements LLMProviderInterface {
       method: 'POST',
       headers,
       body: JSON.stringify(requestBody),
+      signal: config?.signal,
     })
 
     if (!response.ok) {

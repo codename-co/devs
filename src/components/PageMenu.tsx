@@ -11,7 +11,7 @@ import { Icon } from '@/components'
 import { LocalBackupButton } from '@/features/local-backup'
 import { NotificationButton } from '@/features/notifications'
 import { SyncButton, useSyncStore } from '@/features/sync'
-import { useI18n, useUrl } from '@/i18n'
+import { useI18n } from '@/i18n'
 
 export interface PageMenuProps {
   /**
@@ -22,8 +22,7 @@ export interface PageMenuProps {
 }
 
 export function PageMenu({ supplementalActions }: PageMenuProps = {}) {
-  const { lang, t } = useI18n()
-  const url = useUrl(lang)
+  const { t } = useI18n()
   const navigate = useNavigate()
   const [showExtendedActions, setShowExtendedActions] = useState(false)
   const syncEnabled = useSyncStore((state) => state.enabled)
@@ -32,7 +31,7 @@ export function PageMenu({ supplementalActions }: PageMenuProps = {}) {
   useSettingsShortcut()
 
   return (
-    <div className="absolute top-4 end-4 z-20 flex items-center gap-1">
+    <div className="absolute top-0 end-0 z-20 flex items-center gap-1">
       <ButtonGroup variant="light" isIconOnly>
         {supplementalActions}
       </ButtonGroup>
@@ -50,7 +49,11 @@ export function PageMenu({ supplementalActions }: PageMenuProps = {}) {
                 isIconOnly
                 variant="light"
                 aria-label={t('Traces')}
-                onPress={() => navigate(url('/#settings/traces'))}
+                onPress={() =>
+                  navigate(
+                    `${location.pathname}${location.search}#settings/traces`,
+                  )
+                }
               >
                 <Icon name="Activity" size="sm" />
               </Button>
