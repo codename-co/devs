@@ -15,6 +15,7 @@ import { useI18n, useUrl, languages, type Lang } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
 import { PRODUCT } from '@/config/product'
 import { useBackgroundImage } from '@/hooks/useBackgroundImage'
+import { ColorThemePicker } from '@/components/ColorThemePicker'
 import { useHashHighlight } from '@/hooks/useHashHighlight'
 import { successToast } from '@/lib/toast'
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -97,6 +98,19 @@ export function GeneralSection() {
           {t('Dark')}
         </SelectItem>
       </Select>
+
+      <div
+        id="color-theme"
+        className={getHighlightClasses('color-theme', 'max-w-lg')}
+      >
+        <label className="text-sm font-medium text-default-600 mb-2 block">
+          {t('Color Scheme')}
+        </label>
+        <p className="text-xs text-default-500 mb-3">
+          {t('Choose a color scheme for the interface')}
+        </p>
+        <ColorThemePicker />
+      </div>
 
       <Input
         id="platform-name"

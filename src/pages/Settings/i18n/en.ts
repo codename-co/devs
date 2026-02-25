@@ -169,4 +169,6 @@ export const en = [
   'Preserve',
   'Local Backup',
   'Sync',
+  'Color Scheme',
+  'Choose a color scheme for the interface',
 ] as const

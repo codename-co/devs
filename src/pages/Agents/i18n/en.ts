@@ -159,4 +159,5 @@ export const en = [
   'Recent conversations',
   // Step tracker
   'No details available',
+  'Thinking…',
 ] as const

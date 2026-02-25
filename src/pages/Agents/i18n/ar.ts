@@ -182,4 +182,5 @@ export const ar: I18n = {
   // Recent conversations
   'Recent conversations': 'المحادثات الأخيرة',
   'No details available': 'لا توجد تفاصيل متاحة',
+  'Thinking…': 'جارٍ التفكير…',
 } as const

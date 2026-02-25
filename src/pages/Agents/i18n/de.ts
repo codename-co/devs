@@ -191,4 +191,5 @@ export const de: I18n = {
   // Recent conversations
   'Recent conversations': 'Letzte Unterhaltungen',
   'No details available': 'Keine Details verfügbar',
+  'Thinking…': 'Nachdenken…',
 } as const

@@ -9,7 +9,7 @@ export const DevsIcon = memo(() => (
     size="4xl"
     name="DevsAnimated"
     animation="appear"
-    className="mb-4 sm:my-6 text-blue-300 dark:text-white"
+    className="mb-4 sm:my-6 text-primary-300 dark:text-white"
   />
 ))
 DevsIcon.displayName = 'DevsIcon'

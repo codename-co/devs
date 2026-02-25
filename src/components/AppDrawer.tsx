@@ -877,7 +877,7 @@ const ExpandedDrawer = ({
 
   return (
     <div
-      className={`bg-[rgb(244,247,249)] dark:bg-default-50 fixed w-64 py-3 px-2 h-full flex flex-col ${className}`}
+      className={`bg-[var(--devs-bg)] dark:bg-default-50 fixed w-64 py-3 px-2 h-full flex flex-col ${className}`}
     >
       <ScrollShadow
         hideScrollBar

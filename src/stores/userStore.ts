@@ -9,6 +9,7 @@ import type {
   TTSProviderType,
 } from '@/features/live/lib/types'
 import { preferences } from '@/lib/yjs'
+import { getColorTheme, isThemeDark, DEFAULT_COLOR_THEME } from '@/lib/themes'
 
 // ============================================================================
 // Types
@@ -46,6 +47,8 @@ export interface SyncedSettings {
  */
 export interface LocalSettings {
   theme: ThemeMode
+  /** Active color-scheme id (see src/lib/themes.ts) */
+  colorTheme: string
   language: Lang
   isDrawerCollapsed: boolean
   isContextualPanelCollapsed: boolean
@@ -67,6 +70,7 @@ const defaultSyncedSettings: SyncedSettings = {
 
 const defaultLocalSettings: LocalSettings = {
   theme: 'system',
+  colorTheme: DEFAULT_COLOR_THEME,
   language: 'en',
   isDrawerCollapsed: true,
   isContextualPanelCollapsed: false,
@@ -118,6 +122,7 @@ interface UserSettingsStore extends UserSettings {
 
   // Local settings setters (localStorage only)
   setTheme: (theme: ThemeMode) => void
+  setColorTheme: (colorTheme: string) => void
   setLanguage: (language: Lang) => void
   toggleDrawer: () => void
   toggleContextualPanel: () => void
@@ -198,6 +203,7 @@ export const userSettings = create<UserSettingsStore>()(
       // Local Settings (localStorage only)
       // ========================================
       setTheme: (theme: ThemeMode) => set({ theme }),
+      setColorTheme: (colorTheme: string) => set({ colorTheme }),
       setLanguage: (language: Lang) => set({ language }),
       toggleDrawer: () =>
         set((state) => ({ isDrawerCollapsed: !state.isDrawerCollapsed })),
@@ -214,7 +220,10 @@ export const userSettings = create<UserSettingsStore>()(
       // Helpers
       // ========================================
       isDarkTheme: () => {
-        const { theme } = get()
+        const { theme, colorTheme } = get()
+        // If a color theme with a dark background is active, treat as dark
+        const ct = getColorTheme(colorTheme)
+        if (isThemeDark(ct)) return true
         if (theme === 'dark') return true
         if (theme === 'light') return false
         return window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -230,6 +239,7 @@ export const userSettings = create<UserSettingsStore>()(
       // Only persist local settings to localStorage
       partialize: (state) => ({
         theme: state.theme,
+        colorTheme: state.colorTheme,
         language: state.language,
         isDrawerCollapsed: state.isDrawerCollapsed,
         isContextualPanelCollapsed: state.isContextualPanelCollapsed,

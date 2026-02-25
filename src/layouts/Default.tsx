@@ -20,7 +20,7 @@ import {
 } from '@heroui/react'
 import clsx from 'clsx'
 import { useLocation } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { PRODUCT } from '@/config/product'
 
 export interface DefaultLayoutProps {
@@ -60,30 +60,7 @@ export default function DefaultLayout({
     clearBlocks()
   }, [location.pathname, clearBlocks])
 
-  const { platformName, theme } = userSettings()
-  const [systemPrefersDark, setSystemPrefersDark] = useState(false)
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    setSystemPrefersDark(mediaQuery.matches)
-
-    const handleChange = (e: MediaQueryListEvent) => {
-      setSystemPrefersDark(e.matches)
-    }
-
-    mediaQuery.addEventListener('change', handleChange)
-    return () => mediaQuery.removeEventListener('change', handleChange)
-  }, [])
-
-  const isDark = theme === 'dark' || (theme === 'system' && systemPrefersDark)
-
-  useEffect(() => {
-    if (isDark) {
-      document.body.classList.add('dark')
-    } else {
-      document.body.classList.remove('dark')
-    }
-  }, [isDark])
+  const { platformName } = userSettings()
 
   const handleBack = () => {
     const currentPath = location.pathname
@@ -103,7 +80,7 @@ export default function DefaultLayout({
 
   return (
     <div
-      className="flex-grow w-full bg-[rgb(244,247,249)] dark:bg-default-50"
+      className="flex-grow w-full bg-[var(--devs-bg)] dark:bg-default-50"
       dir={direction}
     >
       <title children={metaTitle} />

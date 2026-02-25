@@ -2059,24 +2059,21 @@ export const AgentRunPage = () => {
 
   // Update URL path when conversation ID becomes available
   // Only update when there's no conversationId in the URL yet (new conversation created)
+  // IMPORTANT: Use window.history.replaceState instead of navigate() because
+  // 'agents/run/:agentSlug' and 'agents/run/:agentSlug/:conversationId' are
+  // separate routes in React Router.  navigate() would unmount and remount
+  // the entire AgentRunPage, destroying all local state (isSending, response,
+  // conversationSteps) and killing the in-progress streaming.
   useEffect(() => {
     if (currentConversation?.id && selectedAgent?.slug) {
-      // Only update path if there's no conversation ID in the URL yet
-      // This prevents navigation loops when switching between existing conversations
       if (!conversationId) {
-        navigate(
-          url(`/agents/run/${selectedAgent.slug}/${currentConversation.id}`),
-          { replace: true },
+        const newUrl = url(
+          `/agents/run/${selectedAgent.slug}/${currentConversation.id}`,
         )
+        window.history.replaceState(null, '', newUrl)
       }
     }
-  }, [
-    currentConversation?.id,
-    selectedAgent?.slug,
-    navigate,
-    conversationId,
-    url,
-  ])
+  }, [currentConversation?.id, selectedAgent?.slug, conversationId, url])
 
   // Load artifacts on mount
   useEffect(() => {
@@ -2203,7 +2200,10 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
       setIsSending(true)
       setResponse('')
       setCurrentStatus(null)
-      setConversationSteps([])
+      // Start with a "Thinking…" step so the user sees immediate feedback
+      setConversationSteps([
+        createStepFromStatus({ icon: 'Sparks', i18nKey: 'Thinking…' }),
+      ])
       setPrompt('')
 
       const controller = new AbortController()
@@ -2295,6 +2295,11 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
       setResponse('')
       setCurrentStatus(null)
 
+      // Start with a "Thinking…" step so the user sees immediate feedback
+      setConversationSteps([
+        createStepFromStatus({ icon: 'Sparks', i18nKey: 'Thinking…' }),
+      ])
+
       // Convert files to base64 for LLM processing
       const filesData = await Promise.all(
         selectedFiles.map(async (file) => ({
@@ -2317,9 +2322,6 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
         name: skill.name,
         skillMdContent: skill.skillMdContent || skill.description,
       }))
-
-      // Reset steps for new message
-      setConversationSteps([])
 
       const controller = new AbortController()
       abortControllerRef.current = controller
@@ -2430,7 +2432,13 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
   // Build timeline items: combine messages and memories, sorted by timestamp
   // Filter out system messages as they are displayed in the context panel
   const timelineItems = useMemo((): TimelineItem[] => {
-    const messageItems: TimelineItem[] = conversationMessages
+    // Use messages directly from currentConversation (zustand) to avoid the
+    // one-frame flash between clearing streaming state and useEffect syncing
+    // conversationMessages.  currentConversation is already updated by
+    // addMessage before submitChat returns, so the timeline always has the
+    // latest persisted messages without a gap.
+    const messages = currentConversation?.messages ?? conversationMessages
+    const messageItems: TimelineItem[] = messages
       .filter((message) => message.role !== 'system')
       .map((message) => ({
         type: 'message' as const,
@@ -2446,8 +2454,12 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
 
     const items = [...messageItems, ...memoryItems]
 
-    // Add virtual streaming message during active sending
-    if (isSending && (response || conversationSteps.length > 0)) {
+    // Add virtual streaming message during active sending.
+    // Always show when isSending so the user gets immediate feedback:
+    //  - Spinner/"Thinking…" step when LLM is processing (no content yet)
+    //  - Steps when tools are executing
+    //  - Content when text is streaming
+    if (isSending) {
       items.push({
         type: 'message' as const,
         data: {
@@ -2464,6 +2476,7 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
     // Combine and sort by timestamp
     return items.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
   }, [
+    currentConversation,
     conversationMessages,
     newlyLearnedMemories,
     isSending,

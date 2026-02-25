@@ -209,4 +209,6 @@ export const ar: I18n = {
   Preserve: 'حفظ',
   'Local Backup': 'نسخة احتياطية محلية',
   Sync: 'مزامنة',
+  'Color Scheme': 'نظام الألوان',
+  'Choose a color scheme for the interface': 'اختر نظام ألوان للواجهة',
 } as const

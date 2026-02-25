@@ -31,7 +31,7 @@ const parseMarkdownLinks = (text: string) => {
       url.startsWith('/') ||
       (!url.includes('://') && !url.startsWith('mailto:'))
 
-    const className = 'underline text-blue-600 hover:text-blue-800'
+    const className = 'underline text-primary-600 hover:text-primary-800'
     if (isInternal) {
       parts.push(
         createElement(Link, { key: startIndex, to: url, className }, linkText),

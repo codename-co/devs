@@ -489,7 +489,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
 
     return (
       <div
-        className={`relative ${className || ''} ${isDragOver ? 'ring-2 ring-primary ring-offset-2 rounded-lg' : ''}`}
+        className={`relative z-10 ${className || ''} ${isDragOver ? 'ring-2 ring-primary ring-offset-2 rounded-lg' : ''}`}
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}

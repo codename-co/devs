@@ -501,7 +501,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         id="prompt-area"
         data-testid="prompt-area"
         className={cn(
-          'w-full max-w-4xl mx-auto relative p-[3px] prompt-area',
+          'w-full max-w-4xl mx-auto relative p-[3px] prompt-area z-10',
           isDragOver && 'ring-2 ring-primary ring-offset-2 rounded-lg',
           isFocused && 'animate-gradient-border',
           className,
@@ -610,7 +610,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                   />
                 )}
 
-                {withAgentSelector !== false && (
+                {withAgentSelector !== false && !disabledAgentPicker && (
                   <AgentSelector
                     lang={lang}
                     disabled={disabledAgentPicker}
@@ -729,7 +729,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                         isIconOnly
                         color="danger"
                         radius="md"
-                        variant="solid"
+                        // variant="solid"
                         size="sm"
                         onPress={props.onStop}
                       >

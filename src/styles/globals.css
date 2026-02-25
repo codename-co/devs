@@ -20,14 +20,6 @@
 }
 
 @font-face {
-  font-family: 'Figtree';
-  font-style: normal;
-  font-weight: 400 800;
-  font-display: swap;
-  src: url('/fonts/Figtree.ttf') format('truetype');
-}
-
-@font-face {
   font-family: 'EB Garamond';
   font-style: normal;
   font-weight: 400;
@@ -35,12 +27,54 @@
   src: url('/fonts/EBGaramond.ttf') format('truetype');
 }
 
+@font-face {
+  font-family: 'Figtree';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/Figtree.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/Oswald.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/PlayfairDisplay.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Quicksand';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/Quicksand.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Vollkorn';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/Vollkorn.ttf') format('truetype');
+}
+
 :root {
-  font-family:
-    'Figtree',
-    system-ui,
-    -apple-system,
-    sans-serif;
+  /* Color-theme CSS custom properties (set via JS in Providers.tsx) */
+  --devs-primary: #3366ff;
+  --devs-bg: rgb(244, 247, 249);
+  --devs-heading-font: 'Playfair Display', Georgia, serif;
+  --devs-body-font: 'Figtree', system-ui, -apple-system, sans-serif;
+
+  font-family: var(--devs-body-font);
 }
 
 @layer base {
@@ -120,8 +154,14 @@
     @apply bg-default-50;
   } */
 
-  [role='heading'] {
-    font-family: 'EB Garamond', serif;
+  [role='heading'],
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--devs-heading-font);
     font-optical-sizing: auto;
     font-style: normal;
   }

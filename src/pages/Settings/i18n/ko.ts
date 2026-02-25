@@ -209,4 +209,7 @@ export const ko: I18n = {
   Preserve: '보존',
   'Local Backup': '로컬 백업',
   Sync: '동기화',
+  'Color Scheme': '색상 테마',
+  'Choose a color scheme for the interface':
+    '인터페이스의 색상 테마를 선택하세요',
 } as const

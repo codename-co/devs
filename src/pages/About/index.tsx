@@ -9,7 +9,7 @@ import {
   Link,
 } from '@heroui/react'
 import { Icon } from '@/components/Icon'
-import { useI18n } from '@/i18n'
+import { useI18n, useUrl } from '@/i18n'
 import { IconName } from '@/lib/types'
 import { Container, Section, Title } from '@/components'
 import { LLMService } from '@/lib/llm'
@@ -170,7 +170,8 @@ const FAQ_KEYS = [
 // ---------------------------------------------------------------------------
 
 export const AboutPage = () => {
-  const { t, url } = useI18n(localI18n)
+  const { t } = useI18n(localI18n)
+  const url = useUrl()
 
   const providers = LLMService.listProviders()
     .filter((p) => p !== 'custom')

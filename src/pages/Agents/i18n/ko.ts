@@ -186,4 +186,5 @@ export const ko: I18n = {
   // Recent conversations
   'Recent conversations': '최근 대화',
   'No details available': '세부 정보 없음',
+  'Thinking…': '생각 중…',
 } as const

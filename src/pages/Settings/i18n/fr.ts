@@ -214,4 +214,7 @@ export const fr: I18n = {
   Preserve: 'Conserver',
   'Local Backup': 'Sauvegarde locale',
   Sync: 'Synchronisation',
+  'Color Scheme': 'Jeu de couleurs',
+  'Choose a color scheme for the interface':
+    "Choisissez un jeu de couleurs pour l'interface",
 } as const

@@ -8,14 +8,7 @@
  */
 
 import { memo, useMemo } from 'react'
-import {
-  Accordion,
-  AccordionItem,
-  Button,
-  Chip,
-  Spinner,
-  Tooltip,
-} from '@heroui/react'
+import { Accordion, AccordionItem, Button, Chip, Spinner } from '@heroui/react'
 import { Link, useLocation } from 'react-router-dom'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
@@ -365,18 +358,16 @@ export const ConversationStepTracker = memo(
         {/* Trace details link */}
         {traceIds && traceIds.length > 0 && (
           <div className="mt-1 pl-2">
-            <Tooltip content={t('View trace details' as any)}>
-              <Button
-                as={Link}
-                to={`${location.pathname}${location.search}#settings/traces/logs/${traceIds[0]}`}
-                size="sm"
-                variant="light"
-                className="text-tiny text-default-400 gap-1 h-6 min-w-0 px-2"
-              >
-                <Icon name="Activity" className="w-3 h-3" />
-                <span>{t('View trace details' as any)}</span>
-              </Button>
-            </Tooltip>
+            <Button
+              as={Link}
+              to={`${location.pathname}${location.search}#settings/traces/logs/${traceIds[0]}`}
+              size="sm"
+              variant="light"
+              className="text-tiny text-default-400 gap-1 h-6 min-w-0 px-2"
+            >
+              <Icon name="Activity" className="w-3 h-3" />
+              <span>{t('View trace details' as any)}</span>
+            </Button>
           </div>
         )}
       </div>
