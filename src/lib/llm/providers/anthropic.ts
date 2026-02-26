@@ -238,7 +238,7 @@ export class AnthropicProvider implements LLMProviderInterface {
     }
 
     // Retry fetch up to 2 times on network failures (TypeError: Failed to fetch)
-    let response: Response
+    let response!: Response
     let lastError: Error | null = null
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
@@ -433,7 +433,7 @@ export class AnthropicProvider implements LLMProviderInterface {
     }
 
     // Retry fetch up to 2 times on network failures (TypeError: Failed to fetch)
-    let response: Response
+    let response!: Response
     let lastError: Error | null = null
     for (let attempt = 0; attempt < 3; attempt++) {
       try {

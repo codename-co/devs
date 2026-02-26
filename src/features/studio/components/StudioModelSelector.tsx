@@ -12,6 +12,7 @@
  */
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Button,
   Dropdown,
@@ -24,14 +25,13 @@ import {
 } from '@heroui/react'
 
 import { Icon } from '@/components/Icon'
-import { useAddLLMProviderModal } from '@/components/AddLLMProviderModal'
 import { useLLMModelStore } from '@/stores/llmModelStore'
 import { LLMService } from '@/lib/llm'
 import { CredentialService } from '@/lib/credential-service'
 import { inferLocalModelCapabilities } from '@/lib/llm/models'
 import { getModel as getModelFromModelsDev } from '@/lib/models-dev'
 import type { NormalizedModel } from '@/lib/models-dev/types'
-import { type Lang, useI18n } from '@/i18n'
+import { type Lang, useI18n, useUrl } from '@/i18n'
 import type { Credential } from '@/types'
 import type { IconName } from '@/lib/types'
 
@@ -145,7 +145,8 @@ export function StudioModelSelector({
   onVideoModelChange,
 }: StudioModelSelectorProps) {
   const { t } = useI18n(localI18n)
-  const openAddProviderModal = useAddLLMProviderModal((state) => state.open)
+  const navigate = useNavigate()
+  const url = useUrl()
   const credentials = useLLMModelStore((state) => state.credentials)
 
   // View mode: 'providers' shows provider list, 'models' shows model list for a provider
@@ -417,7 +418,13 @@ export function StudioModelSelector({
           variant="flat"
           color="warning"
           className="min-w-0 px-2 h-8"
-          onPress={openAddProviderModal}
+          onPress={() =>
+            navigate(
+              url(
+                `${location.pathname}${location.search}#settings/providers/add`,
+              ),
+            )
+          }
           startContent={<Icon name="Plus" size="sm" />}
         >
           <span className="text-xs">{t('Select model')}</span>
@@ -652,7 +659,13 @@ export function StudioModelSelector({
                 key="add-provider"
                 startContent={<Icon name="Plus" size="sm" />}
                 textValue={t('Select model')}
-                onPress={openAddProviderModal}
+                onPress={() =>
+                  navigate(
+                    url(
+                      `${location.pathname}${location.search}#settings/providers/add`,
+                    ),
+                  )
+                }
                 closeOnSelect
               >
                 {t('Add provider')}
