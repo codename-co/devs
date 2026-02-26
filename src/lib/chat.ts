@@ -23,6 +23,8 @@ export interface ResponseStatus {
   i18nKey: string
   /** Optional variables for i18n interpolation */
   vars?: Record<string, string | number>
+  /** Tool calls being executed (name + parsed input), for live progress display */
+  pendingToolCalls?: PendingToolCall[]
 }
 
 /** Tool call result data for step tracking */
@@ -30,6 +32,12 @@ export interface ToolCallResult {
   name: string
   input: Record<string, unknown>
   output?: string
+}
+
+/** Basic tool call info sent before execution starts (no output yet) */
+export interface PendingToolCall {
+  name: string
+  input: Record<string, unknown>
 }
 
 /** Response update can be content, a status update, or tool results */
@@ -128,18 +136,25 @@ const TOOL_STATUS_I18N_KEYS: Record<string, string> = {
 }
 
 /**
- * Get i18n key for tool status message.
+ * Get i18n key (and optional vars) for tool status message.
  * Returns specific tool i18n key when a single tool type is used,
  * or generic 'Using tools…' for multiple different tools.
+ * All returned i18nKeys are proper i18n keys that exist in translation files.
  * @param toolCalls - The tool calls being executed
  */
-function getToolStatusI18nKey(toolCalls: ToolCall[]): string {
+function getToolStatusI18nKey(toolCalls: ToolCall[]): {
+  i18nKey: string
+  vars?: Record<string, string | number>
+} {
   if (toolCalls.length === 1) {
     const toolName = toolCalls[0].function.name
     const i18nKey = TOOL_STATUS_I18N_KEYS[toolName]
     return i18nKey
-      ? `${i18nKey}…`
-      : `Using tool: ${toolName.replace(/_/g, ' ')}…`
+      ? { i18nKey: `${i18nKey}…` }
+      : {
+          i18nKey: 'Using tool: {tool}…',
+          vars: { tool: toolName.replace(/_/g, ' ') },
+        }
   }
 
   // Multiple tools - show unique tool types
@@ -148,12 +163,15 @@ function getToolStatusI18nKey(toolCalls: ToolCall[]): string {
     const toolName = uniqueToolNames[0]
     const i18nKey = TOOL_STATUS_I18N_KEYS[toolName]
     return i18nKey
-      ? `${i18nKey}…`
-      : `Using tool: ${toolName.replace(/_/g, ' ')}…`
+      ? { i18nKey: `${i18nKey}…` }
+      : {
+          i18nKey: 'Using tool: {tool}…',
+          vars: { tool: toolName.replace(/_/g, ' ') },
+        }
   }
 
   // Multiple different tools - give a summary
-  return 'Using tools…'
+  return { i18nKey: 'Using tools…' }
 }
 
 /**
@@ -829,6 +847,16 @@ ${skillBlocks}`
     const messageSteps: MessageStep[] = []
     const workingMessages = [...messages]
 
+    // Create initial "Thinking…" step for persistence
+    chatStepCounter++
+    messageSteps.push({
+      id: `step-${Date.now()}-${chatStepCounter}`,
+      icon: 'Sparks',
+      i18nKey: 'Thinking…',
+      status: 'running',
+      startedAt: Date.now(),
+    })
+
     // Tool execution loop - continues until we get a response without tool calls
     while (toolIterations < MAX_TOOL_ITERATIONS) {
       toolIterations++
@@ -875,15 +903,27 @@ ${skillBlocks}`
       )
 
       // Show user that tools are being executed with appropriate message
-      const toolStatusKey = getToolStatusI18nKey(toolCalls)
+      const toolStatus = getToolStatusI18nKey(toolCalls)
+      // Parse tool call arguments for live progress display
+      const pendingToolCalls: PendingToolCall[] = toolCalls.map((tc) => {
+        let parsedInput: Record<string, unknown> = {}
+        try {
+          parsedInput = JSON.parse(tc.function.arguments || '{}')
+        } catch {
+          parsedInput = {}
+        }
+        return { name: tc.function.name, input: parsedInput }
+      })
       // First send the content so far
       onResponseUpdate({ type: 'content', content: finalContent })
-      // Then send the tool status
+      // Then send the tool status with pending tool info
       onResponseUpdate({
         type: 'status',
         status: {
           icon: 'Tools',
-          i18nKey: toolStatusKey,
+          i18nKey: toolStatus.i18nKey,
+          vars: toolStatus.vars,
+          pendingToolCalls,
         },
       })
 
@@ -897,7 +937,8 @@ ${skillBlocks}`
       messageSteps.push({
         id: `step-${Date.now()}-${chatStepCounter}`,
         icon: 'Tools',
-        i18nKey: toolStatusKey,
+        i18nKey: toolStatus.i18nKey,
+        vars: toolStatus.vars,
         status: 'running',
         startedAt: Date.now(),
       })
@@ -993,6 +1034,15 @@ ${skillBlocks}`
     if (lastRunningStep) {
       lastRunningStep.status = 'completed'
       lastRunningStep.completedAt = Date.now()
+    }
+
+    // Extract <think> content and persist on the Thinking step
+    const thinkMatch = finalContent.match(/<think>([\s\S]*?)(?:<\/think>|$)/)
+    if (thinkMatch) {
+      const thinkingStep = messageSteps.find((s) => s.i18nKey === 'Thinking…')
+      if (thinkingStep) {
+        thinkingStep.thinkingContent = thinkMatch[1].trim()
+      }
     }
 
     const timeend = Date.now()

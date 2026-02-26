@@ -132,65 +132,21 @@ export const MarkdownRenderer = ({
       const thinkBlocks: ThinkBlock[] = []
       let processedMarkdown = contentToRender
 
-      // Preprocess display math: Convert $$...$$ to placeholders
+      // Declare mathBlocks early (needed by early returns in code block processing)
       const mathBlocks: { id: string; latex: string }[] = []
       let mathBlockIndex = 0
 
-      // Match $$...$$ blocks (display math)
-      processedMarkdown = processedMarkdown.replace(
-        /\$\$([\s\S]*?)\$\$/g,
-        (_match, latex) => {
-          const id = `math-block-${mathBlockIndex++}`
-          mathBlocks.push({ id, latex: latex.trim() })
-          return `<div data-math-block-id="${id}"></div>`
-        },
-      )
-
-      // Preprocess inline math: Convert $...$ to `$...$` so marked treats it as code
-      // Use a more robust regex that handles special characters in LaTeX
-      processedMarkdown = processedMarkdown.replace(
-        /\$([^$\n]+?)\$/g,
-        (_match, expr) => `\`$$${expr}$$\``,
-      )
-
-      // Process <think> tags first
-      const thinkTagRegex = /<think>([\s\S]*?)<\/think>/g
-      const incompleteThinkRegex = /<think>([\s\S]*)$/
-      let thinkMatch
-      let thinkIndex = 0
-
-      // First, process complete think tags
-      while ((thinkMatch = thinkTagRegex.exec(contentToRender)) !== null) {
-        const [fullMatch, thinkContent] = thinkMatch
-        const blockId = `think-block-${thinkIndex++}`
-
-        // Replace with a placeholder
-        const placeholder = `<div data-think-block-id="${blockId}"></div>`
-        processedMarkdown = processedMarkdown.replace(fullMatch, placeholder)
-
-        thinkBlocks.push({
-          id: blockId,
-          content: thinkContent.trim(),
-          processing: false, // Complete blocks are not processing
-        })
-      }
-
-      // Check for incomplete think tag at the end
-      const incompleteThinkMatch = incompleteThinkRegex.exec(contentToRender)
-      if (incompleteThinkMatch) {
-        const [fullMatch, thinkContent] = incompleteThinkMatch
-        const blockId = `think-block-${thinkIndex++}`
-
-        // Replace with a placeholder
-        const placeholder = `<div data-think-block-id="${blockId}"></div>`
-        processedMarkdown = processedMarkdown.replace(fullMatch, placeholder)
-
-        thinkBlocks.push({
-          id: blockId,
-          content: thinkContent.trim(),
-          processing: true, // Incomplete blocks are still processing
-        })
-      }
+      // ===================================================================
+      // STEP 1: Extract code blocks FIRST (before any text preprocessing)
+      // ===================================================================
+      // Code blocks must be extracted before math ($...$) and think (<think>)
+      // preprocessing. Otherwise, preprocessing modifies processedMarkdown
+      // (e.g. replacing $x$ with `$$x$$`) while fullMatch still references the
+      // original contentToRender — causing processedMarkdown.replace(fullMatch, …)
+      // to silently fail. This led to specialized widgets (Marp presentations,
+      // sheet music, diagrams, etc.) rendering correctly during streaming
+      // (which uses the incomplete-code-block path that bypasses this issue)
+      // but falling back to plain code blocks once streaming ended.
 
       if (renderWidgets) {
         // Check for incomplete code blocks during streaming
@@ -200,10 +156,6 @@ export const MarkdownRenderer = ({
           contentToRender.includes('```') && codeBlockCount % 2 !== 0
 
         if (hasIncompleteCodeBlock) {
-          // console.debug(
-          //   '[MarkdownRenderer] Detected incomplete code block during streaming, using progressive fallback',
-          // )
-
           // Process any complete code blocks that exist before the incomplete one
           const completeCodeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g
           let match
@@ -361,6 +313,72 @@ export const MarkdownRenderer = ({
           }
         }
       }
+
+      // ===================================================================
+      // STEP 2: Math preprocessing (code blocks already replaced with placeholders)
+      // ===================================================================
+
+      // Match $$...$$ blocks (display math)
+      processedMarkdown = processedMarkdown.replace(
+        /\$\$([\s\S]*?)\$\$/g,
+        (_match, latex) => {
+          const id = `math-block-${mathBlockIndex++}`
+          mathBlocks.push({ id, latex: latex.trim() })
+          return `<div data-math-block-id="${id}"></div>`
+        },
+      )
+
+      // Preprocess inline math: Convert $...$ to `$...$` so marked treats it as code
+      // Use a more robust regex that handles special characters in LaTeX
+      processedMarkdown = processedMarkdown.replace(
+        /\$([^$\n]+?)\$/g,
+        (_match, expr) => `\`$$${expr}$$\``,
+      )
+
+      // ===================================================================
+      // STEP 3: Process <think> tags
+      // ===================================================================
+      const thinkTagRegex = /<think>([\s\S]*?)<\/think>/g
+      const incompleteThinkRegex = /<think>([\s\S]*)$/
+      let thinkMatch
+      let thinkIndex = 0
+
+      // First, process complete think tags
+      while ((thinkMatch = thinkTagRegex.exec(contentToRender)) !== null) {
+        const [fullMatch, thinkContent] = thinkMatch
+        const blockId = `think-block-${thinkIndex++}`
+
+        // Replace with a placeholder
+        const placeholder = `<div data-think-block-id="${blockId}"></div>`
+        processedMarkdown = processedMarkdown.replace(fullMatch, placeholder)
+
+        thinkBlocks.push({
+          id: blockId,
+          content: thinkContent.trim(),
+          processing: false, // Complete blocks are not processing
+        })
+      }
+
+      // Check for incomplete think tag at the end
+      const incompleteThinkMatch = incompleteThinkRegex.exec(contentToRender)
+      if (incompleteThinkMatch) {
+        const [fullMatch, thinkContent] = incompleteThinkMatch
+        const blockId = `think-block-${thinkIndex++}`
+
+        // Replace with a placeholder
+        const placeholder = `<div data-think-block-id="${blockId}"></div>`
+        processedMarkdown = processedMarkdown.replace(fullMatch, placeholder)
+
+        thinkBlocks.push({
+          id: blockId,
+          content: thinkContent.trim(),
+          processing: true, // Incomplete blocks are still processing
+        })
+      }
+
+      // ===================================================================
+      // STEP 4: Parse with marked
+      // ===================================================================
 
       // Configure marked for better formatting
       configureMarked()
@@ -656,10 +674,8 @@ export const MarkdownRenderer = ({
     <>
       {renderedContent}
       {isStreaming && (
-        <span
-          className="inline-block w-[3px] h-[1.1em] bg-primary-500 align-text-bottom ml-0.5 animate-pulse"
-          aria-hidden="true"
-        />
+        // animated ellipsis to indicate streaming
+        <span className="text-primary-300 animate-pulse">▍</span>
       )}
     </>
   )

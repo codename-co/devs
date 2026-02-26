@@ -83,6 +83,8 @@ export interface MessageStep {
   completedAt?: number
   /** Optional LLM-generated title */
   title?: string
+  /** Thinking/reasoning content extracted from <think> blocks */
+  thinkingContent?: string
   /** Tool calls executed during this step (name, parsed input, raw output) */
   toolCalls?: Array<{
     name: string

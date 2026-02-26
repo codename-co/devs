@@ -71,7 +71,7 @@
   /* Color-theme CSS custom properties (set via JS in Providers.tsx) */
   --devs-primary: #3366ff;
   --devs-bg: rgb(244, 247, 249);
-  --devs-heading-font: 'Playfair Display', Georgia, serif;
+  --devs-heading-font: 'EB Garamond', Georgia, serif;
   --devs-body-font: 'Figtree', system-ui, -apple-system, sans-serif;
 
   font-family: var(--devs-body-font);
@@ -194,17 +194,17 @@
   }
 
   .markdown-content h2 {
-    @apply text-lg font-semibold mb-2 mt-3 first:mt-0;
+    @apply text-lg font-bold mb-2 mt-3 first:mt-0;
   }
 
   .markdown-content h3 {
-    @apply text-base font-medium mb-2 mt-3 first:mt-0;
+    @apply text-lg font-bold mb-2 mt-3 first:mt-0;
   }
 
   .markdown-content h4,
   .markdown-content h5,
   .markdown-content h6 {
-    @apply font-medium mb-1 mt-2 first:mt-0;
+    @apply font-bold mb-1 mt-2 first:mt-0;
   }
 
   .markdown-content p {

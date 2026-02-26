@@ -1,6 +1,7 @@
 import {
   Button,
   ButtonGroup,
+  Chip,
   Textarea,
   type TextAreaProps,
   Tooltip,
@@ -491,6 +492,80 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       [onBlur],
     )
 
+    // Resolve active mentions for visual chip rendering
+    const resolvedAgentMentions = useMemo(
+      () => extractMentionedAgents(),
+      [prompt, extractMentionedAgents],
+    )
+    const resolvedMethodologyMentions = useMemo(
+      () => extractMentionedMethodologies(),
+      [prompt, extractMentionedMethodologies],
+    )
+    const resolvedSkillMentions = useMemo(
+      () => extractMentionedSkills(),
+      [prompt, extractMentionedSkills],
+    )
+    const hasMentionChips =
+      resolvedAgentMentions.length > 0 ||
+      resolvedMethodologyMentions.length > 0 ||
+      resolvedSkillMentions.length > 0
+
+    // Remove a single @agent mention from the prompt
+    const handleRemoveAgentMention = useCallback(
+      (agent: Agent) => {
+        const name = agent.i18n?.[lang]?.name ?? agent.name
+        const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const noSpaceName = name.replace(/\s+/g, '')
+        const newPrompt = prompt
+          .replace(new RegExp(`(^|\\s)@\\[${escaped}\\]\\s?`, 'i'), '$1')
+          .replace(new RegExp(`(^|\\s)@${noSpaceName}\\b\\s?`, 'i'), '$1')
+          .replace(new RegExp(`(^|\\s)@${agent.id}\\b\\s?`, 'i'), '$1')
+          .replace(/\s+/g, ' ')
+          .trim()
+        handlePromptChange(newPrompt)
+      },
+      [prompt, handlePromptChange, lang],
+    )
+
+    // Remove a single #methodology mention from the prompt
+    const handleRemoveMethodologyMention = useCallback(
+      (methodology: Methodology) => {
+        const name = (
+          methodology.metadata.i18n?.[lang]?.name ?? methodology.metadata.name
+        )
+          .replace(/\s+/g, '-')
+          .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const id = methodology.metadata.id.replace(
+          /[.*+?^${}()|[\]\\]/g,
+          '\\$&',
+        )
+        const newPrompt = prompt
+          .replace(new RegExp(`#${name}\\b\\s?`, 'i'), '')
+          .replace(new RegExp(`#${id}\\b\\s?`, 'i'), '')
+          .replace(/\s+/g, ' ')
+          .trim()
+        handlePromptChange(newPrompt)
+      },
+      [prompt, handlePromptChange, lang],
+    )
+
+    // Remove a single /skill mention from the prompt
+    const handleRemoveSkillMention = useCallback(
+      (skill: InstalledSkill) => {
+        const name = skill.name
+          .replace(/\s+/g, '-')
+          .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const id = skill.id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const newPrompt = prompt
+          .replace(new RegExp(`(^|\\s)\\/${name}\\b\\s?`, 'i'), '$1')
+          .replace(new RegExp(`(^|\\s)\\/${id}\\b\\s?`, 'i'), '$1')
+          .replace(/\s+/g, ' ')
+          .trim()
+        handlePromptChange(newPrompt)
+      },
+      [prompt, handlePromptChange],
+    )
+
     const canSubmit = useMemo(
       () => prompt.trim().length > 0 && !isRecording,
       [prompt, isRecording],
@@ -511,6 +586,53 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
+        {/* Mention chips — absolute-positioned above the prompt area */}
+        {hasMentionChips && (
+          <div className="absolute z-0 -top-8 bottom-0 left-0 right-0 rounded-2xl flex gap-1 flex-wrap px-1 border-2 border-primary-200 !bg-primary-50 p-1 shadow-lg shadow-primary-200/50">
+            {resolvedAgentMentions.map((agent) => (
+              <Chip
+                key={`agent-${agent.id}`}
+                color="primary"
+                variant="flat"
+                size="sm"
+                onClose={() => handleRemoveAgentMention(agent)}
+                startContent={
+                  <span className="pl-1 text-xs opacity-60">@</span>
+                }
+              >
+                {agent.i18n?.[lang]?.name ?? agent.name}
+              </Chip>
+            ))}
+            {resolvedMethodologyMentions.map((methodology) => (
+              <Chip
+                key={`methodology-${methodology.metadata.id}`}
+                color="success"
+                variant="flat"
+                size="sm"
+                onClose={() => handleRemoveMethodologyMention(methodology)}
+                startContent={
+                  <span className="pl-1 text-xs opacity-60">#</span>
+                }
+              >
+                {methodology.metadata.i18n?.[lang]?.name ??
+                  methodology.metadata.name}
+              </Chip>
+            ))}
+            {resolvedSkillMentions.map((skill) => (
+              <Chip
+                key={`skill-${skill.id}`}
+                color="primary"
+                variant="flat"
+                size="sm"
+                onClose={() => handleRemoveSkillMention(skill)}
+                startContent={<Icon name="Puzzle" size="sm" />}
+              >
+                {skill.name}
+              </Chip>
+            ))}
+          </div>
+        )}
+
         <div className="relative rounded-lg">
           {/* Agent mention autocomplete popover */}
           {!disabledMention && showAgentMentionPopover && (
@@ -696,47 +818,50 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                     </Tooltip>
                   )}
 
-                  {selectedAgent?.id !== 'devs' && onSubmitToAgent && (
-                    <Tooltip content={t('Send prompt')} placement="bottom">
-                      <Button
-                        type="submit"
-                        data-testid="submit-agent-button"
-                        isIconOnly={isSmallWidth()}
-                        disabled={props.isSending}
-                        color={!prompt.trim() ? 'default' : 'primary'}
-                        className={cn(
-                          'rtl:rotate-180',
-                          canSubmit && 'dark:bg-white dark:text-black',
-                        )}
-                        radius="md"
-                        variant="solid"
-                        size="sm"
-                        isDisabled={!canSubmit}
-                        isLoading={props.isSending}
-                        onPress={() =>
-                          handleSubmitWithMentions(onSubmitToAgent)
-                        }
+                  {selectedAgent?.id !== 'devs' &&
+                    onSubmitToAgent &&
+                    (props.isSending && props.onStop ? (
+                      <Tooltip
+                        content={t('Stop generating')}
+                        placement="bottom"
                       >
-                        <Icon name="ArrowRight" size="sm" />
-                      </Button>
-                    </Tooltip>
-                  )}
-
-                  {props.isSending && props.onStop && (
-                    <Tooltip content={t('Stop generating')} placement="bottom">
-                      <Button
-                        data-testid="stop-button"
-                        isIconOnly
-                        color="danger"
-                        radius="md"
-                        // variant="solid"
-                        size="sm"
-                        onPress={props.onStop}
-                      >
-                        <Icon name="Square" size="sm" />
-                      </Button>
-                    </Tooltip>
-                  )}
+                        <Button
+                          data-testid="stop-button"
+                          isIconOnly={isSmallWidth()}
+                          color="danger"
+                          radius="md"
+                          // variant="solid"
+                          size="sm"
+                          onPress={props.onStop}
+                        >
+                          <Icon name="Square" size="sm" />
+                        </Button>
+                      </Tooltip>
+                    ) : (
+                      <Tooltip content={t('Send prompt')} placement="bottom">
+                        <Button
+                          type="submit"
+                          data-testid="submit-agent-button"
+                          isIconOnly={isSmallWidth()}
+                          disabled={props.isSending}
+                          color={!prompt.trim() ? 'default' : 'primary'}
+                          className={cn(
+                            'rtl:rotate-180',
+                            canSubmit && 'dark:bg-white dark:text-black',
+                          )}
+                          radius="md"
+                          variant="solid"
+                          size="sm"
+                          isDisabled={!canSubmit}
+                          isLoading={props.isSending}
+                          onPress={() =>
+                            handleSubmitWithMentions(onSubmitToAgent)
+                          }
+                        >
+                          <Icon name="ArrowRight" size="sm" />
+                        </Button>
+                      </Tooltip>
+                    ))}
                 </ButtonGroup>
               </div>
             </div>

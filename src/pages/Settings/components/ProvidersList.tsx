@@ -101,7 +101,7 @@ export function ProvidersList() {
           <Icon name={provider?.icon as any} size="md" />
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <p className="font-medium">{provider?.name}</p>
+              <p className="text-small font-medium">{provider?.name}</p>
               {isDefault && (
                 <Chip size="sm" color="primary" variant="flat">
                   {t('Default Provider')}

@@ -12,7 +12,11 @@ import { Accordion, AccordionItem, Button, Chip, Spinner } from '@heroui/react'
 import { Link, useLocation } from 'react-router-dom'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
-import type { ResponseStatus, ToolCallResult } from '@/lib/chat'
+import type {
+  ResponseStatus,
+  ToolCallResult,
+  PendingToolCall,
+} from '@/lib/chat'
 import type { IconName } from '@/lib/types'
 import type { MessageStep } from '@/types'
 import localI18n from './i18n'
@@ -40,8 +44,12 @@ export interface ConversationStep {
   completedAt?: number
   /** Optional LLM-generated title to replace the i18n key */
   title?: string
+  /** Thinking/reasoning content extracted from <think> blocks */
+  thinkingContent?: string
   /** Tool calls with their input/output (for expanding in the accordion) */
   toolCalls?: ToolCallResult[]
+  /** Tool calls being executed (before results come back) for live display */
+  pendingToolCalls?: PendingToolCall[]
 }
 
 // ============================================================================
@@ -63,6 +71,7 @@ export function createStepFromStatus(status: ResponseStatus): ConversationStep {
     vars: status.vars,
     status: 'running',
     startedAt: Date.now(),
+    pendingToolCalls: status.pendingToolCalls,
   }
 }
 
@@ -110,6 +119,26 @@ export function addToolDataToStep(
   for (let i = updated.length - 1; i >= 0; i--) {
     if (updated[i].status === 'running') {
       updated[i] = { ...updated[i], toolCalls }
+      break
+    }
+  }
+  return updated
+}
+
+/**
+ * Update (append) thinking content for the "Thinking…" step.
+ * Used to accumulate <think> block content during streaming.
+ * Finds the step by i18nKey instead of status, so it works even after
+ * the step has been marked as completed.
+ */
+export function updateStepThinkingContent(
+  steps: ConversationStep[],
+  thinkingContent: string,
+): ConversationStep[] {
+  const updated = [...steps]
+  for (let i = 0; i < updated.length; i++) {
+    if (updated[i].i18nKey === 'Thinking…') {
+      updated[i] = { ...updated[i], thinkingContent }
       break
     }
   }
@@ -188,11 +217,15 @@ const ToolIOContent = memo(
     }
 
     return (
-      <div className="space-y-3 py-1">
+      <div className="space-y-3 py-1 ps-5">
         {toolCalls.map((tc, idx) => (
           <div key={idx} className="space-y-1.5">
             {/* Tool chip */}
-            <Chip size="sm" startContent={<Icon name="Code" size="sm" />}>
+            <Chip
+              size="sm"
+              startContent={<Icon name="Terminal" size="sm" />}
+              variant="flat"
+            >
               {tc.name}
             </Chip>
             {/* Input */}
@@ -232,6 +265,100 @@ const ToolIOContent = memo(
 ToolIOContent.displayName = 'ToolIOContent'
 
 // ============================================================================
+// Pending Tool Info (displayed while tool is executing)
+// ============================================================================
+
+/** Extract the most meaningful parameter from a tool call's input */
+const getToolDetail = (tc: PendingToolCall): string | null => {
+  const { input } = tc
+  if (input.query && typeof input.query === 'string') return input.query
+  if (input.expression && typeof input.expression === 'string')
+    return input.expression
+  if (input.document_id && typeof input.document_id === 'string')
+    return input.document_id
+  if (input.skill_name && typeof input.skill_name === 'string')
+    return input.skill_name
+  if (input.code && typeof input.code === 'string')
+    return input.code.slice(0, 80)
+  if (input.folder_id && typeof input.folder_id === 'string')
+    return input.folder_id
+  return null
+}
+
+/** Display pending tool call details during execution */
+const PendingToolInfo = memo(
+  ({ toolCalls }: { toolCalls: PendingToolCall[] }) => {
+    if (!toolCalls || toolCalls.length === 0) return null
+
+    return (
+      <div className="ml-6 mt-1.5 space-y-1">
+        {toolCalls.map((tc, idx) => {
+          const detail = getToolDetail(tc)
+          const displayName = tc.name.replace(/_/g, ' ')
+
+          return (
+            <div
+              key={idx}
+              className="flex items-center gap-1.5 text-xs text-default-400"
+            >
+              <Icon
+                name="NavArrowRight"
+                className="w-3 h-3 flex-shrink-0 animate-pulse"
+              />
+              <span className="font-medium">{displayName}</span>
+              {detail && (
+                <span className="italic truncate max-w-[250px]">
+                  &ldquo;
+                  {detail.length > 60 ? detail.slice(0, 60) + '…' : detail}
+                  &rdquo;
+                </span>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    )
+  },
+)
+PendingToolInfo.displayName = 'PendingToolInfo'
+
+/** Render a running step inline (outside accordion) */
+const RunningStepInline = memo(
+  ({
+    step,
+    t,
+  }: {
+    step: ConversationStep
+    t: (key: any, vars?: any) => string
+  }) => {
+    const label = step.title || t(step.i18nKey as any, step.vars)
+
+    return (
+      <div>
+        <div className="flex items-center gap-2 text-sm text-default-500">
+          <Spinner size="sm" classNames={{ wrapper: 'w-4 h-4' }} />
+          <span className="italic font-medium">{label}</span>
+        </div>
+        {step.pendingToolCalls && step.pendingToolCalls.length > 0 && (
+          <PendingToolInfo toolCalls={step.pendingToolCalls} />
+        )}
+        {step.thinkingContent && (
+          <details className="mt-1 ml-6">
+            <summary className="cursor-pointer text-xs text-default-400 select-none">
+              {t('Thoughts' as any)}
+            </summary>
+            <div className="ml-2 mt-1 text-xs text-default-400 whitespace-pre-wrap max-h-40 overflow-y-auto">
+              {step.thinkingContent}
+            </div>
+          </details>
+        )}
+      </div>
+    )
+  },
+)
+RunningStepInline.displayName = 'RunningStepInline'
+
+// ============================================================================
 // Main Component
 // ============================================================================
 
@@ -250,11 +377,24 @@ export interface ConversationStepTrackerProps {
  * Displays a compact accordion of all conversation processing steps.
  * Each step shows a status icon (spinner/check/cross), title, duration,
  * and can be expanded to reveal tool input/output details.
+ *
+ * Running steps are always displayed inline (outside the accordion) for
+ * maximum visibility, with pending tool call details shown when available.
  */
 export const ConversationStepTracker = memo(
   ({ steps, className = '', traceIds }: ConversationStepTrackerProps) => {
     const { t } = useI18n(localI18n)
     const location = useLocation()
+
+    // Separate completed/failed steps from running step
+    const finishedSteps = useMemo(
+      () => steps.filter((s) => s.status !== 'running'),
+      [steps],
+    )
+    const runningStep = useMemo(
+      () => steps.find((s) => s.status === 'running'),
+      [steps],
+    )
 
     // Count statuses for summary chip
     const summary = useMemo(() => {
@@ -266,94 +406,111 @@ export const ConversationStepTracker = memo(
 
     if (steps.length === 0) return null
 
-    // If there's only one step and it's running, show inline (no accordion)
-    if (steps.length === 1 && steps[0].status === 'running') {
-      const step = steps[0]
-      const label = step.title || t(step.i18nKey as any, step.vars)
+    // Only one running step and nothing else → show inline
+    if (steps.length === 1 && runningStep) {
       return (
-        <div
-          className={`flex items-center gap-2 text-sm text-default-500 ${className}`}
-        >
-          <Spinner size="sm" classNames={{ wrapper: 'w-4 h-4' }} />
-          <span className="italic font-medium">{label}</span>
+        <div className={`${className}`}>
+          <RunningStepInline step={runningStep} t={t} />
         </div>
       )
     }
 
     return (
       <div className={`${className}`}>
-        {/* Summary chip */}
-        <div className="flex items-center gap-2 mb-1">
-          <Icon name="ListSelect" size="sm" className="text-default-400" />
-          <span className="text-tiny font-medium text-default-500">
-            {t('Steps' as any)}
-          </span>
-          {summary.running > 0 && (
-            <Chip size="sm" color="primary" variant="flat">
-              {summary.running} {summary.running === 1 ? 'running' : 'running'}
-            </Chip>
-          )}
-          {summary.completed > 0 && (
-            <Chip size="sm" variant="bordered">
-              {summary.completed}
-            </Chip>
-          )}
-          {summary.failed > 0 && (
-            <Chip size="sm" color="danger" variant="flat">
-              {summary.failed}
-            </Chip>
-          )}
-        </div>
+        {/* Completed/failed steps in accordion */}
+        {finishedSteps.length > 0 && (
+          <>
+            {/* Summary chip */}
+            <div className="flex items-center gap-2 mb-1">
+              <Icon name="ListSelect" size="sm" className="text-default-400" />
+              <span className="text-tiny font-medium text-default-500">
+                {t('Steps' as any)}
+              </span>
+              {summary.running > 0 && (
+                <Chip size="sm" color="primary" variant="flat">
+                  {summary.running}{' '}
+                  {summary.running === 1 ? 'running' : 'running'}
+                </Chip>
+              )}
+              {summary.completed > 0 && (
+                <Chip size="sm" variant="bordered">
+                  {summary.completed}
+                </Chip>
+              )}
+              {summary.failed > 0 && (
+                <Chip size="sm" color="danger" variant="flat">
+                  {summary.failed}
+                </Chip>
+              )}
+            </div>
 
-        <Accordion
-          isCompact
-          fullWidth={false}
-          showDivider={false}
-          variant="light"
-          className="px-0 gap-0"
-          selectionMode="multiple"
-          itemClasses={{
-            // base: 'py-0',
-            title: 'text-sm font-medium',
-            trigger:
-              'py-1.5 px-2 rounded-md hover:bg-default-100 data-[hover=true]:bg-default-100',
-            content: 'px-2 pb-2 pt-0',
-            indicator: 'text-sm text-default-600 rotate-90',
-          }}
-        >
-          {steps.map((step) => {
-            const label = step.title || t(step.i18nKey as any, step.vars)
-            const hasDetails = step.toolCalls && step.toolCalls.length > 0
+            <Accordion
+              isCompact
+              fullWidth={false}
+              showDivider={false}
+              variant="light"
+              className="px-0 gap-0"
+              selectionMode="multiple"
+              itemClasses={{
+                title: 'text-sm font-medium',
+                trigger:
+                  'py-1.5 px-2 rounded-md hover:bg-default-100 data-[hover=true]:bg-default-100',
+                content: 'mx-2 px-2 pb-2 pt-0 border-s border-default-200',
+                indicator: 'text-sm text-default-600 -rotate-180',
+              }}
+            >
+              {finishedSteps.map((step) => {
+                const label = step.title || t(step.i18nKey as any, step.vars)
+                const hasDetails =
+                  (step.toolCalls && step.toolCalls.length > 0) ||
+                  !!step.thinkingContent
 
-            return (
-              <AccordionItem
-                key={step.id}
-                aria-label={label}
-                isDisabled={!hasDetails}
-                hideIndicator={!hasDetails}
-                startContent={<StepStatusIcon status={step.status} />}
-                classNames={{
-                  trigger: 'w-auto',
-                }}
-                title={
-                  <span
-                    className={`truncate ${
-                      step.status === 'failed'
-                        ? 'text-danger-600'
-                        : step.status === 'running'
-                          ? 'text-default-700'
-                          : 'text-default-500'
-                    }`}
+                return (
+                  <AccordionItem
+                    key={step.id}
+                    aria-label={label}
+                    isDisabled={!hasDetails}
+                    hideIndicator={!hasDetails}
+                    startContent={<StepStatusIcon status={step.status} />}
+                    classNames={{
+                      trigger: 'w-auto',
+                    }}
+                    title={
+                      <span
+                        className={`truncate ${
+                          step.status === 'failed'
+                            ? 'text-danger-600'
+                            : 'text-default-500'
+                        }`}
+                      >
+                        {label}
+                      </span>
+                    }
                   >
-                    {label}
-                  </span>
-                }
-              >
-                <ToolIOContent toolCalls={step.toolCalls} t={t} />
-              </AccordionItem>
-            )
-          })}
-        </Accordion>
+                    {step.thinkingContent && (
+                      <div className="mb-2">
+                        <div className="text-xs font-medium text-default-500 mb-1">
+                          {t('Thoughts' as any)}
+                        </div>
+                        <div className="text-xs text-default-400 whitespace-pre-wrap max-h-40 overflow-y-auto rounded-md bg-default-50 p-2">
+                          {step.thinkingContent}
+                        </div>
+                      </div>
+                    )}
+                    <ToolIOContent toolCalls={step.toolCalls} t={t} />
+                  </AccordionItem>
+                )
+              })}
+            </Accordion>
+          </>
+        )}
+
+        {/* Currently running step — always visible inline, outside accordion */}
+        {runningStep && (
+          <div className="mt-2">
+            <RunningStepInline step={runningStep} t={t} />
+          </div>
+        )}
 
         {/* Trace details link */}
         {traceIds && traceIds.length > 0 && (

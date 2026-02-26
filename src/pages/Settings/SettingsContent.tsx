@@ -329,7 +329,7 @@ const SettingsContentInner = () => {
                         <button
                           type="button"
                           onClick={() => handleSectionClick(section)}
-                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-left ${
+                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-start ${
                             isActive
                               ? 'bg-default-200 font-medium'
                               : 'text-default-600 hover:bg-default-100'
@@ -343,7 +343,7 @@ const SettingsContentInner = () => {
                           {isExternal && (
                             <Icon
                               name="ArrowRight"
-                              className="h-3 w-3 ml-auto shrink-0 text-default-400"
+                              className="h-3 w-3 ms-auto shrink-0 text-default-400 rtl:rotate-180"
                             />
                           )}
                         </button>

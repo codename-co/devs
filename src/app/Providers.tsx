@@ -20,7 +20,7 @@ import { useSyncStore } from '@/features/sync'
 import { SyncPasswordModal } from '@/features/sync/components/SyncPasswordModal'
 import { ServiceWorkerUpdatePrompt } from '@/components/ServiceWorkerUpdatePrompt'
 import { AddLLMProviderModal } from '@/components/AddLLMProviderModal'
-import { I18nProvider } from '@/i18n'
+import { I18nProvider, languageDirection } from '@/i18n'
 
 // Expose sync debug tools in browser console
 ;(window as unknown as Record<string, unknown>).devsSync = {
@@ -174,6 +174,14 @@ function ProvidersInner({ children }: { children: React.ReactNode }) {
       return () => mediaQuery.removeEventListener('change', applyTheme)
     }
   }, [theme, colorTheme])
+
+  // Apply language direction (ltr/rtl) and lang attribute to <html>
+  // so that portals, modals, and all DOM elements inherit direction.
+  useEffect(() => {
+    const root = document.documentElement
+    root.dir = languageDirection[lang] || 'ltr'
+    root.lang = lang || 'en'
+  }, [lang])
 
   // Auto-backup: automatically sync to local folder when data changes
   useAutoBackup()

@@ -15,8 +15,21 @@
  *   />
  */
 
-import { forwardRef, useState, useCallback, useRef, useEffect } from 'react'
-import { Button, Textarea, Tooltip, type TextAreaProps } from '@heroui/react'
+import {
+  forwardRef,
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+  useMemo,
+} from 'react'
+import {
+  Button,
+  Chip,
+  Textarea,
+  Tooltip,
+  type TextAreaProps,
+} from '@heroui/react'
 
 // ============================================================================
 // Embedded i18n System - No Provider Required
@@ -327,6 +340,51 @@ export function createTranslator(lang: LanguageCode) {
 }
 
 // ============================================================================
+// Mention Parsing Utilities
+// ============================================================================
+
+/** Represents a parsed mention from the prompt text */
+export interface ParsedMention {
+  /** The mention prefix type */
+  type: '@' | '#' | '/'
+  /** The mention text without the prefix */
+  text: string
+  /** The full match including the prefix (e.g., "@agent") */
+  fullMatch: string
+  /** The start index in the original string */
+  index: number
+}
+
+/** Color mapping for each mention type */
+const mentionChipColor: Record<string, 'primary' | 'success' | 'secondary'> = {
+  '@': 'primary',
+  '#': 'success',
+  '/': 'secondary',
+}
+
+/**
+ * Parses mention patterns (@word, #word, /word) from text.
+ * Mentions must start at the beginning of the string or after whitespace.
+ */
+export function parseMentions(text: string): ParsedMention[] {
+  const regex = /(?:^|\s)([@#/])([\w][\w-]*)/g
+  const mentions: ParsedMention[] = []
+  let match
+
+  while ((match = regex.exec(text)) !== null) {
+    const leadingSpace = match[0].length - match[0].trimStart().length
+    mentions.push({
+      type: match[1] as '@' | '#' | '/',
+      text: match[2],
+      fullMatch: `${match[1]}${match[2]}`,
+      index: match.index + leadingSpace,
+    })
+  }
+
+  return mentions
+}
+
+// ============================================================================
 // PromptArea Component
 // ============================================================================
 
@@ -475,6 +533,20 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       [enableDragDrop, onFilesChange],
     )
 
+    // Parse mentions (@agent, #tag, /command) from prompt text
+    const mentions = useMemo(() => parseMentions(prompt), [prompt])
+
+    const handleRemoveMention = useCallback(
+      (mention: ParsedMention) => {
+        const before = prompt.slice(0, mention.index)
+        const after = prompt.slice(mention.index + mention.fullMatch.length)
+        const newPrompt = (before + after).replace(/\s{2,}/g, ' ').trim()
+        setPrompt(newPrompt)
+        onValueChange?.(newPrompt)
+      },
+      [prompt, onValueChange],
+    )
+
     const canSubmit = prompt.trim().length > 0 && !isLoading
     const resolvedPlaceholder =
       placeholder ||
@@ -508,6 +580,24 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
           }}
           {...props}
         />
+
+        {/* Mention chips — absolute-positioned above the prompt area */}
+        {mentions.length > 0 && (
+          <div className="absolute z-20 bottom-full left-0 right-0 mb-2 flex items-center gap-1 flex-wrap">
+            {mentions.map((mention, index) => (
+              <Chip
+                key={`${mention.fullMatch}-${mention.index}-${index}`}
+                color={mentionChipColor[mention.type]}
+                variant="flat"
+                size="sm"
+                onClose={() => handleRemoveMention(mention)}
+                classNames={{ base: 'shrink-0 cursor-default' }}
+              >
+                {mention.fullMatch}
+              </Chip>
+            ))}
+          </div>
+        )}
 
         {showSubmitButton && (
           <div className="absolute z-10 bottom-0 inset-x-px p-2 rounded-b-lg">
