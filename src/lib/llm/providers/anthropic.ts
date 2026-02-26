@@ -226,7 +226,7 @@ export class AnthropicProvider implements LLMProviderInterface {
       }
     }
 
-    const response = await fetch(endpoint, {
+    const fetchOptions: RequestInit = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -235,7 +235,32 @@ export class AnthropicProvider implements LLMProviderInterface {
         'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify(requestBody),
-    })
+    }
+
+    // Retry fetch up to 2 times on network failures (TypeError: Failed to fetch)
+    let response: Response
+    let lastError: Error | null = null
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        response = await fetch(endpoint, fetchOptions)
+        lastError = null
+        break
+      } catch (error) {
+        lastError = error as Error
+        if (attempt < 2) {
+          console.warn(
+            `[Anthropic] Fetch attempt ${attempt + 1} failed, retrying...`,
+            (error as Error).message,
+          )
+          await new Promise((r) => setTimeout(r, 500 * (attempt + 1)))
+        }
+      }
+    }
+    if (lastError) {
+      throw new Error(
+        `Anthropic API network error after 3 attempts: ${lastError.message}`,
+      )
+    }
 
     console.log('[ANTHROPIC-PROVIDER] 📡 Response received:', {
       status: response.status,
@@ -394,20 +419,45 @@ export class AnthropicProvider implements LLMProviderInterface {
       }
     }
 
-    const response = await fetch(
-      `${config?.baseUrl || this.baseUrl}/messages`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': config?.apiKey || '',
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify(requestBody),
-        signal: config?.signal,
+    const endpoint = `${config?.baseUrl || this.baseUrl}/messages`
+    const fetchOptions: RequestInit = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': config?.apiKey || '',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
       },
-    )
+      body: JSON.stringify(requestBody),
+      signal: config?.signal,
+    }
+
+    // Retry fetch up to 2 times on network failures (TypeError: Failed to fetch)
+    let response: Response
+    let lastError: Error | null = null
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        response = await fetch(endpoint, fetchOptions)
+        lastError = null
+        break
+      } catch (error) {
+        lastError = error as Error
+        // Only retry on network errors, not abort signals
+        if (config?.signal?.aborted) throw error
+        if (attempt < 2) {
+          console.warn(
+            `[Anthropic] Fetch attempt ${attempt + 1} failed, retrying...`,
+            (error as Error).message,
+          )
+          await new Promise((r) => setTimeout(r, 500 * (attempt + 1)))
+        }
+      }
+    }
+    if (lastError) {
+      throw new Error(
+        `Anthropic API network error after 3 attempts: ${lastError.message}`,
+      )
+    }
 
     if (!response.ok) {
       let errorMessage = response.statusText

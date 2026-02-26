@@ -548,283 +548,135 @@ self.addEventListener('fetch', (event) => {
 
   const isLLMRequest = llmHosts.some((host) => url.hostname.includes(host))
 
-  if (!isLLMRequest) {
-    // Skip service worker entirely for localhost development assets to prevent conflicts
-    const isLocalhost =
-      url.hostname === 'localhost' || url.hostname === '127.0.0.1'
-    const isDevAsset =
-      url.pathname.includes('/@vite/') ||
-      url.pathname.includes('/node_modules/') ||
-      url.pathname.includes('/.vite/') ||
-      url.searchParams.has('v') // Vite version parameter
-    const isAppAsset =
-      url.pathname.endsWith('.js') ||
-      url.pathname.endsWith('.css') ||
-      url.pathname.endsWith('.ts') ||
-      url.pathname.endsWith('.tsx')
-
-    if (isLocalhost && (isDevAsset || isAppAsset)) {
-      // Don't intercept localhost development assets at all
-      return
-    }
-
-    if (isLocalhost) {
-      return
-    }
-
-    // Don't intercept cross-origin requests that aren't LLM or HuggingFace APIs
-    // (those are handled above). This prevents the SW from modifying external
-    // API calls like OAuth token exchanges (e.g. Vertex AI service account auth).
-    const isSameOrigin = url.origin === self.location.origin
-    if (!isSameOrigin) {
-      return
-    }
-
-    // Skip caching for model registry - always fetch fresh
-    if (url.pathname === '/models/model-registry.json') {
-      return
-    }
-
-    // Determine caching strategy based on file type
-    const isHTMLRequest =
-      url.pathname.endsWith('.html') ||
-      url.pathname.endsWith('/') ||
-      !url.pathname.includes('.')
-
-    // JSON files in /schemas/ and extensions manifest should use network-first to ensure fresh data
-    const isSchemaJSON =
-      url.pathname.startsWith('/schemas/') && url.pathname.endsWith('.json')
-    const isExtensionsManifest = url.pathname === '/extensions/manifest.json'
-
-    if (isHTMLRequest || isSchemaJSON || isExtensionsManifest) {
-      // Network-first for HTML and schema JSON to ensure users get latest version
-      // Normalize URL to prevent mixed content errors from trailing-slash
-      // redirects behind TLS-terminating proxies (server runs on HTTP
-      // and constructs Location header with http:// protocol)
-      let fetchRequest = event.request
-      if (isHTMLRequest) {
-        const normalizedUrl = new URL(event.request.url)
-        let modified = false
-
-        // Upgrade insecure requests
-        if (normalizedUrl.protocol === 'http:') {
-          normalizedUrl.protocol = 'https:'
-          modified = true
-        }
-
-        // Add trailing slash to directory-like paths to prevent server redirects
-        if (
-          !normalizedUrl.pathname.endsWith('/') &&
-          !normalizedUrl.pathname.includes('.')
-        ) {
-          normalizedUrl.pathname += '/'
-          modified = true
-        }
-
-        if (modified) {
-          fetchRequest = new Request(normalizedUrl.toString(), event.request)
-        }
-      }
-
-      event.respondWith(
-        fetch(fetchRequest)
-          .then((response) => {
-            // Cache the new version
-            if (response.ok) {
-              const responseToCache = response.clone()
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, responseToCache)
-              })
-            }
-            return response
-          })
-          .catch(() => {
-            // Fallback to cache if offline
-            return caches.match(event.request)
-          }),
-      )
-      return
-    }
-
-    // For assets (JS, CSS, images), use stale-while-revalidate
-    event.respondWith(
-      caches.match(event.request).then((cachedResponse) => {
-        const fetchPromise = fetch(event.request)
-          .then((networkResponse) => {
-            // Update cache in background
-            if (networkResponse.ok) {
-              const responseToCache = networkResponse.clone()
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, responseToCache)
-              })
-            }
-            return networkResponse
-          })
-          .catch(() => {
-            // If network fails, we already have cached version
-            return cachedResponse
-          })
-
-        // Return cached version immediately, but update cache in background
-        return cachedResponse || fetchPromise
-      }),
+  // Don't intercept LLM API calls - let them pass through to the browser's
+  // native fetch which handles CORS preflight correctly. The SW re-fetching
+  // cross-origin requests can interfere with CORS and cause net::ERR_FAILED.
+  // LLM request tracking is already handled by TraceService in the app code.
+  if (isLLMRequest) {
+    console.debug(
+      `[SW-LLM] ⏭️ Passing through LLM request to ${url.hostname} (native fetch handles CORS)`,
     )
     return
   }
 
-  // Generate unique request ID for tracking
-  const requestId = `fetch_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
-  const startTime = Date.now()
+  // Skip service worker entirely for localhost development assets to prevent conflicts
+  const isLocalhost =
+    url.hostname === 'localhost' || url.hostname === '127.0.0.1'
+  const isDevAsset =
+    url.pathname.includes('/@vite/') ||
+    url.pathname.includes('/node_modules/') ||
+    url.pathname.includes('/.vite/') ||
+    url.searchParams.has('v') // Vite version parameter
+  const isAppAsset =
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.css') ||
+    url.pathname.endsWith('.ts') ||
+    url.pathname.endsWith('.tsx')
 
-  console.debug(
-    `[SW-LLM] 🎯 Intercepted LLM request: ${requestId} to ${url.hostname}`,
-  )
+  if (isLocalhost && (isDevAsset || isAppAsset)) {
+    // Don't intercept localhost development assets at all
+    return
+  }
 
-  // Track this request
-  activeRequests.set(requestId, {
-    provider: url.hostname,
-    endpoint: url.href,
-    startTime,
-  })
-  requestStats.totalRequests++
-  broadcastProgressUpdate()
+  if (isLocalhost) {
+    return
+  }
 
-  // For LLM APIs, always use network-first strategy
+  // Don't intercept cross-origin requests that aren't LLM or HuggingFace APIs
+  // (those are handled above). This prevents the SW from modifying external
+  // API calls like OAuth token exchanges (e.g. Vertex AI service account auth).
+  const isSameOrigin = url.origin === self.location.origin
+  if (!isSameOrigin) {
+    return
+  }
+
+  // Skip caching for model registry - always fetch fresh
+  if (url.pathname === '/models/model-registry.json') {
+    return
+  }
+
+  // Determine caching strategy based on file type
+  const isHTMLRequest =
+    url.pathname.endsWith('.html') ||
+    url.pathname.endsWith('/') ||
+    !url.pathname.includes('.')
+
+  // JSON files in /schemas/ and extensions manifest should use network-first to ensure fresh data
+  const isSchemaJSON =
+    url.pathname.startsWith('/schemas/') && url.pathname.endsWith('.json')
+  const isExtensionsManifest = url.pathname === '/extensions/manifest.json'
+
+  if (isHTMLRequest || isSchemaJSON || isExtensionsManifest) {
+    // Network-first for HTML and schema JSON to ensure users get latest version
+    // Normalize URL to prevent mixed content errors from trailing-slash
+    // redirects behind TLS-terminating proxies (server runs on HTTP
+    // and constructs Location header with http:// protocol)
+    let fetchRequest = event.request
+    if (isHTMLRequest) {
+      const normalizedUrl = new URL(event.request.url)
+      let modified = false
+
+      // Upgrade insecure requests
+      if (normalizedUrl.protocol === 'http:') {
+        normalizedUrl.protocol = 'https:'
+        modified = true
+      }
+
+      // Add trailing slash to directory-like paths to prevent server redirects
+      if (
+        !normalizedUrl.pathname.endsWith('/') &&
+        !normalizedUrl.pathname.includes('.')
+      ) {
+        normalizedUrl.pathname += '/'
+        modified = true
+      }
+
+      if (modified) {
+        fetchRequest = new Request(normalizedUrl.toString(), event.request)
+      }
+    }
+
+    event.respondWith(
+      fetch(fetchRequest)
+        .then((response) => {
+          // Cache the new version
+          if (response.ok) {
+            const responseToCache = response.clone()
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache)
+            })
+          }
+          return response
+        })
+        .catch(() => {
+          // Fallback to cache if offline
+          return caches.match(event.request)
+        }),
+    )
+    return
+  }
+
+  // For assets (JS, CSS, images), use stale-while-revalidate
   event.respondWith(
-    fetch(event.request)
-      .then(async (response) => {
-        // Calculate response time and update stats
-        const responseTime = Date.now() - startTime
-        updateAverageResponseTime(responseTime)
-
-        console.log(
-          `[SW] LLM request completed: ${requestId} (${responseTime}ms)`,
-        )
-
-        // Track with Langfuse if enabled (for fetch-based requests)
-        console.debug('[SW-TRACK] 🔍 Checking if should track request:', {
-          method: event.request.method,
-          responseOk: response.ok,
-          responseType: response.type,
-          langfuseEnabled: !!langfuseConfig?.enabled,
+    caches.match(event.request).then((cachedResponse) => {
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
+          // Update cache in background
+          if (networkResponse.ok) {
+            const responseToCache = networkResponse.clone()
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache)
+            })
+          }
+          return networkResponse
+        })
+        .catch(() => {
+          // If network fails, we already have cached version
+          return cachedResponse
         })
 
-        if (event.request.method === 'POST' && response.ok) {
-          console.debug(
-            '[SW-TRACK] ✅ POST request with OK response, attempting tracking...',
-          )
-          try {
-            const responseClone = response.clone()
-            console.debug('[SW-TRACK] 📋 Response details:', {
-              type: responseClone.type,
-              status: responseClone.status,
-              headers: Object.fromEntries(responseClone.headers.entries()),
-            })
-
-            if (responseClone.type !== 'cors') {
-              console.log('[SW-TRACK] 🔓 Non-CORS response, can read body')
-              const responseData = await responseClone.json()
-              await trackLLMRequest(
-                {
-                  provider: url.hostname,
-                  endpoint: url.href,
-                  model: 'unknown', // Can't easily extract model from fetch request
-                  messages: [], // Can't easily extract messages from fetch request
-                },
-                {
-                  success: true,
-                  data: responseData,
-                  status: response.status,
-                  usage: responseData.usage,
-                },
-                responseTime,
-              )
-            } else {
-              console.debug(
-                '[SW-TRACK] 🔒 CORS response, cannot read body - tracking with limited data',
-              )
-              // Track anyway with limited data
-              await trackLLMRequest(
-                {
-                  provider: url.hostname,
-                  endpoint: url.href,
-                  model: 'unknown',
-                  messages: [],
-                },
-                {
-                  success: true,
-                  data: { message: 'CORS response - body not readable' },
-                  status: response.status,
-                  usage: null,
-                },
-                responseTime,
-              )
-            }
-          } catch (trackingError) {
-            console.warn(
-              '[SW-TRACK] ❌ Failed to track fetch request with Langfuse:',
-              trackingError,
-            )
-          }
-        } else {
-          console.warn('[SW-TRACK] ⏭️ Skipping tracking:', {
-            reason:
-              event.request.method !== 'POST' ? 'not POST' : 'response not OK',
-          })
-        }
-
-        // Remove from active requests and update stats
-        activeRequests.delete(requestId)
-        requestStats.completedRequests++
-        broadcastProgressUpdate()
-
-        // Don't cache error responses
-        if (!response.ok) {
-          return response
-        }
-
-        // Only cache GET requests (Cache API doesn't support other methods)
-        if (event.request.method === 'GET') {
-          const responseToCache = response.clone()
-          caches.open(API_CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache)
-          })
-        }
-
-        return response
-      })
-      .catch(async (error) => {
-        console.warn(`[SW] LLM request failed: ${requestId} -`, error.message)
-
-        // Calculate response time for error case
-        const responseTime = Date.now() - startTime
-
-        // Track error with Langfuse if enabled
-        await trackLLMRequest(
-          {
-            provider: url.hostname,
-            endpoint: url.href,
-            model: 'unknown',
-            messages: [],
-          },
-          { success: false, error: error.message },
-          responseTime,
-        )
-
-        // Remove from active requests on error
-        activeRequests.delete(requestId)
-        requestStats.completedRequests++
-        broadcastProgressUpdate()
-
-        // If network fails, try cache
-        const cachedResponse = await caches.match(event.request)
-        if (cachedResponse) {
-          console.debug(`[SW] Using cached response for ${requestId}`)
-          return cachedResponse
-        }
-        // Re-throw error if no cached response available
-        throw error
-      }),
+      // Return cached version immediately, but update cache in background
+      return cachedResponse || fetchPromise
+    }),
   )
-  return
 })

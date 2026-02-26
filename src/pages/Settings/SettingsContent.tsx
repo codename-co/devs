@@ -309,7 +309,7 @@ const SettingsContentInner = () => {
       </div>
 
       {/* Left sidebar menu (hidden on narrow screens) */}
-      <nav className="hidden md:block max-w-48 shrink-0 border-e border-default-200 overflow-x-hidden overflow-y-auto bg-default-50">
+      <nav className="hidden md:block max-w-48 shrink-0 border-e border-default-200 overflow-x-hidden overflow-y-auto bg-[var(--devs-bg)] dark:bg-default-50">
         <h2 className="text-lg font-medium px-4 py-4">{t('Settings')}</h2>
         <div className="flex flex-col gap-4 px-2 pb-4">
           {groups.map((group) => {
