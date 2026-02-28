@@ -12,4 +12,5 @@ export const en = [
   'requirements',
   'Filter by status',
   'In Progress',
+  'Sub-Tasks',
 ] as const

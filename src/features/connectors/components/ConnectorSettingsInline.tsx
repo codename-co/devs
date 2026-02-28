@@ -30,6 +30,7 @@ import { ProviderRegistry } from '../provider-registry'
 import { getProvider } from '../providers/apps'
 import {
   AuthenticationError,
+  TokenDecryptionError,
   storeEncryptionMetadata,
 } from '../connector-provider'
 import { SecureStorage } from '@/lib/crypto'
@@ -196,7 +197,10 @@ export function ConnectorSettingsInline({
 
           setFolders(folderNodes)
         } catch (fetchErr) {
-          if (fetchErr instanceof AuthenticationError) {
+          if (
+            fetchErr instanceof AuthenticationError ||
+            fetchErr instanceof TokenDecryptionError
+          ) {
             try {
               currentConnector = await refreshAndUpdateToken(
                 providerInstance,

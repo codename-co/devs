@@ -163,7 +163,7 @@ export function MeetingControls({
         <Button
           color="danger"
           variant="flat"
-          startContent={<Icon name="X" size="sm" />}
+          startContent={<Icon name="Xmark" size="sm" />}
           onPress={onLeave}
         >
           Leave Meeting

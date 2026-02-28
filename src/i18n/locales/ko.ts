@@ -31,6 +31,7 @@ export const ko: I18n = {
   RECENT: '최근',
   'Recent activity': '최근 활동',
   Marketplace: '마켓플레이스',
+  Library: '라이브러리',
   Skills: '스킬',
   Verified: '인증됨',
   'Start a conversation': '대화 시작',
@@ -309,7 +310,17 @@ export const ko: I18n = {
   'Task Not Found': '작업을 찾을 수 없음',
   'The requested task could not be found.': '요청한 작업을 찾을 수 없습니다.',
   'Task Steps': '작업 단계',
+  Steps: '단계',
+  'Agents working…': '에이전트 작업 중…',
+  'No conversation messages yet.': '아직 대화 메시지가 없습니다.',
+  'Copied to clipboard': '클립보드에 복사됨',
+  Conversation: '대화',
+  'No messages yet. The task is being processed…':
+    '아직 메시지가 없습니다. 작업을 처리 중입니다…',
   'Validation Criteria': '검증 기준',
+  'Delete task': '작업 삭제',
+  'Are you sure you want to delete this task? This action cannot be undone.':
+    '이 작업을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
 
   // SubTaskTree Component
   'Task Hierarchy': '작업 계층 구조',

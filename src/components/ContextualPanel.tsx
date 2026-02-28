@@ -60,7 +60,7 @@ export const ContextualPanel: React.FC = memo(() => {
         className={clsx('h-full', isCollapsed && 'fixed end-0')}
         data-state={isCollapsed ? 'collapsed' : 'expanded'}
       >
-        <CollapsedPanel className="panel-collapsed" />
+        {/* <CollapsedPanel className="panel-collapsed" /> */}
         <ExpandedPanel className="panel-expanded" />
         {!isCollapsed && isMobile && <BackDrop />}
 
@@ -89,34 +89,34 @@ export const ContextualPanel: React.FC = memo(() => {
 })
 ContextualPanel.displayName = 'ContextualPanel'
 
-const CollapsedPanel = ({ className }: { className?: string }) => {
-  const toggleCollapsed = userSettings((s) => s.toggleContextualPanel)
-  const { t } = useI18n()
+// const CollapsedPanel = ({ className }: { className?: string }) => {
+//   const toggleCollapsed = userSettings((s) => s.toggleContextualPanel)
+//   const { t } = useI18n()
 
-  return (
-    <div
-      className={`w-18 mt-18 p-4 h-full z-50 flex flex-col transition-all duration-200 ${className} pointer-events-none`}
-    >
-      <div className="flex flex-col items-center">
-        <Tooltip content={t('Expand sidebar')} placement="left">
-          <Button
-            data-testid="panel-expand-button"
-            isIconOnly
-            variant="light"
-            onPress={toggleCollapsed}
-            className="md:me-4 backdrop-blur-xs backdrop-brightness-120 pointer-events-auto"
-            aria-label={t('Expand sidebar')}
-          >
-            <Icon
-              name="SidebarExpand"
-              className="opacity-40 dark:opacity-60 rotate-180"
-            />
-          </Button>
-        </Tooltip>
-      </div>
-    </div>
-  )
-}
+//   return (
+//     <div
+//       className={`w-18 mt-18 p-4 h-full z-50 flex flex-col transition-all duration-200 ${className} pointer-events-none`}
+//     >
+//       <div className="flex flex-col items-center">
+//         <Tooltip content={t('Expand sidebar')} placement="left">
+//           <Button
+//             data-testid="panel-expand-button"
+//             isIconOnly
+//             variant="light"
+//             onPress={toggleCollapsed}
+//             className="md:me-4 backdrop-blur-xs backdrop-brightness-120 pointer-events-auto"
+//             aria-label={t('Expand sidebar')}
+//           >
+//             <Icon
+//               name="SidebarExpand"
+//               className="opacity-40 dark:opacity-60 rotate-180"
+//             />
+//           </Button>
+//         </Tooltip>
+//       </div>
+//     </div>
+//   )
+// }
 
 const ExpandedPanel = ({ className }: { className?: string }) => {
   const { blocks } = useContextualPanelStore()

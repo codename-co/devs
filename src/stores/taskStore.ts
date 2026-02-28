@@ -197,8 +197,33 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         throw new Error('Task not found')
       }
 
+      // When a task is being completed, auto-satisfy any pending requirements
+      let requirementUpdates: Partial<Task> = {}
+      if (
+        updates.status === 'completed' &&
+        task.status !== 'completed' &&
+        task.requirements?.length
+      ) {
+        const now = new Date().toISOString()
+        requirementUpdates = {
+          requirements: task.requirements.map((req) =>
+            req.status === 'satisfied' || req.satisfiedAt
+              ? req
+              : {
+                  ...req,
+                  status: 'satisfied' as const,
+                  satisfiedAt: now,
+                  validatedAt: now,
+                  validationResult:
+                    req.validationResult || 'Auto-satisfied on task completion',
+                },
+          ),
+        }
+      }
+
       const updatedTask: Task = {
         ...task,
+        ...requirementUpdates,
         ...updates,
         id,
         updatedAt: new Date().toISOString(),

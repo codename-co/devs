@@ -468,6 +468,7 @@ export interface TaskPlan {
     | 'hierarchical'
     | 'parallel_isolated' // Manus Wide Research pattern
     | 'iterative_deep' // Perplexity Research Mode pattern
+    | 'agent_team' // Agent Teams: shared task list + inter-agent messaging
   estimatedDuration: number
   requiredSkills: string[]
   agentAssignments: AgentAssignment[]
@@ -557,6 +558,8 @@ export interface IsolatedExecutionConfig {
     content: string
     toolCall?: string
   }) => void
+  /** Callback for streaming content chunks (called with accumulated content). */
+  onContent?: (content: string) => void
 }
 
 export interface Artifact {

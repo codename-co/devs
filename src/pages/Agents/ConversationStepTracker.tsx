@@ -8,9 +8,9 @@
  */
 
 import { memo, useMemo } from 'react'
-import { Accordion, AccordionItem, Button, Chip, Spinner } from '@heroui/react'
+import { AccordionItem, Button, Chip, Spinner } from '@heroui/react'
 import { Link, useLocation } from 'react-router-dom'
-import { Icon } from '@/components'
+import { AccordionTracker, Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import type {
   ResponseStatus,
@@ -444,21 +444,7 @@ export const ConversationStepTracker = memo(
               )}
             </div>
 
-            <Accordion
-              isCompact
-              fullWidth={false}
-              showDivider={false}
-              variant="light"
-              className="px-0 gap-0"
-              selectionMode="multiple"
-              itemClasses={{
-                title: 'text-sm font-medium',
-                trigger:
-                  'py-1.5 px-2 rounded-md hover:bg-default-100 data-[hover=true]:bg-default-100',
-                content: 'mx-2 px-2 pb-2 pt-0 border-s border-default-200',
-                indicator: 'text-sm text-default-600 -rotate-180',
-              }}
-            >
+            <AccordionTracker>
               {finishedSteps.map((step) => {
                 const label = step.title || t(step.i18nKey as any, step.vars)
                 const hasDetails =
@@ -501,7 +487,7 @@ export const ConversationStepTracker = memo(
                   </AccordionItem>
                 )
               })}
-            </Accordion>
+            </AccordionTracker>
           </>
         )}
 

@@ -1786,6 +1786,15 @@ export const AgentRunPage = () => {
         href: url(`/agents/start/${selectedAgent?.slug}`),
         icon: 'Plus',
       },
+      moreActions: [
+        {
+          label: t('View details'),
+          onClick: () => {
+            userSettings.getState().toggleContextualPanel()
+          },
+          icon: 'InfoCircle',
+        },
+      ],
     }),
     [
       selectedAgent?.icon,
@@ -1892,6 +1901,8 @@ export const AgentRunPage = () => {
         const pendingAgentData = sessionStorage.getItem('pendingAgent')
         const pendingFilesData = sessionStorage.getItem('pendingFiles')
         const pendingSkillsData = sessionStorage.getItem('pendingSkills')
+        const pendingConnectorsData =
+          sessionStorage.getItem('pendingConnectors')
 
         if (pendingPrompt && pendingAgentData) {
           const pendingAgent = JSON.parse(pendingAgentData)
@@ -1901,12 +1912,16 @@ export const AgentRunPage = () => {
           const pendingSkills = pendingSkillsData
             ? JSON.parse(pendingSkillsData)
             : undefined
+          const pendingConnectors = pendingConnectorsData
+            ? JSON.parse(pendingConnectorsData)
+            : undefined
 
           // Clear the session storage
           sessionStorage.removeItem('pendingPrompt')
           sessionStorage.removeItem('pendingAgent')
           sessionStorage.removeItem('pendingFiles')
           sessionStorage.removeItem('pendingSkills')
+          sessionStorage.removeItem('pendingConnectors')
 
           // Set the prompt and auto-submit if the agent matches
           if (pendingAgent.id === agent.id) {
@@ -1919,6 +1934,7 @@ export const AgentRunPage = () => {
                 agent,
                 pendingFiles,
                 pendingSkills,
+                pendingConnectors,
               )
             }, 100)
           }
@@ -2120,6 +2136,11 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
         data: string
       }> = [],
       skills?: Array<{ name: string; skillMdContent: string }>,
+      connectors?: Array<{
+        name: string
+        provider: string
+        accountEmail?: string
+      }>,
     ) => {
       if (isSending) return
 
@@ -2144,6 +2165,7 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
         clearResponseAfterSubmit: true,
         attachments: files,
         activatedSkills: skills,
+        activatedConnectors: connectors,
         lang,
         t,
         signal: controller.signal,
@@ -2210,6 +2232,12 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
       mentionedAgent?: Agent,
       _mentionedMethodology?: unknown,
       mentionedSkills?: InstalledSkill[],
+      mentionedConnectors?: Array<{
+        id: string
+        name: string
+        provider: string
+        accountEmail?: string
+      }>,
     ) => {
       const promptToUse = cleanedPrompt ?? prompt
       // Use mentioned agent if provided, otherwise fall back to selected agent
@@ -2249,6 +2277,13 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
         skillMdContent: skill.skillMdContent || skill.description,
       }))
 
+      // Build activated connectors from /mentions
+      const activatedConnectors = mentionedConnectors?.map((c) => ({
+        name: c.name,
+        provider: c.provider,
+        accountEmail: c.accountEmail,
+      }))
+
       const controller = new AbortController()
       abortControllerRef.current = controller
 
@@ -2261,6 +2296,7 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
         clearResponseAfterSubmit: true,
         attachments: filesData,
         activatedSkills,
+        activatedConnectors,
         lang,
         t,
         signal: controller.signal,

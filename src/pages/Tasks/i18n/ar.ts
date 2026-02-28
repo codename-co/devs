@@ -16,4 +16,5 @@ export const ar: I18n = {
   requirements: 'متطلبات',
   'Filter by status': 'تصفية حسب الحالة',
   'In Progress': 'قيد التنفيذ',
+  'Sub-Tasks': 'المهام الفرعية',
 } as const

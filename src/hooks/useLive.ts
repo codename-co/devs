@@ -33,8 +33,10 @@ import {
 import { loadBuiltInAgents } from '@/stores/agentStore'
 import {
   decryptFields,
+  decryptAttachments,
   KNOWLEDGE_ENCRYPTED_FIELDS,
   CONVERSATION_ENCRYPTED_FIELDS,
+  MESSAGE_ENCRYPTED_FIELDS,
   MEMORY_ENCRYPTED_FIELDS,
 } from '@/lib/crypto/content-encryption'
 // Re-export agent hooks from agentStore (they handle built-in agent cache)
@@ -85,6 +87,52 @@ export function useDecryptedConversations(): Conversation[] {
             ...CONVERSATION_ENCRYPTED_FIELDS,
           ]) as Promise<Conversation>,
       ),
+    ).then((result) => {
+      if (!cancelled) setDecrypted(result)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [rawConversations])
+
+  return decrypted
+}
+
+/**
+ * Subscribe to all conversations with full decryption (metadata AND message content).
+ * More expensive than useDecryptedConversations — use only when message content is needed.
+ */
+export function useFullyDecryptedConversations(): Conversation[] {
+  const rawConversations = useLiveMap(conversations)
+  const [decrypted, setDecrypted] = useState<Conversation[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+    Promise.all(
+      rawConversations.map(async (conv) => {
+        // Decrypt message-level fields (content, pinnedDescription, attachments)
+        const decryptedMessages = await Promise.all(
+          conv.messages.map(async (msg) => {
+            const decryptedMsg = (await decryptFields(msg, [
+              ...MESSAGE_ENCRYPTED_FIELDS,
+            ])) as import('@/types').Message
+            if (msg.attachments && msg.attachments.length > 0) {
+              decryptedMsg.attachments = await decryptAttachments(
+                msg.attachments,
+              )
+            }
+            return decryptedMsg
+          }),
+        )
+        const result = {
+          ...conv,
+          messages: decryptedMessages as import('@/types').Message[],
+        }
+        // Decrypt conversation-level fields (summary, title)
+        return decryptFields(result, [
+          ...CONVERSATION_ENCRYPTED_FIELDS,
+        ]) as Promise<Conversation>
+      }),
     ).then((result) => {
       if (!cancelled) setDecrypted(result)
     })

@@ -244,7 +244,31 @@ export class SecureStorage {
       // Migration path: re-encrypt all credentials with new non-extractable key
       await this.migrateFromLegacyMasterKey(legacyMasterKey, db)
     } else {
-      // Fresh installation: generate new non-extractable key
+      // Check if encrypted data already exists — if so, the key was lost
+      // (e.g. IndexedDB cryptoKeys store was cleared/corrupted while Yjs data survived)
+      try {
+        const { connectors: connectorsYjs, credentials: credentialsYjs } =
+          await import('@/lib/yjs')
+        const hasEncryptedConnectors = Array.from(connectorsYjs.values()).some(
+          (c: any) => c.encryptedAccessToken || c.encryptedRefreshToken,
+        )
+        const hasEncryptedCredentials = Array.from(
+          credentialsYjs.values(),
+        ).some((c: any) => c.encryptedApiKey)
+
+        if (hasEncryptedConnectors || hasEncryptedCredentials) {
+          console.error(
+            '[SecureStorage] ⚠️ Encryption key not found but encrypted data exists! ' +
+              'The master CryptoKey was lost (IndexedDB cryptoKeys store may have been cleared). ' +
+              'A new key will be generated but existing encrypted tokens/credentials will be unreadable. ' +
+              'Connectors will need to be reconnected and API keys re-entered.',
+          )
+        }
+      } catch {
+        // Yjs not available yet, skip check
+      }
+
+      // Generate new non-extractable key (fresh install or key recovery)
       await this.generateAndStoreNewKey(db, false)
     }
   }

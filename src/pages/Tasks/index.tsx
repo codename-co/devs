@@ -22,8 +22,8 @@ export const TasksPage = () => {
   const header: HeaderProps = {
     color: 'bg-secondary-50',
     icon: {
-      name: 'TriangleFlagTwoStripes',
-      color: 'text-secondary-300',
+      name: 'PcCheck',
+      color: 'text-secondary-300 dark:text-secondary-600',
     },
     title: (
       <>
@@ -94,7 +94,7 @@ export const TasksPage = () => {
     }
   }
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date | string) => {
     const now = new Date()
     const taskDate = new Date(date)
     const diffMs = now.getTime() - taskDate.getTime()

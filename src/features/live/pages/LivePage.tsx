@@ -479,7 +479,7 @@ export const LivePage = () => {
                   onPress={() => setIsGenerating(false)}
                   className="min-w-16 min-h-16"
                 >
-                  <Icon name="X" size="2xl" />
+                  <Icon name="Xmark" size="2xl" />
                 </Button>
               </Tooltip>
             )}

@@ -32,6 +32,7 @@ export const ar: I18n = {
   RECENT: 'الأخيرة',
   'Recent activity': 'النشاط الأخير',
   Marketplace: 'المتجر',
+  Library: 'المكتبة',
   Skills: 'المهارات',
   Verified: 'موثق',
   'Start a conversation': 'بدء محادثة',
@@ -311,7 +312,17 @@ export const ar: I18n = {
   'The requested task could not be found.':
     'لم يتم العثور على المهمة المطلوبة.',
   'Task Steps': 'خطوات المهمة',
+  Steps: 'خطوات',
+  'Agents working…': 'الوكلاء يعملون…',
+  'No conversation messages yet.': 'لا توجد رسائل محادثة بعد.',
+  'Copied to clipboard': 'تم النسخ إلى الحافظة',
+  Conversation: 'المحادثة',
+  'No messages yet. The task is being processed…':
+    'لا توجد رسائل بعد. يتم معالجة المهمة…',
   'Validation Criteria': 'معايير التحقق',
+  'Delete task': 'حذف المهمة',
+  'Are you sure you want to delete this task? This action cannot be undone.':
+    'هل أنت متأكد من حذف هذه المهمة؟ لا يمكن التراجع عن هذا الإجراء.',
 
   // SubTaskTree Component
   'Task Hierarchy': 'التسلسل الهرمي للمهام',

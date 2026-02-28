@@ -305,15 +305,15 @@ export abstract class BaseAppConnectorProvider
         salt,
       )
     } catch (error) {
-      // Treat decryption failure as "no refresh token available" rather than
-      // throwing — this allows the caller to fall back gracefully (e.g. ask
-      // the user to reconnect) instead of surfacing a cryptic error.
-      // This can happen when the CryptoKey was regenerated, the DB was
-      // restored from backup, or the token came from another device.
+      // Re-throw decryption errors so callers can distinguish "no token"
+      // from "token exists but can't be decrypted" (e.g. CryptoKey changed).
+      // This matches the JSDoc contract: @throws TokenDecryptionError.
       console.warn(
         `[ConnectorProvider] Refresh token for connector ${connector.id} cannot be decrypted (encryption key may have changed). Reconnection required.`,
       )
-      return null
+      throw new TokenDecryptionError(
+        `Refresh token for ${connector.provider} cannot be decrypted. The encryption key may have changed. Please reconnect.`,
+      )
     }
   }
 
@@ -342,7 +342,44 @@ export abstract class BaseAppConnectorProvider
     url: string,
     options: RequestInit = {},
   ): Promise<Response> {
-    const token = await this.getDecryptedToken(connector)
+    let token: string
+    try {
+      token = await this.getDecryptedToken(connector)
+    } catch (error) {
+      if (
+        error instanceof TokenDecryptionError ||
+        error instanceof MissingEncryptionMetadataError
+      ) {
+        // CryptoKey changed (browser data cleared, different device, etc.)
+        // Mark connector as expired and prompt re-authentication
+        if (import.meta.env.DEV) {
+          console.warn(
+            `[ConnectorProvider] Token decryption failed for ${connector.provider}, marking as expired:`,
+            error.message,
+          )
+        }
+
+        const notifyWarning = await getNotifyWarning()
+        notifyWarning({
+          title: `${connector.provider}: Reconnection required`,
+          description:
+            'Your credentials could not be decrypted (encryption key may have changed). Please reconnect.',
+          actionUrl: `/knowledge/connectors#connector/${connector.id}`,
+        })
+
+        const store = await getConnectorStore()
+        await store.updateConnector(connector.id, {
+          status: 'expired',
+          errorMessage: 'Credentials could not be decrypted. Please reconnect.',
+        })
+
+        throw new AuthenticationError(
+          'Credentials could not be decrypted. The encryption key may have changed (e.g. after a browser data reset or on a different device). Please reconnect.',
+          401,
+        )
+      }
+      throw error
+    }
 
     const headers = new Headers(options.headers)
     headers.set('Authorization', `Bearer ${token}`)
@@ -476,11 +513,13 @@ export abstract class BaseAppConnectorProvider
         )
       }
 
+      const isKeyMismatch = error instanceof TokenDecryptionError
       const notifyWarning = await getNotifyWarning()
       notifyWarning({
-        title: `${connector.provider}: Token refresh failed`,
-        description:
-          'Could not refresh your access token. Please reconnect to continue.',
+        title: `${connector.provider}: ${isKeyMismatch ? 'Reconnection required' : 'Token refresh failed'}`,
+        description: isKeyMismatch
+          ? 'Your credentials could not be decrypted (encryption key may have changed). Please disconnect and reconnect.'
+          : 'Could not refresh your access token. Please reconnect to continue.',
         actionUrl: `/knowledge/connectors#connector/${connector.id}`,
       })
 
@@ -488,8 +527,9 @@ export abstract class BaseAppConnectorProvider
       const store = await getConnectorStore()
       await store.updateConnector(connector.id, {
         status: 'expired',
-        errorMessage:
-          'Access token expired and refresh failed. Please reconnect.',
+        errorMessage: isKeyMismatch
+          ? 'Credentials could not be decrypted. Please disconnect and reconnect.'
+          : 'Access token expired and refresh failed. Please reconnect.',
       })
 
       return null

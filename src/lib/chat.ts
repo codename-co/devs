@@ -476,6 +476,12 @@ export interface ChatSubmitOptions {
   }>
   /** Skills explicitly activated by the user via /mention in the prompt */
   activatedSkills?: Array<{ name: string; skillMdContent: string }>
+  /** Connectors explicitly activated by the user via /mention in the prompt */
+  activatedConnectors?: Array<{
+    name: string
+    provider: string
+    accountEmail?: string
+  }>
   lang: Lang
   t: any
   /** Callback for response updates - receives either content or status updates */
@@ -502,6 +508,7 @@ export const submitChat = async (
     clearResponseAfterSubmit = false,
     attachments = [],
     activatedSkills = [],
+    activatedConnectors = [],
     lang,
     t,
     onResponseUpdate,
@@ -574,47 +581,47 @@ export const submitChat = async (
 
         const result = await WorkflowOrchestrator.orchestrateTask(prompt)
 
-        const orchestrationReport = [
-          `# Task Orchestration Complete\n`,
-          `✅ **Status**: ${result.success ? 'Success' : 'Failed'}`,
-          `🆔 **Workflow ID**: ${result.workflowId}`,
-          `📋 **Main Task**: ${result.mainTaskId}`,
-          result.subTaskIds.length > 0
-            ? `🔧 **Sub-tasks**: ${result.subTaskIds.length} tasks`
-            : '',
-          `📄 **Artifacts Generated**: ${result.artifacts.length}\n`,
-          result.artifacts.length > 0
-            ? [
-                `## Generated Artifacts\n`,
-                ...result.artifacts.map(
-                  (artifact) =>
-                    `### ${artifact.title}\n**Type**: ${artifact.type} | **Status**: ${artifact.status}\n**Description**: ${artifact.description}\n\n\`\`\`${artifact.format}\n${artifact.content}\n\`\`\``,
-                ),
-              ].join('\n')
-            : '',
-          result.errors?.length
-            ? [
-                `## Issues Encountered\n`,
-                ...result.errors.map((error) => `⚠️ ${error}`),
-              ].join('\n')
-            : '',
-        ]
-          .filter(Boolean)
-          .join('\n')
+        // const orchestrationReport = [
+        //   `# Task Orchestration Complete\n`,
+        //   `✅ **Status**: ${result.success ? 'Success' : 'Failed'}`,
+        //   `🆔 **Workflow ID**: ${result.workflowId}`,
+        //   `📋 **Main Task**: ${result.mainTaskId}`,
+        //   result.subTaskIds.length > 0
+        //     ? `🔧 **Sub-tasks**: ${result.subTaskIds.length} tasks`
+        //     : '',
+        //   `📄 **Artifacts Generated**: ${result.artifacts.length}\n`,
+        //   result.artifacts.length > 0
+        //     ? [
+        //         `## Generated Artifacts\n`,
+        //         ...result.artifacts.map(
+        //           (artifact) =>
+        //             `### ${artifact.title}\n**Type**: ${artifact.type} | **Status**: ${artifact.status}\n**Description**: ${artifact.description}\n\n\`\`\`${artifact.format}\n${artifact.content}\n\`\`\``,
+        //         ),
+        //       ].join('\n')
+        //     : '',
+        //   result.errors?.length
+        //     ? [
+        //         `## Issues Encountered\n`,
+        //         ...result.errors.map((error) => `⚠️ ${error}`),
+        //       ].join('\n')
+        //     : '',
+        // ]
+        //   .filter(Boolean)
+        //   .join('\n')
 
-        onResponseUpdate({ type: 'content', content: orchestrationReport })
+        // onResponseUpdate({ type: 'content', content: orchestrationReport })
 
         // Finalize orchestration step
         orchestrationSteps[0].status = 'completed'
         orchestrationSteps[0].completedAt = Date.now()
 
         // Save the orchestration report as assistant message
-        await addMessage(conversation.id, {
-          role: 'assistant',
-          content: orchestrationReport,
-          agentId: agent.id,
-          steps: orchestrationSteps,
-        })
+        // await addMessage(conversation.id, {
+        //   role: 'assistant',
+        //   content: orchestrationReport,
+        //   agentId: agent.id,
+        //   steps: orchestrationSteps,
+        // })
 
         // Clear the prompt after successful orchestration
         onPromptClear()
@@ -716,10 +723,36 @@ The user has explicitly requested the following skill(s). Follow their instructi
 ${skillBlocks}`
     }
 
+    // Build active connector context from user-mentioned /connectors
+    let activeConnectorInstructions = ''
+    if (activatedConnectors.length > 0) {
+      const connectorBlocks = activatedConnectors
+        .map((c) => {
+          const parts = [`[ACTIVE_CONNECTOR: ${c.name}]`]
+          parts.push(`Provider: ${c.provider}`)
+          if (c.accountEmail) {
+            parts.push(`Account: ${c.accountEmail}`)
+          }
+          parts.push(
+            `The user has connected their ${c.name} account. Knowledge items synced from this connector are available in the knowledge base. Reference and use this connector's data when relevant to the user's query.`,
+          )
+          parts.push(`[/ACTIVE_CONNECTOR]`)
+          return parts.join('\n')
+        })
+        .join('\n\n')
+      activeConnectorInstructions = `## User-Activated Connectors
+
+The user has explicitly referenced the following connected service(s). Use data from these connectors when relevant.
+
+${connectorBlocks}`
+    }
+
     const instructionParts = [
       enhancedInstructions,
       // Inject user-activated skill instructions
       activeSkillInstructions,
+      // Inject user-activated connector context
+      activeConnectorInstructions,
       // Inject memory context if available
       memoryContext,
       // Inject pinned messages context if available

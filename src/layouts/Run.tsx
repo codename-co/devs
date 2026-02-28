@@ -116,7 +116,7 @@ export default function RunLayout({
               {/* Compact top bar */}
               {header && (
                 <div className="sticky top-0 z-10 border-b border-default-200 rounded-t-xl dark:border-default-100 bg-background/80 backdrop-blur-lg">
-                  <div className="flex items-center gap-2 px-4 h-14 max-w-full">
+                  <div className="flex items-center gap-4 px-4 h-14 max-w-full">
                     {/* Back button */}
                     <Tooltip content={t('Back')}>
                       <Button
@@ -151,16 +151,8 @@ export default function RunLayout({
                                 className="w-7 h-7"
                               />
                             ) : (
-                              <div
-                                className={clsx(
-                                  'flex items-center justify-center w-7 h-7 rounded-full',
-                                  header.icon.color,
-                                )}
-                              >
-                                <Icon
-                                  size="sm"
-                                  name={header.icon.name as any}
-                                />
+                              <div className={clsx(header.icon.color)}>
+                                <Icon size="md" name={header.icon.name} />
                               </div>
                             )}
                           </button>
@@ -173,13 +165,8 @@ export default function RunLayout({
                           className="w-7 h-7 shrink-0"
                         />
                       ) : header.icon.name ? (
-                        <div
-                          className={clsx(
-                            'flex items-center justify-center w-7 h-7 rounded-full shrink-0',
-                            header.icon.color,
-                          )}
-                        >
-                          <Icon size="sm" name={header.icon.name as any} />
+                        <div className={clsx(header.icon.color)}>
+                          <Icon size="md" name={header.icon.name as any} />
                         </div>
                       ) : null)}
 

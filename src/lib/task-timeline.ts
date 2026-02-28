@@ -43,7 +43,7 @@ export const buildTimelineEvents = async (
   events.push({
     id: `task-created-${task.id}`,
     type: 'task_created',
-    timestamp: task.createdAt,
+    timestamp: new Date(task.createdAt),
     title: 'Task Created',
     data: task,
   })
@@ -53,7 +53,7 @@ export const buildTimelineEvents = async (
     events.push({
       id: `methodology-selected-${task.id}`,
       type: 'methodology_selected',
-      timestamp: task.createdAt,
+      timestamp: new Date(task.createdAt),
       title: 'Methodology Selected',
       description: `Using ${task.methodologyId.toUpperCase()} methodology for structured execution`,
       data: { methodologyId: task.methodologyId },
@@ -66,7 +66,7 @@ export const buildTimelineEvents = async (
     events.push({
       id: `task-assigned-${task.id}`,
       type: 'agent_assigned',
-      timestamp: task.assignedAt || task.createdAt, // Use assignedAt if available
+      timestamp: new Date(task.assignedAt || task.createdAt), // Use assignedAt if available
       title: 'Agent Assigned',
       description: `Assigned to ${agent?.name || task.assignedAgentId}`,
       agent: agent || undefined,
@@ -112,7 +112,9 @@ export const buildTimelineEvents = async (
 
   for (const requirement of task.requirements) {
     // Requirement detection event (when first added to task)
-    const detectedTimestamp = (requirement as any).detectedAt || task.createdAt
+    const detectedTimestamp = new Date(
+      (requirement as any).detectedAt || task.createdAt,
+    )
     const detectedKey = `${detectedTimestamp.getTime()}-requirement_detected`
 
     if (!requirementEventsByTimestampAndType.has(detectedKey)) {
@@ -130,7 +132,7 @@ export const buildTimelineEvents = async (
 
     // Requirement validation event (when validated by system)
     if ((requirement as any).validatedAt) {
-      const validatedTimestamp = (requirement as any).validatedAt
+      const validatedTimestamp = new Date((requirement as any).validatedAt)
       const validatedKey = `${validatedTimestamp.getTime()}-requirement_validated`
 
       if (!requirementEventsByTimestampAndType.has(validatedKey)) {
@@ -149,8 +151,9 @@ export const buildTimelineEvents = async (
 
     // Requirement satisfaction event (when completed)
     if (requirement.status === 'satisfied') {
-      const satisfiedTimestamp =
-        (requirement as any).satisfiedAt || task.updatedAt
+      const satisfiedTimestamp = new Date(
+        (requirement as any).satisfiedAt || task.updatedAt,
+      )
       const satisfiedKey = `${satisfiedTimestamp.getTime()}-requirement_satisfied`
 
       if (!requirementEventsByTimestampAndType.has(satisfiedKey)) {
@@ -223,7 +226,9 @@ export const buildTimelineEvents = async (
   if (subTasks.length > 0) {
     // Task branching event (when sub-tasks are first created)
     const earliestSubTask = subTasks.reduce((earliest, subTask) =>
-      subTask.createdAt < earliest.createdAt ? subTask : earliest,
+      new Date(subTask.createdAt) < new Date(earliest.createdAt)
+        ? subTask
+        : earliest,
     )
 
     // If methodology-based, group by phases
@@ -242,7 +247,7 @@ export const buildTimelineEvents = async (
       // Create phase events
       for (const [phaseId, phaseTasks] of phaseGroups) {
         const phaseStart = phaseTasks.reduce((earliest, t) =>
-          t.createdAt < earliest.createdAt ? t : earliest,
+          new Date(t.createdAt) < new Date(earliest.createdAt) ? t : earliest,
         )
         const allCompleted = phaseTasks.every((t) => t.status === 'completed')
         // const anyCompleted = phaseTasks.some((t) => t.status === 'completed')
@@ -251,7 +256,7 @@ export const buildTimelineEvents = async (
         events.push({
           id: `phase-started-${task.id}-${phaseId}`,
           type: 'phase_started',
-          timestamp: phaseStart.createdAt,
+          timestamp: new Date(phaseStart.createdAt),
           title: `Phase Started: ${phaseId.toUpperCase()}`,
           description: `Beginning ${phaseId} phase with ${phaseTasks.length} tasks`,
           data: {
@@ -272,7 +277,7 @@ export const buildTimelineEvents = async (
           events.push({
             id: `phase-completed-${task.id}-${phaseId}`,
             type: 'phase_completed',
-            timestamp: phaseEnd.completedAt || phaseEnd.updatedAt,
+            timestamp: new Date(phaseEnd.completedAt || phaseEnd.updatedAt),
             title: `Phase Completed: ${phaseId.toUpperCase()}`,
             description: `Finished ${phaseId} phase - all ${phaseTasks.length} tasks completed`,
             data: {
@@ -289,7 +294,7 @@ export const buildTimelineEvents = async (
         events.push({
           id: `team-built-${task.id}`,
           type: 'team_built',
-          timestamp: earliestSubTask.createdAt,
+          timestamp: new Date(earliestSubTask.createdAt),
           title: 'Team Built',
           description: `Assembled team with ${rolesAssigned} role assignments across ${phaseGroups.size} phases`,
           data: {
@@ -303,7 +308,7 @@ export const buildTimelineEvents = async (
       events.push({
         id: `task-branched-${task.id}`,
         type: 'task_branched',
-        timestamp: earliestSubTask.createdAt,
+        timestamp: new Date(earliestSubTask.createdAt),
         title: 'Task Branched',
         description: `Task split into ${subTasks.length} sub-tasks`,
         data: {
@@ -324,7 +329,7 @@ export const buildTimelineEvents = async (
         events.push({
           id: `role-assigned-${subTask.id}`,
           type: 'role_assigned',
-          timestamp: subTask.assignedAt || subTask.createdAt,
+          timestamp: new Date(subTask.assignedAt || subTask.createdAt),
           title: `Role Assigned: ${subTask.assignedRoleId}`,
           description: `${agent.name} assigned as ${subTask.assignedRoleId} for task: ${subTask.title}`,
           agent: agent || undefined,
@@ -339,7 +344,7 @@ export const buildTimelineEvents = async (
         events.push({
           id: `subtask-created-${subTask.id}`,
           type: 'subtask_created',
-          timestamp: subTask.createdAt,
+          timestamp: new Date(subTask.createdAt),
           title: 'Sub-task Created',
           description: subTask.title,
           agent: agent || undefined,
@@ -352,7 +357,7 @@ export const buildTimelineEvents = async (
         events.push({
           id: `subtask-completed-${subTask.id}`,
           type: 'subtask_completed',
-          timestamp: subTask.completedAt || subTask.updatedAt,
+          timestamp: new Date(subTask.completedAt || subTask.updatedAt),
           title: 'Sub-task Completed',
           description: subTask.title,
           agent: agent || undefined,
@@ -367,7 +372,7 @@ export const buildTimelineEvents = async (
     events.push({
       id: `task-completed-${task.id}`,
       type: 'task_completed',
-      timestamp: task.completedAt || task.updatedAt, // Use completedAt if available
+      timestamp: new Date(task.completedAt || task.updatedAt), // Use completedAt if available
       title: 'Task Completed',
       description: 'All requirements satisfied',
       data: task,

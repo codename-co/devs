@@ -16,4 +16,5 @@ export const ko: I18n = {
   requirements: '요구사항',
   'Filter by status': '상태별 필터링',
   'In Progress': '진행 중',
+  'Sub-Tasks': '하위 작업',
 } as const

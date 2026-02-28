@@ -58,13 +58,18 @@ export function useMethodologyMention({
       return availableMethodologies
     }
 
-    const query = mentionQuery.toLowerCase()
+    const query = mentionQuery.toLowerCase().replace(/-/g, ' ')
     return availableMethodologies.filter((methodology) => {
       const name = (
         methodology.metadata.i18n?.[lang]?.name ?? methodology.metadata.name
       ).toLowerCase()
+      const hyphenatedName = name.replace(/\s+/g, '-')
       const id = methodology.metadata.id.toLowerCase()
-      return name.includes(query) || id.includes(query)
+      return (
+        name.includes(query) ||
+        hyphenatedName.includes(mentionQuery.toLowerCase()) ||
+        id.includes(query)
+      )
     })
   }, [availableMethodologies, mentionQuery, lang])
 
@@ -93,12 +98,13 @@ export function useMethodologyMention({
 
       const methodologyName =
         methodology.metadata.i18n?.[lang]?.name ?? methodology.metadata.name
-      // Replace the partial #mention with the full methodology name
+      // Replace spaces with hyphens for clean #mention syntax
+      const hyphenatedName = methodologyName.replace(/\s+/g, '-')
       const beforeMention = prompt.substring(0, mentionStartIndex)
       const afterMention = prompt.substring(
         mentionStartIndex + 1 + mentionQuery.length,
       )
-      const newPrompt = `${beforeMention}#${methodologyName} ${afterMention}`
+      const newPrompt = `${beforeMention}#${hyphenatedName} ${afterMention}`
 
       onPromptChange(newPrompt)
       setShowMentionPopover(false)

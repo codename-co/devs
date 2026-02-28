@@ -1,42 +1,33 @@
-import { useEffect, useState, useMemo, useCallback, useRef, memo } from 'react'
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import {
-  Button,
-  Card,
-  CardBody,
-  Chip,
-  Divider,
-  Progress,
   Spinner,
-  Tooltip,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  useDisclosure,
 } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
-import {
-  Container,
-  Icon,
-  MarkdownRenderer,
-  PromptArea,
-  Section,
-} from '@/components'
+import { Container, Icon, PromptArea, Section, Title } from '@/components'
 import { MessageBubble } from '@/components/chat'
 import RunLayout from '@/layouts/Run'
-import type { HeaderProps, IconName } from '@/lib/types'
+import type { HeaderProps } from '@/lib/types'
 import { getAgentById } from '@/stores/agentStore'
+import { useTaskStore } from '@/stores/taskStore'
+import { useConversationStore } from '@/stores/conversationStore'
 import {
   useTask,
   useTasks,
   useConversations,
   useArtifacts,
   useSyncReady,
+  useOrchestrationStreaming,
 } from '@/hooks'
-import type {
-  Agent,
-  Message,
-  Task,
-  Artifact as ArtifactType,
-  Conversation,
-} from '@/types'
+import type { Agent, Message, Conversation, InstalledSkill } from '@/types'
 import { notifyError } from '@/features/notifications'
 import { WorkflowOrchestrator } from '@/lib/orchestrator'
 import {
@@ -59,545 +50,13 @@ import {
   completeLastStep,
   addToolDataToStep,
 } from '../Agents/ConversationStepTracker'
-import { openInspector } from '@/stores/inspectorPanelStore'
 
-// ============================================================================
-// Task Steps Section
-// ============================================================================
-
-const TaskStepsSection = memo(
-  ({
-    steps,
-    agentCache,
-  }: {
-    steps: Task['steps']
-    agentCache: Record<string, Agent>
-  }) => {
-    const { t } = useI18n()
-
-    if (!steps.length) return null
-
-    const completed = steps.filter((s) => s.status === 'completed').length
-
-    return (
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-3">
-          <Icon name="List" className="w-4 h-4 text-default-500" />
-          <h3 className="text-sm font-semibold text-default-700">
-            {(t as any)('Steps')} ({completed}/{steps.length})
-          </h3>
-          <Progress
-            size="sm"
-            value={(completed / steps.length) * 100}
-            color="success"
-            className="max-w-[120px]"
-            aria-label="Steps progress"
-          />
-        </div>
-        <div className="space-y-1">
-          {[...steps]
-            .sort((a, b) => a.order - b.order)
-            .map((step) => {
-              const agent = step.agentId ? agentCache[step.agentId] : null
-              const statusIcon =
-                step.status === 'completed'
-                  ? 'Check'
-                  : step.status === 'in_progress'
-                    ? 'Running'
-                    : step.status === 'failed'
-                      ? 'X'
-                      : 'Clock'
-              const statusColor =
-                step.status === 'completed'
-                  ? 'text-success-500'
-                  : step.status === 'in_progress'
-                    ? 'text-primary-500'
-                    : step.status === 'failed'
-                      ? 'text-danger-500'
-                      : 'text-default-400'
-
-              return (
-                <div
-                  key={step.id}
-                  className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-default-50 transition-colors"
-                >
-                  <Icon
-                    name={statusIcon as IconName}
-                    className={`w-4 h-4 flex-shrink-0 ${statusColor}`}
-                  />
-                  <span className="text-sm font-medium text-default-800 flex-1 truncate">
-                    {step.name}
-                  </span>
-                  {agent && (
-                    <Chip
-                      size="sm"
-                      variant="flat"
-                      color="primary"
-                      className="text-tiny flex-shrink-0"
-                      startContent={
-                        agent.icon ? (
-                          <Icon
-                            name={agent.icon as IconName}
-                            className="w-3 h-3"
-                          />
-                        ) : undefined
-                      }
-                    >
-                      {agent.name}
-                    </Chip>
-                  )}
-                  {step.duration != null && (
-                    <span className="text-tiny text-default-400 flex-shrink-0">
-                      {step.duration < 1000
-                        ? `${Math.round(step.duration)}ms`
-                        : `${(step.duration / 1000).toFixed(1)}s`}
-                    </span>
-                  )}
-                </div>
-              )
-            })}
-        </div>
-      </div>
-    )
-  },
-)
-
-TaskStepsSection.displayName = 'TaskStepsSection'
-
-// ============================================================================
-// Sub-Task Conversation (messages for a single sub-task)
-// ============================================================================
-
-const SubTaskConversation = memo(
-  ({
-    subTask,
-    conversations,
-    agentCache,
-    onCopy,
-  }: {
-    subTask: Task
-    conversations: Conversation[]
-    agentCache: Record<string, Agent>
-    onCopy: (content: string) => void
-  }) => {
-    const { t } = useI18n()
-    const agent = subTask.assignedAgentId
-      ? agentCache[subTask.assignedAgentId]
-      : null
-
-    const subTaskConversations = useMemo(
-      () => conversations.filter((c) => c.workflowId === subTask.workflowId),
-      [conversations, subTask.workflowId],
-    )
-
-    const messages = useMemo(() => {
-      const msgs: Message[] = []
-      for (const conv of subTaskConversations) {
-        for (const msg of conv.messages) {
-          if (msg.role !== 'system') {
-            msgs.push(msg)
-          }
-        }
-      }
-      return msgs.sort(
-        (a, b) =>
-          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-      )
-    }, [subTaskConversations])
-
-    const stepsDone = subTask.steps.filter(
-      (s) => s.status === 'completed',
-    ).length
-
-    return (
-      <div className="space-y-3">
-        {subTask.description && (
-          <p className="text-sm text-default-600 whitespace-pre-wrap">
-            {subTask.description}
-          </p>
-        )}
-
-        {subTask.steps.length > 0 && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-tiny text-default-500">
-              {(t as any)('Steps')}: {stepsDone}/{subTask.steps.length}
-            </span>
-            {subTask.steps.map((step) => (
-              <Chip
-                key={step.id}
-                size="sm"
-                variant="flat"
-                color={
-                  step.status === 'completed'
-                    ? 'success'
-                    : step.status === 'failed'
-                      ? 'danger'
-                      : step.status === 'in_progress'
-                        ? 'primary'
-                        : 'default'
-                }
-                className="text-tiny"
-              >
-                {step.name}
-              </Chip>
-            ))}
-          </div>
-        )}
-
-        {messages.length > 0 ? (
-          <div className="flex flex-col gap-4 pl-2 border-l-2 border-default-200">
-            {messages.map((msg) => (
-              <MessageBubble
-                key={msg.id}
-                message={msg}
-                agent={msg.agentId ? agentCache[msg.agentId] : agent}
-                showAgentChip={msg.role === 'assistant'}
-                onCopy={onCopy}
-              />
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-default-400 italic">
-            {(t as any)('No conversation messages yet.')}
-          </p>
-        )}
-      </div>
-    )
-  },
-)
-
-SubTaskConversation.displayName = 'SubTaskConversation'
-
-// ============================================================================
-// Sub-Tasks Section
-// ============================================================================
-
-/** Status icon for a sub-task, mirrors ConversationStepTracker's StepStatusIcon */
-const SubTaskStatusIcon = memo(({ status }: { status: string }) => {
-  switch (status) {
-    case 'in_progress':
-      return <Spinner size="sm" classNames={{ wrapper: 'w-4 h-4' }} />
-    case 'completed':
-      return (
-        <Icon name="CheckCircleSolid" size="sm" className="text-success-500" />
-      )
-    case 'failed':
-      return (
-        <Icon name="XmarkCircleSolid" size="sm" className="text-danger-400" />
-      )
-    default:
-      return <Icon name="Clock" size="sm" className="text-default-400" />
-  }
-})
-SubTaskStatusIcon.displayName = 'SubTaskStatusIcon'
-
-const SubTasksSection = memo(
-  ({
-    subTasks,
-    allConversations,
-    allArtifacts,
-    agentCache,
-    onCopy,
-  }: {
-    subTasks: Task[]
-    allConversations: Conversation[]
-    allArtifacts: ArtifactType[]
-    agentCache: Record<string, Agent>
-    onCopy: (content: string) => void
-  }) => {
-    const { t } = useI18n()
-
-    if (!subTasks.length) return null
-
-    const completed = subTasks.filter((st) => st.status === 'completed').length
-
-    return (
-      <div className="mb-6">
-        {/* Header with summary chips, like ConversationStepTracker */}
-        <div className="flex items-center gap-2 mb-2">
-          <Icon name="GitFork" className="w-4 h-4 text-default-500" />
-          <span className="text-tiny font-medium text-default-500">
-            {(t as any)('Sub-Tasks')}
-          </span>
-          {subTasks.filter((s) => s.status === 'in_progress').length > 0 && (
-            <Chip size="sm" color="primary" variant="flat">
-              {subTasks.filter((s) => s.status === 'in_progress').length}{' '}
-              running
-            </Chip>
-          )}
-          {completed > 0 && (
-            <Chip size="sm" variant="bordered">
-              {completed}
-            </Chip>
-          )}
-          {subTasks.filter((s) => s.status === 'failed').length > 0 && (
-            <Chip size="sm" color="danger" variant="flat">
-              {subTasks.filter((s) => s.status === 'failed').length}
-            </Chip>
-          )}
-        </div>
-
-        {/* Vertical inline list of sub-tasks */}
-        <div className="space-y-1">
-          {subTasks.map((subTask) => {
-            const agent = subTask.assignedAgentId
-              ? agentCache[subTask.assignedAgentId]
-              : null
-            const subArtifacts = allArtifacts.filter(
-              (a) => a.taskId === subTask.id,
-            )
-            const isRunning = subTask.status === 'in_progress'
-
-            return (
-              <div key={subTask.id}>
-                {/* Step row: icon + title + chips */}
-                <div className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-default-100 transition-colors">
-                  <SubTaskStatusIcon status={subTask.status} />
-                  <span
-                    className={`text-sm font-medium flex-1 truncate ${
-                      subTask.status === 'failed'
-                        ? 'text-danger-600'
-                        : 'text-default-600'
-                    }`}
-                  >
-                    {subTask.title}
-                  </span>
-                  {agent && (
-                    <Chip
-                      size="sm"
-                      variant="flat"
-                      color="primary"
-                      className="text-tiny flex-shrink-0"
-                      startContent={
-                        agent.icon ? (
-                          <Icon
-                            name={agent.icon as IconName}
-                            className="w-3 h-3"
-                          />
-                        ) : undefined
-                      }
-                    >
-                      {agent.name}
-                    </Chip>
-                  )}
-                  {subTask.complexity === 'complex' && (
-                    <Chip
-                      size="sm"
-                      variant="flat"
-                      color="warning"
-                      className="text-tiny flex-shrink-0"
-                    >
-                      complex
-                    </Chip>
-                  )}
-                </div>
-
-                {/* Expanded content: always visible for running tasks, indented with border */}
-                {(isRunning ||
-                  subTask.description ||
-                  subArtifacts.length > 0) && (
-                  <div className="ml-5 pl-3 border-l border-default-200 space-y-3 pb-2">
-                    {/* Sub-task conversation */}
-                    <SubTaskConversation
-                      subTask={subTask}
-                      conversations={allConversations}
-                      agentCache={agentCache}
-                      onCopy={onCopy}
-                    />
-                    {/* Sub-task artifacts */}
-                    {subArtifacts.length > 0 && (
-                      <div>
-                        <h4 className="text-tiny font-semibold text-default-500 mb-2 flex items-center gap-1">
-                          <Icon name="Page" className="w-3 h-3" />
-                          {(t as any)('Artifacts')} ({subArtifacts.length})
-                        </h4>
-                        <div className="space-y-2">
-                          {subArtifacts.map((artifact) => (
-                            <ArtifactCard
-                              key={artifact.id}
-                              artifact={artifact}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    )
-  },
-)
-
-SubTasksSection.displayName = 'SubTasksSection'
-
-// ============================================================================
-// Artifact Card (compact inline)
-// ============================================================================
-
-const ArtifactCard = memo(({ artifact }: { artifact: ArtifactType }) => {
-  const statusColor =
-    artifact.status === 'approved' || artifact.status === 'final'
-      ? 'success'
-      : artifact.status === 'rejected'
-        ? 'danger'
-        : 'warning'
-
-  return (
-    <Card className="shadow-sm">
-      <CardBody className="p-3">
-        <div className="flex justify-between items-start w-full mb-2">
-          <div className="flex flex-col items-start">
-            <span className="font-medium text-sm">{artifact.title}</span>
-            <div className="flex gap-2 mt-1">
-              <Chip
-                size="sm"
-                variant="flat"
-                color={statusColor}
-                className="text-tiny"
-              >
-                {artifact.status}
-              </Chip>
-              <Chip
-                size="sm"
-                variant="flat"
-                color="default"
-                className="text-tiny"
-              >
-                {artifact.type}
-              </Chip>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-tiny text-default-500">
-              {artifact.content.length.toLocaleString()} chars
-            </span>
-            <Button
-              size="sm"
-              variant="light"
-              isIconOnly
-              aria-label="Expand artifact"
-              onPress={() => openInspector({ type: 'artifact', artifact })}
-            >
-              <Icon name="Expand" size="sm" className="text-default-500" />
-            </Button>
-          </div>
-        </div>
-        {artifact.description && (
-          <p className="text-small text-default-600 mb-2">
-            {artifact.description}
-          </p>
-        )}
-        <div className="p-2 bg-default-100 rounded-small max-h-48 overflow-y-auto">
-          <MarkdownRenderer
-            content={artifact.content}
-            className="prose dark:prose-invert prose-sm text-small"
-          />
-        </div>
-        <div className="flex justify-between text-tiny text-default-500 mt-2">
-          <span>
-            Created: {new Date(artifact.createdAt).toLocaleDateString()}
-          </span>
-          <span>v{artifact.version}</span>
-        </div>
-      </CardBody>
-    </Card>
-  )
-})
-
-ArtifactCard.displayName = 'ArtifactCard'
-
-// ============================================================================
-// Artifacts Section
-// ============================================================================
-
-const ArtifactsSection = memo(
-  ({ artifacts }: { artifacts: ArtifactType[] }) => {
-    const { t } = useI18n()
-
-    if (!artifacts.length) return null
-
-    return (
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-3">
-          <Icon name="Page" className="w-4 h-4 text-default-500" />
-          <h3 className="text-sm font-semibold text-default-700">
-            {(t as any)('Artifacts')} ({artifacts.length})
-          </h3>
-        </div>
-        <div className="space-y-2">
-          {artifacts.map((artifact) => (
-            <ArtifactCard key={artifact.id} artifact={artifact} />
-          ))}
-        </div>
-      </div>
-    )
-  },
-)
-
-ArtifactsSection.displayName = 'ArtifactsSection'
-
-// ============================================================================
-// Task Status Banner
-// ============================================================================
-
-const TaskStatusBanner = memo(
-  ({
-    status,
-    complexity,
-    isOrchestrating,
-    progress,
-  }: {
-    status: string
-    complexity: string
-    isOrchestrating: boolean
-    progress?: number
-  }) => {
-    const { t } = useI18n()
-
-    const statusColor =
-      status === 'completed'
-        ? 'success'
-        : status === 'failed'
-          ? 'danger'
-          : status === 'in_progress'
-            ? 'primary'
-            : 'default'
-
-    return (
-      <div className="mb-4 flex flex-col gap-2">
-        <div className="flex items-center gap-2 flex-wrap">
-          <Chip size="sm" color={statusColor} variant="flat">
-            {status.replace('_', ' ')}
-          </Chip>
-          <Chip size="sm" variant="flat" color="secondary">
-            {complexity}
-          </Chip>
-          {isOrchestrating && (
-            <div className="flex items-center gap-2 text-primary text-sm">
-              <Spinner size="sm" />
-              <span>{(t as any)('Agents working…')}</span>
-            </div>
-          )}
-        </div>
-        {isOrchestrating && progress !== undefined && progress > 0 && (
-          <Progress
-            size="sm"
-            value={progress}
-            color="primary"
-            className="max-w-md"
-            aria-label="Task progress"
-          />
-        )}
-      </div>
-    )
-  },
-)
-
-TaskStatusBanner.displayName = 'TaskStatusBanner'
+import {
+  ArtifactsSection,
+  SubTasksSection,
+  TaskStatusBanner,
+  TaskStepsSection,
+} from './components'
 
 // ============================================================================
 // Main Task Page
@@ -621,6 +80,9 @@ export const TaskPage = () => {
   const allConversations = useConversations()
   const allArtifacts = useArtifacts()
   const isSyncReady = useSyncReady()
+
+  // Subscribe to real-time streaming from the orchestration engine
+  const streamingMap = useOrchestrationStreaming(task?.workflowId)
 
   // Core state
   const [prompt, setPrompt] = useState('')
@@ -650,6 +112,14 @@ export const TaskPage = () => {
   const userHasScrolledUpRef = useRef(false)
   const isAutoScrollingRef = useRef(false)
   const abortControllerRef = useRef<AbortController | null>(null)
+
+  // Delete confirmation modal
+  const {
+    isOpen: isDeleteModalOpen,
+    onOpen: onDeleteModalOpen,
+    onClose: onDeleteModalClose,
+  } = useDisclosure()
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const isLoading = !isSyncReady || (!task && !!taskId)
 
@@ -739,21 +209,10 @@ export const TaskPage = () => {
     }
   }, [rawRelevantConversations])
 
-  // ── Related conversations for the parent task ──────────────────────────
-  const relatedConversations = useMemo(
-    () =>
-      task
-        ? decryptedConversations.filter(
-            (conv) => conv.workflowId === task.workflowId,
-          )
-        : [],
-    [decryptedConversations, task],
-  )
-
-  // ── Aggregate all messages from related conversations ──────────────────
+  // ── Aggregate all messages from the entire task tree ─────────────────
   const allMessages = useMemo(() => {
     const msgs: (Message & { _conversationId: string })[] = []
-    for (const conv of relatedConversations) {
+    for (const conv of decryptedConversations) {
       for (const msg of conv.messages) {
         if (msg.role !== 'system') {
           msgs.push({ ...msg, _conversationId: conv.id })
@@ -764,21 +223,40 @@ export const TaskPage = () => {
       (a, b) =>
         new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     )
-  }, [relatedConversations])
+  }, [decryptedConversations])
 
   // ── Header ─────────────────────────────────────────────────────────────
   const header: HeaderProps = useMemo(
     () => ({
       icon: {
-        name: 'TriangleFlagTwoStripes',
-        color: 'text-primary-300 dark:text-primary-600',
+        name: 'PcCheck',
+        color: 'text-secondary-500 dark:text-white',
       },
       title: task?.title || t('Task Details'),
       subtitle: task
         ? `${task.complexity} • ${task.status.replace('_', ' ')}${subTasks.length ? ` • ${subTasks.length} sub-tasks` : ''}`
         : undefined,
+      // cta: {
+      //   label: t('Share'),
+      //   // href: '',
+      //   icon: 'ShareAndroid',
+      // },
+      moreActions: [
+        {
+          label: t('Delete task'),
+          onClick: onDeleteModalOpen,
+          icon: 'Trash',
+        },
+      ],
     }),
-    [task?.title, task?.complexity, task?.status, subTasks.length, t],
+    [
+      task?.title,
+      task?.complexity,
+      task?.status,
+      subTasks.length,
+      t,
+      onDeleteModalOpen,
+    ],
   )
 
   // ── Load agents for all messages + sub-tasks into cache ────────────────
@@ -950,7 +428,7 @@ export const TaskPage = () => {
   const handleCopy = useCallback(
     async (content: string) => {
       await copyRichText(content)
-      successToast((t as any)('Copied to clipboard'))
+      successToast(t('Copied to clipboard'))
     },
     [t],
   )
@@ -970,7 +448,12 @@ export const TaskPage = () => {
 
   // ── Submit follow-up message ──────────────────────────────────────────
   const onSubmit = useCallback(
-    async (cleanedPrompt?: string, mentionedAgent?: Agent) => {
+    async (
+      cleanedPrompt?: string,
+      mentionedAgent?: Agent,
+      _mentionedMethodology?: unknown,
+      mentionedSkills?: InstalledSkill[],
+    ) => {
       const promptToUse = cleanedPrompt ?? prompt
       const agentToUse = mentionedAgent || selectedAgent
       if (!promptToUse.trim() || isSending || !agentToUse) return
@@ -998,6 +481,12 @@ export const TaskPage = () => {
         _conversationId: undefined,
       })) as Message[]
 
+      // Build activated skills from /mentions
+      const activatedSkills = mentionedSkills?.map((skill) => ({
+        name: skill.name,
+        skillMdContent: skill.skillMdContent || skill.description,
+      }))
+
       const controller = new AbortController()
       abortControllerRef.current = controller
 
@@ -1008,6 +497,7 @@ export const TaskPage = () => {
         includeHistory: true,
         clearResponseAfterSubmit: true,
         attachments: filesData,
+        activatedSkills,
         lang,
         t,
         signal: controller.signal,
@@ -1050,6 +540,47 @@ export const TaskPage = () => {
       t,
     ],
   )
+
+  // ── Delete handler ─────────────────────────────────────────────────────
+  const handleConfirmDelete = useCallback(async () => {
+    if (!task) return
+    setIsDeleting(true)
+    try {
+      const taskStore = useTaskStore.getState()
+      const convStore = useConversationStore.getState()
+
+      // Delete related conversations (from parent + sub-task workflows)
+      for (const conv of decryptedConversations) {
+        await convStore.deleteConversation(conv.id)
+      }
+
+      // Delete sub-tasks
+      for (const st of subTasks) {
+        await taskStore.deleteTask(st.id)
+      }
+
+      // Delete the parent task
+      await taskStore.deleteTask(task.id)
+
+      onDeleteModalClose()
+      navigate(url(''))
+    } catch (error) {
+      notifyError({
+        title: 'Delete Failed',
+        description:
+          error instanceof Error ? error.message : 'Failed to delete task',
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }, [
+    task,
+    subTasks,
+    decryptedConversations,
+    navigate,
+    url,
+    onDeleteModalClose,
+  ])
 
   // ── Stop handler ──────────────────────────────────────────────────────
   const handleStop = useCallback(() => {
@@ -1106,7 +637,7 @@ export const TaskPage = () => {
       <RunLayout header={header}>
         <Section mainClassName="text-center">
           <div className="flex flex-col items-center justify-center min-h-[50vh]">
-            <Icon name="X" className="w-16 h-16 text-danger mb-4" />
+            <Icon name="Xmark" className="w-16 h-16 text-danger mb-4" />
             <h2 className="text-xl font-semibold mb-2">
               {t('Task Not Found')}
             </h2>
@@ -1139,74 +670,29 @@ export const TaskPage = () => {
               progress={orchestrationProgress}
             />
 
-            {/* Requirements (compact) */}
-            {task.requirements.length > 0 && (
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-2">
-                  <Icon name="Check" className="w-4 h-4 text-default-500" />
-                  <h3 className="text-sm font-semibold text-default-700">
-                    {(t as any)('Requirements')} ({task.requirements.length})
-                  </h3>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {task.requirements.map((req) => (
-                    <Tooltip key={req.id} content={req.description}>
-                      <Chip
-                        size="sm"
-                        variant="flat"
-                        color={
-                          req.status === 'satisfied' || req.satisfiedAt
-                            ? 'success'
-                            : req.status === 'failed'
-                              ? 'danger'
-                              : 'default'
-                        }
-                        startContent={
-                          req.status === 'satisfied' || req.satisfiedAt ? (
-                            <Icon name="Check" className="w-3 h-3" />
-                          ) : req.status === 'failed' ? (
-                            <Icon name="X" className="w-3 h-3" />
-                          ) : undefined
-                        }
-                      >
-                        {req.description.length > 50
-                          ? req.description.slice(0, 50) + '…'
-                          : req.description}
-                      </Chip>
-                    </Tooltip>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Steps section */}
             <TaskStepsSection steps={task.steps} agentCache={agentCache} />
 
-            {/* Sub-tasks section */}
+            {/* Sub-tasks & requirements section */}
             <SubTasksSection
               subTasks={subTasks}
+              requirements={task.requirements}
               allConversations={decryptedConversations}
               allArtifacts={allArtifacts}
               agentCache={agentCache}
               onCopy={handleCopy}
+              streamingMap={streamingMap}
             />
 
             {/* Parent-level artifacts */}
             <ArtifactsSection artifacts={parentArtifacts} />
 
-            <Divider className="mb-6" />
-
             {/* Cross-agent conversation timeline */}
             {timelineItems.length > 0 && (
               <div className="mb-3">
                 <div className="flex items-center gap-2 mb-4">
-                  <Icon
-                    name="ChatBubble"
-                    className="w-4 h-4 text-default-500"
-                  />
-                  <h3 className="text-sm font-semibold text-default-700">
-                    {(t as any)('Conversation')}
-                  </h3>
+                  <Icon name="ChatBubble" size="sm" />
+                  <Title level={4}>{t('Conversation')}</Title>
                 </div>
                 <div className="relative flex flex-col gap-6">
                   {timelineItems.map((item) => (
@@ -1236,9 +722,7 @@ export const TaskPage = () => {
                   name="ChatBubble"
                   className="w-12 h-12 mx-auto mb-4 opacity-50"
                 />
-                <p>
-                  {(t as any)('No messages yet. The task is being processed…')}
-                </p>
+                <p>{t('No messages yet. The task is being processed…')}</p>
               </div>
             )}
           </Container>
@@ -1262,6 +746,41 @@ export const TaskPage = () => {
           />
         )}
       </div>
+
+      {/* Delete confirmation modal */}
+      <Modal isOpen={isDeleteModalOpen} onClose={onDeleteModalClose} size="md">
+        <ModalContent>
+          <ModalHeader>
+            <div className="flex items-center gap-2">
+              <Icon name="Trash" size="sm" className="text-danger" />
+              {t('Delete task')}
+            </div>
+          </ModalHeader>
+          <ModalBody>
+            <p>
+              {t(
+                'Are you sure you want to delete this task? This action cannot be undone.',
+              )}
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="light"
+              onPress={onDeleteModalClose}
+              isDisabled={isDeleting}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              color="danger"
+              onPress={handleConfirmDelete}
+              isLoading={isDeleting}
+            >
+              {t('Delete')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </RunLayout>
   )
 }

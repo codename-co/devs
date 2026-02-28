@@ -34,6 +34,7 @@ import { type LanguageCode } from '@/i18n/locales'
 import { cn } from '@/lib/utils'
 import { type Agent, type KnowledgeItem, type InstalledSkill } from '@/types'
 import type { Methodology } from '@/types/methodology.types'
+import type { Connector } from '@/features/connectors/types'
 import { getDefaultAgent } from '@/stores/agentStore'
 import { getKnowledgeItemDecrypted } from '@/stores/knowledgeStore'
 import {
@@ -52,12 +53,14 @@ export interface PromptAreaProps
     mentionedAgent?: Agent,
     mentionedMethodology?: Methodology,
     mentionedSkills?: InstalledSkill[],
+    mentionedConnectors?: Connector[],
   ) => void
   onSubmitTask?: (
     cleanedPrompt?: string,
     mentionedAgent?: Agent,
     mentionedMethodology?: Methodology,
     mentionedSkills?: InstalledSkill[],
+    mentionedConnectors?: Connector[],
   ) => void
   isSending?: boolean
   onStop?: () => void
@@ -164,15 +167,16 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       onPromptChange: handlePromptChange,
     })
 
-    // Skill mention hook for / autocomplete
+    // Skill & connector mention hook for / autocomplete
     const {
       showMentionPopover: showSkillMentionPopover,
-      filteredSkills,
+      filteredItems: slashCommandItems,
       selectedIndex: skillSelectedIndex,
       handleMentionSelect: handleSkillMentionSelect,
       handleKeyNavigation: handleSkillKeyNavigation,
       closeMentionPopover: closeSkillMentionPopover,
       extractMentionedSkills,
+      extractMentionedConnectors,
       removeMentionsFromPrompt: removeSkillMentionsFromPrompt,
     } = useSkillMention({
       lang,
@@ -232,7 +236,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       },
     })
 
-    // Handle submission with @mention and #mention processing
+    // Handle submission with @mention, #mention, and /mention processing
     const handleSubmitWithMentions = useCallback(
       (
         submitFn?: (
@@ -240,6 +244,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
           mentionedAgent?: Agent,
           mentionedMethodology?: Methodology,
           mentionedSkills?: InstalledSkill[],
+          mentionedConnectors?: Connector[],
         ) => void,
       ) => {
         if (!submitFn) return
@@ -269,6 +274,9 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         // Extract mentioned skills for activation in the conversation
         const mentionedSkills = extractMentionedSkills()
 
+        // Extract mentioned connectors for context injection
+        const mentionedConnectors = extractMentionedConnectors()
+
         // Remove @mentions, #mentions and /mentions from the prompt before submission
         let cleanedPrompt = removeAgentMentionsFromPrompt(prompt)
         cleanedPrompt = removeMethodologyMentionsFromPrompt(cleanedPrompt)
@@ -285,12 +293,13 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         closeMethodologyMentionPopover()
         closeSkillMentionPopover()
 
-        // Pass the cleaned prompt, mentioned agent/methodology, and activated skills to the submit function
+        // Pass the cleaned prompt, mentioned agent/methodology, activated skills, and connectors to the submit function
         submitFn(
           cleanedPrompt,
           mentionedAgent,
           mentionedMethodology,
           mentionedSkills.length > 0 ? mentionedSkills : undefined,
+          mentionedConnectors.length > 0 ? mentionedConnectors : undefined,
         )
       },
       [
@@ -298,6 +307,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         extractMentionedAgents,
         extractMentionedMethodologies,
         extractMentionedSkills,
+        extractMentionedConnectors,
         removeAgentMentionsFromPrompt,
         removeMethodologyMentionsFromPrompt,
         removeSkillMentionsFromPrompt,
@@ -505,10 +515,15 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       () => extractMentionedSkills(),
       [prompt, extractMentionedSkills],
     )
+    const resolvedConnectorMentions = useMemo(
+      () => extractMentionedConnectors(),
+      [prompt, extractMentionedConnectors],
+    )
     const hasMentionChips =
       resolvedAgentMentions.length > 0 ||
       resolvedMethodologyMentions.length > 0 ||
-      resolvedSkillMentions.length > 0
+      resolvedSkillMentions.length > 0 ||
+      resolvedConnectorMentions.length > 0
 
     // Remove a single @agent mention from the prompt
     const handleRemoveAgentMention = useCallback(
@@ -559,6 +574,26 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         const newPrompt = prompt
           .replace(new RegExp(`(^|\\s)\\/${name}\\b\\s?`, 'i'), '$1')
           .replace(new RegExp(`(^|\\s)\\/${id}\\b\\s?`, 'i'), '$1')
+          .replace(/\s+/g, ' ')
+          .trim()
+        handlePromptChange(newPrompt)
+      },
+      [prompt, handlePromptChange],
+    )
+
+    // Remove a single /connector mention from the prompt
+    const handleRemoveConnectorMention = useCallback(
+      (connector: Connector) => {
+        const name = (connector.name || connector.provider)
+          .replace(/\s+/g, '-')
+          .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const provider = connector.provider.replace(
+          /[.*+?^${}()|[\]\\]/g,
+          '\\$&',
+        )
+        const newPrompt = prompt
+          .replace(new RegExp(`(^|\\s)\\/${name}\\b\\s?`, 'i'), '$1')
+          .replace(new RegExp(`(^|\\s)\\/${provider}\\b\\s?`, 'i'), '$1')
           .replace(/\s+/g, ' ')
           .trim()
         handlePromptChange(newPrompt)
@@ -630,6 +665,18 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                 {skill.name}
               </Chip>
             ))}
+            {resolvedConnectorMentions.map((connector) => (
+              <Chip
+                key={`connector-${connector.id}`}
+                color="primary"
+                variant="flat"
+                size="sm"
+                onClose={() => handleRemoveConnectorMention(connector)}
+                startContent={<Icon name="EvPlug" size="sm" />}
+              >
+                {connector.name || connector.provider}
+              </Chip>
+            ))}
           </div>
         )}
 
@@ -656,11 +703,11 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
             />
           )}
 
-          {/* Skill mention autocomplete popover */}
+          {/* Skill & connector mention autocomplete popover */}
           {showSkillMentionPopover && (
             <SkillMentionPopover
               lang={lang}
-              skills={filteredSkills}
+              items={slashCommandItems}
               selectedIndex={skillSelectedIndex}
               onSelect={handleSkillMentionSelect}
               onClose={closeSkillMentionPopover}

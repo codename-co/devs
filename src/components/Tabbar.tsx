@@ -67,7 +67,7 @@ export const Tabbar = ({ className = '' }) => {
         // data-color="secondary"
         title={
           <Tooltip content={t('Tasks')} placement="top">
-            <Icon name="TriangleFlagTwoStripes" />
+            <Icon name="PcCheck" />
           </Tooltip>
         }
         href={url('/tasks')}

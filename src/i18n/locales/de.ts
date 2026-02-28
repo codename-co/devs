@@ -32,6 +32,7 @@ export const de: I18n = {
   RECENT: 'KÜRZLICH',
   'Recent activity': 'Letzte Aktivität',
   Marketplace: 'Marktplatz',
+  Library: 'Bibliothek',
   Skills: 'Fähigkeiten',
   Verified: 'Verifiziert',
   'Start a conversation': 'Gespräch starten',
@@ -316,7 +317,17 @@ export const de: I18n = {
   'The requested task could not be found.':
     'Die angeforderte Aufgabe konnte nicht gefunden werden.',
   'Task Steps': 'Aufgabenschritte',
+  Steps: 'Schritte',
+  'Agents working…': 'Agenten arbeiten…',
+  'No conversation messages yet.': 'Noch keine Konversationsnachrichten.',
+  'Copied to clipboard': 'In die Zwischenablage kopiert',
+  Conversation: 'Konversation',
+  'No messages yet. The task is being processed…':
+    'Noch keine Nachrichten. Die Aufgabe wird bearbeitet…',
   'Validation Criteria': 'Validierungskriterien',
+  'Delete task': 'Aufgabe löschen',
+  'Are you sure you want to delete this task? This action cannot be undone.':
+    'Sind Sie sicher, dass Sie diese Aufgabe löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
 
   // SubTaskTree Component
   'Task Hierarchy': 'Aufgabenhierarchie',

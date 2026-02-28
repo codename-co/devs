@@ -86,7 +86,7 @@ const TYPE_COLORS: Record<SearchResultType, string> = {
 const TYPE_ICONS: Record<SearchResultType, string> = {
   agent: 'Sparks',
   conversation: 'ChatBubble',
-  task: 'TriangleFlagTwoStripes',
+  task: 'PcCheck',
   file: 'Folder',
   memory: 'Brain',
   message: 'ChatLines',
@@ -362,7 +362,7 @@ async function searchTasks(query: string): Promise<SearchResult[]> {
           color: TYPE_COLORS.task,
           href: `/tasks/${task.id}`,
           score: calculateScore(query, texts, 4),
-          timestamp: task.updatedAt,
+          timestamp: new Date(task.updatedAt),
         })
       }
     }
@@ -651,7 +651,7 @@ const SEARCHABLE_PAGES: PageDefinition[] = [
   {
     id: 'page-tasks',
     href: '/tasks',
-    icon: 'TriangleFlagTwoStripes',
+    icon: 'PcCheck',
     color: 'secondary',
     nameKey: 'Tasks',
     keywords: ['todo', 'work', 'project', 'assignment'],

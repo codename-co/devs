@@ -33,10 +33,18 @@ import {
   areResearchToolsRegistered,
   registerSkillTools,
   areSkillToolsRegistered,
+  registerConnectorTools,
+  areConnectorToolsRegistered,
+  registerPresentationTools,
+  arePresentationToolsRegistered,
 } from '@/lib/tool-executor'
 import { KNOWLEDGE_TOOL_DEFINITIONS } from '@/lib/knowledge-tools'
 import { MATH_TOOL_DEFINITIONS } from '@/lib/math-tools'
 import { CODE_TOOL_DEFINITIONS } from '@/lib/code-tools'
+import { PRESENTATION_TOOL_DEFINITIONS } from '@/lib/presentation-tools'
+import { getToolDefinitionsForProvider } from '@/features/connectors/tools'
+import { connectors as connectorsMap } from '@/lib/yjs/maps'
+import type { Connector } from '@/features/connectors/types'
 import {
   WIKIPEDIA_SEARCH_TOOL_DEFINITION,
   WIKIPEDIA_ARTICLE_TOOL_DEFINITION,
@@ -67,26 +75,94 @@ const DEFAULT_MAX_TURNS = 15
 const MIN_TURNS = 1
 
 // ============================================================================
+// Connector Tool Helpers
+// ============================================================================
+
+/**
+ * Dynamically collects tool definitions for active connectors.
+ * Only includes tools for connectors that are connected and active.
+ * Enhances tool descriptions with available connector IDs so the LLM knows which to use.
+ */
+async function getConnectorToolDefinitions(): Promise<ToolDefinition[]> {
+  try {
+    const connectors = Array.from(connectorsMap.values())
+    const activeConnectors = connectors.filter((c: Connector) =>
+      ['connected', 'syncing'].includes(c.status),
+    )
+
+    if (activeConnectors.length === 0) return []
+
+    // Group active connectors by provider
+    const connectorsByProvider = new Map<string, Connector[]>()
+    for (const connector of activeConnectors) {
+      const existing = connectorsByProvider.get(connector.provider) || []
+      existing.push(connector)
+      connectorsByProvider.set(connector.provider, existing)
+    }
+
+    const tools: ToolDefinition[] = []
+    for (const [provider, providerConnectors] of connectorsByProvider) {
+      const providerTools = getToolDefinitionsForProvider(provider)
+
+      // Enhance each tool with available connector IDs for this provider
+      const enhancedTools = providerTools.map((tool) => {
+        const connectorInfo = providerConnectors
+          .map(
+            (c) =>
+              `"${c.id}"${c.accountEmail ? ` (${c.accountEmail})` : c.name ? ` (${c.name})` : ''}`,
+          )
+          .join(', ')
+
+        const enhancedTool: ToolDefinition = JSON.parse(JSON.stringify(tool))
+
+        if (enhancedTool.function.parameters?.properties?.connector_id) {
+          const originalDesc =
+            enhancedTool.function.parameters.properties.connector_id
+              .description || ''
+          enhancedTool.function.parameters.properties.connector_id.description = `${originalDesc}. Available connector IDs: ${connectorInfo}`
+        }
+
+        return enhancedTool
+      })
+
+      tools.push(...enhancedTools)
+    }
+
+    return tools
+  } catch (error) {
+    console.error(
+      '[agent-runner] Failed to get connector tool definitions:',
+      error,
+    )
+    return []
+  }
+}
+
+// ============================================================================
 // Tool Collection
 // ============================================================================
 
 /**
  * Collects and filters tool definitions based on agent scope.
  * Registers tool handlers on-demand (lazy registration).
+ * Async because connector tool definitions require reading from Yjs.
  */
-function collectTools(scope?: AgentScope): ToolDefinition[] {
+async function collectTools(scope?: AgentScope): Promise<ToolDefinition[]> {
   // Ensure tool handlers are registered
   if (!areKnowledgeToolsRegistered()) registerKnowledgeTools()
   if (!areMathToolsRegistered()) registerMathTools()
   if (!areCodeToolsRegistered()) registerCodeTools()
   if (!areResearchToolsRegistered()) registerResearchTools()
   if (!areSkillToolsRegistered()) registerSkillTools()
+  if (!areConnectorToolsRegistered()) registerConnectorTools()
+  if (!arePresentationToolsRegistered()) registerPresentationTools()
 
   // Gather all available tool definitions
   const allTools: ToolDefinition[] = [
     ...Object.values(KNOWLEDGE_TOOL_DEFINITIONS),
     ...Object.values(MATH_TOOL_DEFINITIONS),
     ...Object.values(CODE_TOOL_DEFINITIONS),
+    ...Object.values(PRESENTATION_TOOL_DEFINITIONS),
     WIKIPEDIA_SEARCH_TOOL_DEFINITION,
     WIKIPEDIA_ARTICLE_TOOL_DEFINITION,
     WIKIDATA_SEARCH_TOOL_DEFINITION,
@@ -95,6 +171,10 @@ function collectTools(scope?: AgentScope): ToolDefinition[] {
     ARXIV_PAPER_TOOL_DEFINITION,
     ...Object.values(SKILL_TOOL_DEFINITIONS),
   ]
+
+  // Add connector tools (dynamic, based on active connectors)
+  const connectorTools = await getConnectorToolDefinitions()
+  allTools.push(...connectorTools)
 
   if (!scope) return allTools
 
@@ -331,6 +411,7 @@ export async function runAgent(
     knowledgeItemIds,
     signal,
     onProgress,
+    onContent,
   } = config
 
   const maxTurns = Math.max(MIN_TURNS, scope?.maxTurns ?? DEFAULT_MAX_TURNS)
@@ -339,7 +420,7 @@ export async function runAgent(
   const systemPrompt = await buildSystemPrompt(agent, task, dependencyOutputs)
 
   // 2. Collect tools (scoped)
-  const tools = collectTools(scope)
+  const tools = await collectTools(scope)
 
   // 3. Resolve LLM config with scope overrides
   const llmConfig = await resolveConfig(scope, signal)
@@ -384,6 +465,11 @@ export async function runAgent(
     // Accumulate response
     if (turnResult.content) {
       finalResponse = turnResult.content // Last turn's content is the final response
+    }
+
+    // Report streaming content
+    if (onContent && turnResult.content) {
+      onContent(finalResponse)
     }
 
     // Report progress
@@ -446,6 +532,7 @@ export async function runAgentSingleShot(
   scope?: AgentScope,
   dependencyOutputs?: Array<{ taskTitle: string; content: string }>,
   signal?: AbortSignal,
+  onContent?: (content: string) => void,
 ): Promise<AgentRunnerResult> {
   const systemPrompt = await buildSystemPrompt(agent, task, dependencyOutputs)
   const config = await resolveConfig(scope, signal)
@@ -465,6 +552,7 @@ export async function runAgentSingleShot(
     taskId: task.id,
   })) {
     response += chunk
+    if (onContent) onContent(response)
   }
 
   return {

@@ -71,7 +71,7 @@ interface ActivityItem {
 
 const ACTIVITY_ICONS: Record<ActivityItem['type'], IconName> = {
   conversation: 'ChatBubble',
-  task: 'TriangleFlagTwoStripes',
+  task: 'PcCheck',
   agent: 'Sparks',
   file: 'Page',
   studio: 'MediaImagePlus',
@@ -243,10 +243,9 @@ const RecentActivity = ({ lang }: { lang: LanguageCode }) => {
             variant="faded"
             startContent={<Icon name={item.icon} size="sm" />}
             textValue={item.name}
+            classNames={{ title: 'truncate' }}
           >
-            <span className="truncate text-ellipsis text-small">
-              {item.name}
-            </span>
+            <span className="text-small">{item.name}</span>
           </ListboxItem>
         ))}
       </ListboxSection>
@@ -406,7 +405,7 @@ const RecentActivity = ({ lang }: { lang: LanguageCode }) => {
 
 const BackDrop = () => (
   <div
-    className="fixed inset-0 bg-black opacity-40 dark:opacity-70 -z-1 pointer-events-auto"
+    className="fixed inset-0 bg-black opacity-40 dark:opacity-70 -z-1"
     onClick={userSettings.getState().toggleDrawer}
   />
 )
@@ -487,14 +486,14 @@ export const AppDrawer = memo(() => {
   return (
     <aside
       className={clsx(
-        'pointer-events-none flex-0 h-full md:h-screen z-50 fixed md:relative',
+        'flex-0 h-full md:h-screen z-50 fixed md:relative',
         !isCollapsed && '-me-4',
       )}
     >
       <div
         id="app-drawer"
         data-testid="app-drawer"
-        className={clsx('h-full', isCollapsed && 'fixed')}
+        className={clsx('h-full')}
         data-state={isCollapsed ? 'collapsed' : 'expanded'}
       >
         <CollapsedDrawer
@@ -529,7 +528,7 @@ export const AppDrawer = memo(() => {
           transition: width 0.1s ease-in-out;
         }
         #app-drawer[data-state="collapsed"] {
-          width: 73px; /* Collapsed width */
+          width: 56px; /* Collapsed width */
         }
         #app-drawer[data-state="expanded"] {
           width: 256px; /* Expanded width */
@@ -568,23 +567,23 @@ const CollapsedDrawer = ({
 
   return (
     <div
-      className={`group w-18 p-4 lg:p-4 h-full z-50 flex flex-col transition-all duration-200 border-e border-transparent hover:bg-background dark:hover:bg-content1 hover:border-default-200 ${className} hover:pointer-events-auto`}
+      className={`group w-18 p-4 lg:p-4 h-full z-50 flex flex-col transition-all duration-200 border-e border-transparent ${className}`}
     >
-      <div className="flex flex-col items-center overflow-y-auto overflow-x-hidden no-scrollbar">
+      <div className="flex flex-col items-center overflow-y-auto overflow-x-hidden no-scrollbar -mt-4 md:mt-0">
         <Tooltip content={t('Expand sidebar')} placement="right">
           <Button
             data-testid="menu-button"
             isIconOnly
             variant="light"
             onPress={() => userSettings.getState().toggleDrawer()}
-            className="mb-4 pointer-events-auto backdrop-blur-xs backdrop-brightness-120"
+            className="mb-4 backdrop-blur-xs"
             aria-label={t('Expand sidebar')}
           >
             <Icon name="SidebarExpand" className="opacity-40 dark:opacity-60" />
           </Button>
         </Tooltip>
 
-        <div className="w-full opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+        <div>
           {/* Collapsed Navigation Icons */}
           <nav className="flex flex-col w-full">
             <Tooltip content={t('New chat')} placement="right">
@@ -664,7 +663,23 @@ const CollapsedDrawer = ({
                 )}
                 aria-label={t('Tasks')}
               >
-                <Icon name="TriangleFlagTwoStripes" />
+                <Icon name="PcCheck" />
+              </Button>
+            </Tooltip>
+            <Tooltip content={t('Library')} placement="right">
+              <Button
+                as={Link}
+                href={url('/library')}
+                isIconOnly
+                color="success"
+                variant="light"
+                className={cn(
+                  'w-full text-success-600 dark:text-success-300 [.is-active]:bg-default-100',
+                  isCurrentPath('/library') && 'is-active',
+                )}
+                aria-label={t('Library')}
+              >
+                <Icon name="BookStack" />
               </Button>
             </Tooltip>
             {hasConversations && (
@@ -881,7 +896,7 @@ const ExpandedDrawer = ({
     >
       <ScrollShadow
         hideScrollBar
-        className="pointer-events-auto flex flex-col overflow-y-auto flex-1 p-0.5"
+        className="flex flex-col overflow-y-auto flex-1 p-0.5"
       >
         <div className="mb-3.5 flex items-center p-0.5 justify-between">
           <Link href={url('')}>
@@ -979,12 +994,30 @@ const ExpandedDrawer = ({
                   )}
                   startContent={
                     <Icon
-                      name="TriangleFlagTwoStripes"
+                      name="PcCheck"
                       className="text-secondary dark:text-secondary-600"
                     />
                   }
                 >
                   {t('Tasks')}
+                </ListboxItem>,
+                <ListboxItem
+                  key="library"
+                  href={url('/library')}
+                  variant="faded"
+                  // color="success"
+                  className={cn(
+                    // 'dark:text-gray-200 dark:hover:text-success-500 [.is-active]:bg-default-100',
+                    isCurrentPath('/library') && 'is-active',
+                  )}
+                  startContent={
+                    <Icon
+                      name="BookStack"
+                      className="text-success-600 dark:text-success-300"
+                    />
+                  }
+                >
+                  {t('Library')}
                 </ListboxItem>,
                 <ListboxItem
                   key="conversations"
@@ -1100,7 +1133,7 @@ const ExpandedDrawer = ({
       </ScrollShadow>
 
       {/* Bottom navigation */}
-      <nav className="pointer-events-auto w-full flex flex-col mt-4 gap-2">
+      <nav className="w-full flex flex-col mt-4 gap-2">
         {/* Progress indicator and Organization/Product name at bottom */}
 
         {/* Language Selector Popover */}

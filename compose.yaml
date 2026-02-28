@@ -1,5 +1,5 @@
 services:
   devs:
-    image: codename/devs
+    image: codename/devs:${DEVS_VERSION:-latest}
     ports:
       - 8080:80

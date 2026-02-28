@@ -55,6 +55,8 @@ export class LocalLLMProvider implements LLMProviderInterface {
   // Cache for available models to avoid repeated HuggingFace API calls
   private static cachedModels: string[] | null = null
   private static modelsPromise: Promise<string[]> | null = null
+  // When true, bypass WebGPU and use WASM backend (set after WebGPU runtime failure)
+  private static useWasmFallback = false
 
   // Default model, optimized for browser inference
   public static readonly DEFAULT_MODEL =
@@ -124,7 +126,52 @@ export class LocalLLMProvider implements LLMProviderInterface {
   }
 
   /**
-   * Load the model pipeline with progress tracking
+   * Detect GPU buffer allocation / runtime errors from ONNX Runtime WebGPU backend.
+   * These occur when a tensor size overflows or exceeds the device's maxBufferSize.
+   */
+  private static isGpuBufferError(error: unknown): boolean {
+    const msg =
+      error instanceof Error
+        ? error.message
+        : typeof error === 'string'
+          ? error
+          : String(error)
+    return (
+      msg.includes('createBuffer') ||
+      msg.includes('unsigned long long') ||
+      msg.includes('maxBufferSize') ||
+      msg.includes('GPUBufferDescriptor') ||
+      msg.includes('GPUDevice')
+    )
+  }
+
+  /**
+   * Determine the best dtype for a model based on its name and WebGPU device limits.
+   * ONNX-web models are pre-quantized and should use q4f16 to avoid GPU buffer overflow.
+   * Falls back to fp16 for other models, then fp32 as last resort.
+   */
+  private static getDtypeForModel(
+    modelName: string,
+  ): 'q4f16' | 'fp16' | 'fp32' {
+    const lower = modelName.toLowerCase()
+
+    // ONNX-web models are pre-quantized for browser inference — always use q4f16
+    if (lower.includes('onnx-web') || lower.includes('onnx_web')) {
+      return 'q4f16'
+    }
+
+    // For other ONNX community models, prefer fp16 to stay within GPU buffer limits
+    if (lower.includes('onnx')) {
+      return 'fp16'
+    }
+
+    // Default to fp16 for WebGPU — fp32 often exceeds maxBufferSize
+    return 'fp16'
+  }
+
+  /**
+   * Load the model pipeline with progress tracking.
+   * Uses WebGPU by default, falls back to WASM if WebGPU previously failed at runtime.
    */
   private async loadPipeline(
     modelName: string,
@@ -136,26 +183,46 @@ export class LocalLLMProvider implements LLMProviderInterface {
       })
     }
 
-    const generator = await pipeline('text-generation', modelName, {
-      device: 'webgpu',
-      // dtype: 'q4f16',
-      // dtype: 'fp16',
-      progress_callback: (progress: any) => {
-        LocalLLMProvider.progressCallback?.({
-          status: progress.status || 'downloading',
-          loaded: progress.loaded,
-          total: progress.total,
-          progress: progress.progress,
-        })
-      },
-    })
+    const dtype = LocalLLMProvider.getDtypeForModel(modelName)
+    const device = LocalLLMProvider.useWasmFallback ? 'wasm' : 'webgpu'
+    console.log(
+      `[LOCAL-LLM] Loading model "${modelName}" with dtype: ${dtype}, device: ${device}`,
+    )
 
-    LocalLLMProvider.progressCallback?.({
-      status: 'ready',
-      progress: 100,
-    })
+    try {
+      const generator = await pipeline('text-generation', modelName, {
+        device,
+        dtype,
+        progress_callback: (progress: any) => {
+          LocalLLMProvider.progressCallback?.({
+            status: progress.status || 'downloading',
+            loaded: progress.loaded,
+            total: progress.total,
+            progress: progress.progress,
+          })
+        },
+      })
 
-    return generator
+      LocalLLMProvider.progressCallback?.({
+        status: 'ready',
+        progress: 100,
+      })
+
+      return generator
+    } catch (error: unknown) {
+      // If WebGPU loading itself fails, try WASM fallback automatically
+      if (
+        !LocalLLMProvider.useWasmFallback &&
+        LocalLLMProvider.isGpuBufferError(error)
+      ) {
+        console.warn(
+          `[LOCAL-LLM] WebGPU loading failed for "${modelName}", retrying with WASM backend...`,
+        )
+        LocalLLMProvider.useWasmFallback = true
+        return this.loadPipeline(modelName)
+      }
+      throw error
+    }
   }
 
   /**
@@ -197,6 +264,30 @@ export class LocalLLMProvider implements LLMProviderInterface {
   }
 
   async chat(
+    messages: LLMMessage[],
+    config?: Partial<LLMConfig>,
+  ): Promise<LLMResponse> {
+    try {
+      return await this._executeChatInference(messages, config)
+    } catch (error: unknown) {
+      // If WebGPU fails at inference time, automatically retry with WASM
+      if (
+        !LocalLLMProvider.useWasmFallback &&
+        LocalLLMProvider.isGpuBufferError(error)
+      ) {
+        console.warn(
+          '[LOCAL-LLM] WebGPU inference failed with GPU buffer error. ' +
+            'Falling back to WASM backend and retrying...',
+        )
+        LocalLLMProvider.useWasmFallback = true
+        await LocalLLMProvider.unload()
+        return this._executeChatInference(messages, config)
+      }
+      throw error
+    }
+  }
+
+  private async _executeChatInference(
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
   ): Promise<LLMResponse> {
@@ -257,6 +348,31 @@ export class LocalLLMProvider implements LLMProviderInterface {
   }
 
   async *streamChat(
+    messages: LLMMessage[],
+    config?: Partial<LLMConfig>,
+  ): AsyncIterableIterator<string> {
+    try {
+      yield* this._executeStreamInference(messages, config)
+    } catch (error: unknown) {
+      // If WebGPU fails at inference time, automatically retry with WASM
+      if (
+        !LocalLLMProvider.useWasmFallback &&
+        LocalLLMProvider.isGpuBufferError(error)
+      ) {
+        console.warn(
+          '[LOCAL-LLM] WebGPU streaming failed with GPU buffer error. ' +
+            'Falling back to WASM backend and retrying...',
+        )
+        LocalLLMProvider.useWasmFallback = true
+        await LocalLLMProvider.unload()
+        yield* this._executeStreamInference(messages, config)
+      } else {
+        throw error
+      }
+    }
+  }
+
+  private async *_executeStreamInference(
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
   ): AsyncIterableIterator<string> {

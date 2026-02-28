@@ -14,6 +14,7 @@ instructions: | # markdown
   - The final App component in its own function; instead, wrap it in an anonymous function passed to `_render`.
   - The code must be self-contained, with all necessary styles and scripts included via CDN links.
   - The design must be clean, modern, and user-friendly, following best practices in UI/UX.
+  - When relying on external libraries, rely on import maps and esm.sh for module resolution, and ensure to specify react as an external dependency (`?external=react`).
 
   ```html
   <!doctype html>

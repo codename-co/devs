@@ -16,4 +16,5 @@ export const de: I18n = {
   requirements: 'Anforderungen',
   'Filter by status': 'Nach Status filtern',
   'In Progress': 'In Arbeit',
+  'Sub-Tasks': 'Unteraufgaben',
 } as const

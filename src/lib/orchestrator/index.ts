@@ -47,6 +47,33 @@ export {
 // Task queue
 export { TaskQueue, type QueuedTask, type TaskQueueEvent } from './task-queue'
 
+// Orchestration event bus
+export {
+  on as onOrchestrationEvent,
+  onAny as onAnyOrchestrationEvent,
+  emit as emitOrchestrationEvent,
+  removeAllListeners as removeAllOrchestrationListeners,
+  type OrchestrationEvent,
+  type AgentStartEvent,
+  type AgentStreamingEvent,
+  type AgentToolCallEvent,
+  type AgentCompleteEvent,
+  type PhaseChangeEvent,
+} from './events'
+
+// Team coordinator
+export {
+  SharedTaskList,
+  TeamMailbox,
+  TeamCoordinator,
+  detectTeamFromPrompt,
+  type TeamTask,
+  type TeamMessage,
+  type AgentTeamConfig,
+  type TeamDetectionResult,
+  type TeamTaskInput,
+} from './team-coordinator'
+
 // ============================================================================
 // Legacy compatibility — re-export WorkflowOrchestrator facade
 // ============================================================================

@@ -145,6 +145,12 @@ export const IndexPage = () => {
     mentionedAgent?: Agent,
     _mentionedMethodology?: unknown,
     mentionedSkills?: InstalledSkill[],
+    mentionedConnectors?: Array<{
+      id: string
+      name: string
+      provider: string
+      accountEmail?: string
+    }>,
   ) => {
     const promptToUse = cleanedPrompt ?? prompt
     if (!promptToUse.trim() || isSending) return
@@ -178,6 +184,19 @@ export const IndexPage = () => {
         skillMdContent: skill.skillMdContent || skill.description,
       }))
       sessionStorage.setItem('pendingSkills', JSON.stringify(skillsData))
+    }
+
+    // Store activated connectors for the agent run page
+    if (mentionedConnectors && mentionedConnectors.length > 0) {
+      const connectorsData = mentionedConnectors.map((c) => ({
+        name: c.name,
+        provider: c.provider,
+        accountEmail: c.accountEmail,
+      }))
+      sessionStorage.setItem(
+        'pendingConnectors',
+        JSON.stringify(connectorsData),
+      )
     }
 
     // Navigate to the agent run page using slug

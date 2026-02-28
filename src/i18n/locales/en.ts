@@ -30,6 +30,7 @@ export const en = [
   'RECENT',
   'Recent activity',
   'Marketplace',
+  'Library',
   'Skills',
   'Verified',
   'Start a conversation',
@@ -291,7 +292,15 @@ export const en = [
   'Task Not Found',
   'The requested task could not be found.',
   'Task Steps',
+  'Steps',
+  'Agents working…',
+  'No conversation messages yet.',
+  'Copied to clipboard',
+  'Conversation',
+  'No messages yet. The task is being processed…',
   'Validation Criteria',
+  'Delete task',
+  'Are you sure you want to delete this task? This action cannot be undone.',
 
   // SubTaskTree Component
   'Task Hierarchy',

@@ -315,7 +315,7 @@ export const SubTaskTree = ({
                       key={depId}
                       className="flex items-center gap-2 p-2 bg-warning-50 border border-warning-200 rounded"
                     >
-                      <Icon name="X" className="w-4 h-4 text-warning" />
+                      <Icon name="Xmark" className="w-4 h-4 text-warning" />
                       <span className="text-sm text-warning-700">
                         Dependency task not found: {depId.substring(0, 8)}...
                       </span>

@@ -23,6 +23,7 @@ import { TermsPage } from '@/pages/Terms'
 import { OAuthCallbackPage } from '@/pages/OAuth'
 import { TaskPage } from '@/pages/Tasks/show'
 import { TasksPage } from '@/pages/Tasks'
+import { LibraryPage } from '@/pages/Artifacts'
 import { LivePage } from '@/features/live'
 import {
   MarketplacePage,
@@ -53,6 +54,7 @@ const routes = {
   task: TaskPage,
   tasks: TasksPage,
   'tasks/:taskId': TaskPage,
+  library: LibraryPage,
   terms: TermsPage,
   marketplace: MarketplacePage,
   'marketplace/new': NewExtensionPage,

@@ -28,9 +28,8 @@ interface AgentMentionResult {
 }
 
 // Regex to detect @mentions while typing:
-// Matches @word characters (simple) or @[text inside brackets (bracket syntax for multi-word names)
-const MENTION_REGEX = /@(\w*)$/
-const BRACKET_MENTION_REGEX = /@\[([^\]]*)$/
+// Matches @word-characters including hyphens (spaces in agent names are auto-replaced with "-")
+const MENTION_REGEX = /@([\w-]*)$/
 
 export function useAgentMention({
   lang,
@@ -55,28 +54,21 @@ export function useAgentMention({
       return availableAgents
     }
 
-    const query = mentionQuery.toLowerCase()
+    const query = mentionQuery.toLowerCase().replace(/-/g, ' ')
     return availableAgents.filter((agent) => {
       const name = (agent.i18n?.[lang]?.name ?? agent.name).toLowerCase()
+      const hyphenatedName = name.replace(/\s+/g, '-')
       const id = agent.id.toLowerCase()
-      return name.includes(query) || id.includes(query)
+      return (
+        name.includes(query) ||
+        hyphenatedName.includes(mentionQuery.toLowerCase()) ||
+        id.includes(query)
+      )
     })
   }, [availableAgents, mentionQuery, lang])
 
   // Detect @ mentions while typing
   useEffect(() => {
-    // First check for bracket syntax: @[partial name
-    const bracketMatch = prompt.match(BRACKET_MENTION_REGEX)
-    if (bracketMatch) {
-      const query = bracketMatch[1] || ''
-      setMentionQuery(query)
-      setMentionStartIndex(prompt.length - bracketMatch[0].length)
-      setShowMentionPopover(true)
-      setSelectedIndex(0)
-      return
-    }
-
-    // Then check for simple syntax: @partial
     const match = prompt.match(MENTION_REGEX)
     if (match) {
       const query = match[1] || ''
@@ -97,14 +89,12 @@ export function useAgentMention({
       if (mentionStartIndex === -1) return
 
       const agentName = agent.i18n?.[lang]?.name ?? agent.name
-      // Replace the partial @mention with the full agent name in bracket syntax
+      // Replace spaces with hyphens for clean @mention syntax
+      const hyphenatedName = agentName.replace(/\s+/g, '-')
       const beforeMention = prompt.substring(0, mentionStartIndex)
-      // Account for bracket char if user was typing @[query
-      const isBracket = prompt[mentionStartIndex + 1] === '['
-      const mentionLen = (isBracket ? 2 : 1) + mentionQuery.length
+      const mentionLen = 1 + mentionQuery.length // 1 for the '@' char
       const afterMention = prompt.substring(mentionStartIndex + mentionLen)
-      // Use @[Name] format to properly support names with spaces
-      const newPrompt = `${beforeMention}@[${agentName}] ${afterMention}`
+      const newPrompt = `${beforeMention}@${hyphenatedName} ${afterMention}`
 
       onPromptChange(newPrompt)
       setShowMentionPopover(false)
@@ -168,30 +158,19 @@ export function useAgentMention({
   const extractMentionedAgents = useCallback((): Agent[] => {
     const mentions: Agent[] = []
 
-    // First, extract @[Multi Word Name] bracket mentions
-    const bracketMatches = prompt.matchAll(/(^|[\s])@\[([^\]]+)\]/g)
-    for (const match of bracketMatches) {
+    // Extract @hyphenated-name mentions
+    const mentionMatches = prompt.matchAll(/(^|[\s])@([\w-]+)/g)
+    for (const match of mentionMatches) {
       const mentionName = match[2].toLowerCase()
       const agent = availableAgents.find((a) => {
         const name = (a.i18n?.[lang]?.name ?? a.name).toLowerCase()
+        const hyphenatedName = name.replace(/\s+/g, '-')
         const id = a.id.toLowerCase()
-        return name === mentionName || id === mentionName
-      })
-      if (agent && !mentions.find((m) => m.id === agent.id)) {
-        mentions.push(agent)
-      }
-    }
-
-    // Also extract simple @SingleWord mentions for backward compatibility
-    const simpleMatches = prompt.matchAll(/(^|[\s])@(\w+)/g)
-    for (const match of simpleMatches) {
-      const mentionName = match[2].toLowerCase()
-      const agent = availableAgents.find((a) => {
-        const name = (a.i18n?.[lang]?.name ?? a.name)
-          .toLowerCase()
-          .replace(/\s+/g, '')
-        const id = a.id.toLowerCase()
-        return name === mentionName || id === mentionName
+        return (
+          hyphenatedName === mentionName ||
+          name.replace(/\s+/g, '') === mentionName ||
+          id === mentionName
+        )
       })
       if (agent && !mentions.find((m) => m.id === agent.id)) {
         mentions.push(agent)
@@ -203,11 +182,9 @@ export function useAgentMention({
 
   // Remove all @mentions from the prompt
   const removeMentionsFromPrompt = useCallback((text: string): string => {
-    // Replace @mentions with empty string, cleaning up extra spaces
-    // Handle both @[Multi Word] bracket syntax and @SingleWord simple syntax
+    // Replace @hyphenated-name mentions with empty string, cleaning up extra spaces
     return text
-      .replace(/(^|[\s])@\[[^\]]+\]\s*/g, '$1')
-      .replace(/(^|[\s])@[\w]+\s*/g, '$1')
+      .replace(/(^|[\s])@[\w-]+\s*/g, '$1')
       .replace(/\s+/g, ' ')
       .trim()
   }, [])
