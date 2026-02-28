@@ -111,16 +111,16 @@ const SEARCH_CONFIG = {
 
 ## Searchable Entities
 
-| Entity        | Searchable Fields              | Icon                     | Base Score |
-| ------------- | ------------------------------ | ------------------------ | ---------- |
-| Agents        | name, role, description, tags  | `Sparks`                 | 5          |
-| Conversations | title, summary                 | `ChatBubble`             | 3          |
-| Messages      | content                        | `ChatLines`              | 1          |
-| Tasks         | title, description             | `TriangleFlagTwoStripes` | 4          |
-| Files         | name, description, path, tags  | `Folder` / `Document`    | 2          |
-| Memories      | title, content, keywords, tags | `Brain`                  | 2          |
-| Methodologies | name, description, tags        | `Strategy`               | 3          |
-| Connectors    | name, provider, category       | `Puzzle`                 | 2          |
+| Entity        | Searchable Fields              | Icon                  | Base Score |
+| ------------- | ------------------------------ | --------------------- | ---------- |
+| Agents        | name, role, description, tags  | `Sparks`              | 5          |
+| Conversations | title, summary                 | `ChatBubble`          | 3          |
+| Messages      | content                        | `ChatLines`           | 1          |
+| Tasks         | title, description             | `PcCheck`.            | 4          |
+| Files         | name, description, path, tags  | `Folder` / `Document` | 2          |
+| Memories      | title, content, keywords, tags | `Brain`               | 2          |
+| Methodologies | name, description, tags        | `Strategy`            | 3          |
+| Connectors    | name, provider, category       | `Puzzle`              | 2          |
 
 ## Scoring Algorithm
 

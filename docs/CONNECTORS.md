@@ -1520,7 +1520,7 @@ test('connect Google Drive flow', async ({ page }) => {
     })
   })
 
-  await page.goto('/settings/connectors')
+  await page.goto('/#settings/connectors')
   await page.click('text=Add Connector')
   await page.click('text=Google Drive')
 

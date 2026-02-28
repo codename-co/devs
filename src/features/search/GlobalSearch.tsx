@@ -32,6 +32,7 @@ const localI18n = {
     'No results found',
     'New task',
     'agent',
+    'artifact',
     'conversation',
     'task',
     'file',
@@ -42,6 +43,7 @@ const localI18n = {
     'media',
     'page',
     'Agents',
+    'Artifacts',
     'Conversations',
     'Tasks',
     'Files',
@@ -60,6 +62,7 @@ const localI18n = {
     'No results found': 'لم يتم العثور على نتائج',
     'New task': 'مهمة جديدة',
     agent: 'وكيل',
+    artifact: 'مخرج',
     conversation: 'محادثة',
     task: 'مهمة',
     file: 'ملف',
@@ -70,6 +73,7 @@ const localI18n = {
     media: 'وسائط',
     page: 'صفحة',
     Agents: 'الوكلاء',
+    Artifacts: 'المخرجات',
     Conversations: 'المحادثات',
     Tasks: 'المهام',
     Files: 'الملفات',
@@ -88,6 +92,7 @@ const localI18n = {
     'No results found': 'Keine Ergebnisse gefunden',
     'New task': 'Neue Aufgabe',
     agent: 'Agent',
+    artifact: 'Artefakt',
     conversation: 'Konversation',
     task: 'Aufgabe',
     file: 'Datei',
@@ -98,6 +103,7 @@ const localI18n = {
     media: 'Medien',
     page: 'Seite',
     Agents: 'Agenten',
+    Artifacts: 'Artefakte',
     Conversations: 'Konversationen',
     Tasks: 'Aufgaben',
     Files: 'Dateien',
@@ -116,6 +122,7 @@ const localI18n = {
     'No results found': 'No se encontraron resultados',
     'New task': 'Nueva tarea',
     agent: 'agente',
+    artifact: 'artefacto',
     conversation: 'conversación',
     task: 'tarea',
     file: 'archivo',
@@ -126,6 +133,7 @@ const localI18n = {
     media: 'medios',
     page: 'página',
     Agents: 'Agentes',
+    Artifacts: 'Artefactos',
     Conversations: 'Conversaciones',
     Tasks: 'Tareas',
     Files: 'Archivos',
@@ -144,6 +152,7 @@ const localI18n = {
     'No results found': 'Aucun résultat trouvé',
     'New task': 'Nouvelle tâche',
     agent: 'agent',
+    artifact: 'artefact',
     conversation: 'conversation',
     task: 'tâche',
     file: 'fichier',
@@ -154,6 +163,7 @@ const localI18n = {
     media: 'médias',
     page: 'page',
     Agents: 'Agents',
+    Artifacts: 'Artefacts',
     Conversations: 'Conversations',
     Tasks: 'Tâches',
     Files: 'Fichiers',
@@ -171,6 +181,7 @@ const localI18n = {
     'No results found': '결과를 찾을 수 없습니다',
     'New task': '새 작업',
     agent: '에이전트',
+    artifact: '산출물',
     conversation: '대화',
     task: '작업',
     file: '파일',
@@ -181,6 +192,7 @@ const localI18n = {
     media: '미디어',
     page: '페이지',
     Agents: '에이전트',
+    Artifacts: '산출물',
     Conversations: '대화',
     Tasks: '작업',
     Files: '파일',
@@ -199,6 +211,7 @@ const localI18n = {
  */
 const SECTION_TITLE_KEYS: Record<SearchResultType, string> = {
   agent: 'Agents',
+  artifact: 'Artifacts',
   conversation: 'Conversations',
   task: 'Tasks',
   file: 'Files',
@@ -216,6 +229,7 @@ const SECTION_TITLE_KEYS: Record<SearchResultType, string> = {
 function getIconColorClass(type: SearchResultType): string {
   const colors: Record<SearchResultType, string> = {
     agent: 'text-warning',
+    artifact: 'text-secondary',
     conversation: 'text-default-500',
     task: 'text-secondary',
     file: 'text-primary',
@@ -523,7 +537,7 @@ export function GlobalSearch() {
                               <Icon
                                 name={
                                   item.type === 'task'
-                                    ? 'TriangleFlagTwoStripes'
+                                    ? 'PcCheck'
                                     : 'ChatBubble'
                                 }
                                 className={

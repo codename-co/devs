@@ -6,6 +6,7 @@ import {
   memories as memoriesMap,
   studioEntries as studioEntriesMap,
   connectors as connectorsMap,
+  artifacts as artifactsMap,
 } from '@/lib/yjs'
 import {
   decryptFields,
@@ -24,6 +25,7 @@ import { IconName } from '@/lib/types'
 
 export type SearchResultType =
   | 'agent'
+  | 'artifact'
   | 'conversation'
   | 'task'
   | 'file'
@@ -69,6 +71,7 @@ const SEARCH_CONFIG = {
  */
 const TYPE_COLORS: Record<SearchResultType, string> = {
   agent: 'warning',
+  artifact: 'secondary',
   conversation: 'default',
   task: 'secondary',
   file: 'primary',
@@ -85,6 +88,7 @@ const TYPE_COLORS: Record<SearchResultType, string> = {
  */
 const TYPE_ICONS: Record<SearchResultType, string> = {
   agent: 'Sparks',
+  artifact: 'Page',
   conversation: 'ChatBubble',
   task: 'PcCheck',
   file: 'Folder',
@@ -454,6 +458,44 @@ async function searchMemories(query: string): Promise<SearchResult[]> {
     }
   } catch (error) {
     console.warn('Failed to search memories:', error)
+  }
+
+  return results
+}
+
+/**
+ * Index and search artifacts
+ */
+async function searchArtifacts(query: string): Promise<SearchResult[]> {
+  const results: SearchResult[] = []
+
+  try {
+    const allArtifacts = Array.from(artifactsMap.values())
+    for (const artifact of allArtifacts) {
+      const texts = [
+        artifact.title,
+        artifact.description,
+        artifact.type,
+        artifact.format,
+      ]
+      if (matchesQuery(query, texts)) {
+        results.push({
+          id: artifact.id,
+          type: 'artifact',
+          title: artifact.title,
+          subtitle: `${artifact.type} · ${artifact.status}`,
+          icon: TYPE_ICONS.artifact,
+          color: TYPE_COLORS.artifact,
+          href: `/library#${artifact.id}`,
+          score: calculateScore(query, texts, 3),
+          timestamp: artifact.updatedAt
+            ? new Date(artifact.updatedAt)
+            : new Date(artifact.createdAt),
+        })
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to search artifacts:', error)
   }
 
   return results
@@ -836,6 +878,7 @@ export async function globalSearch(
   // Run all searches in parallel
   const [
     agents,
+    artifacts,
     conversations,
     messages,
     tasks,
@@ -847,6 +890,7 @@ export async function globalSearch(
     pages,
   ] = await Promise.all([
     searchAgents(query),
+    searchArtifacts(query),
     searchConversations(query),
     searchMessages(query),
     searchTasks(query),
@@ -862,6 +906,7 @@ export async function globalSearch(
   const allResults = [
     ...pages, // Pages first for quick navigation
     ...agents,
+    ...artifacts,
     ...conversations,
     ...messages,
     ...tasks,
@@ -923,7 +968,7 @@ export function createDebouncedSearch(
 
 /**
  * Check if there are any searchable items (user-generated content)
- * Returns true if there are conversations, tasks, files, memories, connectors, or media
+ * Returns true if there are conversations, tasks, files, memories, connectors, media, or artifacts
  */
 export async function hasSearchableItems(): Promise<boolean> {
   try {
@@ -935,6 +980,7 @@ export async function hasSearchableItems(): Promise<boolean> {
     if (connectorsMap.size > 0) return true
     if (studioEntriesMap.size > 0) return true
     if (agentsMap.size > 0) return true
+    if (artifactsMap.size > 0) return true
 
     return false
   } catch (error) {
