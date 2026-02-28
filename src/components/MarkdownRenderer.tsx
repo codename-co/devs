@@ -1,6 +1,6 @@
 import { marked } from 'marked'
 import katex from 'katex'
-import React, { JSX, useEffect, useMemo, useRef, useState } from 'react'
+import React, { JSX, useEffect, useId, useMemo, useRef, useState } from 'react'
 
 import {
   type CodeBlockType,
@@ -15,6 +15,11 @@ import {
   EXTENDED_CITATION_PATTERN,
   getSemanticCitationType,
 } from './InlineSource'
+import {
+  openInspector,
+  updateLiveWidget,
+  useInspectorPanelStore,
+} from '@/stores/inspectorPanelStore'
 
 interface MarkdownRendererProps {
   content: string
@@ -60,6 +65,32 @@ export const MarkdownRenderer = ({
   }>({ html: '', codeBlocks: [], thinkBlocks: [], mathBlocks: [] })
 
   const { t } = useI18n()
+
+  // Stable ID scoped to this MarkdownRenderer instance, used to build
+  // unique widget identifiers that survive re-renders.
+  const instanceId = useId()
+
+  // Keep the inspector panel's widget in sync whenever our code blocks
+  // change (e.g. during streaming).  We read the inspector item once per
+  // processedContent update and push new code if it belongs to us.
+  const inspectorWidgetId = useInspectorPanelStore((s) =>
+    s.item?.type === 'widget' ? s.item.widgetId : undefined,
+  )
+
+  useEffect(() => {
+    if (!inspectorWidgetId || !inspectorWidgetId.startsWith(instanceId)) return
+
+    const match = processedContent.codeBlocks.find(
+      (b) => `${instanceId}-${b.id}` === inspectorWidgetId,
+    )
+    if (match && match.specializedType) {
+      updateLiveWidget(inspectorWidgetId, {
+        code: match.code,
+        widgetType: match.specializedType,
+        language: match.language,
+      })
+    }
+  }, [processedContent.codeBlocks, inspectorWidgetId, instanceId])
 
   // Helper function to configure marked with KaTeX support
   const configureMarked = () => {
@@ -582,6 +613,7 @@ export const MarkdownRenderer = ({
             codeBlock.type === 'specialized' &&
             codeBlock.specializedType
           ) {
+            const widgetId = `${instanceId}-${codeBlockId}`
             return (
               <Widget
                 key={codeBlockId}
@@ -589,6 +621,20 @@ export const MarkdownRenderer = ({
                 type={codeBlock.specializedType}
                 language={codeBlock.language}
                 className="my-4"
+                moreActions={[
+                  {
+                    label: 'Expand',
+                    icon: 'Expand',
+                    onPress: () =>
+                      openInspector({
+                        type: 'widget',
+                        widgetId,
+                        code: codeBlock.code,
+                        widgetType: codeBlock.specializedType!,
+                        language: codeBlock.language,
+                      }),
+                  },
+                ]}
               />
             )
           }

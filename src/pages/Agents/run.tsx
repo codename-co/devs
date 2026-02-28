@@ -29,9 +29,8 @@ import {
   MarkdownRenderer,
   PromptArea,
   Section,
-  Widget,
-  useTraceSources,
 } from '@/components'
+import { MessageContent } from '@/components/chat'
 import { AgentAppearancePicker } from '@/components/AgentAppearancePicker'
 import RunLayout from '@/layouts/Run'
 import { Link } from 'react-router-dom'
@@ -782,57 +781,6 @@ TimelineToolsDisplay.displayName = 'TimelineToolsDisplay'
  * Uses useTraceSources hook to load sources once and share them between
  * MarkdownRenderer (for inline citations) and SourcesDisplay (for source list).
  */
-const MessageContentWithSources = memo(
-  ({
-    content: rawContent,
-    detectContentType,
-    traceIds,
-    isStreaming = false,
-  }: {
-    content: string | Array<{ type: string; text?: string }>
-    detectContentType: (content: string) => string
-    traceIds: string[]
-    isStreaming?: boolean
-  }) => {
-    // Normalize content to string - it can be an array for multi-part messages
-    const content =
-      typeof rawContent === 'string'
-        ? rawContent
-        : Array.isArray(rawContent)
-          ? rawContent
-              .filter((p) => p.type === 'text' && p.text)
-              .map((p) => p.text)
-              .join('\n')
-          : String(rawContent ?? '')
-    const { citedSources } = useTraceSources({
-      traceIds,
-      loadTrace: useTraceStore.getState().loadTrace,
-      getCurrentSpans: () => useTraceStore.getState().currentSpans,
-      clearCurrentTrace: useTraceStore.getState().clearCurrentTrace,
-      content,
-    })
-
-    return (
-      <div className="text-left">
-        <div className="prose prose-neutral text-medium break-words">
-          {detectContentType(content) === 'marpit-presentation' ? (
-            <Widget type="marpit" language="yaml" code={content} />
-          ) : (
-            <MarkdownRenderer
-              content={content}
-              className="prose dark:prose-invert"
-              sources={citedSources}
-              isStreaming={isStreaming}
-            />
-          )}
-        </div>
-      </div>
-    )
-  },
-)
-
-MessageContentWithSources.displayName = 'MessageContentWithSources'
-
 // ============================================================================
 // Message Display Component
 // ============================================================================
@@ -843,7 +791,6 @@ const MessageDisplay = memo(
     message,
     selectedAgent,
     getMessageAgent,
-    detectContentType,
     isPinned,
     onPinClick,
     onLearnClick,
@@ -855,7 +802,6 @@ const MessageDisplay = memo(
     message: Message
     selectedAgent: Agent | null
     getMessageAgent: (message: Message) => Promise<Agent | null>
-    detectContentType: (content: string) => string
     isPinned: boolean
     onPinClick: (message: Message) => void
     onLearnClick: (message: Message) => void
@@ -958,9 +904,8 @@ const MessageDisplay = memo(
             />
           )}
           {message.content ? (
-            <MessageContentWithSources
+            <MessageContent
               content={message.content}
-              detectContentType={detectContentType}
               traceIds={message.traceIds || []}
               isStreaming={isStreaming}
             />
@@ -1866,25 +1811,6 @@ export const AgentRunPage = () => {
     return searchParams.get('message')
   }, [location.search])
 
-  // Helper function to detect content type
-  const detectContentType = useCallback((content: string) => {
-    // Check for Marpit presentation by looking for YAML frontmatter with marp: true
-    const yamlFrontmatterRegex = /^---\s*\n([\s\S]*?)\n---/
-    const match = content.match(yamlFrontmatterRegex)
-
-    if (match) {
-      const frontmatter = match[1]
-      if (
-        frontmatter.includes('marp: true') ||
-        frontmatter.includes('marp:true')
-      ) {
-        return 'marpit-presentation'
-      }
-    }
-
-    return 'markdown'
-  }, [])
-
   // Helper function to get agent for a message
   const getMessageAgent = useCallback(
     async (message: Message): Promise<Agent | null> => {
@@ -2515,7 +2441,6 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
                       message={item.data}
                       selectedAgent={selectedAgent}
                       getMessageAgent={getMessageAgent}
-                      detectContentType={detectContentType}
                       isPinned={checkIsPinned(item.data.id)}
                       onPinClick={handlePinClick}
                       onLearnClick={handleLearnClick}

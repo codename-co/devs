@@ -7,11 +7,43 @@ import {
   ValidationResult,
 } from '@/lib/requirement-validator'
 
+// ============================================================================
+// Helper: Normalize a date value that may have been corrupted by Yjs binary
+// serialization (Date objects have no enumerable properties, so Yjs encodes
+// them as empty plain objects {} which survive as {} after page reload).
+// ============================================================================
+function normalizeYjsDate(value: unknown): string {
+  if (value instanceof Date && !isNaN(value.getTime()))
+    return value.toISOString()
+  if (
+    typeof value === 'string' &&
+    value.length > 0 &&
+    !isNaN(Date.parse(value))
+  )
+    return value
+  if (typeof value === 'number') return new Date(value).toISOString()
+  return new Date(0).toISOString()
+}
+
 /**
- * Helper to get all tasks from Yjs map
+ * Helper to get all tasks from Yjs map, normalizing date fields
+ * that Yjs may have corrupted during serialization.
  */
 function getAllTasks(): Task[] {
-  return Array.from(tasks.values())
+  return Array.from(tasks.values()).map((task) => ({
+    ...task,
+    createdAt: normalizeYjsDate(task.createdAt),
+    updatedAt: normalizeYjsDate(task.updatedAt),
+    ...(task.completedAt !== undefined && {
+      completedAt: normalizeYjsDate(task.completedAt),
+    }),
+    ...(task.dueDate !== undefined && {
+      dueDate: normalizeYjsDate(task.dueDate),
+    }),
+    ...(task.assignedAt !== undefined && {
+      assignedAt: normalizeYjsDate(task.assignedAt),
+    }),
+  })) as Task[]
 }
 
 /**
@@ -127,13 +159,14 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         await whenReady
       }
 
+      const now = new Date().toISOString()
       const task: Task = {
         ...taskData,
         id: crypto.randomUUID(),
         steps: taskData.steps || [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
+        createdAt: now,
+        updatedAt: now,
+      } as Task
 
       tasks.set(task.id, task)
 
@@ -168,8 +201,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         ...task,
         ...updates,
         id,
-        updatedAt: new Date(),
-      }
+        updatedAt: new Date().toISOString(),
+      } as Task
 
       tasks.set(id, updatedTask)
 
@@ -237,8 +270,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       const updatedTask: Task = {
         ...task,
         requirements: [...task.requirements, newRequirement],
-        updatedAt: new Date(),
-      }
+        updatedAt: new Date().toISOString(),
+      } as Task
 
       tasks.set(taskId, updatedTask)
 
@@ -281,8 +314,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       const updatedTask: Task = {
         ...task,
         requirements: updatedRequirements,
-        updatedAt: new Date(),
-      }
+        updatedAt: new Date().toISOString(),
+      } as Task
 
       tasks.set(taskId, updatedTask)
 
@@ -422,8 +455,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       const updatedTask: Task = {
         ...task,
         steps: [...task.steps, newStep],
-        updatedAt: new Date(),
-      }
+        updatedAt: new Date().toISOString(),
+      } as Task
 
       tasks.set(taskId, updatedTask)
 
@@ -455,7 +488,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         throw new Error('Task not found')
       }
 
-      const startTime = new Date()
+      const startTime = new Date().toISOString()
       const updatedSteps = task.steps.map((step) =>
         step.id === stepId
           ? { ...step, status: 'in_progress' as const, startedAt: startTime }
@@ -465,8 +498,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       const updatedTask: Task = {
         ...task,
         steps: updatedSteps,
-        updatedAt: new Date(),
-      }
+        updatedAt: new Date().toISOString(),
+      } as Task
 
       tasks.set(taskId, updatedTask)
 
@@ -502,12 +535,12 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       const updatedSteps = task.steps.map((step) => {
         if (step.id === stepId) {
           const duration = step.startedAt
-            ? endTime.getTime() - step.startedAt.getTime()
+            ? endTime.getTime() - new Date(step.startedAt).getTime()
             : undefined
           return {
             ...step,
             status: 'completed' as const,
-            completedAt: endTime,
+            completedAt: endTime.toISOString(),
             duration,
           }
         }
@@ -517,8 +550,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       const updatedTask: Task = {
         ...task,
         steps: updatedSteps,
-        updatedAt: new Date(),
-      }
+        updatedAt: new Date().toISOString(),
+      } as Task
 
       tasks.set(taskId, updatedTask)
 
@@ -561,8 +594,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       const updatedTask: Task = {
         ...task,
         steps: updatedSteps,
-        updatedAt: new Date(),
-      }
+        updatedAt: new Date().toISOString(),
+      } as Task
 
       tasks.set(taskId, updatedTask)
 
@@ -629,7 +662,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       )
 
       // Update requirement statuses based on validation results
-      const validationTimestamp = new Date()
+      const validationTimestamp = new Date().toISOString()
       const updatedRequirements = task.requirements.map((req) => {
         const result = results.find((r) => r.requirementId === req.id)
         if (result) {
@@ -651,7 +684,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       const updatedTask = {
         ...task,
         requirements: updatedRequirements,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       }
 
       tasks.set(taskId, updatedTask)
@@ -697,8 +730,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       await get().updateRequirement(taskId, requirementId, {
         status: 'satisfied',
         validationCriteria: evidence || [],
-        satisfiedAt: new Date(),
-      })
+        satisfiedAt: new Date().toISOString(),
+      } as any)
       successToast('Requirement marked as satisfied')
     } catch (error) {
       errorToast('Failed to mark requirement as satisfied', error)
@@ -721,14 +754,15 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
           userRequirement,
         )
 
+      const now = new Date().toISOString()
       const task: Task = {
         ...taskData,
         id: taskId,
         requirements: extractedRequirements,
         steps: taskData.steps || [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
+        createdAt: now,
+        updatedAt: now,
+      } as Task
 
       tasks.set(task.id, task)
 

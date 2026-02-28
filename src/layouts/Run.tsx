@@ -1,9 +1,11 @@
 import { ContextualPanel, Icon } from '@/components'
+import { InspectorPanel } from '@/components/InspectorPanel'
 import { AppDrawer } from '@/components/AppDrawer'
 import { Tabbar } from '@/components/Tabbar'
 import { languageDirection, useI18n } from '@/i18n'
 import type { HeaderProps, IconName } from '@/lib/types'
 import { useContextualPanelStore } from '@/stores/contextualPanelStore'
+import { useInspectorPanelStore } from '@/stores/inspectorPanelStore'
 import { userSettings } from '@/stores/userStore'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
@@ -14,11 +16,12 @@ import {
   DropdownMenu,
   DropdownTrigger,
   Link,
+  ScrollShadow,
   ToastProvider,
   Tooltip,
 } from '@heroui/react'
 import clsx from 'clsx'
-import { useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { PRODUCT } from '@/config/product'
 
 export interface RunLayoutProps {
@@ -49,13 +52,26 @@ export default function RunLayout({
   const navigate = useNavigate()
   const location = useLocation()
   const clearBlocks = useContextualPanelStore((s) => s.clearBlocks)
+  const closeInspector = useInspectorPanelStore((s) => s.close)
 
   const direction = languageDirection[lang]
 
-  // Clear contextual panel when navigating to a new page
+  // Clear contextual panel and inspector when navigating to a new page
   useEffect(() => {
     clearBlocks()
-  }, [location.pathname, clearBlocks])
+    closeInspector()
+  }, [location.pathname, clearBlocks, closeInspector])
+
+  const isInspectorOpen = useInspectorPanelStore((s) => s.item !== null)
+
+  // Ref for the conversation scroll container so adjacent panels can forward wheel events
+  const conversationRef = useRef<HTMLElement>(null)
+
+  const handlePanelWheel = useCallback((e: React.WheelEvent) => {
+    const el = conversationRef.current
+    if (!el) return
+    el.scrollTop += e.deltaY
+  }, [])
 
   const { platformName } = userSettings()
 
@@ -80,16 +96,23 @@ export default function RunLayout({
       dir={direction}
     >
       <title children={metaTitle} />
-      <div className="flex relative min-h-screen">
+      <div className="flex relative h-screen overflow-hidden">
         <AppDrawer />
-        <div className="bg-background dark:bg-transparent md:m-4 md:rounded-xl flex flex-col-reverse w-full relative">
+        <div
+          className={clsx(
+            'bg-background dark:bg-transparent md:m-4 md:rounded-xl flex flex-col-reverse relative transition-all duration-200 overflow-hidden',
+            isInspectorOpen
+              ? 'min-w-64 w-full md:w-1/3 md:max-w-256 shrink-0'
+              : 'w-full',
+          )}
+        >
           <Tabbar className="md:hidden" />
 
           <main
             role="main"
-            className="flex-1 flex flex-col w-full @container/main"
+            className="flex-1 flex flex-col w-full overflow-hidden @container/main"
           >
-            <div className="flex flex-col relative bg-transparent min-h-full">
+            <div className="flex-1 flex flex-col relative bg-transparent min-h-0">
               {/* Compact top bar */}
               {header && (
                 <div className="sticky top-0 z-10 border-b border-default-200 rounded-t-xl dark:border-default-100 bg-background/80 backdrop-blur-lg">
@@ -228,18 +251,27 @@ export default function RunLayout({
               <ToastProvider />
 
               {/* Full-height content area — no PageMenu or padded sections */}
-              <div
+              <ScrollShadow
+                ref={conversationRef}
+                role="main"
+                hideScrollBar
                 className={clsx(
                   'flex-1 flex flex-col pb-14 md:pb-0',
+                  'w-full overflow-y-auto @container/main',
                   className,
                 )}
               >
                 {children}
-              </div>
+              </ScrollShadow>
             </div>
           </main>
         </div>
-        <ContextualPanel />
+        <div onWheel={handlePanelWheel}>
+          <ContextualPanel />
+        </div>
+        <div onWheel={handlePanelWheel} className="flex-1 min-w-0">
+          <InspectorPanel />
+        </div>
       </div>
     </div>
   )

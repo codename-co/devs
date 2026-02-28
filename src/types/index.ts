@@ -293,8 +293,8 @@ export interface TaskStep {
   name: string
   description: string
   status: 'pending' | 'in_progress' | 'completed' | 'failed'
-  startedAt?: Date
-  completedAt?: Date
+  startedAt?: Date | string
+  completedAt?: Date | string
   duration?: number // in milliseconds
   agentId?: string
   order: number
@@ -307,6 +307,77 @@ export interface TaskAttachment {
   data: string // base64 encoded file data
 }
 
+// ============================================================================
+// Agent Scope — Per-agent capability boundaries for orchestration
+// ============================================================================
+
+/**
+ * Scoping constraints for an agent during orchestrated execution.
+ * Inspired by Claude Code subagent scoping: each agent gets explicit
+ * boundaries on tools, model, iteration budget, and permissions.
+ */
+export interface AgentScope {
+  /** Tool allowlist — only these tools are available (empty/undefined = all) */
+  allowedTools?: string[]
+  /** Tool denylist — these tools are blocked (applied after allowlist) */
+  deniedTools?: string[]
+  /** Maximum agentic loop iterations before forced termination */
+  maxTurns?: number
+  /** Model override — use a specific model for this agent (e.g. cheaper for exploration) */
+  model?: string
+  /** Provider override — use a specific provider */
+  provider?: LLMProvider
+  /** Permission level for the agent */
+  permissions?: 'read-only' | 'read-write' | 'full'
+  /** Temperature override for this agent */
+  temperature?: number
+  /** Maximum tokens for each LLM call */
+  maxTokens?: number
+}
+
+// ============================================================================
+// Task Execution — Enhanced execution context
+// ============================================================================
+
+/**
+ * Execution mode for a task
+ * - 'single-shot': One LLM call (legacy behavior)
+ * - 'iterative': Agentic loop with tool use
+ * - 'parallel-isolated': Spawn N fresh-context agents
+ */
+export type TaskExecutionMode =
+  | 'single-shot'
+  | 'iterative'
+  | 'parallel-isolated'
+
+/**
+ * Priority levels for task queue scheduling
+ */
+export type TaskPriority = 'critical' | 'high' | 'normal' | 'low' | 'background'
+
+/**
+ * Background execution state for async tasks
+ */
+export type TaskRunState =
+  | 'queued'
+  | 'scheduled'
+  | 'running'
+  | 'paused'
+  | 'cancelling'
+  | 'cancelled'
+
+/**
+ * Input/output contract between dependent tasks.
+ * Each task declares what it produces and what it consumes,
+ * enabling intelligent context passing between agents.
+ */
+export interface TaskIOContract {
+  /** What this task receives from dependencies */
+  inputs?: { taskId: string; description: string }[]
+  /** What this task produces for downstream tasks */
+  outputs?: { key: string; description: string }[]
+}
+
 export interface Task {
   id: string
   workflowId: string
@@ -316,7 +387,7 @@ export interface Task {
   complexity: 'simple' | 'complex'
   status: 'pending' | 'in_progress' | 'completed' | 'failed'
   assignedAgentId?: string
-  assignedAt?: Date // When the agent was assigned
+  assignedAt?: Date | string // When the agent was assigned
   assignedRoleId?: string // Methodology role ID for this assignment
   parentTaskId?: string
   dependencies: string[]
@@ -325,14 +396,39 @@ export interface Task {
   steps: TaskStep[]
   estimatedPasses: number
   actualPasses: number
-  createdAt: Date
-  updatedAt: Date
-  completedAt?: Date // When the task was completed
-  dueDate?: Date
+  createdAt: Date | string
+  updatedAt: Date | string
+  completedAt?: Date | string // When the task was completed
+  dueDate?: Date | string
   // Methodology-specific fields
   methodologyId?: string // Which methodology is guiding this task
   phaseId?: string // Which phase of the methodology this task belongs to
   taskTemplateId?: string // Reference to the methodology's task template
+  // === New orchestration fields (v2) ===
+  /** How this task should be executed */
+  executionMode?: TaskExecutionMode
+  /** Agent scope overrides for this task */
+  agentScope?: AgentScope
+  /** Input/output contracts for dependency chaining */
+  ioContract?: TaskIOContract
+  /** Priority for queue scheduling */
+  priority?: TaskPriority
+  /** Background execution state (undefined = foreground) */
+  runState?: TaskRunState
+  /** Number of agentic loop turns actually consumed */
+  turnsUsed?: number
+  /** Whether this task can run in parallel with siblings */
+  parallelizable?: boolean
+  /** Synthesis flag — is this a synthesis/merge task? */
+  isSynthesis?: boolean
+  /** Tags for the agent model recommendation */
+  modelHint?: 'fast' | 'balanced' | 'powerful'
+  /** Scheduled execution time (for recurring/deferred tasks) */
+  scheduledAt?: Date
+  /** Recurrence rule (cron-like string, e.g. "0 9 * * 1" for every Monday 9am) */
+  recurrence?: string
+  /** Abort controller key for cancellation */
+  abortKey?: string
 }
 
 export interface Requirement {
@@ -344,9 +440,9 @@ export interface Requirement {
   status: 'pending' | 'in_progress' | 'satisfied' | 'failed'
   validationCriteria: string[]
   taskId: string
-  detectedAt?: Date
-  validatedAt?: Date
-  satisfiedAt?: Date
+  detectedAt?: Date | string
+  validatedAt?: Date | string
+  satisfiedAt?: Date | string
   validationResult?: string
 }
 
@@ -370,16 +466,24 @@ export interface TaskPlan {
     | 'sequential_agents'
     | 'parallel_agents'
     | 'hierarchical'
+    | 'parallel_isolated' // Manus Wide Research pattern
+    | 'iterative_deep' // Perplexity Research Mode pattern
   estimatedDuration: number
   requiredSkills: string[]
   agentAssignments: AgentAssignment[]
+  /** Dependency graph edges: [fromTaskId, toTaskId] */
+  dependencyGraph?: [string, string][]
+  /** Whether a synthesis step is needed after parallel execution */
+  requiresSynthesis?: boolean
 }
 
 export interface AgentAssignment {
   agentId: string
-  role: 'leader' | 'contributor' | 'reviewer'
+  role: 'leader' | 'contributor' | 'reviewer' | 'synthesizer'
   tasks: string[]
   contextAccess: string[]
+  /** Per-agent scope for this assignment */
+  scope?: AgentScope
 }
 
 export interface AgentSpec {
@@ -388,6 +492,10 @@ export interface AgentSpec {
   requiredSkills: string[]
   estimatedExperience: string
   specialization: string
+  /** Recommended scope for this agent */
+  scope?: AgentScope
+  /** Model hint for cost optimization */
+  modelHint?: 'fast' | 'balanced' | 'powerful'
 }
 
 export interface ExecutionResult {
@@ -396,6 +504,59 @@ export interface ExecutionResult {
   context: SharedContext[]
   errors?: string[]
   nextTasks?: Task[]
+  /** Number of agentic loop turns consumed */
+  turnsUsed?: number
+  /** Tool calls executed during iterative execution */
+  toolCallsLog?: Array<{
+    tool: string
+    input: Record<string, unknown>
+    output?: string
+  }>
+  /** The final agent response content */
+  finalResponse?: string
+}
+
+/**
+ * Result of a single turn in the agentic execution loop.
+ */
+export interface AgentTurnResult {
+  /** The LLM's text response for this turn */
+  content: string
+  /** Tool calls requested by the LLM */
+  toolCalls?: Array<{ name: string; input: Record<string, unknown> }>
+  /** Tool call results fed back to the LLM */
+  toolResults?: Array<{ name: string; output: string }>
+  /** Whether the agent considers the task complete */
+  isComplete: boolean
+  /** Thinking/reasoning content if available */
+  thinking?: string
+}
+
+/**
+ * Configuration for spawning an isolated agent execution.
+ * Each spawned agent gets a completely fresh context window.
+ */
+export interface IsolatedExecutionConfig {
+  /** The task to execute */
+  task: Task
+  /** The agent to use */
+  agent: Agent
+  /** The prompt/instructions for this specific execution */
+  prompt: string
+  /** Scoping constraints */
+  scope?: AgentScope
+  /** Dependency outputs from upstream tasks (injected into context) */
+  dependencyOutputs?: Array<{ taskTitle: string; content: string }>
+  /** Relevant knowledge items filtered for this sub-task */
+  knowledgeItemIds?: string[]
+  /** Abort signal for cancellation */
+  signal?: AbortSignal
+  /** Callback for streaming progress */
+  onProgress?: (update: {
+    turn: number
+    content: string
+    toolCall?: string
+  }) => void
 }
 
 export interface Artifact {

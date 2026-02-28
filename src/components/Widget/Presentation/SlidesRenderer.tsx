@@ -199,7 +199,7 @@ export const SlidesRenderer = ({
           {/* Slides Preview Panel */}
           {totalSlides > 1 && (
             <div className="slides-preview hidden @3xl/presentation:block flex-shrink-0 w-48">
-              <div className="space-y-2 max-h-[400px] overflow-y-auto">
+              <div className="space-y-2 overflow-y-auto">
                 {slides.map((slide, index) => (
                   <div
                     key={`slide-preview-${index}`}
@@ -259,6 +259,9 @@ export const SlidesRenderer = ({
                   page={currentSlide + 1}
                   total={totalSlides}
                   onChange={(i) => goToSlide(i - 1)}
+                  classNames={{
+                    base: 'mt-1 pb-0',
+                  }}
                 />
               )}
 

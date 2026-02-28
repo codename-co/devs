@@ -256,7 +256,7 @@ export const Presentation = ({ code }: { code: string }) => {
     <SlidesRenderer
       slides={renderedSlides}
       onExportPDF={exportToPDF}
-      className="marpit-presentation w-[80em] max-w-full"
+      className="marpit-presentation max-w-full"
     />
   )
 }

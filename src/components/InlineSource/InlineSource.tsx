@@ -1,11 +1,10 @@
 import { memo, useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Chip, Tooltip, useDisclosure } from '@heroui/react'
+import { Chip, Tooltip } from '@heroui/react'
 
 import { Icon } from '@/components/Icon'
-import { ContentPreviewModal } from '@/components/ContentPreview'
 import { getKnowledgeItem } from '@/stores/knowledgeStore'
-import type { KnowledgeItem } from '@/types'
+import { openInspector } from '@/stores/inspectorPanelStore'
 import type { Span } from '@/features/traces/types'
 import type { IconName } from '@/lib/types'
 import { useI18n } from '@/i18n'
@@ -392,14 +391,10 @@ export interface InlineCitationProps {
 /**
  * Inline Citation Component
  * Renders a clickable inline source badge with icon and name.
- * For knowledge items, opens a preview modal instead of navigating away.
+ * For knowledge items, opens the inspector panel on the right.
  */
 export const InlineCitation = memo(
   ({ number, source, onClick }: InlineCitationProps) => {
-    const { isOpen, onOpen, onClose } = useDisclosure()
-    const [knowledgeItem, setKnowledgeItem] = useState<KnowledgeItem | null>(
-      null,
-    )
     const [isLoading, setIsLoading] = useState(false)
 
     const icon = source ? getSourceIcon(source.type) : 'Internet'
@@ -413,7 +408,7 @@ export const InlineCitation = memo(
         : source.name
       : `Source ${number}`
 
-    // Fetch knowledge item when opening modal
+    // Open knowledge item in inspector panel
     const handleOpenPreview = useCallback(() => {
       if (!isKnowledgeSource || !source) return
 
@@ -421,15 +416,14 @@ export const InlineCitation = memo(
       try {
         const item = getKnowledgeItem(source.id)
         if (item) {
-          setKnowledgeItem(item)
-          onOpen()
+          openInspector({ type: 'knowledge', item })
         }
       } catch (error) {
         console.error('Failed to load knowledge item:', error)
       } finally {
         setIsLoading(false)
       }
-    }, [source, isKnowledgeSource, onOpen])
+    }, [source, isKnowledgeSource])
 
     const citationContent = (
       <span
@@ -470,26 +464,14 @@ export const InlineCitation = memo(
       )
     }
 
-    // Knowledge source - opens preview modal
+    // Knowledge source - opens inspector panel
     if (isKnowledgeSource) {
       return (
-        <>
-          <Tooltip content={tooltipContent}>
-            <span className="inline" onClick={handleOpenPreview}>
-              {citationContent}
-            </span>
-          </Tooltip>
-
-          {/* Content Preview Modal */}
-          {knowledgeItem && (
-            <ContentPreviewModal
-              isOpen={isOpen}
-              onClose={onClose}
-              type="knowledge"
-              item={knowledgeItem}
-            />
-          )}
-        </>
+        <Tooltip content={tooltipContent}>
+          <span className="inline" onClick={handleOpenPreview}>
+            {citationContent}
+          </span>
+        </Tooltip>
       )
     }
 
@@ -587,15 +569,11 @@ export interface InlineSourceProps {
 
 /**
  * Inline Source Component
- * Displays a clickable source reference that opens a preview modal for internal sources.
+ * Displays a clickable source reference that opens the inspector panel for internal sources.
  */
 export const InlineSource = memo(
   ({ source, t, showRefNumber = true }: InlineSourceProps) => {
     const icon = getSourceIcon(source.type)
-    const { isOpen, onOpen, onClose } = useDisclosure()
-    const [knowledgeItem, setKnowledgeItem] = useState<KnowledgeItem | null>(
-      null,
-    )
     const [isLoading, setIsLoading] = useState(false)
 
     // Determine the target URL - prefer external URL, fallback to internal path
@@ -603,7 +581,7 @@ export const InlineSource = memo(
     const isExternal = !!source.externalUrl
     const isKnowledgeSource = source.type === 'knowledge' && !isExternal
 
-    // Fetch knowledge item when opening modal
+    // Open knowledge item in inspector panel
     const handleOpenPreview = useCallback(() => {
       if (!isKnowledgeSource) return
 
@@ -611,15 +589,14 @@ export const InlineSource = memo(
       try {
         const item = getKnowledgeItem(source.id)
         if (item) {
-          setKnowledgeItem(item)
-          onOpen()
+          openInspector({ type: 'knowledge', item })
         }
       } catch (error) {
         console.error('Failed to load knowledge item:', error)
       } finally {
         setIsLoading(false)
       }
-    }, [source.id, isKnowledgeSource, onOpen])
+    }, [source.id, isKnowledgeSource])
 
     if (!targetUrl && !isKnowledgeSource) return null
 
@@ -660,42 +637,30 @@ export const InlineSource = memo(
       )
     }
 
-    // Internal knowledge source - open preview modal
+    // Internal knowledge source - open inspector panel
     return (
-      <>
-        <Tooltip
-          content={
-            <div className="text-tiny max-w-xs">
-              <div className="font-medium">{source.name}</div>
-              <div className="text-default-400">
-                {t?.('View in Knowledge Base') ?? 'View in Knowledge Base'}
-              </div>
+      <Tooltip
+        content={
+          <div className="text-tiny max-w-xs">
+            <div className="font-medium">{source.name}</div>
+            <div className="text-default-400">
+              {t?.('View in Knowledge Base') ?? 'View in Knowledge Base'}
             </div>
-          }
+          </div>
+        }
+      >
+        <Chip
+          as="button"
+          onClick={handleOpenPreview}
+          isDisabled={isLoading}
+          size="sm"
+          variant="flat"
+          className="cursor-pointer hover:opacity-80 transition-opacity text-tiny gap-1 select-none"
+          startContent={<Icon name={icon as any} className="w-3 h-3" />}
         >
-          <Chip
-            as="button"
-            onClick={handleOpenPreview}
-            isDisabled={isLoading}
-            size="sm"
-            variant="flat"
-            className="cursor-pointer hover:opacity-80 transition-opacity text-tiny gap-1 select-none"
-            startContent={<Icon name={icon as any} className="w-3 h-3" />}
-          >
-            {displayContent}
-          </Chip>
-        </Tooltip>
-
-        {/* Content Preview Modal */}
-        {knowledgeItem && (
-          <ContentPreviewModal
-            isOpen={isOpen}
-            onClose={onClose}
-            type="knowledge"
-            item={knowledgeItem}
-          />
-        )}
-      </>
+          {displayContent}
+        </Chip>
+      </Tooltip>
     )
   },
 )

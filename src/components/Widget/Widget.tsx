@@ -1,4 +1,4 @@
-import { Card, CardBody, CardHeader, Tab, Tabs } from '@heroui/react'
+import { Card, CardBody, CardHeader, Tab, Tabs, Tooltip } from '@heroui/react'
 import { IconName } from '@/lib/types'
 import { useI18n } from '@/i18n'
 import { useState, Suspense, lazy } from 'react'
@@ -35,6 +35,12 @@ export type CodeBlockType =
   | 'html'
   | 'generic'
 
+export interface WidgetAction {
+  label: string
+  icon?: IconName
+  onPress: () => void
+}
+
 export interface WidgetProps {
   code: string
   type: CodeBlockType
@@ -44,6 +50,7 @@ export interface WidgetProps {
   showTitle?: boolean
   showActions?: boolean
   showShadows?: boolean
+  moreActions?: WidgetAction[]
 }
 
 // Main specialized widget component
@@ -56,6 +63,7 @@ export const Widget = ({
   showTitle = true,
   showActions = true,
   showShadows = true,
+  moreActions,
 }: WidgetProps) => {
   const [viewMode, setViewMode] = useState<'source' | 'render'>('render')
   const { t } = useI18n(localI18n)
@@ -161,7 +169,7 @@ export const Widget = ({
         )
       case 'html':
         return (
-          <div className="w-full h-[500px]">
+          <div className="w-full h-full">
             <iframe
               title="HTML Preview"
               srcDoc={completeStreamingHtml(code)}
@@ -195,7 +203,7 @@ export const Widget = ({
           )}
 
           {showActions && (
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <Tabs
                 aria-label="View mode"
                 size="sm"
@@ -207,6 +215,17 @@ export const Widget = ({
                 <Tab key="render" title={t('Render')} />
                 <Tab key="source" title={t('Code')} />
               </Tabs>
+              {moreActions?.map((action, i) => (
+                <Tooltip key={i} content={action.label}>
+                  <button
+                    onClick={action.onPress}
+                    className="p-1.5 rounded-md text-default-500 hover:text-default-700 hover:bg-default-100 transition-colors"
+                    aria-label={action.label}
+                  >
+                    <Icon name={action.icon ?? 'Expand'} className="w-4 h-4" />
+                  </button>
+                </Tooltip>
+              ))}
             </div>
           )}
         </CardHeader>

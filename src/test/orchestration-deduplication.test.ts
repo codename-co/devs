@@ -1,6 +1,39 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { WorkflowOrchestrator } from '@/lib/orchestrator'
 
+// Mock internal orchestrator modules to avoid deep dependency chains
+vi.mock('@/lib/orchestrator/agent-runner', () => ({
+  runAgent: vi.fn().mockResolvedValue({
+    response: 'Test response',
+    success: true,
+    turnsUsed: 1,
+    toolCallsLog: [],
+  }),
+  runAgentSingleShot: vi.fn().mockResolvedValue({
+    response: 'Test response',
+    success: true,
+    turnsUsed: 1,
+    toolCallsLog: [],
+  }),
+}))
+
+vi.mock('@/lib/orchestrator/task-decomposer', () => ({
+  decomposeTask: vi.fn().mockResolvedValue({
+    mainTaskTitle: 'Test Task',
+    tasks: [],
+    strategy: 'sequential',
+  }),
+}))
+
+vi.mock('@/lib/orchestrator/synthesis-engine', () => ({
+  synthesizeResults: vi.fn().mockResolvedValue({
+    content: 'Synthesized result',
+    format: 'markdown',
+    sources: [],
+  }),
+  mergeResults: vi.fn().mockReturnValue('Merged result'),
+}))
+
 // Mock all the dependencies
 vi.mock('@/lib/task-analyzer', () => ({
   TaskAnalyzer: {
@@ -43,12 +76,13 @@ vi.mock('@/stores/taskStore', () => ({
 
 vi.mock('@/stores/agentStore', () => ({
   getAgentById: vi.fn(),
-  createAgent: vi.fn().mockResolvedValue({
-    id: 'agent-1',
-    name: 'Test Agent',
-    role: 'Task Executor',
-    instructions: 'Test instructions',
-    createdAt: new Date(),
+  getDefaultAgent: vi.fn().mockReturnValue({
+    id: 'devs',
+    name: 'DEVS',
+    slug: 'devs',
+    role: 'Orchestrator',
+    instructions: 'Default orchestrator agent',
+    tags: [],
   }),
   loadAllAgents: vi.fn().mockResolvedValue([]),
 }))
