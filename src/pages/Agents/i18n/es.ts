@@ -217,4 +217,7 @@ export const es: I18n = {
   'Reading skill file…': 'Leyendo archivo de habilidad…',
   'Running skill script…': 'Ejecutando script de habilidad…',
   Thoughts: 'Pensamientos',
+  'Delete conversation': 'Eliminar conversación',
+  'Are you sure you want to delete this conversation? This action cannot be undone.':
+    '¿Estás seguro de que quieres eliminar esta conversación? Esta acción no se puede deshacer.',
 } as const

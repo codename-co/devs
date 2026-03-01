@@ -150,6 +150,10 @@ export const fr: I18n = {
   'Pricing per 1M tokens': 'Tarif par 1M de tokens',
   Input: 'Entrée',
   Output: 'Sortie',
+  'Older models': 'Modèles précédents',
+  Deprecated: 'Obsolète',
+  Beta: 'Bêta',
+  Alpha: 'Alpha',
 
   // Service worker
   'New features are waiting': 'De nouvelles fonctionnalités vous attendent',

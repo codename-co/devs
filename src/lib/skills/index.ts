@@ -6,11 +6,7 @@
  * @module lib/skills
  */
 
-export {
-  searchSkills,
-  aiSearchSkills,
-  SkillsmpError,
-} from './skillsmp-client'
+export { searchSkills, aiSearchSkills, SkillsmpError } from './skillsmp-client'
 export type {
   SkillSearchResult,
   SkillsPagination,
@@ -18,6 +14,14 @@ export type {
   SkillAISearchResponse,
   SkillSearchOptions,
 } from './skillsmp-client'
+
+export {
+  searchSkillsSh,
+  getSkillsShGitHubUrl,
+  toUnifiedSkillResult,
+  SkillsShError,
+} from './skillssh-client'
+export type { SkillsShResult, SkillsShSearchResponse } from './skillssh-client'
 
 export {
   parseGitHubUrl,

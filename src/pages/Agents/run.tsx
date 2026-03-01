@@ -20,7 +20,7 @@ import {
   Tooltip,
   useDisclosure,
 } from '@heroui/react'
-import { Pin, PinSlash } from 'iconoir-react'
+import { Pin } from 'iconoir-react'
 
 import { useI18n } from '@/i18n'
 import {
@@ -30,7 +30,7 @@ import {
   PromptArea,
   Section,
 } from '@/components'
-import { MessageContent } from '@/components/chat'
+import { MessageBubble } from '@/components/chat'
 import { AgentAppearancePicker } from '@/components/AgentAppearancePicker'
 import RunLayout from '@/layouts/Run'
 import { Link } from 'react-router-dom'
@@ -62,7 +62,7 @@ import {
 } from '@/lib/chat'
 import { userSettings } from '@/stores/userStore'
 import { getKnowledgeItem } from '@/stores/knowledgeStore'
-import { copyRichText } from '@/lib/clipboard'
+import { fileToBase64 } from '@/lib/file-utils'
 import {
   learnFromMessage,
   processPendingLearningEvents,
@@ -70,15 +70,14 @@ import {
 import { MessageDescriptionGenerator } from '@/lib/message-description-generator'
 import { useConversationStore } from '@/stores/conversationStore'
 import { useArtifactStore } from '@/stores/artifactStore'
+import { useAutoScroll } from '@/hooks'
 import { categoryLabels } from '../Knowledge/AgentMemories'
 import { useAgentContextPanel } from './useAgentContextPanel'
 import {
-  ConversationStepTracker,
   type ConversationStep,
   createStepFromStatus,
   completeLastStep,
   addToolDataToStep,
-  messageStepsToConversationSteps,
 } from './ConversationStepTracker'
 import localI18n from './i18n'
 
@@ -781,198 +780,6 @@ TimelineToolsDisplay.displayName = 'TimelineToolsDisplay'
  * Uses useTraceSources hook to load sources once and share them between
  * MarkdownRenderer (for inline citations) and SourcesDisplay (for source list).
  */
-// ============================================================================
-// Message Display Component
-// ============================================================================
-
-// Component to display a single message with proper agent context
-const MessageDisplay = memo(
-  ({
-    message,
-    selectedAgent,
-    getMessageAgent,
-    isPinned,
-    onPinClick,
-    onLearnClick,
-    isLearning,
-    conversationId,
-    isStreaming = false,
-    liveSteps,
-  }: {
-    message: Message
-    selectedAgent: Agent | null
-    getMessageAgent: (message: Message) => Promise<Agent | null>
-    isPinned: boolean
-    onPinClick: (message: Message) => void
-    onLearnClick: (message: Message) => void
-    isLearning: boolean
-    conversationId: string | undefined
-    isStreaming?: boolean
-    liveSteps?: ConversationStep[]
-  }) => {
-    const { t } = useI18n(localI18n)
-    const [messageAgent, setMessageAgent] = useState<Agent | null>(null)
-
-    useEffect(() => {
-      if (message.role === 'assistant') {
-        getMessageAgent(message).then(setMessageAgent)
-      }
-    }, [message, getMessageAgent])
-
-    const displayAgent = messageAgent || selectedAgent
-    const isFromDifferentAgent =
-      messageAgent && messageAgent.id !== selectedAgent?.id
-
-    const showPinButton = message.role === 'assistant' && conversationId
-    const showLearnButton = message.role === 'assistant' && conversationId
-
-    // Use live steps during streaming, persisted steps for historical messages
-    const steps =
-      isStreaming && liveSteps
-        ? liveSteps
-        : message.steps?.length
-          ? messageStepsToConversationSteps(message.steps)
-          : []
-
-    return (
-      <div
-        key={message.id}
-        data-message-id={message.id}
-        aria-hidden="false"
-        tabIndex={0}
-        className={`flex w-full gap-3 group ${message.role === 'user' ? 'justify-end' : ''}`}
-      >
-        {/* User message action buttons - shown on hover at start */}
-        {message.role === 'user' && (
-          <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <Tooltip content={t('Copy prompt')}>
-              <Button
-                size="sm"
-                variant="light"
-                color="default"
-                isIconOnly
-                onPress={async () => {
-                  await copyRichText(message.content)
-                  successToast(t('Prompt copied to clipboard'))
-                }}
-              >
-                <Icon name="Copy" className="w-4 h-4" />
-              </Button>
-            </Tooltip>
-          </div>
-        )}
-        <div
-          className={`rounded-medium text-foreground relative overflow-hidden font-medium ${
-            message.role === 'user'
-              ? 'bg-default-100 px-4 py-3 max-w-[80%]'
-              : 'bg-transparent px-1 py-0'
-          } ${isPinned ? 'border-l-4 border-warning-400 pl-4' : ''}`}
-        >
-          {/* Pinned indicator chip */}
-          {isPinned && (
-            <div className="mb-2">
-              <Chip
-                size="sm"
-                variant="flat"
-                color="warning"
-                startContent={<Pin className="w-3 h-3" />}
-                className="text-tiny"
-              >
-                {t('Pinned')}
-              </Chip>
-            </div>
-          )}
-          {/* Show agent name if different from current agent */}
-          {isFromDifferentAgent && displayAgent && (
-            <div className="mb-2">
-              <Chip
-                size="sm"
-                variant="flat"
-                color="primary"
-                className="text-tiny"
-              >
-                {displayAgent.name}
-              </Chip>
-            </div>
-          )}
-          {/* Conversation steps - live during streaming, persisted for historical */}
-          {message.role === 'assistant' && steps.length > 0 && (
-            <ConversationStepTracker
-              steps={steps}
-              className="mb-2"
-              traceIds={message.traceIds}
-            />
-          )}
-          {message.content ? (
-            <MessageContent
-              content={message.content}
-              traceIds={message.traceIds || []}
-              isStreaming={isStreaming}
-            />
-          ) : isStreaming && steps.length === 0 ? (
-            <div className="flex items-center gap-1 py-2">
-              <Spinner size="sm" classNames={{ wrapper: 'w-4 h-4' }} />
-            </div>
-          ) : null}
-          {/* Assistant message action buttons */}
-          {!isStreaming && message.role === 'assistant' && (
-            <div className="mt-2 flex flex-wrap items-center gap-1">
-              <Tooltip content={t('Copy the answer')}>
-                <Button
-                  size="sm"
-                  variant="light"
-                  color="default"
-                  isIconOnly
-                  onPress={async () => {
-                    await copyRichText(message.content)
-                    successToast(t('Answer copied to clipboard'))
-                  }}
-                >
-                  <Icon name="Copy" className="w-4 h-4" />
-                </Button>
-              </Tooltip>
-              {showLearnButton && (
-                <Tooltip content={t('Learn from this message')}>
-                  <Button
-                    size="sm"
-                    variant="light"
-                    // color="secondary"
-                    isIconOnly
-                    isLoading={isLearning}
-                    onPress={() => onLearnClick(message)}
-                  >
-                    <Icon name="Brain" className="w-4 h-4" />
-                  </Button>
-                </Tooltip>
-              )}
-              {showPinButton && (
-                <Tooltip
-                  content={isPinned ? t('Unpin message') : t('Pin message')}
-                >
-                  <Button
-                    size="sm"
-                    variant={isPinned ? 'flat' : 'light'}
-                    color={isPinned ? 'warning' : 'default'}
-                    isIconOnly
-                    onPress={() => onPinClick(message)}
-                  >
-                    {isPinned ? (
-                      <PinSlash className="w-4 h-4" />
-                    ) : (
-                      <Pin className="w-4 h-4" />
-                    )}
-                  </Button>
-                </Tooltip>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    )
-  },
-)
-
-MessageDisplay.displayName = 'MessageDisplay'
 
 // Component to display artifacts in side panel
 const ArtifactWidget = memo(({ artifact }: { artifact: Artifact }) => {
@@ -1475,65 +1282,25 @@ export const AgentRunPage = () => {
   const [editingPortrait, setEditingPortrait] = useState<string | undefined>()
   const [isSavingAppearance, setIsSavingAppearance] = useState(false)
 
+  // Delete conversation modal state
+  const {
+    isOpen: isDeleteModalOpen,
+    onOpen: onDeleteModalOpen,
+    onClose: onDeleteModalClose,
+  } = useDisclosure()
+  const [isDeleting, setIsDeleting] = useState(false)
+
   const isConversationPristine = useMemo(
     () => !(Number(currentConversation?.messages.length) > 0),
     [currentConversation],
   )
 
   // ── Auto-scroll during streaming ──────────────────────────────────────
-  const streamingEndRef = useRef<HTMLDivElement | null>(null)
-  const userHasScrolledUpRef = useRef(false)
-  const isAutoScrollingRef = useRef(false)
+  const { streamingEndRef } = useAutoScroll(isSending, [
+    response,
+    conversationSteps,
+  ])
   const abortControllerRef = useRef<AbortController | null>(null)
-
-  // Track user scroll intent: disengage when they scroll up, re-engage when
-  // they scroll back near the bottom.  We ignore scroll events fired by our
-  // own programmatic scrollTo (guarded by isAutoScrollingRef).
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!isSending) return
-      // Skip events caused by our own programmatic scroll
-      if (isAutoScrollingRef.current) return
-
-      const scrollBottom = window.innerHeight + window.scrollY
-      const docHeight = document.documentElement.scrollHeight
-      const distanceFromBottom = docHeight - scrollBottom
-
-      if (distanceFromBottom > 150) {
-        // User scrolled away — hand control to them
-        userHasScrolledUpRef.current = true
-      } else {
-        // User scrolled back to the bottom — re-engage auto-scroll
-        userHasScrolledUpRef.current = false
-      }
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [isSending])
-
-  // Reset scroll lock when a new message starts streaming
-  useEffect(() => {
-    if (isSending) {
-      userHasScrolledUpRef.current = false
-    }
-  }, [isSending])
-
-  // Scroll to the very bottom as streaming content changes.
-  // Uses instant scrollTo so we keep up with fast token output.
-  useEffect(() => {
-    if (isSending && !userHasScrolledUpRef.current && streamingEndRef.current) {
-      isAutoScrollingRef.current = true
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: 'instant',
-      })
-      // Clear the guard after the browser has flushed the scroll event
-      requestAnimationFrame(() => {
-        isAutoScrollingRef.current = false
-      })
-    }
-  }, [isSending, response, conversationSteps])
 
   // Load pending review memories when agent/conversation loads
   // Filter to only show memories from the current conversation
@@ -1763,6 +1530,35 @@ export const AgentRunPage = () => {
     onAppearanceModalClose,
   ])
 
+  // ── Delete conversation handler ──────────────────────────────────────
+  const handleConfirmDeleteConversation = useCallback(async () => {
+    if (!currentConversation) return
+    setIsDeleting(true)
+    try {
+      const convStore = useConversationStore.getState()
+      await convStore.deleteConversation(currentConversation.id)
+      onDeleteModalClose()
+      // Navigate to a fresh chat with the same agent
+      navigate(url(`/agents/start/${selectedAgent?.slug}`))
+    } catch (error) {
+      notifyError({
+        title: 'Delete Failed',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Failed to delete conversation',
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }, [
+    currentConversation,
+    selectedAgent?.slug,
+    navigate,
+    url,
+    onDeleteModalClose,
+  ])
+
   const header: HeaderProps = useMemo(
     () => ({
       icon: {
@@ -1794,6 +1590,15 @@ export const AgentRunPage = () => {
           },
           icon: 'InfoCircle',
         },
+        ...(!isConversationPristine
+          ? [
+              {
+                label: t('Delete conversation'),
+                onClick: onDeleteModalOpen,
+                icon: 'Trash' as const,
+              },
+            ]
+          : []),
       ],
     }),
     [
@@ -1803,6 +1608,8 @@ export const AgentRunPage = () => {
       selectedAgent?.id,
       selectedAgent?.color,
       handleOpenAppearanceModal,
+      isConversationPristine,
+      onDeleteModalOpen,
       t,
       lang,
       url,
@@ -1820,34 +1627,32 @@ export const AgentRunPage = () => {
     return searchParams.get('message')
   }, [location.search])
 
-  // Helper function to get agent for a message
-  const getMessageAgent = useCallback(
-    async (message: Message): Promise<Agent | null> => {
-      if (message.role !== 'assistant') return null
-
-      const messageAgentId = message.agentId || selectedAgent?.id
-      if (!messageAgentId) return selectedAgent
-
-      // Check cache first
-      if (agentCache[messageAgentId]) {
-        return agentCache[messageAgentId]
-      }
-
-      // Fetch and cache the agent
-      try {
-        const agent = await getAgentById(messageAgentId)
-        if (agent) {
-          setAgentCache((prev) => ({ ...prev, [messageAgentId]: agent }))
-          return agent
+  // Pre-load agents for all conversation messages into cache
+  useEffect(() => {
+    const loadAgents = async () => {
+      const messages = currentConversation?.messages ?? conversationMessages
+      const missingIds = new Set<string>()
+      for (const msg of messages) {
+        if (msg.agentId && !agentCache[msg.agentId]) {
+          missingIds.add(msg.agentId)
         }
-      } catch (error) {
-        console.warn(`Failed to load agent ${messageAgentId}:`, error)
       }
-
-      return selectedAgent
-    },
-    [selectedAgent, agentCache],
-  )
+      if (missingIds.size === 0) return
+      const updates: Record<string, Agent> = {}
+      for (const id of missingIds) {
+        try {
+          const agent = await getAgentById(id)
+          if (agent) updates[id] = agent
+        } catch {
+          // skip
+        }
+      }
+      if (Object.keys(updates).length > 0) {
+        setAgentCache((prev) => ({ ...prev, ...updates }))
+      }
+    }
+    loadAgents()
+  }, [currentConversation?.messages, conversationMessages])
 
   // Load agent and conversation on mount
   useEffect(() => {
@@ -2212,20 +2017,6 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
     [isSending, conversationMessages, lang, t, generateQuickReplies],
   )
 
-  // Helper function to convert File to base64
-  const fileToBase64 = useCallback((file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.readAsDataURL(file)
-      reader.onload = () => {
-        const result = reader.result as string
-        // Remove the data URL prefix (data:mime/type;base64,)
-        resolve(result.split(',')[1])
-      }
-      reader.onerror = reject
-    })
-  }, [])
-
   const onSubmit = useCallback(
     async (
       cleanedPrompt?: string,
@@ -2347,7 +2138,6 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
       selectedAgent,
       conversationMessages,
       selectedFiles,
-      fileToBase64,
       lang,
       t,
       generateQuickReplies,
@@ -2472,16 +2262,26 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
               <div className="duration-600 relative flex flex-col gap-6">
                 {timelineItems.map((item) =>
                   item.type === 'message' ? (
-                    <MessageDisplay
+                    <MessageBubble
                       key={item.data.id}
                       message={item.data}
-                      selectedAgent={selectedAgent}
-                      getMessageAgent={getMessageAgent}
+                      agent={
+                        item.data.agentId
+                          ? agentCache[item.data.agentId] || selectedAgent
+                          : selectedAgent
+                      }
+                      showAgentChip={
+                        !!item.data.agentId &&
+                        agentCache[item.data.agentId]?.id !== selectedAgent?.id
+                      }
                       isPinned={checkIsPinned(item.data.id)}
-                      onPinClick={handlePinClick}
-                      onLearnClick={handleLearnClick}
+                      onPin={
+                        currentConversation?.id ? handlePinClick : undefined
+                      }
+                      onLearn={
+                        currentConversation?.id ? handleLearnClick : undefined
+                      }
                       isLearning={learningMessageId === item.data.id}
-                      conversationId={currentConversation?.id}
                       isStreaming={item.data.id === '__streaming__'}
                       liveSteps={
                         item.data.id === '__streaming__'
@@ -2678,6 +2478,41 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
               startContent={!isPinning && <Pin className="w-4 h-4" />}
             >
               {t('Pin it')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Delete Conversation Confirmation Modal */}
+      <Modal isOpen={isDeleteModalOpen} onClose={onDeleteModalClose} size="md">
+        <ModalContent>
+          <ModalHeader>
+            <div className="flex items-center gap-2">
+              <Icon name="Trash" size="sm" className="text-danger" />
+              {t('Delete conversation')}
+            </div>
+          </ModalHeader>
+          <ModalBody>
+            <p>
+              {t(
+                'Are you sure you want to delete this conversation? This action cannot be undone.',
+              )}
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="light"
+              onPress={onDeleteModalClose}
+              isDisabled={isDeleting}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              color="danger"
+              onPress={handleConfirmDeleteConversation}
+              isLoading={isDeleting}
+            >
+              {t('Delete')}
             </Button>
           </ModalFooter>
         </ModalContent>

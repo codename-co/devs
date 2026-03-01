@@ -20,6 +20,7 @@ import { useSettingsLabel } from '@/pages/Settings/SettingsContext'
 import { SkillSettingsInline } from '@/features/skills/components/SkillSettingsInline'
 import {
   installSkill,
+  createCustomSkill,
   isSkillInstalled,
   useSkills,
   getSkillById,
@@ -27,6 +28,10 @@ import {
 import { fetchSkillFromGitHub } from '@/lib/skills/github-fetcher'
 import { searchSkills } from '@/lib/skills/skillsmp-client'
 import type { SkillSearchResult } from '@/lib/skills/skillsmp-client'
+import {
+  searchSkillsSh,
+  toUnifiedSkillResult,
+} from '@/lib/skills/skillssh-client'
 import type { InstalledSkill } from '@/types'
 import skillsI18n from '@/features/skills/pages/i18n'
 
@@ -49,6 +54,10 @@ export function SkillsSection() {
     navigate(`${location.pathname}#settings/skills/add`, { replace: true })
   }, [navigate, location.pathname])
 
+  const navigateToCreate = useCallback(() => {
+    navigate(`${location.pathname}#settings/skills/create`, { replace: true })
+  }, [navigate, location.pathname])
+
   const navigateToSkill = useCallback(
     (skillId: string) => {
       navigate(`${location.pathname}#settings/skills/${skillId}`, {
@@ -57,6 +66,18 @@ export function SkillsSection() {
     },
     [navigate, location.pathname],
   )
+
+  // --- Sub-route: /create (custom skill form) ----------------------------
+  if (activeElement === 'create') {
+    return (
+      <div data-testid="skills-settings">
+        <CreateSkillView
+          onCreated={(skillId) => navigateToSkill(skillId)}
+          onCancel={navigateToList}
+        />
+      </div>
+    )
+  }
 
   // --- Sub-route: /add (search & install) --------------------------------
   if (activeElement === 'add') {
@@ -109,7 +130,7 @@ export function SkillsSection() {
       {/* Content */}
       <div className="mt-6">
         {installedSkills.length === 0 ? (
-          <EmptyState onAdd={navigateToAdd} />
+          <EmptyState onAdd={navigateToAdd} onCreate={navigateToCreate} />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
             {installedSkills.map((skill) => (
@@ -120,15 +141,25 @@ export function SkillsSection() {
               />
             ))}
 
-            <Button
-              color="primary"
-              size="sm"
-              variant="flat"
-              startContent={<Icon name="Plus" className="w-4 h-4" />}
-              onPress={navigateToAdd}
-            >
-              {t('Install')}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                color="primary"
+                size="sm"
+                variant="flat"
+                startContent={<Icon name="Plus" className="w-4 h-4" />}
+                onPress={navigateToAdd}
+              >
+                {t('Install')}
+              </Button>
+              <Button
+                size="sm"
+                variant="flat"
+                startContent={<Icon name="Plus" className="w-4 h-4" />}
+                onPress={navigateToCreate}
+              >
+                {t('Create')}
+              </Button>
+            </div>
           </div>
         )}
       </div>
@@ -237,20 +268,43 @@ function AddSkillView({
   // Push label into breadcrumb
   useSettingsLabel(t('Discover'))
 
-  // --- Keyword search ---------------------------------------------------
+  // --- Keyword search (Skills.sh + SkillsMP in parallel) ----------------
   const handleSearch = useCallback(async () => {
     const trimmed = query.trim()
-    if (!trimmed || !SKILLSMP_API_KEY) return
+    if (!trimmed) return
 
     setIsSearching(true)
     setHasSearched(true)
 
     try {
-      const response = await searchSkills(trimmed, SKILLSMP_API_KEY, {
-        limit: 20,
-        sortBy: 'stars',
-      })
-      setResults(response.data.skills)
+      // Search both registries in parallel
+      const [skillsShResults, skillsMpResults] = await Promise.all([
+        searchSkillsSh(trimmed)
+          .then((r) => r.skills.map(toUnifiedSkillResult))
+          .catch(() => [] as SkillSearchResult[]),
+        SKILLSMP_API_KEY
+          ? searchSkills(trimmed, SKILLSMP_API_KEY, {
+              limit: 20,
+              sortBy: 'stars',
+            })
+              .then((r) => r.data.skills)
+              .catch(() => [] as SkillSearchResult[])
+          : Promise.resolve([] as SkillSearchResult[]),
+      ])
+
+      // Merge results, dedup by githubUrl (prefer SkillsMP which has descriptions)
+      const seen = new Set<string>()
+      const merged: SkillSearchResult[] = []
+      for (const r of [...skillsMpResults, ...skillsShResults]) {
+        if (!seen.has(r.githubUrl)) {
+          seen.add(r.githubUrl)
+          merged.push(r)
+        }
+      }
+
+      // Sort by popularity descending
+      merged.sort((a, b) => b.stars - a.stars)
+      setResults(merged)
     } catch (error) {
       console.error('Skill search failed:', error)
       setResults([])
@@ -343,123 +397,114 @@ function AddSkillView({
 
   return (
     <div className="space-y-6">
-      {/* Keyword search */}
-      {SKILLSMP_API_KEY ? (
-        <>
-          <div className="flex gap-2">
-            <Input
-              value={query}
-              onValueChange={setQuery}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSearch()
-              }}
-              placeholder={t('Search skills...')}
-              size="sm"
-              className="flex-1"
-              autoFocus
-              startContent={
-                <Icon
-                  name="Search"
-                  width={16}
-                  height={16}
-                  className="text-default-400"
-                />
-              }
-            />
-            <Button
-              size="sm"
-              color="primary"
-              onPress={handleSearch}
-              isDisabled={!query.trim() || isSearching}
-            >
-              {isSearching ? <Spinner size="sm" /> : t('Discover')}
-            </Button>
-          </div>
-
-          {/* Search results */}
-          {isSearching && (
-            <div className="flex items-center justify-center py-8">
-              <Spinner size="lg" label={t('Searching...')} />
-            </div>
-          )}
-
-          {!isSearching && hasSearched && results.length === 0 && (
-            <div className="text-center py-8 text-default-400">
+      {/* Keyword search (Skills.sh always available, SkillsMP when API key set) */}
+      <>
+        <div className="flex gap-2">
+          <Input
+            value={query}
+            onValueChange={setQuery}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSearch()
+            }}
+            placeholder={t('Search skills...')}
+            size="sm"
+            className="flex-1"
+            autoFocus
+            startContent={
               <Icon
                 name="Search"
-                width={32}
-                height={32}
-                className="mx-auto mb-2"
+                width={16}
+                height={16}
+                className="text-default-400"
               />
-              <p className="text-sm">{t('No skills found')}</p>
-              <p className="text-xs">{t('Try a different search query')}</p>
-            </div>
-          )}
+            }
+          />
+          <Button
+            size="sm"
+            color="primary"
+            onPress={handleSearch}
+            isDisabled={!query.trim() || isSearching}
+          >
+            {isSearching ? <Spinner size="sm" /> : t('Discover')}
+          </Button>
+        </div>
 
-          {!isSearching && results.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {results.map((result) => {
-                const installed = isSkillInstalled(result.githubUrl)
-                const installing = installingIds.has(result.id)
-                return (
-                  <Card key={result.id} shadow="sm">
-                    <CardBody className="gap-2 p-4">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-sm font-semibold truncate">
-                            {result.name}
-                          </h3>
-                          <p className="text-xs text-default-500 truncate">
-                            {t('by {author}').replace(
-                              '{author}',
-                              result.author,
-                            )}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-1 text-default-400 text-xs shrink-0">
-                          <Icon name="StarSolid" width={12} height={12} />
-                          <span>{result.stars.toLocaleString()}</span>
-                        </div>
+        {/* Search results */}
+        {isSearching && (
+          <div className="flex items-center justify-center py-8">
+            <Spinner size="lg" label={t('Searching...')} />
+          </div>
+        )}
+
+        {!isSearching && hasSearched && results.length === 0 && (
+          <div className="text-center py-8 text-default-400">
+            <Icon
+              name="Search"
+              width={32}
+              height={32}
+              className="mx-auto mb-2"
+            />
+            <p className="text-sm">{t('No skills found')}</p>
+            <p className="text-xs">{t('Try a different search query')}</p>
+          </div>
+        )}
+
+        {!isSearching && results.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {results.map((result) => {
+              const installed = isSkillInstalled(result.githubUrl)
+              const installing = installingIds.has(result.id)
+              return (
+                <Card key={result.id} shadow="sm">
+                  <CardBody className="gap-2 p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-semibold truncate">
+                          {result.name}
+                        </h3>
+                        <p className="text-xs text-default-500 truncate">
+                          {t('by {author}').replace('{author}', result.author)}
+                        </p>
                       </div>
-                      <p className="text-xs text-default-600 line-clamp-2">
-                        {result.description}
-                      </p>
-                      <div className="flex items-center justify-end gap-2 mt-1">
-                        {installed ? (
-                          <Chip size="sm" variant="flat" color="success">
-                            {t('Installed')}
-                          </Chip>
-                        ) : (
-                          <Button
-                            size="sm"
-                            color="primary"
-                            variant="flat"
-                            isDisabled={installing}
-                            onPress={() => handleInstallResult(result)}
-                            startContent={
-                              installing ? (
-                                <Spinner size="sm" />
-                              ) : (
-                                <Icon name="Download" width={14} height={14} />
-                              )
-                            }
-                          >
-                            {installing ? t('Installing...') : t('Install')}
-                          </Button>
-                        )}
+                      <div className="flex items-center gap-1 text-default-400 text-xs shrink-0">
+                        <Icon name="StarSolid" width={12} height={12} />
+                        <span>{result.stars.toLocaleString()}</span>
                       </div>
-                    </CardBody>
-                  </Card>
-                )
-              })}
-            </div>
-          )}
-        </>
-      ) : (
-        <p className="text-sm text-default-500">
-          {t('Search by keyword or describe what you need')}
-        </p>
-      )}
+                    </div>
+                    <p className="text-xs text-default-600 line-clamp-2">
+                      {result.description}
+                    </p>
+                    <div className="flex items-center justify-end gap-2 mt-1">
+                      {installed ? (
+                        <Chip size="sm" variant="flat" color="success">
+                          {t('Installed')}
+                        </Chip>
+                      ) : (
+                        <Button
+                          size="sm"
+                          color="primary"
+                          variant="flat"
+                          isDisabled={installing}
+                          onPress={() => handleInstallResult(result)}
+                          startContent={
+                            installing ? (
+                              <Spinner size="sm" />
+                            ) : (
+                              <Icon name="Download" width={14} height={14} />
+                            )
+                          }
+                        >
+                          {installing ? t('Installing...') : t('Install')}
+                        </Button>
+                      )}
+                    </div>
+                  </CardBody>
+                </Card>
+              )
+            })}
+          </div>
+        )}
+      </>
 
       {/* GitHub URL fallback — collapsible */}
       <div>
@@ -519,10 +564,129 @@ function AddSkillView({
 }
 
 // ============================================================================
+// CreateSkillView — simple form to create a custom skill
+// ============================================================================
+
+function CreateSkillView({
+  onCreated,
+  onCancel,
+}: {
+  onCreated: (skillId: string) => void
+  onCancel: () => void
+}) {
+  const { t } = useI18n(skillsI18n)
+
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [prompt, setPrompt] = useState('')
+  const [nameError, setNameError] = useState('')
+  const [promptError, setPromptError] = useState('')
+
+  // Push label into breadcrumb
+  useSettingsLabel(t('Create Custom Skill'))
+
+  const handleCreate = useCallback(() => {
+    let valid = true
+    const trimmedName = name.trim().replace(/\s+/g, '-')
+    if (!trimmedName) {
+      setNameError(t('Name is required'))
+      valid = false
+    } else if (/\s/.test(name.trim())) {
+      setNameError(t('Name must not contain spaces'))
+      valid = false
+    } else {
+      setNameError('')
+    }
+    if (!prompt.trim()) {
+      setPromptError(t('Prompt is required'))
+      valid = false
+    } else {
+      setPromptError('')
+    }
+    if (!valid) return
+
+    const skill = createCustomSkill({
+      name: trimmedName,
+      description: description.trim(),
+      skillMdContent: prompt.trim(),
+    })
+
+    addToast({
+      title: t('Custom skill created successfully'),
+      color: 'success',
+    })
+    onCreated(skill.id)
+  }, [name, description, prompt, t, onCreated])
+
+  return (
+    <div className="space-y-6">
+      <Input
+        label={t('Skill Name')}
+        placeholder={t('my-custom-skill')}
+        description={t('No spaces allowed — use hyphens instead')}
+        value={name}
+        onValueChange={(v) => {
+          setName(v)
+          if (v.trim()) setNameError('')
+        }}
+        isInvalid={!!nameError}
+        errorMessage={nameError}
+        size="sm"
+        autoFocus
+      />
+
+      <Input
+        label={t('Description')}
+        placeholder={t('A short description of what this skill does')}
+        value={description}
+        onValueChange={setDescription}
+        size="sm"
+      />
+
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-foreground">
+          {t('Prompt')}
+        </label>
+        <textarea
+          value={prompt}
+          onChange={(e) => {
+            setPrompt(e.target.value)
+            if (e.target.value.trim()) setPromptError('')
+          }}
+          placeholder={t('Write the skill instructions in Markdown...')}
+          rows={12}
+          className={`w-full rounded-lg border bg-default-100 px-3 py-2 text-sm font-mono resize-y focus:outline-none focus:ring-2 focus:ring-primary ${
+            promptError
+              ? 'border-danger focus:ring-danger'
+              : 'border-default-200'
+          }`}
+        />
+        {promptError && <p className="text-xs text-danger">{promptError}</p>}
+      </div>
+
+      <div className="flex justify-end gap-2">
+        <Button size="sm" variant="flat" onPress={onCancel}>
+          {t('Cancel')}
+        </Button>
+        <Button size="sm" color="primary" onPress={handleCreate}>
+          {t('Create')}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+// ============================================================================
 // EmptyState
 // ============================================================================
 
-function EmptyState({ onAdd }: { onAdd: () => void }) {
+function EmptyState({
+  onAdd,
+  onCreate,
+}: {
+  onAdd: () => void
+  onCreate: () => void
+}) {
   const { t } = useI18n(skillsI18n)
 
   return (
@@ -531,9 +695,15 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
       <p className="text-sm text-default-500 max-w-md mb-6">
         {t('Discover, install, and manage specialized skills for your agents')}
       </p>
-      <Button color="primary" onPress={onAdd} size="sm">
-        {t('Discover')}
-      </Button>
+      <div className="flex gap-3">
+        <Button color="primary" onPress={onAdd} size="sm">
+          {t('Discover')}
+        </Button>
+        <Button variant="flat" onPress={onCreate} size="sm">
+          {t('Create')}
+        </Button>
+      </div>
+      <p className="text-xs text-default-400 mt-3">{t('or create your own')}</p>
     </div>
   )
 }

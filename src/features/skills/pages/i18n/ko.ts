@@ -73,18 +73,17 @@ export const ko: I18n = {
   'Skill installed successfully': '스킬이 성공적으로 설치되었습니다',
   'Skill uninstalled': '스킬이 제거되었습니다',
   'Failed to install skill': '스킬 설치에 실패했습니다',
-  'Failed to fetch skill from GitHub':
-    'GitHub에서 스킬을 가져오지 못했습니다',
+  'Failed to fetch skill from GitHub': 'GitHub에서 스킬을 가져오지 못했습니다',
 
   // Compatibility
   'Browser Compatible': '브라우저 호환',
   'Can execute Python and JavaScript scripts in-browser':
     '브라우저에서 Python 및 JavaScript 스크립트를 실행할 수 있습니다',
   'Partial Compatibility': '부분 호환',
-  'Some scripts require system tools that can\'t run in-browser':
+  "Some scripts require system tools that can't run in-browser":
     '일부 스크립트는 브라우저에서 사용할 수 없는 시스템 도구가 필요합니다',
   'Instructions Only': '지침 전용',
-  'Scripts are available for reference but can\'t execute in-browser':
+  "Scripts are available for reference but can't execute in-browser":
     '스크립트는 참조용으로 제공되지만 브라우저에서 실행할 수 없습니다',
 
   // Execution
@@ -120,7 +119,8 @@ export const ko: I18n = {
   'Arguments must be a JSON object': '인수는 JSON 객체여야 합니다',
   'Invalid JSON': '잘못된 JSON',
   'No Python scripts available': '사용 가능한 Python 스크립트 없음',
-  'Only Python scripts can be executed in the sandbox': '샌드박스에서는 Python 스크립트만 실행할 수 있습니다',
+  'Only Python scripts can be executed in the sandbox':
+    '샌드박스에서는 Python 스크립트만 실행할 수 있습니다',
   'Pre-compiled in Pyodide': 'Pyodide에서 사전 컴파일됨',
   'Will be installed via micropip': 'micropip을 통해 설치됩니다',
   Done: '완료',
@@ -135,8 +135,7 @@ export const ko: I18n = {
   'No skills installed': '설치된 스킬 없음',
   'Search the SkillsMP registry to discover and install skills':
     'SkillsMP 레지스트리에서 스킬을 검색하고 설치하세요',
-  'Your installed skills will appear here':
-    '설치된 스킬이 여기에 표시됩니다',
+  'Your installed skills will appear here': '설치된 스킬이 여기에 표시됩니다',
   'API key required': 'API 키 필요',
   'Enter your SkillsMP API key in Settings to search for skills':
     '스킬을 검색하려면 설정에서 SkillsMP API 키를 입력하세요',
@@ -144,4 +143,24 @@ export const ko: I18n = {
   'Install from GitHub URL': 'GitHub URL에서 설치',
   'Paste a GitHub URL to a skill directory or SKILL.md file':
     'GitHub URL을 붙여넣어 스킬 디렉토리 또는 SKILL.md 파일에서 설치하세요',
+
+  // Custom skill creation
+  'Create Custom Skill': '커스텀 스킬 만들기',
+  Create: '만들기',
+  'Skill Name': '스킬 이름',
+  'my-custom-skill': '나의-커스텀-스킬',
+  'No spaces allowed — use hyphens instead':
+    '공백은 허용되지 않습니다 — 대신 하이픈을 사용하세요',
+  'Name must not contain spaces': '이름에 공백을 포함할 수 없습니다',
+  Description: '설명',
+  'A short description of what this skill does':
+    '이 스킬이 하는 일에 대한 간단한 설명',
+  Prompt: '프롬프트',
+  'Write the skill instructions in Markdown...':
+    'Markdown으로 스킬 지침을 작성하세요…',
+  'Name is required': '이름은 필수입니다',
+  'Prompt is required': '프롬프트는 필수입니다',
+  'Custom skill created successfully':
+    '커스텀 스킬이 성공적으로 생성되었습니다',
+  'or create your own': '또는 직접 만들기',
 }

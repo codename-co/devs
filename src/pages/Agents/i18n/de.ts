@@ -217,4 +217,7 @@ export const de: I18n = {
   'Reading skill file…': 'Fähigkeitsdatei lesen…',
   'Running skill script…': 'Fähigkeitsskript ausführen…',
   Thoughts: 'Gedanken',
+  'Delete conversation': 'Unterhaltung löschen',
+  'Are you sure you want to delete this conversation? This action cannot be undone.':
+    'Sind Sie sicher, dass Sie diese Unterhaltung löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
 } as const

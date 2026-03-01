@@ -26,6 +26,7 @@ import {
   useArtifacts,
   useSyncReady,
   useOrchestrationStreaming,
+  useAutoScroll,
 } from '@/hooks'
 import type { Agent, Message, Conversation, InstalledSkill } from '@/types'
 import { notifyError } from '@/features/notifications'
@@ -36,6 +37,7 @@ import {
   type ResponseStatus,
 } from '@/lib/chat'
 import { copyRichText } from '@/lib/clipboard'
+import { fileToBase64 } from '@/lib/file-utils'
 import { successToast } from '@/lib/toast'
 import {
   decryptFields,
@@ -108,9 +110,10 @@ export const TaskPage = () => {
   const [orchestrationProgress, setOrchestrationProgress] = useState(0)
 
   // Auto-scroll
-  const streamingEndRef = useRef<HTMLDivElement | null>(null)
-  const userHasScrolledUpRef = useRef(false)
-  const isAutoScrollingRef = useRef(false)
+  const { streamingEndRef } = useAutoScroll(isSending, [
+    response,
+    conversationSteps,
+  ])
   const abortControllerRef = useRef<AbortController | null>(null)
 
   // Delete confirmation modal
@@ -319,38 +322,7 @@ export const TaskPage = () => {
   }, [allMessages, task?.assignedAgentId, task?.steps, subTasks])
 
   // ── Auto-scroll during streaming ──────────────────────────────────────
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!isSending) return
-      if (isAutoScrollingRef.current) return
-      const scrollBottom = window.innerHeight + window.scrollY
-      const docHeight = document.documentElement.scrollHeight
-      if (docHeight - scrollBottom > 150) {
-        userHasScrolledUpRef.current = true
-      } else {
-        userHasScrolledUpRef.current = false
-      }
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [isSending])
-
-  useEffect(() => {
-    if (isSending) userHasScrolledUpRef.current = false
-  }, [isSending])
-
-  useEffect(() => {
-    if (isSending && !userHasScrolledUpRef.current && streamingEndRef.current) {
-      isAutoScrollingRef.current = true
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: 'instant',
-      })
-      requestAnimationFrame(() => {
-        isAutoScrollingRef.current = false
-      })
-    }
-  }, [isSending, response, conversationSteps])
+  // (handled by useAutoScroll hook)
 
   // ── Handle navigation when task ID is missing ─────────────────────────
   useEffect(() => {
@@ -432,19 +404,6 @@ export const TaskPage = () => {
     },
     [t],
   )
-
-  // ── File to base64 ────────────────────────────────────────────────────
-  const fileToBase64 = useCallback((file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.readAsDataURL(file)
-      reader.onload = () => {
-        const result = reader.result as string
-        resolve(result.split(',')[1])
-      }
-      reader.onerror = reject
-    })
-  }, [])
 
   // ── Submit follow-up message ──────────────────────────────────────────
   const onSubmit = useCallback(
@@ -529,16 +488,7 @@ export const TaskPage = () => {
       setCurrentStatus(null)
       setConversationSteps([])
     },
-    [
-      prompt,
-      isSending,
-      selectedAgent,
-      allMessages,
-      selectedFiles,
-      fileToBase64,
-      lang,
-      t,
-    ],
+    [prompt, isSending, selectedAgent, allMessages, selectedFiles, lang, t],
   )
 
   // ── Delete handler ─────────────────────────────────────────────────────

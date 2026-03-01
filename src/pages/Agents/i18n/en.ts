@@ -187,4 +187,7 @@ export const en = [
   'Running skill script…',
   // Thinking/reasoning content
   'Thoughts',
+  // Delete conversation
+  'Delete conversation',
+  'Are you sure you want to delete this conversation? This action cannot be undone.',
 ] as const

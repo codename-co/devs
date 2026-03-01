@@ -80,10 +80,10 @@ export const ar: I18n = {
   'Can execute Python and JavaScript scripts in-browser':
     'يمكن تشغيل نصوص بايثون وجافاسكريبت في المتصفح',
   'Partial Compatibility': 'توافق جزئي',
-  'Some scripts require system tools that can\'t run in-browser':
+  "Some scripts require system tools that can't run in-browser":
     'بعض النصوص تتطلب أدوات نظام غير متوفرة في المتصفح',
   'Instructions Only': 'تعليمات فقط',
-  'Scripts are available for reference but can\'t execute in-browser':
+  "Scripts are available for reference but can't execute in-browser":
     'النصوص البرمجية متاحة كمرجع لكن لا يمكن تشغيلها في المتصفح',
 
   // Execution
@@ -119,7 +119,8 @@ export const ar: I18n = {
   'Arguments must be a JSON object': 'يجب أن تكون المعاملات كائن JSON',
   'Invalid JSON': 'JSON غير صالح',
   'No Python scripts available': 'لا توجد نصوص بايثون متاحة',
-  'Only Python scripts can be executed in the sandbox': 'يمكن تشغيل نصوص بايثون فقط في البيئة المعزولة',
+  'Only Python scripts can be executed in the sandbox':
+    'يمكن تشغيل نصوص بايثون فقط في البيئة المعزولة',
   'Pre-compiled in Pyodide': 'مترجم مسبقاً في Pyodide',
   'Will be installed via micropip': 'سيتم تثبيته عبر micropip',
   Done: 'تم',
@@ -142,4 +143,23 @@ export const ar: I18n = {
   'Install from GitHub URL': 'التثبيت من رابط GitHub',
   'Paste a GitHub URL to a skill directory or SKILL.md file':
     'الصق رابط GitHub لمجلد مهارة أو ملف SKILL.md',
+
+  // Custom skill creation
+  'Create Custom Skill': 'إنشاء مهارة مخصصة',
+  Create: 'إنشاء',
+  'Skill Name': 'اسم المهارة',
+  'my-custom-skill': 'مهارتي-المخصصة',
+  'No spaces allowed — use hyphens instead':
+    'لا يُسمح بالمسافات — استخدم الشرطات بدلاً منها',
+  'Name must not contain spaces': 'يجب ألا يحتوي الاسم على مسافات',
+  Description: 'الوصف',
+  'A short description of what this skill does':
+    'وصف قصير لما تفعله هذه المهارة',
+  Prompt: 'التعليمات',
+  'Write the skill instructions in Markdown...':
+    'اكتب تعليمات المهارة بصيغة Markdown…',
+  'Name is required': 'الاسم مطلوب',
+  'Prompt is required': 'التعليمات مطلوبة',
+  'Custom skill created successfully': 'تم إنشاء المهارة المخصصة بنجاح',
+  'or create your own': 'أو أنشئ مهارتك الخاصة',
 }

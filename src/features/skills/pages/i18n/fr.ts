@@ -83,16 +83,17 @@ export const fr: I18n = {
   'Can execute Python and JavaScript scripts in-browser':
     'Peut exécuter des scripts Python et JavaScript dans le navigateur',
   'Partial Compatibility': 'Compatibilité partielle',
-  'Some scripts require system tools that can\'t run in-browser':
+  "Some scripts require system tools that can't run in-browser":
     'Certains scripts nécessitent des outils système non disponibles dans le navigateur',
   'Instructions Only': 'Instructions uniquement',
-  'Scripts are available for reference but can\'t execute in-browser':
+  "Scripts are available for reference but can't execute in-browser":
     'Les scripts sont disponibles en référence mais ne peuvent pas s\u2019exécuter dans le navigateur',
 
   // Execution
   'Run Script': 'Exécuter le script',
   'Running script…': 'Exécution du script\u2026',
-  'Initializing Python environment…': 'Initialisation de l\u2019environnement Python\u2026',
+  'Initializing Python environment…':
+    'Initialisation de l\u2019environnement Python\u2026',
   'Installing packages…': 'Installation des paquets\u2026',
   'Script executed successfully': 'Script exécuté avec succès',
   'Script execution failed': 'Échec de l\u2019exécution du script',
@@ -122,7 +123,8 @@ export const fr: I18n = {
   'Arguments must be a JSON object': 'Les arguments doivent être un objet JSON',
   'Invalid JSON': 'JSON invalide',
   'No Python scripts available': 'Aucun script Python disponible',
-  'Only Python scripts can be executed in the sandbox': 'Seuls les scripts Python peuvent être exécutés dans le bac à sable',
+  'Only Python scripts can be executed in the sandbox':
+    'Seuls les scripts Python peuvent être exécutés dans le bac à sable',
   'Pre-compiled in Pyodide': 'Précompilé dans Pyodide',
   'Will be installed via micropip': 'Sera installé via micropip',
   Done: 'Terminé',
@@ -146,4 +148,24 @@ export const fr: I18n = {
   'Install from GitHub URL': 'Installer depuis une URL GitHub',
   'Paste a GitHub URL to a skill directory or SKILL.md file':
     'Collez une URL GitHub vers un répertoire de compétence ou un fichier SKILL.md',
+
+  // Custom skill creation
+  'Create Custom Skill': 'Créer une compétence personnalisée',
+  Create: 'Créer',
+  'Skill Name': 'Nom de la compétence',
+  'my-custom-skill': 'ma-competence',
+  'No spaces allowed — use hyphens instead':
+    'Les espaces ne sont pas autorisés — utilisez des tirets',
+  'Name must not contain spaces': 'Le nom ne doit pas contenir d\u2019espaces',
+  Description: 'Description',
+  'A short description of what this skill does':
+    'Une courte description de ce que fait cette compétence',
+  Prompt: 'Prompt',
+  'Write the skill instructions in Markdown...':
+    'Rédigez les instructions de la compétence en Markdown…',
+  'Name is required': 'Le nom est requis',
+  'Prompt is required': 'Le prompt est requis',
+  'Custom skill created successfully':
+    'Compétence personnalisée créée avec succès',
+  'or create your own': 'ou créez la vôtre',
 }

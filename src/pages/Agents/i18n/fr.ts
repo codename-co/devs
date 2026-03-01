@@ -215,4 +215,7 @@ export const fr: I18n = {
   'Reading skill file…': 'Lecture du fichier de compétence…',
   'Running skill script…': 'Exécution du script de compétence…',
   Thoughts: 'Réflexions',
+  'Delete conversation': 'Supprimer la conversation',
+  'Are you sure you want to delete this conversation? This action cannot be undone.':
+    'Êtes-vous sûr de vouloir supprimer cette conversation ? Cette action est irréversible.',
 } as const

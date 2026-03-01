@@ -148,6 +148,10 @@ export const es: I18n = {
   'Pricing per 1M tokens': 'Precio por 1M de tokens',
   Input: 'Entrada',
   Output: 'Salida',
+  'Older models': 'Modelos antiguos',
+  Deprecated: 'Obsoleto',
+  Beta: 'Beta',
+  Alpha: 'Alfa',
 
   // Service worker
   'New features are waiting': 'Nuevas funciones te están esperando',

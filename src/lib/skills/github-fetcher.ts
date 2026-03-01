@@ -573,10 +573,24 @@ const KNOWN_SUBDIRS = new Set(['scripts', 'references', 'assets'])
 export async function fetchSkillFromGitHub(
   githubUrl: string,
 ): Promise<FetchedSkill> {
-  const { owner, repo, branch, path } = parseGitHubUrl(githubUrl)
+  const parsed = parseGitHubUrl(githubUrl)
+  const { owner, repo, branch } = parsed
+  let { path } = parsed
 
-  // 1. List the root directory to discover all entries
-  const rootEntries = await fetchGitHubDirectory(owner, repo, path)
+  // 1. List the root directory to discover all entries.
+  //    If the path 404s, try an alternative: strip or add a leading "skills/"
+  //    segment, since some repos use "skills/{name}" while others use "{name}"
+  //    directly at the repo root.
+  let rootEntries: GitHubContentEntry[]
+  try {
+    rootEntries = await fetchGitHubDirectory(owner, repo, path)
+  } catch {
+    const altPath = path.startsWith('skills/')
+      ? path.slice('skills/'.length)
+      : `skills/${path}`
+    rootEntries = await fetchGitHubDirectory(owner, repo, altPath)
+    path = altPath
+  }
 
   // 2. Fetch SKILL.md
   const rawSkillMd = await fetchRawContent(
@@ -587,24 +601,37 @@ export async function fetchSkillFromGitHub(
   )
   const { frontmatter: manifest } = parseFrontmatter(rawSkillMd)
 
-  // 3. Classify root entries
+  // 3. Classify root entries and detect which known sub-dirs actually exist
   const extraFileEntries: GitHubContentEntry[] = []
   const extraDirEntries: GitHubContentEntry[] = []
+  const presentSubDirs = new Set<string>()
 
   for (const entry of rootEntries) {
     if (entry.type === 'file' && entry.name !== 'SKILL.md') {
       extraFileEntries.push(entry)
-    } else if (entry.type === 'dir' && !KNOWN_SUBDIRS.has(entry.name)) {
-      extraDirEntries.push(entry)
+    } else if (entry.type === 'dir') {
+      if (KNOWN_SUBDIRS.has(entry.name)) {
+        presentSubDirs.add(entry.name)
+      } else {
+        extraDirEntries.push(entry)
+      }
     }
   }
 
-  // 4. Fetch known sub-directories + extra root files + extra dirs in parallel
+  // 4. Fetch only existing known sub-directories + extra root files + extra dirs in parallel
+  //    Skip directories not present in root listing to avoid unnecessary 404 requests.
+  const emptyFiles: { path: string; content: string }[] = []
   const [scriptFiles, referenceFiles, assetFiles, ...extraResults] =
     await Promise.all([
-      fetchAllFilesInDirectory(owner, repo, branch, `${path}/scripts`),
-      fetchAllFilesInDirectory(owner, repo, branch, `${path}/references`),
-      fetchAllFilesInDirectory(owner, repo, branch, `${path}/assets`),
+      presentSubDirs.has('scripts')
+        ? fetchAllFilesInDirectory(owner, repo, branch, `${path}/scripts`)
+        : Promise.resolve(emptyFiles),
+      presentSubDirs.has('references')
+        ? fetchAllFilesInDirectory(owner, repo, branch, `${path}/references`)
+        : Promise.resolve(emptyFiles),
+      presentSubDirs.has('assets')
+        ? fetchAllFilesInDirectory(owner, repo, branch, `${path}/assets`)
+        : Promise.resolve(emptyFiles),
       // Fetch each extra root-level file
       ...extraFileEntries.map(async (entry) => {
         const content = await fetchRawContent(owner, repo, branch, entry.path)

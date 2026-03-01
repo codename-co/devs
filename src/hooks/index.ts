@@ -61,3 +61,6 @@ export type { HashRouteState, UseHashRouteReturn } from './useHashRoute'
 // Orchestration streaming
 export { useOrchestrationStreaming } from './useOrchestrationStreaming'
 export type { SubTaskStreamingState } from './useOrchestrationStreaming'
+
+// Streaming helpers
+export { useAutoScroll } from './useAutoScroll'

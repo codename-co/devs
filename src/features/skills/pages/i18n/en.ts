@@ -71,9 +71,9 @@ export const en = [
   'Browser Compatible',
   'Can execute Python and JavaScript scripts in-browser',
   'Partial Compatibility',
-  'Some scripts require system tools that can\'t run in-browser',
+  "Some scripts require system tools that can't run in-browser",
   'Instructions Only',
-  'Scripts are available for reference but can\'t execute in-browser',
+  "Scripts are available for reference but can't execute in-browser",
 
   // Execution
   'Run Script',
@@ -126,4 +126,20 @@ export const en = [
   // Manual URL install
   'Install from GitHub URL',
   'Paste a GitHub URL to a skill directory or SKILL.md file',
+
+  // Custom skill creation
+  'Create Custom Skill',
+  'Create',
+  'Skill Name',
+  'my-custom-skill',
+  'No spaces allowed — use hyphens instead',
+  'Name must not contain spaces',
+  'Description',
+  'A short description of what this skill does',
+  'Prompt',
+  'Write the skill instructions in Markdown...',
+  'Name is required',
+  'Prompt is required',
+  'Custom skill created successfully',
+  'or create your own',
 ]

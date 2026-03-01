@@ -212,4 +212,7 @@ export const ko: I18n = {
   'Reading skill file…': '기술 파일 읽는 중…',
   'Running skill script…': '기술 스크립트 실행 중…',
   Thoughts: '생각',
+  'Delete conversation': '대화 삭제',
+  'Are you sure you want to delete this conversation? This action cannot be undone.':
+    '이 대화를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
 } as const

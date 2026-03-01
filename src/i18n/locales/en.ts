@@ -150,6 +150,10 @@ export const en = [
   'Pricing per 1M tokens',
   'Input',
   'Output',
+  'Older models',
+  'Deprecated',
+  'Beta',
+  'Alpha',
 
   // Service worker
   'New features are waiting',

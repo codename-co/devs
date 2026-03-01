@@ -83,10 +83,10 @@ export const es: I18n = {
   'Can execute Python and JavaScript scripts in-browser':
     'Puede ejecutar scripts de Python y JavaScript en el navegador',
   'Partial Compatibility': 'Compatibilidad parcial',
-  'Some scripts require system tools that can\'t run in-browser':
+  "Some scripts require system tools that can't run in-browser":
     'Algunos scripts requieren herramientas del sistema no disponibles en el navegador',
   'Instructions Only': 'Solo instrucciones',
-  'Scripts are available for reference but can\'t execute in-browser':
+  "Scripts are available for reference but can't execute in-browser":
     'Los scripts están disponibles como referencia pero no se pueden ejecutar en el navegador',
 
   // Execution
@@ -122,7 +122,8 @@ export const es: I18n = {
   'Arguments must be a JSON object': 'Los argumentos deben ser un objeto JSON',
   'Invalid JSON': 'JSON inválido',
   'No Python scripts available': 'No hay scripts Python disponibles',
-  'Only Python scripts can be executed in the sandbox': 'Solo se pueden ejecutar scripts Python en el sandbox',
+  'Only Python scripts can be executed in the sandbox':
+    'Solo se pueden ejecutar scripts Python en el sandbox',
   'Pre-compiled in Pyodide': 'Precompilado en Pyodide',
   'Will be installed via micropip': 'Se instalará vía micropip',
   Done: 'Listo',
@@ -146,4 +147,24 @@ export const es: I18n = {
   'Install from GitHub URL': 'Instalar desde URL de GitHub',
   'Paste a GitHub URL to a skill directory or SKILL.md file':
     'Pegue una URL de GitHub a un directorio de habilidad o archivo SKILL.md',
+
+  // Custom skill creation
+  'Create Custom Skill': 'Crear habilidad personalizada',
+  Create: 'Crear',
+  'Skill Name': 'Nombre de la habilidad',
+  'my-custom-skill': 'mi-habilidad',
+  'No spaces allowed — use hyphens instead':
+    'No se permiten espacios — usa guiones en su lugar',
+  'Name must not contain spaces': 'El nombre no debe contener espacios',
+  Description: 'Descripción',
+  'A short description of what this skill does':
+    'Una breve descripción de lo que hace esta habilidad',
+  Prompt: 'Prompt',
+  'Write the skill instructions in Markdown...':
+    'Escribe las instrucciones de la habilidad en Markdown…',
+  'Name is required': 'El nombre es obligatorio',
+  'Prompt is required': 'El prompt es obligatorio',
+  'Custom skill created successfully':
+    'Habilidad personalizada creada con éxito',
+  'or create your own': 'o crea la tuya propia',
 }

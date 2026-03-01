@@ -145,6 +145,10 @@ export const ko: I18n = {
   'Pricing per 1M tokens': '1M 토큰당 가격',
   Input: '입력',
   Output: '출력',
+  'Older models': '이전 모델',
+  Deprecated: '사용 중단',
+  Beta: '베타',
+  Alpha: '알파',
 
   // Service worker
   'New features are waiting': '새로운 기능이 기다리고 있습니다',

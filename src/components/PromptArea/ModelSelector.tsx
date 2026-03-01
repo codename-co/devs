@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import {
   Button,
+  Chip,
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
@@ -227,6 +228,31 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
     [getCachedModelData],
   )
 
+  // Categorize a model as 'latest', 'older', or 'deprecated' based on models.dev metadata
+  const getModelCategory = useCallback(
+    (
+      provider: LLMProvider,
+      modelId: string,
+    ): 'latest' | 'older' | 'deprecated' => {
+      const modelData = getCachedModelData(provider, modelId)
+      if (!modelData) return 'latest' // No data available, assume latest
+
+      // Explicit deprecation status from models.dev
+      if (modelData.metadata.status === 'deprecated') return 'deprecated'
+
+      // Check release date - models older than 12 months are categorized as 'older'
+      if (modelData.metadata.releaseDate) {
+        const releaseDate = new Date(modelData.metadata.releaseDate)
+        const twelveMonthsAgo = new Date()
+        twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12)
+        if (releaseDate < twelveMonthsAgo) return 'older'
+      }
+
+      return 'latest'
+    },
+    [getCachedModelData],
+  )
+
   // Load model data for models when viewing a provider
   useEffect(() => {
     if (!viewingProvider || viewingProvider.models.length === 0) return
@@ -374,10 +400,42 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
         )
       }
 
+      const status = modelData?.metadata?.status
+
       return (
         <div className="p-1 max-w-xs">
-          <div className="font-medium text-sm mb-2">
+          <div className="flex items-center gap-2 font-medium text-sm mb-2">
             {displayModelName(modelId, provider)}
+            {status === 'deprecated' && (
+              <Chip
+                size="sm"
+                color="danger"
+                variant="flat"
+                classNames={{ base: 'h-4 px-1', content: 'text-[10px] px-0' }}
+              >
+                {t('Deprecated')}
+              </Chip>
+            )}
+            {status === 'beta' && (
+              <Chip
+                size="sm"
+                color="warning"
+                variant="flat"
+                classNames={{ base: 'h-4 px-1', content: 'text-[10px] px-0' }}
+              >
+                {t('Beta')}
+              </Chip>
+            )}
+            {status === 'alpha' && (
+              <Chip
+                size="sm"
+                color="secondary"
+                variant="flat"
+                classNames={{ base: 'h-4 px-1', content: 'text-[10px] px-0' }}
+              >
+                {t('Alpha')}
+              </Chip>
+            )}
           </div>
 
           {/* Pricing section */}
@@ -737,89 +795,157 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
             />
           </DropdownItem>
         )}
-        {filteredModels.map((model) => {
-          const isSelected = currentModelForProvider === model
-          const modelData = getCachedModelData(
-            viewingProvider.credential.provider,
-            model,
-          )
-          const caps = getCachedCapabilities(
-            viewingProvider.credential.provider,
-            model,
-          )
-          const hasCapabilities = caps && Object.values(caps).some(Boolean)
-          const hasPricing = modelData?.pricing
-          const showTooltip = hasCapabilities || hasPricing
+        {(() => {
+          // Group filtered models by category
+          const latestModels: string[] = []
+          const olderModels: string[] = []
 
-          return (
-            <DropdownItem
-              key={model}
-              startContent={
-                isSelected ? (
-                  <Icon name="Check" size="sm" />
-                ) : (
-                  <span className="w-4" />
-                )
-              }
-              endContent={
-                showTooltip ? (
-                  <Tooltip
-                    content={renderModelTooltip(
-                      viewingProvider.credential.provider,
-                      model,
+          for (const model of filteredModels) {
+            const category = getModelCategory(
+              viewingProvider.credential.provider,
+              model,
+            )
+            if (category === 'latest') {
+              latestModels.push(model)
+            } else {
+              olderModels.push(model)
+            }
+          }
+
+          const renderModelItem = (model: string, dimmed = false) => {
+            const isSelected = currentModelForProvider === model
+            const modelData = getCachedModelData(
+              viewingProvider.credential.provider,
+              model,
+            )
+            const caps = getCachedCapabilities(
+              viewingProvider.credential.provider,
+              model,
+            )
+            const hasCapabilities = caps && Object.values(caps).some(Boolean)
+            const hasPricing = modelData?.pricing
+            const showTooltip = hasCapabilities || hasPricing
+            const category = getModelCategory(
+              viewingProvider.credential.provider,
+              model,
+            )
+            const isDeprecated = category === 'deprecated'
+
+            return (
+              <DropdownItem
+                key={model}
+                startContent={
+                  isSelected ? (
+                    <Icon name="Check" size="sm" />
+                  ) : (
+                    <span className="w-4" />
+                  )
+                }
+                endContent={
+                  <div className="flex gap-1 items-center shrink-0">
+                    {isDeprecated && (
+                      <Chip
+                        size="sm"
+                        color="danger"
+                        variant="flat"
+                        classNames={{
+                          base: 'h-4 px-1',
+                          content: 'text-[10px] px-0',
+                        }}
+                      >
+                        {t('Deprecated')}
+                      </Chip>
                     )}
-                    placement="top"
-                    delay={200}
-                    closeDelay={0}
-                    classNames={{
-                      content:
-                        'bg-content1 shadow-lg border border-default-200',
-                    }}
-                  >
-                    <div className="flex gap-1 items-center shrink-0 cursor-help">
-                      {hasCapabilities ? (
-                        renderCapabilityIcons(
+                    {showTooltip ? (
+                      <Tooltip
+                        content={renderModelTooltip(
                           viewingProvider.credential.provider,
                           model,
-                          true,
-                        )
-                      ) : (
-                        <Icon
-                          name="InfoCircle"
-                          size="sm"
-                          className="w-3 h-3 text-default-400"
-                        />
-                      )}
-                    </div>
-                  </Tooltip>
-                ) : (
-                  renderCapabilityIcons(
-                    viewingProvider.credential.provider,
-                    model,
+                        )}
+                        placement="top"
+                        delay={200}
+                        closeDelay={0}
+                        classNames={{
+                          content:
+                            'bg-content1 shadow-lg border border-default-200',
+                        }}
+                      >
+                        <div className="flex gap-1 items-center shrink-0 cursor-help">
+                          {hasCapabilities ? (
+                            renderCapabilityIcons(
+                              viewingProvider.credential.provider,
+                              model,
+                              true,
+                            )
+                          ) : (
+                            <Icon
+                              name="InfoCircle"
+                              size="sm"
+                              className="w-3 h-3 text-default-400"
+                            />
+                          )}
+                        </div>
+                      </Tooltip>
+                    ) : (
+                      renderCapabilityIcons(
+                        viewingProvider.credential.provider,
+                        model,
+                      )
+                    )}
+                  </div>
+                }
+                textValue={model}
+                closeOnSelect
+                className={dimmed ? 'opacity-60' : ''}
+                onPress={() => {
+                  handleProviderSelect(
+                    viewingProvider.credential,
+                    viewingProvider.models,
                   )
-                )
-              }
-              textValue={model}
-              closeOnSelect
-              onPress={() => {
-                handleProviderSelect(
-                  viewingProvider.credential,
-                  viewingProvider.models,
-                )
-                handleModelSelect(viewingProvider.credential.provider, model)
-              }}
-            >
-              {displayModelName(model, viewingProvider.credential.provider)}
-            </DropdownItem>
+                  handleModelSelect(viewingProvider.credential.provider, model)
+                }}
+              >
+                {displayModelName(model, viewingProvider.credential.provider)}
+              </DropdownItem>
+            )
+          }
+
+          return (
+            <>
+              {latestModels.map((model) => renderModelItem(model))}
+              {olderModels.length > 0 && (
+                <>
+                  <DropdownItem
+                    key="older-divider"
+                    isReadOnly
+                    textValue="Older models"
+                    isDisabled
+                  >
+                    <div className="flex items-center gap-2 py-0.5">
+                      <div className="flex-1 h-px bg-default-200" />
+                      <span className="text-xs uppercase tracking-wider">
+                        {t('Older models')}
+                      </span>
+                      <div className="flex-1 h-px bg-default-200" />
+                    </div>
+                  </DropdownItem>
+                  {olderModels.map((model) => renderModelItem(model, true))}
+                </>
+              )}
+              {filteredModels.length === 0 && (
+                <DropdownItem
+                  key="no-results"
+                  isReadOnly
+                  textValue="No results"
+                >
+                  <span className="text-default-400 text-sm">
+                    {t('No models found')}
+                  </span>
+                </DropdownItem>
+              )}
+            </>
           )
-        })}
-        {filteredModels.length === 0 && (
-          <DropdownItem key="no-results" isReadOnly textValue="No results">
-            <span className="text-default-400 text-sm">
-              {t('No models found')}
-            </span>
-          </DropdownItem>
-        )}
+        })()}
       </>
     )
   }

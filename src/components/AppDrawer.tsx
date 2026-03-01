@@ -586,7 +586,7 @@ const CollapsedDrawer = ({
         <div>
           {/* Collapsed Navigation Icons */}
           <nav className="hidden md:flex flex-col w-full">
-            <Tooltip content={t('New chat')} placement="right">
+            <Tooltip content={t('New Task')} placement="right">
               <Button
                 as={Link}
                 href={url('')}
@@ -594,9 +594,9 @@ const CollapsedDrawer = ({
                 color="primary"
                 variant="light"
                 className="w-full dark:text-white"
-                aria-label={t('Chat')}
+                aria-label={t('New Task')}
               >
-                <Icon name="ChatPlusIn" />
+                <Icon name="PlusCircle" />
               </Button>
             </Tooltip>
             <Tooltip
@@ -937,20 +937,20 @@ const ExpandedDrawer = ({
             <ListboxSection>
               {[
                 <ListboxItem
-                  key="new-chat"
+                  key="new-task"
                   href={url('')}
                   variant="faded"
                   color="primary"
                   className="dark:text-gray-200 dark:hover:text-primary-500 [.is-active]:bg-primary-50"
                   startContent={
                     <Icon
-                      name="ChatPlusIn"
+                      name="PlusCircle"
                       className="text-primary-400 dark:text-white"
                     />
                   }
-                  textValue={t('New chat')}
+                  textValue={t('New Task')}
                 >
-                  {t('New chat')}
+                  {t('New Task')}
                 </ListboxItem>,
                 // Search Button
                 <ListboxItem

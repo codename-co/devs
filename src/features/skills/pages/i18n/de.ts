@@ -66,8 +66,7 @@ export const de: I18n = {
   'All agents': 'Alle Agenten',
   'Select specific agents': 'Bestimmte Agenten auswählen',
   'Auto-activate': 'Automatische Aktivierung',
-  'Always inject skill instructions':
-    'Fähigkeitsanweisungen immer einfügen',
+  'Always inject skill instructions': 'Fähigkeitsanweisungen immer einfügen',
   'Confirm Uninstall': 'Deinstallation bestätigen',
   'Are you sure you want to uninstall this skill?':
     'Sind Sie sicher, dass Sie diese Fähigkeit deinstallieren möchten?',
@@ -83,16 +82,17 @@ export const de: I18n = {
   'Can execute Python and JavaScript scripts in-browser':
     'Kann Python- und JavaScript-Skripte im Browser ausführen',
   'Partial Compatibility': 'Teilweise Kompatibilität',
-  'Some scripts require system tools that can\'t run in-browser':
+  "Some scripts require system tools that can't run in-browser":
     'Einige Skripte erfordern Systemwerkzeuge, die im Browser nicht verfügbar sind',
   'Instructions Only': 'Nur Anweisungen',
-  'Scripts are available for reference but can\'t execute in-browser':
+  "Scripts are available for reference but can't execute in-browser":
     'Skripte sind als Referenz verfügbar, können aber nicht im Browser ausgeführt werden',
 
   // Execution
   'Run Script': 'Skript ausführen',
   'Running script…': 'Skript wird ausgeführt\u2026',
-  'Initializing Python environment…': 'Python-Umgebung wird initialisiert\u2026',
+  'Initializing Python environment…':
+    'Python-Umgebung wird initialisiert\u2026',
   'Installing packages…': 'Pakete werden installiert\u2026',
   'Script executed successfully': 'Skript erfolgreich ausgeführt',
   'Script execution failed': 'Skriptausführung fehlgeschlagen',
@@ -122,7 +122,8 @@ export const de: I18n = {
   'Arguments must be a JSON object': 'Argumente müssen ein JSON-Objekt sein',
   'Invalid JSON': 'Ungültiges JSON',
   'No Python scripts available': 'Keine Python-Skripte verfügbar',
-  'Only Python scripts can be executed in the sandbox': 'Nur Python-Skripte können in der Sandbox ausgeführt werden',
+  'Only Python scripts can be executed in the sandbox':
+    'Nur Python-Skripte können in der Sandbox ausgeführt werden',
   'Pre-compiled in Pyodide': 'In Pyodide vorkompiliert',
   'Will be installed via micropip': 'Wird über micropip installiert',
   Done: 'Fertig',
@@ -146,4 +147,23 @@ export const de: I18n = {
   'Install from GitHub URL': 'Von GitHub-URL installieren',
   'Paste a GitHub URL to a skill directory or SKILL.md file':
     'Fügen Sie eine GitHub-URL zu einem Skill-Verzeichnis oder einer SKILL.md-Datei ein',
+
+  // Custom skill creation
+  'Create Custom Skill': 'Eigene Fähigkeit erstellen',
+  Create: 'Erstellen',
+  'Skill Name': 'Fähigkeitsname',
+  'my-custom-skill': 'meine-faehigkeit',
+  'No spaces allowed — use hyphens instead':
+    'Keine Leerzeichen erlaubt — verwenden Sie Bindestriche',
+  'Name must not contain spaces': 'Der Name darf keine Leerzeichen enthalten',
+  Description: 'Beschreibung',
+  'A short description of what this skill does':
+    'Eine kurze Beschreibung, was diese Fähigkeit tut',
+  Prompt: 'Prompt',
+  'Write the skill instructions in Markdown...':
+    'Schreiben Sie die Fähigkeitsanweisungen in Markdown…',
+  'Name is required': 'Name ist erforderlich',
+  'Prompt is required': 'Prompt ist erforderlich',
+  'Custom skill created successfully': 'Eigene Fähigkeit erfolgreich erstellt',
+  'or create your own': 'oder erstellen Sie Ihre eigene',
 }

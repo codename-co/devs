@@ -208,4 +208,7 @@ export const ar: I18n = {
   'Reading skill file…': 'قراءة ملف المهارة…',
   'Running skill script…': 'تشغيل سكريبت المهارة…',
   Thoughts: 'أفكار',
+  'Delete conversation': 'حذف المحادثة',
+  'Are you sure you want to delete this conversation? This action cannot be undone.':
+    'هل أنت متأكد أنك تريد حذف هذه المحادثة؟ لا يمكن التراجع عن هذا الإجراء.',
 } as const

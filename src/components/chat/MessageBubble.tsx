@@ -103,6 +103,20 @@ export const MessageBubble = memo(
               : 'bg-transparent px-1 py-0'
           } ${isPinned ? 'border-l-4 border-warning-400 pl-4' : ''}`}
         >
+          {/* Pinned indicator chip */}
+          {isPinned && (
+            <div className="mb-2">
+              <Chip
+                size="sm"
+                variant="flat"
+                color="warning"
+                startContent={<Icon name="Pin" className="w-3 h-3" />}
+                className="text-tiny"
+              >
+                {t('Pinned' as any)}
+              </Chip>
+            </div>
+          )}
           {/* Agent chip */}
           {showAgentChip && agent && message.role === 'assistant' && (
             <div className="mb-2">

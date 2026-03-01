@@ -147,6 +147,10 @@ export const ar: I18n = {
   'Pricing per 1M tokens': 'السعر لكل 1M رمز',
   Input: 'إدخال',
   Output: 'إخراج',
+  'Older models': 'نماذج قديمة',
+  Deprecated: 'مهمل',
+  Beta: 'تجريبي',
+  Alpha: 'ألفا',
 
   // Service worker
   'New features are waiting': 'ميزات جديدة في الانتظار',

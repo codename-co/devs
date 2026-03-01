@@ -39,6 +39,47 @@ export interface InstallSkillData {
 // ============================================================================
 
 /**
+ * Data required to create a custom skill from scratch.
+ */
+export interface CreateCustomSkillData {
+  name: string
+  description: string
+  /** Markdown prompt / instructions */
+  skillMdContent: string
+}
+
+/**
+ * Create a custom skill from a name and markdown prompt.
+ * Returns the created InstalledSkill.
+ */
+export function createCustomSkill(data: CreateCustomSkillData): InstalledSkill {
+  const now = new Date()
+  const skill: InstalledSkill = {
+    id: nanoid(),
+    name: data.name,
+    description: data.description,
+    author: 'custom',
+    skillMdContent: data.skillMdContent,
+    scripts: [],
+    references: [],
+    assets: [],
+    githubUrl: '',
+    stars: 0,
+    installedAt: now,
+    updatedAt: now,
+    enabled: true,
+    assignedAgentIds: [],
+    autoActivate: false,
+  }
+
+  transact(() => {
+    skills.set(skill.id, skill)
+  })
+
+  return skill
+}
+
+/**
  * Install a new skill into the store.
  * Returns the created InstalledSkill.
  */
@@ -127,10 +168,7 @@ export function setSkillEnabled(id: string, enabled: boolean): boolean {
  * Assign a skill to specific agents.
  * Pass an empty array to make the skill available to all agents.
  */
-export function assignSkillToAgents(
-  id: string,
-  agentIds: string[],
-): boolean {
+export function assignSkillToAgents(id: string, agentIds: string[]): boolean {
   const existing = skills.get(id)
   if (!existing) return false
 
