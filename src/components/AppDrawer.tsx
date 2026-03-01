@@ -585,7 +585,7 @@ const CollapsedDrawer = ({
 
         <div>
           {/* Collapsed Navigation Icons */}
-          <nav className="flex flex-col w-full">
+          <nav className="hidden md:flex flex-col w-full">
             <Tooltip content={t('New chat')} placement="right">
               <Button
                 as={Link}

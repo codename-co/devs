@@ -115,7 +115,7 @@ export default function RunLayout({
             <div className="flex-1 flex flex-col relative bg-transparent min-h-0">
               {/* Compact top bar */}
               {header && (
-                <div className="sticky top-0 z-10 border-b border-default-200 rounded-t-xl dark:border-default-100 bg-background/80 backdrop-blur-lg">
+                <div className="sticky top-0 z-10 rounded-t-xl">
                   <div className="flex items-center gap-4 px-4 h-14 max-w-full">
                     {/* Back button */}
                     <Tooltip content={t('Back')}>

@@ -760,7 +760,7 @@ export function StudioPage() {
   }, [])
 
   return (
-    <DefaultLayout showBackButton={false}>
+    <DefaultLayout showBackButton={false} title={t('Studio')}>
       {/* Studio branded background */}
       <StudioBackground />
       <Section className="min-h-screen relative">

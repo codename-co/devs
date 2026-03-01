@@ -368,6 +368,7 @@ export const LivePage = () => {
   return (
     <DefaultLayout
       showBackButton={false}
+      title={t('Live')}
       pageMenuActions={
         <>
           {/* Agent Selector */}

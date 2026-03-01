@@ -72,7 +72,7 @@ export default function DefaultLayout({
   }
 
   const metaTitle = [
-    header?.title ?? title,
+    title ?? header?.title,
     platformName || PRODUCT.displayName,
   ]
     .filter(Boolean)

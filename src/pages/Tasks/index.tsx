@@ -116,7 +116,7 @@ export const TasksPage = () => {
 
   if (isLoading && tasks.length === 0) {
     return (
-      <DefaultLayout header={header}>
+      <DefaultLayout header={header} title={t('Tasks')}>
         <Section mainClassName="text-center">
           <div className="flex flex-col items-center justify-center min-h-[50vh]">
             <Spinner size="lg" />
