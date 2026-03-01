@@ -579,7 +579,14 @@ export const submitChat = async (
           },
         ]
 
-        const result = await WorkflowOrchestrator.orchestrateTask(prompt)
+        const result = await WorkflowOrchestrator.orchestrateTask(
+          prompt,
+          undefined,
+          {
+            activatedSkills,
+            signal,
+          },
+        )
 
         // const orchestrationReport = [
         //   `# Task Orchestration Complete\n`,

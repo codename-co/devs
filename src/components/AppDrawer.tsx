@@ -227,6 +227,7 @@ const useRecentActivity = (lang: LanguageCode): ActivityItem[] => {
 const RecentActivity = ({ lang }: { lang: LanguageCode }) => {
   const { t } = useI18n()
   const items = useRecentActivity(lang)
+  const location = useLocation()
 
   if (items.length === 0) return null
 
@@ -236,18 +237,29 @@ const RecentActivity = ({ lang }: { lang: LanguageCode }) => {
         title={t('Recent activity')}
         classNames={{ heading: 'ms-[4px]' }}
       >
-        {items.map((item) => (
-          <ListboxItem
-            key={item.id}
-            href={item.href}
-            variant="faded"
-            startContent={<Icon name={item.icon} size="sm" />}
-            textValue={item.name}
-            classNames={{ title: 'truncate' }}
-          >
-            <span className="text-small">{item.name}</span>
-          </ListboxItem>
-        ))}
+        {items.map((item) => {
+          // Check if this item's href matches the current path
+          const isActive =
+            location.pathname === item.href ||
+            location.pathname.startsWith(item.href + '/')
+
+          return (
+            <ListboxItem
+              key={item.id}
+              href={item.href}
+              variant="faded"
+              startContent={<Icon name={item.icon} size="sm" />}
+              textValue={item.name}
+              classNames={{ title: 'truncate' }}
+              className={cn(
+                '[.is-active]:bg-default-100',
+                isActive && 'is-active',
+              )}
+            >
+              <span className="text-small">{item.name}</span>
+            </ListboxItem>
+          )
+        })}
       </ListboxSection>
     </Listbox>
   )

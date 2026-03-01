@@ -19,3 +19,11 @@ export function toEpoch(v: unknown): number {
   }
   return 0
 }
+
+// Format a date string (YYYY-MM-DD or YYYY-MM) for compact display
+export const formatDateCompact = (dateStr: string, lang?: string): string => {
+  return Intl.DateTimeFormat(lang, {
+    year: 'numeric',
+    month: 'short',
+  }).format(new Date(dateStr))
+}

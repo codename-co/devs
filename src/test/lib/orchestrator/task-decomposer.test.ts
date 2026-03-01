@@ -53,6 +53,8 @@ const mockAnalysis: TaskAnalysisResult = {
   estimatedDuration: 30,
   estimatedPasses: 3,
   suggestedStrategy: 'parallel_agents',
+  tier: 1,
+  tierReason: 'Complex task requiring multiple agents',
 }
 
 describe('decomposeTask', () => {

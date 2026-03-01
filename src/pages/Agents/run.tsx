@@ -2254,7 +2254,7 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
 
   return (
     <RunLayout title={selectedAgent?.name} header={header}>
-      <div className="px-6 lg:px-8 pb-16">
+      <div className="grow flex flex-col px-6 lg:px-8">
         <Section mainClassName="bg-transparent" size={2}>
           <Container>
             {/* Display timeline: messages and memories interleaved by timestamp */}
@@ -2404,6 +2404,8 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
               )}
           </Container>
         </Section>
+
+        <div className="grow" />
 
         <PromptArea
           lang={lang}

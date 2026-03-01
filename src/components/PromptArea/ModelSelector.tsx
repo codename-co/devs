@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import {
   Button,
   Chip,
@@ -7,7 +8,6 @@ import {
   DropdownMenu,
   DropdownItem,
   DropdownSection,
-  Tooltip,
   Input,
   Spinner,
 } from '@heroui/react'
@@ -24,7 +24,7 @@ import {
   usesLocalInference,
 } from '@/lib/llm/models'
 
-import { type Lang, useI18n } from '@/i18n'
+import { useI18n, type Lang } from '@/i18n'
 import type {
   LLMProvider,
   Credential,
@@ -33,6 +33,7 @@ import type {
 } from '@/types'
 import type { IconName } from '@/lib/types'
 import { useNavigate } from 'react-router-dom'
+import { formatDateCompact } from '@/lib/date'
 
 interface ModelSelectorProps {
   lang: Lang
@@ -78,6 +79,12 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
   const [modelDataCache, setModelDataCache] = useState<
     Record<string, NormalizedModel | null>
   >({})
+  // Hovered model for the detail panel
+  const [hoveredModel, setHoveredModel] = useState<string | null>(null)
+  // Bounding rect of the dropdown menu popover for positioning the detail panel
+  const [menuRect, setMenuRect] = useState<DOMRect | null>(null)
+  // Timer ref for delayed hover off
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Get provider configurations with their models
   const providerConfigs = useMemo(() => PROVIDERS(lang, t), [lang, t])
@@ -144,7 +151,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
       const mapping: Partial<Record<LLMProvider, string>> = {
         openai: 'openai',
         anthropic: 'anthropic',
-        google: 'gemini',
+        google: 'google', // models.dev uses 'google' not 'gemini'
         'vertex-ai': 'google-vertex',
         mistral: 'mistral',
         openrouter: 'openrouter',
@@ -318,52 +325,31 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
     stripVersionSuffix,
   ])
 
-  // Capability configuration for icons and tooltips
-  const capabilityConfig = useMemo(
-    () => [
-      {
-        key: 'fast' as keyof ModelCapabilities,
-        icon: 'Timer' as IconName,
-        className: 'text-warning',
-        label: t('Fast'),
-        description: t('Optimized for speed'),
-      },
-      {
-        key: 'lowCost' as keyof ModelCapabilities,
-        icon: 'PiggyBank' as IconName,
-        className: 'text-success',
-        label: t('Low cost'),
-        description: t('Budget-friendly pricing'),
-      },
-      {
-        key: 'highCost' as keyof ModelCapabilities,
-        icon: 'PiggyBank' as IconName,
-        className: 'text-danger',
-        label: t('High cost'),
-        description: t('Premium pricing tier'),
-      },
-      {
-        key: 'thinking' as keyof ModelCapabilities,
-        icon: 'Brain' as IconName,
-        className: 'text-secondary',
-        label: t('Thinking'),
-        description: t('Extended reasoning capabilities'),
-      },
-      {
-        key: 'vision' as keyof ModelCapabilities,
-        icon: 'MediaImage' as IconName,
-        className: 'text-primary',
-        label: t('Vision'),
-        description: t('Can analyze images'),
-      },
-      {
-        key: 'tools' as keyof ModelCapabilities,
-        icon: 'Puzzle' as IconName,
-        className: 'text-default-400',
-        label: t('Tools'),
-        description: t('Function calling support'),
-      },
-    ],
+  // Format context window size for display (e.g., 128000 -> "128K", 2000000 -> "2M")
+  const formatContextWindow = useCallback((tokens: number): string => {
+    if (tokens >= 1_000_000) {
+      const m = tokens / 1_000_000
+      return `${Number.isInteger(m) ? m : m.toFixed(1)}M`
+    }
+    if (tokens >= 1_000) {
+      const k = tokens / 1_000
+      return `${Number.isInteger(k) ? k : k.toFixed(1)}K`
+    }
+    return `${tokens}`
+  }, [])
+
+  // Get a visual cost tier ($ to $$$$) based on input price per million tokens
+  const getCostTier = useCallback(
+    (inputPerMillion: number): { label: string; className: string } => {
+      if (inputPerMillion === 0)
+        return { label: t('Free'), className: 'text-success' }
+      if (inputPerMillion < 0.5)
+        return { label: '$', className: 'text-success' }
+      if (inputPerMillion < 3) return { label: '$$', className: 'text-warning' }
+      if (inputPerMillion < 10)
+        return { label: '$$$', className: 'text-orange-500' }
+      return { label: '$$$$', className: 'text-danger' }
+    },
     [t],
   )
 
@@ -378,158 +364,494 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
     [t],
   )
 
+  // Generate a concise, human-readable description of what a model is good for
+  const generateModelDescription = useCallback(
+    (
+      _provider: LLMProvider,
+      _modelId: string,
+      modelData: NormalizedModel | null,
+      caps: ModelCapabilities | null,
+    ): string => {
+      const traits: string[] = []
+      const uses: string[] = []
+
+      // Determine the model's core personality from capabilities
+      if (caps?.thinking) traits.push(t('reasoning-focused'))
+      else if (caps?.fast) traits.push(t('fast and lightweight'))
+      else if (caps?.highCost) traits.push(t('flagship'))
+      else if (caps?.lowCost) traits.push(t('cost-efficient'))
+
+      // Modality-driven use cases
+      if (caps?.vision) uses.push(t('image understanding'))
+      if (modelData?.capabilities?.audio) uses.push(t('audio'))
+      if (modelData?.modalities?.output?.includes('image'))
+        uses.push(t('image generation'))
+      if (modelData?.modalities?.output?.includes('audio'))
+        uses.push(t('speech synthesis'))
+      if (caps?.tools) uses.push(t('tool use'))
+      if (modelData?.capabilities?.structuredOutput)
+        uses.push(t('structured output'))
+
+      // Context window note
+      const ctx = modelData?.limits?.contextWindow
+      const ctxNote =
+        ctx && ctx >= 200_000
+          ? t('with a very large context window')
+          : ctx && ctx >= 100_000
+            ? t('with a large context window')
+            : ''
+
+      // Build sentence
+      const traitStr =
+        traits.length > 0
+          ? traits.join(', ') + ' ' + t('model')
+          : t('General-purpose model')
+      const useStr =
+        uses.length > 0
+          ? ` ${t('suited for')} ${uses.slice(0, 3).join(', ')}`
+          : ''
+      const ctxStr = ctxNote ? `, ${ctxNote}` : ''
+
+      return `${traitStr}${useStr}${ctxStr}.`
+    },
+    [t],
+  )
+
+  // Full list of all capabilities to always display (enabled or disabled)
+  const allCapabilityDefs = useMemo(
+    () => [
+      {
+        key: 'thinking' as const,
+        icon: 'Brain' as IconName,
+        enabledClass: 'text-secondary',
+        label: t('Reasoning'),
+      },
+      {
+        key: 'vision' as const,
+        icon: 'MediaImage' as IconName,
+        enabledClass: 'text-primary',
+        label: t('Vision'),
+      },
+      {
+        key: 'tools' as const,
+        icon: 'Puzzle' as IconName,
+        enabledClass: 'text-warning',
+        label: t('Tools'),
+      },
+      {
+        key: 'structuredOutput' as const,
+        icon: 'Code' as IconName,
+        enabledClass: 'text-success',
+        label: t('JSON'),
+      },
+      {
+        key: 'attachments' as const,
+        icon: 'Attachment' as IconName,
+        enabledClass: 'text-cyan-500',
+        label: t('Files'),
+      },
+      {
+        key: 'audio' as const,
+        icon: 'MusicNote' as IconName,
+        enabledClass: 'text-pink-500',
+        label: t('Audio'),
+      },
+    ],
+    [t],
+  )
+
+  // All possible input modalities
+  const allInputModalities = useMemo(
+    () => [
+      { key: 'text', icon: 'Text' as IconName, label: t('Text') },
+      { key: 'image', icon: 'MediaImage' as IconName, label: t('Image') },
+      { key: 'audio', icon: 'MusicNote' as IconName, label: t('Audio') },
+      { key: 'video', icon: 'VideoCamera' as IconName, label: t('Video') },
+      { key: 'pdf', icon: 'Page' as IconName, label: t('PDF') },
+    ],
+    [t],
+  )
+
+  // All possible output modalities
+  const allOutputModalities = useMemo(
+    () => [
+      { key: 'text', icon: 'Text' as IconName, label: t('Text') },
+      { key: 'image', icon: 'MediaImage' as IconName, label: t('Image') },
+      { key: 'audio', icon: 'MusicNote' as IconName, label: t('Audio') },
+      { key: 'video', icon: 'VideoCamera' as IconName, label: t('Video') },
+    ],
+    [t],
+  )
+
   // Render a comprehensive tooltip content for a model
   const renderModelTooltip = useCallback(
     (provider: LLMProvider, modelId: string) => {
       const modelData = getCachedModelData(provider, modelId)
       const caps = getCachedCapabilities(provider, modelId)
-      const activeCapabilities = caps
-        ? capabilityConfig.filter(({ key }) => caps[key])
-        : []
 
       const hasPricing = modelData?.pricing
-      const hasCapabilities = activeCapabilities.length > 0
+      const hasContext = modelData?.limits?.contextWindow
 
-      if (!hasPricing && !hasCapabilities) {
-        return (
-          <div className="p-1">
-            <div className="font-medium text-sm">
-              {displayModelName(modelId, provider)}
-            </div>
-          </div>
-        )
-      }
+      // Prefer the human-readable name from models.dev over the raw model ID
+      const preferredName =
+        modelData?.name || displayModelName(modelId, provider)
 
+      // Metadata
+      const knowledgeCutoff = modelData?.metadata?.knowledgeCutoff
+      const releaseDate = modelData?.metadata?.releaseDate
+      const openWeights = modelData?.metadata?.openWeights
+      const hasMetadata = knowledgeCutoff || releaseDate
       const status = modelData?.metadata?.status
 
+      // Need at least some data to show
+      const hasModalities = modelData?.modalities
+      const hasCaps = caps || modelData?.capabilities
+      if (
+        !hasPricing &&
+        !hasCaps &&
+        !hasContext &&
+        !hasMetadata &&
+        !hasModalities
+      ) {
+        return null
+      }
+
+      const costTier = hasPricing
+        ? getCostTier(modelData.pricing.inputPerMillion)
+        : null
+
+      // Build a visual context bar (percentage of 1M tokens as reference max)
+      const contextRatio = hasContext
+        ? Math.min(modelData.limits.contextWindow / 1_000_000, 1)
+        : 0
+
+      // Resolve which capabilities are enabled
+      const resolvedCaps: Record<string, boolean> = {}
+      // From ModelCapabilities (our internal inference)
+      if (caps) {
+        resolvedCaps.thinking = !!caps.thinking
+        resolvedCaps.vision = !!caps.vision
+        resolvedCaps.tools = !!caps.tools
+      }
+      // From models.dev data (more authoritative for cloud models)
+      if (modelData?.capabilities) {
+        resolvedCaps.thinking =
+          resolvedCaps.thinking || modelData.capabilities.reasoning
+        resolvedCaps.vision =
+          resolvedCaps.vision || modelData.capabilities.vision
+        resolvedCaps.tools = resolvedCaps.tools || modelData.capabilities.tools
+        resolvedCaps.structuredOutput = modelData.capabilities.structuredOutput
+        resolvedCaps.attachments = modelData.capabilities.attachments
+        resolvedCaps.audio = modelData.capabilities.audio
+      }
+
+      // Enabled input/output modalities
+      const enabledInputs = new Set(modelData?.modalities?.input || [])
+      const enabledOutputs = new Set(modelData?.modalities?.output || [])
+
+      // Description
+      const description = generateModelDescription(
+        provider,
+        modelId,
+        modelData,
+        caps,
+      )
+
       return (
-        <div className="p-1 max-w-xs">
-          <div className="flex items-center gap-2 font-medium text-sm mb-2">
-            {displayModelName(modelId, provider)}
-            {status === 'deprecated' && (
-              <Chip
-                size="sm"
-                color="danger"
-                variant="flat"
-                classNames={{ base: 'h-4 px-1', content: 'text-[10px] px-0' }}
-              >
-                {t('Deprecated')}
-              </Chip>
-            )}
-            {status === 'beta' && (
-              <Chip
-                size="sm"
-                color="warning"
-                variant="flat"
-                classNames={{ base: 'h-4 px-1', content: 'text-[10px] px-0' }}
-              >
-                {t('Beta')}
-              </Chip>
-            )}
-            {status === 'alpha' && (
-              <Chip
-                size="sm"
-                color="secondary"
-                variant="flat"
-                classNames={{ base: 'h-4 px-1', content: 'text-[10px] px-0' }}
-              >
-                {t('Alpha')}
-              </Chip>
-            )}
+        <div className="w-72">
+          {/* ── Header: Identity + badges ── */}
+          <div className="px-3 pt-2.5 pb-1.5">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex flex-col min-w-0">
+                <span className="font-semibold text-sm leading-tight truncate">
+                  {preferredName}
+                </span>
+                <span className="text-[11px] text-default-400 truncate">
+                  {modelId}
+                </span>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                {openWeights && (
+                  <Chip
+                    size="sm"
+                    color="success"
+                    variant="flat"
+                    classNames={{
+                      base: 'h-4 px-1',
+                      content: 'text-[10px] px-0',
+                    }}
+                  >
+                    Open
+                  </Chip>
+                )}
+                {status === 'deprecated' && (
+                  <Chip
+                    size="sm"
+                    color="danger"
+                    variant="flat"
+                    classNames={{
+                      base: 'h-4 px-1',
+                      content: 'text-[10px] px-0',
+                    }}
+                  >
+                    Deprecated
+                  </Chip>
+                )}
+                {status === 'beta' && (
+                  <Chip
+                    size="sm"
+                    color="warning"
+                    variant="flat"
+                    classNames={{
+                      base: 'h-4 px-1',
+                      content: 'text-[10px] px-0',
+                    }}
+                  >
+                    Beta
+                  </Chip>
+                )}
+                {status === 'alpha' && (
+                  <Chip
+                    size="sm"
+                    color="secondary"
+                    variant="flat"
+                    classNames={{
+                      base: 'h-4 px-1',
+                      content: 'text-[10px] px-0',
+                    }}
+                  >
+                    Alpha
+                  </Chip>
+                )}
+                {costTier && (
+                  <span className={`text-xs font-bold ${costTier.className}`}>
+                    {costTier.label}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Pricing section */}
-          {hasPricing && (
-            <div className="mb-2 pb-2 border-b border-default-200">
-              <div className="text-xs text-default-500 mb-1">
-                {t('Pricing per 1M tokens')}
-              </div>
-              <div className="flex gap-3 text-xs">
-                <div>
-                  <span className="text-default-400">{t('Input')}:</span>{' '}
+          {/* ── Description: one-liner about the model ── */}
+          <div className="px-3 pb-2">
+            <p className="text-[11px] text-default-500 leading-relaxed first-letter:uppercase">
+              {description}
+            </p>
+          </div>
+
+          {/* ── Metadata: release & knowledge cutoff ── */}
+          {hasMetadata && (
+            <div className="px-3 py-1.5 flex items-center text-[11px] border-t border-default-100">
+              {releaseDate && (
+                <div className="flex items-center gap-1 w-24">
+                  <Icon
+                    name={'Calendar' as IconName}
+                    size="sm"
+                    className="w-3 h-3 text-default-400"
+                  />
                   <span className="font-medium">
-                    {formatPrice(modelData.pricing.inputPerMillion)}
+                    {formatDateCompact(releaseDate, lang)}
                   </span>
                 </div>
-                <div>
-                  <span className="text-default-400">{t('Output')}:</span>{' '}
+              )}
+              {knowledgeCutoff && (
+                <div className="flex items-center gap-1">
+                  <Icon
+                    name={'Book' as IconName}
+                    size="sm"
+                    className="w-3 h-3 text-default-400"
+                  />
+                  <span className="text-default-400">{t('Cutoff')}</span>
                   <span className="font-medium">
-                    {formatPrice(modelData.pricing.outputPerMillion)}
-                  </span>
-                </div>
-              </div>
-              {modelData.pricing.reasoningPerMillion && (
-                <div className="text-xs mt-1">
-                  <span className="text-default-400">{t('Thinking')}:</span>{' '}
-                  <span className="font-medium">
-                    {formatPrice(modelData.pricing.reasoningPerMillion)}
+                    {formatDateCompact(knowledgeCutoff, lang)}
                   </span>
                 </div>
               )}
             </div>
           )}
 
-          {/* Capabilities section */}
-          {hasCapabilities && (
-            <div className="flex flex-col gap-1.5">
-              {activeCapabilities.map(
-                ({ key, icon, className, label, description }) => (
-                  <div key={key} className="flex items-start gap-2">
+          {/* ── Modalities: Input & Output with all types shown ── */}
+          {hasModalities && (
+            <div className="px-3 py-2 border-t border-default-100">
+              <div className="grid grid-flow-col">
+                {/* Input modalities */}
+                <div className="flex-1">
+                  <span className="text-[10px] text-default-400 uppercase tracking-wider font-medium">
+                    {t('Input')}
+                  </span>
+                  <div className="grid grid-cols-5 gap-1 mt-1">
+                    {allInputModalities.map(({ key, icon, label }) => {
+                      const enabled = enabledInputs.has(key)
+                      return (
+                        <div
+                          key={key}
+                          className={`flex flex-col items-center gap-0.5 ${enabled ? '' : 'opacity-20'}`}
+                          title={`${label}${enabled ? '' : ` (${t('not supported')})`}`}
+                        >
+                          <Icon
+                            name={icon}
+                            size="sm"
+                            className={`w-3.5 h-3.5 ${enabled ? 'text-foreground' : 'text-default-300'}`}
+                          />
+                          <span className="text-[9px] text-default-500 leading-none">
+                            {label}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+                {/* Divider */}
+                <div className="w-px bg-default-100 self-stretch my-1" />
+                {/* Output modalities */}
+                <div className="flex-1">
+                  <span className="text-[10px] text-default-400 uppercase tracking-wider font-medium">
+                    {t('Output')}
+                  </span>
+                  <div className="grid grid-cols-4 gap-1 mt-1">
+                    {allOutputModalities.map(({ key, icon, label }) => {
+                      const enabled = enabledOutputs.has(key)
+                      return (
+                        <div
+                          key={key}
+                          className={`flex flex-col items-center gap-0.5 ${enabled ? '' : 'opacity-20'}`}
+                          title={`${label}${enabled ? '' : ` (${t('not supported')})`}`}
+                        >
+                          <Icon
+                            name={icon}
+                            size="sm"
+                            className={`w-3.5 h-3.5 ${enabled ? 'text-foreground' : 'text-default-300'}`}
+                          />
+                          <span className="text-[9px] text-default-500 leading-none">
+                            {label}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Capabilities: 3×2 grid, all shown, enabled/disabled visually ── */}
+          <div className="px-3 py-2 border-t border-default-100">
+            <span className="text-[10px] text-default-400 uppercase tracking-wider font-medium">
+              {t('Capabilities')}
+            </span>
+            <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 mt-1.5">
+              {allCapabilityDefs.map(({ key, icon, enabledClass, label }) => {
+                const enabled = !!resolvedCaps[key]
+                return (
+                  <div
+                    key={key}
+                    className={`flex items-center gap-1 ${enabled ? '' : 'opacity-20'}`}
+                    title={`${label}${enabled ? '' : ` (${t('not supported')})`}`}
+                  >
                     <Icon
                       name={icon}
                       size="sm"
-                      className={`w-3.5 h-3.5 mt-0.5 ${className}`}
+                      className={`w-3.5 h-3.5 ${enabled ? enabledClass : 'text-default-300'}`}
                     />
-                    <div className="flex flex-col">
-                      <span className="text-xs font-medium">{label}</span>
-                      <span className="text-xs text-default-400">
-                        {description}
+                    <span
+                      className={`text-[11px] ${enabled ? 'text-foreground' : 'text-default-300'}`}
+                    >
+                      {label}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* ── Context window ── */}
+          {hasContext && (
+            <div className="px-3 py-2 bg-default-50 border-t border-default-100">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[11px] text-default-500">
+                  {t('Context')}
+                </span>
+                <span className="text-[11px] font-medium">
+                  {formatContextWindow(modelData.limits.contextWindow)} tokens
+                </span>
+              </div>
+              <div className="h-1 w-full bg-default-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full transition-all"
+                  style={{ width: `${Math.max(contextRatio * 100, 4)}%` }}
+                />
+              </div>
+              {modelData?.limits?.maxOutput && (
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-[11px] text-default-500">
+                    {t('Max output')}
+                  </span>
+                  <span className="text-[11px] font-medium">
+                    {formatContextWindow(modelData.limits.maxOutput)} tokens
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Pricing ── */}
+          {hasPricing && (
+            <div className="px-3 py-2 bg-default-50 border-t border-default-100">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[11px]">
+                <div className="flex justify-between">
+                  <span className="text-default-400">{t('Input')}</span>
+                  <span className="font-medium">
+                    {formatPrice(modelData.pricing.inputPerMillion)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-default-400">{t('Output')}</span>
+                  <span className="font-medium">
+                    {formatPrice(modelData.pricing.outputPerMillion)}
+                  </span>
+                </div>
+                {modelData.pricing.reasoningPerMillion != null &&
+                  modelData.pricing.reasoningPerMillion > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-default-400">{t('Thinking')}</span>
+                      <span className="font-medium">
+                        {formatPrice(modelData.pricing.reasoningPerMillion)}
                       </span>
                     </div>
-                  </div>
-                ),
-              )}
+                  )}
+                {modelData.pricing.cacheReadPerMillion != null &&
+                  modelData.pricing.cacheReadPerMillion > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-default-400">
+                        {t('Cache read')}
+                      </span>
+                      <span className="font-medium">
+                        {formatPrice(modelData.pricing.cacheReadPerMillion)}
+                      </span>
+                    </div>
+                  )}
+              </div>
+              <div className="text-[10px] text-default-300 text-right mt-0.5">
+                /{t('1M tokens')}
+              </div>
             </div>
           )}
         </div>
       )
     },
     [
-      capabilityConfig,
+      allCapabilityDefs,
+      allInputModalities,
+      allOutputModalities,
       displayModelName,
+      generateModelDescription,
       getCachedCapabilities,
       getCachedModelData,
+      getCostTier,
+      formatContextWindow,
       formatPrice,
       t,
     ],
-  )
-
-  // Render capability icons for a model (compact view for endContent)
-  const renderCapabilityIcons = useCallback(
-    (provider: LLMProvider, modelId: string, noWrapper = false) => {
-      const caps = getCachedCapabilities(provider, modelId)
-      if (!caps) return null
-
-      const icons = capabilityConfig
-        .filter(({ key }) => caps[key])
-        .map(({ key, icon, className }) => (
-          <Icon
-            key={key}
-            name={icon}
-            size="sm"
-            className={`w-3 h-3 ${className}`}
-          />
-        ))
-
-      if (icons.length === 0) return null
-
-      return noWrapper ? (
-        <>{icons}</>
-      ) : (
-        <div className="flex gap-1 items-center shrink-0">{icons}</div>
-      )
-    },
-    [capabilityConfig, getCachedCapabilities],
   )
 
   const handleProviderSelect = useCallback(
@@ -564,6 +886,8 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
       setViewMode('providers')
       setViewingProvider(null)
       setModelSearchQuery('')
+      setHoveredModel(null)
+      setMenuRect(null)
     }
   }, [])
 
@@ -684,25 +1008,13 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
           <div className="flex flex-col gap-0.5">
             <span>{providerName}</span>
             {isSelected && currentModelForProvider ? (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-default-500">
-                  {displayModelName(
-                    currentModelForProvider,
-                    credential.provider,
-                  )}
-                </span>
-                {renderCapabilityIcons(
-                  credential.provider,
-                  currentModelForProvider,
-                )}
-              </div>
+              <span className="text-xs text-default-500">
+                {displayModelName(currentModelForProvider, credential.provider)}
+              </span>
             ) : singleModel && !hasMultipleModels ? (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-default-500">
-                  {displayModelName(singleModel, credential.provider)}
-                </span>
-                {renderCapabilityIcons(credential.provider, singleModel)}
-              </div>
+              <span className="text-xs text-default-500">
+                {displayModelName(singleModel, credential.provider)}
+              </span>
             ) : hasMultipleModels ? (
               <span className="text-xs text-default-500">
                 {t('{n} models', { n: models.length })}
@@ -824,7 +1136,8 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
             )
             const hasCapabilities = caps && Object.values(caps).some(Boolean)
             const hasPricing = modelData?.pricing
-            const showTooltip = hasCapabilities || hasPricing
+            const hasContext = modelData?.limits?.contextWindow
+            const showTooltip = hasCapabilities || hasPricing || hasContext
             const category = getModelCategory(
               viewingProvider.credential.provider,
               model,
@@ -856,47 +1169,18 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
                         {t('Deprecated')}
                       </Chip>
                     )}
-                    {showTooltip ? (
-                      <Tooltip
-                        content={renderModelTooltip(
-                          viewingProvider.credential.provider,
-                          model,
-                        )}
-                        placement="top"
-                        delay={200}
-                        closeDelay={0}
-                        classNames={{
-                          content:
-                            'bg-content1 shadow-lg border border-default-200',
-                        }}
-                      >
-                        <div className="flex gap-1 items-center shrink-0 cursor-help">
-                          {hasCapabilities ? (
-                            renderCapabilityIcons(
-                              viewingProvider.credential.provider,
-                              model,
-                              true,
-                            )
-                          ) : (
-                            <Icon
-                              name="InfoCircle"
-                              size="sm"
-                              className="w-3 h-3 text-default-400"
-                            />
-                          )}
-                        </div>
-                      </Tooltip>
-                    ) : (
-                      renderCapabilityIcons(
-                        viewingProvider.credential.provider,
-                        model,
-                      )
+                    {showTooltip && (
+                      <Icon
+                        name="InfoCircle"
+                        size="sm"
+                        className="w-3 h-3 text-default-400"
+                      />
                     )}
                   </div>
                 }
                 textValue={model}
                 closeOnSelect
-                className={dimmed ? 'opacity-60' : ''}
+                className={`relative ${dimmed ? 'opacity-60' : ''}`}
                 onPress={() => {
                   handleProviderSelect(
                     viewingProvider.credential,
@@ -905,7 +1189,29 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
                   handleModelSelect(viewingProvider.credential.provider, model)
                 }}
               >
-                {displayModelName(model, viewingProvider.credential.provider)}
+                <div
+                  className="absolute inset-0 z-10"
+                  onMouseEnter={(e) => {
+                    if (hoverTimeoutRef.current) {
+                      clearTimeout(hoverTimeoutRef.current)
+                      hoverTimeoutRef.current = null
+                    }
+                    setHoveredModel(model)
+                    const popover = e.currentTarget.closest(
+                      '[data-slot="content"]',
+                    ) as HTMLElement | null
+                    if (popover) {
+                      setMenuRect(popover.getBoundingClientRect())
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    hoverTimeoutRef.current = setTimeout(() => {
+                      setHoveredModel(null)
+                    }, 100)
+                  }}
+                />
+                {modelData?.name ||
+                  displayModelName(model, viewingProvider.credential.provider)}
               </DropdownItem>
             )
           }
@@ -951,77 +1257,111 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
   }
 
   return (
-    <Dropdown
-      placement="bottom-start"
-      className="bg-white dark:bg-default-50 dark:text-white"
-      shouldBlockScroll={false}
-      onOpenChange={handleDropdownOpenChange}
-    >
-      <DropdownTrigger>
-        <Button
-          radius="full"
-          variant="light"
-          size="sm"
-          startContent={
-            <Icon
-              name={getProviderIcon(selectedProvider?.provider || 'custom')}
-              size="sm"
-              className="hidden md:flex text-default-500 dark:text-default-600"
-            />
-          }
-        >
-          <span className="text-xs truncate max-w-22 md:max-w-48">
-            {displayText}
-          </span>
-        </Button>
-      </DropdownTrigger>
-      <DropdownMenu
-        aria-label="LLM Provider and Model selection"
-        selectionMode="none"
-        closeOnSelect={false}
-        className="max-h-80 overflow-y-auto w-64"
+    <>
+      <Dropdown
+        placement="bottom-start"
+        className="bg-white dark:bg-default-50 dark:text-white"
+        shouldBlockScroll={false}
+        onOpenChange={handleDropdownOpenChange}
       >
-        {viewMode === 'providers' ? (
-          <>
-            <DropdownSection showDivider>
-              {renderProviderItems()}
-            </DropdownSection>
-            <DropdownSection>
-              <DropdownItem
-                key="settings"
-                startContent={<Icon name="Plus" size="sm" />}
-                textValue={t('Add AI provider')}
-                onPress={() => {
-                  navigate(`${location.pathname}#settings/providers/add`)
-                }}
-                closeOnSelect
-              >
-                {t('Add AI provider')}
-              </DropdownItem>
-            </DropdownSection>
-          </>
-        ) : (
-          <>
-            <DropdownSection showDivider>
-              <DropdownItem
-                key="back"
-                startContent={<Icon name="ArrowLeft" size="sm" />}
-                textValue={t('Back')}
-                closeOnSelect={false}
-                onPress={() => {
-                  setViewMode('providers')
-                  setViewingProvider(null)
-                }}
-              >
-                <span className="font-medium">
-                  {viewingProvider?.providerName}
-                </span>
-              </DropdownItem>
-            </DropdownSection>
-            <DropdownSection>{renderModelItems()}</DropdownSection>
-          </>
-        )}
-      </DropdownMenu>
-    </Dropdown>
+        <DropdownTrigger>
+          <Button
+            radius="full"
+            variant="light"
+            size="sm"
+            startContent={
+              <Icon
+                name={getProviderIcon(selectedProvider?.provider || 'custom')}
+                size="sm"
+                className="hidden md:flex text-default-500 dark:text-default-600"
+              />
+            }
+          >
+            <span className="text-xs truncate max-w-22 md:max-w-48">
+              {displayText}
+            </span>
+          </Button>
+        </DropdownTrigger>
+        <DropdownMenu
+          aria-label="LLM Provider and Model selection"
+          selectionMode="none"
+          closeOnSelect={false}
+          className="max-h-80 overflow-y-auto w-64"
+        >
+          {viewMode === 'providers' ? (
+            <>
+              <DropdownSection showDivider>
+                {renderProviderItems()}
+              </DropdownSection>
+              <DropdownSection>
+                <DropdownItem
+                  key="settings"
+                  startContent={<Icon name="Plus" size="sm" />}
+                  textValue={t('Add AI provider')}
+                  onPress={() => {
+                    navigate(`${location.pathname}#settings/providers/add`)
+                  }}
+                  closeOnSelect
+                >
+                  {t('Add AI provider')}
+                </DropdownItem>
+              </DropdownSection>
+            </>
+          ) : (
+            <>
+              <DropdownSection showDivider>
+                <DropdownItem
+                  key="back"
+                  startContent={<Icon name="ArrowLeft" size="sm" />}
+                  textValue={t('Back')}
+                  closeOnSelect={false}
+                  onPress={() => {
+                    setViewMode('providers')
+                    setViewingProvider(null)
+                  }}
+                >
+                  <span className="font-medium">
+                    {viewingProvider?.providerName}
+                  </span>
+                </DropdownItem>
+              </DropdownSection>
+              <DropdownSection>{renderModelItems()}</DropdownSection>
+            </>
+          )}
+        </DropdownMenu>
+      </Dropdown>
+      {/* Detail panel rendered via portal, fixed to the left of the dropdown */}
+      {hoveredModel &&
+        menuRect &&
+        viewingProvider &&
+        (() => {
+          const tooltipContent = renderModelTooltip(
+            viewingProvider.credential.provider,
+            hoveredModel,
+          )
+          if (!tooltipContent) return null
+          return createPortal(
+            <div
+              className="fixed z-[9999] bg-content1 shadow-lg border border-default-200 rounded-xl overflow-hidden"
+              style={{
+                top: menuRect.top,
+                right: window.innerWidth - menuRect.left + 8,
+              }}
+              onMouseEnter={() => {
+                if (hoverTimeoutRef.current) {
+                  clearTimeout(hoverTimeoutRef.current)
+                  hoverTimeoutRef.current = null
+                }
+              }}
+              onMouseLeave={() => {
+                setHoveredModel(null)
+              }}
+            >
+              {tooltipContent}
+            </div>,
+            document.body,
+          )
+        })()}
+    </>
   )
 }

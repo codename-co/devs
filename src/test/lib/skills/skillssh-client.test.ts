@@ -38,13 +38,15 @@ const MOCK_RESPONSE = {
 // ── Tests ──
 
 describe('skillssh-client', () => {
-  let fetchSpy: ReturnType<typeof vi.spyOn>
+  let fetchSpy: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
-    fetchSpy = vi.spyOn(globalThis, 'fetch')
+    fetchSpy = vi.fn()
+    vi.stubGlobal('fetch', fetchSpy)
   })
 
   afterEach(() => {
+    vi.unstubAllGlobals()
     vi.restoreAllMocks()
   })
 

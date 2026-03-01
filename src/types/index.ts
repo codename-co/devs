@@ -255,6 +255,7 @@ export type LLMProvider =
   | 'huggingface'
   | 'openai-compatible'
   | 'claude-code'
+  | 'chatjimmy'
   | 'custom'
   // Image generation providers
   | 'stability'
@@ -385,7 +386,7 @@ export interface Task {
   description: string
   attachments?: TaskAttachment[] // File attachments from user
   complexity: 'simple' | 'complex'
-  status: 'pending' | 'in_progress' | 'completed' | 'failed'
+  status: 'pending' | 'claimed' | 'in_progress' | 'completed' | 'failed'
   assignedAgentId?: string
   assignedAt?: Date | string // When the agent was assigned
   assignedRoleId?: string // Methodology role ID for this assignment
@@ -855,4 +856,179 @@ export interface InstalledSkill {
   assignedAgentIds: string[]
   /** Whether to always inject instructions vs. match-based activation */
   autoActivate: boolean
+}
+
+// ============================================================================
+// Orchestration Workflow Entity
+// ============================================================================
+
+/**
+ * Represents a full orchestration run from user prompt to final deliverable.
+ * Created by the engine router, updated by strategy modules, persisted in Yjs.
+ */
+export interface OrchestrationWorkflow {
+  id: string
+  /** The original user prompt that triggered this workflow */
+  prompt: string
+  /** Which strategy was selected */
+  strategy: 'direct' | 'flat-team' | 'nested-team'
+  /** Complexity tier: 0=single agent, 1=flat team, 2=nested teams */
+  tier: 0 | 1 | 2
+  /** Lead agent responsible for orchestration */
+  leadAgentId: string
+  /** All agents participating in this workflow */
+  participatingAgentIds: string[]
+  /** Root task created for this workflow */
+  rootTaskId: string
+  /** Current workflow status */
+  status:
+    | 'analyzing'
+    | 'decomposing'
+    | 'recruiting'
+    | 'executing'
+    | 'validating'
+    | 'synthesizing'
+    | 'completed'
+    | 'failed'
+    | 'interrupted'
+  /** Human-readable phase description */
+  phase: string
+  /** Progress percentage (0-100) */
+  progress: number
+  /** Total LLM turns consumed */
+  totalTurnsUsed: number
+  /** Error message if failed */
+  error?: string
+  /** Parent workflow ID for nested teams (Tier 2) */
+  parentWorkflowId?: string
+  createdAt: Date
+  completedAt?: Date
+  updatedAt: Date
+}
+
+export type OrchestrationWorkflowStatus = OrchestrationWorkflow['status']
+
+// ============================================================================
+// Inter-Agent Messaging
+// ============================================================================
+
+/**
+ * Typed message for inter-agent communication within a workflow.
+ * Stored in Yjs for persistence and P2P sync.
+ *
+ * MVP supports only 'finding' and 'status' types.
+ * Future: 'question', 'decision', 'handoff', 'review'.
+ */
+export interface AgentMessage {
+  id: string
+  /** The workflow this message belongs to */
+  workflowId: string
+  /** Sending agent ID */
+  from: string
+  /** Target agent ID or 'broadcast' for all teammates */
+  to: string
+  /** Message type - MVP: finding (shared discoveries) and status (progress/blockers) */
+  type: 'finding' | 'status'
+  /** Message content */
+  content: string
+  /** Referenced task IDs for context */
+  referencedTaskIds?: string[]
+  /** Referenced artifact IDs for context */
+  referencedArtifactIds?: string[]
+  timestamp: Date
+  /** Whether the recipient has read this message */
+  read: boolean
+}
+
+// ============================================================================
+// Background Task Queue
+// ============================================================================
+
+/**
+ * Recurrence configuration for scheduled tasks.
+ * Supports cron-like expressions and simple interval patterns.
+ */
+export interface ScheduleConfig {
+  /** Cron expression (e.g. "0 9 * * 1" = every Monday at 9am) */
+  cron?: string
+  /** Simple interval in milliseconds (alternative to cron) */
+  intervalMs?: number
+  /** Maximum number of recurring executions (undefined = unlimited) */
+  maxExecutions?: number
+  /** Number of executions completed so far */
+  executionsCompleted?: number
+  /** When to stop recurring (undefined = never) */
+  endsAt?: Date | string
+}
+
+/**
+ * Approval gate configuration for human-in-the-loop workflows.
+ */
+export interface ApprovalGate {
+  /** Unique identifier for this gate */
+  id: string
+  /** When the gate should trigger */
+  trigger:
+    | 'before-execution'
+    | 'after-decomposition'
+    | 'before-synthesis'
+    | 'on-budget-exceed'
+  /** Current approval status */
+  status: 'pending' | 'approved' | 'rejected' | 'auto-approved'
+  /** Who approved/rejected */
+  reviewedBy?: string
+  /** When the decision was made */
+  reviewedAt?: Date | string
+  /** Optional note from reviewer */
+  note?: string
+  /** Budget threshold that triggers auto-gate (in estimated tokens) */
+  budgetThreshold?: number
+  /** Auto-approve policy for background tasks */
+  autoApprovePolicy?: 'always' | 'under-budget' | 'never'
+}
+
+/**
+ * Persistent queue entry for background/scheduled orchestration tasks.
+ * Stored in Yjs for cross-tab awareness and persistence across page reloads.
+ */
+export interface QueuedTaskEntry {
+  id: string
+  /** The original user prompt */
+  prompt: string
+  /** Associated workflow ID (created when execution starts) */
+  workflowId?: string
+  /** Root task ID (if reusing an existing task) */
+  existingTaskId?: string
+  /** Queue priority */
+  priority: TaskPriority
+  /** Current run state */
+  runState: TaskRunState
+  /** Skills activated via /mention */
+  activatedSkills?: Array<{ name: string; skillMdContent: string }>
+  /** Progress percentage (0-100) */
+  progress: number
+  /** Human-readable status message */
+  statusMessage?: string
+  /** Sub-tasks completed */
+  subTasksCompleted?: number
+  /** Total sub-tasks */
+  subTasksTotal?: number
+  /** Error message if failed */
+  error?: string
+  /** Schedule configuration for deferred/recurring tasks */
+  schedule?: ScheduleConfig
+  /** Approval gates for human-in-the-loop */
+  approvalGates?: ApprovalGate[]
+  /** Whether this entry is being processed by a Web Worker */
+  workerOwned?: boolean
+  /** Tab/client ID that owns execution (for leader election) */
+  ownerClientId?: string
+  /** When the entry was created */
+  createdAt: Date | string
+  /** When execution started */
+  startedAt?: Date | string
+  /** When execution completed */
+  completedAt?: Date | string
+  /** When next recurring execution should fire */
+  nextRunAt?: Date | string
 }

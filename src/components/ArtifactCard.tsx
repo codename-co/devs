@@ -20,25 +20,25 @@ export const ArtifactCard = memo(
       [artifact, onPress],
     )
 
-    const handleDownload = useCallback(() => {
-      const ext = artifact.format === 'markdown' ? 'md' : artifact.format
-      const mimeMap: Record<string, string> = {
-        markdown: 'text/markdown',
-        json: 'application/json',
-        code: 'text/plain',
-        html: 'text/html',
-        binary: 'application/octet-stream',
-      }
-      const blob = new Blob([artifact.content], {
-        type: mimeMap[artifact.format] || 'text/plain',
-      })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${artifact.title}.${ext}`
-      a.click()
-      URL.revokeObjectURL(url)
-    }, [artifact])
+    // const handleDownload = useCallback(() => {
+    //   const ext = artifact.format === 'markdown' ? 'md' : artifact.format
+    //   const mimeMap: Record<string, string> = {
+    //     markdown: 'text/markdown',
+    //     json: 'application/json',
+    //     code: 'text/plain',
+    //     html: 'text/html',
+    //     binary: 'application/octet-stream',
+    //   }
+    //   const blob = new Blob([artifact.content], {
+    //     type: mimeMap[artifact.format] || 'text/plain',
+    //   })
+    //   const url = URL.createObjectURL(blob)
+    //   const a = document.createElement('a')
+    //   a.href = url
+    //   a.download = `${artifact.title}.${ext}`
+    //   a.click()
+    //   URL.revokeObjectURL(url)
+    // }, [artifact])
 
     if (artifact.format === 'markdown') {
       return (
@@ -53,14 +53,14 @@ export const ArtifactCard = memo(
               <Icon name="Page" size="md" className="text-default-500" />
             </div>
             <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
-              <span className="font-medium text-xs sm:text-sm truncate">
+              <span className="font-medium text-xs sm:text-sm">
                 {artifact.title}
               </span>
               <span className="text-tiny text-default-400 uppercase">
                 Markdown
               </span>
             </div>
-            <Button
+            {/* <Button
               size="sm"
               variant="light"
               isIconOnly
@@ -69,7 +69,7 @@ export const ArtifactCard = memo(
               onPress={handleDownload}
             >
               <Icon name="Download" size="sm" className="text-default-400" />
-            </Button>
+            </Button> */}
           </CardBody>
         </Card>
       )
@@ -80,7 +80,7 @@ export const ArtifactCard = memo(
         <CardBody className="p-2 sm:p-3">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start w-full mb-2 gap-1 sm:gap-2">
             <div className="flex flex-col items-start min-w-0">
-              <span className="font-medium text-xs sm:text-sm truncate max-w-full">
+              <span className="font-medium text-xs sm:text-sm max-w-full">
                 {artifact.title}
               </span>
               <div className="flex flex-wrap gap-1 sm:gap-2 mt-1">

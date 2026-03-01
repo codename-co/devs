@@ -146,7 +146,7 @@ export interface TaskFrontmatter {
   workflowId: string
   title: string
   complexity: 'simple' | 'complex'
-  status: 'pending' | 'in_progress' | 'completed' | 'failed'
+  status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'claimed'
   assignedAgentId?: string
   assignedAt?: string
   assignedRoleId?: string

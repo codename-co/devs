@@ -320,6 +320,14 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       ],
     )
 
+    // Determine the primary submit action based on the selected agent
+    // This must match the first visible button in the ButtonGroup
+    const primarySubmitAction = useMemo(() => {
+      if (currentAgent?.id === 'devs' && onSubmitTask) return onSubmitTask
+      if (onSubmit) return onSubmit as unknown as typeof onSubmitTask
+      return onSubmitToAgent
+    }, [currentAgent?.id, onSubmitTask, onSubmit, onSubmitToAgent])
+
     const handleKeyDown = useCallback(
       (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
         // Handle agent mention popover keyboard navigation first
@@ -339,7 +347,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
 
         if (event.key === 'Enter' && !event.shiftKey) {
           event.preventDefault()
-          handleSubmitWithMentions(onSubmitToAgent)
+          handleSubmitWithMentions(primarySubmitAction)
         }
         onKeyDown?.(event)
       },
@@ -348,7 +356,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         handleMethodologyKeyNavigation,
         handleSkillKeyNavigation,
         handleSubmitWithMentions,
-        onSubmitToAgent,
+        primarySubmitAction,
         onKeyDown,
       ],
     )

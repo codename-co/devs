@@ -5,6 +5,8 @@ import { useI18n } from '@/i18n'
 import { MessageBubble } from '@/components/chat'
 import type { Agent, Message, Task, Conversation } from '@/types'
 import type { SubTaskStreamingState } from '@/hooks/useOrchestrationStreaming'
+import type { ConversationStep } from '../../Agents/ConversationStepTracker'
+import type { PendingToolCall } from '@/lib/chat'
 
 export const SubTaskConversation = memo(
   ({
@@ -49,6 +51,46 @@ export const SubTaskConversation = memo(
     const stepsDone = subTask.steps.filter(
       (s) => s.status === 'completed',
     ).length
+
+    // Build live steps from streaming tool call data
+    const liveSteps: ConversationStep[] = useMemo(() => {
+      if (!streaming?.isStreaming) return []
+      const steps: ConversationStep[] = []
+
+      // Thinking step (when thinking data is available)
+      if (streaming.isThinking && streaming.thinkingContent) {
+        steps.push({
+          id: `thinking-${streaming.taskId}`,
+          icon: 'Brain',
+          i18nKey: 'Thinking…',
+          status: 'running',
+          startedAt: Date.now(),
+          thinkingContent: streaming.thinkingContent,
+        })
+      }
+
+      // Tool call steps
+      if (streaming.toolCalls && streaming.toolCalls.length > 0) {
+        const pendingToolCalls: PendingToolCall[] = streaming.toolCalls.map(
+          (tc) => ({
+            name: tc.toolName,
+            input: tc.input,
+          }),
+        )
+        steps.push({
+          id: `tools-${streaming.taskId}`,
+          icon: 'Wrench',
+          i18nKey: 'Using tools…',
+          status: streaming.toolCalls.some((tc) => tc.status === 'running')
+            ? 'running'
+            : 'completed',
+          startedAt: Date.now(),
+          pendingToolCalls,
+        })
+      }
+
+      return steps
+    }, [streaming])
 
     return (
       <div className="space-y-3">
@@ -114,6 +156,7 @@ export const SubTaskConversation = memo(
                 }
                 showAgentChip
                 isStreaming
+                liveSteps={liveSteps}
                 onCopy={onCopy}
               />
             )}
@@ -136,6 +179,7 @@ export const SubTaskConversation = memo(
               }
               showAgentChip
               isStreaming
+              liveSteps={liveSteps}
               onCopy={onCopy}
             />
           </div>

@@ -463,11 +463,11 @@ export const LibraryPage = () => {
                 </div>
               </ModalHeader>
               <ModalBody>
-                {previewArtifact.description && (
+                {/* {previewArtifact.description && (
                   <p className="text-sm text-default-600 mb-3">
                     {previewArtifact.description}
                   </p>
-                )}
+                )} */}
                 <ScrollShadow className="max-h-[60vh]">
                   <div className="bg-default-50 rounded-lg p-4">
                     <MarkdownRenderer
@@ -542,15 +542,13 @@ export const LibraryPage = () => {
                   </p>
                 )}
                 <ScrollShadow className="max-h-[60vh]">
-                  <div className="bg-default-50 rounded-lg p-4">
-                    <Widget
-                      code={previewWidget.code}
-                      type={previewWidget.widgetType}
-                      language={previewWidget.language}
-                      showTitle={false}
-                      showActions={false}
-                    />
-                  </div>
+                  <Widget
+                    code={previewWidget.code}
+                    type={previewWidget.widgetType}
+                    language={previewWidget.language}
+                    showTitle={false}
+                    showActions={false}
+                  />
                 </ScrollShadow>
                 <div className="flex flex-wrap gap-3 text-tiny text-default-400 mt-3">
                   <span>
@@ -560,9 +558,6 @@ export const LibraryPage = () => {
                 </div>
               </ModalBody>
               <ModalFooter>
-                <Button variant="light" onPress={handleClosePreview}>
-                  {t('Close')}
-                </Button>
                 <Button
                   color="primary"
                   variant="flat"

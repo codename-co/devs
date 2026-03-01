@@ -235,10 +235,7 @@ export const IndexPage = () => {
       const task = await createTaskWithRequirements(
         {
           workflowId: crypto.randomUUID(), // Create a new workflow for this task
-          title:
-            promptToUse.length > 50
-              ? promptToUse.substring(0, 50) + '...'
-              : promptToUse,
+          title: promptToUse,
           description: promptToUse,
           attachments,
           complexity: 'complex', // Assume complex by default since it goes to orchestrator

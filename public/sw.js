@@ -424,6 +424,44 @@ self.addEventListener('message', async (event) => {
     console.log('[SW] ⏭️ Skip waiting requested')
     self.skipWaiting()
   }
+  // -------------------------------------------------------------------------
+  // Background Task Messages
+  // -------------------------------------------------------------------------
+  else if (event.data.type === 'BACKGROUND_TASK_STARTED') {
+    const { entryId, prompt } = event.data.payload || {}
+    console.log(`[SW] 🚀 Background task started: ${entryId}`)
+    // Track active background tasks for keepalive
+    if (!self._backgroundTasks) self._backgroundTasks = new Map()
+    self._backgroundTasks.set(entryId, { prompt, startTime: Date.now() })
+  } else if (event.data.type === 'BACKGROUND_TASK_PROGRESS') {
+    // Update tracked task progress (for future SW-based notifications)
+    const { entryId, progress, message } = event.data.payload || {}
+    if (self._backgroundTasks?.has(entryId)) {
+      const task = self._backgroundTasks.get(entryId)
+      task.progress = progress
+      task.message = message
+    }
+  } else if (event.data.type === 'BACKGROUND_TASK_COMPLETED') {
+    const { entryId } = event.data.payload || {}
+    console.log(`[SW] ✅ Background task completed: ${entryId}`)
+    if (self._backgroundTasks) {
+      self._backgroundTasks.delete(entryId)
+    }
+  } else if (event.data.type === 'BACKGROUND_TASK_FAILED') {
+    const { entryId, error } = event.data.payload || {}
+    console.log(`[SW] ❌ Background task failed: ${entryId} — ${error}`)
+    if (self._backgroundTasks) {
+      self._backgroundTasks.delete(entryId)
+    }
+  } else if (event.data.type === 'BACKGROUND_TASK_CANCELLED') {
+    const { entryId } = event.data.payload || {}
+    console.log(`[SW] 🚫 Background task cancelled: ${entryId}`)
+    if (self._backgroundTasks) {
+      self._backgroundTasks.delete(entryId)
+    }
+  } else if (event.data.type === 'BACKGROUND_KEEPALIVE') {
+    // Keepalive ping — just acknowledge to stay active
+  }
 })
 
 // Fetch event - handle API caching

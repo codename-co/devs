@@ -155,6 +155,8 @@ describe('Orchestration Deduplication', () => {
                 requirements: [],
                 estimatedDuration: 5,
                 suggestedStrategy: 'hierarchical',
+                tier: 0,
+                tierReason: 'Simple task',
               }),
             100,
           ),

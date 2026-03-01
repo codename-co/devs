@@ -15,6 +15,7 @@
 
 import type { Plugin } from 'vite'
 import type { IncomingMessage } from 'node:http'
+import { Readable } from 'node:stream'
 
 export type CredentialInjection =
   | {
@@ -157,16 +158,42 @@ export function oauthProxyPlugin(routes: ProxyRoute[]): Plugin {
 
           // Forward response status and headers
           res.statusCode = response.status
+
+          // Detect streaming responses to handle them differently
+          const contentType = response.headers.get('content-type') || ''
+          const isStreamingResponse =
+            contentType.includes('text/event-stream') ||
+            contentType.includes('text/plain')
+
           response.headers.forEach((value, key) => {
+            const lowerKey = key.toLowerCase()
             // Skip content-encoding to avoid double-encoding issues
-            if (key.toLowerCase() !== 'content-encoding') {
-              res.setHeader(key, value)
-            }
+            if (lowerKey === 'content-encoding') return
+            // Remove content-length for streaming responses so the browser
+            // doesn't wait for a fixed number of bytes before surfacing data
+            if (isStreamingResponse && lowerKey === 'content-length') return
+            res.setHeader(key, value)
           })
 
-          // Forward response body
-          const responseBody = await response.arrayBuffer()
-          res.end(Buffer.from(responseBody))
+          // Stream the response body if it's a streaming content type,
+          // otherwise buffer and send at once
+          if (isStreamingResponse && response.body) {
+            // Use Node's Readable.fromWeb to properly pipe the Web ReadableStream
+            const nodeStream = Readable.fromWeb(response.body as any)
+            nodeStream.pipe(res)
+            // Wait for the pipe to finish
+            await new Promise<void>((resolve, reject) => {
+              nodeStream.on('end', resolve)
+              nodeStream.on('error', reject)
+              res.on('close', () => {
+                nodeStream.destroy()
+                resolve()
+              })
+            })
+          } else {
+            const responseBody = await response.arrayBuffer()
+            res.end(Buffer.from(responseBody))
+          }
         } catch (err) {
           console.error(`Proxy error for ${route.pathPrefix}:`, err)
           res.statusCode = 500

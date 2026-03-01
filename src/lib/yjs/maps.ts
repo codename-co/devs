@@ -46,6 +46,9 @@ import type {
   AgentMemoryDocument,
   SharedContext,
   InstalledSkill,
+  OrchestrationWorkflow,
+  AgentMessage,
+  QueuedTaskEntry,
 } from '@/types'
 import type { Battle } from '@/features/battle/types'
 import type { StudioEntry } from '@/features/studio/types'
@@ -165,8 +168,16 @@ export const credentials = ydoc.getMap<Credential>('credentials')
 /** Studio entries (AI-generated images/videos) — keyed by `StudioEntry.id`. */
 export const studioEntries = ydoc.getMap<StudioEntry>('studioEntries')
 
-/** Workflow orchestration runs — keyed by `Workflow.id`. */
-export const workflows = ydoc.getMap<Workflow>('workflows')
+/** Workflow orchestration runs — keyed by `Workflow.id`. Supports both legacy and new OrchestrationWorkflow format. */
+export const workflows = ydoc.getMap<Workflow | OrchestrationWorkflow>(
+  'workflows',
+)
+
+/** Inter-agent messages for team communication — keyed by `AgentMessage.id`. */
+export const agentMessages = ydoc.getMap<AgentMessage>('agentMessages')
+
+/** Persistent queued tasks for background/scheduled execution — keyed by `QueuedTaskEntry.id`. */
+export const queuedTasks = ydoc.getMap<QueuedTaskEntry>('queuedTasks')
 
 /** Battle Arena card-battle matches — keyed by `Battle.id`. */
 export const battles = ydoc.getMap<Battle>('battles')

@@ -15,6 +15,7 @@
 
 import { LLMService, LLMMessage, ToolDefinition, ToolCall } from '@/lib/llm'
 import { CredentialService } from '@/lib/credential-service'
+import { emit } from './events'
 import {
   getKnowledgeAttachments,
   buildAgentInstructions,
@@ -50,6 +51,7 @@ import {
   WIKIPEDIA_ARTICLE_TOOL_DEFINITION,
   WIKIDATA_SEARCH_TOOL_DEFINITION,
   WIKIDATA_ENTITY_TOOL_DEFINITION,
+  WIKIDATA_SPARQL_TOOL_DEFINITION,
   ARXIV_SEARCH_TOOL_DEFINITION,
   ARXIV_PAPER_TOOL_DEFINITION,
   SKILL_TOOL_DEFINITIONS,
@@ -167,6 +169,7 @@ async function collectTools(scope?: AgentScope): Promise<ToolDefinition[]> {
     WIKIPEDIA_ARTICLE_TOOL_DEFINITION,
     WIKIDATA_SEARCH_TOOL_DEFINITION,
     WIKIDATA_ENTITY_TOOL_DEFINITION,
+    WIKIDATA_SPARQL_TOOL_DEFINITION,
     ARXIV_SEARCH_TOOL_DEFINITION,
     ARXIV_PAPER_TOOL_DEFINITION,
     ...Object.values(SKILL_TOOL_DEFINITIONS),
@@ -289,7 +292,7 @@ async function buildSystemPrompt(
   parts.push(taskContext)
 
   parts.push(
-    `\n\n## Execution Instructions\nYou are an autonomous agent executing a task. You have access to tools. Use them as needed to gather information, compute results, or produce deliverables. When you have fully addressed all requirements, provide your final deliverable. Be thorough and ensure all requirements are addressed.`,
+    `\n\n## Execution Instructions\nYou are an autonomous agent executing a task. You have access to tools — use them proactively.\n\n**Research tools:** When the task involves factual questions, historical dates, names, biographical details, or any verifiable information, you MUST use the available research tools (wikipedia_search, wikipedia_article, wikidata_search, arxiv_search, etc.) to look up accurate information rather than relying on your training data alone. Search first, answer second.\n\n**Other tools:** Use knowledge tools to search the user's knowledge base, math tools for calculations, and code tools when code execution is needed.\n\nWhen you have fully addressed all requirements, provide your final deliverable. Be thorough and ensure all requirements are addressed.`,
   )
 
   return parts.join('\n')
@@ -314,6 +317,7 @@ async function executeTurn(
   const configWithTools = {
     ...config,
     tools: tools.length > 0 ? tools : undefined,
+    tool_choice: tools.length > 0 ? ('auto' as const) : undefined,
   }
 
   // Use chat (not streamChat) to get tool calls
@@ -504,6 +508,16 @@ export async function runAgent(
           output: tr?.output,
         })
 
+        // Emit agent-tool-call event for live UI feedback
+        emit({
+          type: 'agent-tool-call',
+          taskId: task.id,
+          agentId: agent.id,
+          toolName: tc.name,
+          toolInput: tc.input,
+          workflowId: task.workflowId,
+        })
+
         // Feed tool result back as a user message (tool result format)
         messages.push({
           role: 'user',
@@ -561,4 +575,115 @@ export async function runAgentSingleShot(
     turnsUsed: 1,
     toolCallsLog: [],
   }
+}
+
+// ============================================================================
+// Retry Wrapper
+// ============================================================================
+
+/** Max retry attempts for transient failures */
+const MAX_RETRIES = 2
+
+/**
+ * Determines if an error is transient and worth retrying.
+ * Transient: 429 rate-limit, 5xx server errors, timeout, network failures.
+ * Non-transient: 4xx client errors (except 429), content filter, context length.
+ */
+function isTransientError(error: unknown): boolean {
+  if (!error) return false
+
+  const message =
+    error instanceof Error
+      ? error.message.toLowerCase()
+      : String(error).toLowerCase()
+
+  // Rate limiting
+  if (
+    message.includes('429') ||
+    message.includes('rate limit') ||
+    message.includes('too many requests')
+  )
+    return true
+  // Server errors
+  if (
+    message.includes('500') ||
+    message.includes('502') ||
+    message.includes('503') ||
+    message.includes('504')
+  )
+    return true
+  if (
+    message.includes('internal server error') ||
+    message.includes('bad gateway') ||
+    message.includes('service unavailable')
+  )
+    return true
+  // Network / timeout
+  if (message.includes('timeout') || message.includes('timed out')) return true
+  if (
+    message.includes('network') ||
+    message.includes('econnreset') ||
+    message.includes('econnrefused')
+  )
+    return true
+  if (message.includes('fetch failed') || message.includes('failed to fetch'))
+    return true
+
+  // Non-transient indicators
+  if (message.includes('context length') || message.includes('token limit'))
+    return false
+  if (message.includes('content filter') || message.includes('safety'))
+    return false
+  if (
+    message.includes('invalid') ||
+    message.includes('unauthorized') ||
+    message.includes('forbidden')
+  )
+    return false
+
+  // Default: not transient
+  return false
+}
+
+/**
+ * Wraps `runAgent` with automatic retry for transient failures.
+ * Uses linear backoff: 1s * (attempt + 1).
+ *
+ * @param config - Same config as `runAgent`
+ * @param onRetry - Optional callback invoked before each retry attempt
+ * @returns The agent result from the first successful attempt
+ */
+export async function runAgentWithRetry(
+  config: Parameters<typeof runAgent>[0],
+  onRetry?: (attempt: number, error: unknown) => void,
+): Promise<AgentRunnerResult> {
+  let lastError: unknown
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      return await runAgent(config)
+    } catch (error) {
+      lastError = error
+
+      // Don't retry non-transient errors or if signal is aborted
+      if (!isTransientError(error) || config.signal?.aborted) {
+        throw error
+      }
+
+      // Don't retry if we've exhausted attempts
+      if (attempt >= MAX_RETRIES) {
+        throw error
+      }
+
+      // Notify caller about the retry
+      onRetry?.(attempt + 1, error)
+
+      // Linear backoff: 1s, 2s, 3s
+      const delay = 1000 * (attempt + 1)
+      await new Promise((resolve) => setTimeout(resolve, delay))
+    }
+  }
+
+  // Should not reach here, but TypeScript needs it
+  throw lastError
 }

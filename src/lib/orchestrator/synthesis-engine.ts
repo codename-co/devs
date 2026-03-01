@@ -13,6 +13,7 @@
 
 import { LLMService, LLMMessage } from '@/lib/llm'
 import { CredentialService } from '@/lib/credential-service'
+import { emit } from './events'
 import type { Agent, AgentScope } from '@/types'
 
 // ============================================================================
@@ -35,6 +36,10 @@ export interface SynthesisInput {
   scope?: AgentScope
   /** Abort signal */
   signal?: AbortSignal
+  /** Task ID for event emission context */
+  taskId?: string
+  /** Workflow ID for event emission context */
+  workflowId?: string
 }
 
 export interface SynthesisResult {
@@ -77,7 +82,9 @@ Do NOT include meta-commentary about the synthesis process itself.`
 export async function synthesizeResults(
   input: SynthesisInput,
 ): Promise<SynthesisResult> {
-  const { originalPrompt, results, scope, signal } = input
+  const { originalPrompt, results, scope, signal, taskId, workflowId } = input
+  const synthTaskId = taskId || 'synthesis'
+  const synthAgentId = input.synthesisAgent?.id || 'synthesis-agent'
 
   if (results.length === 0) {
     return {
@@ -122,10 +129,46 @@ export async function synthesizeResults(
       { role: 'user', content: userContent },
     ]
 
+    // Emit phase-change: synthesizing
+    emit({
+      type: 'phase-change',
+      phase: 'synthesizing',
+      workflowId: workflowId || '',
+      message: `Synthesizing ${results.length} sub-task results...`,
+      progress: 85,
+    })
+
+    // Emit agent-start for the synthesis agent
+    emit({
+      type: 'agent-start',
+      taskId: synthTaskId,
+      agentId: synthAgentId,
+      agentName: input.synthesisAgent?.name || 'Synthesis Agent',
+      workflowId: workflowId || '',
+    })
+
     let response = ''
     for await (const chunk of LLMService.streamChat(messages, config)) {
       response += chunk
+
+      // Emit streaming events
+      emit({
+        type: 'agent-streaming',
+        taskId: synthTaskId,
+        agentId: synthAgentId,
+        content: response,
+        workflowId: workflowId || '',
+      })
     }
+
+    // Emit agent-complete
+    emit({
+      type: 'agent-complete',
+      taskId: synthTaskId,
+      agentId: synthAgentId,
+      success: true,
+      workflowId: workflowId || '',
+    })
 
     return {
       content: response,

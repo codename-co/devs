@@ -10,6 +10,10 @@ export interface TaskAnalysisResult {
   estimatedDuration: number
   requiredSkills: string[]
   suggestedAgents: AgentSpec[]
+  /** Orchestration tier: 0 = single agent, 1 = multi-agent team */
+  tier: 0 | 1
+  /** Human-readable reason for the chosen tier */
+  tierReason: string
 }
 
 export interface TaskBreakdown {
@@ -187,6 +191,8 @@ Original Prompt: {prompt}`
                 specialization: 'General problem solving',
               },
             ],
+            tier: TaskAnalyzer.estimateComplexity(prompt) === 'simple' ? 0 : 1,
+            tierReason: 'Fallback tier estimation based on complexity',
           }
         }
       }
@@ -198,6 +204,12 @@ Original Prompt: {prompt}`
         status: 'pending' as const,
         taskId: '', // Will be set when task is created
       }))
+
+      // Ensure tier is set (may be missing from LLM response)
+      if (analysis.tier === undefined || analysis.tier === null) {
+        analysis.tier = analysis.complexity === 'simple' ? 0 : 1
+        analysis.tierReason = `Auto-inferred from complexity: ${analysis.complexity}`
+      }
 
       return analysis
     } catch (error) {
@@ -510,8 +522,6 @@ Original Prompt: {prompt}`
   static extractTaskTitle(prompt: string): string {
     const sentences = prompt.split(/[.!?]+/)
     const firstSentence = sentences[0]?.trim() || prompt
-    return firstSentence.length > 50
-      ? firstSentence.substring(0, 50) + '...'
-      : firstSentence
+    return firstSentence
   }
 }

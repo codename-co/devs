@@ -113,6 +113,8 @@ export {
   installedExtensions,
   customExtensions,
   skills,
+  agentMessages,
+  queuedTasks,
 } from './maps'
 export type { Preferences, Workflow, LangfuseConfigEntry } from './maps'
 

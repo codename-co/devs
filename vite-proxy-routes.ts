@@ -104,5 +104,19 @@ export function getProxyRoutes(env: Record<string, string>): ProxyRoute[] {
         clientSecret: env.VITE_FIGMA_CLIENT_SECRET || '',
       },
     },
+    // Skills.sh API (unauthenticated, CORS proxy only)
+    {
+      pathPrefix: '/api/skills',
+      target: 'https://skills.sh',
+      targetPathPrefix: '/api',
+      credentials: { type: 'none' },
+    },
+    // ChatJimmy API (unauthenticated, CORS proxy only)
+    {
+      pathPrefix: '/api/chatjimmy',
+      target: 'https://chatjimmy.ai',
+      targetPathPrefix: '/api',
+      credentials: { type: 'none' },
+    },
   ]
 }

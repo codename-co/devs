@@ -19,6 +19,7 @@ import type { HeaderProps } from '@/lib/types'
 import { getAgentById } from '@/stores/agentStore'
 import { useTaskStore } from '@/stores/taskStore'
 import { useConversationStore } from '@/stores/conversationStore'
+import { useWorkflowStore } from '@/stores/workflowStore'
 import {
   useTask,
   useTasks,
@@ -54,11 +55,19 @@ import {
 } from '../Agents/ConversationStepTracker'
 
 import {
+  AgentTeamBar,
   ArtifactsSection,
+  CommunicationTrace,
+  RecoveryBanner,
   SubTasksSection,
   TaskStatusBanner,
   TaskStepsSection,
+  WorkflowHeader,
 } from './components'
+import {
+  detectOrphanForWorkflow,
+  type OrphanedWorkflow,
+} from '@/lib/orchestrator/recovery'
 
 // ============================================================================
 // Main Task Page
@@ -84,7 +93,25 @@ export const TaskPage = () => {
   const isSyncReady = useSyncReady()
 
   // Subscribe to real-time streaming from the orchestration engine
-  const streamingMap = useOrchestrationStreaming(task?.workflowId)
+  const { streamingMap, workflowProgress } = useOrchestrationStreaming(
+    task?.workflowId,
+  )
+
+  // Get workflow from store (for WorkflowHeader + AgentTeamBar)
+  const workflows = useWorkflowStore((s) => s.workflows)
+  const loadWorkflows = useWorkflowStore((s) => s.loadWorkflows)
+  const workflow = useMemo(
+    () =>
+      task?.workflowId
+        ? (workflows.find((w) => w.id === task.workflowId) ?? null)
+        : null,
+    [workflows, task?.workflowId],
+  )
+
+  // Load workflows when task has a workflowId
+  useEffect(() => {
+    if (task?.workflowId) loadWorkflows()
+  }, [task?.workflowId, loadWorkflows])
 
   // Core state
   const [prompt, setPrompt] = useState('')
@@ -108,6 +135,7 @@ export const TaskPage = () => {
   >(new Set())
   const [isOrchestrating, setIsOrchestrating] = useState(false)
   const [orchestrationProgress, setOrchestrationProgress] = useState(0)
+  const [orchestrationPhase, setOrchestrationPhase] = useState('')
 
   // Auto-scroll
   const { streamingEndRef } = useAutoScroll(isSending, [
@@ -115,6 +143,10 @@ export const TaskPage = () => {
     conversationSteps,
   ])
   const abortControllerRef = useRef<AbortController | null>(null)
+
+  // Recovery state
+  const [orphanedWorkflow, setOrphanedWorkflow] =
+    useState<OrphanedWorkflow | null>(null)
 
   // Delete confirmation modal
   const {
@@ -350,6 +382,21 @@ export const TaskPage = () => {
     }
   }, [isSyncReady, taskId, task, navigate, url, t])
 
+  // ── Detect orphaned workflows on mount ──────────────────────────────
+  useEffect(() => {
+    if (!isSyncReady || !task?.workflowId) return
+
+    detectOrphanForWorkflow(task.workflowId)
+      .then((orphan) => {
+        if (orphan) {
+          setOrphanedWorkflow(orphan)
+        }
+      })
+      .catch(() => {
+        // Non-fatal — recovery detection failure shouldn't break the page
+      })
+  }, [isSyncReady, task?.workflowId])
+
   // ── Trigger orchestration for pending tasks ───────────────────────────
   useEffect(() => {
     const orchestrateTask = async () => {
@@ -365,10 +412,21 @@ export const TaskPage = () => {
       setHasTriggeredOrchestration((prev) => new Set(prev).add(task.id))
       setIsOrchestrating(true)
 
+      // Set up abort controller for cancellation
+      const abortController = new AbortController()
+      abortControllerRef.current = abortController
+
       try {
         const result = await WorkflowOrchestrator.orchestrateTask(
           task.description,
           task.id,
+          {
+            onProgress: (update) => {
+              setOrchestrationProgress(update.progress)
+              setOrchestrationPhase(update.message)
+            },
+            signal: abortController.signal,
+          },
         )
         console.log('✅ Task orchestration completed:', result)
       } catch (error) {
@@ -602,7 +660,7 @@ export const TaskPage = () => {
 
   return (
     <RunLayout title={task.title} header={header}>
-      <div className="px-6 lg:px-8 pb-16">
+      <div className="grow flex flex-col px-6 lg:px-8">
         <Section mainClassName="bg-transparent" size={2}>
           <Container>
             {/* Task description */}
@@ -612,13 +670,40 @@ export const TaskPage = () => {
               </p>
             </div>
 
-            {/* Status banner */}
-            <TaskStatusBanner
-              status={task.status}
-              complexity={task.complexity}
-              isOrchestrating={isOrchestrating}
-              progress={orchestrationProgress}
-            />
+            {/* Status header — rich version when workflow exists, simple fallback otherwise */}
+            {workflow ? (
+              <>
+                <WorkflowHeader
+                  workflow={workflow}
+                  liveProgress={workflowProgress}
+                />
+                {workflow.participatingAgentIds.length > 0 && (
+                  <AgentTeamBar
+                    participatingAgentIds={workflow.participatingAgentIds}
+                    liveProgress={workflowProgress}
+                  />
+                )}
+              </>
+            ) : (
+              <TaskStatusBanner
+                status={task.status}
+                complexity={task.complexity}
+                isOrchestrating={isOrchestrating}
+                progress={orchestrationProgress}
+                phaseMessage={orchestrationPhase}
+              />
+            )}
+
+            {/* Inter-agent communication trace */}
+            <CommunicationTrace workflowId={task.workflowId} />
+
+            {/* Recovery banner for interrupted workflows */}
+            {orphanedWorkflow && (
+              <RecoveryBanner
+                orphan={orphanedWorkflow}
+                onResolved={() => setOrphanedWorkflow(null)}
+              />
+            )}
 
             {/* Steps section */}
             <TaskStepsSection steps={task.steps} agentCache={agentCache} />
@@ -677,6 +762,8 @@ export const TaskPage = () => {
             )}
           </Container>
         </Section>
+
+        <div className="grow" />
 
         {/* Prompt area for follow-up conversation */}
         {task.status !== 'pending' && (

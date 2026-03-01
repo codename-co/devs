@@ -9,11 +9,13 @@ export const TaskStatusBanner = memo(
     complexity,
     isOrchestrating,
     progress,
+    phaseMessage,
   }: {
     status: string
     complexity: string
     isOrchestrating: boolean
     progress?: number
+    phaseMessage?: string
   }) => {
     const { t } = useI18n()
 
@@ -22,7 +24,7 @@ export const TaskStatusBanner = memo(
         ? 'success'
         : status === 'failed'
           ? 'danger'
-          : status === 'in_progress'
+          : status === 'in_progress' || status === 'claimed'
             ? 'primary'
             : 'default'
 
@@ -38,7 +40,7 @@ export const TaskStatusBanner = memo(
           {isOrchestrating && (
             <div className="flex items-center gap-2 text-primary text-sm">
               <Spinner size="sm" />
-              <span>{t('Agents working…')}</span>
+              <span>{phaseMessage || t('Agents working…')}</span>
             </div>
           )}
         </div>
@@ -48,6 +50,8 @@ export const TaskStatusBanner = memo(
             value={progress}
             color="primary"
             className="max-w-md"
+            label={phaseMessage}
+            showValueLabel
             aria-label="Task progress"
           />
         )}

@@ -807,6 +807,60 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 }))
 
 // =========================================================================
+// Task Claiming API (Step 0.8)
+// =========================================================================
+
+/**
+ * Claim a pending task for an agent.
+ * Only tasks with status 'pending' can be claimed.
+ * Returns true if claim succeeded, false if task is not claimable.
+ */
+export function claimTask(taskId: string, agentId: string): boolean {
+  const task = tasks.get(taskId)
+  if (!task || task.status !== 'pending') return false
+
+  const updated = {
+    ...task,
+    status: 'claimed' as const,
+    assignedAgentId: agentId,
+    updatedAt: new Date().toISOString(),
+  }
+  tasks.set(taskId, updated)
+
+  const state = useTaskStore.getState()
+  useTaskStore.setState({
+    tasks: state.tasks.map((t) => (t.id === taskId ? updated : t)),
+  })
+
+  return true
+}
+
+/**
+ * Release a claimed task back to pending.
+ * Only tasks with status 'claimed' can be unclaimed.
+ * Returns true if unclaim succeeded, false otherwise.
+ */
+export function unclaimTask(taskId: string): boolean {
+  const task = tasks.get(taskId)
+  if (!task || task.status !== 'claimed') return false
+
+  const updated = {
+    ...task,
+    status: 'pending' as const,
+    assignedAgentId: undefined,
+    updatedAt: new Date().toISOString(),
+  }
+  tasks.set(taskId, updated)
+
+  const state = useTaskStore.getState()
+  useTaskStore.setState({
+    tasks: state.tasks.map((t) => (t.id === taskId ? updated : t)),
+  })
+
+  return true
+}
+
+// =========================================================================
 // Yjs Observers for P2P sync
 // =========================================================================
 

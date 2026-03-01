@@ -259,14 +259,31 @@ export class GoogleProvider implements LLMProviderInterface {
     const { contents, systemInstruction } =
       await this.convertMessagesToNativeFormat(messages)
 
-    // Build request body with google_search tool
+    // Build tools array: google_search + custom function declarations
+    const toolsArray: Record<string, unknown>[] = [{ google_search: {} }]
+
+    // Include custom function tools alongside Google Search grounding
+    if (config?.tools && config.tools.length > 0) {
+      const functionDeclarations = config.tools
+        .filter((t) => t.type === 'function' && t.function)
+        .map((t) => ({
+          name: t.function.name,
+          description: t.function.description,
+          parameters: t.function.parameters,
+        }))
+      if (functionDeclarations.length > 0) {
+        toolsArray.push({ function_declarations: functionDeclarations })
+      }
+    }
+
+    // Build request body with google_search + custom tools
     const requestBody: Record<string, unknown> = {
       contents,
       generationConfig: {
         temperature: config?.temperature || 0.7,
         maxOutputTokens: config?.maxTokens,
       },
-      tools: [{ google_search: {} }],
+      tools: toolsArray,
     }
 
     if (systemInstruction) {
@@ -298,12 +315,29 @@ export class GoogleProvider implements LLMProviderInterface {
       throw new Error('No response candidate from Gemini API')
     }
 
-    // Extract text content from parts
-    const textContent =
-      candidate.content?.parts
-        ?.filter((part: any) => part.text)
-        ?.map((part: any) => part.text)
-        ?.join('') || ''
+    // Extract text content and function calls from parts
+    let textContent = ''
+    const tool_calls: Array<{
+      id: string
+      type: 'function'
+      function: { name: string; arguments: string }
+    }> = []
+
+    for (const part of candidate.content?.parts || []) {
+      if (part.text) {
+        textContent += part.text
+      }
+      if (part.functionCall) {
+        tool_calls.push({
+          id: `call_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+          type: 'function',
+          function: {
+            name: part.functionCall.name,
+            arguments: JSON.stringify(part.functionCall.args || {}),
+          },
+        })
+      }
+    }
 
     // Parse grounding metadata
     const groundingMetadata = this.parseGroundingMetadata(candidate)
@@ -311,7 +345,8 @@ export class GoogleProvider implements LLMProviderInterface {
     return {
       content: textContent,
       groundingMetadata,
-      finish_reason: candidate.finishReason === 'STOP' ? 'stop' : 'stop',
+      tool_calls: tool_calls.length > 0 ? tool_calls : undefined,
+      finish_reason: tool_calls.length > 0 ? 'tool_calls' : 'stop',
       usage: data.usageMetadata
         ? {
             promptTokens: data.usageMetadata.promptTokenCount || 0,
@@ -412,13 +447,30 @@ export class GoogleProvider implements LLMProviderInterface {
     const { contents, systemInstruction } =
       await this.convertMessagesToNativeFormat(messages)
 
+    // Build tools array: google_search + custom function declarations
+    const toolsArray: Record<string, unknown>[] = [{ google_search: {} }]
+
+    // Include custom function tools alongside Google Search grounding
+    if (config?.tools && config.tools.length > 0) {
+      const functionDeclarations = config.tools
+        .filter((t) => t.type === 'function' && t.function)
+        .map((t) => ({
+          name: t.function.name,
+          description: t.function.description,
+          parameters: t.function.parameters,
+        }))
+      if (functionDeclarations.length > 0) {
+        toolsArray.push({ function_declarations: functionDeclarations })
+      }
+    }
+
     const requestBody: Record<string, unknown> = {
       contents,
       generationConfig: {
         temperature: config?.temperature || 0.7,
         maxOutputTokens: config?.maxTokens,
       },
-      tools: [{ google_search: {} }],
+      tools: toolsArray,
     }
 
     if (systemInstruction) {
@@ -462,11 +514,23 @@ export class GoogleProvider implements LLMProviderInterface {
             const parsed = JSON.parse(data)
             const candidate = parsed.candidates?.[0]
 
-            // Extract text from parts
+            // Extract text and function calls from parts
             if (candidate?.content?.parts) {
               for (const part of candidate.content.parts) {
                 if (part.text) {
                   yield part.text
+                }
+                if (part.functionCall) {
+                  // Emit function call as __TOOL_CALLS__ marker for the tool execution loop
+                  const toolCall = {
+                    id: `call_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+                    type: 'function',
+                    function: {
+                      name: part.functionCall.name,
+                      arguments: JSON.stringify(part.functionCall.args || {}),
+                    },
+                  }
+                  yield `\n__TOOL_CALLS__${JSON.stringify([toolCall])}`
                 }
               }
             }

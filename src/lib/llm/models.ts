@@ -84,6 +84,7 @@ const DEVS_TO_MODELS_DEV_MAP: Record<LLMProvider, string | string[] | null> = {
   huggingface: null,
   'openai-compatible': null,
   'claude-code': null, // Claude Code API - uses Claude models via local server
+  chatjimmy: null, // ChatJimmy - unauthenticated, uses own model names
   custom: null,
   stability: null,
   replicate: null,
@@ -555,6 +556,7 @@ const EMPTY_REGISTRY: ModelRegistry = {
   huggingface: [],
   'openai-compatible': [],
   'claude-code': [],
+  chatjimmy: [],
   custom: [],
   stability: [],
   replicate: [],

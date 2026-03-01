@@ -15,6 +15,7 @@
 
 import { LLMService, LLMMessage } from '@/lib/llm'
 import { CredentialService } from '@/lib/credential-service'
+import { toolRegistry } from '@/tools'
 import type {
   Requirement,
   AgentSpec,
@@ -131,6 +132,8 @@ IMPORTANT: Respond with ONLY valid JSON. No explanations, no markdown formatting
 
 User Request: {prompt}
 
+Available Tools: {tools}
+
 Analysis Context: {analysis}`
 
 // ============================================================================
@@ -151,26 +154,38 @@ export async function decomposeTask(
       throw new Error('No AI provider configured')
     }
 
-    const filledPrompt = DECOMPOSITION_PROMPT.replace(
-      '{prompt}',
-      prompt,
-    ).replace(
-      '{analysis}',
-      JSON.stringify(
-        {
-          complexity: analysis.complexity,
-          requiredSkills: analysis.requiredSkills,
-          requirements: analysis.requirements.map((r) => ({
-            type: r.type,
-            description: r.description,
-            priority: r.priority,
-          })),
-          suggestedAgents: analysis.suggestedAgents,
-        },
-        null,
-        2,
-      ),
-    )
+    // Collect available tool summaries for context
+    let toolSummary = 'None'
+    try {
+      const metadata = toolRegistry.listMetadata()
+      if (metadata.length > 0) {
+        toolSummary = metadata
+          .map((m) => `- ${m.name}: ${m.shortDescription}`)
+          .join('\n')
+      }
+    } catch {
+      // Non-fatal — decomposition works without tool context
+    }
+
+    const filledPrompt = DECOMPOSITION_PROMPT.replace('{prompt}', prompt)
+      .replace('{tools}', toolSummary)
+      .replace(
+        '{analysis}',
+        JSON.stringify(
+          {
+            complexity: analysis.complexity,
+            requiredSkills: analysis.requiredSkills,
+            requirements: analysis.requirements.map((r) => ({
+              type: r.type,
+              description: r.description,
+              priority: r.priority,
+            })),
+            suggestedAgents: analysis.suggestedAgents,
+          },
+          null,
+          2,
+        ),
+      )
 
     const messages: LLMMessage[] = [
       { role: 'system', content: filledPrompt },

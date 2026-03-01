@@ -18,6 +18,7 @@
 export {
   orchestrate,
   submitBackground,
+  submitBackgroundLegacy,
   type OrchestrationResult,
   type OrchestrationOptions,
 } from './engine'
@@ -74,6 +75,56 @@ export {
   type TeamTaskInput,
 } from './team-coordinator'
 
+// Scheduler (background queue draining + leader election)
+export {
+  startScheduler,
+  stopScheduler,
+  cancelScheduledTask,
+  isSchedulerLeader,
+  getSchedulerClientId,
+  forceTick,
+} from './scheduler'
+
+// Approval gates (human-in-the-loop)
+export {
+  createDefaultGates,
+  createComprehensiveGates,
+  checkGate,
+  hasPendingGate,
+  hasRejectedGate,
+  approveGate,
+  rejectGate,
+  autoApproveAll,
+  getPendingApprovals,
+} from './approval-gate'
+
+// Service Worker bridge (background notifications + keepalive)
+export {
+  notifyTaskStarted,
+  notifyTaskProgress,
+  notifyTaskCompleted,
+  notifyTaskFailed,
+  notifyTaskCancelled,
+  requestNotificationPermission,
+  isSWBridgeAvailable,
+} from './sw-bridge'
+
+// Background worker manager
+export {
+  initBackgroundWorker,
+  executeInBackground,
+  cancelBackgroundTask,
+  isWorkerReady,
+  shutdownBackgroundWorker,
+} from './background-worker'
+
+// Recovery
+export {
+  detectOrphanedWorkflows,
+  resumeWorkflow,
+  discardWorkflow,
+} from './recovery'
+
 // ============================================================================
 // Legacy compatibility — re-export WorkflowOrchestrator facade
 // ============================================================================
@@ -83,6 +134,7 @@ import {
   runningOrchestrations,
   type OrchestrationResult,
 } from './engine'
+import type { OrchestrationOptions } from './engine'
 
 /**
  * Legacy-compatible facade for the v2 orchestration engine.
@@ -96,7 +148,8 @@ export class WorkflowOrchestrator {
   static async orchestrateTask(
     prompt: string,
     existingTaskId?: string,
+    options?: OrchestrationOptions,
   ): Promise<OrchestrationResult> {
-    return orchestrate(prompt, existingTaskId)
+    return orchestrate(prompt, existingTaskId, options)
   }
 }
