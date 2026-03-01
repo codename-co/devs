@@ -6,6 +6,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { GoogleProvider } from '@/lib/llm/providers/google'
+import { sanitizeSchemaForGemini } from '@/lib/llm/providers/google'
 
 // Mock fetch globally
 const mockFetch = vi.fn()
@@ -156,6 +157,162 @@ describe('GoogleProvider', () => {
       // URL should contain the stripped model ID
       expect(url).toContain('/models/gemini-2.5-flash:generateContent')
       expect(url).not.toContain('/models/google/')
+    })
+  })
+
+  describe('sanitizeSchemaForGemini', () => {
+    it('should remove top-level additionalProperties', () => {
+      const schema = {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+        },
+        required: ['name'],
+        additionalProperties: false,
+      }
+      const result = sanitizeSchemaForGemini(schema)
+      expect(result).toEqual({
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+        },
+        required: ['name'],
+      })
+      expect(result).not.toHaveProperty('additionalProperties')
+    })
+
+    it('should remove nested additionalProperties from property values', () => {
+      const schema = {
+        type: 'object',
+        properties: {
+          variables: {
+            type: 'object',
+            description: 'Named variables',
+            additionalProperties: { type: 'number' },
+          },
+        },
+      }
+      const result = sanitizeSchemaForGemini(schema)
+      expect(result).toEqual({
+        type: 'object',
+        properties: {
+          variables: {
+            type: 'object',
+            description: 'Named variables',
+          },
+        },
+      })
+    })
+
+    it('should preserve non-additionalProperties fields', () => {
+      const schema = {
+        type: 'object',
+        properties: {
+          expression: {
+            type: 'string',
+            description: 'Math expression',
+          },
+          precision: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 20,
+          },
+        },
+        required: ['expression'],
+      }
+      const result = sanitizeSchemaForGemini(schema)
+      expect(result).toEqual(schema)
+    })
+
+    it('should handle deeply nested schemas', () => {
+      const schema = {
+        type: 'object',
+        properties: {
+          outer: {
+            type: 'object',
+            properties: {
+              inner: {
+                type: 'object',
+                additionalProperties: true,
+                properties: {
+                  value: { type: 'string' },
+                },
+              },
+            },
+            additionalProperties: false,
+          },
+        },
+        additionalProperties: false,
+      }
+      const result = sanitizeSchemaForGemini(schema)
+      expect(result).toEqual({
+        type: 'object',
+        properties: {
+          outer: {
+            type: 'object',
+            properties: {
+              inner: {
+                type: 'object',
+                properties: {
+                  value: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      })
+    })
+
+    it('should handle arrays in schema (e.g. enum values)', () => {
+      const schema = {
+        type: 'object',
+        properties: {
+          mode: {
+            type: 'string',
+            enum: ['fast', 'slow'],
+          },
+        },
+      }
+      const result = sanitizeSchemaForGemini(schema)
+      expect(result).toEqual(schema)
+    })
+
+    it('should handle empty schema', () => {
+      const result = sanitizeSchemaForGemini({})
+      expect(result).toEqual({})
+    })
+
+    it('should strip additionalProperties from items in arrays of objects', () => {
+      const schema = {
+        type: 'object',
+        properties: {
+          items: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                id: { type: 'string' },
+              },
+            },
+          },
+        },
+      }
+      const result = sanitizeSchemaForGemini(schema)
+      expect(result).toEqual({
+        type: 'object',
+        properties: {
+          items: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+              },
+            },
+          },
+        },
+      })
     })
   })
 })

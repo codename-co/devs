@@ -37,6 +37,35 @@ import {
  *
  * Unsupported formats (like .docx, .xlsx) are converted to text via mammoth.
  */
+/**
+ * Recursively strip JSON Schema properties unsupported by the Gemini native API
+ * (e.g. additionalProperties). This prevents 400 errors when sending tool
+ * definitions through the native generateContent / streamGenerateContent endpoints.
+ */
+export function sanitizeSchemaForGemini(
+  schema: Record<string, unknown>,
+): Record<string, unknown> {
+  const UNSUPPORTED_KEYS = ['additionalProperties']
+
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(schema)) {
+    if (UNSUPPORTED_KEYS.includes(key)) continue
+
+    if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+      result[key] = sanitizeSchemaForGemini(value as Record<string, unknown>)
+    } else if (Array.isArray(value)) {
+      result[key] = value.map((item) =>
+        item !== null && typeof item === 'object' && !Array.isArray(item)
+          ? sanitizeSchemaForGemini(item as Record<string, unknown>)
+          : item,
+      )
+    } else {
+      result[key] = value
+    }
+  }
+  return result
+}
+
 export class GoogleProvider implements LLMProviderInterface {
   protected baseUrl = 'https://generativelanguage.googleapis.com/v1beta/openai'
   protected nativeBaseUrl = 'https://generativelanguage.googleapis.com/v1beta'
@@ -259,31 +288,16 @@ export class GoogleProvider implements LLMProviderInterface {
     const { contents, systemInstruction } =
       await this.convertMessagesToNativeFormat(messages)
 
-    // Build tools array: google_search + custom function declarations
-    const toolsArray: Record<string, unknown>[] = [{ google_search: {} }]
-
-    // Include custom function tools alongside Google Search grounding
-    if (config?.tools && config.tools.length > 0) {
-      const functionDeclarations = config.tools
-        .filter((t) => t.type === 'function' && t.function)
-        .map((t) => ({
-          name: t.function.name,
-          description: t.function.description,
-          parameters: t.function.parameters,
-        }))
-      if (functionDeclarations.length > 0) {
-        toolsArray.push({ function_declarations: functionDeclarations })
-      }
-    }
-
-    // Build request body with google_search + custom tools
+    // Only google_search for grounded requests.
+    // Combining google_search with function_declarations is only supported
+    // in the Live API — the regular generateContent endpoint rejects it.
     const requestBody: Record<string, unknown> = {
       contents,
       generationConfig: {
         temperature: config?.temperature || 0.7,
         maxOutputTokens: config?.maxTokens,
       },
-      tools: toolsArray,
+      tools: [{ google_search: {} }],
     }
 
     if (systemInstruction) {
@@ -315,27 +329,11 @@ export class GoogleProvider implements LLMProviderInterface {
       throw new Error('No response candidate from Gemini API')
     }
 
-    // Extract text content and function calls from parts
+    // Extract text content from parts (no function calls in grounding-only mode)
     let textContent = ''
-    const tool_calls: Array<{
-      id: string
-      type: 'function'
-      function: { name: string; arguments: string }
-    }> = []
-
     for (const part of candidate.content?.parts || []) {
       if (part.text) {
         textContent += part.text
-      }
-      if (part.functionCall) {
-        tool_calls.push({
-          id: `call_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-          type: 'function',
-          function: {
-            name: part.functionCall.name,
-            arguments: JSON.stringify(part.functionCall.args || {}),
-          },
-        })
       }
     }
 
@@ -345,8 +343,7 @@ export class GoogleProvider implements LLMProviderInterface {
     return {
       content: textContent,
       groundingMetadata,
-      tool_calls: tool_calls.length > 0 ? tool_calls : undefined,
-      finish_reason: tool_calls.length > 0 ? 'tool_calls' : 'stop',
+      finish_reason: 'stop',
       usage: data.usageMetadata
         ? {
             promptTokens: data.usageMetadata.promptTokenCount || 0,
@@ -447,30 +444,16 @@ export class GoogleProvider implements LLMProviderInterface {
     const { contents, systemInstruction } =
       await this.convertMessagesToNativeFormat(messages)
 
-    // Build tools array: google_search + custom function declarations
-    const toolsArray: Record<string, unknown>[] = [{ google_search: {} }]
-
-    // Include custom function tools alongside Google Search grounding
-    if (config?.tools && config.tools.length > 0) {
-      const functionDeclarations = config.tools
-        .filter((t) => t.type === 'function' && t.function)
-        .map((t) => ({
-          name: t.function.name,
-          description: t.function.description,
-          parameters: t.function.parameters,
-        }))
-      if (functionDeclarations.length > 0) {
-        toolsArray.push({ function_declarations: functionDeclarations })
-      }
-    }
-
+    // Only google_search for grounded requests.
+    // Combining google_search with function_declarations is only supported
+    // in the Live API — the regular streamGenerateContent endpoint rejects it.
     const requestBody: Record<string, unknown> = {
       contents,
       generationConfig: {
         temperature: config?.temperature || 0.7,
         maxOutputTokens: config?.maxTokens,
       },
-      tools: toolsArray,
+      tools: [{ google_search: {} }],
     }
 
     if (systemInstruction) {
@@ -514,23 +497,11 @@ export class GoogleProvider implements LLMProviderInterface {
             const parsed = JSON.parse(data)
             const candidate = parsed.candidates?.[0]
 
-            // Extract text and function calls from parts
+            // Extract text from parts (no function calls in grounding-only mode)
             if (candidate?.content?.parts) {
               for (const part of candidate.content.parts) {
                 if (part.text) {
                   yield part.text
-                }
-                if (part.functionCall) {
-                  // Emit function call as __TOOL_CALLS__ marker for the tool execution loop
-                  const toolCall = {
-                    id: `call_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-                    type: 'function',
-                    function: {
-                      name: part.functionCall.name,
-                      arguments: JSON.stringify(part.functionCall.args || {}),
-                    },
-                  }
-                  yield `\n__TOOL_CALLS__${JSON.stringify([toolCall])}`
                 }
               }
             }
