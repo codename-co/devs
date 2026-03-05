@@ -29,8 +29,28 @@ export const SubTaskConversation = memo(
       : null
 
     const subTaskConversations = useMemo(
-      () => conversations.filter((c) => c.workflowId === subTask.workflowId),
-      [conversations, subTask.workflowId],
+      () =>
+        conversations.filter((c) => {
+          // Must be in the same workflow
+          if (c.workflowId !== subTask.workflowId) return false
+
+          // Each sub-task conversation starts with a user message equal to
+          // the sub-task description.  Since every sub-task shares the same
+          // workflowId we need this second check to disambiguate.
+          const firstUserMsg = c.messages.find((m) => m.role === 'user')
+          if (firstUserMsg && subTask.description) {
+            return firstUserMsg.content === subTask.description
+          }
+
+          // Fallback: match by the conversation's primary agentId
+          return c.agentId === subTask.assignedAgentId
+        }),
+      [
+        conversations,
+        subTask.workflowId,
+        subTask.description,
+        subTask.assignedAgentId,
+      ],
     )
 
     const messages = useMemo(() => {
@@ -93,13 +113,7 @@ export const SubTaskConversation = memo(
     }, [streaming])
 
     return (
-      <div className="space-y-3">
-        {subTask.description && (
-          <p className="text-sm text-default-600 whitespace-pre-wrap">
-            {subTask.description}
-          </p>
-        )}
-
+      <div className="space-y-3 py-4">
         {subTask.steps.length > 0 && (
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-tiny text-default-500">
@@ -128,7 +142,7 @@ export const SubTaskConversation = memo(
         )}
 
         {messages.length > 0 ? (
-          <div className="flex flex-col gap-4 pl-2 border-l-2 border-default-200">
+          <div className="flex flex-col gap-4">
             {messages.map((msg) => (
               <MessageBubble
                 key={msg.id}
@@ -136,6 +150,7 @@ export const SubTaskConversation = memo(
                 agent={msg.agentId ? agentCache[msg.agentId] : agent}
                 showAgentChip={msg.role === 'assistant'}
                 onCopy={onCopy}
+                size="sm"
               />
             ))}
             {/* Streaming message — shown while the agent is producing output */}

@@ -57,11 +57,11 @@ import {
 import {
   AgentTeamBar,
   ArtifactsSection,
-  CommunicationTrace,
   RecoveryBanner,
   SubTasksSection,
   TaskStatusBanner,
   TaskStepsSection,
+  TeamWorkDiagram,
   WorkflowHeader,
 } from './components'
 import {
@@ -694,8 +694,13 @@ export const TaskPage = () => {
               />
             )}
 
-            {/* Inter-agent communication trace */}
-            <CommunicationTrace workflowId={task.workflowId} />
+            {/* Live team work diagram */}
+            <TeamWorkDiagram
+              workflowId={task.workflowId}
+              workflow={workflow}
+              liveProgress={workflowProgress}
+              subTasks={subTasks}
+            />
 
             {/* Recovery banner for interrupted workflows */}
             {orphanedWorkflow && (

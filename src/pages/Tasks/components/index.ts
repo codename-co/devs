@@ -1,7 +1,7 @@
 export { AgentTeamBar } from './AgentTeamBar'
 export { ArtifactsSection } from './ArtifactsSection'
-export { CommunicationTrace } from './CommunicationTrace'
 export { RecoveryBanner } from './RecoveryBanner'
+export { TeamWorkDiagram } from './TeamWorkDiagram'
 export { SubTaskConversation } from './SubTaskConversation'
 export { SubTaskStatusIcon } from './SubTaskStatusIcon'
 export { SubTasksSection } from './SubTasksSection'

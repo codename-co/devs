@@ -70,6 +70,31 @@ export default function RunLayout({
   const handlePanelWheel = useCallback((e: React.WheelEvent) => {
     const el = conversationRef.current
     if (!el) return
+
+    // Don't hijack scroll when the event target is inside its own scrollable
+    // container (e.g. the InspectorPanel or a scrollable artifact view).
+    // Only forward to the main conversation area when the nested scroller has
+    // reached its boundary in the scroll direction.
+    const target = e.target as HTMLElement | null
+    if (target) {
+      let node: HTMLElement | null = target
+      const panelRoot = e.currentTarget as HTMLElement
+      while (node && node !== panelRoot) {
+        const { scrollHeight, clientHeight, scrollTop } = node
+        const isScrollable = scrollHeight > clientHeight
+        if (isScrollable) {
+          const atTop = scrollTop <= 0
+          const atBottom = scrollTop + clientHeight >= scrollHeight - 1
+          const scrollingDown = e.deltaY > 0
+          if (!(scrollingDown && atBottom) && !(!scrollingDown && atTop)) {
+            // The nested scroller can still scroll in this direction — let it.
+            return
+          }
+        }
+        node = node.parentElement
+      }
+    }
+
     el.scrollTop += e.deltaY
   }, [])
 

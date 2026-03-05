@@ -52,10 +52,10 @@ export const SubTasksSection = memo(
     return (
       <div className="mb-6">
         {/* Header with summary chips, like ConversationStepTracker */}
-        <div className="flex items-center gap-2 mb-2 text-default-500">
+        {/* <div className="flex items-center gap-2 mb-2 text-default-500">
           <Icon name="SplitSquareDashed" size="sm" />
           <Title level={5}>{t('Sub-Tasks')}</Title>
-        </div>
+        </div> */}
 
         {/* Vertical inline list of sub-tasks */}
         <AccordionTracker>
@@ -86,55 +86,47 @@ export const SubTasksSection = memo(
               const isStreaming = !!streamingState?.isStreaming
 
               return (
-                <AccordionItem key={subTask.id} title={subTask.title}>
-                  {/* Step row: icon + title + chips */}
-                  <div className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-default-100 transition-colors">
-                    <SubTaskStatusIcon status={subTask.status} />
-                    <span
-                      className={`text-sm font-medium flex-1 truncate ${
-                        subTask.status === 'failed'
-                          ? 'text-danger-600'
-                          : 'text-default-600'
-                      }`}
-                    >
-                      {subTask.title}
-                    </span>
-                    {agent && (
-                      <Chip
-                        size="sm"
-                        variant="flat"
-                        color="primary"
-                        className="text-tiny flex-shrink-0"
-                        startContent={
-                          agent.icon ? (
-                            <Icon
-                              name={agent.icon as IconName}
-                              className="w-3 h-3"
-                            />
-                          ) : undefined
-                        }
+                <AccordionItem
+                  key={subTask.id}
+                  startContent={<SubTaskStatusIcon status={subTask.status} />}
+                  title={
+                    <div className="flex items-center gap-2 truncate">
+                      <span
+                        className={`flex-1 truncate ${
+                          subTask.status === 'failed' ? 'text-danger-600' : ''
+                        }`}
                       >
-                        {agent.name}
-                      </Chip>
-                    )}
-                    {subTask.complexity === 'complex' && (
-                      <Chip
-                        size="sm"
-                        variant="flat"
-                        color="warning"
-                        className="text-tiny flex-shrink-0"
-                      >
-                        complex
-                      </Chip>
-                    )}
-                  </div>
-
+                        {subTask.title}
+                      </span>
+                      {agent && (
+                        <Chip
+                          size="sm"
+                          variant="flat"
+                          color="primary"
+                          startContent={
+                            agent.icon ? (
+                              <Icon
+                                name={agent.icon as IconName}
+                                className="w-3 h-3"
+                              />
+                            ) : undefined
+                          }
+                        >
+                          {agent.name}
+                        </Chip>
+                      )}
+                    </div>
+                  }
+                  classNames={{
+                    content: 'ms-4 ps-4 border-l-2 border-default-200',
+                  }}
+                >
                   {/* Expanded content: always visible for running/streaming tasks, indented with border */}
                   {(isRunning ||
                     isStreaming ||
                     subTask.description ||
                     subArtifacts.length > 0) && (
-                    <div className="ml-5 pl-3 border-l border-default-200 space-y-3 pb-2">
+                    <div className="space-y-3 pb-2">
                       {/* Sub-task conversation */}
                       <SubTaskConversation
                         subTask={subTask}

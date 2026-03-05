@@ -22,6 +22,8 @@ export interface MessageBubbleProps {
   message: Message
   /** Resolved agent for this message (looked up by parent) */
   agent?: Agent | null
+  /** Visual size — 'sm' uses compact spacing and smaller text */
+  size?: 'sm' | 'md'
   /** Always show the agent name chip — useful in cross-agent views */
   showAgentChip?: boolean
   /** Highlight as pinned */
@@ -44,6 +46,7 @@ export const MessageBubble = memo(
   ({
     message,
     agent,
+    size = 'md',
     showAgentChip,
     isPinned,
     isStreaming = false,
@@ -53,6 +56,7 @@ export const MessageBubble = memo(
     onLearn,
     isLearning,
   }: MessageBubbleProps) => {
+    const isSmall = size === 'sm'
     const { t } = useI18n()
 
     // Resolve steps: live during streaming, persisted for historical
@@ -77,7 +81,7 @@ export const MessageBubble = memo(
         data-message-id={message.id}
         aria-hidden="false"
         tabIndex={0}
-        className={`flex w-full gap-3 group ${message.role === 'user' ? 'justify-end' : ''}`}
+        className={`flex w-full group ${isSmall ? 'gap-2' : 'gap-3'} ${message.role === 'user' ? 'justify-end' : ''}`}
       >
         {/* User message: copy button on hover */}
         {message.role === 'user' && (
@@ -97,15 +101,15 @@ export const MessageBubble = memo(
         )}
 
         <div
-          className={`rounded-medium text-foreground relative overflow-hidden font-medium ${
+          className={`rounded-medium text-foreground relative overflow-hidden ${isSmall ? 'text-tiny' : 'font-medium'} ${
             message.role === 'user'
-              ? 'bg-default-100 px-4 py-3 max-w-[80%]'
-              : 'bg-transparent px-1 py-0'
+              ? `bg-default-100 max-w-[80%] ${isSmall ? 'px-3 py-2' : 'px-4 py-3'}`
+              : `bg-transparent ${isSmall ? 'px-0.5 py-0' : 'px-1 py-0'}`
           } ${isPinned ? 'border-l-4 border-warning-400 pl-4' : ''}`}
         >
           {/* Pinned indicator chip */}
           {isPinned && (
-            <div className="mb-2">
+            <div className={isSmall ? 'mb-1' : 'mb-2'}>
               <Chip
                 size="sm"
                 variant="flat"
@@ -119,7 +123,7 @@ export const MessageBubble = memo(
           )}
           {/* Agent chip */}
           {showAgentChip && agent && message.role === 'assistant' && (
-            <div className="mb-2">
+            <div className={isSmall ? 'mb-1' : 'mb-2'}>
               <Chip
                 size="sm"
                 variant="flat"
@@ -140,7 +144,7 @@ export const MessageBubble = memo(
           {message.role === 'assistant' && steps.length > 0 && (
             <ConversationStepTracker
               steps={steps}
-              className="mb-2"
+              className={isSmall ? 'mb-1' : 'mb-2'}
               traceIds={message.traceIds}
             />
           )}
@@ -160,7 +164,9 @@ export const MessageBubble = memo(
 
           {/* Assistant action buttons */}
           {!isStreaming && message.role === 'assistant' && (
-            <div className="mt-2 flex flex-wrap items-center gap-1">
+            <div
+              className={`flex flex-wrap items-center gap-1 ${isSmall ? 'mt-1' : 'mt-2'}`}
+            >
               <Tooltip content={t('Copy' as any)}>
                 <Button
                   size="sm"
