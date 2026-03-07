@@ -28,8 +28,8 @@ interface AgentMentionResult {
 }
 
 // Regex to detect @mentions while typing:
-// Matches @word-characters including hyphens and dots (spaces in agent names are auto-replaced with "-")
-const MENTION_REGEX = /@([\w.-]*)$/
+// Matches @word-characters including hyphens, dots, and Unicode letters (spaces in agent names are auto-replaced with "-")
+const MENTION_REGEX = /@([\p{L}\p{N}\w.-]*)$/u
 
 export function useAgentMention({
   lang,
@@ -159,7 +159,7 @@ export function useAgentMention({
     const mentions: Agent[] = []
 
     // Extract @hyphenated-name mentions
-    const mentionMatches = prompt.matchAll(/(^|[\s])@([\w.-]+)/g)
+    const mentionMatches = prompt.matchAll(/(^|[\s])@([\p{L}\p{N}\w.-]+)/gu)
     for (const match of mentionMatches) {
       const mentionName = match[2].toLowerCase()
       const agent = availableAgents.find((a) => {
@@ -184,7 +184,7 @@ export function useAgentMention({
   const removeMentionsFromPrompt = useCallback((text: string): string => {
     // Replace @hyphenated-name mentions with empty string, cleaning up extra spaces
     return text
-      .replace(/(^|[\s])@[\w.-]+\s*/g, '$1')
+      .replace(/(^|[\s])@[\p{L}\p{N}\w.-]+\s*/gu, '$1')
       .replace(/\s+/g, ' ')
       .trim()
   }, [])

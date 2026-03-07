@@ -33,10 +33,26 @@ export const SlidesRenderer = ({
 }) => {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isFullSlidesMode, setIsFullSlidesMode] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
   const totalSlides = slides.length
 
   // Track previous slide count to handle streaming gracefully
   const prevSlidesCountRef = useRef(totalSlides)
+
+  // Detect available height to switch to full slides mode
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setIsFullSlidesMode(entry.contentRect.height > 800)
+      }
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   const { t } = useI18n(localI18n)
 
@@ -193,79 +209,18 @@ export const SlidesRenderer = ({
       </Modal>
 
       <div
+        ref={containerRef}
         className={`slides-presentation @container/presentation ${className}`}
       >
-        <div className="flex gap-4">
-          {/* Slides Preview Panel */}
-          {totalSlides > 1 && (
-            <div className="slides-preview hidden @3xl/presentation:block flex-shrink-0 w-48">
-              <div className="space-y-2 overflow-y-auto">
-                {slides.map((slide, index) => (
-                  <div
-                    key={`slide-preview-${index}`}
-                    className={`slide-preview cursor-pointer border-2 rounded-md overflow-hidden transition-all ${
-                      index === currentSlide
-                        ? 'border-primary-500 shadow-md'
-                        : 'border-default-200 hover:border-default-300'
-                    }`}
-                    onClick={() => goToSlide(index)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
-                        goToSlide(index)
-                      }
-                    }}
-                    aria-label={`Go to slide ${index + 1}`}
-                  >
-                    <div
-                      className="relative bg-white"
-                      style={{ aspectRatio: '16/9' }}
-                    >
-                      <div
-                        className="absolute inset-0 transform scale-[0.35] origin-top-left overflow-hidden"
-                        style={{ width: '286%', height: '286%' }}
-                      >
-                        <Slide
-                          content={slide}
-                          className="pointer-events-none"
-                        />
-                      </div>
-                      <div className="absolute bottom-1 end-1 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">
-                        {index + 1}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+        {isFullSlidesMode ? (
+          /* Full slides mode: all slides stacked vertically */
+          <div className="space-y-4">
+            {slides.map((slide, index) => (
+              <Slide key={`slide-full-${index}`} content={slide} />
+            ))}
 
-          {/* Main Content */}
-          <div className="flex-1 min-w-0">
-            {/* Slide Content */}
-            <Slide content={currentSlideContent} />
-
-            {/* Navigation Controls */}
-            <div className="flex items-center justify-between">
-              {totalSlides > 1 && (
-                <Pagination
-                  loop
-                  isCompact
-                  siblings={0}
-                  showControls
-                  variant="light"
-                  page={currentSlide + 1}
-                  total={totalSlides}
-                  onChange={(i) => goToSlide(i - 1)}
-                  classNames={{
-                    base: 'mt-1 pb-0',
-                  }}
-                />
-              )}
-
-              {/* Action Buttons */}
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end">
               <ButtonGroup>
                 <Tooltip content={t('Slideshow')}>
                   <Button
@@ -293,7 +248,108 @@ export const SlidesRenderer = ({
               </ButtonGroup>
             </div>
           </div>
-        </div>
+        ) : (
+          /* Paginated mode with preview panel */
+          <div className="flex gap-4">
+            {/* Slides Preview Panel */}
+            {totalSlides > 1 && (
+              <div className="slides-preview hidden @3xl/presentation:block flex-shrink-0 w-48">
+                <div className="space-y-2 overflow-y-auto">
+                  {slides.map((slide, index) => (
+                    <div
+                      key={`slide-preview-${index}`}
+                      className={`slide-preview cursor-pointer border-2 rounded-md overflow-hidden transition-all ${
+                        index === currentSlide
+                          ? 'border-primary-500 shadow-md'
+                          : 'border-default-200 hover:border-default-300'
+                      }`}
+                      onClick={() => goToSlide(index)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          goToSlide(index)
+                        }
+                      }}
+                      aria-label={`Go to slide ${index + 1}`}
+                    >
+                      <div
+                        className="relative bg-white"
+                        style={{ aspectRatio: '16/9' }}
+                      >
+                        <div
+                          className="absolute inset-0 transform scale-[0.35] origin-top-left overflow-hidden"
+                          style={{ width: '286%', height: '286%' }}
+                        >
+                          <Slide
+                            content={slide}
+                            className="pointer-events-none"
+                          />
+                        </div>
+                        <div className="absolute bottom-1 end-1 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">
+                          {index + 1}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Main Content */}
+            <div className="flex-1 min-w-0">
+              {/* Slide Content */}
+              <Slide content={currentSlideContent} />
+
+              {/* Navigation Controls */}
+              <div className="flex items-center justify-between">
+                {totalSlides > 1 && (
+                  <Pagination
+                    loop
+                    isCompact
+                    siblings={0}
+                    showControls
+                    variant="light"
+                    page={currentSlide + 1}
+                    total={totalSlides}
+                    onChange={(i) => goToSlide(i - 1)}
+                    classNames={{
+                      base: 'mt-1 pb-0',
+                    }}
+                  />
+                )}
+
+                {/* Action Buttons */}
+                <ButtonGroup>
+                  <Tooltip content={t('Slideshow')}>
+                    <Button
+                      size="sm"
+                      variant="light"
+                      color="primary"
+                      onPress={enterFullscreen}
+                      className="ml-auto"
+                    >
+                      <Icon name="Presentation" className="w-4 h-4 mr-1" />
+                    </Button>
+                  </Tooltip>
+                  {onExportPDF && (
+                    <Tooltip content={t('Export/Print')}>
+                      <Button
+                        size="sm"
+                        variant="light"
+                        onPress={onExportPDF}
+                        className="ml-auto"
+                      >
+                        <Icon name="Share" className="w-4 h-4 mr-1" />
+                      </Button>
+                    </Tooltip>
+                  )}
+                </ButtonGroup>
+              </div>
+            </div>
+          </div>
+        )}
 
         {children}
       </div>

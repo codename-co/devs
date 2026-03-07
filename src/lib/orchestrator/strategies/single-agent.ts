@@ -20,6 +20,7 @@ import {
   markTaskCompleted,
   validateAndRefine,
   buildFailureResult,
+  toolCallsLogToMessageSteps,
 } from './shared'
 
 import { useTaskStore } from '@/stores/taskStore'
@@ -136,11 +137,13 @@ export async function executeSingleAgent(
       message: 'Validating result...',
     })
 
-    // Save final assistant message
+    // Save final assistant message (including tool steps for UI display)
+    const steps = toolCallsLogToMessageSteps(result.toolCallsLog)
     await addMessage(conversationId, {
       role: 'assistant',
       content: result.response,
       agentId: agent.id,
+      ...(steps.length > 0 && { steps }),
     })
 
     // Create artifact

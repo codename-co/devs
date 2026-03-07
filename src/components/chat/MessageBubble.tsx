@@ -72,7 +72,7 @@ export const MessageBubble = memo(
         onCopy(message.content)
       } else {
         await copyRichText(message.content)
-        successToast(t('Copied' as any))
+        successToast(t('Copied to clipboard'))
       }
     }
 
@@ -86,7 +86,7 @@ export const MessageBubble = memo(
         {/* User message: copy button on hover */}
         {message.role === 'user' && (
           <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <Tooltip content={t('Copy' as any)}>
+            <Tooltip content={t('Copy prompt')}>
               <Button
                 size="sm"
                 variant="light"
@@ -117,7 +117,7 @@ export const MessageBubble = memo(
                 startContent={<Icon name="Pin" className="w-3 h-3" />}
                 className="text-tiny"
               >
-                {t('Pinned' as any)}
+                {t('Pinned')}
               </Chip>
             </div>
           )}
@@ -167,7 +167,7 @@ export const MessageBubble = memo(
             <div
               className={`flex flex-wrap items-center gap-1 ${isSmall ? 'mt-1' : 'mt-2'}`}
             >
-              <Tooltip content={t('Copy' as any)}>
+              <Tooltip content={t('Copy the answer')}>
                 <Button
                   size="sm"
                   variant="light"
@@ -179,7 +179,7 @@ export const MessageBubble = memo(
                 </Button>
               </Tooltip>
               {onLearn && (
-                <Tooltip content={t('Learn from this message' as any)}>
+                <Tooltip content={t('Learn from this message')}>
                   <Button
                     size="sm"
                     variant="light"
@@ -193,11 +193,7 @@ export const MessageBubble = memo(
               )}
               {onPin && (
                 <Tooltip
-                  content={
-                    isPinned
-                      ? t('Unpin message' as any)
-                      : t('Pin message' as any)
-                  }
+                  content={isPinned ? t('Unpin message') : t('Pin message')}
                 >
                   <Button
                     size="sm"

@@ -476,7 +476,13 @@ export interface ChatSubmitOptions {
     data: string // base64 encoded
   }>
   /** Skills explicitly activated by the user via /mention in the prompt */
-  activatedSkills?: Array<{ name: string; skillMdContent: string }>
+  activatedSkills?: Array<{
+    name: string
+    skillMdContent: string
+    scripts?: Array<{ path: string; language: string; requiredPackages?: string[] }>
+    references?: Array<{ path: string }>
+    assets?: Array<{ path: string }>
+  }>
   /** Connectors explicitly activated by the user via /mention in the prompt */
   activatedConnectors?: Array<{
     name: string
@@ -730,14 +736,52 @@ export const submitChat = async (
     let activeSkillInstructions = ''
     if (activatedSkills.length > 0) {
       const skillBlocks = activatedSkills
-        .map(
-          (skill) =>
-            `[ACTIVE_SKILL: ${skill.name}]\n${skill.skillMdContent}\n[/ACTIVE_SKILL]`,
-        )
+        .map((skill) => {
+          const parts: string[] = [skill.skillMdContent]
+
+          // Append script/reference/asset listings (same as activate_skill tool handler)
+          if (skill.scripts && skill.scripts.length > 0) {
+            parts.push('\n## Available Scripts\n')
+            for (const script of skill.scripts) {
+              const pkgs = script.requiredPackages?.length
+                ? ` (requires: ${script.requiredPackages.join(', ')})`
+                : ''
+              parts.push(
+                `- \`${script.path}\` [${script.language}]${pkgs}`,
+              )
+            }
+            parts.push(
+              '\nUse `run_skill_script` to execute Python or JavaScript scripts.',
+              'Bash scripts cannot be executed directly but you can read and follow their logic.',
+            )
+          }
+
+          if (skill.references && skill.references.length > 0) {
+            parts.push('\n## Reference Files\n')
+            for (const ref of skill.references) {
+              parts.push(`- \`${ref.path}\``)
+            }
+            parts.push('\nUse `read_skill_file` to read reference documents.')
+          }
+
+          if (skill.assets && skill.assets.length > 0) {
+            parts.push('\n## Assets\n')
+            for (const asset of skill.assets) {
+              parts.push(`- \`${asset.path}\``)
+            }
+            parts.push('\nUse `read_skill_file` to access asset files.')
+          }
+
+          return `[ACTIVE_SKILL: ${skill.name}]\n${parts.join('\n')}\n[/ACTIVE_SKILL]`
+        })
         .join('\n\n')
+
+      const hasScripts = activatedSkills.some(
+        (s) => s.scripts && s.scripts.length > 0,
+      )
       activeSkillInstructions = `## User-Activated Skills
 
-The user has explicitly requested the following skill(s). Follow their instructions carefully to complete the task.
+The user has explicitly requested the following skill(s). Follow their instructions carefully to complete the task.${hasScripts ? '\nWhen the skill includes scripts, you MUST execute them using `run_skill_script` rather than describing or simulating the execution in text.' : ''}
 
 ${skillBlocks}`
     }
@@ -898,6 +942,28 @@ ${connectorBlocks}`
     let chatStepCounter = 0
     const messageSteps: MessageStep[] = []
     const workingMessages = [...messages]
+
+    // Record user-activated skill steps for message persistence
+    if (activatedSkills.length > 0) {
+      for (const skill of activatedSkills) {
+        chatStepCounter++
+        messageSteps.push({
+          id: `step-${Date.now()}-${chatStepCounter}`,
+          icon: 'OpenBook',
+          i18nKey: 'Activating skill…',
+          status: 'completed',
+          startedAt: Date.now(),
+          completedAt: Date.now(),
+          toolCalls: [
+            {
+              name: 'activate_skill',
+              input: { skill_name: skill.name },
+              output: `Skill "${skill.name}" activated. Instructions loaded.`,
+            },
+          ],
+        })
+      }
+    }
 
     // Create initial "Thinking…" step for persistence
     chatStepCounter++

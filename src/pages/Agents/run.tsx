@@ -1962,10 +1962,32 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
       setIsSending(true)
       setResponse('')
       setCurrentStatus(null)
-      // Start with a "Thinking…" step so the user sees immediate feedback
-      setConversationSteps([
+
+      // Build initial steps: skill activation steps (completed) + Thinking step (running)
+      const initialSteps: ConversationStep[] = []
+      if (skills && skills.length > 0) {
+        for (const skill of skills) {
+          initialSteps.push({
+            id: `step-skill-${Date.now()}-${initialSteps.length}`,
+            icon: 'OpenBook' as IconName,
+            i18nKey: 'Activating skill…',
+            status: 'completed',
+            startedAt: Date.now(),
+            completedAt: Date.now(),
+            toolCalls: [
+              {
+                name: 'activate_skill',
+                input: { skill_name: skill.name },
+                output: `Skill "${skill.name}" activated. Instructions loaded.`,
+              },
+            ],
+          })
+        }
+      }
+      initialSteps.push(
         createStepFromStatus({ icon: 'Sparks', i18nKey: 'Thinking…' }),
-      ])
+      )
+      setConversationSteps(initialSteps)
       setPrompt('')
 
       const controller = new AbortController()
@@ -2050,10 +2072,40 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
       setResponse('')
       setCurrentStatus(null)
 
-      // Start with a "Thinking…" step so the user sees immediate feedback
-      setConversationSteps([
+      // Build activated skills from /mentions (needed before initializing steps)
+      const activatedSkills = mentionedSkills?.map((skill) => ({
+        name: skill.name,
+        skillMdContent: skill.skillMdContent || skill.description,
+        scripts: skill.scripts,
+        references: skill.references,
+        assets: skill.assets,
+      }))
+
+      // Build initial steps: skill activation steps (completed) + Thinking step (running)
+      const initialSteps: ConversationStep[] = []
+      if (activatedSkills && activatedSkills.length > 0) {
+        for (const skill of activatedSkills) {
+          initialSteps.push({
+            id: `step-skill-${Date.now()}-${initialSteps.length}`,
+            icon: 'OpenBook' as IconName,
+            i18nKey: 'Activating skill…',
+            status: 'completed',
+            startedAt: Date.now(),
+            completedAt: Date.now(),
+            toolCalls: [
+              {
+                name: 'activate_skill',
+                input: { skill_name: skill.name },
+                output: `Skill "${skill.name}" activated. Instructions loaded.`,
+              },
+            ],
+          })
+        }
+      }
+      initialSteps.push(
         createStepFromStatus({ icon: 'Sparks', i18nKey: 'Thinking…' }),
-      ])
+      )
+      setConversationSteps(initialSteps)
 
       // Convert files to base64 for LLM processing
       const filesData = await Promise.all(
@@ -2071,12 +2123,6 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
       if (convId) {
         persistQuickReplies(convId, [])
       }
-
-      // Build activated skills from /mentions
-      const activatedSkills = mentionedSkills?.map((skill) => ({
-        name: skill.name,
-        skillMdContent: skill.skillMdContent || skill.description,
-      }))
 
       // Build activated connectors from /mentions
       const activatedConnectors = mentionedConnectors?.map((c) => ({

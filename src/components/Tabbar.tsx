@@ -55,7 +55,7 @@ export const Tabbar = ({ className = '' }) => {
         key="/"
         // data-color="primary"
         title={
-          <Tooltip content={t('New chat')} placement="top">
+          <Tooltip content={t('New Task')} placement="top">
             <Icon name="PlusCircleSolid" size="lg" />
           </Tooltip>
         }

@@ -3,10 +3,18 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardBody, Chip, Spinner } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
-import { Section, Container, Filter, FilterOption, Icon } from '@/components'
+import {
+  Section,
+  Container,
+  MultiFilter,
+  MultiFilterSelection,
+  FilterSection,
+  Icon,
+} from '@/components'
 import DefaultLayout from '@/layouts/Default'
 import { useTaskStore } from '@/stores/taskStore'
-import { Task } from '@/types'
+import { useArtifactStore } from '@/stores/artifactStore'
+import { Task, Artifact } from '@/types'
 import { HeaderProps } from '@/lib/types'
 import localI18n from './i18n'
 
@@ -14,10 +22,51 @@ export const TasksPage = () => {
   const { t, url } = useI18n(localI18n)
   const navigate = useNavigate()
   const { tasks, isLoading, loadTasks } = useTaskStore()
+  const { artifacts, loadArtifacts } = useArtifactStore()
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([])
-  const [statusFilter, setStatusFilter] = useState<Task['status'] | 'all'>(
-    'all',
-  )
+  const [filters, setFilters] = useState<MultiFilterSelection>({
+    status: 'all',
+    scope: 'root',
+  })
+
+  // Build a map of taskId → parentTaskId for subtask → root resolution
+  const parentTaskMap = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const task of tasks) {
+      if (task.parentTaskId) map.set(task.id, task.parentTaskId)
+    }
+    return map
+  }, [tasks])
+
+  // Build a map of taskId → latest artifact (by updatedAt)
+  // Subtask artifacts are also attributed to their parent task
+  const lastArtifactByTask = useMemo(() => {
+    const map = new Map<string, Artifact>()
+    for (const artifact of artifacts) {
+      // Attribute to the artifact's own task
+      const ownExisting = map.get(artifact.taskId)
+      if (
+        !ownExisting ||
+        new Date(artifact.updatedAt).getTime() >
+          new Date(ownExisting.updatedAt).getTime()
+      ) {
+        map.set(artifact.taskId, artifact)
+      }
+      // Also attribute to the parent task (so root tasks show subtask artifacts)
+      const parentId = parentTaskMap.get(artifact.taskId)
+      if (parentId) {
+        const parentExisting = map.get(parentId)
+        if (
+          !parentExisting ||
+          new Date(artifact.updatedAt).getTime() >
+            new Date(parentExisting.updatedAt).getTime()
+        ) {
+          map.set(parentId, artifact)
+        }
+      }
+    }
+    return map
+  }, [artifacts, parentTaskMap])
 
   const header: HeaderProps = {
     color: 'bg-secondary-50',
@@ -43,42 +92,79 @@ export const TasksPage = () => {
 
   useEffect(() => {
     loadTasks()
-  }, [loadTasks])
+    loadArtifacts()
+  }, [loadTasks, loadArtifacts])
 
   useEffect(() => {
-    if (statusFilter === 'all') {
-      setFilteredTasks(tasks)
-    } else {
-      setFilteredTasks(tasks.filter((task) => task.status === statusFilter))
-    }
-  }, [tasks, statusFilter])
+    let result = tasks
 
-  // Filter options with counts
-  const filterOptions: FilterOption<Task['status'] | 'all'>[] = useMemo(
+    // Scope filter: root tasks only vs all
+    if (filters.scope !== 'all') {
+      result = result.filter((task) => !task.parentTaskId)
+    }
+
+    // Status filter
+    if (filters.status !== 'all') {
+      result = result.filter((task) => task.status === filters.status)
+    }
+
+    setFilteredTasks(result)
+  }, [tasks, filters])
+
+  // Scoped tasks for counts (respect scope filter)
+  const scopedTasks = useMemo(
+    () =>
+      filters.scope !== 'all'
+        ? tasks.filter((task) => !task.parentTaskId)
+        : tasks,
+    [tasks, filters.scope],
+  )
+
+  const rootTaskCount = useMemo(
+    () => tasks.filter((task) => !task.parentTaskId).length,
+    [tasks],
+  )
+
+  // Multi-filter sections
+  const filterSections: FilterSection[] = useMemo(
     () => [
-      { key: 'all', label: t('All'), count: tasks.length },
       {
-        key: 'in_progress',
-        label: t('In Progress'),
-        count: tasks.filter((t) => t.status === 'in_progress').length,
+        key: 'scope',
+        title: t('Scope'),
+        options: [
+          { key: 'root', label: t('Tasks'), count: rootTaskCount },
+          { key: 'all', label: t('Tasks & Sub-Tasks'), count: tasks.length },
+        ],
       },
       {
-        key: 'completed',
-        label: t('Completed'),
-        count: tasks.filter((t) => t.status === 'completed').length,
-      },
-      {
-        key: 'pending',
-        label: t('Pending'),
-        count: tasks.filter((t) => t.status === 'pending').length,
-      },
-      {
-        key: 'failed',
-        label: t('Failed'),
-        count: tasks.filter((t) => t.status === 'failed').length,
+        key: 'status',
+        title: t('Status'),
+        options: [
+          { key: 'all', label: t('All'), count: scopedTasks.length },
+          {
+            key: 'in_progress',
+            label: t('In Progress'),
+            count: scopedTasks.filter((t) => t.status === 'in_progress').length,
+          },
+          {
+            key: 'completed',
+            label: t('Completed'),
+            count: scopedTasks.filter((t) => t.status === 'completed').length,
+          },
+          {
+            key: 'pending',
+            label: t('Pending'),
+            count: scopedTasks.filter((t) => t.status === 'pending').length,
+          },
+          {
+            key: 'failed',
+            label: t('Failed'),
+            count: scopedTasks.filter((t) => t.status === 'failed').length,
+          },
+        ],
       },
     ],
-    [tasks, t],
+    [tasks, scopedTasks, rootTaskCount, t],
   )
 
   const getStatusColor = (status: Task['status']) => {
@@ -91,6 +177,25 @@ export const TasksPage = () => {
         return 'danger'
       default:
         return 'default'
+    }
+  }
+
+  const getArtifactTypeIcon = (type: Artifact['type']) => {
+    switch (type) {
+      case 'code':
+        return 'Code'
+      case 'document':
+        return 'Page'
+      case 'design':
+        return 'Palette'
+      case 'analysis':
+        return 'StatsReport'
+      case 'plan':
+        return 'Map'
+      case 'report':
+        return 'Reports'
+      default:
+        return 'Page'
     }
   }
 
@@ -131,14 +236,14 @@ export const TasksPage = () => {
     <DefaultLayout title={t('Tasks')} header={header}>
       <Section>
         <Container>
-          {/* Status Filter */}
-          {filteredTasks.length > 0 && (
+          {/* Filters */}
+          {tasks.length > 0 && (
             <div className="flex gap-2 mb-6">
-              <Filter
-                label={t('Filter by status')}
-                options={filterOptions}
-                selectedKey={statusFilter}
-                onSelectionChange={setStatusFilter}
+              <MultiFilter
+                label={t('Filters')}
+                sections={filterSections}
+                selectedKeys={filters}
+                onSelectionChange={setFilters}
               />
             </div>
           )}
@@ -154,11 +259,11 @@ export const TasksPage = () => {
                 />
               </div>
               <p className="text-lg font-semibold mb-1">
-                {statusFilter === 'all'
+                {filters.status === 'all'
                   ? t('No tasks found')
                   : t('No {status} tasks found', {
                       status: t(
-                        statusFilter
+                        filters.status
                           .replace('_', ' ')
                           .replace(/\b\w/g, (c) => c.toUpperCase()) as any,
                       ).toLowerCase(),
@@ -186,9 +291,9 @@ export const TasksPage = () => {
                     className="w-full"
                     onPress={() => handleTaskClick(task.id)}
                   >
-                    <CardBody className="py-4">
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex-1 min-w-0">
+                    <CardBody className="p-0">
+                      <div className="flex">
+                        <div className="flex-1 min-w-0 py-4 pl-4 pr-2">
                           <div className="flex items-center gap-2 mb-1">
                             <h3 className="text-base font-medium truncate">
                               {task.title}
@@ -204,10 +309,41 @@ export const TasksPage = () => {
                           <p className="text-sm text-default-500 line-clamp-1">
                             {task.description}
                           </p>
+                          <time className="text-xs text-default-400 mt-1 block">
+                            {formatDate(task.createdAt)}
+                          </time>
                         </div>
-                        <time className="text-sm text-default-400 shrink-0">
-                          {formatDate(task.createdAt)}
-                        </time>
+                        {lastArtifactByTask.has(task.id) &&
+                          (() => {
+                            const artifact = lastArtifactByTask.get(task.id)!
+                            return (
+                              <div
+                                className="w-32 shrink-0 aspect-[4/3] bg-default-50 border-l border-default-100 rounded-r-lg overflow-hidden flex flex-col cursor-pointer hover:bg-default-100 transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  navigate(url(`/tasks/${task.id}`), {
+                                    state: { openArtifactId: artifact.id },
+                                  })
+                                }}
+                              >
+                                <div className="flex-1 overflow-hidden px-2 pt-2">
+                                  <pre className="text-[8px] leading-tight text-default-500 whitespace-pre-wrap break-all overflow-hidden h-full">
+                                    {artifact.content?.slice(0, 300)}
+                                  </pre>
+                                </div>
+                                <div className="flex items-center gap-1 px-2 py-1 bg-default-100/50">
+                                  <Icon
+                                    name={getArtifactTypeIcon(artifact.type)}
+                                    size="sm"
+                                    className="text-default-400"
+                                  />
+                                  <span className="text-[10px] text-default-400 truncate">
+                                    {artifact.title}
+                                  </span>
+                                </div>
+                              </div>
+                            )
+                          })()}
                       </div>
                     </CardBody>
                   </Card>

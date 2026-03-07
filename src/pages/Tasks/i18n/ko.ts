@@ -17,4 +17,8 @@ export const ko: I18n = {
   'Filter by status': '상태별 필터링',
   'In Progress': '진행 중',
   'Sub-Tasks': '하위 작업',
+  'Tasks & Sub-Tasks': '작업 및 하위 작업',
+  Scope: '범위',
+  Status: '상태',
+  Filters: '필터',
 } as const

@@ -20,9 +20,35 @@ import type {
   Artifact,
   AgentScope,
   IsolatedExecutionConfig,
+  MessageStep,
 } from '@/types'
 import type { OrchestrationOptions } from '../engine'
 import type { DecomposedTask } from '../task-decomposer'
+
+// ============================================================================
+// Tool calls → MessageStep conversion
+// ============================================================================
+
+/**
+ * Convert an AgentRunnerResult's toolCallsLog into persisted MessageStep[] so
+ * that the task page can display executed tools via ConversationStepTracker.
+ */
+export function toolCallsLogToMessageSteps(
+  toolCallsLog: AgentRunnerResult['toolCallsLog'],
+): MessageStep[] {
+  if (!toolCallsLog || toolCallsLog.length === 0) return []
+
+  return toolCallsLog.map((tc, idx) => ({
+    id: `tool-${Date.now()}-${idx}`,
+    icon: 'Settings',
+    i18nKey: 'Using tool',
+    vars: { tool: tc.tool },
+    status: 'completed' as const,
+    startedAt: Date.now(),
+    completedAt: Date.now(),
+    toolCalls: [{ name: tc.tool, input: tc.input, output: tc.output }],
+  }))
+}
 
 // ============================================================================
 // Conversation Helpers
@@ -157,7 +183,7 @@ export async function createSynthesisArtifact(
   await ArtifactManager.createArtifact({
     taskId,
     agentId,
-    title: `${taskTitle} - Synthesized Result`,
+    title: taskTitle,
     description: 'Synthesized output from all sub-tasks',
     type: inferArtifactType(content),
     format: 'markdown',
@@ -439,11 +465,13 @@ export async function executeSubTaskWithAgent(params: {
     subTask.requirements.map((r) => r.id),
   )
 
-  // 8. Save assistant message
+  // 8. Save assistant message (including tool steps for UI display)
+  const steps = toolCallsLogToMessageSteps(result.toolCallsLog)
   await addMessage(conversationId, {
     role: 'assistant',
     content: result.response,
     agentId: agent.id,
+    ...(steps.length > 0 && { steps }),
   })
 
   // 9. Update task status

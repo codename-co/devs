@@ -44,6 +44,7 @@ export const ArtifactCard = memo(
       return (
         <Card
           isPressable
+          fullWidth
           onPress={handleOpen}
           shadow="none"
           className="border border-default-200 bg-default-50 hover:bg-default-100"
@@ -60,6 +61,7 @@ export const ArtifactCard = memo(
                 Markdown
               </span>
             </div>
+            <Icon name="NavArrowRight" size="md" className="text-default-500" />
             {/* <Button
               size="sm"
               variant="light"

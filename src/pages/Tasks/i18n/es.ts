@@ -17,4 +17,8 @@ export const es: I18n = {
   'Filter by status': 'Filtrar por estado',
   'In Progress': 'En curso',
   'Sub-Tasks': 'Subtareas',
+  'Tasks & Sub-Tasks': 'Tareas y subtareas',
+  Scope: 'Alcance',
+  Status: 'Estado',
+  Filters: 'Filtros',
 } as const

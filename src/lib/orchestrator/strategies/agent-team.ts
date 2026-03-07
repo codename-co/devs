@@ -36,6 +36,7 @@ import {
   markTaskFailed,
   markTaskInProgress,
   validateAndRefine,
+  toolCallsLogToMessageSteps,
 } from './shared'
 import { claimTask } from '@/stores/taskStore'
 import { useMailboxStore } from '@/stores/mailboxStore'
@@ -447,11 +448,13 @@ export async function executeAgentTeam(
           subTask.requirements.map((r) => r.id),
         )
 
-        // Save assistant message
+        // Save assistant message (including tool steps for UI display)
+        const steps = toolCallsLogToMessageSteps(result.toolCallsLog)
         await addMessage(conversationId, {
           role: 'assistant',
           content: result.response,
           agentId: teammate.id,
+          ...(steps.length > 0 && { steps }),
         })
 
         // Update task status

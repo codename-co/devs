@@ -20,6 +20,7 @@ import { getAgentById } from '@/stores/agentStore'
 import { useTaskStore } from '@/stores/taskStore'
 import { useConversationStore } from '@/stores/conversationStore'
 import { useWorkflowStore } from '@/stores/workflowStore'
+import { useInspectorPanelStore } from '@/stores/inspectorPanelStore'
 import {
   useTask,
   useTasks,
@@ -173,11 +174,12 @@ export const TaskPage = () => {
     [allTasks, task],
   )
 
-  // ── Artifacts for this task (direct only) ──────────────────────────────
-  const parentArtifacts = useMemo(
-    () => (task ? allArtifacts.filter((a) => a.taskId === task.id) : []),
-    [allArtifacts, task],
-  )
+  // ── Artifacts for the entire task tree (parent + sub-tasks) ──────────
+  const allTaskArtifacts = useMemo(() => {
+    if (!task) return []
+    const taskIds = new Set([task.id, ...subTasks.map((st) => st.id)])
+    return allArtifacts.filter((a) => taskIds.has(a.taskId))
+  }, [allArtifacts, task, subTasks])
 
   // ── Collect all workflow IDs (parent + sub-tasks) for conversation lookup
   const relevantWorkflowIds = useMemo(() => {
@@ -264,13 +266,10 @@ export const TaskPage = () => {
   const header: HeaderProps = useMemo(
     () => ({
       icon: {
-        name: 'PcCheck',
+        name: task?.status === 'completed' ? 'PcCheck' : 'PcWarning',
         color: 'text-secondary-500 dark:text-white',
       },
       title: task?.title || t('Task Details'),
-      subtitle: task
-        ? `${task.complexity} • ${task.status.replace('_', ' ')}${subTasks.length ? ` • ${subTasks.length} sub-tasks` : ''}`
-        : undefined,
       // cta: {
       //   label: t('Share'),
       //   // href: '',
@@ -381,6 +380,20 @@ export const TaskPage = () => {
       return () => clearTimeout(timeout)
     }
   }, [isSyncReady, taskId, task, navigate, url, t])
+
+  // ── Open artifact in inspector when navigated with openArtifactId state ──
+  const openInspector = useInspectorPanelStore((s) => s.open)
+  useEffect(() => {
+    const artifactId = (location.state as { openArtifactId?: string })
+      ?.openArtifactId
+    if (!artifactId || !allArtifacts.length) return
+    const artifact = allArtifacts.find((a) => a.id === artifactId)
+    if (artifact) {
+      openInspector({ type: 'artifact', artifact })
+      // Clear the state so it doesn't re-open on re-render
+      window.history.replaceState({}, '')
+    }
+  }, [allArtifacts, location.state, openInspector])
 
   // ── Detect orphaned workflows on mount ──────────────────────────────
   useEffect(() => {
@@ -724,8 +737,8 @@ export const TaskPage = () => {
               streamingMap={streamingMap}
             />
 
-            {/* Parent-level artifacts */}
-            <ArtifactsSection artifacts={parentArtifacts} />
+            {/* All artifacts (parent + sub-tasks) */}
+            <ArtifactsSection artifacts={allTaskArtifacts} />
 
             {/* Cross-agent conversation timeline */}
             {timelineItems.length > 0 && (

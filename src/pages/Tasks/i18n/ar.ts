@@ -17,4 +17,8 @@ export const ar: I18n = {
   'Filter by status': 'تصفية حسب الحالة',
   'In Progress': 'قيد التنفيذ',
   'Sub-Tasks': 'المهام الفرعية',
+  'Tasks & Sub-Tasks': 'المهام والمهام الفرعية',
+  Scope: 'النطاق',
+  Status: 'الحالة',
+  Filters: 'التصفيات',
 } as const

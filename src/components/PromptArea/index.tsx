@@ -538,11 +538,21 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       (agent: Agent) => {
         const name = agent.i18n?.[lang]?.name ?? agent.name
         const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const hyphenatedName = name
+          .replace(/\s+/g, '-')
+          .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
         const noSpaceName = name.replace(/\s+/g, '')
         const newPrompt = prompt
-          .replace(new RegExp(`(^|\\s)@\\[${escaped}\\]\\s?`, 'i'), '$1')
-          .replace(new RegExp(`(^|\\s)@${noSpaceName}\\b\\s?`, 'i'), '$1')
-          .replace(new RegExp(`(^|\\s)@${agent.id}\\b\\s?`, 'i'), '$1')
+          .replace(new RegExp(`(^|\\s)@\\[${escaped}\\]\\s?`, 'iu'), '$1')
+          .replace(
+            new RegExp(`(^|\\s)@${hyphenatedName}(?=[\\s]|$)\\s?`, 'iu'),
+            '$1',
+          )
+          .replace(
+            new RegExp(`(^|\\s)@${noSpaceName}(?=[\\s]|$)\\s?`, 'iu'),
+            '$1',
+          )
+          .replace(new RegExp(`(^|\\s)@${agent.id}(?=[\\s]|$)\\s?`, 'iu'), '$1')
           .replace(/\s+/g, ' ')
           .trim()
         handlePromptChange(newPrompt)
@@ -563,8 +573,8 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
           '\\$&',
         )
         const newPrompt = prompt
-          .replace(new RegExp(`#${name}\\b\\s?`, 'i'), '')
-          .replace(new RegExp(`#${id}\\b\\s?`, 'i'), '')
+          .replace(new RegExp(`#${name}(?=[\\s]|$)\\s?`, 'iu'), '')
+          .replace(new RegExp(`#${id}(?=[\\s]|$)\\s?`, 'iu'), '')
           .replace(/\s+/g, ' ')
           .trim()
         handlePromptChange(newPrompt)
@@ -580,8 +590,8 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
           .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
         const id = skill.id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
         const newPrompt = prompt
-          .replace(new RegExp(`(^|\\s)\\/${name}\\b\\s?`, 'i'), '$1')
-          .replace(new RegExp(`(^|\\s)\\/${id}\\b\\s?`, 'i'), '$1')
+          .replace(new RegExp(`(^|\\s)\\/${name}(?=[\\s]|$)\\s?`, 'iu'), '$1')
+          .replace(new RegExp(`(^|\\s)\\/${id}(?=[\\s]|$)\\s?`, 'iu'), '$1')
           .replace(/\s+/g, ' ')
           .trim()
         handlePromptChange(newPrompt)
@@ -600,8 +610,11 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
           '\\$&',
         )
         const newPrompt = prompt
-          .replace(new RegExp(`(^|\\s)\\/${name}\\b\\s?`, 'i'), '$1')
-          .replace(new RegExp(`(^|\\s)\\/${provider}\\b\\s?`, 'i'), '$1')
+          .replace(new RegExp(`(^|\\s)\\/${name}(?=[\\s]|$)\\s?`, 'iu'), '$1')
+          .replace(
+            new RegExp(`(^|\\s)\\/${provider}(?=[\\s]|$)\\s?`, 'iu'),
+            '$1',
+          )
           .replace(/\s+/g, ' ')
           .trim()
         handlePromptChange(newPrompt)

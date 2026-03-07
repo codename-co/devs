@@ -101,8 +101,8 @@ const InspectorContent = memo(({ item }: { item: InspectorItem }) => {
               </Tooltip>
             )}
 
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              <Icon name={icon} className="w-4 h-4 text-default-500 shrink-0" />
+            <div className="flex items-center gap-4 px-4 h-14 max-w-full flex-1 min-w-0">
+              <Icon name={icon} size="md" className="text-default-500" />
               <span className="text-sm font-medium truncate">{title}</span>
             </div>
 
@@ -162,17 +162,17 @@ InspectorBody.displayName = 'InspectorBody'
 
 const ArtifactBody = memo(
   ({ artifact }: { artifact: import('@/types').Artifact }) => {
-    const statusColor =
-      artifact.status === 'approved' || artifact.status === 'final'
-        ? 'success'
-        : artifact.status === 'rejected'
-          ? 'danger'
-          : 'warning'
+    // const statusColor =
+    //   artifact.status === 'approved' || artifact.status === 'final'
+    //     ? 'success'
+    //     : artifact.status === 'rejected'
+    //       ? 'danger'
+    //       : 'warning'
 
     return (
       <div className="space-y-4">
         {/* Meta chips */}
-        <div className="flex flex-wrap gap-2">
+        {/* <div className="flex flex-wrap gap-2">
           <Chip size="sm" variant="flat" color={statusColor}>
             {artifact.status}
           </Chip>
@@ -182,11 +182,11 @@ const ArtifactBody = memo(
           <Chip size="sm" variant="flat" color="default">
             v{artifact.version}
           </Chip>
-        </div>
+        </div> */}
 
-        {artifact.description && (
+        {/* {artifact.description && (
           <p className="text-sm text-default-600">{artifact.description}</p>
-        )}
+        )} */}
 
         {/* Full content */}
         <div className="rounded-lg bg-default-50 dark:bg-default-100/30 p-4">

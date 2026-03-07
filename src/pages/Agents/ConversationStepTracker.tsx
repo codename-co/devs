@@ -198,7 +198,7 @@ const ToolIOContent = memo(
     if (!toolCalls || toolCalls.length === 0) {
       return (
         <p className="text-tiny text-default-400 italic py-1">
-          {t('No details available' as any)}
+          {t('No details available')}
         </p>
       )
     }
@@ -232,7 +232,7 @@ const ToolIOContent = memo(
             {tc.input && Object.keys(tc.input).length > 0 && (
               <div>
                 <span className="text-tiny font-semibold text-default-500 uppercase tracking-wider">
-                  {t('Input' as any)}
+                  {t('Input')}
                 </span>
                 <pre className="text-tiny bg-default-100 dark:bg-default-50/50 rounded-md p-2 mt-1 overflow-x-auto whitespace-pre-wrap break-all font-mono text-default-600 max-h-40 overflow-y-auto">
                   {Object.entries(tc.input)
@@ -245,7 +245,7 @@ const ToolIOContent = memo(
             {tc.output !== undefined && tc.output !== null && (
               <div>
                 <span className="text-tiny font-semibold text-default-500 uppercase tracking-wider">
-                  {t('Output' as any)}
+                  {t('Output')}
                 </span>
                 <pre className="text-tiny bg-default-100 dark:bg-default-50/50 rounded-md p-2 mt-1 overflow-x-auto whitespace-pre-wrap break-all font-mono text-default-600 max-h-40 overflow-y-auto">
                   {formatValue(tc.output)}
@@ -331,7 +331,7 @@ const RunningStepInline = memo(
     step: ConversationStep
     t: (key: any, vars?: any) => string
   }) => {
-    const label = step.title || t(step.i18nKey as any, step.vars)
+    const label = step.title || t(step.i18nKey, step.vars)
 
     return (
       <div>
@@ -345,7 +345,7 @@ const RunningStepInline = memo(
         {step.thinkingContent && (
           <details className="mt-1 ml-6">
             <summary className="cursor-pointer text-xs text-default-400 select-none">
-              {t('Thoughts' as any)}
+              {t('Thoughts')}
             </summary>
             <div className="ml-2 mt-1 text-xs text-default-400 whitespace-pre-wrap max-h-40 overflow-y-auto">
               {step.thinkingContent}
@@ -424,7 +424,7 @@ export const ConversationStepTracker = memo(
             <div className="flex items-center gap-2 mb-1">
               <Icon name="ListSelect" size="sm" className="text-default-400" />
               <span className="text-tiny font-medium text-default-500">
-                {t('Steps' as any)}
+                {t('Steps')}
               </span>
               {summary.running > 0 && (
                 <Chip size="sm" color="primary" variant="flat">
@@ -476,7 +476,7 @@ export const ConversationStepTracker = memo(
                     {step.thinkingContent && (
                       <div className="mb-2">
                         <div className="text-xs font-medium text-default-500 mb-1">
-                          {t('Thoughts' as any)}
+                          {t('Thoughts')}
                         </div>
                         <div className="text-xs text-default-400 whitespace-pre-wrap max-h-40 overflow-y-auto rounded-md bg-default-50 p-2">
                           {step.thinkingContent}
@@ -509,7 +509,7 @@ export const ConversationStepTracker = memo(
               className="text-tiny text-default-400 gap-1 h-6 min-w-0 px-2"
             >
               <Icon name="Activity" className="w-3 h-3" />
-              <span>{t('View trace details' as any)}</span>
+              <span>{t('View trace details')}</span>
             </Button>
           </div>
         )}

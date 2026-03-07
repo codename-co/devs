@@ -13,4 +13,8 @@ export const en = [
   'Filter by status',
   'In Progress',
   'Sub-Tasks',
+  'Tasks & Sub-Tasks',
+  'Scope',
+  'Status',
+  'Filters',
 ] as const

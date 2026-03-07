@@ -24,7 +24,7 @@ test.describe('Core User Journeys', () => {
 
     // Check drawer navigation items (use navigation-specific selectors)
     for (const item of [
-      'New chat',
+      'New task',
       'Tasks',
       'Agents',
       'Knowledge',
@@ -50,7 +50,7 @@ test.describe('Core User Journeys', () => {
     await expect(page).toHaveURL(/\/settings/)
 
     // Verify we can go back home
-    await _.navigateViaDrawer('New chat')
+    await _.navigateViaDrawer('New task')
     await expect(page).toHaveURL('/')
     await expect(page.locator('[data-testid="prompt-area"]')).toBeVisible()
   })

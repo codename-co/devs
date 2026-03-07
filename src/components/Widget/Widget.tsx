@@ -194,41 +194,46 @@ export const Widget = ({
         className={`specialized-code-block ${className}`}
         shadow={showShadows ? 'md' : 'none'}
       >
-        <CardHeader className="flex justify-between items-center">
-          {showTitle && (
-            <h4 className="text-sm font-semibold text-default-600">
-              <Icon name={getIcon()} className="w-4 h-4 inline-block mr-2" />
-              {title ?? getTitle()}
-            </h4>
-          )}
+        {(showTitle || showActions) && (
+          <CardHeader className="flex justify-between items-center">
+            {showTitle && (
+              <h4 className="text-sm font-semibold text-default-600">
+                <Icon name={getIcon()} className="w-4 h-4 inline-block mr-2" />
+                {title ?? getTitle()}
+              </h4>
+            )}
 
-          {showActions && (
-            <div className="flex items-center gap-2">
-              <Tabs
-                aria-label="View mode"
-                size="sm"
-                selectedKey={viewMode === 'render' ? 'render' : 'source'}
-                onSelectionChange={(key) =>
-                  setViewMode(key as 'render' | 'source')
-                }
-              >
-                <Tab key="render" title={t('Render')} />
-                <Tab key="source" title={t('Code')} />
-              </Tabs>
-              {moreActions?.map((action, i) => (
-                <Tooltip key={i} content={action.label}>
-                  <button
-                    onClick={action.onPress}
-                    className="p-1.5 rounded-md text-default-500 hover:text-default-700 hover:bg-default-100 transition-colors"
-                    aria-label={action.label}
-                  >
-                    <Icon name={action.icon ?? 'Expand'} className="w-4 h-4" />
-                  </button>
-                </Tooltip>
-              ))}
-            </div>
-          )}
-        </CardHeader>
+            {showActions && (
+              <div className="flex items-center gap-2">
+                <Tabs
+                  aria-label="View mode"
+                  size="sm"
+                  selectedKey={viewMode === 'render' ? 'render' : 'source'}
+                  onSelectionChange={(key) =>
+                    setViewMode(key as 'render' | 'source')
+                  }
+                >
+                  <Tab key="render" title={t('Render')} />
+                  <Tab key="source" title={t('Code')} />
+                </Tabs>
+                {moreActions?.map((action, i) => (
+                  <Tooltip key={i} content={action.label}>
+                    <button
+                      onClick={action.onPress}
+                      className="p-1.5 rounded-md text-default-500 hover:text-default-700 hover:bg-default-100 transition-colors"
+                      aria-label={action.label}
+                    >
+                      <Icon
+                        name={action.icon ?? 'Expand'}
+                        className="w-4 h-4"
+                      />
+                    </button>
+                  </Tooltip>
+                ))}
+              </div>
+            )}
+          </CardHeader>
+        )}
         <CardBody className="pt-0">{renderContent()}</CardBody>
       </Card>
     </ErrorBoundary>
