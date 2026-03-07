@@ -31,7 +31,6 @@ src/features/{feature-name}/
 
 | Feature      | Directory                    | Description                         |
 | ------------ | ---------------------------- | ----------------------------------- |
-| Battle Arena | `src/features/battle/`       | Agent vs agent competitions         |
 | Connectors   | `src/features/connectors/`   | OAuth integrations (Google, Notion) |
 | Live         | `src/features/live/`         | Real-time collaboration             |
 | Sync         | `src/features/sync/`         | P2P data synchronization via Yjs    |

@@ -12,7 +12,10 @@
  */
 
 import type { ToolCall, ToolDefinition, ParsedToolCall } from '@/lib/llm/types'
-import { TraceService, estimateTokenCount } from '@/features/traces/trace-service'
+import {
+  TraceService,
+  estimateTokenCount,
+} from '@/features/traces/trace-service'
 import type {
   ToolExecutionContext,
   ToolHandler,
@@ -1143,4 +1146,34 @@ export function areSkillToolsRegistered(): boolean {
  */
 export function unregisterSkillTools(): void {
   unregisterCategoryFromLegacy('skill', defaultRegistry)
+}
+
+// ============================================================================
+// Artifact Tools Registration
+// ============================================================================
+
+/**
+ * Register all artifact tools with the default registry.
+ * Call this during application initialization to enable artifact
+ * read/write/list/update tools for agents.
+ */
+export function registerArtifactTools(): void {
+  registerCategoryWithLegacy('artifact', defaultRegistry)
+}
+
+/**
+ * Check if artifact tools are registered.
+ *
+ * @returns true if all artifact tools are registered
+ */
+export function areArtifactToolsRegistered(): boolean {
+  return isCategoryRegisteredInLegacy('artifact', defaultRegistry)
+}
+
+/**
+ * Unregister all artifact tools from the default registry.
+ * Useful for testing or when disabling artifact features.
+ */
+export function unregisterArtifactTools(): void {
+  unregisterCategoryFromLegacy('artifact', defaultRegistry)
 }

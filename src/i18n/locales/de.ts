@@ -18,8 +18,6 @@ export const de: I18n = {
   'New Task': 'Neue Aufgabe',
   'New Team': 'Neues Team',
   Tasks: 'Aufgaben',
-  Arena: 'Arena',
-  'Battle Arena': 'Kampfarena',
   Teams: 'Teams',
   Settings: 'Einstellungen',
   Agents: 'Agenten',

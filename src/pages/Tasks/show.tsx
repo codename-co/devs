@@ -61,7 +61,7 @@ import {
   SubTasksSection,
   TaskStatusBanner,
   TaskStepsSection,
-  TeamWorkDiagram,
+  // TeamWorkDiagram,
   WorkflowHeader,
 } from './components'
 import {
@@ -695,12 +695,12 @@ export const TaskPage = () => {
             )}
 
             {/* Live team work diagram */}
-            <TeamWorkDiagram
+            {/* <TeamWorkDiagram
               workflowId={task.workflowId}
               workflow={workflow}
               liveProgress={workflowProgress}
               subTasks={subTasks}
-            />
+            /> */}
 
             {/* Recovery banner for interrupted workflows */}
             {orphanedWorkflow && (

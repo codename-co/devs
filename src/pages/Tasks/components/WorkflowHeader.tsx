@@ -66,12 +66,19 @@ export const WorkflowHeader = memo(
         const end = workflow.completedAt
           ? new Date(workflow.completedAt).getTime()
           : new Date(workflow.updatedAt).getTime()
-        setElapsed(end - start)
+        // Guard against corrupted dates (Yjs may serialize Date as {})
+        const diff = end - start
+        setElapsed(diff > 0 ? diff : 0)
         return
       }
 
       const start = new Date(workflow.createdAt).getTime()
-      const tick = () => setElapsed(Date.now() - start)
+      // Guard: if createdAt is corrupted (epoch), don't show nonsensical elapsed
+      if (isNaN(start) || start === 0) {
+        setElapsed(0)
+        return
+      }
+      const tick = () => setElapsed(Math.max(0, Date.now() - start))
       tick()
       intervalRef.current = setInterval(tick, 1000)
       return () => {

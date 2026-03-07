@@ -90,9 +90,9 @@ export const SubTasksSection = memo(
                   key={subTask.id}
                   startContent={<SubTaskStatusIcon status={subTask.status} />}
                   title={
-                    <div className="flex items-center gap-2 truncate">
+                    <div className="flex items-center gap-2">
                       <span
-                        className={`flex-1 truncate ${
+                        className={`flex-1 ${
                           subTask.status === 'failed' ? 'text-danger-600' : ''
                         }`}
                       >
@@ -111,6 +111,7 @@ export const SubTasksSection = memo(
                               />
                             ) : undefined
                           }
+                          className="font-sans"
                         >
                           {agent.name}
                         </Chip>

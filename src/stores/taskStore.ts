@@ -29,8 +29,8 @@ function normalizeYjsDate(value: unknown): string {
  * Helper to get all tasks from Yjs map, normalizing date fields
  * that Yjs may have corrupted during serialization.
  */
-function getAllTasks(): Task[] {
-  return Array.from(tasks.values()).map((task) => ({
+function normalizeTask(task: Task): Task {
+  return {
     ...task,
     createdAt: normalizeYjsDate(task.createdAt),
     updatedAt: normalizeYjsDate(task.updatedAt),
@@ -43,7 +43,26 @@ function getAllTasks(): Task[] {
     ...(task.assignedAt !== undefined && {
       assignedAt: normalizeYjsDate(task.assignedAt),
     }),
-  })) as Task[]
+    // Normalize date fields inside steps — Yjs corrupts Date objects to {}
+    steps: (task.steps || []).map((step) => ({
+      ...step,
+      ...(step.startedAt !== undefined && {
+        startedAt: normalizeYjsDate(step.startedAt),
+      }),
+      ...(step.completedAt !== undefined && {
+        completedAt: normalizeYjsDate(step.completedAt),
+      }),
+      // Sanitize corrupted durations (negative or NaN)
+      ...(step.duration != null &&
+        (isNaN(step.duration) || step.duration < 0) && {
+          duration: undefined,
+        }),
+    })),
+  } as Task
+}
+
+function getAllTasks(): Task[] {
+  return Array.from(tasks.values()).map(normalizeTask)
 }
 
 /**
@@ -141,7 +160,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       }
       const task = tasks.get(id)
       if (task) {
-        set({ currentTask: task, isLoading: false })
+        set({ currentTask: normalizeTask(task), isLoading: false })
       } else {
         errorToast('Task not found', 'The requested task could not be found')
         set({ isLoading: false })

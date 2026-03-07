@@ -152,7 +152,16 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
   getWorkflowById: (id) => {
     const w = workflows.get(id)
     if (!w || !('prompt' in w)) return null
-    return w as unknown as OrchestrationWorkflow
+    // Normalize dates that Yjs may have corrupted
+    const wf = w as unknown as Record<string, unknown>
+    return {
+      ...wf,
+      createdAt: normalizeYjsDate(wf.createdAt),
+      updatedAt: normalizeYjsDate(wf.updatedAt),
+      ...(wf.completedAt !== undefined && {
+        completedAt: normalizeYjsDate(wf.completedAt),
+      }),
+    } as unknown as OrchestrationWorkflow
   },
 
   getActiveWorkflows: () => {

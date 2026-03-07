@@ -87,7 +87,7 @@ export const TaskStepsSection = memo(
                       {agent.name}
                     </Chip>
                   )}
-                  {step.duration != null && (
+                  {step.duration != null && step.duration > 0 && (
                     <span className="text-tiny text-default-400 flex-shrink-0">
                       {step.duration < 1000
                         ? `${Math.round(step.duration)}ms`

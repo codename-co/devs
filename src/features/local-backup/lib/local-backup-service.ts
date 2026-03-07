@@ -20,7 +20,6 @@ import {
   artifacts as artifactsMap,
   credentials as credentialsMap,
   connectors as connectorsMap,
-  battles as battlesMap,
   workflows as workflowsMap,
   pinnedMessages as pinnedMessagesMap,
   memoryLearningEvents as memoryLearningEventsMap,
@@ -1177,7 +1176,6 @@ class FolderSyncService {
         ['connectorSyncStates', connectorSyncStatesMap],
         ['traces', tracesMap],
         ['spans', spansMap],
-        ['battles', battlesMap],
         ['workflows', workflowsMap],
         ['pinnedMessages', pinnedMessagesMap],
         // notifications are local-only, not included in backup

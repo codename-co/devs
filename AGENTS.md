@@ -397,21 +397,7 @@ Local Backup provides automatic, bidirectional synchronization between DEVS's In
 - CRDT (Conflict-free Replicated Data Types) for shared state
 - Privacy-preserving collaboration protocols
 
-### 11. Battle Arena - Card Battle System
-
-The Battle Arena is a gamified competitive feature where AI agents battle as collectible playing cards. Each agent is transformed into a unique card with stats, abilities, elemental types, and AI-generated artwork. See [docs/ARENA.md](docs/ARENA.md) for full documentation.
-
-**Key Features:**
-
-- **Collectible Agent Cards**: Each AI agent becomes a unique trading card
-- **Eight Element Types**: Wisdom, Creativity, Charisma, Strategy, Nature, Spirit, Tech, Cosmic
-- **Rarity System**: Common, Uncommon, Rare, Epic, Legendary
-- **AI-Generated Artwork**: Card portraits generated via the Studio
-- **Turn-Based Combat**: Strategic battles with abilities, energy, and status effects
-- **Visual Effects**: Animated attacks, damage numbers, screen shakes
-- **Tournament Mode**: Elimination-style competitions
-
-### 12. Global Search
+### 11. Global Search
 
 The Global Search feature provides a unified, fast search experience across all DEVS entities. See [docs/SEARCH.md](docs/SEARCH.md) for full documentation.
 
@@ -423,7 +409,7 @@ The Global Search feature provides a unified, fast search experience across all 
 - Grouped results by category
 - Recent searches and quick navigation
 
-### 13. Meeting Bot - Google Meet Integration
+### 12. Meeting Bot - Google Meet Integration
 
 DEVS enables AI agents to join Google Meet meetings as real participants. See [docs/MEET-BOT.md](docs/MEET-BOT.md) for full documentation.
 
@@ -435,7 +421,7 @@ DEVS enables AI agents to join Google Meet meetings as real participants. See [d
 - Emoji reactions and chat responses
 - Meeting summarization
 
-### 14. Traces - LLM Observability & Analytics
+### 13. Traces - LLM Observability & Analytics
 
 DEVS includes a comprehensive tracing system for monitoring, analyzing, and debugging all LLM interactions. See [docs/TRACES.md](docs/TRACES.md) for full documentation.
 
@@ -447,7 +433,7 @@ DEVS includes a comprehensive tracing system for monitoring, analyzing, and debu
 - Error tracking and debugging
 - Analytics dashboard with charts
 
-### 15. P2P Sync - Cross-Device Synchronization
+### 14. P2P Sync - Cross-Device Synchronization
 
 DEVS uses a **Yjs-first architecture** where Yjs is the single source of truth for all application data. See [docs/SYNC.md](docs/SYNC.md) for full documentation.
 
@@ -461,7 +447,7 @@ DEVS uses a **Yjs-first architecture** where Yjs is the single source of truth f
 - Reactive hooks (`useLiveMap`, `useLiveValue`) for instant UI updates
 - Automatic migration from legacy IndexedDB
 
-### 16. Marketplace - Platform Extension System
+### 15. Marketplace - Platform Extension System
 
 The DEVS Marketplace transforms DEVS into an extensible platform, allowing the community to build and share custom extensions. All extensions are defined using YAML schemas with standardized hooks. See [docs/MARKETPLACE.md](docs/MARKETPLACE.md) for full documentation.
 
@@ -482,7 +468,7 @@ The DEVS Marketplace transforms DEVS into an extensible platform, allowing the c
 - **Interoperability**: Extensions can compose and depend on each other
 - **Low Barrier**: Non-developers can create simple extensions via specialist agents
 
-### 17. Extension Bridge - Sandboxed Extension API
+### 16. Extension Bridge - Sandboxed Extension API
 
 Extensions run in sandboxed iframes and communicate with DEVS through a message-based API. The bridge script exposes the `window.DEVS` object for extensions. See [docs/EXTENSION-BRIDGE.md](docs/EXTENSION-BRIDGE.md) for full documentation.
 

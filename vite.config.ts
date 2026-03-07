@@ -182,8 +182,7 @@ export default defineConfig(({ mode }) => {
               'monaco-yaml',
             ],
             // features
-            battle: ['@/features/battle'],
-            // connectors removed - has cross-chunk circular dependencies with battle/sync
+            connectors: ['@/features/connectors'],
             live: ['@/features/live'],
             local: ['@/features/local-backup'],
             meeting: ['@/features/meeting-bot'],

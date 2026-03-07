@@ -88,9 +88,9 @@ function parseProviderFromModel(model: string): {
   provider: LLMProvider | null
   modelId: string
 } {
-  // Check for provider prefix (e.g., "openai/gpt-4o")
+  // Check for provider prefix (e.g., "openai/gpt-4o", "local/model-name")
   const prefixMatch = model.match(
-    /^(openai|anthropic|google|mistral|deepseek|xai|openrouter)\/(.+)$/i,
+    /^(openai|anthropic|google|mistral|deepseek|xai|openrouter|local|ollama)\/(.+)$/i,
   )
   if (prefixMatch) {
     return {
@@ -255,6 +255,15 @@ async function loadPricingCatalog(): Promise<void> {
  */
 function getPricingForModel(model: string): Pricing {
   const { provider, modelId } = parseProviderFromModel(model)
+
+  // Local and self-hosted models are free — return zero pricing immediately
+  const FREE_PROVIDERS: LLMProvider[] = ['local', 'ollama']
+  if (provider && FREE_PROVIDERS.includes(provider)) {
+    return pricingFromUsdPerMillion({
+      inputUsdPerMillion: 0,
+      outputUsdPerMillion: 0,
+    })
+  }
 
   // 1. Try models.dev cache first (primary source)
   if (modelsDevPricing) {

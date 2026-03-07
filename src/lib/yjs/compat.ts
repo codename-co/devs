@@ -32,7 +32,6 @@ import {
   credentials,
   studioEntries,
   workflows,
-  battles,
   pinnedMessages,
   secrets,
 } from './maps'
@@ -75,9 +74,6 @@ export const getStudioEntriesMap = () => studioEntries
 
 /** @deprecated Use `import { workflows } from '@/lib/yjs'` instead. */
 export const getWorkflowsMap = () => workflows
-
-/** @deprecated Use `import { battles } from '@/lib/yjs'` instead. */
-export const getBattlesMap = () => battles
 
 /** @deprecated Use `import { pinnedMessages } from '@/lib/yjs'` instead. */
 export const getPinnedMessagesMap = () => pinnedMessages

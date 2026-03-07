@@ -41,4 +41,7 @@ export {
   registerSkillTools,
   areSkillToolsRegistered,
   unregisterSkillTools,
+  registerArtifactTools,
+  areArtifactToolsRegistered,
+  unregisterArtifactTools,
 } from './executor'

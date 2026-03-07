@@ -20,8 +20,25 @@ export function toEpoch(v: unknown): number {
   return 0
 }
 
+export const formatDateTime = (
+  dateStr: string | Date,
+  lang?: string,
+): string => {
+  return Intl.DateTimeFormat(lang, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).format(new Date(dateStr))
+}
+
 // Format a date string (YYYY-MM-DD or YYYY-MM) for compact display
-export const formatDateCompact = (dateStr: string, lang?: string): string => {
+export const formatDateCompact = (
+  dateStr: string | Date,
+  lang?: string,
+): string => {
   return Intl.DateTimeFormat(lang, {
     year: 'numeric',
     month: 'short',

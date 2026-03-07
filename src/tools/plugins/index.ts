@@ -108,6 +108,15 @@ export {
   SKILL_TOOL_DEFINITIONS,
 } from './skill-tools'
 
+// Artifact tools
+export {
+  writeArtifactPlugin,
+  readArtifactPlugin,
+  listTaskArtifactsPlugin,
+  updateArtifactPlugin,
+  artifactPlugins,
+} from './artifact'
+
 // Connector tools - re-export all from connectors
 export * from './connectors'
 
@@ -129,7 +138,17 @@ import {
 } from './wikidata'
 import { arxivSearchPlugin, arxivPaperPlugin } from './arxiv'
 import { textOcrPlugin } from './text-ocr'
-import { activateSkillPlugin, readSkillFilePlugin, runSkillScriptPlugin } from './skill-tools'
+import {
+  activateSkillPlugin,
+  readSkillFilePlugin,
+  runSkillScriptPlugin,
+} from './skill-tools'
+import {
+  writeArtifactPlugin,
+  readArtifactPlugin,
+  listTaskArtifactsPlugin,
+  updateArtifactPlugin,
+} from './artifact'
 import { allConnectorPlugins } from './connectors'
 import type { ToolPlugin } from '../types'
 
@@ -163,6 +182,11 @@ export const corePlugins: ToolPlugin<any, any>[] = [
   activateSkillPlugin,
   readSkillFilePlugin,
   runSkillScriptPlugin,
+  // Artifact
+  writeArtifactPlugin,
+  readArtifactPlugin,
+  listTaskArtifactsPlugin,
+  updateArtifactPlugin,
 ]
 
 /**
@@ -199,6 +223,12 @@ export const pluginsByCategory = {
   ],
   utility: [textOcrPlugin],
   skill: [activateSkillPlugin, readSkillFilePlugin, runSkillScriptPlugin],
+  artifact: [
+    writeArtifactPlugin,
+    readArtifactPlugin,
+    listTaskArtifactsPlugin,
+    updateArtifactPlugin,
+  ],
   connector: allConnectorPlugins,
 } as const
 

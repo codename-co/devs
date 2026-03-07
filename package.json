@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@heroui/react": "^2.8.7",
-    "@huggingface/transformers": "^3.8.1",
+    "@huggingface/transformers": "^4.0.0-next",
     "@marp-team/marpit": "^3.2.0",
     "@mermaid-js/layout-elk": "^0.2.0",
     "@monaco-editor/react": "^4.7.0",

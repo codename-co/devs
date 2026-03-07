@@ -38,6 +38,8 @@ import {
   areConnectorToolsRegistered,
   registerPresentationTools,
   arePresentationToolsRegistered,
+  registerArtifactTools,
+  areArtifactToolsRegistered,
 } from '@/lib/tool-executor'
 import { KNOWLEDGE_TOOL_DEFINITIONS } from '@/lib/knowledge-tools'
 import { MATH_TOOL_DEFINITIONS } from '@/lib/math-tools'
@@ -56,6 +58,7 @@ import {
   ARXIV_PAPER_TOOL_DEFINITION,
   SKILL_TOOL_DEFINITIONS,
 } from '@/tools/plugins'
+import { ARTIFACT_TOOL_DEFINITIONS } from '@/lib/artifact-tools'
 import { userSettings } from '@/stores/userStore'
 import type {
   Agent,
@@ -158,6 +161,7 @@ async function collectTools(scope?: AgentScope): Promise<ToolDefinition[]> {
   if (!areSkillToolsRegistered()) registerSkillTools()
   if (!areConnectorToolsRegistered()) registerConnectorTools()
   if (!arePresentationToolsRegistered()) registerPresentationTools()
+  if (!areArtifactToolsRegistered()) registerArtifactTools()
 
   // Gather all available tool definitions
   const allTools: ToolDefinition[] = [
@@ -173,6 +177,7 @@ async function collectTools(scope?: AgentScope): Promise<ToolDefinition[]> {
     ARXIV_SEARCH_TOOL_DEFINITION,
     ARXIV_PAPER_TOOL_DEFINITION,
     ...Object.values(SKILL_TOOL_DEFINITIONS),
+    ...Object.values(ARTIFACT_TOOL_DEFINITIONS),
   ]
 
   // Add connector tools (dynamic, based on active connectors)

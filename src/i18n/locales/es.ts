@@ -18,8 +18,6 @@ export const es: I18n = {
   'New Task': 'Nueva tarea',
   'New Team': 'Nuevo equipo',
   Tasks: 'Tareas',
-  Arena: 'Arena',
-  'Battle Arena': 'Arena de Batalla',
   Teams: 'Equipos',
   Settings: 'Configuraciones',
   Agents: 'Agentes',

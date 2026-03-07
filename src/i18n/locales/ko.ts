@@ -18,8 +18,6 @@ export const ko: I18n = {
   'New Task': '새로운 작업',
   'New Team': '새로운 팀',
   Tasks: '작업',
-  Arena: '아레나',
-  'Battle Arena': '배틀 아레나',
   Teams: '팀',
   Settings: '설정',
   Agents: '에이전트',

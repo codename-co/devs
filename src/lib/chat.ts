@@ -2,6 +2,7 @@ import { LLMService, LLMMessage, ToolDefinition, ToolCall } from '@/lib/llm'
 import type { GroundingMetadata } from '@/lib/llm/types'
 import { CredentialService } from '@/lib/credential-service'
 import { useConversationStore } from '@/stores/conversationStore'
+import { conversations as conversationsYjs } from '@/lib/yjs'
 import { getDefaultAgent } from '@/stores/agentStore'
 import { buildPinnedContextForChat } from '@/stores/pinnedMessageStore'
 import { TraceService } from '@/features/traces/trace-service'
@@ -621,6 +622,17 @@ export const submitChat = async (
         // Finalize orchestration step
         orchestrationSteps[0].status = 'completed'
         orchestrationSteps[0].completedAt = Date.now()
+
+        // Link conversation to the real workflow so artifact lookups work
+        if (result.workflowId && conversation) {
+          const raw = conversationsYjs.get(conversation.id)
+          if (raw) {
+            conversationsYjs.set(conversation.id, {
+              ...raw,
+              workflowId: result.workflowId,
+            })
+          }
+        }
 
         // Save the orchestration report as assistant message
         // await addMessage(conversation.id, {

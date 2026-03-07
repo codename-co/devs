@@ -4,6 +4,8 @@ import { useI18n } from '@/i18n'
 import { Trace, Span, SpanType } from '../types'
 import localI18n from '../i18n'
 import { Icon } from '@/components'
+import { useModelPicker } from '@/components/PromptArea/useModelPicker'
+import { formatDateTime } from '@/lib/date'
 
 interface TraceDetailProps {
   trace: Trace
@@ -11,7 +13,8 @@ interface TraceDetailProps {
 }
 
 export function TraceDetail({ trace, spans }: TraceDetailProps) {
-  const { t } = useI18n(localI18n)
+  const { t, lang } = useI18n(localI18n)
+  const { getProviderIcon } = useModelPicker()
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -44,29 +47,30 @@ export function TraceDetail({ trace, spans }: TraceDetailProps) {
     return `${inTok} → ${outTok} Σ ${total}`
   }
 
-  const formatDate = (date?: Date) => {
-    if (!date) return '-'
-    return new Date(date).toLocaleString()
-  }
-
   return (
     <div className="space-y-6">
       {/* Trace Overview */}
       <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between w-full">
+        <CardHeader className="pb-2 flex flex-col items-start">
+          <div className="flex items-baseline justify-between w-full gap-2">
+            {trace.primaryModel?.provider ? (
+              <Icon
+                name={getProviderIcon(trace.primaryModel.provider)}
+                size="sm"
+                className="text-default-400"
+              />
+            ) : (
+              '-'
+            )}
             <h3 className="text-lg font-semibold">{trace.name}</h3>
             <Chip size="sm" color={getStatusColor(trace.status)} variant="flat">
               {trace.status}
             </Chip>
           </div>
+          <span className="text-tiny text-gray-300">{trace.id}</span>
         </CardHeader>
         <CardBody className="pt-0">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-xs text-default-400">{t('Trace ID')}</p>
-              <p className="text-sm font-mono truncate">{trace.id}</p>
-            </div>
             <div>
               <p className="text-xs text-default-400">{t('Duration')}</p>
               <p className="text-sm font-medium">
@@ -74,14 +78,8 @@ export function TraceDetail({ trace, spans }: TraceDetailProps) {
               </p>
             </div>
             <div>
-              <p className="text-xs text-default-400">{t('Model')}</p>
-              <p className="text-sm">{trace.primaryModel?.model || '-'}</p>
-            </div>
-            <div>
-              <p className="text-xs text-default-400">{t('Provider')}</p>
-              <p className="text-sm capitalize">
-                {trace.primaryModel?.provider || '-'}
-              </p>
+              <p className="text-xs text-default-400">{t('Started')}</p>
+              <p className="text-sm">{formatDateTime(trace.startTime, lang)}</p>
             </div>
             <div>
               <p className="text-xs text-default-400">{t('Tokens')}</p>
@@ -100,14 +98,6 @@ export function TraceDetail({ trace, spans }: TraceDetailProps) {
                   ? `$${trace.totalCost.totalCost.toFixed(4)}`
                   : '-'}
               </p>
-            </div>
-            <div>
-              <p className="text-xs text-default-400">{t('Started')}</p>
-              <p className="text-sm">{formatDate(trace.startTime)}</p>
-            </div>
-            <div>
-              <p className="text-xs text-default-400">{t('Ended')}</p>
-              <p className="text-sm">{formatDate(trace.endTime)}</p>
             </div>
           </div>
 

@@ -33,6 +33,7 @@ export type ToolCategory =
   | 'connector' // External service integrations
   | 'utility' // General utility tools
   | 'skill' // Agent Skills (SkillsMP / GitHub)
+  | 'artifact' // Shared artifact read/write
   | 'custom' // User-defined tools
 
 // ============================================================================

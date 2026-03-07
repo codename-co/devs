@@ -448,7 +448,7 @@ function computeNextRun(
  *
  * Supports: minute hour day-of-month month day-of-week
  *   - exact values: "0 9 * * 1"
- *   - intervals: "*​/30 * * * *"  (every 30 min)
+ *   - intervals: "*\/30 * * * *"  (every 30 min)
  *   - wildcards: "*"
  */
 export function parseCronNextRun(cron: string, from: Date): Date {

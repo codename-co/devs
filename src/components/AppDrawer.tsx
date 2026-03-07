@@ -79,11 +79,14 @@ const ACTIVITY_ICONS: Record<ActivityItem['type'], IconName> = {
   skill: 'Puzzle',
 }
 
+/** Well-known workflowId values assigned to user-initiated (root) conversations. */
+const ROOT_WORKFLOW_IDS = new Set(['default', 'orchestration', 'live'])
+
 const useRecentActivity = (lang: LanguageCode): ActivityItem[] => {
   const url = useUrl(lang)
   const conversations = useConversationStore((s) => s.conversations)
   const getTitle = useConversationStore((s) => s.getConversationTitle)
-  const allTasks = useLiveMap(taskMap)
+  const allTasks = useLiveMap(taskMap).filter((t) => !t.parentTaskId)
   const agents = useAgents()
   const allKnowledge = useLiveMap(knowledgeMap)
   const allStudio = useLiveMap(studioMap)
@@ -98,8 +101,9 @@ const useRecentActivity = (lang: LanguageCode): ActivityItem[] => {
   return useMemo(() => {
     const items: ActivityItem[] = []
 
-    // Conversations
+    // Conversations – only root (user-initiated) ones
     for (const c of conversations) {
+      if (!ROOT_WORKFLOW_IDS.has(c.workflowId)) continue
       const ts = toEpoch(c.updatedAt) || toEpoch(c.timestamp)
       if (!ts) continue
       const agent = c.agentId ? getAgentById(c.agentId) : undefined
@@ -265,156 +269,6 @@ const RecentActivity = ({ lang }: { lang: LanguageCode }) => {
   )
 }
 
-// const ConversationList = () => {
-//   const { t, url } = useI18n()
-//   const { conversations, loadConversations, getConversationTitle } =
-//     useConversationStore()
-
-//   useEffect(() => {
-//     // Load conversations from the database when component mounts
-//     loadConversations()
-//   }, [loadConversations])
-
-//   if (conversations.length === 0) {
-//     return null
-//   }
-
-//   // Sort conversations by timestamp, most recent first
-//   const sortedConversations = [...conversations].sort(
-//     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
-//   )
-
-//   return (
-//     <Listbox aria-label={t('Conversations history')}>
-//       <ListboxSection title={t('CONVERSATIONS')}>
-//         {[
-//           ...sortedConversations.slice(0, 5).map((conversation) => (
-//             <ListboxItem
-//               key={conversation.id}
-//               className="dark:text-gray-200 dark:hover:text-grey-500"
-//               href={url(
-//                 `/agents/run#${conversation.agentId}/${conversation.id}`,
-//               )}
-//               textValue={getConversationTitle(conversation)}
-//             >
-//               <div className="flex items-center gap-2">
-//                 <Icon name="ChatLines" />
-//                 <span className="truncate">
-//                   {getConversationTitle(conversation)}
-//                 </span>
-//               </div>
-//             </ListboxItem>
-//           )),
-//           conversations.length > 0 && (
-//             <ListboxItem
-//               key="view-all"
-//               className="dark:text-gray-200 dark:hover:text-grey-500"
-//               href={url('/conversations')}
-//             >
-//               {t('View all history')}
-//             </ListboxItem>
-//           ),
-//         ].filter((item) => !!item)}
-//       </ListboxSection>
-//     </Listbox>
-//   )
-// }
-
-// const TaskList = () => {
-//   const { t, url } = useI18n()
-//   const { tasks, loadTasks } = useTaskStore()
-
-//   useEffect(() => {
-//     // Load tasks from the database when component mounts
-//     loadTasks()
-//   }, [loadTasks])
-
-//   if (tasks.length === 0) {
-//     return null
-//   }
-
-//   // Sort tasks by updatedAt timestamp, most recent first
-//   const sortedTasks = [...tasks].sort(
-//     (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-//   )
-
-//   // Helper function to get task status color
-//   const getTaskStatusColor = (status: string) => {
-//     switch (status) {
-//       case 'completed':
-//         return 'text-success'
-//       case 'in_progress':
-//         return 'text-primary'
-//       case 'failed':
-//         return 'text-danger'
-//       default:
-//         return 'text-default-500'
-//     }
-//   }
-
-//   // Helper function to get task status icon
-//   const getTaskStatusIcon = (status: string) => {
-//     switch (status) {
-//       case 'completed':
-//         return 'CheckCircle'
-//       case 'in_progress':
-//         return 'Circle'
-//       case 'failed':
-//         return 'Circle'
-//       default:
-//         return 'Circle'
-//     }
-//   }
-
-//   return (
-//     <Listbox aria-label={t('Recent tasks')}>
-//       <ListboxSection title={t('TASKS')}>
-//         {[
-//           ...sortedTasks.slice(0, 5).map((task) => (
-//             <ListboxItem
-//               key={task.id}
-//               className="dark:text-gray-200 dark:hover:text-grey-500"
-//               href={url(`/tasks/${task.id}`)}
-//               textValue={task.title}
-//             >
-//               <div className="flex items-center gap-2">
-//                 <Icon
-//                   name={getTaskStatusIcon(task.status) as any}
-//                   className={`w-4 h-4 ${getTaskStatusColor(task.status)}`}
-//                 />
-//                 <div className="flex-1 min-w-0">
-//                   <span className="truncate text-small font-medium">
-//                     {task.title}
-//                   </span>
-//                   <div className="flex items-center gap-1 mt-0.5">
-//                     <span
-//                       className={`text-tiny ${getTaskStatusColor(task.status)}`}
-//                     >
-//                       {task.status.replace('_', ' ')}
-//                     </span>
-//                     {task.complexity === 'complex' && (
-//                       <span className="text-tiny text-warning">• complex</span>
-//                     )}
-//                   </div>
-//                 </div>
-//               </div>
-//             </ListboxItem>
-//           )),
-//           tasks.length > 0 && (
-//             <ListboxItem
-//               key="view-all"
-//               className="dark:text-gray-200 dark:hover:text-grey-500"
-//               href={url('/tasks')}
-//             >
-//               {t('View all tasks')}
-//             </ListboxItem>
-//           ),
-//         ].filter((item) => !!item)}
-//       </ListboxSection>
-//     </Listbox>
-//   )
-// }
-
 const BackDrop = () => (
   <div
     className="fixed inset-0 bg-black opacity-40 dark:opacity-70 -z-1"
@@ -579,7 +433,7 @@ const CollapsedDrawer = ({
 
   return (
     <div
-      className={`group w-18 p-4 lg:p-4 h-full z-50 fixed flex flex-col transition-all duration-200 border-e border-transparent ${className}`}
+      className={`group w-18 p-4 lg:p-4 !pt-6 h-full z-50 fixed flex flex-col transition-all duration-200 border-e border-transparent ${className}`}
     >
       <div className="flex flex-col items-center overflow-y-auto overflow-x-hidden no-scrollbar -mt-4 md:mt-0">
         <Tooltip content={t('Expand sidebar')} placement="right">
@@ -904,7 +758,7 @@ const ExpandedDrawer = ({
 
   return (
     <div
-      className={`bg-[var(--devs-bg)] dark:bg-default-50 fixed w-64 py-3 px-2 h-full flex flex-col ${className}`}
+      className={`bg-[var(--devs-bg)] dark:bg-default-50 fixed w-64 py-3 !pt-5 px-2 h-full flex flex-col ${className}`}
     >
       <ScrollShadow
         hideScrollBar
@@ -1198,7 +1052,7 @@ const ExpandedDrawer = ({
         </Popover>
 
         {/* Quick Actions Bar */}
-        <div className="flex items-center justify-between gap-1 px-1">
+        <div className="flex items-center justify-end gap-1 px-1">
           {/* Progress Indicator */}
           {/* <div className="flex items-center">
             <ProgressIndicator />

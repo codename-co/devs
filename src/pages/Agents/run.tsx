@@ -70,6 +70,7 @@ import {
 import { MessageDescriptionGenerator } from '@/lib/message-description-generator'
 import { useConversationStore } from '@/stores/conversationStore'
 import { useArtifactStore } from '@/stores/artifactStore'
+import { useTaskStore } from '@/stores/taskStore'
 import { useAutoScroll } from '@/hooks'
 import { categoryLabels } from '../Knowledge/AgentMemories'
 import { useAgentContextPanel } from './useAgentContextPanel'
@@ -124,6 +125,11 @@ const TOOL_DISPLAY_NAMES: Record<string, string> = {
   activate_skill: 'Activating skill',
   run_skill_script: 'Running skill script',
   read_skill_file: 'Reading skill file',
+  // Artifact tools
+  write_artifact: 'Writing artifact',
+  read_artifact: 'Reading artifact',
+  list_task_artifacts: 'Listing artifacts',
+  update_artifact: 'Updating artifact',
 }
 
 /** Get appropriate icon for tool type */
@@ -132,6 +138,10 @@ const getToolIcon = (toolName: string): IconName => {
   if (toolName === 'activate_skill') return 'OpenBook'
   if (toolName === 'run_skill_script') return 'Play'
   if (toolName === 'read_skill_file') return 'Page'
+  if (toolName === 'write_artifact') return 'PagePlus'
+  if (toolName === 'read_artifact') return 'Page'
+  if (toolName === 'list_task_artifacts') return 'List'
+  if (toolName === 'update_artifact') return 'PageEdit'
   if (toolName.includes('search')) return 'Search'
   if (toolName.includes('read') || toolName.includes('document')) return 'Page'
   if (toolName.includes('list') || toolName.includes('browse')) return 'Folder'
@@ -1224,7 +1234,7 @@ export const AgentRunPage = () => {
     [],
   )
   const [agentCache, setAgentCache] = useState<Record<string, Agent>>({})
-  const [_conversationArtifacts, setConversationArtifacts] = useState<
+  const [conversationArtifacts, setConversationArtifacts] = useState<
     Artifact[]
   >([])
 
@@ -1834,12 +1844,12 @@ export const AgentRunPage = () => {
       return
     }
 
-    // Get artifacts created by any agent participating in this conversation
-    const participatingAgents = currentConversation.participatingAgents || [
-      currentConversation.agentId,
-    ]
+    // Get artifacts linked to this conversation's workflow via tasks
+    const { getTasksByWorkflow } = useTaskStore.getState()
+    const workflowTasks = getTasksByWorkflow(currentConversation.workflowId)
+    const taskIds = new Set(workflowTasks.map((t) => t.id))
     const relatedArtifacts = artifacts.filter((artifact) =>
-      participatingAgents.includes(artifact.agentId),
+      taskIds.has(artifact.taskId),
     )
 
     setConversationArtifacts(relatedArtifacts)
@@ -2302,6 +2312,25 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
                 )}
                 {/* Scroll sentinel — auto-scroll targets this during streaming */}
                 <div ref={streamingEndRef} aria-hidden="true" />
+              </div>
+            )}
+
+            {/* Conversation artifacts */}
+            {conversationArtifacts.length > 0 && !isConversationPristine && (
+              <div className="mt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Icon
+                    name="PagePlus"
+                    size="sm"
+                    className="text-default-500"
+                  />
+                  <span className="text-sm font-medium text-default-500">
+                    {t('Artifacts' as any)} ({conversationArtifacts.length})
+                  </span>
+                </div>
+                {conversationArtifacts.map((artifact) => (
+                  <ArtifactWidget key={artifact.id} artifact={artifact} />
+                ))}
               </div>
             )}
 

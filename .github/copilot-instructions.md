@@ -119,7 +119,6 @@ Each feature in `src/features/` is self-contained:
 - `connectors/` - OAuth 2.0 PKCE integrations (Google, Notion)
 - `sync/` - P2P sync via Yjs/WebRTC
 - `traces/` - LLM observability
-- `battle/` - Agent vs agent competitive arena
 - `local-backup/` - Bidirectional file system sync
 
 ## Common Gotchas

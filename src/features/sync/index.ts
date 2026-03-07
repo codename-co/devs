@@ -17,7 +17,6 @@ export type {
   Agent,
   Artifact,
   AgentMemoryEntry,
-  Battle,
   Conversation,
   Credential,
   KnowledgeItem,
@@ -32,7 +31,6 @@ export type {
 export {
   getAgentsMap,
   getArtifactsMap,
-  getBattlesMap,
   getConversationsMap,
   getCredentialsMap,
   getKnowledgeMap,
@@ -87,7 +85,6 @@ export {
   credentials,
   preferences,
   workflows,
-  battles,
   studioEntries,
   pinnedMessages,
   secrets,

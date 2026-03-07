@@ -17,7 +17,6 @@ import type {
   KnowledgeItem,
   Task,
 } from '@/types'
-import type { Battle } from '@/features/battle/types'
 import type { StudioEntry } from '@/features/studio/types'
 
 // Re-export types for convenience (dates are strings at runtime after serialization)
@@ -29,7 +28,6 @@ export type {
   Credential,
   KnowledgeItem,
   Task,
-  Battle,
   StudioEntry,
 }
 
@@ -132,11 +130,6 @@ export function getSecretsMap(): Y.Map<Credential> {
 /** Get the credentials map (encrypted API credentials for AI providers) */
 export function getCredentialsMap(): Y.Map<Credential> {
   return getYDoc().getMap<Credential>('credentials')
-}
-
-/** Get the battles map (id -> Battle) */
-export function getBattlesMap(): Y.Map<Battle> {
-  return getYDoc().getMap<Battle>('battles')
 }
 
 /** Get the studio entries map (id -> StudioEntry) */

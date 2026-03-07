@@ -716,15 +716,6 @@ const SEARCHABLE_PAGES: PageDefinition[] = [
     keywords: ['workflow', 'process', 'framework', 'method'],
   },
   {
-    id: 'page-arena',
-    href: '/arena',
-    icon: 'Crown',
-    color: 'warning',
-    nameKey: 'Arena',
-    descriptionKey: 'Battle Arena',
-    keywords: ['battle', 'competition', 'debate', 'versus', 'vs'],
-  },
-  {
     id: 'page-conversations',
     href: '/conversations',
     icon: 'ChatBubble',

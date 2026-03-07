@@ -21,8 +21,6 @@ export const en = [
   'Agents',
   'Create and manage your AI specialists',
   'Methodologies',
-  'Arena',
-  'Battle Arena',
   'Conversations',
   'Conversations history',
   'Studio',

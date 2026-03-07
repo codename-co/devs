@@ -18,8 +18,6 @@ export const ar: I18n = {
   'New Task': 'مهمة جديدة',
   'New Team': 'فريق جديد',
   Tasks: 'المهام',
-  Arena: 'الساحة',
-  'Battle Arena': 'ساحة المعركة',
   Teams: 'الفرق',
   Settings: 'الإعدادات',
   Agents: 'الوكلاء',

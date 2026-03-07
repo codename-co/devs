@@ -97,7 +97,6 @@ export {
   credentials,
   studioEntries,
   workflows,
-  battles,
   pinnedMessages,
   secrets,
   connectors,
@@ -144,6 +143,5 @@ export {
   getSecretsMap,
   getStudioEntriesMap,
   getWorkflowsMap,
-  getBattlesMap,
   getPinnedMessagesMap,
 } from './compat'

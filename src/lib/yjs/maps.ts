@@ -50,7 +50,6 @@ import type {
   AgentMessage,
   QueuedTaskEntry,
 } from '@/types'
-import type { Battle } from '@/features/battle/types'
 import type { StudioEntry } from '@/features/studio/types'
 import type { Trace, Span, TracingConfig } from '@/features/traces/types'
 import type { Connector, ConnectorSyncState } from '@/features/connectors/types'
@@ -178,9 +177,6 @@ export const agentMessages = ydoc.getMap<AgentMessage>('agentMessages')
 
 /** Persistent queued tasks for background/scheduled execution — keyed by `QueuedTaskEntry.id`. */
 export const queuedTasks = ydoc.getMap<QueuedTaskEntry>('queuedTasks')
-
-/** Battle Arena card-battle matches — keyed by `Battle.id`. */
-export const battles = ydoc.getMap<Battle>('battles')
 
 /** Pinned messages bookmarked from conversations — keyed by `PinnedMessage.id`. */
 export const pinnedMessages = ydoc.getMap<PinnedMessage>('pinnedMessages')
