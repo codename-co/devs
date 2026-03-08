@@ -830,4 +830,34 @@ export const ko: I18n = {
     '{productName}을 무료로 시작하세요 — 계정 불필요, 신용카드 불필요, 서버 설정 불필요.',
   'Get Started →': '시작하기 →',
   'View Source on GitHub': 'GitHub에서 소스 보기',
+
+  // Open WebUI
+  'Full AI agent orchestration that runs in your browser \u2014 no Docker, no Python, no server to maintain.':
+    '브라우저에서 실행되는 완전한 AI 에이전트 오케스트레이션 \u2014 Docker 불필요, Python 불필요, 서버 유지보수 불필요.',
+  'Docker + Python stack': 'Docker + Python 스택',
+  'Self-hosted server required': '자체 호스팅 서버 필요',
+  'Open WebUI License': 'Open WebUI 라이선스',
+  'No (server required)': '아니오 (서버 필요)',
+  Experimental: '실험적',
+  'OpenAI-compatible APIs + Ollama': 'OpenAI 호환 API + Ollama',
+  'Unlimited (self-hosted)': '무제한 (자체 호스팅)',
+  'True Zero Infrastructure': '진정한 제로 인프라',
+  'Open your browser and start working \u2014 no Docker, no Python, no database, no server to maintain. {alternative} requires Docker, Python, and a database backend to self-host.':
+    '브라우저를 열고 바로 시작하세요 \u2014 Docker, Python, 데이터베이스, 서버 유지보수 모두 불필요. {alternative}은 자체 호스팅을 위해 Docker, Python, 데이터베이스 백엔드가 필요합니다.',
+  'Coordinate specialized agent teams with dependency resolution and parallel execution. {alternative} is a single-chat interface without multi-agent orchestration.':
+    '의존성 해결 및 병렬 실행으로 전문 에이전트 팀을 조율합니다. {alternative}은 멀티 에이전트 오케스트레이션이 없는 단일 채팅 인터페이스입니다.',
+  'Serverless Privacy': '서버리스 프라이버시',
+  'All data stays in your browser \u2014 IndexedDB, encrypted tokens, zero telemetry. No server at all, not even a self-hosted one. {alternative} requires a running server that stores your data.':
+    '모든 데이터가 브라우저에 남습니다 \u2014 IndexedDB, 암호화된 토큰, 제로 텔레메트리. 자체 호스팅 서버조차 없습니다. {alternative}은 데이터를 저장하는 실행 중인 서버가 필요합니다.',
+  'Cross-device synchronization via Yjs/WebRTC with no central server. {alternative} requires Redis and a database for multi-user support.':
+    '중앙 서버 없이 Yjs/WebRTC를 통한 크로스 디바이스 동기화. {alternative}은 다중 사용자 지원을 위해 Redis와 데이터베이스가 필요합니다.',
+  'Requires Docker + Python infrastructure': 'Docker + Python 인프라 필요',
+  'Enterprise plans for advanced features':
+    '고급 기능을 위한 엔터프라이즈 플랜',
+  'Need advanced RAG with vector database options (ChromaDB, PGVector, Qdrant)':
+    '벡터 데이터베이스 옵션이 있는 고급 RAG가 필요합니다 (ChromaDB, PGVector, Qdrant)',
+  'Want enterprise features like RBAC, LDAP, SSO, and horizontal scaling':
+    'RBAC, LDAP, SSO, 수평 확장과 같은 엔터프라이즈 기능이 필요합니다',
+  'Need image generation, voice/video calls, and a Pipelines plugin framework':
+    '이미지 생성, 음성/영상 통화, Pipelines 플러그인 프레임워크가 필요합니다',
 }

@@ -47,12 +47,14 @@ import {
   CompareMiniMaxPage,
   CompareNextdocsPage,
   CompareOpenManusPage,
+  CompareOpenWebUIPage,
   CompareReplitPage,
   CompareRomaPage,
   CompareRunnerHPage,
   CompareTracePage,
   CompareV7GoPage,
 } from '@/pages/Compare'
+import { ComparePage } from '@/pages/Compare/index.tsx'
 
 const routes = {
   index: IndexPage,
@@ -82,6 +84,7 @@ const routes = {
   'marketplace/new': NewExtensionPage,
   'marketplace/extensions/:extensionId/edit': ExtensionEditorPage,
   live: LivePage,
+  compare: ComparePage,
   'compare/agenticseek': CompareAgenticSeekPage,
   'compare/base44': CompareBase44Page,
   'compare/chatgpt': CompareChatGPTPage,
@@ -97,6 +100,7 @@ const routes = {
   'compare/minimax': CompareMiniMaxPage,
   'compare/nextdocs': CompareNextdocsPage,
   'compare/openmanus': CompareOpenManusPage,
+  'compare/openwebui': CompareOpenWebUIPage,
   'compare/replit': CompareReplitPage,
   'compare/roma': CompareRomaPage,
   'compare/runnerh': CompareRunnerHPage,

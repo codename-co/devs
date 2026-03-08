@@ -839,4 +839,35 @@ export const es: I18n = {
     'Quieres flujos automatizados para procesar PDF, im\u00e1genes y documentos estructurados',
   'Require enterprise integrations and dedicated support for document automation':
     'Requieres integraciones empresariales y soporte dedicado para automatizaci\u00f3n de documentos',
+
+  // Open WebUI
+  'Full AI agent orchestration that runs in your browser \u2014 no Docker, no Python, no server to maintain.':
+    'Orquestaci\u00f3n completa de agentes IA en tu navegador \u2014 sin Docker, sin Python, sin servidor que mantener.',
+  'Docker + Python stack': 'Stack Docker + Python',
+  'Self-hosted server required': 'Servidor auto-alojado requerido',
+  'Open WebUI License': 'Licencia Open WebUI',
+  'No (server required)': 'No (servidor requerido)',
+  Experimental: 'Experimental',
+  'OpenAI-compatible APIs + Ollama': 'APIs compatibles con OpenAI + Ollama',
+  'Unlimited (self-hosted)': 'Ilimitado (auto-alojado)',
+  'True Zero Infrastructure': 'Cero Infraestructura',
+  'Open your browser and start working \u2014 no Docker, no Python, no database, no server to maintain. {alternative} requires Docker, Python, and a database backend to self-host.':
+    'Abre tu navegador y comienza a trabajar \u2014 sin Docker, sin Python, sin base de datos, sin servidor que mantener. {alternative} requiere Docker, Python y una base de datos para auto-alojarse.',
+  'Coordinate specialized agent teams with dependency resolution and parallel execution. {alternative} is a single-chat interface without multi-agent orchestration.':
+    'Coordina equipos de agentes especializados con resoluci\u00f3n de dependencias y ejecuci\u00f3n paralela. {alternative} es una interfaz de chat \u00fanico sin orquestaci\u00f3n multi-agente.',
+  'Serverless Privacy': 'Privacidad sin Servidor',
+  'All data stays in your browser \u2014 IndexedDB, encrypted tokens, zero telemetry. No server at all, not even a self-hosted one. {alternative} requires a running server that stores your data.':
+    'Todos los datos permanecen en tu navegador \u2014 IndexedDB, tokens cifrados, cero telemetr\u00eda. Sin servidor alguno, ni siquiera auto-alojado. {alternative} requiere un servidor en ejecuci\u00f3n que almacena tus datos.',
+  'Cross-device synchronization via Yjs/WebRTC with no central server. {alternative} requires Redis and a database for multi-user support.':
+    'Sincronizaci\u00f3n entre dispositivos v\u00eda Yjs/WebRTC sin servidor central. {alternative} requiere Redis y una base de datos para soporte multi-usuario.',
+  'Requires Docker + Python infrastructure':
+    'Requiere infraestructura Docker + Python',
+  'Enterprise plans for advanced features':
+    'Planes empresariales para funciones avanzadas',
+  'Need advanced RAG with vector database options (ChromaDB, PGVector, Qdrant)':
+    'Necesitas RAG avanzado con opciones de bases de datos vectoriales (ChromaDB, PGVector, Qdrant)',
+  'Want enterprise features like RBAC, LDAP, SSO, and horizontal scaling':
+    'Quieres funciones empresariales como RBAC, LDAP, SSO y escalado horizontal',
+  'Need image generation, voice/video calls, and a Pipelines plugin framework':
+    'Necesitas generaci\u00f3n de im\u00e1genes, llamadas de voz/video y un framework de plugins Pipelines',
 }

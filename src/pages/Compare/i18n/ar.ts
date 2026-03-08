@@ -713,4 +713,35 @@ export const ar: I18n = {
     'Want automated workflows for processing PDFs, images, and structured documents',
   'Require enterprise integrations and dedicated support for document automation':
     'Require enterprise integrations and dedicated support for document automation',
+
+  // Open WebUI
+  'Full AI agent orchestration that runs in your browser \u2014 no Docker, no Python, no server to maintain.':
+    'Full AI agent orchestration that runs in your browser \u2014 no Docker, no Python, no server to maintain.',
+  'Docker + Python stack': 'Docker + Python stack',
+  'Self-hosted server required': 'Self-hosted server required',
+  'Open WebUI License': 'Open WebUI License',
+  'No (server required)': 'No (server required)',
+  Experimental: 'Experimental',
+  'OpenAI-compatible APIs + Ollama': 'OpenAI-compatible APIs + Ollama',
+  'Unlimited (self-hosted)': 'Unlimited (self-hosted)',
+  'True Zero Infrastructure': 'True Zero Infrastructure',
+  'Open your browser and start working \u2014 no Docker, no Python, no database, no server to maintain. {alternative} requires Docker, Python, and a database backend to self-host.':
+    'Open your browser and start working \u2014 no Docker, no Python, no database, no server to maintain. {alternative} requires Docker, Python, and a database backend to self-host.',
+  'Coordinate specialized agent teams with dependency resolution and parallel execution. {alternative} is a single-chat interface without multi-agent orchestration.':
+    'Coordinate specialized agent teams with dependency resolution and parallel execution. {alternative} is a single-chat interface without multi-agent orchestration.',
+  'Serverless Privacy': 'Serverless Privacy',
+  'All data stays in your browser \u2014 IndexedDB, encrypted tokens, zero telemetry. No server at all, not even a self-hosted one. {alternative} requires a running server that stores your data.':
+    'All data stays in your browser \u2014 IndexedDB, encrypted tokens, zero telemetry. No server at all, not even a self-hosted one. {alternative} requires a running server that stores your data.',
+  'Cross-device synchronization via Yjs/WebRTC with no central server. {alternative} requires Redis and a database for multi-user support.':
+    'Cross-device synchronization via Yjs/WebRTC with no central server. {alternative} requires Redis and a database for multi-user support.',
+  'Requires Docker + Python infrastructure':
+    'Requires Docker + Python infrastructure',
+  'Enterprise plans for advanced features':
+    'Enterprise plans for advanced features',
+  'Need advanced RAG with vector database options (ChromaDB, PGVector, Qdrant)':
+    'Need advanced RAG with vector database options (ChromaDB, PGVector, Qdrant)',
+  'Want enterprise features like RBAC, LDAP, SSO, and horizontal scaling':
+    'Want enterprise features like RBAC, LDAP, SSO, and horizontal scaling',
+  'Need image generation, voice/video calls, and a Pipelines plugin framework':
+    'Need image generation, voice/video calls, and a Pipelines plugin framework',
 }

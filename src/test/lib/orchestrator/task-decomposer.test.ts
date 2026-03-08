@@ -55,6 +55,8 @@ const mockAnalysis: TaskAnalysisResult = {
   suggestedStrategy: 'parallel_agents',
   tier: 1,
   tierReason: 'Complex task requiring multiple agents',
+  requestedAgentIdentifiers: [],
+  requestedCapabilities: [],
 }
 
 describe('decomposeTask', () => {

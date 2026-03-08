@@ -25,6 +25,7 @@ const PRIORITY_MAP = {
   Knowledge: '0.7',
   Methodologies: '0.7',
   Tasks: '0.6',
+  Compare: '0.8',
   Conversation: '0.5',
   AgentMemory: '0.5',
   Settings: '0.5',
@@ -39,6 +40,7 @@ const CHANGEFREQ_MAP = {
   Settings: 'monthly',
   Knowledge: 'weekly',
   Methodologies: 'monthly',
+  Compare: 'monthly',
   Tasks: 'weekly',
   default: 'weekly',
 }
@@ -53,6 +55,16 @@ function generateSitemap() {
     .map((file) => file.replace(/\/index\.(tsx|mdx)$/, ''))
     .filter((page) => page !== 'NotFound') // Exclude 404 page
 
+  // Discover Compare sub-pages (e.g., Compare/agenticseek.tsx → compare/agenticseek)
+  const compareFiles = globSync('Compare/*.tsx', {
+    cwd: resolve(rootDir, 'src/pages'),
+    ignore: ['Compare/index.tsx'],
+  })
+  const compareSubPages = compareFiles.map(
+    (file) => `Compare/${file.replace('Compare/', '').replace('.tsx', '')}`,
+  )
+  pages.push(...compareSubPages)
+
   const today = new Date().toISOString().split('T')[0]
 
   let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -64,8 +76,12 @@ function generateSitemap() {
   for (const page of pages) {
     const isIndex = page === 'Index'
     const pagePath = isIndex ? '' : `${page.toLowerCase()}/`
-    const priority = PRIORITY_MAP[page] || '0.5'
-    const changefreq = CHANGEFREQ_MAP[page] || CHANGEFREQ_MAP.default
+    const pageCategory = page.includes('/') ? page.split('/')[0] : page
+    const priority = PRIORITY_MAP[page] || PRIORITY_MAP[pageCategory] || '0.5'
+    const changefreq =
+      CHANGEFREQ_MAP[page] ||
+      CHANGEFREQ_MAP[pageCategory] ||
+      CHANGEFREQ_MAP.default
 
     for (const lang of LANGS) {
       const langPrefix = lang === DEFAULT_LANG ? '' : `${lang}/`

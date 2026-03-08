@@ -38,29 +38,31 @@ export const TasksPage = () => {
     return map
   }, [tasks])
 
-  // Build a map of taskId → latest artifact (by updatedAt)
+  // Build a map of taskId → latest artifact
   // Subtask artifacts are also attributed to their parent task
   const lastArtifactByTask = useMemo(() => {
+    // Pre-compute timestamps once per artifact (avoids repeated Date construction)
+    const times = new Map<string, number>()
+    for (const a of artifacts) {
+      const d = a.updatedAt ?? a.createdAt
+      let t = d ? +new Date(d) : 0
+      if (t !== t) t = 0 // NaN guard
+      times.set(a.id, t)
+    }
+
     const map = new Map<string, Artifact>()
     for (const artifact of artifacts) {
-      // Attribute to the artifact's own task
+      const artTime = times.get(artifact.id)!
+
       const ownExisting = map.get(artifact.taskId)
-      if (
-        !ownExisting ||
-        new Date(artifact.updatedAt).getTime() >
-          new Date(ownExisting.updatedAt).getTime()
-      ) {
+      if (!ownExisting || artTime >= times.get(ownExisting.id)!) {
         map.set(artifact.taskId, artifact)
       }
-      // Also attribute to the parent task (so root tasks show subtask artifacts)
+
       const parentId = parentTaskMap.get(artifact.taskId)
       if (parentId) {
         const parentExisting = map.get(parentId)
-        if (
-          !parentExisting ||
-          new Date(artifact.updatedAt).getTime() >
-            new Date(parentExisting.updatedAt).getTime()
-        ) {
+        if (!parentExisting || artTime >= times.get(parentExisting.id)!) {
           map.set(parentId, artifact)
         }
       }

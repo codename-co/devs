@@ -56,6 +56,7 @@ export async function executeAgentTeam(
   const detection: TeamDetectionResult = teamDetection || {
     isTeamRequest: false,
     suggestedRoles: [],
+    requestedAgentIdentifiers: [],
   }
 
   try {
@@ -98,8 +99,31 @@ export async function executeAgentTeam(
     const allAgents = await loadAllAgents()
     const activeAgents = allAgents.filter((a: any) => !a.deletedAt)
 
-    // Pick team lead
-    let leadAgent = getDefaultAgent()
+    // Merge agent identifiers from @mentions (syntactic) and LLM extraction (semantic)
+    const requestedIdentifiers = [
+      ...(detection.requestedAgentIdentifiers || []),
+      ...(analysis.requestedAgentIdentifiers || []),
+    ]
+    const uniqueIdentifiers = [...new Set(requestedIdentifiers)]
+    const requestedCapabilities = analysis.requestedCapabilities || []
+
+    // Resolve explicitly requested agents by slug/name match
+    const requestedAgents: Agent[] = []
+    for (const identifier of uniqueIdentifiers) {
+      const found = activeAgents.find(
+        (a) =>
+          a.slug === identifier ||
+          a.name.toLowerCase() === identifier ||
+          a.slug === identifier.replace(/\s+/g, '-'),
+      )
+      if (found) {
+        requestedAgents.push(found)
+      }
+    }
+
+    // Pick team lead — prefer an explicitly requested agent, otherwise fall back to default
+    let leadAgent =
+      requestedAgents.length > 0 ? requestedAgents[0] : getDefaultAgent()
     if (!leadAgent && activeAgents.length > 0) {
       leadAgent = activeAgents[0]
     }
@@ -111,12 +135,22 @@ export async function executeAgentTeam(
     const teammateAgents: Agent[] = []
     const usedAgentIds = new Set<string>([leadAgent.id])
 
+    // First, add any remaining explicitly requested agents as teammates
+    for (const agent of requestedAgents) {
+      if (!usedAgentIds.has(agent.id)) {
+        teammateAgents.push(agent)
+        usedAgentIds.add(agent.id)
+      }
+    }
+
+    // Then fill remaining slots from decomposed subtasks with skill+capability scoring
     for (const decomposedTask of decomposition.subTasks) {
       const spec = decomposedTask.suggestedAgent
       const bestMatch = activeAgents
         .filter((a) => !usedAgentIds.has(a.id))
         .map((agent) => {
           let score = 0
+          // Score by subtask skill requirements
           for (const skill of spec.requiredSkills) {
             const lower = skill.toLowerCase()
             if (agent.tags?.some((t: string) => t.toLowerCase() === lower))
@@ -124,6 +158,16 @@ export async function executeAgentTeam(
             if (agent.role.toLowerCase().includes(lower)) score += 2
             if (agent.name.toLowerCase().includes(lower)) score += 2
             if (agent.instructions.toLowerCase().includes(lower)) score += 1
+          }
+          // Boost score for agents matching user-requested capabilities (LLM-extracted)
+          for (const cap of requestedCapabilities) {
+            const lower = cap.toLowerCase()
+            if (
+              agent.tags?.some((t: string) => t.toLowerCase().includes(lower))
+            )
+              score += 4
+            if (agent.role.toLowerCase().includes(lower)) score += 3
+            if (agent.instructions.toLowerCase().includes(lower)) score += 2
           }
           return { agent, score }
         })

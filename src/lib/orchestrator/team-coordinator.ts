@@ -113,6 +113,8 @@ export interface TeamDetectionResult {
   isTeamRequest: boolean
   suggestedRoles: string[]
   teamGoal?: string
+  /** Agent slugs from @mentions in the prompt (e.g. @code-reviewer) */
+  requestedAgentIdentifiers: string[]
 }
 
 // ============================================================================
@@ -732,6 +734,11 @@ export class TeamCoordinator {
  * 2. Role lists: "one on X, one on Y" or "- X reviewer - Y analyst"
  * 3. Multiple agent mentions: "researcher and writer"
  * 4. Numbered lists of perspectives/roles
+ * 5. @mentions of specific agents: "@code-reviewer"
+ *
+ * Note: Semantic extraction of agent preferences and capabilities (e.g.
+ * "use the security-expert agent", "expert in Python") is handled by the
+ * LLM via TaskAnalyzer.analyzePrompt(), not by regex matching here.
  */
 export function detectTeamFromPrompt(prompt: string): TeamDetectionResult {
   const lower = prompt.toLowerCase()
@@ -817,17 +824,33 @@ export function detectTeamFromPrompt(prompt: string): TeamDetectionResult {
     /(\d+|two|three|four|five|six|seven|eight|nine|ten)\s+(?:agent\s+)?(?:reviewers?|teammates?|agents?|members?)/i
   const countMatch = lower.match(countPattern)
 
+  // ---- Extract @mentions (syntactic convention) ----
+  const requestedAgentIdentifiers: string[] = []
+
+  const mentionPattern = /@([\p{L}\p{N}\w.\-]+)/gu
+  while ((match = mentionPattern.exec(prompt)) !== null) {
+    const id = match[1].toLowerCase()
+    if (!requestedAgentIdentifiers.includes(id)) {
+      requestedAgentIdentifiers.push(id)
+    }
+  }
+
+  // Multiple @mentions also implies a team request
+  const hasMultipleMentions = requestedAgentIdentifiers.length >= 2
+
   // Determine if this is a team request
   const isTeamRequest =
     hasTeamKeyword ||
     suggestedRoles.length >= 2 ||
     (roleMatches.length >= 2 &&
       (lower.includes(' and ') || lower.includes(','))) ||
-    !!countMatch
+    !!countMatch ||
+    hasMultipleMentions
 
   return {
     isTeamRequest,
     suggestedRoles,
     teamGoal: isTeamRequest ? prompt : undefined,
+    requestedAgentIdentifiers,
   }
 }

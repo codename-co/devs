@@ -14,6 +14,10 @@ export interface TaskAnalysisResult {
   tier: 0 | 1
   /** Human-readable reason for the chosen tier */
   tierReason: string
+  /** Agent names, slugs, or identifiers explicitly referenced by the user in the prompt */
+  requestedAgentIdentifiers: string[]
+  /** Capability-based preferences extracted from the prompt (e.g. "expert in Python", "good at machine learning") */
+  requestedCapabilities: string[]
 }
 
 export interface TaskBreakdown {
@@ -51,7 +55,9 @@ Analyze the following user prompt and provide a JSON response with this exact st
       "estimatedExperience": "Junior|Mid|Senior|Expert",
       "specialization": "Specific area of expertise"
     }
-  ]
+  ],
+  "requestedAgentIdentifiers": ["agent-slug-or-name"],
+  "requestedCapabilities": ["capability1", "capability2"]
 }
 
 Guidelines:
@@ -61,6 +67,8 @@ Guidelines:
 - Validation criteria should be measurable and specific
 - Required skills should match common expertise areas
 - Suggested agents should complement each other for complex tasks
+- requestedAgentIdentifiers: Extract any agent names, slugs, or identifiers that the user explicitly references in the prompt (e.g. "use the security-expert agent", "ask the code reviewer", "I want the data-analyst to handle this"). Use lowercase slug format (kebab-case). Return empty array if no specific agents are mentioned.
+- requestedCapabilities: Extract any capability-based preferences the user expresses (e.g. "expert in Python", "good at machine learning", "someone who knows Kubernetes"). Normalize to lowercase. Return empty array if no specific capabilities are mentioned.
 
 User Prompt: {prompt}`
 
@@ -193,6 +201,8 @@ Original Prompt: {prompt}`
             ],
             tier: TaskAnalyzer.estimateComplexity(prompt) === 'simple' ? 0 : 1,
             tierReason: 'Fallback tier estimation based on complexity',
+            requestedAgentIdentifiers: [],
+            requestedCapabilities: [],
           }
         }
       }
@@ -209,6 +219,14 @@ Original Prompt: {prompt}`
       if (analysis.tier === undefined || analysis.tier === null) {
         analysis.tier = analysis.complexity === 'simple' ? 0 : 1
         analysis.tierReason = `Auto-inferred from complexity: ${analysis.complexity}`
+      }
+
+      // Ensure agent preference fields are arrays (may be missing from LLM response)
+      if (!Array.isArray(analysis.requestedAgentIdentifiers)) {
+        analysis.requestedAgentIdentifiers = []
+      }
+      if (!Array.isArray(analysis.requestedCapabilities)) {
+        analysis.requestedCapabilities = []
       }
 
       return analysis

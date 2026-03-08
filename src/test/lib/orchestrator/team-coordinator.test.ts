@@ -1004,4 +1004,44 @@ describe('detectTeamFromPrompt', () => {
     expect(result.isTeamRequest).toBe(true)
     expect(result.suggestedRoles.length).toBeGreaterThanOrEqual(3)
   })
+
+  // ==========================================================================
+  // @mention extraction (syntactic convention — kept in detectTeamFromPrompt)
+  // Semantic extraction (agent names, capabilities) is handled by LLM via
+  // TaskAnalyzer.analyzePrompt() and tested in task-analyzer.test.ts
+  // ==========================================================================
+
+  describe('@mention extraction', () => {
+    it('should extract @mentioned agent slugs', () => {
+      const result = detectTeamFromPrompt(
+        'Have @code-reviewer and @tech-writer review and document this API',
+      )
+      expect(result.isTeamRequest).toBe(true)
+      expect(result.requestedAgentIdentifiers).toContain('code-reviewer')
+      expect(result.requestedAgentIdentifiers).toContain('tech-writer')
+    })
+
+    it('should return empty identifiers when no @mentions', () => {
+      const result = detectTeamFromPrompt(
+        'Write a function that calculates fibonacci numbers',
+      )
+      expect(result.requestedAgentIdentifiers).toEqual([])
+    })
+
+    it('should set isTeamRequest when multiple @mentions are present', () => {
+      const result = detectTeamFromPrompt(
+        'Have @alice and @bob work on this together',
+      )
+      expect(result.isTeamRequest).toBe(true)
+      expect(result.requestedAgentIdentifiers).toContain('alice')
+      expect(result.requestedAgentIdentifiers).toContain('bob')
+    })
+
+    it('should not have requestedCapabilities field', () => {
+      const result = detectTeamFromPrompt(
+        'I need someone expert in Python to handle this',
+      )
+      expect(result).not.toHaveProperty('requestedCapabilities')
+    })
+  })
 })

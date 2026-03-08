@@ -847,4 +847,35 @@ export const fr: I18n = {
     'Voulez des workflows automatis\u00e9s pour le traitement de PDF, images et documents structur\u00e9s',
   'Require enterprise integrations and dedicated support for document automation':
     'N\u00e9cessitez des int\u00e9grations entreprise et un support d\u00e9di\u00e9 pour l\u2019automatisation de documents',
+
+  // Open WebUI
+  'Full AI agent orchestration that runs in your browser \u2014 no Docker, no Python, no server to maintain.':
+    'Orchestration compl\u00e8te d\u2019agents IA dans votre navigateur \u2014 sans Docker, sans Python, sans serveur \u00e0 maintenir.',
+  'Docker + Python stack': 'Stack Docker + Python',
+  'Self-hosted server required': 'Serveur auto-h\u00e9berg\u00e9 requis',
+  'Open WebUI License': 'Licence Open WebUI',
+  'No (server required)': 'Non (serveur requis)',
+  Experimental: 'Exp\u00e9rimental',
+  'OpenAI-compatible APIs + Ollama': 'APIs compatibles OpenAI + Ollama',
+  'Unlimited (self-hosted)': 'Illimit\u00e9 (auto-h\u00e9berg\u00e9)',
+  'True Zero Infrastructure': 'Z\u00e9ro Infrastructure',
+  'Open your browser and start working \u2014 no Docker, no Python, no database, no server to maintain. {alternative} requires Docker, Python, and a database backend to self-host.':
+    'Ouvrez votre navigateur et commencez \u00e0 travailler \u2014 sans Docker, sans Python, sans base de donn\u00e9es, sans serveur \u00e0 maintenir. {alternative} n\u00e9cessite Docker, Python et une base de donn\u00e9es pour l\u2019auto-h\u00e9bergement.',
+  'Coordinate specialized agent teams with dependency resolution and parallel execution. {alternative} is a single-chat interface without multi-agent orchestration.':
+    'Coordonnez des \u00e9quipes d\u2019agents sp\u00e9cialis\u00e9s avec r\u00e9solution de d\u00e9pendances et ex\u00e9cution parall\u00e8le. {alternative} est une interface de chat unique sans orchestration multi-agents.',
+  'Serverless Privacy': 'Confidentialit\u00e9 sans serveur',
+  'All data stays in your browser \u2014 IndexedDB, encrypted tokens, zero telemetry. No server at all, not even a self-hosted one. {alternative} requires a running server that stores your data.':
+    'Toutes les donn\u00e9es restent dans votre navigateur \u2014 IndexedDB, tokens chiffr\u00e9s, z\u00e9ro t\u00e9l\u00e9m\u00e9trie. Aucun serveur, m\u00eame pas auto-h\u00e9berg\u00e9. {alternative} n\u00e9cessite un serveur qui stocke vos donn\u00e9es.',
+  'Cross-device synchronization via Yjs/WebRTC with no central server. {alternative} requires Redis and a database for multi-user support.':
+    'Synchronisation multi-appareils via Yjs/WebRTC sans serveur central. {alternative} n\u00e9cessite Redis et une base de donn\u00e9es pour le support multi-utilisateurs.',
+  'Requires Docker + Python infrastructure':
+    'N\u00e9cessite une infrastructure Docker + Python',
+  'Enterprise plans for advanced features':
+    'Plans entreprise pour les fonctionnalit\u00e9s avanc\u00e9es',
+  'Need advanced RAG with vector database options (ChromaDB, PGVector, Qdrant)':
+    'Avez besoin de RAG avanc\u00e9 avec options de bases vectorielles (ChromaDB, PGVector, Qdrant)',
+  'Want enterprise features like RBAC, LDAP, SSO, and horizontal scaling':
+    'Voulez des fonctionnalit\u00e9s entreprise comme RBAC, LDAP, SSO et mise \u00e0 l\u2019\u00e9chelle horizontale',
+  'Need image generation, voice/video calls, and a Pipelines plugin framework':
+    'Avez besoin de g\u00e9n\u00e9ration d\u2019images, d\u2019appels voix/vid\u00e9o et d\u2019un framework de plugins Pipelines',
 }

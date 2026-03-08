@@ -670,6 +670,38 @@ export const en = [
   'Want automated workflows for processing PDFs, images, and structured documents',
   'Require enterprise integrations and dedicated support for document automation',
 
+  // Open WebUI — Hero
+  'Full AI agent orchestration that runs in your browser \u2014 no Docker, no Python, no server to maintain.',
+
+  // Open WebUI — TL;DR
+  'Self-hosted server required',
+  'Docker + Python stack',
+
+  // Open WebUI — Feature table
+  'Open WebUI License',
+  'No (server required)',
+  'Experimental',
+  'OpenAI-compatible APIs + Ollama',
+  'Unlimited (self-hosted)',
+
+  // Open WebUI — Advantages
+  'True Zero Infrastructure',
+  'Open your browser and start working \u2014 no Docker, no Python, no database, no server to maintain. {alternative} requires Docker, Python, and a database backend to self-host.',
+  'Coordinate specialized agent teams with dependency resolution and parallel execution. {alternative} is a single-chat interface without multi-agent orchestration.',
+  'Serverless Privacy',
+  'All data stays in your browser \u2014 IndexedDB, encrypted tokens, zero telemetry. No server at all, not even a self-hosted one. {alternative} requires a running server that stores your data.',
+  'P2P Collaboration',
+  'Cross-device synchronization via Yjs/WebRTC with no central server. {alternative} requires Redis and a database for multi-user support.',
+
+  // Open WebUI — Pricing
+  'Requires Docker + Python infrastructure',
+  'Enterprise plans for advanced features',
+
+  // Open WebUI — Honest take
+  'Need advanced RAG with vector database options (ChromaDB, PGVector, Qdrant)',
+  'Want enterprise features like RBAC, LDAP, SSO, and horizontal scaling',
+  'Need image generation, voice/video calls, and a Pipelines plugin framework',
+
   // CTA
   'Ready to Take Control of Your AI Workflow?',
   'Start using {productName} for free \u2014 no account needed, no credit card, no server to set up.',
