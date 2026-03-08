@@ -280,21 +280,19 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
       </>
     ),
   },
-  {
-    provider: 'chatjimmy',
-    name: 'ChatJimmy',
-    models: [
-      'llama3.1-8B',
-      'deepseek-r1',
-      'mistral-small-3.1',
-      'gemma-3-4b',
-      'qwen2.5-coder',
-    ],
-    icon: 'ChatBubble',
-    noApiKey: true,
-    noServerUrl: true,
-    apiKeyPage: 'https://chatjimmy.ai',
-  },
+  ...(import.meta.env.DEV
+    ? ([
+        {
+          provider: 'chatjimmy',
+          name: 'ChatJimmy',
+          models: ['llama3.1-8B'],
+          icon: 'ChatBubble',
+          noApiKey: true,
+          noServerUrl: true,
+          apiKeyPage: 'https://chatjimmy.ai',
+        },
+      ] as ProviderConfig[])
+    : []),
   {
     provider: 'custom',
     name: 'Custom',

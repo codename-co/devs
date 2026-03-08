@@ -24,13 +24,7 @@ export function stripStatsTrailer(text: string): string {
 }
 
 /** Available ChatJimmy models */
-export const CHATJIMMY_MODELS = [
-  'llama3.1-8B',
-  'deepseek-r1',
-  'mistral-small-3.1',
-  'gemma-3-4b',
-  'qwen2.5-coder',
-]
+export const CHATJIMMY_MODELS = ['llama3.1-8B']
 
 const CHATJIMMY_BASE_URL = 'https://chatjimmy.ai/api/chat'
 

@@ -1,0 +1,8 @@
+export { StatusIcon, type ComparisonStatus } from './StatusIcon'
+export { ComparisonHero } from './ComparisonHero'
+export { TLDRCards, type TLDRItem } from './TLDRCards'
+export { FeatureTable, type FeatureRow } from './FeatureTable'
+export { AdvantagesGrid, type Advantage } from './AdvantagesGrid'
+export { PricingComparison } from './PricingComparison'
+export { HonestTake } from './HonestTake'
+export { FinalCTA } from './FinalCTA'

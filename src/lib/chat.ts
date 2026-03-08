@@ -479,7 +479,11 @@ export interface ChatSubmitOptions {
   activatedSkills?: Array<{
     name: string
     skillMdContent: string
-    scripts?: Array<{ path: string; language: string; requiredPackages?: string[] }>
+    scripts?: Array<{
+      path: string
+      language: string
+      requiredPackages?: string[]
+    }>
     references?: Array<{ path: string }>
     assets?: Array<{ path: string }>
   }>
@@ -746,9 +750,7 @@ export const submitChat = async (
               const pkgs = script.requiredPackages?.length
                 ? ` (requires: ${script.requiredPackages.join(', ')})`
                 : ''
-              parts.push(
-                `- \`${script.path}\` [${script.language}]${pkgs}`,
-              )
+              parts.push(`- \`${script.path}\` [${script.language}]${pkgs}`)
             }
             parts.push(
               '\nUse `run_skill_script` to execute Python or JavaScript scripts.',
