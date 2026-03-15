@@ -32,7 +32,7 @@ export const SVG = ({ code }: { code: string }) => {
     //   sandbox="allow-same-origin allow-scripts allow-forms"
     // />
     <div
-      className="svg-container flex justify-center items-center p-4"
+      className="svg-container flex justify-center items-center py-4"
       dangerouslySetInnerHTML={{ __html: code }}
     />
   )

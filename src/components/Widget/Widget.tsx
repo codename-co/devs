@@ -1,4 +1,14 @@
-import { Card, CardBody, CardHeader, Tab, Tabs, Tooltip } from '@heroui/react'
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Tooltip,
+} from '@heroui/react'
 import { IconName } from '@/lib/types'
 import { useI18n } from '@/i18n'
 import { useState, Suspense, lazy } from 'react'
@@ -47,9 +57,7 @@ export interface WidgetProps {
   language?: string
   className?: string
   title?: string
-  showTitle?: boolean
   showActions?: boolean
-  showShadows?: boolean
   moreActions?: WidgetAction[]
 }
 
@@ -60,9 +68,7 @@ export const Widget = ({
   language,
   className = '',
   title,
-  showTitle = true,
   showActions = true,
-  showShadows = true,
   moreActions,
 }: WidgetProps) => {
   const [viewMode, setViewMode] = useState<'source' | 'render'>('render')
@@ -173,7 +179,7 @@ export const Widget = ({
             <iframe
               title="HTML Preview"
               srcDoc={completeStreamingHtml(code)}
-              className="w-full h-full border-0 rounded-md"
+              className="w-full h-full border-0 rounded-md min-h-200"
               sandbox="allow-same-origin allow-scripts allow-forms"
             />
           </div>
@@ -191,50 +197,81 @@ export const Widget = ({
   return (
     <ErrorBoundary>
       <Card
-        className={`specialized-code-block ${className}`}
-        shadow={showShadows ? 'md' : 'none'}
+        className={`specialized-code-block border-b border-default-200 last:border-b-0 ${className}`}
+        radius="none"
+        shadow="none"
+        fullWidth
       >
-        {(showTitle || showActions) && (
-          <CardHeader className="flex justify-between items-center">
-            {showTitle && (
-              <h4 className="text-sm font-semibold text-default-600">
-                <Icon name={getIcon()} className="w-4 h-4 inline-block mr-2" />
-                {title ?? getTitle()}
-              </h4>
-            )}
-
+        {showActions && (
+          <CardHeader className="flex items-center justify-end px-0">
             {showActions && (
               <div className="flex items-center gap-2">
-                <Tabs
-                  aria-label="View mode"
-                  size="sm"
-                  selectedKey={viewMode === 'render' ? 'render' : 'source'}
-                  onSelectionChange={(key) =>
-                    setViewMode(key as 'render' | 'source')
-                  }
-                >
-                  <Tab key="render" title={t('Render')} />
-                  <Tab key="source" title={t('Code')} />
-                </Tabs>
                 {moreActions?.map((action, i) => (
                   <Tooltip key={i} content={action.label}>
-                    <button
-                      onClick={action.onPress}
-                      className="p-1.5 rounded-md text-default-500 hover:text-default-700 hover:bg-default-100 transition-colors"
+                    <Button
+                      isIconOnly
+                      variant="light"
                       aria-label={action.label}
-                    >
-                      <Icon
-                        name={action.icon ?? 'Expand'}
-                        className="w-4 h-4"
-                      />
-                    </button>
+                      size="sm"
+                      onPress={action.onPress}
+                      startContent={
+                        <Icon name={action.icon ?? 'Expand'} size="sm" />
+                      }
+                    />
                   </Tooltip>
                 ))}
+
+                <Dropdown>
+                  <DropdownTrigger>
+                    <Button
+                      isIconOnly
+                      variant="light"
+                      aria-label={t('Hide extended actions')}
+                      size="sm"
+                      startContent={<Icon name="MoreHoriz" size="sm" />}
+                    />
+                  </DropdownTrigger>
+
+                  <DropdownMenu>
+                    <DropdownItem
+                      key="info"
+                      startContent={<Icon name={getIcon()} size="sm" />}
+                      title={title ?? getTitle()}
+                      isDisabled
+                    />
+                    <DropdownItem
+                      key="render"
+                      startContent={<Icon name="Eye" size="sm" />}
+                      title={t('Render')}
+                      onPress={() => setViewMode('render')}
+                    />
+                    <DropdownItem
+                      key="source"
+                      startContent={<Icon name="Code" size="sm" />}
+                      title={t('Code')}
+                      onPress={() => setViewMode('source')}
+                    />
+                    <>
+                      {moreActions?.map((action, i) => (
+                        <DropdownItem
+                          key={i}
+                          startContent={
+                            action.icon ? (
+                              <Icon name={action.icon} size="sm" />
+                            ) : null
+                          }
+                          title={action.label}
+                          onPress={action.onPress}
+                        />
+                      ))}
+                    </>
+                  </DropdownMenu>
+                </Dropdown>
               </div>
             )}
           </CardHeader>
         )}
-        <CardBody className="pt-0">{renderContent()}</CardBody>
+        <CardBody className="pt-0 px-0">{renderContent()}</CardBody>
       </Card>
     </ErrorBoundary>
   )

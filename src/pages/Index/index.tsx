@@ -28,6 +28,7 @@ import { getAgentsByCategory } from '@/stores/agentStore'
 import localeI18n from './i18n'
 import { agentThemeIcon, useCasesByThemes } from '@/lib/agents'
 import { PRODUCT } from '@/config/product'
+import { userSettings } from '@/stores/userStore'
 
 export const IndexPage = () => {
   const { lang, t } = useI18n(localeI18n)
@@ -47,9 +48,12 @@ export const IndexPage = () => {
     useBackgroundImage()
   const { hasSetupData, setupData, clearSetupData } = useEasySetup()
 
+  const { platformName } = userSettings()
+  const productName = platformName ?? PRODUCT.displayName
+
   // PWA install prompt
   usePWAInstallPrompt({
-    title: t('Install {productName}', { productName: PRODUCT.displayName }),
+    title: t('Install {productName}', { productName }),
     description: t(
       'Install this app on your device for a better experience and offline access.',
     ),
@@ -309,11 +313,12 @@ export const IndexPage = () => {
 
             <motion.div {...motionVariants.title}>
               <Title
-                subtitle={t('Delegate complex tasks to your own AI teams')}
+                subtitle={t('Your own AI agents ready to collaborate')}
                 className="!text-2xl sm:!text-3xl md:!text-4xl font-light"
                 subtitleClassName="text-md md:text-xl"
               >
-                {t('Let your agents take it from here')}
+                {platformName ||
+                  t('Hey {productName}', { productName: PRODUCT.displayName })}
               </Title>
             </motion.div>
           </motion.div>

@@ -3,9 +3,9 @@ import { en } from './en'
 type I18n = Record<(typeof en)[number], string>
 
 export const ar: I18n = {
-  'Let your agents take it from here': 'دع وكلاءك يتولون الأمر من هنا',
-  'Delegate complex tasks to your own AI teams':
-    'فوّض المهام المعقدة إلى فرق الذكاء الاصطناعي الخاصة بك',
+  'Hey {productName}': 'Hey {productName}',
+  'Your own AI agents ready to collaborate':
+    'وكلاء الذكاء الاصطناعي الخاصون بك جاهزون للتعاون',
   'Failed to get response from LLM. Please try again later.':
     'فشل الحصول على رد من LLM. يرجى المحاولة مرة أخرى لاحقاً.',
 

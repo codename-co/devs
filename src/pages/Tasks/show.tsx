@@ -13,7 +13,7 @@ import {
 
 import { useI18n } from '@/i18n'
 import { Container, Icon, PromptArea, Section, Title } from '@/components'
-import { MessageBubble } from '@/components/chat'
+import { MessageBubble, HitlPrompt } from '@/components/chat'
 import RunLayout from '@/layouts/Run'
 import type { HeaderProps } from '@/lib/types'
 import { getAgentById } from '@/stores/agentStore'
@@ -30,7 +30,14 @@ import {
   useOrchestrationStreaming,
   useAutoScroll,
 } from '@/hooks'
-import type { Agent, Message, Conversation, InstalledSkill } from '@/types'
+import type {
+  Agent,
+  Message,
+  Conversation,
+  InstalledSkill,
+  Task,
+  HitlRequest,
+} from '@/types'
 import { notifyError } from '@/features/notifications'
 import { WorkflowOrchestrator } from '@/lib/orchestrator'
 import {
@@ -69,6 +76,7 @@ import {
   detectOrphanForWorkflow,
   type OrphanedWorkflow,
 } from '@/lib/orchestrator/recovery'
+import { onHitlRequest, getPendingRequestsForConversation } from '@/lib/hitl'
 
 // ============================================================================
 // Main Task Page
@@ -149,6 +157,9 @@ export const TaskPage = () => {
   const [orphanedWorkflow, setOrphanedWorkflow] =
     useState<OrphanedWorkflow | null>(null)
 
+  // HITL requests state
+  const [hitlRequests, setHitlRequests] = useState<HitlRequest[]>([])
+
   // Delete confirmation modal
   const {
     isOpen: isDeleteModalOpen,
@@ -159,7 +170,7 @@ export const TaskPage = () => {
 
   const isLoading = !isSyncReady || (!task && !!taskId)
 
-  // ── Sub-tasks ──────────────────────────────────────────────────────────
+  // ── Sub-tasks (direct children) ────────────────────────────────────────
   const subTasks = useMemo(
     () =>
       task
@@ -174,22 +185,38 @@ export const TaskPage = () => {
     [allTasks, task],
   )
 
-  // ── Artifacts for the entire task tree (parent + sub-tasks) ──────────
+  // ── All descendant tasks (recursive, for artifact/conversation lookup) ─
+  const allDescendantTasks = useMemo(() => {
+    if (!task) return []
+    const descendants: Task[] = []
+    const collect = (parentId: string) => {
+      for (const t of allTasks) {
+        if (t.parentTaskId === parentId) {
+          descendants.push(t)
+          collect(t.id)
+        }
+      }
+    }
+    collect(task.id)
+    return descendants
+  }, [allTasks, task])
+
+  // ── Artifacts for the entire task tree (parent + all descendants) ─────
   const allTaskArtifacts = useMemo(() => {
     if (!task) return []
-    const taskIds = new Set([task.id, ...subTasks.map((st) => st.id)])
+    const taskIds = new Set([task.id, ...allDescendantTasks.map((st) => st.id)])
     return allArtifacts.filter((a) => taskIds.has(a.taskId))
-  }, [allArtifacts, task, subTasks])
+  }, [allArtifacts, task, allDescendantTasks])
 
-  // ── Collect all workflow IDs (parent + sub-tasks) for conversation lookup
+  // ── Collect all workflow IDs (parent + all descendants) for conversation lookup
   const relevantWorkflowIds = useMemo(() => {
     const ids = new Set<string>()
     if (task?.workflowId) ids.add(task.workflowId)
-    for (const st of subTasks) {
+    for (const st of allDescendantTasks) {
       if (st.workflowId) ids.add(st.workflowId)
     }
     return ids
-  }, [task?.workflowId, subTasks])
+  }, [task?.workflowId, allDescendantTasks])
 
   // ── All conversations relevant to this task tree (raw / encrypted) ─────
   const rawRelevantConversations = useMemo(
@@ -394,6 +421,40 @@ export const TaskPage = () => {
       window.history.replaceState({}, '')
     }
   }, [allArtifacts, location.state, openInspector])
+
+  // ── Subscribe to HITL requests for all relevant conversations ──────
+  const relevantConversationIds = useMemo(
+    () => decryptedConversations.map((c) => c.id),
+    [decryptedConversations],
+  )
+
+  useEffect(() => {
+    if (relevantConversationIds.length === 0) {
+      setHitlRequests([])
+      return
+    }
+
+    // Load existing pending requests for all relevant conversations
+    const existing = relevantConversationIds.flatMap((id) =>
+      getPendingRequestsForConversation(id),
+    )
+    setHitlRequests(existing)
+
+    // Subscribe to new HITL requests
+    const conversationIdSet = new Set(relevantConversationIds)
+    const unsubscribe = onHitlRequest((request) => {
+      if (conversationIdSet.has(request.conversationId)) {
+        setHitlRequests((prev) => {
+          const exists = prev.find((r) => r.id === request.id)
+          if (exists) {
+            return prev.map((r) => (r.id === request.id ? request : r))
+          }
+          return [...prev, request]
+        })
+      }
+    })
+    return unsubscribe
+  }, [relevantConversationIds])
 
   // ── Detect orphaned workflows on mount ──────────────────────────────
   useEffect(() => {
@@ -615,27 +676,56 @@ export const TaskPage = () => {
     setConversationSteps([])
   }, [])
 
-  // ── Timeline items (messages + streaming) ─────────────────────────────
+  // ── Timeline items (messages + HITL + streaming) ──────────────────────
+  type TimelineItem =
+    | {
+        type: 'message'
+        data: Message & { _conversationId: string }
+        timestamp: Date
+      }
+    | { type: 'hitl'; data: HitlRequest; timestamp: Date }
+
   const timelineItems = useMemo(() => {
-    const items = [...allMessages]
+    const items: TimelineItem[] = allMessages.map((msg) => ({
+      type: 'message' as const,
+      data: msg,
+      timestamp: new Date(msg.timestamp),
+    }))
+
+    // Add HITL request items
+    for (const request of hitlRequests) {
+      items.push({
+        type: 'hitl' as const,
+        data: request,
+        timestamp: new Date(request.createdAt),
+      })
+    }
 
     // Add streaming message
     if (isSending) {
       items.push({
-        id: '__streaming__',
-        role: 'assistant' as const,
-        content: response || '',
+        type: 'message' as const,
+        data: {
+          id: '__streaming__',
+          role: 'assistant' as const,
+          content: response || '',
+          timestamp: new Date(),
+          agentId: selectedAgent?.id,
+          _conversationId: '',
+        } as Message & { _conversationId: string },
         timestamp: new Date(),
-        agentId: selectedAgent?.id,
-        _conversationId: '',
-      } as Message & { _conversationId: string })
+      })
     }
 
-    return items.sort(
-      (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-    )
-  }, [allMessages, isSending, response, conversationSteps, selectedAgent?.id])
+    return items.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+  }, [
+    allMessages,
+    hitlRequests,
+    isSending,
+    response,
+    conversationSteps,
+    selectedAgent?.id,
+  ])
 
   // ── Loading state ─────────────────────────────────────────────────────
   if (isLoading) {
@@ -730,6 +820,7 @@ export const TaskPage = () => {
             <SubTasksSection
               subTasks={subTasks}
               requirements={task.requirements}
+              allTasks={allTasks}
               allConversations={decryptedConversations}
               allArtifacts={allArtifacts}
               agentCache={agentCache}
@@ -748,21 +839,37 @@ export const TaskPage = () => {
                   <Title level={4}>{t('Conversation')}</Title>
                 </div>
                 <div className="relative flex flex-col gap-6">
-                  {timelineItems.map((item) => (
-                    <MessageBubble
-                      key={item.id}
-                      message={item}
-                      agent={item.agentId ? agentCache[item.agentId] : null}
-                      showAgentChip={item.role === 'assistant'}
-                      isStreaming={item.id === '__streaming__'}
-                      liveSteps={
-                        item.id === '__streaming__'
-                          ? conversationSteps
-                          : undefined
-                      }
-                      onCopy={handleCopy}
-                    />
-                  ))}
+                  {timelineItems.map((item) =>
+                    item.type === 'hitl' ? (
+                      <HitlPrompt
+                        key={item.data.id}
+                        request={item.data}
+                        agent={
+                          item.data.agentId
+                            ? agentCache[item.data.agentId] || selectedAgent
+                            : selectedAgent
+                        }
+                      />
+                    ) : (
+                      <MessageBubble
+                        key={item.data.id}
+                        message={item.data}
+                        agent={
+                          item.data.agentId
+                            ? agentCache[item.data.agentId]
+                            : null
+                        }
+                        showAgentChip={item.data.role === 'assistant'}
+                        isStreaming={item.data.id === '__streaming__'}
+                        liveSteps={
+                          item.data.id === '__streaming__'
+                            ? conversationSteps
+                            : undefined
+                        }
+                        onCopy={handleCopy}
+                      />
+                    ),
+                  )}
                   <div ref={streamingEndRef} aria-hidden="true" />
                 </div>
               </div>

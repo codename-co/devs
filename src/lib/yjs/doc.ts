@@ -161,7 +161,22 @@ export function resetYDoc(): void {
     'credentials',
     'studioEntries',
     'workflows',
-    'battles',
+    'pinnedMessages',
+    'traces',
+    'spans',
+    'tracingConfig',
+    'connectors',
+    'connectorSyncStates',
+    'notifications',
+    'memoryLearningEvents',
+    'agentMemoryDocuments',
+    'sharedContexts',
+    'installedExtensions',
+    'customExtensions',
+    'skills',
+    'langfuseConfig',
+    'agentMessages',
+    'queuedTasks',
   ]
 
   for (const name of mapNames) {

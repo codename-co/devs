@@ -148,9 +148,7 @@ export function MethodologiesPage() {
                             }).generate()
                           }
                           title={t('Graphical Representation')}
-                          showTitle={false}
                           showActions={false}
-                          showShadows={true}
                           className="hidden md:block @xl/main:block max-h-240 w-32 h-32 select-none"
                         />
                         <div className="flex-1 min-w-0">

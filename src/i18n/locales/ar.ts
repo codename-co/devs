@@ -961,4 +961,23 @@ export const ar: I18n = {
     'علامة تبويب أخرى تتولى مهام الخلفية',
   'Task completed in background': 'اكتملت المهمة في الخلفية',
   'Task failed in background': 'فشلت المهمة في الخلفية',
+
+  // Human-In-The-Loop (HITL)
+  'Awaiting response': 'في انتظار الرد',
+  Answered: 'تمت الإجابة',
+  'Auto-resolved': 'تم الحل تلقائيًا',
+  Dismissed: 'تم التجاهل',
+  Approval: 'الموافقة',
+  Clarification: 'التوضيح',
+  Choice: 'الاختيار',
+  Confirmation: 'التأكيد',
+  Feedback: 'التعليقات',
+  'Type your response...': 'اكتب ردك...',
+  Send: 'إرسال',
+  Skip: 'تخطي',
+  Response: 'الرد',
+  'YOLO Mode': 'وضع YOLO',
+  'Skip all human intervention prompts and let agents decide autonomously':
+    'تخطي جميع مطالبات التدخل البشري والسماح للوكلاء بالقرار بشكل مستقل',
+  Automation: 'الأتمتة',
 } as const

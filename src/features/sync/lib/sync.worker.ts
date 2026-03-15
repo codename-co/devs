@@ -90,8 +90,6 @@ function getMap(storeName: SyncedStoreName): Y.Map<unknown> {
   switch (storeName) {
     case 'agents':
       return doc.getMap('agents')
-    case 'battles':
-      return doc.getMap('battles')
     case 'conversations':
       return doc.getMap('conversations')
     case 'knowledgeItems':

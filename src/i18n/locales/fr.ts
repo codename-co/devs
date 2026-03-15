@@ -984,4 +984,22 @@ export const fr: I18n = {
     'Un autre onglet gère les tâches en arrière-plan',
   'Task completed in background': 'Tâche terminée en arrière-plan',
   'Task failed in background': 'Tâche échouée en arrière-plan',
+  // Human-In-The-Loop (HITL)
+  'Awaiting response': 'En attente de réponse',
+  Answered: 'Répondu',
+  'Auto-resolved': 'Résolu automatiquement',
+  Dismissed: 'Ignoré',
+  Approval: 'Approbation',
+  Clarification: 'Clarification',
+  Choice: 'Choix',
+  Confirmation: 'Confirmation',
+  Feedback: 'Retour',
+  'Type your response...': 'Tapez votre réponse...',
+  Send: 'Envoyer',
+  Skip: 'Passer',
+  Response: 'Réponse',
+  'YOLO Mode': 'Mode YOLO',
+  'Skip all human intervention prompts and let agents decide autonomously':
+    'Ignorer toutes les demandes d\u2019intervention humaine et laisser les agents décider de manière autonome',
+  Automation: 'Automatisation',
 } as const

@@ -172,6 +172,9 @@ export async function deriveRoomName(
 /** Active WebSocket provider, or `null` when sync is disabled. */
 let provider: WebsocketProvider | null = null
 
+/** Reference to the ydoc update handler so we can unsubscribe on disable. */
+let updateHandler: ((update: Uint8Array, origin: unknown) => void) | null = null
+
 /** Convenience accessor — avoids scattering `provider` null-checks. */
 const wsProvider = (): WebsocketProvider | null => provider
 
@@ -241,8 +244,9 @@ export async function enableSync(config: SyncConfig): Promise<void> {
     console.log('[Sync] Document synced:', synced)
   })
 
-  // Track sync activity on document updates
-  ydoc.on('update', (update: Uint8Array, origin: unknown) => {
+  // Track sync activity on document updates.
+  // Store the handler reference so disableSync() can remove it.
+  updateHandler = (update: Uint8Array, origin: unknown) => {
     const isRemote = origin === provider
     const activity: SyncActivity = {
       type: isRemote ? 'received' : 'sent',
@@ -253,7 +257,8 @@ export async function enableSync(config: SyncConfig): Promise<void> {
       `[Sync] ${isRemote ? '⬇️ Received' : '⬆️ Sent'} ${update.length} bytes`,
     )
     recordActivity(activity)
-  })
+  }
+  ydoc.on('update', updateHandler)
 }
 
 /**
@@ -262,6 +267,10 @@ export async function enableSync(config: SyncConfig): Promise<void> {
  * Safe to call even if sync is already disabled (no-op).
  */
 export function disableSync(): void {
+  if (updateHandler) {
+    ydoc.off('update', updateHandler)
+    updateHandler = null
+  }
   if (provider) {
     provider.destroy()
     provider = null

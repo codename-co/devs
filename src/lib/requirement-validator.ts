@@ -1,5 +1,5 @@
 import { Requirement, Task, Artifact } from '@/types'
-import { getTasksMap, getArtifactsMap } from '@/features/sync/lib/yjs-doc'
+import { tasks as tasksMap, artifacts as artifactsMap } from '@/lib/yjs'
 import { nanoid } from 'nanoid'
 
 export interface ValidationResult {
@@ -170,7 +170,6 @@ export class RequirementValidator {
     evidence?: string[],
   ) {
     try {
-      const tasksMap = getTasksMap()
       const task = tasksMap.get(taskId)
       if (task) {
         const requirement = task.requirements.find(
@@ -213,7 +212,6 @@ export class RequirementValidator {
     requirementId: string,
   ): Promise<Requirement | null> {
     try {
-      const tasksMap = getTasksMap()
       const tasks = Array.from(tasksMap.values())
       for (const task of tasks) {
         const requirement = task.requirements.find(
@@ -329,9 +327,6 @@ export async function validateTaskRequirements(taskId: string): Promise<{
   satisfactionRate: number
 }> {
   try {
-    const tasksMap = getTasksMap()
-    const artifactsMap = getArtifactsMap()
-
     const task = tasksMap.get(taskId)
     if (!task) {
       throw new Error(`Task ${taskId} not found`)

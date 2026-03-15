@@ -7,6 +7,7 @@ interface UseMethodologyMentionOptions {
   lang: LanguageCode
   prompt: string
   onPromptChange: (value: string) => void
+  inputRef?: React.RefObject<HTMLTextAreaElement | null>
 }
 
 interface MethodologyMentionResult {
@@ -34,6 +35,7 @@ export function useMethodologyMention({
   lang,
   prompt,
   onPromptChange,
+  inputRef,
 }: UseMethodologyMentionOptions): MethodologyMentionResult {
   const [availableMethodologies, setAvailableMethodologies] = useState<
     Methodology[]
@@ -73,15 +75,16 @@ export function useMethodologyMention({
     })
   }, [availableMethodologies, mentionQuery, lang])
 
-  // Detect # mentions while typing
+  // Detect # mentions while typing (at cursor position, not just end of text)
   useEffect(() => {
-    // Find if there's an active mention being typed
-    const match = prompt.match(MENTION_REGEX)
+    const cursorPos = inputRef?.current?.selectionStart ?? prompt.length
+    const textUpToCursor = prompt.substring(0, cursorPos)
+    const match = textUpToCursor.match(MENTION_REGEX)
 
     if (match) {
       const query = match[1] || ''
       setMentionQuery(query)
-      setMentionStartIndex(prompt.length - match[0].length)
+      setMentionStartIndex(cursorPos - match[0].length)
       setShowMentionPopover(true)
       setSelectedIndex(0)
     } else {
@@ -89,7 +92,7 @@ export function useMethodologyMention({
       setMentionQuery('')
       setMentionStartIndex(-1)
     }
-  }, [prompt])
+  }, [prompt, inputRef])
 
   // Handle selecting a methodology from the popover
   const handleMentionSelect = useCallback(

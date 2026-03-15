@@ -40,6 +40,8 @@ export interface SyncedSettings {
   enableWebSearchGrounding?: boolean
   // Global system instructions
   globalSystemInstructions?: string
+  // HITL — YOLO mode (auto-resolve all human-in-the-loop requests)
+  yoloMode?: boolean
 }
 
 /**
@@ -66,6 +68,7 @@ const defaultSyncedSettings: SyncedSettings = {
   hideDefaultAgents: false,
   suggestionsEnabled: true,
   enableWebSearchGrounding: true,
+  yoloMode: false,
 }
 
 const defaultLocalSettings: LocalSettings = {
@@ -119,6 +122,7 @@ interface UserSettingsStore extends UserSettings {
   setSuggestionsEnabled: (enabled: boolean) => void
   setEnableWebSearchGrounding: (enabled: boolean) => void
   setGlobalSystemInstructions: (instructions: string | undefined) => void
+  setYoloMode: (enabled: boolean) => void
 
   // Local settings setters (localStorage only)
   setTheme: (theme: ThemeMode) => void
@@ -197,6 +201,10 @@ export const userSettings = create<UserSettingsStore>()(
       setGlobalSystemInstructions: (instructions: string | undefined) => {
         setSyncedSetting('globalSystemInstructions', instructions)
         set({ globalSystemInstructions: instructions })
+      },
+      setYoloMode: (enabled: boolean) => {
+        setSyncedSetting('yoloMode', enabled)
+        set({ yoloMode: enabled })
       },
 
       // ========================================

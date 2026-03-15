@@ -114,6 +114,17 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
     const [isDragOver, setIsDragOver] = useState(false)
     const [isFocused, setIsFocused] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const internalInputRef = useRef<HTMLTextAreaElement>(null)
+    const mergedRef = useCallback(
+      (node: HTMLTextAreaElement | null) => {
+        internalInputRef.current = node
+        if (typeof ref === 'function') ref(node)
+        else if (ref)
+          (ref as React.MutableRefObject<HTMLTextAreaElement | null>).current =
+            node
+      },
+      [ref],
+    )
     const speechToTextEnabled = userSettings(
       (state) => state.speechToTextEnabled,
     )
@@ -149,6 +160,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       lang,
       prompt,
       onPromptChange: handlePromptChange,
+      inputRef: internalInputRef,
     })
 
     // Methodology mention hook for # autocomplete
@@ -165,6 +177,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       lang,
       prompt,
       onPromptChange: handlePromptChange,
+      inputRef: internalInputRef,
     })
 
     // Skill & connector mention hook for / autocomplete
@@ -182,6 +195,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       lang,
       prompt,
       onPromptChange: handlePromptChange,
+      inputRef: internalInputRef,
     })
 
     useEffect(() => {
@@ -246,6 +260,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
           mentionedSkills?: InstalledSkill[],
           mentionedConnectors?: Connector[],
         ) => void,
+        keepMentions?: boolean,
       ) => {
         if (!submitFn) return
 
@@ -277,15 +292,20 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         // Extract mentioned connectors for context injection
         const mentionedConnectors = extractMentionedConnectors()
 
-        // Remove @mentions, #mentions and /mentions from the prompt before submission
-        let cleanedPrompt = removeAgentMentionsFromPrompt(prompt)
-        cleanedPrompt = removeMethodologyMentionsFromPrompt(cleanedPrompt)
-        cleanedPrompt = removeSkillMentionsFromPrompt(cleanedPrompt)
+        // In task mode, keep mentions in the prompt so the task description preserves them
+        const promptToSubmit = keepMentions
+          ? prompt
+          : (() => {
+              let cleaned = removeAgentMentionsFromPrompt(prompt)
+              cleaned = removeMethodologyMentionsFromPrompt(cleaned)
+              cleaned = removeSkillMentionsFromPrompt(cleaned)
+              return cleaned
+            })()
 
         // Update local state (for UI consistency)
-        if (cleanedPrompt !== prompt) {
-          setPrompt(cleanedPrompt)
-          onValueChange?.(cleanedPrompt)
+        if (promptToSubmit !== prompt) {
+          setPrompt(promptToSubmit)
+          onValueChange?.(promptToSubmit)
         }
 
         // Close mention popovers if open
@@ -293,9 +313,9 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         closeMethodologyMentionPopover()
         closeSkillMentionPopover()
 
-        // Pass the cleaned prompt, mentioned agent/methodology, activated skills, and connectors to the submit function
+        // Pass the prompt, mentioned agent/methodology, activated skills, and connectors to the submit function
         submitFn(
-          cleanedPrompt,
+          promptToSubmit,
           mentionedAgent,
           mentionedMethodology,
           mentionedSkills.length > 0 ? mentionedSkills : undefined,
@@ -328,6 +348,9 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       return onSubmitToAgent
     }, [currentAgent?.id, onSubmitTask, onSubmit, onSubmitToAgent])
 
+    // Whether the primary submit action is task mode (mentions should be kept)
+    const isPrimaryTaskMode = primarySubmitAction === onSubmitTask
+
     const handleKeyDown = useCallback(
       (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
         // Handle agent mention popover keyboard navigation first
@@ -347,7 +370,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
 
         if (event.key === 'Enter' && !event.shiftKey) {
           event.preventDefault()
-          handleSubmitWithMentions(primarySubmitAction)
+          handleSubmitWithMentions(primarySubmitAction, isPrimaryTaskMode)
         }
         onKeyDown?.(event)
       },
@@ -357,6 +380,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         handleSkillKeyNavigation,
         handleSubmitWithMentions,
         primarySubmitAction,
+        isPrimaryTaskMode,
         onKeyDown,
       ],
     )
@@ -746,7 +770,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
           />
 
           <Textarea
-            ref={ref}
+            ref={mergedRef}
             data-testid="prompt-input"
             className="pb-20 bg-content2 rounded-lg"
             classNames={{
@@ -853,7 +877,9 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                         size="sm"
                         isDisabled={!canSubmit}
                         isLoading={props.isSending}
-                        onPress={() => handleSubmitWithMentions(onSubmitTask)}
+                        onPress={() =>
+                          handleSubmitWithMentions(onSubmitTask, true)
+                        }
                       >
                         <Icon name="ArrowRight" size="sm" />
                       </Button>

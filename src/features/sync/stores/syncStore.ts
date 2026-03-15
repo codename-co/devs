@@ -23,11 +23,14 @@ import {
   getPeerCount,
   getPeers,
   getLocalClientId,
-  preferences,
 } from '@/lib/yjs'
 import type { PeerInfo, SyncActivity, SyncStatus } from '@/lib/yjs'
 
 export type SyncMode = 'share' | 'join'
+
+// Track unsubscribe functions for sync event listeners to prevent leaks
+let unsubStatus: (() => void) | null = null
+let unsubActivity: (() => void) | null = null
 
 interface SyncState {
   // Persisted settings
@@ -139,8 +142,12 @@ export const useSyncStore = create<SyncState>()(
 
         console.log('[SyncStore] Enabling sync...', { mode: effectiveMode })
 
+        // Cleanup previous subscriptions to prevent accumulating listeners
+        if (unsubStatus) unsubStatus()
+        if (unsubActivity) unsubActivity()
+
         // Subscribe to sync status changes
-        onSyncStatusChange(() => {
+        unsubStatus = onSyncStatusChange(() => {
           set({
             status: getSyncStatus(),
             peerCount: getPeerCount(),
@@ -152,20 +159,17 @@ export const useSyncStore = create<SyncState>()(
         })
 
         // Subscribe to sync activity events
-        onSyncActivity((activity) => {
+        unsubActivity = onSyncActivity((activity) => {
           set((state) => ({
             recentActivity: [activity, ...state.recentActivity].slice(0, 50),
           }))
         })
 
-        // Only force load local data when SHARING (creating a new room)
-        // When JOINING an existing room, we want to receive remote data, not push local data
-        if (effectiveMode !== 'share') {
-          console.log(
-            '[SyncStore] Joining room - clearing preferences to prefer remote state',
-          )
-          preferences.clear()
-        }
+        // Note: We intentionally do NOT clear local data when joining.
+        // In Yjs CRDTs, map.clear() creates delete tombstones that propagate
+        // to all peers, which would destroy the source device's data.
+        // Instead, we let the CRDT merge handle conflicts naturally —
+        // the joiner receives the sharer's state and both converge.
 
         // Enable sync encryption mode with password (for credential encryption)
         try {
@@ -201,6 +205,16 @@ export const useSyncStore = create<SyncState>()(
             '[SyncStore] Failed to disable sync encryption mode:',
             err,
           )
+        }
+
+        // Cleanup sync event subscriptions
+        if (unsubStatus) {
+          unsubStatus()
+          unsubStatus = null
+        }
+        if (unsubActivity) {
+          unsubActivity()
+          unsubActivity = null
         }
 
         yjsDisableSync()

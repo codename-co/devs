@@ -83,23 +83,23 @@ const createGradientBackground = (size) => {
 const createMaskableSvg = (size) => {
   const padding = Math.floor(size * 0.15) // 15% padding for safe zone
   const iconSize = size - padding * 2
-  const scale = iconSize / 64
+  const scale = iconSize / 128
 
   return /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
     ${createGradientBackground(size)}
-    <g transform="translate(${padding}, ${padding}) scale(${scale})">
-      <polygon points="12,26 46,17 37,51" fill="#fff" stroke="#fff" stroke-width="12" stroke-linejoin="round"/>
+    <g fill="#fff" transform="translate(${padding}, ${padding}) scale(${scale})">
+      <defs><path id="a" d="M108 85.2c2.6 4 4 7.2 4 8.8 0 6-21.5 13-48 13s-48-7-48-13c0-1.6 1.4-4.8 4-8.8 5.7 5 23.3 8.8 44 8.8s38.3-3.7 44-8.8Z"/><path id="b" d="M60 30h8v5a4 4 0 0 1-8 0v-5Z"/></defs><use href="#a"/><use href="#a" style="mix-blend-mode:multiply"/><path d="M64 34a42 42 0 0 1 42 39.3c2.5 1.6 4 3.4 4 5.2C110 85.4 89.4 91 64 91s-46-5.6-46-12.5c0-1.8 1.5-3.6 4-5.2A42 42 0 0 1 64 34Zm-12 9.3c.7-.8-.3-2-1.2-1.4l-.3.2a45.6 45.6 0 0 0-20.3 28.2l-.2.5c0 .1 0 .2.2.3l1.2.7c2 1 4.3 1.3 6.5.7l.1-.1 1.2-4.5a61 61 0 0 1 11.7-23.2l1.1-1.4Z"/><use href="#b"/><use href="#b" style="mix-blend-mode:multiply"/><ellipse cx="64" cy="25.5" rx="12" ry="5.5"/><ellipse cx="64" cy="23" rx="10" ry="3" style="mix-blend-mode:multiply"/><ellipse cx="64" cy="24" rx="5" ry="1"/>
     </g>
   </svg>`
 }
 
 // Standard icon (any purpose) - white icon on gradient background
 const createStandardSvg = (size) => {
-  const scale = size / 64
+  const scale = size / 128
   return /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
     ${createGradientBackground(size)}
-    <g transform="scale(${scale})">
-      <polygon points="12,26 46,17 37,51" fill="#fff" stroke="#fff" stroke-width="12" stroke-linejoin="round"/>
+    <g fill="#fff" transform="scale(${scale})">
+      <defs><path id="a" d="M108 85.2c2.6 4 4 7.2 4 8.8 0 6-21.5 13-48 13s-48-7-48-13c0-1.6 1.4-4.8 4-8.8 5.7 5 23.3 8.8 44 8.8s38.3-3.7 44-8.8Z"/><path id="b" d="M60 30h8v5a4 4 0 0 1-8 0v-5Z"/></defs><use href="#a"/><use href="#a" style="mix-blend-mode:multiply"/><path d="M64 34a42 42 0 0 1 42 39.3c2.5 1.6 4 3.4 4 5.2C110 85.4 89.4 91 64 91s-46-5.6-46-12.5c0-1.8 1.5-3.6 4-5.2A42 42 0 0 1 64 34Zm-12 9.3c.7-.8-.3-2-1.2-1.4l-.3.2a45.6 45.6 0 0 0-20.3 28.2l-.2.5c0 .1 0 .2.2.3l1.2.7c2 1 4.3 1.3 6.5.7l.1-.1 1.2-4.5a61 61 0 0 1 11.7-23.2l1.1-1.4Z"/><use href="#b"/><use href="#b" style="mix-blend-mode:multiply"/><ellipse cx="64" cy="25.5" rx="12" ry="5.5"/><ellipse cx="64" cy="23" rx="10" ry="3" style="mix-blend-mode:multiply"/><ellipse cx="64" cy="24" rx="5" ry="1"/>
     </g>
   </svg>`
 }

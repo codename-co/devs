@@ -281,7 +281,6 @@ export function LocalBackupSection() {
         'credentials',
         'studioEntries',
         'workflows',
-        'battles',
         'pinnedMessages',
         'traces',
         'spans',

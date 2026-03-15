@@ -57,7 +57,6 @@ export class Database {
     'pinnedMessages',
     'connectors',
     'connectorSyncStates',
-    'battles',
     'studioEntries',
     'traces',
     'spans',

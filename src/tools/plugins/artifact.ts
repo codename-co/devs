@@ -60,18 +60,16 @@ export const writeArtifactPlugin: ToolPlugin<
     if (context.abortSignal?.aborted) {
       throw new Error('Aborted')
     }
-    return writeArtifact(args)
+    // Inject task_id and agent_id from execution context — the LLM does not
+    // provide these; they are set programmatically by the orchestration engine.
+    return writeArtifact({
+      ...args,
+      task_id: context.taskId || args.task_id || 'unknown',
+      agent_id: context.agentId || args.agent_id || 'unknown',
+    })
   },
   validate: (args): WriteArtifactParams => {
     const params = args as WriteArtifactParams
-
-    if (!params.task_id || typeof params.task_id !== 'string') {
-      throw new Error('task_id is required and must be a string')
-    }
-
-    if (!params.agent_id || typeof params.agent_id !== 'string') {
-      throw new Error('agent_id is required and must be a string')
-    }
 
     if (!params.title || typeof params.title !== 'string') {
       throw new Error('title is required and must be a string')
@@ -171,20 +169,14 @@ export const listTaskArtifactsPlugin: ToolPlugin<
     if (context.abortSignal?.aborted) {
       throw new Error('Aborted')
     }
-    return listTaskArtifacts(args)
+    // Inject task_id from execution context
+    return listTaskArtifacts({
+      ...args,
+      task_id: context.taskId || args.task_id || 'unknown',
+    })
   },
   validate: (args): ListTaskArtifactsParams => {
-    const params = args as ListTaskArtifactsParams
-
-    if (!params.task_id || typeof params.task_id !== 'string') {
-      throw new Error('task_id is required and must be a string')
-    }
-
-    if (params.task_id.trim() === '') {
-      throw new Error('task_id cannot be empty')
-    }
-
-    return params
+    return args as ListTaskArtifactsParams
   },
 })
 

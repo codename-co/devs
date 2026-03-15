@@ -40,6 +40,7 @@ import {
 } from './shared'
 import { claimTask } from '@/stores/taskStore'
 import { useMailboxStore } from '@/stores/mailboxStore'
+import { requestHumanInput } from '@/lib/hitl'
 
 export async function executeAgentTeam(
   prompt: string,
@@ -249,6 +250,38 @@ export async function executeAgentTeam(
       teamTaskMap.set(decomposedTask.tempId, teamTask.id)
     }
 
+    // HITL checkpoint: review decomposed plan before team execution
+    const teamSummary = decomposition.subTasks
+      .map((t, i) => `${i + 1}. **${t.title}**`)
+      .join('\n')
+
+    // Create a conversation for the lead agent to host the HITL prompt
+    const { conversationId: leadConversationId } =
+      await createSubTaskConversation(leadAgent.id, workflowId, prompt)
+
+    const hitlResponse = await requestHumanInput({
+      conversationId: leadConversationId,
+      agentId: leadAgent.id,
+      type: 'approval',
+      question:
+        `I've broken down the task into **${decomposition.subTasks.length} subtasks** with a team of **${teammateAgents.length + 1} agents**:\n\n` +
+        teamSummary +
+        `\n\nShould I proceed with execution?`,
+      quickReplies: [
+        { label: 'Execute', value: 'execute', color: 'success' },
+        { label: 'Cancel', value: 'cancel', color: 'danger' },
+      ],
+    })
+
+    if (hitlResponse.value === 'cancel') {
+      await updateTask(mainTask.id, { status: 'failed' })
+      return buildFailureResult(
+        workflowId,
+        mainTask.id,
+        new Error('Cancelled by user'),
+      )
+    }
+
     // Phase 5: Team execution loop
     options?.onProgress?.({
       phase: 'executing',
@@ -354,6 +387,8 @@ export async function executeAgentTeam(
           workflowId,
           decomposedTask.description,
         )
+        // Link conversation to task for reliable UI lookup
+        await updateTask(subTask.id, { conversationId })
 
         // Set up events
         const events = createAgentEventEmitters(
@@ -511,6 +546,28 @@ export async function executeAgentTeam(
       })
 
       await Promise.all(batchPromises)
+    }
+
+    // HITL checkpoint: review before synthesis
+    const completedCount = executedResults.size
+    const synthesisHitl = await requestHumanInput({
+      conversationId: leadConversationId,
+      agentId: leadAgent.id,
+      type: 'confirmation',
+      question: `All **${completedCount}** subtasks are complete. Ready to synthesize the final result.\n\nProceed with synthesis?`,
+      quickReplies: [
+        { label: 'Synthesize', value: 'synthesize', color: 'success' },
+        { label: 'Cancel', value: 'cancel', color: 'danger' },
+      ],
+    })
+
+    if (synthesisHitl.value === 'cancel') {
+      await updateTask(mainTask.id, { status: 'failed' })
+      return buildFailureResult(
+        workflowId,
+        mainTask.id,
+        new Error('Cancelled by user before synthesis'),
+      )
     }
 
     // Phase 6: Synthesis

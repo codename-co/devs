@@ -9,6 +9,7 @@ interface UseSkillMentionOptions {
   lang: LanguageCode
   prompt: string
   onPromptChange: (value: string) => void
+  inputRef?: React.RefObject<HTMLTextAreaElement | null>
 }
 
 /**
@@ -96,6 +97,7 @@ const MENTION_REGEX = /(?:^|\s)\/([\w-]*)$/
 export function useSkillMention({
   prompt,
   onPromptChange,
+  inputRef,
 }: UseSkillMentionOptions): SkillMentionResult {
   const allSkills = useSkills()
   const availableSkills = useMemo(
@@ -186,15 +188,17 @@ export function useSkillMention({
     [filteredItems],
   )
 
-  // Detect / mentions while typing
+  // Detect / mentions while typing (at cursor position, not just end of text)
   useEffect(() => {
-    const match = prompt.match(MENTION_REGEX)
+    const cursorPos = inputRef?.current?.selectionStart ?? prompt.length
+    const textUpToCursor = prompt.substring(0, cursorPos)
+    const match = textUpToCursor.match(MENTION_REGEX)
 
     if (match) {
       const query = match[1] || ''
       setMentionQuery(query)
-      // The full match may start with a space; the `/` position is match.index + (match[0].length - match[1].length - 1)
-      const slashIndex = prompt.length - match[1].length - 1
+      // The full match may start with a space; the `/` position is cursorPos - query.length - 1
+      const slashIndex = cursorPos - query.length - 1
       setMentionStartIndex(slashIndex)
       setShowMentionPopover(true)
       setSelectedIndex(0)
@@ -203,7 +207,7 @@ export function useSkillMention({
       setMentionQuery('')
       setMentionStartIndex(-1)
     }
-  }, [prompt])
+  }, [prompt, inputRef])
 
   // Handle selecting an item (skill or connector) from the popover
   const handleMentionSelect = useCallback(

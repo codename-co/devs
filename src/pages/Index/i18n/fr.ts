@@ -3,11 +3,11 @@ import { en } from './en'
 type I18n = Record<(typeof en)[number], string>
 
 export const fr: I18n = {
-  'Let your agents take it from here': 'Laissez vos agents prendre le relais',
-  'Delegate complex tasks to your own AI teams':
-    'Déléguez vos tâches les plus complexes à vos propres équipes IA',
+  'Hey {productName}': 'Hey {productName}',
+  'Your own AI agents ready to collaborate':
+    'Votre équipe d’agents IA prête à passer à l’action',
   'Failed to get response from LLM. Please try again later.':
-    'Échec de la réponse du LLM. Veuillez réessayer plus tard.',
+    'Impossible d’obtenir une réponse du LLM. Veuillez réessayer plus tard.',
 
   // Agent themes
   Writing: 'Écriture',

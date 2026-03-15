@@ -980,4 +980,23 @@ export const es: I18n = {
     'Otra pestaña está gestionando las tareas en segundo plano',
   'Task completed in background': 'Tarea completada en segundo plano',
   'Task failed in background': 'Tarea fallida en segundo plano',
+
+  // Human-In-The-Loop (HITL)
+  'Awaiting response': 'Esperando respuesta',
+  Answered: 'Respondido',
+  'Auto-resolved': 'Resuelto automáticamente',
+  Dismissed: 'Descartado',
+  Approval: 'Aprobación',
+  Clarification: 'Aclaración',
+  Choice: 'Elección',
+  Confirmation: 'Confirmación',
+  Feedback: 'Comentarios',
+  'Type your response...': 'Escribe tu respuesta...',
+  Send: 'Enviar',
+  Skip: 'Omitir',
+  Response: 'Respuesta',
+  'YOLO Mode': 'Modo YOLO',
+  'Skip all human intervention prompts and let agents decide autonomously':
+    'Omitir todas las solicitudes de intervención humana y dejar que los agentes decidan de forma autónoma',
+  Automation: 'Automatización',
 } as const

@@ -228,9 +228,7 @@ const WidgetBody = memo(
         type={widgetType}
         language={language}
         title={title}
-        showTitle={false}
         showActions={false}
-        showShadows={false}
         className="w-full h-full"
       />
     )

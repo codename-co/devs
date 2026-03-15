@@ -29,7 +29,6 @@ vi.mock('@/lib/yjs/maps', () => {
     credentials: createMockMap(),
     studioEntries: createMockMap(),
     workflows: createMockMap(),
-    battles: createMockMap(),
     pinnedMessages: createMockMap(),
     traces: createMockMap(),
     spans: createMockMap(),
@@ -69,7 +68,6 @@ describe('db/export', () => {
 
     it('should include feature maps', () => {
       expect(EXPORT_MAP_NAMES).toContain('studioEntries')
-      expect(EXPORT_MAP_NAMES).toContain('battles')
       expect(EXPORT_MAP_NAMES).toContain('traces')
       expect(EXPORT_MAP_NAMES).toContain('connectors')
       expect(EXPORT_MAP_NAMES).toContain('skills')

@@ -899,4 +899,22 @@ export const en = [
   'Another tab is handling background tasks',
   'Task completed in background',
   'Task failed in background',
+
+  // Human-In-The-Loop (HITL)
+  'Awaiting response',
+  'Answered',
+  'Auto-resolved',
+  'Dismissed',
+  'Approval',
+  'Clarification',
+  'Choice',
+  'Confirmation',
+  'Feedback',
+  'Type your response...',
+  'Send',
+  'Skip',
+  'Response',
+  'YOLO Mode',
+  'Skip all human intervention prompts and let agents decide autonomously',
+  'Automation',
 ] as const

@@ -17,6 +17,7 @@ import HTMLdemoPage from '@/pages/Demo/html.mdx'
 import DiagramPage from '@/pages/Demo/diagram.mdx'
 import { CodeSandboxPage } from '@/pages/Demo/CodeSandbox'
 import { ConversationTestsPage } from '@/pages/Demo/ConversationTests'
+import { TaskTimelineDemo } from '@/pages/Demo/TaskTimelineDemo'
 import { AboutPage } from '@/pages/About'
 import { PrivacyPage } from '@/pages/Privacy'
 import { TermsPage } from '@/pages/Terms'
@@ -71,6 +72,7 @@ const routes = {
   'demo/conversations': ConversationTestsPage,
   'demo/diagram': DiagramPage,
   'demo/html': HTMLdemoPage,
+  'demo/timeline': TaskTimelineDemo,
   studio: StudioPage,
   'oauth/callback': OAuthCallbackPage,
   about: AboutPage,

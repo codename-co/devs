@@ -259,9 +259,7 @@ export const MethodologyPage = () => {
                   language="mermaid"
                   code={diagramCode}
                   title={t('Graphical Representation')}
-                  showTitle={false}
                   showActions={false}
-                  showShadows={false}
                   className="max-h-240"
                 />
               )}
@@ -1271,9 +1269,7 @@ export const MethodologyPage = () => {
 
                       return diagram
                     })()}
-                    showTitle={false}
                     showActions={false}
-                    showShadows={false}
                   />
                 </Container>
               </Section>

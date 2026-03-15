@@ -7,6 +7,7 @@ interface UseAgentMentionOptions {
   lang: LanguageCode
   prompt: string
   onPromptChange: (value: string) => void
+  inputRef?: React.RefObject<HTMLTextAreaElement | null>
 }
 
 interface AgentMentionResult {
@@ -35,6 +36,7 @@ export function useAgentMention({
   lang,
   prompt,
   onPromptChange,
+  inputRef,
 }: UseAgentMentionOptions): AgentMentionResult {
   // Load agents from store (includes both built-in and custom agents)
   const [availableAgents, setAvailableAgents] = useState<Agent[]>([])
@@ -67,13 +69,15 @@ export function useAgentMention({
     })
   }, [availableAgents, mentionQuery, lang])
 
-  // Detect @ mentions while typing
+  // Detect @ mentions while typing (at cursor position, not just end of text)
   useEffect(() => {
-    const match = prompt.match(MENTION_REGEX)
+    const cursorPos = inputRef?.current?.selectionStart ?? prompt.length
+    const textUpToCursor = prompt.substring(0, cursorPos)
+    const match = textUpToCursor.match(MENTION_REGEX)
     if (match) {
       const query = match[1] || ''
       setMentionQuery(query)
-      setMentionStartIndex(prompt.length - match[0].length)
+      setMentionStartIndex(cursorPos - match[0].length)
       setShowMentionPopover(true)
       setSelectedIndex(0)
     } else {
@@ -81,7 +85,7 @@ export function useAgentMention({
       setMentionQuery('')
       setMentionStartIndex(-1)
     }
-  }, [prompt])
+  }, [prompt, inputRef])
 
   // Handle selecting an agent from the popover
   const handleMentionSelect = useCallback(

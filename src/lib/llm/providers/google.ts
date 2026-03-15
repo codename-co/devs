@@ -12,6 +12,7 @@ import {
 import {
   LLMConfigWithTools,
   GroundingMetadata,
+  GoogleThinkingConfig,
   stripModelPrefix,
 } from '../types'
 import {
@@ -268,6 +269,51 @@ export class GoogleProvider implements LLMProviderInterface {
   }
 
   /**
+   * Build the native Gemini thinkingConfig object from GoogleThinkingConfig.
+   */
+  private buildNativeThinkingConfig(
+    thinking: GoogleThinkingConfig,
+  ): Record<string, unknown> {
+    const thinkingConfig: Record<string, unknown> = {}
+    if (thinking.thinkingLevel !== undefined) {
+      thinkingConfig.thinkingLevel = thinking.thinkingLevel.toUpperCase()
+    }
+    if (thinking.thinkingBudget !== undefined) {
+      thinkingConfig.thinkingBudget = thinking.thinkingBudget
+    }
+    if (thinking.includeThoughts) {
+      thinkingConfig.includeThoughts = true
+    }
+    return thinkingConfig
+  }
+
+  /**
+   * Map GoogleThinkingConfig to OpenAI-compatible reasoning_effort.
+   * Gemini's thinkingLevel maps to: minimal→low, low→low, medium→medium, high→high
+   */
+  private mapThinkingToReasoningEffort(
+    thinking: GoogleThinkingConfig,
+  ): string | undefined {
+    if (thinking.thinkingLevel) {
+      const mapping: Record<string, string> = {
+        minimal: 'low',
+        low: 'low',
+        medium: 'medium',
+        high: 'high',
+      }
+      return mapping[thinking.thinkingLevel]
+    }
+    // Map thinkingBudget to reasoning_effort for OpenAI-compat
+    if (thinking.thinkingBudget !== undefined) {
+      if (thinking.thinkingBudget === 0) return 'none'
+      if (thinking.thinkingBudget <= 1024) return 'low'
+      if (thinking.thinkingBudget <= 8192) return 'medium'
+      return 'high'
+    }
+    return undefined
+  }
+
+  /**
    * Chat using native Gemini API with Google Search grounding.
    * Uses the native API format which supports the google_search tool.
    */
@@ -283,6 +329,7 @@ export class GoogleProvider implements LLMProviderInterface {
       messagesCount: messages.length,
       temperature: config?.temperature || 0.7,
       grounding: true,
+      googleThinking: config?.googleThinking,
     })
 
     const { contents, systemInstruction } =
@@ -291,12 +338,21 @@ export class GoogleProvider implements LLMProviderInterface {
     // Only google_search for grounded requests.
     // Combining google_search with function_declarations is only supported
     // in the Live API — the regular generateContent endpoint rejects it.
+    const generationConfig: Record<string, unknown> = {
+      temperature: config?.temperature || 0.7,
+      maxOutputTokens: config?.maxTokens,
+    }
+
+    // Add thinking config for native API
+    if (config?.googleThinking) {
+      generationConfig.thinkingConfig = this.buildNativeThinkingConfig(
+        config.googleThinking,
+      )
+    }
+
     const requestBody: Record<string, unknown> = {
       contents,
-      generationConfig: {
-        temperature: config?.temperature || 0.7,
-        maxOutputTokens: config?.maxTokens,
-      },
+      generationConfig,
       tools: [{ google_search: {} }],
     }
 
@@ -329,11 +385,16 @@ export class GoogleProvider implements LLMProviderInterface {
       throw new Error('No response candidate from Gemini API')
     }
 
-    // Extract text content from parts (no function calls in grounding-only mode)
+    // Extract text and thinking content from parts
     let textContent = ''
+    let thinkingContent = ''
     for (const part of candidate.content?.parts || []) {
       if (part.text) {
-        textContent += part.text
+        if (part.thought) {
+          thinkingContent += (thinkingContent ? '\n' : '') + part.text
+        } else {
+          textContent += part.text
+        }
       }
     }
 
@@ -342,6 +403,7 @@ export class GoogleProvider implements LLMProviderInterface {
 
     return {
       content: textContent,
+      thinking: thinkingContent || undefined,
       groundingMetadata,
       finish_reason: 'stop',
       usage: data.usageMetadata
@@ -371,6 +433,7 @@ export class GoogleProvider implements LLMProviderInterface {
       messagesCount: messages.length,
       temperature: config?.temperature || 0.7,
       hasTools: !!config?.tools?.length,
+      googleThinking: config?.googleThinking,
     })
 
     // Convert messages (may involve async document conversion)
@@ -384,6 +447,36 @@ export class GoogleProvider implements LLMProviderInterface {
       messages: convertedMessages,
       temperature: config?.temperature || 0.7,
       max_tokens: config?.maxTokens,
+    }
+
+    // Add thinking config for OpenAI-compat API
+    if (config?.googleThinking) {
+      const reasoningEffort = this.mapThinkingToReasoningEffort(
+        config.googleThinking,
+      )
+      if (reasoningEffort) {
+        requestBody.reasoning_effort = reasoningEffort
+      }
+      // Use google extra body for includeThoughts and fine-grained control
+      if (
+        config.googleThinking.includeThoughts ||
+        config.googleThinking.thinkingBudget !== undefined
+      ) {
+        const thinkingConfig: Record<string, unknown> = {}
+        if (config.googleThinking.thinkingLevel) {
+          thinkingConfig.thinking_level = config.googleThinking.thinkingLevel
+        }
+        if (config.googleThinking.thinkingBudget !== undefined) {
+          thinkingConfig.thinking_budget = config.googleThinking.thinkingBudget
+        }
+        if (config.googleThinking.includeThoughts) {
+          thinkingConfig.include_thoughts = true
+        }
+        requestBody.google = { thinking_config: thinkingConfig }
+        // Remove reasoning_effort when using native thinking_config
+        // (they can't be used at the same time)
+        delete requestBody.reasoning_effort
+      }
     }
 
     // Add tools if provided
@@ -413,6 +506,7 @@ export class GoogleProvider implements LLMProviderInterface {
 
     return {
       content: message.content || '',
+      thinking: message.reasoning_content || undefined,
       tool_calls: parseToolCallsFromResponse(message),
       finish_reason: data.choices[0].finish_reason,
       usage: data.usage
@@ -439,6 +533,7 @@ export class GoogleProvider implements LLMProviderInterface {
       model,
       messagesCount: messages.length,
       grounding: true,
+      googleThinking: config?.googleThinking,
     })
 
     const { contents, systemInstruction } =
@@ -447,12 +542,21 @@ export class GoogleProvider implements LLMProviderInterface {
     // Only google_search for grounded requests.
     // Combining google_search with function_declarations is only supported
     // in the Live API — the regular streamGenerateContent endpoint rejects it.
+    const streamGenerationConfig: Record<string, unknown> = {
+      temperature: config?.temperature || 0.7,
+      maxOutputTokens: config?.maxTokens,
+    }
+
+    // Add thinking config for native API
+    if (config?.googleThinking) {
+      streamGenerationConfig.thinkingConfig = this.buildNativeThinkingConfig(
+        config.googleThinking,
+      )
+    }
+
     const requestBody: Record<string, unknown> = {
       contents,
-      generationConfig: {
-        temperature: config?.temperature || 0.7,
-        maxOutputTokens: config?.maxTokens,
-      },
+      generationConfig: streamGenerationConfig,
       tools: [{ google_search: {} }],
     }
 
@@ -497,11 +601,15 @@ export class GoogleProvider implements LLMProviderInterface {
             const parsed = JSON.parse(data)
             const candidate = parsed.candidates?.[0]
 
-            // Extract text from parts (no function calls in grounding-only mode)
+            // Extract text from parts, separating thinking from content
             if (candidate?.content?.parts) {
               for (const part of candidate.content.parts) {
                 if (part.text) {
-                  yield part.text
+                  if (part.thought) {
+                    yield `\n__THINKING_DELTA__${part.text}`
+                  } else {
+                    yield part.text
+                  }
                 }
               }
             }
@@ -543,6 +651,33 @@ export class GoogleProvider implements LLMProviderInterface {
       temperature: config?.temperature || 0.7,
       max_tokens: config?.maxTokens,
       stream: true,
+    }
+
+    // Add thinking config for OpenAI-compat API
+    if (config?.googleThinking) {
+      const reasoningEffort = this.mapThinkingToReasoningEffort(
+        config.googleThinking,
+      )
+      if (reasoningEffort) {
+        requestBody.reasoning_effort = reasoningEffort
+      }
+      if (
+        config.googleThinking.includeThoughts ||
+        config.googleThinking.thinkingBudget !== undefined
+      ) {
+        const thinkingConfig: Record<string, unknown> = {}
+        if (config.googleThinking.thinkingLevel) {
+          thinkingConfig.thinking_level = config.googleThinking.thinkingLevel
+        }
+        if (config.googleThinking.thinkingBudget !== undefined) {
+          thinkingConfig.thinking_budget = config.googleThinking.thinkingBudget
+        }
+        if (config.googleThinking.includeThoughts) {
+          thinkingConfig.include_thoughts = true
+        }
+        requestBody.google = { thinking_config: thinkingConfig }
+        delete requestBody.reasoning_effort
+      }
     }
 
     // Add tools if provided

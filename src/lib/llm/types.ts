@@ -302,6 +302,83 @@ export interface LLMConfigWithTools {
    * @default false
    */
   enableWebSearch?: boolean
+  /**
+   * Anthropic extended thinking configuration.
+   *
+   * - `{ type: 'adaptive' }`: Recommended for Claude Opus 4.6 and Sonnet 4.6.
+   *   Claude dynamically determines when and how much to think.
+   * - `{ type: 'enabled', budget_tokens: N }`: Manual mode for older models.
+   *   Sets a fixed thinking token budget (min 1024). Deprecated on Opus 4.6/Sonnet 4.6.
+   *
+   * When thinking is enabled, temperature must not be set and tool_choice
+   * is restricted to 'auto' or 'none'.
+   */
+  thinking?: AnthropicThinkingConfig
+  /**
+   * Effort level for Anthropic adaptive thinking.
+   * Controls how thoroughly Claude reasons about the request.
+   *
+   * - 'max': Always thinks with no constraints (Opus 4.6 only)
+   * - 'high': Always thinks with deep reasoning (default)
+   * - 'medium': Moderate thinking, may skip for simple queries
+   * - 'low': Minimal thinking, skips for simple tasks
+   */
+  effort?: AnthropicThinkingEffort
+  /**
+   * Google Gemini thinking configuration.
+   *
+   * Controls how much the model reasons before responding.
+   * Supports both Gemini 3 (thinkingLevel) and Gemini 2.5 (thinkingBudget) models.
+   *
+   * When `includeThoughts` is true, thought summaries are returned in the response.
+   */
+  googleThinking?: GoogleThinkingConfig
+}
+
+/**
+ * Anthropic thinking configuration.
+ */
+export type AnthropicThinkingConfig =
+  | { type: 'adaptive' }
+  | { type: 'enabled'; budget_tokens: number }
+
+/**
+ * Anthropic thinking effort level.
+ * Used with adaptive thinking to guide how much reasoning Claude does.
+ */
+export type AnthropicThinkingEffort = 'low' | 'medium' | 'high' | 'max'
+
+/**
+ * Google Gemini thinking level for Gemini 3+ models.
+ */
+export type GeminiThinkingLevel = 'minimal' | 'low' | 'medium' | 'high'
+
+/**
+ * Google Gemini thinking configuration.
+ * Supports both Gemini 3 (thinkingLevel) and 2.5 (thinkingBudget) models.
+ */
+export interface GoogleThinkingConfig {
+  /**
+   * Thinking level for Gemini 3+ models.
+   * - 'minimal': Near-zero thinking (Gemini 3 Flash/Flash-Lite default)
+   * - 'low': Minimizes latency and cost
+   * - 'medium': Balanced thinking
+   * - 'high': Max reasoning depth (Gemini 3 Pro/Flash default)
+   */
+  thinkingLevel?: GeminiThinkingLevel
+  /**
+   * Thinking token budget for Gemini 2.5 models.
+   * - -1: Dynamic thinking (default)
+   * - 0: Disable thinking (2.5 Flash only)
+   * - Positive number: Token budget (e.g. 1024, 8192, 24576)
+   */
+  thinkingBudget?: number
+  /**
+   * Whether to include thought summaries in the response.
+   * When true, the response will contain the model's reasoning.
+   * @default false
+   */
+  includeThoughts?: boolean
 }
 
 // ============================================================================
@@ -360,6 +437,12 @@ export interface GroundingMetadata {
 export interface LLMResponseWithTools {
   /** Text content of the response (may be empty if only tool_calls) */
   content: string
+  /**
+   * Thinking content from Anthropic extended/adaptive thinking.
+   * Contains Claude's reasoning process (may be summarized for Claude 4+ models).
+   * Present when thinking was enabled and Claude chose to think.
+   */
+  thinking?: string
   /**
    * Tool calls requested by the model.
    * Present when the model wants to invoke tools.

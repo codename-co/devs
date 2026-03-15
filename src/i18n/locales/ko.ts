@@ -960,4 +960,23 @@ export const ko: I18n = {
     '다른 탭에서 백그라운드 작업을 처리하고 있습니다',
   'Task completed in background': '백그라운드에서 작업 완료',
   'Task failed in background': '백그라운드에서 작업 실패',
+
+  // Human-In-The-Loop (HITL)
+  'Awaiting response': '응답 대기 중',
+  Answered: '답변 완료',
+  'Auto-resolved': '자동 해결됨',
+  Dismissed: '무시됨',
+  Approval: '승인',
+  Clarification: '설명',
+  Choice: '선택',
+  Confirmation: '확인',
+  Feedback: '피드백',
+  'Type your response...': '응답을 입력하세요...',
+  Send: '보내기',
+  Skip: '건너뛰기',
+  Response: '응답',
+  'YOLO Mode': 'YOLO 모드',
+  'Skip all human intervention prompts and let agents decide autonomously':
+    '모든 인적 개입 요청을 건너뛰고 에이전트가 자율적으로 결정하도록 합니다',
+  Automation: '자동화',
 } as const

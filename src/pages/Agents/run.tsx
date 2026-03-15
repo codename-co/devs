@@ -31,6 +31,7 @@ import {
   Section,
 } from '@/components'
 import { MessageBubble } from '@/components/chat'
+import { HitlPrompt } from '@/components/chat'
 import { AgentAppearancePicker } from '@/components/AgentAppearancePicker'
 import RunLayout from '@/layouts/Run'
 import { Link } from 'react-router-dom'
@@ -51,6 +52,7 @@ import {
   AgentMemoryEntry,
   MemoryCategory,
   InstalledSkill,
+  HitlRequest,
 } from '@/types'
 import type { Trace, Span } from '@/features/traces/types'
 import { errorToast, successToast } from '@/lib/toast'
@@ -67,6 +69,7 @@ import {
   learnFromMessage,
   processPendingLearningEvents,
 } from '@/lib/memory-learning-service'
+import { onHitlRequest, getPendingRequestsForConversation } from '@/lib/hitl'
 import { MessageDescriptionGenerator } from '@/lib/message-description-generator'
 import { useConversationStore } from '@/stores/conversationStore'
 import { useArtifactStore } from '@/stores/artifactStore'
@@ -86,6 +89,7 @@ import localI18n from './i18n'
 type TimelineItem =
   | { type: 'message'; data: Message; timestamp: Date }
   | { type: 'memory'; data: AgentMemoryEntry; timestamp: Date }
+  | { type: 'hitl'; data: HitlRequest; timestamp: Date }
 
 // ============================================================================
 // Tool Display Name Mapping & Context Helpers
@@ -1266,6 +1270,9 @@ export const AgentRunPage = () => {
     AgentMemoryEntry[]
   >([])
 
+  // HITL requests state
+  const [hitlRequests, setHitlRequests] = useState<HitlRequest[]>([])
+
   // Quick replies state - initialized from persisted conversation data
   const [quickReplies, setQuickReplies] = useState<string[]>([])
   const [isGeneratingReplies, setIsGeneratingReplies] = useState(false)
@@ -1340,6 +1347,29 @@ export const AgentRunPage = () => {
     }
     loadPendingMemories()
   }, [selectedAgent?.id, currentConversation?.id])
+
+  // Load HITL requests and subscribe to new ones
+  useEffect(() => {
+    if (!currentConversation?.id) {
+      setHitlRequests([])
+      return
+    }
+    // Load existing pending requests for this conversation
+    setHitlRequests(getPendingRequestsForConversation(currentConversation.id))
+    // Subscribe to new HITL requests
+    const unsubscribe = onHitlRequest((request) => {
+      if (request.conversationId === currentConversation.id) {
+        setHitlRequests((prev) => {
+          const exists = prev.find((r) => r.id === request.id)
+          if (exists) {
+            return prev.map((r) => (r.id === request.id ? request : r))
+          }
+          return [...prev, request]
+        })
+      }
+    })
+    return unsubscribe
+  }, [currentConversation?.id])
 
   // Load pinned messages when conversation changes
   useEffect(() => {
@@ -2260,7 +2290,13 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
       timestamp: new Date(memory.learnedAt),
     }))
 
-    const items = [...messageItems, ...memoryItems]
+    const hitlItems: TimelineItem[] = hitlRequests.map((request) => ({
+      type: 'hitl' as const,
+      data: request,
+      timestamp: new Date(request.createdAt),
+    }))
+
+    const items = [...messageItems, ...memoryItems, ...hitlItems]
 
     // Add virtual streaming message during active sending.
     // Always show when isSending so the user gets immediate feedback:
@@ -2287,6 +2323,7 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
     currentConversation,
     conversationMessages,
     newlyLearnedMemories,
+    hitlRequests,
     isSending,
     response,
     conversationSteps,
@@ -2343,6 +2380,16 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
                         item.data.id === '__streaming__'
                           ? conversationSteps
                           : undefined
+                      }
+                    />
+                  ) : item.type === 'hitl' ? (
+                    <HitlPrompt
+                      key={item.data.id}
+                      request={item.data}
+                      agent={
+                        item.data.agentId
+                          ? agentCache[item.data.agentId] || selectedAgent
+                          : selectedAgent
                       }
                     />
                   ) : (

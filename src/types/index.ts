@@ -430,6 +430,8 @@ export interface Task {
   recurrence?: string
   /** Abort controller key for cancellation */
   abortKey?: string
+  /** ID of the conversation associated with this task */
+  conversationId?: string
 }
 
 export interface Requirement {
@@ -1031,4 +1033,68 @@ export interface QueuedTaskEntry {
   completedAt?: Date | string
   /** When next recurring execution should fire */
   nextRunAt?: Date | string
+}
+
+// ============================================================================
+// Human-In-The-Loop (HITL)
+// ============================================================================
+
+/** Type of human intervention requested */
+export type HitlRequestType =
+  | 'approval'
+  | 'clarification'
+  | 'choice'
+  | 'confirmation'
+  | 'feedback'
+
+/** Status of a HITL request */
+export type HitlStatus = 'pending' | 'answered' | 'dismissed' | 'auto-resolved'
+
+/** A pre-filled quick reply option for HITL requests */
+export interface HitlQuickReply {
+  /** Button label shown to the user */
+  label: string
+  /** Value sent as the response when clicked */
+  value: string
+  /** HeroUI color for the button */
+  color?: 'primary' | 'success' | 'danger' | 'warning' | 'default'
+}
+
+/** A human-in-the-loop request created by an agent or the orchestrator */
+export interface HitlRequest {
+  /** Unique identifier */
+  id: string
+  /** Conversation where the request appears */
+  conversationId: string
+  /** Agent that created the request */
+  agentId: string
+  /** Category of intervention */
+  type: HitlRequestType
+  /** The question or prompt shown to the user */
+  question: string
+  /** Pre-filled quick reply options */
+  quickReplies?: HitlQuickReply[]
+  /** Current status */
+  status: HitlStatus
+  /** User's response (text or quick reply value) */
+  response?: string
+  /** When the request was created */
+  createdAt: Date | string
+  /** When the request was resolved */
+  resolvedAt?: Date | string
+}
+
+/** Options for creating a HITL request */
+export interface HitlRequestOptions {
+  conversationId: string
+  agentId: string
+  type: HitlRequestType
+  question: string
+  quickReplies?: HitlQuickReply[]
+}
+
+/** Result returned when a HITL request is resolved */
+export interface HitlResponse {
+  status: 'answered' | 'dismissed' | 'auto-resolved'
+  value: string
 }

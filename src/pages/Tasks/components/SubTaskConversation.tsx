@@ -31,22 +31,28 @@ export const SubTaskConversation = memo(
     const subTaskConversations = useMemo(
       () =>
         conversations.filter((c) => {
+          // Primary: direct link via conversationId stored on the task
+          if (subTask.conversationId) {
+            return c.id === subTask.conversationId
+          }
+
+          // Fallback for older tasks without conversationId:
           // Must be in the same workflow
           if (c.workflowId !== subTask.workflowId) return false
 
           // Each sub-task conversation starts with a user message equal to
-          // the sub-task description.  Since every sub-task shares the same
-          // workflowId we need this second check to disambiguate.
+          // the sub-task description.
           const firstUserMsg = c.messages.find((m) => m.role === 'user')
           if (firstUserMsg && subTask.description) {
             return firstUserMsg.content === subTask.description
           }
 
-          // Fallback: match by the conversation's primary agentId
+          // Last resort: match by the conversation's primary agentId
           return c.agentId === subTask.assignedAgentId
         }),
       [
         conversations,
+        subTask.conversationId,
         subTask.workflowId,
         subTask.description,
         subTask.assignedAgentId,

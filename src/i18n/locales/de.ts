@@ -983,4 +983,23 @@ export const de: I18n = {
     'Ein anderer Tab verarbeitet Hintergrundaufgaben',
   'Task completed in background': 'Aufgabe im Hintergrund abgeschlossen',
   'Task failed in background': 'Aufgabe im Hintergrund fehlgeschlagen',
+
+  // Human-In-The-Loop (HITL)
+  'Awaiting response': 'Warten auf Antwort',
+  Answered: 'Beantwortet',
+  'Auto-resolved': 'Automatisch gelöst',
+  Dismissed: 'Verworfen',
+  Approval: 'Genehmigung',
+  Clarification: 'Klärung',
+  Choice: 'Auswahl',
+  Confirmation: 'Bestätigung',
+  Feedback: 'Feedback',
+  'Type your response...': 'Geben Sie Ihre Antwort ein...',
+  Send: 'Senden',
+  Skip: 'Überspringen',
+  Response: 'Antwort',
+  'YOLO Mode': 'YOLO-Modus',
+  'Skip all human intervention prompts and let agents decide autonomously':
+    'Alle menschlichen Eingabeaufforderungen überspringen und Agenten autonom entscheiden lassen',
+  Automation: 'Automatisierung',
 } as const

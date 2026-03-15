@@ -12,6 +12,7 @@
 import { useConversationStore } from '@/stores/conversationStore'
 import { useTaskStore, claimTask } from '@/stores/taskStore'
 import { ArtifactManager } from '@/lib/artifact-manager'
+import { notifyTaskCompleted, notifyTaskFailed } from '@/lib/web-notifications'
 import { emit } from '../events'
 import { runAgent, type AgentRunnerResult } from '../agent-runner'
 import type {
@@ -223,24 +224,28 @@ export async function markTaskCompleted(
   turnsUsed: number,
   actualPasses: number = 1,
 ): Promise<void> {
-  const { updateTask } = useTaskStore.getState()
+  const { updateTask, getTaskById } = useTaskStore.getState()
+  const task = await getTaskById(taskId)
   await updateTask(taskId, {
     status: 'completed',
     turnsUsed,
     actualPasses,
     completedAt: new Date(),
   })
+  notifyTaskCompleted(task?.title ?? 'Task')
 }
 
 /**
  * Mark a task as failed.
  */
 export async function markTaskFailed(taskId: string): Promise<void> {
-  const { updateTask } = useTaskStore.getState()
+  const { updateTask, getTaskById } = useTaskStore.getState()
+  const task = await getTaskById(taskId)
   await updateTask(taskId, {
     status: 'failed',
     completedAt: new Date(),
   })
+  notifyTaskFailed(task?.title ?? 'Task')
 }
 
 // ============================================================================
@@ -414,6 +419,9 @@ export async function executeSubTaskWithAgent(params: {
     workflowId,
     decomposedTask.description,
   )
+  // Link conversation to task for reliable UI lookup
+  const { updateTask: _updateTaskForConv } = useTaskStore.getState()
+  await _updateTaskForConv(subTask.id, { conversationId })
 
   // 3. Set up events
   const events = createAgentEventEmitters(
@@ -839,13 +847,33 @@ export async function validateAndRefine(
     claimTask(refinementTask.id, agent.id)
     await markTaskInProgress(refinementTask.id, agent.id)
 
-    await runAgent({
+    // Create conversation so the refinement output is visible in the UI
+    const refinementPrompt = `Please address these issues with your previous output: ${validationResult.reason}\n\nOriginal task: ${prompt}`
+    const { conversationId, addMessage } = await createSubTaskConversation(
+      agent.id,
+      refinementTask.workflowId,
+      refinementTask.description,
+    )
+    // Link conversation to refinement task for reliable UI lookup
+    const { updateTask: _updateRefinementConv } = useTaskStore.getState()
+    await _updateRefinementConv(refinementTask.id, { conversationId })
+
+    const result = await runAgent({
       task: refinementTask,
       agent,
-      prompt: `Please address these issues with your previous output: ${validationResult.reason}\n\nOriginal task: ${prompt}`,
+      prompt: refinementPrompt,
       scope: options?.scope,
       signal: options?.signal,
     })
+
+    // Persist the assistant response in the conversation
+    if (result.response) {
+      await addMessage(conversationId, {
+        role: 'assistant',
+        content: result.response,
+        agentId: agent.id,
+      })
+    }
 
     await markTaskCompleted(refinementTask.id, 1, 1)
 

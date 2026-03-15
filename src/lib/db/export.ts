@@ -26,7 +26,6 @@ export const EXPORT_MAP_NAMES = [
   'credentials',
   'studioEntries',
   'workflows',
-  'battles',
   'pinnedMessages',
   'traces',
   'spans',

@@ -214,7 +214,6 @@ export type SyncWorkerResponse =
 
 export type SyncedStoreName =
   | 'agents'
-  | 'battles'
   | 'conversations'
   | 'knowledgeItems'
   | 'agentMemories'
@@ -225,7 +224,6 @@ export type SyncedStoreName =
 
 export const SYNCED_STORES: SyncedStoreName[] = [
   'agents',
-  'battles',
   'conversations',
   'knowledgeItems',
   'agentMemories',

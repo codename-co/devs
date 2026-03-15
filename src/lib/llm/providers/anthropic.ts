@@ -72,6 +72,22 @@ export class AnthropicProvider implements LLMProviderInterface {
   }
 
   /**
+   * Constrain tool_choice for thinking-enabled requests.
+   * When thinking is active, only 'auto' and 'none' are supported.
+   * 'required' and forced tool choices are incompatible with extended thinking.
+   */
+  private constrainToolChoiceForThinking(toolChoice: ToolChoice): ToolChoice {
+    if (toolChoice === 'none' || toolChoice === 'auto') {
+      return toolChoice
+    }
+    // 'required' or forced function choice are incompatible with thinking
+    console.warn(
+      `[Anthropic] tool_choice '${typeof toolChoice === 'string' ? toolChoice : 'function'}' is incompatible with thinking, falling back to 'auto'`,
+    )
+    return 'auto'
+  }
+
+  /**
    * Convert Anthropic tool_use content blocks to OpenAI tool_calls format
    */
   private convertToolUseToToolCalls(contentBlocks: any[]): ToolCall[] {
@@ -177,6 +193,8 @@ export class AnthropicProvider implements LLMProviderInterface {
 
     const endpoint = `${config?.baseUrl || this.baseUrl}/messages`
     const model = this.getModelId(config?.model)
+    const thinkingEnabled = !!config?.thinking
+
     console.log('[ANTHROPIC-PROVIDER] 🚀 Making LLM request:', {
       endpoint,
       model,
@@ -185,15 +203,31 @@ export class AnthropicProvider implements LLMProviderInterface {
       temperature: config?.temperature || 0.7,
       hasTools: !!config?.tools?.length,
       enableWebSearch: !!config?.enableWebSearch,
+      thinking: config?.thinking,
+      effort: config?.effort,
     })
 
     // Build request body
+    // When thinking is enabled, temperature is not compatible
     const requestBody: Record<string, unknown> = {
       model,
       system: systemMessage,
       messages: userMessages,
-      temperature: config?.temperature || 0.7,
       max_tokens: config?.maxTokens || AnthropicProvider.DEFAULT_MAX_TOKENS,
+    }
+
+    if (!thinkingEnabled) {
+      requestBody.temperature = config?.temperature || 0.7
+    }
+
+    // Add thinking configuration
+    if (config?.thinking) {
+      requestBody.thinking = config.thinking
+    }
+
+    // Add effort level via output_config (used with adaptive thinking)
+    if (config?.effort) {
+      requestBody.output_config = { effort: config.effort }
     }
 
     // Build tools array
@@ -214,12 +248,15 @@ export class AnthropicProvider implements LLMProviderInterface {
     }
 
     // Add tools to request if any
+    // When thinking is enabled, tool_choice is restricted to 'auto' or 'none'
     if (tools.length > 0 && config?.tool_choice !== 'none') {
       requestBody.tools = tools
       if (config?.tool_choice) {
-        const anthropicToolChoice = this.convertToolChoiceToAnthropicFormat(
-          config.tool_choice,
-        )
+        const effectiveToolChoice = thinkingEnabled
+          ? this.constrainToolChoiceForThinking(config.tool_choice)
+          : config.tool_choice
+        const anthropicToolChoice =
+          this.convertToolChoiceToAnthropicFormat(effectiveToolChoice)
         if (anthropicToolChoice) {
           requestBody.tool_choice = anthropicToolChoice
         }
@@ -282,6 +319,12 @@ export class AnthropicProvider implements LLMProviderInterface {
 
     const data = await response.json()
 
+    // Extract thinking content from response
+    const thinkingContent = data.content
+      .filter((block: any) => block.type === 'thinking')
+      .map((block: any) => block.thinking)
+      .join('\n')
+
     // Extract text content from response
     const textContent = data.content
       .filter((block: any) => block.type === 'text')
@@ -314,6 +357,7 @@ export class AnthropicProvider implements LLMProviderInterface {
 
     return {
       content: textContent,
+      thinking: thinkingContent || undefined,
       tool_calls: toolCalls.length > 0 ? toolCalls : undefined,
       groundingMetadata,
       finish_reason: finishReason,
@@ -379,14 +423,30 @@ export class AnthropicProvider implements LLMProviderInterface {
     // Filter out null messages (those with empty/whitespace-only content)
     const userMessages = convertedMessages.filter((m) => m !== null)
 
+    const thinkingEnabled = !!config?.thinking
+
     // Build request body
+    // When thinking is enabled, temperature is not compatible
     const requestBody: Record<string, unknown> = {
       model: this.getModelId(config?.model),
       system: systemMessage,
       messages: userMessages,
-      temperature: config?.temperature || 0.7,
       max_tokens: config?.maxTokens || AnthropicProvider.DEFAULT_MAX_TOKENS,
       stream: true,
+    }
+
+    if (!thinkingEnabled) {
+      requestBody.temperature = config?.temperature || 0.7
+    }
+
+    // Add thinking configuration
+    if (config?.thinking) {
+      requestBody.thinking = config.thinking
+    }
+
+    // Add effort level via output_config (used with adaptive thinking)
+    if (config?.effort) {
+      requestBody.output_config = { effort: config.effort }
     }
 
     // Build tools array
@@ -407,12 +467,15 @@ export class AnthropicProvider implements LLMProviderInterface {
     }
 
     // Add tools to request if any
+    // When thinking is enabled, tool_choice is restricted to 'auto' or 'none'
     if (tools.length > 0 && config?.tool_choice !== 'none') {
       requestBody.tools = tools
       if (config?.tool_choice) {
-        const anthropicToolChoice = this.convertToolChoiceToAnthropicFormat(
-          config.tool_choice,
-        )
+        const effectiveToolChoice = thinkingEnabled
+          ? this.constrainToolChoiceForThinking(config.tool_choice)
+          : config.tool_choice
+        const anthropicToolChoice =
+          this.convertToolChoiceToAnthropicFormat(effectiveToolChoice)
         if (anthropicToolChoice) {
           requestBody.tool_choice = anthropicToolChoice
         }
@@ -499,8 +562,19 @@ export class AnthropicProvider implements LLMProviderInterface {
           try {
             const parsed = JSON.parse(data)
 
+            // Handle thinking content delta
+            if (
+              parsed.type === 'content_block_delta' &&
+              parsed.delta?.type === 'thinking_delta'
+            ) {
+              yield `\n__THINKING_DELTA__${parsed.delta.thinking}`
+            }
+
             // Handle text content delta
-            if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+            if (
+              parsed.type === 'content_block_delta' &&
+              parsed.delta?.type === 'text_delta'
+            ) {
               yield parsed.delta.text
             }
 

@@ -17,7 +17,7 @@ import { userSettings } from '@/stores/userStore'
 
 import { Icon } from './Icon'
 import { Title } from './Title'
-import { ProgressIndicator } from './ProgressIndicator'
+// import { ProgressIndicator } from './ProgressIndicator'
 import { SettingsModal } from './SettingsModal'
 import {
   GlobalSearch,
@@ -367,7 +367,7 @@ export const AppDrawer = memo(() => {
           onOpenSearch={openSearch}
           onOpenSettings={openSettings}
           hasConversations={conversationsCount > 0}
-          hasSearchable={hasSearchable}
+          // hasSearchable={hasSearchable}
           installedApps={installedApps}
           lang={lang}
         />
@@ -416,6 +416,7 @@ AppDrawer.displayName = 'AppDrawer'
 const CollapsedDrawer = ({
   className,
   onOpenSearch,
+  onOpenSettings,
   hasConversations,
   installedApps,
   lang,
@@ -424,7 +425,6 @@ const CollapsedDrawer = ({
   onOpenSearch: () => void
   onOpenSettings: () => void
   hasConversations: boolean
-  hasSearchable: boolean
   installedApps: InstalledExtension[]
   lang: LanguageCode
 }) => {
@@ -689,27 +689,35 @@ const CollapsedDrawer = ({
               </Button>
             </Tooltip>
           </nav>
-
-          {/* <div className="mt-4 pt-4 border-t border-default-200 float-end">
-            <Tooltip content={t('Upgrade to Pro')} placement="right">
-              <Button
-                as={Link}
-                href={url('/upgrade')}
-                isIconOnly
-                color="warning"
-                variant="flat"
-                aria-label={t('Upgrade to Pro')}
-              >
-                <Icon name="Star" />
-              </Button>
-            </Tooltip>
-          </div> */}
         </div>
       </div>
 
-      {/* Progress indicator at bottom */}
       <div className="mt-auto pt-4 hidden lg:flex flex-col items-center gap-2">
-        <ProgressIndicator />
+        {/* Progress indicator at bottom */}
+        {/* <ProgressIndicator /> */}
+        <Tooltip
+          content={
+            <span className="flex items-center gap-2">
+              {t('Settings')}
+              <Kbd keys={['command']}>,</Kbd>
+            </span>
+          }
+          placement="right"
+        >
+          <Button
+            isIconOnly
+            variant="light"
+            size="sm"
+            onPress={onOpenSettings}
+            aria-label={t('Settings')}
+          >
+            <Icon
+              name="Settings"
+              className="text-gray-500 dark:text-gray-400"
+              size="sm"
+            />
+          </Button>
+        </Tooltip>
       </div>
     </div>
   )
@@ -768,7 +776,7 @@ const ExpandedDrawer = ({
           <Link href={url('')}>
             <Icon
               name="Devs"
-              className="text-primary-300 dark:text-white ms-3 me-1.5"
+              className="text-primary-300 dark:text-white mt-1 ms-3 me-1.5"
             />
             <Title
               level={3}

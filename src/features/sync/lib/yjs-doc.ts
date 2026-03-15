@@ -7,7 +7,7 @@
  * Note: Yjs stores JSON-serializable data, so Date fields become ISO strings
  * when synced. We use the base types directly and accept this runtime behavior.
  */
-import * as Y from 'yjs'
+import type * as Y from 'yjs'
 import type {
   Agent,
   Artifact,
@@ -18,6 +18,10 @@ import type {
   Task,
 } from '@/types'
 import type { StudioEntry } from '@/features/studio/types'
+
+// Re-export the canonical Y.Doc and reset from @/lib/yjs
+export { ydoc as _ydoc, resetYDoc } from '@/lib/yjs'
+import { ydoc } from '@/lib/yjs'
 
 // Re-export types for convenience (dates are strings at runtime after serialization)
 export type {
@@ -53,29 +57,15 @@ export type Preferences = Record<string, unknown>
 export type Secrets = Record<string, string>
 
 // ============================================================================
-// Yjs Document Singleton
+// Yjs Document — delegates to the canonical singleton in @/lib/yjs
 // ============================================================================
 
-let ydoc: Y.Doc | null = null
-
 /**
- * Get the singleton Yjs document
+ * Get the singleton Yjs document.
+ * @deprecated Import `ydoc` from `@/lib/yjs` directly.
  */
-export function getYDoc(): Y.Doc {
-  if (!ydoc) {
-    ydoc = new Y.Doc()
-  }
+export function getYDoc() {
   return ydoc
-}
-
-/**
- * Reset the Yjs document (for testing)
- */
-export function resetYDoc(): void {
-  if (ydoc) {
-    ydoc.destroy()
-    ydoc = null
-  }
 }
 
 // ============================================================================

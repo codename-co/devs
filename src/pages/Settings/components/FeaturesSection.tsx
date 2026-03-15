@@ -53,6 +53,8 @@ export function FeaturesSection() {
   const setGlobalSystemInstructions = userSettings(
     (state) => state.setGlobalSystemInstructions,
   )
+  const yoloMode = userSettings((state) => state.yoloMode ?? false)
+  const setYoloMode = userSettings((state) => state.setYoloMode)
 
   return (
     <div data-testid="conversational-settings" className="space-y-8">
@@ -91,6 +93,21 @@ export function FeaturesSection() {
             <p className="text-xs text-default-500">
               {t(
                 'Allow AI models to search the web for up-to-date information (supported by Google Gemini and Anthropic Claude)',
+              )}
+            </p>
+          </Switch>
+        </div>
+
+        <div id="yolo-mode" className={getHighlightClasses('yolo-mode')}>
+          <Switch
+            isSelected={yoloMode}
+            onChange={(e) => setYoloMode(e.target.checked)}
+            size="sm"
+          >
+            <p>{t('YOLO Mode')}</p>
+            <p className="text-xs text-default-500">
+              {t(
+                'Skip all human intervention prompts and let agents decide autonomously',
               )}
             </p>
           </Switch>

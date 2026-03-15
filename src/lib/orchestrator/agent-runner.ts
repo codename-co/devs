@@ -273,7 +273,7 @@ async function buildSystemPrompt(
   const skillInstructions = await buildSkillInstructions(agent.id)
 
   // Build task context
-  let taskContext = `\n\n## Current Task\n**Title:** ${task.title}\n**Description:** ${task.description}`
+  let taskContext = `\n\n## Current Task\n**Task ID:** ${task.id}\n**Agent ID:** ${agent.id}\n**Title:** ${task.title}\n**Description:** ${task.description}`
 
   if (task.requirements?.length > 0) {
     taskContext += `\n\n### Requirements\n`
@@ -348,9 +348,17 @@ async function executeTurn(
 
       toolCalls.push({ name: toolName, input: toolInput })
 
-      // Execute the tool
+      // Execute the tool (pass execution context so tools get real task/agent IDs)
       try {
-        const result = await defaultExecutor.execute(call as ToolCall)
+        const result = await defaultExecutor.execute(call as ToolCall, {
+          context: context
+            ? {
+                agentId: context.agentId,
+                taskId: context.taskId,
+                conversationId: context.conversationId,
+              }
+            : undefined,
+        })
         const output = result.success
           ? defaultExecutor.formatResultForLLM(result)
           : `Error: ${(result as any).error || 'Tool execution failed'}`

@@ -6,10 +6,10 @@ import { Icon } from './Icon'
 
 export const DevsIcon = memo(() => (
   <Icon
-    size="4xl"
-    name="DevsAnimated"
+    size="5xl"
+    name="Devs"
     animation="appear"
-    className="mb-4 sm:my-6 text-primary-300 dark:text-white"
+    className="text-gray-400 dark:text-white"
   />
 ))
 DevsIcon.displayName = 'DevsIcon'

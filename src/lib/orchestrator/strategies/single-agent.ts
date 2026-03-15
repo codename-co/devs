@@ -26,6 +26,7 @@ import {
 import { useTaskStore } from '@/stores/taskStore'
 import { claimTask } from '@/stores/taskStore'
 import { emit } from '../events'
+import { requestHumanInput } from '@/lib/hitl'
 
 export async function executeSingleAgent(
   prompt: string,
@@ -91,7 +92,29 @@ export async function executeSingleAgent(
       status: 'in_progress',
       assignedAgentId: agent.id,
       assignedAt: new Date(),
+      conversationId,
     })
+
+    // HITL checkpoint: ask for approval before agent execution
+    const hitlResponse = await requestHumanInput({
+      conversationId,
+      agentId: agent.id,
+      type: 'approval',
+      question: `I'll handle this task: **${mainTask.title}**\n\nShould I proceed?`,
+      quickReplies: [
+        { label: 'Proceed', value: 'proceed', color: 'success' },
+        { label: 'Cancel', value: 'cancel', color: 'danger' },
+      ],
+    })
+
+    if (hitlResponse.value === 'cancel') {
+      await updateTask(mainTask.id, { status: 'failed' })
+      return buildFailureResult(
+        workflowId,
+        mainTask.id,
+        new Error('Cancelled by user'),
+      )
+    }
 
     // Set up event emitters
     const events = createAgentEventEmitters(

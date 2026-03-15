@@ -21,10 +21,10 @@ import type { Artifact } from '@/types'
  * Creates a new artifact with markdown content that other agents/tasks can read.
  */
 export interface WriteArtifactParams {
-  /** The task ID this artifact belongs to */
-  task_id: string
-  /** The agent ID creating the artifact */
-  agent_id: string
+  /** The task ID this artifact belongs to (injected from execution context) */
+  task_id?: string
+  /** The agent ID creating the artifact (injected from execution context) */
+  agent_id?: string
   /** Human-readable title for the artifact (e.g. "Chapter 1 - Introduction") */
   title: string
   /** The markdown content of the artifact */
@@ -97,8 +97,8 @@ export interface ReadArtifactResult {
  * Lists all artifacts associated with a task (or parent task for subtask context).
  */
 export interface ListTaskArtifactsParams {
-  /** The task ID to list artifacts for */
-  task_id: string
+  /** The task ID to list artifacts for (injected from execution context) */
+  task_id?: string
 }
 
 /**
@@ -205,18 +205,10 @@ export const ARTIFACT_TOOL_DEFINITIONS: Record<
         'Create a new shared artifact (markdown document) that other agents and tasks can read. ' +
         'Use this to produce structured deliverables like chapters, reports, outlines, or any content ' +
         'that downstream tasks need to build upon. The artifact is persisted and can be read later ' +
-        'by other agents via read_artifact.',
+        'by other agents via read_artifact. The task ID and agent ID are set automatically.',
       parameters: {
         type: 'object',
         properties: {
-          task_id: {
-            type: 'string',
-            description: 'The ID of the current task this artifact belongs to',
-          },
-          agent_id: {
-            type: 'string',
-            description: 'The ID of the agent creating this artifact',
-          },
           title: {
             type: 'string',
             description:
@@ -239,7 +231,7 @@ export const ARTIFACT_TOOL_DEFINITIONS: Record<
             enum: ['document', 'code', 'design', 'analysis', 'plan', 'report'],
           },
         },
-        required: ['task_id', 'agent_id', 'title', 'content'],
+        required: ['title', 'content'],
       },
     },
   },
@@ -270,19 +262,13 @@ export const ARTIFACT_TOOL_DEFINITIONS: Record<
     function: {
       name: 'list_task_artifacts',
       description:
-        'List all artifacts associated with a task. Returns summary information including ' +
+        'List all artifacts associated with the current task. Returns summary information including ' +
         'titles, types, statuses, and IDs. Use this to discover what documents have been ' +
-        'created by sibling or upstream tasks, then use read_artifact to get full content.',
+        'created by sibling or upstream tasks, then use read_artifact to get full content. ' +
+        'The task ID is set automatically from the current execution context.',
       parameters: {
         type: 'object',
-        properties: {
-          task_id: {
-            type: 'string',
-            description:
-              'The task ID to list artifacts for. Use the parent task ID to see all sibling artifacts.',
-          },
-        },
-        required: ['task_id'],
+        properties: {},
       },
     },
   },

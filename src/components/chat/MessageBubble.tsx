@@ -101,7 +101,7 @@ export const MessageBubble = memo(
         )}
 
         <div
-          className={`rounded-medium text-foreground relative overflow-hidden ${isSmall ? 'text-tiny' : 'font-medium'} ${
+          className={`w-full rounded-medium text-foreground relative overflow-hidden ${isSmall ? 'text-tiny' : 'font-medium'} ${
             message.role === 'user'
               ? `bg-default-100 max-w-[80%] ${isSmall ? 'px-3 py-2' : 'px-4 py-3'}`
               : `bg-transparent ${isSmall ? 'px-0.5 py-0' : 'px-1 py-0'}`
