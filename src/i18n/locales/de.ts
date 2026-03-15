@@ -242,6 +242,8 @@ export const de: I18n = {
   // Artifacts side panel
   Artifacts: 'Artefakte',
   'No artifacts created yet': 'Noch keine Artefakte erstellt',
+  'Show all artifacts': 'Alle Artefakte anzeigen',
+  Expand: 'Ausklappen',
 
   // Task
   Requirements: 'Anforderungen',

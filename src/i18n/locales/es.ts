@@ -240,6 +240,8 @@ export const es: I18n = {
   // Artifacts side panel
   Artifacts: 'Artefactos',
   'No artifacts created yet': 'Aún no se han creado artefactos',
+  'Show all artifacts': 'Mostrar todos los artefactos',
+  Expand: 'Expandir',
 
   // Task
   Requirements: 'Requisitos',

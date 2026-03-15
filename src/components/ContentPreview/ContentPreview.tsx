@@ -384,7 +384,7 @@ const HTMLPreview = ({ content, name }: { content: string; name: string }) => {
         srcDoc={srcDoc}
         title={name}
         className="w-full h-full"
-        sandbox="allow-same-origin"
+        sandbox="allow-same-origin allow-pointer-lock"
         referrerPolicy="no-referrer"
       />
     </div>

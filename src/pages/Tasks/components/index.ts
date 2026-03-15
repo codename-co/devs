@@ -1,6 +1,7 @@
 export { AgentTeamBar } from './AgentTeamBar'
 export { ArtifactsSection } from './ArtifactsSection'
 export { RecoveryBanner } from './RecoveryBanner'
+export { RequirementsSection } from './RequirementsSection'
 export { TeamWorkDiagram } from './TeamWorkDiagram'
 export { SubTaskConversation } from './SubTaskConversation'
 export { SubTaskStatusIcon } from './SubTaskStatusIcon'

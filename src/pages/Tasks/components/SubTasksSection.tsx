@@ -9,7 +9,6 @@ import type {
   Task,
   Artifact as ArtifactType,
   Conversation,
-  Requirement,
 } from '@/types'
 import type { SubTaskStreamingState } from '@/hooks/useOrchestrationStreaming'
 
@@ -17,18 +16,9 @@ import { SubTaskStatusIcon } from './SubTaskStatusIcon'
 import { SubTaskConversation } from './SubTaskConversation'
 import localI18n from '../i18n'
 
-/** Map requirement status to a task-like status for the icon */
-const requirementStatusToTaskStatus = (req: Requirement): string => {
-  if (req.status === 'satisfied' || req.satisfiedAt) return 'completed'
-  if (req.status === 'failed') return 'failed'
-  if (req.status === 'in_progress') return 'in_progress'
-  return 'pending'
-}
-
 export const SubTasksSection = memo(
   ({
     subTasks,
-    requirements = [],
     allTasks = [],
     allConversations,
     allArtifacts,
@@ -37,7 +27,6 @@ export const SubTasksSection = memo(
     streamingMap,
   }: {
     subTasks: Task[]
-    requirements?: Requirement[]
     /** All tasks in the system, used to find nested sub-tasks (refinements). */
     allTasks?: Task[]
     allConversations: Conversation[]
@@ -49,8 +38,7 @@ export const SubTasksSection = memo(
   }) => {
     const { t } = useI18n(localI18n)
 
-    const totalItems = subTasks.length + requirements.length
-    if (!totalItems) return null
+    if (!subTasks.length) return null
 
     /** Render a list of sub-tasks recursively (handles nested refinement tasks). */
     const renderSubTasks = (tasks: Task[], depth: number = 0) =>
@@ -154,25 +142,7 @@ export const SubTasksSection = memo(
     return (
       <div className="mb-6">
         {/* Vertical inline list of sub-tasks */}
-        <AccordionTracker>
-          {[
-            // Requirements rendered as sub-task items
-            ...requirements.map((req) => {
-              const mappedStatus = requirementStatusToTaskStatus(req)
-              return (
-                <AccordionItem
-                  key={req.id}
-                  startContent={<SubTaskStatusIcon status={mappedStatus} />}
-                  title={req.description}
-                  isDisabled
-                  hideIndicator
-                />
-              )
-            }),
-
-            ...renderSubTasks(subTasks),
-          ]}
-        </AccordionTracker>
+        <AccordionTracker>{renderSubTasks(subTasks)}</AccordionTracker>
       </div>
     )
   },

@@ -237,6 +237,8 @@ export const ko: I18n = {
   // Artifacts side panel
   Artifacts: '아티팩트',
   'No artifacts created yet': '아직 생성된 아티팩트가 없습니다',
+  'Show all artifacts': '모든 아티팩트 표시',
+  Expand: '확장',
 
   // Task
   Requirements: '요구 사항',

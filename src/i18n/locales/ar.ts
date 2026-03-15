@@ -237,7 +237,9 @@ export const ar: I18n = {
 
   // Artifacts side panel
   Artifacts: 'القطع الأثرية',
+  'Show all artifacts': 'عرض جميع القطع الأثرية',
   'No artifacts created yet': 'لم يتم إنشاء قطع أثرية بعد',
+  Expand: 'توسيع',
 
   // Task
   Requirements: 'المتطلبات',

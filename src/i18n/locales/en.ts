@@ -240,6 +240,8 @@ export const en = [
   // Artifacts side panel
   'Artifacts',
   'No artifacts created yet',
+  'Show all artifacts',
+  'Expand',
 
   // Task
   'Requirements',

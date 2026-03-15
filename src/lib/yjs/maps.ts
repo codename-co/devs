@@ -250,6 +250,12 @@ export interface LangfuseConfigEntry {
 export const langfuseConfig = ydoc.getMap<LangfuseConfigEntry>('langfuseConfig')
 
 /**
+ * Widget preview capture images — keyed by stable widget ID.
+ * Values are PNG data-URLs (640×480).
+ */
+export const widgetCaptures = ydoc.getMap<string>('widgetCaptures')
+
+/**
  * @deprecated Use {@link credentials} instead.  Alias kept for backward
  * compatibility with code that still references `secrets`.
  */

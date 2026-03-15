@@ -623,7 +623,7 @@ export const MarkdownRenderer = ({
                 className="my-4"
                 moreActions={[
                   {
-                    label: 'Expand',
+                    label: t('Expand'),
                     icon: 'Expand',
                     onPress: () =>
                       openInspector({

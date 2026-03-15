@@ -1,41 +1,91 @@
 import { memo } from 'react'
-import { Chip, Progress } from '@heroui/react'
+import { Accordion, AccordionItem, Chip } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
 import { Icon } from '@/components'
 import type { IconName } from '@/lib/types'
-import type { Agent, Task } from '@/types'
+import type { Agent, Requirement, Task } from '@/types'
+
+/** Map requirement status to step-like icon/color */
+const reqStatusIcon = (req: Requirement): string =>
+  req.status === 'satisfied' || req.satisfiedAt
+    ? 'Check'
+    : req.status === 'failed'
+      ? 'X'
+      : req.status === 'in_progress'
+        ? 'Running'
+        : 'Clock'
+
+const reqStatusColor = (req: Requirement): string =>
+  req.status === 'satisfied' || req.satisfiedAt
+    ? 'text-success-500'
+    : req.status === 'failed'
+      ? 'text-danger-500'
+      : req.status === 'in_progress'
+        ? 'text-primary-500'
+        : 'text-default-400'
 
 export const TaskStepsSection = memo(
   ({
     steps,
+    requirements = [],
     agentCache,
   }: {
     steps: Task['steps']
+    requirements?: Requirement[]
     agentCache: Record<string, Agent>
   }) => {
     const { t } = useI18n()
 
-    if (!steps.length) return null
-
-    const completed = steps.filter((s) => s.status === 'completed').length
+    const totalItems = requirements.length + steps.length
+    if (!totalItems) return null
 
     return (
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-3">
-          <Icon name="List" className="w-4 h-4 text-default-500" />
-          <h3 className="text-sm font-semibold text-default-700">
-            {t('Steps')} ({completed}/{steps.length})
-          </h3>
-          <Progress
-            size="sm"
-            value={(completed / steps.length) * 100}
-            color="success"
-            className="max-w-[120px]"
-            aria-label="Steps progress"
-          />
-        </div>
+      <div>
         <div className="space-y-1">
+          {/* Requirements in a collapsed accordion */}
+          {requirements.length > 0 && (
+            // <div
+            //   key="requirements"
+            //   className="flex items-center gap-2 px-2 rounded-md hover:bg-default-50 transition-colors"
+            // >
+            // </div>
+            <Accordion isCompact className="px-0">
+              <AccordionItem
+                key="requirements"
+                startContent={
+                  <Icon
+                    name="DoubleCheck"
+                    className={`w-4 h-4 flex-shrink-0`}
+                  />
+                }
+                title={
+                  <span className="text-sm font-medium text-default-800 flex-1 truncate">
+                    {t('Requirements')}
+                  </span>
+                }
+                classNames={{ trigger: 'py-1.5 px-2', content: 'pb-2' }}
+              >
+                <div className="space-y-1">
+                  {requirements.map((req) => (
+                    <div
+                      key={req.id}
+                      className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-default-50 transition-colors"
+                    >
+                      <Icon
+                        name={reqStatusIcon(req) as IconName}
+                        className={`w-4 h-4 flex-shrink-0 ${reqStatusColor(req)}`}
+                      />
+                      <span className="text-sm text-default-700 flex-1">
+                        {req.description}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </AccordionItem>
+            </Accordion>
+          )}
+          {/* Steps */}
           {[...steps]
             .sort((a, b) => a.order - b.order)
             .map((step) => {

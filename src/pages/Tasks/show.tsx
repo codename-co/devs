@@ -814,12 +814,15 @@ export const TaskPage = () => {
             )}
 
             {/* Steps section */}
-            <TaskStepsSection steps={task.steps} agentCache={agentCache} />
+            <TaskStepsSection
+              steps={task.steps}
+              requirements={task.requirements}
+              agentCache={agentCache}
+            />
 
-            {/* Sub-tasks & requirements section */}
+            {/* Sub-tasks section */}
             <SubTasksSection
               subTasks={subTasks}
-              requirements={task.requirements}
               allTasks={allTasks}
               allConversations={decryptedConversations}
               allArtifacts={allArtifacts}
@@ -828,8 +831,11 @@ export const TaskPage = () => {
               streamingMap={streamingMap}
             />
 
-            {/* All artifacts (parent + sub-tasks) */}
-            <ArtifactsSection artifacts={allTaskArtifacts} />
+            {/* All artifacts (parent + sub-tasks) + rich widgets from conversations */}
+            <ArtifactsSection
+              artifacts={allTaskArtifacts}
+              conversations={decryptedConversations}
+            />
 
             {/* Cross-agent conversation timeline */}
             {timelineItems.length > 0 && (

@@ -243,6 +243,8 @@ export const fr: I18n = {
   // Artifacts side panel
   Artifacts: 'Artefacts',
   'No artifacts created yet': 'Aucun artefact créé pour le moment',
+  'Show all artifacts': 'Afficher tous les artefacts',
+  Expand: 'Agrandir',
 
   // Task
   Requirements: 'Exigences',

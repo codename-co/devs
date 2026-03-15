@@ -180,7 +180,7 @@ export const Widget = ({
               title="HTML Preview"
               srcDoc={completeStreamingHtml(code)}
               className="w-full h-full border-0 rounded-md min-h-200"
-              sandbox="allow-same-origin allow-scripts allow-forms"
+              sandbox="allow-same-origin allow-scripts allow-forms allow-pointer-lock"
             />
           </div>
         )
@@ -271,7 +271,7 @@ export const Widget = ({
             )}
           </CardHeader>
         )}
-        <CardBody className="pt-0 px-0">{renderContent()}</CardBody>
+        <CardBody className="p-0">{renderContent()}</CardBody>
       </Card>
     </ErrorBoundary>
   )

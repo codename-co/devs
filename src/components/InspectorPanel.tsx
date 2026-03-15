@@ -81,7 +81,7 @@ const InspectorContent = memo(({ item }: { item: InspectorItem }) => {
         className="flex flex-col overflow-y-auto flex-1 p-0.5"
       >
         {/* Header bar */}
-        <div className="sticky top-0 bg-background dark:bg-content1 z-10 pb-2 mb-2 px-2">
+        <div className="sticky top-0 bg-background dark:bg-content1 z-10 px-2">
           <div className="flex items-center gap-2">
             {canGoBack && (
               <Tooltip content={t('Back')}>
@@ -101,7 +101,7 @@ const InspectorContent = memo(({ item }: { item: InspectorItem }) => {
               </Tooltip>
             )}
 
-            <div className="flex items-center gap-4 px-4 h-14 max-w-full flex-1 min-w-0">
+            <div className="flex items-center gap-2 h-14 max-w-full flex-1 min-w-0">
               <Icon name={icon} size="md" className="text-default-500" />
               <span className="text-sm font-medium truncate">{title}</span>
             </div>
@@ -122,7 +122,7 @@ const InspectorContent = memo(({ item }: { item: InspectorItem }) => {
         </div>
 
         {/* Body */}
-        <div className="px-3 pb-4 h-full">
+        <div className="px-3 h-full">
           <InspectorBody item={item} />
         </div>
       </ScrollShadow>
