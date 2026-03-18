@@ -8,10 +8,12 @@ import type { STTProvider, STTProviderType } from '../types'
 import { WebSpeechSTTProvider } from './web-speech'
 import { MoonshineSTTProvider } from './moonshine'
 import { WhisperSTTProvider } from './whisper'
+import { GraniteSTTProvider } from './granite'
 
 export { WebSpeechSTTProvider } from './web-speech'
 export { MoonshineSTTProvider } from './moonshine'
 export { WhisperSTTProvider } from './whisper'
+export { GraniteSTTProvider } from './granite'
 
 /**
  * Create an STT provider instance
@@ -32,6 +34,11 @@ export function createSTTProvider(
     case 'whisper':
       return new WhisperSTTProvider(
         options?.modelId || 'onnx-community/whisper-small',
+      )
+
+    case 'granite':
+      return new GraniteSTTProvider(
+        options?.modelId || 'onnx-community/granite-4.0-1b-speech-ONNX',
       )
 
     case 'gemini-live':
@@ -79,6 +86,7 @@ export function getAvailableSTTProviders(
 
   // Check browser capabilities
   const webSpeechSupported = isWebSpeechSupported()
+  const hasWebGPU = typeof navigator !== 'undefined' && 'gpu' in navigator
 
   return [
     {
@@ -108,6 +116,18 @@ export function getAvailableSTTProviders(
       name: t('Whisper'),
       description: t('High quality, multilingual. ~500MB download.'),
       isLocal: true,
+    },
+    {
+      type: 'granite',
+      name: t('Granite Speech'),
+      description: t(
+        'Multilingual, keyword biasing. Requires WebGPU. ~600MB download.',
+      ),
+      isLocal: true,
+      isDisabled: !hasWebGPU,
+      disabledReason: !hasWebGPU
+        ? t('Granite Speech requires WebGPU')
+        : undefined,
     },
     {
       type: 'gemini-live',

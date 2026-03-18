@@ -16,6 +16,9 @@ export const en = [
   'Moonshine only supports English',
   'Whisper',
   'High quality, multilingual. ~500MB download.',
+  'Granite Speech',
+  'Multilingual, keyword biasing. Requires WebGPU. ~600MB download.',
+  'Granite Speech requires WebGPU',
   'Bidirectional audio with Gemini. Requires API key.',
   // TTS Providers
   'Instant but robotic.',

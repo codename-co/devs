@@ -23,6 +23,10 @@ export const es: I18n = {
   Whisper: 'Whisper',
   'High quality, multilingual. ~500MB download.':
     'Alta calidad, multilingüe. ~500 MB de descarga.',
+  'Granite Speech': 'Granite Speech',
+  'Multilingual, keyword biasing. Requires WebGPU. ~600MB download.':
+    'Multilingüe, sesgo por palabras clave. Requiere WebGPU. ~600 MB de descarga.',
+  'Granite Speech requires WebGPU': 'Granite Speech requiere WebGPU',
   'Bidirectional audio with Gemini. Requires API key.':
     'Audio bidireccional con Gemini. Requiere clave API.',
   // TTS Providers

@@ -12,6 +12,7 @@ export {
   WebSpeechSTTProvider,
   MoonshineSTTProvider,
   WhisperSTTProvider,
+  GraniteSTTProvider,
   createSTTProvider,
   getAvailableSTTProviders,
 } from './stt'

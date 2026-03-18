@@ -23,6 +23,10 @@ export const ko: I18n = {
   Whisper: 'Whisper',
   'High quality, multilingual. ~500MB download.':
     '고품질, 다국어 지원. ~500MB 다운로드.',
+  'Granite Speech': 'Granite Speech',
+  'Multilingual, keyword biasing. Requires WebGPU. ~600MB download.':
+    '다국어, 키워드 바이어싱. WebGPU 필요. ~600MB 다운로드.',
+  'Granite Speech requires WebGPU': 'Granite Speech는 WebGPU가 필요합니다',
   'Bidirectional audio with Gemini. Requires API key.':
     'Gemini와 양방향 오디오. API 키 필요.',
   // TTS Providers

@@ -13,6 +13,7 @@ export type STTProviderType =
   | 'web-speech' // Browser native Web Speech API
   | 'moonshine' // onnx-community/moonshine-base-ONNX (fast, ~166MB)
   | 'whisper' // onnx-community/whisper-large-v3-turbo (SOTA, ~800MB)
+  | 'granite' // onnx-community/granite-4.0-1b-speech-ONNX (multilingual, ~1B params)
   | 'gemini-live' // Gemini Live API (cloud, bidirectional)
   | 'lm-studio' // Local LM Studio server
 
