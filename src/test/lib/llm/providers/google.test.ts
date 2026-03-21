@@ -160,6 +160,173 @@ describe('GoogleProvider', () => {
     })
   })
 
+  describe('grounded chat with function tools', () => {
+    it('should include function declarations alongside google_search in grounded requests', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          candidates: [
+            {
+              content: { parts: [{ text: 'Searching Gmail...' }] },
+              finishReason: 'STOP',
+            },
+          ],
+          usageMetadata: {
+            promptTokenCount: 10,
+            candidatesTokenCount: 5,
+            totalTokenCount: 15,
+          },
+        }),
+      })
+
+      await provider.chat([{ role: 'user', content: 'Search my emails' }], {
+        model: 'gemini-2.5-flash',
+        apiKey: 'test-key',
+        enableWebSearch: true,
+        tools: [
+          {
+            type: 'function',
+            function: {
+              name: 'gmail_search',
+              description: 'Search emails',
+              parameters: {
+                type: 'object',
+                properties: {
+                  query: { type: 'string', description: 'Search query' },
+                },
+                required: ['query'],
+              },
+            },
+          },
+        ],
+      })
+
+      const [, options] = mockFetch.mock.calls[0]
+      const body = JSON.parse(options.body)
+      // Should have both google_search and functionDeclarations
+      expect(body.tools).toHaveLength(2)
+      expect(body.tools[0]).toEqual({ google_search: {} })
+      expect(body.tools[1]).toHaveProperty('functionDeclarations')
+      expect(body.tools[1].functionDeclarations[0].name).toBe('gmail_search')
+      // Should include tool_config for mixed tool mode
+      expect(body.tool_config).toEqual({
+        function_calling_config: { mode: 'AUTO' },
+        include_server_side_tool_invocations: true,
+      })
+    })
+
+    it('should sanitize additionalProperties from tool schemas in grounded requests', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          candidates: [
+            {
+              content: { parts: [{ text: 'OK' }] },
+              finishReason: 'STOP',
+            },
+          ],
+        }),
+      })
+
+      await provider.chat([{ role: 'user', content: 'test' }], {
+        model: 'gemini-2.5-flash',
+        apiKey: 'test-key',
+        enableWebSearch: true,
+        tools: [
+          {
+            type: 'function',
+            function: {
+              name: 'test_tool',
+              description: 'Test',
+              parameters: {
+                type: 'object',
+                properties: { a: { type: 'string', description: 'param' } },
+                required: ['a'],
+                additionalProperties: false,
+              },
+            },
+          },
+        ],
+      })
+
+      const [, options] = mockFetch.mock.calls[0]
+      const body = JSON.parse(options.body)
+      const params = body.tools[1].functionDeclarations[0].parameters
+      expect(params).not.toHaveProperty('additionalProperties')
+      expect(params.type).toBe('object')
+      expect(params.properties.a).toEqual({
+        type: 'string',
+        description: 'param',
+      })
+    })
+
+    it('should parse functionCall parts from grounded response', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    functionCall: {
+                      name: 'gmail_search',
+                      args: { query: 'from:boss', connector_id: 'abc123' },
+                    },
+                  },
+                ],
+              },
+              finishReason: 'STOP',
+            },
+          ],
+          usageMetadata: {
+            promptTokenCount: 10,
+            candidatesTokenCount: 5,
+            totalTokenCount: 15,
+          },
+        }),
+      })
+
+      const result = await provider.chat(
+        [{ role: 'user', content: 'Search my emails from boss' }],
+        {
+          model: 'gemini-2.5-flash',
+          apiKey: 'test-key',
+          enableWebSearch: true,
+          tools: [
+            {
+              type: 'function',
+              function: {
+                name: 'gmail_search',
+                description: 'Search emails',
+                parameters: {
+                  type: 'object',
+                  properties: {
+                    query: { type: 'string', description: 'Search query' },
+                    connector_id: {
+                      type: 'string',
+                      description: 'Connector ID',
+                    },
+                  },
+                  required: ['query', 'connector_id'],
+                },
+              },
+            },
+          ],
+        },
+      )
+
+      expect(result.tool_calls).toBeDefined()
+      expect(result.tool_calls).toHaveLength(1)
+      expect(result.tool_calls![0].function.name).toBe('gmail_search')
+      expect(JSON.parse(result.tool_calls![0].function.arguments)).toEqual({
+        query: 'from:boss',
+        connector_id: 'abc123',
+      })
+      expect(result.finish_reason).toBe('tool_calls')
+    })
+  })
+
   describe('sanitizeSchemaForGemini', () => {
     it('should remove top-level additionalProperties', () => {
       const schema = {

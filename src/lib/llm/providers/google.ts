@@ -14,6 +14,7 @@ import {
   GroundingMetadata,
   GoogleThinkingConfig,
   stripModelPrefix,
+  ToolCall,
 } from '../types'
 import {
   addToolsToRequestBody,
@@ -335,9 +336,6 @@ export class GoogleProvider implements LLMProviderInterface {
     const { contents, systemInstruction } =
       await this.convertMessagesToNativeFormat(messages)
 
-    // Only google_search for grounded requests.
-    // Combining google_search with function_declarations is only supported
-    // in the Live API — the regular generateContent endpoint rejects it.
     const generationConfig: Record<string, unknown> = {
       temperature: config?.temperature || 0.7,
       maxOutputTokens: config?.maxTokens,
@@ -350,10 +348,33 @@ export class GoogleProvider implements LLMProviderInterface {
       )
     }
 
+    // Build tools array: google_search for grounding + function declarations for user tools
+    const nativeTools: Record<string, unknown>[] = [{ google_search: {} }]
+    if (config?.tools && config.tools.length > 0) {
+      nativeTools.push({
+        functionDeclarations: config.tools.map((tool) => ({
+          name: tool.function.name,
+          description: tool.function.description,
+          parameters: sanitizeSchemaForGemini(
+            tool.function.parameters as unknown as Record<string, unknown>,
+          ),
+        })),
+      })
+    }
+
     const requestBody: Record<string, unknown> = {
       contents,
       generationConfig,
-      tools: [{ google_search: {} }],
+      tools: nativeTools,
+    }
+
+    // When mixing built-in tools (google_search) with function declarations,
+    // the API requires include_server_side_tool_invocations to be enabled
+    if (config?.tools && config.tools.length > 0) {
+      requestBody.tool_config = {
+        function_calling_config: { mode: 'AUTO' },
+        include_server_side_tool_invocations: true,
+      }
     }
 
     if (systemInstruction) {
@@ -385,9 +406,10 @@ export class GoogleProvider implements LLMProviderInterface {
       throw new Error('No response candidate from Gemini API')
     }
 
-    // Extract text and thinking content from parts
+    // Extract text, thinking, and function call content from parts
     let textContent = ''
     let thinkingContent = ''
+    const functionCalls: ToolCall[] = []
     for (const part of candidate.content?.parts || []) {
       if (part.text) {
         if (part.thought) {
@@ -395,6 +417,16 @@ export class GoogleProvider implements LLMProviderInterface {
         } else {
           textContent += part.text
         }
+      }
+      if (part.functionCall) {
+        functionCalls.push({
+          id: `call_${functionCalls.length}`,
+          type: 'function',
+          function: {
+            name: part.functionCall.name,
+            arguments: JSON.stringify(part.functionCall.args || {}),
+          },
+        })
       }
     }
 
@@ -404,8 +436,9 @@ export class GoogleProvider implements LLMProviderInterface {
     return {
       content: textContent,
       thinking: thinkingContent || undefined,
+      tool_calls: functionCalls.length > 0 ? functionCalls : undefined,
       groundingMetadata,
-      finish_reason: 'stop',
+      finish_reason: functionCalls.length > 0 ? 'tool_calls' : 'stop',
       usage: data.usageMetadata
         ? {
             promptTokens: data.usageMetadata.promptTokenCount || 0,
@@ -539,9 +572,6 @@ export class GoogleProvider implements LLMProviderInterface {
     const { contents, systemInstruction } =
       await this.convertMessagesToNativeFormat(messages)
 
-    // Only google_search for grounded requests.
-    // Combining google_search with function_declarations is only supported
-    // in the Live API — the regular streamGenerateContent endpoint rejects it.
     const streamGenerationConfig: Record<string, unknown> = {
       temperature: config?.temperature || 0.7,
       maxOutputTokens: config?.maxTokens,
@@ -554,10 +584,33 @@ export class GoogleProvider implements LLMProviderInterface {
       )
     }
 
+    // Build tools array: google_search for grounding + function declarations for user tools
+    const nativeTools: Record<string, unknown>[] = [{ google_search: {} }]
+    if (config?.tools && config.tools.length > 0) {
+      nativeTools.push({
+        functionDeclarations: config.tools.map((tool) => ({
+          name: tool.function.name,
+          description: tool.function.description,
+          parameters: sanitizeSchemaForGemini(
+            tool.function.parameters as unknown as Record<string, unknown>,
+          ),
+        })),
+      })
+    }
+
     const requestBody: Record<string, unknown> = {
       contents,
       generationConfig: streamGenerationConfig,
-      tools: [{ google_search: {} }],
+      tools: nativeTools,
+    }
+
+    // When mixing built-in tools (google_search) with function declarations,
+    // the API requires include_server_side_tool_invocations to be enabled
+    if (config?.tools && config.tools.length > 0) {
+      requestBody.tool_config = {
+        function_calling_config: { mode: 'AUTO' },
+        include_server_side_tool_invocations: true,
+      }
     }
 
     if (systemInstruction) {
@@ -583,6 +636,7 @@ export class GoogleProvider implements LLMProviderInterface {
 
     const decoder = new TextDecoder()
     let buffer = ''
+    const accumulatedFunctionCalls: ToolCall[] = []
 
     while (true) {
       const { done, value } = await reader.read()
@@ -595,7 +649,13 @@ export class GoogleProvider implements LLMProviderInterface {
       for (const line of lines) {
         if (line.trim().startsWith('data: ')) {
           const data = line.slice(6).trim()
-          if (data === '[DONE]') return
+          if (data === '[DONE]') {
+            // Yield accumulated function calls as tool call markers
+            if (accumulatedFunctionCalls.length > 0) {
+              yield formatToolCallsForStream(accumulatedFunctionCalls)
+            }
+            return
+          }
 
           try {
             const parsed = JSON.parse(data)
@@ -611,6 +671,17 @@ export class GoogleProvider implements LLMProviderInterface {
                     yield part.text
                   }
                 }
+                // Accumulate function calls from native API response
+                if (part.functionCall) {
+                  accumulatedFunctionCalls.push({
+                    id: `call_${accumulatedFunctionCalls.length}`,
+                    type: 'function',
+                    function: {
+                      name: part.functionCall.name,
+                      arguments: JSON.stringify(part.functionCall.args || {}),
+                    },
+                  })
+                }
               }
             }
 
@@ -621,11 +692,25 @@ export class GoogleProvider implements LLMProviderInterface {
                 yield `\n__GROUNDING_METADATA__${JSON.stringify(groundingMeta)}`
               }
             }
+
+            // On finish, yield accumulated function calls
+            if (
+              candidate?.finishReason &&
+              accumulatedFunctionCalls.length > 0
+            ) {
+              yield formatToolCallsForStream(accumulatedFunctionCalls)
+              accumulatedFunctionCalls.length = 0
+            }
           } catch {
             // Skip invalid JSON
           }
         }
       }
+    }
+
+    // Yield any remaining function calls
+    if (accumulatedFunctionCalls.length > 0) {
+      yield formatToolCallsForStream(accumulatedFunctionCalls)
     }
   }
 
