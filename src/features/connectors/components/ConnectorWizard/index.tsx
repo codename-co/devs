@@ -188,6 +188,8 @@ export function ConnectorWizard({
           name: getProvider(provider)?.name || provider,
           encryptedToken,
           encryptedRefreshToken,
+          tokenIv: iv,
+          refreshTokenIv: refreshIv,
           tokenExpiresAt,
           scopes: result.scope?.split(' ') || [],
           accountId: info?.id,
@@ -202,8 +204,8 @@ export function ConnectorWizard({
         storeEncryptionMetadata(id, iv, salt, false)
 
         // Store refresh token encryption metadata if available
-        if (refreshIv && refreshSalt) {
-          storeEncryptionMetadata(id, refreshIv, refreshSalt, true)
+        if (refreshIv != null) {
+          storeEncryptionMetadata(id, refreshIv, refreshSalt ?? '', true)
         }
 
         console.log('[ConnectorWizard] Connector created:', {

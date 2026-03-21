@@ -181,6 +181,7 @@ export function ConnectorSettingsModal({
       return {
         ...currentConnector,
         encryptedToken,
+        tokenIv: iv,
         tokenExpiresAt,
         status: 'connected',
       }

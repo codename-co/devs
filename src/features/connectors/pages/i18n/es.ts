@@ -54,8 +54,6 @@ export const es: I18n = {
   // Wizard - Provider Selection
   'Choose a service to connect to your knowledge base:':
     'Elige un servicio para conectar a tu base de conocimientos:',
-  'Choose a service to connect to your knowledge base':
-    'Elige un servicio para conectar a tu base de conocimientos',
   'Select a Service': 'Seleccionar un servicio',
 
   // Wizard - OAuth Step

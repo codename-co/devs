@@ -1,4 +1,10 @@
-import { Listbox, ListboxSection, ListboxItem, Input } from '@heroui/react'
+import {
+  Listbox,
+  ListboxSection,
+  ListboxItem,
+  Input,
+  DropdownItem,
+} from '@heroui/react'
 import { type Agent } from '@/types'
 import { getAgentsByCategory } from '@/stores/agentStore'
 import { Icon } from '../Icon'
@@ -6,6 +12,7 @@ import { AgentAvatar } from '../AgentAvatar'
 import { useI18n, type LanguageCode } from '@/i18n'
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { agentCategoryNames } from '@/lib/agents'
+import { useNavigate } from 'react-router-dom'
 
 interface AgentPickerProps {
   selectedAgent?: Agent | null
@@ -23,6 +30,7 @@ export function AgentPicker({
   const [orderedCategories, setOrderedCategories] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const navigate = useNavigate()
 
   // Focus input when component mounts
   useEffect(() => {
@@ -159,18 +167,19 @@ export function AgentPicker({
         className="max-h-80 overflow-y-auto p-1"
       >
         {filteredCategories.length > 0 ? (
-          filteredCategories.map((category) => {
-            const agents = filteredAgentsByCategory[category]
-            if (!agents || agents.length === 0) return null
-            return (
+          (filteredCategories
+            .filter((category) => {
+              const agents = filteredAgentsByCategory[category]
+              return agents && agents.length > 0
+            })
+            .map((category) => (
               <ListboxSection
                 key={category}
                 title={t((agentCategoryNames as any)[category] ?? category)}
               >
-                {agents.map(renderAgentItem)}
+                {filteredAgentsByCategory[category].map(renderAgentItem)}
               </ListboxSection>
-            )
-          })
+            )) as any)
         ) : searchQuery ? (
           <ListboxItem key="no-results" isReadOnly textValue="No results">
             <span className="text-default-400 text-sm">
@@ -178,6 +187,17 @@ export function AgentPicker({
             </span>
           </ListboxItem>
         ) : null}
+        <DropdownItem
+          key="manage-agents"
+          startContent={<Icon name="Settings" size="sm" />}
+          textValue={t('Manage agents')}
+          onPress={() => {
+            navigate(`/${lang}/agents`)
+          }}
+          closeOnSelect
+        >
+          {t('Manage agents')}
+        </DropdownItem>
       </Listbox>
     </div>
   )

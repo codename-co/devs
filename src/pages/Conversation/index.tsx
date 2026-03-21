@@ -37,7 +37,7 @@ import { successToast } from '@/lib/toast'
 import { formatConversationDate, formatDate } from '@/lib/format'
 import { isDate } from '@/lib/date'
 
-export function ConversationPage() {
+export function ConversationsContent() {
   const { t, url, lang } = useI18n()
   const navigate = useNavigate()
 
@@ -79,15 +79,6 @@ export function ConversationPage() {
     onOpen: onRenameOpen,
     onClose: onRenameClose,
   } = useDisclosure()
-
-  const header: HeaderProps = {
-    icon: {
-      name: 'ChatBubble',
-      color: 'text-default-300',
-    },
-    title: t('Conversations history'),
-    subtitle: t('Find your past conversations'),
-  }
 
   // Agents load automatically via reactive hook
 
@@ -319,266 +310,273 @@ export function ConversationPage() {
   }, [paginatedConversations, lang, t])
 
   return (
+    <>
+      {/* Search and Filter Controls */}
+      <div className="flex flex-col md:flex-row gap-3 mb-6">
+        <Input
+          placeholder={t('Search conversations')}
+          value={searchQuery}
+          onValueChange={setSearchQuery}
+          startContent={<Search className="w-4 h-4 text-default-400" />}
+          classNames={{
+            base: 'flex-1',
+            input: 'text-small',
+          }}
+          isClearable
+          onClear={() => setSearchQuery('')}
+        />
+        <Filter
+          label={t('Filter conversations')}
+          options={filterOptions}
+          selectedKey={displayFilter}
+          onSelectionChange={(key) => setShowPinnedOnly(key === 'pinned')}
+          showCounts="options-only"
+        />
+      </div>
+
+      {!isSyncReady ? (
+        <div className="flex justify-center items-center py-12">
+          <Spinner size="lg" />
+        </div>
+      ) : conversations.length === 0 ? (
+        <Card>
+          <CardBody className="text-center py-12">
+            <p className="text-lg text-default-500">
+              No saved conversations found
+            </p>
+            <Button
+              color="primary"
+              className="mt-4"
+              onPress={() => navigate('/')}
+            >
+              Start New Conversation
+            </Button>
+          </CardBody>
+        </Card>
+      ) : filteredConversations.length === 0 ? (
+        <Card>
+          <CardBody className="text-center py-12">
+            <p className="text-lg text-default-500">
+              {showPinnedOnly
+                ? t('No pinned conversations')
+                : t('No conversations found')}
+            </p>
+          </CardBody>
+        </Card>
+      ) : (
+        <>
+          <div className="space-y-6">
+            {groupedConversations.map((group) => (
+              <div key={group.label}>
+                <h2 className="text-sm font-medium text-default-500 mb-2">
+                  {group.label}
+                </h2>
+                <div className="space-y-2">
+                  {group.conversations.map((conversation) => (
+                    <Card
+                      key={conversation.id}
+                      isHoverable
+                      shadow="none"
+                      className={`transition-transform w-full cursor-pointer ${conversation.isPinned ? 'border-l-4 border-l-warning' : ''}`}
+                    >
+                      <CardBody className="py-4">
+                        <div className="flex items-center justify-between gap-4">
+                          <div
+                            className="flex-1 min-w-0 cursor-pointer"
+                            onClick={() =>
+                              handleLoadConversation(conversation.id)
+                            }
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault()
+                                handleLoadConversation(conversation.id)
+                              }
+                            }}
+                            role="button"
+                            tabIndex={0}
+                          >
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-base font-medium truncate">
+                                {getConversationTitle(conversation)}
+                              </h3>
+                            </div>
+                            <p className="text-sm text-default-500 mt-0.5">
+                              {getAgentName(conversation.agentId)}
+                            </p>
+                            {conversation.summary &&
+                              typeof conversation.summary === 'string' && (
+                                <p className="text-xs text-default-400 mt-1 line-clamp-2">
+                                  {conversation.summary.substring(0, 150)}…
+                                </p>
+                              )}
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <Button
+                              isIconOnly
+                              size="sm"
+                              variant="light"
+                              onPress={() =>
+                                handleTogglePin(
+                                  conversation.id,
+                                  conversation.isPinned || false,
+                                )
+                              }
+                              title={
+                                conversation.isPinned
+                                  ? t('Unpin conversation')
+                                  : t('Pin conversation')
+                              }
+                            >
+                              {conversation.isPinned ? (
+                                <StarSolid className="w-4 h-4 text-warning" />
+                              ) : (
+                                <Star className="w-4 h-4" />
+                              )}
+                            </Button>
+                            <Dropdown>
+                              <DropdownTrigger>
+                                <Button isIconOnly size="sm" variant="light">
+                                  <MoreVert className="w-4 h-4" />
+                                </Button>
+                              </DropdownTrigger>
+                              <DropdownMenu>
+                                <DropdownItem
+                                  key="rename"
+                                  onPress={() => handleOpenRename(conversation)}
+                                >
+                                  {t('Rename conversation')}
+                                </DropdownItem>
+                                <DropdownItem
+                                  key="summarize"
+                                  onPress={() => handleSummarize(conversation)}
+                                  isDisabled={isSummarizing}
+                                >
+                                  {conversation.summary
+                                    ? t('View summary')
+                                    : t('Summarize conversation')}
+                                </DropdownItem>
+                              </DropdownMenu>
+                            </Dropdown>
+                            {selectedConversation === conversation.id && (
+                              <Spinner size="sm" />
+                            )}
+                          </div>
+                        </div>
+                      </CardBody>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex justify-center mt-6">
+              <Pagination
+                total={totalPages}
+                page={currentPage}
+                onChange={setCurrentPage}
+                showControls
+                size="sm"
+                color="primary"
+              />
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Summary Modal */}
+      <Modal
+        isOpen={isSummaryOpen}
+        onClose={onSummaryClose}
+        size="3xl"
+        scrollBehavior="inside"
+      >
+        <ModalContent>
+          <ModalHeader>
+            <div>
+              <h3 className="text-lg font-semibold">
+                {summaryConversation
+                  ? getConversationTitle(summaryConversation)
+                  : 'Conversation Summary'}
+              </h3>
+              <p className="text-sm text-default-500 font-normal">
+                {summaryConversation &&
+                  formatDate(new Date(summaryConversation.timestamp))}
+              </p>
+            </div>
+          </ModalHeader>
+          <ModalBody>
+            {summaryConversation?.summary ? (
+              <MarkdownRenderer content={summaryConversation.summary} />
+            ) : (
+              <p className="text-default-500">{t('No summary available')}</p>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="light" onPress={onSummaryClose}>
+              {t('Close')}
+            </Button>
+            {summaryConversation && (
+              <Button
+                color="primary"
+                onPress={() => handleLoadConversation(summaryConversation.id)}
+              >
+                {t('View full conversation')}
+              </Button>
+            )}
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Rename Modal */}
+      <Modal isOpen={isRenameOpen} onClose={onRenameClose} size="md">
+        <ModalContent>
+          <ModalHeader>{t('Rename conversation')}</ModalHeader>
+          <ModalBody>
+            <Input
+              label={t('Conversation title')}
+              placeholder={t('Enter a new title')}
+              value={newTitle}
+              onValueChange={setNewTitle}
+              autoFocus
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="light" onPress={onRenameClose}>
+              {t('Cancel')}
+            </Button>
+            <Button
+              color="primary"
+              onPress={handleRename}
+              isDisabled={!newTitle.trim()}
+            >
+              {t('Save')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
+  )
+}
+
+export function ConversationPage() {
+  const { t } = useI18n()
+
+  const header: HeaderProps = {
+    icon: {
+      name: 'ChatBubble',
+      color: 'text-default-300',
+    },
+    title: t('Conversations history'),
+    subtitle: t('Find your past conversations'),
+  }
+
+  return (
     <DefaultLayout title={t('Conversations history')} header={header}>
       <Section>
         <Container>
-          {/* Search and Filter Controls */}
-          <div className="flex flex-col md:flex-row gap-3 mb-6">
-            <Input
-              placeholder={t('Search conversations')}
-              value={searchQuery}
-              onValueChange={setSearchQuery}
-              startContent={<Search className="w-4 h-4 text-default-400" />}
-              classNames={{
-                base: 'flex-1',
-                input: 'text-small',
-              }}
-              isClearable
-              onClear={() => setSearchQuery('')}
-            />
-            <Filter
-              label={t('Filter conversations')}
-              options={filterOptions}
-              selectedKey={displayFilter}
-              onSelectionChange={(key) => setShowPinnedOnly(key === 'pinned')}
-              showCounts="options-only"
-            />
-          </div>
-
-          {!isSyncReady ? (
-            <div className="flex justify-center items-center py-12">
-              <Spinner size="lg" />
-            </div>
-          ) : conversations.length === 0 ? (
-            <Card>
-              <CardBody className="text-center py-12">
-                <p className="text-lg text-default-500">
-                  No saved conversations found
-                </p>
-                <Button
-                  color="primary"
-                  className="mt-4"
-                  onPress={() => navigate('/')}
-                >
-                  Start New Conversation
-                </Button>
-              </CardBody>
-            </Card>
-          ) : filteredConversations.length === 0 ? (
-            <Card>
-              <CardBody className="text-center py-12">
-                <p className="text-lg text-default-500">
-                  {showPinnedOnly
-                    ? t('No pinned conversations')
-                    : t('No conversations found')}
-                </p>
-              </CardBody>
-            </Card>
-          ) : (
-            <>
-              <div className="space-y-6">
-                {groupedConversations.map((group) => (
-                  <div key={group.label}>
-                    <h2 className="text-sm font-medium text-default-500 mb-2 capitalize">
-                      {group.label}
-                    </h2>
-                    <div className="space-y-2">
-                      {group.conversations.map((conversation) => (
-                        <Card
-                          key={conversation.id}
-                          isHoverable
-                          shadow="none"
-                          className={`transition-transform w-full cursor-pointer ${conversation.isPinned ? 'border-l-4 border-l-warning' : ''}`}
-                        >
-                          <CardBody className="py-4">
-                            <div className="flex items-center justify-between gap-4">
-                              <div
-                                className="flex-1 min-w-0 cursor-pointer"
-                                onClick={() =>
-                                  handleLoadConversation(conversation.id)
-                                }
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter' || e.key === ' ') {
-                                    e.preventDefault()
-                                    handleLoadConversation(conversation.id)
-                                  }
-                                }}
-                                role="button"
-                                tabIndex={0}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <h3 className="text-base font-medium truncate">
-                                    {getConversationTitle(conversation)}
-                                  </h3>
-                                </div>
-                                <p className="text-sm text-default-500 mt-0.5">
-                                  {getAgentName(conversation.agentId)}
-                                </p>
-                                {conversation.summary &&
-                                  typeof conversation.summary === 'string' && (
-                                    <p className="text-xs text-default-400 mt-1 line-clamp-2">
-                                      {conversation.summary.substring(0, 150)}…
-                                    </p>
-                                  )}
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0">
-                                <Button
-                                  isIconOnly
-                                  size="sm"
-                                  variant="light"
-                                  onPress={() =>
-                                    handleTogglePin(
-                                      conversation.id,
-                                      conversation.isPinned || false,
-                                    )
-                                  }
-                                  title={
-                                    conversation.isPinned
-                                      ? t('Unpin conversation')
-                                      : t('Pin conversation')
-                                  }
-                                >
-                                  {conversation.isPinned ? (
-                                    <StarSolid className="w-4 h-4 text-warning" />
-                                  ) : (
-                                    <Star className="w-4 h-4" />
-                                  )}
-                                </Button>
-                                <Dropdown>
-                                  <DropdownTrigger>
-                                    <Button
-                                      isIconOnly
-                                      size="sm"
-                                      variant="light"
-                                    >
-                                      <MoreVert className="w-4 h-4" />
-                                    </Button>
-                                  </DropdownTrigger>
-                                  <DropdownMenu>
-                                    <DropdownItem
-                                      key="rename"
-                                      onPress={() =>
-                                        handleOpenRename(conversation)
-                                      }
-                                    >
-                                      {t('Rename conversation')}
-                                    </DropdownItem>
-                                    <DropdownItem
-                                      key="summarize"
-                                      onPress={() =>
-                                        handleSummarize(conversation)
-                                      }
-                                      isDisabled={isSummarizing}
-                                    >
-                                      {conversation.summary
-                                        ? t('View summary')
-                                        : t('Summarize conversation')}
-                                    </DropdownItem>
-                                  </DropdownMenu>
-                                </Dropdown>
-                                {selectedConversation === conversation.id && (
-                                  <Spinner size="sm" />
-                                )}
-                              </div>
-                            </div>
-                          </CardBody>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {totalPages > 1 && (
-                <div className="flex justify-center mt-6">
-                  <Pagination
-                    total={totalPages}
-                    page={currentPage}
-                    onChange={setCurrentPage}
-                    showControls
-                    size="sm"
-                    color="primary"
-                  />
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Summary Modal */}
-          <Modal
-            isOpen={isSummaryOpen}
-            onClose={onSummaryClose}
-            size="3xl"
-            scrollBehavior="inside"
-          >
-            <ModalContent>
-              <ModalHeader>
-                <div>
-                  <h3 className="text-lg font-semibold">
-                    {summaryConversation
-                      ? getConversationTitle(summaryConversation)
-                      : 'Conversation Summary'}
-                  </h3>
-                  <p className="text-sm text-default-500 font-normal">
-                    {summaryConversation &&
-                      formatDate(new Date(summaryConversation.timestamp))}
-                  </p>
-                </div>
-              </ModalHeader>
-              <ModalBody>
-                {summaryConversation?.summary ? (
-                  <MarkdownRenderer content={summaryConversation.summary} />
-                ) : (
-                  <p className="text-default-500">
-                    {t('No summary available')}
-                  </p>
-                )}
-              </ModalBody>
-              <ModalFooter>
-                <Button variant="light" onPress={onSummaryClose}>
-                  {t('Close')}
-                </Button>
-                {summaryConversation && (
-                  <Button
-                    color="primary"
-                    onPress={() =>
-                      handleLoadConversation(summaryConversation.id)
-                    }
-                  >
-                    {t('View full conversation')}
-                  </Button>
-                )}
-              </ModalFooter>
-            </ModalContent>
-          </Modal>
-
-          {/* Rename Modal */}
-          <Modal isOpen={isRenameOpen} onClose={onRenameClose} size="md">
-            <ModalContent>
-              <ModalHeader>{t('Rename conversation')}</ModalHeader>
-              <ModalBody>
-                <Input
-                  label={t('Conversation title')}
-                  placeholder={t('Enter a new title')}
-                  value={newTitle}
-                  onValueChange={setNewTitle}
-                  autoFocus
-                />
-              </ModalBody>
-              <ModalFooter>
-                <Button variant="light" onPress={onRenameClose}>
-                  {t('Cancel')}
-                </Button>
-                <Button
-                  color="primary"
-                  onPress={handleRename}
-                  isDisabled={!newTitle.trim()}
-                >
-                  {t('Save')}
-                </Button>
-              </ModalFooter>
-            </ModalContent>
-          </Modal>
+          <ConversationsContent />
         </Container>
       </Section>
     </DefaultLayout>

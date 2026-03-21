@@ -110,6 +110,20 @@ export const es: I18n = {
   'Speak to microphone': 'Hablar al micrófono',
   'Send prompt': 'Enviar prompt',
   'Stop generating': 'Detener generación',
+  Media: 'Medios',
+  Web: 'Web',
+  Agent: 'Agente',
+  'Image & video generation': 'Generación de imágenes y videos',
+  'Create a web app': 'Crear una aplicación web',
+  'Create an agent': 'Crear un agente',
+  'Describe the image or video you want to create…':
+    'Describe la imagen o el video que quieres crear…',
+  'Describe the web app you want to build…':
+    'Describe la aplicación web que quieres construir…',
+  'Describe the AI agent you want to create…':
+    'Describe el agente de IA que quieres crear…',
+  'Live voice conversation': 'Conversación de voz en vivo',
+  'Listening…': 'Escuchando…',
   'Select an agent': 'Seleccionar un agente',
   'No agents found': 'No se encontraron agentes',
   'Select a methodology': 'Seleccionar una metodología',
@@ -125,6 +139,7 @@ export const es: I18n = {
   Hybrid: 'Híbrido',
   'Select a model': 'Seleccionar un modelo',
   'Add AI provider': 'Agregar proveedor LLM',
+  'Manage agents': 'Gestionar agentes',
   '{n} models': '{n} modelos',
   'Search models...': 'Buscar modelos...',
   'No models found': 'No se encontraron modelos',
@@ -870,6 +885,9 @@ export const es: I18n = {
     'Genera tu primera imagen para verla aquí',
   Current: 'Actual',
   History: 'Historial',
+  'History sections': 'Secciones del historial',
+  'Your library, tasks, and conversations in one place':
+    'Tu biblioteca, tareas y conversaciones en un solo lugar',
   Clear: 'Limpiar',
   'Current Session': 'Sesión actual',
   Studio: 'Studio',

@@ -40,7 +40,7 @@ export function ProviderGrid({ category, onSelect }: ProviderGridProps) {
 
   return (
     <div className="space-y-4">
-      <p className="text-default-500">
+      <p className="text-sm text-default-500">
         {t('Choose a service to connect to your knowledge base:')}
       </p>
 

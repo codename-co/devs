@@ -65,7 +65,7 @@ export function FolderPicker({
 
   const [folders, setFolders] = useState<FolderNode[]>([])
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [syncAll, setSyncAll] = useState(true)
+  const [syncAll, setSyncAll] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [urlInput, setUrlInput] = useState('')
@@ -231,7 +231,7 @@ export function FolderPicker({
 
   return (
     <div className="space-y-4">
-      <div className="text-center mb-6">
+      <div className="mb-6">
         <h3 className="text-lg font-medium mb-2">
           {isUrlInputMode
             ? t('Add files to sync')
@@ -335,17 +335,20 @@ export function FolderPicker({
       )}
 
       {/* Actions */}
-      <div className="flex justify-between pt-4">
-        <Button variant="flat" onPress={onSkip}>
-          {t('Skip')}
-        </Button>
-        <Button
-          color="primary"
-          onPress={handleContinue}
-          isDisabled={isContinueDisabled}
-        >
-          {t('Continue')}
-        </Button>
+      <div className="flex justify-end gap-4 pt-4">
+        {isContinueDisabled ? (
+          <Button color="primary" onPress={onSkip}>
+            {t('Skip')}
+          </Button>
+        ) : (
+          <Button
+            color="primary"
+            onPress={handleContinue}
+            isDisabled={isContinueDisabled}
+          >
+            {t('Continue')}
+          </Button>
+        )}
       </div>
     </div>
   )

@@ -112,6 +112,20 @@ export const fr: I18n = {
   'Speak to microphone': 'Dicter au microphone',
   'Send prompt': 'Envoyer le prompt',
   'Stop generating': 'Arrêter la génération',
+  Media: 'Média',
+  Web: 'Web',
+  Agent: 'Agent',
+  'Image & video generation': 'Génération d’images et vidéos',
+  'Create a web app': 'Créer une application web',
+  'Create an agent': 'Créer un agent',
+  'Describe the image or video you want to create…':
+    'Décrivez l’image ou la vidéo que vous souhaitez créer…',
+  'Describe the web app you want to build…':
+    'Décrivez l’application web que vous souhaitez construire…',
+  'Describe the AI agent you want to create…':
+    'Décrivez l’agent IA que vous souhaitez créer…',
+  'Live voice conversation': 'Conversation vocale en direct',
+  'Listening…': 'Écoute…',
   'Select an agent': 'Sélectionner un agent',
   'No agents found': 'Aucun agent trouvé',
   'Select a methodology': 'Sélectionner une méthodologie',
@@ -127,6 +141,7 @@ export const fr: I18n = {
   Hybrid: 'Hybride',
   'Select a model': 'Sélectionner un modèle',
   'Add AI provider': 'Ajouter un fournisseur LLM',
+  'Manage agents': 'Gérer les agents',
   '{n} models': '{n} modèles',
   'Search models...': 'Rechercher des modèles...',
   'No models found': 'Aucun modèle trouvé',
@@ -879,6 +894,9 @@ export const fr: I18n = {
     'Générez votre première image pour la voir ici',
   Current: 'Actuel',
   History: 'Historique',
+  'History sections': 'Sections de l\u2019historique',
+  'Your library, tasks, and conversations in one place':
+    'Votre bibliothèque, vos tâches et vos conversations au même endroit',
   Clear: 'Effacer',
   'Current Session': 'Session actuelle',
 

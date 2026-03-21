@@ -41,4 +41,9 @@ export const motionVariants: Record<string, MotionProps> = {
     ...fadeInUp(30),
     transition: createTransition(0.7, { duration: 0.3 }),
   },
+
+  recentActivity: {
+    ...fadeInUp(20),
+    transition: createTransition(0.4, { duration: 0.6 }),
+  },
 }

@@ -51,6 +51,7 @@ export function SuccessStep({
 
   const config = getProvider(provider)
   const syncSupported = config?.syncSupported !== false
+  const isGoogleProvider = provider.startsWith('google') || provider === 'gmail'
 
   return (
     <div className="flex flex-col items-center justify-center py-8">
@@ -122,8 +123,8 @@ export function SuccessStep({
         </div>
       </div>
 
-      {/* Warning if no refresh token */}
-      {!hasRefreshToken && (
+      {/* Warning if no refresh token (Google-specific) */}
+      {isGoogleProvider && !hasRefreshToken && (
         <div className="w-full max-w-sm bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-lg p-4 mb-6">
           <div className="flex items-start gap-3">
             <WarningTriangle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
@@ -143,11 +144,11 @@ export function SuccessStep({
 
       {/* Actions */}
       <div className="flex gap-3">
-        <Button variant="flat" onPress={onDone}>
+        <Button color="primary" onPress={onDone}>
           {t('Done')}
         </Button>
         {syncSupported && (
-          <Button color="primary" onPress={onStartSync}>
+          <Button variant="flat" onPress={onStartSync}>
             <Icon name="RefreshDouble" className="w-4 h-4 mr-1" />
             {t('Start Sync Now')}
           </Button>

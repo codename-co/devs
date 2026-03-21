@@ -23,7 +23,6 @@ import { ConnectorCard } from '@/features/connectors/components'
 import { ConnectorWizardInline } from '@/features/connectors/components/ConnectorWizardInline'
 import { ConnectorSettingsInline } from '@/features/connectors/components/ConnectorSettingsInline'
 import type { ConnectorCategory } from '@/features/connectors/types'
-import type { IconName } from '@/lib/types'
 import localI18n from '@/features/connectors/pages/i18n'
 
 export function ConnectorsSection() {
@@ -97,6 +96,24 @@ export function ConnectorsSection() {
     navigateToList()
   }
 
+  // Redirect to add wizard when no connectors exist
+  useEffect(() => {
+    if (
+      isInitialized &&
+      !isLoading &&
+      currentConnectors.length === 0 &&
+      !activeElement
+    ) {
+      navigateToAdd()
+    }
+  }, [
+    isInitialized,
+    isLoading,
+    currentConnectors.length,
+    activeElement,
+    navigateToAdd,
+  ])
+
   // --- Sub-route: /new  (wizard) ----------------------------------------
   if (activeElement === 'add') {
     return (
@@ -159,7 +176,9 @@ export function ConnectorsSection() {
             <Spinner size="lg" />
           </div>
         ) : currentConnectors.length === 0 ? (
-          <EmptyState category={selectedTab} onAdd={navigateToAdd} />
+          <div className="flex justify-center items-center py-12">
+            <Spinner size="lg" />
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
             {currentConnectors.map((connector) => (
@@ -182,62 +201,6 @@ export function ConnectorsSection() {
           </div>
         )}
       </div>
-    </div>
-  )
-}
-
-/**
- * Empty state component for when no connectors exist in the selected category.
- */
-function EmptyState({
-  category,
-  onAdd,
-}: {
-  category: ConnectorCategory
-  onAdd: () => void
-}) {
-  const { t } = useI18n(localI18n)
-
-  const categoryInfo: Record<
-    ConnectorCategory,
-    { icon: IconName; title: string; description: string }
-  > = {
-    app: {
-      icon: 'WebWindow',
-      title: t('No app connectors yet'),
-      description: t(
-        'Connect external services to give your agents powerful tools for searching, reading, and interacting with your data.',
-      ),
-    },
-    api: {
-      icon: 'Code',
-      title: t('No API connectors yet'),
-      description: t(
-        'Connect custom REST or GraphQL APIs to extend agent capabilities.',
-      ),
-    },
-    mcp: {
-      icon: 'Server',
-      title: t('No MCP connectors yet'),
-      description: t(
-        'Connect Model Context Protocol servers to extend agent capabilities.',
-      ),
-    },
-  }
-
-  const info = categoryInfo[category]
-
-  return (
-    <div className="flex flex-col items-center justify-center py-8 text-center">
-      <h3 className="text-md font-medium mb-2">{info.title}</h3>
-      <p className="text-sm text-default-500 max-w-md mb-6">
-        {info.description}
-      </p>
-      {category === 'app' && (
-        <Button color="primary" onPress={onAdd} size="sm">
-          {t('Add your first connector')}
-        </Button>
-      )}
     </div>
   )
 }

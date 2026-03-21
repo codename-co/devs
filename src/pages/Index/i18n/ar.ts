@@ -16,8 +16,17 @@ export const ar: I18n = {
   Art: 'الفن',
   Coding: 'البرمجة',
 
+  // Prompt modes & CTA
+  Live: 'مباشر',
+  Studio: 'استوديو',
+
   // PWA Install
   'Install {productName}': 'تثبيت {productName}',
   'Install this app on your device for a better experience and offline access.':
     'ثبت هذا التطبيق على جهازك للحصول على تجربة أفضل والوصول دون اتصال.',
+
+  // Recent Activity
+  'Recent conversations': 'المحادثات الأخيرة',
+  'View all': 'عرض الكل',
+  'Untitled conversation': 'محادثة بدون عنوان',
 } as const

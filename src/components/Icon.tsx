@@ -361,11 +361,12 @@ export const Icons = {
 
 export type IconProps = ComponentProps<'svg'> & {
   name: IconName
-  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl'
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl'
   animation?: 'appear' | 'spinning' | 'thinking' | 'pulsating'
 }
 
 const sizeMap = {
+  xs: 12,
   sm: 16,
   md: 20,
   lg: 24,

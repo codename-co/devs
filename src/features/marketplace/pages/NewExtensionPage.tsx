@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Card,
@@ -82,6 +82,15 @@ export function NewExtensionPage() {
   const [prompt, setPrompt] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Consume forwarded prompt from Index page
+  useEffect(() => {
+    const forwarded = sessionStorage.getItem('appPrompt')
+    if (forwarded) {
+      setPrompt(forwarded)
+      sessionStorage.removeItem('appPrompt')
+    }
+  }, [])
 
   const header: HeaderProps = {
     icon: {

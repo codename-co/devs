@@ -356,6 +356,9 @@ export async function tryReconnectFolderSync(): Promise<boolean> {
 
   const handle = await getStoredDirectoryHandle()
   if (!handle) {
+    // Handle was lost from IndexedDB — unrecoverable without user action
+    console.warn('[LocalBackup] Stored directory handle not found, disabling')
+    useFolderSyncStore.setState({ isEnabled: false, basePath: null })
     return false
   }
 
@@ -366,7 +369,11 @@ export async function tryReconnectFolderSync(): Promise<boolean> {
       await store.reconnect(handle)
       return true
     }
-    // If permission is 'prompt', we'll need user interaction
+    // If permission is 'prompt' or 'denied', we need user interaction
+    console.log(
+      '[LocalBackup] Permission not granted, needs user action:',
+      permission,
+    )
     return false
   } catch (error) {
     console.error('Failed to reconnect folder sync:', error)

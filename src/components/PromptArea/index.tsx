@@ -2,6 +2,9 @@ import {
   Button,
   ButtonGroup,
   Chip,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   Textarea,
   type TextAreaProps,
   Tooltip,
@@ -44,10 +47,20 @@ import {
   isSmallWidth,
 } from '@/lib/device'
 import { userSettings } from '@/stores/userStore'
+import { VoiceWaveform, useVoice } from '@/features/live'
+import { VoiceSettingsPanel } from '@/features/live/components/VoiceSettingsPanel'
+import type {
+  STTProviderType,
+  TTSProviderType,
+} from '@/features/live/lib/types'
+
+export type PromptMode = 'chat' | 'live' | 'studio' | 'app' | 'agent'
 
 export interface PromptAreaProps
   extends Omit<TextAreaProps, 'onFocus' | 'onBlur' | 'onKeyDown'> {
   lang: LanguageCode
+  mode?: PromptMode
+  onModeChange?: (mode: PromptMode) => void
   onSubmitToAgent?: (
     cleanedPrompt?: string,
     mentionedAgent?: Agent,
@@ -100,6 +113,8 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       onFocus,
       onBlur,
       onKeyDown,
+      mode = 'chat',
+      onModeChange,
       withModelSelector,
       withAttachmentSelector,
       withAgentSelector,
@@ -108,6 +123,107 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
     ref,
   ) {
     const { t } = useI18n(lang as any)
+
+    const handleToggleMode = useCallback(
+      (newMode: PromptMode) => {
+        onModeChange?.(mode === newMode ? 'chat' : newMode)
+      },
+      [mode, onModeChange],
+    )
+
+    const modePlaceholders: Record<PromptMode, string> = useMemo(
+      () => ({
+        chat: t('Need something done?'),
+        live: t('Listening…'),
+        studio: t('Describe the image or video you want to create…'),
+        app: t('Describe the web app you want to build…'),
+        agent: t('Describe the AI agent you want to create…'),
+      }),
+      [t],
+    )
+
+    // ---------- Live mode voice integration ----------
+    const {
+      kokoroVoiceId,
+      setKokoroVoiceId,
+      sttProvider: savedSTTProvider,
+      setSTTProvider: setSavedSTTProvider,
+      ttsProvider: savedTTSProvider,
+      setTTSProvider: setSavedTTSProvider,
+      liveAutoSpeak,
+      setLiveAutoSpeak,
+    } = userSettings()
+
+    const liveAutoSpeakValue = liveAutoSpeak ?? true
+    const selectedVoiceId = kokoroVoiceId || 'af_heart'
+    const isLiveMode = mode === 'live'
+
+    const voice = useVoice(
+      isLiveMode
+        ? {
+            sttProvider: (savedSTTProvider as STTProviderType) || 'web-speech',
+            ttsProvider: (savedTTSProvider as TTSProviderType) || 'web-speech',
+            ttsVoiceId: selectedVoiceId,
+            language: lang,
+            onFinalTranscript: (text) => {
+              if (text.trim()) {
+                // Auto-submit the transcript
+                handlePromptChange(text)
+                // Defer submission to next tick so prompt state updates first
+                setTimeout(() => {
+                  if (onSubmitToAgent) onSubmitToAgent(text)
+                  else if (onSubmitTask) onSubmitTask(text)
+                }, 0)
+              }
+            },
+            onError: (err) => {
+              console.error('[Live Voice] Error:', err)
+            },
+          }
+        : { sttProvider: 'web-speech', ttsProvider: 'web-speech' },
+    )
+
+    const ttsAnalyserRef = useRef<AnalyserNode | null>(null)
+
+    useEffect(() => {
+      if (isLiveMode) {
+        ttsAnalyserRef.current = voice.getTTSAnalyser()
+      }
+    }, [isLiveMode, voice.getTTSAnalyser, voice.isSpeaking, voice.isTTSReady])
+
+    // When entering live mode, start recording; when leaving, stop
+    useEffect(() => {
+      if (isLiveMode && voice.isSTTReady && !voice.isRecording) {
+        voice.startRecording()
+      }
+      if (!isLiveMode && voice.isRecording) {
+        voice.stopRecording()
+      }
+    }, [isLiveMode, voice.isSTTReady])
+
+    // Update prompt with live transcript
+    useEffect(() => {
+      if (isLiveMode && voice.transcript) {
+        handlePromptChange(voice.transcript)
+      }
+    }, [isLiveMode, voice.transcript])
+
+    const handleSTTProviderChange = useCallback(
+      async (type: string) => {
+        await voice.setSTTProvider(type as STTProviderType)
+        setSavedSTTProvider(type as STTProviderType)
+      },
+      [voice.setSTTProvider, setSavedSTTProvider],
+    )
+
+    const handleTTSProviderChange = useCallback(
+      async (type: string) => {
+        await voice.setTTSProvider(type as TTSProviderType)
+        setSavedTTSProvider(type as TTSProviderType)
+      },
+      [voice.setTTSProvider, setSavedTTSProvider],
+    )
+    // ---------- End Live mode voice integration ----------
 
     const [prompt, setPrompt] = useState(defaultPrompt)
     const [selectedFiles, setSelectedFiles] = useState<File[]>([])
@@ -725,7 +841,22 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
           </div>
         )}
 
-        <div className="relative rounded-lg">
+        <div className="relative rounded-lg overflow-hidden">
+          {/* Live mode waveform background */}
+          {isLiveMode && (
+            <div className="absolute inset-0 z-0 pointer-events-none flex items-center overflow-hidden rounded-lg opacity-60">
+              <VoiceWaveform
+                isActive={voice.isRecording || voice.isSpeaking}
+                width={1200}
+                height={400}
+                color="hsl(var(--heroui-primary))"
+                lineWidth={1.5}
+                className="w-full h-full"
+                ttsAnalyserRef={ttsAnalyserRef}
+              />
+            </div>
+          )}
+
           {/* Agent mention autocomplete popover */}
           {!disabledMention && showAgentMentionPopover && (
             <AgentMentionPopover
@@ -772,17 +903,24 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
           <Textarea
             ref={mergedRef}
             data-testid="prompt-input"
-            className="pb-20 bg-content2 rounded-lg"
+            className={cn(
+              'pb-20 bg-content2 rounded-lg relative z-[1]',
+              isLiveMode && 'bg-transparent',
+            )}
             classNames={{
               input: 'p-1',
-              inputWrapper: `shadow-none -mb-20 pb-12 ${selectedFiles.length ? 'pb-20' : ''} bg-default-200 !ring-0 !ring-offset-0`,
+              inputWrapper: cn(
+                'shadow-none -mb-20 pb-12 !ring-0 !ring-offset-0',
+                selectedFiles.length ? 'pb-20' : '',
+                isLiveMode ? 'bg-transparent' : 'bg-default-200',
+              ),
             }}
             maxRows={7}
             minRows={
               isMobileDevice() && isLandscape() && isSmallHeight() ? 1 : 3
             }
             placeholder={
-              isDragOver ? t('Drop files here…') : t('Need something done?')
+              isDragOver ? t('Drop files here…') : modePlaceholders[mode]
             }
             size="lg"
             value={prompt}
@@ -813,6 +951,8 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                 {withAttachmentSelector !== false && (
                   <AttachmentSelector
                     lang={lang}
+                    mode={mode}
+                    onModeChange={onModeChange}
                     onFileUpload={handlePaperclipClick}
                     onKnowledgeFileSelect={handleKnowledgeFileSelect}
                     onSkillSelect={handleSkillSelect}
@@ -835,30 +975,93 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
               </div>
 
               <div className="flex items-center gap-2">
-                {withModelSelector !== false && <ModelSelector lang={lang} />}
+                {withModelSelector !== false && !isLiveMode && (
+                  <ModelSelector lang={lang} />
+                )}
 
-                {speechToTextEnabled && (!prompt.trim() || isRecording) && (
+                {/* Live mode voice settings popover */}
+                {isLiveMode && (
+                  <Popover placement="top-end">
+                    <PopoverTrigger>
+                      <Button
+                        isIconOnly
+                        size="sm"
+                        radius="full"
+                        variant="light"
+                        className="text-default-400"
+                      >
+                        <Icon name="Settings" size="sm" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0">
+                      <VoiceSettingsPanel
+                        autoSpeak={liveAutoSpeakValue}
+                        onAutoSpeakChange={setLiveAutoSpeak}
+                        sttProviderType={voice.sttProviderType}
+                        onSTTProviderChange={handleSTTProviderChange}
+                        ttsProviderType={voice.ttsProviderType}
+                        onTTSProviderChange={handleTTSProviderChange}
+                        selectedVoiceId={selectedVoiceId}
+                        onVoiceChange={setKokoroVoiceId}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                )}
+
+                {/* Live mode toggle — next to submit */}
+                {onModeChange && (
                   <Tooltip
-                    content={t('Speak to microphone')}
+                    content={t('Live voice conversation')}
                     placement="bottom"
                   >
                     <Button
                       isIconOnly
-                      color={isRecording ? 'primary' : 'default'}
-                      isDisabled={!isSpeechRecognitionSupported}
-                      radius="full"
-                      variant={isRecording ? 'solid' : 'light'}
                       size="sm"
-                      onPress={toggleRecording}
-                    >
-                      {isRecording ? (
-                        <Icon name="MicrophoneSpeaking" size="sm" />
-                      ) : (
-                        <Icon name="Microphone" size="sm" />
+                      radius="full"
+                      variant={isLiveMode ? 'solid' : 'light'}
+                      color={isLiveMode ? 'primary' : 'default'}
+                      className={cn(
+                        !isLiveMode && 'text-default-400',
+                        isLiveMode && voice.isRecording && 'animate-pulse',
                       )}
+                      onPress={() => handleToggleMode('live')}
+                    >
+                      <Icon
+                        name={
+                          isLiveMode && voice.isRecording
+                            ? 'MicrophoneSpeaking'
+                            : 'Microphone'
+                        }
+                        size="sm"
+                      />
                     </Button>
                   </Tooltip>
                 )}
+
+                {!isLiveMode &&
+                  speechToTextEnabled &&
+                  (!prompt.trim() || isRecording) && (
+                    <Tooltip
+                      content={t('Speak to microphone')}
+                      placement="bottom"
+                    >
+                      <Button
+                        isIconOnly
+                        color={isRecording ? 'primary' : 'default'}
+                        isDisabled={!isSpeechRecognitionSupported}
+                        radius="full"
+                        variant={isRecording ? 'solid' : 'light'}
+                        size="sm"
+                        onPress={toggleRecording}
+                      >
+                        {isRecording ? (
+                          <Icon name="MicrophoneSpeaking" size="sm" />
+                        ) : (
+                          <Icon name="Microphone" size="sm" />
+                        )}
+                      </Button>
+                    </Tooltip>
+                  )}
 
                 <ButtonGroup variant="flat">
                   {selectedAgent?.id === 'devs' && onSubmitTask && (

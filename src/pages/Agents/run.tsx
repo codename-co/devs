@@ -22,7 +22,7 @@ import {
 } from '@heroui/react'
 import { Pin } from 'iconoir-react'
 
-import { useI18n } from '@/i18n'
+import { useI18n, useUrl } from '@/i18n'
 import {
   Container,
   Icon,
@@ -1218,7 +1218,8 @@ const RecentConversations = memo(
 RecentConversations.displayName = 'RecentConversations'
 
 export const AgentRunPage = () => {
-  const { t, lang, url } = useI18n(localI18n)
+  const { t, lang } = useI18n(localI18n)
+  const url = useUrl(lang)
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -1579,7 +1580,7 @@ export const AgentRunPage = () => {
       await convStore.deleteConversation(currentConversation.id)
       onDeleteModalClose()
       // Navigate to a fresh chat with the same agent
-      navigate(url(`/agents/start/${selectedAgent?.slug}`))
+      navigate(url(`/agents/run/${selectedAgent?.slug}`))
     } catch (error) {
       notifyError({
         title: 'Delete Failed',
@@ -1619,7 +1620,7 @@ export const AgentRunPage = () => {
         selectedAgent?.role,
       cta: {
         label: t('New chat'),
-        href: url(`/agents/start/${selectedAgent?.slug}`),
+        href: url(`/agents/run/${selectedAgent?.slug}`),
         icon: 'Plus',
       },
       moreActions: [

@@ -159,16 +159,17 @@ export class SyncEngine {
       ? new Date(Date.now() + refreshResult.expiresIn * 1000)
       : undefined
 
-    // Update the connector in the store
+    // Store new encryption metadata
+    storeEncryptionMetadata(connector.id, iv, salt, false)
+
+    // Update the connector in the store (include tokenIv for immediate availability)
     await store.updateConnector(connector.id, {
       encryptedToken,
+      tokenIv: iv,
       tokenExpiresAt,
       status: 'connected',
       errorMessage: undefined,
     })
-
-    // Store new encryption metadata
-    storeEncryptionMetadata(connector.id, iv, salt, false)
 
     log.info(`Token refreshed successfully for connector: ${connector.name}`)
 
@@ -176,6 +177,7 @@ export class SyncEngine {
     return {
       ...connector,
       encryptedToken,
+      tokenIv: iv,
       tokenExpiresAt,
       status: 'connected',
     }

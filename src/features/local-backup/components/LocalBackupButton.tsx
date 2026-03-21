@@ -11,6 +11,7 @@ import {
   tryReconnectFolderSync,
   useFolderSyncStore,
 } from '../stores/folderSyncStore'
+import { folderSyncService } from '../lib/local-backup-service'
 import { PageMenuButton } from '@/components/PageMenuButton'
 import { useI18n } from '@/i18n'
 import { localI18n } from '../i18n'
@@ -34,11 +35,11 @@ export function LocalBackupButton() {
   // Check if we need to use the download fallback (Safari, Firefox, etc.)
   const useFallbackDownload = !isFileSystemAccessSupported()
 
-  // Try to reconnect on mount
+  // Try to reconnect on mount when enabled but service isn't active
   useEffect(() => {
-    if (isEnabled && !basePath) {
+    if (isEnabled && !folderSyncService.isActive()) {
       tryReconnectFolderSync().then((success) => {
-        if (!success && isEnabled) {
+        if (!success && useFolderSyncStore.getState().isEnabled) {
           setNeedsPermission(true)
         }
       })

@@ -157,6 +157,7 @@ export function ConnectorSettingsInline({
       return {
         ...currentConnector,
         encryptedToken,
+        tokenIv: iv,
         tokenExpiresAt,
         status: 'connected',
       }

@@ -31,202 +31,13 @@ import { useState, useEffect, memo, useMemo } from 'react'
 import { cn, isCurrentPath } from '@/lib/utils'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useConversationStore } from '@/stores/conversationStore'
-import { getAgentById } from '@/stores/agentStore'
-import { useAgents } from '@/stores/agentStore'
-import { useSkills } from '@/stores/skillStore'
 import {
   useMarketplaceStore,
   type InstalledExtension,
 } from '@/features/marketplace'
 import { getAppPrimaryPageUrl } from '@/features/marketplace/store'
 import { getExtensionColorClass } from '@/features/marketplace/utils'
-import {
-  useLiveMap,
-  useSyncReady,
-  tasks as taskMap,
-  knowledge as knowledgeMap,
-  studioEntries as studioMap,
-  connectors as connectorMap,
-} from '@/lib/yjs'
-import type { IconName } from '@/lib/types'
-import { toEpoch } from '@/lib/date'
-
-// ── Recent Activity types & helpers ──────────────────────────────────────────
-
-interface ActivityItem {
-  id: string
-  type:
-    | 'conversation'
-    | 'task'
-    | 'agent'
-    | 'file'
-    | 'studio'
-    | 'connector'
-    | 'skill'
-  name: string
-  icon: IconName
-  href: string
-  timestamp: number // ms since epoch for sorting
-}
-
-const ACTIVITY_ICONS: Record<ActivityItem['type'], IconName> = {
-  conversation: 'ChatBubble',
-  task: 'PcCheck',
-  agent: 'Sparks',
-  file: 'Page',
-  studio: 'MediaImagePlus',
-  connector: 'DataTransferBoth',
-  skill: 'Puzzle',
-}
-
-/** Well-known workflowId values assigned to user-initiated (root) conversations. */
-const ROOT_WORKFLOW_IDS = new Set(['default', 'orchestration', 'live'])
-
-const useRecentActivity = (lang: LanguageCode): ActivityItem[] => {
-  const url = useUrl(lang)
-  const conversations = useConversationStore((s) => s.conversations)
-  const getTitle = useConversationStore((s) => s.getConversationTitle)
-  const allTasks = useLiveMap(taskMap).filter((t) => !t.parentTaskId)
-  const agents = useAgents()
-  const allKnowledge = useLiveMap(knowledgeMap)
-  const allStudio = useLiveMap(studioMap)
-  const allConnectors = useLiveMap(connectorMap)
-  const allSkills = useSkills()
-
-  // Force a re-render once Yjs has finished hydrating from IndexedDB.
-  // Without this, useLiveMap hooks may return stale (empty) snapshots
-  // because the Y.Map.observe() events fired before React could process them.
-  const yjsReady = useSyncReady()
-
-  return useMemo(() => {
-    const items: ActivityItem[] = []
-
-    // Conversations – only root (user-initiated) ones
-    for (const c of conversations) {
-      if (!ROOT_WORKFLOW_IDS.has(c.workflowId)) continue
-      const ts = toEpoch(c.updatedAt) || toEpoch(c.timestamp)
-      if (!ts) continue
-      const agent = c.agentId ? getAgentById(c.agentId) : undefined
-      const slug = c.agentSlug || agent?.slug || 'devs'
-      items.push({
-        id: `conv-${c.id}`,
-        type: 'conversation',
-        name: getTitle(c) || 'Untitled',
-        icon: ACTIVITY_ICONS.conversation,
-        href: url(`/agents/run/${slug}/${c.id}`),
-        timestamp: ts,
-      })
-    }
-
-    // Tasks
-    for (const t of allTasks) {
-      const ts = toEpoch((t as any).updatedAt) || toEpoch((t as any).createdAt)
-      if (!ts) continue
-      items.push({
-        id: `task-${(t as any).id}`,
-        type: 'task',
-        name: (t as any).title || 'Untitled task',
-        icon: ACTIVITY_ICONS.task,
-        href: url(`/tasks/${(t as any).id}`),
-        timestamp: ts,
-      })
-    }
-
-    // Agents (custom only — useAgents filters deleted)
-    for (const a of agents) {
-      const ts = toEpoch(a.updatedAt) || toEpoch(a.createdAt)
-      if (!ts) continue
-      items.push({
-        id: `agent-${a.id}`,
-        type: 'agent',
-        name: a.name,
-        icon: ACTIVITY_ICONS.agent,
-        href: url(`/agents/run/${a.slug}`),
-        timestamp: ts,
-      })
-    }
-
-    // Knowledge / files
-    for (const k of allKnowledge) {
-      const ki = k as any
-      if (ki.type === 'folder') continue
-      const ts = toEpoch(ki.lastModified) || toEpoch(ki.createdAt)
-      if (!ts) continue
-      items.push({
-        id: `file-${ki.id}`,
-        type: 'file',
-        name: ki.name || 'Untitled file',
-        icon: ACTIVITY_ICONS.file,
-        href: url(`/knowledge`),
-        timestamp: ts,
-      })
-    }
-
-    // Studio entries
-    for (const s of allStudio) {
-      const si = s as any
-      const ts = toEpoch(si.createdAt)
-      if (!ts) continue
-      const label =
-        si.prompt?.length > 40
-          ? si.prompt.slice(0, 40) + '…'
-          : si.prompt || 'Generation'
-      items.push({
-        id: `studio-${si.id}`,
-        type: 'studio',
-        name: label,
-        icon: ACTIVITY_ICONS.studio,
-        href: url(`/studio`),
-        timestamp: ts,
-      })
-    }
-
-    // Connectors
-    for (const c of allConnectors) {
-      const ci = c as any
-      const ts =
-        toEpoch(ci.lastSyncAt) || toEpoch(ci.updatedAt) || toEpoch(ci.createdAt)
-      if (!ts) continue
-      items.push({
-        id: `conn-${ci.id}`,
-        type: 'connector',
-        name: ci.name || ci.provider || 'Connector',
-        icon: ACTIVITY_ICONS.connector,
-        href: url(`/#settings/connectors`),
-        timestamp: ts,
-      })
-    }
-
-    // Installed skills
-    for (const sk of allSkills) {
-      const ts = toEpoch(sk.updatedAt) || toEpoch(sk.installedAt)
-      if (!ts) continue
-      items.push({
-        id: `skill-${sk.id}`,
-        type: 'skill',
-        name: sk.name,
-        icon: ACTIVITY_ICONS.skill,
-        href: url(`/#settings/skills`),
-        timestamp: ts,
-      })
-    }
-
-    // Sort descending by timestamp and take top 10
-    items.sort((a, b) => b.timestamp - a.timestamp)
-    return items.slice(0, 10)
-  }, [
-    conversations,
-    getTitle,
-    allTasks,
-    agents,
-    allKnowledge,
-    allStudio,
-    allConnectors,
-    allSkills,
-    url,
-    yjsReady,
-  ])
-}
+import { useRecentActivity } from '@/hooks/useRecentActivity'
 
 const RecentActivity = ({ lang }: { lang: LanguageCode }) => {
   const { t } = useI18n()
@@ -299,10 +110,6 @@ export const AppDrawer = memo(() => {
     navigate(location.pathname, { replace: true })
   }
 
-  // Load conversations count
-  const conversationsCount = useConversationStore(
-    (state) => state.conversations.length,
-  )
   const loadConversations = useConversationStore(
     (state) => state.loadConversations,
   )
@@ -354,20 +161,19 @@ export const AppDrawer = memo(() => {
       className={clsx(
         'flex-0 h-full md:h-screen z-50 fixed md:relative',
         !isCollapsed && '-me-4',
+        isMobile && 'pointer-events-none',
       )}
     >
       <div
         id="app-drawer"
         data-testid="app-drawer"
-        className={clsx('h-full')}
+        className={clsx('h-full ', isMobile ? 'pointer-events-none' : '')}
         data-state={isCollapsed ? 'collapsed' : 'expanded'}
       >
         <CollapsedDrawer
           className="drawer-collapsed"
           onOpenSearch={openSearch}
           onOpenSettings={openSettings}
-          hasConversations={conversationsCount > 0}
-          // hasSearchable={hasSearchable}
           installedApps={installedApps}
           lang={lang}
         />
@@ -375,7 +181,6 @@ export const AppDrawer = memo(() => {
           className="drawer-expanded"
           onOpenSearch={openSearch}
           onOpenSettings={openSettings}
-          hasConversations={conversationsCount > 0}
           hasSearchable={hasSearchable}
           installedApps={installedApps}
           lang={lang}
@@ -417,14 +222,12 @@ const CollapsedDrawer = ({
   className,
   onOpenSearch,
   onOpenSettings,
-  hasConversations,
   installedApps,
   lang,
 }: {
   className?: string
   onOpenSearch: () => void
   onOpenSettings: () => void
-  hasConversations: boolean
   installedApps: InstalledExtension[]
   lang: LanguageCode
 }) => {
@@ -433,9 +236,9 @@ const CollapsedDrawer = ({
 
   return (
     <div
-      className={`group w-18 p-4 lg:p-4 !pt-6 h-full z-50 fixed flex flex-col transition-all duration-200 border-e border-transparent ${className}`}
+      className={`group w-18 p-4 lg:p-4 !pt-6 h-full z-50 fixed flex flex-col transition-all duration-200 border-e border-transparent pointer-events-none ${className}`}
     >
-      <div className="flex flex-col items-center overflow-y-auto overflow-x-hidden no-scrollbar -mt-4 md:mt-0">
+      <div className="flex flex-col items-center overflow-y-auto overflow-x-hidden no-scrollbar -mt-4 md:mt-0 pointer-events-auto">
         <Tooltip content={t('Expand sidebar')} placement="right">
           <Button
             data-testid="menu-button"
@@ -500,7 +303,7 @@ const CollapsedDrawer = ({
                 <Icon name="Book" />
               </Button>
             </Tooltip> */}
-            <Tooltip content={t('Agents')} placement="right">
+            {/* <Tooltip content={t('Agents')} placement="right">
               <Button
                 as={Link}
                 href={url('/agents')}
@@ -515,57 +318,23 @@ const CollapsedDrawer = ({
               >
                 <Icon name="Sparks" />
               </Button>
-            </Tooltip>
-            <Tooltip content={t('Tasks')} placement="right">
+            </Tooltip> */}
+            <Tooltip content={t('History')} placement="right">
               <Button
                 as={Link}
-                href={url('/tasks')}
+                href={url('/history')}
                 isIconOnly
-                color="secondary"
                 variant="light"
                 className={cn(
-                  'w-full text-secondary-600 [.is-active]:bg-default-100',
-                  isCurrentPath('/tasks') && 'is-active',
+                  'w-full text-gray-500 dark:text-gray-400 [.is-active]:bg-default-100',
+                  isCurrentPath('/history') && 'is-active',
                 )}
-                aria-label={t('Tasks')}
+                aria-label={t('History')}
               >
-                <Icon name="PcCheck" />
+                <Icon name="ClockRotateRight" />
               </Button>
             </Tooltip>
-            <Tooltip content={t('Library')} placement="right">
-              <Button
-                as={Link}
-                href={url('/library')}
-                isIconOnly
-                color="success"
-                variant="light"
-                className={cn(
-                  'w-full text-success-600 dark:text-success-300 [.is-active]:bg-default-100',
-                  isCurrentPath('/library') && 'is-active',
-                )}
-                aria-label={t('Library')}
-              >
-                <Icon name="BookStack" />
-              </Button>
-            </Tooltip>
-            {hasConversations && (
-              <Tooltip content={t('Conversations history')} placement="right">
-                <Button
-                  as={Link}
-                  href={url('/conversations')}
-                  isIconOnly
-                  variant="light"
-                  className={cn(
-                    'w-full text-gray-500 dark:text-gray-400 [.is-active]:bg-default-100',
-                    isCurrentPath('/conversations') && 'is-active',
-                  )}
-                  aria-label={t('Conversations history')}
-                >
-                  <Icon name="ChatBubble" />
-                </Button>
-              </Tooltip>
-            )}
-            <Tooltip content={t('Studio')} placement="right">
+            {/* <Tooltip content={t('Studio')} placement="right">
               <Button
                 as={Link}
                 href={url('/studio')}
@@ -579,8 +348,8 @@ const CollapsedDrawer = ({
               >
                 <Icon name="MediaImagePlus" />
               </Button>
-            </Tooltip>
-            <Tooltip content={t('Live')} placement="right">
+            </Tooltip> */}
+            {/* <Tooltip content={t('Live')} placement="right">
               <Button
                 as={Link}
                 href={url('/live')}
@@ -594,7 +363,7 @@ const CollapsedDrawer = ({
               >
                 <Icon name="Voice" />
               </Button>
-            </Tooltip>
+            </Tooltip> */}
             {/* <Tooltip content={t('Methodologies')} placement="right">
               <Button
                 as={Link}
@@ -727,14 +496,12 @@ const ExpandedDrawer = ({
   className,
   onOpenSearch,
   onOpenSettings,
-  hasConversations,
   installedApps,
   lang,
 }: {
   className?: string
   onOpenSearch: () => void
   onOpenSettings: () => void
-  hasConversations: boolean
   hasSearchable: boolean
   installedApps: InstalledExtension[]
   lang: LanguageCode
@@ -766,7 +533,7 @@ const ExpandedDrawer = ({
 
   return (
     <div
-      className={`bg-[var(--devs-bg)] dark:bg-default-50 fixed w-64 py-3 !pt-5 px-2 h-full flex flex-col ${className}`}
+      className={`bg-[var(--devs-bg)] dark:bg-default-50 fixed w-64 py-3 !pt-5 px-2 h-full flex flex-col pointer-events-auto ${className}`}
     >
       <ScrollShadow
         hideScrollBar
@@ -776,7 +543,8 @@ const ExpandedDrawer = ({
           <Link href={url('')}>
             <Icon
               name="Devs"
-              className="text-primary-300 dark:text-white mt-1 ms-3 me-1.5"
+              size="lg"
+              className="text-default-400 dark:text-white mt-1 ms-2.5 me-1.5"
             />
             <Title
               level={3}
@@ -843,108 +611,71 @@ const ExpandedDrawer = ({
                 >
                   {t('Search')}
                 </ListboxItem>,
+                // <ListboxItem
+                //   key="agents"
+                //   href={url('/agents')}
+                //   variant="faded"
+                //   color="warning"
+                //   className={cn(
+                //     'dark:text-gray-200 dark:hover:text-warning-500 [.is-active]:bg-default-100',
+                //     isCurrentPath('/agents') && 'is-active',
+                //   )}
+                //   startContent={<Icon name="Sparks" className="text-warning" />}
+                //   textValue={t('Agents')}
+                // >
+                //   {t('Agents')}
+                // </ListboxItem>,
                 <ListboxItem
-                  key="agents"
-                  href={url('/agents')}
-                  variant="faded"
-                  color="warning"
-                  className={cn(
-                    'dark:text-gray-200 dark:hover:text-warning-500 [.is-active]:bg-default-100',
-                    isCurrentPath('/agents') && 'is-active',
-                  )}
-                  startContent={<Icon name="Sparks" className="text-warning" />}
-                  textValue={t('Agents')}
-                >
-                  {t('Agents')}
-                </ListboxItem>,
-                <ListboxItem
-                  key="tasks"
-                  href={url('/tasks')}
-                  variant="faded"
-                  color="secondary"
-                  className={cn(
-                    'dark:text-gray-200 dark:hover:text-secondary-600 [.is-active]:bg-default-100',
-                    isCurrentPath('/tasks') && 'is-active',
-                  )}
-                  startContent={
-                    <Icon
-                      name="PcCheck"
-                      className="text-secondary dark:text-secondary-600"
-                    />
-                  }
-                >
-                  {t('Tasks')}
-                </ListboxItem>,
-                <ListboxItem
-                  key="library"
-                  href={url('/library')}
-                  variant="faded"
-                  // color="success"
-                  className={cn(
-                    // 'dark:text-gray-200 dark:hover:text-success-500 [.is-active]:bg-default-100',
-                    isCurrentPath('/library') && 'is-active',
-                  )}
-                  startContent={
-                    <Icon
-                      name="BookStack"
-                      className="text-success-600 dark:text-success-300"
-                    />
-                  }
-                >
-                  {t('Library')}
-                </ListboxItem>,
-                <ListboxItem
-                  key="conversations"
-                  href={url('/conversations')}
+                  key="history"
+                  href={url('/history')}
                   variant="faded"
                   className={cn(
                     '[.is-active]:bg-default-100',
-                    isCurrentPath('/conversations') && 'is-active',
-                    !hasConversations && 'hidden',
+                    isCurrentPath('/history') && 'is-active',
                   )}
                   startContent={
                     <Icon
-                      name="ChatBubble"
+                      name="ClockRotateRight"
                       className="text-gray-500 dark:text-gray-400"
                     />
                   }
                 >
-                  {t('Conversations')}
+                  {t('History')}
                 </ListboxItem>,
-                <ListboxItem
-                  key="studio"
-                  href={url('/studio')}
-                  variant="faded"
-                  className={cn(
-                    '[.is-active]:bg-default-100',
-                    isCurrentPath('/studio') && 'is-active',
-                  )}
-                  startContent={
-                    <Icon
-                      name="MediaImagePlus"
-                      className="text-pink-500 dark:text-pink-400"
-                    />
-                  }
-                >
-                  {t('Studio')}
-                </ListboxItem>,
-                <ListboxItem
-                  key="live"
-                  href={url('/live')}
-                  variant="faded"
-                  className={cn(
-                    '[.is-active]:bg-default-100',
-                    isCurrentPath('/live') && 'is-active',
-                  )}
-                  startContent={
-                    <Icon
-                      name="Voice"
-                      className="text-cyan-500 dark:text-cyan-400"
-                    />
-                  }
-                >
-                  {t('Live')}
-                </ListboxItem>,
+                // <ListboxItem
+                //   key="studio"
+                //   href={url('/studio')}
+                //   variant="faded"
+                //   className={cn(
+                //     '[.is-active]:bg-default-100',
+                //     isCurrentPath('/studio') && 'is-active',
+                //   )}
+                //   startContent={
+                //     <Icon
+                //       name="MediaImagePlus"
+                //       className="text-pink-500 dark:text-pink-400"
+                //     />
+                //   }
+                // >
+                //   {t('Studio')}
+                // </ListboxItem>,
+                // <ListboxItem
+                //   key="live"
+                //   href={url('/live')}
+                //   variant="faded"
+                //   className={cn(
+                //     '[.is-active]:bg-default-100',
+                //     isCurrentPath('/live') && 'is-active',
+                //   )}
+                //   startContent={
+                //     <Icon
+                //       name="Voice"
+                //       className="text-cyan-500 dark:text-cyan-400"
+                //     />
+                //   }
+                // >
+                //   {t('Live')}
+                // </ListboxItem>,
                 // Installed Marketplace Apps
                 ...installedApps.map((installedApp) => {
                   const ext = installedApp.extension

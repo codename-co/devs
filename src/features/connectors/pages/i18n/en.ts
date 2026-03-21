@@ -45,7 +45,6 @@ export const en = [
 
   // Wizard - Provider Selection
   'Choose a service to connect to your knowledge base:',
-  'Choose a service to connect to your knowledge base',
   'Select a Service',
 
   // Wizard - OAuth Step

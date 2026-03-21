@@ -486,7 +486,7 @@ async function searchArtifacts(query: string): Promise<SearchResult[]> {
           subtitle: `${artifact.type} · ${artifact.status}`,
           icon: TYPE_ICONS.artifact,
           color: TYPE_COLORS.artifact,
-          href: `/library#${artifact.id}`,
+          href: `/history#${artifact.id}`,
           score: calculateScore(query, texts, 3),
           timestamp: artifact.updatedAt
             ? new Date(artifact.updatedAt)
@@ -692,7 +692,7 @@ const SEARCHABLE_PAGES: PageDefinition[] = [
   },
   {
     id: 'page-tasks',
-    href: '/tasks',
+    href: '/history/tasks',
     icon: 'PcCheck',
     color: 'secondary',
     nameKey: 'Tasks',
@@ -717,7 +717,7 @@ const SEARCHABLE_PAGES: PageDefinition[] = [
   },
   {
     id: 'page-conversations',
-    href: '/conversations',
+    href: '/history/conversations',
     icon: 'ChatBubble',
     color: 'default',
     nameKey: 'Conversations',

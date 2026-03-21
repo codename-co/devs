@@ -18,7 +18,7 @@ import { Task, Artifact } from '@/types'
 import { HeaderProps } from '@/lib/types'
 import localI18n from './i18n'
 
-export const TasksPage = () => {
+export const TasksContent = () => {
   const { t, url } = useI18n(localI18n)
   const navigate = useNavigate()
   const { tasks, isLoading, loadTasks } = useTaskStore()
@@ -69,28 +69,6 @@ export const TasksPage = () => {
     }
     return map
   }, [artifacts, parentTaskMap])
-
-  const header: HeaderProps = {
-    color: 'bg-secondary-50',
-    icon: {
-      name: 'PcCheck',
-      color: 'text-secondary-300 dark:text-secondary-600',
-    },
-    title: (
-      <>
-        {t('Tasks')}
-        <Chip size="sm" variant="flat" className="ml-2 align-middle">
-          Beta
-        </Chip>
-      </>
-    ),
-    subtitle: t('Manage and monitor tasks for your organization'),
-    cta: {
-      label: t('New Task'),
-      href: url(''),
-      icon: 'Plus',
-    },
-  }
 
   useEffect(() => {
     loadTasks()
@@ -223,135 +201,160 @@ export const TasksPage = () => {
 
   if (isLoading && tasks.length === 0) {
     return (
-      <DefaultLayout header={header} title={t('Tasks')}>
-        <Section mainClassName="text-center">
-          <div className="flex flex-col items-center justify-center min-h-[50vh]">
-            <Spinner size="lg" />
-            <p className="mt-4 text-default-500">{t('Loading tasks…')}</p>
-          </div>
-        </Section>
-      </DefaultLayout>
+      <div className="flex flex-col items-center justify-center min-h-[50vh]">
+        <Spinner size="lg" />
+        <p className="mt-4 text-default-500">{t('Loading tasks…')}</p>
+      </div>
     )
+  }
+
+  return (
+    <>
+      {/* Filters */}
+      {tasks.length > 0 && (
+        <div className="flex gap-2 mb-6">
+          <MultiFilter
+            label={t('Filters')}
+            sections={filterSections}
+            selectedKeys={filters}
+            onSelectionChange={setFilters}
+          />
+        </div>
+      )}
+
+      {/* Tasks List */}
+      {filteredTasks.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 px-8">
+          <div className="w-16 h-16 rounded-full bg-default-100 flex items-center justify-center mb-4">
+            <Icon
+              name="TriangleFlagTwoStripes"
+              size="xl"
+              className="text-default-400"
+            />
+          </div>
+          <p className="text-lg font-semibold mb-1">
+            {filters.status === 'all'
+              ? t('No tasks found')
+              : t('No {status} tasks found', {
+                  status: t(
+                    filters.status
+                      .replace('_', ' ')
+                      .replace(/\b\w/g, (c) => c.toUpperCase()) as any,
+                  ).toLowerCase(),
+                })}
+          </p>
+        </div>
+      ) : (
+        <div data-testid="task-list" className="space-y-2">
+          {filteredTasks
+            .sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime(),
+            )
+            .map((task) => (
+              <Card
+                key={task.id}
+                data-testid="task-item"
+                isPressable
+                isHoverable
+                shadow="none"
+                className="w-full"
+                onPress={() => handleTaskClick(task.id)}
+              >
+                <CardBody className="p-0">
+                  <div className="flex">
+                    <div className="flex-1 min-w-0 py-4 pl-4 pr-2">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-base font-medium truncate">
+                          {task.title}
+                        </h3>
+                        <Chip
+                          size="sm"
+                          color={getStatusColor(task.status)}
+                          variant="flat"
+                        >
+                          {t(task.status.replace('_', ' ') as any)}
+                        </Chip>
+                      </div>
+                      <p className="text-sm text-default-500 line-clamp-1">
+                        {task.description}
+                      </p>
+                      <time className="text-xs text-default-400 mt-1 block">
+                        {formatDate(task.createdAt)}
+                      </time>
+                    </div>
+                    {lastArtifactByTask.has(task.id) &&
+                      (() => {
+                        const artifact = lastArtifactByTask.get(task.id)!
+                        return (
+                          <div
+                            className="w-32 shrink-0 aspect-[4/3] bg-default-50 border-l border-default-100 rounded-r-lg overflow-hidden flex flex-col cursor-pointer hover:bg-default-100 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              navigate(url(`/tasks/${task.id}`), {
+                                state: { openArtifactId: artifact.id },
+                              })
+                            }}
+                          >
+                            <div className="flex-1 overflow-hidden px-2 pt-2">
+                              <pre className="text-[8px] leading-tight text-default-500 whitespace-pre-wrap break-all overflow-hidden h-full">
+                                {artifact.content?.slice(0, 300)}
+                              </pre>
+                            </div>
+                            <div className="flex items-center gap-1 px-2 py-1 bg-default-100/50">
+                              <Icon
+                                name={getArtifactTypeIcon(artifact.type)}
+                                size="sm"
+                                className="text-default-400"
+                              />
+                              <span className="text-[10px] text-default-400 truncate">
+                                {artifact.title}
+                              </span>
+                            </div>
+                          </div>
+                        )
+                      })()}
+                  </div>
+                </CardBody>
+              </Card>
+            ))}
+        </div>
+      )}
+    </>
+  )
+}
+
+export const TasksPage = () => {
+  const { t, url } = useI18n(localI18n)
+
+  const header: HeaderProps = {
+    color: 'bg-secondary-50',
+    icon: {
+      name: 'PcCheck',
+      color: 'text-secondary-300 dark:text-secondary-600',
+    },
+    title: (
+      <>
+        {t('Tasks')}
+        <Chip size="sm" variant="flat" className="ml-2 align-middle">
+          Beta
+        </Chip>
+      </>
+    ),
+    subtitle: t('Manage and monitor tasks for your organization'),
+    cta: {
+      label: t('New Task'),
+      href: url(''),
+      icon: 'Plus',
+    },
   }
 
   return (
     <DefaultLayout title={t('Tasks')} header={header}>
       <Section>
         <Container>
-          {/* Filters */}
-          {tasks.length > 0 && (
-            <div className="flex gap-2 mb-6">
-              <MultiFilter
-                label={t('Filters')}
-                sections={filterSections}
-                selectedKeys={filters}
-                onSelectionChange={setFilters}
-              />
-            </div>
-          )}
-
-          {/* Tasks List */}
-          {filteredTasks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 px-8">
-              <div className="w-16 h-16 rounded-full bg-default-100 flex items-center justify-center mb-4">
-                <Icon
-                  name="TriangleFlagTwoStripes"
-                  size="xl"
-                  className="text-default-400"
-                />
-              </div>
-              <p className="text-lg font-semibold mb-1">
-                {filters.status === 'all'
-                  ? t('No tasks found')
-                  : t('No {status} tasks found', {
-                      status: t(
-                        filters.status
-                          .replace('_', ' ')
-                          .replace(/\b\w/g, (c) => c.toUpperCase()) as any,
-                      ).toLowerCase(),
-                    })}
-              </p>
-              {/* <p className="text-sm text-default-500 text-center max-w-xs">
-                {t('Browse the marketplace to find useful extensions')}
-              </p> */}
-            </div>
-          ) : (
-            <div data-testid="task-list" className="space-y-2">
-              {filteredTasks
-                .sort(
-                  (a, b) =>
-                    new Date(b.createdAt).getTime() -
-                    new Date(a.createdAt).getTime(),
-                )
-                .map((task) => (
-                  <Card
-                    key={task.id}
-                    data-testid="task-item"
-                    isPressable
-                    isHoverable
-                    shadow="none"
-                    className="w-full"
-                    onPress={() => handleTaskClick(task.id)}
-                  >
-                    <CardBody className="p-0">
-                      <div className="flex">
-                        <div className="flex-1 min-w-0 py-4 pl-4 pr-2">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="text-base font-medium truncate">
-                              {task.title}
-                            </h3>
-                            <Chip
-                              size="sm"
-                              color={getStatusColor(task.status)}
-                              variant="flat"
-                            >
-                              {t(task.status.replace('_', ' ') as any)}
-                            </Chip>
-                          </div>
-                          <p className="text-sm text-default-500 line-clamp-1">
-                            {task.description}
-                          </p>
-                          <time className="text-xs text-default-400 mt-1 block">
-                            {formatDate(task.createdAt)}
-                          </time>
-                        </div>
-                        {lastArtifactByTask.has(task.id) &&
-                          (() => {
-                            const artifact = lastArtifactByTask.get(task.id)!
-                            return (
-                              <div
-                                className="w-32 shrink-0 aspect-[4/3] bg-default-50 border-l border-default-100 rounded-r-lg overflow-hidden flex flex-col cursor-pointer hover:bg-default-100 transition-colors"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  navigate(url(`/tasks/${task.id}`), {
-                                    state: { openArtifactId: artifact.id },
-                                  })
-                                }}
-                              >
-                                <div className="flex-1 overflow-hidden px-2 pt-2">
-                                  <pre className="text-[8px] leading-tight text-default-500 whitespace-pre-wrap break-all overflow-hidden h-full">
-                                    {artifact.content?.slice(0, 300)}
-                                  </pre>
-                                </div>
-                                <div className="flex items-center gap-1 px-2 py-1 bg-default-100/50">
-                                  <Icon
-                                    name={getArtifactTypeIcon(artifact.type)}
-                                    size="sm"
-                                    className="text-default-400"
-                                  />
-                                  <span className="text-[10px] text-default-400 truncate">
-                                    {artifact.title}
-                                  </span>
-                                </div>
-                              </div>
-                            )
-                          })()}
-                      </div>
-                    </CardBody>
-                  </Card>
-                ))}
-            </div>
-          )}
+          <TasksContent />
         </Container>
       </Section>
     </DefaultLayout>

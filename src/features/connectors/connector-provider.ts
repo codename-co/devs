@@ -481,18 +481,20 @@ export abstract class BaseAppConnectorProvider
       const updatedConnector: Connector = {
         ...connector,
         encryptedToken,
+        tokenIv: iv,
         tokenExpiresAt,
         status: 'connected',
         errorMessage: undefined,
       }
 
-      // Store encryption metadata
+      // Store encryption metadata in localStorage + Yjs
       storeEncryptionMetadata(connector.id, iv, salt, false)
 
-      // Update the connector in the store
+      // Update the connector in the store (include tokenIv for immediate availability)
       const store = await getConnectorStore()
       await store.updateConnector(connector.id, {
         encryptedToken,
+        tokenIv: iv,
         tokenExpiresAt,
         status: 'connected',
         errorMessage: undefined,

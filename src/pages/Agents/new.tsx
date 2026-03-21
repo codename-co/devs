@@ -114,6 +114,15 @@ export function AgentsNewPage() {
   const [generationError, setGenerationError] = useState('')
   const [generatedPreview, setGeneratedPreview] = useState('')
 
+  // Consume forwarded prompt from Index page
+  useEffect(() => {
+    const forwarded = sessionStorage.getItem('agentPrompt')
+    if (forwarded) {
+      setMetaPrompt(forwarded)
+      sessionStorage.removeItem('agentPrompt')
+    }
+  }, [])
+
   // Form state
   const [name, setName] = useState('')
   const [role, setRole] = useState('')

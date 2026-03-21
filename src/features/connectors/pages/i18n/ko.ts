@@ -54,8 +54,6 @@ export const ko: I18n = {
   // Wizard - Provider Selection
   'Choose a service to connect to your knowledge base:':
     '지식 베이스에 연결할 서비스를 선택하세요:',
-  'Choose a service to connect to your knowledge base':
-    '지식 베이스에 연결할 서비스를 선택하세요',
   'Select a Service': '서비스 선택',
 
   // Wizard - OAuth Step

@@ -9,13 +9,14 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Button, Chip, Progress, Tooltip } from '@heroui/react'
+import { Alert, Button, Chip, Progress, Tooltip } from '@heroui/react'
 
 import '@/features/local-backup/types/file-system.d'
 import {
   useFolderSyncStore,
   tryReconnectFolderSync,
 } from '@/features/local-backup/stores/folderSyncStore'
+import { folderSyncService } from '@/features/local-backup/lib/local-backup-service'
 import { Icon } from '@/components/Icon'
 import type { IconName } from '@/lib/types'
 import { useI18n } from '@/i18n'
@@ -200,9 +201,10 @@ export function LocalBackupSection() {
 
   // ---------- reconnect on mount ----------
   useEffect(() => {
-    if (isEnabled && !basePath) {
+    if (isEnabled && !folderSyncService.isActive()) {
       tryReconnectFolderSync().then((success) => {
-        if (!success && isEnabled) setNeedsPermission(true)
+        if (!success && useFolderSyncStore.getState().isEnabled)
+          setNeedsPermission(true)
       })
     }
   }, [isEnabled, basePath])
@@ -377,7 +379,7 @@ export function LocalBackupSection() {
       >
         {/* Left — icon + status text */}
         <div className="flex items-center gap-3 min-w-0">
-          <div
+          {/* <div
             className={`flex items-center justify-center h-9 w-9 rounded-lg shrink-0 ${
               status === 'active'
                 ? 'bg-success-100 text-success-600'
@@ -400,7 +402,7 @@ export function LocalBackupSection() {
               }
               className="h-5 w-5"
             />
-          </div>
+          </div> */}
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-default-800">
@@ -412,15 +414,21 @@ export function LocalBackupSection() {
                       ? t('Permission required')
                       : t('Local backup disabled')}
               </span>
-              {status === 'active' && (
-                <Chip size="sm" variant="flat" color="success" className="h-5">
-                  {t('Active')}
-                </Chip>
-              )}
-              {isSyncing && (
+              {isSyncing ? (
                 <Chip size="sm" variant="flat" color="primary" className="h-5">
                   {t('Backing up...')}
                 </Chip>
+              ) : (
+                status === 'active' && (
+                  <Chip
+                    size="sm"
+                    variant="flat"
+                    color="success"
+                    className="h-5"
+                  >
+                    {t('Active')}
+                  </Chip>
+                )
               )}
             </div>
             {/* Subtitle */}
@@ -459,9 +467,7 @@ export function LocalBackupSection() {
                   isLoading={isSyncing}
                   onPress={() => triggerSync()}
                 >
-                  {!isSyncing && (
-                    <Icon name="RefreshDouble" className="h-4 w-4" />
-                  )}
+                  {!isSyncing && <Icon name="RefreshDouble" size="md" />}
                 </Button>
               </Tooltip>
               <Tooltip content={t('Change Folder')}>
@@ -471,7 +477,7 @@ export function LocalBackupSection() {
                   isIconOnly
                   onPress={handleSelectFolder}
                 >
-                  <Icon name="Folder" className="h-4 w-4" />
+                  <Icon name="FolderSettings" size="md" />
                 </Button>
               </Tooltip>
               <Button
@@ -506,9 +512,7 @@ export function LocalBackupSection() {
               variant="flat"
               onPress={handleSelectFolder}
               isLoading={isInitializing}
-              startContent={
-                !isInitializing && <Icon name="Folder" className="h-4 w-4" />
-              }
+              startContent={!isInitializing && <Icon name="Folder" size="md" />}
             >
               {t('Select Folder')}
             </Button>
@@ -530,9 +534,7 @@ export function LocalBackupSection() {
             size="sm"
             onPress={handleDownloadBackup}
             isLoading={isDownloading}
-            startContent={
-              !isDownloading && <Icon name="Download" className="h-4 w-4" />
-            }
+            startContent={!isDownloading && <Icon name="Download" size="md" />}
           >
             {t('Download Backup')}
           </Button>
@@ -571,7 +573,7 @@ export function LocalBackupSection() {
                         : 'bg-default-100 text-default-400'
                     }`}
                   >
-                    <Icon name={cat.icon} className="h-4 w-4" />
+                    <Icon name={cat.icon} size="md" />
                   </div>
                 }
                 endContent={
@@ -600,13 +602,14 @@ export function LocalBackupSection() {
                                   ? 'WarningCircle'
                                   : 'Circle'
                             }
-                            className={`h-4 w-4 ${
+                            size="md"
+                            className={
                               isFullyBacked
                                 ? 'text-success-500'
                                 : isPartial
                                   ? 'text-warning-500'
                                   : 'text-default-300'
-                            }`}
+                            }
                           />
                         </div>
                       </Tooltip>
@@ -686,7 +689,7 @@ export function LocalBackupSection() {
             })}
             {syncFullExport && syncStats.fullExport && (
               <div className="flex items-center gap-1.5 text-xs text-success-600">
-                <Icon name="CheckCircle" className="h-3.5 w-3.5" />
+                <Icon name="CheckCircle" size="sm" />
                 {t('Full Export')}
               </div>
             )}
@@ -696,11 +699,10 @@ export function LocalBackupSection() {
 
       {/* ── Tip ── */}
       {!useFallbackDownload && (
-        <p className="text-xs text-default-400">
-          <Icon name="InfoCircle" className="h-3 w-3 inline mr-1" />
+        <Alert variant="bordered" color="default" className="text-sm">
           {t('Files are stored as readable Markdown')}.{' '}
           {t('Preview files in Finder, sync with Git, or edit externally')}.
-        </p>
+        </Alert>
       )}
     </div>
   )

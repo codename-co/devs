@@ -208,6 +208,15 @@ export function StudioPage() {
   // Local state
   const [prompt, setPrompt] = useState('')
   const [referenceImages, setReferenceImages] = useState<File[]>([])
+
+  // Consume forwarded prompt from Index page
+  useEffect(() => {
+    const forwarded = sessionStorage.getItem('studioPrompt')
+    if (forwarded) {
+      setPrompt(forwarded)
+      sessionStorage.removeItem('studioPrompt')
+    }
+  }, [])
   const [mediaFilter, setMediaFilter] = useState<
     'all' | 'images' | 'videos' | 'favorites'
   >('all')

@@ -609,15 +609,16 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
         ? new Date(Date.now() + refreshResult.expiresIn * 1000)
         : undefined
 
-      // Update the connector in the store
+      // Update the connector in the store (include tokenIv for immediate availability)
       await updateConnector(connector.id, {
         encryptedToken,
+        tokenIv: iv,
         tokenExpiresAt,
         status: 'connected',
         errorMessage: undefined,
       })
 
-      // Store new encryption metadata
+      // Store new encryption metadata in localStorage
       storeEncryptionMetadata(connector.id, iv, salt, false)
 
       if (import.meta.env.DEV) {

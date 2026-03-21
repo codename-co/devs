@@ -1,5 +1,6 @@
 import { useI18n, useUrl } from '@/i18n'
 import { Container, Icon, PromptArea, Section, Title } from '@/components'
+import type { PromptMode } from '@/components/PromptArea'
 import { DevsIcon } from '@/components/DevsIcon'
 import { EasySetupModal } from '@/components/EasySetup/EasySetupModal'
 import DefaultLayout from '@/layouts/Default'
@@ -29,6 +30,7 @@ import localeI18n from './i18n'
 import { agentThemeIcon, useCasesByThemes } from '@/lib/agents'
 import { PRODUCT } from '@/config/product'
 import { userSettings } from '@/stores/userStore'
+import { RecentActivity } from './RecentActivity'
 
 export const IndexPage = () => {
   const { lang, t } = useI18n(localeI18n)
@@ -39,6 +41,7 @@ export const IndexPage = () => {
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [agents, setAgents] = useState<Agent[]>([])
+  const [mode, setMode] = useState<PromptMode>('chat')
   // const [methodologies, setMethodologies] = useState<Methodology[]>([])
   const [isLoadingAgents, setIsLoadingAgents] = useState(true)
   // const [isLoadingMethodologies, setIsLoadingMethodologies] = useState(true)
@@ -156,6 +159,28 @@ export const IndexPage = () => {
       accountEmail?: string
     }>,
   ) => {
+    // Handle mode-specific submissions (live mode uses normal chat flow)
+    if (mode !== 'chat' && mode !== 'live') {
+      const promptToUse = cleanedPrompt ?? prompt
+      if (!promptToUse.trim()) return
+
+      if (mode === 'studio') {
+        sessionStorage.setItem('studioPrompt', promptToUse)
+        navigate(url('/studio'))
+      } else if (mode === 'app') {
+        sessionStorage.setItem('appPrompt', promptToUse)
+        navigate(url('/marketplace/new'))
+      } else if (mode === 'agent') {
+        sessionStorage.setItem('agentPrompt', promptToUse)
+        navigate(url('/agents/new'))
+      }
+
+      setPrompt('')
+      setSelectedFiles([])
+      setMode('chat')
+      return
+    }
+
     const promptToUse = cleanedPrompt ?? prompt
     if (!promptToUse.trim() || isSending) return
 
@@ -216,6 +241,28 @@ export const IndexPage = () => {
     cleanedPrompt?: string,
     mentionedAgent?: Agent,
   ) => {
+    // Handle mode-specific submissions (live mode uses normal chat flow)
+    if (mode !== 'chat' && mode !== 'live') {
+      const promptToUse = cleanedPrompt ?? prompt
+      if (!promptToUse.trim()) return
+
+      if (mode === 'studio') {
+        sessionStorage.setItem('studioPrompt', promptToUse)
+        navigate(url('/studio'))
+      } else if (mode === 'app') {
+        sessionStorage.setItem('appPrompt', promptToUse)
+        navigate(url('/marketplace/new'))
+      } else if (mode === 'agent') {
+        sessionStorage.setItem('agentPrompt', promptToUse)
+        navigate(url('/agents/new'))
+      }
+
+      setPrompt('')
+      setSelectedFiles([])
+      setMode('chat')
+      return
+    }
+
     const promptToUse = cleanedPrompt ?? prompt
     if (!promptToUse.trim() || isSending) return
 
@@ -337,6 +384,8 @@ export const IndexPage = () => {
               selectedAgent={selectedAgent}
               onAgentChange={setSelectedAgent}
               onFilesChange={setSelectedFiles}
+              mode={mode}
+              onModeChange={setMode}
             />
           </motion.div>
 
@@ -345,34 +394,6 @@ export const IndexPage = () => {
             {!isLoadingAgents && (
               <Container size={7} className="mt-0 sm:-mt-8">
                 <div className="flex gap-2 flex-wrap justify-center">
-                  <motion.div
-                    {...motionVariants.usecase}
-                    transition={{
-                      ...motionVariants.usecase.transition,
-                      delay: 0.6,
-                    }}
-                    key="studio"
-                  >
-                    <Button
-                      variant="ghost"
-                      // color="danger"
-                      size="md"
-                      className="inline-flex justify-start"
-                      startContent={
-                        <Icon
-                          name="MediaImagePlus"
-                          size="lg"
-                          className="text-default-500"
-                        />
-                      }
-                      onClick={() => {
-                        navigate('/studio')
-                      }}
-                    >
-                      <span className="font-semibold">{t('Studio')}</span>
-                    </Button>
-                  </motion.div>
-
                   {useCasesByThemes(agents).map(
                     ({ theme, usecases }, index) => (
                       <motion.div
@@ -517,6 +538,10 @@ export const IndexPage = () => {
             </Container>
           )} */}
           </motion.div>
+
+          <motion.div {...motionVariants.agentSection}>
+            <RecentActivity />
+          </motion.div>
         </Section>
 
         <footer className="absolute bottom-12 md:bottom-0 left-0 right-0 mt-auto py-6 flex justify-center gap-4 scale-90 text-sm *:text-default-400 dark:*:text-default-500">
@@ -524,16 +549,14 @@ export const IndexPage = () => {
           <Link href={url('/terms')}>{t('Terms')}</Link>
           <Link href={url('/privacy')}>{t('Privacy')}</Link>
           {/* Open Source */}
-          <Link href="https://github.com/codename-co/devs">
-            <a
-              href="https://github.com/codename-co/devs"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center"
-            >
-              <Icon name="GitHub" size="sm" className="me-1" />
-              {t('Open Source')}
-            </a>
+          <Link
+            href="https://github.com/codename-co/devs"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center"
+          >
+            <Icon name="GitHub" size="sm" className="me-1" />
+            {t('Open Source')}
           </Link>
         </footer>
       </DefaultLayout>

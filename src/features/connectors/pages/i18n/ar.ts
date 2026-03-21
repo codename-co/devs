@@ -54,8 +54,6 @@ export const ar: I18n = {
   // Wizard - Provider Selection
   'Choose a service to connect to your knowledge base:':
     'اختر خدمة لتوصيلها بقاعدة معرفتك:',
-  'Choose a service to connect to your knowledge base':
-    'اختر خدمة لتوصيلها بقاعدة معرفتك',
   'Select a Service': 'اختر خدمة',
 
   // Wizard - OAuth Step

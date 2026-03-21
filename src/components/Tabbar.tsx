@@ -2,9 +2,29 @@ import { Tab, Tabs, Tooltip } from '@heroui/react'
 import { Icon } from './Icon'
 import { useI18n } from '@/i18n'
 import { currentBasePath } from '@/lib/utils'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { useSearchStore } from '@/features/search/searchStore'
 
 export const Tabbar = ({ className = '' }) => {
   const { t, url } = useI18n()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const openSettings = () => {
+    navigate(`${location.pathname}#settings`, { replace: true })
+  }
+
+  const openSearch = () => {
+    useSearchStore.getState().open()
+  }
+
+  const handleSelectionChange = (key: React.Key) => {
+    if (key === '/settings') {
+      openSettings()
+    } else if (key === '/search') {
+      openSearch()
+    }
+  }
 
   return (
     <Tabs
@@ -13,6 +33,7 @@ export const Tabbar = ({ className = '' }) => {
       variant="underlined"
       // color="primary"
       selectedKey={currentBasePath()}
+      onSelectionChange={handleSelectionChange}
       className={`flex w-full fixed bottom-0 z-20 backdrop-blur-xs backdrop-brightness-120 border-t-1 border-default-200 dark:border-default-400 bg-white/80 dark:bg-default-50/80 ${className}`}
       classNames={{
         tabList: 'flex w-full justify-around',
@@ -31,25 +52,23 @@ export const Tabbar = ({ className = '' }) => {
       }}
     >
       <Tab
-        key="/agents"
-        // data-color="warning"
+        key="/settings"
+        // data-color="gray"
         title={
-          <Tooltip content={t('Agents')} placement="top">
-            <Icon name="Sparks" />
+          <Tooltip content={t('Settings')} placement="top">
+            <Icon name="Settings" />
+          </Tooltip>
+        }
+      />
+      <Tab
+        key="/search"
+        // data-color="gray"
+        title={
+          <Tooltip content={t('Search')} placement="top">
+            <Icon name="Search" />
           </Tooltip>
         }
         // className="bg-amber-500"
-        href={url('/agents')}
-      />
-      <Tab
-        key="/studio"
-        // data-color="danger"
-        title={
-          <Tooltip content={t('Studio')} placement="top">
-            <Icon name="MediaImagePlus" />
-          </Tooltip>
-        }
-        href={url('/studio')}
       />
       <Tab
         key="/"
@@ -63,24 +82,24 @@ export const Tabbar = ({ className = '' }) => {
         className="zoom-in scale-125"
       />
       <Tab
-        key="/tasks"
+        key="/history"
         // data-color="secondary"
         title={
-          <Tooltip content={t('Tasks')} placement="top">
-            <Icon name="PcCheck" />
+          <Tooltip content={t('History')} placement="top">
+            <Icon name="ClockRotateRight" />
           </Tooltip>
         }
-        href={url('/tasks')}
+        href={url('/history')}
       />
       <Tab
-        key="/live"
-        // data-color="cyan"
+        key="/marketplace"
+        // data-color="warning"
         title={
-          <Tooltip content={t('Live')} placement="top">
-            <Icon name="Voice" />
+          <Tooltip content={t('Marketplace')} placement="top">
+            <Icon name="HexagonPlus" />
           </Tooltip>
         }
-        href={url('/live')}
+        href={url('/marketplace')}
       />
     </Tabs>
   )

@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Outlet, Route, Routes, useParams } from 'react-router-dom'
+import { Navigate, Outlet, Route, Routes, useParams } from 'react-router-dom'
 
 import { LocalLLMLoadingIndicator } from '@/components'
 import { LanguageRedirect } from '@/components/LanguageRedirect'
@@ -9,9 +9,8 @@ import { StudioPage } from '@/features/studio/pages/StudioPage'
 import { IndexPage } from '@/pages/Index'
 import { AgentsNewPage } from '@/pages/Agents/new'
 import { AgentRunPage } from '@/pages/Agents/run'
-import { AgentsStartPage } from '@/pages/Agents/start'
 import { AgentsPage } from '@/pages/Agents'
-import { ConversationPage } from '@/pages/Conversation'
+import { HistoryPage } from '@/pages/History'
 import DemoPage from '@/pages/Demo/index.mdx'
 import HTMLdemoPage from '@/pages/Demo/html.mdx'
 import DiagramPage from '@/pages/Demo/diagram.mdx'
@@ -23,8 +22,6 @@ import { PrivacyPage } from '@/pages/Privacy'
 import { TermsPage } from '@/pages/Terms'
 import { OAuthCallbackPage } from '@/pages/OAuth'
 import { TaskPage } from '@/pages/Tasks/show'
-import { TasksPage } from '@/pages/Tasks'
-import { LibraryPage } from '@/pages/Artifacts'
 import { LivePage } from '@/features/live'
 import {
   MarketplacePage,
@@ -57,6 +54,13 @@ import {
 } from '@/pages/Compare'
 import { ComparePage } from '@/pages/Compare/index.tsx'
 
+// Redirect components for old paths → history tabs
+const LibraryRedirect = () => <Navigate to="../history" replace />
+const TasksRedirect = () => <Navigate to="../history/tasks" replace />
+const ConversationsRedirect = () => (
+  <Navigate to="../history/conversations" replace />
+)
+
 const routes = {
   index: IndexPage,
   agents: AgentsPage,
@@ -64,9 +68,12 @@ const routes = {
   'agents/run/:agentSlug': AgentRunPage,
   'agents/run/:agentSlug/:conversationId': AgentRunPage,
   'agents/new': AgentsNewPage,
-  'agents/start': AgentsStartPage,
-  'agents/start/:agentSlug': AgentsStartPage,
-  conversations: ConversationPage,
+  history: HistoryPage,
+  'history/library': HistoryPage,
+  'history/memories': HistoryPage,
+  'history/tasks': HistoryPage,
+  'history/conversations': HistoryPage,
+  conversations: ConversationsRedirect,
   demo: DemoPage,
   'demo/code': CodeSandboxPage,
   'demo/conversations': ConversationTestsPage,
@@ -78,9 +85,9 @@ const routes = {
   about: AboutPage,
   privacy: PrivacyPage,
   task: TaskPage,
-  tasks: TasksPage,
+  tasks: TasksRedirect,
   'tasks/:taskId': TaskPage,
-  library: LibraryPage,
+  library: LibraryRedirect,
   terms: TermsPage,
   marketplace: MarketplacePage,
   'marketplace/new': NewExtensionPage,

@@ -16,8 +16,17 @@ export const es: I18n = {
   Art: 'Arte',
   Coding: 'Programación',
 
+  // Prompt modes & CTA
+  Live: 'Live',
+  Studio: 'Studio',
+
   // PWA Install
   'Install {productName}': 'Instalar {productName}',
   'Install this app on your device for a better experience and offline access.':
     'Instale esta aplicación en su dispositivo para una mejor experiencia y acceso sin conexión.',
+
+  // Recent Activity
+  'Recent conversations': 'Conversaciones recientes',
+  'View all': 'Ver todo',
+  'Untitled conversation': 'Conversación sin título',
 } as const

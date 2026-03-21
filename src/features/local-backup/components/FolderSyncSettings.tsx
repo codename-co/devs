@@ -19,6 +19,7 @@ import {
   useFolderSyncStore,
   tryReconnectFolderSync,
 } from '../stores/folderSyncStore'
+import { folderSyncService } from '../lib/local-backup-service'
 import { Icon } from '@/components/Icon'
 import { useI18n } from '@/i18n'
 import { localI18n } from '../i18n'
@@ -56,11 +57,11 @@ export function FolderSyncSettings() {
   const [pendingHandle, setPendingHandle] =
     useState<FileSystemDirectoryHandle | null>(null)
 
-  // Try to reconnect on mount
+  // Try to reconnect on mount when enabled but service isn't active
   useEffect(() => {
-    if (isEnabled && !basePath) {
+    if (isEnabled && !folderSyncService.isActive()) {
       tryReconnectFolderSync().then((success) => {
-        if (!success && isEnabled) {
+        if (!success && useFolderSyncStore.getState().isEnabled) {
           setNeedsPermission(true)
         }
       })
