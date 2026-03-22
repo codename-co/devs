@@ -1253,20 +1253,18 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
           )
         })()}
 
-        {
-          <Button
-            variant="light"
-            size="sm"
-            startContent={<Icon name="Settings" size="sm" />}
-            onPress={() => {
-              navigate(`${location.pathname}#settings/knowledge`)
-              // setIsOpen(false)
-            }}
-            className="justify-start text-default-400 text-xs px-1 border-t border-default-100 dark:border-default-800 rounded-none pt-2"
-          >
-            {t('Manage knowledge')}
-          </Button>
-        }
+        <DropdownItem
+          key="manage-knowledge"
+          startContent={<Icon name="Settings" size="sm" />}
+          textValue={t('Manage knowledge')}
+          closeOnSelect
+          className="text-default-400 text-xs"
+          onPress={() => {
+            navigate(`${location.pathname}#settings/knowledge`)
+          }}
+        >
+          {t('Manage knowledge')}
+        </DropdownItem>
       </>
     )
   }

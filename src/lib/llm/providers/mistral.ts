@@ -38,9 +38,15 @@ export class MistralProvider implements LLMProviderInterface {
     message: LLMMessage,
   ): Promise<any> {
     if (!message.attachments || message.attachments.length === 0) {
+      // Mistral requires assistant messages to have non-empty content or tool_calls.
+      // During tool loops, assistant messages may have empty content, so provide a fallback.
+      const content =
+        message.role === 'assistant' && !message.content
+          ? '(tool use)'
+          : message.content
       return {
         role: message.role,
-        content: message.content,
+        content,
       }
     }
 

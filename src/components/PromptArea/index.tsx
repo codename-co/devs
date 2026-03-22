@@ -1026,14 +1026,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                       )}
                       onPress={() => handleToggleMode('live')}
                     >
-                      <Icon
-                        name={
-                          isLiveMode && voice.isRecording
-                            ? 'MicrophoneSpeaking'
-                            : 'Microphone'
-                        }
-                        size="sm"
-                      />
+                      <Icon name="Voice" size="md" />
                     </Button>
                   </Tooltip>
                 )}

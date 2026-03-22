@@ -1,17 +1,17 @@
 import {
   Button,
-  Card,
-  CardBody,
   Chip,
   Image,
+  Input,
   Listbox,
   ListboxItem,
+  ListboxSection,
   Popover,
   PopoverContent,
   PopoverTrigger,
   Spinner,
 } from '@heroui/react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Icon } from '../Icon'
 import type { IconName } from '@/lib/types'
@@ -40,69 +40,6 @@ interface AttachmentSelectorProps {
   onScreenCapture?: (file: File) => void
 }
 
-// Grid tile component for consistent styling
-function GridTile({
-  icon,
-  label,
-  onPress,
-  isActive,
-  color,
-  isDisabled,
-  isLoading,
-}: {
-  icon: IconName
-  label: string
-  onPress: () => void
-  isActive?: boolean
-  color?: 'secondary' | 'warning' | 'success' | 'primary' | 'default'
-  isDisabled?: boolean
-  isLoading?: boolean
-}) {
-  const activeColors: Record<string, string> = {
-    secondary:
-      'bg-secondary-50 dark:bg-secondary-900/30 border-secondary-200 dark:border-secondary-700 text-secondary-600 dark:text-secondary-400',
-    warning:
-      'bg-warning-50 dark:bg-warning-900/30 border-warning-200 dark:border-warning-700 text-warning-600 dark:text-warning-400',
-    success:
-      'bg-success-50 dark:bg-success-900/30 border-success-200 dark:border-success-700 text-success-600 dark:text-success-400',
-    primary:
-      'bg-primary-50 dark:bg-primary-900/30 border-primary-200 dark:border-primary-700 text-primary-600 dark:text-primary-400',
-  }
-
-  return (
-    <Card
-      isPressable
-      isDisabled={isDisabled}
-      onPress={onPress}
-      className={`
-        border transition-all duration-150 select-none
-        ${isActive && color ? activeColors[color] : 'border-default-200'}
-        ${isDisabled ? 'opacity-40' : ''}
-      `}
-      shadow="none"
-    >
-      <CardBody className="flex flex-col items-center justify-center gap-1.5 p-3 overflow-hidden">
-        {isLoading ? (
-          <Spinner size="sm" />
-        ) : (
-          <Icon
-            name={icon}
-            size="md"
-            color={color}
-            className={`text-${color}-500 dark:text-${color}-400 -mb-1 opacity-30`}
-            // className={!isActive ? 'text-default-500' : ''}
-          />
-        )}
-        <span
-          className={`text-xs font-medium leading-tight text-center ${!isActive ? 'text-default-600 dark:text-default-400' : ''}`}
-        >
-          {label}
-        </span>
-      </CardBody>
-    </Card>
-  )
-}
-
 export function AttachmentSelector({
   lang,
   mode,
@@ -120,6 +57,10 @@ export function AttachmentSelector({
   const [isOpen, setIsOpen] = useState(false)
   const [skillItems, setSkillItems] = useState<InstalledSkill[]>([])
   const [panelView, setPanelView] = useState<PanelView>('main')
+  const [knowledgeSearch, setKnowledgeSearch] = useState('')
+  const [skillsSearch, setSkillsSearch] = useState('')
+  const [knowledgeCount, setKnowledgeCount] = useState(0)
+  const [skillsCount, setSkillsCount] = useState(0)
 
   // Screen capture hook
   const {
@@ -133,10 +74,24 @@ export function AttachmentSelector({
     },
   })
 
-  // Reset view when popover closes
+  // Load counts when popover opens, reset on close
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen) {
+      try {
+        const items = getAllKnowledgeItems()
+        setKnowledgeCount(items.filter((item) => item.type === 'file').length)
+      } catch {
+        setKnowledgeCount(0)
+      }
+      try {
+        setSkillsCount(getEnabledSkills().length)
+      } catch {
+        setSkillsCount(0)
+      }
+    } else {
       setPanelView('main')
+      setKnowledgeSearch('')
+      setSkillsSearch('')
     }
   }, [isOpen])
 
@@ -150,7 +105,7 @@ export function AttachmentSelector({
           new Date(b.lastModified).getTime() -
           new Date(a.lastModified).getTime(),
       )
-      setKnowledgeItems(fileItems.slice(0, 20))
+      setKnowledgeItems(fileItems.slice(0, 50))
     } catch (error) {
       console.error('Error loading knowledge items:', error)
       setKnowledgeItems([])
@@ -170,12 +125,27 @@ export function AttachmentSelector({
     }
   }, [])
 
-  const handleModeToggle = useCallback(
-    (newMode: PromptMode) => {
-      onModeChange?.(mode === newMode ? 'chat' : newMode)
-    },
-    [mode, onModeChange],
-  )
+  // Filtered lists for sub-views
+  const filteredKnowledgeItems = useMemo(() => {
+    if (!knowledgeSearch.trim()) return knowledgeItems
+    const q = knowledgeSearch.toLowerCase()
+    return knowledgeItems.filter(
+      (item) =>
+        item.name.toLowerCase().includes(q) ||
+        item.path.toLowerCase().includes(q) ||
+        (item.tags && item.tags.some((tag) => tag.toLowerCase().includes(q))),
+    )
+  }, [knowledgeItems, knowledgeSearch])
+
+  const filteredSkillItems = useMemo(() => {
+    if (!skillsSearch.trim()) return skillItems
+    const q = skillsSearch.toLowerCase()
+    return skillItems.filter(
+      (skill) =>
+        skill.name.toLowerCase().includes(q) ||
+        skill.description.toLowerCase().includes(q),
+    )
+  }, [skillItems, skillsSearch])
 
   const renderKnowledgePreview = useCallback((item: KnowledgeItem) => {
     if (
@@ -208,15 +178,47 @@ export function AttachmentSelector({
         <span className="font-medium">{t('Choose from knowledge base')}</span>
       </Button>
 
-      <div className="max-h-52 overflow-y-auto -mx-1 px-1">
+      {knowledgeItems.length > 5 && (
+        <Input
+          size="sm"
+          placeholder={t('Filter files…')}
+          value={knowledgeSearch}
+          onValueChange={setKnowledgeSearch}
+          startContent={
+            <Icon name="Search" size="xs" className="text-default-400" />
+          }
+          isClearable
+          onClear={() => setKnowledgeSearch('')}
+          classNames={{ inputWrapper: 'h-8' }}
+          autoFocus
+        />
+      )}
+
+      <div className="max-h-60 overflow-y-auto -mx-1 px-1">
         {loadingKnowledge ? (
           <div className="flex items-center justify-center py-6">
             <Spinner size="sm" />
           </div>
-        ) : knowledgeItems.length === 0 ? (
-          <div className="flex items-center gap-2 py-4 text-default-400 text-sm justify-center">
-            <Icon name="QuestionMark" size="sm" />
-            {t('No files found in knowledge base')}
+        ) : filteredKnowledgeItems.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 py-6 text-center">
+            <Icon name="Folder" size="lg" className="text-default-300" />
+            <span className="text-default-400 text-sm">
+              {knowledgeSearch
+                ? t('No matching files')
+                : t('No files found in knowledge base')}
+            </span>
+            {!knowledgeSearch && (
+              <Button
+                size="sm"
+                variant="flat"
+                onPress={() => {
+                  navigate(`${location.pathname}#settings/knowledge`)
+                  setIsOpen(false)
+                }}
+              >
+                {t('Add files')}
+              </Button>
+            )}
           </div>
         ) : (
           <Listbox
@@ -229,7 +231,7 @@ export function AttachmentSelector({
               }
             }}
           >
-            {knowledgeItems.slice(0, 10).map((item) => (
+            {filteredKnowledgeItems.slice(0, 20).map((item) => (
               <ListboxItem
                 key={item.id}
                 startContent={renderKnowledgePreview(item)}
@@ -262,7 +264,7 @@ export function AttachmentSelector({
           navigate(`${location.pathname}#settings/knowledge`)
           setIsOpen(false)
         }}
-        className="justify-start text-default-400 text-xs px-1 border-t border-default-100 dark:border-default-800 rounded-none pt-2"
+        className="justify-start text-default-400 text-xs px-1 mt-1"
       >
         {t('Manage knowledge')}
       </Button>
@@ -282,11 +284,43 @@ export function AttachmentSelector({
         <span className="font-medium">{t('Choose from skills')}</span>
       </Button>
 
-      <div className="max-h-52 overflow-y-auto -mx-1 px-1">
-        {skillItems.length === 0 ? (
-          <div className="flex items-center gap-2 py-4 text-default-400 text-sm justify-center">
-            <Icon name="QuestionMark" size="sm" />
-            {t('No skills installed')}
+      {skillItems.length > 5 && (
+        <Input
+          size="sm"
+          placeholder={t('Filter skills…')}
+          value={skillsSearch}
+          onValueChange={setSkillsSearch}
+          startContent={
+            <Icon name="Search" size="xs" className="text-default-400" />
+          }
+          isClearable
+          onClear={() => setSkillsSearch('')}
+          classNames={{ inputWrapper: 'h-8' }}
+          autoFocus
+        />
+      )}
+
+      <div className="max-h-60 overflow-y-auto -mx-1 px-1">
+        {filteredSkillItems.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 py-6 text-center">
+            <Icon name="Puzzle" size="lg" className="text-default-300" />
+            <span className="text-default-400 text-sm">
+              {skillsSearch
+                ? t('No matching skills')
+                : t('No skills installed')}
+            </span>
+            {!skillsSearch && (
+              <Button
+                size="sm"
+                variant="flat"
+                onPress={() => {
+                  navigate(`${location.pathname}#settings/skills`)
+                  setIsOpen(false)
+                }}
+              >
+                {t('Browse skills')}
+              </Button>
+            )}
           </div>
         ) : (
           <Listbox
@@ -299,7 +333,7 @@ export function AttachmentSelector({
               }
             }}
           >
-            {skillItems.map((skill) => (
+            {filteredSkillItems.map((skill) => (
               <ListboxItem
                 key={skill.id}
                 startContent={
@@ -333,143 +367,220 @@ export function AttachmentSelector({
           navigate(`${location.pathname}#settings/skills`)
           setIsOpen(false)
         }}
-        className="justify-start text-default-400 text-xs px-1 border-t border-default-100 dark:border-default-800 rounded-none pt-2"
+        className="justify-start text-default-400 text-xs px-1 mt-1"
       >
         {t('Manage skills')}
       </Button>
     </div>
   )
 
-  // --- Main grid panel ---
+  // --- Main panel ---
   const renderMainPanel = () => {
     const providers = getProviders()
 
-    return (
-      <div className="flex flex-col gap-3">
-        {/* CREATE section — mode selectors in a 3-col grid */}
-        {onModeChange && (
-          <div className="flex flex-col gap-1.5">
-            {/* <span className="text-[10px] font-semibold uppercase tracking-wider text-default-400 px-0.5">
-              {t('Create')}
-            </span> */}
-            <div className="grid grid-cols-3 gap-1.5">
-              <GridTile
-                icon="MediaImagePlus"
-                label={t('Media')}
-                onPress={() => handleModeToggle('studio')}
-                isActive={mode === 'studio'}
-                // color="secondary"
-              />
-              <GridTile
-                icon="Code"
-                label={t('Web')}
-                onPress={() => handleModeToggle('app')}
-                isActive={mode === 'app'}
-                // color="warning"
-              />
-              <GridTile
-                icon="Sparks"
-                label={t('Agent')}
-                onPress={() => handleModeToggle('agent')}
-                isActive={mode === 'agent'}
-                // color="success"
-              />
+    // Mode items for the Create section
+    const modeItems: { key: PromptMode; icon: IconName; label: string }[] = [
+      { key: 'studio', icon: 'MediaImagePlus', label: t('Media') },
+      { key: 'app', icon: 'Code', label: t('Web') },
+      { key: 'agent', icon: 'Sparks', label: t('Agent') },
+    ]
+
+    // Connectors avatar stack or icon
+    const connectorsStart =
+      providers.length > 0 ? (
+        <div className="flex items-center">
+          {providers.slice(0, 3).map((provider, index) => (
+            <div
+              key={provider.name}
+              className="w-5 h-5 rounded-full bg-white dark:bg-default-100 flex items-center justify-center border border-default-200 dark:border-default-700 -ml-1 first:ml-0"
+              style={{ zIndex: providers.length - index }}
+            >
+              <Icon name={provider.icon as IconName} size="xs" />
             </div>
-          </div>
+          ))}
+        </div>
+      ) : (
+        <Icon name="EvPlug" size="sm" className="text-default-400" />
+      )
+
+    return (
+      <div className="flex flex-col">
+        {/* CREATE section — mode radio group */}
+        {onModeChange && (
+          <Listbox
+            aria-label={t('Create')}
+            variant="flat"
+            classNames={{ base: 'w-full', list: 'w-full' }}
+            onAction={(key) => {
+              const newMode = key as PromptMode
+              onModeChange?.(mode === newMode ? 'chat' : newMode)
+            }}
+          >
+            <ListboxSection
+              classNames={{
+                heading: 'hidden',
+                base: 'w-full',
+                group: 'w-full grid grid-cols-3',
+              }}
+            >
+              {modeItems.map((item) => (
+                <ListboxItem
+                  key={item.key}
+                  startContent={
+                    <Icon
+                      name={item.icon}
+                      size="sm"
+                      className={
+                        mode === item.key
+                          ? 'text-primary-500'
+                          : 'text-default-500'
+                      }
+                    />
+                  }
+                  textValue={item.label}
+                  classNames={{
+                    base: `flex-col items-center justify-center gap-1 py-2.5 px-1 text-center ${mode === item.key ? 'bg-primary-50 dark:bg-primary-900/30' : ''}`,
+                    title: `text-xs ${mode === item.key ? 'text-primary-600 dark:text-primary-400 font-semibold' : ''}`,
+                  }}
+                >
+                  {item.label}
+                </ListboxItem>
+              ))}
+            </ListboxSection>
+          </Listbox>
         )}
 
-        {/* ATTACH section — file sources in a row */}
-        <div className="flex flex-col gap-1.5">
-          {/* <span className="text-[10px] font-semibold uppercase tracking-wider text-default-400 px-0.5">
-            {t('Attach a file or image')}
-          </span> */}
-          <div
-            className={`grid gap-1.5 ${isScreenCaptureSupported ? 'grid-cols-3' : 'grid-cols-2'}`}
-          >
-            <GridTile
-              icon="Attachment"
-              label={t('Upload new file')}
-              onPress={() => {
+        {/* ATTACH + EXTEND section */}
+        <Listbox
+          aria-label={t('Attach')}
+          variant="flat"
+          classNames={{ list: 'gap-0' }}
+          onAction={(key) => {
+            switch (key) {
+              case 'upload':
                 onFileUpload()
                 setIsOpen(false)
-              }}
-            />
-            <GridTile
-              icon="Folder"
-              label={t('Knowledge')}
-              onPress={() => {
+                break
+              case 'knowledge':
                 loadKnowledgeItems()
                 setPanelView('knowledge')
-              }}
-            />
-            {isScreenCaptureSupported && (
-              <GridTile
-                icon="Screenshot"
-                label={t('Capture screen')}
-                onPress={captureScreen}
-                isDisabled={isCapturing}
-                isLoading={isCapturing}
-              />
-            )}
-          </div>
-        </div>
-
-        {/* SKILLS + CONNECTORS section — compact row */}
-        <div className="flex flex-col gap-1.5">
-          {/* <span className="text-[10px] font-semibold uppercase tracking-wider text-default-400 px-0.5">
-            {t('Skills')} & {t('Connectors')}
-          </span> */}
-          <div className="grid grid-cols-2 gap-1.5">
-            <GridTile
-              icon="Puzzle"
-              label={t('Skills')}
-              onPress={() => {
+                break
+              case 'screenshot':
+                captureScreen()
+                break
+              case 'skills':
                 loadSkillItems()
                 setPanelView('skills')
-              }}
-            />
-            <Card
-              isPressable
-              onPress={() => {
-                navigate(`${location.pathname}#settings/connectors/add`)
+                break
+              case 'connectors':
+                navigate(`${location.pathname}#settings/connectors`)
                 setIsOpen(false)
-              }}
-              className="border border-default-200 dark:border-default-700 transition-all duration-150 select-none"
-              shadow="none"
+                break
+            }
+          }}
+        >
+          <ListboxSection classNames={{ heading: 'hidden' }}>
+            <ListboxItem
+              key="upload"
+              startContent={
+                <Icon
+                  name="Attachment"
+                  size="sm"
+                  className="text-default-500"
+                />
+              }
+              textValue={t('Upload new file')}
             >
-              <CardBody className="flex flex-col items-center justify-center gap-1.5 p-3">
-                {providers.length > 0 ? (
-                  <div className="flex items-center justify-center">
-                    {providers.slice(0, 4).map((provider, index) => (
-                      <div
-                        key={provider.name}
-                        className="w-6 h-6 rounded-full bg-white dark:bg-default-100 flex items-center justify-center border border-default-200 dark:border-default-700 -ml-1.5 first:ml-0"
-                        style={{ zIndex: providers.length - index }}
-                      >
-                        <Icon name={provider.icon as IconName} size="xs" />
-                      </div>
-                    ))}
-                    <div
-                      className="w-6 h-6 rounded-full bg-default-100 dark:bg-default-800 flex items-center justify-center border border-default-200 dark:border-default-700 -ml-1.5"
-                      style={{ zIndex: 0 }}
-                    >
-                      <Icon
-                        name="Plus"
-                        size="sm"
-                        className="text-default-400"
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <Icon name="EvPlug" size="lg" className="text-default-500" />
-                )}
-                <span className="text-xs font-medium text-default-600 dark:text-default-400">
-                  {t('Connectors')}
-                </span>
-              </CardBody>
-            </Card>
-          </div>
-        </div>
+              {t('Upload new file')}
+            </ListboxItem>
+            {knowledgeCount > 0 ? (
+              <ListboxItem
+                key="knowledge"
+                startContent={
+                  <Icon name="Folder" size="sm" className="text-default-500" />
+                }
+                endContent={
+                  <Chip
+                    size="sm"
+                    variant="flat"
+                    className="text-[10px] h-5 min-w-0"
+                  >
+                    {knowledgeCount}
+                  </Chip>
+                }
+                textValue={t('Knowledge')}
+              >
+                {t('Knowledge')}
+              </ListboxItem>
+            ) : (
+              <ListboxItem
+                key="knowledge-empty"
+                className="hidden"
+                textValue=""
+              >
+                {''}
+              </ListboxItem>
+            )}
+            {isScreenCaptureSupported ? (
+              <ListboxItem
+                key="screenshot"
+                startContent={
+                  isCapturing ? (
+                    <Spinner size="sm" />
+                  ) : (
+                    <Icon
+                      name="Screenshot"
+                      size="sm"
+                      className="text-default-500"
+                    />
+                  )
+                }
+                isDisabled={isCapturing}
+                textValue={t('Capture screen')}
+              >
+                {t('Capture screen')}
+              </ListboxItem>
+            ) : (
+              <ListboxItem
+                key="screenshot-unsupported"
+                className="hidden"
+                textValue=""
+              >
+                {''}
+              </ListboxItem>
+            )}
+          </ListboxSection>
+
+          <ListboxSection classNames={{ heading: 'hidden' }}>
+            <ListboxItem
+              key="skills"
+              startContent={
+                <Icon name="Puzzle" size="sm" className="text-default-500" />
+              }
+              endContent={
+                skillsCount > 0 ? (
+                  <Chip
+                    size="sm"
+                    variant="flat"
+                    className="text-[10px] h-5 min-w-0"
+                  >
+                    {skillsCount}
+                  </Chip>
+                ) : undefined
+              }
+              textValue={t('Skills')}
+            >
+              {t('Skills')}
+            </ListboxItem>
+            <ListboxItem
+              key="connectors"
+              startContent={connectorsStart}
+              textValue={t('Connectors')}
+            >
+              {t('Connectors')}
+            </ListboxItem>
+          </ListboxSection>
+        </Listbox>
       </div>
     )
   }
@@ -486,7 +597,7 @@ export function AttachmentSelector({
           <Icon name="Plus" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="p-3 w-72 bg-white dark:bg-default-50">
+      <PopoverContent className="p-1 w-64 bg-white dark:bg-default-50">
         {panelView === 'main' && renderMainPanel()}
         {panelView === 'knowledge' && renderKnowledgeBrowser()}
         {panelView === 'skills' && renderSkillsBrowser()}
