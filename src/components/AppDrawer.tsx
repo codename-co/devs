@@ -461,7 +461,7 @@ const CollapsedDrawer = ({
         </div>
       </div>
 
-      <div className="mt-auto pt-4 hidden lg:flex flex-col items-center gap-2">
+      <div className="mt-auto pt-4 hidden lg:flex flex-col items-center gap-2 pointer-events-auto">
         {/* Progress indicator at bottom */}
         {/* <ProgressIndicator /> */}
         <Tooltip
