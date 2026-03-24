@@ -94,15 +94,6 @@ const WIDGET_ICONS: Record<CodeBlockType, IconName> = {
   generic: 'Code',
 }
 
-const WIDGET_LABELS: Record<CodeBlockType, string> = {
-  abc: 'Score',
-  svg: 'SVG',
-  diagram: 'Diagram',
-  marpit: 'Presentation',
-  html: 'HTML',
-  generic: 'Code',
-}
-
 // ============================================================================
 // Component
 // ============================================================================
@@ -181,13 +172,6 @@ export const ArtifactPreviewCard = memo(
       item.kind === 'artifact'
         ? (ARTIFACT_ICONS[item.artifact.type] ?? 'Page')
         : WIDGET_ICONS[item.widget.widgetType]
-    const statusLabel =
-      item.kind === 'artifact' ? item.artifact.status : undefined
-    const typeLabel =
-      item.kind === 'artifact'
-        ? item.artifact.type
-        : WIDGET_LABELS[item.widget.widgetType]
-
     // ---- Landscape card ----
     if (layout === 'landscape') {
       return (

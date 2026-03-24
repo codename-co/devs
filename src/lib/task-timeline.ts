@@ -79,7 +79,7 @@ export const buildTimelineEvents = async (
     events.push({
       id: `artifact-${artifact.id}`,
       type: 'artifact_created',
-      timestamp: artifact.createdAt,
+      timestamp: new Date(artifact.createdAt),
       title: `Artifact Created: ${artifact.title}`,
       description: artifact.description,
       agent: agent || undefined,
