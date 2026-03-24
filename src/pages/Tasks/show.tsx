@@ -138,10 +138,9 @@ export const TaskPage = () => {
   // Agent cache for resolving cross-agent messages
   const [agentCache, setAgentCache] = useState<Record<string, Agent>>({})
 
-  // Orchestration state
-  const [hasTriggeredOrchestration, setHasTriggeredOrchestration] = useState<
-    Set<string>
-  >(new Set())
+  // Orchestration state — use a ref so the guard is synchronous and immune
+  // to React batching / StrictMode double-fire.
+  const hasTriggeredOrchestrationRef = useRef<Set<string>>(new Set())
   const [isOrchestrating, setIsOrchestrating] = useState(false)
   const [orchestrationProgress, setOrchestrationProgress] = useState(0)
   const [orchestrationPhase, setOrchestrationPhase] = useState('')
@@ -478,12 +477,12 @@ export const TaskPage = () => {
         !task ||
         task.status !== 'pending' ||
         !task.description ||
-        hasTriggeredOrchestration.has(task.id)
+        hasTriggeredOrchestrationRef.current.has(task.id)
       ) {
         return
       }
 
-      setHasTriggeredOrchestration((prev) => new Set(prev).add(task.id))
+      hasTriggeredOrchestrationRef.current.add(task.id)
       setIsOrchestrating(true)
 
       // Set up abort controller for cancellation
@@ -526,7 +525,7 @@ export const TaskPage = () => {
     }
 
     orchestrateTask()
-  }, [task?.id, task?.status, task?.description, hasTriggeredOrchestration])
+  }, [task?.id, task?.status, task?.description])
 
   // ── Copy handler ──────────────────────────────────────────────────────
   const handleCopy = useCallback(

@@ -158,6 +158,9 @@ export const MarkdownRenderer = ({
   }, [content, isStreaming])
 
   const renderMarkdown = async (contentToRender: string) => {
+    if (typeof contentToRender !== 'string') {
+      contentToRender = String(contentToRender ?? '')
+    }
     try {
       const codeBlocks: CodeBlock[] = []
       const thinkBlocks: ThinkBlock[] = []

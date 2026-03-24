@@ -8,6 +8,7 @@ import type {
   STTProviderType,
   TTSProviderType,
 } from '@/features/live/lib/types'
+import type { ModelTierConfig } from '@/types'
 import { preferences } from '@/lib/yjs'
 import { getColorTheme, isThemeDark, DEFAULT_COLOR_THEME } from '@/lib/themes'
 
@@ -42,6 +43,10 @@ export interface SyncedSettings {
   globalSystemInstructions?: string
   // HITL — YOLO mode (auto-resolve all human-in-the-loop requests)
   yoloMode?: boolean
+  // Model tiers
+  fastModel?: ModelTierConfig
+  balancedModel?: ModelTierConfig
+  thinkingModel?: ModelTierConfig
 }
 
 /**
@@ -123,6 +128,9 @@ interface UserSettingsStore extends UserSettings {
   setEnableWebSearchGrounding: (enabled: boolean) => void
   setGlobalSystemInstructions: (instructions: string | undefined) => void
   setYoloMode: (enabled: boolean) => void
+  setFastModel: (config: ModelTierConfig | undefined) => void
+  setBalancedModel: (config: ModelTierConfig | undefined) => void
+  setThinkingModel: (config: ModelTierConfig | undefined) => void
 
   // Local settings setters (localStorage only)
   setTheme: (theme: ThemeMode) => void
@@ -205,6 +213,18 @@ export const userSettings = create<UserSettingsStore>()(
       setYoloMode: (enabled: boolean) => {
         setSyncedSetting('yoloMode', enabled)
         set({ yoloMode: enabled })
+      },
+      setFastModel: (config: ModelTierConfig | undefined) => {
+        setSyncedSetting('fastModel', config)
+        set({ fastModel: config })
+      },
+      setBalancedModel: (config: ModelTierConfig | undefined) => {
+        setSyncedSetting('balancedModel', config)
+        set({ balancedModel: config })
+      },
+      setThinkingModel: (config: ModelTierConfig | undefined) => {
+        setSyncedSetting('thinkingModel', config)
+        set({ thinkingModel: config })
       },
 
       // ========================================

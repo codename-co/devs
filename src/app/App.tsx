@@ -6,6 +6,7 @@ import Router from '@/app/Router'
 import { Providers } from '@/app/Providers'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import '@/styles/globals.css'
+import '@/styles/view-transitions.css'
 import 'katex/dist/katex.min.css'
 
 const container = globalThis.document.getElementById('root')

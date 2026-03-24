@@ -6,8 +6,8 @@ import { EasySetupModal } from '@/components/EasySetup/EasySetupModal'
 import DefaultLayout from '@/layouts/Default'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Agent, InstalledSkill } from '@/types'
-import { useTaskStore } from '@/stores/taskStore'
+import { Agent, InstalledSkill, SessionIntent } from '@/types'
+import { useSessionStore } from '@/stores/sessionStore'
 import { errorToast } from '@/lib/toast'
 import { useBackgroundImage } from '@/hooks/useBackgroundImage'
 import { useEasySetup } from '@/hooks/useEasySetup'
@@ -46,7 +46,7 @@ export const IndexPage = () => {
   const [isLoadingAgents, setIsLoadingAgents] = useState(true)
   // const [isLoadingMethodologies, setIsLoadingMethodologies] = useState(true)
 
-  const { createTaskWithRequirements } = useTaskStore()
+  const { createSession } = useSessionStore()
   const { backgroundImage, backgroundLoaded, isDragOver, dragHandlers } =
     useBackgroundImage()
   const { hasSetupData, setupData, clearSetupData } = useEasySetup()
@@ -159,157 +159,139 @@ export const IndexPage = () => {
       accountEmail?: string
     }>,
   ) => {
-    // Handle mode-specific submissions (live mode uses normal chat flow)
-    if (mode !== 'chat' && mode !== 'live') {
-      const promptToUse = cleanedPrompt ?? prompt
-      if (!promptToUse.trim()) return
-
-      if (mode === 'studio') {
-        sessionStorage.setItem('studioPrompt', promptToUse)
-        navigate(url('/studio'))
-      } else if (mode === 'app') {
-        sessionStorage.setItem('appPrompt', promptToUse)
-        navigate(url('/marketplace/new'))
-      } else if (mode === 'agent') {
-        sessionStorage.setItem('agentPrompt', promptToUse)
-        navigate(url('/agents/new'))
-      }
-
-      setPrompt('')
-      setSelectedFiles([])
-      setMode('chat')
-      return
-    }
-
-    const promptToUse = cleanedPrompt ?? prompt
-    if (!promptToUse.trim() || isSending) return
-
-    setIsSending(true)
-
-    // Use mentioned agent if provided, otherwise fall back to selected agent or 'devs'
-    const agent = mentionedAgent ||
-      selectedAgent || { id: 'devs', slug: 'devs' }
-
-    // Store prompt, agent, and files in sessionStorage for AgentRunPage to pick up
-    sessionStorage.setItem('pendingPrompt', promptToUse)
-    sessionStorage.setItem('pendingAgent', JSON.stringify(agent))
-    if (selectedFiles.length > 0) {
-      // Convert files to base64 for storage
-      const filesData = await Promise.all(
-        selectedFiles.map(async (file) => ({
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          data: await fileToBase64(file),
-        })),
-      )
-      sessionStorage.setItem('pendingFiles', JSON.stringify(filesData))
-    }
-
-    // Store activated skills for the agent run page
-    if (mentionedSkills && mentionedSkills.length > 0) {
-      const skillsData = mentionedSkills.map((skill) => ({
-        name: skill.name,
-        skillMdContent: skill.skillMdContent || skill.description,
-      }))
-      sessionStorage.setItem('pendingSkills', JSON.stringify(skillsData))
-    }
-
-    // Store activated connectors for the agent run page
-    if (mentionedConnectors && mentionedConnectors.length > 0) {
-      const connectorsData = mentionedConnectors.map((c) => ({
-        name: c.name,
-        provider: c.provider,
-        accountEmail: c.accountEmail,
-      }))
-      sessionStorage.setItem(
-        'pendingConnectors',
-        JSON.stringify(connectorsData),
-      )
-    }
-
-    // Navigate to the agent run page using slug
-    navigate(url(`/agents/run/${agent.slug}`))
-
-    // Clear the prompt and files
-    setPrompt('')
-    setSelectedFiles([])
-    setIsSending(false)
-  }
-
-  const onSubmitTask = async (
-    cleanedPrompt?: string,
-    mentionedAgent?: Agent,
-  ) => {
-    // Handle mode-specific submissions (live mode uses normal chat flow)
-    if (mode !== 'chat' && mode !== 'live') {
-      const promptToUse = cleanedPrompt ?? prompt
-      if (!promptToUse.trim()) return
-
-      if (mode === 'studio') {
-        sessionStorage.setItem('studioPrompt', promptToUse)
-        navigate(url('/studio'))
-      } else if (mode === 'app') {
-        sessionStorage.setItem('appPrompt', promptToUse)
-        navigate(url('/marketplace/new'))
-      } else if (mode === 'agent') {
-        sessionStorage.setItem('agentPrompt', promptToUse)
-        navigate(url('/agents/new'))
-      }
-
-      setPrompt('')
-      setSelectedFiles([])
-      setMode('chat')
-      return
-    }
-
     const promptToUse = cleanedPrompt ?? prompt
     if (!promptToUse.trim() || isSending) return
 
     setIsSending(true)
 
     try {
-      // Use mentioned agent if provided, otherwise fall back to selected agent or 'devs'
-      const agent = mentionedAgent || selectedAgent || { id: 'devs' }
+      const agent = mentionedAgent ||
+        selectedAgent || { id: 'devs', slug: 'devs' }
 
-      // Convert files to TaskAttachment format
-      const attachments = await Promise.all(
-        selectedFiles.map(async (file) => ({
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          data: await fileToBase64(file),
-        })),
-      )
+      // Determine intent from explicit mode signals
+      let intent: SessionIntent
+      if (mode === 'studio') intent = 'media'
+      else if (mode === 'app') intent = 'app'
+      else if (mode === 'agent') intent = 'agent'
+      else if (agent.id === 'devs') intent = 'task'
+      else intent = 'conversation'
 
-      // Create a task with the user's prompt
-      const task = await createTaskWithRequirements(
-        {
-          workflowId: crypto.randomUUID(), // Create a new workflow for this task
-          title: promptToUse,
-          description: promptToUse,
-          attachments,
-          complexity: 'complex', // Assume complex by default since it goes to orchestrator
-          status: 'pending',
-          assignedAgentId: agent.id,
-          dependencies: [],
-          artifacts: [],
-          steps: [],
-          estimatedPasses: 1,
-          actualPasses: 0,
-        },
-        promptToUse, // User requirement for extracting specific requirements
-      )
+      // Convert files to session attachments
+      const attachments =
+        selectedFiles.length > 0
+          ? await Promise.all(
+              selectedFiles.map(async (file) => ({
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                data: await fileToBase64(file),
+              })),
+            )
+          : undefined
 
-      // Clear the prompt and files
+      // Create a session entity
+      const session = await createSession({
+        prompt: promptToUse,
+        intent,
+        primaryAgentId: agent.id,
+        attachments,
+        mentionedSkills: mentionedSkills?.map((s) => s.name),
+        mentionedConnectors: mentionedConnectors?.map((c) => c.name),
+      })
+
+      // Clear any stale pending data — the Session pipeline handles execution now,
+      // so we must not leave prompts that the legacy agents/run page would pick up.
+      sessionStorage.removeItem('pendingPrompt')
+      sessionStorage.removeItem('pendingAgent')
+      sessionStorage.removeItem('pendingFiles')
+      sessionStorage.removeItem('pendingSkills')
+      sessionStorage.removeItem('pendingConnectors')
+
+      // Navigate with View Transition
+      const targetUrl = url(`/session/${session.id}`)
+      if (document.startViewTransition) {
+        document.startViewTransition(() => {
+          navigate(targetUrl)
+        })
+      } else {
+        navigate(targetUrl)
+      }
+
       setPrompt('')
       setSelectedFiles([])
-
-      // Navigate to the task page
-      navigate(url(`/tasks/${task.id}`))
+      setMode('chat')
     } catch (error) {
-      console.error('Failed to create task:', error)
-      errorToast('Failed to create task', error)
+      console.error('Failed to create session:', error)
+      errorToast('Failed to create session', error)
+    } finally {
+      setIsSending(false)
+    }
+  }
+
+  const onSubmitTask = async (
+    cleanedPrompt?: string,
+    mentionedAgent?: Agent,
+  ) => {
+    const promptToUse = cleanedPrompt ?? prompt
+    if (!promptToUse.trim() || isSending) return
+
+    setIsSending(true)
+
+    try {
+      const agent = mentionedAgent ||
+        selectedAgent || { id: 'devs', slug: 'devs' }
+
+      // Convert files to session attachments
+      const attachments =
+        selectedFiles.length > 0
+          ? await Promise.all(
+              selectedFiles.map(async (file) => ({
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                data: await fileToBase64(file),
+              })),
+            )
+          : undefined
+
+      // Determine intent
+      let intent: SessionIntent
+      if (mode === 'studio') intent = 'media'
+      else if (mode === 'app') intent = 'app'
+      else if (mode === 'agent') intent = 'agent'
+      else intent = 'task'
+
+      // Create session
+      const session = await createSession({
+        prompt: promptToUse,
+        intent,
+        primaryAgentId: agent.id,
+        attachments,
+      })
+
+      // Clear any stale pending data — the Session pipeline handles execution now.
+      sessionStorage.removeItem('pendingPrompt')
+      sessionStorage.removeItem('pendingAgent')
+      sessionStorage.removeItem('pendingFiles')
+      sessionStorage.removeItem('pendingSkills')
+      sessionStorage.removeItem('pendingConnectors')
+
+      // Navigate with View Transition
+      const targetUrl = url(`/session/${session.id}`)
+      if (document.startViewTransition) {
+        document.startViewTransition(() => {
+          navigate(targetUrl)
+        })
+      } else {
+        navigate(targetUrl)
+      }
+
+      setPrompt('')
+      setSelectedFiles([])
+      setMode('chat')
+    } catch (error) {
+      console.error('Failed to create session:', error)
+      errorToast('Failed to create session', error)
     } finally {
       setIsSending(false)
     }

@@ -269,16 +269,53 @@ export function useDecryptedKnowledgeItem(
 
 /**
  * Subscribe to all tasks with instant reactivity.
+ * Normalizes date fields that Yjs may have corrupted during serialization.
  */
 export function useTasks(): Task[] {
-  return useLiveMap(tasks)
+  const raw = useLiveMap(tasks)
+  return useMemo(
+    () =>
+      raw.map((t) => ({
+        ...t,
+        createdAt: normalizeDate(t.createdAt),
+        updatedAt: normalizeDate(t.updatedAt),
+        ...(t.completedAt !== undefined && {
+          completedAt: normalizeDate(t.completedAt),
+        }),
+        ...(t.dueDate !== undefined && { dueDate: normalizeDate(t.dueDate) }),
+        ...(t.assignedAt !== undefined && {
+          assignedAt: normalizeDate(t.assignedAt),
+        }),
+      })),
+    [raw],
+  )
 }
 
 /**
  * Subscribe to a single task with instant reactivity.
  */
 export function useTask(id: string | undefined): Task | undefined {
-  return useLiveValue(tasks, id)
+  const raw = useLiveValue(tasks, id)
+  return useMemo(
+    () =>
+      raw
+        ? {
+            ...raw,
+            createdAt: normalizeDate(raw.createdAt),
+            updatedAt: normalizeDate(raw.updatedAt),
+            ...(raw.completedAt !== undefined && {
+              completedAt: normalizeDate(raw.completedAt),
+            }),
+            ...(raw.dueDate !== undefined && {
+              dueDate: normalizeDate(raw.dueDate),
+            }),
+            ...(raw.assignedAt !== undefined && {
+              assignedAt: normalizeDate(raw.assignedAt),
+            }),
+          }
+        : undefined,
+    [raw],
+  )
 }
 
 // ============================================================================
@@ -381,17 +418,39 @@ export function useDecryptedAgentMemories(
 // ============================================================================
 
 /**
+ * Normalize a date value that may have been corrupted by Yjs binary
+ * serialization (Date objects become empty `{}` after a round-trip).
+ */
+function normalizeDate(value: unknown): string {
+  if (value instanceof Date && !isNaN(value.getTime()))
+    return value.toISOString()
+  if (typeof value === 'string' && value.length > 0) return value
+  if (typeof value === 'number') return new Date(value).toISOString()
+  return new Date(0).toISOString()
+}
+
+function normalizeArtifact(a: Artifact): Artifact {
+  return {
+    ...a,
+    createdAt: normalizeDate(a.createdAt),
+    updatedAt: normalizeDate(a.updatedAt),
+  }
+}
+
+/**
  * Subscribe to all artifacts with instant reactivity.
  */
 export function useArtifacts(): Artifact[] {
-  return useLiveMap(artifacts)
+  const raw = useLiveMap(artifacts)
+  return useMemo(() => raw.map(normalizeArtifact), [raw])
 }
 
 /**
  * Subscribe to a single artifact with instant reactivity.
  */
 export function useArtifact(id: string | undefined): Artifact | undefined {
-  return useLiveValue(artifacts, id)
+  const raw = useLiveValue(artifacts, id)
+  return useMemo(() => (raw ? normalizeArtifact(raw) : undefined), [raw])
 }
 
 // ============================================================================

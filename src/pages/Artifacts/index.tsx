@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
-  Card,
-  CardBody,
   Chip,
   Modal,
   ModalContent,
@@ -10,11 +8,12 @@ import {
   ModalBody,
   ModalFooter,
   Button,
+  Pagination,
   ScrollShadow,
 } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
-import { Section, Container, Icon, ArtifactCard } from '@/components'
+import { Section, Container, Icon, ArtifactPreviewCard } from '@/components'
 import DefaultLayout from '@/layouts/Default'
 import { getAgentById } from '@/stores/agentStore'
 import { useFullyDecryptedConversations, useArtifacts } from '@/hooks'
@@ -27,6 +26,8 @@ import { Widget } from '@/components/Widget/Widget'
 import type { Artifact, Conversation } from '@/types'
 import type { HeaderProps, IconName } from '@/lib/types'
 import localI18n from './i18n'
+
+const ITEMS_PER_PAGE = 12
 
 // ============================================================================
 // Library item: wraps both artifacts and conversation widgets
@@ -188,6 +189,7 @@ export const LibraryContent = () => {
   const [previewWidget, setPreviewWidget] = useState<LibraryItemWidget | null>(
     null,
   )
+  const [page, setPage] = useState(1)
 
   // --- Hash → state: update the URL hash when opening / closing items ---
   const setHashId = useCallback(
@@ -315,75 +317,59 @@ export const LibraryContent = () => {
           </p>
         </div>
       ) : (
-        <div data-testid="library-list" className="space-y-2">
-          {items.map((item) =>
-            item.kind === 'artifact' ? (
-              <ArtifactCard
-                key={item.id}
-                artifact={item.artifact}
-                onPress={() => {
-                  setPreviewArtifact(item.artifact)
-                  setHashId(item.id)
-                }}
+        <>
+          <div
+            data-testid="library-list"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
+          >
+            {items
+              .slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
+              .map((item) =>
+                item.kind === 'artifact' ? (
+                  <ArtifactPreviewCard
+                    key={item.id}
+                    item={{ kind: 'artifact', artifact: item.artifact }}
+                    layout="landscape"
+                    onPress={() => {
+                      setPreviewArtifact(item.artifact)
+                      setHashId(item.id)
+                    }}
+                  />
+                ) : (
+                  <ArtifactPreviewCard
+                    key={item.id}
+                    item={{
+                      kind: 'widget',
+                      widget: {
+                        id: item.id,
+                        title: item.title,
+                        code: item.code,
+                        widgetType: item.widgetType,
+                        language: item.language,
+                        agentName: item.agentName,
+                      },
+                    }}
+                    layout="landscape"
+                    onPress={() => {
+                      setPreviewWidget(item)
+                      setHashId(item.id)
+                    }}
+                  />
+                ),
+              )}
+          </div>
+          {items.length > ITEMS_PER_PAGE && (
+            <div className="flex justify-center mt-6">
+              <Pagination
+                total={Math.ceil(items.length / ITEMS_PER_PAGE)}
+                page={page}
+                onChange={setPage}
+                showControls
+                size="sm"
               />
-            ) : (
-              <Card
-                key={item.id}
-                data-testid="library-item"
-                shadow="none"
-                isPressable
-                className="w-full"
-                onPress={() => {
-                  setPreviewWidget(item)
-                  setHashId(item.id)
-                }}
-              >
-                <CardBody className="py-4">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="shrink-0 w-8 h-8 rounded-lg bg-default-100 flex items-center justify-center">
-                        <Icon
-                          name={item.icon as any}
-                          className="text-default-600"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <h3 className="text-base font-medium truncate">
-                            {item.title}
-                          </h3>
-                        </div>
-                        <p className="text-sm text-default-500 line-clamp-1">
-                          {item.subtitle}
-                          {item.agentName && (
-                            <span className="ml-2 text-default-400">
-                              — {item.agentName}
-                            </span>
-                          )}
-                          {item.conversationTitle && (
-                            <span className="ml-2 text-default-400">
-                              · {item.conversationTitle}
-                            </span>
-                          )}
-                          {/* <Chip
-                                size="sm"
-                                variant="bordered"
-                                className="text-default-500 ms-2"
-                              >
-                                {item.typeLabel}
-                              </Chip> */}
-                        </p>
-                      </div>
-                    </div>
-                    <time className="text-sm text-default-400">
-                      {formatDate(item.date)}
-                    </time>
-                  </div>
-                </CardBody>
-              </Card>
-            ),
+            </div>
           )}
-        </div>
+        </>
       )}
       {/* Artifact preview modal */}
       <Modal

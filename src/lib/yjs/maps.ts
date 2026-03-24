@@ -49,6 +49,7 @@ import type {
   OrchestrationWorkflow,
   AgentMessage,
   QueuedTaskEntry,
+  Session,
 } from '@/types'
 import type { StudioEntry } from '@/features/studio/types'
 import type { Trace, Span, TracingConfig } from '@/features/traces/types'
@@ -177,6 +178,9 @@ export const agentMessages = ydoc.getMap<AgentMessage>('agentMessages')
 
 /** Persistent queued tasks for background/scheduled execution — keyed by `QueuedTaskEntry.id`. */
 export const queuedTasks = ydoc.getMap<QueuedTaskEntry>('queuedTasks')
+
+/** Sessions — universal containers for user requests — keyed by `Session.id`. */
+export const sessions = ydoc.getMap<Session>('sessions')
 
 /** Pinned messages bookmarked from conversations — keyed by `PinnedMessage.id`. */
 export const pinnedMessages = ydoc.getMap<PinnedMessage>('pinnedMessages')

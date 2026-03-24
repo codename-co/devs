@@ -578,8 +578,8 @@ export interface Artifact {
   status: 'draft' | 'review' | 'approved' | 'rejected' | 'final'
   dependencies: string[]
   validates: string[]
-  createdAt: Date
-  updatedAt: Date
+  createdAt: Date | string
+  updatedAt: Date | string
   reviewedBy?: string[]
 }
 
@@ -1097,4 +1097,84 @@ export interface HitlRequestOptions {
 export interface HitlResponse {
   status: 'answered' | 'dismissed' | 'auto-resolved'
   value: string
+}
+
+// ============================================================================
+// Sessions — Unified Prompt Experience
+// ============================================================================
+
+/** The resolved intent for a session or turn */
+export type SessionIntent = 'conversation' | 'task' | 'media' | 'app' | 'agent'
+
+/** A single turn within a session (user prompt → agent work → artifacts) */
+export interface SessionTurn {
+  id: string
+  prompt: string
+  intent: SessionIntent
+  agentId: string
+  artifactIds: string[]
+  status: 'pending' | 'running' | 'completed' | 'failed'
+  createdAt: Date | string
+  completedAt?: Date | string
+}
+
+/** An artifact produced during a session */
+export interface SessionArtifact {
+  id: string
+  type:
+    | 'image'
+    | 'video'
+    | 'document'
+    | 'code'
+    | 'app'
+    | 'agent'
+    | 'website'
+    | 'presentation'
+  title: string
+  content: string
+  mimeType?: string
+  preview?: string
+  metadata?: Record<string, unknown>
+  createdAt: Date | string
+}
+
+/** A file attachment provided by the user at session creation */
+export interface SessionAttachment {
+  name: string
+  type: string
+  size: number
+  data: string
+}
+
+/** The universal container for any user request */
+export interface Session {
+  id: string
+  title: string
+  prompt: string
+  status: 'starting' | 'running' | 'completed' | 'failed'
+  intent: SessionIntent
+  turns: SessionTurn[]
+  primaryAgentId: string
+  participatingAgents: string[]
+  conversationId?: string
+  taskId?: string
+  artifacts: SessionArtifact[]
+  attachments?: SessionAttachment[]
+  mentionedSkills?: string[]
+  mentionedConnectors?: string[]
+  methodology?: string
+  createdAt: Date | string
+  updatedAt: Date | string
+  completedAt?: Date | string
+}
+
+// ============================================================================
+// Model Tiers — User-configured model selection per tier
+// ============================================================================
+
+/** A provider + model pair used for a specific tier */
+export interface ModelTierConfig {
+  providerId: string
+  provider: LLMProvider
+  model: string
 }

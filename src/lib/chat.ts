@@ -2,7 +2,6 @@ import { LLMService, LLMMessage, ToolDefinition, ToolCall } from '@/lib/llm'
 import type { GroundingMetadata } from '@/lib/llm/types'
 import { CredentialService } from '@/lib/credential-service'
 import { useConversationStore } from '@/stores/conversationStore'
-import { conversations as conversationsYjs } from '@/lib/yjs'
 import { getDefaultAgent } from '@/stores/agentStore'
 import { buildPinnedContextForChat } from '@/stores/pinnedMessageStore'
 import { TraceService } from '@/features/traces/trace-service'
@@ -599,58 +598,51 @@ export const submitChat = async (
           },
         )
 
-        // const orchestrationReport = [
-        //   `# Task Orchestration Complete\n`,
-        //   `✅ **Status**: ${result.success ? 'Success' : 'Failed'}`,
-        //   `🆔 **Workflow ID**: ${result.workflowId}`,
-        //   `📋 **Main Task**: ${result.mainTaskId}`,
-        //   result.subTaskIds.length > 0
-        //     ? `🔧 **Sub-tasks**: ${result.subTaskIds.length} tasks`
-        //     : '',
-        //   `📄 **Artifacts Generated**: ${result.artifacts.length}\n`,
-        //   result.artifacts.length > 0
-        //     ? [
-        //         `## Generated Artifacts\n`,
-        //         ...result.artifacts.map(
-        //           (artifact) =>
-        //             `### ${artifact.title}\n**Type**: ${artifact.type} | **Status**: ${artifact.status}\n**Description**: ${artifact.description}\n\n\`\`\`${artifact.format}\n${artifact.content}\n\`\`\``,
-        //         ),
-        //       ].join('\n')
-        //     : '',
-        //   result.errors?.length
-        //     ? [
-        //         `## Issues Encountered\n`,
-        //         ...result.errors.map((error) => `⚠️ ${error}`),
-        //       ].join('\n')
-        //     : '',
-        // ]
-        //   .filter(Boolean)
-        //   .join('\n')
+        // Build the response from the orchestration result
+        const orchestrationResponse =
+          result.synthesizedResponse ||
+          [
+            `# Task Orchestration Complete\n`,
+            `✅ **Status**: ${result.success ? 'Success' : 'Failed'}`,
+            result.artifacts.length > 0
+              ? [
+                  `## Generated Artifacts\n`,
+                  ...result.artifacts.map(
+                    (artifact) =>
+                      `### ${artifact.title}\n**Type**: ${artifact.type} | **Status**: ${artifact.status}\n**Description**: ${artifact.description}\n\n\`\`\`${artifact.format}\n${artifact.content}\n\`\`\``,
+                  ),
+                ].join('\n')
+              : '',
+            result.errors?.length
+              ? [
+                  `## Issues Encountered\n`,
+                  ...result.errors.map((error) => `⚠️ ${error}`),
+                ].join('\n')
+              : '',
+          ]
+            .filter(Boolean)
+            .join('\n')
 
-        // onResponseUpdate({ type: 'content', content: orchestrationReport })
+        onResponseUpdate({ type: 'content', content: orchestrationResponse })
 
         // Finalize orchestration step
         orchestrationSteps[0].status = 'completed'
         orchestrationSteps[0].completedAt = Date.now()
 
-        // Link conversation to the real workflow so artifact lookups work
-        if (result.workflowId && conversation) {
-          const raw = conversationsYjs.get(conversation.id)
-          if (raw) {
-            conversationsYjs.set(conversation.id, {
-              ...raw,
-              workflowId: result.workflowId,
-            })
-          }
-        }
+        // NOTE: We intentionally do NOT overwrite the orchestration conversation's
+        // workflowId with the real workflow UUID. Sub-task conversations already carry
+        // the real workflowId; promoting this top-level conversation would cause the
+        // TaskPage (which queries by workflowId) to show duplicate user/assistant
+        // messages from both the orchestration conversation and the sub-task
+        // conversations.
 
-        // Save the orchestration report as assistant message
-        // await addMessage(conversation.id, {
-        //   role: 'assistant',
-        //   content: orchestrationReport,
-        //   agentId: agent.id,
-        //   steps: orchestrationSteps,
-        // })
+        // Save the orchestration response as assistant message
+        await addMessage(conversation.id, {
+          role: 'assistant',
+          content: orchestrationResponse,
+          agentId: agent.id,
+          steps: orchestrationSteps,
+        })
 
         // Clear the prompt after successful orchestration
         onPromptClear()

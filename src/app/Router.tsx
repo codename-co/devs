@@ -22,6 +22,7 @@ import { PrivacyPage } from '@/pages/Privacy'
 import { TermsPage } from '@/pages/Terms'
 import { OAuthCallbackPage } from '@/pages/OAuth'
 import { TaskPage } from '@/pages/Tasks/show'
+import { SessionPage } from '@/pages/Session'
 import { LivePage } from '@/features/live'
 import {
   MarketplacePage,
@@ -87,6 +88,7 @@ const routes = {
   task: TaskPage,
   tasks: TasksRedirect,
   'tasks/:taskId': TaskPage,
+  'session/:sessionId': SessionPage,
   library: LibraryRedirect,
   terms: TermsPage,
   marketplace: MarketplacePage,

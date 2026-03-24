@@ -34,9 +34,11 @@ export function generateWidgetCapture(
   code: string,
   widgetType: CodeBlockType,
 ): Promise<string | null> {
-  if (widgetType !== 'svg' && widgetType !== 'html')
-    return Promise.resolve(null)
-  return captureViaIframe(code, widgetType)
+  if (widgetType === 'svg' || widgetType === 'html')
+    return captureViaIframe(code, widgetType)
+  if (widgetType === 'abc') return captureAbc(code)
+  if (widgetType === 'marpit') return captureMarpit(code)
+  return Promise.resolve(null)
 }
 
 // ── Iframe-based capture ────────────────────────────────────────────────
@@ -44,6 +46,7 @@ export function generateWidgetCapture(
 function captureViaIframe(
   code: string,
   widgetType: CodeBlockType,
+  bodyStyleOverride?: string,
 ): Promise<string | null> {
   return new Promise((resolve) => {
     const nonce = crypto.randomUUID()
@@ -56,9 +59,10 @@ function captureViaIframe(
     iframe.tabIndex = -1
 
     const bodyStyle =
-      widgetType === 'svg'
+      bodyStyleOverride ??
+      (widgetType === 'svg'
         ? 'margin:0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fff'
-        : 'margin:0;padding:8px;overflow:hidden;background:#fff;font-family:system-ui,-apple-system,sans-serif;font-size:14px;box-sizing:border-box'
+        : 'margin:0;padding:8px;overflow:hidden;background:#fff;font-family:system-ui,-apple-system,sans-serif;font-size:14px;box-sizing:border-box')
 
     iframe.srcdoc = [
       '<!DOCTYPE html><html><head><meta charset="utf-8">',
@@ -138,6 +142,16 @@ const CAPTURE_HTML_FN = `function capture(){
   var x=c.getContext("2d");
   x.fillStyle="#fff";x.fillRect(0,0,W,H);
 
+  /* 0. Paint html/body backgrounds (themes set bg on :root) */
+  var roots=[document.documentElement,document.body];
+  for(var ri=0;ri<roots.length;ri++){
+    var rs=getComputedStyle(roots[ri]);
+    var rbg=rs.backgroundColor;
+    if(rbg&&rbg!=="rgba(0, 0, 0, 0)"&&rbg!=="transparent"){
+      x.fillStyle=rbg;x.fillRect(0,0,W,H);
+    }
+  }
+
   /* 1. Backgrounds, borders, images, canvases */
   var els=document.body.querySelectorAll("*");
   for(var i=0;i<els.length;i++){
@@ -184,3 +198,90 @@ const CAPTURE_HTML_FN = `function capture(){
 
   send(c.toDataURL("image/png"));
 }`
+
+// ── ABC music sheet capture ─────────────────────────────────────────────
+
+/**
+ * Render ABC notation to SVG via abcjs, then capture via the SVG path.
+ */
+async function captureAbc(code: string): Promise<string | null> {
+  try {
+    const { renderAbc } = await import('abcjs')
+    const container = document.createElement('div')
+    // Use a visible-sized container so abcjs computes layout properly
+    container.style.cssText =
+      'position:fixed;left:-10000px;top:-10000px;width:640px;height:480px;'
+    document.body.appendChild(container)
+    try {
+      renderAbc(container, code, { staffwidth: 580 })
+      const svg = container.querySelector('svg')
+      if (!svg) return null
+      // Crop the viewBox to show the top of the score (title + first
+      // staves). Use a generous 1.5× width ratio so the first few
+      // staves are visible beneath the title.
+      const bb = svg.getBBox()
+      const cropH = Math.min(bb.height, bb.width * 1.5)
+      svg.setAttribute('viewBox', `${bb.x} ${bb.y} ${bb.width} ${cropH}`)
+      const svgStr = new XMLSerializer().serializeToString(svg)
+      return captureViaIframe(svgStr, 'svg')
+    } finally {
+      container.remove()
+    }
+  } catch {
+    return null
+  }
+}
+
+// ── Marpit presentation capture ─────────────────────────────────────────
+
+/**
+ * Render Marpit markdown to HTML+CSS, then capture the first slide via
+ * the HTML path.
+ */
+async function captureMarpit(code: string): Promise<string | null> {
+  try {
+    const [{ Marpit }, cssModule] = await Promise.all([
+      import('https://esm.sh/@marp-team/marpit@3.1.3' as string) as Promise<{
+        Marpit: new (opts: Record<string, unknown>) => {
+          themeSet: { default: unknown; add(css: string): unknown }
+          render(md: string): { html: string; css: string }
+        }
+      }>,
+      import(
+        '@/components/Widget/Presentation/Presentation.marp.css?raw'
+      ) as Promise<{ default: string }>,
+    ])
+
+    const marpit = new Marpit({
+      markdown: { html: true, breaks: true },
+      script: false,
+      inlineSVG: false,
+    })
+    marpit.themeSet.default = marpit.themeSet.add(cssModule.default)
+
+    const { html, css } = marpit.render(code)
+    // Extract only the first slide
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(html, 'text/html')
+    const firstSlide = doc.querySelector('section')
+    const slideHtml = firstSlide ? firstSlide.outerHTML : html
+
+    // Include both the Marpit-generated CSS and the theme CSS.
+    // Override the theme's container-query-based zoom (which doesn't
+    // work in a sandboxed iframe) with an explicit transform that
+    // scales the 1280×720 slide to fit the 640×480 capture canvas.
+    const scaleX = W / 1280
+    const scaleY = H / 720
+    const scale = Math.min(scaleX, scaleY)
+    const combined = [
+      `<style>${cssModule.default}\n${css}`,
+      `section{zoom:unset!important;transform:scale(${scale})!important;transform-origin:top left!important;}`,
+      '</style>',
+      slideHtml,
+    ].join('\n')
+    const bodyStyle = 'margin:0;padding:0;overflow:hidden'
+    return captureViaIframe(combined, 'html', bodyStyle)
+  } catch {
+    return null
+  }
+}

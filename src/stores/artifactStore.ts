@@ -3,11 +3,28 @@ import { artifacts, whenReady, isReady } from '@/lib/yjs'
 import type { Artifact } from '@/types'
 import { errorToast, successToast } from '@/lib/toast'
 
+// ============================================================================
+// Helper: Normalize a date value that may have been corrupted by Yjs binary
+// serialization (Date objects have no enumerable properties, so Yjs encodes
+// them as empty plain objects {} which survive as {} after page reload).
+// ============================================================================
+function normalizeYjsDate(value: unknown): string {
+  if (value instanceof Date && !isNaN(value.getTime()))
+    return value.toISOString()
+  if (typeof value === 'string' && value.length > 0) return value
+  if (typeof value === 'number') return new Date(value).toISOString()
+  return new Date(0).toISOString()
+}
+
 /**
- * Helper to get all artifacts from Yjs map
+ * Helper to get all artifacts from Yjs map, normalising date fields.
  */
 function getAllArtifacts(): Artifact[] {
-  return Array.from(artifacts.values())
+  return Array.from(artifacts.values()).map((a) => ({
+    ...a,
+    createdAt: normalizeYjsDate(a.createdAt),
+    updatedAt: normalizeYjsDate(a.updatedAt),
+  }))
 }
 
 interface ArtifactStore {
@@ -91,12 +108,13 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
         await whenReady
       }
 
+      const now = new Date().toISOString()
       const artifact: Artifact = {
         ...artifactData,
         id: crypto.randomUUID(),
         version: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: now,
+        updatedAt: now,
       }
 
       artifacts.set(artifact.id, artifact)
@@ -136,7 +154,7 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
           updates.content !== undefined
             ? artifact.version + 1
             : artifact.version,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       }
 
       artifacts.set(id, updatedArtifact)

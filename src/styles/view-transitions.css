@@ -1,0 +1,54 @@
+/**
+ * CSS View Transition styles for the unified session experience.
+ *
+ * Uses the CSS View Transitions API to smoothly morph the PromptArea
+ * from the Index page hero into the Session page prompt bar.
+ */
+
+/* Shared element: the prompt area morphs from Index to Session */
+#prompt-area {
+  view-transition-name: prompt-area;
+}
+
+::view-transition-old(prompt-area) {
+  animation: 300ms ease-out both vtFadeAndShrink;
+}
+
+::view-transition-new(prompt-area) {
+  animation: 300ms ease-in both vtFadeAndGrow;
+}
+
+/* Page-level cross-fade */
+::view-transition-old(root) {
+  animation: 200ms ease-out both vtFadeOut;
+}
+
+::view-transition-new(root) {
+  animation: 200ms ease-in 100ms both vtFadeIn;
+}
+
+@keyframes vtFadeAndShrink {
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes vtFadeAndGrow {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes vtFadeOut {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vtFadeIn {
+  from {
+    opacity: 0;
+  }
+}

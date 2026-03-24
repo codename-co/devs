@@ -841,7 +841,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
           </div>
         )}
 
-        <div className="relative rounded-lg overflow-hidden">
+        <div className="relative rounded-lg">
           {/* Live mode waveform background */}
           {isLiveMode && (
             <div className="absolute inset-0 z-0 pointer-events-none flex items-center overflow-hidden rounded-lg opacity-60">

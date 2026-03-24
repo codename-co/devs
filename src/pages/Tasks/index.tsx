@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, CardBody, Chip, Spinner } from '@heroui/react'
+import { Card, CardBody, Chip, Pagination } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
 import {
@@ -10,24 +10,27 @@ import {
   MultiFilterSelection,
   FilterSection,
   Icon,
+  ArtifactPreviewCard,
 } from '@/components'
 import DefaultLayout from '@/layouts/Default'
-import { useTaskStore } from '@/stores/taskStore'
-import { useArtifactStore } from '@/stores/artifactStore'
+import { useTasks, useArtifacts } from '@/hooks'
 import { Task, Artifact } from '@/types'
 import { HeaderProps } from '@/lib/types'
 import localI18n from './i18n'
 
+const TASKS_PER_PAGE = 10
+
 export const TasksContent = () => {
   const { t, url } = useI18n(localI18n)
   const navigate = useNavigate()
-  const { tasks, isLoading, loadTasks } = useTaskStore()
-  const { artifacts, loadArtifacts } = useArtifactStore()
+  const tasks = useTasks()
+  const artifacts = useArtifacts()
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([])
   const [filters, setFilters] = useState<MultiFilterSelection>({
     status: 'all',
     scope: 'root',
   })
+  const [page, setPage] = useState(1)
 
   // Build a map of taskId → parentTaskId for subtask → root resolution
   const parentTaskMap = useMemo(() => {
@@ -71,11 +74,6 @@ export const TasksContent = () => {
   }, [artifacts, parentTaskMap])
 
   useEffect(() => {
-    loadTasks()
-    loadArtifacts()
-  }, [loadTasks, loadArtifacts])
-
-  useEffect(() => {
     let result = tasks
 
     // Scope filter: root tasks only vs all
@@ -89,6 +87,7 @@ export const TasksContent = () => {
     }
 
     setFilteredTasks(result)
+    setPage(1) // Reset to first page when filters change
   }, [tasks, filters])
 
   // Scoped tasks for counts (respect scope filter)
@@ -160,25 +159,6 @@ export const TasksContent = () => {
     }
   }
 
-  const getArtifactTypeIcon = (type: Artifact['type']) => {
-    switch (type) {
-      case 'code':
-        return 'Code'
-      case 'document':
-        return 'Page'
-      case 'design':
-        return 'Palette'
-      case 'analysis':
-        return 'StatsReport'
-      case 'plan':
-        return 'Map'
-      case 'report':
-        return 'Reports'
-      default:
-        return 'Page'
-    }
-  }
-
   const formatDate = (date: Date | string) => {
     const now = new Date()
     const taskDate = new Date(date)
@@ -197,15 +177,6 @@ export const TasksContent = () => {
 
   const handleTaskClick = (taskId: string) => {
     navigate(url(`/tasks/${taskId}`))
-  }
-
-  if (isLoading && tasks.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh]">
-        <Spinner size="lg" />
-        <p className="mt-4 text-default-500">{t('Loading tasks…')}</p>
-      </div>
-    )
   }
 
   return (
@@ -245,81 +216,86 @@ export const TasksContent = () => {
           </p>
         </div>
       ) : (
-        <div data-testid="task-list" className="space-y-2">
-          {filteredTasks
-            .sort(
-              (a, b) =>
-                new Date(b.createdAt).getTime() -
-                new Date(a.createdAt).getTime(),
-            )
-            .map((task) => (
-              <Card
-                key={task.id}
-                data-testid="task-item"
-                isPressable
-                isHoverable
-                shadow="none"
-                className="w-full"
-                onPress={() => handleTaskClick(task.id)}
-              >
-                <CardBody className="p-0">
-                  <div className="flex">
-                    <div className="flex-1 min-w-0 py-4 pl-4 pr-2">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-base font-medium truncate">
-                          {task.title}
-                        </h3>
-                        <Chip
-                          size="sm"
-                          color={getStatusColor(task.status)}
-                          variant="flat"
-                        >
-                          {t(task.status.replace('_', ' ') as any)}
-                        </Chip>
-                      </div>
-                      <p className="text-sm text-default-500 line-clamp-1">
-                        {task.description}
-                      </p>
-                      <time className="text-xs text-default-400 mt-1 block">
-                        {formatDate(task.createdAt)}
-                      </time>
-                    </div>
-                    {lastArtifactByTask.has(task.id) &&
-                      (() => {
-                        const artifact = lastArtifactByTask.get(task.id)!
-                        return (
-                          <div
-                            className="w-32 shrink-0 aspect-[4/3] bg-default-50 border-l border-default-100 rounded-r-lg overflow-hidden flex flex-col cursor-pointer hover:bg-default-100 transition-colors"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              navigate(url(`/tasks/${task.id}`), {
-                                state: { openArtifactId: artifact.id },
-                              })
-                            }}
+        <>
+          <div data-testid="task-list" className="space-y-2">
+            {filteredTasks
+              .sort(
+                (a, b) =>
+                  new Date(b.createdAt).getTime() -
+                  new Date(a.createdAt).getTime(),
+              )
+              .slice((page - 1) * TASKS_PER_PAGE, page * TASKS_PER_PAGE)
+              .map((task) => (
+                <Card
+                  key={task.id}
+                  data-testid="task-item"
+                  isPressable
+                  isHoverable
+                  shadow="none"
+                  className="w-full"
+                  onPress={() => handleTaskClick(task.id)}
+                >
+                  <CardBody className="p-0">
+                    <div className="flex">
+                      <div className="flex-1 min-w-0 py-4 pl-4 pr-2">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-base font-medium truncate">
+                            {task.title}
+                          </h3>
+                          <Chip
+                            size="sm"
+                            color={getStatusColor(task.status)}
+                            variant="flat"
                           >
-                            <div className="flex-1 overflow-hidden px-2 pt-2">
-                              <pre className="text-[8px] leading-tight text-default-500 whitespace-pre-wrap break-all overflow-hidden h-full">
-                                {artifact.content?.slice(0, 300)}
-                              </pre>
-                            </div>
-                            <div className="flex items-center gap-1 px-2 py-1 bg-default-100/50">
-                              <Icon
-                                name={getArtifactTypeIcon(artifact.type)}
-                                size="sm"
-                                className="text-default-400"
-                              />
-                              <span className="text-[10px] text-default-400 truncate">
-                                {artifact.title}
-                              </span>
-                            </div>
-                          </div>
-                        )
-                      })()}
-                  </div>
-                </CardBody>
-              </Card>
-            ))}
-        </div>
+                            {t(task.status.replace('_', ' ') as any)}
+                          </Chip>
+                        </div>
+                        <p className="text-sm text-default-500 line-clamp-1">
+                          {task.description}
+                        </p>
+                        <time className="text-xs text-default-400 mt-1 block">
+                          {formatDate(task.createdAt)}
+                        </time>
+                      </div>
+                      {lastArtifactByTask.has(task.id) && (
+                        <div
+                          className="w-40 shrink-0 border-l border-default-100 overflow-hidden"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <ArtifactPreviewCard
+                            item={{
+                              kind: 'artifact',
+                              artifact: lastArtifactByTask.get(task.id)!,
+                            }}
+                            onPress={() =>
+                              navigate(url(`/tasks/${task.id}`), {
+                                state: {
+                                  openArtifactId: lastArtifactByTask.get(
+                                    task.id,
+                                  )!.id,
+                                },
+                              })
+                            }
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </CardBody>
+                </Card>
+              ))}
+          </div>
+          {filteredTasks.length > TASKS_PER_PAGE && (
+            <div className="flex justify-center mt-6">
+              <Pagination
+                total={Math.ceil(filteredTasks.length / TASKS_PER_PAGE)}
+                page={page}
+                onChange={setPage}
+                showControls
+                size="sm"
+              />
+            </div>
+          )}
+        </>
       )}
     </>
   )
