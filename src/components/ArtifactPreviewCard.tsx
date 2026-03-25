@@ -94,6 +94,15 @@ const WIDGET_ICONS: Record<CodeBlockType, IconName> = {
   generic: 'Code',
 }
 
+const WIDGET_LABELS: Record<CodeBlockType, string> = {
+  abc: 'Score',
+  svg: 'SVG',
+  diagram: 'Diagram',
+  marpit: 'Presentation',
+  html: 'HTML',
+  generic: 'Code',
+}
+
 // ============================================================================
 // Component
 // ============================================================================
@@ -172,6 +181,13 @@ export const ArtifactPreviewCard = memo(
       item.kind === 'artifact'
         ? (ARTIFACT_ICONS[item.artifact.type] ?? 'Page')
         : WIDGET_ICONS[item.widget.widgetType]
+    const statusLabel =
+      item.kind === 'artifact' ? item.artifact.status : undefined
+    const typeLabel =
+      item.kind === 'artifact'
+        ? item.artifact.type
+        : WIDGET_LABELS[item.widget.widgetType]
+
     // ---- Landscape card ----
     if (layout === 'landscape') {
       return (
@@ -233,10 +249,10 @@ export const ArtifactPreviewCard = memo(
         onPress={handlePress}
       >
         <CardBody className="flex flex-row items-center gap-2 sm:gap-3 p-2 sm:p-3">
-          {/* <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-medium bg-default-100 shrink-0">
+          <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-medium bg-default-100 shrink-0">
             <Icon name={icon} size="md" className="text-default-500" />
-          </div> */}
-          {/* <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
+          </div>
+          <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
             <span className="font-medium text-xs sm:text-sm truncate">
               {title}
             </span>
@@ -249,7 +265,7 @@ export const ArtifactPreviewCard = memo(
                 <span className="ml-1">· {statusLabel}</span>
               )}
             </span>
-          </div> */}
+          </div>
           {preview ? (
             <img
               src={preview}
