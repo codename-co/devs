@@ -98,6 +98,7 @@ const WIDGET_ICONS: Record<CodeBlockType, IconName> = {
   svg: 'MediaImage',
   diagram: 'CubeScan',
   marpit: 'Presentation',
+  pptx: 'Presentation',
   html: 'Html5',
   generic: 'Code',
 }
@@ -107,24 +108,9 @@ const WIDGET_LABELS: Record<CodeBlockType, string> = {
   svg: 'SVG',
   diagram: 'Diagram',
   marpit: 'Presentation',
+  pptx: 'PowerPoint',
   html: 'HTML Widget',
   generic: 'Code',
-}
-
-const formatDate = (date: Date | string) => {
-  const now = new Date()
-  const d = new Date(date)
-  const diffMs = now.getTime() - d.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
-
-  if (diffMins < 1) return 'Just now'
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays < 7) return `${diffDays}d ago`
-
-  return d.toLocaleDateString()
 }
 
 // ============================================================================
@@ -236,6 +222,7 @@ export const LibraryContent = () => {
       abc: 'abc',
       diagram: 'mmd',
       marpit: 'md',
+      pptx: 'js',
       generic: 'txt',
     }
     const mimeMap: Record<CodeBlockType, string> = {
@@ -244,6 +231,7 @@ export const LibraryContent = () => {
       abc: 'text/plain',
       diagram: 'text/plain',
       marpit: 'text/markdown',
+      pptx: 'text/javascript',
       generic: 'text/plain',
     }
     const ext = extMap[widget.widgetType] || 'txt'
@@ -422,15 +410,6 @@ export const LibraryContent = () => {
                     />
                   </div>
                 </ScrollShadow>
-                <div className="flex flex-wrap gap-3 text-tiny text-default-400 mt-3">
-                  <span>
-                    {previewArtifact.content.length.toLocaleString()} chars
-                  </span>
-                  <span>v{previewArtifact.version}</span>
-                  <span>
-                    {new Date(previewArtifact.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
               </ModalBody>
               <ModalFooter>
                 <Button
@@ -495,12 +474,6 @@ export const LibraryContent = () => {
                     showActions={false}
                   />
                 </ScrollShadow>
-                <div className="flex flex-wrap gap-3 text-tiny text-default-400 mt-3">
-                  <span>
-                    {previewWidget.code.length.toLocaleString()} chars
-                  </span>
-                  <span>{formatDate(previewWidget.date)}</span>
-                </div>
               </ModalBody>
               <ModalFooter>
                 <Button

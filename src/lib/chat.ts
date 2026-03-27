@@ -76,7 +76,8 @@ import {
 import { KNOWLEDGE_TOOL_DEFINITIONS } from '@/lib/knowledge-tools'
 import { MATH_TOOL_DEFINITIONS } from '@/lib/math-tools'
 import { CODE_TOOL_DEFINITIONS } from '@/lib/code-tools'
-import { PRESENTATION_TOOL_DEFINITIONS } from '@/lib/presentation-tools'
+// import { PRESENTATION_TOOL_DEFINITIONS } from '@/lib/presentation-tools'
+import { PPTX_TOOL_DEFINITIONS } from '@/lib/pptx-tools'
 import {
   WIKIPEDIA_SEARCH_TOOL_DEFINITION,
   WIKIPEDIA_ARTICLE_TOOL_DEFINITION,
@@ -185,7 +186,8 @@ function getAgentToolDefinitions(_agent: Agent): ToolDefinition[] {
     ...Object.values(KNOWLEDGE_TOOL_DEFINITIONS),
     ...Object.values(MATH_TOOL_DEFINITIONS),
     ...Object.values(CODE_TOOL_DEFINITIONS),
-    ...Object.values(PRESENTATION_TOOL_DEFINITIONS),
+    // ...Object.values(PRESENTATION_TOOL_DEFINITIONS),
+    ...Object.values(PPTX_TOOL_DEFINITIONS),
     // Research tools
     WIKIPEDIA_SEARCH_TOOL_DEFINITION,
     WIKIPEDIA_ARTICLE_TOOL_DEFINITION,

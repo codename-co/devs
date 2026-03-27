@@ -47,6 +47,8 @@ export interface SyncedSettings {
   fastModel?: ModelTierConfig
   balancedModel?: ModelTierConfig
   thinkingModel?: ModelTierConfig
+  // PPTX presentation theme ('auto' = inherit from color theme)
+  pptxTheme?: string
 }
 
 /**
@@ -131,6 +133,7 @@ interface UserSettingsStore extends UserSettings {
   setFastModel: (config: ModelTierConfig | undefined) => void
   setBalancedModel: (config: ModelTierConfig | undefined) => void
   setThinkingModel: (config: ModelTierConfig | undefined) => void
+  setPptxTheme: (pptxTheme: string | undefined) => void
 
   // Local settings setters (localStorage only)
   setTheme: (theme: ThemeMode) => void
@@ -225,6 +228,10 @@ export const userSettings = create<UserSettingsStore>()(
       setThinkingModel: (config: ModelTierConfig | undefined) => {
         setSyncedSetting('thinkingModel', config)
         set({ thinkingModel: config })
+      },
+      setPptxTheme: (pptxTheme: string | undefined) => {
+        setSyncedSetting('pptxTheme', pptxTheme)
+        set({ pptxTheme })
       },
 
       // ========================================

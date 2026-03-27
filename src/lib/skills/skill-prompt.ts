@@ -78,7 +78,14 @@ export function buildSkillInstructions(agentId?: string): string {
 
   // 2. Usage instructions
   parts.push(`
-When a user's task matches one of the available skills above, use the \`activate_skill\` tool to load its full instructions. The tool will return detailed step-by-step guidance and may reference scripts you can execute with \`run_skill_script\`.
+When a user's task matches one of the available skills above, use the \`activate_skill\` tool to load its full instructions. The tool will return detailed step-by-step guidance.
+
+After activating a skill, you can:
+- Run **bundled scripts** with \`run_skill_script\` using the \`script_path\` parameter (only for paths listed under "Available Scripts")
+- Read **reference documentation** with \`read_skill_file\` to learn APIs and libraries
+- **Generate and run custom code** with \`run_skill_script\` using the \`code\` and \`language\` parameters (useful when reference docs teach you an API)
+
+IMPORTANT: Reference files are documentation, NOT executable scripts. Never pass reference file paths to \`script_path\`. Instead, read them with \`read_skill_file\`, then write your own code and execute it using the \`code\` parameter.
 
 Do NOT activate a skill unless the user's request clearly benefits from it.`)
 

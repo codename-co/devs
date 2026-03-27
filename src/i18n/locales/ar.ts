@@ -1013,4 +1013,21 @@ export const ar: I18n = {
   'Skip all human intervention prompts and let agents decide autonomously':
     'تخطي جميع مطالبات التدخل البشري والسماح للوكلاء بالقرار بشكل مستقل',
   Automation: 'الأتمتة',
+
+  // Session
+  Session: 'الجلسة',
+  'Starting…': 'جاري البدء…',
+  'Working…': 'جاري العمل…',
+  'file(s)': 'ملف(ات)',
+  'Creating agent…': 'جاري إنشاء الوكيل…',
+  'Agent creation failed': 'فشل إنشاء الوكيل',
+  'Building app…': 'جاري بناء التطبيق…',
+  'App build failed': 'فشل بناء التطبيق',
+  'is thinking…': 'يفكر…',
+  'Turn failed': 'فشلت الدورة',
+  'Generating media…': 'جاري توليد الوسائط…',
+  'Generation failed': 'فشل التوليد',
+  'Media generated': 'تم توليد الوسائط',
+  'Orchestrating task…': 'جاري تنسيق المهمة…',
+  'Task failed': 'فشلت المهمة',
 } as const

@@ -16,6 +16,7 @@ import { userSettings } from '@/stores/userStore'
 import { PRODUCT } from '@/config/product'
 import { useBackgroundImage } from '@/hooks/useBackgroundImage'
 import { ColorThemePicker } from '@/components/ColorThemePicker'
+import { PptxThemePicker } from '@/components/PptxThemePicker'
 import { useHashHighlight } from '@/hooks/useHashHighlight'
 import { successToast } from '@/lib/toast'
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -117,6 +118,16 @@ export function GeneralSection() {
             {t('Choose a color scheme for the interface')}
           </p>
           <ColorThemePicker />
+        </div>
+
+        <div
+          id="pptx-theme"
+          className={getHighlightClasses('pptx-theme', 'max-w-lg')}
+        >
+          <p className="text-xs text-default-500 mb-3">
+            {t('Presentation theme used for generated PPTX slides')}
+          </p>
+          <PptxThemePicker />
         </div>
       </div>
 

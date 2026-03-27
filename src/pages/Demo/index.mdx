@@ -12,6 +12,7 @@ import Code from './code.mdx'
 import Diagram from './diagram.mdx'
 import Html from './html.mdx'
 import markdown from './markdown.md?raw'
+import Pptx from './pptx.mdx'
 import Presentation from './presentation.mdx'
 import Svg from './svg.mdx'
 
@@ -25,22 +26,23 @@ import Svg from './svg.mdx'
 >
   <Section>
     <Container>
-      <Title level={2}>Markdown</Title>
-      <MarkdownRenderer
-        content={markdown}
-        className="prose dark:prose-invert prose-sm"
-      />
-    </Container>
-  </Section>
-  <Section>
-    <Container>
       <Title level={2}>Widgets</Title>
+      <Pptx />
       <Presentation />
       <ABC />
       <Diagram />
       <Html />
       <Svg />
       <Code />
+    </Container>
+  </Section>
+  <Section>
+    <Container>
+      <Title level={2}>Markdown</Title>
+      <MarkdownRenderer
+        content={markdown}
+        className="prose dark:prose-invert prose-sm"
+      />
     </Container>
   </Section>
   <Section>

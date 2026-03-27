@@ -195,13 +195,6 @@ const ArtifactBody = memo(
             className="prose dark:prose-invert prose-sm max-w-none"
           />
         </div>
-
-        <div className="flex justify-between text-tiny text-default-400">
-          <span>
-            Created: {new Date(artifact.createdAt).toLocaleDateString()}
-          </span>
-          <span>{artifact.content.length.toLocaleString()} chars</span>
-        </div>
       </div>
     )
   },

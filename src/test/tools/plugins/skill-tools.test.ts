@@ -158,11 +158,11 @@ describe('skill-tools', () => {
       expect(runSkillScriptPlugin.metadata.enabledByDefault).toBe(true)
     })
 
-    it('run_skill_script definition should require skill_name and script_path', () => {
+    it('run_skill_script definition should require only skill_name', () => {
       const fn = runSkillScriptPlugin.definition.function
       expect(fn.name).toBe('run_skill_script')
       expect(fn.parameters.required).toContain('skill_name')
-      expect(fn.parameters.required).toContain('script_path')
+      expect(fn.parameters.required).not.toContain('script_path')
     })
   })
 
@@ -536,6 +536,159 @@ describe('skill-tools', () => {
 
       expect(unsubFn).toHaveBeenCalled()
     })
+
+    it('should suggest code parameter when script_path not found', async () => {
+      mockSkillsMap.set('s1', makeSkill({ id: 's1', name: 'pdf' }))
+      const ctx = makeContext()
+      await expect(
+        runSkillScriptPlugin.handler(
+          { skill_name: 'pdf', script_path: 'scripts/missing.py' },
+          ctx,
+        ),
+      ).rejects.toThrow('code')
+    })
+  })
+
+  // ── run_skill_script inline code mode ─────────────────────────
+
+  describe('run_skill_script (inline code)', () => {
+    it('should execute inline Python code', async () => {
+      mockSkillsMap.set('s1', makeSkill({ id: 's1', name: 'pptx' }))
+      mockExecute.mockResolvedValue({
+        success: true,
+        result: 'done',
+        stdout: 'Created presentation\n',
+        stderr: '',
+        console: [],
+        executionTimeMs: 200,
+        language: 'python',
+      })
+
+      const ctx = makeContext()
+      const result = await runSkillScriptPlugin.handler(
+        {
+          skill_name: 'pptx',
+          code: 'from pptx import Presentation\npres = Presentation()\nprint("Created presentation")',
+          language: 'python',
+          packages: ['python-pptx'],
+        },
+        ctx,
+      )
+
+      expect(result).toContain('executed successfully')
+      expect(result).toContain('Created presentation')
+      expect(mockExecute).toHaveBeenCalledWith(
+        expect.objectContaining({
+          language: 'python',
+          code: 'from pptx import Presentation\npres = Presentation()\nprint("Created presentation")',
+          packages: ['python-pptx'],
+        }),
+      )
+    })
+
+    it('should execute inline JavaScript code', async () => {
+      mockSkillsMap.set('s1', makeSkill({ id: 's1', name: 'pptx' }))
+      mockExecute.mockResolvedValue({
+        success: true,
+        result: '42',
+        stdout: '',
+        stderr: '',
+        console: [],
+        executionTimeMs: 15,
+        language: 'javascript',
+      })
+
+      const ctx = makeContext()
+      const result = await runSkillScriptPlugin.handler(
+        {
+          skill_name: 'pptx',
+          code: 'const x = 42; x',
+          language: 'javascript',
+        },
+        ctx,
+      )
+
+      expect(result).toContain('executed successfully')
+      expect(mockExecute).toHaveBeenCalledWith(
+        expect.objectContaining({
+          language: 'javascript',
+          code: 'const x = 42; x',
+          packages: [],
+        }),
+      )
+    })
+
+    it('should throw when code is provided without language', async () => {
+      mockSkillsMap.set('s1', makeSkill({ id: 's1', name: 'pptx' }))
+      const ctx = makeContext()
+      await expect(
+        runSkillScriptPlugin.handler(
+          { skill_name: 'pptx', code: 'print("hi")' },
+          ctx,
+        ),
+      ).rejects.toThrow('language')
+    })
+
+    it('should throw when neither code nor script_path is provided', async () => {
+      mockSkillsMap.set('s1', makeSkill({ id: 's1', name: 'pptx' }))
+      const ctx = makeContext()
+      await expect(
+        runSkillScriptPlugin.handler({ skill_name: 'pptx' }, ctx),
+      ).rejects.toThrow('script_path')
+    })
+
+    it('should pass arguments to inline code execution', async () => {
+      mockSkillsMap.set('s1', makeSkill({ id: 's1', name: 'pptx' }))
+      mockExecute.mockResolvedValue({
+        success: true,
+        stdout: '',
+        stderr: '',
+        console: [],
+        executionTimeMs: 100,
+        language: 'python',
+      })
+
+      const ctx = makeContext()
+      await runSkillScriptPlugin.handler(
+        {
+          skill_name: 'pptx',
+          code: 'print(prompt)',
+          language: 'python',
+          arguments: { prompt: 'hello' },
+        },
+        ctx,
+      )
+
+      expect(mockExecute).toHaveBeenCalledWith(
+        expect.objectContaining({
+          context: { prompt: 'hello' },
+        }),
+      )
+    })
+
+    it('should use "Code" label in output for inline code', async () => {
+      mockSkillsMap.set('s1', makeSkill({ id: 's1', name: 'pptx' }))
+      mockExecute.mockResolvedValue({
+        success: true,
+        stdout: '',
+        stderr: '',
+        console: [],
+        executionTimeMs: 50,
+        language: 'python',
+      })
+
+      const ctx = makeContext()
+      const result = await runSkillScriptPlugin.handler(
+        {
+          skill_name: 'pptx',
+          code: 'print("hi")',
+          language: 'python',
+        },
+        ctx,
+      )
+
+      expect(result).toContain('Code executed successfully')
+    })
   })
 
   // ── Validation ────────────────────────────────────────────────
@@ -547,13 +700,32 @@ describe('skill-tools', () => {
       ).toThrow('skill_name')
     })
 
-    it('should reject missing script_path', () => {
+    it('should reject missing both script_path and code', () => {
       expect(() =>
         runSkillScriptPlugin.validate!({ skill_name: 'pdf' }),
       ).toThrow('script_path')
     })
 
-    it('should pass valid arguments', () => {
+    it('should reject code without language', () => {
+      expect(() =>
+        runSkillScriptPlugin.validate!({
+          skill_name: 'pdf',
+          code: 'print("hi")',
+        }),
+      ).toThrow('language')
+    })
+
+    it('should reject unsupported language', () => {
+      expect(() =>
+        runSkillScriptPlugin.validate!({
+          skill_name: 'pdf',
+          code: 'puts "hi"',
+          language: 'ruby',
+        }),
+      ).toThrow('Unsupported language')
+    })
+
+    it('should pass valid arguments with script_path', () => {
       const result = runSkillScriptPlugin.validate!({
         skill_name: 'pdf',
         script_path: 'scripts/analyze.py',
@@ -561,6 +733,19 @@ describe('skill-tools', () => {
       expect(result).toEqual({
         skill_name: 'pdf',
         script_path: 'scripts/analyze.py',
+      })
+    })
+
+    it('should pass valid arguments with inline code', () => {
+      const result = runSkillScriptPlugin.validate!({
+        skill_name: 'pdf',
+        code: 'print("hello")',
+        language: 'python',
+      })
+      expect(result).toEqual({
+        skill_name: 'pdf',
+        code: 'print("hello")',
+        language: 'python',
       })
     })
   })
@@ -593,6 +778,32 @@ describe('skill-tools', () => {
       expect(result).toContain('scripts/analyze.py')
       expect(result).toContain('run_skill_script')
       expect(result).toContain('pandas')
+      expect(result).toContain('Generating Custom Code')
+    })
+
+    it('should distinguish reference files from scripts', async () => {
+      mockSkillsMap.set(
+        's1',
+        makeSkill({
+          id: 's1',
+          name: 'pptx',
+          skillMdContent: '# PPTX Skill',
+          scripts: [makeScript({ path: 'scripts/add_slide.py' })],
+          references: [
+            { path: 'references/pptxgenjs.md', content: '# PptxGenJS API' },
+          ],
+        }),
+      )
+
+      const ctx = makeContext()
+      const result = await activateSkillPlugin.handler(
+        { skill_name: 'pptx' },
+        ctx,
+      )
+
+      expect(result).toContain('Available Scripts (executable)')
+      expect(result).toContain('Reference Files (documentation, NOT scripts)')
+      expect(result).toContain('Do NOT pass these paths to `run_skill_script`')
     })
   })
 

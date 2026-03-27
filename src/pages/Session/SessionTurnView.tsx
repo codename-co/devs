@@ -1,6 +1,6 @@
 import { Chip, Spinner } from '@heroui/react'
 
-import { Icon } from '@/components'
+import { Icon, MessageBubble } from '@/components'
 import type { Session, SessionTurn } from '@/types'
 
 import { ConversationTurn } from './turns/ConversationTurn'
@@ -37,9 +37,14 @@ export function SessionTurnView({ turn, session }: SessionTurnViewProps) {
     <div className="flex flex-col gap-2">
       {/* Turn header */}
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-full bg-default-200 flex items-center justify-center shrink-0">
-          <Icon name="User" size="sm" />
-        </div>
+        <MessageBubble
+          message={{
+            id: turn.id,
+            content: turn.prompt,
+            role: 'user',
+            timestamp: new Date(turn.createdAt),
+          }}
+        />
         <p className="text-sm flex-1 min-w-0 truncate">{turn.prompt}</p>
         <Chip
           size="sm"

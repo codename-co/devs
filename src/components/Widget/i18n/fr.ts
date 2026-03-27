@@ -6,4 +6,5 @@ export const fr: I18n = {
   Render: 'Rendu',
   Code: 'Code',
   'Loading…': 'Chargement…',
+  Download: 'Télécharger',
 } as const

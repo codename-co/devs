@@ -84,14 +84,14 @@ export const useRecentActivity = (lang: LanguageCode): ActivityItem[] => {
 
     // Tasks
     for (const t of allTasks) {
-      const ts = toEpoch((t as any).updatedAt) || toEpoch((t as any).createdAt)
+      const ts = toEpoch(t.updatedAt) || toEpoch(t.createdAt)
       if (!ts) continue
       items.push({
-        id: `task-${(t as any).id}`,
+        id: `task-${t.id}`,
         type: 'task',
-        name: (t as any).title || 'Untitled task',
+        name: t.title || 'Untitled task',
         icon: ACTIVITY_ICONS.task,
-        href: url(`/tasks/${(t as any).id}`),
+        href: url(`/tasks/${t.id}`),
         timestamp: ts,
       })
     }

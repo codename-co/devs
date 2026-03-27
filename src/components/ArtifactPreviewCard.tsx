@@ -90,6 +90,7 @@ const WIDGET_ICONS: Record<CodeBlockType, IconName> = {
   svg: 'MediaImage',
   diagram: 'CubeScan',
   marpit: 'Presentation',
+  pptx: 'Presentation',
   html: 'Html5',
   generic: 'Code',
 }
@@ -99,6 +100,7 @@ const WIDGET_LABELS: Record<CodeBlockType, string> = {
   svg: 'SVG',
   diagram: 'Diagram',
   marpit: 'Presentation',
+  pptx: 'PowerPoint',
   html: 'HTML',
   generic: 'Code',
 }

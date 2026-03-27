@@ -1213,12 +1213,14 @@ const AgentToolsDisplay = (_props: { tools: Agent['tools'] }) => {
           { KNOWLEDGE_TOOL_DEFINITIONS },
           { MATH_TOOL_DEFINITIONS },
           { CODE_TOOL_DEFINITIONS },
-          { PRESENTATION_TOOL_DEFINITIONS },
+          // { PRESENTATION_TOOL_DEFINITIONS },
+          { PPTX_TOOL_DEFINITIONS },
         ] = await Promise.all([
           import('@/lib/knowledge-tools'),
           import('@/lib/math-tools'),
           import('@/lib/code-tools'),
-          import('@/lib/presentation-tools'),
+          // import('@/lib/presentation-tools'),
+          import('@/lib/pptx-tools'),
         ])
 
         const toolsList: AllToolInfo[] = []
@@ -1260,7 +1262,19 @@ const AgentToolsDisplay = (_props: { tools: Agent['tools'] }) => {
         }
 
         // Add presentation tools
-        for (const def of Object.values(PRESENTATION_TOOL_DEFINITIONS)) {
+        // for (const def of Object.values(PRESENTATION_TOOL_DEFINITIONS)) {
+        //   const name = def.function.name
+        //   toolsList.push({
+        //     name,
+        //     description: def.function.description,
+        //     category: 'presentation',
+        //     icon: 'Presentation',
+        //     label: formatToolLabel(name),
+        //   })
+        // }
+
+        // Add PPTX tools
+        for (const def of Object.values(PPTX_TOOL_DEFINITIONS)) {
           const name = def.function.name
           toolsList.push({
             name,

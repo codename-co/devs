@@ -797,7 +797,6 @@ TimelineToolsDisplay.displayName = 'TimelineToolsDisplay'
 
 // Component to display artifacts in side panel
 const ArtifactWidget = memo(({ artifact }: { artifact: Artifact }) => {
-  const characterCount = artifact.content.length
   const statusColor =
     artifact.status === 'approved' || artifact.status === 'final'
       ? 'success'
@@ -834,9 +833,6 @@ const ArtifactWidget = memo(({ artifact }: { artifact: Artifact }) => {
                       {artifact.type}
                     </Chip>
                   </div>
-                </div>
-                <div className="text-tiny text-default-500">
-                  {characterCount.toLocaleString()} chars
                 </div>
               </div>
             }

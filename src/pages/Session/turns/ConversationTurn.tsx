@@ -24,26 +24,21 @@ export function ConversationTurn({ turn }: ConversationTurnProps) {
       <div className="flex items-center gap-2 text-default-400 py-2">
         <Spinner size="sm" />
         <span className="text-sm">
-          {agent?.name ?? (t as any)('Agent')} {(t as any)('is thinking…')}
+          {agent?.name ?? t('Agent')} {t('is thinking…')}
         </span>
       </div>
     )
   }
 
-  // Once completed, the conversation content will be in the linked conversation
-  // For now, show a placeholder indicating the turn was handled
-  return (
-    <div className="py-2">
-      <div className="text-sm text-default-500">
-        {turn.status === 'completed' && (
-          <span>
-            {agent?.name ?? (t as any)('Agent')} {(t as any)('responded')}
-          </span>
-        )}
-        {turn.status === 'failed' && (
-          <span className="text-danger">{(t as any)('Turn failed')}</span>
-        )}
+  // When completed, the response is rendered as a MessageBubble by SessionTimeline.
+  // Only show feedback for failures.
+  if (turn.status === 'failed') {
+    return (
+      <div className="py-2">
+        <span className="text-sm text-danger">{t('Turn failed')}</span>
       </div>
-    </div>
-  )
+    )
+  }
+
+  return null
 }

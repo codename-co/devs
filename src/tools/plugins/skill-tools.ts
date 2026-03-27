@@ -39,7 +39,10 @@ interface ReadSkillFileArgs {
 
 interface RunSkillScriptArgs {
   skill_name: string
-  script_path: string
+  script_path?: string
+  code?: string
+  language?: 'python' | 'javascript'
+  packages?: string[]
   arguments?: Record<string, unknown>
   input_files?: Array<{
     path: string
@@ -111,7 +114,7 @@ export const activateSkillPlugin: ToolPlugin<ActivateSkillArgs, string> =
       const parts: string[] = [skill.skillMdContent]
 
       if (skill.scripts.length > 0) {
-        parts.push('\n## Available Scripts\n')
+        parts.push('\n## Available Scripts (executable)\n')
         for (const script of skill.scripts) {
           const pkgs = script.requiredPackages?.length
             ? ` (requires: ${script.requiredPackages.join(', ')})`
@@ -119,17 +122,17 @@ export const activateSkillPlugin: ToolPlugin<ActivateSkillArgs, string> =
           parts.push(`- \`${script.path}\` [${script.language}]${pkgs}`)
         }
         parts.push(
-          '\nUse `run_skill_script` to execute Python or JavaScript scripts.',
+          '\nUse `run_skill_script` with `script_path` to execute a bundled script.',
           'Bash scripts cannot be executed directly but you can read and follow their logic.',
         )
       }
 
       if (skill.references.length > 0) {
-        parts.push('\n## Reference Files\n')
+        parts.push('\n## Reference Files (documentation, NOT scripts)\n')
         for (const ref of skill.references) {
           parts.push(`- \`${ref.path}\``)
         }
-        parts.push('\nUse `read_skill_file` to read reference documents.')
+        parts.push('\nUse `read_skill_file` to read these. Do NOT pass these paths to `run_skill_script`.')
       }
 
       if (skill.assets.length > 0) {
@@ -139,6 +142,14 @@ export const activateSkillPlugin: ToolPlugin<ActivateSkillArgs, string> =
         }
         parts.push('\nUse `read_skill_file` to access asset files.')
       }
+
+      parts.push(
+        '\n## Generating Custom Code\n',
+        'You can also generate and run your own Python or JavaScript code within this skill\'s context.',
+        'Use `run_skill_script` with the `code` and `language` parameters instead of `script_path`.',
+        'This is useful when the skill\'s reference files document a library API and you need to',
+        'write custom code using that API to fulfill the user\'s request.',
+      )
 
       return parts.join('\n')
     },
@@ -266,23 +277,51 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
       function: {
         name: 'run_skill_script',
         description:
-          'Execute a Python or JavaScript script bundled with an installed Agent Skill. ' +
+          'Execute code in the context of an installed Agent Skill. Two modes:\n' +
+          '1. Run a bundled script: provide `script_path` to execute a pre-bundled script from the skill.\n' +
+          '2. Run custom code: provide `code` and `language` to execute your own generated code ' +
+          '(e.g. code you wrote based on the skill\'s reference documentation).\n\n' +
           'Python scripts run in an isolated Python 3.11 environment (Pyodide WebAssembly) ' +
           'with automatic PyPI package installation. JavaScript scripts run in an isolated ' +
-          'QuickJS WebAssembly environment. Both support file input/output via a ' +
-          'virtual filesystem. Use after activating a skill to run its scripts.',
+          'QuickJS WebAssembly environment. Both support file input/output via a virtual filesystem.\n\n' +
+          'IMPORTANT: Reference files (documentation/tutorials) are NOT scripts. ' +
+          'Do NOT pass reference file paths as script_path. ' +
+          'Instead, read reference files with `read_skill_file`, then use the `code` parameter ' +
+          'to write and execute your own code based on what you learned.',
         parameters: {
           type: 'object',
           properties: {
             skill_name: {
               type: 'string',
               description:
-                'The name of the installed skill containing the script',
+                'The name of the installed skill',
             },
             script_path: {
               type: 'string',
               description:
-                'Path to the script within the skill (e.g. "scripts/analyze.py")',
+                'Path to a bundled script within the skill (e.g. "scripts/analyze.py"). ' +
+                'Only use paths listed under "Available Scripts" from activate_skill. ' +
+                'Omit this when using the `code` parameter instead.',
+            },
+            code: {
+              type: 'string',
+              description:
+                'Inline code to execute. Use this to run custom code you generated ' +
+                'based on the skill\'s reference documentation or API examples. ' +
+                'Must be used together with `language`. Omit `script_path` when using this.',
+            },
+            language: {
+              type: 'string',
+              enum: ['python', 'javascript'],
+              description:
+                'Programming language of the inline `code`. Required when `code` is provided.',
+            },
+            packages: {
+              type: 'array',
+              items: { type: 'string' },
+              description:
+                'Additional packages to install before running inline code (Python only, e.g. ["pptxgenjs", "pandas"]). ' +
+                'Not needed for bundled scripts as their packages are auto-detected.',
             },
             arguments: {
               type: 'object',
@@ -326,7 +365,7 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
               },
             },
           },
-          required: ['skill_name', 'script_path'],
+          required: ['skill_name'],
         },
       },
     },
@@ -336,7 +375,7 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
         throw new Error('Aborted')
       }
 
-      // ── Resolve skill and script ──────────────────────────────
+      // ── Resolve skill ─────────────────────────────────────────
       const skill = getSkillByName(args.skill_name)
       if (!skill) {
         const available = getEnabledSkills()
@@ -353,41 +392,77 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
         )
       }
 
-      const script = skill.scripts.find(
-        (s) =>
-          s.path === args.script_path ||
-          s.path.endsWith(`/${args.script_path}`) ||
-          s.path.endsWith(args.script_path),
-      )
+      // ── Determine execution mode: inline code vs bundled script ──
+      const isInlineCode = Boolean(args.code)
 
-      if (!script) {
-        const available = skill.scripts.map((s) => s.path).join(', ')
-        throw new Error(
-          `Script "${args.script_path}" not found in skill "${skill.name}". ` +
-            `Available scripts: ${available || 'none'}`,
-        )
-      }
+      let codeToRun: string
+      let execLanguage: 'python' | 'javascript'
+      let packages: string[]
+      let label: string
 
-      // ── Validate script language ──────────────────────────────
-      const executableLanguages = ['python', 'javascript']
-      if (!executableLanguages.includes(script.language)) {
-        if (script.language === 'bash') {
-          return (
-            `This is a Bash script and cannot be executed directly in the browser.\n\n` +
-            `**Script content** (\`${script.path}\`):\n\`\`\`bash\n${script.content}\n\`\`\`\n\n` +
-            `You can read this script and follow its logic to accomplish the task manually, ` +
-            `or translate the relevant parts to Python or JavaScript and re-run with \`run_skill_script\`.`
+      if (isInlineCode) {
+        // Inline code mode: LLM generated code based on skill references
+        if (!args.language) {
+          throw new Error(
+            '`language` is required when providing inline `code`. ' +
+              'Specify "python" or "javascript".',
           )
         }
-        throw new Error(
-          `Script "${script.path}" is written in ${script.language} and cannot ` +
-            `be executed in the sandboxed code runner. Supported languages: Python, JavaScript.`,
+        codeToRun = args.code!
+        execLanguage = args.language
+        packages =
+          execLanguage === 'python' ? (args.packages ?? []) : []
+        label = `inline-${execLanguage}`
+      } else {
+        // Bundled script mode: run a pre-declared script from the skill
+        if (!args.script_path) {
+          throw new Error(
+            'Either `script_path` (to run a bundled script) or `code` + `language` ' +
+              '(to run custom code) must be provided.',
+          )
+        }
+
+        const script = skill.scripts.find(
+          (s) =>
+            s.path === args.script_path ||
+            s.path.endsWith(`/${args.script_path}`) ||
+            s.path.endsWith(args.script_path!),
         )
+
+        if (!script) {
+          const available = skill.scripts.map((s) => s.path).join(', ')
+          throw new Error(
+            `Script "${args.script_path}" not found in skill "${skill.name}". ` +
+              `Available scripts: ${available || 'none'}. ` +
+              `If you need to run custom code, use the \`code\` and \`language\` parameters instead.`,
+          )
+        }
+
+        // Validate script language
+        const executableLanguages = ['python', 'javascript']
+        if (!executableLanguages.includes(script.language)) {
+          if (script.language === 'bash') {
+            return (
+              `This is a Bash script and cannot be executed directly in the browser.\n\n` +
+              `**Script content** (\`${script.path}\`):\n\`\`\`bash\n${script.content}\n\`\`\`\n\n` +
+              `You can translate the relevant parts to Python or JavaScript and re-run with \`run_skill_script\` ` +
+              `using the \`code\` and \`language\` parameters.`
+            )
+          }
+          throw new Error(
+            `Script "${script.path}" is written in ${script.language} and cannot ` +
+              `be executed in the sandboxed code runner. Supported languages: Python, JavaScript.`,
+          )
+        }
+
+        codeToRun = script.content
+        execLanguage = script.language as 'python' | 'javascript'
+        packages =
+          execLanguage === 'python' ? (script.requiredPackages ?? []) : []
+        label = script.path
       }
 
       // ── Check package compatibility (Python only) ─────────────
-      const packages =
-        script.language === 'python' ? (script.requiredPackages ?? []) : []
       const incompatible = packages.filter(
         (pkg) => checkPackageCompatibility(pkg) === 'incompatible',
       )
@@ -433,7 +508,7 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
       const inputFiles = await resolveInputFiles(fileRefs)
 
       // ── Execute in sandbox ────────────────────────────────────
-      const langLabel = script.language === 'python' ? 'Python' : 'JavaScript'
+      const langLabel = execLanguage === 'python' ? 'Python' : 'JavaScript'
       context.onProgress?.(0.1, `Initializing ${langLabel} environment…`)
 
       const unsubscribe = sandbox.onProgress((event) => {
@@ -446,14 +521,14 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
 
       try {
         const result = await sandbox.execute({
-          language: script.language as 'python' | 'javascript',
-          code: script.content,
+          language: execLanguage,
+          code: codeToRun,
           context: args.arguments,
           packages,
           files: inputFiles,
-          timeout: script.language === 'python' ? 60_000 : 30_000,
+          timeout: execLanguage === 'python' ? 60_000 : 30_000,
           traceId: skill.id,
-          label: script.path,
+          label,
         })
 
         context.onProgress?.(0.9, 'Processing results…')
@@ -462,9 +537,9 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
         const parts: string[] = []
 
         if (result.success) {
-          parts.push(`✅ Script \`${script.path}\` executed successfully.`)
+          parts.push(`✅ ${isInlineCode ? 'Code' : `Script \`${label}\``} executed successfully.`)
         } else {
-          parts.push(`❌ Script \`${script.path}\` failed.`)
+          parts.push(`❌ ${isInlineCode ? 'Code' : `Script \`${label}\``} failed.`)
         }
 
         parts.push(`\n**Execution time**: ${result.executionTimeMs}ms`)
@@ -512,8 +587,29 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
         throw new Error('skill_name is required and must be a string')
       }
 
-      if (!params.script_path || typeof params.script_path !== 'string') {
-        throw new Error('script_path is required and must be a string')
+      const hasCode = params.code && typeof params.code === 'string'
+      const hasScriptPath =
+        params.script_path && typeof params.script_path === 'string'
+
+      if (!hasCode && !hasScriptPath) {
+        throw new Error(
+          'Either script_path or code must be provided',
+        )
+      }
+
+      if (hasCode && !params.language) {
+        throw new Error(
+          'language is required when providing inline code',
+        )
+      }
+
+      if (
+        params.language &&
+        !['python', 'javascript'].includes(params.language)
+      ) {
+        throw new Error(
+          `Unsupported language: "${params.language}". Supported: python, javascript`,
+        )
       }
 
       return params

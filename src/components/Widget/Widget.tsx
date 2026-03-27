@@ -11,12 +11,13 @@ import {
 } from '@heroui/react'
 import { IconName } from '@/lib/types'
 import { useI18n } from '@/i18n'
-import { useState, Suspense, lazy } from 'react'
+import { useState, useCallback, Suspense, lazy } from 'react'
 import localI18n from './i18n'
 import { ErrorBoundary } from '../ErrorBoundary'
 import { Icon } from '../Icon'
 import { useScoreTitle } from './Score/titles'
 import { usePresentationTitle } from './Presentation/titles'
+import { usePptxTitle } from './PPTX/titles'
 import { completeStreamingHtml } from './stream-html.utils'
 import './widget.css'
 import { MonacoEditor } from '../MonacoEditor'
@@ -35,6 +36,9 @@ const Score = lazy(() =>
 const SVG = lazy(() =>
   import('./SVG/SVG').then((module) => ({ default: module.SVG })),
 )
+const PPTX = lazy(() =>
+  import('./PPTX/PPTX').then((module) => ({ default: module.PPTX })),
+)
 
 // Type definitions for specialized widgets
 export type CodeBlockType =
@@ -42,6 +46,7 @@ export type CodeBlockType =
   | 'svg'
   | 'diagram'
   | 'marpit'
+  | 'pptx'
   | 'html'
   | 'generic'
 
@@ -75,6 +80,7 @@ export const Widget = ({
   const { t } = useI18n(localI18n)
   const scoreTitle = useScoreTitle()
   const presentationTitle = usePresentationTitle()
+  const pptxTitle = usePptxTitle()
 
   const getIcon = (): IconName => {
     switch (type) {
@@ -85,6 +91,8 @@ export const Widget = ({
       case 'diagram':
         return 'CubeScan'
       case 'marpit':
+        return 'Presentation'
+      case 'pptx':
         return 'Presentation'
       case 'html':
         return 'Html5'
@@ -103,6 +111,8 @@ export const Widget = ({
         return 'Mermaid diagram'
       case 'marpit':
         return presentationTitle
+      case 'pptx':
+        return pptxTitle
       case 'html':
         return 'HTML'
       default:
@@ -124,12 +134,60 @@ export const Widget = ({
         return 'mermaid'
       case 'marpit':
         return 'yaml'
+      case 'pptx':
+        return 'javascript'
       case 'html':
         return 'html'
       default:
         return 'plaintext'
     }
   }
+
+  const getFileExtension = () => {
+    switch (type) {
+      case 'abc': return '.abc'
+      case 'svg': return '.svg'
+      case 'diagram': return '.mmd'
+      case 'marpit': return '.md'
+      case 'pptx': return '.pptx'
+      case 'html': return '.html'
+      default: return language ? `.${language}` : '.txt'
+    }
+  }
+
+  const handleDownload = useCallback(async () => {
+    if (type === 'pptx') {
+      // Special case: build the presentation and download the .pptx binary
+      const PptxGenJS = (await import('pptxgenjs')).default
+      const wrappedCode = `${code}\nreturn pres;`
+      const fn = new Function('pptxgen', wrappedCode)
+      const pres = fn(PptxGenJS)
+      if (!pres || typeof pres.write !== 'function') {
+        throw new Error('The code must create a `pres` variable using `new pptxgen()`')
+      }
+      const blob = (await pres.write({ outputType: 'blob' })) as Blob
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${title ?? 'presentation'}.pptx`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      return
+    }
+
+    // Default: download the raw code as a text file
+    const blob = new Blob([code], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${title ?? 'download'}${getFileExtension()}`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }, [code, type, title])
 
   const renderContent = () => {
     if (viewMode === 'source') {
@@ -171,6 +229,12 @@ export const Widget = ({
         return (
           <Suspense fallback={<Fallback />}>
             <Presentation code={code} />
+          </Suspense>
+        )
+      case 'pptx':
+        return (
+          <Suspense fallback={<Fallback />}>
+            <PPTX code={code} />
           </Suspense>
         )
       case 'html':
@@ -251,6 +315,12 @@ export const Widget = ({
                       title={t('Code')}
                       onPress={() => setViewMode('source')}
                     />
+                    <DropdownItem
+                      key="download"
+                      startContent={<Icon name="Download" size="sm" />}
+                      title={t('Download')}
+                      onPress={handleDownload}
+                    />
                     <>
                       {moreActions?.map((action, i) => (
                         <DropdownItem
@@ -322,6 +392,17 @@ export const detectSpecializedCodeType = (
   // Diagram detection (placeholder for future implementations)
   if (language === 'mermaid' || language === 'diagram') {
     return 'diagram'
+  }
+
+  // PptxGenJS detection
+  if (
+    language === 'pptx' ||
+    language === 'pptxgenjs' ||
+    trimmedCode.includes('new pptxgen()') ||
+    trimmedCode.includes('new PptxGenJS()') ||
+    trimmedCode.includes('.addSlide()')
+  ) {
+    return 'pptx'
   }
 
   // Marpit detection

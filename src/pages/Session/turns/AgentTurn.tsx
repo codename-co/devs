@@ -20,7 +20,7 @@ export function AgentTurn({ turn, session }: AgentTurnProps) {
     return (
       <div className="flex items-center gap-2 text-default-400 py-2">
         <Spinner size="sm" />
-        <span className="text-sm">{(t as any)('Creating agent…')}</span>
+        <span className="text-sm">{t('Creating agent…')}</span>
       </div>
     )
   }
@@ -30,7 +30,7 @@ export function AgentTurn({ turn, session }: AgentTurnProps) {
       {turn.status === 'failed' && (
         <div className="flex items-center gap-2 text-danger">
           <Icon name="WarningTriangle" size="sm" />
-          <span className="text-sm">{(t as any)('Agent creation failed')}</span>
+          <span className="text-sm">{t('Agent creation failed')}</span>
         </div>
       )}
       {agentArtifacts.length > 0 &&
@@ -51,11 +51,7 @@ export function AgentTurn({ turn, session }: AgentTurnProps) {
             </CardBody>
           </Card>
         ))}
-      {turn.status === 'completed' && agentArtifacts.length === 0 && (
-        <span className="text-sm text-default-500">
-          {(t as any)('Agent created')}
-        </span>
-      )}
+
     </div>
   )
 }

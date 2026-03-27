@@ -97,7 +97,7 @@ export function SessionPage() {
 
   if (!sessionId || !session) {
     return (
-      <RunLayout header={{ title: (t as any)('Session') }}>
+      <RunLayout header={{ title: t('Session') }}>
         <div className="flex items-center justify-center h-64">
           <Spinner size="lg" />
         </div>
@@ -129,8 +129,8 @@ export function SessionPage() {
                   ) : undefined
                 }
               >
-                {session.status === 'starting' && (t as any)('Starting…')}
-                {session.status === 'running' && (t as any)('Working…')}
+                {session.status === 'starting' && t('Starting…')}
+                {session.status === 'running' && t('Working…')}
               </Chip>
             </div>
           )}

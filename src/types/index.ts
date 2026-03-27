@@ -1114,6 +1114,7 @@ export interface SessionTurn {
   agentId: string
   artifactIds: string[]
   status: 'pending' | 'running' | 'completed' | 'failed'
+  taskId?: string
   createdAt: Date | string
   completedAt?: Date | string
 }

@@ -1012,4 +1012,21 @@ export const ko: I18n = {
   'Skip all human intervention prompts and let agents decide autonomously':
     '모든 인적 개입 요청을 건너뛰고 에이전트가 자율적으로 결정하도록 합니다',
   Automation: '자동화',
+
+  // Session
+  Session: '세션',
+  'Starting…': '시작 중…',
+  'Working…': '작업 중…',
+  'file(s)': '파일',
+  'Creating agent…': '에이전트 생성 중…',
+  'Agent creation failed': '에이전트 생성 실패',
+  'Building app…': '앱 빌드 중…',
+  'App build failed': '앱 빌드 실패',
+  'is thinking…': '생각 중…',
+  'Turn failed': '턴 실패',
+  'Generating media…': '미디어 생성 중…',
+  'Generation failed': '생성 실패',
+  'Media generated': '미디어 생성 완료',
+  'Orchestrating task…': '작업 오케스트레이션 중…',
+  'Task failed': '작업 실패',
 } as const

@@ -397,12 +397,12 @@ export const ConversationStepTracker = memo(
     )
 
     // Count statuses for summary chip
-    const summary = useMemo(() => {
-      const completed = steps.filter((s) => s.status === 'completed').length
-      const failed = steps.filter((s) => s.status === 'failed').length
-      const running = steps.filter((s) => s.status === 'running').length
-      return { completed, failed, running, total: steps.length }
-    }, [steps])
+    // const summary = useMemo(() => {
+    //   const completed = steps.filter((s) => s.status === 'completed').length
+    //   const failed = steps.filter((s) => s.status === 'failed').length
+    //   const running = steps.filter((s) => s.status === 'running').length
+    //   return { completed, failed, running, total: steps.length }
+    // }, [steps])
 
     if (steps.length === 0) return null
 
@@ -421,7 +421,7 @@ export const ConversationStepTracker = memo(
         {finishedSteps.length > 0 && (
           <>
             {/* Summary chip */}
-            <div className="flex items-center gap-2 mb-1">
+            {/* <div className="flex items-center gap-2 mb-1">
               <Icon name="ListSelect" size="sm" className="text-default-400" />
               <span className="text-tiny font-medium text-default-500">
                 {t('Steps')}
@@ -442,7 +442,7 @@ export const ConversationStepTracker = memo(
                   {summary.failed}
                 </Chip>
               )}
-            </div>
+            </div> */}
 
             <AccordionTracker>
               {finishedSteps.map((step) => {

@@ -44,7 +44,7 @@ import {
 import { KNOWLEDGE_TOOL_DEFINITIONS } from '@/lib/knowledge-tools'
 import { MATH_TOOL_DEFINITIONS } from '@/lib/math-tools'
 import { CODE_TOOL_DEFINITIONS } from '@/lib/code-tools'
-import { PRESENTATION_TOOL_DEFINITIONS } from '@/lib/presentation-tools'
+// import { PRESENTATION_TOOL_DEFINITIONS } from '@/lib/presentation-tools'
 import { getToolDefinitionsForProvider } from '@/features/connectors/tools'
 import { connectors as connectorsMap } from '@/lib/yjs/maps'
 import type { Connector } from '@/features/connectors/types'
@@ -68,6 +68,7 @@ import type {
   LLMConfig,
   Task,
 } from '@/types'
+import { PPTX_TOOL_DEFINITIONS } from '../pptx-tools'
 
 // ============================================================================
 // Constants
@@ -168,7 +169,8 @@ async function collectTools(scope?: AgentScope): Promise<ToolDefinition[]> {
     ...Object.values(KNOWLEDGE_TOOL_DEFINITIONS),
     ...Object.values(MATH_TOOL_DEFINITIONS),
     ...Object.values(CODE_TOOL_DEFINITIONS),
-    ...Object.values(PRESENTATION_TOOL_DEFINITIONS),
+    // ...Object.values(PRESENTATION_TOOL_DEFINITIONS),
+    ...Object.values(PPTX_TOOL_DEFINITIONS),
     WIKIPEDIA_SEARCH_TOOL_DEFINITION,
     WIKIPEDIA_ARTICLE_TOOL_DEFINITION,
     WIKIDATA_SEARCH_TOOL_DEFINITION,

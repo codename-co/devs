@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { Agent, Session } from '@/types'
+import type { Agent, Session, SessionTurn } from '@/types'
 import { useSessionStore } from '@/stores/sessionStore'
 import { useConversationStore } from '@/stores/conversationStore'
 import { useTaskStore } from '@/stores/taskStore'
@@ -26,6 +26,9 @@ export interface SessionExecutionState {
  * Hook that detects when a session is in 'starting' state and kicks off
  * the appropriate LLM pipeline (conversation or task orchestration).
  *
+ * Also watches for new pending turns (follow-up messages) and executes them
+ * through the same pipeline with conversation history.
+ *
  * `submitChat` already dispatches to the orchestrator when agent.id === 'devs',
  * so we don't need separate pipeline logic here.
  *
@@ -36,9 +39,11 @@ export function useSessionExecution(
   lang: Lang,
   t: any,
 ): SessionExecutionState {
-  const { updateSession } = useSessionStore()
+  const { updateSession, updateTurn } = useSessionStore()
   // Guard against running the pipeline more than once per session
   const executingRef = useRef<string | null>(null)
+  // Guard against running multiple turns concurrently
+  const executingTurnRef = useRef<string | null>(null)
 
   // Live streaming state
   const [response, setResponse] = useState('')
@@ -167,6 +172,103 @@ export function useSessionExecution(
     [lang, t, updateSession],
   )
 
+  /** Execute a follow-up turn within an existing session conversation. */
+  const executeTurn = useCallback(
+    async (s: Session, turn: SessionTurn) => {
+      // Resolve agent for this turn
+      let agent: Agent | undefined | null = getAgentById(turn.agentId)
+      if (!agent) {
+        agent = await getAgentByIdAsync(turn.agentId)
+      }
+      if (!agent) {
+        await updateTurn(s.id, turn.id, { status: 'failed' })
+        return
+      }
+
+      // Mark turn as running
+      await updateTurn(s.id, turn.id, { status: 'running' })
+
+      // Initialize streaming state
+      setIsSending(true)
+      setResponse('')
+      setConversationSteps([
+        createStepFromStatus({ icon: 'Sparks', i18nKey: 'Thinking…' }),
+      ])
+
+      const controller = new AbortController()
+
+      // Load conversation history so the LLM has full context
+      const { loadConversation } = useConversationStore.getState()
+      let conversationMessages: import('@/types').Message[] = []
+      if (s.conversationId) {
+        const conv = await loadConversation(s.conversationId)
+        if (conv?.messages) {
+          // Include all non-system messages as history
+          conversationMessages = conv.messages.filter(
+            (m) => m.role !== 'system',
+          )
+        }
+      }
+
+      try {
+        const result = await submitChat({
+          prompt: turn.prompt,
+          agent,
+          conversationMessages,
+          includeHistory: true,
+          lang,
+          t,
+          signal: controller.signal,
+          onResponseUpdate: (update: ResponseUpdate) => {
+            if (update.type === 'content') {
+              setResponse(update.content)
+              setConversationSteps((prev) => completeLastStep(prev))
+            } else if (update.type === 'tool_results') {
+              setConversationSteps((prev) =>
+                addToolDataToStep(prev, update.toolCalls),
+              )
+            } else {
+              setConversationSteps((prev) => {
+                const completed = completeLastStep(prev)
+                return [...completed, createStepFromStatus(update.status)]
+              })
+            }
+          },
+          onPromptClear: () => {
+            // No-op — prompt already consumed
+          },
+        })
+
+        // Link task if the orchestrator produced one during this turn
+        const turnUpdates: Partial<import('@/types').SessionTurn> = {
+          status: result.success ? 'completed' : 'failed',
+          completedAt: new Date().toISOString(),
+        }
+        const { currentConversation } = useConversationStore.getState()
+        if (currentConversation?.workflowId) {
+          const workflowTasks = useTaskStore
+            .getState()
+            .getTasksByWorkflow(currentConversation.workflowId)
+          const mainTask = workflowTasks.find((wt) => !wt.parentTaskId)
+          if (mainTask) {
+            turnUpdates.taskId = mainTask.id
+          }
+        }
+        await updateTurn(s.id, turn.id, turnUpdates)
+      } catch (error) {
+        console.error('Turn execution failed:', error)
+        await updateTurn(s.id, turn.id, { status: 'failed' })
+      } finally {
+        executingTurnRef.current = null
+        setIsSending(false)
+        setResponse('')
+        setConversationSteps([])
+      }
+    },
+    [lang, t, updateTurn],
+  )
+
+  // Kick off initial session execution
   useEffect(() => {
     if (!session) return
     if (session.status !== 'starting') return
@@ -175,6 +277,21 @@ export function useSessionExecution(
     executingRef.current = session.id
     execute(session)
   }, [session, execute])
+
+  // Watch for new pending turns and execute them
+  useEffect(() => {
+    if (!session) return
+    // Don't process turns while the initial prompt is still executing
+    if (session.status === 'starting' || session.status === 'running') return
+    // Don't start a new turn if one is already executing
+    if (executingTurnRef.current) return
+
+    const pendingTurn = session.turns.find((t) => t.status === 'pending')
+    if (!pendingTurn) return
+
+    executingTurnRef.current = pendingTurn.id
+    executeTurn(session, pendingTurn)
+  }, [session, executeTurn])
 
   return { response, conversationSteps, isSending }
 }

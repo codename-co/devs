@@ -29,6 +29,7 @@ const WIDGET_LABELS: Record<CodeBlockType, string> = {
   svg: 'SVG',
   diagram: 'Diagram',
   marpit: 'Presentation',
+  pptx: 'PowerPoint',
   html: 'HTML',
   generic: 'Code',
 }

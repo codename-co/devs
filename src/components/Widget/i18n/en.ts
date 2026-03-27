@@ -1,1 +1,1 @@
-export const en = ['Render', 'Code', 'Loading…'] as const
+export const en = ['Render', 'Code', 'Loading…', 'Download'] as const

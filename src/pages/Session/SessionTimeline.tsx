@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Chip, Divider, Spinner } from '@heroui/react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Chip, Spinner } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
 import { Icon } from '@/components'
@@ -59,41 +59,94 @@ export function SessionTimeline({
     })
   }, [rawConversation])
 
-  // Build timeline items: historical messages + live streaming message
-  const assistantMessages = useMemo(() => {
-    const historical =
-      conversation?.messages?.filter((m) => m.role === 'assistant') ?? []
+  // Split assistant messages into groups: initial prompt responses + per-turn responses
+  const { initialMessages, turnMessages, streamingMessage, totalCount } =
+    useMemo(() => {
+      const historical =
+        conversation?.messages?.filter((m) => m.role === 'assistant') ?? []
 
-    // Inject a synthetic streaming message while the LLM is generating
-    if (isSending) {
-      const streamingMessage: Message = {
-        id: '__streaming__',
-        role: 'assistant',
-        content: response || '',
-        timestamp: new Date(),
-        agentId: session.primaryAgentId,
+      const streaming: Message | undefined = isSending
+        ? {
+            id: '__streaming__',
+            role: 'assistant',
+            content: response || '',
+            timestamp: new Date(),
+            agentId: session.primaryAgentId,
+          }
+        : undefined
+
+      const turns = session.turns
+      const toTime = (d: Date | string) => new Date(d).getTime()
+
+      if (turns.length === 0) {
+        return {
+          initialMessages: historical,
+          turnMessages: [] as Message[][],
+          streamingMessage: streaming,
+          totalCount: historical.length + (streaming ? 1 : 0),
+        }
       }
-      return [...historical, streamingMessage]
-    }
 
-    return historical
-  }, [conversation, isSending, response, session.primaryAgentId])
+      // Messages before first turn → responses to the initial prompt
+      const firstTurnTime = toTime(turns[0].createdAt)
+      const initial = historical.filter(
+        (m) => toTime(m.timestamp) < firstTurnTime,
+      )
+
+      // Messages per turn (between turn[i].createdAt and turn[i+1].createdAt)
+      const perTurn = turns.map((turn, i) => {
+        const turnStart = toTime(turn.createdAt)
+        const turnEnd =
+          i < turns.length - 1 ? toTime(turns[i + 1].createdAt) : Infinity
+        return historical.filter(
+          (m) =>
+            toTime(m.timestamp) >= turnStart && toTime(m.timestamp) < turnEnd,
+        )
+      })
+
+      return {
+        initialMessages: initial,
+        turnMessages: perTurn,
+        streamingMessage: streaming,
+        totalCount: historical.length + (streaming ? 1 : 0),
+      }
+    }, [
+      conversation,
+      isSending,
+      response,
+      session.primaryAgentId,
+      session.turns,
+    ])
+
+  const renderMessage = (message: Message) => {
+    const agent = message.agentId ? getAgentById(message.agentId) : null
+    const isStreaming = message.id === '__streaming__'
+    return (
+      <MessageBubble
+        key={message.id}
+        message={message}
+        agent={agent}
+        showAgentChip
+        isStreaming={isStreaming}
+        liveSteps={isStreaming ? conversationSteps : undefined}
+      />
+    )
+  }
 
   return (
     <div className="flex flex-col gap-6 max-w-3xl mx-auto w-full">
       {/* Initial prompt display */}
       <div className="flex flex-col gap-2">
         <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-full bg-default-200 flex items-center justify-center shrink-0 mt-0.5">
-            <Icon name="User" size="sm" />
-          </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-default-500 mb-1">
-              {(t as any)('You')}
-            </p>
-            <p className="text-base whitespace-pre-wrap break-words">
-              {session.prompt}
-            </p>
+            <MessageBubble
+              message={{
+                role: 'user',
+                content: session.prompt,
+                id: 'aa',
+                timestamp: new Date(),
+              }}
+            />
             <div className="flex items-center gap-2 mt-2">
               <Chip
                 size="sm"
@@ -104,7 +157,7 @@ export function SessionTimeline({
               </Chip>
               {session.attachments && session.attachments.length > 0 && (
                 <Chip size="sm" variant="flat" color="default">
-                  {session.attachments.length} {(t as any)('file(s)')}
+                  {session.attachments.length} {t('file(s)')}
                 </Chip>
               )}
             </div>
@@ -112,64 +165,55 @@ export function SessionTimeline({
         </div>
       </div>
 
-      {/* Turns */}
-      {session.turns.map((turn, index) => (
-        <div key={turn.id}>
-          <Divider className="my-2" />
-          <SessionTurnView turn={turn} session={session} index={index} />
-        </div>
-      ))}
+      {/* Assistant messages responding to the initial prompt */}
+      {initialMessages.map(renderMessage)}
 
-      {/* Conversation messages — rendered live with steps, tool calls, etc. */}
-      {assistantMessages.map((message) => {
-        const agent = message.agentId ? getAgentById(message.agentId) : null
-        const isStreaming = message.id === '__streaming__'
-        return (
-          <div key={message.id}>
-            <Divider className="my-2" />
-            <MessageBubble
-              message={message}
-              agent={agent}
-              showAgentChip
-              isStreaming={isStreaming}
-              liveSteps={isStreaming ? conversationSteps : undefined}
-            />
-          </div>
-        )
-      })}
+      {/* Streaming message when there are no turns yet */}
+      {session.turns.length === 0 &&
+        streamingMessage &&
+        renderMessage(streamingMessage)}
+
+      {/* Turns interleaved with their corresponding assistant messages */}
+      {session.turns.map((turn, index) => (
+        <Fragment key={turn.id}>
+          <SessionTurnView turn={turn} session={session} index={index} />
+          {turnMessages[index]?.map(renderMessage)}
+          {/* Streaming message belongs to the latest turn */}
+          {index === session.turns.length - 1 &&
+            streamingMessage &&
+            renderMessage(streamingMessage)}
+        </Fragment>
+      ))}
 
       {/* Loading indicator while running with no messages yet */}
       {(session.status === 'running' || session.status === 'starting') &&
-        assistantMessages.length === 0 && (
+        totalCount === 0 && (
           <div className="flex items-center gap-2 text-default-400 justify-center py-4">
             <Spinner size="sm" />
-            <span className="text-sm">{(t as any)('Thinking…')}</span>
+            <span className="text-sm">{t('Thinking…')}</span>
           </div>
         )}
 
       {/* Artifacts summary */}
       {session.artifacts.length > 0 && (
-        <>
-          <Divider className="my-2" />
-          <div className="flex flex-col gap-2">
-            <p className="text-sm font-medium text-default-500">
-              {(t as any)('Artifacts')} ({session.artifacts.length})
-            </p>
-            <div className="flex gap-2 flex-wrap">
-              {session.artifacts.map((artifact) => (
-                <Chip
-                  key={artifact.id}
-                  size="sm"
-                  variant="flat"
-                  color="primary"
-                  startContent={<Icon name="Page" size="xs" />}
-                >
-                  {artifact.title}
-                </Chip>
-              ))}
-            </div>
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-medium text-default-500">
+            {t('Artifacts')} ({session.artifacts.length})
+          </p>
+          <div className="flex gap-2 flex-wrap">
+            {session.artifacts.map((artifact) => (
+              <Chip
+                key={artifact.id}
+                size="sm"
+                variant="flat"
+                color="primary"
+                startContent={<Icon name="Page" size="xs" />}
+              >
+                {artifact.title}
+              </Chip>
+            ))}
           </div>
-        </>
+        </div>
       )}
     </div>
   )

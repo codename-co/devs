@@ -947,4 +947,21 @@ export const en = [
   'YOLO Mode',
   'Skip all human intervention prompts and let agents decide autonomously',
   'Automation',
+
+  // Session
+  'Session',
+  'Starting…',
+  'Working…',
+  'file(s)',
+  'Creating agent…',
+  'Agent creation failed',
+  'Building app…',
+  'App build failed',
+  'is thinking…',
+  'Turn failed',
+  'Generating media…',
+  'Generation failed',
+  'Media generated',
+  'Orchestrating task…',
+  'Task failed',
 ] as const

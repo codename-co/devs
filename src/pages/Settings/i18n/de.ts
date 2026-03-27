@@ -218,4 +218,6 @@ export const de: I18n = {
   'Color Scheme': 'Farbschema',
   'Choose a color scheme for the interface':
     'Wählen Sie ein Farbschema für die Oberfläche',
+  'Presentation theme used for generated PPTX slides':
+    'Präsentationsthema für generierte PPTX-Folien',
 } as const

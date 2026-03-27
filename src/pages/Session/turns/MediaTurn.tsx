@@ -23,7 +23,7 @@ export function MediaTurn({ turn, session }: MediaTurnProps) {
     return (
       <div className="flex items-center gap-2 text-default-400 py-2">
         <Spinner size="sm" />
-        <span className="text-sm">{(t as any)('Generating media…')}</span>
+        <span className="text-sm">{t('Generating media…')}</span>
       </div>
     )
   }
@@ -33,7 +33,7 @@ export function MediaTurn({ turn, session }: MediaTurnProps) {
       {turn.status === 'failed' && (
         <div className="flex items-center gap-2 text-danger">
           <Icon name="WarningTriangle" size="sm" />
-          <span className="text-sm">{(t as any)('Generation failed')}</span>
+          <span className="text-sm">{t('Generation failed')}</span>
         </div>
       )}
       {mediaArtifacts.length > 0 && (
@@ -62,9 +62,7 @@ export function MediaTurn({ turn, session }: MediaTurnProps) {
         </div>
       )}
       {turn.status === 'completed' && mediaArtifacts.length === 0 && (
-        <span className="text-sm text-default-500">
-          {(t as any)('Media generated')}
-        </span>
+        <span className="text-sm text-default-500">{t('Media generated')}</span>
       )}
     </div>
   )

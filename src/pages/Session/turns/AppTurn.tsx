@@ -22,7 +22,7 @@ export function AppTurn({ turn, session }: AppTurnProps) {
     return (
       <div className="flex items-center gap-2 text-default-400 py-2">
         <Spinner size="sm" />
-        <span className="text-sm">{(t as any)('Building app…')}</span>
+        <span className="text-sm">{t('Building app…')}</span>
       </div>
     )
   }
@@ -32,7 +32,7 @@ export function AppTurn({ turn, session }: AppTurnProps) {
       {turn.status === 'failed' && (
         <div className="flex items-center gap-2 text-danger">
           <Icon name="WarningTriangle" size="sm" />
-          <span className="text-sm">{(t as any)('App build failed')}</span>
+          <span className="text-sm">{t('App build failed')}</span>
         </div>
       )}
       {appArtifacts.length > 0 &&
@@ -50,11 +50,7 @@ export function AppTurn({ turn, session }: AppTurnProps) {
             )}
           </div>
         ))}
-      {turn.status === 'completed' && appArtifacts.length === 0 && (
-        <span className="text-sm text-default-500">
-          {(t as any)('App generated')}
-        </span>
-      )}
+
     </div>
   )
 }

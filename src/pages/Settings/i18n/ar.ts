@@ -211,4 +211,6 @@ export const ar: I18n = {
   Sync: 'مزامنة',
   'Color Scheme': 'نظام الألوان',
   'Choose a color scheme for the interface': 'اختر نظام ألوان للواجهة',
+  'Presentation theme used for generated PPTX slides':
+    'سمة العرض المستخدمة لشرائح PPTX المُنشأة',
 } as const

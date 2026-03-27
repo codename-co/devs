@@ -212,4 +212,6 @@ export const ko: I18n = {
   'Color Scheme': '색상 테마',
   'Choose a color scheme for the interface':
     '인터페이스의 색상 테마를 선택하세요',
+  'Presentation theme used for generated PPTX slides':
+    '생성된 PPTX 슬라이드에 사용할 프레젠테이션 테마',
 } as const

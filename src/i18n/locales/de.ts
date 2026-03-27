@@ -1036,4 +1036,21 @@ export const de: I18n = {
   'Skip all human intervention prompts and let agents decide autonomously':
     'Alle menschlichen Eingabeaufforderungen überspringen und Agenten autonom entscheiden lassen',
   Automation: 'Automatisierung',
+
+  // Session
+  Session: 'Sitzung',
+  'Starting…': 'Wird gestartet…',
+  'Working…': 'Arbeitet…',
+  'file(s)': 'Datei(en)',
+  'Creating agent…': 'Agent wird erstellt…',
+  'Agent creation failed': 'Agenterstellung fehlgeschlagen',
+  'Building app…': 'App wird erstellt…',
+  'App build failed': 'App-Erstellung fehlgeschlagen',
+  'is thinking…': 'denkt nach…',
+  'Turn failed': 'Runde fehlgeschlagen',
+  'Generating media…': 'Medium wird generiert…',
+  'Generation failed': 'Generierung fehlgeschlagen',
+  'Media generated': 'Medium generiert',
+  'Orchestrating task…': 'Aufgabe wird orchestriert…',
+  'Task failed': 'Aufgabe fehlgeschlagen',
 } as const

@@ -171,4 +171,5 @@ export const en = [
   'Sync',
   'Color Scheme',
   'Choose a color scheme for the interface',
+  'Presentation theme used for generated PPTX slides',
 ] as const

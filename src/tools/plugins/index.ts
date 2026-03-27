@@ -28,6 +28,7 @@ export { executePlugin } from './execute'
 
 // Presentation tools
 export { generatePresentationPlugin } from './generate-presentation'
+export { generatePptxPlugin } from './generate-pptx'
 
 // Knowledge tools
 export {
@@ -123,7 +124,8 @@ export * from './connectors'
 // Import all plugins for bulk registration
 import { calculatePlugin } from './calculate'
 import { executePlugin } from './execute'
-import { generatePresentationPlugin } from './generate-presentation'
+// import { generatePresentationPlugin } from './generate-presentation'
+import { generatePptxPlugin } from './generate-pptx'
 import {
   searchKnowledgePlugin,
   readDocumentPlugin,
@@ -162,7 +164,8 @@ export const corePlugins: ToolPlugin<any, any>[] = [
   // Code
   executePlugin,
   // Presentation
-  generatePresentationPlugin,
+  // generatePresentationPlugin,
+  generatePptxPlugin,
   // Knowledge
   searchKnowledgePlugin,
   readDocumentPlugin,
@@ -205,7 +208,8 @@ export const allPlugins: ToolPlugin<any, any>[] = [
 export const pluginsByCategory = {
   math: [calculatePlugin],
   code: [executePlugin],
-  presentation: [generatePresentationPlugin],
+  // presentation: [generatePresentationPlugin],
+  pptx: [generatePptxPlugin],
   knowledge: [
     searchKnowledgePlugin,
     readDocumentPlugin,
