@@ -1,7 +1,7 @@
 {
   "name": "devs",
   "private": true,
-  "version": "0.7.6",
+  "version": "0.7.9",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -56,6 +56,7 @@
     "nanoid": "^5.1.6",
     "pdfjs-dist": "^5.4.530",
     "postal-mime": "^2.7.3",
+    "pptxgenjs": "^4.0.1",
     "pretty-bytes": "^7.1.0",
     "qrcode": "^1.5.4",
     "quickjs-emscripten": "^0.32.0",
