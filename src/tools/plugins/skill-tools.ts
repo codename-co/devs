@@ -132,7 +132,9 @@ export const activateSkillPlugin: ToolPlugin<ActivateSkillArgs, string> =
         for (const ref of skill.references) {
           parts.push(`- \`${ref.path}\``)
         }
-        parts.push('\nUse `read_skill_file` to read these. Do NOT pass these paths to `run_skill_script`.')
+        parts.push(
+          '\nUse `read_skill_file` to read these. Do NOT pass these paths to `run_skill_script`.',
+        )
       }
 
       if (skill.assets.length > 0) {
@@ -145,10 +147,10 @@ export const activateSkillPlugin: ToolPlugin<ActivateSkillArgs, string> =
 
       parts.push(
         '\n## Generating Custom Code\n',
-        'You can also generate and run your own Python or JavaScript code within this skill\'s context.',
+        "You can also generate and run your own Python or JavaScript code within this skill's context.",
         'Use `run_skill_script` with the `code` and `language` parameters instead of `script_path`.',
-        'This is useful when the skill\'s reference files document a library API and you need to',
-        'write custom code using that API to fulfill the user\'s request.',
+        "This is useful when the skill's reference files document a library API and you need to",
+        "write custom code using that API to fulfill the user's request.",
       )
 
       return parts.join('\n')
@@ -280,7 +282,7 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
           'Execute code in the context of an installed Agent Skill. Two modes:\n' +
           '1. Run a bundled script: provide `script_path` to execute a pre-bundled script from the skill.\n' +
           '2. Run custom code: provide `code` and `language` to execute your own generated code ' +
-          '(e.g. code you wrote based on the skill\'s reference documentation).\n\n' +
+          "(e.g. code you wrote based on the skill's reference documentation).\n\n" +
           'Python scripts run in an isolated Python 3.11 environment (Pyodide WebAssembly) ' +
           'with automatic PyPI package installation. JavaScript scripts run in an isolated ' +
           'QuickJS WebAssembly environment. Both support file input/output via a virtual filesystem.\n\n' +
@@ -293,8 +295,7 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
           properties: {
             skill_name: {
               type: 'string',
-              description:
-                'The name of the installed skill',
+              description: 'The name of the installed skill',
             },
             script_path: {
               type: 'string',
@@ -307,7 +308,7 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
               type: 'string',
               description:
                 'Inline code to execute. Use this to run custom code you generated ' +
-                'based on the skill\'s reference documentation or API examples. ' +
+                "based on the skill's reference documentation or API examples. " +
                 'Must be used together with `language`. Omit `script_path` when using this.',
             },
             language: {
@@ -410,8 +411,7 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
         }
         codeToRun = args.code!
         execLanguage = args.language
-        packages =
-          execLanguage === 'python' ? (args.packages ?? []) : []
+        packages = execLanguage === 'python' ? (args.packages ?? []) : []
         label = `inline-${execLanguage}`
       } else {
         // Bundled script mode: run a pre-declared script from the skill
@@ -537,9 +537,13 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
         const parts: string[] = []
 
         if (result.success) {
-          parts.push(`✅ ${isInlineCode ? 'Code' : `Script \`${label}\``} executed successfully.`)
+          parts.push(
+            `✅ ${isInlineCode ? 'Code' : `Script \`${label}\``} executed successfully.`,
+          )
         } else {
-          parts.push(`❌ ${isInlineCode ? 'Code' : `Script \`${label}\``} failed.`)
+          parts.push(
+            `❌ ${isInlineCode ? 'Code' : `Script \`${label}\``} failed.`,
+          )
         }
 
         parts.push(`\n**Execution time**: ${result.executionTimeMs}ms`)
@@ -592,15 +596,11 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
         params.script_path && typeof params.script_path === 'string'
 
       if (!hasCode && !hasScriptPath) {
-        throw new Error(
-          'Either script_path or code must be provided',
-        )
+        throw new Error('Either script_path or code must be provided')
       }
 
       if (hasCode && !params.language) {
-        throw new Error(
-          'language is required when providing inline code',
-        )
+        throw new Error('language is required when providing inline code')
       }
 
       if (

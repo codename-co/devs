@@ -51,7 +51,6 @@ export function AgentTurn({ turn, session }: AgentTurnProps) {
             </CardBody>
           </Card>
         ))}
-
     </div>
   )
 }

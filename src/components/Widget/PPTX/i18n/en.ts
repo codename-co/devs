@@ -1,4 +1,1 @@
-export const en = [
-  'Generation error',
-  'Failed to generate PPTX',
-] as const
+export const en = ['Generation error', 'Failed to generate PPTX'] as const

@@ -50,7 +50,6 @@ export function AppTurn({ turn, session }: AppTurnProps) {
             )}
           </div>
         ))}
-
     </div>
   )
 }

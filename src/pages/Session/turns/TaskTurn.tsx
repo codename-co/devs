@@ -36,7 +36,7 @@ export function TaskTurn({ turn, session }: TaskTurnProps) {
 
   // Find the root task
   const task = useMemo(
-    () => (taskId ? allTasks.find((t) => t.id === taskId) ?? null : null),
+    () => (taskId ? (allTasks.find((t) => t.id === taskId) ?? null) : null),
     [allTasks, taskId],
   )
 

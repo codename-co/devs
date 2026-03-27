@@ -145,13 +145,20 @@ export const Widget = ({
 
   const getFileExtension = () => {
     switch (type) {
-      case 'abc': return '.abc'
-      case 'svg': return '.svg'
-      case 'diagram': return '.mmd'
-      case 'marpit': return '.md'
-      case 'pptx': return '.pptx'
-      case 'html': return '.html'
-      default: return language ? `.${language}` : '.txt'
+      case 'abc':
+        return '.abc'
+      case 'svg':
+        return '.svg'
+      case 'diagram':
+        return '.mmd'
+      case 'marpit':
+        return '.md'
+      case 'pptx':
+        return '.pptx'
+      case 'html':
+        return '.html'
+      default:
+        return language ? `.${language}` : '.txt'
     }
   }
 
@@ -163,7 +170,9 @@ export const Widget = ({
       const fn = new Function('pptxgen', wrappedCode)
       const pres = fn(PptxGenJS)
       if (!pres || typeof pres.write !== 'function') {
-        throw new Error('The code must create a `pres` variable using `new pptxgen()`')
+        throw new Error(
+          'The code must create a `pres` variable using `new pptxgen()`',
+        )
       }
       const blob = (await pres.write({ outputType: 'blob' })) as Blob
       const url = URL.createObjectURL(blob)
