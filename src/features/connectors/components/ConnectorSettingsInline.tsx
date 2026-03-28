@@ -7,22 +7,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import {
-  Button,
-  Checkbox,
-  Spinner,
-  ScrollShadow,
-  Switch,
-  Divider,
-  Accordion,
-  AccordionItem,
-  Chip,
-  Card,
-  CardBody,
-  RadioGroup,
-  Textarea,
-  Avatar,
-} from '@heroui/react'
+import { Button, Checkbox, Spinner, ScrollShadow, Switch, Separator, Accordion, Chip, Card, RadioGroup, TextArea, Avatar } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { useConnectorStore } from '../stores'
@@ -373,7 +358,7 @@ export function ConnectorSettingsInline({
         {/* Account Info */}
         {connector.accountEmail && (
           <Card shadow="none" className="bg-default-100">
-            <CardBody className="flex-row items-center gap-3">
+            <Card.Content className="flex-row items-center gap-3">
               {connector.accountPicture ? (
                 <Avatar src={connector.accountPicture} size="sm" />
               ) : (
@@ -388,16 +373,16 @@ export function ConnectorSettingsInline({
                 </p>
               </div>
               {connector.status === 'connected' && (
-                <Chip size="sm" color="success" variant="flat">
+                <Chip size="sm" color="success" variant="soft">
                   {t('Connected')}
                 </Chip>
               )}
               {connector.status === 'expired' && (
-                <Chip size="sm" color="danger" variant="flat">
+                <Chip size="sm" color="danger" variant="soft">
                   {t('Expired')}
                 </Chip>
               )}
-            </CardBody>
+            </Card.Content>
           </Card>
         )}
 
@@ -409,8 +394,8 @@ export function ConnectorSettingsInline({
 
             return (
               <Accordion variant="light" className="px-0" isCompact>
-                <AccordionItem
-                  key="tools"
+                <Accordion.Item
+                  id="tools"
                   aria-label={t('Agent Tools')}
                   title={
                     <div className="flex items-center gap-2">
@@ -445,12 +430,12 @@ export function ConnectorSettingsInline({
                       </div>
                     ))}
                   </div>
-                </AccordionItem>
+                </Accordion.Item>
               </Accordion>
             )
           })()}
 
-        <Divider />
+        <Separator />
 
         {/* Sync Settings */}
         <Accordion
@@ -458,8 +443,8 @@ export function ConnectorSettingsInline({
           className="px-0"
           defaultExpandedKeys={syncEnabled ? ['sync'] : []}
         >
-          <AccordionItem
-            key="sync"
+          <Accordion.Item
+            id="sync"
             aria-label={t('Knowledge Base Sync')}
             title={
               <div className="flex items-center gap-2">
@@ -473,7 +458,7 @@ export function ConnectorSettingsInline({
                 </span>
                 <Chip
                   size="sm"
-                  variant="flat"
+                  variant="soft"
                   color={syncEnabled ? 'success' : 'default'}
                 >
                   {syncEnabled ? t('Enabled') : t('Disabled')}
@@ -511,7 +496,7 @@ export function ConnectorSettingsInline({
                     <p className="text-sm font-medium">{t('Sync Settings')}</p>
                     {isUrlInputMode
                       ? parsedUrls.length > 0 && (
-                          <Chip size="sm" variant="flat" color="primary">
+                          <Chip size="sm" variant="soft" color="accent">
                             {t('{n} items to sync', {
                               n: parsedUrls.length,
                             })}
@@ -519,7 +504,7 @@ export function ConnectorSettingsInline({
                         )
                       : !syncAll &&
                         selectedIds.size > 0 && (
-                          <Chip size="sm" variant="flat" color="primary">
+                          <Chip size="sm" variant="soft" color="accent">
                             {t('{n} folders selected', {
                               n: selectedIds.size,
                             })}
@@ -534,7 +519,7 @@ export function ConnectorSettingsInline({
                           name: config?.name || provider,
                         })}
                       </p>
-                      <Textarea
+                      <TextArea
                         value={urlInput}
                         onValueChange={setUrlInput}
                         placeholder={
@@ -582,7 +567,7 @@ export function ConnectorSettingsInline({
 
                       {!syncAll && (
                         <Card shadow="none" className="bg-default-50">
-                          <CardBody className="p-3">
+                          <Card.Content className="p-3">
                             <ScrollShadow className="max-h-48">
                               {isLoading ? (
                                 <div className="flex flex-col items-center justify-center py-6 gap-2">
@@ -641,7 +626,7 @@ export function ConnectorSettingsInline({
                               !error &&
                               selectedFolderNames.length > 0 && (
                                 <>
-                                  <Divider className="my-3" />
+                                  <Separator className="my-3" />
                                   <div className="flex flex-wrap gap-1">
                                     {selectedFolderNames
                                       .slice(0, 5)
@@ -649,20 +634,20 @@ export function ConnectorSettingsInline({
                                         <Chip
                                           key={name}
                                           size="sm"
-                                          variant="flat"
+                                          variant="soft"
                                         >
                                           {name}
                                         </Chip>
                                       ))}
                                     {selectedFolderNames.length > 5 && (
-                                      <Chip size="sm" variant="flat">
+                                      <Chip size="sm" variant="soft">
                                         +{selectedFolderNames.length - 5}
                                       </Chip>
                                     )}
                                   </div>
                                 </>
                               )}
-                          </CardBody>
+                          </Card.Content>
                         </Card>
                       )}
                     </>
@@ -670,17 +655,17 @@ export function ConnectorSettingsInline({
                 </div>
               )}
             </div>
-          </AccordionItem>
+          </Accordion.Item>
         </Accordion>
 
         {/* Disconnect Section */}
         {onDisconnect && (
           <>
-            <Divider />
+            <Separator />
             <div className="space-y-3">
               {!showDisconnectConfirm ? (
                 <Button
-                  variant="light"
+                  variant="ghost"
                   color="danger"
                   className="w-full"
                   startContent={<Icon name="Xmark" className="w-4 h-4" />}
@@ -693,7 +678,7 @@ export function ConnectorSettingsInline({
                   shadow="none"
                   className="bg-danger-50 dark:bg-danger-900/20"
                 >
-                  <CardBody className="p-4 space-y-3">
+                  <Card.Content className="p-4 space-y-3">
                     <p className="text-sm text-danger">
                       {t(
                         'Are you sure you want to disconnect this service? This will remove all synced data.',
@@ -702,7 +687,7 @@ export function ConnectorSettingsInline({
                     <div className="flex gap-2">
                       <Button
                         size="sm"
-                        variant="flat"
+                        variant="secondary"
                         onPress={() => setShowDisconnectConfirm(false)}
                       >
                         {t('Cancel')}
@@ -715,7 +700,7 @@ export function ConnectorSettingsInline({
                         {t('Disconnect')}
                       </Button>
                     </div>
-                  </CardBody>
+                  </Card.Content>
                 </Card>
               )}
             </div>
@@ -725,7 +710,7 @@ export function ConnectorSettingsInline({
 
       {/* Footer */}
       <div className="flex justify-end gap-2 pt-4 border-t border-default-200 mt-4">
-        <Button variant="flat" size="sm" onPress={onClose}>
+        <Button variant="secondary" size="sm" onPress={onClose}>
           {t('Close')}
         </Button>
         <Button

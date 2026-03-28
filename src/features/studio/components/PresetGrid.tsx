@@ -4,16 +4,7 @@
  * Full grid view of all available presets for browsing and selection.
  */
 
-import {
-  Button,
-  Card,
-  CardBody,
-  CardFooter,
-  Input,
-  Chip,
-  Tabs,
-  Tab,
-} from '@heroui/react'
+import { Button, Card, Input, Chip, Tabs, Tab } from '@heroui/react'
 import { useState, useMemo } from 'react'
 
 import { Icon } from '@/components/Icon'
@@ -249,18 +240,17 @@ function PresetCard({
 
   return (
     <Card
-      isPressable
       isHoverable
       className={`transition-all ${isActive ? 'ring-2 ring-primary' : ''}`}
       onPress={onSelect}
     >
-      <CardBody className="p-3">
+      <Card.Content className="p-3">
         <div className="flex items-start justify-between">
           <span className="text-2xl">{preset.icon || '🎨'}</span>
           {onDelete && (
             <Button
               isIconOnly
-              variant="light"
+              variant="ghost"
               size="sm"
               className="opacity-0 group-hover:opacity-100 -mt-1 -mr-1"
               onPress={() => {
@@ -277,16 +267,16 @@ function PresetCard({
             {preset.description}
           </p>
         )}
-      </CardBody>
-      <CardFooter className="pt-0 px-3 pb-3">
+      </Card.Content>
+      <Card.Footer className="pt-0 px-3 pb-3">
         <div className="flex flex-wrap gap-1">
           {settingsPreview.map((setting, idx) => (
-            <Chip key={idx} size="sm" variant="flat" className="text-[10px]">
+            <Chip key={idx} size="sm" variant="soft" className="text-[10px]">
               {setting}
             </Chip>
           ))}
         </div>
-      </CardFooter>
+      </Card.Footer>
     </Card>
   )
 }

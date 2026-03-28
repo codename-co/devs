@@ -1,13 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  Button,
-  Card,
-  CardBody,
-  Chip,
-  Pagination,
-  Spinner,
-} from '@heroui/react'
+import { Button, Card, Chip, Pagination, Spinner } from '@heroui/react'
 
 import { loadAllMethodologies } from '@/stores/methodologiesStore'
 import DefaultLayout from '@/layouts/Default'
@@ -105,7 +98,7 @@ export function MethodologiesPage() {
             </div>
           ) : methodologies.length === 0 ? (
             <Card>
-              <CardBody className="text-center py-12">
+              <Card.Content className="text-center py-12">
                 <p className="text-lg text-default-500">
                   No methodologies found
                 </p>
@@ -116,7 +109,7 @@ export function MethodologiesPage() {
                 >
                   Create New Methodology
                 </Button>
-              </CardBody>
+              </Card.Content>
             </Card>
           ) : (
             <>
@@ -124,7 +117,6 @@ export function MethodologiesPage() {
                 {paginatedMethodologies.map((methodology) => (
                   <Card
                     key={methodology.metadata.id}
-                    isPressable
                     isHoverable
                     shadow="none"
                     className="transition-transform w-full"
@@ -132,7 +124,7 @@ export function MethodologiesPage() {
                       handleSelectMethodology(methodology.metadata.id)
                     }
                   >
-                    <CardBody className="py-4">
+                    <Card.Content className="py-4">
                       <div className="flex items-center justify-between gap-4">
                         <Widget
                           type="diagram"
@@ -168,7 +160,7 @@ export function MethodologiesPage() {
                               ) : null}
                             </h3>
                             <div className="hidden sm:flex items-center gap-2 mb-1">
-                              <Chip size="sm" variant="flat">
+                              <Chip size="sm" variant="soft">
                                 {methodology.metadata.type}
                               </Chip>
                               {methodology.metadata.complexity && (
@@ -177,7 +169,7 @@ export function MethodologiesPage() {
                                   color={getComplexityColor(
                                     methodology.metadata.complexity,
                                   )}
-                                  variant="flat"
+                                  variant="soft"
                                 >
                                   {methodology.metadata.complexity}
                                 </Chip>
@@ -198,7 +190,7 @@ export function MethodologiesPage() {
                                   <Chip
                                     key={tag}
                                     size="sm"
-                                    variant="dot"
+                                    variant="soft"
                                     className="text-xs"
                                   >
                                     {tag}
@@ -207,7 +199,7 @@ export function MethodologiesPage() {
                               {methodology.metadata.tags.length > 3 && (
                                 <Chip
                                   size="sm"
-                                  variant="dot"
+                                  variant="soft"
                                   className="text-xs"
                                 >
                                   +{methodology.metadata.tags.length - 3} more
@@ -225,7 +217,7 @@ export function MethodologiesPage() {
                           </span>
                         </div>
                       </div>
-                    </CardBody>
+                    </Card.Content>
                   </Card>
                 ))}
               </div>

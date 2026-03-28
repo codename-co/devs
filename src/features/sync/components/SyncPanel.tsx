@@ -5,7 +5,7 @@
  * Displays sync status, room sharing, and connection options.
  * This is the main sync UI - no separate settings page needed.
  */
-import { Alert, Button, Chip, Input, Snippet } from '@heroui/react'
+import { Alert, Button, Chip, Input } from '@heroui/react'
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 
 import { useSyncStore } from '../stores/syncStore'
@@ -301,7 +301,7 @@ export function SyncPanel(_props: SyncPanelProps) {
         <Button
           fullWidth
           color="primary"
-          variant="flat"
+          variant="secondary"
           size="sm"
           onPress={handleStartSync}
           isLoading={isEnabling}
@@ -315,7 +315,7 @@ export function SyncPanel(_props: SyncPanelProps) {
       {/* Join button - directly starts QR scanning */}
       <Button
         fullWidth
-        variant="bordered"
+        variant="outline"
         size="sm"
         onPress={startScanner}
         startContent={<Icon name="QrCode" />}
@@ -331,7 +331,7 @@ export function SyncPanel(_props: SyncPanelProps) {
       {/* Back button */}
       <Button
         size="sm"
-        variant="light"
+        variant="ghost"
         onPress={stopScanner}
         startContent={<Icon name="ArrowLeft" className="h-4 w-4" />}
         className="self-start -ms-2 -mt-1"
@@ -345,14 +345,14 @@ export function SyncPanel(_props: SyncPanelProps) {
         {scannerError ? (
           <Alert
             color="danger"
-            variant="flat"
+            status="flat"
             icon={<Icon name="VideoCameraOff" />}
             title={t('Camera access denied')}
             // endContent={
             //   <Button
             //     isIconOnly
             //     size="sm"
-            //     variant="flat"
+            //     variant="secondary"
             //     onPress={startScanner}
             //   >
             //     <Icon name="Refresh" aria-label={t('Try Again')} />
@@ -365,7 +365,7 @@ export function SyncPanel(_props: SyncPanelProps) {
           // <div className="flex flex-col items-center gap-2 p-3 bg-danger-50 rounded-lg">
           //   <Icon name="WarningTriangle" className="h-6 w-6 text-danger" />
           //   <p className="text-xs text-danger text-center">{scannerError}</p>
-          //   <Button size="sm" variant="flat" onPress={startScanner}>
+          //   <Button size="sm" variant="secondary" onPress={startScanner}>
           //     {t('Try Again')}
           //   </Button>
           // </div>
@@ -390,7 +390,7 @@ export function SyncPanel(_props: SyncPanelProps) {
       {/* Back button */}
       <Button
         size="sm"
-        variant="light"
+        variant="ghost"
         onPress={() => {
           setPendingJoinCode(null)
           setJoinPassword('')
@@ -437,7 +437,7 @@ export function SyncPanel(_props: SyncPanelProps) {
 
       <Button
         color="primary"
-        variant="flat"
+        variant="secondary"
         size="sm"
         isLoading={isEnabling}
         isDisabled={!joinPassword.trim()}
@@ -457,19 +457,11 @@ export function SyncPanel(_props: SyncPanelProps) {
           <span className="text-xs text-default-500">
             {t('Share this code or link with other devices:')}
           </span>
-          <Snippet
-            symbol=""
-            size="sm"
-            variant="bordered"
-            copyIcon={<Icon name="Copy" />}
-            tooltipProps={{ content: t('Copy to clipboard') }}
-            classNames={{
-              base: 'bg-default-50 border-default-200 w-full',
-              pre: 'whitespace-pre-wrap break-all max-h-8 overflow-y-hidden',
-            }}
-          >
-            {syncUrl}
-          </Snippet>
+          <pre className="bg-default-50 border border-default-200 w-full rounded-lg p-2">
+            <code className="whitespace-pre-wrap break-all max-h-8 overflow-y-hidden block text-sm">
+              {syncUrl}
+            </code>
+          </pre>
         </div>
       )}
 
@@ -503,7 +495,7 @@ export function SyncPanel(_props: SyncPanelProps) {
         <div className="flex items-center gap-2">
           <Chip
             size="sm"
-            variant="flat"
+            variant="soft"
             color={getStatusColor()}
             onClose={enabled ? disableSync : undefined}
           >

@@ -7,26 +7,11 @@
 
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  Button,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  useDisclosure,
-  Drawer,
-  DrawerContent,
-  DrawerBody,
-  Input,
-  addToast,
-  Chip,
-} from '@heroui/react'
+import { Button, Modal, useOverlayState, Drawer, DrawerContent, DrawerBody, Input, toast, Chip } from '@heroui/react'
 
 import { Container, Filter, Icon, Section, Title } from '@/components'
 import DefaultLayout from '@/layouts/Default'
 import { useI18n, useUrl } from '@/i18n'
-import { motion } from 'framer-motion'
 import {
   createTransition,
   fadeInUp,
@@ -103,7 +88,7 @@ export function StudioPage() {
           currentSettings,
           response.images,
         )
-        addToast({
+        toast({
           title: t('Image generated successfully'),
           color: 'success',
         })
@@ -117,7 +102,7 @@ export function StudioPage() {
       setReferenceImages([])
     },
     onGenerationError: () => {
-      addToast({
+      toast({
         title: t('Failed to generate image'),
         description: imageError || undefined,
         color: 'danger',
@@ -146,7 +131,7 @@ export function StudioPage() {
           videoSettings,
           response.videos,
         )
-        addToast({
+        toast({
           title: t('Video generated successfully'),
           color: 'success',
         })
@@ -159,7 +144,7 @@ export function StudioPage() {
       setReferenceImages([])
     },
     onGenerationError: () => {
-      addToast({
+      toast({
         title: t('Failed to generate video'),
         description: videoError || undefined,
         color: 'danger',
@@ -483,21 +468,9 @@ export function StudioPage() {
   )
 
   // Modal states
-  const {
-    isOpen: isPresetsOpen,
-    onOpen: onOpenPresets,
-    onClose: onClosePresets,
-  } = useDisclosure()
-  const {
-    isOpen: isSettingsOpen,
-    onOpen: onOpenSettings,
-    onClose: onCloseSettings,
-  } = useDisclosure()
-  const {
-    isOpen: isSavePresetOpen,
-    onOpen: onOpenSavePreset,
-    onClose: onCloseSavePreset,
-  } = useDisclosure()
+  const { isOpen: isPresetsOpen, open: onOpenPresets, close: onClosePresets } = useOverlayState()
+  const { isOpen: isSettingsOpen, open: onOpenSettings, close: onCloseSettings } = useOverlayState()
+  const { isOpen: isSavePresetOpen, open: onOpenSavePreset, close: onCloseSavePreset } = useOverlayState()
 
   // Get API key from stored credentials using selected provider
   const getProviderConfig = useCallback(async () => {
@@ -544,7 +517,7 @@ export function StudioPage() {
         // Video generation
         const config = await getVideoProviderConfig()
         if (!config) {
-          addToast({
+          toast({
             title: t(
               'Configure your video provider in Settings to get started',
             ),
@@ -553,7 +526,7 @@ export function StudioPage() {
               <Button
                 size="sm"
                 color="warning"
-                variant="flat"
+                variant="secondary"
                 onPress={() => navigate(url('/#settings/providers'))}
               >
                 {t('Go to Settings')}
@@ -605,7 +578,7 @@ export function StudioPage() {
         // Image generation
         const config = await getProviderConfig()
         if (!config) {
-          addToast({
+          toast({
             title: t(
               'Configure your image provider in Settings to get started',
             ),
@@ -614,7 +587,7 @@ export function StudioPage() {
               <Button
                 size="sm"
                 color="warning"
-                variant="flat"
+                variant="secondary"
                 onPress={() => navigate(url('/#settings/providers'))}
               >
                 {t('Go to Settings')}
@@ -697,7 +670,7 @@ export function StudioPage() {
     setSavePresetDescription('')
     onCloseSavePreset()
 
-    addToast({
+    toast({
       title: t('Preset saved'),
       color: 'success',
     })
@@ -755,7 +728,7 @@ export function StudioPage() {
       await removeVideo(deleteConfirm.entryId, deleteConfirm.mediaId)
     }
 
-    addToast({
+    toast({
       title: t('Media deleted'),
       color: 'success',
     })
@@ -775,21 +748,12 @@ export function StudioPage() {
       <Section className="min-h-screen relative">
         <Container className="py-6 md:py-10 max-w-5xl relative z-10">
           {/* Hero section with prompt */}
-          <motion.div
+          <div
             className="text-center mb-8"
             {...fadeInUp(20)}
-            transition={createTransition(0, {
-              ...SPRING_CONFIG,
-              duration: 0.8,
-            })}
           >
-            <motion.div
+            <div
               {...scaleIn}
-              transition={createTransition(0.1, {
-                type: 'spring',
-                damping: 20,
-                stiffness: 100,
-              })}
             >
               <Title
                 subtitle={
@@ -814,13 +778,12 @@ export function StudioPage() {
                 />
                 {t('Studio')}
               </Title>
-            </motion.div>
+            </div>
 
             {/* Media type toggle */}
-            <motion.div
+            <div
               className="flex justify-center mt-4"
               {...fadeInUp(10)}
-              transition={createTransition(0.15, { duration: 0.5 })}
             >
               <div className="flex gap-2 p-1 bg-default-100 rounded-xl">
                 <Button
@@ -842,14 +805,13 @@ export function StudioPage() {
                   {t('Video')}
                 </Button>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
           {/* Centered prompt area - the star of the show */}
-          <motion.div
+          <div
             className="mb-10"
             {...fadeInUp(30)}
-            transition={createTransition(0.3, { duration: 0.7 })}
           >
             <ImagePromptArea
               lang={lang}
@@ -874,20 +836,19 @@ export function StudioPage() {
               availableVideoProviders={availableVideoProviders}
               onVideoModelChange={handleVideoModelChange}
             />
-          </motion.div>
+          </div>
 
           {/* History section header with title and filter */}
           {(totalMediaCount > 0 || streamingImages.length > 0) && (
-            <motion.div
+            <div
               className="flex items-center justify-between mb-6"
               {...fadeInUp(30)}
-              transition={createTransition(0.4, { duration: 0.7 })}
             >
               <div className="flex items-center gap-3">
                 <h2 className="text-lg font-semibold">
                   {t('Generated media')}
                 </h2>
-                <Chip size="sm" variant="flat">
+                <Chip size="sm" variant="soft">
                   {totalMediaCount}
                 </Chip>
               </div>
@@ -922,14 +883,13 @@ export function StudioPage() {
                 }
                 showCounts="all"
               />
-            </motion.div>
+            </div>
           )}
 
           {/* Gallery content - unified media gallery */}
-          <motion.div
+          <div
             className="min-h-[300px]"
             {...fadeInUp(30)}
-            transition={createTransition(0.5, { duration: 0.7 })}
           >
             {/* Video Generation Progress */}
             {isGeneratingVideo && (
@@ -1129,19 +1089,19 @@ export function StudioPage() {
                     )}
               </div>
             )}
-          </motion.div>
+          </div>
         </Container>
       </Section>
       {/* Presets Modal */}
       <Modal
         isOpen={isPresetsOpen}
-        onClose={onClosePresets}
+        onOpenChange={(v) => !v && (onClosePresets)()}
         size="4xl"
         scrollBehavior="inside"
       >
-        <ModalContent>
-          <ModalHeader>{t('Image Presets')}</ModalHeader>
-          <ModalBody className="pb-6">
+        <Modal.Dialog>
+          <Modal.Header>{t('Image Presets')}</Modal.Header>
+          <Modal.Body className="pb-6">
             <PresetGrid
               lang={lang}
               presets={presets}
@@ -1150,8 +1110,8 @@ export function StudioPage() {
               onSelectPreset={handlePresetSelect}
               onDeletePreset={deletePreset}
             />
-          </ModalBody>
-        </ModalContent>
+          </Modal.Body>
+        </Modal.Dialog>
       </Modal>
       {/* Settings Drawer */}
       <Drawer
@@ -1174,10 +1134,10 @@ export function StudioPage() {
         </DrawerContent>
       </Drawer>
       {/* Save Preset Modal */}
-      <Modal isOpen={isSavePresetOpen} onClose={onCloseSavePreset} size="md">
-        <ModalContent>
-          <ModalHeader>{t('Save Preset')}</ModalHeader>
-          <ModalBody className="pb-6">
+      <Modal isOpen={isSavePresetOpen} onOpenChange={(v) => !v && (onCloseSavePreset)()} size="md">
+        <Modal.Dialog>
+          <Modal.Header>{t('Save Preset')}</Modal.Header>
+          <Modal.Body className="pb-6">
             <div className="space-y-4">
               <Input
                 label={t('Preset name')}
@@ -1193,7 +1153,7 @@ export function StudioPage() {
                 onValueChange={setSavePresetDescription}
               />
               <div className="flex justify-end gap-2">
-                <Button variant="flat" onPress={onCloseSavePreset}>
+                <Button variant="secondary" onPress={onCloseSavePreset}>
                   {t('Cancel')}
                 </Button>
                 <Button
@@ -1205,37 +1165,37 @@ export function StudioPage() {
                 </Button>
               </div>
             </div>
-          </ModalBody>
-        </ModalContent>
+          </Modal.Body>
+        </Modal.Dialog>
       </Modal>
 
       {/* Delete Confirmation Modal */}
       <Modal
         isOpen={deleteConfirm?.isOpen ?? false}
-        onClose={handleCancelDelete}
+        onOpenChange={(v) => !v && (handleCancelDelete)()}
         size="sm"
       >
-        <ModalContent>
-          <ModalHeader className="flex items-center gap-2">
+        <Modal.Dialog>
+          <Modal.Header className="flex items-center gap-2">
             <Icon name="Trash" size="md" className="text-danger" />
             {t('Delete media')}
-          </ModalHeader>
-          <ModalBody>
+          </Modal.Header>
+          <Modal.Body>
             <p className="text-default-600">
               {t(
                 'Are you sure you want to permanently delete this media? This action cannot be undone.',
               )}
             </p>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="flat" onPress={handleCancelDelete}>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onPress={handleCancelDelete}>
               {t('Cancel')}
             </Button>
             <Button color="danger" onPress={handleConfirmDelete}>
               {t('Delete')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
     </DefaultLayout>
   )

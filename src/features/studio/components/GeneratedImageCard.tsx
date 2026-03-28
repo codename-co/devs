@@ -4,22 +4,7 @@
  * Card displaying a single generated image with actions.
  */
 
-import {
-  Button,
-  Card,
-  CardBody,
-  CardFooter,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  Tooltip,
-  Image,
-  Modal,
-  ModalContent,
-  ModalBody,
-  useDisclosure,
-} from '@heroui/react'
+import { Button, Card, Dropdown, Tooltip, Modal, useOverlayState } from '@heroui/react'
 import { useState, useCallback } from 'react'
 
 import { Icon } from '@/components/Icon'
@@ -59,7 +44,7 @@ export function GeneratedImageCard({
   onPreview,
 }: GeneratedImageCardProps) {
   const { t } = useI18n(lang as any)
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const { isOpen, open: onOpen, close: onClose } = useOverlayState()
   const [isLoading, setIsLoading] = useState(true)
 
   const handleImageLoad = useCallback(() => {
@@ -87,7 +72,7 @@ export function GeneratedImageCard({
           isSelected ? 'ring-2 ring-primary' : ''
         }`}
       >
-        <CardBody className="p-0 overflow-hidden">
+        <Card.Content className="p-0 overflow-hidden">
           {/* Image - click to preview fullscreen */}
           <div
             className="relative aspect-square cursor-pointer"
@@ -102,16 +87,11 @@ export function GeneratedImageCard({
                 />
               </div>
             )}
-            <Image
+            <img
               src={imageUrl}
               alt="Generated image"
               className="w-full h-full object-cover"
-              classNames={{
-                wrapper: 'w-full h-full !max-w-full',
-                img: 'w-full h-full object-cover',
-              }}
               onLoad={handleImageLoad}
-              radius="none"
               loading="lazy"
             />
 
@@ -122,7 +102,7 @@ export function GeneratedImageCard({
                   <Button
                     isIconOnly
                     size="sm"
-                    variant="flat"
+                    variant="secondary"
                     className="bg-white/20 backdrop-blur-sm"
                     onPress={onPreview || onOpen}
                   >
@@ -135,7 +115,7 @@ export function GeneratedImageCard({
                     <Button
                       isIconOnly
                       size="sm"
-                      variant="flat"
+                      variant="secondary"
                       className="bg-white/20 backdrop-blur-sm"
                       onPress={onDownload}
                     >
@@ -149,7 +129,7 @@ export function GeneratedImageCard({
                     <Button
                       isIconOnly
                       size="sm"
-                      variant="flat"
+                      variant="secondary"
                       className="bg-white/20 backdrop-blur-sm hover:bg-danger/50"
                       onPress={onDelete}
                     >
@@ -169,7 +149,7 @@ export function GeneratedImageCard({
                   <Button
                     isIconOnly
                     size="sm"
-                    variant="flat"
+                    variant="secondary"
                     className="bg-black/30 backdrop-blur-sm min-w-8 w-8 h-8"
                     onPress={onFavorite}
                   >
@@ -194,10 +174,10 @@ export function GeneratedImageCard({
               </div>
             )}
           </div>
-        </CardBody>
+        </Card.Content>
 
         {showActions && (
-          <CardFooter className="p-2 justify-between gap-2">
+          <Card.Footer className="p-2 justify-between gap-2">
             {/* Prompt */}
             <span
               className="text-xs text-default-500 line-clamp-2 flex-1"
@@ -208,12 +188,12 @@ export function GeneratedImageCard({
 
             {/* More actions dropdown */}
             <Dropdown>
-              <DropdownTrigger>
-                <Button isIconOnly size="sm" variant="light">
+              <Dropdown.Trigger>
+                <Button isIconOnly size="sm" variant="ghost">
                   <Icon name="MoreHoriz" size="sm" />
                 </Button>
-              </DropdownTrigger>
-              <DropdownMenu
+              </Dropdown.Trigger>
+              <Dropdown.Menu
                 aria-label="Image actions"
                 onAction={(key) => {
                   if (key === 'download') onDownload?.()
@@ -222,39 +202,35 @@ export function GeneratedImageCard({
                   if (key === 'delete') onDelete?.()
                 }}
               >
-                <DropdownItem
-                  key="download"
-                  startContent={<Icon name="Download" size="sm" />}
+                <Dropdown.Item
+                  id="download"
                 >
                   {t('Download')}
-                </DropdownItem>
-                <DropdownItem
-                  key="copy-prompt"
-                  startContent={<Icon name="Copy" size="sm" />}
+                </Dropdown.Item>
+                <Dropdown.Item
+                  id="copy-prompt"
                   className={
                     !onCopyPrompt || !image.revisedPrompt ? 'hidden' : ''
                   }
                 >
                   {t('Copy revised prompt')}
-                </DropdownItem>
-                <DropdownItem
-                  key="reference"
-                  startContent={<Icon name="MediaImage" size="sm" />}
+                </Dropdown.Item>
+                <Dropdown.Item
+                  id="reference"
                   className={!onUseAsReference ? 'hidden' : ''}
                 >
                   {t('Use as reference')}
-                </DropdownItem>
-                <DropdownItem
-                  key="delete"
-                  startContent={<Icon name="Trash" size="sm" />}
+                </Dropdown.Item>
+                <Dropdown.Item
+                  id="delete"
                   color="danger"
                   className={!onDelete ? 'hidden text-danger' : 'text-danger'}
                 >
                   {t('Delete')}
-                </DropdownItem>
-              </DropdownMenu>
+                </Dropdown.Item>
+              </Dropdown.Menu>
             </Dropdown>
-          </CardFooter>
+          </Card.Footer>
         )}
       </Card>
 
@@ -262,15 +238,15 @@ export function GeneratedImageCard({
       {!onPreview && (
         <Modal
           isOpen={isOpen}
-          onClose={onClose}
+          onOpenChange={(v) => !v && (onClose)()}
           size="full"
           classNames={{
             body: 'p-0',
             closeButton: 'z-50 bg-white/20 backdrop-blur-sm hover:bg-white/40',
           }}
         >
-          <ModalContent>
-            <ModalBody className="flex items-center justify-center bg-black/90 min-h-screen">
+          <Modal.Dialog>
+            <Modal.Body className="flex items-center justify-center bg-black/90 min-h-screen">
               <img
                 src={imageUrl}
                 alt="Generated image full size"
@@ -282,7 +258,7 @@ export function GeneratedImageCard({
                 {onDownload && (
                   <Button
                     size="sm"
-                    variant="flat"
+                    variant="secondary"
                     className="text-white"
                     startContent={<Icon name="Download" size="sm" />}
                     onPress={onDownload}
@@ -293,7 +269,7 @@ export function GeneratedImageCard({
                 {onUseAsReference && (
                   <Button
                     size="sm"
-                    variant="flat"
+                    variant="secondary"
                     className="text-white"
                     startContent={<Icon name="MediaImage" size="sm" />}
                     onPress={onUseAsReference}
@@ -311,8 +287,8 @@ export function GeneratedImageCard({
                   </p>
                 </div>
               )}
-            </ModalBody>
-          </ModalContent>
+            </Modal.Body>
+          </Modal.Dialog>
         </Modal>
       )}
     </>

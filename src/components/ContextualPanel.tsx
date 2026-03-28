@@ -1,11 +1,5 @@
 import React, { useState, useEffect, memo } from 'react'
-import {
-  Accordion,
-  AccordionItem,
-  Button,
-  ScrollShadow,
-  Tooltip,
-} from '@heroui/react'
+import { Accordion, Button, ScrollShadow, Tooltip } from '@heroui/react'
 import clsx from 'clsx'
 
 import { Icon } from './Icon'
@@ -102,7 +96,7 @@ ContextualPanel.displayName = 'ContextualPanel'
 //           <Button
 //             data-testid="panel-expand-button"
 //             isIconOnly
-//             variant="light"
+//             variant="ghost"
 //             onPress={toggleCollapsed}
 //             className="md:me-4 backdrop-blur-xs backdrop-brightness-120 pointer-events-auto"
 //             aria-label={t('Expand sidebar')}
@@ -157,7 +151,7 @@ const ExpandedPanel = ({ className }: { className?: string }) => {
               <Button
                 data-testid="panel-collapse-button"
                 isIconOnly
-                variant="light"
+                variant="ghost"
                 size="sm"
                 onPress={toggleCollapsed}
                 aria-label={t('Collapse sidebar')}
@@ -188,8 +182,8 @@ const ExpandedPanel = ({ className }: { className?: string }) => {
           {blocks.map((block) => {
             const isExpanded = expandedKeys.has(block.id)
             return (
-              <AccordionItem
-                key={block.id}
+              <Accordion.Item
+                id={block.id}
                 aria-label={block.title}
                 title={
                   <div className="flex items-center gap-2 flex-1">
@@ -213,7 +207,7 @@ const ExpandedPanel = ({ className }: { className?: string }) => {
               >
                 <div className="mb-2" />
                 {block.content}
-              </AccordionItem>
+              </Accordion.Item>
             )
           })}
         </Accordion>
@@ -247,9 +241,9 @@ export const ContextualPanelSection: React.FC<ContextualPanelSectionProps> = ({
         content: 'px-2 pb-3 pt-0',
       }}
     >
-      <AccordionItem key="section" aria-label={title} title={title}>
+      <Accordion.Item id="section" aria-label={title} title={title}>
         {children}
-      </AccordionItem>
+      </Accordion.Item>
     </Accordion>
   )
 }

@@ -1,4 +1,3 @@
-import type { MotionProps } from 'framer-motion'
 import {
   createTransition,
   fadeInUp,

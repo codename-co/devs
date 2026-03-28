@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Progress, Spinner } from '@heroui/react'
+import { ProgressBar, Spinner } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
 import { Icon } from '@/components'
@@ -160,7 +160,7 @@ export function TaskTurn({ turn, session }: TaskTurnProps) {
           <span className="text-sm">{t('Orchestrating task…')}</span>
         </div>
         {task && task.steps.length > 0 && (
-          <Progress
+          <ProgressBar
             size="sm"
             value={
               (task.steps.filter((s) => s.status === 'completed').length /

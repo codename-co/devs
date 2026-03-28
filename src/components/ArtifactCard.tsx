@@ -1,5 +1,5 @@
 import { memo, useCallback } from 'react'
-import { Button, Card, CardBody, Chip } from '@heroui/react'
+import { Button, Card, Chip } from '@heroui/react'
 
 import { Icon, MarkdownRenderer } from '@/components'
 import type { Artifact as ArtifactType } from '@/types'
@@ -43,13 +43,12 @@ export const ArtifactCard = memo(
     if (artifact.format === 'markdown') {
       return (
         <Card
-          isPressable
           fullWidth
           onPress={handleOpen}
           shadow="none"
           className="border border-default-200 bg-default-50 hover:bg-default-100"
         >
-          <CardBody className="flex flex-row items-center gap-2 sm:gap-3 p-2 sm:p-3">
+          <Card.Content className="flex flex-row items-center gap-2 sm:gap-3 p-2 sm:p-3">
             <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-medium bg-default-100 shrink-0">
               <Icon name="Page" size="md" className="text-default-500" />
             </div>
@@ -64,7 +63,7 @@ export const ArtifactCard = memo(
             <Icon name="NavArrowRight" size="md" className="text-default-500" />
             {/* <Button
               size="sm"
-              variant="light"
+              variant="ghost"
               isIconOnly
               aria-label="Download artifact"
               className="shrink-0"
@@ -72,14 +71,14 @@ export const ArtifactCard = memo(
             >
               <Icon name="Download" size="sm" className="text-default-400" />
             </Button> */}
-          </CardBody>
+          </Card.Content>
         </Card>
       )
     }
 
     return (
       <Card className="shadow-sm">
-        <CardBody className="p-2 sm:p-3">
+        <Card.Content className="p-2 sm:p-3">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start w-full mb-2 gap-1 sm:gap-2">
             <div className="flex flex-col items-start min-w-0">
               <span className="font-medium text-xs sm:text-sm max-w-full">
@@ -88,7 +87,7 @@ export const ArtifactCard = memo(
               <div className="flex flex-wrap gap-1 sm:gap-2 mt-1">
                 <Chip
                   size="sm"
-                  variant="flat"
+                  variant="soft"
                   color={statusColor}
                   className="text-tiny"
                 >
@@ -96,7 +95,7 @@ export const ArtifactCard = memo(
                 </Chip>
                 <Chip
                   size="sm"
-                  variant="flat"
+                  variant="soft"
                   color="default"
                   className="text-tiny"
                 >
@@ -110,7 +109,7 @@ export const ArtifactCard = memo(
               </span>
               <Button
                 size="sm"
-                variant="light"
+                variant="ghost"
                 isIconOnly
                 aria-label="Expand artifact"
                 onPress={handleOpen}
@@ -136,7 +135,7 @@ export const ArtifactCard = memo(
             </span>
             <span>v{artifact.version}</span>
           </div>
-        </CardBody>
+        </Card.Content>
       </Card>
     )
   },

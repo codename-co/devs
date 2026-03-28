@@ -10,7 +10,7 @@
  *  - Global system instructions textarea
  */
 
-import { Textarea } from '@heroui/react'
+import { TextArea } from '@heroui/react'
 import { useI18n } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
 import { useHashHighlight } from '@/hooks/useHashHighlight'
@@ -148,7 +148,7 @@ export function FeaturesSection() {
               "These instructions will be prepended to every agent's instructions",
             )}
           </p>
-          <Textarea
+          <TextArea
             placeholder={t(
               'Enter global instructions that apply to all agents...',
             )}

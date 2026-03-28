@@ -1,5 +1,9 @@
 {
   "servers": {
+    "heroui-migration": {
+      "type": "http",
+      "url": "https://migration-mcp.heroui.com"
+    },
     "io.github.upstash/context7": {
       "type": "stdio",
       "command": "npx",

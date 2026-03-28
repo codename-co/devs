@@ -1,14 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from 'react'
-import {
-  Button,
-  ButtonGroup,
-  Modal,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  Pagination,
-  Tooltip,
-} from '@heroui/react'
+import { Button, ButtonGroup, Modal, Pagination, Tooltip } from '@heroui/react'
 import { useI18n } from '@/i18n'
 import localI18n from './i18n'
 import { Slide } from './PresentationSlide'
@@ -153,9 +144,9 @@ export const SlidesRenderer = ({
   return (
     <>
       {/* Fullscreen Modal */}
-      <Modal isOpen={isFullscreen} onClose={exitFullscreen} size="full">
-        <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">
+      <Modal isOpen={isFullscreen} onOpenChange={(v) => !v && (exitFullscreen)()} size="full">
+        <Modal.Dialog>
+          <Modal.Header className="flex flex-col gap-1">
             <div className="flex items-center gap-3">
               <div className="w-full h-full flex items-center justify-center">
                 <div className="relative w-full h-full max-w-none max-h-none">
@@ -167,7 +158,7 @@ export const SlidesRenderer = ({
                     {currentSlide > 0 && (
                       <Button
                         isIconOnly
-                        variant="light"
+                        variant="ghost"
                         className="absolute start-4 top-1/2 -translate-y-1/2 text--black/50 hover:bg-black/70"
                         onPress={goToPrevSlide}
                       >
@@ -178,7 +169,7 @@ export const SlidesRenderer = ({
                     {currentSlide < totalSlides - 1 && (
                       <Button
                         isIconOnly
-                        variant="light"
+                        variant="ghost"
                         className="absolute end-4 top-1/2 -translate-y-1/2 text--black/50 hover:bg-black/70"
                         onPress={goToNextSlide}
                       >
@@ -193,8 +184,8 @@ export const SlidesRenderer = ({
                 </div>
               </div>
             </div>
-          </ModalHeader>
-          <ModalFooter className="absolute bottom-4 self-center">
+          </Modal.Header>
+          <Modal.Footer className="absolute bottom-4 self-center">
             <Pagination
               loop
               isCompact
@@ -204,8 +195,8 @@ export const SlidesRenderer = ({
               total={totalSlides}
               onChange={(i) => goToSlide(i - 1)}
             />
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
 
       <div
@@ -225,7 +216,7 @@ export const SlidesRenderer = ({
                 <Tooltip content={t('Slideshow')}>
                   <Button
                     size="sm"
-                    variant="light"
+                    variant="ghost"
                     color="primary"
                     onPress={enterFullscreen}
                     className="ml-auto"
@@ -237,7 +228,7 @@ export const SlidesRenderer = ({
                   <Tooltip content={t('Export/Print')}>
                     <Button
                       size="sm"
-                      variant="light"
+                      variant="ghost"
                       onPress={onExportPDF}
                       className="ml-auto"
                     >
@@ -325,7 +316,7 @@ export const SlidesRenderer = ({
                   <Tooltip content={t('Slideshow')}>
                     <Button
                       size="sm"
-                      variant="light"
+                      variant="ghost"
                       color="primary"
                       onPress={enterFullscreen}
                       className="ml-auto"
@@ -337,7 +328,7 @@ export const SlidesRenderer = ({
                     <Tooltip content={t('Export/Print')}>
                       <Button
                         size="sm"
-                        variant="light"
+                        variant="ghost"
                         onPress={onExportPDF}
                         className="ml-auto"
                       >

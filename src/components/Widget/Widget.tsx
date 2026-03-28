@@ -1,14 +1,4 @@
-import {
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-  Tooltip,
-} from '@heroui/react'
+import { Button, Card, Dropdown, Tooltip } from '@heroui/react'
 import { IconName } from '@/lib/types'
 import { useI18n } from '@/i18n'
 import { useState, useCallback, Suspense, lazy } from 'react'
@@ -276,14 +266,14 @@ export const Widget = ({
         fullWidth
       >
         {showActions && (
-          <CardHeader className="flex items-center justify-end px-0">
+          <Card.Header className="flex items-center justify-end px-0">
             {showActions && (
               <div className="flex items-center gap-2">
                 {moreActions?.map((action, i) => (
                   <Tooltip key={i} content={action.label}>
                     <Button
                       isIconOnly
-                      variant="light"
+                      variant="ghost"
                       aria-label={action.label}
                       size="sm"
                       onPress={action.onPress}
@@ -295,62 +285,53 @@ export const Widget = ({
                 ))}
 
                 <Dropdown>
-                  <DropdownTrigger>
+                  <Dropdown.Trigger>
                     <Button
                       isIconOnly
-                      variant="light"
+                      variant="ghost"
                       aria-label={t('Hide extended actions')}
                       size="sm"
                       startContent={<Icon name="MoreHoriz" size="sm" />}
                     />
-                  </DropdownTrigger>
+                  </Dropdown.Trigger>
 
-                  <DropdownMenu>
-                    <DropdownItem
-                      key="info"
-                      startContent={<Icon name={getIcon()} size="sm" />}
+                  <Dropdown.Menu>
+                    <Dropdown.Item
+                      id="info"
                       title={title ?? getTitle()}
                       isDisabled
                     />
-                    <DropdownItem
-                      key="render"
-                      startContent={<Icon name="Eye" size="sm" />}
+                    <Dropdown.Item
+                      id="render"
                       title={t('Render')}
                       onPress={() => setViewMode('render')}
                     />
-                    <DropdownItem
-                      key="source"
-                      startContent={<Icon name="Code" size="sm" />}
+                    <Dropdown.Item
+                      id="source"
                       title={t('Code')}
                       onPress={() => setViewMode('source')}
                     />
-                    <DropdownItem
-                      key="download"
-                      startContent={<Icon name="Download" size="sm" />}
+                    <Dropdown.Item
+                      id="download"
                       title={t('Download')}
                       onPress={handleDownload}
                     />
                     <>
                       {moreActions?.map((action, i) => (
-                        <DropdownItem
-                          key={i}
-                          startContent={
-                            action.icon ? (
-                              <Icon name={action.icon} size="sm" />
-                            ) : null
-                          }
+                        <Dropdown.Item
+                          id={i}
                           title={action.label}
                           onPress={action.onPress}
                         />
                       ))}
                     </>
-                  </DropdownMenu>
+                  </Dropdown.Menu>
                 </Dropdown>
               </div>
             )}
-          </CardHeader>
+          </Card.Header>
         )}
-        <CardBody className="p-0">{renderContent()}</CardBody>
+        <Card.Content className="p-0">{renderContent()}</Card.Content>
       </Card>
     </ErrorBoundary>
   )

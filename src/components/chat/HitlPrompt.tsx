@@ -1,5 +1,5 @@
 import { memo, useState, useCallback } from 'react'
-import { Button, Textarea, Chip, Alert } from '@heroui/react'
+import { Button, TextArea, Chip, Alert } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
 import { Icon } from '@/components/Icon'
@@ -89,7 +89,7 @@ export const HitlPrompt = memo(({ request, agent }: HitlPromptProps) => {
               {agent.name}
             </span>
           )}
-          <Chip size="sm" color={statusColor[request.status]} variant="flat">
+          <Chip size="sm" color={statusColor[request.status]} variant="soft">
             {t(
               request.status === 'pending'
                 ? 'Awaiting response'
@@ -100,7 +100,7 @@ export const HitlPrompt = memo(({ request, agent }: HitlPromptProps) => {
                     : 'Dismissed',
             )}
           </Chip>
-          <Chip size="sm" variant="dot" color="warning">
+          <Chip size="sm" variant="soft" color="warning">
             <Icon
               name={typeIcon[request.type] as any}
               size="sm"
@@ -116,7 +116,7 @@ export const HitlPrompt = memo(({ request, agent }: HitlPromptProps) => {
         {/* Question */}
         <Alert
           color="warning"
-          variant="faded"
+          status="faded"
           icon={<Icon name="ChatBubbleQuestionSolid" />}
         >
           <MarkdownRenderer content={request.question} />
@@ -132,7 +132,7 @@ export const HitlPrompt = memo(({ request, agent }: HitlPromptProps) => {
                   key={reply.value}
                   size="sm"
                   color={reply.color ?? 'default'}
-                  variant="flat"
+                  variant="secondary"
                   onPress={() => handleQuickReply(reply.value)}
                 >
                   {reply.label}
@@ -144,7 +144,7 @@ export const HitlPrompt = memo(({ request, agent }: HitlPromptProps) => {
         {/* Text input for custom response */}
         {isPending && (
           <div className="flex gap-2">
-            <Textarea
+            <TextArea
               size="sm"
               minRows={1}
               maxRows={4}
@@ -165,7 +165,7 @@ export const HitlPrompt = memo(({ request, agent }: HitlPromptProps) => {
               </Button>
               <Button
                 size="sm"
-                variant="light"
+                variant="ghost"
                 color="default"
                 onPress={handleDismiss}
               >

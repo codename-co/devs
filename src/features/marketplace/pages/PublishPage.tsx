@@ -1,14 +1,5 @@
 import { useState, useCallback } from 'react'
-import {
-  Card,
-  CardBody,
-  Button,
-  Chip,
-  Tabs,
-  Tab,
-  Input,
-  Textarea,
-} from '@heroui/react'
+import { Card, Button, Chip, Tabs, Tab, Input, TextArea } from '@heroui/react'
 import {
   Upload,
   Check,
@@ -72,7 +63,7 @@ export function PublishPage() {
         <Container>
           {/* Coming Soon Banner */}
           <Card className="mb-8 border border-warning-200 dark:border-warning-800 bg-warning-50 dark:bg-warning-900/20">
-            <CardBody className="py-4">
+            <Card.Content className="py-4">
               <div className="flex items-center gap-3">
                 <WarningTriangle className="w-5 h-5 text-warning-500 flex-shrink-0" />
                 <div>
@@ -85,7 +76,7 @@ export function PublishPage() {
                   </span>
                 </div>
               </div>
-            </CardBody>
+            </Card.Content>
           </Card>
 
           {/* Main Content */}
@@ -93,7 +84,7 @@ export function PublishPage() {
             {/* Left Column - Form */}
             <div className="lg:col-span-2">
               <Card className="border border-default-200 dark:border-default-800">
-                <CardBody className="p-6">
+                <Card.Content className="p-6">
                   <Tabs
                     selectedKey={activeTab}
                     onSelectionChange={(key) =>
@@ -150,7 +141,7 @@ export function PublishPage() {
                           </p>
                           <Button
                             color="primary"
-                            variant="flat"
+                            variant="secondary"
                             startContent={<Folder className="w-4 h-4" />}
                             isDisabled
                           >
@@ -163,19 +154,19 @@ export function PublishPage() {
                       <div className="text-sm text-default-500">
                         <p className="font-medium mb-2">Supported formats:</p>
                         <div className="flex flex-wrap gap-2">
-                          <Chip size="sm" variant="flat">
+                          <Chip size="sm" variant="soft">
                             .agent.yaml
                           </Chip>
-                          <Chip size="sm" variant="flat">
+                          <Chip size="sm" variant="soft">
                             .tool.yaml
                           </Chip>
-                          <Chip size="sm" variant="flat">
+                          <Chip size="sm" variant="soft">
                             .connector.yaml
                           </Chip>
-                          <Chip size="sm" variant="flat">
+                          <Chip size="sm" variant="soft">
                             .app.yaml
                           </Chip>
-                          <Chip size="sm" variant="flat">
+                          <Chip size="sm" variant="soft">
                             .devs
                           </Chip>
                         </div>
@@ -190,7 +181,7 @@ export function PublishPage() {
                         placeholder="My Awesome Extension"
                         isDisabled
                       />
-                      <Textarea
+                      <TextArea
                         label="Description"
                         placeholder="Describe what your extension does..."
                         minRows={3}
@@ -204,7 +195,7 @@ export function PublishPage() {
                           isDisabled
                         />
                       </div>
-                      <Textarea
+                      <TextArea
                         label="Extension Definition (YAML)"
                         placeholder="# Paste your extension YAML here..."
                         minRows={10}
@@ -215,14 +206,14 @@ export function PublishPage() {
                   )}
 
                   <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-default-200">
-                    <Button variant="flat" isDisabled>
+                    <Button variant="secondary" isDisabled>
                       {t('Validate')}
                     </Button>
                     <Button color="primary" isDisabled>
                       {t('Publish')}
                     </Button>
                   </div>
-                </CardBody>
+                </Card.Content>
               </Card>
             </div>
 
@@ -230,7 +221,7 @@ export function PublishPage() {
             <div className="space-y-6">
               {/* Publishing Guidelines */}
               <Card className="border border-default-200 dark:border-default-800">
-                <CardBody className="p-6">
+                <Card.Content className="p-6">
                   <h3 className="font-semibold text-default-900 mb-4">
                     Publishing Guidelines
                   </h3>
@@ -258,18 +249,18 @@ export function PublishPage() {
                       <span>Use semantic versioning (e.g., 1.0.0)</span>
                     </li>
                   </ul>
-                </CardBody>
+                </Card.Content>
               </Card>
 
               {/* Schema Documentation */}
               <Card className="border border-default-200 dark:border-default-800">
-                <CardBody className="p-6">
+                <Card.Content className="p-6">
                   <h3 className="font-semibold text-default-900 mb-4">
                     Schema Documentation
                   </h3>
                   <div className="space-y-2">
                     <Button
-                      variant="flat"
+                      variant="secondary"
                       size="sm"
                       className="w-full justify-start"
                       startContent={<Page className="w-4 h-4" />}
@@ -280,7 +271,7 @@ export function PublishPage() {
                       App Schema
                     </Button>
                     <Button
-                      variant="flat"
+                      variant="secondary"
                       size="sm"
                       className="w-full justify-start"
                       startContent={<Page className="w-4 h-4" />}
@@ -289,7 +280,7 @@ export function PublishPage() {
                       Agent Schema
                     </Button>
                     <Button
-                      variant="flat"
+                      variant="secondary"
                       size="sm"
                       className="w-full justify-start"
                       startContent={<Page className="w-4 h-4" />}
@@ -298,7 +289,7 @@ export function PublishPage() {
                       Connector Schema
                     </Button>
                     <Button
-                      variant="flat"
+                      variant="secondary"
                       size="sm"
                       className="w-full justify-start"
                       startContent={<Page className="w-4 h-4" />}
@@ -307,12 +298,12 @@ export function PublishPage() {
                       Tool Schema
                     </Button>
                   </div>
-                </CardBody>
+                </Card.Content>
               </Card>
 
               {/* My Extensions */}
               <Card className="border border-default-200 dark:border-default-800">
-                <CardBody className="p-6">
+                <Card.Content className="p-6">
                   <h3 className="font-semibold text-default-900 mb-4">
                     {t('My extensions')}
                   </h3>
@@ -320,7 +311,7 @@ export function PublishPage() {
                     {t('No extensions found')}.{' '}
                     {t('Be the first to publish an extension!')}
                   </p>
-                </CardBody>
+                </Card.Content>
               </Card>
             </div>
           </div>

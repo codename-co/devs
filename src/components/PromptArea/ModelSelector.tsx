@@ -1,16 +1,6 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import {
-  Button,
-  Chip,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  DropdownSection,
-  Input,
-  Spinner,
-} from '@heroui/react'
+import { Button, Chip, Dropdown, Input, Spinner } from '@heroui/react'
 
 import { Icon } from '../Icon'
 import { useModelPicker } from './useModelPicker'
@@ -575,7 +565,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
                   <Chip
                     size="sm"
                     color="success"
-                    variant="flat"
+                    variant="soft"
                     classNames={{
                       base: 'h-4 px-1',
                       content: 'text-[10px] px-0',
@@ -588,7 +578,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
                   <Chip
                     size="sm"
                     color="danger"
-                    variant="flat"
+                    variant="soft"
                     classNames={{
                       base: 'h-4 px-1',
                       content: 'text-[10px] px-0',
@@ -601,7 +591,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
                   <Chip
                     size="sm"
                     color="warning"
-                    variant="flat"
+                    variant="soft"
                     classNames={{
                       base: 'h-4 px-1',
                       content: 'text-[10px] px-0',
@@ -613,8 +603,8 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
                 {status === 'alpha' && (
                   <Chip
                     size="sm"
-                    color="secondary"
-                    variant="flat"
+                    color="default"
+                    variant="soft"
                     classNames={{
                       base: 'h-4 px-1',
                       content: 'text-[10px] px-0',
@@ -932,11 +922,8 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
       const singleModel = models[0]
 
       return (
-        <DropdownItem
-          key={credential.id}
-          startContent={
-            <Icon name={getProviderIcon(credential.provider)} size="sm" />
-          }
+        <Dropdown.Item
+          id={credential.id}
           endContent={
             showArrow ? (
               <Icon
@@ -1025,7 +1012,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
               </span>
             ) : null}
           </div>
-        </DropdownItem>
+        </Dropdown.Item>
       )
     })
   }
@@ -1037,8 +1024,8 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
     // Show loading state while fetching
     if (isFetchingModels) {
       return (
-        <DropdownItem
-          key="loading"
+        <Dropdown.Item
+          id="loading"
           isReadOnly
           textValue="Loading"
           className="cursor-default"
@@ -1047,15 +1034,15 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
             <Spinner size="sm" />
             <span className="text-default-500">{t('Loading models...')}</span>
           </div>
-        </DropdownItem>
+        </Dropdown.Item>
       )
     }
 
     // Show empty state if no models available
     if (viewingProvider.models.length === 0) {
       return (
-        <DropdownItem
-          key="empty"
+        <Dropdown.Item
+          id="empty"
           isReadOnly
           textValue="No models"
           className="cursor-default"
@@ -1066,7 +1053,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
               {t('Check your server URL and connection')}
             </span>
           </div>
-        </DropdownItem>
+        </Dropdown.Item>
       )
     }
 
@@ -1086,8 +1073,8 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
     return (
       <>
         {showSearch && (
-          <DropdownItem
-            key="search"
+          <Dropdown.Item
+            id="search"
             isReadOnly
             textValue="Search"
             className="cursor-default"
@@ -1105,7 +1092,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
               }}
               autoFocus
             />
-          </DropdownItem>
+          </Dropdown.Item>
         )}
         {(() => {
           // Group filtered models by category
@@ -1145,22 +1132,15 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
             const isDeprecated = category === 'deprecated'
 
             return (
-              <DropdownItem
-                key={model}
-                startContent={
-                  isSelected ? (
-                    <Icon name="Check" size="sm" />
-                  ) : (
-                    <span className="w-4" />
-                  )
-                }
+              <Dropdown.Item
+                id={model}
                 endContent={
                   <div className="flex gap-1 items-center shrink-0">
                     {isDeprecated && (
                       <Chip
                         size="sm"
                         color="danger"
-                        variant="flat"
+                        variant="soft"
                         classNames={{
                           base: 'h-4 px-1',
                           content: 'text-[10px] px-0',
@@ -1212,7 +1192,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
                 />
                 {modelData?.name ||
                   displayModelName(model, viewingProvider.credential.provider)}
-              </DropdownItem>
+              </Dropdown.Item>
             )
           }
 
@@ -1221,8 +1201,8 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
               {latestModels.map((model) => renderModelItem(model))}
               {olderModels.length > 0 && (
                 <>
-                  <DropdownItem
-                    key="older-divider"
+                  <Dropdown.Item
+                    id="older-divider"
                     isReadOnly
                     textValue="Older models"
                     isDisabled
@@ -1234,28 +1214,27 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
                       </span>
                       <div className="flex-1 h-px bg-default-200" />
                     </div>
-                  </DropdownItem>
+                  </Dropdown.Item>
                   {olderModels.map((model) => renderModelItem(model, true))}
                 </>
               )}
               {filteredModels.length === 0 && (
-                <DropdownItem
-                  key="no-results"
+                <Dropdown.Item
+                  id="no-results"
                   isReadOnly
                   textValue="No results"
                 >
                   <span className="text-default-400 text-sm">
                     {t('No models found')}
                   </span>
-                </DropdownItem>
+                </Dropdown.Item>
               )}
             </>
           )
         })()}
 
-        <DropdownItem
-          key="manage-knowledge"
-          startContent={<Icon name="Settings" size="sm" />}
+        <Dropdown.Item
+          id="manage-knowledge"
           textValue={t('Manage knowledge')}
           closeOnSelect
           className="text-default-400 text-xs"
@@ -1264,7 +1243,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
           }}
         >
           {t('Manage knowledge')}
-        </DropdownItem>
+        </Dropdown.Item>
       </>
     )
   }
@@ -1277,10 +1256,10 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
         shouldBlockScroll={false}
         onOpenChange={handleDropdownOpenChange}
       >
-        <DropdownTrigger>
+        <Dropdown.Trigger>
           <Button
             radius="full"
-            variant="light"
+            variant="ghost"
             size="sm"
             startContent={
               <Icon
@@ -1294,8 +1273,8 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
               {displayText}
             </span>
           </Button>
-        </DropdownTrigger>
-        <DropdownMenu
+        </Dropdown.Trigger>
+        <Dropdown.Menu
           aria-label="LLM Provider and Model selection"
           selectionMode="none"
           closeOnSelect={false}
@@ -1303,13 +1282,12 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
         >
           {viewMode === 'providers' ? (
             <>
-              <DropdownSection showDivider>
+              <Dropdown.Section showDivider>
                 {renderProviderItems()}
-              </DropdownSection>
-              <DropdownSection>
-                <DropdownItem
-                  key="settings"
-                  startContent={<Icon name="Plus" size="sm" />}
+              </Dropdown.Section>
+              <Dropdown.Section>
+                <Dropdown.Item
+                  id="settings"
                   textValue={t('Add AI provider')}
                   onPress={() => {
                     navigate(`${location.pathname}#settings/providers/add`)
@@ -1317,15 +1295,14 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
                   closeOnSelect
                 >
                   {t('Add AI provider')}
-                </DropdownItem>
-              </DropdownSection>
+                </Dropdown.Item>
+              </Dropdown.Section>
             </>
           ) : (
             <>
-              <DropdownSection showDivider>
-                <DropdownItem
-                  key="back"
-                  startContent={<Icon name="ArrowLeft" size="sm" />}
+              <Dropdown.Section showDivider>
+                <Dropdown.Item
+                  id="back"
                   textValue={t('Back')}
                   closeOnSelect={false}
                   onPress={() => {
@@ -1336,12 +1313,12 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
                   <span className="font-medium">
                     {viewingProvider?.providerName}
                   </span>
-                </DropdownItem>
-              </DropdownSection>
-              <DropdownSection>{renderModelItems()}</DropdownSection>
+                </Dropdown.Item>
+              </Dropdown.Section>
+              <Dropdown.Section>{renderModelItems()}</Dropdown.Section>
             </>
           )}
-        </DropdownMenu>
+        </Dropdown.Menu>
       </Dropdown>
       {/* Detail panel rendered via portal, fixed to the left of the dropdown */}
       {hoveredModel &&

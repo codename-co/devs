@@ -99,7 +99,7 @@ export function useExtensionBridge({
       if (type === 'DEVS_UI_TOAST') {
         const { addToast } = await import('@heroui/react')
         const { message, options = {} } = payload || {}
-        addToast({ title: message, color: options.type || 'default' })
+        toast({ title: message, color: options.type || 'default' })
         return
       }
 

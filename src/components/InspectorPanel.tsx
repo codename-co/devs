@@ -87,7 +87,7 @@ const InspectorContent = memo(({ item }: { item: InspectorItem }) => {
               <Tooltip content={t('Back')}>
                 <Button
                   isIconOnly
-                  variant="light"
+                  variant="ghost"
                   size="sm"
                   onPress={goBack}
                   aria-label={t('Back')}
@@ -110,7 +110,7 @@ const InspectorContent = memo(({ item }: { item: InspectorItem }) => {
               <Button
                 data-testid="inspector-close-button"
                 isIconOnly
-                variant="light"
+                variant="ghost"
                 size="sm"
                 onPress={close}
                 aria-label={t('Close')}
@@ -173,13 +173,13 @@ const ArtifactBody = memo(
       <div className="space-y-4">
         {/* Meta chips */}
         {/* <div className="flex flex-wrap gap-2">
-          <Chip size="sm" variant="flat" color={statusColor}>
+          <Chip size="sm" variant="soft" color={statusColor}>
             {artifact.status}
           </Chip>
-          <Chip size="sm" variant="flat" color="default">
+          <Chip size="sm" variant="soft" color="default">
             {artifact.type}
           </Chip>
-          <Chip size="sm" variant="flat" color="default">
+          <Chip size="sm" variant="soft" color="default">
             v{artifact.version}
           </Chip>
         </div> */}
@@ -245,7 +245,7 @@ const SourceBody = memo(
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Chip size="sm" variant="flat">
+          <Chip size="sm" variant="soft">
             {source.source.type}
           </Chip>
         </div>

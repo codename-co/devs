@@ -4,17 +4,7 @@
  * Panel content for voice settings in Live mode.
  * Displays STT/TTS provider selection, auto-speak toggle, and voice selection.
  */
-import {
-  Button,
-  Chip,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownSection,
-  DropdownTrigger,
-  Switch,
-  Tooltip,
-} from '@heroui/react'
+import { Button, Chip, Dropdown, Switch, Tooltip } from '@heroui/react'
 import { useMemo } from 'react'
 
 import { Icon } from '@/components/Icon'
@@ -203,9 +193,9 @@ export function VoiceSettingsPanel({
             {tp('Speech Input')}
           </span>
           <Dropdown>
-            <DropdownTrigger>
+            <Dropdown.Trigger>
               <Button
-                variant="bordered"
+                variant="outline"
                 size="sm"
                 startContent={<Icon name="Microphone" size="sm" />}
                 endContent={<Icon name="NavArrowDown" size="sm" />}
@@ -213,8 +203,8 @@ export function VoiceSettingsPanel({
               >
                 {currentSTTName}
               </Button>
-            </DropdownTrigger>
-            <DropdownMenu
+            </Dropdown.Trigger>
+            <Dropdown.Menu
               aria-label="STT Provider"
               selectionMode="single"
               selectedKeys={new Set([sttProviderType])}
@@ -229,27 +219,20 @@ export function VoiceSettingsPanel({
               }}
             >
               {sttProviders.map((provider) => (
-                <DropdownItem
-                  key={provider.type}
+                <Dropdown.Item
+                  id={provider.type}
                   description={
                     provider.isDisabled
                       ? provider.disabledReason
                       : provider.description
-                  }
-                  startContent={
-                    provider.isLocal ? (
-                      <Icon name="HardDrive" size="sm" />
-                    ) : (
-                      <Icon name="Internet" size="sm" />
-                    )
                   }
                   endContent={
                     provider.isLocal ? (
                       <Tooltip content={t('Local')}>
                         <Chip
                           size="sm"
-                          color="primary"
-                          variant="flat"
+                          color="accent"
+                          variant="soft"
                           className="flex items-center"
                         >
                           <Icon name="OpenInBrowser" size="sm" />
@@ -259,8 +242,8 @@ export function VoiceSettingsPanel({
                       <Tooltip content={t('Cloud')}>
                         <Chip
                           size="sm"
-                          color="secondary"
-                          variant="flat"
+                          color="default"
+                          variant="soft"
                           className="flex items-center"
                         >
                           <Icon name="CloudCheck" size="sm" />
@@ -270,9 +253,9 @@ export function VoiceSettingsPanel({
                   }
                 >
                   {provider.name}
-                </DropdownItem>
+                </Dropdown.Item>
               ))}
-            </DropdownMenu>
+            </Dropdown.Menu>
           </Dropdown>
         </div>
 
@@ -282,9 +265,9 @@ export function VoiceSettingsPanel({
             {tp('Speech Output')}
           </span>
           <Dropdown>
-            <DropdownTrigger>
+            <Dropdown.Trigger>
               <Button
-                variant="bordered"
+                variant="outline"
                 size="sm"
                 startContent={<Icon name="Voice" size="sm" />}
                 endContent={<Icon name="NavArrowDown" size="sm" />}
@@ -292,8 +275,8 @@ export function VoiceSettingsPanel({
               >
                 {currentTTSName}
               </Button>
-            </DropdownTrigger>
-            <DropdownMenu
+            </Dropdown.Trigger>
+            <Dropdown.Menu
               aria-label="TTS Provider"
               selectionMode="single"
               selectedKeys={new Set([ttsProviderType])}
@@ -303,23 +286,16 @@ export function VoiceSettingsPanel({
               }}
             >
               {ttsProviders.map((provider) => (
-                <DropdownItem
-                  key={provider.type}
+                <Dropdown.Item
+                  id={provider.type}
                   description={provider.description}
-                  startContent={
-                    provider.isLocal ? (
-                      <Icon name="HardDrive" size="sm" />
-                    ) : (
-                      <Icon name="Internet" size="sm" />
-                    )
-                  }
                   endContent={
                     provider.isLocal ? (
                       <Tooltip content={t('Local')}>
                         <Chip
                           size="sm"
-                          color="primary"
-                          variant="flat"
+                          color="accent"
+                          variant="soft"
                           className="flex items-center"
                         >
                           <Icon name="OpenInBrowser" size="sm" />
@@ -329,8 +305,8 @@ export function VoiceSettingsPanel({
                       <Tooltip content={t('Cloud')}>
                         <Chip
                           size="sm"
-                          color="secondary"
-                          variant="flat"
+                          color="default"
+                          variant="soft"
                           className="flex items-center"
                         >
                           <Icon name="CloudCheck" size="sm" />
@@ -340,9 +316,9 @@ export function VoiceSettingsPanel({
                   }
                 >
                   {provider.name}
-                </DropdownItem>
+                </Dropdown.Item>
               ))}
-            </DropdownMenu>
+            </Dropdown.Menu>
           </Dropdown>
         </div>
 
@@ -353,9 +329,9 @@ export function VoiceSettingsPanel({
               {tp('Voice')}
             </span>
             <Dropdown>
-              <DropdownTrigger>
+              <Dropdown.Trigger>
                 <Button
-                  variant="bordered"
+                  variant="outline"
                   size="sm"
                   startContent={
                     <Icon
@@ -370,8 +346,8 @@ export function VoiceSettingsPanel({
                 >
                   {selectedVoice.name}
                 </Button>
-              </DropdownTrigger>
-              <DropdownMenu
+              </Dropdown.Trigger>
+              <Dropdown.Menu
                 aria-label="Voice Selection"
                 selectionMode="single"
                 selectedKeys={new Set([selectedVoiceId])}
@@ -385,30 +361,22 @@ export function VoiceSettingsPanel({
                   const voices = getVoicesByLanguage(group.key)
                   if (voices.length === 0) return null
                   return (
-                    <DropdownSection
+                    <Dropdown.Section
                       key={group.key}
                       title={group.label}
                       showDivider
                     >
                       {voices.map((voice) => (
-                        <DropdownItem
-                          key={voice.id}
-                          startContent={
-                            <Icon
-                              name={
-                                voice.gender === 'female' ? 'Female' : 'Male'
-                              }
-                              size="sm"
-                            />
-                          }
+                        <Dropdown.Item
+                          id={voice.id}
                         >
                           {voice.name}
-                        </DropdownItem>
+                        </Dropdown.Item>
                       ))}
-                    </DropdownSection>
+                    </Dropdown.Section>
                   )
                 })}
-              </DropdownMenu>
+              </Dropdown.Menu>
             </Dropdown>
           </div>
         )}

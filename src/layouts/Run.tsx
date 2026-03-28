@@ -8,18 +8,7 @@ import { useContextualPanelStore } from '@/stores/contextualPanelStore'
 import { useInspectorPanelStore } from '@/stores/inspectorPanelStore'
 import { userSettings } from '@/stores/userStore'
 import { useNavigate, useLocation } from 'react-router-dom'
-import {
-  Avatar,
-  Button,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-  Link,
-  ScrollShadow,
-  ToastProvider,
-  Tooltip,
-} from '@heroui/react'
+import { Avatar, Button, Dropdown, Link, ScrollShadow, ToastProvider, Tooltip } from '@heroui/react'
 import clsx from 'clsx'
 import { useCallback, useEffect, useRef } from 'react'
 import { PRODUCT } from '@/config/product'
@@ -146,7 +135,7 @@ export default function RunLayout({
                     <Tooltip content={t('Back')}>
                       <Button
                         isIconOnly
-                        variant="light"
+                        variant="ghost"
                         size="sm"
                         onPress={handleBack}
                         className="shrink-0 dark:hover:bg-default-300 rtl:rotate-180"
@@ -170,7 +159,7 @@ export default function RunLayout({
                           >
                             {header.icon.image ? (
                               <Avatar
-                                radius="full"
+
                                 src={`data:image/png;base64,${header.icon.image}`}
                                 alt=""
                                 className="w-7 h-7"
@@ -184,7 +173,7 @@ export default function RunLayout({
                         </Tooltip>
                       ) : header.icon.image ? (
                         <Avatar
-                          radius="full"
+
                           src={`data:image/png;base64,${header.icon.image}`}
                           alt=""
                           className="w-7 h-7 shrink-0"
@@ -213,7 +202,7 @@ export default function RunLayout({
                         <Tooltip content={header.cta.label}>
                           <Button
                             isIconOnly
-                            variant="light"
+                            variant="ghost"
                             size="sm"
                             as={Link}
                             href={header.cta.href ?? ''}
@@ -231,28 +220,25 @@ export default function RunLayout({
                       )}
                       {header.moreActions && header.moreActions.length > 0 && (
                         <Dropdown>
-                          <DropdownTrigger>
+                          <Dropdown.Trigger>
                             <Button
                               isIconOnly
-                              variant="light"
+                              variant="ghost"
                               size="sm"
                               className="dark:hover:bg-default-300"
                             >
                               <Icon name="MoreVert" size="sm" />
                             </Button>
-                          </DropdownTrigger>
-                          <DropdownMenu>
+                          </Dropdown.Trigger>
+                          <Dropdown.Menu>
                             {header.moreActions.map((action) => (
-                              <DropdownItem
-                                key={action.label}
+                              <Dropdown.Item
+                                id={action.label}
                                 onClick={action.onClick}
-                                startContent={
-                                  <Icon name={action.icon as IconName} />
-                                }
                                 title={action.label}
                               />
                             ))}
-                          </DropdownMenu>
+                          </Dropdown.Menu>
                         </Dropdown>
                       )}
                     </div>

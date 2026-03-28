@@ -11,27 +11,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import {
-  Button,
-  Checkbox,
-  Chip,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  Input,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Pagination,
-  Progress,
-  Spinner,
-  Textarea,
-  useDisclosure,
-  Tooltip,
-} from '@heroui/react'
+import { Button, Checkbox, Chip, Dropdown, Input, Modal, Pagination, ProgressBar, Spinner, TextArea, useOverlayState, Tooltip } from '@heroui/react'
 import {
   Upload,
   Folder,
@@ -318,16 +298,8 @@ export function FilesSection() {
   const [dragActive, setDragActive] = useState(false)
   const [selectedItem, setSelectedItem] = useState<KnowledgeItem | null>(null)
   const [previewItem, setPreviewItem] = useState<KnowledgeItem | null>(null)
-  const {
-    isOpen: isEditModalOpen,
-    onOpen: onEditModalOpen,
-    onClose: onEditModalClose,
-  } = useDisclosure()
-  const {
-    isOpen: isPreviewOpen,
-    onOpen: onPreviewOpen,
-    onClose: onPreviewClose,
-  } = useDisclosure()
+  const { isOpen: isEditModalOpen, open: onEditModalOpen, close: onEditModalClose } = useOverlayState()
+  const { isOpen: isPreviewOpen, open: onPreviewOpen, close: onPreviewClose } = useOverlayState()
   const [editForm, setEditForm] = useState({
     name: '',
     description: '',
@@ -340,21 +312,13 @@ export function FilesSection() {
   const [processingJobs, setProcessingJobs] = useState<
     Map<string, { itemId: string; progress: number; status: string }>
   >(new Map())
-  const {
-    isOpen: isUnwatchModalOpen,
-    onOpen: onUnwatchModalOpen,
-    onClose: onUnwatchModalClose,
-  } = useDisclosure()
+  const { isOpen: isUnwatchModalOpen, open: onUnwatchModalOpen, close: onUnwatchModalClose } = useOverlayState()
   const [unwatchingFolderId, setUnwatchingFolderId] = useState<string | null>(
     null,
   )
   const [isPickerActive, setIsPickerActive] = useState(false)
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
-  const {
-    isOpen: isBulkDeleteModalOpen,
-    onOpen: onBulkDeleteModalOpen,
-    onClose: onBulkDeleteModalClose,
-  } = useDisclosure()
+  const { isOpen: isBulkDeleteModalOpen, open: onBulkDeleteModalOpen, close: onBulkDeleteModalClose } = useOverlayState()
 
   // Handle URL hash to open preview modal for specific file ID
   useEffect(() => {
@@ -924,7 +888,7 @@ export function FilesSection() {
                     data-testid="upload-files-button"
                     size="sm"
                     color="primary"
-                    variant="flat"
+                    variant="secondary"
                     startContent={<SubmitDocument className="w-4 h-4" />}
                     onPress={handleFilePicker}
                   >
@@ -934,7 +898,7 @@ export function FilesSection() {
                     data-testid="upload-folder-button"
                     size="sm"
                     color="secondary"
-                    variant="flat"
+                    variant="secondary"
                     startContent={<Folder className="w-4 h-4" />}
                     onPress={handleFolderPicker}
                   >
@@ -961,7 +925,7 @@ export function FilesSection() {
                   <Chip
                     color={syncStatus === 'syncing' ? 'primary' : 'danger'}
                     size="sm"
-                    variant="flat"
+                    variant="soft"
                   >
                     {syncStatus === 'syncing' ? 'Syncing…' : 'Sync Error'}
                   </Chip>
@@ -1006,7 +970,7 @@ export function FilesSection() {
                         {watcher.isActive ? (
                           <Button
                             size="sm"
-                            variant="light"
+                            variant="ghost"
                             color="danger"
                             onPress={() => promptUnwatchFolder(watcher.id)}
                           >
@@ -1016,7 +980,7 @@ export function FilesSection() {
                           <>
                             <Button
                               size="sm"
-                              variant="light"
+                              variant="ghost"
                               color="primary"
                               onPress={() =>
                                 handleReconnectFolder(
@@ -1031,7 +995,7 @@ export function FilesSection() {
                             </Button>
                             <Button
                               size="sm"
-                              variant="light"
+                              variant="ghost"
                               color="danger"
                               onPress={() => promptUnwatchFolder(watcher.id)}
                             >
@@ -1067,7 +1031,7 @@ export function FilesSection() {
                               <Button
                                 size="sm"
                                 color="danger"
-                                variant="flat"
+                                variant="secondary"
                                 isIconOnly
                                 startContent={<Trash className="w-4 h-4" />}
                                 onPress={onBulkDeleteModalOpen}
@@ -1077,7 +1041,7 @@ export function FilesSection() {
                               <Button
                                 size="sm"
                                 color="primary"
-                                variant="flat"
+                                variant="secondary"
                                 isIconOnly
                                 startContent={
                                   <RefreshDouble className="w-4 h-4" />
@@ -1087,7 +1051,7 @@ export function FilesSection() {
                             </Tooltip>
                             <Button
                               size="sm"
-                              variant="flat"
+                              variant="secondary"
                               startContent={<Xmark className="w-4 h-4" />}
                               onPress={unselectAllItems}
                             >
@@ -1097,7 +1061,7 @@ export function FilesSection() {
                         ) : (
                           <Button
                             size="sm"
-                            variant="flat"
+                            variant="secondary"
                             startContent={<CheckCircle className="w-4 h-4" />}
                             onPress={selectAllItems}
                           >
@@ -1189,7 +1153,7 @@ export function FilesSection() {
                                         Processing document...
                                       </span>
                                     </div>
-                                    <Progress
+                                    <ProgressBar
                                       size="sm"
                                       value={processingJob.progress}
                                       color="primary"
@@ -1209,8 +1173,8 @@ export function FilesSection() {
                                       <Chip
                                         key={tag}
                                         size="sm"
-                                        variant="flat"
-                                        color="primary"
+                                        variant="soft"
+                                        color="accent"
                                       >
                                         {tag}
                                       </Chip>
@@ -1222,40 +1186,33 @@ export function FilesSection() {
 
                             <div className="flex items-center space-x-2">
                               <Dropdown>
-                                <DropdownTrigger>
-                                  <Button isIconOnly variant="light" size="sm">
+                                <Dropdown.Trigger>
+                                  <Button isIconOnly variant="ghost" size="sm">
                                     <MoreVert className="w-4 h-4" />
                                   </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu>
-                                  <DropdownItem
-                                    key="edit"
-                                    startContent={
-                                      <EditPencil className="w-4 h-4" />
-                                    }
+                                </Dropdown.Trigger>
+                                <Dropdown.Menu>
+                                  <Dropdown.Item
+                                    id="edit"
                                     onPress={() => openEditModal(item)}
                                   >
                                     {t('Edit')}
-                                  </DropdownItem>
-                                  <DropdownItem
-                                    key="reprocess"
-                                    startContent={
-                                      <RefreshDouble className="w-4 h-4" />
-                                    }
+                                  </Dropdown.Item>
+                                  <Dropdown.Item
+                                    id="reprocess"
                                     onPress={() => reprocessItem(item)}
                                   >
                                     {t('Reprocess')}
-                                  </DropdownItem>
-                                  <DropdownItem
-                                    key="delete"
-                                    startContent={<Trash className="w-4 h-4" />}
+                                  </Dropdown.Item>
+                                  <Dropdown.Item
+                                    id="delete"
                                     className="text-danger"
                                     color="danger"
                                     onPress={() => deleteItem(item.id)}
                                   >
                                     {t('Delete')}
-                                  </DropdownItem>
-                                </DropdownMenu>
+                                  </Dropdown.Item>
+                                </Dropdown.Menu>
                               </Dropdown>
                             </div>
                           </div>
@@ -1284,10 +1241,10 @@ export function FilesSection() {
       </div>
 
       {/* Edit File Modal */}
-      <Modal isOpen={isEditModalOpen} onClose={onEditModalClose} size="2xl">
-        <ModalContent>
-          <ModalHeader>{t('Knowledge Item')}</ModalHeader>
-          <ModalBody>
+      <Modal isOpen={isEditModalOpen} onOpenChange={(v) => !v && (onEditModalClose)()} size="2xl">
+        <Modal.Dialog>
+          <Modal.Header>{t('Knowledge Item')}</Modal.Header>
+          <Modal.Body>
             <div className="space-y-4">
               <Input
                 label={t('name')}
@@ -1296,7 +1253,7 @@ export function FilesSection() {
                   setEditForm((prev) => ({ ...prev, name: value }))
                 }
               />
-              <Textarea
+              <TextArea
                 label={t('description')}
                 placeholder="Optional description for this item…"
                 value={editForm.description}
@@ -1313,39 +1270,39 @@ export function FilesSection() {
                 }
               />
             </div>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="light" onPress={onEditModalClose}>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="ghost" onPress={onEditModalClose}>
               {t('Cancel')}
             </Button>
             <Button color="primary" onPress={saveItemChanges}>
               {t('Save')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
 
       {/* Unwatch Folder Confirmation Modal */}
       <Modal
         isOpen={isUnwatchModalOpen}
-        onClose={() => {
+        onOpenChange={(v) => !v && (() => {
           onUnwatchModalClose()
           setUnwatchingFolderId(null)
-        }}
+        })()}
       >
-        <ModalContent>
-          <ModalHeader>{t('Stop Syncing Folder')}</ModalHeader>
-          <ModalBody>
+        <Modal.Dialog>
+          <Modal.Header>{t('Stop Syncing Folder')}</Modal.Header>
+          <Modal.Body>
             <p>
               {t(
                 'Do you want to keep the synced files in your knowledge base?',
               )}
             </p>
-          </ModalBody>
-          <ModalFooter>
+          </Modal.Body>
+          <Modal.Footer>
             <Button
               color="danger"
-              variant="light"
+              variant="ghost"
               onPress={() => handleUnwatchFolder(false)}
             >
               {t('Delete Files')}
@@ -1353,31 +1310,31 @@ export function FilesSection() {
             <Button color="primary" onPress={() => handleUnwatchFolder(true)}>
               {t('Keep Files')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
 
       {/* Bulk Delete Confirmation Modal */}
-      <Modal isOpen={isBulkDeleteModalOpen} onClose={onBulkDeleteModalClose}>
-        <ModalContent>
-          <ModalHeader>{t('Delete Selected Items')}</ModalHeader>
-          <ModalBody>
+      <Modal isOpen={isBulkDeleteModalOpen} onOpenChange={(v) => !v && (onBulkDeleteModalClose)()}>
+        <Modal.Dialog>
+          <Modal.Header>{t('Delete Selected Items')}</Modal.Header>
+          <Modal.Body>
             <p>
               {t(
                 'Are you sure you want to delete {count} item(s)? This action cannot be undone.',
                 { count: selectedItems.size },
               )}
             </p>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="light" onPress={onBulkDeleteModalClose}>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="ghost" onPress={onBulkDeleteModalClose}>
               {t('Cancel')}
             </Button>
             <Button color="danger" onPress={deleteSelectedItems}>
               {t('Delete')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
 
       {/* Content Preview Modal */}

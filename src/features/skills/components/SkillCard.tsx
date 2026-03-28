@@ -2,7 +2,7 @@
  * SkillCard — Compact card for displaying a skill search result or installed skill.
  */
 
-import { Card, CardBody, Chip, Button, Spinner } from '@heroui/react'
+import { Card, Chip, Button, Spinner } from '@heroui/react'
 import { Icon } from '@/components'
 import type { SkillSearchResult } from '@/lib/skills/skillsmp-client'
 import type { InstalledSkill } from '@/types'
@@ -45,12 +45,11 @@ export function SkillCard({
 
   return (
     <Card
-      isPressable
       onPress={onSelect}
       className="w-full"
       shadow="sm"
     >
-      <CardBody className="gap-3 p-4">
+      <Card.Content className="gap-3 p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-semibold truncate">{name}</h3>
@@ -69,17 +68,17 @@ export function SkillCard({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1 flex-wrap">
             {pythonCount > 0 && (
-              <Chip size="sm" variant="flat" color="success">
+              <Chip size="sm" variant="soft" color="success">
                 {t('Python')}
               </Chip>
             )}
             {bashCount > 0 && (
-              <Chip size="sm" variant="flat" color="warning">
+              <Chip size="sm" variant="soft" color="warning">
                 {t('Bash')}
               </Chip>
             )}
             {scripts.length === 0 && !searchResult && (
-              <Chip size="sm" variant="flat" color="default">
+              <Chip size="sm" variant="soft" color="default">
                 {t('Instructions')}
               </Chip>
             )}
@@ -89,7 +88,7 @@ export function SkillCard({
             <Button
               size="sm"
               color="primary"
-              variant="flat"
+              variant="secondary"
               isDisabled={isInstalling}
               onPress={(e) => {
                 e.continuePropagation?.()
@@ -108,12 +107,12 @@ export function SkillCard({
           )}
 
           {isInstalled && (
-            <Chip size="sm" variant="flat" color="success">
+            <Chip size="sm" variant="soft" color="success">
               {t('Installed')}
             </Chip>
           )}
         </div>
-      </CardBody>
+      </Card.Content>
     </Card>
   )
 }

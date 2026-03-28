@@ -42,7 +42,6 @@ export default defineConfig({
         'react-dom',
         'react/jsx-runtime',
         // '@heroui/react',
-        'framer-motion',
       ],
       output: {
         // Provide global variables for externalized deps

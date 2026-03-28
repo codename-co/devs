@@ -1,5 +1,4 @@
-import { HeroUIProvider } from '@heroui/react'
-import { useHref, useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useEffect, useRef } from 'react'
 import * as SyncModule from '@/features/sync'
 import { useAutoBackup, tryReconnectLocalBackup } from '@/features/local-backup'
@@ -199,13 +198,9 @@ function ProvidersInner({ children }: { children: React.ReactNode }) {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const navigate = useNavigate()
-
   return (
-    <HeroUIProvider navigate={navigate} useHref={useHref}>
-      <I18nProvider>
-        <ProvidersInner>{children}</ProvidersInner>
-      </I18nProvider>
-    </HeroUIProvider>
+    <I18nProvider>
+      <ProvidersInner>{children}</ProvidersInner>
+    </I18nProvider>
   )
 }

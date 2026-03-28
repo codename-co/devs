@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { useI18n } from '@/i18n'
 import { errorToast, successToast } from '@/lib/toast'
 import { userSettings } from '@/stores/userStore'
-import { addToast, Button } from '@heroui/react'
+import { toast, Button } from '@heroui/react'
 
 interface UseBackgroundImageReturn {
   backgroundImage: string | undefined
@@ -89,12 +89,12 @@ export const useBackgroundImage = (): UseBackgroundImageReturn => {
     }
 
     // Show success toast
-    addToast({
+    toast({
       title: t('Background image updated'),
       color: 'success',
       severity: 'success',
       endContent: (
-        <Button size="sm" color="success" variant="flat" onPress={handleUndo}>
+        <Button size="sm" color="success" variant="secondary" onPress={handleUndo}>
           {t('Undo')}
         </Button>
       ),

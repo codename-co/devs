@@ -1,25 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import {
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  Checkbox,
-  Chip,
-  Input,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Select,
-  SelectItem,
-  Spinner,
-  Tab,
-  Tabs,
-  Textarea,
-  useDisclosure,
-} from '@heroui/react'
+import { Button, Card, Checkbox, Chip, Input, Modal, Select, Spinner, Tab, Tabs, TextArea, useOverlayState } from '@heroui/react'
 
 import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
 import { MemoryReviewList } from '@/components/MemoryReview'
@@ -97,21 +77,9 @@ export const AgentMemories: React.FC = () => {
     downgradeFromGlobal,
   } = useAgentMemoryStore()
 
-  const {
-    isOpen: isDeleteOpen,
-    onOpen: onDeleteOpen,
-    onClose: onDeleteClose,
-  } = useDisclosure()
-  const {
-    isOpen: isMemoryEditOpen,
-    onOpen: onMemoryEditOpen,
-    onClose: onMemoryEditClose,
-  } = useDisclosure()
-  const {
-    isOpen: isMemoryCreateOpen,
-    onOpen: onMemoryCreateOpen,
-    onClose: onMemoryCreateClose,
-  } = useDisclosure()
+  const { isOpen: isDeleteOpen, open: onDeleteOpen, close: onDeleteClose } = useOverlayState()
+  const { isOpen: isMemoryEditOpen, open: onMemoryEditOpen, close: onMemoryEditClose } = useOverlayState()
+  const { isOpen: isMemoryCreateOpen, open: onMemoryCreateOpen, close: onMemoryCreateClose } = useOverlayState()
   const [memoryToDelete, setMemoryToDelete] = useState<string | null>(null)
   const [memoryToEdit, setMemoryToEdit] = useState<AgentMemoryEntry | null>(
     null,
@@ -323,7 +291,7 @@ export const AgentMemories: React.FC = () => {
               <Button
                 size="sm"
                 color="secondary"
-                variant="flat"
+                variant="secondary"
                 startContent={<Icon name="Plus" className="w-3.5 h-3.5" />}
                 onPress={onMemoryCreateOpen}
               >
@@ -332,7 +300,7 @@ export const AgentMemories: React.FC = () => {
               <Button
                 size="sm"
                 color="primary"
-                variant="flat"
+                variant="secondary"
                 startContent={
                   <Icon name="RefreshDouble" className="w-3.5 h-3.5" />
                 }
@@ -347,16 +315,16 @@ export const AgentMemories: React.FC = () => {
           {/* Stats chips */}
           {stats && selectedAgentId && (
             <div className="flex flex-wrap gap-2 sm:ml-auto">
-              <Chip size="sm" variant="flat">
+              <Chip size="sm" variant="soft">
                 {stats.total} {t('Total Memories')}
               </Chip>
               {stats.pendingReview > 0 && (
-                <Chip size="sm" variant="flat" color="warning">
+                <Chip size="sm" variant="soft" color="warning">
                   {stats.pendingReview} {t('Pending Review')}
                 </Chip>
               )}
               {(stats.byConfidence.high ?? 0) > 0 && (
-                <Chip size="sm" variant="flat" color="success">
+                <Chip size="sm" variant="soft" color="success">
                   {stats.byConfidence.high} {t('High Confidence')}
                 </Chip>
               )}
@@ -380,7 +348,7 @@ export const AgentMemories: React.FC = () => {
                   <Icon name="Clock" size="sm" className="hidden lg:inline" />
                   <span>{t('Pending Review')}</span>
                   {pendingMemories.length > 0 && (
-                    <Chip size="sm" color="warning" variant="solid">
+                    <Chip size="sm" color="warning" variant="primary">
                       {pendingMemories.length}
                     </Chip>
                   )}
@@ -396,7 +364,7 @@ export const AgentMemories: React.FC = () => {
                   <Icon name="Check" size="sm" className="hidden lg:inline" />
                   <span>{t('Approved')}</span>
                   {approvedMemories.length > 0 && (
-                    <Chip size="sm" variant="flat">
+                    <Chip size="sm" variant="soft">
                       {approvedMemories.length}
                     </Chip>
                   )}
@@ -529,7 +497,7 @@ export const AgentMemories: React.FC = () => {
             </div>
           ) : memoryDocument?.synthesis ? (
             <Card>
-              <CardHeader className="flex justify-between">
+              <Card.Header className="flex justify-between">
                 <div>
                   <h3 className="text-lg font-semibold">
                     {t('Memory Synthesis for {agent}', {
@@ -546,7 +514,7 @@ export const AgentMemories: React.FC = () => {
                 </div>
                 <Button
                   size="sm"
-                  variant="flat"
+                  variant="secondary"
                   startContent={<Icon name="Download" className="w-4 h-4" />}
                   onPress={() => {
                     const blob = new Blob([memoryDocument.synthesis], {
@@ -562,10 +530,10 @@ export const AgentMemories: React.FC = () => {
                 >
                   {t('Export')}
                 </Button>
-              </CardHeader>
-              <CardBody>
+              </Card.Header>
+              <Card.Content>
                 <MarkdownRenderer content={memoryDocument.synthesis} />
-              </CardBody>
+              </Card.Content>
             </Card>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-default-400">
@@ -592,32 +560,32 @@ export const AgentMemories: React.FC = () => {
       )}
 
       {/* Delete Memory Confirmation Modal */}
-      <Modal isOpen={isDeleteOpen} onClose={onDeleteClose}>
-        <ModalContent>
-          <ModalHeader>{t('Delete Memory')}</ModalHeader>
-          <ModalBody>
+      <Modal isOpen={isDeleteOpen} onOpenChange={(v) => !v && (onDeleteClose)()}>
+        <Modal.Dialog>
+          <Modal.Header>{t('Delete Memory')}</Modal.Header>
+          <Modal.Body>
             <p>
               {t(
                 'Are you sure you want to delete this memory? This action cannot be undone.',
               )}
             </p>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="light" onPress={onDeleteClose}>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="ghost" onPress={onDeleteClose}>
               {t('Cancel')}
             </Button>
             <Button color="danger" onPress={handleDeleteMemory}>
               {t('Delete')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
 
       {/* Edit Memory Modal */}
-      <Modal isOpen={isMemoryEditOpen} onClose={onMemoryEditClose} size="2xl">
-        <ModalContent>
-          <ModalHeader>{t('Edit Memory')}</ModalHeader>
-          <ModalBody className="gap-4">
+      <Modal isOpen={isMemoryEditOpen} onOpenChange={(v) => !v && (onMemoryEditClose)()} size="2xl">
+        <Modal.Dialog>
+          <Modal.Header>{t('Edit Memory')}</Modal.Header>
+          <Modal.Body className="gap-4">
             <Input
               label={t('Title')}
               value={memoryEditForm.title}
@@ -625,7 +593,7 @@ export const AgentMemories: React.FC = () => {
                 setMemoryEditForm((prev) => ({ ...prev, title: value }))
               }
             />
-            <Textarea
+            <TextArea
               label={t('Content')}
               value={memoryEditForm.content}
               onValueChange={(value) =>
@@ -646,7 +614,7 @@ export const AgentMemories: React.FC = () => {
                 className="flex-1"
               >
                 {Object.entries(categoryLabels).map(([key, label]) => (
-                  <SelectItem key={key}>{t(label as any)}</SelectItem>
+                  <Select.Item id={key}>{t(label as any)}</Select.Item>
                 ))}
               </Select>
               <Select
@@ -663,9 +631,9 @@ export const AgentMemories: React.FC = () => {
                 }}
                 className="flex-1"
               >
-                <SelectItem key="high">{t('High')}</SelectItem>
-                <SelectItem key="medium">{t('Medium')}</SelectItem>
-                <SelectItem key="low">{t('Low')}</SelectItem>
+                <Select.Item id="high">{t('High')}</Select.Item>
+                <Select.Item id="medium">{t('Medium')}</Select.Item>
+                <Select.Item id="low">{t('Low')}</Select.Item>
               </Select>
             </div>
             <Input
@@ -676,27 +644,27 @@ export const AgentMemories: React.FC = () => {
               }
               description={t('Comma-separated list of keywords')}
             />
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="light" onPress={onMemoryEditClose}>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="ghost" onPress={onMemoryEditClose}>
               {t('Cancel')}
             </Button>
             <Button color="primary" onPress={handleEditMemory}>
               {t('Save')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
 
       {/* Create Memory Modal */}
       <Modal
         isOpen={isMemoryCreateOpen}
-        onClose={onMemoryCreateClose}
+        onOpenChange={(v) => !v && (onMemoryCreateClose)()}
         size="2xl"
       >
-        <ModalContent>
-          <ModalHeader>{t('Create Memory')}</ModalHeader>
-          <ModalBody className="gap-4">
+        <Modal.Dialog>
+          <Modal.Header>{t('Create Memory')}</Modal.Header>
+          <Modal.Body className="gap-4">
             <Input
               label={t('Title')}
               placeholder="Brief description of this memory"
@@ -706,7 +674,7 @@ export const AgentMemories: React.FC = () => {
               }
               isRequired
             />
-            <Textarea
+            <TextArea
               label={t('Content')}
               placeholder="Detailed information to remember"
               value={memoryCreateForm.content}
@@ -730,7 +698,7 @@ export const AgentMemories: React.FC = () => {
                 className="flex-1"
               >
                 {Object.entries(categoryLabels).map(([key, label]) => (
-                  <SelectItem key={key}>{t(label as any)}</SelectItem>
+                  <Select.Item id={key}>{t(label as any)}</Select.Item>
                 ))}
               </Select>
               <Select
@@ -745,9 +713,9 @@ export const AgentMemories: React.FC = () => {
                 }}
                 className="flex-1"
               >
-                <SelectItem key="high">{t('High')}</SelectItem>
-                <SelectItem key="medium">{t('Medium')}</SelectItem>
-                <SelectItem key="low">{t('Low')}</SelectItem>
+                <Select.Item id="high">{t('High')}</Select.Item>
+                <Select.Item id="medium">{t('Medium')}</Select.Item>
+                <Select.Item id="low">{t('Low')}</Select.Item>
               </Select>
             </div>
             <Input
@@ -776,9 +744,9 @@ export const AgentMemories: React.FC = () => {
             >
               {t('Make Global')} - Share this memory with all agents
             </Checkbox>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="light" onPress={onMemoryCreateClose}>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="ghost" onPress={onMemoryCreateClose}>
               {t('Cancel')}
             </Button>
             <Button
@@ -788,8 +756,8 @@ export const AgentMemories: React.FC = () => {
             >
               {t('Create Memory')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
     </>
   )
@@ -820,23 +788,23 @@ function MemoryCard({
 
   return (
     <Card className="w-full group" shadow="sm">
-      <CardBody className="flex flex-row gap-4 py-3">
+      <Card.Content className="flex flex-row gap-4 py-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <h4 className="font-semibold text-sm truncate">{memory.title}</h4>
-            <Chip size="sm" variant="flat" color={confidenceColor as any}>
+            <Chip size="sm" variant="soft" color={confidenceColor as any}>
               {t((memory.confidence || 'medium') as any)}
             </Chip>
-            <Chip size="sm" variant="bordered">
+            <Chip size="sm" variant="secondary">
               {t(categoryLabel as any)}
             </Chip>
             {memory.isGlobal && (
-              <Chip size="sm" variant="solid" color="primary">
+              <Chip size="sm" variant="primary" color="accent">
                 {t('Global')}
               </Chip>
             )}
             {memory.validationStatus === 'auto_approved' && (
-              <Chip size="sm" variant="dot" color="default">
+              <Chip size="sm" variant="soft" color="default">
                 {t('Auto-approved')}
               </Chip>
             )}
@@ -861,7 +829,7 @@ function MemoryCard({
                   <Chip
                     key={keyword}
                     size="sm"
-                    variant="flat"
+                    variant="soft"
                     className="text-xs"
                   >
                     {keyword}
@@ -880,27 +848,27 @@ function MemoryCard({
           <Button
             isIconOnly
             size="sm"
-            variant="light"
+            variant="ghost"
             color={memory.isGlobal ? 'danger' : 'primary'}
             onPress={onToggleGlobal}
             title={memory.isGlobal ? t('Remove Global') : t('Make Global')}
           >
             <Icon name="Share" className="w-4 h-4" />
           </Button>
-          <Button isIconOnly size="sm" variant="light" onPress={onEdit}>
+          <Button isIconOnly size="sm" variant="ghost" onPress={onEdit}>
             <Icon name="EditPencil" className="w-4 h-4" />
           </Button>
           <Button
             isIconOnly
             size="sm"
-            variant="light"
+            variant="ghost"
             color="danger"
             onPress={onDelete}
           >
             <Icon name="Trash" className="w-4 h-4" />
           </Button>
         </div>
-      </CardBody>
+      </Card.Content>
     </Card>
   )
 }

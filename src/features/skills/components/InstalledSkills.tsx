@@ -2,7 +2,7 @@
  * InstalledSkills — List of installed skills with management controls.
  */
 
-import { Card, CardBody, Chip, Switch, Button } from '@heroui/react'
+import { Card, Chip, Switch, Button } from '@heroui/react'
 import { Icon } from '@/components'
 import { useSkills } from '@/stores/skillStore'
 import {
@@ -41,20 +41,19 @@ export function InstalledSkills({ t, onSelect }: InstalledSkillsProps) {
         return (
           <Card
             key={skill.id}
-            isPressable
             onPress={() => onSelect?.(skill)}
             shadow="sm"
           >
-            <CardBody className="flex flex-row items-center gap-4 p-4">
+            <Card.Content className="flex flex-row items-center gap-4 p-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-semibold">{skill.name}</h3>
                   {compat.canExecute ? (
-                    <Chip size="sm" variant="dot" color="success">
+                    <Chip size="sm" variant="soft" color="success">
                       {t('Compatible')}
                     </Chip>
                   ) : (
-                    <Chip size="sm" variant="dot" color="warning">
+                    <Chip size="sm" variant="soft" color="warning">
                       {t('Partial')}
                     </Chip>
                   )}
@@ -86,7 +85,7 @@ export function InstalledSkills({ t, onSelect }: InstalledSkillsProps) {
                 />
                 <Button
                   size="sm"
-                  variant="flat"
+                  variant="secondary"
                   color="danger"
                   isIconOnly
                   onPress={() => uninstallSkill(skill.id)}
@@ -95,7 +94,7 @@ export function InstalledSkills({ t, onSelect }: InstalledSkillsProps) {
                   <Icon name="Trash" width={14} height={14} />
                 </Button>
               </div>
-            </CardBody>
+            </Card.Content>
           </Card>
         )
       })}

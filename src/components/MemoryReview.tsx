@@ -1,20 +1,5 @@
 import { useState } from 'react'
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  Button,
-  Chip,
-  Textarea,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  useDisclosure,
-  CardFooter,
-  ButtonGroup,
-} from '@heroui/react'
+import { Card, Button, Chip, TextArea, Modal, useOverlayState, ButtonGroup } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
 import { Icon } from '@/components/Icon'
@@ -68,7 +53,7 @@ export function MemoryReviewCard({
   isLoading = false,
 }: MemoryReviewCardProps) {
   const { t } = useI18n()
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const { isOpen, open: onOpen, close: onClose } = useOverlayState()
   const [editedContent, setEditedContent] = useState(memory.content)
   const [reviewNotes, setReviewNotes] = useState('')
   const [actionLoading, setActionLoading] = useState<
@@ -127,13 +112,13 @@ export function MemoryReviewCard({
   return (
     <>
       <Card className="w-full">
-        <CardHeader className="flex flex-row items-start justify-between gap-3 pb-0">
+        <Card.Header className="flex flex-row items-start justify-between gap-3 pb-0">
           <div className="flex flex-col gap-1">
             <h4 className="text-md font-semibold">{memory.title}</h4>
             {/* <div className="flex flex-wrap gap-2">
               <Chip
                 size="sm"
-                variant="flat"
+                variant="soft"
                 color={categoryInfo.color as any}
                 startContent={
                   <Icon name={categoryInfo.icon as any} className="w-3 h-3" />
@@ -148,7 +133,7 @@ export function MemoryReviewCard({
               >
                 <Chip
                   size="sm"
-                  variant="dot"
+                  variant="soft"
                   color={confidenceInfo.color as any}
                 >
                   {t(confidenceInfo.label as any)}
@@ -159,9 +144,9 @@ export function MemoryReviewCard({
           <span className="text-xs text-default-400">
             {formatDate(memory.learnedAt)}
           </span>
-        </CardHeader>
+        </Card.Header>
 
-        <CardBody className="gap-3">
+        <Card.Content className="gap-3">
           <p className="text-sm text-default-600">{memory.content}</p>
 
           {/* {memory.keywords.length > 0 && (
@@ -170,7 +155,7 @@ export function MemoryReviewCard({
                 <Chip
                   key={keyword}
                   size="sm"
-                  variant="bordered"
+                  variant="secondary"
                   className="text-xs"
                 >
                   {keyword}
@@ -178,10 +163,10 @@ export function MemoryReviewCard({
               ))}
             </div>
           )} */}
-        </CardBody>
+        </Card.Content>
 
-        <CardFooter>
-          <ButtonGroup variant="flat" size="sm">
+        <Card.Footer>
+          <ButtonGroup variant="secondary" size="sm">
             <Button
               color="danger"
               size="sm"
@@ -210,21 +195,21 @@ export function MemoryReviewCard({
               {t('Memorize')}
             </Button>
           </ButtonGroup>
-        </CardFooter>
+        </Card.Footer>
       </Card>
 
       {/* Edit Modal */}
-      <Modal isOpen={isOpen} onClose={onClose} size="lg">
-        <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">
+      <Modal isOpen={isOpen} onOpenChange={(v) => !v && (onClose)()} size="lg">
+        <Modal.Dialog>
+          <Modal.Header className="flex flex-col gap-1">
             {t('Edit Memory')}
-          </ModalHeader>
-          <ModalBody>
+          </Modal.Header>
+          <Modal.Body>
             <div className="flex flex-col gap-4">
               <div className="flex gap-2">
                 <Chip
                   size="sm"
-                  variant="flat"
+                  variant="soft"
                   color={categoryInfo.color as any}
                   startContent={
                     <Icon name={categoryInfo.icon as any} className="w-3 h-3" />
@@ -234,7 +219,7 @@ export function MemoryReviewCard({
                 </Chip>
                 <Chip
                   size="sm"
-                  variant="dot"
+                  variant="soft"
                   color={confidenceInfo.color as any}
                 >
                   {t(confidenceInfo.label as any)}
@@ -243,7 +228,7 @@ export function MemoryReviewCard({
 
               <h4 className="font-semibold">{memory.title}</h4>
 
-              <Textarea
+              <TextArea
                 label={t('Memory content')}
                 value={editedContent}
                 onValueChange={setEditedContent}
@@ -251,7 +236,7 @@ export function MemoryReviewCard({
                 maxRows={10}
               />
 
-              <Textarea
+              <TextArea
                 label={t('Review notes (optional)')}
                 placeholder={t('Explain your changes...')}
                 value={reviewNotes}
@@ -260,9 +245,9 @@ export function MemoryReviewCard({
                 maxRows={4}
               />
             </div>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="light" onPress={onClose}>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="ghost" onPress={onClose}>
               {t('Cancel')}
             </Button>
             <Button
@@ -273,8 +258,8 @@ export function MemoryReviewCard({
             >
               {t('Save & Approve')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
     </>
   )
@@ -356,11 +341,11 @@ export function MemoryReviewList({
         <div className="flex flex-row items-center justify-between">
           <div className="flex gap-2">
             {selectedIds.size > 0 ? (
-              <Button size="sm" variant="light" onPress={deselectAll}>
+              <Button size="sm" variant="ghost" onPress={deselectAll}>
                 {t('Deselect All')}
               </Button>
             ) : (
-              <Button size="sm" variant="light" onPress={selectAll}>
+              <Button size="sm" variant="ghost" onPress={selectAll}>
                 {t('Select All')}
               </Button>
             )}
@@ -373,7 +358,7 @@ export function MemoryReviewList({
               <Button
                 size="sm"
                 color="danger"
-                variant="flat"
+                variant="secondary"
                 isDisabled={selectedIds.size === 0 || isLoading}
                 onPress={handleBulkReject}
                 startContent={<Icon name="Xmark" className="w-4 h-4" />}

@@ -1,0 +1,422 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" preserveAspectRatio="xMidYMid meet" width="100%" height="100%" style="display: block;">
+  <defs>
+    <!-- Intersection gradients with smooth purple color transitions -->
+    <linearGradient id="intersectGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:0" />
+      <stop offset="30%" style="stop-color:#6366f1;stop-opacity:0.15" />
+      <stop offset="50%" style="stop-color:#8b5cf6;stop-opacity:0.2" />
+      <stop offset="70%" style="stop-color:#6366f1;stop-opacity:0.15" />
+      <stop offset="100%" style="stop-color:#6366f1;stop-opacity:0" />
+    </linearGradient>
+    <linearGradient id="intersectGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:0" />
+      <stop offset="30%" style="stop-color:#8b5cf6;stop-opacity:0.1" />
+      <stop offset="50%" style="stop-color:#a78bfa;stop-opacity:0.14" />
+      <stop offset="70%" style="stop-color:#8b5cf6;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0" />
+    </linearGradient>
+    <linearGradient id="intersectGrad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#a78bfa;stop-opacity:0" />
+      <stop offset="30%" style="stop-color:#a78bfa;stop-opacity:0.06" />
+      <stop offset="50%" style="stop-color:#c4b5fd;stop-opacity:0.09" />
+      <stop offset="70%" style="stop-color:#a78bfa;stop-opacity:0.06" />
+      <stop offset="100%" style="stop-color:#a78bfa;stop-opacity:0" />
+    </linearGradient>
+    
+    <!-- Wave stroke gradients - fade at edges -->
+    <linearGradient id="strokeGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:0.3" />
+      <stop offset="50%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6366f1;stop-opacity:0.3" />
+    </linearGradient>
+    <linearGradient id="strokeGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:0.2" />
+      <stop offset="50%" style="stop-color:#8b5cf6;stop-opacity:0.7" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0.2" />
+    </linearGradient>
+    <linearGradient id="strokeGrad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#a78bfa;stop-opacity:0.15" />
+      <stop offset="50%" style="stop-color:#a78bfa;stop-opacity:0.45" />
+      <stop offset="100%" style="stop-color:#a78bfa;stop-opacity:0.15" />
+    </linearGradient>
+    <linearGradient id="strokeGrad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#c4b5fd;stop-opacity:0.1" />
+      <stop offset="50%" style="stop-color:#c4b5fd;stop-opacity:0.25" />
+      <stop offset="100%" style="stop-color:#c4b5fd;stop-opacity:0.1" />
+    </linearGradient>
+    
+    <!-- Glow filter for active state -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <style>
+    .wave-fill {
+      stroke: none;
+      transition: opacity 0.3s ease;
+    }
+    .wave-stroke {
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke-width 0.2s ease;
+    }
+    .mic-prompt {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      fill: #6366f1;
+      cursor: pointer;
+      transition: opacity 0.4s ease, fill 0.2s ease;
+    }
+    .mic-prompt:hover {
+      fill: #4f46e5;
+    }
+    .mic-icon {
+      fill: none;
+      stroke: #6366f1;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      cursor: pointer;
+      transition: stroke 0.2s ease;
+    }
+    .mic-icon:hover {
+      stroke: #4f46e5;
+    }
+    .listening-indicator {
+      fill: #6366f1;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+  </style>
+  
+  <!-- Listening indicator (pulsing dot) -->
+  <circle class="listening-indicator" id="listeningDot" cx="400" cy="185" r="4" />
+  
+  <!-- Mic icon and prompt -->
+  <g id="micPromptGroup" style="cursor: pointer">
+    <path class="mic-icon" id="micIcon" d="M400 90 L400 90 M392 90 a8 8 0 0 0 16 0 v-8 a8 8 0 0 0 -16 0 v8 M388 90 a12 12 0 0 0 24 0 M400 102 v6 M394 108 h12" transform="translate(0, 4)"/>
+    <text class="mic-prompt" x="400" y="130" text-anchor="middle" id="micPrompt">Click to start listening</text>
+  </g>
+  
+  <script type="text/javascript"><![CDATA[
+    const svg = document.querySelector('svg');
+    const micPromptGroup = document.getElementById('micPromptGroup');
+    const micPrompt = document.getElementById('micPrompt');
+    const listeningDot = document.getElementById('listeningDot');
+    
+    const frequency = 0.018;
+    
+    // Dynamic dimensions based on viewBox
+    let width = 800;
+    let height = 200;
+    let centerY = 100;
+    
+    // Update dimensions when SVG resizes
+    function updateDimensions() {
+      const bbox = svg.getBoundingClientRect();
+      if (bbox.width > 0 && bbox.height > 0) {
+        // Keep using viewBox coordinates but track actual aspect ratio
+        const viewBox = svg.viewBox.baseVal;
+        width = viewBox.width;
+        height = viewBox.height;
+        centerY = height / 2;
+      }
+    }
+    
+    // Initial dimension setup
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    
+    // Audio analysis
+    let audioContext, analyser, dataArray;
+    let frequencyBands = { low: 0, mid: 0, high: 0 };
+    let smoothedBands = { low: 0, mid: 0, high: 0 };
+    let micEnabled = false;
+    let isActive = false;
+    
+    // Energy pulse system - smooth traveling amplitude modulation
+    let energyPulsePosition = 0; // 0 to 1, normalized position across width
+    let energyPulseIntensity = 0;
+    let targetPulseIntensity = 0;
+    const pulseSpeed = 0.008; // How fast the pulse travels
+    const pulseWidth = 0.35; // Width of the energy pulse (0-1)
+    
+    // Voice history for smooth trailing effect
+    const voiceHistory = new Array(60).fill(0);
+    let historyIndex = 0;
+    
+    // Breathing animation for idle state
+    let breathePhase = 0;
+    const breatheSpeed = 0.015;
+    
+    // 4 waves with refined parameters - each responds to different frequency band
+    const waveConfigs = [
+      { phaseOffset: 0, speed: 0.012, baseAmplitude: 15, amplitudeMultiplier: 1.0, freqBand: 'low', strokeGrad: 'url(#strokeGrad1)', strokeWidth: 2 },
+      { phaseOffset: 0.5, speed: 0.015, baseAmplitude: 18, amplitudeMultiplier: 1.2, freqBand: 'mid', strokeGrad: 'url(#strokeGrad2)', strokeWidth: 1.5 },
+      { phaseOffset: 1.0, speed: 0.019, baseAmplitude: 22, amplitudeMultiplier: 1.5, freqBand: 'high', strokeGrad: 'url(#strokeGrad3)', strokeWidth: 1.2 },
+      { phaseOffset: 1.5, speed: 0.024, baseAmplitude: 26, amplitudeMultiplier: 1.8, freqBand: 'high', strokeGrad: 'url(#strokeGrad4)', strokeWidth: 1 }
+    ];
+    
+    const intersectionGradients = ['url(#intersectGrad1)', 'url(#intersectGrad2)', 'url(#intersectGrad3)'];
+    
+    // Create intersection fill paths
+    const intersectionFills = [];
+    for (let i = 0; i < waveConfigs.length - 1; i++) {
+      const fillPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      fillPath.setAttribute('class', 'wave-fill');
+      fillPath.setAttribute('fill', intersectionGradients[i]);
+      svg.insertBefore(fillPath, micPromptGroup);
+      intersectionFills.push(fillPath);
+    }
+    
+    // Create wave stroke paths
+    const waves = waveConfigs.map(config => {
+      const strokePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      strokePath.setAttribute('class', 'wave-stroke');
+      strokePath.setAttribute('stroke', config.strokeGrad);
+      strokePath.setAttribute('stroke-width', config.strokeWidth);
+      svg.insertBefore(strokePath, micPromptGroup);
+      
+      return { 
+        strokePath,
+        basePhase: config.phaseOffset, 
+        speed: config.speed, 
+        baseAmplitude: config.baseAmplitude,
+        amplitudeMultiplier: config.amplitudeMultiplier,
+        freqBand: config.freqBand,
+        strokeWidth: config.strokeWidth,
+        time: Math.random() * 10, // Random start phase for organic feel
+        points: []
+      };
+    });
+    
+    async function enableMicrophone() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 512;
+        analyser.smoothingTimeConstant = 0.85;
+        
+        const source = audioContext.createMediaStreamSource(stream);
+        source.connect(analyser);
+        
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        micEnabled = true;
+        
+        // Smooth transition out
+        micPromptGroup.style.opacity = '0';
+        setTimeout(() => {
+          micPromptGroup.style.display = 'none';
+        }, 400);
+        
+        // Show listening indicator with fade
+        listeningDot.style.opacity = '1';
+        
+      } catch (err) {
+        micPrompt.textContent = 'Microphone access needed';
+        micPrompt.style.fill = '#ef4444';
+        console.error('Microphone error:', err);
+      }
+    }
+    
+    function analyzeAudio() {
+      if (!micEnabled || !analyser) return;
+      
+      analyser.getByteFrequencyData(dataArray);
+      
+      const bufferLength = dataArray.length;
+      const lowEnd = Math.floor(bufferLength * 0.12);
+      const midEnd = Math.floor(bufferLength * 0.35);
+      
+      let lowSum = 0, midSum = 0, highSum = 0;
+      
+      for (let i = 0; i < bufferLength; i++) {
+        if (i < lowEnd) {
+          lowSum += dataArray[i];
+        } else if (i < midEnd) {
+          midSum += dataArray[i];
+        } else {
+          highSum += dataArray[i];
+        }
+      }
+      
+      // Normalize with perceptual scaling
+      const lowAvg = Math.pow(lowSum / lowEnd / 255, 0.7);
+      const midAvg = Math.pow(midSum / (midEnd - lowEnd) / 255, 0.75);
+      const highAvg = Math.pow(highSum / (bufferLength - midEnd) / 255, 0.85);
+      
+      frequencyBands.low = lowAvg;
+      frequencyBands.mid = midAvg;
+      frequencyBands.high = highAvg;
+      
+      // Smooth interpolation with different speeds per band
+      smoothedBands.low += (frequencyBands.low - smoothedBands.low) * 0.15;
+      smoothedBands.mid += (frequencyBands.mid - smoothedBands.mid) * 0.2;
+      smoothedBands.high += (frequencyBands.high - smoothedBands.high) * 0.25;
+      
+      // Detect if actively speaking
+      const totalIntensity = (smoothedBands.low + smoothedBands.mid + smoothedBands.high) / 3;
+      isActive = totalIntensity > 0.08;
+      
+      // Pulse the listening indicator
+      const pulseScale = 1 + totalIntensity * 0.8;
+      listeningDot.setAttribute('r', 4 * pulseScale);
+      listeningDot.style.opacity = String(0.4 + totalIntensity * 0.6);
+      
+      // Update voice history for trailing effect
+      voiceHistory[historyIndex] = totalIntensity;
+      historyIndex = (historyIndex + 1) % voiceHistory.length;
+      
+      // Update energy pulse
+      targetPulseIntensity = totalIntensity;
+      energyPulseIntensity += (targetPulseIntensity - energyPulseIntensity) * 0.1;
+    }
+    
+    function updateEnergyPulse() {
+      // Advance pulse position
+      energyPulsePosition += pulseSpeed;
+      if (energyPulsePosition > 1.5) {
+        energyPulsePosition = -0.5;
+      }
+    }
+    
+    function getEnergyAtPosition(normalizedX, freqBand) {
+      // Get historical voice intensity for this x position
+      // Creates a trailing effect where left side shows older audio
+      const historyOffset = Math.floor((1 - normalizedX) * voiceHistory.length * 0.8);
+      const historyIdx = (historyIndex - historyOffset + voiceHistory.length) % voiceHistory.length;
+      const historicalIntensity = voiceHistory[historyIdx];
+      
+      // Smooth traveling pulse envelope
+      const distFromPulse = normalizedX - energyPulsePosition;
+      const pulseEnvelope = Math.exp(-distFromPulse * distFromPulse / (pulseWidth * pulseWidth)) * energyPulseIntensity;
+      
+      // Combine historical intensity with pulse
+      const combinedEnergy = historicalIntensity * 0.7 + pulseEnvelope * 0.5;
+      
+      // Band-specific response
+      let bandMultiplier = 1.0;
+      if (freqBand === 'low') bandMultiplier = 1.0 + smoothedBands.low * 0.5;
+      else if (freqBand === 'mid') bandMultiplier = 1.0 + smoothedBands.mid * 0.6;
+      else if (freqBand === 'high') bandMultiplier = 1.0 + smoothedBands.high * 0.8;
+      
+      return combinedEnergy * bandMultiplier;
+    }
+    
+    function calculateWavePoints(phaseOffset, amplitude, freqBand, amplitudeMultiplier) {
+      const points = [];
+      for (let x = 0; x <= width; x += 3) {
+        const normalizedX = x / width;
+        
+        // Get energy at this position
+        const energy = getEnergyAtPosition(normalizedX, freqBand);
+        
+        // Dynamic amplitude based on position energy
+        const dynamicAmplitude = amplitude + energy * 35 * amplitudeMultiplier;
+        
+        // Base sine wave with subtle harmonic for richness
+        let y = centerY;
+        y += dynamicAmplitude * Math.sin(frequency * x + phaseOffset);
+        y += dynamicAmplitude * 0.12 * Math.sin(frequency * 2.3 * x + phaseOffset * 1.5);
+        
+        // Add breathing motion when idle - gentle organic movement
+        if (!isActive) {
+          y += Math.sin(breathePhase + x * 0.003) * 3;
+        }
+        
+        points.push({ x, y });
+      }
+      return points;
+    }
+    
+    function pointsToPath(points) {
+      if (points.length < 2) return '';
+      
+      // Use smooth curves for organic feel
+      let d = 'M' + points[0].x + ',' + points[0].y;
+      
+      for (let i = 1; i < points.length - 1; i++) {
+        const prev = points[i - 1];
+        const curr = points[i];
+        const next = points[i + 1];
+        
+        // Catmull-Rom inspired smoothing
+        const tension = 6;
+        const cp1x = curr.x - (next.x - prev.x) / tension;
+        const cp1y = curr.y - (next.y - prev.y) / tension;
+        
+        d += ' S' + cp1x + ',' + cp1y + ' ' + curr.x + ',' + curr.y;
+      }
+      
+      // Last point
+      const last = points[points.length - 1];
+      d += ' L' + last.x + ',' + last.y;
+      
+      return d;
+    }
+    
+    function createIntersectionPath(points1, points2) {
+      let d = pointsToPath(points1);
+      for (let i = points2.length - 1; i >= 0; i--) {
+        d += ' L' + points2[i].x + ',' + points2[i].y;
+      }
+      d += 'Z';
+      return d;
+    }
+    
+    function animate() {
+      analyzeAudio();
+      updateEnergyPulse();
+      breathePhase += breatheSpeed;
+      
+      // Update waves
+      waves.forEach(wave => {
+        wave.time += wave.speed;
+        const phaseOffset = wave.basePhase + wave.time;
+        
+        // Base amplitude (energy modulation happens inside calculateWavePoints)
+        const amplitude = wave.baseAmplitude;
+        
+        // Dynamic stroke width based on activity
+        const bandIntensity = smoothedBands[wave.freqBand] || 0;
+        const dynamicWidth = wave.strokeWidth + (isActive ? bandIntensity * 0.5 : 0);
+        wave.strokePath.setAttribute('stroke-width', dynamicWidth);
+        
+        // Apply subtle glow when active
+        if (isActive && bandIntensity > 0.2) {
+          wave.strokePath.setAttribute('filter', 'url(#glow)');
+        } else {
+          wave.strokePath.removeAttribute('filter');
+        }
+        
+        wave.points = calculateWavePoints(phaseOffset, amplitude, wave.freqBand, wave.amplitudeMultiplier);
+        wave.strokePath.setAttribute('d', pointsToPath(wave.points));
+      });
+      
+      // Update intersection fills
+      for (let i = 0; i < intersectionFills.length; i++) {
+        const path = createIntersectionPath(waves[i].points, waves[i + 1].points);
+        intersectionFills[i].setAttribute('d', path);
+        
+        // Boost fill opacity when active
+        intersectionFills[i].style.opacity = isActive ? '1.3' : '1';
+      }
+      
+      requestAnimationFrame(animate);
+    }
+    
+    // Click handler
+    micPromptGroup.addEventListener('click', enableMicrophone);
+    
+    // Start animation
+    animate();
+  ]]></script>
+</svg>

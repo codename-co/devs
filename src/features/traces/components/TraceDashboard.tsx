@@ -1,12 +1,5 @@
 import { useMemo, useState, useEffect } from 'react'
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  Spinner,
-  Select,
-  SelectItem,
-} from '@heroui/react'
+import { Card, Spinner, Select } from '@heroui/react'
 import ReactECharts from 'echarts-for-react'
 import type { EChartsOption } from 'echarts'
 
@@ -93,7 +86,7 @@ export function TraceDashboard({
             aria-label={t('Time Range')}
           >
             {PERIOD_OPTIONS.map((option) => (
-              <SelectItem key={option.key}>{t(option.labelKey)}</SelectItem>
+              <Select.Item id={option.key}>{t(option.labelKey)}</Select.Item>
             ))}
           </Select>
         </div>
@@ -163,54 +156,54 @@ export function TraceDashboard({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Model Distribution */}
         <Card>
-          <CardHeader>
+          <Card.Header>
             <h3 className="font-semibold">{t('Model Distribution')}</h3>
-          </CardHeader>
-          <CardBody className="pt-0">
+          </Card.Header>
+          <Card.Content className="pt-0">
             <DistributionChart
               data={displayMetrics.modelUsage}
               total={displayMetrics.totalTraces}
             />
-          </CardBody>
+          </Card.Content>
         </Card>
 
         {/* Provider Distribution */}
         <Card>
-          <CardHeader>
+          <Card.Header>
             <h3 className="font-semibold">{t('Provider Distribution')}</h3>
-          </CardHeader>
-          <CardBody className="pt-0">
+          </Card.Header>
+          <Card.Content className="pt-0">
             <DistributionChart
               data={displayMetrics.providerUsage}
               total={displayMetrics.totalTraces}
             />
-          </CardBody>
+          </Card.Content>
         </Card>
       </div>
 
       {/* Daily Trend */}
       <Card>
-        <CardHeader>
+        <Card.Header>
           <h3 className="font-semibold">{t('Requests Over Time')}</h3>
-        </CardHeader>
+        </Card.Header>
 
-        <CardBody className="pt-0">
+        <Card.Content className="pt-0">
           <DailyChart data={dailyMetrics} />
-        </CardBody>
+        </Card.Content>
       </Card>
 
       {/* Agent Usage */}
       {Object.keys(displayMetrics.agentUsage).length > 0 && (
         <Card>
-          <CardHeader>
+          <Card.Header>
             <h3 className="font-semibold">{t('Agent Usage')}</h3>
-          </CardHeader>
-          <CardBody className="pt-0">
+          </Card.Header>
+          <Card.Content className="pt-0">
             <AgentDistributionChart
               data={displayMetrics.agentUsage}
               total={displayMetrics.totalTraces}
             />
-          </CardBody>
+          </Card.Content>
         </Card>
       )}
     </div>
@@ -239,7 +232,7 @@ function MetricCard({ title, value, subtitle, icon, color }: MetricCardProps) {
 
   return (
     <Card className="border border-default-200">
-      <CardBody className="p-4">
+      <Card.Content className="p-4">
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs text-default-400 uppercase tracking-wider">
@@ -252,7 +245,7 @@ function MetricCard({ title, value, subtitle, icon, color }: MetricCardProps) {
             <Icon name={icon} size="md" />
           </div>
         </div>
-      </CardBody>
+      </Card.Content>
     </Card>
   )
 }

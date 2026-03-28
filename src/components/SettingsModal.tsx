@@ -1,4 +1,4 @@
-import { Modal, ModalContent, ModalBody } from '@heroui/react'
+import { Modal } from '@heroui/react'
 
 // Lazy load the settings content to avoid circular dependencies
 import { lazy, Suspense } from 'react'
@@ -20,15 +20,15 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
       scrollBehavior="inside"
       placement="bottom-center"
       isOpen={isOpen}
-      onClose={onClose}
+      onOpenChange={(v) => !v && (onClose)()}
       backdrop="blur"
       classNames={{
         base: 'max-h-[90vh] overflow-hidden',
         body: 'p-0',
       }}
     >
-      <ModalContent>
-        <ModalBody className="p-0 min-h-[500px]">
+      <Modal.Dialog>
+        <Modal.Body className="p-0 min-h-[500px]">
           <Suspense
             fallback={
               <div className="flex items-center justify-center py-8">
@@ -38,8 +38,8 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
           >
             <SettingsContent isModal />
           </Suspense>
-        </ModalBody>
-      </ModalContent>
+        </Modal.Body>
+      </Modal.Dialog>
     </Modal>
   )
 }

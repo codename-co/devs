@@ -670,7 +670,7 @@ declare module 'framer-motion' {
     onExitComplete?: () => void;
   }
 
-  export const AnimatePresence: React.FC<AnimatePresenceProps>;
+  export const AnimatePresence: React.FC<>;
 
   export interface TargetAndTransition {
     [key: string]: any;
@@ -886,12 +886,11 @@ declare module '@devs/components' {
   export { Badge } from '@heroui/react';
   export { Chip } from '@heroui/react';
   export { Code } from '@heroui/react';
-  export { Image } from '@heroui/react';
   export { Kbd } from '@heroui/react';
   export { User } from '@heroui/react';
   export { Skeleton } from '@heroui/react';
   export { Snippet } from '@heroui/react';
-  export type { CardProps, AvatarProps, BadgeProps, ChipProps, ImageProps } from '@heroui/react';
+  export type { CardProps, AvatarProps, BadgeProps, ChipProps } from '@heroui/react';
 
   // Feedback
   export { CircularProgress, Progress } from '@heroui/react';

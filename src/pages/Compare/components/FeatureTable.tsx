@@ -1,6 +1,5 @@
 import { Container, Section, Title } from '@/components'
 import { Chip } from '@heroui/react'
-import { motion } from 'framer-motion'
 import { motionVariants } from '../motion'
 import { PRODUCT } from '@/config/product'
 import { StatusIcon, type ComparisonStatus } from './StatusIcon'
@@ -26,18 +25,18 @@ export const FeatureTable = ({ features, altName }: FeatureTableProps) => {
   return (
     <Section>
       <Container size={6} className="text-center">
-        <motion.div {...motionVariants.chip}>
-          <Chip variant="flat" color="primary" className="mb-4">
+        <div {...motionVariants.chip}>
+          <Chip variant="soft" color="accent" className="mb-4">
             {t('Feature Comparison')}
           </Chip>
-        </motion.div>
-        <motion.div {...motionVariants.title}>
+        </div>
+        <div {...motionVariants.title}>
           <Title level={2} size="3xl" className="mb-8">
             {t('Head-to-Head Comparison')}
           </Title>
-        </motion.div>
+        </div>
 
-        <motion.div {...motionVariants.table}>
+        <div {...motionVariants.table}>
           <div className="overflow-hidden rounded-lg border border-default-200">
             <div className="grid grid-cols-3 bg-default-100 dark:bg-default-50/10 px-4 py-3 text-sm font-semibold text-left">
               <div>{t('Feature')}</div>
@@ -67,7 +66,7 @@ export const FeatureTable = ({ features, altName }: FeatureTableProps) => {
               ),
             )}
           </div>
-        </motion.div>
+        </div>
       </Container>
     </Section>
   )

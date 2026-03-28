@@ -11,8 +11,8 @@
 
 import { useState, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Button, Card, CardBody, Chip, Input, Spinner } from '@heroui/react'
-import { addToast } from '@heroui/react'
+import { Button, Card, Chip, Input, Spinner } from '@heroui/react'
+import { toast } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { useHashHighlight } from '@/hooks/useHashHighlight'
@@ -100,7 +100,7 @@ export function SkillsSection() {
             <p className="text-default-500 text-sm">
               {t('No skills installed')}
             </p>
-            <Button size="sm" variant="flat" onPress={navigateToList}>
+            <Button size="sm" variant="secondary" onPress={navigateToList}>
               {t('Cancel')}
             </Button>
           </div>
@@ -145,7 +145,7 @@ export function SkillsSection() {
               <Button
                 color="primary"
                 size="sm"
-                variant="flat"
+                variant="secondary"
                 startContent={<Icon name="Plus" className="w-4 h-4" />}
                 onPress={navigateToAdd}
               >
@@ -153,7 +153,7 @@ export function SkillsSection() {
               </Button>
               <Button
                 size="sm"
-                variant="flat"
+                variant="secondary"
                 startContent={<Icon name="Plus" className="w-4 h-4" />}
                 onPress={navigateToCreate}
               >
@@ -181,8 +181,8 @@ function SkillListCard({
   const { t } = useI18n(skillsI18n)
 
   return (
-    <Card isPressable onPress={onClick} shadow="sm">
-      <CardBody className="flex flex-row items-center gap-4 p-4">
+    <Card onPress={onClick} shadow="sm">
+      <Card.Content className="flex flex-row items-center gap-4 p-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="flex gap-2 items-center text-sm font-semibold truncate">
@@ -190,11 +190,11 @@ function SkillListCard({
               {skill.name}
             </h3>
             {/* {compat.canExecute ? (
-              <Chip size="sm" variant="dot" color="success">
+              <Chip size="sm" variant="soft" color="success">
                 {t('Compatible')}
               </Chip>
             ) : (
-              <Chip size="sm" variant="dot" color="warning">
+              <Chip size="sm" variant="soft" color="warning">
                 {t('Partial')}
               </Chip>
             )} */}
@@ -228,7 +228,7 @@ function SkillListCard({
           />
           <Button
             size="sm"
-            variant="flat"
+            variant="secondary"
             color="danger"
             isIconOnly
             onPress={() => uninstallSkill(skill.id)}
@@ -237,7 +237,7 @@ function SkillListCard({
             <Icon name="Trash" width={14} height={14} />
           </Button>
         </div> */}
-      </CardBody>
+      </Card.Content>
     </Card>
   )
 }
@@ -330,14 +330,14 @@ function AddSkillView({
           githubUrl: result.githubUrl,
           stars: result.stars,
         })
-        addToast({
+        toast({
           title: t('Skill installed successfully'),
           color: 'success',
         })
         onInstalled(skill.id)
       } catch (error) {
         console.error('Failed to install skill:', error)
-        addToast({
+        toast({
           title: t('Failed to install skill'),
           description:
             error instanceof Error
@@ -375,14 +375,14 @@ function AddSkillView({
         githubUrl: fetched.githubUrl,
         stars: 0,
       })
-      addToast({
+      toast({
         title: t('Skill installed successfully'),
         color: 'success',
       })
       onInstalled(skill.id)
     } catch (error) {
       console.error('Failed to install skill from URL:', error)
-      addToast({
+      toast({
         title: t('Failed to install skill'),
         description:
           error instanceof Error
@@ -456,7 +456,7 @@ function AddSkillView({
               const installing = installingIds.has(result.id)
               return (
                 <Card key={result.id} shadow="sm">
-                  <CardBody className="gap-2 p-4">
+                  <Card.Content className="gap-2 p-4">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         <h3 className="text-sm font-semibold truncate">
@@ -476,14 +476,14 @@ function AddSkillView({
                     </p>
                     <div className="flex items-center justify-end gap-2 mt-1">
                       {installed ? (
-                        <Chip size="sm" variant="flat" color="success">
+                        <Chip size="sm" variant="soft" color="success">
                           {t('Installed')}
                         </Chip>
                       ) : (
                         <Button
                           size="sm"
                           color="primary"
-                          variant="flat"
+                          variant="secondary"
                           isDisabled={installing}
                           onPress={() => handleInstallResult(result)}
                           startContent={
@@ -498,7 +498,7 @@ function AddSkillView({
                         </Button>
                       )}
                     </div>
-                  </CardBody>
+                  </Card.Content>
                 </Card>
               )
             })}
@@ -611,7 +611,7 @@ function CreateSkillView({
       skillMdContent: prompt.trim(),
     })
 
-    addToast({
+    toast({
       title: t('Custom skill created successfully'),
       color: 'success',
     })
@@ -665,7 +665,7 @@ function CreateSkillView({
       </div>
 
       <div className="flex justify-end gap-2">
-        <Button size="sm" variant="flat" onPress={onCancel}>
+        <Button size="sm" variant="secondary" onPress={onCancel}>
           {t('Cancel')}
         </Button>
         <Button size="sm" color="primary" onPress={handleCreate}>
@@ -699,7 +699,7 @@ function EmptyState({
         <Button color="primary" onPress={onAdd} size="sm">
           {t('Discover')}
         </Button>
-        <Button variant="flat" onPress={onCreate} size="sm">
+        <Button variant="secondary" onPress={onCreate} size="sm">
           {t('Create')}
         </Button>
       </div>

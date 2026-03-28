@@ -1,13 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import {
-  Button,
-  Card,
-  CardBody,
-  Progress,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from '@heroui/react'
+import { Button, Card, ProgressBar, Popover } from '@heroui/react'
 import { Icon } from '@/components/Icon'
 import { useConnectorStore } from '../stores'
 import { ConnectorIcon } from './ConnectorIcon'
@@ -72,11 +64,11 @@ export function GlobalSyncIndicator({
         onOpenChange={setIsOpen}
         placement={position.includes('bottom') ? 'top-end' : 'bottom-end'}
       >
-        <PopoverTrigger>
+        <Popover.Trigger>
           <Button
             isIconOnly
             color="primary"
-            variant="shadow"
+            variant="primary"
             className="relative animate-pulse"
             aria-label={`${syncCount} connector${syncCount > 1 ? 's' : ''} syncing`}
           >
@@ -87,11 +79,11 @@ export function GlobalSyncIndicator({
               </span>
             )}
           </Button>
-        </PopoverTrigger>
+        </Popover.Trigger>
 
-        <PopoverContent className="p-0 w-72">
+        <Popover.Content className="p-0 w-72">
           <Card shadow="none" className="border-none">
-            <CardBody className="p-3">
+            <Card.Content className="p-3">
               <div className="flex items-center gap-2 mb-3">
                 <Icon
                   name="RefreshDouble"
@@ -111,9 +103,9 @@ export function GlobalSyncIndicator({
                   />
                 ))}
               </div>
-            </CardBody>
+            </Card.Content>
           </Card>
-        </PopoverContent>
+        </Popover.Content>
       </Popover>
     </div>
   )
@@ -143,7 +135,7 @@ function SyncingConnectorItem({
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{connector.name}</p>
         <div className="flex items-center gap-2 mt-1">
-          <Progress
+          <ProgressBar
             size="sm"
             isIndeterminate
             color="primary"

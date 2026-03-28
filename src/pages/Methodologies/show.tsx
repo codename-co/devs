@@ -1,20 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import {
-  Accordion,
-  AccordionItem,
-  Button,
-  Card,
-  CardBody,
-  Chip,
-  Link,
-  Navbar,
-  NavbarContent,
-  NavbarItem,
-  Spinner,
-  Tab,
-  Tabs,
-} from '@heroui/react'
+import { Accordion, Button, Card, Chip, Link, Spinner, Tab, Tabs } from '@heroui/react'
 
 import { Container, Icon, Section, Title, Widget } from '@/components'
 import DefaultLayout from '@/layouts/Default'
@@ -184,21 +170,21 @@ export const MethodologyPage = () => {
           {/* <Title level={2}>{longTitle}</Title> */}
 
           <div className="flex items-center gap-2 flex-wrap mb-4">
-            <Chip size="sm" variant="flat" color="primary">
+            <Chip size="sm" variant="soft" color="accent">
               {t(methodology.metadata.type)}
             </Chip>
             {methodology.metadata.complexity && (
-              <Chip size="sm" variant="flat" color="secondary">
+              <Chip size="sm" variant="soft" color="default">
                 {t(methodology.metadata.complexity)}
               </Chip>
             )}
             {methodology.metadata.version && (
-              <Chip size="sm" variant="dot" color="default">
+              <Chip size="sm" variant="soft" color="default">
                 v{methodology.metadata.version}
               </Chip>
             )}
             {methodology.metadata.origin && (
-              <Chip size="sm" variant="dot" color="warning">
+              <Chip size="sm" variant="soft" color="warning">
                 {methodology.metadata.origin}
               </Chip>
             )}
@@ -214,7 +200,7 @@ export const MethodologyPage = () => {
                 <h4 className="text-sm font-semibold mb-2">{t('Domains')}</h4>
                 <div className="flex gap-2 flex-wrap">
                   {methodology.metadata.domains.map((domain) => (
-                    <Chip key={domain} size="sm" variant="flat">
+                    <Chip key={domain} size="sm" variant="soft">
                       {domain}
                     </Chip>
                   ))}
@@ -228,7 +214,7 @@ export const MethodologyPage = () => {
                 <h4 className="text-sm font-semibold mb-2">{t('Tags')}</h4>
                 <div className="flex gap-2 flex-wrap">
                   {methodology.metadata.tags.map((tag) => (
-                    <Chip key={tag} size="sm" variant="dot">
+                    <Chip key={tag} size="sm" variant="soft">
                       {tag}
                     </Chip>
                   ))}
@@ -240,7 +226,7 @@ export const MethodologyPage = () => {
 
       <Tabs
         aria-label="Methodology sections"
-        variant="underlined"
+        variant="primary"
         // color="primary
         classNames={{
           base: 'flex place-self-center w-full max-w-4xl -mb-3',
@@ -278,8 +264,8 @@ export const MethodologyPage = () => {
                 }
               >
                 {methodology.phases.map((phase, index) => (
-                  <AccordionItem
-                    key={`phase-${index}-${phase.name.toLowerCase().replace(/\s+/g, '-')}`}
+                  <Accordion.Item
+                    id={`phase-${index}-${phase.name.toLowerCase().replace(/\s+/g, '-')}`}
                     id={`phase-${index}-${phase.name.toLowerCase().replace(/\s+/g, '-')}`}
                     aria-label={phase.name}
                     title={phase.name}
@@ -318,17 +304,17 @@ export const MethodologyPage = () => {
 
                     <div className="flex gap-2 flex-wrap mb-4">
                       {phase.optional && (
-                        <Chip size="sm" variant="flat" color="warning">
+                        <Chip size="sm" variant="soft" color="warning">
                           {t('Optional')}
                         </Chip>
                       )}
                       {phase.repeatable && (
-                        <Chip size="sm" variant="flat" color="secondary">
+                        <Chip size="sm" variant="soft" color="default">
                           {t('Repeatable')}
                         </Chip>
                       )}
                       {phase.parallelizable && (
-                        <Chip size="sm" variant="flat" color="primary">
+                        <Chip size="sm" variant="soft" color="accent">
                           {t('Parallelizable')}
                         </Chip>
                       )}
@@ -342,7 +328,7 @@ export const MethodologyPage = () => {
                         </p>
                         <div className="flex gap-2">
                           {phase.duration.estimated && (
-                            <Chip size="sm" variant="flat">
+                            <Chip size="sm" variant="soft">
                               {t('Estimated')}:{' '}
                               {formatDuration(
                                 phase.duration.estimated * 60,
@@ -351,13 +337,13 @@ export const MethodologyPage = () => {
                             </Chip>
                           )}
                           {phase.duration.min && (
-                            <Chip size="sm" variant="dot">
+                            <Chip size="sm" variant="soft">
                               {t('Minimum')}:{' '}
                               {formatDuration(phase.duration.min * 60, lang)}
                             </Chip>
                           )}
                           {phase.duration.max && (
-                            <Chip size="sm" variant="dot">
+                            <Chip size="sm" variant="soft">
                               {t('Maximum')}:{' '}
                               {formatDuration(phase.duration.max * 60, lang)}
                             </Chip>
@@ -422,7 +408,7 @@ export const MethodologyPage = () => {
                                         <Chip
                                           key={roleId}
                                           size="sm"
-                                          variant="flat"
+                                          variant="soft"
                                         >
                                           {role?.name || roleId}
                                         </Chip>
@@ -441,7 +427,7 @@ export const MethodologyPage = () => {
                                 <div className="flex gap-1 flex-wrap">
                                   {phase.agentRequirements.skills.map(
                                     (skill) => (
-                                      <Chip key={skill} size="sm" variant="dot">
+                                      <Chip key={skill} size="sm" variant="soft">
                                         {skill}
                                       </Chip>
                                     ),
@@ -455,8 +441,8 @@ export const MethodologyPage = () => {
                                 {t('Min Experience')}:{' '}
                                 <Chip
                                   size="sm"
-                                  variant="flat"
-                                  color="secondary"
+                                  variant="soft"
+                                  color="default"
                                 >
                                   {t(phase.agentRequirements.minExperience)}
                                 </Chip>
@@ -487,7 +473,7 @@ export const MethodologyPage = () => {
                                       <Chip
                                         key={input.typeId}
                                         size="sm"
-                                        variant="flat"
+                                        variant="soft"
                                       >
                                         {methodology.artifactFlow?.artifactTypes?.find(
                                           (a) => a.id === input.typeId,
@@ -508,7 +494,7 @@ export const MethodologyPage = () => {
                                       <Chip
                                         key={output.typeId}
                                         size="sm"
-                                        variant="flat"
+                                        variant="soft"
                                         color="success"
                                       >
                                         {methodology.artifactFlow?.artifactTypes?.find(
@@ -522,7 +508,7 @@ export const MethodologyPage = () => {
                           </div>
                         </div>
                       )}
-                  </AccordionItem>
+                  </Accordion.Item>
                 ))}
               </Accordion>
             </Container>
@@ -557,21 +543,21 @@ export const MethodologyPage = () => {
                             <div className="flex items-center gap-2 mb-1 flex-wrap">
                               <h4 className="font-semibold">{role.name}</h4>
                               {role.authority && (
-                                <Chip size="sm" variant="flat">
+                                <Chip size="sm" variant="soft">
                                   {t(role.authority)}
                                 </Chip>
                               )}
                               {role.experienceLevel && (
                                 <Chip
                                   size="sm"
-                                  variant="flat"
-                                  color="secondary"
+                                  variant="soft"
+                                  color="default"
                                 >
                                   {t(role.experienceLevel)}
                                 </Chip>
                               )}
                               {isRequired && (
-                                <Chip size="sm" variant="flat" color="danger">
+                                <Chip size="sm" variant="soft" color="danger">
                                   {t('Required')}
                                 </Chip>
                               )}
@@ -604,7 +590,7 @@ export const MethodologyPage = () => {
                                       <Chip
                                         key={skill}
                                         size="sm"
-                                        variant="flat"
+                                        variant="soft"
                                         color="success"
                                       >
                                         {skill}
@@ -621,7 +607,7 @@ export const MethodologyPage = () => {
                                   </p>
                                   <div className="flex gap-1 flex-wrap">
                                     {role.optionalSkills.map((skill) => (
-                                      <Chip key={skill} size="sm" variant="dot">
+                                      <Chip key={skill} size="sm" variant="soft">
                                         {skill}
                                       </Chip>
                                     ))}
@@ -644,7 +630,7 @@ export const MethodologyPage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {methodology.agentCoordination.teamComposition.minSize && (
                       <Card>
-                        <CardBody>
+                        <Card.Content>
                           <p className="text-sm text-default-600">
                             {t('Minimum team size')}
                           </p>
@@ -654,12 +640,12 @@ export const MethodologyPage = () => {
                                 .minSize
                             }
                           </p>
-                        </CardBody>
+                        </Card.Content>
                       </Card>
                     )}
                     {methodology.agentCoordination.teamComposition.maxSize && (
                       <Card>
-                        <CardBody>
+                        <Card.Content>
                           <p className="text-sm text-default-600">
                             {t('Maximum team size')}
                           </p>
@@ -669,7 +655,7 @@ export const MethodologyPage = () => {
                                 .maxSize
                             }
                           </p>
-                        </CardBody>
+                        </Card.Content>
                       </Card>
                     )}
                   </div>
@@ -699,7 +685,7 @@ export const MethodologyPage = () => {
 
                           return (
                             <Card key={index}>
-                              <CardBody>
+                              <Card.Content>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                   <div>
                                     <p className="text-sm text-default-600">
@@ -721,7 +707,7 @@ export const MethodologyPage = () => {
                                     <p className="text-sm text-default-600">
                                       {t('Type')}
                                     </p>
-                                    <Chip size="sm" variant="flat">
+                                    <Chip size="sm" variant="soft">
                                       {t(pattern.type)}
                                     </Chip>
                                   </div>
@@ -737,7 +723,7 @@ export const MethodologyPage = () => {
                                           <Chip
                                             key={type}
                                             size="sm"
-                                            variant="dot"
+                                            variant="soft"
                                           >
                                             {t(type)}
                                           </Chip>
@@ -745,7 +731,7 @@ export const MethodologyPage = () => {
                                       </div>
                                     </div>
                                   )}
-                              </CardBody>
+                              </Card.Content>
                             </Card>
                           )
                         },
@@ -772,7 +758,7 @@ export const MethodologyPage = () => {
 
                           return (
                             <Card key={index}>
-                              <CardBody>
+                              <Card.Content>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <div>
                                     <p className="text-sm text-default-600">
@@ -788,8 +774,8 @@ export const MethodologyPage = () => {
                                     </p>
                                     <Chip
                                       size="sm"
-                                      variant="flat"
-                                      color="primary"
+                                      variant="soft"
+                                      color="accent"
                                     >
                                       {authorityRole?.name ||
                                         decision.authority}
@@ -803,7 +789,7 @@ export const MethodologyPage = () => {
                                     </p>
                                     <Chip
                                       size="sm"
-                                      variant="flat"
+                                      variant="soft"
                                       color={
                                         decision.requiresConsensus
                                           ? 'success'
@@ -831,7 +817,7 @@ export const MethodologyPage = () => {
                                               <Chip
                                                 key={roleId}
                                                 size="sm"
-                                                variant="dot"
+                                                variant="soft"
                                                 className="mr-1"
                                               >
                                                 {role?.name || roleId}
@@ -842,7 +828,7 @@ export const MethodologyPage = () => {
                                       </div>
                                     )}
                                 </div>
-                              </CardBody>
+                              </Card.Content>
                             </Card>
                           )
                         },
@@ -863,20 +849,20 @@ export const MethodologyPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {methodology.configuration.maxIterations && (
                     <Card>
-                      <CardBody>
+                      <Card.Content>
                         <p className="text-sm text-default-600">
                           {t('Maximum Iterations')}
                         </p>
                         <p className="text-2xl font-semibold">
                           {methodology.configuration.maxIterations}
                         </p>
-                      </CardBody>
+                      </Card.Content>
                     </Card>
                   )}
 
                   {methodology.configuration.timeBox && (
                     <Card>
-                      <CardBody>
+                      <Card.Content>
                         <p className="text-sm text-default-600 mb-2">
                           {t('Time Box')}
                         </p>
@@ -889,7 +875,7 @@ export const MethodologyPage = () => {
                             undefined && (
                             <Chip
                               size="sm"
-                              variant="flat"
+                              variant="soft"
                               color={
                                 methodology.configuration.timeBox.strict
                                   ? 'warning'
@@ -902,13 +888,13 @@ export const MethodologyPage = () => {
                             </Chip>
                           )}
                         </div>
-                      </CardBody>
+                      </Card.Content>
                     </Card>
                   )}
 
                   {methodology.configuration.qualityGates && (
                     <Card>
-                      <CardBody>
+                      <Card.Content>
                         <p className="text-sm text-default-600 mb-2">
                           {t('Quality Gates')}
                         </p>
@@ -916,7 +902,7 @@ export const MethodologyPage = () => {
                           <div className="flex items-center gap-2">
                             <Chip
                               size="sm"
-                              variant="flat"
+                              variant="soft"
                               color={
                                 methodology.configuration.qualityGates.enabled
                                   ? 'success'
@@ -948,20 +934,20 @@ export const MethodologyPage = () => {
                             </p>
                           )}
                         </div>
-                      </CardBody>
+                      </Card.Content>
                     </Card>
                   )}
 
                   {methodology.configuration.parallelization && (
                     <Card>
-                      <CardBody>
+                      <Card.Content>
                         <p className="text-sm text-default-600 mb-2">
                           {t('Parallelization')}
                         </p>
                         <div className="space-y-1">
                           <Chip
                             size="sm"
-                            variant="flat"
+                            variant="soft"
                             color={
                               methodology.configuration.parallelization.enabled
                                 ? 'success'
@@ -993,13 +979,13 @@ export const MethodologyPage = () => {
                             </p>
                           )}
                         </div>
-                      </CardBody>
+                      </Card.Content>
                     </Card>
                   )}
 
                   {methodology.configuration.convergence && (
                     <Card>
-                      <CardBody>
+                      <Card.Content>
                         <p className="text-sm text-default-600 mb-2">
                           {t('Convergence')}
                         </p>
@@ -1024,7 +1010,7 @@ export const MethodologyPage = () => {
                             </p>
                           )}
                         </div>
-                      </CardBody>
+                      </Card.Content>
                     </Card>
                   )}
                 </div>
@@ -1039,13 +1025,13 @@ export const MethodologyPage = () => {
                 <Title level={2}>{t('Execution Strategy')}</Title>
                 <div className="space-y-4">
                   <Card>
-                    <CardBody>
+                    <Card.Content>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <p className="text-sm text-default-600">
                             {t('Strategy')}
                           </p>
-                          <Chip size="sm" variant="flat" color="primary">
+                          <Chip size="sm" variant="soft" color="accent">
                             {t(methodology.execution.strategy)}
                           </Chip>
                         </div>
@@ -1054,7 +1040,7 @@ export const MethodologyPage = () => {
                             <p className="text-sm text-default-600">
                               {t('Failure Handling')}
                             </p>
-                            <Chip size="sm" variant="flat" color="warning">
+                            <Chip size="sm" variant="soft" color="warning">
                               {t(
                                 methodology.execution.failureHandling.strategy,
                               )}
@@ -1072,13 +1058,13 @@ export const MethodologyPage = () => {
                           </div>
                         )}
                       </div>
-                    </CardBody>
+                    </Card.Content>
                   </Card>
 
                   {methodology.execution.phaseOrder &&
                     methodology.execution.phaseOrder.length > 0 && (
                       <Card>
-                        <CardBody>
+                        <Card.Content>
                           <p className="text-sm text-default-600 mb-2">
                             {t('Phase Order')}
                           </p>
@@ -1089,21 +1075,21 @@ export const MethodologyPage = () => {
                                   (p) => p.id === phaseId,
                                 )
                                 return (
-                                  <Chip key={phaseId} size="sm" variant="flat">
+                                  <Chip key={phaseId} size="sm" variant="soft">
                                     {index + 1}. {phase?.name || phaseId}
                                   </Chip>
                                 )
                               },
                             )}
                           </div>
-                        </CardBody>
+                        </Card.Content>
                       </Card>
                     )}
 
                   {methodology.execution.loops &&
                     methodology.execution.loops.length > 0 && (
                       <Card>
-                        <CardBody>
+                        <Card.Content>
                           <p className="text-sm text-default-600 mb-3">
                             {t('Loops')}
                           </p>
@@ -1135,7 +1121,7 @@ export const MethodologyPage = () => {
                                       <Chip
                                         key={phaseId}
                                         size="sm"
-                                        variant="dot"
+                                        variant="soft"
                                       >
                                         {phase?.name || phaseId}
                                       </Chip>
@@ -1145,14 +1131,14 @@ export const MethodologyPage = () => {
                               </div>
                             ))}
                           </div>
-                        </CardBody>
+                        </Card.Content>
                       </Card>
                     )}
 
                   {methodology.execution.branches &&
                     methodology.execution.branches.length > 0 && (
                       <Card>
-                        <CardBody>
+                        <Card.Content>
                           <p className="text-sm text-default-600 mb-3">
                             {t('Branches')}
                           </p>
@@ -1177,7 +1163,7 @@ export const MethodologyPage = () => {
                                       </p>
                                       <Chip
                                         size="sm"
-                                        variant="flat"
+                                        variant="soft"
                                         color="success"
                                       >
                                         {methodology.phases.find(
@@ -1191,7 +1177,7 @@ export const MethodologyPage = () => {
                                       </p>
                                       <Chip
                                         size="sm"
-                                        variant="flat"
+                                        variant="soft"
                                         color="danger"
                                       >
                                         {methodology.phases.find(
@@ -1204,7 +1190,7 @@ export const MethodologyPage = () => {
                               ),
                             )}
                           </div>
-                        </CardBody>
+                        </Card.Content>
                       </Card>
                     )}
                 </div>
@@ -1285,7 +1271,7 @@ export const MethodologyPage = () => {
                     {methodology.artifactFlow.artifactTypes.map(
                       (artifactType) => (
                         <Card key={artifactType.id}>
-                          <CardBody>
+                          <Card.Content>
                             <div className="mb-3">
                               <h4 className="font-semibold text-lg">
                                 {artifactType.name}
@@ -1298,7 +1284,7 @@ export const MethodologyPage = () => {
                             </div>
 
                             <div className="flex gap-2 mb-3">
-                              <Chip size="sm" variant="flat" color="primary">
+                              <Chip size="sm" variant="soft" color="accent">
                                 {t('Format')}: {t(artifactType.format)}
                               </Chip>
                             </div>
@@ -1357,7 +1343,7 @@ export const MethodologyPage = () => {
                                   </div>
                                 </div>
                               )}
-                          </CardBody>
+                          </Card.Content>
                         </Card>
                       ),
                     )}
@@ -1376,7 +1362,7 @@ export const MethodologyPage = () => {
                 <div className="space-y-3">
                   {methodology.ceremonies.map((ceremony) => (
                     <Card key={ceremony.id}>
-                      <CardBody>
+                      <Card.Content>
                         <div className="flex items-start justify-between mb-3">
                           <div>
                             <h4 className="font-semibold text-lg">
@@ -1389,7 +1375,7 @@ export const MethodologyPage = () => {
                             )}
                           </div>
                           {ceremony.duration && (
-                            <Chip size="sm" variant="flat">
+                            <Chip size="sm" variant="soft">
                               {formatDuration(ceremony.duration * 60, lang)}
                             </Chip>
                           )}
@@ -1400,7 +1386,7 @@ export const MethodologyPage = () => {
                             <p className="text-sm text-default-600 mb-1">
                               {t('Timing')}
                             </p>
-                            <Chip size="sm" variant="flat">
+                            <Chip size="sm" variant="soft">
                               {t(ceremony.timing)}
                             </Chip>
                           </div>
@@ -1421,7 +1407,7 @@ export const MethodologyPage = () => {
                                         <Chip
                                           key={participantId}
                                           size="sm"
-                                          variant="dot"
+                                          variant="soft"
                                         >
                                           {role?.name || participantId}
                                         </Chip>
@@ -1460,7 +1446,7 @@ export const MethodologyPage = () => {
                                       <Chip
                                         key={input}
                                         size="sm"
-                                        variant="flat"
+                                        variant="soft"
                                       >
                                         {input}
                                       </Chip>
@@ -1480,7 +1466,7 @@ export const MethodologyPage = () => {
                                         <Chip
                                           key={output}
                                           size="sm"
-                                          variant="flat"
+                                          variant="soft"
                                         >
                                           {output}
                                         </Chip>
@@ -1491,7 +1477,7 @@ export const MethodologyPage = () => {
                               )}
                           </div>
                         )}
-                      </CardBody>
+                      </Card.Content>
                     </Card>
                   ))}
                 </div>
@@ -1506,7 +1492,7 @@ export const MethodologyPage = () => {
               {/* <Title level={2}>{t('JSON Methodology')}</Title> */}
               <Button
                 as={Link}
-                variant="flat"
+                variant="secondary"
                 startContent={<Icon name="Download" size="sm" />}
                 href={`/methodologies/${methodology.metadata.id}.methodology.json`}
                 target="_blank"
@@ -1524,19 +1510,13 @@ export const MethodologyPage = () => {
       </Tabs>
 
       {/* Bottom Navigation Bar */}
-      <Navbar
-        position="static"
-        className="bottom-0 top-auto"
-        classNames={{
-          wrapper: 'max-w-5xl',
-        }}
-        isBordered
-        isBlurred
+      <nav
+        className="bottom-0 top-auto border-t border-divider backdrop-blur-lg"
       >
-        <NavbarContent justify="start">
-          <NavbarItem>
+        <div className="flex items-center gap-2 max-w-5xl mx-auto px-6 py-3 justify-start">
+          <div>
             <Button
-              variant="flat"
+              variant="secondary"
               startContent={
                 <Icon
                   name="NavArrowLeft"
@@ -1560,14 +1540,14 @@ export const MethodologyPage = () => {
                   })
                 : t('Back to Methodologies')}
             </Button>
-          </NavbarItem>
-        </NavbarContent>
+          </div>
+        </div>
 
         {nextMethodology && (
-          <NavbarContent justify="end">
-            <NavbarItem>
+          <div className="flex items-center gap-2 max-w-5xl mx-auto px-6 py-3 justify-end">
+            <div>
               <Button
-                variant="flat"
+                variant="secondary"
                 endContent={
                   <Icon
                     name="NavArrowRight"
@@ -1585,10 +1565,10 @@ export const MethodologyPage = () => {
                     nextMethodology.metadata.name,
                 })}
               </Button>
-            </NavbarItem>
-          </NavbarContent>
+            </div>
+          </div>
         )}
-      </Navbar>
+      </nav>
     </DefaultLayout>
   )
 }

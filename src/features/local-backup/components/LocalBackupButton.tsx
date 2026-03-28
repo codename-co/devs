@@ -3,7 +3,7 @@
  *
  * Header icon button with popover for local backup settings
  */
-import { Popover, PopoverContent } from '@heroui/react'
+import { Popover } from '@heroui/react'
 import { useEffect, useState } from 'react'
 
 import '../types/file-system.d'
@@ -88,7 +88,7 @@ export function LocalBackupButton() {
         shortcutKey="S"
         onClick={openSettings}
       />
-      <PopoverContent />
+      <Popover.Content />
     </Popover>
   )
 }

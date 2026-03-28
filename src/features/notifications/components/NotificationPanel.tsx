@@ -127,7 +127,7 @@ function NotificationItem({
             </Tooltip>
           )}
           {notification.actionLabel && (
-            <Chip size="sm" variant="flat" color="primary" className="mt-2">
+            <Chip size="sm" variant="soft" color="accent" className="mt-2">
               {notification.actionLabel}
             </Chip>
           )}
@@ -137,7 +137,7 @@ function NotificationItem({
         <Button
           isIconOnly
           size="sm"
-          variant="light"
+          variant="ghost"
           className="opacity-0 group-hover:opacity-100 absolute top-2 end-2"
           onPress={() => deleteNotification(notification.id)}
           aria-label="Delete notification"
@@ -173,13 +173,13 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold">{t('Notifications')}</h3>
           {unreadCount > 0 && (
-            <Chip size="sm" color="primary" variant="flat">
+            <Chip size="sm" color="accent" variant="soft">
               {unreadCount}
             </Chip>
           )}
         </div>
         {notifications.length > 0 && (
-          <Button size="sm" variant="light" onPress={clearAll}>
+          <Button size="sm" variant="ghost" onPress={clearAll}>
             {t('Clear all')}
           </Button>
         )}

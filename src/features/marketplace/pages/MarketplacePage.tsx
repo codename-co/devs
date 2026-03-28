@@ -1,16 +1,5 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
-import {
-  Card,
-  CardHeader,
-  Chip,
-  Listbox,
-  ListboxItem,
-  Spinner,
-  Avatar,
-  Input,
-  Button,
-  Tooltip,
-} from '@heroui/react'
+import { Card, Chip, ListBox, Spinner, Avatar, Input, Button, Tooltip } from '@heroui/react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import DefaultLayout from '@/layouts/Default'
 import { Container, Section, Icon, Title } from '@/components'
@@ -282,10 +271,9 @@ export function MarketplacePage() {
       <Card
         key={ext.id}
         shadow="sm"
-        isPressable
         onPress={() => handleOpenExtensionDetail(ext)}
       >
-        <CardHeader className="gap-4">
+        <Card.Header className="gap-4">
           <Avatar
             icon={<Icon name={ext.icon || categoryMeta.icon} />}
             color={chipColor}
@@ -298,8 +286,8 @@ export function MarketplacePage() {
               <Tooltip content={t('AI-generated')}>
                 <Chip
                   size="sm"
-                  color="secondary"
-                  variant="flat"
+                  color="default"
+                  variant="soft"
                   className="float-end"
                 >
                   <Icon name="Sparks" size="sm" />
@@ -317,7 +305,7 @@ export function MarketplacePage() {
                 {localizedName}
               </span>
               {ext.featured && (
-                <Chip size="sm" color="warning" variant="flat">
+                <Chip size="sm" color="warning" variant="soft">
                   ★
                 </Chip>
               )}
@@ -326,7 +314,7 @@ export function MarketplacePage() {
               {localizedDescription || t('No description found')}
             </p>
           </div>
-        </CardHeader>
+        </Card.Header>
       </Card>
     )
   }
@@ -359,7 +347,7 @@ export function MarketplacePage() {
                 <div className="flex-shrink-0">
                   <Button
                     color="warning"
-                    variant="shadow"
+                    variant="primary"
                     startContent={<Icon name="Code" />}
                     as={Link}
                     to={url('/marketplace/new')}
@@ -378,7 +366,7 @@ export function MarketplacePage() {
           {/* Main layout with vertical tabs on left */}
           <div className="flex gap-8">
             {/* Category Listbox */}
-            <Listbox
+            <ListBox
               aria-label={t('Categories')}
               selectedKeys={[selectedCategory]}
               selectionMode="single"
@@ -389,84 +377,42 @@ export function MarketplacePage() {
               variant="flat"
               className="hidden sm:flex w-auto"
             >
-              <ListboxItem
-                key="all"
-                startContent={<Icon name="ViewGrid" />}
-                endContent={
-                  <Chip size="sm" variant="flat">
-                    {categoryCounts.all}
-                  </Chip>
-                }
+              <ListBox.Item
+                id="all"
               >
                 {t('All')}
-              </ListboxItem>
-              <ListboxItem
-                key="app"
-                startContent={<Icon name="CubeScan" />}
-                endContent={
-                  <Chip size="sm" variant="flat">
-                    {categoryCounts.app}
-                  </Chip>
-                }
+              </ListBox.Item>
+              <ListBox.Item
+                id="app"
               >
                 {t('Apps')}
-              </ListboxItem>
-              <ListboxItem
-                key="agent"
-                startContent={<Icon name="User" />}
-                endContent={
-                  <Chip size="sm" variant="flat">
-                    {categoryCounts.agent}
-                  </Chip>
-                }
+              </ListBox.Item>
+              <ListBox.Item
+                id="agent"
               >
                 {t('Agents')}
-              </ListboxItem>
-              <ListboxItem
-                key="connector"
-                startContent={<Icon name="Puzzle" />}
-                endContent={
-                  <Chip size="sm" variant="flat">
-                    {categoryCounts.connector}
-                  </Chip>
-                }
+              </ListBox.Item>
+              <ListBox.Item
+                id="connector"
               >
                 {t('Connectors')}
-              </ListboxItem>
-              <ListboxItem
-                key="tool"
-                startContent={<Icon name="Settings" />}
-                endContent={
-                  <Chip size="sm" variant="flat">
-                    {categoryCounts.tool}
-                  </Chip>
-                }
+              </ListBox.Item>
+              <ListBox.Item
+                id="tool"
               >
                 {t('Tools')}
-              </ListboxItem>
-              <ListboxItem
-                key="custom"
-                startContent={<Icon name="Sparks" />}
-                endContent={
-                  <Chip size="sm" variant="flat">
-                    {categoryCounts.custom}
-                  </Chip>
-                }
+              </ListBox.Item>
+              <ListBox.Item
+                id="custom"
               >
                 {t('My extensions')}
-              </ListboxItem>
-              <ListboxItem
-                key="installed"
-                startContent={<Icon name="Check" />}
-                endContent={
-                  <Chip size="sm" variant="flat">
-                    {categoryCounts.installed}
-                  </Chip>
-                }
+              </ListBox.Item>
+              <ListBox.Item
+                id="installed"
               >
                 {t('Installed')}
-              </ListboxItem>
-            </Listbox>
+              </ListBox.Item>
+            </ListBox>
 
             {/* Content area */}
             <div style={{ flex: 1, minWidth: 0 }}>

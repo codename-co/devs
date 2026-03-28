@@ -101,7 +101,7 @@ export const CommunicationTrace = memo(
         >
           <Icon name="ChatBubble" size="sm" />
           <span className="text-sm font-medium">Agent Communications</span>
-          <Chip size="sm" variant="flat" color="default">
+          <Chip size="sm" variant="soft" color="default">
             {messages.length}
           </Chip>
           <span className="ml-auto text-default-400 text-xs">
@@ -122,8 +122,8 @@ export const CommunicationTrace = memo(
                 </span>
                 <Chip
                   size="sm"
-                  variant="flat"
-                  color="secondary"
+                  variant="soft"
+                  color="default"
                   className="shrink-0"
                 >
                   {getAgentName(msg.from)}
@@ -131,7 +131,7 @@ export const CommunicationTrace = memo(
                 <span className="text-default-400 text-xs mt-0.5">→</span>
                 <Chip
                   size="sm"
-                  variant="flat"
+                  variant="soft"
                   color="default"
                   className="shrink-0"
                 >
@@ -139,7 +139,7 @@ export const CommunicationTrace = memo(
                 </Chip>
                 <Chip
                   size="sm"
-                  variant="dot"
+                  variant="soft"
                   color={TYPE_COLOR[msg.type] ?? 'default'}
                   className="shrink-0"
                 >

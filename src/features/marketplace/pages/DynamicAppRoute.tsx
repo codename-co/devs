@@ -205,7 +205,7 @@ export function DynamicAppRoute() {
           {updateAvailable && (
             <Tooltip content={t('Update')} placement="bottom">
               <Button
-                variant="flat"
+                variant="secondary"
                 isIconOnly
                 color="success"
                 aria-label={t('Update')}
@@ -220,7 +220,7 @@ export function DynamicAppRoute() {
           {ext.isCustom && (
             <Tooltip content={t('Edit')} placement="bottom">
               <Button
-                variant="light"
+                variant="ghost"
                 isIconOnly
                 aria-label={t('Edit')}
                 className="opacity-70 hover:opacity-100"

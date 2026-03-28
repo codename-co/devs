@@ -6,7 +6,7 @@ import { Icon } from '@/components'
 export const SubTaskStatusIcon = memo(({ status }: { status: string }) => {
   switch (status) {
     case 'in_progress':
-      return <Spinner size="sm" classNames={{ wrapper: 'w-4 h-4' }} />
+      return <Spinner size="sm" />
     case 'completed':
       return (
         <Icon name="CheckCircleSolid" size="sm" className="text-default-400" />

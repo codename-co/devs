@@ -1,0 +1,184 @@
+id: tic-tac-toe
+name: Tic Tac Toe
+version: 1.0.0
+type: app
+license: MIT
+icon: Gamepad
+color: indigo
+description: A classic Tic Tac Toe game offering Player vs Player and Player vs AI modes.
+author:
+  name: Arnaud Leymet
+  url: https://arnley.com
+privacyPolicy: https://devs.new/privacy
+pages:
+  tictactoe: | # tsx
+    import { useState, useEffect } from 'react';
+    import { Button, Card, Container, Section } from '@devs/components';
+    import confetti from 'https://esm.sh/canvas-confetti?external=react,react-dom';
+
+    const App = () => {
+      const [squares, setSquares] = useState(Array(9).fill(null));
+      const [xIsNext, setXIsNext] = useState(true);
+      const [gameMode, setGameMode] = useState('pvp'); // 'pvp' or 'ai'
+
+      const calculateWinner = (squares) => {
+        const lines = [
+          [0, 1, 2], [3, 4, 5], [6, 7, 8],
+          [0, 3, 6], [1, 4, 7], [2, 5, 8],
+          [0, 4, 8], [2, 4, 6],
+        ];
+        for (let i = 0; i < lines.length; i++) {
+          const [a, b, c] = lines[i];
+          if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+            return squares[a];
+          }
+        }
+        return null;
+      };
+
+      const winner = calculateWinner(squares);
+      const isDraw = !winner && squares.every(Boolean);
+
+      useEffect(() => {
+        if (winner) {
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+          });
+          window.DEVS?.ui?.toast(`Winner: ${winner}!`, { type: 'success' });
+        } else if (isDraw) {
+           window.DEVS?.ui?.toast("It's a draw!", { type: 'info' });
+        }
+      }, [winner, isDraw]);
+
+      const handleClick = (i, isAI = false) => {
+        if (squares[i] || winner) return;
+
+        // If AI mode and it's O's turn (AI), prevent manual click
+        if (gameMode === 'ai' && !xIsNext && !isAI) return;
+
+        const nextSquares = squares.slice();
+        nextSquares[i] = xIsNext ? 'X' : 'O';
+        setSquares(nextSquares);
+        setXIsNext(!xIsNext);
+      };
+
+      // AI Logic
+      useEffect(() => {
+        if (gameMode === 'ai' && !xIsNext && !winner && !isDraw) {
+          const makeAIMove = async () => {
+            const emptyIndices = squares.map((s, i) => s === null ? i : null).filter(i => i !== null);
+
+            if (emptyIndices.length === 0) return; // No moves left
+
+            try {
+              // Represent the board for the LLM
+              const boardForLLM = squares.map(s => s === null ? '""' : `'${s}'`).join(', ');
+              const prompt = `You are playing Tic Tac Toe as 'O'. The current board is represented by a 0-indexed array of 9 elements: [${boardForLLM}]. An empty string "" means an empty spot. 'X' is the opponent. Your goal is to win or block the opponent. Respond with only the 0-indexed position (0-8) for your next move. Do not include any other text or explanation.`;
+
+              const response = await window.DEVS.llm.chat(
+                [
+                  { role: 'system', content: 'You are an expert Tic Tac Toe player. Always respond with only a single 0-indexed number (0-8) representing your next move. Do not include any other text.' },
+                  { role: 'user', content: prompt },
+                ],
+                { temperature: 0.1, maxTokens: 5 } // Low temperature for deterministic-like behavior, maxTokens for concise response
+              );
+
+              const aiMoveString = response.content.trim();
+              const aiMove = parseInt(aiMoveString, 10);
+              console.log(aiMoveString);
+
+              if (!isNaN(aiMove) && emptyIndices.includes(aiMove)) {
+                // Valid move
+                handleClick(aiMove, true);
+              } else {
+                // Fallback to a random move if LLM provides an invalid or non-empty spot
+                console.warn("LLM provided an invalid move, falling back to random:", aiMoveString);
+                window.DEVS?.ui?.toast('AI chose an invalid move, making a random one instead.', { type: 'warning' });
+                const randomIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+                handleClick(randomIndex, true);
+              }
+            } catch (error) {
+              console.error("Error making AI move with LLM:", error);
+              window.DEVS?.ui?.toast('AI encountered an error, making a random move.', { type: 'error' });
+              // Fallback to random move on error
+              const randomIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+              handleClick(randomIndex, true);
+            }
+          };
+
+          const timer = setTimeout(() => {
+            makeAIMove();
+          }, 600); // Delay for better UX
+          return () => clearTimeout(timer);
+        }
+      }, [xIsNext, gameMode, winner, isDraw, squares]);
+
+      const resetGame = () => {
+        setSquares(Array(9).fill(null));
+        setXIsNext(true);
+      };
+
+      const status = winner
+        ? `Winner: ${winner}`
+        : isDraw
+        ? "Draw!"
+        : `Next player: ${xIsNext ? 'X' : 'O'}`;
+
+      return (
+        <Section>
+          <Container className="flex flex-col items-center gap-6 py-12">
+            <div className="flex gap-2 mb-2">
+              <Button
+                variant={gameMode === 'pvp' ? 'solid' : 'bordered'}
+                color="primary"
+                onPress={() => { setGameMode('pvp'); resetGame(); }}
+                size="sm"
+              >
+                Player vs Player
+              </Button>
+              <Button
+                variant={gameMode === 'ai' ? 'solid' : 'bordered'}
+                color="secondary"
+                onPress={() => { setGameMode('ai'); resetGame(); }}
+                size="sm"
+              >
+                Player vs AI
+              </Button>
+            </div>
+
+            <Card className="p-6 bg-content1 shadow-md">
+              <div className="text-xl font-semibold text-center mb-6 min-h-[2rem]">
+                <span className={winner ? "text-success" : "text-default-700"}>
+                  {status}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                {squares.map((square, i) => (
+                  <Button
+                    key={i}
+                    isIconOnly
+                    className="w-24 h-24 text-5xl font-bold rounded-xl"
+                    variant={square ? "solid" : "flat"}
+                    color={square === 'X' ? "primary" : square === 'O' ? "danger" : "default"}
+                    onPress={() => handleClick(i)}
+                  >
+                    {square}
+                  </Button>
+                ))}
+              </div>
+            </Card>
+
+            <Button
+              color="warning"
+              variant="flat"
+              onPress={resetGame}
+              className="mt-4"
+            >
+              Reset Game
+            </Button>
+          </Container>
+        </Section>
+      );
+    }

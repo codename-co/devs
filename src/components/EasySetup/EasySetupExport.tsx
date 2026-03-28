@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Input, Switch, Alert, Divider, Snippet, Spinner } from '@heroui/react'
+import { Input, Switch, Alert, Separator, Spinner } from '@heroui/react'
 import { Icon } from '@/components'
 import { generateSetupQRData } from '@/lib/easy-qr'
 import { errorToast } from '@/lib/toast'
@@ -97,7 +97,7 @@ export const EasySetupExport = () => {
         className="max-w-xs"
       />
 
-      <Divider />
+      <Separator />
 
       <p className="text-sm font-medium text-gray-600">
         {t('Now you can share the platform configuration…')}
@@ -109,17 +109,11 @@ export const EasySetupExport = () => {
             {t('Either with this URL:')}
           </p>
 
-          <Snippet
-            symbol={false}
-            copyIcon={<Icon name="Copy" />}
-            tooltipProps={{ content: t('Copy to clipboard') }}
-            classNames={{
-              base: 'bg-default-50 border-default-200 w-full',
-              pre: 'whitespace-pre-wrap break-all max-h-16 overflow-y-hidden',
-            }}
-          >
-            {generatedUrl}
-          </Snippet>
+          <pre className="bg-default-50 border border-default-200 w-full rounded-lg p-2">
+            <code className="whitespace-pre-wrap break-all max-h-16 overflow-y-hidden block text-sm">
+              {generatedUrl}
+            </code>
+          </pre>
         </div>
 
         <div className="flex flex-col gap-2 flex-1">

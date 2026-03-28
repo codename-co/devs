@@ -7,17 +7,7 @@ import type { HeaderProps, IconName } from '@/lib/types'
 import { useContextualPanelStore } from '@/stores/contextualPanelStore'
 import { userSettings } from '@/stores/userStore'
 import { useNavigate } from 'react-router-dom'
-import {
-  Avatar,
-  Button,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-  Link,
-  ToastProvider,
-  Tooltip,
-} from '@heroui/react'
+import { Avatar, Button, Dropdown, Link, ToastProvider, Tooltip } from '@heroui/react'
 import clsx from 'clsx'
 import { useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
@@ -105,7 +95,7 @@ export default function DefaultLayout({
                     {showBackButton && (
                       <Tooltip content={t('Back')}>
                         <Button
-                          variant="light"
+                          variant="ghost"
                           onPress={handleBack}
                           startContent={
                             <Icon
@@ -129,7 +119,7 @@ export default function DefaultLayout({
                             >
                               {header.icon.image ? (
                                 <Avatar
-                                  radius="full"
+
                                   src={`data:image/png;base64,${header.icon.image}`}
                                   alt=""
                                   className="w-12 h-12"
@@ -145,7 +135,7 @@ export default function DefaultLayout({
                           </Tooltip>
                         ) : header.icon.image ? (
                           <Avatar
-                            radius="full"
+
                             src={`data:image/png;base64,${header.icon.image}`}
                             alt=""
                             className={clsx(
@@ -166,7 +156,7 @@ export default function DefaultLayout({
                       <div className="absolute end-0 flex items-center gap-1 z-1">
                         {header?.cta && (
                           <Button
-                            variant="light"
+                            variant="ghost"
                             as={Link}
                             href={header.cta?.href ?? ''}
                             startContent={
@@ -181,26 +171,23 @@ export default function DefaultLayout({
                         )}
                         {header?.moreActions && (
                           <Dropdown>
-                            <DropdownTrigger>
+                            <Dropdown.Trigger>
                               <Button
-                                variant="light"
+                                variant="ghost"
                                 className="shrink-0 dark:hover:bg-default-300"
                               >
                                 <Icon name="MoreVert" size="sm" />
                               </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu>
+                            </Dropdown.Trigger>
+                            <Dropdown.Menu>
                               {header.moreActions.map((action) => (
-                                <DropdownItem
-                                  key={action.label}
+                                <Dropdown.Item
+                                  id={action.label}
                                   onClick={action.onClick}
-                                  startContent={
-                                    <Icon name={action.icon as IconName} />
-                                  }
                                   title={action.label}
                                 />
                               ))}
-                            </DropdownMenu>
+                            </Dropdown.Menu>
                           </Dropdown>
                         )}
                       </div>

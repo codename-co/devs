@@ -1,15 +1,5 @@
 import { useEffect, useState } from 'react'
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  Input,
-  Chip,
-  Progress,
-} from '@heroui/react'
+import { Modal, Button, Input, Chip, ProgressBar } from '@heroui/react'
 import { Icon } from '@/components'
 import { EasySetupData, EasySetupCrypto } from '@/lib/easy-setup'
 import { useI18n } from '@/i18n'
@@ -110,14 +100,14 @@ export const EasySetupModal = ({
 
   const renderPasswordStep = () => (
     <>
-      <ModalHeader className="flex flex-col gap-1">
+      <Modal.Header className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <Icon name="DatabaseRestore" />
           {t('Platform Preparation')} {setupData.p.n}
           {/* <span className="text-sm text-gray-600">1/3</span> */}
         </div>
-      </ModalHeader>
-      <ModalBody>
+      </Modal.Header>
+      <Modal.Body>
         <div className="space-y-4">
           <Input
             type="password"
@@ -130,9 +120,9 @@ export const EasySetupModal = ({
             autoFocus
           />
         </div>
-      </ModalBody>
-      <ModalFooter>
-        <Button variant="light" onPress={handleClose}>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="ghost" onPress={handleClose}>
           {t('Cancel')}
         </Button>
         <Button
@@ -147,20 +137,20 @@ export const EasySetupModal = ({
         >
           {t('Continue')}
         </Button>
-      </ModalFooter>
+      </Modal.Footer>
     </>
   )
 
   const renderPreviewStep = () => (
     <>
-      <ModalHeader className="flex flex-col gap-1">
+      <Modal.Header className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <Icon name="DatabaseRestore" />
           {t('Platform Preparation')} {setupData.p.n}
           {/* <span className="text-sm text-gray-600">2/3</span> */}
         </div>
-      </ModalHeader>
-      <ModalBody>
+      </Modal.Header>
+      <Modal.Body>
         <div className="space-y-4 max-h-96 overflow-y-auto">
           {setupData.p.a.length > 0 && (
             <div>
@@ -186,7 +176,7 @@ export const EasySetupModal = ({
                     <Icon name="Lock" size="sm" />
                     <span>{cred.p}</span>
                     {cred.m && (
-                      <Chip size="sm" variant="flat">
+                      <Chip size="sm" variant="soft">
                         {cred.m}
                       </Chip>
                     )}
@@ -196,30 +186,30 @@ export const EasySetupModal = ({
             </div>
           )}
         </div>
-      </ModalBody>
-      <ModalFooter>
-        <Button variant="light" onPress={() => setCurrentStep('password')}>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="ghost" onPress={() => setCurrentStep('password')}>
           {t('Back')}
         </Button>
         <Button color="primary" onPress={handleInitialize}>
           {t('Continue')}
         </Button>
-      </ModalFooter>
+      </Modal.Footer>
     </>
   )
 
   const renderInitializingStep = () => (
     <>
-      <ModalHeader className="flex flex-col gap-1">
+      <Modal.Header className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <Icon name="DatabaseRestore" />
           {t('Platform Preparation')} {setupData.p.n}
           {/* <span className="text-sm text-gray-600">3/3</span> */}
         </div>
-      </ModalHeader>
-      <ModalBody>
+      </Modal.Header>
+      <Modal.Body>
         <div className="text-center space-y-4">
-          <Progress
+          <ProgressBar
             size="sm"
             isIndeterminate
             color="primary"
@@ -229,23 +219,23 @@ export const EasySetupModal = ({
           <p className="text-gray-600">{t('Setting the platform up…')}</p>
           {error && <div className="text-red-500 text-sm">{error}</div>}
         </div>
-      </ModalBody>
+      </Modal.Body>
     </>
   )
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={handleClose}
+      onOpenChange={(v) => !v && (handleClose)()}
       size="lg"
       isDismissable={!isInitializing}
       placement="bottom-center"
     >
-      <ModalContent>
+      <Modal.Dialog>
         {currentStep === 'password' && renderPasswordStep()}
         {currentStep === 'preview' && renderPreviewStep()}
         {currentStep === 'initializing' && renderInitializingStep()}
-      </ModalContent>
+      </Modal.Dialog>
     </Modal>
   )
 }

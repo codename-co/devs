@@ -7,16 +7,7 @@
  */
 
 import { useState, useCallback, useRef } from 'react'
-import {
-  Button,
-  Select,
-  SelectItem,
-  Textarea,
-  Chip,
-  Progress,
-  Divider,
-  Tooltip,
-} from '@heroui/react'
+import { Button, Select, TextArea, Chip, ProgressBar, Separator, Tooltip } from '@heroui/react'
 import { Icon } from '@/components'
 import {
   sandbox,
@@ -176,7 +167,7 @@ export function TrySkillRunner({ skill, t }: TrySkillRunnerProps) {
                     : t('Will be installed via micropip')
               }
             >
-              <Chip size="sm" variant="flat" color={color}>
+              <Chip size="sm" variant="soft" color={color}>
                 {pkg}
               </Chip>
             </Tooltip>
@@ -203,12 +194,12 @@ export function TrySkillRunner({ skill, t }: TrySkillRunnerProps) {
         classNames={{ trigger: 'h-12' }}
       >
         {runnableScripts.map((script) => (
-          <SelectItem key={script.path} textValue={script.path}>
+          <Select.Item id={script.path} textValue={script.path}>
             <div className="flex items-center gap-2">
               <Icon name="Code" width={14} height={14} />
               <span className="font-mono text-xs">{script.path}</span>
             </div>
-          </SelectItem>
+          </Select.Item>
         ))}
       </Select>
 
@@ -216,7 +207,7 @@ export function TrySkillRunner({ skill, t }: TrySkillRunnerProps) {
       {selectedScript && renderPackageChips(selectedScript)}
 
       {/* Arguments */}
-      <Textarea
+      <TextArea
         label={t('Arguments (JSON)')}
         description={t('Keys become --flags in sys.argv for argparse scripts')}
         placeholder={'{\n  "prompt": "hello world",\n  "filename": "output.png"\n}'}
@@ -253,7 +244,7 @@ export function TrySkillRunner({ skill, t }: TrySkillRunnerProps) {
       {/* Progress bar */}
       {isRunning && (
         <div className="space-y-1">
-          <Progress
+          <ProgressBar
             size="sm"
             value={progress.value * 100}
             color="primary"
@@ -268,17 +259,17 @@ export function TrySkillRunner({ skill, t }: TrySkillRunnerProps) {
       {/* Results */}
       {result && (
         <>
-          <Divider />
+          <Separator />
 
           <div className="space-y-3">
             {/* Status header */}
             <div className="flex items-center gap-2">
               {result.success ? (
-                <Chip size="sm" color="success" variant="flat">
+                <Chip size="sm" color="success" variant="soft">
                   {t('Script executed successfully')}
                 </Chip>
               ) : (
-                <Chip size="sm" color="danger" variant="flat">
+                <Chip size="sm" color="danger" variant="soft">
                   {t('Script execution failed')}
                 </Chip>
               )}
@@ -356,7 +347,7 @@ export function TrySkillRunner({ skill, t }: TrySkillRunnerProps) {
                           className="text-default-500"
                         />
                         <span className="text-xs font-mono">{f.path}</span>
-                        <Chip size="sm" variant="flat">
+                        <Chip size="sm" variant="soft">
                           {f.encoding}
                         </Chip>
                       </div>

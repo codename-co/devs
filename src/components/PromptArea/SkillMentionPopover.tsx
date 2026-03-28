@@ -1,4 +1,4 @@
-import { Listbox, ListboxItem, ListboxSection } from '@heroui/react'
+import { ListBox } from '@heroui/react'
 import { useEffect, useCallback } from 'react'
 
 import { Icon } from '../Icon'
@@ -77,21 +77,21 @@ export function SkillMentionPopover({
       className="absolute bottom-full left-0 mb-2 w-80 max-h-64 overflow-y-auto bg-content1 rounded-lg shadow-lg border border-default-200 z-50"
       data-testid="skill-mention-popover"
     >
-      <Listbox
+      <ListBox
         aria-label={t('Select a skill')}
         selectionMode="single"
         selectedKeys={items[selectedIndex] ? [items[selectedIndex].id] : []}
         onAction={handleAction}
       >
         {skills.length > 0 ? (
-          <ListboxSection title={t('Skills')} key="skills-section">
+          <ListBox.Section title={t('Skills')} key="skills-section">
             {skills.map((item) => {
               const globalIndex = items.indexOf(item)
               const isSelected = globalIndex === selectedIndex
 
               return (
-                <ListboxItem
-                  key={item.id}
+                <ListBox.Item
+                  id={item.id}
                   data-selected={isSelected}
                   description={item.description}
                   className={isSelected ? 'bg-default-100' : ''}
@@ -106,20 +106,20 @@ export function SkillMentionPopover({
                   }
                 >
                   {item.name}
-                </ListboxItem>
+                </ListBox.Item>
               )
             })}
-          </ListboxSection>
+          </ListBox.Section>
         ) : null}
         {connectors.length > 0 ? (
-          <ListboxSection title={t('Connectors')} key="connectors-section">
+          <ListBox.Section title={t('Connectors')} key="connectors-section">
             {connectors.map((item) => {
               const globalIndex = items.indexOf(item)
               const isSelected = globalIndex === selectedIndex
 
               return (
-                <ListboxItem
-                  key={item.id}
+                <ListBox.Item
+                  id={item.id}
                   data-selected={isSelected}
                   description={item.description}
                   className={isSelected ? 'bg-default-100' : ''}
@@ -130,12 +130,12 @@ export function SkillMentionPopover({
                   }
                 >
                   {item.name}
-                </ListboxItem>
+                </ListBox.Item>
               )
             })}
-          </ListboxSection>
+          </ListBox.Section>
         ) : null}
-      </Listbox>
+      </ListBox>
     </div>
   )
 }

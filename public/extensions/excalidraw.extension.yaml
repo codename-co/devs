@@ -1,0 +1,550 @@
+id: excalidraw
+name: Excalidraw
+version: 0.1.0
+type: app
+license: MIT
+icon: FrameSimple
+color: indigo
+description: Infinite canvas whiteboard with AI agents as active participants.
+  Draw, collaborate, and let AI help you visualize ideas.
+author:
+  name: Arnaud Leymet
+  url: https://arnley.com
+privacyPolicy: https://devs.new/privacy
+source: https://github.com/codename-co/devs/blob/main/public/extensions/excalidraw.extension.yaml
+i18n:
+  en:
+    name: Excalidraw
+    description: Infinite canvas whiteboard with AI agents as active participants.
+    messages:
+      title: Excalidraw
+      newCanvas: New Canvas
+      askAI: Ask AI
+      aiPlaceholder: Ask AI to help with your drawing…
+      analyzing: Analyzing your canvas…
+      generating: Generating suggestions…
+      observer: Observer
+      suggester: Suggester
+      implementer: Implementer
+      observerDesc: Watching and understanding your drawings
+      suggesterDesc: Offering ideas and improvements
+      implementerDesc: Converting sketches to prototypes
+      clearCanvas: Clear Canvas
+      exportImage: Export as Image
+      exportJSON: Export as JSON
+      undo: Undo
+      redo: Redo
+      aiSuggestions: AI Suggestions
+      noSuggestions: Draw something and ask AI for suggestions!
+      applySuggestion: Apply
+      dismissSuggestion: Dismiss
+      sketchToPrototype: Sketch → Prototype
+      describeDrawing: Describe what you see
+      suggestImprovements: Suggest improvements
+      generateUserFlow: Generate user flow
+      generateWireframe: Generate wireframe
+      organizeElements: Organize elements
+      aiThinking: AI is thinking…
+      welcome: Welcome to Canvas
+      welcomeDesc: Start drawing or ask AI for help
+      drawHint: Use the toolbar to draw shapes, add text, or freehand sketch
+      aiHint: Click 'Ask AI' to get suggestions, organize elements, or convert sketches
+  fr:
+    name: Excalidraw
+    description: Tableau blanc infini avec des agents IA comme participants actifs.
+    messages:
+      title: Excalidraw
+      newCanvas: Nouveau Canvas
+      askAI: Demander à l'IA
+      aiPlaceholder: Demandez à l'IA de vous aider avec votre dessin…
+      analyzing: Analyse de votre canvas…
+      generating: Génération de suggestions…
+      observer: Observateur
+      suggester: Suggéreur
+      implementer: Implémenteur
+      observerDesc: Observe et comprend vos dessins
+      suggesterDesc: Propose des idées et améliorations
+      implementerDesc: Convertit les croquis en prototypes
+      clearCanvas: Effacer le Canvas
+      exportImage: Exporter en image
+      exportJSON: Exporter en JSON
+      undo: Annuler
+      redo: Refaire
+      aiSuggestions: Suggestions IA
+      noSuggestions: Dessinez quelque chose et demandez des suggestions à l'IA !
+      applySuggestion: Appliquer
+      dismissSuggestion: Ignorer
+      sketchToPrototype: Croquis → Prototype
+      describeDrawing: Décrire ce que vous voyez
+      suggestImprovements: Suggérer des améliorations
+      generateUserFlow: Générer un flux utilisateur
+      generateWireframe: Générer une maquette
+      organizeElements: Organiser les éléments
+      aiThinking: L'IA réfléchit…
+      welcome: Bienvenue sur Canvas
+      welcomeDesc: Commencez à dessiner ou demandez de l'aide à l'IA
+      drawHint:
+        Utilisez la barre d'outils pour dessiner des formes, ajouter du texte
+        ou dessiner à main levée
+      aiHint:
+        Cliquez sur 'Demander à l'IA' pour obtenir des suggestions, organiser
+        les éléments ou convertir les croquis
+  es:
+    name: Excalidraw
+    description: Pizarra infinita con agentes de IA como participantes activos.
+    messages:
+      title: Excalidraw
+      newCanvas: Nuevo Canvas
+      askAI: Preguntar a la IA
+      aiPlaceholder: Pide a la IA que te ayude con tu dibujo…
+      analyzing: Analizando tu canvas…
+      generating: Generando sugerencias…
+      observer: Observador
+      suggester: Sugeridor
+      implementer: Implementador
+      observerDesc: Observa y entiende tus dibujos
+      suggesterDesc: Ofrece ideas y mejoras
+      implementerDesc: Convierte bocetos en prototipos
+      clearCanvas: Limpiar Canvas
+      exportImage: Exportar como imagen
+      exportJSON: Exportar como JSON
+      undo: Deshacer
+      redo: Rehacer
+      aiSuggestions: Sugerencias de IA
+      noSuggestions: ¡Dibuja algo y pide sugerencias a la IA!
+      applySuggestion: Aplicar
+      dismissSuggestion: Descartar
+      sketchToPrototype: Boceto → Prototipo
+      describeDrawing: Describir lo que ves
+      suggestImprovements: Sugerir mejoras
+      generateUserFlow: Generar flujo de usuario
+      generateWireframe: Generar wireframe
+      organizeElements: Organizar elementos
+      aiThinking: La IA está pensando…
+      welcome: Bienvenido a Canvas
+      welcomeDesc: Empieza a dibujar o pide ayuda a la IA
+      drawHint: Usa la barra de herramientas para dibujar formas, añadir texto o
+        dibujar a mano alzada
+      aiHint:
+        Haz clic en 'Preguntar a la IA' para obtener sugerencias, organizar
+        elementos o convertir bocetos
+  de:
+    name: Excalidraw
+    description: Unendliche Leinwand mit KI-Agenten als aktive Teilnehmer.
+    messages:
+      title: Excalidraw
+      newCanvas: Neue Leinwand
+      askAI: KI fragen
+      aiPlaceholder: Bitten Sie die KI um Hilfe bei Ihrer Zeichnung…
+      analyzing: Analyse Ihrer Leinwand…
+      generating: Vorschläge werden generiert…
+      observer: Beobachter
+      suggester: Vorschläger
+      implementer: Umsetzer
+      observerDesc: Beobachtet und versteht Ihre Zeichnungen
+      suggesterDesc: Bietet Ideen und Verbesserungen
+      implementerDesc: Wandelt Skizzen in Prototypen um
+      clearCanvas: Leinwand löschen
+      exportImage: Als Bild exportieren
+      exportJSON: Als JSON exportieren
+      undo: Rückgängig
+      redo: Wiederholen
+      aiSuggestions: KI-Vorschläge
+      noSuggestions: Zeichnen Sie etwas und fragen Sie die KI nach Vorschlägen!
+      applySuggestion: Anwenden
+      dismissSuggestion: Verwerfen
+      sketchToPrototype: Skizze → Prototyp
+      describeDrawing: Beschreiben Sie, was Sie sehen
+      suggestImprovements: Verbesserungen vorschlagen
+      generateUserFlow: Benutzerfluss generieren
+      generateWireframe: Wireframe generieren
+      organizeElements: Elemente organisieren
+      aiThinking: KI denkt nach…
+      welcome: Willkommen bei Canvas
+      welcomeDesc: Beginnen Sie zu zeichnen oder fragen Sie die KI um Hilfe
+      drawHint: Verwenden Sie die Symbolleiste, um Formen zu zeichnen, Text
+        hinzuzufügen oder freihändig zu skizzieren
+      aiHint:
+        Klicken Sie auf 'KI fragen', um Vorschläge zu erhalten, Elemente zu
+        organisieren oder Skizzen zu konvertieren
+pages:
+  'canvas': | # jsx
+    import { useState, useCallback, useEffect, useRef } from 'react'
+    import { Button, Card, CardBody, Spinner, Chip, Tooltip, Divider, ScrollShadow, Textarea } from '@heroui/react'
+
+    // AI Agent types
+    const AI_AGENTS = [
+      { id: 'observer', icon: '👁️', color: 'primary' },
+      { id: 'suggester', icon: '💡', color: 'warning' },
+      { id: 'implementer', icon: '🔧', color: 'success' }
+    ]
+
+    // Quick action presets
+    const QUICK_ACTIONS = [
+      { id: 'describe', icon: '📝', msgKey: 'describeDrawing' },
+      { id: 'improve', icon: '✨', msgKey: 'suggestImprovements' },
+      { id: 'userflow', icon: '🔀', msgKey: 'generateUserFlow' },
+      { id: 'wireframe', icon: '📐', msgKey: 'generateWireframe' },
+      { id: 'organize', icon: '📊', msgKey: 'organizeElements' }
+    ]
+
+    const App = () => {
+      const iframeRef = useRef(null)
+      const [elements, setElements] = useState([])
+      const [prompt, setPrompt] = useState('')
+      const [isLoading, setIsLoading] = useState(false)
+      const [activeAgent, setActiveAgent] = useState(null)
+      const [suggestions, setSuggestions] = useState([])
+      const [showAIPanel, setShowAIPanel] = useState(true)
+      const [isApplying, setIsApplying] = useState(null)
+      const [excalidrawReady, setExcalidrawReady] = useState(false)
+
+      const t = useCallback((key) => window.DEVS?.t?.(key) || key, [])
+      const isDark = window.DEVS?.theme === 'dark'
+      const [llmAvailable, setLlmAvailable] = useState(false)
+      const [debugInfo, setDebugInfo] = useState('')
+
+      // Listen for messages from Excalidraw iframe
+      useEffect(() => {
+        const handleMessage = (event) => {
+          if (event.origin !== 'https://excalidraw.com') return
+
+          try {
+            const data = event.data
+            if (data.type === 'excalidraw:ready') {
+              setExcalidrawReady(true)
+            } else if (data.type === 'excalidraw:change') {
+              setElements(data.elements || [])
+            }
+          } catch (e) {
+            // Ignore parse errors
+          }
+        }
+
+        window.addEventListener('message', handleMessage)
+        return () => window.removeEventListener('message', handleMessage)
+      }, [])
+
+      // Mark as ready when iframe loads
+      const handleIframeLoad = useCallback(() => {
+        setExcalidrawReady(true)
+      }, [])
+
+      // Check LLM availability
+      useEffect(() => {
+        const checkLLM = () => {
+          const available = !!(window.DEVS?.llm?.chat)
+          setLlmAvailable(available)
+          if (!available) {
+            setDebugInfo('LLM not configured. Please set up an AI provider in Settings.')
+          }
+        }
+        checkLLM()
+        const timer = setTimeout(checkLLM, 1000)
+        return () => clearTimeout(timer)
+      }, [])
+
+      // Get canvas description for AI (simplified since we can't access iframe content directly)
+      const getCanvasDescription = useCallback(() => {
+        if (elements.length === 0) return 'The canvas is empty or content not yet loaded.'
+        const summary = elements.reduce((acc, el) => {
+          acc[el.type] = (acc[el.type] || 0) + 1
+          return acc
+        }, {})
+        const texts = elements.filter(el => el.type === 'text').map(el => `"${el.text}" at (${Math.round(el.x)},${Math.round(el.y)})`).join(', ')
+        return `Canvas contains: ${Object.entries(summary).map(([type, count]) => `${count} ${type}(s)`).join(', ')}. ${texts ? `Text elements: ${texts}.` : ''}`
+      }, [elements])
+
+      // Generate drawing directly from prompt
+      const generateFromPrompt = useCallback(async (customPrompt) => {
+        const finalPrompt = customPrompt || prompt
+        if (!finalPrompt.trim()) {
+          window.DEVS?.ui?.toast?.({ title: 'Empty prompt', description: 'Please enter a prompt first', color: 'warning' })
+          return
+        }
+
+        if (!window.DEVS?.llm?.chat) {
+          window.DEVS?.ui?.toast?.({ title: 'LLM not available', description: 'Please configure an AI provider in Settings', color: 'danger' })
+          return
+        }
+
+        setIsLoading(true)
+        setActiveAgent('implementer')
+        setShowAIPanel(true)
+        setDebugInfo('Generating suggestions...')
+
+        try {
+          const response = await window.DEVS.llm.chat([
+            { role: 'system', content: `You are a helpful assistant that provides drawing instructions for Excalidraw.
+
+    Since we're using embedded Excalidraw, provide step-by-step instructions the user can follow to create what they want.
+
+    Format your response as a JSON array of actionable suggestions:
+    [{"title": "Step title", "description": "Detailed instructions on what to draw and how"}]
+
+    Be specific about shapes, positions, colors, and text to add.
+    Only output the JSON array.` },
+            { role: 'user', content: `Create instructions for: ${finalPrompt}` }
+          ])
+
+          let parsed = []
+          try {
+            const contentStr = typeof response.content === 'string' ? response.content : JSON.stringify(response.content)
+            const match = contentStr.match(/\[\s*\{[\s\S]*\}\s*\]/)
+            if (match) {
+              parsed = JSON.parse(match[0]).map(item => ({
+                ...item,
+                title: typeof item.title === 'string' ? item.title : JSON.stringify(item.title || ''),
+                description: typeof item.description === 'string' ? item.description : JSON.stringify(item.description || '')
+              }))
+            }
+          } catch (e) {
+            const contentStr = typeof response.content === 'string' ? response.content : JSON.stringify(response.content)
+            parsed = [{ title: 'AI Suggestion', description: contentStr.slice(0, 500) }]
+          }
+
+          setSuggestions(parsed)
+          setPrompt('')
+          setDebugInfo('')
+          window.DEVS?.ui?.toast?.({ title: '🎨 Suggestions ready!', description: 'Follow the steps in the AI panel' })
+        } catch (err) {
+          const errMsg = typeof err?.message === 'string' ? err.message : String(err)
+          setDebugInfo(`Error: ${errMsg}`)
+          window.DEVS?.ui?.toast?.({ title: 'Error', description: errMsg, color: 'danger' })
+        } finally {
+          setIsLoading(false)
+          setActiveAgent(null)
+        }
+      }, [prompt])
+
+      const askAI = useCallback(async (customPrompt) => {
+        const finalPrompt = customPrompt || prompt
+        if (!finalPrompt.trim()) {
+          window.DEVS?.ui?.toast?.({ title: 'Empty prompt', description: 'Please enter a prompt first', color: 'warning' })
+          return
+        }
+
+        if (!window.DEVS?.llm?.chat) {
+          window.DEVS?.ui?.toast?.({ title: 'LLM not available', description: 'Please configure an AI provider in Settings', color: 'danger' })
+          setDebugInfo('LLM API not found. Check Settings > AI Provider.')
+          return
+        }
+
+        setIsLoading(true)
+        setActiveAgent('observer')
+        setShowAIPanel(true)
+        setDebugInfo('Analyzing request...')
+
+        try {
+          const canvasDesc = getCanvasDescription()
+
+          setActiveAgent('suggester')
+          const suggesterResponse = await window.DEVS.llm.chat([
+            { role: 'system', content: `You are a drawing assistant for Excalidraw. Provide 2-3 actionable suggestions as a JSON array.
+    Each suggestion should be clear instructions the user can follow to draw in Excalidraw.
+
+    Format: [{"title": "Short title", "description": "Step-by-step instructions on what to draw"}]
+
+    Make suggestions specific with details about shapes, colors, positions, and connections.
+    Only output JSON.` },
+            { role: 'user', content: `Canvas state: ${canvasDesc}\n\nUser request: ${finalPrompt}` }
+          ])
+
+          let parsed = []
+          try {
+            const contentStr = typeof suggesterResponse.content === 'string' ? suggesterResponse.content : JSON.stringify(suggesterResponse.content)
+            const match = contentStr.match(/\[\s*\{[\s\S]*\}\s*\]/)
+            if (match) {
+              parsed = JSON.parse(match[0]).map(item => ({
+                ...item,
+                title: typeof item.title === 'string' ? item.title : JSON.stringify(item.title || ''),
+                description: typeof item.description === 'string' ? item.description : JSON.stringify(item.description || '')
+              }))
+            }
+          } catch (e) {
+            const contentStr = typeof suggesterResponse.content === 'string' ? suggesterResponse.content : JSON.stringify(suggesterResponse.content)
+            parsed = [{ title: 'AI Response', description: contentStr.slice(0, 500) }]
+          }
+
+          setSuggestions(parsed)
+          setActiveAgent(null)
+          setPrompt('')
+          setDebugInfo('')
+        } catch (err) {
+          console.error('AI failed:', err)
+          const errMsg = typeof err?.message === 'string' ? err.message : String(err)
+          setDebugInfo(`Error: ${errMsg}`)
+          window.DEVS?.ui?.toast?.({ title: 'Error', description: errMsg, color: 'danger' })
+          setActiveAgent(null)
+        } finally {
+          setIsLoading(false)
+        }
+      }, [prompt, getCanvasDescription])
+
+      const handleQuickAction = useCallback((actionId) => {
+        const prompts = {
+          describe: 'Describe what I should draw on this canvas.',
+          improve: 'Suggest specific improvements or additions I can make.',
+          userflow: 'Give me step-by-step instructions to create a user flow diagram with boxes and arrows.',
+          wireframe: 'Give me step-by-step instructions to create a mobile app wireframe layout.',
+          organize: 'Suggest how to organize and structure a diagram.'
+        }
+        askAI(prompts[actionId] || '')
+      }, [askAI])
+
+      const dismissSuggestion = (index) => {
+        setSuggestions(prev => prev.filter((_, i) => i !== index))
+      }
+
+      const completeSuggestion = (index) => {
+        window.DEVS?.ui?.toast?.({ title: '✅ Done!', description: 'Step marked as complete' })
+        setSuggestions(prev => prev.filter((_, i) => i !== index))
+      }
+
+      // Build Excalidraw URL with theme
+      const excalidrawUrl = `https://excalidraw.com/?embed=true&theme=${isDark ? 'dark' : 'light'}`
+
+      return (
+        <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: isDark ? '#1e1e2e' : '#ffffff' }}>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderBottom: `1px solid ${isDark ? '#313244' : '#e2e8f0'}`, background: isDark ? '#1e1e2e' : '#ffffff', zIndex: 100, flexShrink: 0 }}>
+            <span style={{ fontSize: '20px' }}>🎨</span>
+            <span style={{ fontWeight: 600, marginRight: '8px' }}>{t('title')}</span>
+            <Divider orientation="vertical" style={{ height: '24px' }} />
+
+            <Tooltip content="Open in new tab">
+              <Button size="sm" variant="flat" isIconOnly onPress={() => window.open('https://excalidraw.com', '_blank')}>↗️</Button>
+            </Tooltip>
+
+            <div style={{ flex: 1 }} />
+
+            {/* AI Agents */}
+            <div style={{ display: 'flex', gap: '4px' }}>
+              {AI_AGENTS.map(agent => (
+                <Tooltip key={agent.id} content={t(agent.id + 'Desc')}>
+                  <Chip size="sm" variant={activeAgent === agent.id ? 'solid' : 'flat'} color={agent.color} className={activeAgent === agent.id ? 'animate-pulse' : ''}>
+                    {agent.icon} {t(agent.id)}
+                  </Chip>
+                </Tooltip>
+              ))}
+            </div>
+
+            <Divider orientation="vertical" style={{ height: '24px' }} />
+            <Button size="sm" color="primary" variant={showAIPanel ? 'solid' : 'flat'} onPress={() => setShowAIPanel(!showAIPanel)} startContent={<span>🤖</span>}>{t('askAI')}</Button>
+          </div>
+
+          {/* Main */}
+          <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+            {/* Excalidraw Embed */}
+            <div style={{ flex: 1, position: 'relative' }}>
+              <iframe
+                ref={iframeRef}
+                src={excalidrawUrl}
+                onLoad={handleIframeLoad}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 'none'
+                }}
+                allow="clipboard-read; clipboard-write"
+                title="Excalidraw"
+              />
+              {!excalidrawReady && (
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: isDark ? 'rgba(30,30,46,0.9)' : 'rgba(255,255,255,0.9)',
+                  flexDirection: 'column',
+                  gap: '16px'
+                }}>
+                  <Spinner size="lg" />
+                  <span style={{ color: isDark ? '#a6adc8' : '#64748b' }}>Loading Excalidraw...</span>
+                </div>
+              )}
+            </div>
+
+            {/* AI Panel */}
+            {showAIPanel && (
+              <div style={{ width: '320px', borderLeft: `1px solid ${isDark ? '#313244' : '#e2e8f0'}`, display: 'flex', flexDirection: 'column', background: isDark ? '#1e1e2e' : '#ffffff', flexShrink: 0 }}>
+                <div style={{ padding: '12px', borderBottom: `1px solid ${isDark ? '#313244' : '#e2e8f0'}` }}>
+                  <div style={{ fontSize: '12px', color: isDark ? '#a6adc8' : '#64748b', marginBottom: '8px' }}>Quick Actions</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                    {QUICK_ACTIONS.map(action => (
+                      <Button key={action.id} size="sm" variant="flat" onPress={() => handleQuickAction(action.id)} isDisabled={isLoading || isApplying !== null}>
+                        {action.icon} {t(action.msgKey)}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ padding: '12px', borderBottom: `1px solid ${isDark ? '#313244' : '#e2e8f0'}` }}>
+                  <Textarea size="sm" placeholder={t('aiPlaceholder')} value={prompt} onValueChange={setPrompt} minRows={2} maxRows={4} />
+                  <Button size="sm" color="primary" style={{ marginTop: '8px', width: '100%' }} onPress={() => askAI()} isLoading={isLoading} isDisabled={!prompt.trim() || isApplying !== null}>
+                    {isLoading ? t('aiThinking') : t('askAI')}
+                  </Button>
+                </div>
+                <ScrollShadow style={{ flex: 1, padding: '12px' }}>
+                  <div style={{ fontSize: '12px', color: isDark ? '#a6adc8' : '#64748b', marginBottom: '8px' }}>{t('aiSuggestions')}</div>
+                  {debugInfo && (
+                    <div style={{ padding: '8px', marginBottom: '8px', borderRadius: '6px', fontSize: '12px', background: isDark ? '#313244' : '#f1f5f9', color: isDark ? '#cdd6f4' : '#475569' }}>
+                      {typeof debugInfo === 'string' ? debugInfo : JSON.stringify(debugInfo)}
+                    </div>
+                  )}
+                  {!llmAvailable && (
+                    <div style={{ padding: '12px', marginBottom: '8px', borderRadius: '6px', background: isDark ? '#45475a' : '#fef3c7', color: isDark ? '#f9e2af' : '#92400e', fontSize: '13px' }}>
+                      ⚠️ AI provider not configured. Go to Settings to set up your LLM.
+                    </div>
+                  )}
+                  {suggestions.length === 0 ? (
+                    <div style={{ textAlign: 'center', color: isDark ? '#6c7086' : '#94a3b8', padding: '24px', fontSize: '14px' }}>{t('noSuggestions')}</div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {suggestions.map((s, i) => (
+                        <Card key={i} shadow="sm">
+                          <CardBody style={{ padding: '12px' }}>
+                            <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '4px' }}>{typeof s.title === 'string' ? s.title : JSON.stringify(s.title)}</div>
+                            <div style={{ fontSize: '13px', color: isDark ? '#a6adc8' : '#64748b', marginBottom: '8px', whiteSpace: 'pre-wrap' }}>{typeof s.description === 'string' ? s.description : JSON.stringify(s.description)}</div>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              <Button size="sm" color="success" variant="flat" onPress={() => completeSuggestion(i)}>
+                                ✅ Done
+                              </Button>
+                              <Button size="sm" variant="flat" onPress={() => dismissSuggestion(i)}>
+                                {t('dismissSuggestion')}
+                              </Button>
+                            </div>
+                          </CardBody>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </ScrollShadow>
+              </div>
+            )}
+          </div>
+        </div>
+      )
+    }
+configuration:
+  schema:
+    type: object
+    properties:
+      defaultTheme:
+        type: string
+        enum:
+          - light
+          - dark
+          - system
+        default: system
+        description: Default canvas theme
+      autoSave:
+        type: boolean
+        default: true
+        description: Automatically save canvas state
+      aiModel:
+        type: string
+        description: Preferred AI model for canvas assistance
+  defaults:
+    defaultTheme: system
+    autoSave: true

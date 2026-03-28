@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { Chip, Progress, Spinner } from '@heroui/react'
+import { Chip, ProgressBar, Spinner } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
 
@@ -31,10 +31,10 @@ export const TaskStatusBanner = memo(
     return (
       <div className="mb-4 flex flex-col gap-2">
         <div className="flex items-center gap-2 flex-wrap">
-          <Chip size="sm" color={statusColor} variant="flat">
+          <Chip size="sm" color={statusColor} variant="soft">
             {status.replace('_', ' ')}
           </Chip>
-          <Chip size="sm" variant="flat" color="secondary">
+          <Chip size="sm" variant="soft" color="default">
             {complexity}
           </Chip>
           {isOrchestrating && (
@@ -45,7 +45,7 @@ export const TaskStatusBanner = memo(
           )}
         </div>
         {isOrchestrating && progress !== undefined && progress > 0 && (
-          <Progress
+          <ProgressBar
             size="sm"
             value={progress}
             color="primary"

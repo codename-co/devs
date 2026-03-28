@@ -1,4 +1,4 @@
-import { Card, CardBody, CardHeader, Chip, Divider } from '@heroui/react'
+import { Card, Chip, Separator } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
 import { Trace, Span, SpanType } from '../types'
@@ -51,7 +51,7 @@ export function TraceDetail({ trace, spans }: TraceDetailProps) {
     <div className="space-y-6">
       {/* Trace Overview */}
       <Card>
-        <CardHeader className="pb-2 flex flex-col items-start">
+        <Card.Header className="pb-2 flex flex-col items-start">
           <div className="flex items-baseline justify-between w-full gap-2">
             {trace.primaryModel?.provider ? (
               <Icon
@@ -63,13 +63,13 @@ export function TraceDetail({ trace, spans }: TraceDetailProps) {
               '-'
             )}
             <h3 className="text-lg font-semibold">{trace.name}</h3>
-            <Chip size="sm" color={getStatusColor(trace.status)} variant="flat">
+            <Chip size="sm" color={getStatusColor(trace.status)} variant="soft">
               {trace.status}
             </Chip>
           </div>
           <span className="text-tiny text-gray-300">{trace.id}</span>
-        </CardHeader>
-        <CardBody className="pt-0">
+        </Card.Header>
+        <Card.Content className="pt-0">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <p className="text-xs text-default-400">{t('Duration')}</p>
@@ -106,13 +106,13 @@ export function TraceDetail({ trace, spans }: TraceDetailProps) {
               <p className="text-sm text-danger">{trace.statusMessage}</p>
             </div>
           )}
-        </CardBody>
+        </Card.Content>
       </Card>
 
       {/* Input/Output */}
       {(trace.input || trace.output) && (
         <Card>
-          <CardBody className="space-y-4">
+          <Card.Content className="space-y-4">
             {trace.input && (
               <div>
                 <p className="text-sm font-medium text-default-600 mb-2 gap-1 flex items-center">
@@ -124,7 +124,7 @@ export function TraceDetail({ trace, spans }: TraceDetailProps) {
                 </pre>
               </div>
             )}
-            {trace.input && trace.output && <Divider />}
+            {trace.input && trace.output && <Separator />}
             {trace.output && (
               <div>
                 <p className="text-sm font-medium text-default-600 mb-2 gap-1 flex items-center">
@@ -136,18 +136,18 @@ export function TraceDetail({ trace, spans }: TraceDetailProps) {
                 </pre>
               </div>
             )}
-          </CardBody>
+          </Card.Content>
         </Card>
       )}
 
       {/* Spans */}
       <Card>
-        <CardHeader>
+        <Card.Header>
           <h3 className="text-lg font-semibold">
             {t('Spans')} ({spans.length})
           </h3>
-        </CardHeader>
-        <CardBody className="pt-0">
+        </Card.Header>
+        <Card.Content className="pt-0">
           {spans.length === 0 ? (
             <p className="text-default-400 text-center py-4">
               {t('No spans found')}
@@ -159,7 +159,7 @@ export function TraceDetail({ trace, spans }: TraceDetailProps) {
               ))}
             </div>
           )}
-        </CardBody>
+        </Card.Content>
       </Card>
     </div>
   )
@@ -225,11 +225,11 @@ function SpanCard({ span, index }: SpanCardProps) {
         <div className="flex items-center gap-2">
           <span className="text-xs text-default-400">#{index + 1}</span>
           <span className="font-medium">{span.name}</span>
-          <Chip size="sm" variant="flat">
+          <Chip size="sm" variant="soft">
             {getSpanTypeLabel(span.type)}
           </Chip>
         </div>
-        <Chip size="sm" color={getStatusColor(span.status)} variant="flat">
+        <Chip size="sm" color={getStatusColor(span.status)} variant="soft">
           {span.status}
         </Chip>
       </div>

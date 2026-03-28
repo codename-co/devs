@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Alert, Button, Chip, Progress, Tooltip } from '@heroui/react'
+import { Alert, Button, Chip, ProgressBar, Tooltip } from '@heroui/react'
 
 import '@/features/local-backup/types/file-system.d'
 import {
@@ -415,14 +415,14 @@ export function LocalBackupSection() {
                       : t('Local backup disabled')}
               </span>
               {isSyncing ? (
-                <Chip size="sm" variant="flat" color="primary" className="h-5">
+                <Chip size="sm" variant="soft" color="accent" className="h-5">
                   {t('Backing up...')}
                 </Chip>
               ) : (
                 status === 'active' && (
                   <Chip
                     size="sm"
-                    variant="flat"
+                    variant="soft"
                     color="success"
                     className="h-5"
                   >
@@ -461,7 +461,7 @@ export function LocalBackupSection() {
               <Tooltip content={t('Backup Now')}>
                 <Button
                   size="sm"
-                  variant="flat"
+                  variant="secondary"
                   color="success"
                   isIconOnly
                   isLoading={isSyncing}
@@ -473,7 +473,7 @@ export function LocalBackupSection() {
               <Tooltip content={t('Change Folder')}>
                 <Button
                   size="sm"
-                  variant="flat"
+                  variant="secondary"
                   isIconOnly
                   onPress={handleSelectFolder}
                 >
@@ -482,7 +482,7 @@ export function LocalBackupSection() {
               </Tooltip>
               <Button
                 size="sm"
-                variant="light"
+                variant="ghost"
                 color="danger"
                 onPress={disableSync}
               >
@@ -491,7 +491,7 @@ export function LocalBackupSection() {
             </>
           )}
           {status === 'error' && (
-            <Button size="sm" variant="flat" onPress={clearError}>
+            <Button size="sm" variant="secondary" onPress={clearError}>
               {t('Dismiss')}
             </Button>
           )}
@@ -499,7 +499,7 @@ export function LocalBackupSection() {
             <Button
               size="sm"
               color="warning"
-              variant="flat"
+              variant="secondary"
               onPress={handleGrantPermission}
             >
               {t('Grant Permission')}
@@ -509,7 +509,7 @@ export function LocalBackupSection() {
             <Button
               size="sm"
               color="primary"
-              variant="flat"
+              variant="secondary"
               onPress={handleSelectFolder}
               isLoading={isInitializing}
               startContent={!isInitializing && <Icon name="Folder" size="md" />}
@@ -530,7 +530,7 @@ export function LocalBackupSection() {
           </p>
           <Button
             color="primary"
-            variant="flat"
+            variant="secondary"
             size="sm"
             onPress={handleDownloadBackup}
             isLoading={isDownloading}
@@ -675,7 +675,7 @@ export function LocalBackupSection() {
                       {backed}/{total}
                     </span>
                   </div>
-                  <Progress
+                  <ProgressBar
                     size="sm"
                     value={pct}
                     color={
@@ -699,7 +699,7 @@ export function LocalBackupSection() {
 
       {/* ── Tip ── */}
       {!useFallbackDownload && (
-        <Alert variant="bordered" color="default" className="text-sm">
+        <Alert status="bordered" color="default" className="text-sm">
           {t('Files are stored as readable Markdown')}.{' '}
           {t('Preview files in Finder, sync with Git, or edit externally')}.
         </Alert>

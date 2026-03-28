@@ -1,13 +1,4 @@
-import {
-  Accordion,
-  AccordionItem,
-  Button,
-  Card,
-  CardBody,
-  Chip,
-  Divider,
-  Link,
-} from '@heroui/react'
+import { Accordion, Button, Card, Chip, Separator, Link } from '@heroui/react'
 import { Icon } from '@/components/Icon'
 import { useI18n, useUrl } from '@/i18n'
 import { IconName } from '@/lib/types'
@@ -247,7 +238,7 @@ export const AboutPage = () => {
               .
             </p>
 
-            <Divider className="max-w-xs mx-auto !my-8 opacity-40" />
+            <Separator className="max-w-xs mx-auto !my-8 opacity-40" />
 
             <blockquote className="max-w-xl mx-auto italic text-default-500 text-sm leading-relaxed border-l-3 border-primary-300 dark:border-primary-700 pl-4 text-left">
               {t(
@@ -264,7 +255,7 @@ export const AboutPage = () => {
       <Section>
         <Container>
           <div className="text-center mb-2">
-            <Chip size="sm" variant="flat" color="default" className="mb-3">
+            <Chip size="sm" variant="soft" color="default" className="mb-3">
               {t('Philosophy')}
             </Chip>
             <Title level={2} className="!mb-1">
@@ -284,7 +275,7 @@ export const AboutPage = () => {
                 shadow="sm"
                 className="border border-default-100 dark:border-default-50/10"
               >
-                <CardBody className="p-6 text-center space-y-3">
+                <Card.Content className="p-6 text-center space-y-3">
                   <div
                     className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl mx-auto ${p.color}`}
                   >
@@ -294,7 +285,7 @@ export const AboutPage = () => {
                   <p className="text-sm text-default-500 leading-relaxed">
                     {t(p.description)}
                   </p>
-                </CardBody>
+                </Card.Content>
               </Card>
             ))}
           </div>
@@ -307,7 +298,7 @@ export const AboutPage = () => {
       <Section mainClassName="bg-default-50/50 dark:bg-default-50/5">
         <Container>
           <div className="text-center mb-2">
-            <Chip size="sm" variant="flat" color="primary" className="mb-3">
+            <Chip size="sm" variant="soft" color="accent" className="mb-3">
               {t('Capabilities')}
             </Chip>
             <Title level={2} className="!mb-1">
@@ -327,7 +318,7 @@ export const AboutPage = () => {
                 shadow="none"
                 className={`border border-default-100 dark:border-default-50/10 bg-gradient-to-br ${pillar.gradient}`}
               >
-                <CardBody className="p-6 space-y-3">
+                <Card.Content className="p-6 space-y-3">
                   <div className="flex items-center gap-3">
                     <Icon
                       name={pillar.icon}
@@ -345,7 +336,7 @@ export const AboutPage = () => {
                   <p className="text-sm text-default-600 leading-relaxed">
                     {t(pillar.description)}
                   </p>
-                </CardBody>
+                </Card.Content>
               </Card>
             ))}
           </div>
@@ -358,7 +349,7 @@ export const AboutPage = () => {
       <Section>
         <Container>
           <div className="text-center mb-2">
-            <Chip size="sm" variant="flat" color="secondary" className="mb-3">
+            <Chip size="sm" variant="soft" color="default" className="mb-3">
               {t('Getting Started')}
             </Chip>
             <Title level={2} className="!mb-1">
@@ -407,7 +398,7 @@ export const AboutPage = () => {
       <Section mainClassName="bg-default-50/50 dark:bg-default-50/5">
         <Container>
           <div className="text-center mb-2">
-            <Chip size="sm" variant="flat" color="warning" className="mb-3">
+            <Chip size="sm" variant="soft" color="warning" className="mb-3">
               {t('For Everyone')}
             </Chip>
             <Title level={2} className="!mb-1">
@@ -427,13 +418,13 @@ export const AboutPage = () => {
                 shadow="none"
                 className="border border-default-100 dark:border-default-50/10"
               >
-                <CardBody className="p-4 flex flex-col items-center text-center gap-2">
+                <Card.Content className="p-4 flex flex-col items-center text-center gap-2">
                   <Icon name={uc.icon} className="w-6 h-6 text-default-400" />
                   <span className="font-medium text-sm">{t(uc.persona)}</span>
                   <span className="text-xs text-default-400 leading-snug hidden sm:block">
                     {t(uc.action)}
                   </span>
-                </CardBody>
+                </Card.Content>
               </Card>
             ))}
           </div>
@@ -446,7 +437,7 @@ export const AboutPage = () => {
       <Section mainClassName="bg-default-50/50 dark:bg-default-50/5">
         <Container>
           <div className="text-center mb-2">
-            <Chip size="sm" variant="flat" color="default" className="mb-3">
+            <Chip size="sm" variant="soft" color="default" className="mb-3">
               {t('FAQ')}
             </Chip>
             <Title level={2} className="!mb-1">
@@ -463,8 +454,8 @@ export const AboutPage = () => {
                     ? { license: pkg.license }
                     : undefined
               return (
-                <AccordionItem
-                  key={i}
+                <Accordion.Item
+                  id={i}
                   aria-label={t(faq.q)}
                   title={
                     <span className="text-sm font-medium">{t(faq.q)}</span>
@@ -473,7 +464,7 @@ export const AboutPage = () => {
                   <p className="text-sm text-default-600 leading-relaxed pb-2">
                     {t(faq.a, vars)}
                   </p>
-                </AccordionItem>
+                </Accordion.Item>
               )
             })}
           </Accordion>
@@ -489,7 +480,7 @@ export const AboutPage = () => {
             shadow="none"
             className="bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/15 dark:to-secondary-900/15 border border-primary-100 dark:border-primary-800/30"
           >
-            <CardBody className="p-8 md:p-12 text-center space-y-5">
+            <Card.Content className="p-8 md:p-12 text-center space-y-5">
               <Icon name="Heart" className="w-8 h-8 text-danger-400 mx-auto" />
               <Title level={2} size="2xl" className="!mb-0">
                 {t('Shape the Future With Us')}
@@ -508,7 +499,7 @@ export const AboutPage = () => {
                   target="_blank"
                   isExternal
                   color="default"
-                  variant="flat"
+                  variant="secondary"
                   startContent={<Icon name="GitHub" />}
                 >
                   {t('View on GitHub')}
@@ -519,7 +510,7 @@ export const AboutPage = () => {
                   target="_blank"
                   isExternal
                   color="primary"
-                  variant="flat"
+                  variant="secondary"
                   startContent={<Icon name="ChatPlusIn" />}
                 >
                   {t('Open an Issue')}
@@ -530,7 +521,7 @@ export const AboutPage = () => {
                 v{pkg.version} &middot; {pkg.license} License &middot;{' '}
                 {t('Made with care for humans everywhere.')}
               </p>
-            </CardBody>
+            </Card.Content>
           </Card>
         </Container>
       </Section>

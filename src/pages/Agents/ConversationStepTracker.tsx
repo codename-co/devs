@@ -8,7 +8,7 @@
  */
 
 import { memo, useMemo } from 'react'
-import { AccordionItem, Button, Chip, Spinner } from '@heroui/react'
+import { Button, Chip, Spinner } from '@heroui/react'
 import { Link, useLocation } from 'react-router-dom'
 import { AccordionTracker, Icon } from '@/components'
 import { useI18n } from '@/i18n'
@@ -170,7 +170,7 @@ export function messageStepsToConversationSteps(
 const StepStatusIcon = memo(({ status }: { status: StepStatus }) => {
   switch (status) {
     case 'running':
-      return <Spinner size="sm" classNames={{ wrapper: 'w-4 h-4' }} />
+      return <Spinner size="sm" />
     case 'completed':
       return (
         <Icon name="CheckCircleSolid" size="sm" className="text-gray-400/60" />
@@ -336,7 +336,7 @@ const RunningStepInline = memo(
     return (
       <div>
         <div className="flex items-center gap-2 text-sm text-default-500">
-          <Spinner size="sm" classNames={{ wrapper: 'w-4 h-4' }} />
+          <Spinner size="sm" />
           <span className="italic font-medium">{label}</span>
         </div>
         {step.pendingToolCalls && step.pendingToolCalls.length > 0 && (
@@ -427,18 +427,18 @@ export const ConversationStepTracker = memo(
                 {t('Steps')}
               </span>
               {summary.running > 0 && (
-                <Chip size="sm" color="primary" variant="flat">
+                <Chip size="sm" color="accent" variant="soft">
                   {summary.running}{' '}
                   {summary.running === 1 ? 'running' : 'running'}
                 </Chip>
               )}
               {summary.completed > 0 && (
-                <Chip size="sm" variant="bordered">
+                <Chip size="sm" variant="secondary">
                   {summary.completed}
                 </Chip>
               )}
               {summary.failed > 0 && (
-                <Chip size="sm" color="danger" variant="flat">
+                <Chip size="sm" color="danger" variant="soft">
                   {summary.failed}
                 </Chip>
               )}
@@ -452,8 +452,8 @@ export const ConversationStepTracker = memo(
                   !!step.thinkingContent
 
                 return (
-                  <AccordionItem
-                    key={step.id}
+                  <Accordion.Item
+                    id={step.id}
                     aria-label={label}
                     isDisabled={!hasDetails}
                     hideIndicator={!hasDetails}
@@ -484,7 +484,7 @@ export const ConversationStepTracker = memo(
                       </div>
                     )}
                     <ToolIOContent toolCalls={step.toolCalls} t={t} />
-                  </AccordionItem>
+                  </Accordion.Item>
                 )
               })}
             </AccordionTracker>
@@ -505,7 +505,7 @@ export const ConversationStepTracker = memo(
               as={Link}
               to={`${location.pathname}${location.search}#settings/traces/logs/${traceIds[0]}`}
               size="sm"
-              variant="light"
+              variant="ghost"
               className="text-tiny text-default-400 gap-1 h-6 min-w-0 px-2"
             >
               <Icon name="Activity" className="w-3 h-3" />

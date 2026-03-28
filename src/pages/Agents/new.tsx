@@ -1,18 +1,4 @@
-import {
-  Accordion,
-  AccordionItem,
-  Alert,
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  Input,
-  Slider,
-  Spinner,
-  Tab,
-  Tabs,
-  Textarea,
-} from '@heroui/react'
+import { Accordion, Alert, Button, Card, Input, Slider, Spinner, Tab, Tabs, TextArea } from '@heroui/react'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -433,7 +419,7 @@ export function AgentsNewPage() {
                       <Alert color="danger">{generationError}</Alert>
                     )}
 
-                    <Textarea
+                    <TextArea
                       label={t('What agent do you need?')}
                       value={metaPrompt}
                       onValueChange={setMetaPrompt}
@@ -449,7 +435,7 @@ export function AgentsNewPage() {
 
                     {isGenerating && generatedPreview && (
                       <Card>
-                        <CardBody>
+                        <Card.Content>
                           <div className="flex items-center gap-2 mb-2">
                             <Spinner size="sm" />
                             <span className="text-small text-default-500">
@@ -459,7 +445,7 @@ export function AgentsNewPage() {
                           <div className="text-sm text-default-600 whitespace-pre-wrap max-h-48 overflow-y-auto">
                             {generatedPreview}
                           </div>
-                        </CardBody>
+                        </Card.Content>
                       </Card>
                     )}
 
@@ -481,7 +467,7 @@ export function AgentsNewPage() {
                       </Button>
 
                       <Button
-                        variant="light"
+                        variant="ghost"
                         onPress={() => setCreationMode('manual')}
                         isDisabled={isGenerating}
                       >
@@ -546,7 +532,7 @@ export function AgentsNewPage() {
                       description={t('What does your agent do?')}
                     />
 
-                    <Textarea
+                    <TextArea
                       label={t('Instructions')}
                       value={instructions}
                       onValueChange={setInstructions}
@@ -574,7 +560,7 @@ export function AgentsNewPage() {
                     />
 
                     <Accordion>
-                      <AccordionItem title={t('Advanced Configuration')}>
+                      <Accordion.Item title={t('Advanced Configuration')}>
                         <div className="space-y-4 p-4 border rounded-md">
                           <AgentKnowledgePicker
                             selectedKnowledgeIds={selectedKnowledgeIds}
@@ -614,7 +600,7 @@ export function AgentsNewPage() {
                             )}
                           </p>
                         </div>
-                      </AccordionItem>
+                      </Accordion.Item>
                     </Accordion>
 
                     <div className="flex gap-4">
@@ -629,7 +615,7 @@ export function AgentsNewPage() {
 
                       <Button
                         type="button"
-                        variant="bordered"
+                        variant="outline"
                         onPress={resetForm}
                         isDisabled={isSubmitting}
                       >
@@ -644,20 +630,20 @@ export function AgentsNewPage() {
             {/* Right Side - Live Chat Preview */}
             {isPreviewEnabled && (
               <Card className="h-full">
-                <CardHeader>
+                <Card.Header>
                   <div className="flex justify-between items-center w-full">
                     <Title level={3}>{t('Live Preview')}</Title>
                     <Button
                       onPress={clearChat}
                       isDisabled={isLoading}
-                      variant="flat"
+                      variant="secondary"
                       size="sm"
                     >
                       {t('Clear')}
                     </Button>
                   </div>
-                </CardHeader>
-                <CardBody className="flex flex-col p-0">
+                </Card.Header>
+                <Card.Content className="flex flex-col p-0">
                   {/* Chat Messages */}
                   <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[400px]">
                     {messages.length === 0 && (
@@ -741,7 +727,7 @@ export function AgentsNewPage() {
                       </Button>
                     </div>
                   </div>
-                </CardBody>
+                </Card.Content>
               </Card>
             )}
           </div>

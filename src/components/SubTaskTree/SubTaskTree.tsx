@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Card, Chip, Progress } from '@heroui/react'
+import { Card, Chip, ProgressBar } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import type { Task } from '@/types'
@@ -82,7 +82,6 @@ const TaskNode = ({
   return (
     <Card
       className={`flex flex-row w-full items-center text-left gap-3 py-2 px-3 rounded-lg border border-default-200 hover:border-primary-300 transition-colors ${isSelected ? 'bg-primary-50 border-primary-300' : 'bg-default-50'} ${className}`}
-      isPressable
       onPress={() => navigate(url(`/tasks/${task.id}`))}
     >
       {/* Indentation */}
@@ -109,13 +108,13 @@ const TaskNode = ({
         <div className="flex items-center gap-2 mb-1">
           <h4 className="font-medium text-foreground truncate">{task.title}</h4>
           <div className="flex gap-1 flex-none">
-            <Chip size="sm" color={getStatusColor(task.status)} variant="flat">
+            <Chip size="sm" color={getStatusColor(task.status)} variant="soft">
               {task.status.replace('_', ' ')}
             </Chip>
             <Chip
               size="sm"
               color={getComplexityColor(task.complexity)}
-              variant="flat"
+              variant="soft"
             >
               {task.complexity}
             </Chip>
@@ -126,7 +125,7 @@ const TaskNode = ({
         {task.steps.length > 0 && (
           <div className="mb-2" data-testid="task-breakdown">
             <div className="flex items-center gap-2 mb-1">
-              <Progress
+              <ProgressBar
                 data-testid="progress-bar"
                 size="sm"
                 value={completionPercentage}
@@ -233,8 +232,8 @@ export const SubTaskTree = ({
             <Button
               isIconOnly
               size="sm"
-              variant="light"
-              onClick={() => {
+              variant="ghost"
+              onPress={() => {
                 const allTaskIds = new Set([
                   task.id,
                   ...children.map((c) => c.id),
@@ -251,8 +250,8 @@ export const SubTaskTree = ({
             <Button
               isIconOnly
               size="sm"
-              variant="light"
-              onClick={() => setExpandedTasks(new Set([task.id]))}
+              variant="ghost"
+              onPress={() => setExpandedTasks(new Set([task.id]))}
             >
               <Icon name="ArrowRight" className="w-4 h-4" />
             </Button>
@@ -325,7 +324,6 @@ export const SubTaskTree = ({
                 return (
                   <Card
                     key={depId}
-                    isPressable
                     onPress={() => navigate(url(`/tasks/${task.id}`))}
                     className="flex flex-row w-full items-center text-left gap-3 p-3 bg-default-50 border border-default-200 rounded-lg"
                   >
@@ -368,7 +366,7 @@ export const SubTaskTree = ({
                               ? 'danger'
                               : 'default'
                       }
-                      variant="flat"
+                      variant="soft"
                     >
                       {depTask.status.replace('_', ' ')}
                     </Chip>

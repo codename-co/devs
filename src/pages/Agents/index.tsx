@@ -1,23 +1,4 @@
-import {
-  Alert,
-  Card,
-  CardBody,
-  Spinner,
-  Tab,
-  Tabs,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  useDisclosure,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  Chip,
-} from '@heroui/react'
+import { Alert, Card, Spinner, Tab, Tabs, Modal, Button, useOverlayState, Dropdown, Chip } from '@heroui/react'
 import { useEffect, useState } from 'react'
 
 import { useI18n } from '@/i18n'
@@ -52,13 +33,8 @@ export const AgentsPage = () => {
 
   const { t, url } = useI18n(localI18n)
   const navigate = useNavigate()
-  const { isOpen: isKnowledgeModalOpen, onClose: onKnowledgeModalClose } =
-    useDisclosure()
-  const {
-    isOpen: isDeleteModalOpen,
-    onOpen: onDeleteModalOpen,
-    onClose: onDeleteModalClose,
-  } = useDisclosure()
+  const { isOpen: isKnowledgeModalOpen, close: onKnowledgeModalClose } = useOverlayState()
+  const { isOpen: isDeleteModalOpen, open: onDeleteModalOpen, close: onDeleteModalClose } = useOverlayState()
 
   // Set initial active tab based on agent counts
   useEffect(() => {
@@ -119,7 +95,7 @@ export const AgentsPage = () => {
     if (agents.length === 0) {
       return (
         <Card>
-          <CardBody className="text-center py-12">
+          <Card.Content className="text-center py-12">
             <p className="text-default-500 mb-4">
               {isGlobal
                 ? 'No global agents available.'
@@ -130,7 +106,7 @@ export const AgentsPage = () => {
                 Click "New Agent" above to create your first custom agent!
               </p>
             )}
-          </CardBody>
+          </Card.Content>
         </Card>
       )
     }
@@ -147,40 +123,37 @@ export const AgentsPage = () => {
               children={
                 <div className="absolute end-2 top-2">
                   <Dropdown>
-                    <DropdownTrigger>
-                      <Button isIconOnly variant="light" size="sm">
+                    <Dropdown.Trigger>
+                      <Button isIconOnly variant="ghost" size="sm">
                         <MoreVert className="w-4 h-4" />
                       </Button>
-                    </DropdownTrigger>
-                    <DropdownMenu>
-                      <DropdownItem
-                        key="live"
-                        startContent={<Voice className="w-4 h-4" />}
+                    </Dropdown.Trigger>
+                    <Dropdown.Menu>
+                      <Dropdown.Item
+                        id="live"
                         onPress={() => handleStartLiveConversation(agent.slug)}
                       >
                         {t('Start Live Conversation')}
-                      </DropdownItem>
+                      </Dropdown.Item>
                       {!isGlobal && agent.id.startsWith('custom-') ? (
                         <>
-                          {/* <DropdownItem
-                            key="edit"
-                            startContent={<EditPencil className="w-4 h-4" />}
+                          {/* <Dropdown.Item
+                            id="edit"
                             onPress={() => handleEditKnowledge(agent)}
                           >
                             {t('Edit Knowledge')}
-                          </DropdownItem> */}
-                          <DropdownItem
-                            key="delete"
+                          </Dropdown.Item> */}
+                          <Dropdown.Item
+                            id="delete"
                             className="text-danger"
                             color="danger"
-                            startContent={<Trash className="w-4 h-4" />}
                             onPress={() => handleDeleteAgent(agent)}
                           >
                             {t('Delete')}
-                          </DropdownItem>
+                          </Dropdown.Item>
                         </>
                       ) : null}
-                    </DropdownMenu>
+                    </Dropdown.Menu>
                   </Dropdown>
                 </div>
               }
@@ -243,7 +216,7 @@ export const AgentsPage = () => {
                     <Icon name="Sparks" className="w-5 h-5" />
                     <span>{t('My Agents')}</span>
                     {userAgents.length > 0 && (
-                      <Chip size="sm" variant="flat">
+                      <Chip size="sm" variant="soft">
                         {userAgents.length}
                       </Chip>
                     )}
@@ -261,7 +234,7 @@ export const AgentsPage = () => {
                   <Icon name="SparksSolid" className="w-5 h-5" />
                   <span>{t('Built-in Agents')}</span>
                   {globalAgents.length > 0 && (
-                    <Chip size="sm" variant="flat">
+                    <Chip size="sm" variant="soft">
                       {globalAgents.length}
                     </Chip>
                   )}
@@ -288,25 +261,25 @@ export const AgentsPage = () => {
       {/* Edit Knowledge Modal */}
       <Modal
         isOpen={isKnowledgeModalOpen}
-        onClose={onKnowledgeModalClose}
+        onOpenChange={(v) => !v && (onKnowledgeModalClose)()}
         size="3xl"
         scrollBehavior="inside"
       >
-        <ModalContent>
-          <ModalHeader>
+        <Modal.Dialog>
+          <Modal.Header>
             <div className="flex items-center gap-2">
               {t('Edit Knowledge for {name}', { name: editingAgent?.name })}
             </div>
-          </ModalHeader>
-          <ModalBody>
+          </Modal.Header>
+          <Modal.Body>
             <AgentKnowledgePicker
               selectedKnowledgeIds={selectedKnowledgeIds}
               onSelectionChange={setSelectedKnowledgeIds}
             />
-          </ModalBody>
-          <ModalFooter>
+          </Modal.Body>
+          <Modal.Footer>
             <Button
-              variant="light"
+              variant="ghost"
               onPress={onKnowledgeModalClose}
               isDisabled={saving}
             >
@@ -319,27 +292,27 @@ export const AgentsPage = () => {
             >
               {t('Save Changes')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
 
       {/* Delete Confirmation Modal */}
-      <Modal isOpen={isDeleteModalOpen} onClose={onDeleteModalClose} size="md">
-        <ModalContent>
-          <ModalHeader>
+      <Modal isOpen={isDeleteModalOpen} onOpenChange={(v) => !v && (onDeleteModalClose)()} size="md">
+        <Modal.Dialog>
+          <Modal.Header>
             <div className="flex items-center gap-2">{t('Delete Agent')}</div>
-          </ModalHeader>
-          <ModalBody>
+          </Modal.Header>
+          <Modal.Body>
             <p>
               {t(
                 'Are you sure you want to delete "{name}"? This action cannot be undone.',
                 { name: deletingAgent?.name },
               )}
             </p>
-          </ModalBody>
-          <ModalFooter>
+          </Modal.Body>
+          <Modal.Footer>
             <Button
-              variant="light"
+              variant="ghost"
               onPress={onDeleteModalClose}
               isDisabled={deleting}
             >
@@ -352,8 +325,8 @@ export const AgentsPage = () => {
             >
               {t('Delete')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
     </DefaultLayout>
   )

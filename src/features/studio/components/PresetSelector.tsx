@@ -4,14 +4,7 @@
  * Dropdown/popover for quick preset selection.
  */
 
-import {
-  Button,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  DropdownSection,
-} from '@heroui/react'
+import { Button, Dropdown } from '@heroui/react'
 
 import { Icon } from '@/components/Icon'
 import { type Lang, useI18n } from '@/i18n'
@@ -58,10 +51,10 @@ export function PresetSelector({
       placement="bottom-start"
       className="bg-white dark:bg-default-50 dark:text-white"
     >
-      <DropdownTrigger>
+      <Dropdown.Trigger>
         <Button
           radius="full"
-          variant="light"
+          variant="ghost"
           size="sm"
           startContent={
             <Icon name="Sparks" size="sm" className="text-default-500" />
@@ -73,8 +66,8 @@ export function PresetSelector({
               : t('Presets')}
           </span>
         </Button>
-      </DropdownTrigger>
-      <DropdownMenu
+      </Dropdown.Trigger>
+      <Dropdown.Menu
         aria-label="Image preset selection"
         selectionMode="single"
         selectedKeys={activePreset ? [activePreset.id] : []}
@@ -89,39 +82,34 @@ export function PresetSelector({
         }}
         className="max-h-80 overflow-y-auto"
       >
-        <DropdownSection title={t('Quick presets')} showDivider>
+        <Dropdown.Section title={t('Quick presets')} showDivider>
           {popularPresets.map((preset) => (
-            <DropdownItem
-              key={preset.id}
-              startContent={
-                <span className="text-lg">{preset.icon || '🎨'}</span>
-              }
+            <Dropdown.Item
+              id={preset.id}
               description={preset.description}
               textValue={preset.name}
             >
               {preset.name}
-            </DropdownItem>
+            </Dropdown.Item>
           ))}
-        </DropdownSection>
+        </Dropdown.Section>
 
-        <DropdownSection>
-          <DropdownItem
-            key="none"
-            startContent={<Icon name="Xmark" size="sm" />}
+        <Dropdown.Section>
+          <Dropdown.Item
+            id="none"
             textValue={t('No preset')}
             className={!activePreset ? 'bg-default-100' : ''}
           >
             {t('No preset')}
-          </DropdownItem>
-          <DropdownItem
-            key="library"
-            startContent={<Icon name="Sparks" size="sm" />}
+          </Dropdown.Item>
+          <Dropdown.Item
+            id="library"
             textValue={t('Browse all presets')}
           >
             {t('Browse all presets')}
-          </DropdownItem>
-        </DropdownSection>
-      </DropdownMenu>
+          </Dropdown.Item>
+        </Dropdown.Section>
+      </Dropdown.Menu>
     </Dropdown>
   )
 }

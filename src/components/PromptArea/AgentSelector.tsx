@@ -1,10 +1,4 @@
-import {
-  Button,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  Tooltip,
-} from '@heroui/react'
+import { Button, Popover, Tooltip } from '@heroui/react'
 import { useState } from 'react'
 
 import { AgentPicker } from './AgentPicker'
@@ -52,12 +46,12 @@ export function AgentSelector({
         }}
         isKeyboardDismissDisabled={false}
       >
-        <PopoverTrigger>
+        <Popover.Trigger>
           <Button
             data-testid="agent-picker"
             isIconOnly={isSmallWidth()}
             radius="full"
-            variant="light"
+            variant="ghost"
             size="sm"
             isDisabled={disabled}
           >
@@ -69,13 +63,13 @@ export function AgentSelector({
               nameClassName="hidden min-[36em]:inline-flex"
             />
           </Button>
-        </PopoverTrigger>
-        <PopoverContent>
+        </Popover.Trigger>
+        <Popover.Content>
           <AgentPicker
             selectedAgent={selectedAgent}
             onAgentChange={handleAgentChange}
           />
-        </PopoverContent>
+        </Popover.Content>
       </Popover>
     </Tooltip>
   )

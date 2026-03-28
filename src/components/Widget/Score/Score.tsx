@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { renderAbc, synth, type SynthOptions } from 'abcjs'
-import { Alert, Button, Progress } from '@heroui/react'
+import { Alert, Button, ProgressBar } from '@heroui/react'
 
 import './Score.css'
 import { Icon } from '@/components/Icon'
@@ -253,7 +253,7 @@ export const Score = ({ code }: { code: string }) => {
 
             <div className="flex-1 flex items-center gap-2 text-sm text-default-600">
               <span className="min-w-[40px]">{formatTime(currentTime)}</span>
-              <Progress
+              <ProgressBar
                 value={progress}
                 className="flex-1"
                 size="sm"

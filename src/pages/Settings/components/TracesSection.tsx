@@ -13,23 +13,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import {
-  Button,
-  Input,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Select,
-  SelectItem,
-  Spinner,
-  Tabs,
-  Tab,
-  Tooltip,
-  Switch,
-  useDisclosure,
-} from '@heroui/react'
+import { Button, Input, Modal, Select, Spinner, Tabs, Tab, Tooltip, Switch, useOverlayState } from '@heroui/react'
 import { addToast } from '@heroui/toast'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
@@ -110,16 +94,8 @@ export function TracesSection() {
     clearAllTraces,
   } = useTraceStore()
 
-  const {
-    isOpen: isTracesConfigOpen,
-    onOpen: onTracesConfigOpen,
-    onClose: onTracesConfigClose,
-  } = useDisclosure()
-  const {
-    isOpen: isTracesClearOpen,
-    onOpen: onTracesClearOpen,
-    onClose: onTracesClearClose,
-  } = useDisclosure()
+  const { isOpen: isTracesConfigOpen, open: onTracesConfigOpen, close: onTracesConfigClose } = useOverlayState()
+  const { isOpen: isTracesClearOpen, open: onTracesClearOpen, close: onTracesClearClose } = useOverlayState()
 
   const [tracesRetentionDays, setTracesRetentionDays] = useState(
     tracesConfig?.retentionDays?.toString() || '30',
@@ -178,14 +154,14 @@ export function TracesSection() {
       if (traceId === selectedTraceId) {
         navigateToHash('settings/traces/logs')
       }
-      addToast({
+      toast({
         title: tTraces('Deleted'),
         description: tTraces('Trace deleted successfully'),
         color: 'success',
       })
     } catch (error) {
       console.error('Failed to delete trace:', error)
-      addToast({
+      toast({
         title: tTraces('Error'),
         description: tTraces('Failed to delete trace'),
         color: 'danger',
@@ -197,14 +173,14 @@ export function TracesSection() {
     try {
       await clearAllTraces()
       onTracesClearClose()
-      addToast({
+      toast({
         title: tTraces('Cleared'),
         description: tTraces('All traces deleted successfully'),
         color: 'success',
       })
     } catch (error) {
       console.error('Failed to clear traces:', error)
-      addToast({
+      toast({
         title: tTraces('Error'),
         description: tTraces('Failed to clear traces'),
         color: 'danger',
@@ -220,14 +196,14 @@ export function TracesSection() {
         samplingRate: parseFloat(tracesSamplingRate) || 1,
       })
       onTracesConfigClose()
-      addToast({
+      toast({
         title: tTraces('Saved'),
         description: tTraces('Configuration saved successfully'),
         color: 'success',
       })
     } catch (error) {
       console.error('Failed to save config:', error)
-      addToast({
+      toast({
         title: tTraces('Error'),
         description: tTraces('Failed to save configuration'),
         color: 'danger',
@@ -271,7 +247,7 @@ export function TracesSection() {
         <Tooltip content={tTraces('Settings')} placement="bottom">
           <Button
             size="sm"
-            variant="flat"
+            variant="secondary"
             aria-label={tTraces('Settings')}
             onPress={onTracesConfigOpen}
           >
@@ -326,10 +302,10 @@ export function TracesSection() {
       )}
 
       {/* Traces Config Modal */}
-      <Modal isOpen={isTracesConfigOpen} onClose={onTracesConfigClose}>
-        <ModalContent>
-          <ModalHeader>{tTraces('Tracing Settings')}</ModalHeader>
-          <ModalBody className="gap-4">
+      <Modal isOpen={isTracesConfigOpen} onOpenChange={(v) => !v && (onTracesConfigClose)()}>
+        <Modal.Dialog>
+          <Modal.Header>{tTraces('Tracing Settings')}</Modal.Header>
+          <Modal.Body className="gap-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">{tTraces('Enable Tracing')}</p>
@@ -362,10 +338,10 @@ export function TracesSection() {
                 if (key) setTracesSamplingRate(key.toString())
               }}
             >
-              <SelectItem key="1">100%</SelectItem>
-              <SelectItem key="0.5">50%</SelectItem>
-              <SelectItem key="0.1">10%</SelectItem>
-              <SelectItem key="0.01">1%</SelectItem>
+              <Select.Item id="1">100%</Select.Item>
+              <Select.Item id="0.5">50%</Select.Item>
+              <Select.Item id="0.1">10%</Select.Item>
+              <Select.Item id="0.01">1%</Select.Item>
             </Select>
 
             <div className="pt-4 border-t border-divider">
@@ -380,7 +356,7 @@ export function TracesSection() {
                 </div>
                 <Button
                   color="danger"
-                  variant="flat"
+                  variant="secondary"
                   onPress={onTracesClearOpen}
                 >
                   <Icon name="Trash" size="sm" />
@@ -388,38 +364,38 @@ export function TracesSection() {
                 </Button>
               </div>
             </div>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="flat" onPress={onTracesConfigClose}>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onPress={onTracesConfigClose}>
               {tTraces('Cancel')}
             </Button>
             <Button color="primary" onPress={handleSaveTracesConfig}>
               {tTraces('Save')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
 
       {/* Traces Clear Confirmation Modal */}
-      <Modal isOpen={isTracesClearOpen} onClose={onTracesClearClose}>
-        <ModalContent>
-          <ModalHeader>{tTraces('Clear All Traces')}</ModalHeader>
-          <ModalBody>
+      <Modal isOpen={isTracesClearOpen} onOpenChange={(v) => !v && (onTracesClearClose)()}>
+        <Modal.Dialog>
+          <Modal.Header>{tTraces('Clear All Traces')}</Modal.Header>
+          <Modal.Body>
             <p>
               {tTraces(
                 'Are you sure you want to delete all traces? This action cannot be undone.',
               )}
             </p>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="flat" onPress={onTracesClearClose}>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onPress={onTracesClearClose}>
               {tTraces('Cancel')}
             </Button>
             <Button color="danger" onPress={handleClearAllTraces}>
               {tTraces('Delete All')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
     </div>
   )

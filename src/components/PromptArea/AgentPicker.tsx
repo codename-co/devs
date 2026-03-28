@@ -1,10 +1,4 @@
-import {
-  Listbox,
-  ListboxSection,
-  ListboxItem,
-  Input,
-  DropdownItem,
-} from '@heroui/react'
+import { ListBox, Input } from '@heroui/react'
 import { type Agent } from '@/types'
 import { getAgentsByCategory } from '@/stores/agentStore'
 import { Icon } from '../Icon'
@@ -126,15 +120,14 @@ export function AgentPicker({
   // Render agent item
   const renderAgentItem = useCallback(
     (agent: Agent) => (
-      <ListboxItem
-        key={agent.id}
+      <ListBox.Item
+        id={agent.id}
         description={agent.i18n?.[lang]?.desc ?? agent.desc ?? agent.role}
-        startContent={<AgentAvatar agent={agent} size="md" />}
         className="truncate"
         textValue={agent.i18n?.[lang]?.name ?? agent.name}
       >
         {agent.i18n?.[lang]?.name ?? agent.name}
-      </ListboxItem>
+      </ListBox.Item>
     ),
     [lang],
   )
@@ -158,7 +151,7 @@ export function AgentPicker({
           />
         </div>
       )}
-      <Listbox
+      <ListBox
         aria-label="Agent selection"
         disallowEmptySelection
         selectionMode="single"
@@ -173,23 +166,22 @@ export function AgentPicker({
               return agents && agents.length > 0
             })
             .map((category) => (
-              <ListboxSection
+              <ListBox.Section
                 key={category}
                 title={t((agentCategoryNames as any)[category] ?? category)}
               >
                 {filteredAgentsByCategory[category].map(renderAgentItem)}
-              </ListboxSection>
+              </ListBox.Section>
             )) as any)
         ) : searchQuery ? (
-          <ListboxItem key="no-results" isReadOnly textValue="No results">
+          <ListBox.Item id="no-results" isReadOnly textValue="No results">
             <span className="text-default-400 text-sm">
               {t('No agents found')}
             </span>
-          </ListboxItem>
+          </ListBox.Item>
         ) : null}
-        <DropdownItem
-          key="manage-agents"
-          startContent={<Icon name="Settings" size="sm" />}
+        <Dropdown.Item
+          id="manage-agents"
           textValue={t('Manage agents')}
           onPress={() => {
             navigate(`/${lang}/agents`)
@@ -197,8 +189,8 @@ export function AgentPicker({
           closeOnSelect
         >
           {t('Manage agents')}
-        </DropdownItem>
-      </Listbox>
+        </Dropdown.Item>
+      </ListBox>
     </div>
   )
 }

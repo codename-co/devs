@@ -169,7 +169,7 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks: {
             vendor: ['react', 'react-dom'],
-            ui: ['@heroui/react'],
+            ui: ['@heroui/react', '@heroui/styles'],
             i18n: ['@/i18n'],
             // ...Object.fromEntries(
             //   langs.map((lang) => [`i18n-${lang}`, [`@/i18n/locales/${lang}`]]),

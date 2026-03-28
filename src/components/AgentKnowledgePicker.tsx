@@ -1,20 +1,4 @@
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  Checkbox,
-  CheckboxGroup,
-  Chip,
-  Input,
-  Spinner,
-  Button,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  useDisclosure,
-} from '@heroui/react'
+import { Card, Checkbox, CheckboxGroup, Chip, Input, Spinner, Button, Modal, useOverlayState } from '@heroui/react'
 import { useState, useEffect, useMemo } from 'react'
 
 import { getAllKnowledgeItems } from '@/stores/knowledgeStore'
@@ -42,7 +26,7 @@ export function AgentKnowledgePicker({
   const [selectedPreview, setSelectedPreview] = useState<KnowledgeItem | null>(
     null,
   )
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const { isOpen, open: onOpen, close: onClose } = useOverlayState()
 
   useEffect(() => {
     loadKnowledgeItems()
@@ -138,17 +122,17 @@ export function AgentKnowledgePicker({
   if (loading) {
     return (
       <Card className={className}>
-        <CardHeader>
+        <Card.Header>
           <div className="flex items-center gap-2">
             <Icon name="Brain" className="w-5 h-5 text-primary" />
             <h3 className="text-lg font-semibold">Knowledge Base</h3>
           </div>
-        </CardHeader>
-        <CardBody>
+        </Card.Header>
+        <Card.Content>
           <div className="flex justify-center">
             <Spinner size="lg" />
           </div>
-        </CardBody>
+        </Card.Content>
       </Card>
     )
   }
@@ -156,13 +140,13 @@ export function AgentKnowledgePicker({
   if (knowledgeItems.length === 0) {
     return (
       <Card className={className}>
-        <CardHeader>
+        <Card.Header>
           <div className="flex items-center gap-2">
             <Icon name="Brain" className="w-5 h-5 text-primary" />
             <h3 className="text-lg font-semibold">Knowledge Base</h3>
           </div>
-        </CardHeader>
-        <CardBody>
+        </Card.Header>
+        <Card.Content>
           <div className="text-center text-default-500 py-8">
             <Icon name="Brain" className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <p>No knowledge items found.</p>
@@ -171,7 +155,7 @@ export function AgentKnowledgePicker({
               agent.
             </p>
           </div>
-        </CardBody>
+        </Card.Content>
       </Card>
     )
   }
@@ -179,12 +163,12 @@ export function AgentKnowledgePicker({
   return (
     <>
       <Card className={className}>
-        <CardHeader>
+        <Card.Header>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Icon name="Brain" className="w-5 h-5 text-primary" />
               <h3 className="text-lg font-semibold">Knowledge Base</h3>
-              <Chip size="sm" variant="flat" color="primary">
+              <Chip size="sm" variant="soft" color="accent">
                 {selectedKnowledgeIds.length} selected
               </Chip>
             </div>
@@ -198,11 +182,11 @@ export function AgentKnowledgePicker({
             }
             className="mt-2"
           />
-        </CardHeader>
-        <CardBody className="max-h-80 overflow-y-auto">
+        </Card.Header>
+        <Card.Content className="max-h-80 overflow-y-auto">
           <CheckboxGroup
             value={selectedKnowledgeIds}
-            onValueChange={handleSelectionChange}
+            onChange={handleSelectionChange}
             className="gap-2"
           >
             {filteredItems.map((item) => (
@@ -217,7 +201,7 @@ export function AgentKnowledgePicker({
                     <span className="font-medium truncate">{item.name}</span>
                     <Button
                       size="sm"
-                      variant="light"
+                      variant="ghost"
                       onPress={() => handlePreviewItem(item)}
                       className="ml-auto"
                     >
@@ -243,14 +227,14 @@ export function AgentKnowledgePicker({
                         <Chip
                           key={tag}
                           size="sm"
-                          variant="flat"
+                          variant="soft"
                           color="default"
                         >
                           {tag}
                         </Chip>
                       ))}
                       {item.tags.length > 3 && (
-                        <Chip size="sm" variant="flat" color="default">
+                        <Chip size="sm" variant="soft" color="default">
                           +{item.tags.length - 3}
                         </Chip>
                       )}
@@ -260,23 +244,23 @@ export function AgentKnowledgePicker({
               </div>
             ))}
           </CheckboxGroup>
-        </CardBody>
+        </Card.Content>
       </Card>
 
       <Modal
         isOpen={isOpen}
-        onClose={onClose}
+        onOpenChange={(v) => !v && (onClose)()}
         size="3xl"
         scrollBehavior="inside"
       >
-        <ModalContent>
-          <ModalHeader>
+        <Modal.Dialog>
+          <Modal.Header>
             <div className="flex items-center gap-2">
               {selectedPreview && getFileIcon(selectedPreview)}
               {selectedPreview?.name}
             </div>
-          </ModalHeader>
-          <ModalBody>
+          </Modal.Header>
+          <Modal.Body>
             {selectedPreview && (
               <div className="space-y-4">
                 {selectedPreview.description && (
@@ -317,8 +301,8 @@ export function AgentKnowledgePicker({
                         <Chip
                           key={tag}
                           size="sm"
-                          variant="flat"
-                          color="primary"
+                          variant="soft"
+                          color="accent"
                         >
                           {tag}
                         </Chip>
@@ -328,11 +312,11 @@ export function AgentKnowledgePicker({
                 )}
               </div>
             )}
-          </ModalBody>
-          <ModalFooter>
+          </Modal.Body>
+          <Modal.Footer>
             <Button onPress={onClose}>Close</Button>
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
     </>
   )

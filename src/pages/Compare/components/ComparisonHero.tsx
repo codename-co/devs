@@ -1,6 +1,5 @@
 import { Container, Icon, Section } from '@/components'
 import { Button, Chip, Link } from '@heroui/react'
-import { motion } from 'framer-motion'
 import { motionVariants } from '../motion'
 import { useI18n, useUrl } from '@/i18n'
 import localI18n from '../i18n'
@@ -20,23 +19,23 @@ export const ComparisonHero = ({ title, subtitle }: ComparisonHeroProps) => {
   return (
     <Section mainClassName="bg-gradient-to-b from-primary-50/50 via-transparent to-transparent dark:from-primary-900/10">
       <Container size={6} className="text-center py-16">
-        <motion.div {...motionVariants.chip}>
-          <Chip variant="flat" color="primary" className="mb-6">
+        <div {...motionVariants.chip}>
+          <Chip variant="soft" color="accent" className="mb-6">
             {t('Comparison')}
           </Chip>
-        </motion.div>
+        </div>
 
-        <motion.div {...motionVariants.title}>
+        <div {...motionVariants.title}>
           <h1 className="text-5xl font-bold !leading-tight mb-4">{title}</h1>
-        </motion.div>
+        </div>
 
-        <motion.div {...motionVariants.subtitle}>
+        <div {...motionVariants.subtitle}>
           <p className="max-w-2xl mx-auto text-lg text-default-600 mb-8">
             {subtitle}
           </p>
-        </motion.div>
+        </div>
 
-        <motion.div
+        <div
           {...motionVariants.cta}
           className="flex gap-3 justify-center flex-wrap"
         >
@@ -62,7 +61,7 @@ export const ComparisonHero = ({ title, subtitle }: ComparisonHeroProps) => {
             <Icon name="GitHub" size="md" />
             {t('View on GitHub')}
           </Button>
-        </motion.div>
+        </div>
       </Container>
     </Section>
   )

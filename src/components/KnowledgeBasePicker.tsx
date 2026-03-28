@@ -1,11 +1,4 @@
-import {
-  DropdownMenu,
-  DropdownSection,
-  DropdownItem,
-  type DropdownMenuProps,
-  Image,
-  Chip,
-} from '@heroui/react'
+import { type DropdownMenuProps, Chip } from '@heroui/react'
 import { useState, useEffect } from 'react'
 
 import { Icon } from './Icon'
@@ -91,7 +84,7 @@ export function KnowledgeBasePicker({
     const contentStr = safeString(item.content)
     if (item.fileType === 'image' && contentStr.startsWith('data:image/')) {
       return (
-        <Image
+        <img
           src={contentStr}
           alt={item.name}
           className="w-8 h-8 rounded object-cover"
@@ -124,32 +117,32 @@ export function KnowledgeBasePicker({
 
   if (loading) {
     return (
-      <DropdownMenu {...props}>
-        <DropdownItem key="loading" isDisabled>
+      <Dropdown.Menu {...props}>
+        <Dropdown.Item id="loading" isDisabled>
           <div className="flex items-center gap-2">
             <Icon name="Settings" className="animate-spin" size="sm" />
             Loading knowledge base...
           </div>
-        </DropdownItem>
-      </DropdownMenu>
+        </Dropdown.Item>
+      </Dropdown.Menu>
     )
   }
 
   if (knowledgeItems.length === 0) {
     return (
-      <DropdownMenu {...props}>
-        <DropdownItem key="empty" isDisabled>
+      <Dropdown.Menu {...props}>
+        <Dropdown.Item id="empty" isDisabled>
           <div className="flex items-center gap-2 text-default-500">
             <Icon name="Folder" size="sm" />
             No files in knowledge base
           </div>
-        </DropdownItem>
-      </DropdownMenu>
+        </Dropdown.Item>
+      </Dropdown.Menu>
     )
   }
 
   return (
-    <DropdownMenu
+    <Dropdown.Menu
       aria-label="Knowledge base file selection"
       selectionMode="single"
       onSelectionChange={handleSelectionChange}
@@ -157,18 +150,17 @@ export function KnowledgeBasePicker({
       {...props}
     >
       {orderedTypes.map((fileType) => (
-        <DropdownSection
+        <Dropdown.Section
           key={fileType}
           title={typeNames[fileType]}
           showDivider={orderedTypes.indexOf(fileType) < orderedTypes.length - 1}
         >
           {itemsByType[fileType].slice(0, 10).map((item) => (
-            <DropdownItem
-              key={item.id}
-              startContent={renderPreview(item)}
+            <Dropdown.Item
+              id={item.id}
               endContent={
                 <div className="flex items-center gap-1">
-                  <Chip size="sm" variant="flat" className="text-xs">
+                  <Chip size="sm" variant="soft" className="text-xs">
                     {formatBytes(item.size || 0, lang)}
                   </Chip>
                 </div>
@@ -187,10 +179,10 @@ export function KnowledgeBasePicker({
               className="py-2"
             >
               <div className="font-medium truncate max-w-48">{item.name}</div>
-            </DropdownItem>
+            </Dropdown.Item>
           ))}
-        </DropdownSection>
+        </Dropdown.Section>
       ))}
-    </DropdownMenu>
+    </Dropdown.Menu>
   )
 }

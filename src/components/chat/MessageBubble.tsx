@@ -89,7 +89,7 @@ export const MessageBubble = memo(
             <Tooltip content={t('Copy prompt')}>
               <Button
                 size="sm"
-                variant="light"
+                variant="ghost"
                 color="default"
                 isIconOnly
                 onPress={handleCopy}
@@ -112,7 +112,7 @@ export const MessageBubble = memo(
             <div className={isSmall ? 'mb-1' : 'mb-2'}>
               <Chip
                 size="sm"
-                variant="flat"
+                variant="soft"
                 color="warning"
                 startContent={<Icon name="Pin" className="w-3 h-3" />}
                 className="text-tiny"
@@ -126,8 +126,8 @@ export const MessageBubble = memo(
             <div className={isSmall ? 'mb-1' : 'mb-2'}>
               <Chip
                 size="sm"
-                variant="flat"
-                color="primary"
+                variant="soft"
+                color="accent"
                 startContent={
                   agent.icon ? (
                     <Icon name={agent.icon as IconName} className="w-3 h-3" />
@@ -158,7 +158,7 @@ export const MessageBubble = memo(
             />
           ) : isStreaming && steps.length === 0 ? (
             <div className="flex items-center gap-1 py-2">
-              <Spinner size="sm" classNames={{ wrapper: 'w-4 h-4' }} />
+              <Spinner size="sm" />
             </div>
           ) : null}
 
@@ -170,7 +170,7 @@ export const MessageBubble = memo(
               <Tooltip content={t('Copy the answer')}>
                 <Button
                   size="sm"
-                  variant="light"
+                  variant="ghost"
                   color="default"
                   isIconOnly
                   onPress={handleCopy}
@@ -182,7 +182,7 @@ export const MessageBubble = memo(
                 <Tooltip content={t('Learn from this message')}>
                   <Button
                     size="sm"
-                    variant="light"
+                    variant="ghost"
                     isIconOnly
                     isLoading={isLearning}
                     onPress={() => onLearn(message)}

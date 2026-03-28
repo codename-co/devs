@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useState } from 'react'
-import { Card, CardBody } from '@heroui/react'
+import { Card } from '@heroui/react'
 
 import { Icon } from '@/components'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
@@ -195,12 +195,11 @@ export const ArtifactPreviewCard = memo(
       return (
         <div>
           <Card
-            isPressable
             shadow="none"
             className="w-full border border-default-200 bg-default-50 hover:bg-default-100"
             onPress={handlePress}
           >
-            <CardBody className="p-0 flex flex-col overflow-hidden">
+            <Card.Content className="p-0 flex flex-col overflow-hidden">
               {/* Content preview pane */}
               <div className="w-full h-36 bg-default-100/50 overflow-hidden relative">
                 {preview ? (
@@ -230,7 +229,7 @@ export const ArtifactPreviewCard = memo(
                   </div>
                 )}
               </div>
-            </CardBody>
+            </Card.Content>
           </Card>
 
           {/* Title below the preview */}
@@ -244,13 +243,12 @@ export const ArtifactPreviewCard = memo(
     // ---- List card (default, compact) ----
     return (
       <Card
-        isPressable
         fullWidth
         shadow="none"
         className="border border-default-200 bg-default-50 hover:bg-default-100"
         onPress={handlePress}
       >
-        <CardBody className="flex flex-row items-center gap-2 sm:gap-3 p-2 sm:p-3">
+        <Card.Content className="flex flex-row items-center gap-2 sm:gap-3 p-2 sm:p-3">
           <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-medium bg-default-100 shrink-0">
             <Icon name={icon} size="md" className="text-default-500" />
           </div>
@@ -295,7 +293,7 @@ export const ArtifactPreviewCard = memo(
             size="md"
             className="text-default-500 shrink-0"
           />
-        </CardBody>
+        </Card.Content>
       </Card>
     )
   },

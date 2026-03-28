@@ -32,7 +32,7 @@ export function PageMenu({ supplementalActions }: PageMenuProps = {}) {
 
   return (
     <div className="absolute top-0 end-0 z-20 flex items-center gap-1">
-      <ButtonGroup variant="light" isIconOnly>
+      <ButtonGroup variant="ghost" isIconOnly>
         {supplementalActions}
       </ButtonGroup>
       <ButtonGroup className="opacity-70 *:hover:opacity-100">
@@ -47,7 +47,7 @@ export function PageMenu({ supplementalActions }: PageMenuProps = {}) {
             <Tooltip content={t('Traces')}>
               <Button
                 isIconOnly
-                variant="light"
+                variant="ghost"
                 aria-label={t('Traces')}
                 onPress={() =>
                   navigate(
@@ -74,7 +74,7 @@ export function PageMenu({ supplementalActions }: PageMenuProps = {}) {
         >
           <Button
             isIconOnly
-            variant="light"
+            variant="ghost"
             aria-label={
               showExtendedActions
                 ? t('Hide extended actions')

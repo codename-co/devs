@@ -103,7 +103,7 @@ export function SecuritySection() {
                   <Button
                     isIconOnly
                     size="sm"
-                    variant="light"
+                    variant="ghost"
                     onPress={handleCopyMasterKey}
                   >
                     <Icon name="InfoCircle" className="h-4 w-4" />
@@ -117,7 +117,7 @@ export function SecuritySection() {
         <div className="flex gap-2">
           <Button
             size="sm"
-            variant="flat"
+            variant="secondary"
             color="warning"
             onPress={handleRegenerateMasterKey}
             isLoading={isRegeneratingKey}

@@ -1,15 +1,5 @@
 import { useEffect, useState } from 'react'
-import {
-  Button,
-  Card,
-  CardBody,
-  Input,
-  Tabs,
-  Tab,
-  Tooltip,
-  Breadcrumbs,
-  BreadcrumbItem,
-} from '@heroui/react'
+import { Button, Card, Input, Tabs, Tab, Tooltip, Breadcrumbs, BreadcrumbsItem } from '@heroui/react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useI18n } from '@/i18n'
 import { SecureStorage } from '@/lib/crypto'
@@ -363,7 +353,7 @@ const SettingsContentInner = () => {
         {SecureStorage.isLocked() && (
           <div className="px-6 pt-4">
             <Card>
-              <CardBody className="flex flex-row items-center gap-4">
+              <Card.Content className="flex flex-row items-center gap-4">
                 <Icon name="Lock" className="h-5 w-5 text-warning" />
                 <div className="flex-1">
                   <p className="text-sm font-medium">
@@ -389,7 +379,7 @@ const SettingsContentInner = () => {
                 >
                   {t('Unlock')}
                 </Button>
-              </CardBody>
+              </Card.Content>
             </Card>
           </div>
         )}
@@ -407,7 +397,7 @@ const SettingsContentInner = () => {
                   </button>
                 )} */}
               <Breadcrumbs size="lg" className="font-semibold">
-                <BreadcrumbItem
+                <BreadcrumbsItem
                   onClick={() => {
                     if (!activeElement) return
 
@@ -426,10 +416,10 @@ const SettingsContentInner = () => {
                   }}
                 >
                   {currentSection.label}
-                </BreadcrumbItem>
+                </BreadcrumbsItem>
 
                 {labelInfo && (
-                  <BreadcrumbItem>
+                  <BreadcrumbsItem>
                     {labelInfo.icon && (
                       <Icon
                         name={labelInfo.icon}
@@ -438,7 +428,7 @@ const SettingsContentInner = () => {
                       />
                     )}
                     {labelInfo.label}
-                  </BreadcrumbItem>
+                  </BreadcrumbsItem>
                 )}
               </Breadcrumbs>
             </h3>

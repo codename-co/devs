@@ -1,15 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  Modal,
-  ModalContent,
-  ModalBody,
-  Input,
-  Listbox,
-  ListboxItem,
-  ListboxSection,
-  Spinner,
-} from '@heroui/react'
+import { Modal, Input, ListBox, Spinner } from '@heroui/react'
 
 import { Icon } from '@/components/Icon'
 import { useI18n, useUrl } from '@/i18n'
@@ -452,7 +443,7 @@ export function GlobalSearch() {
   return (
     <Modal
       isOpen={isOpen}
-      onClose={close}
+      onOpenChange={(v) => !v && (close)()}
       placement="top-center"
       size="lg"
       backdrop="blur"
@@ -464,8 +455,8 @@ export function GlobalSearch() {
         body: 'p-0',
       }}
     >
-      <ModalContent>
-        <ModalBody>
+      <Modal.Dialog>
+        <Modal.Body>
           <div className="p-2 border-b border-default-200">
             <Input
               ref={inputRef}
@@ -503,26 +494,25 @@ export function GlobalSearch() {
               // Default view: New task action + recent history
               <>
                 {/* New task action */}
-                <Listbox aria-label={t('New task')} variant="flat">
-                  <ListboxItem
-                    key="new-task"
+                <ListBox aria-label={t('New task')} variant="flat">
+                  <ListBox.Item
+                    id="new-task"
                     textValue={t('New task')}
-                    startContent={<Icon name="Plus" className="text-primary" />}
                     onPress={handleNewTask}
                   >
                     <span className="text-sm font-medium">{t('New task')}</span>
-                  </ListboxItem>
-                </Listbox>
+                  </ListBox.Item>
+                </ListBox>
 
                 {/* Recent history grouped by date */}
                 {groupedHistory.length > 0 && (
-                  <Listbox
+                  <ListBox
                     aria-label={t('Recent')}
                     variant="flat"
                     className="mt-2"
                   >
                     {groupedHistory.map((group) => (
-                      <ListboxSection
+                      <ListBox.Section
                         key={group.label}
                         title={group.label}
                         classNames={{
@@ -530,23 +520,9 @@ export function GlobalSearch() {
                         }}
                       >
                         {group.items.map((item) => (
-                          <ListboxItem
-                            key={item.id}
+                          <ListBox.Item
+                            id={item.id}
                             textValue={item.title}
-                            startContent={
-                              <Icon
-                                name={
-                                  item.type === 'task'
-                                    ? 'PcCheck'
-                                    : 'ChatBubble'
-                                }
-                                className={
-                                  item.type === 'task'
-                                    ? 'text-secondary'
-                                    : 'text-default-500'
-                                }
-                              />
-                            }
                             onPress={() => {
                               close()
                               navigate(url(item.href))
@@ -562,11 +538,11 @@ export function GlobalSearch() {
                                 </span>
                               )}
                             </div>
-                          </ListboxItem>
+                          </ListBox.Item>
                         ))}
-                      </ListboxSection>
+                      </ListBox.Section>
                     ))}
-                  </Listbox>
+                  </ListBox>
                 )}
               </>
             ) : results.length === 0 && !isSearching ? (
@@ -579,7 +555,7 @@ export function GlobalSearch() {
                 <p className="text-sm">{t('No results found')}</p>
               </div>
             ) : (
-              <Listbox
+              <ListBox
                 aria-label={t('Search DEVS')}
                 variant="flat"
                 onAction={(key) => {
@@ -589,7 +565,7 @@ export function GlobalSearch() {
               >
                 {Array.from(groupedResults.entries()).map(
                   ([type, groupResults]) => (
-                    <ListboxSection
+                    <ListBox.Section
                       key={type}
                       title={t(SECTION_TITLE_KEYS[type] as any)}
                       classNames={{
@@ -601,20 +577,10 @@ export function GlobalSearch() {
                         const isSelected = flatIndex === selectedIndex
 
                         return (
-                          <ListboxItem
-                            key={result.id}
+                          <ListBox.Item
+                            id={result.id}
                             textValue={result.title}
                             className={isSelected ? 'bg-default-100' : ''}
-                            startContent={
-                              <Icon
-                                name={result.icon as any}
-                                className={
-                                  result.color
-                                    ? `text-${result.color}-500`
-                                    : getIconColorClass(result.type)
-                                }
-                              />
-                            }
                           >
                             <div className="flex flex-col gap-0.5">
                               <span className="text-sm font-medium truncate">
@@ -626,17 +592,17 @@ export function GlobalSearch() {
                                 </span>
                               )}
                             </div>
-                          </ListboxItem>
+                          </ListBox.Item>
                         )
                       })}
-                    </ListboxSection>
+                    </ListBox.Section>
                   ),
                 )}
-              </Listbox>
+              </ListBox>
             )}
           </div>
-        </ModalBody>
-      </ModalContent>
+        </Modal.Body>
+      </Modal.Dialog>
     </Modal>
   )
 }

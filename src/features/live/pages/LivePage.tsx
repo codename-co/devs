@@ -16,13 +16,7 @@ import { buildAgentInstructions } from '@/lib/agent-knowledge'
 import { buildMemoryContextForChat } from '@/lib/memory-learning-service'
 import { languages } from '@/i18n'
 import type { Agent, Message } from '@/types'
-import {
-  Button,
-  Popover,
-  PopoverContent,
-  Progress,
-  Tooltip,
-} from '@heroui/react'
+import { Button, Popover, ProgressBar, Tooltip } from '@heroui/react'
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { VoiceWaveform } from '../components'
@@ -387,7 +381,7 @@ export const LivePage = () => {
               tooltip={t('Voice Settings')}
               ariaLabel={t('Voice Settings')}
             />
-            <PopoverContent className="p-0">
+            <Popover.Content className="p-0">
               <VoiceSettingsPanel
                 autoSpeak={autoSpeak}
                 onAutoSpeakChange={setLiveAutoSpeak}
@@ -398,7 +392,7 @@ export const LivePage = () => {
                 selectedVoiceId={selectedVoiceId}
                 onVoiceChange={setKokoroVoiceId}
               />
-            </PopoverContent>
+            </Popover.Content>
           </Popover>
         </>
       }
@@ -424,7 +418,7 @@ export const LivePage = () => {
               {loadingProgress.status}
             </p>
             {loadingProgress.progress !== undefined && (
-              <Progress
+              <ProgressBar
                 value={loadingProgress.progress * 100}
                 size="sm"
                 color="primary"

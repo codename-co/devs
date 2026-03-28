@@ -12,16 +12,7 @@ import { errorToast } from '@/lib/toast'
 import { useBackgroundImage } from '@/hooks/useBackgroundImage'
 import { useEasySetup } from '@/hooks/useEasySetup'
 import { usePWAInstallPrompt } from '@/hooks/usePWAInstallPrompt'
-import {
-  Alert,
-  Button,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-  Link,
-} from '@heroui/react'
-import { motion } from 'framer-motion'
+import { Alert, Button, Dropdown, Link } from '@heroui/react'
 import { motionVariants } from './motion'
 import { getAgentsByCategory } from '@/stores/agentStore'
 // import { loadAllMethodologies } from '@/stores/methodologiesStore'
@@ -322,7 +313,7 @@ export const IndexPage = () => {
           <div className="absolute top-auto bottom-2 inset-0 flex items-center justify-center">
             <div>
               <Alert
-                variant="faded"
+                status="faded"
                 title={t('Drop your image here')}
                 description={t('Release to set as background')}
               />
@@ -331,16 +322,16 @@ export const IndexPage = () => {
         )}
 
         <Section mainClassName="section-blank">
-          <motion.div
+          <div
             layoutId="active"
             className="flex flex-col text-center items-center mt-0 sm:mt-[10vh]"
             {...motionVariants.container}
           >
-            <motion.div {...motionVariants.icon}>
+            <div {...motionVariants.icon}>
               <DevsIcon />
-            </motion.div>
+            </div>
 
-            <motion.div {...motionVariants.title}>
+            <div {...motionVariants.title}>
               <Title
                 subtitle={t('Your own AI agents ready to collaborate')}
                 className="!text-2xl sm:!text-3xl md:!text-4xl font-light"
@@ -349,10 +340,10 @@ export const IndexPage = () => {
                 {platformName ||
                   t('Hey {productName}', { productName: PRODUCT.displayName })}
               </Title>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
-          <motion.div {...motionVariants.promptArea}>
+          <div {...motionVariants.promptArea}>
             <PromptArea
               lang={lang}
               autoFocus
@@ -369,25 +360,21 @@ export const IndexPage = () => {
               mode={mode}
               onModeChange={setMode}
             />
-          </motion.div>
+          </div>
 
-          <motion.div {...motionVariants.agentSection}>
+          <div {...motionVariants.agentSection}>
             {/* Use Cases Section */}
             {!isLoadingAgents && (
               <Container size={7} className="mt-0 sm:-mt-8">
                 <div className="flex gap-2 flex-wrap justify-center">
                   {useCasesByThemes(agents).map(
                     ({ theme, usecases }, index) => (
-                      <motion.div
+                      <div
                         {...motionVariants.usecase}
-                        transition={{
-                          ...motionVariants.usecase.transition,
-                          delay: 0.7 + 0.06 * index,
-                        }}
                         key={theme}
                       >
                         <Dropdown key={theme} placement="bottom-start">
-                          <DropdownTrigger>
+                          <Dropdown.Trigger>
                             <Button
                               variant="ghost"
                               size="md"
@@ -406,24 +393,15 @@ export const IndexPage = () => {
                                 {t(theme as any)}
                               </span>
                             </Button>
-                          </DropdownTrigger>
-                          <DropdownMenu
+                          </Dropdown.Trigger>
+                          <Dropdown.Menu
                             aria-label={`${theme} examples`}
                             className="max-h-[70vh] overflow-y-auto"
                           >
                             {[
-                              <DropdownItem
-                                key="aa"
+                              <Dropdown.Item
+                                id="aa"
                                 className="py-2 text-default-500 !data-[hover=true]:bg-transparent"
-                                startContent={
-                                  usecases[0]?.agent.icon && (
-                                    <Icon
-                                      name={(agentThemeIcon as any)[theme]}
-                                      size="md"
-                                      className="text-default-00"
-                                    />
-                                  )
-                                }
                                 endContent={
                                   <Icon
                                     name="Xmark"
@@ -435,11 +413,11 @@ export const IndexPage = () => {
                                 <span className="font-medium">
                                   {t(theme as any)}
                                 </span>
-                              </DropdownItem>,
+                              </Dropdown.Item>,
 
                               ...usecases.map((example) => (
-                                <DropdownItem
-                                  key={example.id}
+                                <Dropdown.Item
+                                  id={example.id}
                                   endContent={
                                     <Icon
                                       name="NavArrowRight"
@@ -476,12 +454,12 @@ export const IndexPage = () => {
                                   {example.agent.i18n?.[lang]?.examples?.find(
                                     (ex) => ex.id === example.id,
                                   )?.title ?? example.title}
-                                </DropdownItem>
+                                </Dropdown.Item>
                               )),
                             ]}
-                          </DropdownMenu>
+                          </Dropdown.Menu>
                         </Dropdown>
-                      </motion.div>
+                      </div>
                     ),
                   )}
                 </div>
@@ -502,7 +480,6 @@ export const IndexPage = () => {
                   return (
                     <Card
                       key={methodology.metadata.id}
-                      isPressable
                       isHoverable
                       shadow="sm"
                       className="transition-transform"
@@ -510,20 +487,20 @@ export const IndexPage = () => {
                         window.location.hash = `p=${encodeURIComponent(methodologyName)}`
                       }}
                     >
-                      <CardBody className="p-3 text-center">
+                      <Card.Content className="p-3 text-center">
                         <p className="text-sm font-medium">{methodologyName}</p>
-                      </CardBody>
+                      </Card.Content>
                     </Card>
                   )
                 })}
               </div>
             </Container>
           )} */}
-          </motion.div>
+          </div>
 
-          <motion.div {...motionVariants.agentSection}>
+          <div {...motionVariants.agentSection}>
             <RecentActivity />
-          </motion.div>
+          </div>
         </Section>
 
         <footer className="absolute bottom-12 md:bottom-0 left-0 right-0 mt-auto py-6 flex justify-center gap-4 scale-90 text-sm *:text-default-400 dark:*:text-default-500">

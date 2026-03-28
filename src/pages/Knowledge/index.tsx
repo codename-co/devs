@@ -80,7 +80,7 @@ export const KnowledgePage: React.FC = () => {
                   <Icon name="Puzzle" className="w-5 h-5" />
                   <span>{t('Connectors')}</span>
                   {connectorsCount > 0 && (
-                    <Chip size="sm" variant="flat">
+                    <Chip size="sm" variant="soft">
                       {connectorsCount}
                     </Chip>
                   )}

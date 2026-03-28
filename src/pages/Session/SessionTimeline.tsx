@@ -150,13 +150,13 @@ export function SessionTimeline({
             <div className="flex items-center gap-2 mt-2">
               <Chip
                 size="sm"
-                variant="flat"
+                variant="soft"
                 color={intentColors[session.intent]}
               >
                 {intentLabels[session.intent] || session.intent}
               </Chip>
               {session.attachments && session.attachments.length > 0 && (
-                <Chip size="sm" variant="flat" color="default">
+                <Chip size="sm" variant="soft" color="default">
                   {session.attachments.length} {t('file(s)')}
                 </Chip>
               )}
@@ -205,8 +205,8 @@ export function SessionTimeline({
               <Chip
                 key={artifact.id}
                 size="sm"
-                variant="flat"
-                color="primary"
+                variant="soft"
+                color="accent"
                 startContent={<Icon name="Page" size="xs" />}
               >
                 {artifact.title}

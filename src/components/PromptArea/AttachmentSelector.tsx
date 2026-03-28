@@ -1,16 +1,4 @@
-import {
-  Button,
-  Chip,
-  Image,
-  Input,
-  Listbox,
-  ListboxItem,
-  ListboxSection,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  Spinner,
-} from '@heroui/react'
+import { Button, Chip, Input, ListBox, Popover, Spinner } from '@heroui/react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Icon } from '../Icon'
@@ -154,7 +142,7 @@ export function AttachmentSelector({
       item.content.startsWith('data:image/')
     ) {
       return (
-        <Image
+        <img
           src={item.content}
           alt={item.name}
           className="w-6 h-6 rounded object-cover"
@@ -169,7 +157,7 @@ export function AttachmentSelector({
   const renderKnowledgeBrowser = () => (
     <div className="flex flex-col gap-2">
       <Button
-        variant="light"
+        variant="ghost"
         size="sm"
         startContent={<Icon name="ArrowLeft" size="sm" />}
         onPress={() => setPanelView('main')}
@@ -210,7 +198,7 @@ export function AttachmentSelector({
             {!knowledgeSearch && (
               <Button
                 size="sm"
-                variant="flat"
+                variant="secondary"
                 onPress={() => {
                   navigate(`${location.pathname}#settings/knowledge`)
                   setIsOpen(false)
@@ -221,7 +209,7 @@ export function AttachmentSelector({
             )}
           </div>
         ) : (
-          <Listbox
+          <ListBox
             aria-label={t('Choose from knowledge base')}
             onAction={(key) => {
               const item = knowledgeItems.find((i) => i.id === key)
@@ -232,14 +220,8 @@ export function AttachmentSelector({
             }}
           >
             {filteredKnowledgeItems.slice(0, 20).map((item) => (
-              <ListboxItem
-                key={item.id}
-                startContent={renderKnowledgePreview(item)}
-                endContent={
-                  <Chip size="sm" variant="flat" className="text-xs shrink-0">
-                    {formatBytes(item.size || 0, lang)}
-                  </Chip>
-                }
+              <ListBox.Item
+                id={item.id}
                 textValue={item.name}
               >
                 <div className="flex flex-col gap-0 min-w-0">
@@ -250,14 +232,14 @@ export function AttachmentSelector({
                     {item.path.replace(/^\//, '')}
                   </span>
                 </div>
-              </ListboxItem>
+              </ListBox.Item>
             ))}
-          </Listbox>
+          </ListBox>
         )}
       </div>
 
       <Button
-        variant="light"
+        variant="ghost"
         size="sm"
         startContent={<Icon name="Settings" size="sm" />}
         onPress={() => {
@@ -275,7 +257,7 @@ export function AttachmentSelector({
   const renderSkillsBrowser = () => (
     <div className="flex flex-col gap-2">
       <Button
-        variant="light"
+        variant="ghost"
         size="sm"
         startContent={<Icon name="ArrowLeft" size="sm" />}
         onPress={() => setPanelView('main')}
@@ -312,7 +294,7 @@ export function AttachmentSelector({
             {!skillsSearch && (
               <Button
                 size="sm"
-                variant="flat"
+                variant="secondary"
                 onPress={() => {
                   navigate(`${location.pathname}#settings/skills`)
                   setIsOpen(false)
@@ -323,7 +305,7 @@ export function AttachmentSelector({
             )}
           </div>
         ) : (
-          <Listbox
+          <ListBox
             aria-label={t('Choose from skills')}
             onAction={(key) => {
               const skill = skillItems.find((s) => s.id === key)
@@ -334,15 +316,8 @@ export function AttachmentSelector({
             }}
           >
             {filteredSkillItems.map((skill) => (
-              <ListboxItem
-                key={skill.id}
-                startContent={
-                  <Icon
-                    name="Puzzle"
-                    size="sm"
-                    className="text-default-500 shrink-0"
-                  />
-                }
+              <ListBox.Item
+                id={skill.id}
                 textValue={skill.name}
               >
                 <div className="flex flex-col gap-0 min-w-0">
@@ -353,14 +328,14 @@ export function AttachmentSelector({
                     {skill.description}
                   </span>
                 </div>
-              </ListboxItem>
+              </ListBox.Item>
             ))}
-          </Listbox>
+          </ListBox>
         )}
       </div>
 
       <Button
-        variant="light"
+        variant="ghost"
         size="sm"
         startContent={<Icon name="Settings" size="sm" />}
         onPress={() => {
@@ -407,7 +382,7 @@ export function AttachmentSelector({
       <div className="flex flex-col">
         {/* CREATE section — mode radio group */}
         {onModeChange && (
-          <Listbox
+          <ListBox
             aria-label={t('Create')}
             variant="flat"
             classNames={{ base: 'w-full', list: 'w-full' }}
@@ -416,7 +391,7 @@ export function AttachmentSelector({
               onModeChange?.(mode === newMode ? 'chat' : newMode)
             }}
           >
-            <ListboxSection
+            <ListBox.Section
               classNames={{
                 heading: 'hidden',
                 base: 'w-full',
@@ -424,19 +399,8 @@ export function AttachmentSelector({
               }}
             >
               {modeItems.map((item) => (
-                <ListboxItem
-                  key={item.key}
-                  startContent={
-                    <Icon
-                      name={item.icon}
-                      size="sm"
-                      className={
-                        mode === item.key
-                          ? 'text-primary-500'
-                          : 'text-default-500'
-                      }
-                    />
-                  }
+                <ListBox.Item
+                  id={item.key}
                   textValue={item.label}
                   classNames={{
                     base: `flex-col items-center justify-center gap-1 py-2.5 px-1 text-center ${mode === item.key ? 'bg-primary-50 dark:bg-primary-900/30' : ''}`,
@@ -444,14 +408,14 @@ export function AttachmentSelector({
                   }}
                 >
                   {item.label}
-                </ListboxItem>
+                </ListBox.Item>
               ))}
-            </ListboxSection>
-          </Listbox>
+            </ListBox.Section>
+          </ListBox>
         )}
 
         {/* ATTACH + EXTEND section */}
-        <Listbox
+        <ListBox
           aria-label={t('Attach')}
           variant="flat"
           classNames={{ list: 'gap-0' }}
@@ -479,108 +443,63 @@ export function AttachmentSelector({
             }
           }}
         >
-          <ListboxSection classNames={{ heading: 'hidden' }}>
-            <ListboxItem
-              key="upload"
-              startContent={
-                <Icon
-                  name="Attachment"
-                  size="sm"
-                  className="text-default-500"
-                />
-              }
+          <ListBox.Section classNames={{ heading: 'hidden' }}>
+            <ListBox.Item
+              id="upload"
               textValue={t('Upload new file')}
             >
               {t('Upload new file')}
-            </ListboxItem>
+            </ListBox.Item>
             {knowledgeCount > 0 ? (
-              <ListboxItem
-                key="knowledge"
-                startContent={
-                  <Icon name="Folder" size="sm" className="text-default-500" />
-                }
-                endContent={
-                  <Chip
-                    size="sm"
-                    variant="flat"
-                    className="text-[10px] h-5 min-w-0"
-                  >
-                    {knowledgeCount}
-                  </Chip>
-                }
+              <ListBox.Item
+                id="knowledge"
                 textValue={t('Knowledge')}
               >
                 {t('Knowledge')}
-              </ListboxItem>
+              </ListBox.Item>
             ) : (
-              <ListboxItem
-                key="knowledge-empty"
+              <ListBox.Item
+                id="knowledge-empty"
                 className="hidden"
                 textValue=""
               >
                 {''}
-              </ListboxItem>
+              </ListBox.Item>
             )}
             {isScreenCaptureSupported ? (
-              <ListboxItem
-                key="screenshot"
-                startContent={
-                  isCapturing ? (
-                    <Spinner size="sm" />
-                  ) : (
-                    <Icon
-                      name="Screenshot"
-                      size="sm"
-                      className="text-default-500"
-                    />
-                  )
-                }
+              <ListBox.Item
+                id="screenshot"
                 isDisabled={isCapturing}
                 textValue={t('Capture screen')}
               >
                 {t('Capture screen')}
-              </ListboxItem>
+              </ListBox.Item>
             ) : (
-              <ListboxItem
-                key="screenshot-unsupported"
+              <ListBox.Item
+                id="screenshot-unsupported"
                 className="hidden"
                 textValue=""
               >
                 {''}
-              </ListboxItem>
+              </ListBox.Item>
             )}
-          </ListboxSection>
+          </ListBox.Section>
 
-          <ListboxSection classNames={{ heading: 'hidden' }}>
-            <ListboxItem
-              key="skills"
-              startContent={
-                <Icon name="Puzzle" size="sm" className="text-default-500" />
-              }
-              endContent={
-                skillsCount > 0 ? (
-                  <Chip
-                    size="sm"
-                    variant="flat"
-                    className="text-[10px] h-5 min-w-0"
-                  >
-                    {skillsCount}
-                  </Chip>
-                ) : undefined
-              }
+          <ListBox.Section classNames={{ heading: 'hidden' }}>
+            <ListBox.Item
+              id="skills"
               textValue={t('Skills')}
             >
               {t('Skills')}
-            </ListboxItem>
-            <ListboxItem
-              key="connectors"
-              startContent={connectorsStart}
+            </ListBox.Item>
+            <ListBox.Item
+              id="connectors"
               textValue={t('Connectors')}
             >
               {t('Connectors')}
-            </ListboxItem>
-          </ListboxSection>
-        </Listbox>
+            </ListBox.Item>
+          </ListBox.Section>
+        </ListBox>
       </div>
     )
   }
@@ -592,16 +511,16 @@ export function AttachmentSelector({
       onOpenChange={setIsOpen}
       shouldBlockScroll={false}
     >
-      <PopoverTrigger>
-        <Button isIconOnly radius="md" variant="bordered" size="sm">
+      <Popover.Trigger>
+        <Button isIconOnly radius="md" variant="outline" size="sm">
           <Icon name="Plus" />
         </Button>
-      </PopoverTrigger>
-      <PopoverContent className="p-1 w-64 bg-white dark:bg-default-50">
+      </Popover.Trigger>
+      <Popover.Content className="p-1 w-64 bg-white dark:bg-default-50">
         {panelView === 'main' && renderMainPanel()}
         {panelView === 'knowledge' && renderKnowledgeBrowser()}
         {panelView === 'skills' && renderSkillsBrowser()}
-      </PopoverContent>
+      </Popover.Content>
     </Popover>
   )
 }

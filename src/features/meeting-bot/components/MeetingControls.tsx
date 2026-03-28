@@ -5,14 +5,7 @@
  */
 
 import { useState } from 'react'
-import {
-  Button,
-  Input,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  Chip,
-} from '@heroui/react'
+import { Button, Input, Popover, Chip } from '@heroui/react'
 import { Icon } from '@/components'
 import type { MeetingParticipant } from '../types'
 
@@ -63,12 +56,12 @@ export function MeetingControls({
           {activeParticipants.length !== 1 ? 's' : ''}
         </span>
         {activeParticipants.slice(0, 5).map((p) => (
-          <Chip key={p.id} size="sm" variant="flat">
+          <Chip key={p.id} size="sm" variant="soft">
             {p.name}
           </Chip>
         ))}
         {activeParticipants.length > 5 && (
-          <Chip size="sm" variant="flat">
+          <Chip size="sm" variant="soft">
             +{activeParticipants.length - 5} more
           </Chip>
         )}
@@ -99,21 +92,21 @@ export function MeetingControls({
         <div className="flex gap-2">
           {/* Reactions */}
           <Popover placement="top">
-            <PopoverTrigger>
+            <Popover.Trigger>
               <Button
-                variant="flat"
+                variant="secondary"
                 startContent={<Icon name="Emoji" size="sm" />}
               >
                 React
               </Button>
-            </PopoverTrigger>
-            <PopoverContent>
+            </Popover.Trigger>
+            <Popover.Content>
               <div className="grid grid-cols-4 gap-1 p-2">
                 {REACTIONS.map((emoji) => (
                   <Button
                     key={emoji}
                     size="sm"
-                    variant="light"
+                    variant="ghost"
                     isIconOnly
                     className="text-xl"
                     onPress={() => onReact(emoji)}
@@ -122,20 +115,20 @@ export function MeetingControls({
                   </Button>
                 ))}
               </div>
-            </PopoverContent>
+            </Popover.Content>
           </Popover>
 
           {/* TTS (experimental) */}
           <Popover placement="top">
-            <PopoverTrigger>
+            <Popover.Trigger>
               <Button
-                variant="flat"
+                variant="secondary"
                 startContent={<Icon name="Voice" size="sm" />}
               >
                 Speak
               </Button>
-            </PopoverTrigger>
-            <PopoverContent>
+            </Popover.Trigger>
+            <Popover.Content>
               <div className="p-3 space-y-2 w-64">
                 <p className="text-xs text-default-500">
                   ⚠️ TTS requires audio routing setup on the server. Chat is
@@ -155,14 +148,14 @@ export function MeetingControls({
                   }}
                 />
               </div>
-            </PopoverContent>
+            </Popover.Content>
           </Popover>
         </div>
 
         {/* Leave button */}
         <Button
           color="danger"
-          variant="flat"
+          variant="secondary"
           startContent={<Icon name="Xmark" size="sm" />}
           onPress={onLeave}
         >

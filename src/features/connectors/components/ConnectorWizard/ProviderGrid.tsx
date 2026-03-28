@@ -5,7 +5,7 @@
  * Each provider shows its icon, name, and description.
  */
 
-import { Card, CardBody, Tooltip } from '@heroui/react'
+import { Card, Tooltip } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { getProviders } from '../../providers/apps'
@@ -64,7 +64,7 @@ export function ProviderGrid({ category, onSelect }: ProviderGridProps) {
                   : 'opacity-50 cursor-not-allowed'
               }`}
             >
-              <CardBody className="flex flex-col items-center gap-2 p-4">
+              <Card.Content className="flex flex-col items-center gap-2 p-4">
                 <div
                   className="w-12 h-12 rounded-lg flex items-center justify-center"
                   style={{ backgroundColor: `${config.color}20` }}
@@ -81,7 +81,7 @@ export function ProviderGrid({ category, onSelect }: ProviderGridProps) {
                 <span className="text-xs text-default-400 text-center line-clamp-2">
                   {config.description}
                 </span>
-              </CardBody>
+              </Card.Content>
             </Card>
           )
 

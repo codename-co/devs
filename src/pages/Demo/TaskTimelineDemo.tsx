@@ -13,7 +13,7 @@
  * @route /demo/timeline
  */
 
-import { Chip, Divider } from '@heroui/react'
+import { Chip, Separator } from '@heroui/react'
 
 import { Container, Icon, Section, Title } from '@/components'
 import { MessageBubble, HitlPrompt } from '@/components/chat'
@@ -409,16 +409,16 @@ export function TaskTimelineDemo() {
         <Container>
           {/* Legend */}
           <div className="flex flex-wrap gap-3 mb-6">
-            <Chip size="sm" variant="flat" color="warning">
+            <Chip size="sm" variant="soft" color="warning">
               HITL — Pending
             </Chip>
-            <Chip size="sm" variant="flat" color="success">
+            <Chip size="sm" variant="soft" color="success">
               HITL — Answered
             </Chip>
-            <Chip size="sm" variant="flat" color="secondary">
+            <Chip size="sm" variant="soft" color="default">
               HITL — Auto-resolved
             </Chip>
-            <Chip size="sm" variant="flat" color="default">
+            <Chip size="sm" variant="soft" color="default">
               HITL — Dismissed
             </Chip>
           </div>
@@ -439,17 +439,17 @@ export function TaskTimelineDemo() {
                     key={`div-${idx}`}
                     className="flex items-center gap-3 my-2"
                   >
-                    <Divider className="flex-1" />
+                    <Separator className="flex-1" />
                     <Chip
                       size="sm"
-                      variant="bordered"
+                      variant="secondary"
                       startContent={
                         <Icon name="Timer" size="sm" className="ml-1" />
                       }
                     >
                       {item.label}
                     </Chip>
-                    <Divider className="flex-1" />
+                    <Separator className="flex-1" />
                   </div>
                 )
               }

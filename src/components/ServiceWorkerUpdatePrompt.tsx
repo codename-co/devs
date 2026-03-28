@@ -52,7 +52,7 @@ export function ServiceWorkerUpdatePrompt() {
             <>
               <Button
                 size="sm"
-                variant="flat"
+                variant="secondary"
                 color="success"
                 onPress={handleUpdate}
               >

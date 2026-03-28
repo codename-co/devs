@@ -991,6 +991,10 @@ When working with translation strings, apostrophes must be used with the "'" cha
 
 ## AI Agent Guidelines
 
+### No Heuristic Intent Detection
+
+**NEVER use heuristic, keyword-matching to guess what the user wants from their prompt text.** The user's intent is determined by explicit signals: the selected mode, the selected agent, and the UI controls they interact with, or via LLM classification.
+
 ### Context7 MCP for Documentation
 
 Always use Context7 MCP automatically when working on tasks that involve:

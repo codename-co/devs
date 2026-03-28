@@ -1,4 +1,4 @@
-import { Chip, Progress, Tooltip } from '@heroui/react'
+import { Chip, ProgressBar, Tooltip } from '@heroui/react'
 import { Icon } from '@/components/Icon'
 import type { Connector, ConnectorSyncState } from '../types'
 import { SyncEngine } from '../sync-engine'
@@ -60,7 +60,7 @@ export function ConnectorSyncStatus({
     return (
       <div className="flex items-center gap-2">
         <div className="flex-1 min-w-[60px] max-w-[120px]">
-          <Progress
+          <ProgressBar
             size={config.chip}
             isIndeterminate
             color="primary"
@@ -86,7 +86,7 @@ export function ConnectorSyncStatus({
       <Chip
         size={config.chip}
         color="success"
-        variant="flat"
+        variant="soft"
         startContent={
           <Icon name="Check" width={config.icon} height={config.icon} />
         }
@@ -106,7 +106,7 @@ export function ConnectorSyncStatus({
         <Chip
           size={config.chip}
           color="danger"
-          variant="flat"
+          variant="soft"
           startContent={
             <Icon
               name="WarningTriangle"
@@ -132,7 +132,7 @@ export function ConnectorSyncStatus({
         <Chip
           size={config.chip}
           color="warning"
-          variant="flat"
+          variant="soft"
           startContent={
             <Icon name="Clock" width={config.icon} height={config.icon} />
           }
@@ -145,7 +145,7 @@ export function ConnectorSyncStatus({
 
   // Default/unknown state
   return (
-    <Chip size={config.chip} color="default" variant="flat">
+    <Chip size={config.chip} color="default" variant="soft">
       {showLabel ? 'Unknown' : null}
     </Chip>
   )

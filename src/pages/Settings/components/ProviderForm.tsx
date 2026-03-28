@@ -13,7 +13,7 @@
 
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Button, Input, Textarea } from '@heroui/react'
+import { Button, Input, TextArea } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import type { LLMProvider } from '@/types'
@@ -108,7 +108,7 @@ export function ProviderForm({ provider }: ProviderFormProps) {
         target="_blank"
         rel="noopener noreferrer"
         color="primary"
-        variant="flat"
+        variant="secondary"
         className="w-full"
         startContent={<Icon name="OpenInBrowser" className="w-4 h-4" />}
       >
@@ -157,7 +157,7 @@ export function ProviderForm({ provider }: ProviderFormProps) {
         {/* API Key input */}
         {needsApiKey &&
           (providerConfig.multilineApiKey ? (
-            <Textarea
+            <TextArea
               label={t('API Key')}
               placeholder={providerConfig.apiKeyPlaceholder || 'sk-...'}
               value={apiKey}

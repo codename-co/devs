@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { Accordion, AccordionItem, Chip } from '@heroui/react'
+import { Accordion, Chip } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
 import { Icon } from '@/components'
@@ -51,8 +51,8 @@ export const TaskStepsSection = memo(
             // >
             // </div>
             <Accordion isCompact className="px-0">
-              <AccordionItem
-                key="requirements"
+              <Accordion.Item
+                id="requirements"
                 startContent={
                   <Icon
                     name="DoubleCheck"
@@ -82,7 +82,7 @@ export const TaskStepsSection = memo(
                     </div>
                   ))}
                 </div>
-              </AccordionItem>
+              </Accordion.Item>
             </Accordion>
           )}
           {/* Steps */}
@@ -122,8 +122,8 @@ export const TaskStepsSection = memo(
                   {agent && (
                     <Chip
                       size="sm"
-                      variant="flat"
-                      color="primary"
+                      variant="soft"
+                      color="accent"
                       className="text-tiny flex-shrink-0"
                       startContent={
                         agent.icon ? (

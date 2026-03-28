@@ -1,14 +1,4 @@
-import {
-  Button,
-  ButtonGroup,
-  Chip,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  Textarea,
-  type TextAreaProps,
-  Tooltip,
-} from '@heroui/react'
+import { Button, ButtonGroup, Chip, Popover, TextArea, type TextAreaProps, Tooltip } from '@heroui/react'
 import {
   forwardRef,
   useEffect,
@@ -788,8 +778,8 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
             {resolvedAgentMentions.map((agent) => (
               <Chip
                 key={`agent-${agent.id}`}
-                color="primary"
-                variant="flat"
+                color="accent"
+                variant="soft"
                 size="sm"
                 onClose={() => handleRemoveAgentMention(agent)}
                 startContent={
@@ -803,7 +793,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
               <Chip
                 key={`methodology-${methodology.metadata.id}`}
                 color="success"
-                variant="flat"
+                variant="soft"
                 size="sm"
                 onClose={() => handleRemoveMethodologyMention(methodology)}
                 startContent={
@@ -817,8 +807,8 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
             {resolvedSkillMentions.map((skill) => (
               <Chip
                 key={`skill-${skill.id}`}
-                color="primary"
-                variant="flat"
+                color="accent"
+                variant="soft"
                 size="sm"
                 onClose={() => handleRemoveSkillMention(skill)}
                 startContent={<Icon name="Puzzle" size="sm" />}
@@ -829,8 +819,8 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
             {resolvedConnectorMentions.map((connector) => (
               <Chip
                 key={`connector-${connector.id}`}
-                color="primary"
-                variant="flat"
+                color="accent"
+                variant="soft"
                 size="sm"
                 onClose={() => handleRemoveConnectorMention(connector)}
                 startContent={<Icon name="EvPlug" size="sm" />}
@@ -900,7 +890,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
             onChange={handleFileInputChange}
           />
 
-          <Textarea
+          <TextArea
             ref={mergedRef}
             data-testid="prompt-input"
             className={cn(
@@ -982,18 +972,18 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                 {/* Live mode voice settings popover */}
                 {isLiveMode && (
                   <Popover placement="top-end">
-                    <PopoverTrigger>
+                    <Popover.Trigger>
                       <Button
                         isIconOnly
                         size="sm"
                         radius="full"
-                        variant="light"
+                        variant="ghost"
                         className="text-default-400"
                       >
                         <Icon name="Settings" size="sm" />
                       </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0">
+                    </Popover.Trigger>
+                    <Popover.Content className="p-0">
                       <VoiceSettingsPanel
                         autoSpeak={liveAutoSpeakValue}
                         onAutoSpeakChange={setLiveAutoSpeak}
@@ -1004,7 +994,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                         selectedVoiceId={selectedVoiceId}
                         onVoiceChange={setKokoroVoiceId}
                       />
-                    </PopoverContent>
+                    </Popover.Content>
                   </Popover>
                 )}
 
@@ -1056,7 +1046,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                     </Tooltip>
                   )}
 
-                <ButtonGroup variant="flat">
+                <ButtonGroup variant="secondary">
                   {selectedAgent?.id === 'devs' && onSubmitTask && (
                     <Tooltip content={t('Send prompt')} placement="bottom">
                       <Button
@@ -1069,7 +1059,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                           canSubmit && 'dark:bg-white dark:text-black',
                         )}
                         radius="md"
-                        variant="solid"
+                        variant="primary"
                         size="sm"
                         isDisabled={!canSubmit}
                         isLoading={props.isSending}
@@ -1095,7 +1085,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                           canSubmit && 'dark:bg-white dark:text-black',
                         )}
                         radius="md"
-                        variant="solid"
+                        variant="primary"
                         size="sm"
                         isDisabled={!canSubmit}
                         isLoading={props.isSending}
@@ -1120,7 +1110,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                           isIconOnly={isSmallWidth()}
                           color="danger"
                           radius="md"
-                          // variant="solid"
+                          // variant="primary"
                           size="sm"
                           onPress={props.onStop}
                         >
@@ -1140,7 +1130,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                             canSubmit && 'dark:bg-white dark:text-black',
                           )}
                           radius="md"
-                          variant="solid"
+                          variant="primary"
                           size="sm"
                           isDisabled={!canSubmit}
                           isLoading={props.isSending}

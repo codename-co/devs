@@ -1,6 +1,5 @@
 import { Container, Icon, Section } from '@/components'
-import { Button, Card, CardBody, Link } from '@heroui/react'
-import { motion } from 'framer-motion'
+import { Button, Card, Link } from '@heroui/react'
 import { motionVariants } from '../motion'
 import type { IconName } from '@/lib/types'
 import { useI18n, useUrl } from '@/i18n'
@@ -50,12 +49,12 @@ export const FinalCTA = ({ icon = 'Heart' }: FinalCTAProps) => {
   return (
     <Section>
       <Container size={6}>
-        <motion.div {...motionVariants.card}>
+        <div {...motionVariants.card}>
           <Card
             shadow="sm"
             className="bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/15 dark:to-secondary-900/15 border border-default-100"
           >
-            <CardBody className="p-10 text-center">
+            <Card.Content className="p-10 text-center">
               <Icon
                 name={icon}
                 size="2xl"
@@ -82,9 +81,9 @@ export const FinalCTA = ({ icon = 'Heart' }: FinalCTAProps) => {
                   </Button>
                 ))}
               </div>
-            </CardBody>
+            </Card.Content>
           </Card>
-        </motion.div>
+        </div>
       </Container>
     </Section>
   )

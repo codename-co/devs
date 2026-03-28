@@ -4,7 +4,7 @@
  * Shared trigger button style for PageMenu items.
  * Provides consistent appearance for menu trigger buttons.
  */
-import { Button, Tooltip, Kbd, PopoverTrigger } from '@heroui/react'
+import { Button, Tooltip, Kbd } from '@heroui/react'
 import { ReactNode, forwardRef } from 'react'
 
 import { Icon } from './Icon'
@@ -72,13 +72,13 @@ export const PageMenuButton = forwardRef<
     return (
       <Tooltip content={tooltipContent} isDisabled={tooltipDisabled}>
         <span className="inline-flex">
-          <PopoverTrigger>
+          <Popover.Trigger>
             <Button
               ref={ref}
               isIconOnly
-              variant="light"
+              variant="ghost"
               aria-label={ariaLabel}
-              onClick={onClick}
+              onPress={onClick}
             >
               <Icon
                 name={icon}
@@ -96,7 +96,7 @@ export const PageMenuButton = forwardRef<
                 </span>
               )}
             </Button>
-          </PopoverTrigger>
+          </Popover.Trigger>
         </span>
       </Tooltip>
     )

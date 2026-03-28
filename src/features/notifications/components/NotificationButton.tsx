@@ -5,14 +5,7 @@
  * Opens a popover with the notification panel when clicked.
  * Marks all notifications as read when the panel is opened.
  */
-import {
-  Badge,
-  Button,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  Tooltip,
-} from '@heroui/react'
+import { Badge, Button, Popover, Tooltip } from '@heroui/react'
 import { useEffect, useState } from 'react'
 
 import { Icon } from '@/components'
@@ -44,8 +37,8 @@ export function NotificationButton() {
     <Popover placement="bottom" isOpen={isOpen} onOpenChange={handleOpenChange}>
       <Tooltip content={t('Notifications')} isDisabled={isOpen}>
         <span className="inline-flex">
-          <PopoverTrigger>
-            <Button variant="light" isIconOnly aria-label={t('Notifications')}>
+          <Popover.Trigger>
+            <Button variant="ghost" isIconOnly aria-label={t('Notifications')}>
               <Badge
                 content={unreadCount > 99 ? '99+' : unreadCount}
                 color="danger"
@@ -59,12 +52,12 @@ export function NotificationButton() {
                 <Icon name="Bell" className="size-4 lg:size-5" />
               </Badge>
             </Button>
-          </PopoverTrigger>
+          </Popover.Trigger>
         </span>
       </Tooltip>
-      <PopoverContent className="p-0">
+      <Popover.Content className="p-0">
         <NotificationPanel onClose={() => setIsOpen(false)} />
-      </PopoverContent>
+      </Popover.Content>
     </Popover>
   )
 }

@@ -17,7 +17,7 @@
  */
 
 import { forwardRef, useState, useCallback, useRef, useEffect } from 'react'
-import { Button, Textarea, type TextAreaProps } from '@heroui/react'
+import { Button, TextArea, type TextAreaProps } from '@heroui/react'
 
 export interface PromptAreaProps
   extends Omit<TextAreaProps, 'onKeyDown' | 'onSubmit'> {
@@ -108,7 +108,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
 
     return (
       <div className={`relative ${className || ''}`}>
-        <Textarea
+        <TextArea
           ref={textareaRef}
           value={prompt}
           placeholder={placeholder}
@@ -130,7 +130,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
               <Button
                 type="submit"
                 color={canSubmit ? 'primary' : 'default'}
-                variant="solid"
+                variant="primary"
                 size="sm"
                 radius="md"
                 isDisabled={!canSubmit}

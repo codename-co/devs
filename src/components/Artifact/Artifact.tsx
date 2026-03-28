@@ -1,12 +1,5 @@
 import { useState, useEffect } from 'react'
-import {
-  Button,
-  Chip,
-  ScrollShadow,
-  Badge,
-  Tooltip,
-  ButtonGroup,
-} from '@heroui/react'
+import { Button, Chip, ScrollShadow, Badge, Tooltip, ButtonGroup } from '@heroui/react'
 import clsx from 'clsx'
 
 import { useI18n } from '@/i18n'
@@ -158,7 +151,7 @@ export const Artifact = ({
           <Tooltip content={t('Expand artifacts panel')} placement="left">
             <Button
               isIconOnly
-              variant="light"
+              variant="ghost"
               size="sm"
               onPress={onExpand}
               aria-label={t('Expand artifacts panel')}
@@ -177,7 +170,7 @@ export const Artifact = ({
             <div className="flex items-center gap-2">
               <Icon name="Page" className="w-8 h-8 text-primary" />
               <h3 className="text-lg font-semibold">{currentArtifact.title}</h3>
-              <Badge content={artifacts.length} color="primary" size="sm">
+              <Badge content={artifacts.length} color="accent" size="sm">
                 <div className="w-4 h-4" />
               </Badge>
             </div>
@@ -185,7 +178,7 @@ export const Artifact = ({
             <div className="flex items-center gap-1">
               {/* Navigation controls */}
               {artifacts.length > 1 && (
-                <ButtonGroup size="sm" variant="light">
+                <ButtonGroup size="sm" variant="ghost">
                   <Tooltip content={t('Previous artifact')} placement="bottom">
                     <Button
                       isIconOnly
@@ -196,7 +189,7 @@ export const Artifact = ({
                     </Button>
                   </Tooltip>
                   <Button
-                    variant="flat"
+                    variant="secondary"
                     size="sm"
                     className="min-w-fit px-2"
                     isDisabled
@@ -221,7 +214,7 @@ export const Artifact = ({
               >
                 <Button
                   isIconOnly
-                  variant="light"
+                  variant="ghost"
                   size="sm"
                   onPress={onMinimize}
                   aria-label={t('Minimize artifacts panel')}
@@ -241,18 +234,18 @@ export const Artifact = ({
                     <Chip
                       size="sm"
                       color={getArtifactTypeColor(currentArtifact.type)}
-                      variant="flat"
+                      variant="soft"
                     >
                       {currentArtifact.type}
                     </Chip>
                     <Chip
                       size="sm"
                       color={getArtifactStatusColor(currentArtifact.status)}
-                      variant="flat"
+                      variant="soft"
                     >
                       {currentArtifact.status}
                     </Chip>
-                    <Chip size="sm" variant="flat">
+                    <Chip size="sm" variant="soft">
                       v{currentArtifact.version}
                     </Chip>
                   </div>
@@ -284,7 +277,7 @@ export const Artifact = ({
                       </span>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {currentArtifact.dependencies.map((depId) => (
-                          <Chip key={depId} size="sm" variant="bordered">
+                          <Chip key={depId} size="sm" variant="secondary">
                             {depId.slice(-8)}
                           </Chip>
                         ))}
@@ -302,7 +295,7 @@ export const Artifact = ({
                           <Chip
                             key={reqId}
                             size="sm"
-                            variant="bordered"
+                            variant="secondary"
                             color="success"
                           >
                             {reqId.slice(-8)}

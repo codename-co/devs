@@ -1,6 +1,5 @@
 import { Container, Icon, Section, Title } from '@/components'
-import { Button, Card, CardBody, Chip, Link } from '@heroui/react'
-import { motion } from 'framer-motion'
+import { Button, Card, Chip, Link } from '@heroui/react'
 import { motionVariants } from '../motion'
 import { useI18n, useUrl } from '@/i18n'
 import localI18n from '../i18n'
@@ -58,20 +57,20 @@ export const PricingComparison = ({ altTier }: PricingComparisonProps) => {
   return (
     <Section>
       <Container size={6} className="text-center">
-        <motion.div {...motionVariants.chip}>
-          <Chip variant="flat" color="primary" className="mb-4">
+        <div {...motionVariants.chip}>
+          <Chip variant="soft" color="accent" className="mb-4">
             {t('Pricing')}
           </Chip>
-        </motion.div>
-        <motion.div {...motionVariants.title}>
+        </div>
+        <div {...motionVariants.title}>
           <Title level={2} size="3xl" className="mb-8">
             {t('Stop Paying for the Platform')}
           </Title>
-        </motion.div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {tiers.map((tier) => (
-            <motion.div key={tier.name} {...motionVariants.card}>
+            <div key={tier.name} {...motionVariants.card}>
               <Card
                 shadow="sm"
                 className={
@@ -80,7 +79,7 @@ export const PricingComparison = ({ altTier }: PricingComparisonProps) => {
                     : 'border border-default-200'
                 }
               >
-                <CardBody className="p-6">
+                <Card.Content className="p-6">
                   <h3 className="text-xl font-semibold mb-2">{tier.name}</h3>
                   <p
                     className={`text-4xl font-bold mb-4 ${tier.highlighted ? 'text-primary-600' : 'text-default-400'}`}
@@ -118,9 +117,9 @@ export const PricingComparison = ({ altTier }: PricingComparisonProps) => {
                       {tier.cta.label}
                     </Button>
                   )}
-                </CardBody>
+                </Card.Content>
               </Card>
-            </motion.div>
+            </div>
           ))}
         </div>
       </Container>

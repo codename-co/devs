@@ -1,4 +1,4 @@
-import { Listbox, ListboxItem, ListboxSection } from '@heroui/react'
+import { ListBox } from '@heroui/react'
 import { useEffect, useCallback, useMemo } from 'react'
 
 import { Icon } from '../Icon'
@@ -132,14 +132,14 @@ export function AgentMentionPopover({
       className="absolute bottom-full left-0 mb-2 w-80 max-h-64 overflow-y-auto bg-content1 rounded-lg shadow-lg border border-default-200 z-50"
       data-testid="agent-mention-popover"
     >
-      <Listbox
+      <ListBox
         aria-label={t('Select an agent')}
         selectionMode="single"
         selectedKeys={agents[selectedIndex] ? [agents[selectedIndex].id] : []}
         onAction={handleAction}
       >
         {orderedCategories.map((category) => (
-          <ListboxSection
+          <ListBox.Section
             key={category}
             title={t((agentCategoryNames as any)[category] ?? category)}
             classNames={{
@@ -151,24 +151,23 @@ export function AgentMentionPopover({
               const isSelected = globalIndex === selectedIndex
 
               return (
-                <ListboxItem
-                  key={agent.id}
+                <ListBox.Item
+                  id={agent.id}
                   data-selected={isSelected}
                   description={
                     agent.i18n?.[lang]?.desc ?? agent.desc ?? agent.role
                   }
-                  startContent={<Icon name={agent.icon ?? 'User'} size="md" />}
                   className={isSelected ? 'bg-default-100' : ''}
                   textValue={agent.i18n?.[lang]?.name ?? agent.name}
                   onPress={() => onSelect(agent)}
                 >
                   {agent.i18n?.[lang]?.name ?? agent.name}
-                </ListboxItem>
+                </ListBox.Item>
               )
             })}
-          </ListboxSection>
+          </ListBox.Section>
         ))}
-      </Listbox>
+      </ListBox>
     </div>
   )
 }

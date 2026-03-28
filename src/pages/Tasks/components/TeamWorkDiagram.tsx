@@ -17,7 +17,7 @@
  */
 
 import { memo, useMemo, useEffect, useState, useRef } from 'react'
-import { Chip, Progress, Spinner, Tooltip } from '@heroui/react'
+import { Chip, ProgressBar, Spinner, Tooltip } from '@heroui/react'
 
 import { AgentAvatar } from '@/components/AgentAvatar'
 import { Icon } from '@/components'
@@ -236,7 +236,7 @@ const AgentChip = memo(
           </span>
           {taskCount > 0 && (
             <div className="w-full">
-              <Progress
+              <ProgressBar
                 size="sm"
                 value={taskCount > 0 ? (completedCount / taskCount) * 100 : 0}
                 color={completedCount === taskCount ? 'success' : 'primary'}
@@ -405,15 +405,15 @@ export const TeamWorkDiagram = memo(
           {activeCount > 0 && (
             <Chip
               size="sm"
-              variant="flat"
-              color="primary"
+              variant="soft"
+              color="accent"
               startContent={<Spinner size="sm" className="mr-0.5" />}
             >
               {activeCount} active
             </Chip>
           )}
           {totalCount > 0 && (
-            <Chip size="sm" variant="flat" color="default">
+            <Chip size="sm" variant="soft" color="default">
               {completedCount}/{totalCount}
             </Chip>
           )}
@@ -427,7 +427,7 @@ export const TeamWorkDiagram = memo(
           <div className="px-3 pb-3 space-y-3">
             {/* Overall progress bar */}
             {totalCount > 0 && (
-              <Progress
+              <ProgressBar
                 size="sm"
                 value={totalCount > 0 ? (completedCount / totalCount) * 100 : 0}
                 color={completedCount === totalCount ? 'success' : 'primary'}
@@ -492,8 +492,8 @@ export const TeamWorkDiagram = memo(
               <div className="text-center">
                 <Chip
                   size="sm"
-                  variant="dot"
-                  color="primary"
+                  variant="soft"
+                  color="accent"
                   className="text-xs"
                 >
                   {liveProgress.phaseMessage || liveProgress.phase}

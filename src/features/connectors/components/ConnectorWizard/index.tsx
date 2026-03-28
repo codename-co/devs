@@ -6,15 +6,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react'
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  Progress,
-} from '@heroui/react'
+import { Modal, Button, ProgressBar } from '@heroui/react'
 import { useI18n } from '@/i18n'
 import { useConnectorStore } from '../../stores'
 import { useOAuth } from '@/hooks/useOAuth'
@@ -372,15 +364,14 @@ export function ConnectorWizard({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={handleClose}
+      onOpenChange={(v) => !v && (handleClose)()}
       size="2xl"
       scrollBehavior="inside"
     >
-      <ModalContent>
-        {() => (
+      <Modal.Dialog>
           <>
             {/* Header with progress */}
-            <ModalHeader className="flex flex-col gap-2">
+            <Modal.Header className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <span>{getStepTitle()}</span>
                 <span className="text-xs text-default-400 font-normal">
@@ -390,17 +381,17 @@ export function ConnectorWizard({
                   })}
                 </span>
               </div>
-              <Progress
+              <ProgressBar
                 value={progressValue}
                 size="sm"
                 color="primary"
                 className="w-full"
                 aria-label={t('Wizard progress')}
               />
-            </ModalHeader>
+            </Modal.Header>
 
             {/* Body */}
-            <ModalBody>
+            <Modal.Body>
               {/* Step 1: Provider Selection */}
               {step === 'select' && (
                 <ProviderGrid
@@ -444,32 +435,31 @@ export function ConnectorWizard({
                   onDone={handleClose}
                 />
               )}
-            </ModalBody>
+            </Modal.Body>
 
             {/* Footer */}
-            <ModalFooter>
+            <Modal.Footer>
               {step === 'select' && (
-                <Button variant="flat" onPress={handleClose}>
+                <Button variant="secondary" onPress={handleClose}>
                   {t('Cancel')}
                 </Button>
               )}
 
               {step === 'auth' && (
                 <>
-                  <Button variant="flat" onPress={handleBack}>
+                  <Button variant="secondary" onPress={handleBack}>
                     {t('Back')}
                   </Button>
-                  <Button variant="flat" onPress={handleClose}>
+                  <Button variant="secondary" onPress={handleClose}>
                     {t('Cancel')}
                   </Button>
                 </>
               )}
 
               {/* Folders and Success steps have their own action buttons */}
-            </ModalFooter>
+            </Modal.Footer>
           </>
-        )}
-      </ModalContent>
+      </Modal.Dialog>
     </Modal>
   )
 }

@@ -140,7 +140,7 @@ export function ConnectorsSection() {
             <p className="text-default-500 text-sm">
               {t('Connector not found')}
             </p>
-            <Button size="sm" variant="flat" onPress={navigateToList}>
+            <Button size="sm" variant="secondary" onPress={navigateToList}>
               {t('Back to connectors')}
             </Button>
           </div>
@@ -192,7 +192,7 @@ export function ConnectorsSection() {
             <Button
               color="primary"
               size="sm"
-              variant="flat"
+              variant="secondary"
               startContent={<Icon name="Plus" className="w-4 h-4" />}
               onPress={navigateToAdd}
             >

@@ -148,7 +148,7 @@ export function SuccessStep({
           {t('Done')}
         </Button>
         {syncSupported && (
-          <Button variant="flat" onPress={onStartSync}>
+          <Button variant="secondary" onPress={onStartSync}>
             <Icon name="RefreshDouble" className="w-4 h-4 mr-1" />
             {t('Start Sync Now')}
           </Button>

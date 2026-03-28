@@ -1,18 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
-import {
-  Card,
-  Link,
-  Button,
-  Textarea,
-  Chip,
-  Spinner,
-  Checkbox,
-  CheckboxGroup,
-  Input,
-  Tabs,
-  Tab,
-  Tooltip,
-} from '@heroui/react'
+import { Card, Link, Button, TextArea, Chip, Spinner, Checkbox, CheckboxGroup, Input, Tabs, Tab, Tooltip } from '@heroui/react'
 import { userSettings } from '@/stores/userStore'
 
 import {
@@ -203,7 +190,7 @@ export const useAgentContextPanel = (
                                 : title}
                             </span>
                             {/* {isCurrentConversation && (
-                              <Chip size="sm" color="primary" variant="flat">
+                              <Chip size="sm" color="accent" variant="soft">
                                 {t('Current')}
                               </Chip>
                             )} */}
@@ -307,7 +294,7 @@ const EditableAgentProfileWrapper = ({
       headerAction: isEditing ? null : (
         <Button
           size="sm"
-          variant="light"
+          variant="ghost"
           isIconOnly
           onPress={() => setIsEditing(true)}
           aria-label={t('Edit')}
@@ -347,7 +334,7 @@ const EditableSystemPromptWrapper = ({
       headerAction: isEditing ? null : (
         <Button
           size="sm"
-          variant="light"
+          variant="ghost"
           isIconOnly
           onPress={() => setIsEditing(true)}
           aria-label={t('Edit')}
@@ -445,7 +432,7 @@ const EditableAgentProfile = ({
           <h4 className="text-sm font-semibold text-default-700 mb-1">
             {t('Role')}
           </h4>
-          <Textarea
+          <TextArea
             value={editedRole}
             onValueChange={setEditedRole}
             minRows={1}
@@ -460,7 +447,7 @@ const EditableAgentProfile = ({
           <h4 className="text-sm font-semibold text-default-700 mb-1">
             {t('Instructions')}
           </h4>
-          <Textarea
+          <TextArea
             value={editedInstructions}
             onValueChange={setEditedInstructions}
             minRows={10}
@@ -474,7 +461,7 @@ const EditableAgentProfile = ({
         <div className="flex gap-2 justify-end">
           <Button
             size="sm"
-            variant="flat"
+            variant="secondary"
             onPress={handleCancel}
             isDisabled={isSaving}
           >
@@ -558,7 +545,7 @@ const EditableSystemPrompt = ({
   if (isEditing) {
     return (
       <div className="space-y-3">
-        <Textarea
+        <TextArea
           value={editedContent}
           onValueChange={setEditedContent}
           minRows={10}
@@ -570,7 +557,7 @@ const EditableSystemPrompt = ({
         <div className="flex gap-2 justify-end">
           <Button
             size="sm"
-            variant="flat"
+            variant="secondary"
             onPress={handleCancel}
             isDisabled={isSaving}
           >
@@ -631,19 +618,19 @@ const MemoriesContent = ({ memories }: { memories: AgentMemoryEntry[] }) => {
               <span className="font-medium text-sm">{memory.title}</span>
               {/* <span className="pulled-right">
               {memory.isGlobal && (
-                <Chip size="sm" color="primary" variant="flat">
+                <Chip size="sm" color="accent" variant="soft">
                   {t('Global')}
                 </Chip>
               )}
               {memory.category.split('|').map((cat, idx) => (
-                <Chip key={idx} size="sm" color="default" variant="flat">
+                <Chip key={idx} size="sm" color="default" variant="soft">
                   {t(titleize(cat.replace(/_/g, ' ')) as any)}
                 </Chip>
               ))}
             </span> */}
               {/* <Button
               size="sm"
-              variant="light"
+              variant="ghost"
               color={memory.isGlobal ? 'danger' : 'primary'}
               isIconOnly
               title={memory.isGlobal ? t('Remove Global') : t('Make Global')}
@@ -812,7 +799,7 @@ const AgentKnowledgeContent = ({
           <div className="max-h-64 overflow-y-auto overflow-x-hidden">
             <CheckboxGroup
               value={selectedIds}
-              onValueChange={handleSelectionChange}
+              onChange={handleSelectionChange}
               className="gap-1"
             >
               {filteredItems.map((item) => {
@@ -865,13 +852,13 @@ const AgentKnowledgeContent = ({
         )}
 
         <div className="flex items-center justify-between pt-2">
-          <Chip size="sm" variant="flat" color="primary">
+          <Chip size="sm" variant="soft" color="accent">
             {t('{count} selected', { count: selectedIds.length })}
           </Chip>
           <div className="flex gap-2">
             <Button
               size="sm"
-              variant="flat"
+              variant="secondary"
               onPress={handleCancel}
               isDisabled={isSaving}
             >
@@ -900,7 +887,7 @@ const AgentKnowledgeContent = ({
         </p>
         <Button
           size="sm"
-          variant="light"
+          variant="ghost"
           className="mt-2"
           onPress={() => setIsEditing(true)}
           startContent={<Icon name="Plus" className="w-4 h-4" />}
@@ -916,7 +903,7 @@ const AgentKnowledgeContent = ({
       <div className="flex justify-end">
         <Button
           size="sm"
-          variant="light"
+          variant="ghost"
           onPress={() => setIsEditing(true)}
           startContent={<Icon name="EditPencil" size="sm" />}
         >
@@ -1464,7 +1451,7 @@ const AgentToolsDisplay = (_props: { tools: Agent['tools'] }) => {
               <span className="text-xs font-semibold text-default-600 uppercase tracking-wide">
                 {t(CATEGORY_LABELS[category] as Parameters<typeof t>[0])}
               </span>
-              <Chip size="sm" variant="flat" className="h-4 text-xs">
+              <Chip size="sm" variant="soft" className="h-4 text-xs">
                 {categoryTools.length}
               </Chip>
             </div>

@@ -1,23 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  Button,
-  Card,
-  CardBody,
-  Pagination,
-  Spinner,
-  Input,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  useDisclosure,
-} from '@heroui/react'
+import { Button, Card, Pagination, Spinner, Input, Dropdown, Modal, useOverlayState } from '@heroui/react'
 import { Search, Star, StarSolid, MoreVert } from 'iconoir-react'
 
 import { useConversationStore } from '@/stores/conversationStore'
@@ -68,17 +51,9 @@ export function ConversationsContent() {
   const [newTitle, setNewTitle] = useState('')
   const itemsPerPage = 50
 
-  const {
-    isOpen: isSummaryOpen,
-    onOpen: onSummaryOpen,
-    onClose: onSummaryClose,
-  } = useDisclosure()
+  const { isOpen: isSummaryOpen, open: onSummaryOpen, close: onSummaryClose } = useOverlayState()
 
-  const {
-    isOpen: isRenameOpen,
-    onOpen: onRenameOpen,
-    onClose: onRenameClose,
-  } = useDisclosure()
+  const { isOpen: isRenameOpen, open: onRenameOpen, close: onRenameClose } = useOverlayState()
 
   // Agents load automatically via reactive hook
 
@@ -340,7 +315,7 @@ export function ConversationsContent() {
         </div>
       ) : conversations.length === 0 ? (
         <Card>
-          <CardBody className="text-center py-12">
+          <Card.Content className="text-center py-12">
             <p className="text-lg text-default-500">
               No saved conversations found
             </p>
@@ -351,17 +326,17 @@ export function ConversationsContent() {
             >
               Start New Conversation
             </Button>
-          </CardBody>
+          </Card.Content>
         </Card>
       ) : filteredConversations.length === 0 ? (
         <Card>
-          <CardBody className="text-center py-12">
+          <Card.Content className="text-center py-12">
             <p className="text-lg text-default-500">
               {showPinnedOnly
                 ? t('No pinned conversations')
                 : t('No conversations found')}
             </p>
-          </CardBody>
+          </Card.Content>
         </Card>
       ) : (
         <>
@@ -379,7 +354,7 @@ export function ConversationsContent() {
                       shadow="none"
                       className={`transition-transform w-full cursor-pointer ${conversation.isPinned ? 'border-l-4 border-l-warning' : ''}`}
                     >
-                      <CardBody className="py-4">
+                      <Card.Content className="py-4">
                         <div className="flex items-center justify-between gap-4">
                           <div
                             className="flex-1 min-w-0 cursor-pointer"
@@ -414,7 +389,7 @@ export function ConversationsContent() {
                             <Button
                               isIconOnly
                               size="sm"
-                              variant="light"
+                              variant="ghost"
                               onPress={() =>
                                 handleTogglePin(
                                   conversation.id,
@@ -434,35 +409,35 @@ export function ConversationsContent() {
                               )}
                             </Button>
                             <Dropdown>
-                              <DropdownTrigger>
-                                <Button isIconOnly size="sm" variant="light">
+                              <Dropdown.Trigger>
+                                <Button isIconOnly size="sm" variant="ghost">
                                   <MoreVert className="w-4 h-4" />
                                 </Button>
-                              </DropdownTrigger>
-                              <DropdownMenu>
-                                <DropdownItem
-                                  key="rename"
+                              </Dropdown.Trigger>
+                              <Dropdown.Menu>
+                                <Dropdown.Item
+                                  id="rename"
                                   onPress={() => handleOpenRename(conversation)}
                                 >
                                   {t('Rename conversation')}
-                                </DropdownItem>
-                                <DropdownItem
-                                  key="summarize"
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                  id="summarize"
                                   onPress={() => handleSummarize(conversation)}
                                   isDisabled={isSummarizing}
                                 >
                                   {conversation.summary
                                     ? t('View summary')
                                     : t('Summarize conversation')}
-                                </DropdownItem>
-                              </DropdownMenu>
+                                </Dropdown.Item>
+                              </Dropdown.Menu>
                             </Dropdown>
                             {selectedConversation === conversation.id && (
                               <Spinner size="sm" />
                             )}
                           </div>
                         </div>
-                      </CardBody>
+                      </Card.Content>
                     </Card>
                   ))}
                 </div>
@@ -488,12 +463,12 @@ export function ConversationsContent() {
       {/* Summary Modal */}
       <Modal
         isOpen={isSummaryOpen}
-        onClose={onSummaryClose}
+        onOpenChange={(v) => !v && (onSummaryClose)()}
         size="3xl"
         scrollBehavior="inside"
       >
-        <ModalContent>
-          <ModalHeader>
+        <Modal.Dialog>
+          <Modal.Header>
             <div>
               <h3 className="text-lg font-semibold">
                 {summaryConversation
@@ -505,16 +480,16 @@ export function ConversationsContent() {
                   formatDate(new Date(summaryConversation.timestamp))}
               </p>
             </div>
-          </ModalHeader>
-          <ModalBody>
+          </Modal.Header>
+          <Modal.Body>
             {summaryConversation?.summary ? (
               <MarkdownRenderer content={summaryConversation.summary} />
             ) : (
               <p className="text-default-500">{t('No summary available')}</p>
             )}
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="light" onPress={onSummaryClose}>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="ghost" onPress={onSummaryClose}>
               {t('Close')}
             </Button>
             {summaryConversation && (
@@ -525,15 +500,15 @@ export function ConversationsContent() {
                 {t('View full conversation')}
               </Button>
             )}
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
 
       {/* Rename Modal */}
-      <Modal isOpen={isRenameOpen} onClose={onRenameClose} size="md">
-        <ModalContent>
-          <ModalHeader>{t('Rename conversation')}</ModalHeader>
-          <ModalBody>
+      <Modal isOpen={isRenameOpen} onOpenChange={(v) => !v && (onRenameClose)()} size="md">
+        <Modal.Dialog>
+          <Modal.Header>{t('Rename conversation')}</Modal.Header>
+          <Modal.Body>
             <Input
               label={t('Conversation title')}
               placeholder={t('Enter a new title')}
@@ -541,9 +516,9 @@ export function ConversationsContent() {
               onValueChange={setNewTitle}
               autoFocus
             />
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="light" onPress={onRenameClose}>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="ghost" onPress={onRenameClose}>
               {t('Cancel')}
             </Button>
             <Button
@@ -553,8 +528,8 @@ export function ConversationsContent() {
             >
               {t('Save')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
     </>
   )

@@ -1,16 +1,5 @@
 import { useState, useMemo, useCallback, memo } from 'react'
-import {
-  Button,
-  Input,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  Spinner,
-  Tab,
-  Tabs,
-  Tooltip,
-  ScrollShadow,
-} from '@heroui/react'
+import { Button, Input, Popover, Spinner, Tab, Tabs, Tooltip, ScrollShadow } from '@heroui/react'
 
 import { Icon, Icons } from '@/components/Icon'
 import { IconName } from '@/lib/types'
@@ -415,7 +404,7 @@ export const AgentAppearancePicker = ({
           aria-label={t('Appearance')}
           selectedKey={mode}
           onSelectionChange={handleModeChange}
-          variant="light"
+          variant="primary"
           size="sm"
           fullWidth
           isDisabled={isDisabled}
@@ -446,9 +435,9 @@ export const AgentAppearancePicker = ({
                   }}
                   placement="bottom-start"
                 >
-                  <PopoverTrigger>
+                  <Popover.Trigger>
                     <Button
-                      variant="bordered"
+                      variant="outline"
                       size="sm"
                       isDisabled={isDisabled}
                       startContent={
@@ -457,8 +446,8 @@ export const AgentAppearancePicker = ({
                     >
                       {icon || t('Choose Icon')}
                     </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-80">
+                  </Popover.Trigger>
+                  <Popover.Content className="w-80">
                     <div className="p-2 space-y-2">
                       {/* Search Input */}
                       <Input
@@ -508,7 +497,7 @@ export const AgentAppearancePicker = ({
                       {icon && (
                         <Button
                           size="sm"
-                          variant="light"
+                          variant="ghost"
                           className="w-full"
                           onPress={() => {
                             onIconChange?.(undefined)
@@ -520,7 +509,7 @@ export const AgentAppearancePicker = ({
                         </Button>
                       )}
                     </div>
-                  </PopoverContent>
+                  </Popover.Content>
                 </Popover>
               </div>
 
@@ -578,7 +567,7 @@ export const AgentAppearancePicker = ({
               <div className="flex gap-2">
                 <Button
                   size="sm"
-                  variant="bordered"
+                  variant="outline"
                   onPress={handleGeneratePortrait}
                   isDisabled={
                     isDisabled || isGeneratingPortrait || !name || !role
@@ -600,7 +589,7 @@ export const AgentAppearancePicker = ({
                 {portrait && (
                   <Button
                     size="sm"
-                    variant="light"
+                    variant="ghost"
                     color="danger"
                     onPress={handleRemovePortrait}
                     isDisabled={isDisabled}
@@ -633,9 +622,9 @@ export const AgentAppearancePicker = ({
               }}
               placement="bottom-start"
             >
-              <PopoverTrigger>
+              <Popover.Trigger>
                 <Button
-                  variant="bordered"
+                  variant="outline"
                   size="sm"
                   isDisabled={isDisabled}
                   startContent={
@@ -644,8 +633,8 @@ export const AgentAppearancePicker = ({
                 >
                   {icon || t('Choose Icon')}
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80">
+              </Popover.Trigger>
+              <Popover.Content className="w-80">
                 <div className="p-2 space-y-2">
                   <Input
                     size="sm"
@@ -685,7 +674,7 @@ export const AgentAppearancePicker = ({
                   {icon && (
                     <Button
                       size="sm"
-                      variant="light"
+                      variant="ghost"
                       className="w-full"
                       onPress={() => {
                         onIconChange?.(undefined)
@@ -697,7 +686,7 @@ export const AgentAppearancePicker = ({
                     </Button>
                   )}
                 </div>
-              </PopoverContent>
+              </Popover.Content>
             </Popover>
           </div>
 

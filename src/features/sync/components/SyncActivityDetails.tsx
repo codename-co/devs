@@ -3,7 +3,7 @@
  *
  * Visual representation of sync data activity.
  */
-import { Card, CardBody, Progress } from '@heroui/react'
+import { Card, ProgressBar } from '@heroui/react'
 import { useEffect, useMemo, useState } from 'react'
 
 import { Icon } from '@/components/Icon'
@@ -90,7 +90,7 @@ export function SyncActivityDetails({
     <div className="flex flex-col gap-3">
       {/* Activity Feed */}
       <Card>
-        <CardBody>
+        <Card.Content>
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-default-600">
               {t('Data Activity')}
@@ -126,7 +126,7 @@ export function SyncActivityDetails({
                     {t('Sent')}
                   </span>
                 </div>
-                <Progress
+                <ProgressBar
                   size="sm"
                   value={(stats.sent / stats.total) * 100}
                   color="primary"
@@ -147,7 +147,7 @@ export function SyncActivityDetails({
                     {t('Received')}
                   </span>
                 </div>
-                <Progress
+                <ProgressBar
                   size="sm"
                   value={(stats.received / stats.total) * 100}
                   color="success"
@@ -159,7 +159,7 @@ export function SyncActivityDetails({
               </div>
             </div>
           )}
-        </CardBody>
+        </Card.Content>
       </Card>
     </div>
   )

@@ -4,21 +4,7 @@
  * Card displaying a single generated video with playback controls and actions.
  */
 
-import {
-  Button,
-  Card,
-  CardBody,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  Tooltip,
-  Modal,
-  ModalContent,
-  ModalBody,
-  useDisclosure,
-  Progress,
-} from '@heroui/react'
+import { Button, Card, Dropdown, Tooltip, Modal, useOverlayState, ProgressBar } from '@heroui/react'
 import { useState, useCallback, useRef, useMemo } from 'react'
 
 import { Icon } from '@/components/Icon'
@@ -57,7 +43,7 @@ export function GeneratedVideoCard({
   onPreview,
 }: GeneratedVideoCardProps) {
   const { t } = useI18n(localI18n)
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const { isOpen, open: onOpen, close: onClose } = useOverlayState()
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -128,7 +114,7 @@ export function GeneratedVideoCard({
           isSelected ? 'ring-2 ring-primary' : ''
         }`}
       >
-        <CardBody className="p-0 overflow-hidden">
+        <Card.Content className="p-0 overflow-hidden">
           {/* Video container - use aspect-square to match image cards in grid */}
           <div
             className="relative aspect-square cursor-pointer bg-black"
@@ -181,7 +167,7 @@ export function GeneratedVideoCard({
             {/* Progress bar */}
             {isLoaded && (
               <div className="absolute bottom-0 left-0 right-0">
-                <Progress
+                <ProgressBar
                   size="sm"
                   value={(currentTime / video.duration) * 100}
                   className="rounded-none"
@@ -201,7 +187,7 @@ export function GeneratedVideoCard({
                     <Button
                       isIconOnly
                       size="sm"
-                      variant="flat"
+                      variant="secondary"
                       className="bg-white/20 backdrop-blur-sm"
                       onPress={onPreview || onOpen}
                     >
@@ -214,7 +200,7 @@ export function GeneratedVideoCard({
                       <Button
                         isIconOnly
                         size="sm"
-                        variant="flat"
+                        variant="secondary"
                         className="bg-white/20 backdrop-blur-sm"
                         onPress={onDownload}
                       >
@@ -232,7 +218,7 @@ export function GeneratedVideoCard({
                       <Button
                         isIconOnly
                         size="sm"
-                        variant="flat"
+                        variant="secondary"
                         className="bg-white/20 backdrop-blur-sm hover:bg-danger/50"
                         onPress={onDelete}
                       >
@@ -249,7 +235,7 @@ export function GeneratedVideoCard({
               <Button
                 isIconOnly
                 size="sm"
-                variant="flat"
+                variant="secondary"
                 className={`absolute top-2 right-2 bg-black/30 backdrop-blur-sm transition-opacity ${
                   isFavorite
                     ? 'opacity-100'
@@ -272,24 +258,24 @@ export function GeneratedVideoCard({
               {video.width}x{video.height}
             </div>
           </div>
-        </CardBody>
+        </Card.Content>
 
         {/* Actions footer - shown on hover */}
         {showActions && (onDelete || onCopyPrompt) && (
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <div className="flex justify-end gap-1">
               <Dropdown>
-                <DropdownTrigger>
+                <Dropdown.Trigger>
                   <Button
                     isIconOnly
                     size="sm"
-                    variant="flat"
+                    variant="secondary"
                     className="bg-white/20 backdrop-blur-sm min-w-6 w-6 h-6"
                   >
                     <Icon name="MoreHoriz" size="sm" className="text-white" />
                   </Button>
-                </DropdownTrigger>
-                <DropdownMenu
+                </Dropdown.Trigger>
+                <Dropdown.Menu
                   aria-label="Video actions"
                   items={
                     [
@@ -320,17 +306,16 @@ export function GeneratedVideoCard({
                   }
                 >
                   {(item) => (
-                    <DropdownItem
-                      key={item.key}
+                    <Dropdown.Item
+                      id={item.key}
                       className={item.isDanger ? 'text-danger' : ''}
                       color={item.isDanger ? 'danger' : 'default'}
-                      startContent={<Icon name={item.icon} size="sm" />}
                       onPress={item.action}
                     >
                       {item.label}
-                    </DropdownItem>
+                    </Dropdown.Item>
                   )}
-                </DropdownMenu>
+                </Dropdown.Menu>
               </Dropdown>
             </div>
           </div>
@@ -340,7 +325,7 @@ export function GeneratedVideoCard({
       {/* Fullscreen Modal for video preview */}
       <Modal
         isOpen={isOpen}
-        onClose={onClose}
+        onOpenChange={(v) => !v && (onClose)()}
         size="5xl"
         classNames={{
           backdrop: 'bg-black/90',
@@ -348,8 +333,8 @@ export function GeneratedVideoCard({
           body: 'p-0',
         }}
       >
-        <ModalContent>
-          <ModalBody>
+        <Modal.Dialog>
+          <Modal.Body>
             <div className="relative">
               <video
                 src={videoUrl}
@@ -361,7 +346,7 @@ export function GeneratedVideoCard({
               <Button
                 isIconOnly
                 size="lg"
-                variant="flat"
+                variant="secondary"
                 className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm"
                 onPress={onClose}
               >
@@ -373,7 +358,7 @@ export function GeneratedVideoCard({
             <div className="flex justify-center gap-4 mt-4">
               {onDownload && (
                 <Button
-                  variant="flat"
+                  variant="secondary"
                   className="bg-white/10 text-white"
                   startContent={<Icon name="Download" size="sm" />}
                   onPress={onDownload}
@@ -383,7 +368,7 @@ export function GeneratedVideoCard({
               )}
               {onFavorite && (
                 <Button
-                  variant="flat"
+                  variant="secondary"
                   className="bg-white/10 text-white"
                   startContent={
                     <Icon
@@ -407,8 +392,8 @@ export function GeneratedVideoCard({
                 <p className="text-white/80 text-sm">{prompt}</p>
               </div>
             )}
-          </ModalBody>
-        </ModalContent>
+          </Modal.Body>
+        </Modal.Dialog>
       </Modal>
     </>
   )

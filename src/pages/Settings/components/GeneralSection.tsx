@@ -8,7 +8,7 @@
  *  - Background image upload
  */
 
-import { Input, Select, SelectItem } from '@heroui/react'
+import { Input, Select } from '@heroui/react'
 import { Button } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n, useUrl, languages, type Lang } from '@/i18n'
@@ -77,9 +77,9 @@ export function GeneralSection() {
         className={getHighlightClasses('interface-language', 'max-w-3xs')}
       >
         {Object.entries(languages).map(([key, name]) => (
-          <SelectItem key={key} textValue={name}>
+          <Select.Item id={key} textValue={name}>
             {name}
-          </SelectItem>
+          </Select.Item>
         ))}
       </Select>
 
@@ -99,15 +99,15 @@ export function GeneralSection() {
           }}
           className={getHighlightClasses('theme', 'max-w-3xs')}
         >
-          <SelectItem key="system" textValue={t('System')}>
+          <Select.Item id="system" textValue={t('System')}>
             {t('System')}
-          </SelectItem>
-          <SelectItem key="light" textValue={t('Light')}>
+          </Select.Item>
+          <Select.Item id="light" textValue={t('Light')}>
             {t('Light')}
-          </SelectItem>
-          <SelectItem key="dark" textValue={t('Dark')}>
+          </Select.Item>
+          <Select.Item id="dark" textValue={t('Dark')}>
             {t('Dark')}
-          </SelectItem>
+          </Select.Item>
         </Select>
 
         <div
@@ -145,7 +145,7 @@ export function GeneralSection() {
             </p>
             <div className="flex gap-3 items-center">
               <Button
-                variant="flat"
+                variant="secondary"
                 // color="primary"
                 size="sm"
                 startContent={<Icon name="PagePlus" className="h-4 w-4" />}
@@ -159,7 +159,7 @@ export function GeneralSection() {
               </Button>
               {backgroundImage && (
                 <Button
-                  variant="flat"
+                  variant="secondary"
                   color="danger"
                   size="sm"
                   startContent={<Icon name="Trash" className="h-4 w-4" />}

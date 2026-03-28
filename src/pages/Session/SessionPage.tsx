@@ -114,7 +114,7 @@ export function SessionPage() {
             <div className="flex justify-center">
               <Chip
                 size="sm"
-                variant="flat"
+                variant="soft"
                 color={
                   session.status === 'starting'
                     ? 'warning'

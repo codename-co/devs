@@ -11,32 +11,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import {
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  Input,
-  Textarea,
-  Select,
-  SelectItem,
-  Spinner,
-  Chip,
-  Divider,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  useDisclosure,
-  ScrollShadow,
-  Popover,
-  PopoverContent,
-  Dropdown,
-  DropdownItem,
-  DropdownTrigger,
-  DropdownMenu,
-} from '@heroui/react'
+import { Button, Card, Input, TextArea, Select, Spinner, Chip, Separator, Modal, useOverlayState, ScrollShadow, Popover, Dropdown } from '@heroui/react'
 
 import DefaultLayout from '@/layouts/Default'
 import {
@@ -437,16 +412,8 @@ export function ExtensionEditorPage() {
   const isCreatingRef = useRef(false)
 
   // Modal state for new page
-  const {
-    isOpen: isNewPageOpen,
-    onOpen: onNewPageOpen,
-    onClose: onNewPageClose,
-  } = useDisclosure()
-  const {
-    isOpen: isDeleteOpen,
-    onOpen: onDeleteOpen,
-    onClose: onDeleteClose,
-  } = useDisclosure()
+  const { isOpen: isNewPageOpen, open: onNewPageOpen, close: onNewPageClose } = useOverlayState()
+  const { isOpen: isDeleteOpen, open: onDeleteOpen, close: onDeleteClose } = useOverlayState()
   const [newPageName, setNewPageName] = useState('')
 
   // Get store methods
@@ -516,7 +483,7 @@ const App = () => {
     <Section>
       <Container className="max-w-2xl">
         <Card>
-          <CardBody className="text-center py-12">
+          <Card.Content className="text-center py-12">
             <h1 className="text-2xl font-bold mb-4">My Extension</h1>
             <p className="text-default-500 mb-6">
               Start building your extension here!
@@ -524,7 +491,7 @@ const App = () => {
             <Button color="primary">
               Get Started
             </Button>
-          </CardBody>
+          </Card.Content>
         </Card>
       </Container>
     </Section>
@@ -889,9 +856,9 @@ const App = () => {
     <Section>
       <Container>
         <Card>
-          <CardBody>
+          <Card.Content>
             <p>New page: ${newPageName}</p>
-          </CardBody>
+          </Card.Content>
         </Card>
       </Container>
     </Section>
@@ -1207,7 +1174,7 @@ User request: ${userMessage.content}
             </h2>
             <Button
               color="primary"
-              variant="flat"
+              variant="secondary"
               onPress={() => navigate('/marketplace')}
             >
               {t('Back to Marketplace')}
@@ -1247,9 +1214,9 @@ User request: ${userMessage.content}
               tooltip={t('Metadata')}
               ariaLabel={t('Metadata')}
             />
-            <PopoverContent className="p-0">
+            <Popover.Content className="p-0">
               <Card>
-                <CardBody className="space-y-4">
+                <Card.Content className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input
                       label={t('Name')}
@@ -1263,10 +1230,10 @@ User request: ${userMessage.content}
                         aria-label={t('Icon')}
                         className="flex-1"
                       >
-                        <DropdownTrigger>
+                        <Dropdown.Trigger>
                           <Button
                             radius="full"
-                            variant="light"
+                            variant="ghost"
                             size="sm"
                             startContent={
                               <Icon
@@ -1280,8 +1247,8 @@ User request: ${userMessage.content}
                               {extension.icon || t('Icon')}
                             </span>
                           </Button>
-                        </DropdownTrigger>
-                        <DropdownMenu
+                        </Dropdown.Trigger>
+                        <Dropdown.Menu
                           aria-label={t('Icon')}
                           selectionMode="single"
                           selectedKeys={extension.icon ? [extension.icon] : []}
@@ -1293,14 +1260,13 @@ User request: ${userMessage.content}
                           items={icons}
                         >
                           {(item) => (
-                            <DropdownItem
-                              key={item.key}
-                              startContent={<Icon name={item.icon} size="sm" />}
+                            <Dropdown.Item
+                              id={item.key}
                             >
                               {item.label}
-                            </DropdownItem>
+                            </Dropdown.Item>
                           )}
-                        </DropdownMenu>
+                        </Dropdown.Menu>
                       </Dropdown>
                       <Input
                         label={t('Version')}
@@ -1314,7 +1280,7 @@ User request: ${userMessage.content}
                       />
                     </div>
                   </div>
-                  <Textarea
+                  <TextArea
                     label={t('Description')}
                     value={extension.description || ''}
                     onValueChange={(v) =>
@@ -1335,17 +1301,17 @@ User request: ${userMessage.content}
                     className="max-w-xs"
                   >
                     {COLOR_OPTIONS.map((color) => (
-                      <SelectItem key={color}>{color}</SelectItem>
+                      <Select.Item id={color}>{color}</Select.Item>
                     ))}
                   </Select>
-                </CardBody>
+                </Card.Content>
               </Card>
-            </PopoverContent>
+            </Popover.Content>
           </Popover>
 
           {/* Export */}
           <Dropdown placement="bottom-end">
-            <DropdownTrigger>
+            <Dropdown.Trigger>
               <div>
                 <PageMenuButton
                   icon="Download"
@@ -1353,24 +1319,22 @@ User request: ${userMessage.content}
                   ariaLabel={t('Export')}
                 />
               </div>
-            </DropdownTrigger>
-            <DropdownMenu
+            </Dropdown.Trigger>
+            <Dropdown.Menu
               aria-label={t('Export')}
               onAction={(key) => handleExport(key as 'json' | 'yaml')}
             >
-              <DropdownItem
-                key="json"
-                startContent={<Icon name="Code" size="sm" />}
+              <Dropdown.Item
+                id="json"
               >
                 {t('Export as JSON')}
-              </DropdownItem>
-              <DropdownItem
-                key="yaml"
-                startContent={<Icon name="Page" size="sm" />}
+              </Dropdown.Item>
+              <Dropdown.Item
+                id="yaml"
               >
                 {t('Export as YAML')}
-              </DropdownItem>
-            </DropdownMenu>
+              </Dropdown.Item>
+            </Dropdown.Menu>
           </Dropdown>
         </>
       }
@@ -1380,7 +1344,7 @@ User request: ${userMessage.content}
         <div className="flex items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-2">
             {hasUnsavedChanges && (
-              <Chip size="sm" color="warning" variant="flat">
+              <Chip size="sm" color="warning" variant="soft">
                 {t('Unsaved changes')}
               </Chip>
             )}
@@ -1389,7 +1353,7 @@ User request: ${userMessage.content}
             {latestError && (
               <Button
                 color="danger"
-                variant="flat"
+                variant="secondary"
                 size="sm"
                 startContent={<Icon name="Wrench" size="sm" />}
                 onPress={handleFixError}
@@ -1400,7 +1364,7 @@ User request: ${userMessage.content}
             )}
             <Button
               size="sm"
-              variant="flat"
+              variant="secondary"
               onPress={handleSave}
               isLoading={isSaving}
               isDisabled={!hasUnsavedChanges}
@@ -1421,14 +1385,14 @@ User request: ${userMessage.content}
           <div className="flex flex-col gap-4">
             {/* Preview Card */}
             <Card className="flex-grow">
-              <CardHeader className="flex justify-between items-center py-2">
+              <Card.Header className="flex justify-between items-center py-2">
                 <div className="flex items-center gap-2">
                   <Icon name="Eye" size="sm" />
                   <span className="text-sm font-medium">{t('Preview')}</span>
                 </div>
-              </CardHeader>
-              <Divider />
-              <CardBody className="p-0">
+              </Card.Header>
+              <Separator />
+              <Card.Content className="p-0">
                 <ExtensionPreviewWithConsole
                   extensionId={extension.id}
                   extensionName={extension.name}
@@ -1438,32 +1402,32 @@ User request: ${userMessage.content}
                   onPreviewRefresh={handlePreviewRefresh}
                   className="min-h-[300px]"
                 />
-              </CardBody>
+              </Card.Content>
             </Card>
 
             {/* Console Card */}
             <Card>
-              <CardHeader className="flex justify-between items-center py-2">
+              <Card.Header className="flex justify-between items-center py-2">
                 <div className="flex items-center gap-2">
                   <Icon name="Terminal" size="sm" />
                   <span className="text-sm font-medium">{t('Console')}</span>
                   {consoleEntries.length > 0 && (
-                    <Chip size="sm" color="default" variant="flat">
+                    <Chip size="sm" color="default" variant="soft">
                       {consoleEntries.length}
                     </Chip>
                   )}
                 </div>
                 <Button
                   size="sm"
-                  variant="light"
+                  variant="ghost"
                   onPress={handleClearConsole}
                   isDisabled={consoleEntries.length === 0}
                 >
                   {t('Clear console')}
                 </Button>
-              </CardHeader>
-              <Divider />
-              <CardBody className="p-0">
+              </Card.Header>
+              <Separator />
+              <Card.Content className="p-0">
                 <ScrollShadow className="h-32 p-3 font-mono text-xs">
                   {consoleEntries.length === 0 ? (
                     <p className="text-default-400">
@@ -1491,7 +1455,7 @@ User request: ${userMessage.content}
                     ))
                   )}
                 </ScrollShadow>
-              </CardBody>
+              </Card.Content>
             </Card>
           </div>
 
@@ -1503,7 +1467,7 @@ User request: ${userMessage.content}
                 : 'h-fit'
             }
           >
-            <CardHeader
+            <Card.Header
               className={`cursor-pointer select-none py-2 ${
                 isCodePanelCollapsed
                   ? 'flex justify-center'
@@ -1529,7 +1493,7 @@ User request: ${userMessage.content}
                     >
                       <Button
                         size="sm"
-                        variant="light"
+                        variant="ghost"
                         onPress={onNewPageOpen}
                         startContent={<Icon name="Plus" size="sm" />}
                       >
@@ -1538,7 +1502,7 @@ User request: ${userMessage.content}
                       {pageKeys.length > 1 && (
                         <Button
                           size="sm"
-                          variant="light"
+                          variant="ghost"
                           color="danger"
                           onPress={onDeleteOpen}
                           isIconOnly
@@ -1569,17 +1533,17 @@ User request: ${userMessage.content}
                   </div>
                 </>
               )}
-            </CardHeader>
+            </Card.Header>
             {!isCodePanelCollapsed && (
               <>
-                <Divider />
-                <CardBody className="p-0 h-[450px]">
+                <Separator />
+                <Card.Content className="p-0 h-[450px]">
                   <ExtensionMonacoEditor
                     editorKey={editorKey}
                     value={pageCode}
                     onChange={handleCodeChange}
                   />
-                </CardBody>
+                </Card.Content>
               </>
             )}
           </Card>
@@ -1659,10 +1623,10 @@ User request: ${userMessage.content}
         </div>
 
         {/* New Page Modal */}
-        <Modal isOpen={isNewPageOpen} onClose={onNewPageClose}>
-          <ModalContent>
-            <ModalHeader>{t('Add Page')}</ModalHeader>
-            <ModalBody>
+        <Modal isOpen={isNewPageOpen} onOpenChange={(v) => !v && (onNewPageClose)()}>
+          <Modal.Dialog>
+            <Modal.Header>{t('Add Page')}</Modal.Header>
+            <Modal.Body>
               <Input
                 label={t('New page name')}
                 placeholder={t('Enter page route (e.g., settings)')}
@@ -1670,9 +1634,9 @@ User request: ${userMessage.content}
                 onValueChange={setNewPageName}
                 aria-label={t('New page name')}
               />
-            </ModalBody>
-            <ModalFooter>
-              <Button variant="flat" onPress={onNewPageClose}>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onPress={onNewPageClose}>
                 {t('Cancel')}
               </Button>
               <Button
@@ -1682,27 +1646,27 @@ User request: ${userMessage.content}
               >
                 {t('Create')}
               </Button>
-            </ModalFooter>
-          </ModalContent>
+            </Modal.Footer>
+          </Modal.Dialog>
         </Modal>
 
         {/* Delete Page Modal */}
-        <Modal isOpen={isDeleteOpen} onClose={onDeleteClose}>
-          <ModalContent>
-            <ModalHeader>{t('Delete page?')}</ModalHeader>
-            <ModalBody>
+        <Modal isOpen={isDeleteOpen} onOpenChange={(v) => !v && (onDeleteClose)()}>
+          <Modal.Dialog>
+            <Modal.Header>{t('Delete page?')}</Modal.Header>
+            <Modal.Body>
               <p>{t('This action cannot be undone.')}</p>
               <p className="font-medium mt-2">{selectedPage}</p>
-            </ModalBody>
-            <ModalFooter>
-              <Button variant="flat" onPress={onDeleteClose}>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onPress={onDeleteClose}>
                 {t('Cancel')}
               </Button>
               <Button color="danger" onPress={handleDeletePage}>
                 {t('Delete')}
               </Button>
-            </ModalFooter>
-          </ModalContent>
+            </Modal.Footer>
+          </Modal.Dialog>
         </Modal>
       </Section>
     </DefaultLayout>

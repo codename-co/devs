@@ -1,6 +1,5 @@
 import { Container, Icon, Section } from '@/components'
-import { Card, CardBody } from '@heroui/react'
-import { motion } from 'framer-motion'
+import { Card } from '@heroui/react'
 import { motionVariants } from '../motion'
 import { PRODUCT } from '@/config/product'
 import type { IconName } from '@/lib/types'
@@ -22,9 +21,9 @@ export const TLDRCards = ({ items, altName }: TLDRCardsProps) => (
     <Container size={6}>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {items.map((item, i) => (
-          <motion.div key={i} {...motionVariants.card}>
+          <div key={i} {...motionVariants.card}>
             <Card shadow="sm" className="border border-default-100">
-              <CardBody className="p-5 text-center">
+              <Card.Content className="p-5 text-center">
                 <Icon
                   name={item.icon}
                   size="xl"
@@ -47,9 +46,9 @@ export const TLDRCards = ({ items, altName }: TLDRCardsProps) => (
                     </span>
                   </div>
                 </div>
-              </CardBody>
+              </Card.Content>
             </Card>
-          </motion.div>
+          </div>
         ))}
       </div>
     </Container>

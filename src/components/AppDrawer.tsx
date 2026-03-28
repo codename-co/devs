@@ -1,16 +1,4 @@
-import {
-  Button,
-  Kbd,
-  Link,
-  Listbox,
-  ListboxItem,
-  ListboxSection,
-  ScrollShadow,
-  Tooltip,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from '@heroui/react'
+import { Button, Kbd, Link, ListBox, ScrollShadow, Tooltip, Popover } from '@heroui/react'
 
 import { languages, type LanguageCode, useI18n, useUrl } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
@@ -47,8 +35,8 @@ const RecentActivity = ({ lang }: { lang: LanguageCode }) => {
   if (items.length === 0) return null
 
   return (
-    <Listbox aria-label={t('Recent activity')} variant="flat">
-      <ListboxSection
+    <ListBox aria-label={t('Recent activity')} variant="flat">
+      <ListBox.Section
         title={t('Recent activity')}
         classNames={{ heading: 'ms-[4px]' }}
       >
@@ -59,11 +47,10 @@ const RecentActivity = ({ lang }: { lang: LanguageCode }) => {
             location.pathname.startsWith(item.href + '/')
 
           return (
-            <ListboxItem
-              key={item.id}
+            <ListBox.Item
+              id={item.id}
               href={item.href}
               variant="faded"
-              startContent={<Icon name={item.icon} size="sm" />}
               textValue={item.name}
               classNames={{ title: 'truncate' }}
               className={cn(
@@ -72,11 +59,11 @@ const RecentActivity = ({ lang }: { lang: LanguageCode }) => {
               )}
             >
               <span className="text-small">{item.name}</span>
-            </ListboxItem>
+            </ListBox.Item>
           )
         })}
-      </ListboxSection>
-    </Listbox>
+      </ListBox.Section>
+    </ListBox>
   )
 }
 
@@ -243,7 +230,7 @@ const CollapsedDrawer = ({
           <Button
             data-testid="menu-button"
             isIconOnly
-            variant="light"
+            variant="ghost"
             onPress={() => userSettings.getState().toggleDrawer()}
             className="mb-4 backdrop-blur-xs"
             aria-label={t('Expand sidebar')}
@@ -261,7 +248,7 @@ const CollapsedDrawer = ({
                 href={url('')}
                 isIconOnly
                 color="primary"
-                variant="light"
+                variant="ghost"
                 className="w-full dark:text-white"
                 aria-label={t('New Task')}
               >
@@ -279,7 +266,7 @@ const CollapsedDrawer = ({
             >
               <Button
                 isIconOnly
-                variant="light"
+                variant="ghost"
                 className="w-full text-default-500"
                 aria-label={t('Search')}
                 onPress={onOpenSearch}
@@ -293,7 +280,7 @@ const CollapsedDrawer = ({
                 href={url('/knowledge')}
                 isIconOnly
                 color="primary"
-                variant="light"
+                variant="ghost"
                 className={cn(
                   'w-full text-primary-600 [.is-active]:bg-default-100',
                   isCurrentPath('/knowledge') && 'is-active',
@@ -309,7 +296,7 @@ const CollapsedDrawer = ({
                 href={url('/agents')}
                 isIconOnly
                 color="warning"
-                variant="light"
+                variant="ghost"
                 className={cn(
                   'w-full [.is-active]:bg-default-100',
                   isCurrentPath('/agents') && 'is-active',
@@ -324,7 +311,7 @@ const CollapsedDrawer = ({
                 as={Link}
                 href={url('/history')}
                 isIconOnly
-                variant="light"
+                variant="ghost"
                 className={cn(
                   'w-full text-gray-500 dark:text-gray-400 [.is-active]:bg-default-100',
                   isCurrentPath('/history') && 'is-active',
@@ -339,7 +326,7 @@ const CollapsedDrawer = ({
                 as={Link}
                 href={url('/studio')}
                 isIconOnly
-                variant="light"
+                variant="ghost"
                 className={cn(
                   'w-full text-pink-500 dark:text-pink-400 [.is-active]:bg-default-100',
                   isCurrentPath('/studio') && 'is-active',
@@ -354,7 +341,7 @@ const CollapsedDrawer = ({
                 as={Link}
                 href={url('/live')}
                 isIconOnly
-                variant="light"
+                variant="ghost"
                 className={cn(
                   'w-full text-cyan-500 dark:text-cyan-400 [.is-active]:bg-default-100',
                   isCurrentPath('/live') && 'is-active',
@@ -370,7 +357,7 @@ const CollapsedDrawer = ({
                 href={url('/methodologies')}
                 isIconOnly
                 color="success"
-                variant="light"
+                variant="ghost"
                 className={cn(
                   'w-full [.is-active]:bg-default-100',
                   isCurrentPath('/methodologies') && 'is-active',
@@ -386,7 +373,7 @@ const CollapsedDrawer = ({
                 href={url('/arena')}
                 isIconOnly
                 color="warning"
-                variant="light"
+                variant="ghost"
                 className={cn(
                   'w-full text-amber-500 [.is-active]:bg-default-100',
                   isCurrentPath('/arena') && 'is-active',
@@ -402,7 +389,7 @@ const CollapsedDrawer = ({
                   href={url('/teams')}
                   isIconOnly
                   color="success"
-                  variant="light"
+                  variant="ghost"
                   className="w-full"
                   aria-label={t('Teams')}
                 >
@@ -428,7 +415,7 @@ const CollapsedDrawer = ({
                       as={Link}
                       href={url(extPath)}
                       isIconOnly
-                      variant="light"
+                      variant="ghost"
                       className={cn(
                         'w-full [.is-active]:bg-default-100',
                         isCurrentPath(extPath) && 'is-active',
@@ -450,7 +437,7 @@ const CollapsedDrawer = ({
                 href={url('/marketplace')}
                 isIconOnly
                 color="warning"
-                variant="light"
+                variant="ghost"
                 className="w-full"
                 aria-label={t('Marketplace')}
               >
@@ -475,7 +462,7 @@ const CollapsedDrawer = ({
         >
           <Button
             isIconOnly
-            variant="light"
+            variant="ghost"
             size="sm"
             onPress={onOpenSettings}
             aria-label={t('Settings')}
@@ -561,7 +548,7 @@ const ExpandedDrawer = ({
           <Button
             data-testid="menu-button-collapse"
             isIconOnly
-            variant="light"
+            variant="ghost"
             onPress={() => userSettings.getState().toggleDrawer()}
             aria-label={t('Collapse sidebar')}
           >
@@ -575,44 +562,30 @@ const ExpandedDrawer = ({
 
         {/* Navigation */}
         <nav>
-          <Listbox aria-label={t('Main navigation')} variant="flat">
-            <ListboxSection>
+          <ListBox aria-label={t('Main navigation')} variant="flat">
+            <ListBox.Section>
               {[
-                <ListboxItem
-                  key="new-task"
+                <ListBox.Item
+                  id="new-task"
                   href={url('')}
                   variant="faded"
                   color="primary"
                   className="dark:text-gray-200 dark:hover:text-primary-500 [.is-active]:bg-primary-50"
-                  startContent={
-                    <Icon
-                      name="PlusCircle"
-                      className="text-primary-400 dark:text-white"
-                    />
-                  }
                   textValue={t('New Task')}
                 >
                   {t('New Task')}
-                </ListboxItem>,
+                </ListBox.Item>,
                 // Search Button
-                <ListboxItem
-                  key="search"
+                <ListBox.Item
+                  id="search"
                   variant="faded"
                   className="dark:text-gray-200 dark:hover:text-primary-500 [.is-active]:bg-primary-50"
-                  startContent={
-                    <Icon name="Search" className="text-default-700" />
-                  }
-                  endContent={
-                    <Kbd keys={['command']} className="ms-auto text-xs">
-                      K
-                    </Kbd>
-                  }
                   onPress={onOpenSearch}
                 >
                   {t('Search')}
-                </ListboxItem>,
-                // <ListboxItem
-                //   key="agents"
+                </ListBox.Item>,
+                // <ListBox.Item
+                //   id="agents"
                 //   href={url('/agents')}
                 //   variant="faded"
                 //   color="warning"
@@ -620,62 +593,46 @@ const ExpandedDrawer = ({
                 //     'dark:text-gray-200 dark:hover:text-warning-500 [.is-active]:bg-default-100',
                 //     isCurrentPath('/agents') && 'is-active',
                 //   )}
-                //   startContent={<Icon name="Sparks" className="text-warning" />}
+                //
                 //   textValue={t('Agents')}
                 // >
                 //   {t('Agents')}
-                // </ListboxItem>,
-                <ListboxItem
-                  key="history"
+                // </ListBox.Item>,
+                <ListBox.Item
+                  id="history"
                   href={url('/history')}
                   variant="faded"
                   className={cn(
                     '[.is-active]:bg-default-100',
                     isCurrentPath('/history') && 'is-active',
                   )}
-                  startContent={
-                    <Icon
-                      name="ClockRotateRight"
-                      className="text-gray-500 dark:text-gray-400"
-                    />
-                  }
                 >
                   {t('History')}
-                </ListboxItem>,
-                // <ListboxItem
-                //   key="studio"
+                </ListBox.Item>,
+                // <ListBox.Item
+                //   id="studio"
                 //   href={url('/studio')}
                 //   variant="faded"
                 //   className={cn(
                 //     '[.is-active]:bg-default-100',
                 //     isCurrentPath('/studio') && 'is-active',
                 //   )}
-                //   startContent={
-                //     <Icon
-                //       name="MediaImagePlus"
-                //       className="text-pink-500 dark:text-pink-400"
-                //     />
-                //   }
+                //
                 // >
                 //   {t('Studio')}
-                // </ListboxItem>,
-                // <ListboxItem
-                //   key="live"
+                // </ListBox.Item>,
+                // <ListBox.Item
+                //   id="live"
                 //   href={url('/live')}
                 //   variant="faded"
                 //   className={cn(
                 //     '[.is-active]:bg-default-100',
                 //     isCurrentPath('/live') && 'is-active',
                 //   )}
-                //   startContent={
-                //     <Icon
-                //       name="Voice"
-                //       className="text-cyan-500 dark:text-cyan-400"
-                //     />
-                //   }
+                //
                 // >
                 //   {t('Live')}
-                // </ListboxItem>,
+                // </ListBox.Item>,
                 // Installed Marketplace Apps
                 ...installedApps.map((installedApp) => {
                   const ext = installedApp.extension
@@ -684,27 +641,21 @@ const ExpandedDrawer = ({
                     ext.i18n?.[lang as keyof typeof ext.i18n]?.name || ext.name
                   const iconColorClass = getExtensionColorClass(ext.color)
                   return (
-                    <ListboxItem
-                      key={ext.id}
+                    <ListBox.Item
+                      id={ext.id}
                       href={url(extPath)}
                       variant="faded"
                       className={cn(
                         'dark:text-gray-200 [.is-active]:bg-default-100',
                         isCurrentPath(extPath) && 'is-active',
                       )}
-                      startContent={
-                        <Icon
-                          name={ext.icon || 'Puzzle'}
-                          className={iconColorClass}
-                        />
-                      }
                     >
                       {localizedName}
-                    </ListboxItem>
+                    </ListBox.Item>
                   )
                 }),
-                <ListboxItem
-                  key="marketplace"
+                <ListBox.Item
+                  id="marketplace"
                   href={url('/marketplace')}
                   variant="faded"
                   color="warning"
@@ -712,15 +663,12 @@ const ExpandedDrawer = ({
                     'dark:text-gray-200 dark:hover:text-yellow-500 [.is-active]:bg-default-100',
                     isCurrentPath('/marketplace') && 'is-active',
                   )}
-                  startContent={
-                    <Icon name="HexagonPlus" className="text-yellow-500" />
-                  }
                 >
                   {t('Marketplace')}
-                </ListboxItem>,
+                </ListBox.Item>,
               ]}
-            </ListboxSection>
-          </Listbox>
+            </ListBox.Section>
+          </ListBox>
 
           <RecentActivity lang={lang} />
         </nav>
@@ -729,7 +677,7 @@ const ExpandedDrawer = ({
         {/* <Button
           href={url('/upgrade')}
           color="warning"
-          variant="flat"
+          variant="secondary"
           startContent={<Icon name="Star" />}
           aria-label={t('Upgrade to Pro')}
         >
@@ -748,11 +696,11 @@ const ExpandedDrawer = ({
           placement="top-end"
           offset={10}
         >
-          <PopoverTrigger>
+          <Popover.Trigger>
             <span className="absolute bottom-16 end-4 w-0 h-0" />
-          </PopoverTrigger>
-          <PopoverContent className="p-1">
-            <Listbox
+          </Popover.Trigger>
+          <Popover.Content className="p-1">
+            <ListBox
               aria-label={t('Language')}
               selectionMode="single"
               selectedKeys={new Set([lang])}
@@ -777,17 +725,17 @@ const ExpandedDrawer = ({
             >
               {(Object.entries(languages) as [LanguageCode, string][]).map(
                 ([code, name]) => (
-                  <ListboxItem
-                    key={code}
+                  <ListBox.Item
+                    id={code}
                     textValue={name}
                     className={lang === code ? 'bg-primary-50' : ''}
                   >
                     {name}
-                  </ListboxItem>
+                  </ListBox.Item>
                 ),
               )}
-            </Listbox>
-          </PopoverContent>
+            </ListBox>
+          </Popover.Content>
         </Popover>
 
         {/* Quick Actions Bar */}
@@ -809,7 +757,7 @@ const ExpandedDrawer = ({
           >
             <Button
               isIconOnly
-              variant="light"
+              variant="ghost"
               size="sm"
               onPress={() => setTheme(isDarkTheme ? 'light' : 'dark')}
               aria-label={t('Theme')}
@@ -834,7 +782,7 @@ const ExpandedDrawer = ({
           >
             <Button
               isIconOnly
-              variant="light"
+              variant="ghost"
               size="sm"
               onPress={onOpenSettings}
               aria-label={t('Settings')}

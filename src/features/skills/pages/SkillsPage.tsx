@@ -23,7 +23,7 @@ import {
 import { fetchSkillFromGitHub } from '@/lib/skills/github-fetcher'
 import type { SkillSearchResult } from '@/lib/skills/skillsmp-client'
 import type { InstalledSkill } from '@/types'
-import { addToast } from '@heroui/react'
+import { toast } from '@heroui/react'
 import localI18n from './i18n'
 import DefaultLayout from '@/layouts/Default'
 import { HeaderProps } from '@/lib/types'
@@ -77,13 +77,13 @@ export function SkillsPage() {
           githubUrl: result.githubUrl,
           stars: result.stars,
         })
-        addToast({
+        toast({
           title: t('Skill installed successfully'),
           color: 'success',
         })
       } catch (error) {
         console.error('Failed to install skill:', error)
-        addToast({
+        toast({
           title: t('Failed to install skill'),
           description:
             error instanceof Error
@@ -120,14 +120,14 @@ export function SkillsPage() {
         githubUrl: fetched.githubUrl,
         stars: 0,
       })
-      addToast({
+      toast({
         title: t('Skill installed successfully'),
         color: 'success',
       })
       setManualUrl('')
     } catch (error) {
       console.error('Failed to install skill from URL:', error)
-      addToast({
+      toast({
         title: t('Failed to install skill'),
         description:
           error instanceof Error
@@ -163,7 +163,7 @@ export function SkillsPage() {
   const handleUninstall = useCallback(() => {
     if (selectedInstalled) {
       uninstallSkill(selectedInstalled.id)
-      addToast({
+      toast({
         title: t('Skill uninstalled'),
         color: 'success',
       })
@@ -193,7 +193,7 @@ export function SkillsPage() {
     title: (
       <>
         {t('Agent Skills')}
-        <Chip size="sm" variant="flat" className="ml-2 align-middle">
+        <Chip size="sm" variant="soft" className="ml-2 align-middle">
           Beta
         </Chip>
       </>
@@ -295,7 +295,7 @@ export function SkillsPage() {
                 <Icon name="OpenBook" width={16} height={16} />
                 <span>{t('Installed')}</span>
                 {installedSkills.length > 0 && (
-                  <Chip size="sm" variant="flat">
+                  <Chip size="sm" variant="soft">
                     {installedSkills.length}
                   </Chip>
                 )}

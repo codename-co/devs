@@ -30,7 +30,7 @@ export const Tabbar = ({ className = '' }) => {
     <Tabs
       placement="bottom"
       size="lg"
-      variant="underlined"
+      variant="primary"
       // color="primary"
       selectedKey={currentBasePath()}
       onSelectionChange={handleSelectionChange}

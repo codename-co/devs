@@ -48,7 +48,7 @@ export function SessionTurnView({ turn, session }: SessionTurnViewProps) {
         <p className="text-sm flex-1 min-w-0 truncate">{turn.prompt}</p>
         <Chip
           size="sm"
-          variant="flat"
+          variant="soft"
           color={statusColors[turn.status]}
           startContent={
             turn.status === 'running' ? (

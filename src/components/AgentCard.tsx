@@ -1,4 +1,4 @@
-import { Avatar, Card, CardBody, CardHeader, Chip } from '@heroui/react'
+import { Avatar, Card, Chip } from '@heroui/react'
 import { useEffect, useState } from 'react'
 
 import { getAgentById } from '@/stores/agentStore'
@@ -52,12 +52,12 @@ export const AgentCard = ({
   if (loading || !agent) {
     return (
       <Card className={className}>
-        <CardBody>
+        <Card.Content>
           <div className="animate-pulse">
             <div className="h-4 bg-default-300 rounded w-3/4 mb-2"></div>
             <div className="h-3 bg-default-200 rounded w-full"></div>
           </div>
-        </CardBody>
+        </Card.Content>
       </Card>
     )
   }
@@ -82,10 +82,9 @@ export const AgentCard = ({
     <Card
       data-testid="agent-card"
       className={`${className} ${bgColorClass} cursor-pointer hover:scale-105 transition-transform dark:border-1 dark:border-default-400`}
-      isPressable
       onPress={() => onPress?.(agent.slug)}
     >
-      <CardHeader className="pb-2 pt-2 px-4 flex-col items-start relative">
+      <Card.Header className="pb-2 pt-2 px-4 flex-col items-start relative">
         {children}
         <div
           className="flex items-start gap-3 w-full"
@@ -94,7 +93,7 @@ export const AgentCard = ({
           {/* Agent avatar using HeroUI Avatar */}
           <Avatar
             className="w-16 h-16 text-large"
-            radius="full"
+
             color={getAvatarColor(agent.color)}
             src={
               agent.portrait
@@ -125,13 +124,13 @@ export const AgentCard = ({
             )}
           </div>
         </div>
-      </CardHeader>
+      </Card.Header>
       {showDetails && (
-        <CardBody className="px-4 pb-4 pt-0">
+        <Card.Content className="px-4 pb-4 pt-0">
           {!displayDesc && agent.tags && agent.tags.length > 0 && (
             <div data-testid="agent-tags" className="flex gap-1 flex-wrap">
               {agent.tags.slice(0, 3).map((tag: string) => (
-                <Chip key={tag} size="sm" variant="flat" className="tag">
+                <Chip key={tag} size="sm" variant="soft" className="tag">
                   {tag}
                 </Chip>
               ))}
@@ -146,7 +145,7 @@ export const AgentCard = ({
               </span>
             </div>
           )}
-        </CardBody>
+        </Card.Content>
       )}
     </Card>
   )

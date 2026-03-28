@@ -1,12 +1,4 @@
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  Checkbox,
-  CheckboxGroup,
-  Chip,
-  Divider,
-} from '@heroui/react'
+import { Card, Checkbox, CheckboxGroup, Chip, Separator } from '@heroui/react'
 
 import { Icon, Icons } from '@/components/Icon'
 import { useI18n } from '@/i18n'
@@ -293,18 +285,18 @@ export function AgentToolsPicker({
 
   return (
     <Card className={className}>
-      <CardHeader>
+      <Card.Header>
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-2">
             <Icon name="Settings" className="w-5 h-5 text-secondary" />
             <h3 className="text-lg font-semibold">Agent Tools</h3>
-            <Chip size="sm" variant="flat" color="secondary">
+            <Chip size="sm" variant="soft" color="default">
               {selectedToolNames.length} enabled
             </Chip>
           </div>
         </div>
-      </CardHeader>
-      <CardBody className="gap-6">
+      </Card.Header>
+      <Card.Content className="gap-6">
         {/* Knowledge Tools Section */}
         <div>
           <p className="text-sm font-medium text-default-700 mb-2">
@@ -316,7 +308,7 @@ export function AgentToolsPicker({
           </p>
           <CheckboxGroup
             value={selectedToolNames}
-            onValueChange={handleSelectionChange}
+            onChange={handleSelectionChange}
             className="gap-3"
           >
             {knowledgeToolNames.map((name) => {
@@ -345,7 +337,7 @@ export function AgentToolsPicker({
           </CheckboxGroup>
         </div>
 
-        <Divider />
+        <Separator />
 
         {/* Math Tools Section */}
         <div>
@@ -358,7 +350,7 @@ export function AgentToolsPicker({
           </p>
           <CheckboxGroup
             value={selectedToolNames}
-            onValueChange={handleSelectionChange}
+            onChange={handleSelectionChange}
             className="gap-3"
           >
             {mathToolNames.map((name) => {
@@ -389,7 +381,7 @@ export function AgentToolsPicker({
           </CheckboxGroup>
         </div>
 
-        <Divider />
+        <Separator />
 
         {/* Research Tools Section */}
         <div>
@@ -402,7 +394,7 @@ export function AgentToolsPicker({
           </p>
           <CheckboxGroup
             value={selectedToolNames}
-            onValueChange={handleSelectionChange}
+            onChange={handleSelectionChange}
             className="gap-3"
           >
             {researchToolNames.map((name) => {
@@ -430,7 +422,7 @@ export function AgentToolsPicker({
             })}
           </CheckboxGroup>
         </div>
-      </CardBody>
+      </Card.Content>
     </Card>
   )
 }

@@ -1,16 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  Input,
-  Textarea,
-  Card,
-  CardBody,
-} from '@heroui/react'
+import { Modal, Button, Input, TextArea, Card } from '@heroui/react'
 import { create } from 'zustand'
 
 import { Icon } from './Icon'
@@ -134,23 +123,21 @@ export function AddLLMProviderModal({ lang }: AddLLMProviderModalProps) {
       onOpenChange={handleOpenChange}
       scrollBehavior="inside"
     >
-      <ModalContent>
-        {(onClose) => (
+      <Modal.Dialog>
           <>
-            <ModalHeader>{t('Add LLM Provider')}</ModalHeader>
-            <ModalBody>
+            <Modal.Header>{t('Add LLM Provider')}</Modal.Header>
+            <Modal.Body>
               {!selectedProvider ? (
                 <div className="grid grid-cols-3 gap-2">
                   {PROVIDERS(lang, t).map((provider) => (
                     <Card
                       key={provider.provider}
                       className="h-20 hover:bg-primary-50"
-                      isPressable
                       onPress={() =>
                         setSelectedProvider(provider.provider as LLMProvider)
                       }
                     >
-                      <CardBody className="flex flex-col items-center justify-center gap-1.5 p-2">
+                      <Card.Content className="flex flex-col items-center justify-center gap-1.5 p-2">
                         <Icon
                           name={provider.icon as IconName}
                           className="h-5 w-5"
@@ -158,7 +145,7 @@ export function AddLLMProviderModal({ lang }: AddLLMProviderModalProps) {
                         <span className="text-xs text-center leading-tight">
                           {provider.name}
                         </span>
-                      </CardBody>
+                      </Card.Content>
                     </Card>
                   ))}
                 </div>
@@ -168,7 +155,7 @@ export function AddLLMProviderModal({ lang }: AddLLMProviderModalProps) {
                     <Button
                       isIconOnly
                       size="sm"
-                      variant="light"
+                      variant="ghost"
                       onPress={() => setSelectedProvider(undefined)}
                     >
                       <Icon name="NavArrowLeft" className="h-4 w-4" />
@@ -203,7 +190,7 @@ export function AddLLMProviderModal({ lang }: AddLLMProviderModalProps) {
                   {!providerConfig?.noApiKey &&
                     providerConfig?.provider !== 'ollama' &&
                     (providerConfig?.multilineApiKey ? (
-                      <Textarea
+                      <TextArea
                         label={t('API Key')}
                         placeholder={
                           providerConfig?.apiKeyPlaceholder || 'sk-...'
@@ -260,9 +247,9 @@ export function AddLLMProviderModal({ lang }: AddLLMProviderModalProps) {
                   {providerConfig?.moreDetails?.()}
                 </div>
               )}
-            </ModalBody>
-            <ModalFooter>
-              <Button variant="light" onPress={onClose}>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="ghost" onPress={onClose}>
                 {t('Cancel')}
               </Button>
               <Button
@@ -278,10 +265,9 @@ export function AddLLMProviderModal({ lang }: AddLLMProviderModalProps) {
               >
                 {t('Validate & Add')}
               </Button>
-            </ModalFooter>
+            </Modal.Footer>
           </>
-        )}
-      </ModalContent>
+        </Modal.Dialog>
     </Modal>
   )
 }

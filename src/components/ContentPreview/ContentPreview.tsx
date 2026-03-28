@@ -1,14 +1,5 @@
 import { useState, useMemo } from 'react'
-import {
-  Button,
-  Chip,
-  ScrollShadow,
-  Tabs,
-  Tab,
-  Tooltip,
-  Divider,
-  Link,
-} from '@heroui/react'
+import { Button, Chip, ScrollShadow, Tabs, Tab, Tooltip, Separator, Link } from '@heroui/react'
 import clsx from 'clsx'
 
 import { useI18n } from '@/i18n'
@@ -688,7 +679,7 @@ const EMLPreview = ({ content, name }: { content: string; name: string }) => {
             <span className="text-default-500 w-12">{t('To')}:</span>
             <div className="flex-1 flex flex-wrap gap-1">
               {parsedEmail.to.map((addr, i) => (
-                <Chip key={i} size="sm" variant="flat">
+                <Chip key={i} size="sm" variant="soft">
                   {addr.name}
                 </Chip>
               ))}
@@ -702,7 +693,7 @@ const EMLPreview = ({ content, name }: { content: string; name: string }) => {
             <span className="text-default-500 w-12">{t('CC')}:</span>
             <div className="flex-1 flex flex-wrap gap-1">
               {parsedEmail.cc.map((addr, i) => (
-                <Chip key={i} size="sm" variant="bordered">
+                <Chip key={i} size="sm" variant="secondary">
                   {addr.name}
                 </Chip>
               ))}
@@ -744,7 +735,7 @@ const EMLPreview = ({ content, name }: { content: string; name: string }) => {
       )}
 
       {/* Email Body */}
-      <Divider />
+      <Separator />
       {showHtmlContent ? (
         <HTMLPreview content={parsedEmail.htmlBody} name={name} />
       ) : parsedEmail.textBody ? (
@@ -876,7 +867,7 @@ const CSVPreview = ({ content, name }: { content: string; name: string }) => {
           {t('columns')}
         </span>
         {isTruncated && (
-          <Chip size="sm" variant="flat" color="warning">
+          <Chip size="sm" variant="soft" color="warning">
             {t('Showing first {count} rows').replace(
               '{count}',
               String(CSV_MAX_VISIBLE_ROWS),
@@ -1026,7 +1017,7 @@ const MetadataSection = ({
           </div>
         </div>
 
-        <Divider />
+        <Separator />
 
         <div className="space-y-2">
           <div>
@@ -1045,12 +1036,12 @@ const MetadataSection = ({
 
         {artifact.dependencies.length > 0 && (
           <>
-            <Divider />
+            <Separator />
             <div>
               <span className="text-default-500">{t('Dependencies')}:</span>
               <div className="flex flex-wrap gap-1 mt-1">
                 {artifact.dependencies.map((depId) => (
-                  <Chip key={depId} size="sm" variant="bordered">
+                  <Chip key={depId} size="sm" variant="secondary">
                     {depId.slice(-8)}
                   </Chip>
                 ))}
@@ -1061,7 +1052,7 @@ const MetadataSection = ({
 
         {artifact.validates.length > 0 && (
           <>
-            <Divider />
+            <Separator />
             <div>
               <span className="text-default-500">
                 {t('Validates Requirements')}:
@@ -1071,7 +1062,7 @@ const MetadataSection = ({
                   <Chip
                     key={reqId}
                     size="sm"
-                    variant="bordered"
+                    variant="secondary"
                     color="success"
                   >
                     {reqId.slice(-8)}
@@ -1122,7 +1113,7 @@ const MetadataSection = ({
         </div>
       </div>
 
-      <Divider />
+      <Separator />
 
       <div className="space-y-2">
         <div>
@@ -1147,7 +1138,7 @@ const MetadataSection = ({
       {knowledgeItem.syncSource === 'connector' &&
         knowledgeItem.externalUrl && (
           <>
-            <Divider />
+            <Separator />
             <div>
               <span className="text-default-500">{t('External Link')}:</span>
               <Link
@@ -1174,7 +1165,7 @@ const MetadataSection = ({
       {/* Processing Status */}
       {isExtractableDocument(knowledgeItem.mimeType) && (
         <>
-          <Divider />
+          <Separator />
           <div>
             <span className="text-default-500">
               {t('Document Processing')}:
@@ -1233,12 +1224,12 @@ const MetadataSection = ({
       {/* Tags */}
       {knowledgeItem.tags && knowledgeItem.tags.length > 0 && (
         <>
-          <Divider />
+          <Separator />
           <div>
             <span className="text-default-500">{t('Tags')}:</span>
             <div className="flex flex-wrap gap-1 mt-1">
               {knowledgeItem.tags.map((tag) => (
-                <Chip key={tag} size="sm" variant="flat" color="primary">
+                <Chip key={tag} size="sm" variant="soft" color="accent">
                   {tag}
                 </Chip>
               ))}
@@ -1250,7 +1241,7 @@ const MetadataSection = ({
       {/* Description */}
       {knowledgeItem.description && (
         <>
-          <Divider />
+          <Separator />
           <div>
             <span className="text-default-500">{t('Description')}:</span>
             <p className="mt-1 text-default-700">
@@ -1326,7 +1317,7 @@ const TranscriptSection = ({
         {onRequestProcessing && (
           <Button
             color="primary"
-            variant="flat"
+            variant="secondary"
             className="mt-4"
             onPress={onRequestProcessing}
             startContent={<Icon name="RefreshDouble" className="w-4 h-4" />}
@@ -1349,7 +1340,7 @@ const TranscriptSection = ({
       {onRequestProcessing && (
         <Button
           color="primary"
-          variant="flat"
+          variant="secondary"
           className="mt-4"
           onPress={onRequestProcessing}
           startContent={<Icon name="Brain" className="w-4 h-4" />}
@@ -1480,7 +1471,7 @@ export const ContentPreview = (
               <Chip
                 size="sm"
                 color={getFileTypeColor(item, contentType) as any}
-                variant="flat"
+                variant="soft"
               >
                 {isKnowledge
                   ? knowledgeItem?.fileType || 'file'
@@ -1527,7 +1518,7 @@ export const ContentPreview = (
                         ? 'danger'
                         : 'warning'
                   }
-                  variant="flat"
+                  variant="soft"
                 >
                   {artifact.status}
                 </Chip>
@@ -1545,7 +1536,7 @@ export const ContentPreview = (
                 target="_blank"
                 rel="noopener noreferrer"
                 isIconOnly
-                variant="light"
+                variant="ghost"
                 size="sm"
               >
                 <Icon name="OpenNewWindow" className="w-4 h-4" />

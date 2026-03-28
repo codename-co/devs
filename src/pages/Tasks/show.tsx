@@ -1,15 +1,6 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
-import {
-  Spinner,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  useDisclosure,
-} from '@heroui/react'
+import { Spinner, Modal, Button, useOverlayState } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
 import { Container, Icon, PromptArea, Section, Title } from '@/components'
@@ -160,11 +151,7 @@ export const TaskPage = () => {
   const [hitlRequests, setHitlRequests] = useState<HitlRequest[]>([])
 
   // Delete confirmation modal
-  const {
-    isOpen: isDeleteModalOpen,
-    onOpen: onDeleteModalOpen,
-    onClose: onDeleteModalClose,
-  } = useDisclosure()
+  const { isOpen: isDeleteModalOpen, open: onDeleteModalOpen, close: onDeleteModalClose } = useOverlayState()
   const [isDeleting, setIsDeleting] = useState(false)
 
   const isLoading = !isSyncReady || (!task && !!taskId)
@@ -915,24 +902,24 @@ export const TaskPage = () => {
       </div>
 
       {/* Delete confirmation modal */}
-      <Modal isOpen={isDeleteModalOpen} onClose={onDeleteModalClose} size="md">
-        <ModalContent>
-          <ModalHeader>
+      <Modal isOpen={isDeleteModalOpen} onOpenChange={(v) => !v && (onDeleteModalClose)()} size="md">
+        <Modal.Dialog>
+          <Modal.Header>
             <div className="flex items-center gap-2">
               <Icon name="Trash" size="sm" className="text-danger" />
               {t('Delete task')}
             </div>
-          </ModalHeader>
-          <ModalBody>
+          </Modal.Header>
+          <Modal.Body>
             <p>
               {t(
                 'Are you sure you want to delete this task? This action cannot be undone.',
               )}
             </p>
-          </ModalBody>
-          <ModalFooter>
+          </Modal.Body>
+          <Modal.Footer>
             <Button
-              variant="light"
+              variant="ghost"
               onPress={onDeleteModalClose}
               isDisabled={isDeleting}
             >
@@ -945,8 +932,8 @@ export const TaskPage = () => {
             >
               {t('Delete')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
     </RunLayout>
   )

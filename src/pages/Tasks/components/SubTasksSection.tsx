@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { AccordionItem, Chip } from '@heroui/react'
+import { Chip } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
 import { AccordionTracker, ArtifactCard, Icon, Title } from '@/components'
@@ -60,8 +60,8 @@ export const SubTasksSection = memo(
           )
 
         return (
-          <AccordionItem
-            key={subTask.id}
+          <Accordion.Item
+            id={subTask.id}
             startContent={<SubTaskStatusIcon status={subTask.status} />}
             title={
               <div className="flex items-center gap-2">
@@ -75,8 +75,8 @@ export const SubTasksSection = memo(
                 {agent && (
                   <Chip
                     size="sm"
-                    variant="flat"
-                    color="primary"
+                    variant="soft"
+                    color="accent"
                     startContent={
                       agent.icon ? (
                         <Icon
@@ -135,7 +135,7 @@ export const SubTasksSection = memo(
                 )}
               </div>
             )}
-          </AccordionItem>
+          </Accordion.Item>
         )
       })
 

@@ -1,0 +1,1339 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.18"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.28.6/babel.min.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/preact@10/compat"
+      }
+    }
+  </script>
+  <body>
+    <div id="root">…</div>
+    <script
+      type="text/babel"
+      data-type="module"
+      data-presets="react"
+      data-targets="defaults"
+    >
+      import React, { render } from 'react'
+
+      import { useState, useEffect, useRef, useCallback } from 'react'
+
+      const App = () => {
+        const canvasRef = useRef(null)
+        const sceneRef = useRef(null)
+
+        // UI state
+        const [score, setScore] = useState(0)
+        const [blueCount, setBlueCount] = useState(30)
+        const [combo, setCombo] = useState(1)
+        const [wave, setWave] = useState(0)
+        const [gameOver, setGameOver] = useState(false)
+        const [babylonLoaded, setBabylonLoaded] = useState(false)
+        const [BABYLON, setBABYLON] = useState(null)
+        const [lastBattleText, setLastBattleText] = useState(null)
+        const [lastPenaltyText, setLastPenaltyText] = useState(null)
+        const [showComboPopup, setShowComboPopup] = useState(false)
+
+        // Game refs (for render loop)
+        const blueGroupRef = useRef(null)
+        const redGroupsRef = useRef([])
+        const bonusGroupsRef = useRef([])
+        const blueCountRef = useRef(30)
+        const scoreRef = useRef(0)
+        const comboRef = useRef(1)
+        const waveRef = useRef(0)
+        const gameOverRef = useRef(false)
+        const blueXRef = useRef(0)
+        const targetXRef = useRef(0)
+        const isDraggingRef = useRef(false)
+        const dragStartXRef = useRef(0)
+        const dragBlueStartXRef = useRef(0)
+        const lastSpawnTimeRef = useRef(0)
+        const groupIdCounterRef = useRef(0)
+        const restartRef = useRef(null)
+        const comboTimerRef = useRef(null)
+        const destroyGroupFnRef = useRef(null)
+
+        // Performance detection
+        const isLowEndDevice = useRef(
+          navigator.hardwareConcurrency <= 4 ||
+            navigator.deviceMemory <= 4 ||
+            /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent),
+        ).current
+
+        // Sync refs with state
+        useEffect(() => {
+          blueCountRef.current = blueCount
+        }, [blueCount])
+        useEffect(() => {
+          scoreRef.current = score
+        }, [score])
+        useEffect(() => {
+          comboRef.current = combo
+        }, [combo])
+        useEffect(() => {
+          waveRef.current = wave
+        }, [wave])
+        useEffect(() => {
+          gameOverRef.current = gameOver
+        }, [gameOver])
+
+        // Load Babylon.js
+        useEffect(() => {
+          const script = document.createElement('script')
+          script.src = 'https://cdn.babylonjs.com/babylon.js'
+          script.async = true
+          script.onload = () => {
+            setBABYLON(window.BABYLON)
+            setBabylonLoaded(true)
+          }
+          document.body.appendChild(script)
+          return () => {
+            if (script.parentNode) script.parentNode.removeChild(script)
+          }
+        }, [])
+
+        // ==========================================
+        // MAIN GAME SETUP
+        // ==========================================
+        useEffect(() => {
+          if (!babylonLoaded || !canvasRef.current || !BABYLON) return
+
+          const canvas = canvasRef.current
+          const engineOpts = {
+            preserveDrawingBuffer: false,
+            stencil: false,
+            antialias: !isLowEndDevice,
+            powerPreference: isLowEndDevice ? 'low-power' : 'high-performance',
+          }
+          const engine = new BABYLON.Engine(canvas, !isLowEndDevice, engineOpts)
+          if (isLowEndDevice) engine.setHardwareScalingLevel(1.5)
+          const scene = new BABYLON.Scene(engine)
+          scene.clearColor = new BABYLON.Color4(0.12, 0.11, 0.1, 1)
+          sceneRef.current = scene
+
+          // Constants
+          const ARENA_W = 12
+          const ARENA_D = 24
+          const BLUE_Z = -8
+          const SPAWN_Z = 12
+          const PENALTY_Z = -11
+          const MAX_VISIBLE_SOLDIERS = isLowEndDevice ? 16 : 25
+
+          // ============================================
+          // CAMERA - Fixed top-down with slight isometric tilt
+          // ============================================
+          const camera = new BABYLON.ArcRotateCamera(
+            'camera',
+            -Math.PI / 2, // alpha: looking from south
+            Math.PI / 7, // beta: ~26deg from vertical (nearly top-down)
+            28, // radius
+            new BABYLON.Vector3(0, 0, 0),
+            scene,
+          )
+          // Disable all user camera control
+          camera.inputs.clear()
+
+          // ============================================
+          // LIGHTING
+          // ============================================
+          const hemiLight = new BABYLON.HemisphericLight(
+            'hemi',
+            new BABYLON.Vector3(0, 1, 0),
+            scene,
+          )
+          hemiLight.intensity = 0.5
+          hemiLight.diffuse = new BABYLON.Color3(1, 0.97, 0.92)
+          hemiLight.groundColor = new BABYLON.Color3(0.2, 0.18, 0.15)
+
+          const dirLight = new BABYLON.DirectionalLight(
+            'dir',
+            new BABYLON.Vector3(-0.3, -1, 0.5),
+            scene,
+          )
+          dirLight.intensity = 0.8
+          dirLight.diffuse = new BABYLON.Color3(1, 0.96, 0.9)
+          dirLight.position = new BABYLON.Vector3(5, 15, -5)
+
+          // Shadow generator
+          const shadowMapSize = isLowEndDevice ? 512 : 1024
+          const shadowGen = new BABYLON.ShadowGenerator(shadowMapSize, dirLight)
+          if (isLowEndDevice) {
+            shadowGen.usePoissonSampling = true
+          } else {
+            shadowGen.usePercentageCloserFiltering = true
+            shadowGen.filteringQuality = BABYLON.ShadowGenerator.QUALITY_MEDIUM
+          }
+          shadowGen.bias = 0.001
+          shadowGen.normalBias = 0.02
+          shadowGen.darkness = 0.4
+
+          // Glow layer
+          let glowLayer = null
+          if (!isLowEndDevice) {
+            glowLayer = new BABYLON.GlowLayer('glow', scene, {
+              mainTextureSamples: 1,
+            })
+            glowLayer.intensity = 0.4
+          }
+
+          // ============================================
+          // ARENA - Floor & Walls
+          // ============================================
+
+          // Floor with sand texture
+          const floor = BABYLON.MeshBuilder.CreateGround(
+            'floor',
+            { width: ARENA_W + 2, height: ARENA_D + 2 },
+            scene,
+          )
+          floor.position.y = -0.01
+          floor.receiveShadows = true
+
+          const floorMat = new BABYLON.StandardMaterial('floorMat', scene)
+          const floorTexSize = isLowEndDevice ? 256 : 512
+          const floorTex = new BABYLON.DynamicTexture(
+            'floorTex',
+            { width: floorTexSize, height: floorTexSize },
+            scene,
+          )
+          const fCtx = floorTex.getContext()
+          // Base sand color
+          fCtx.fillStyle = '#d4c5a0'
+          fCtx.fillRect(0, 0, floorTexSize, floorTexSize)
+          // Sand grain noise
+          const grainCount = isLowEndDevice ? 1500 : 4000
+          for (let i = 0; i < grainCount; i++) {
+            const gx = Math.random() * floorTexSize
+            const gy = Math.random() * floorTexSize
+            const gs = 1 + Math.random() * 2
+            const shade = 185 + Math.random() * 35
+            fCtx.fillStyle =
+              'rgb(' + shade + ',' + (shade - 12) + ',' + (shade - 38) + ')'
+            fCtx.fillRect(gx, gy, gs, gs)
+          }
+          // Subtle grid
+          fCtx.strokeStyle = 'rgba(0,0,0,0.04)'
+          fCtx.lineWidth = 1
+          const gridStep = floorTexSize / 12
+          for (let i = 0; i <= 12; i++) {
+            fCtx.beginPath()
+            fCtx.moveTo(i * gridStep, 0)
+            fCtx.lineTo(i * gridStep, floorTexSize)
+            fCtx.stroke()
+            fCtx.beginPath()
+            fCtx.moveTo(0, i * gridStep)
+            fCtx.lineTo(floorTexSize, i * gridStep)
+            fCtx.stroke()
+          }
+          floorTex.update()
+          floorMat.diffuseTexture = floorTex
+          floorMat.specularColor = new BABYLON.Color3(0.15, 0.13, 0.1)
+          floorMat.specularPower = 16
+          floor.material = floorMat
+
+          // Penalty zone (red-tinted area at bottom)
+          const penaltyZone = BABYLON.MeshBuilder.CreateGround(
+            'penalty',
+            { width: ARENA_W, height: 3 },
+            scene,
+          )
+          penaltyZone.position = new BABYLON.Vector3(0, 0.01, PENALTY_Z + 1.5)
+          const penaltyMat = new BABYLON.StandardMaterial('penaltyMat', scene)
+          penaltyMat.diffuseColor = new BABYLON.Color3(1, 0.2, 0.2)
+          penaltyMat.alpha = 0.08
+          penaltyMat.emissiveColor = new BABYLON.Color3(1, 0.1, 0.1)
+          penaltyMat.disableLighting = true
+          penaltyMat.backFaceCulling = false
+          penaltyZone.material = penaltyMat
+
+          // Translucent glass walls
+          const wallMat = new BABYLON.StandardMaterial('wallMat', scene)
+          wallMat.diffuseColor = new BABYLON.Color3(0.5, 0.7, 1)
+          wallMat.alpha = 0.12
+          wallMat.specularColor = new BABYLON.Color3(1, 1, 1)
+          wallMat.specularPower = 256
+          wallMat.emissiveColor = new BABYLON.Color3(0.15, 0.25, 0.4)
+          wallMat.backFaceCulling = false
+
+          const wallHeight = 1.2
+          const wallThick = 0.15
+          // Left wall
+          const wallL = BABYLON.MeshBuilder.CreateBox(
+            'wallL',
+            {
+              width: wallThick,
+              height: wallHeight,
+              depth: ARENA_D + 2,
+            },
+            scene,
+          )
+          wallL.position = new BABYLON.Vector3(
+            -ARENA_W / 2 - wallThick / 2,
+            wallHeight / 2,
+            0,
+          )
+          wallL.material = wallMat
+          // Right wall
+          const wallR = wallL.clone('wallR')
+          wallR.position.x = ARENA_W / 2 + wallThick / 2
+          // Back wall
+          const wallB = BABYLON.MeshBuilder.CreateBox(
+            'wallB',
+            {
+              width: ARENA_W + 2 * wallThick,
+              height: wallHeight,
+              depth: wallThick,
+            },
+            scene,
+          )
+          wallB.position = new BABYLON.Vector3(
+            0,
+            wallHeight / 2,
+            ARENA_D / 2 + wallThick / 2,
+          )
+          wallB.material = wallMat
+          // Front wall
+          const wallF = wallB.clone('wallF')
+          wallF.position.z = -ARENA_D / 2 - wallThick / 2
+
+          // ============================================
+          // SHARED MATERIALS
+          // ============================================
+          const blueMat = new BABYLON.StandardMaterial('blueMat', scene)
+          blueMat.diffuseColor = new BABYLON.Color3(0.2, 0.45, 1)
+          blueMat.emissiveColor = new BABYLON.Color3(0.06, 0.12, 0.35)
+          blueMat.specularColor = new BABYLON.Color3(0.5, 0.5, 0.6)
+          blueMat.specularPower = 32
+
+          const redMat = new BABYLON.StandardMaterial('redMat', scene)
+          redMat.diffuseColor = new BABYLON.Color3(1, 0.3, 0.35)
+          redMat.emissiveColor = new BABYLON.Color3(0.35, 0.08, 0.08)
+          redMat.specularColor = new BABYLON.Color3(0.5, 0.3, 0.3)
+          redMat.specularPower = 32
+
+          const bonusMat = new BABYLON.StandardMaterial('bonusMat', scene)
+          bonusMat.diffuseColor = new BABYLON.Color3(0.1, 0.9, 0.7)
+          bonusMat.emissiveColor = new BABYLON.Color3(0.03, 0.3, 0.2)
+          bonusMat.specularColor = new BABYLON.Color3(0.5, 0.8, 0.7)
+          bonusMat.specularPower = 64
+
+          // ============================================
+          // HELPER: Draw rounded rect on canvas
+          // ============================================
+          const drawRoundedRect = (ctx, x, y, w, h, r) => {
+            ctx.beginPath()
+            ctx.moveTo(x + r, y)
+            ctx.lineTo(x + w - r, y)
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r)
+            ctx.lineTo(x + w, y + h - r)
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h)
+            ctx.lineTo(x + r, y + h)
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r)
+            ctx.lineTo(x, y + r)
+            ctx.quadraticCurveTo(x, y, x + r, y)
+            ctx.closePath()
+          }
+
+          // ============================================
+          // HELPER: Arrange soldiers in formation
+          // ============================================
+          const arrangeSoldiers = (count, spacing) => {
+            const positions = []
+            const cols = Math.max(1, Math.ceil(Math.sqrt(count)))
+            const rows = Math.ceil(count / cols)
+            const offX = ((cols - 1) * spacing) / 2
+            const offZ = ((rows - 1) * spacing) / 2
+            for (let i = 0; i < count; i++) {
+              const col = i % cols
+              const row = Math.floor(i / cols)
+              positions.push({
+                x:
+                  col * spacing - offX + (Math.random() - 0.5) * spacing * 0.15,
+                z:
+                  row * spacing - offZ + (Math.random() - 0.5) * spacing * 0.15,
+              })
+            }
+            return positions
+          }
+
+          // ============================================
+          // HELPER: Get group collision radius
+          // ============================================
+          const getGroupRadius = (count) => {
+            return 0.35 + Math.sqrt(Math.max(1, count)) * 0.13
+          }
+
+          // ============================================
+          // HELPER: Update label texture
+          // ============================================
+          const updateLabel = (labelTex, count, type) => {
+            const ctx = labelTex.getContext()
+            ctx.clearRect(0, 0, 256, 128)
+            // Background pill
+            const bgColor =
+              type === 'red'
+                ? 'rgba(220, 60, 70, 0.85)'
+                : type === 'bonus'
+                  ? 'rgba(20, 180, 140, 0.85)'
+                  : 'rgba(50, 120, 240, 0.85)'
+            ctx.fillStyle = bgColor
+            drawRoundedRect(ctx, 30, 15, 196, 98, 18)
+            ctx.fill()
+            // Border
+            ctx.strokeStyle = 'rgba(255,255,255,0.4)'
+            ctx.lineWidth = 3
+            drawRoundedRect(ctx, 30, 15, 196, 98, 18)
+            ctx.stroke()
+            // Count text
+            ctx.font = 'bold 68px Arial'
+            ctx.fillStyle = '#ffffff'
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'middle'
+            ctx.fillText(String(count), 128, 68)
+            labelTex.update()
+          }
+
+          // ============================================
+          // CREATE TROOP GROUP
+          // ============================================
+          const createGroup = (type, count, x, z) => {
+            const id = groupIdCounterRef.current++
+            const node = new BABYLON.TransformNode('group_' + id, scene)
+            node.position = new BABYLON.Vector3(x, 0, z)
+
+            const mat =
+              type === 'blue' ? blueMat : type === 'bonus' ? bonusMat : redMat
+
+            // Create soldier meshes
+            const soldiers = []
+            const soldierSpacing = 0.3
+            const visCount = Math.min(count, MAX_VISIBLE_SOLDIERS)
+            const positions = arrangeSoldiers(visCount, soldierSpacing)
+
+            for (let i = 0; i < MAX_VISIBLE_SOLDIERS; i++) {
+              const s = BABYLON.MeshBuilder.CreateCylinder(
+                's_' + id + '_' + i,
+                {
+                  height: 0.32,
+                  diameterTop: 0.16,
+                  diameterBottom: 0.22,
+                  tessellation: 8,
+                },
+                scene,
+              )
+              s.material = mat
+              s.parent = node
+              s.position.y = 0.16
+              if (i < positions.length) {
+                s.position.x = positions[i].x
+                s.position.z = positions[i].z
+                s.setEnabled(true)
+              } else {
+                s.setEnabled(false)
+              }
+              // Add head sphere
+              const head = BABYLON.MeshBuilder.CreateSphere(
+                'h_' + id + '_' + i,
+                { diameter: 0.15, segments: 6 },
+                scene,
+              )
+              head.material = mat
+              head.parent = s
+              head.position.y = 0.2
+              shadowGen.addShadowCaster(s)
+              soldiers.push({ body: s, head })
+            }
+
+            // Count label billboard
+            const labelPlane = BABYLON.MeshBuilder.CreatePlane(
+              'label_' + id,
+              { width: 1.6, height: 0.8 },
+              scene,
+            )
+            labelPlane.parent = node
+            labelPlane.position.y = 1.8
+            labelPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL
+            const labelTex = new BABYLON.DynamicTexture(
+              'labelTex_' + id,
+              { width: 256, height: 128 },
+              scene,
+            )
+            labelTex.hasAlpha = true
+            const labelMat = new BABYLON.StandardMaterial(
+              'labelMat_' + id,
+              scene,
+            )
+            labelMat.diffuseTexture = labelTex
+            labelMat.emissiveTexture = labelTex
+            labelMat.disableLighting = true
+            labelMat.backFaceCulling = false
+            labelPlane.material = labelMat
+            updateLabel(labelTex, count, type)
+
+            // Connection particles between soldiers (white sparkles)
+            let connectionParticles = null
+            if (!isLowEndDevice && (type === 'blue' || type === 'bonus')) {
+              connectionParticles = new BABYLON.ParticleSystem(
+                'conn_' + id,
+                30,
+                scene,
+              )
+              connectionParticles.particleTexture = new BABYLON.Texture(
+                'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAG0lEQVQYV2P8////fwY8gJGBgQGfNAMDw38GAIBHBP9Zia3HAAAAAElFTkSuQmCC',
+                scene,
+              )
+              connectionParticles.emitter = node
+              const r = getGroupRadius(count) * 0.6
+              connectionParticles.minEmitBox = new BABYLON.Vector3(-r, 0.1, -r)
+              connectionParticles.maxEmitBox = new BABYLON.Vector3(r, 0.4, r)
+              connectionParticles.color1 = new BABYLON.Color4(1, 1, 1, 0.6)
+              connectionParticles.color2 = new BABYLON.Color4(0.8, 0.9, 1, 0.3)
+              connectionParticles.minSize = 0.02
+              connectionParticles.maxSize = 0.06
+              connectionParticles.minLifeTime = 0.3
+              connectionParticles.maxLifeTime = 0.8
+              connectionParticles.emitRate = 15
+              connectionParticles.gravity = new BABYLON.Vector3(0, 0.5, 0)
+              connectionParticles.direction1 = new BABYLON.Vector3(
+                -0.3,
+                0.5,
+                -0.3,
+              )
+              connectionParticles.direction2 = new BABYLON.Vector3(0.3, 1, 0.3)
+              connectionParticles.minEmitPower = 0.1
+              connectionParticles.maxEmitPower = 0.3
+              connectionParticles.start()
+            }
+
+            return {
+              id,
+              node,
+              soldiers,
+              connectionParticles,
+              label: { plane: labelPlane, texture: labelTex, mat: labelMat },
+              count,
+              x,
+              z,
+              type,
+              speed: type === 'red' ? 2 : type === 'bonus' ? 1.8 : 0,
+              isActive: true,
+              wobbleOffset: Math.random() * Math.PI * 2,
+              wobbleSpeed: 0.8 + Math.random() * 0.6,
+            }
+          }
+
+          // ============================================
+          // UPDATE GROUP FORMATION
+          // ============================================
+          const updateFormation = (group) => {
+            const visCount = Math.min(group.count, MAX_VISIBLE_SOLDIERS)
+            const spacing = 0.3
+            const positions = arrangeSoldiers(visCount, spacing)
+
+            group.soldiers.forEach((s, i) => {
+              if (i < visCount && i < positions.length) {
+                s.body.setEnabled(true)
+                s.body.position.x = positions[i].x
+                s.body.position.z = positions[i].z
+              } else {
+                s.body.setEnabled(false)
+              }
+            })
+
+            // Update connection particles emit box
+            if (group.connectionParticles) {
+              const r = getGroupRadius(group.count) * 0.6
+              group.connectionParticles.minEmitBox = new BABYLON.Vector3(
+                -r,
+                0.1,
+                -r,
+              )
+              group.connectionParticles.maxEmitBox = new BABYLON.Vector3(
+                r,
+                0.4,
+                r,
+              )
+            }
+
+            updateLabel(group.label.texture, group.count, group.type)
+          }
+
+          // ============================================
+          // DESTROY GROUP
+          // ============================================
+          const destroyGroup = (group) => {
+            group.isActive = false
+            group.soldiers.forEach((s) => {
+              s.head.dispose()
+              s.body.dispose()
+            })
+            group.label.plane.dispose()
+            group.label.texture.dispose()
+            group.label.mat.dispose()
+            if (group.connectionParticles) {
+              group.connectionParticles.stop()
+              group.connectionParticles.dispose()
+            }
+            group.node.dispose()
+          }
+          destroyGroupFnRef.current = destroyGroup
+
+          // ============================================
+          // BATTLE EFFECT
+          // ============================================
+          const createBattleEffect = (x, z, intensity) => {
+            const particleCount = isLowEndDevice
+              ? 30
+              : Math.min(60, intensity * 3)
+            const ps = new BABYLON.ParticleSystem(
+              'battle',
+              particleCount,
+              scene,
+            )
+            ps.particleTexture = new BABYLON.Texture(
+              'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAG0lEQVQYV2P8////fwY8gJGBgQGfNAMDw38GAIBHBP9Zia3HAAAAAElFTkSuQmCC',
+              scene,
+            )
+            ps.emitter = new BABYLON.Vector3(x, 0.3, z)
+            ps.minEmitBox = new BABYLON.Vector3(-0.3, 0, -0.3)
+            ps.maxEmitBox = new BABYLON.Vector3(0.3, 0.2, 0.3)
+            ps.color1 = new BABYLON.Color4(1, 1, 0.6, 1)
+            ps.color2 = new BABYLON.Color4(1, 0.5, 0.2, 1)
+            ps.colorDead = new BABYLON.Color4(1, 0.2, 0.1, 0)
+            ps.minSize = 0.04
+            ps.maxSize = 0.15
+            ps.minLifeTime = 0.2
+            ps.maxLifeTime = 0.6
+            ps.emitRate = 300
+            ps.gravity = new BABYLON.Vector3(0, -3, 0)
+            ps.direction1 = new BABYLON.Vector3(-2, 3, -2)
+            ps.direction2 = new BABYLON.Vector3(2, 5, 2)
+            ps.minEmitPower = 1
+            ps.maxEmitPower = 4
+            ps.start()
+            setTimeout(() => {
+              ps.emitRate = 0
+            }, 150)
+            setTimeout(() => {
+              ps.dispose()
+            }, 1200)
+
+            // Impact decal on ground
+            const decal = BABYLON.MeshBuilder.CreateDisc(
+              'impact',
+              { radius: 0.4 + intensity * 0.02, tessellation: 12 },
+              scene,
+            )
+            decal.position = new BABYLON.Vector3(x, 0.02, z)
+            decal.rotation.x = Math.PI / 2
+            const decalMat = new BABYLON.StandardMaterial('decalMat', scene)
+            decalMat.diffuseColor = new BABYLON.Color3(0.35, 0.28, 0.2)
+            decalMat.disableLighting = true
+            decalMat.alpha = 0.25
+            decal.material = decalMat
+            let decalAlpha = 0.25
+            const decalObs = scene.onBeforeRenderObservable.add(() => {
+              decalAlpha -= 0.002
+              decalMat.alpha = Math.max(0, decalAlpha)
+              if (decalAlpha <= 0) {
+                scene.onBeforeRenderObservable.remove(decalObs)
+                decal.dispose()
+                decalMat.dispose()
+              }
+            })
+          }
+
+          // ============================================
+          // FLOATING 3D TEXT
+          // ============================================
+          const createFloatingText = (text, x, z, color, size) => {
+            const plane = BABYLON.MeshBuilder.CreatePlane(
+              'floatText',
+              { width: size || 2.2, height: (size || 2.2) * 0.45 },
+              scene,
+            )
+            plane.position = new BABYLON.Vector3(x, 1.2, z)
+            plane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL
+
+            const texW = 320
+            const texH = 144
+            const tex = new BABYLON.DynamicTexture(
+              'floatTex',
+              { width: texW, height: texH },
+              scene,
+            )
+            tex.hasAlpha = true
+            const ctx = tex.getContext()
+            ctx.clearRect(0, 0, texW, texH)
+            // Shadow
+            ctx.font = 'bold 80px Arial'
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'middle'
+            ctx.fillStyle = 'rgba(0,0,0,0.4)'
+            ctx.fillText(text, texW / 2 + 3, texH / 2 + 3)
+            // Main text
+            ctx.fillStyle = color || '#ffffff'
+            ctx.fillText(text, texW / 2, texH / 2)
+            tex.update()
+
+            const mat = new BABYLON.StandardMaterial('floatMat', scene)
+            mat.diffuseTexture = tex
+            mat.emissiveTexture = tex
+            mat.disableLighting = true
+            mat.backFaceCulling = false
+            plane.material = mat
+
+            let yOff = 0
+            let alpha = 1
+            const obs = scene.onBeforeRenderObservable.add(() => {
+              yOff += 0.025
+              alpha -= 0.012
+              plane.position.y = 1.2 + yOff
+              mat.alpha = Math.max(0, alpha)
+              if (alpha <= 0) {
+                scene.onBeforeRenderObservable.remove(obs)
+                plane.dispose()
+                mat.dispose()
+                tex.dispose()
+              }
+            })
+          }
+
+          // ============================================
+          // CAMERA SHAKE
+          // ============================================
+          const originalCameraTarget = camera.target.clone()
+          const shakeCamera = (intensity, duration) => {
+            const startTime = performance.now()
+            const obs = scene.onBeforeRenderObservable.add(() => {
+              const elapsed = performance.now() - startTime
+              if (elapsed > duration) {
+                camera.target.copyFrom(originalCameraTarget)
+                scene.onBeforeRenderObservable.remove(obs)
+                return
+              }
+              const decay = 1 - elapsed / duration
+              camera.target.x =
+                originalCameraTarget.x +
+                (Math.random() - 0.5) * intensity * decay
+              camera.target.z =
+                originalCameraTarget.z +
+                (Math.random() - 0.5) * intensity * decay
+            })
+          }
+
+          // ============================================
+          // RESOLVE BATTLE
+          // ============================================
+          const resolveBattle = (blue, red) => {
+            const casualties = Math.min(blue.count, red.count)
+            if (casualties <= 0) return
+
+            const midX = (blue.node.position.x + red.node.position.x) / 2
+            const midZ = (blue.node.position.z + red.node.position.z) / 2
+
+            // Create visual effects
+            createBattleEffect(midX, midZ, casualties)
+
+            // Award points
+            const points = casualties * 10 * comboRef.current
+            scoreRef.current += points
+            setScore((s) => s + points)
+
+            // Floating score text
+            createFloatingText('+' + points, midX, midZ, '#66aaff', 2.5)
+
+            // Update combo
+            const newCombo = Math.min(comboRef.current + 1, 10)
+            comboRef.current = newCombo
+            setCombo(newCombo)
+            setShowComboPopup(true)
+            if (comboTimerRef.current) clearTimeout(comboTimerRef.current)
+            comboTimerRef.current = setTimeout(
+              () => setShowComboPopup(false),
+              1200,
+            )
+
+            // Combo floating text
+            if (newCombo > 1) {
+              setTimeout(() => {
+                createFloatingText(
+                  'x' + newCombo,
+                  midX + 0.8,
+                  midZ - 0.3,
+                  '#ffdd44',
+                  1.8,
+                )
+              }, 200)
+            }
+
+            // Camera shake for big battles
+            if (casualties >= 15) {
+              shakeCamera(0.3 + casualties * 0.01, 300)
+            }
+
+            // Update counts
+            blue.count -= casualties
+            red.count -= casualties
+
+            // Update blue
+            blueCountRef.current = blue.count
+            setBlueCount(blue.count)
+            if (blue.count > 0) {
+              updateFormation(blue)
+            }
+
+            // Update or destroy red
+            if (red.count <= 0) {
+              destroyGroup(red)
+            } else {
+              updateFormation(red)
+            }
+
+            // Game over check
+            if (blue.count <= 0) {
+              gameOverRef.current = true
+              setGameOver(true)
+              // Hide blue group
+              blue.soldiers.forEach((s) => s.body.setEnabled(false))
+              blue.label.plane.setEnabled(false)
+              if (blue.connectionParticles) blue.connectionParticles.stop()
+            }
+          }
+
+          // ============================================
+          // COLLECT BONUS
+          // ============================================
+          const collectBonus = (blue, bonus) => {
+            const gained = bonus.count
+
+            // Add to blue
+            blue.count += gained
+            blueCountRef.current = blue.count
+            setBlueCount(blue.count)
+            updateFormation(blue)
+
+            // Floating text
+            createFloatingText(
+              '+' + gained,
+              bonus.node.position.x,
+              bonus.node.position.z,
+              '#44ffbb',
+              2.2,
+            )
+
+            // Particles
+            createBattleEffect(
+              bonus.node.position.x,
+              bonus.node.position.z,
+              gained,
+            )
+
+            destroyGroup(bonus)
+          }
+
+          // ============================================
+          // SPAWN WAVE
+          // ============================================
+          const spawnWave = () => {
+            const waveNum = waveRef.current + 1
+            waveRef.current = waveNum
+            setWave(waveNum)
+
+            // Wave composition scales with wave number
+            const numGroups = Math.min(1 + Math.floor(waveNum / 3), 6)
+            const baseSize = Math.floor(8 + waveNum * 2.5)
+            const baseSpeed = 1.5 + Math.min(waveNum * 0.08, 2.5)
+
+            for (let i = 0; i < numGroups; i++) {
+              const count = Math.max(
+                5,
+                baseSize + Math.floor(Math.random() * 12) - 4,
+              )
+              const x = (Math.random() - 0.5) * (ARENA_W - 3)
+              const z = SPAWN_Z + i * 1.5 + Math.random() * 2
+              const speed = baseSpeed + Math.random() * 0.4
+
+              const group = createGroup('red', count, x, z)
+              group.speed = speed
+              redGroupsRef.current.push(group)
+            }
+
+            // Bonus every 3 waves
+            if (waveNum % 3 === 0) {
+              const bonusCount = 8 + Math.floor(waveNum / 2)
+              const bx = (Math.random() - 0.5) * (ARENA_W - 3)
+              const group = createGroup('bonus', bonusCount, bx, SPAWN_Z + 1)
+              group.speed = 1.5
+              bonusGroupsRef.current.push(group)
+            }
+          }
+
+          // ============================================
+          // CREATE INITIAL BLUE GROUP
+          // ============================================
+          const blueGroup = createGroup('blue', 30, 0, BLUE_Z)
+          blueGroupRef.current = blueGroup
+
+          // ============================================
+          // RESTART FUNCTION
+          // ============================================
+          const restartGameFn = () => {
+            // Destroy all red and bonus groups
+            redGroupsRef.current.forEach((g) => {
+              if (g.isActive) destroyGroup(g)
+            })
+            redGroupsRef.current = []
+            bonusGroupsRef.current.forEach((g) => {
+              if (g.isActive) destroyGroup(g)
+            })
+            bonusGroupsRef.current = []
+
+            // Reset blue group
+            const bg = blueGroupRef.current
+            if (bg) {
+              bg.count = 30
+              bg.x = 0
+              bg.node.position.x = 0
+              bg.node.position.z = BLUE_Z
+              bg.soldiers.forEach((s) => s.body.setEnabled(false))
+              bg.label.plane.setEnabled(true)
+              if (bg.connectionParticles) bg.connectionParticles.start()
+              updateFormation(bg)
+            }
+
+            // Reset state
+            blueXRef.current = 0
+            targetXRef.current = 0
+            blueCountRef.current = 30
+            scoreRef.current = 0
+            comboRef.current = 1
+            waveRef.current = 0
+            gameOverRef.current = false
+            lastSpawnTimeRef.current = performance.now()
+            groupIdCounterRef.current = 100 // Avoid id collisions
+
+            setScore(0)
+            setBlueCount(30)
+            setCombo(1)
+            setWave(0)
+            setGameOver(false)
+            setLastBattleText(null)
+            setLastPenaltyText(null)
+          }
+          restartRef.current = restartGameFn
+
+          // ============================================
+          // GAME LOOP
+          // ============================================
+          let lastTime = performance.now()
+          let gameTime = 0
+          lastSpawnTimeRef.current = performance.now()
+
+          scene.registerBeforeRender(() => {
+            const now = performance.now()
+            const dt = Math.min((now - lastTime) / 1000, 0.05)
+            lastTime = now
+            gameTime += dt
+
+            if (gameOverRef.current) return
+
+            const blue = blueGroupRef.current
+            if (!blue || blue.count <= 0) return
+
+            // 1. Smooth blue movement toward target
+            const dx = targetXRef.current - blueXRef.current
+            blueXRef.current += dx * 10 * dt
+            blue.node.position.x = blueXRef.current
+            blue.x = blueXRef.current
+
+            // 2. Move red groups downward
+            for (let i = redGroupsRef.current.length - 1; i >= 0; i--) {
+              const red = redGroupsRef.current[i]
+              if (!red.isActive) {
+                redGroupsRef.current.splice(i, 1)
+                continue
+              }
+              red.z -= red.speed * dt
+              // Subtle lateral wobble
+              red.x +=
+                Math.sin(gameTime * red.wobbleSpeed + red.wobbleOffset) *
+                0.4 *
+                dt
+              // Clamp to arena
+              red.x = Math.max(
+                -ARENA_W / 2 + 1,
+                Math.min(ARENA_W / 2 - 1, red.x),
+              )
+              red.node.position.z = red.z
+              red.node.position.x = red.x
+            }
+
+            // 3. Move bonus groups
+            for (let i = bonusGroupsRef.current.length - 1; i >= 0; i--) {
+              const bonus = bonusGroupsRef.current[i]
+              if (!bonus.isActive) {
+                bonusGroupsRef.current.splice(i, 1)
+                continue
+              }
+              bonus.z -= bonus.speed * dt
+              bonus.x +=
+                Math.sin(gameTime * bonus.wobbleSpeed + bonus.wobbleOffset) *
+                0.3 *
+                dt
+              bonus.x = Math.max(
+                -ARENA_W / 2 + 1,
+                Math.min(ARENA_W / 2 - 1, bonus.x),
+              )
+              bonus.node.position.z = bonus.z
+              bonus.node.position.x = bonus.x
+
+              // Bonus passed bottom = disappear without penalty
+              if (bonus.z < PENALTY_Z) {
+                destroyGroup(bonus)
+                bonusGroupsRef.current.splice(i, 1)
+              }
+            }
+
+            // 4. Check collisions: blue vs red
+            for (let i = redGroupsRef.current.length - 1; i >= 0; i--) {
+              const red = redGroupsRef.current[i]
+              if (!red.isActive || red.count <= 0 || blue.count <= 0) continue
+
+              const blueR = getGroupRadius(blue.count)
+              const redR = getGroupRadius(red.count)
+              const distX = blue.node.position.x - red.node.position.x
+              const distZ = blue.node.position.z - red.node.position.z
+              const dist = Math.sqrt(distX * distX + distZ * distZ)
+
+              if (dist < blueR + redR) {
+                resolveBattle(blue, red)
+                if (blue.count <= 0) break
+              }
+            }
+
+            // 5. Check bonus collection
+            if (blue.count > 0) {
+              for (let i = bonusGroupsRef.current.length - 1; i >= 0; i--) {
+                const bonus = bonusGroupsRef.current[i]
+                if (!bonus.isActive) continue
+
+                const distX = blue.node.position.x - bonus.node.position.x
+                const distZ = blue.node.position.z - bonus.node.position.z
+                const dist = Math.sqrt(distX * distX + distZ * distZ)
+
+                if (
+                  dist <
+                  getGroupRadius(blue.count) + getGroupRadius(bonus.count)
+                ) {
+                  collectBonus(blue, bonus)
+                  bonusGroupsRef.current.splice(i, 1)
+                }
+              }
+            }
+
+            // 6. Check penalties: red passed bottom
+            for (let i = redGroupsRef.current.length - 1; i >= 0; i--) {
+              const red = redGroupsRef.current[i]
+              if (!red.isActive) continue
+
+              if (red.z < PENALTY_Z) {
+                const penalty = red.count * 5
+                scoreRef.current = Math.max(0, scoreRef.current - penalty)
+                setScore((s) => Math.max(0, s - penalty))
+
+                createFloatingText(
+                  '-' + penalty,
+                  red.node.position.x,
+                  PENALTY_Z + 1,
+                  '#ff4444',
+                  2,
+                )
+
+                // Reset combo on penalty
+                comboRef.current = 1
+                setCombo(1)
+
+                setLastPenaltyText({ text: '-' + penalty, time: Date.now() })
+                setTimeout(() => setLastPenaltyText(null), 1500)
+
+                destroyGroup(red)
+                redGroupsRef.current.splice(i, 1)
+              }
+            }
+
+            // 7. Wave spawning
+            const waveInterval = Math.max(2500, 5000 - waveRef.current * 80)
+            if (now - lastSpawnTimeRef.current > waveInterval) {
+              spawnWave()
+              lastSpawnTimeRef.current = now
+            }
+
+            // 8. Soldier idle animation (subtle bobbing)
+            const animateGroup = (group) => {
+              if (!group.isActive) return
+              group.soldiers.forEach((s, idx) => {
+                if (s.body.isEnabled()) {
+                  s.body.position.y =
+                    0.16 +
+                    Math.sin(gameTime * 3 + idx * 0.7 + group.wobbleOffset) *
+                      0.02
+                }
+              })
+            }
+            animateGroup(blue)
+            redGroupsRef.current.forEach(animateGroup)
+            bonusGroupsRef.current.forEach(animateGroup)
+
+            // 9. Pulse penalty zone
+            penaltyMat.alpha = 0.06 + Math.sin(gameTime * 2) * 0.03
+          })
+
+          // ============================================
+          // INPUT HANDLERS
+          // ============================================
+          const getPointerX = (e) => {
+            if (e.touches && e.touches.length > 0) return e.touches[0].clientX
+            return e.clientX
+          }
+
+          const handlePointerDown = (e) => {
+            if (gameOverRef.current) return
+            if (e.button !== undefined && e.button !== 0) return
+            if (e.target !== canvas) return
+            e.preventDefault()
+            isDraggingRef.current = true
+            dragStartXRef.current = getPointerX(e)
+            dragBlueStartXRef.current = blueXRef.current
+          }
+
+          const handlePointerMove = (e) => {
+            if (!isDraggingRef.current || gameOverRef.current) return
+            const currentX = getPointerX(e)
+            const deltaPixels = currentX - dragStartXRef.current
+            const worldDelta =
+              (deltaPixels / canvas.clientWidth) * ARENA_W * 1.2
+            const newX = Math.max(
+              -ARENA_W / 2 + 1,
+              Math.min(ARENA_W / 2 - 1, dragBlueStartXRef.current + worldDelta),
+            )
+            targetXRef.current = newX
+          }
+
+          const handlePointerUp = () => {
+            isDraggingRef.current = false
+          }
+
+          // Keyboard
+          const handleKeyDown = (e) => {
+            if (gameOverRef.current) return
+            const moveSpeed = 0.8
+            if (e.key === 'ArrowLeft' || e.key === 'a') {
+              targetXRef.current = Math.max(
+                -ARENA_W / 2 + 1,
+                targetXRef.current - moveSpeed,
+              )
+            } else if (e.key === 'ArrowRight' || e.key === 'd') {
+              targetXRef.current = Math.min(
+                ARENA_W / 2 - 1,
+                targetXRef.current + moveSpeed,
+              )
+            }
+          }
+
+          document.addEventListener('pointerdown', handlePointerDown)
+          document.addEventListener('pointermove', handlePointerMove)
+          document.addEventListener('pointerup', handlePointerUp)
+          document.addEventListener('pointercancel', handlePointerUp)
+          canvas.addEventListener('touchstart', handlePointerDown, {
+            passive: false,
+          })
+          document.addEventListener('touchmove', handlePointerMove, {
+            passive: true,
+          })
+          document.addEventListener('touchend', handlePointerUp)
+          document.addEventListener('touchcancel', handlePointerUp)
+          window.addEventListener('keydown', handleKeyDown)
+
+          // ============================================
+          // RENDER LOOP
+          // ============================================
+          engine.runRenderLoop(() => {
+            scene.render()
+          })
+          const handleResize = () => engine.resize()
+          window.addEventListener('resize', handleResize)
+
+          // Spawn first wave after short delay
+          setTimeout(() => {
+            lastSpawnTimeRef.current = performance.now()
+            spawnWave()
+          }, 1500)
+
+          return () => {
+            document.removeEventListener('pointerdown', handlePointerDown)
+            document.removeEventListener('pointermove', handlePointerMove)
+            document.removeEventListener('pointerup', handlePointerUp)
+            document.removeEventListener('pointercancel', handlePointerUp)
+            canvas.removeEventListener('touchstart', handlePointerDown)
+            document.removeEventListener('touchmove', handlePointerMove)
+            document.removeEventListener('touchend', handlePointerUp)
+            document.removeEventListener('touchcancel', handlePointerUp)
+            window.removeEventListener('keydown', handleKeyDown)
+            window.removeEventListener('resize', handleResize)
+            engine.dispose()
+          }
+        }, [babylonLoaded, BABYLON])
+
+        return (
+          <div className="fixed inset-0 w-screen h-screen overflow-hidden bg-gray-950">
+            <canvas ref={canvasRef} className="w-full h-full block" />
+
+            {/* HUD - Top bar */}
+            <div className="absolute top-3 left-3 right-3 flex justify-between items-start pointer-events-none z-10">
+              <div className="flex flex-col gap-1">
+                <div className="px-4 py-2 bg-black/60 backdrop-blur-sm rounded-lg">
+                  <span className="text-2xl font-bold text-white">
+                    {score.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+              <div className="px-3 py-2 bg-black/50 backdrop-blur-sm rounded-lg">
+                <span className="text-sm text-white/70 uppercase tracking-wider">
+                  Wave{' '}
+                </span>
+                <span className="text-lg font-bold text-white">{wave}</span>
+              </div>
+            </div>
+
+            {/* Bottom HUD */}
+            <div className="absolute bottom-4 left-3 right-3 flex justify-between items-end pointer-events-none z-10">
+              {/* Blue count */}
+              <div className="px-4 py-2 bg-blue-600/70 backdrop-blur-sm rounded-xl border border-blue-400/30">
+                <div className="flex items-center gap-2">
+                  <span className="text-3xl font-black text-white">
+                    {blueCount}
+                  </span>
+                  <span className="text-sm text-blue-200 uppercase">
+                    troops
+                  </span>
+                </div>
+              </div>
+
+              {/* Combo indicator */}
+              {combo > 1 && (
+                <div
+                  className="px-5 py-2 bg-yellow-500/80 backdrop-blur-sm rounded-xl border border-yellow-300/40"
+                  style={{
+                    animation: showComboPopup
+                      ? 'comboPulse 0.3s ease-out'
+                      : 'none',
+                  }}
+                >
+                  <span className="text-4xl font-black text-white">
+                    x{combo}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Penalty flash */}
+            {lastPenaltyText && (
+              <div
+                className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-20"
+                style={{ animation: 'penaltyFloat 1.5s ease-out forwards' }}
+              >
+                <span className="text-6xl font-black text-red-500 drop-shadow-lg">
+                  {lastPenaltyText.text}
+                </span>
+              </div>
+            )}
+
+            {/* Swipe hint */}
+            {wave === 0 && !gameOver && (
+              <div
+                className="absolute bottom-20 left-1/2 -translate-x-1/2 pointer-events-none z-10"
+                style={{ animation: 'pulse 2s ease-in-out infinite' }}
+              >
+                <div className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full">
+                  <span className="text-sm text-white/70">
+                    {'<'} Swipe to move troops {'>'}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Game Over overlay */}
+            {gameOver && (
+              <div
+                className="absolute inset-0 flex flex-col items-center justify-center bg-black/75 z-30"
+                style={{ animation: 'fadeIn 0.5s ease-out' }}
+              >
+                <h1
+                  className="text-7xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-red-400 to-red-700 mb-2"
+                  style={{ animation: 'scaleIn 0.5s ease-out' }}
+                >
+                  GAME OVER
+                </h1>
+                <div className="flex flex-col items-center gap-3 mt-6 mb-8">
+                  <p className="text-3xl text-white font-bold">
+                    Score: {score.toLocaleString()}
+                  </p>
+                  <p className="text-lg text-white/60">Wave {wave} reached</p>
+                  {combo > 1 && (
+                    <p className="text-lg text-yellow-400">
+                      Best combo: x{combo}
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => restartRef.current && restartRef.current()}
+                  className="px-10 py-4 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xl font-bold rounded-2xl pointer-events-auto transition-colors shadow-lg shadow-blue-600/30"
+                >
+                  Play Again
+                </button>
+              </div>
+            )}
+
+            <style>{
+              /* css */ `
+            @keyframes comboPulse {
+              0% { transform: scale(0.7); }
+              50% { transform: scale(1.2); }
+              100% { transform: scale(1); }
+            }
+            @keyframes penaltyFloat {
+              0% { opacity: 1; transform: translate(-50%, -50%) scale(0.8); }
+              30% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+              100% { opacity: 0; transform: translate(-50%, -120%) scale(0.9); }
+            }
+            @keyframes fadeIn {
+              0% { opacity: 0; }
+              100% { opacity: 1; }
+            }
+            @keyframes scaleIn {
+              0% { transform: scale(0.3); opacity: 0; }
+              60% { transform: scale(1.15); }
+              100% { transform: scale(1); opacity: 1; }
+            }
+            @keyframes pulse {
+              0%, 100% { opacity: 0.5; }
+              50% { opacity: 1; }
+            }
+          `
+            }</style>
+          </div>
+        )
+      }
+
+      render(<App />, root)
+    </script>
+  </body>
+</html>

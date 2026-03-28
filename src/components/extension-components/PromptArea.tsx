@@ -23,13 +23,7 @@ import {
   useEffect,
   useMemo,
 } from 'react'
-import {
-  Button,
-  Chip,
-  Textarea,
-  Tooltip,
-  type TextAreaProps,
-} from '@heroui/react'
+import { Button, Chip, TextArea, Tooltip, type TextAreaProps } from '@heroui/react'
 
 // ============================================================================
 // Embedded i18n System - No Provider Required
@@ -567,7 +561,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        <Textarea
+        <TextArea
           ref={textareaRef}
           value={prompt}
           placeholder={resolvedPlaceholder}
@@ -588,7 +582,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
               <Chip
                 key={`${mention.fullMatch}-${mention.index}-${index}`}
                 color={mentionChipColor[mention.type]}
-                variant="flat"
+                variant="soft"
                 size="sm"
                 onClose={() => handleRemoveMention(mention)}
                 classNames={{ base: 'shrink-0 cursor-default' }}
@@ -606,7 +600,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                 <Button
                   type="submit"
                   color={canSubmit ? 'primary' : 'default'}
-                  variant="solid"
+                  variant="primary"
                   size="sm"
                   radius="md"
                   isDisabled={!canSubmit}

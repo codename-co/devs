@@ -7,7 +7,7 @@
  * - CloudSync: Enabled/Connecting
  * - CloudSync + spinning: Syncing
  */
-import { Popover, PopoverContent } from '@heroui/react'
+import { Popover } from '@heroui/react'
 import { useState, useEffect } from 'react'
 
 import { useSyncStore } from '../stores/syncStore'
@@ -68,7 +68,7 @@ export function SyncButton() {
         tooltipDisabled={isPopoverOpen}
         onClick={openSettings}
       />
-      <PopoverContent />
+      <Popover.Content />
     </Popover>
   )
 }

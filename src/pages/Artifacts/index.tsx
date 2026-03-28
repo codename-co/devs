@@ -1,16 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import {
-  Chip,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  Pagination,
-  ScrollShadow,
-} from '@heroui/react'
+import { Chip, Modal, Button, Pagination, ScrollShadow } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
 import { Section, Container, Icon, ArtifactPreviewCard } from '@/components'
@@ -365,17 +355,17 @@ export const LibraryContent = () => {
         scrollBehavior="inside"
         placement="bottom-center"
         isOpen={!!previewArtifact}
-        onClose={handleClosePreview}
+        onOpenChange={(v) => !v && (handleClosePreview)()}
         backdrop="blur"
         classNames={{
           base: 'max-h-[85vh]',
           body: 'p-4',
         }}
       >
-        <ModalContent>
+        <Modal.Dialog>
           {previewArtifact && (
             <>
-              <ModalHeader className="flex items-center gap-3">
+              <Modal.Header className="flex items-center gap-3">
                 <div className="flex items-center gap-4 max-w-full">
                   <Icon
                     name={
@@ -386,17 +376,17 @@ export const LibraryContent = () => {
                   <span className="truncate">{previewArtifact.title}</span>
                   <Chip
                     size="sm"
-                    variant="flat"
+                    variant="soft"
                     color={getStatusColor(previewArtifact.status)}
                   >
                     {previewArtifact.status}
                   </Chip>
-                  <Chip size="sm" variant="flat" color="default">
+                  <Chip size="sm" variant="soft" color="default">
                     {previewArtifact.type}
                   </Chip>
                 </div>
-              </ModalHeader>
-              <ModalBody>
+              </Modal.Header>
+              <Modal.Body>
                 {/* {previewArtifact.description && (
                   <p className="text-sm text-default-600 mb-3">
                     {previewArtifact.description}
@@ -410,21 +400,21 @@ export const LibraryContent = () => {
                     />
                   </div>
                 </ScrollShadow>
-              </ModalBody>
-              <ModalFooter>
+              </Modal.Body>
+              <Modal.Footer>
                 <Button
                   // color="primary"
-                  variant="flat"
+                  variant="secondary"
                   size="sm"
                   startContent={<Icon name="Download" size="sm" />}
                   onPress={() => handleDownload(previewArtifact)}
                 >
                   {t('Download')}
                 </Button>
-              </ModalFooter>
+              </Modal.Footer>
             </>
           )}
-        </ModalContent>
+        </Modal.Dialog>
       </Modal>
 
       {/* Widget preview modal */}
@@ -433,34 +423,34 @@ export const LibraryContent = () => {
         scrollBehavior="inside"
         placement="bottom-center"
         isOpen={!!previewWidget}
-        onClose={handleClosePreview}
+        onOpenChange={(v) => !v && (handleClosePreview)()}
         backdrop="blur"
         classNames={{
           base: 'max-h-[85vh]',
           body: 'p-4',
         }}
       >
-        <ModalContent>
+        <Modal.Dialog>
           {previewWidget && (
             <>
-              <ModalHeader className="flex items-center gap-3">
+              <Modal.Header className="flex items-center gap-3">
                 <div className="flex items-center gap-4 max-w-full">
                   <Icon
                     name={previewWidget.icon as any}
                     className="text-default-500 shrink-0"
                   />
                   <span className="truncate">{previewWidget.title}</span>
-                  <Chip size="sm" variant="flat" color="default">
+                  <Chip size="sm" variant="soft" color="default">
                     {previewWidget.typeLabel}
                   </Chip>
                   {previewWidget.agentName && (
-                    <Chip size="sm" variant="flat" color="secondary">
+                    <Chip size="sm" variant="soft" color="default">
                       {previewWidget.agentName}
                     </Chip>
                   )}
                 </div>
-              </ModalHeader>
-              <ModalBody>
+              </Modal.Header>
+              <Modal.Body>
                 {previewWidget.conversationTitle && (
                   <p className="text-sm text-default-600 mb-3">
                     {previewWidget.conversationTitle}
@@ -474,20 +464,20 @@ export const LibraryContent = () => {
                     showActions={false}
                   />
                 </ScrollShadow>
-              </ModalBody>
-              <ModalFooter>
+              </Modal.Body>
+              <Modal.Footer>
                 <Button
                   color="primary"
-                  variant="flat"
+                  variant="secondary"
                   startContent={<Icon name="Download" size="sm" />}
                   onPress={() => handleWidgetDownload(previewWidget)}
                 >
                   {t('Download')}
                 </Button>
-              </ModalFooter>
+              </Modal.Footer>
             </>
           )}
-        </ModalContent>
+        </Modal.Dialog>
       </Modal>
     </>
   )

@@ -1,5 +1,83 @@
-@import 'tailwindcss';
+@import '@heroui/styles';
 @config "../../tailwind.config.js";
+
+/* v2 → v3 color compatibility layer: numbered shades used throughout the codebase */
+@theme {
+  /* Base colors mapping v2 names → v3 semantic tokens */
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-foreground);
+  --color-secondary: var(--default);
+  --color-secondary-foreground: var(--default-foreground);
+
+  /* Default (gray) scale */
+  --color-default-50: oklch(0.985 0.001 286);
+  --color-default-100: oklch(0.965 0.002 286);
+  --color-default-200: oklch(0.925 0.003 286);
+  --color-default-300: oklch(0.870 0.005 286);
+  --color-default-400: oklch(0.710 0.010 286);
+  --color-default-500: oklch(0.550 0.014 286);
+  --color-default-600: oklch(0.440 0.012 286);
+  --color-default-700: oklch(0.370 0.010 286);
+  --color-default-800: oklch(0.270 0.006 286);
+  --color-default-900: oklch(0.210 0.006 286);
+
+  /* Primary (accent blue) scale */
+  --color-primary-50: oklch(0.950 0.040 260);
+  --color-primary-100: oklch(0.910 0.070 260);
+  --color-primary-200: oklch(0.830 0.120 255);
+  --color-primary-300: oklch(0.740 0.160 252);
+  --color-primary-400: oklch(0.660 0.185 252);
+  --color-primary-500: oklch(0.560 0.200 255);
+  --color-primary-600: oklch(0.480 0.180 255);
+  --color-primary-700: oklch(0.410 0.155 258);
+  --color-primary-800: oklch(0.340 0.120 260);
+  --color-primary-900: oklch(0.280 0.090 262);
+  --color-primary-950: oklch(0.220 0.060 262);
+
+  /* Secondary scale */
+  --color-secondary-50: oklch(0.960 0.020 290);
+  --color-secondary-100: oklch(0.930 0.030 290);
+  --color-secondary-300: oklch(0.800 0.060 290);
+  --color-secondary-400: oklch(0.700 0.075 290);
+  --color-secondary-500: oklch(0.600 0.090 290);
+  --color-secondary-600: oklch(0.500 0.085 290);
+  --color-secondary-900: oklch(0.250 0.030 290);
+
+  /* Success scale */
+  --color-success-50: oklch(0.960 0.040 150);
+  --color-success-100: oklch(0.920 0.070 150);
+  --color-success-300: oklch(0.780 0.140 150);
+  --color-success-400: oklch(0.730 0.170 150);
+  --color-success-500: oklch(0.680 0.190 150);
+  --color-success-600: oklch(0.600 0.170 150);
+  --color-success-700: oklch(0.520 0.145 150);
+  --color-success-900: oklch(0.350 0.080 150);
+  --color-success-950: oklch(0.280 0.060 150);
+
+  /* Warning scale */
+  --color-warning-50: oklch(0.970 0.030 85);
+  --color-warning-100: oklch(0.940 0.060 80);
+  --color-warning-200: oklch(0.880 0.100 75);
+  --color-warning-300: oklch(0.830 0.130 74);
+  --color-warning-400: oklch(0.780 0.155 73);
+  --color-warning-500: oklch(0.730 0.160 72);
+  --color-warning-600: oklch(0.650 0.140 72);
+  --color-warning-700: oklch(0.560 0.120 72);
+  --color-warning-800: oklch(0.470 0.095 72);
+  --color-warning-900: oklch(0.380 0.070 72);
+
+  /* Danger scale */
+  --color-danger-50: oklch(0.960 0.030 25);
+  --color-danger-100: oklch(0.920 0.060 25);
+  --color-danger-200: oklch(0.840 0.110 25);
+  --color-danger-400: oklch(0.700 0.200 25);
+  --color-danger-500: oklch(0.650 0.230 26);
+  --color-danger-600: oklch(0.580 0.210 26);
+  --color-danger-700: oklch(0.510 0.180 26);
+  --color-danger-800: oklch(0.430 0.140 26);
+  --color-danger-900: oklch(0.370 0.100 26);
+  --color-danger-950: oklch(0.300 0.070 26);
+}
 
 @custom-variant folded {
   @media (device-posture: folded) {

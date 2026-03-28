@@ -7,8 +7,8 @@
  */
 
 import { useState, useCallback } from 'react'
-import { Button, Chip, Divider, Switch, Tabs, Tab } from '@heroui/react'
-import { addToast } from '@heroui/react'
+import { Button, Chip, Separator, Switch, Tabs, Tab } from '@heroui/react'
+import { toast } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import {
@@ -56,7 +56,7 @@ export function SkillSettingsInline({
 
   const handleUninstall = useCallback(() => {
     uninstallSkill(skill.id)
-    addToast({
+    toast({
       title: t('Skill uninstalled'),
       color: 'success',
     })
@@ -112,7 +112,7 @@ export function SkillSettingsInline({
       <div className="flex items-center gap-2">
         {compat.canExecute ? (
           <>
-            <Chip size="sm" color="success" variant="flat">
+            <Chip size="sm" color="success" variant="soft">
               {t('Compatible')}
             </Chip>
             <span className="text-xs text-default-500">
@@ -125,7 +125,7 @@ export function SkillSettingsInline({
           </>
         ) : (
           <>
-            <Chip size="sm" color="warning" variant="flat">
+            <Chip size="sm" color="warning" variant="soft">
               {t('Instructions Only')}
             </Chip>
             <span className="text-xs text-default-500">
@@ -137,7 +137,7 @@ export function SkillSettingsInline({
         )}
       </div>
 
-      <Divider />
+      <Separator />
 
       {/* Tabs for content */}
       <Tabs
@@ -182,7 +182,7 @@ export function SkillSettingsInline({
                         <span className="text-xs font-mono">{script.path}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Chip size="sm" variant="flat">
+                        <Chip size="sm" variant="soft">
                           {script.language}
                         </Chip>
                         {script.requiredPackages &&
@@ -278,7 +278,7 @@ export function SkillSettingsInline({
               />
             </div>
 
-            <Divider />
+            <Separator />
 
             <div className="flex items-center justify-between">
               <div>
@@ -294,7 +294,7 @@ export function SkillSettingsInline({
               />
             </div>
 
-            <Divider />
+            <Separator />
 
             <div>
               <p className="text-sm font-medium mb-1">{t('Installed on')}</p>
@@ -303,7 +303,7 @@ export function SkillSettingsInline({
               </p>
             </div>
 
-            <Divider />
+            <Separator />
 
             {/* Uninstall */}
             {showUninstallConfirm ? (
@@ -316,7 +316,7 @@ export function SkillSettingsInline({
                 </Button>
                 <Button
                   size="sm"
-                  variant="flat"
+                  variant="secondary"
                   onPress={() => setShowUninstallConfirm(false)}
                 >
                   {t('Cancel')}
@@ -326,7 +326,7 @@ export function SkillSettingsInline({
               <Button
                 size="sm"
                 color="danger"
-                variant="flat"
+                variant="secondary"
                 onPress={() => setShowUninstallConfirm(true)}
                 startContent={<Icon name="Trash" width={14} height={14} />}
               >

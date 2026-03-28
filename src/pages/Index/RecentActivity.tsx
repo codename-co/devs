@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
-import { Card, CardBody, Link } from '@heroui/react'
-import { motion } from 'framer-motion'
+import { Card, Link } from '@heroui/react'
 import { Icon } from '@/components/Icon'
 import { Container } from '@/components'
 import { formatConversationDate } from '@/lib/format'
@@ -26,7 +25,7 @@ export function RecentActivity() {
   if (items.length === 0) return null
 
   return (
-    <motion.div {...motionVariants.recentActivity}>
+    <div {...motionVariants.recentActivity}>
       <Container size={5} className="!mt-0 !mb-0 !space-y-3">
         <div>
           <div className="flex items-center justify-between mb-2 px-1">
@@ -47,11 +46,10 @@ export function RecentActivity() {
                 key={item.id}
                 as={Link}
                 href={item.href}
-                isPressable
                 shadow="none"
                 className="bg-default-50 dark:bg-default-100/50 border border-default-200/50 hover:border-default-300 transition-colors"
               >
-                <CardBody className="p-3 flex flex-row items-center gap-3">
+                <Card.Content className="p-3 flex flex-row items-center gap-3">
                   <Icon
                     name={item.icon}
                     size="md"
@@ -78,12 +76,12 @@ export function RecentActivity() {
                     size="md"
                     className="text-default-300 flex-shrink-0"
                   />
-                </CardBody>
+                </Card.Content>
               </Card>
             ))}
           </div>
         </div>
       </Container>
-    </motion.div>
+    </div>
   )
 }

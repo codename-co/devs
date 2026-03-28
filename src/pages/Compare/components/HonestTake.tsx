@@ -1,6 +1,5 @@
 import { Container, Icon, Section, Title } from '@/components'
-import { Card, CardBody, Chip } from '@heroui/react'
-import { motion } from 'framer-motion'
+import { Card, Chip } from '@heroui/react'
 import { motionVariants } from '../motion'
 import { useI18n } from '@/i18n'
 import localI18n from '../i18n'
@@ -40,28 +39,28 @@ export const HonestTake = ({ warningSide }: HonestTakeProps) => {
     <Section>
       <Container size={6}>
         <div className="text-center mb-8">
-          <motion.div {...motionVariants.chip}>
-            <Chip variant="flat" color="primary" className="mb-4">
+          <div {...motionVariants.chip}>
+            <Chip variant="soft" color="accent" className="mb-4">
               {t('Honest Take')}
             </Chip>
-          </motion.div>
-          <motion.div {...motionVariants.title}>
+          </div>
+          <div {...motionVariants.title}>
             <Title level={2} size="3xl">
               {t('Who Should Choose What')}
             </Title>
-          </motion.div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {sides.map((side) => {
             const isPositive = side.variant === 'positive'
             return (
-              <motion.div key={side.title} {...motionVariants.card}>
+              <div key={side.title} {...motionVariants.card}>
                 <Card
                   shadow="sm"
                   className={`border h-full ${isPositive ? 'border-success-200' : 'border-warning-200'}`}
                 >
-                  <CardBody className="p-6">
+                  <Card.Content className="p-6">
                     <h3
                       className={`text-lg font-semibold mb-4 flex items-start gap-2 ${isPositive ? 'text-success-600' : 'text-warning-600'}`}
                     >
@@ -82,9 +81,9 @@ export const HonestTake = ({ warningSide }: HonestTakeProps) => {
                         </li>
                       ))}
                     </ul>
-                  </CardBody>
+                  </Card.Content>
                 </Card>
-              </motion.div>
+              </div>
             )
           })}
         </div>

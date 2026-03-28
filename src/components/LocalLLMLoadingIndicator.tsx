@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Card, CardBody, Progress } from '@heroui/react'
+import { Card, ProgressBar } from '@heroui/react'
 import { useLocalLLMStore } from '@/stores/localLLMStore'
 import { LocalLLMProvider } from '@/lib/llm/providers/local'
 import { Icon } from '@/components'
@@ -37,7 +37,7 @@ export const LocalLLMLoadingIndicator = () => {
   return (
     <div className="fixed bottom-4 end-4 z-50 w-96">
       <Card className="bg-background/95 backdrop-blur-md shadow-lg">
-        <CardBody className="gap-3">
+        <Card.Content className="gap-3">
           <div className="flex items-center gap-3">
             <Icon name="Brain" className="h-6 w-6 text-primary animate-pulse" />
             <div className="flex-1">
@@ -47,7 +47,7 @@ export const LocalLLMLoadingIndicator = () => {
             </div>
           </div>
 
-          <Progress
+          <ProgressBar
             size="sm"
             value={progressPercent}
             color="primary"
@@ -61,7 +61,7 @@ export const LocalLLMLoadingIndicator = () => {
               <span>{formatBytes(loadingProgress.total)}</span>
             </div>
           )} */}
-        </CardBody>
+        </Card.Content>
       </Card>
     </div>
   )

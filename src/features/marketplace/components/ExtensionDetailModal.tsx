@@ -1,22 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  Divider,
-  Avatar,
-  Tooltip,
-  useDisclosure,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  ButtonGroup,
-} from '@heroui/react'
+import { Modal, Button, Separator, Avatar, Tooltip, useOverlayState, Dropdown, ButtonGroup } from '@heroui/react'
 import { OpenNewWindow } from 'iconoir-react'
 
 import { Icon } from '@/components'
@@ -118,11 +102,7 @@ export function ExtensionDetailModal({
   )
 
   // Delete confirmation modal
-  const {
-    isOpen: isDeleteModalOpen,
-    onOpen: onDeleteModalOpen,
-    onClose: onDeleteModalClose,
-  } = useDisclosure()
+  const { isOpen: isDeleteModalOpen, open: onDeleteModalOpen, close: onDeleteModalClose } = useOverlayState()
 
   // State for full extension details (includes author, source, etc.)
   const [fullExtension, setFullExtension] =
@@ -231,7 +211,7 @@ export function ExtensionDetailModal({
     //       <Button
     //         isIconOnly
     //         size="sm"
-    //         variant="light"
+    //         variant="ghost"
     //         onPress={handleCopyUuid}
     //         aria-label="Copy UUID"
     //       >
@@ -252,7 +232,7 @@ export function ExtensionDetailModal({
           <Button
             isIconOnly
             size="sm"
-            variant="light"
+            variant="ghost"
             as="a"
             href={displayExtension.author.url}
             target="_blank"
@@ -276,7 +256,7 @@ export function ExtensionDetailModal({
           <Button
             isIconOnly
             size="sm"
-            variant="light"
+            variant="ghost"
             as="a"
             href={displayExtension.source}
             target="_blank"
@@ -300,7 +280,7 @@ export function ExtensionDetailModal({
           <Button
             isIconOnly
             size="sm"
-            variant="light"
+            variant="ghost"
             as="a"
             href={displayExtension.privacyPolicy}
             target="_blank"
@@ -318,17 +298,17 @@ export function ExtensionDetailModal({
     <>
       <Modal
         isOpen={isOpen}
-        onClose={isPreviewMode ? () => setIsPreviewMode(false) : onClose}
+        onOpenChange={(v) => !v && (isPreviewMode ? () => setIsPreviewMode(false) : onClose)()}
         size={isPreviewMode ? 'full' : 'lg'}
         placement="bottom-center"
       >
-        <ModalContent>
-          <ModalHeader className="flex flex-col items-center gap-4 pt-8">
+        <Modal.Dialog>
+          <Modal.Header className="flex flex-col items-center gap-4 pt-8">
             {isPreviewMode ? (
               <div className="flex items-center gap-2 w-full">
                 <Button
                   isIconOnly
-                  variant="light"
+                  variant="ghost"
                   onPress={() => setIsPreviewMode(false)}
                   aria-label="Back"
                 >
@@ -358,9 +338,9 @@ export function ExtensionDetailModal({
                 </div>
               </>
             )}
-          </ModalHeader>
+          </Modal.Header>
 
-          <ModalBody className={isPreviewMode ? 'p-0 flex-1' : 'gap-6'}>
+          <Modal.Body className={isPreviewMode ? 'p-0 flex-1' : 'gap-6'}>
             {isPreviewMode ? (
               (() => {
                 // Get the first page code from the pages object
@@ -415,7 +395,7 @@ export function ExtensionDetailModal({
                       updateAvailable ? (
                         <Button
                           color="success"
-                          variant="flat"
+                          variant="secondary"
                           onPress={handleUpdate}
                           isLoading={isLoading}
                           startContent={!isLoading && <Icon name="Refresh" />}
@@ -425,7 +405,7 @@ export function ExtensionDetailModal({
                       ) : (
                         <Button
                           color="success"
-                          variant="flat"
+                          variant="secondary"
                           onPress={handleOpenApp}
                           startContent={
                             <Icon
@@ -445,7 +425,7 @@ export function ExtensionDetailModal({
                     ) : (
                       <Button
                         color="primary"
-                        variant="flat"
+                        variant="secondary"
                         onPress={handleInstall}
                         isLoading={isLoading}
                         startContent={!isLoading && <Icon name="Plus" />}
@@ -456,12 +436,12 @@ export function ExtensionDetailModal({
 
                     {/* Secondary actions dropdown */}
                     <Dropdown>
-                      <DropdownTrigger>
-                        <Button isIconOnly variant="flat">
+                      <Dropdown.Trigger>
+                        <Button isIconOnly variant="secondary">
                           <Icon name="MoreVert" />
                         </Button>
-                      </DropdownTrigger>
-                      <DropdownMenu
+                      </Dropdown.Trigger>
+                      <Dropdown.Menu
                         aria-label="Extension actions"
                         onAction={(key) => {
                           switch (key) {
@@ -491,50 +471,45 @@ export function ExtensionDetailModal({
                           }
                         }}
                       >
-                        <DropdownItem
-                          key="preview"
-                          startContent={<Icon name="Eye" />}
+                        <Dropdown.Item
+                          id="preview"
                         >
                           {t('Preview')}
-                        </DropdownItem>
+                        </Dropdown.Item>
                         {displayExtension.isCustom ? (
-                          <DropdownItem
-                            key="edit"
-                            startContent={<Icon name="EditPencil" />}
+                          <Dropdown.Item
+                            id="edit"
                           >
                             {t('Edit')}
-                          </DropdownItem>
+                          </Dropdown.Item>
                         ) : null}
-                        <DropdownItem
-                          key="duplicate"
-                          startContent={<Icon name="Copy" />}
+                        <Dropdown.Item
+                          id="duplicate"
                         >
                           {t('Duplicate & edit')}
-                        </DropdownItem>
+                        </Dropdown.Item>
                         {installed ? (
-                          <DropdownItem
-                            key="uninstall"
-                            startContent={<Icon name="Trash" />}
+                          <Dropdown.Item
+                            id="uninstall"
                             color="danger"
                           >
                             {t('Uninstall')}
-                          </DropdownItem>
+                          </Dropdown.Item>
                         ) : null}
                         {displayExtension.isCustom ? (
-                          <DropdownItem
-                            key="delete"
-                            startContent={<Icon name="Trash" />}
+                          <Dropdown.Item
+                            id="delete"
                             color="danger"
                           >
                             {t('Delete')}
-                          </DropdownItem>
+                          </Dropdown.Item>
                         ) : null}
-                      </DropdownMenu>
+                      </Dropdown.Menu>
                     </Dropdown>
                   </ButtonGroup>
                 </div>
 
-                <Divider />
+                <Separator />
 
                 {/* Metadata Section */}
                 <div className="rounded-lg border border-default-200 overflow-hidden">
@@ -561,34 +536,34 @@ export function ExtensionDetailModal({
                 </div>
               </>
             )}
-          </ModalBody>
+          </Modal.Body>
 
-          {!isPreviewMode && <ModalFooter />}
-        </ModalContent>
+          {!isPreviewMode && <Modal.Footer />}
+        </Modal.Dialog>
       </Modal>
 
       {/* Delete Confirmation Modal */}
-      <Modal isOpen={isDeleteModalOpen} onClose={onDeleteModalClose} size="sm">
-        <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">
+      <Modal isOpen={isDeleteModalOpen} onOpenChange={(v) => !v && (onDeleteModalClose)()} size="sm">
+        <Modal.Dialog>
+          <Modal.Header className="flex flex-col gap-1">
             {t('Delete')}
-          </ModalHeader>
-          <ModalBody>
+          </Modal.Header>
+          <Modal.Body>
             <p>{t('Are you sure you want to delete this extension?')}</p>
             <p className="font-semibold">{localizedName}</p>
             <p className="text-sm text-default-500">
               {t('This action cannot be undone.')}
             </p>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="light" onPress={onDeleteModalClose}>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="ghost" onPress={onDeleteModalClose}>
               {t('Cancel')}
             </Button>
             <Button color="danger" onPress={handleConfirmDelete}>
               {t('Delete')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
     </>
   )

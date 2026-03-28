@@ -72,7 +72,7 @@ export const HistoryPage = () => {
                   {/* <Icon name="BookStack" className="w-5 h-5" /> */}
                   <span>{t('Library')}</span>
                   {/* {artifacts.length > 0 && (
-                    <Chip size="sm" variant="flat">
+                    <Chip size="sm" variant="soft">
                       {artifacts.length}
                     </Chip>
                   )} */}
@@ -98,7 +98,7 @@ export const HistoryPage = () => {
                   {/* <Icon name="PcCheck" className="w-5 h-5" /> */}
                   <span>{t('Tasks')}</span>
                   {/* {tasks.length > 0 && (
-                    <Chip size="sm" variant="flat">
+                    <Chip size="sm" variant="soft">
                       {tasks.length}
                     </Chip>
                   )} */}
@@ -114,7 +114,7 @@ export const HistoryPage = () => {
                   {/* <Icon name="ChatBubble" className="w-5 h-5" /> */}
                   <span>{t('Conversations')}</span>
                   {/* {conversations.length > 0 && (
-                    <Chip size="sm" variant="flat">
+                    <Chip size="sm" variant="soft">
                       {conversations.length}
                     </Chip>
                   )} */}

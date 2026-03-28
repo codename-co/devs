@@ -52,7 +52,7 @@ const App = () => {
   return (
     <Section>
       <Container>
-        <Button variant="light">
+        <Button variant="ghost">
           Example button
         </Button>
       </Container>

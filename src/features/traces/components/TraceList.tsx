@@ -1,19 +1,5 @@
 import { useMemo, useState } from 'react'
-import {
-  Accordion,
-  AccordionItem,
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Chip,
-  Spinner,
-  Card,
-  CardBody,
-  Input,
-} from '@heroui/react'
+import { Accordion, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Chip, Spinner, Card, Input } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
 import { Icon } from '@/components'
@@ -294,12 +280,12 @@ export function TraceList({
       {/* Sessions Accordion */}
       {filteredSessions.length === 0 ? (
         <Card>
-          <CardBody className="flex flex-col items-center justify-center py-12">
+          <Card.Content className="flex flex-col items-center justify-center py-12">
             <Icon name="Search" size="sm" className="text-default-300 mb-4" />
             <p className="text-default-400">
               {t('No sessions found matching your search')}
             </p>
-          </CardBody>
+          </Card.Content>
         </Card>
       ) : (
         <Accordion
@@ -311,8 +297,8 @@ export function TraceList({
           }
         >
           {filteredSessions.map((session) => (
-            <AccordionItem
-              key={session.sessionId}
+            <Accordion.Item
+              id={session.sessionId}
               aria-label={session.displayName}
               classNames={{
                 title: 'w-full',
@@ -388,7 +374,7 @@ export function TraceList({
                     <Chip
                       size="sm"
                       color={getStatusColor(session.status)}
-                      variant="flat"
+                      variant="soft"
                     >
                       {/* {session.status} */}
                     </Chip>
@@ -484,7 +470,7 @@ export function TraceList({
                         <Chip
                           size="sm"
                           color={getStatusColor(trace.status)}
-                          variant="flat"
+                          variant="soft"
                         >
                           {/* {trace.status} */}
                         </Chip>
@@ -493,8 +479,8 @@ export function TraceList({
                         <Button
                           isIconOnly
                           size="sm"
-                          variant="light"
-                          onClick={(e) => {
+                          variant="ghost"
+                          onPress={(e) => {
                             e.stopPropagation()
                             onDeleteTrace?.(trace.id)
                           }}
@@ -506,7 +492,7 @@ export function TraceList({
                   ))}
                 </TableBody>
               </Table>
-            </AccordionItem>
+            </Accordion.Item>
           ))}
         </Accordion>
       )}

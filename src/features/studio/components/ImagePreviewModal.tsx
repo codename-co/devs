@@ -4,7 +4,7 @@
  * Fullscreen modal for previewing generated images with navigation.
  */
 
-import { Button, Modal, ModalContent, ModalBody, Tooltip } from '@heroui/react'
+import { Button, Modal, Tooltip } from '@heroui/react'
 import { useEffect } from 'react'
 
 import { Icon } from '@/components/Icon'
@@ -92,7 +92,7 @@ export function ImagePreviewModal({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onOpenChange={(v) => !v && (onClose)()}
       size="full"
       classNames={{
         body: 'p-0',
@@ -101,8 +101,8 @@ export function ImagePreviewModal({
       }}
       hideCloseButton={false}
     >
-      <ModalContent>
-        <ModalBody className="flex items-center justify-center bg-black/95 min-h-screen p-0 relative">
+      <Modal.Dialog>
+        <Modal.Body className="flex items-center justify-center bg-black/95 min-h-screen p-0 relative">
           {/* Main image */}
           <img
             src={imageUrl}
@@ -116,7 +116,7 @@ export function ImagePreviewModal({
             <Button
               isIconOnly
               size="lg"
-              variant="flat"
+              variant="secondary"
               className="absolute start-4 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white min-w-12 w-12 h-12"
               onPress={onPrevious}
               aria-label={t('Previous image')}
@@ -130,7 +130,7 @@ export function ImagePreviewModal({
             <Button
               isIconOnly
               size="lg"
-              variant="flat"
+              variant="secondary"
               className="absolute end-4 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white min-w-12 w-12 h-12"
               onPress={onNext}
               aria-label={t('Next image')}
@@ -146,7 +146,7 @@ export function ImagePreviewModal({
                 <Button
                   isIconOnly
                   size="md"
-                  variant="flat"
+                  variant="secondary"
                   className="bg-white/10 backdrop-blur-sm hover:bg-white/20 min-w-10 w-10 h-10"
                   onPress={onFavorite}
                 >
@@ -167,7 +167,7 @@ export function ImagePreviewModal({
                 <Button
                   isIconOnly
                   size="sm"
-                  variant="flat"
+                  variant="secondary"
                   className="text-white bg-transparent hover:bg-white/20"
                   onPress={onDownload}
                 >
@@ -180,7 +180,7 @@ export function ImagePreviewModal({
                 <Button
                   isIconOnly
                   size="sm"
-                  variant="flat"
+                  variant="secondary"
                   className="text-white bg-transparent hover:bg-white/20"
                   onPress={() => {
                     onUseAsReference()
@@ -196,7 +196,7 @@ export function ImagePreviewModal({
                 <Button
                   isIconOnly
                   size="sm"
-                  variant="flat"
+                  variant="secondary"
                   className="text-danger bg-transparent hover:bg-danger/20"
                   onPress={() => {
                     onDelete()
@@ -223,8 +223,8 @@ export function ImagePreviewModal({
             <span>← →</span>
             <span>{t('Navigate')}</span>
           </div>
-        </ModalBody>
-      </ModalContent>
+        </Modal.Body>
+      </Modal.Dialog>
     </Modal>
   )
 }

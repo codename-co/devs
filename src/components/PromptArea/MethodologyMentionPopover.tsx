@@ -1,4 +1,4 @@
-import { Listbox, ListboxItem, ListboxSection } from '@heroui/react'
+import { ListBox } from '@heroui/react'
 import { useEffect, useCallback, useMemo } from 'react'
 
 import { useI18n, type Lang } from '@/i18n'
@@ -125,7 +125,7 @@ export function MethodologyMentionPopover({
       className="absolute bottom-full left-0 mb-2 w-80 max-h-64 overflow-y-auto bg-content1 rounded-lg shadow-lg border border-default-200 z-50"
       data-testid="methodology-mention-popover"
     >
-      <Listbox
+      <ListBox
         aria-label={t('Select a methodology')}
         selectionMode="single"
         selectedKeys={
@@ -136,7 +136,7 @@ export function MethodologyMentionPopover({
         onAction={handleAction}
       >
         {orderedTypes.map((type) => (
-          <ListboxSection
+          <ListBox.Section
             key={type}
             title={t((methodologyTypeCategories[type] ?? type) as any)}
             classNames={{
@@ -154,8 +154,8 @@ export function MethodologyMentionPopover({
                 methodology.metadata.title
 
               return (
-                <ListboxItem
-                  key={methodology.metadata.id}
+                <ListBox.Item
+                  id={methodology.metadata.id}
                   data-selected={isSelected}
                   description={description}
                   className={isSelected ? 'bg-default-100' : ''}
@@ -163,12 +163,12 @@ export function MethodologyMentionPopover({
                   onPress={() => onSelect(methodology)}
                 >
                   {name}
-                </ListboxItem>
+                </ListBox.Item>
               )
             })}
-          </ListboxSection>
+          </ListBox.Section>
         ))}
-      </Listbox>
+      </ListBox>
     </div>
   )
 }

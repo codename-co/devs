@@ -103,7 +103,7 @@ export function ProvidersList() {
             <div className="flex items-center gap-2">
               <p className="text-small font-medium">{provider?.name}</p>
               {isDefault && (
-                <Chip size="sm" color="primary" variant="flat">
+                <Chip size="sm" color="accent" variant="soft">
                   {t('Default Provider')}
                 </Chip>
               )}
@@ -114,7 +114,7 @@ export function ProvidersList() {
           {/* {!isDefault && (
             <Button
               size="sm"
-              variant="flat"
+              variant="secondary"
               color="primary"
               onPress={() => handleSetAsDefault(credential.id)}
             >
@@ -124,7 +124,7 @@ export function ProvidersList() {
           <Button
             isIconOnly
             size="sm"
-            variant="light"
+            variant="ghost"
             color="danger"
             onPress={() => handleDeleteCredential(credential.id)}
           >
@@ -144,7 +144,7 @@ export function ProvidersList() {
         <Button
           color="primary"
           size="sm"
-          variant="flat"
+          variant="secondary"
           startContent={<Icon name="Plus" className="h-4 w-4" />}
           onPress={handleStartAddProvider}
           isDisabled={SecureStorage.isLocked()}
@@ -178,7 +178,7 @@ export function ProvidersList() {
             </div>
             <Button
               size="sm"
-              variant="flat"
+              variant="secondary"
               color="danger"
               onPress={handleClearCache}
               isLoading={isClearingCache}

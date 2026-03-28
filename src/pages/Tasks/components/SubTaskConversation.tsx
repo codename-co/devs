@@ -129,7 +129,7 @@ export const SubTaskConversation = memo(
               <Chip
                 key={step.id}
                 size="sm"
-                variant="flat"
+                variant="soft"
                 color={
                   step.status === 'completed'
                     ? 'success'

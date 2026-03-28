@@ -3,15 +3,7 @@
  *
  * Compact UI for enabling/disabling local folder backup
  */
-import {
-  Button,
-  Chip,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  Tooltip,
-} from '@heroui/react'
+import { Button, Chip, Dropdown, Tooltip } from '@heroui/react'
 import { useState, useEffect, useCallback } from 'react'
 
 import '../types/file-system.d'
@@ -200,7 +192,7 @@ export function FolderSyncSettings() {
           </div>
           <Button
             size="sm"
-            variant="light"
+            variant="ghost"
             isIconOnly
             onPress={clearError}
             aria-label="Dismiss"
@@ -219,7 +211,7 @@ export function FolderSyncSettings() {
           <Button
             color="warning"
             size="sm"
-            variant="flat"
+            variant="secondary"
             onPress={handleGrantPermission}
           >
             {t('Grant Permission')}
@@ -238,17 +230,17 @@ export function FolderSyncSettings() {
           <div className="flex items-center gap-2">
             {/* Type selector dropdown */}
             <Dropdown>
-              <DropdownTrigger>
+              <Dropdown.Trigger>
                 <Button
                   size="sm"
-                  variant="light"
+                  variant="ghost"
                   endContent={<Icon name="NavArrowDown" className="h-3 w-3" />}
                   className="min-w-[120px]"
                 >
                   <span className="truncate">{getSelectedLabel()}</span>
                 </Button>
-              </DropdownTrigger>
-              <DropdownMenu
+              </Dropdown.Trigger>
+              <Dropdown.Menu
                 aria-label={t('What to backup:')}
                 selectionMode="multiple"
                 selectedKeys={new Set(syncOptionsValue)}
@@ -257,21 +249,21 @@ export function FolderSyncSettings() {
                 }
                 closeOnSelect={false}
               >
-                <DropdownItem key="agents">{t('Agents')}</DropdownItem>
-                <DropdownItem key="conversations">
+                <Dropdown.Item id="agents">{t('Agents')}</Dropdown.Item>
+                <Dropdown.Item id="conversations">
                   {t('Conversations')}
-                </DropdownItem>
-                <DropdownItem key="memories">{t('Memories')}</DropdownItem>
-                <DropdownItem key="knowledge">{t('Knowledge')}</DropdownItem>
-                <DropdownItem key="tasks">{t('Tasks')}</DropdownItem>
-                <DropdownItem key="studio">{t('Studio')}</DropdownItem>
-                <DropdownItem key="fullExport">{t('Full Export')}</DropdownItem>
-              </DropdownMenu>
+                </Dropdown.Item>
+                <Dropdown.Item id="memories">{t('Memories')}</Dropdown.Item>
+                <Dropdown.Item id="knowledge">{t('Knowledge')}</Dropdown.Item>
+                <Dropdown.Item id="tasks">{t('Tasks')}</Dropdown.Item>
+                <Dropdown.Item id="studio">{t('Studio')}</Dropdown.Item>
+                <Dropdown.Item id="fullExport">{t('Full Export')}</Dropdown.Item>
+              </Dropdown.Menu>
             </Dropdown>
             <Button
               size="sm"
               color="primary"
-              variant="flat"
+              variant="secondary"
               onPress={handleSelectFolder}
               isLoading={isInitializing}
               isDisabled={syncOptionsValue.length === 0}
@@ -293,7 +285,7 @@ export function FolderSyncSettings() {
             <Tooltip content={basePath || 'Unknown'}>
               <Chip
                 size="sm"
-                variant="flat"
+                variant="soft"
                 color="success"
                 classNames={{
                   content: 'max-w-[100px] truncate',
@@ -306,17 +298,17 @@ export function FolderSyncSettings() {
           <div className="flex items-center gap-1">
             {/* Type selector dropdown */}
             <Dropdown>
-              <DropdownTrigger>
+              <Dropdown.Trigger>
                 <Button
                   size="sm"
-                  variant="light"
+                  variant="ghost"
                   isIconOnly
                   aria-label={t('What to backup:')}
                 >
                   <Icon name="Settings" className="h-4 w-4" />
                 </Button>
-              </DropdownTrigger>
-              <DropdownMenu
+              </Dropdown.Trigger>
+              <Dropdown.Menu
                 aria-label={t('What to backup:')}
                 selectionMode="multiple"
                 selectedKeys={new Set(syncOptionsValue)}
@@ -325,21 +317,21 @@ export function FolderSyncSettings() {
                 }
                 closeOnSelect={false}
               >
-                <DropdownItem key="agents">{t('Agents')}</DropdownItem>
-                <DropdownItem key="conversations">
+                <Dropdown.Item id="agents">{t('Agents')}</Dropdown.Item>
+                <Dropdown.Item id="conversations">
                   {t('Conversations')}
-                </DropdownItem>
-                <DropdownItem key="memories">{t('Memories')}</DropdownItem>
-                <DropdownItem key="knowledge">{t('Knowledge')}</DropdownItem>
-                <DropdownItem key="tasks">{t('Tasks')}</DropdownItem>
-                <DropdownItem key="studio">{t('Studio')}</DropdownItem>
-                <DropdownItem key="fullExport">{t('Full Export')}</DropdownItem>
-              </DropdownMenu>
+                </Dropdown.Item>
+                <Dropdown.Item id="memories">{t('Memories')}</Dropdown.Item>
+                <Dropdown.Item id="knowledge">{t('Knowledge')}</Dropdown.Item>
+                <Dropdown.Item id="tasks">{t('Tasks')}</Dropdown.Item>
+                <Dropdown.Item id="studio">{t('Studio')}</Dropdown.Item>
+                <Dropdown.Item id="fullExport">{t('Full Export')}</Dropdown.Item>
+              </Dropdown.Menu>
             </Dropdown>
             <Tooltip content={t('Backup Now')}>
               <Button
                 size="sm"
-                variant="light"
+                variant="ghost"
                 isIconOnly
                 onPress={() => triggerSync()}
                 isLoading={isSyncing}
@@ -353,7 +345,7 @@ export function FolderSyncSettings() {
             <Tooltip content={t('Stop Backup')}>
               <Button
                 size="sm"
-                variant="light"
+                variant="ghost"
                 isIconOnly
                 color="danger"
                 onPress={disableSync}

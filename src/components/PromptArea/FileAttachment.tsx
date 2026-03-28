@@ -52,7 +52,7 @@ export const FileAttachment = ({ file, onRemove }: FileAttachmentProps) => {
   return (
     <>
       <Chip
-        variant="bordered"
+        variant="secondary"
         className="cursor-pointer hover:bg-default-200 transition-colors"
         onClick={handleOpenPreview}
         onClose={onRemove}

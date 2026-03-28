@@ -6,7 +6,7 @@
  */
 
 import { memo, useState, useEffect, useRef } from 'react'
-import { Chip, Progress, Spinner } from '@heroui/react'
+import { Chip, ProgressBar, Spinner } from '@heroui/react'
 
 import type { OrchestrationWorkflow } from '@/types'
 import type { WorkflowProgressState } from '@/hooks/useOrchestrationStreaming'
@@ -104,10 +104,10 @@ export const WorkflowHeader = memo(
       <div className="mb-4 flex flex-col gap-2">
         {/* Row 1: Badges + status + phase info */}
         <div className="flex items-center gap-2 flex-wrap">
-          <Chip size="sm" variant="flat" color={tierColor}>
+          <Chip size="sm" variant="soft" color={tierColor}>
             {tierLabel}
           </Chip>
-          <Chip size="sm" variant="flat" color={statusColor}>
+          <Chip size="sm" variant="soft" color={statusColor}>
             {workflow.status.replace(/_/g, ' ')}
           </Chip>
           {!isTerminal && (
@@ -123,7 +123,7 @@ export const WorkflowHeader = memo(
 
         {/* Row 2: Progress bar (only while active) */}
         {!isTerminal && progress > 0 && (
-          <Progress
+          <ProgressBar
             size="sm"
             value={progress}
             color="primary"

@@ -9,19 +9,7 @@
  */
 
 import { useCallback, useMemo, useRef, useState } from 'react'
-import {
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  Chip,
-  Divider,
-  Progress,
-  Snippet,
-  Spinner,
-  Tab,
-  Tabs,
-} from '@heroui/react'
+import { Button, Card, Chip, Separator, ProgressBar, Spinner, Tab, Tabs } from '@heroui/react'
 
 import { Container, Icon, Section } from '@/components'
 import Layout from '@/layouts/Default'
@@ -1094,14 +1082,14 @@ function TestCaseCard({
 
   return (
     <Card className="w-full" shadow="sm">
-      <CardHeader className="flex items-center justify-between gap-2 pb-1">
+      <Card.Header className="flex items-center justify-between gap-2 pb-1">
         <div className="flex items-center gap-2 min-w-0">
-          <Chip size="sm" variant="flat" color={CATEGORY_COLORS[test.category]}>
+          <Chip size="sm" variant="soft" color={CATEGORY_COLORS[test.category]}>
             {CATEGORY_LABELS[test.category]}
           </Chip>
           <Chip
             size="sm"
-            variant="flat"
+            variant="soft"
             color={test.language === 'javascript' ? 'warning' : 'primary'}
           >
             {test.language === 'javascript' ? 'JS' : 'PY'}
@@ -1109,13 +1097,13 @@ function TestCaseCard({
           <span className="font-semibold text-sm truncate">{test.title}</span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <Chip size="sm" variant="dot" color={statusColor}>
+          <Chip size="sm" variant="soft" color={statusColor}>
             {STATUS_LABELS[run.status]}
           </Chip>
           <Button
             size="sm"
             color="primary"
-            variant="flat"
+            variant="secondary"
             isLoading={isRunning}
             onPress={onRun}
             isDisabled={isRunning}
@@ -1123,20 +1111,12 @@ function TestCaseCard({
             Run
           </Button>
         </div>
-      </CardHeader>
-      <CardBody className="pt-0 gap-2">
+      </Card.Header>
+      <Card.Content className="pt-0 gap-2">
         <p className="text-xs text-default-500">{test.description}</p>
-        <Snippet
-          size="sm"
-          variant="flat"
-          hideSymbol
-          classNames={{
-            base: 'w-full',
-            pre: 'whitespace-pre-wrap text-xs max-h-48 overflow-auto',
-          }}
-        >
+        <pre><code>
           {test.request.code}
-        </Snippet>
+        </code></pre>
 
         {/* ── Inputs (context, packages, files) ── */}
         {(test.request.context ||
@@ -1159,7 +1139,7 @@ function TestCaseCard({
                   packages:
                 </span>
                 {test.request.packages.map((pkg) => (
-                  <Chip key={pkg} size="sm" variant="flat" color="secondary">
+                  <Chip key={pkg} size="sm" variant="soft" color="default">
                     {pkg}
                   </Chip>
                 ))}
@@ -1172,7 +1152,7 @@ function TestCaseCard({
                 </p>
                 {test.request.files.map((f) => (
                   <div key={f.path} className="mb-1">
-                    <Chip size="sm" variant="flat" className="mb-0.5">
+                    <Chip size="sm" variant="soft" className="mb-0.5">
                       {f.path}
                     </Chip>
                     <pre className="text-xs bg-primary-50 dark:bg-primary-50/10 rounded p-2 max-h-24 overflow-auto whitespace-pre-wrap">
@@ -1245,7 +1225,7 @@ function TestCaseCard({
             {run.error}
           </pre>
         )}
-      </CardBody>
+      </Card.Content>
     </Card>
   )
 }
@@ -1414,7 +1394,7 @@ export function CodeSandboxPage() {
             </Button>
             <Button
               color="warning"
-              variant="flat"
+              variant="secondary"
               onPress={() => runFiltered((t) => t.language === 'javascript')}
               isDisabled={globalRunning}
             >
@@ -1422,19 +1402,19 @@ export function CodeSandboxPage() {
             </Button>
             <Button
               color="primary"
-              variant="flat"
+              variant="secondary"
               onPress={() => runFiltered((t) => t.language === 'python')}
               isDisabled={globalRunning}
             >
               Run Python ({pyCases.length})
             </Button>
             {globalRunning && (
-              <Button color="danger" variant="flat" onPress={stopAll}>
+              <Button color="danger" variant="secondary" onPress={stopAll}>
                 Stop
               </Button>
             )}
             <Button
-              variant="light"
+              variant="ghost"
               onPress={resetAll}
               isDisabled={globalRunning}
             >
@@ -1444,22 +1424,22 @@ export function CodeSandboxPage() {
 
           {/* ── Stats bar ──────────────────────────────────── */}
           <div className="flex flex-wrap items-center gap-3 mb-4">
-            <Chip variant="flat" color="default" size="sm">
+            <Chip variant="soft" color="default" size="sm">
               {languageCount} runtimes in parallel
             </Chip>
-            <Chip variant="flat" color="success" size="sm">
+            <Chip variant="soft" color="success" size="sm">
               {stats.passed} passed
             </Chip>
-            <Chip variant="flat" color="danger" size="sm">
+            <Chip variant="soft" color="danger" size="sm">
               {stats.failed} failed
             </Chip>
-            <Chip variant="flat" color="default" size="sm">
+            <Chip variant="soft" color="default" size="sm">
               {stats.pending} pending
             </Chip>
             {stats.running > 0 && (
               <Chip
-                variant="flat"
-                color="primary"
+                variant="soft"
+                color="accent"
                 size="sm"
                 startContent={<Spinner size="sm" />}
               >
@@ -1467,7 +1447,7 @@ export function CodeSandboxPage() {
               </Chip>
             )}
             {stats.passed + stats.failed > 0 && (
-              <Progress
+              <ProgressBar
                 size="sm"
                 className="max-w-xs"
                 color={stats.failed > 0 ? 'danger' : 'success'}
@@ -1478,12 +1458,12 @@ export function CodeSandboxPage() {
             )}
           </div>
 
-          <Divider className="my-4" />
+          <Separator className="my-4" />
 
           {/* ── Test cases by language ──────────────────────── */}
           <Tabs
             aria-label="Language"
-            variant="underlined"
+            variant="primary"
             color="primary"
             classNames={{ panel: 'pt-4' }}
           >

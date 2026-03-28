@@ -1,25 +1,6 @@
 import { useEffect, useState, useMemo, useCallback, memo, useRef } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import {
-  Accordion,
-  AccordionItem,
-  Button,
-  ButtonGroup,
-  Card,
-  CardBody,
-  Chip,
-  Divider,
-  Input,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  Spinner,
-  Textarea,
-  Tooltip,
-  useDisclosure,
-} from '@heroui/react'
+import { Accordion, Button, ButtonGroup, Card, Chip, Separator, Input, Modal, Spinner, TextArea, Tooltip, useOverlayState } from '@heroui/react'
 import { Pin } from 'iconoir-react'
 
 import { useI18n, useUrl } from '@/i18n'
@@ -423,7 +404,7 @@ const ToolTimelineItem = memo(
           <Chip
             size="sm"
             color="danger"
-            variant="flat"
+            variant="soft"
             className="text-tiny h-5"
           >
             {t('Error')}
@@ -435,7 +416,7 @@ const ToolTimelineItem = memo(
             as={Link}
             to={`${location.pathname}${location.search}#settings/traces/logs/${span.traceId}`} // Link to trace logs with span ID in hash
             size="sm"
-            variant="light"
+            variant="ghost"
             isIconOnly
             className="min-w-6 w-6 h-6 opacity-60 hover:opacity-100"
           >
@@ -468,11 +449,7 @@ const TimelineToolsDisplay = memo(
     const { t } = useI18n(localI18n)
     const { loadTrace, currentTrace, currentSpans, clearCurrentTrace } =
       useTraceStore()
-    const {
-      isOpen: isTraceModalOpen,
-      // onOpen: onTraceModalOpen,
-      onClose: onTraceModalClose,
-    } = useDisclosure()
+    const { isOpen: isTraceModalOpen, close: onTraceModalClose } = useOverlayState()
     const [allSpans, setAllSpans] = useState<Span[]>([])
     const [_traces, setTraces] = useState<Map<string, Trace>>(new Map())
     const [isLoading, setIsLoading] = useState(true)
@@ -606,7 +583,7 @@ const TimelineToolsDisplay = memo(
               >
                 <Chip
                   size="sm"
-                  variant="dot"
+                  variant="soft"
                   color={getStatusColor(trace.status)}
                   className="cursor-pointer hover:opacity-80 transition-opacity text-tiny"
                   onClick={() => handleShowFullTrace(traceId)}
@@ -621,12 +598,12 @@ const TimelineToolsDisplay = memo(
         {/* Trace Detail Modal */}
         <Modal
           isOpen={isTraceModalOpen}
-          onClose={handleCloseModal}
+          onOpenChange={(v) => !v && (handleCloseModal)()}
           size="2xl"
           scrollBehavior="inside"
         >
-          <ModalContent>
-            <ModalHeader className="flex flex-col gap-1">
+          <Modal.Dialog>
+            <Modal.Header className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <Icon name="Activity" className="w-5 h-5 text-success-500" />
                 <span>{t('Processing Details')}</span>
@@ -636,8 +613,8 @@ const TimelineToolsDisplay = memo(
                   {currentTrace.name}
                 </p>
               )}
-            </ModalHeader>
-            <ModalBody>
+            </Modal.Header>
+            <Modal.Body>
               {!currentTrace ? (
                 <div className="flex justify-center py-8">
                   <Spinner size="lg" />
@@ -651,7 +628,7 @@ const TimelineToolsDisplay = memo(
                       <Chip
                         size="sm"
                         color={getStatusColor(currentTrace.status)}
-                        variant="flat"
+                        variant="soft"
                         className="mt-1"
                       >
                         {currentTrace.status}
@@ -713,7 +690,7 @@ const TimelineToolsDisplay = memo(
                   {/* Spans */}
                   {currentSpans.length > 0 && (
                     <div>
-                      <Divider className="my-3" />
+                      <Separator className="my-3" />
                       <p className="text-sm font-medium text-default-600 mb-3 flex items-center gap-1">
                         <Icon name="TableRows" className="w-4 h-4" />
                         {t('Steps')} ({currentSpans.length})
@@ -733,7 +710,7 @@ const TimelineToolsDisplay = memo(
                                 <span className="text-sm font-medium">
                                   {span.name}
                                 </span>
-                                <Chip size="sm" variant="flat" color="default">
+                                <Chip size="sm" variant="soft" color="default">
                                   {span.type}
                                 </Chip>
                               </div>
@@ -741,7 +718,7 @@ const TimelineToolsDisplay = memo(
                                 <Chip
                                   size="sm"
                                   color={getStatusColor(span.status)}
-                                  variant="flat"
+                                  variant="soft"
                                 >
                                   {span.status}
                                 </Chip>
@@ -770,13 +747,13 @@ const TimelineToolsDisplay = memo(
                   )}
                 </div>
               )}
-            </ModalBody>
-            <ModalFooter>
-              <Button variant="flat" onPress={handleCloseModal}>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onPress={handleCloseModal}>
                 {t('Close')}
               </Button>
-            </ModalFooter>
-          </ModalContent>
+            </Modal.Footer>
+          </Modal.Dialog>
         </Modal>
       </>
     )
@@ -806,10 +783,10 @@ const ArtifactWidget = memo(({ artifact }: { artifact: Artifact }) => {
 
   return (
     <Card className="mb-3">
-      <CardBody className="p-3">
+      <Card.Content className="p-3">
         <Accordion selectionMode="single" className="px-0">
-          <AccordionItem
-            key={artifact.id}
+          <Accordion.Item
+            id={artifact.id}
             aria-label={artifact.title}
             title={
               <div className="flex justify-between items-center w-full">
@@ -818,7 +795,7 @@ const ArtifactWidget = memo(({ artifact }: { artifact: Artifact }) => {
                   <div className="flex gap-2 mt-1">
                     <Chip
                       size="sm"
-                      variant="flat"
+                      variant="soft"
                       color={statusColor}
                       className="text-tiny"
                     >
@@ -826,7 +803,7 @@ const ArtifactWidget = memo(({ artifact }: { artifact: Artifact }) => {
                     </Chip>
                     <Chip
                       size="sm"
-                      variant="flat"
+                      variant="soft"
                       color="default"
                       className="text-tiny"
                     >
@@ -866,9 +843,9 @@ const ArtifactWidget = memo(({ artifact }: { artifact: Artifact }) => {
                 <span>v{artifact.version}</span>
               </div>
             </div>
-          </AccordionItem>
+          </Accordion.Item>
         </Accordion>
-      </CardBody>
+      </Card.Content>
     </Card>
   )
 })
@@ -991,7 +968,7 @@ const InlineMemoryDisplay = memo(
                 </span>
                 <Chip
                   size="sm"
-                  variant="flat"
+                  variant="soft"
                   color={getCategoryColor(memory.category)}
                   className="text-tiny"
                 >
@@ -1000,7 +977,7 @@ const InlineMemoryDisplay = memo(
               </div>
 
               {/* Action buttons */}
-              <ButtonGroup isIconOnly size="sm" variant="flat">
+              <ButtonGroup isIconOnly size="sm" variant="secondary">
                 <Tooltip content={t('Edit')}>
                   <Button
                     color="default"
@@ -1020,7 +997,7 @@ const InlineMemoryDisplay = memo(
                 </Tooltip>
                 <Tooltip content={t('Memorize')}>
                   <Button
-                    variant="solid"
+                    variant="primary"
                     color="success"
                     startContent={<Icon name="Check" className="w-3 h-3" />}
                     isLoading={isProcessing}
@@ -1038,18 +1015,18 @@ const InlineMemoryDisplay = memo(
                   value={editTitle}
                   onValueChange={setEditTitle}
                   size="sm"
-                  variant="bordered"
+                  variant="secondary"
                 />
-                <Textarea
+                <TextArea
                   label={t('Content')}
                   value={editContent}
                   onValueChange={setEditContent}
                   minRows={2}
                   size="sm"
-                  variant="bordered"
+                  variant="secondary"
                 />
                 <div className="flex gap-2 justify-end">
-                  <Button size="sm" variant="flat" onPress={handleCancelEdit}>
+                  <Button size="sm" variant="secondary" onPress={handleCancelEdit}>
                     {t('Cancel')}
                   </Button>
                   <Button
@@ -1070,7 +1047,7 @@ const InlineMemoryDisplay = memo(
                     <span className="font-medium text-sm">{memory.title}</span>
                     {/* <Chip
                       size="sm"
-                      variant="dot"
+                      variant="soft"
                       color={getConfidenceColor(memory.confidence) as any}
                       className="text-tiny"
                     >
@@ -1084,7 +1061,7 @@ const InlineMemoryDisplay = memo(
                         <Chip
                           key={idx}
                           size="sm"
-                          variant="bordered"
+                          variant="secondary"
                           className="text-tiny"
                         >
                           {keyword}
@@ -1275,33 +1252,21 @@ export const AgentRunPage = () => {
   const [isGeneratingReplies, setIsGeneratingReplies] = useState(false)
 
   // Pin modal state
-  const {
-    isOpen: isPinModalOpen,
-    onOpen: onPinModalOpen,
-    onClose: onPinModalClose,
-  } = useDisclosure()
+  const { isOpen: isPinModalOpen, open: onPinModalOpen, close: onPinModalClose } = useOverlayState()
   const [messageToPin, setMessageToPin] = useState<Message | null>(null)
   const [pinDescription, setPinDescription] = useState('')
   const [isPinning, setIsPinning] = useState(false)
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false)
 
   // Appearance modal state
-  const {
-    isOpen: isAppearanceModalOpen,
-    onOpen: onAppearanceModalOpen,
-    onClose: onAppearanceModalClose,
-  } = useDisclosure()
+  const { isOpen: isAppearanceModalOpen, open: onAppearanceModalOpen, close: onAppearanceModalClose } = useOverlayState()
   const [editingIcon, setEditingIcon] = useState<IconName | undefined>()
   const [editingColor, setEditingColor] = useState<AgentColor | undefined>()
   const [editingPortrait, setEditingPortrait] = useState<string | undefined>()
   const [isSavingAppearance, setIsSavingAppearance] = useState(false)
 
   // Delete conversation modal state
-  const {
-    isOpen: isDeleteModalOpen,
-    onOpen: onDeleteModalOpen,
-    onClose: onDeleteModalClose,
-  } = useDisclosure()
+  const { isOpen: isDeleteModalOpen, open: onDeleteModalOpen, close: onDeleteModalClose } = useOverlayState()
   const [isDeleting, setIsDeleting] = useState(false)
 
   const isConversationPristine = useMemo(
@@ -2438,7 +2403,7 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
                     quickReplies.map((reply, index) => (
                       <Button
                         key={index}
-                        variant="flat"
+                        variant="secondary"
                         size="sm"
                         color="default"
                         className="text-sm"
@@ -2551,15 +2516,15 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
       </div>
 
       {/* Pin Message Modal */}
-      <Modal isOpen={isPinModalOpen} onClose={onPinModalClose} size="lg">
-        <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">
+      <Modal isOpen={isPinModalOpen} onOpenChange={(v) => !v && (onPinModalClose)()} size="lg">
+        <Modal.Dialog>
+          <Modal.Header className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               <Pin className="w-5 h-5 text-warning-500" />
               {t('Pin message')}
             </div>
-          </ModalHeader>
-          <ModalBody>
+          </Modal.Header>
+          <Modal.Body>
             <p className="text-small text-default-500 mb-4">
               {t(
                 'Add a description to help you remember why this message is important.',
@@ -2587,9 +2552,9 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
               }
               endContent={isGeneratingDescription && <Spinner size="sm" />}
             />
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="light" onPress={onPinModalClose}>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="ghost" onPress={onPinModalClose}>
               {t('Cancel')}
             </Button>
             <Button
@@ -2600,29 +2565,29 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
             >
               {t('Pin it')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
 
       {/* Delete Conversation Confirmation Modal */}
-      <Modal isOpen={isDeleteModalOpen} onClose={onDeleteModalClose} size="md">
-        <ModalContent>
-          <ModalHeader>
+      <Modal isOpen={isDeleteModalOpen} onOpenChange={(v) => !v && (onDeleteModalClose)()} size="md">
+        <Modal.Dialog>
+          <Modal.Header>
             <div className="flex items-center gap-2">
               <Icon name="Trash" size="sm" className="text-danger" />
               {t('Delete conversation')}
             </div>
-          </ModalHeader>
-          <ModalBody>
+          </Modal.Header>
+          <Modal.Body>
             <p>
               {t(
                 'Are you sure you want to delete this conversation? This action cannot be undone.',
               )}
             </p>
-          </ModalBody>
-          <ModalFooter>
+          </Modal.Body>
+          <Modal.Footer>
             <Button
-              variant="light"
+              variant="ghost"
               onPress={onDeleteModalClose}
               isDisabled={isDeleting}
             >
@@ -2635,24 +2600,24 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
             >
               {t('Delete')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
 
       {/* Appearance Edit Modal */}
       <Modal
         isOpen={isAppearanceModalOpen}
-        onClose={onAppearanceModalClose}
+        onOpenChange={(v) => !v && (onAppearanceModalClose)()}
         size="md"
       >
-        <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">
+        <Modal.Dialog>
+          <Modal.Header className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               <Icon name="Palette" className="w-5 h-5 text-primary-500" />
               {t('Edit Appearance')}
             </div>
-          </ModalHeader>
-          <ModalBody>
+          </Modal.Header>
+          <Modal.Body>
             {selectedAgent && (
               <AgentAppearancePicker
                 icon={editingIcon}
@@ -2668,9 +2633,9 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
                 showPortraitOption={true}
               />
             )}
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="light" onPress={onAppearanceModalClose}>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="ghost" onPress={onAppearanceModalClose}>
               {t('Cancel')}
             </Button>
             <Button
@@ -2680,8 +2645,8 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
             >
               {t('Save Changes')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Modal.Footer>
+        </Modal.Dialog>
       </Modal>
     </RunLayout>
   )

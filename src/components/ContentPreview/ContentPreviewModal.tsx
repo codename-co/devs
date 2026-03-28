@@ -1,4 +1,4 @@
-import { Modal, ModalContent, ModalBody } from '@heroui/react'
+import { Modal } from '@heroui/react'
 
 import { ContentPreview } from './ContentPreview'
 import type {
@@ -29,20 +29,20 @@ export const ContentPreviewModal = ({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onOpenChange={(v) => !v && (onClose)()}
       size={size}
       scrollBehavior="inside"
     >
-      <ModalContent>
-        <ModalBody>
+      <Modal.Dialog>
+        <Modal.Body>
           <ContentPreview
             {...(previewProps as ContentPreviewProps)}
             mode="full"
             onRequestProcessing={onRequestProcessing}
             className="border-0 rounded-none"
           />
-        </ModalBody>
-      </ModalContent>
+        </Modal.Body>
+      </Modal.Dialog>
     </Modal>
   )
 }

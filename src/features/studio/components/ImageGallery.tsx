@@ -73,14 +73,14 @@ export function ImageGallery({
     <div className="flex flex-col h-full">
       {/* Header with tabs and actions */}
       <div className="flex items-center justify-between mb-4">
-        <Tabs size="sm" variant="underlined" aria-label="Gallery tabs">
+        <Tabs size="sm" variant="primary" aria-label="Gallery tabs">
           <Tab
             key="current"
             title={
               <span className="flex items-center gap-2">
                 {t('Current')}
                 {images.length > 0 && (
-                  <Chip size="sm" variant="flat">
+                  <Chip size="sm" variant="soft">
                     {images.length}
                   </Chip>
                 )}
@@ -93,7 +93,7 @@ export function ImageGallery({
               <span className="flex items-center gap-2">
                 {t('History')}
                 {history.length > 0 && (
-                  <Chip size="sm" variant="flat">
+                  <Chip size="sm" variant="soft">
                     {history.length}
                   </Chip>
                 )}
@@ -140,7 +140,7 @@ export function ImageGallery({
           {onClearAll && images.length > 0 && (
             <Button
               size="sm"
-              variant="light"
+              variant="ghost"
               color="danger"
               startContent={<Icon name="Trash" size="sm" />}
               onPress={onClearAll}
@@ -248,7 +248,7 @@ function HistoryEntry({
             {entry.tags && entry.tags.length > 0 && (
               <div className="flex gap-1">
                 {entry.tags.slice(0, 3).map((tag) => (
-                  <Chip key={tag} size="sm" variant="flat" className="text-xs">
+                  <Chip key={tag} size="sm" variant="soft" className="text-xs">
                     {tag}
                   </Chip>
                 ))}
@@ -261,7 +261,7 @@ function HistoryEntry({
           <Button
             isIconOnly
             size="sm"
-            variant="light"
+            variant="ghost"
             onPress={onToggleFavorite}
           >
             <Icon

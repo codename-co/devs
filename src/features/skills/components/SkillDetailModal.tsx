@@ -3,20 +3,7 @@
  */
 
 import { useState } from 'react'
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  Chip,
-  Tabs,
-  Tab,
-  Divider,
-  Switch,
-  Spinner,
-} from '@heroui/react'
+import { Modal, Button, Chip, Tabs, Tab, Separator, Switch, Spinner } from '@heroui/react'
 import { Icon } from '@/components'
 import type { InstalledSkill } from '@/types'
 import type { SkillSearchResult } from '@/lib/skills/skillsmp-client'
@@ -73,17 +60,17 @@ export function SkillDetailModal({
   const compat = installedSkill ? getSkillCompatibility(installedSkill) : null
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="3xl" scrollBehavior="inside">
-      <ModalContent>
-        <ModalHeader className="flex flex-col gap-1">
+    <Modal isOpen={isOpen} onOpenChange={(v) => !v && (onClose)()} size="3xl" scrollBehavior="inside">
+      <Modal.Dialog>
+        <Modal.Header className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <Icon name="OpenBook" width={20} height={20} />
             <span>{name}</span>
           </div>
           <p className="text-sm text-default-500 font-normal">{description}</p>
-        </ModalHeader>
+        </Modal.Header>
 
-        <ModalBody>
+        <Modal.Body>
           {/* Metadata bar */}
           <div className="flex flex-wrap gap-3 text-xs text-default-500">
             <div className="flex items-center gap-1">
@@ -116,11 +103,11 @@ export function SkillDetailModal({
           {/* Compatibility indicator */}
           {compat && (
             <>
-              <Divider />
+              <Separator />
               <div className="flex items-center gap-2">
                 {compat.canExecute ? (
                   <>
-                    <Chip size="sm" color="success" variant="flat">
+                    <Chip size="sm" color="success" variant="soft">
                       {t('Compatible')}
                     </Chip>
                     <span className="text-xs text-default-500">
@@ -135,7 +122,7 @@ export function SkillDetailModal({
                   </>
                 ) : (
                   <>
-                    <Chip size="sm" color="warning" variant="flat">
+                    <Chip size="sm" color="warning" variant="soft">
                       {t('Instructions Only')}
                     </Chip>
                     <span className="text-xs text-default-500">
@@ -149,7 +136,7 @@ export function SkillDetailModal({
             </>
           )}
 
-          <Divider />
+          <Separator />
 
           {/* Tabs */}
           {isInstalled && installedSkill ? (
@@ -196,7 +183,7 @@ export function SkillDetailModal({
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <Chip size="sm" variant="flat">
+                              <Chip size="sm" variant="soft">
                                 {script.language}
                               </Chip>
                               {script.requiredPackages &&
@@ -299,7 +286,7 @@ export function SkillDetailModal({
                     />
                   </div>
 
-                  <Divider />
+                  <Separator />
 
                   <div className="flex items-center justify-between">
                     <div>
@@ -317,7 +304,7 @@ export function SkillDetailModal({
                     />
                   </div>
 
-                  <Divider />
+                  <Separator />
 
                   <div>
                     <p className="text-sm font-medium mb-1">
@@ -340,14 +327,14 @@ export function SkillDetailModal({
               )}
             </div>
           )}
-        </ModalBody>
+        </Modal.Body>
 
-        <ModalFooter>
+        <Modal.Footer>
           {isInstalled ? (
             <Button
               size="sm"
               color="danger"
-              variant="flat"
+              variant="secondary"
               onPress={onUninstall}
               startContent={<Icon name="Trash" width={14} height={14} />}
             >
@@ -370,11 +357,11 @@ export function SkillDetailModal({
               {isInstalling ? t('Installing...') : t('Install')}
             </Button>
           )}
-          <Button size="sm" variant="flat" onPress={onClose}>
+          <Button size="sm" variant="secondary" onPress={onClose}>
             {t('Cancel')}
           </Button>
-        </ModalFooter>
-      </ModalContent>
+        </Modal.Footer>
+      </Modal.Dialog>
     </Modal>
   )
 }

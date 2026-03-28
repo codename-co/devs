@@ -7,7 +7,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react'
-import { Button, Progress } from '@heroui/react'
+import { Button, ProgressBar } from '@heroui/react'
 import { useI18n } from '@/i18n'
 import { useConnectorStore } from '../stores'
 import { useOAuth } from '@/hooks/useOAuth'
@@ -300,7 +300,7 @@ export function ConnectorWizardInline({
     <div className="flex flex-col h-full">
       {/* Header with back button and progress */}
       <div className="flex flex-col gap-3 mb-4">
-        <Progress
+        <ProgressBar
           value={progressValue}
           size="sm"
           color="primary"
@@ -352,10 +352,10 @@ export function ConnectorWizardInline({
       {/* Footer actions */}
       {step === 'auth' && (
         <div className="flex justify-end gap-2 pt-4 border-t border-default-200 mt-4">
-          <Button variant="flat" size="sm" onPress={handleBack}>
+          <Button variant="secondary" size="sm" onPress={handleBack}>
             {t('Back')}
           </Button>
-          <Button variant="flat" size="sm" onPress={onClose}>
+          <Button variant="secondary" size="sm" onPress={onClose}>
             {t('Cancel')}
           </Button>
         </div>

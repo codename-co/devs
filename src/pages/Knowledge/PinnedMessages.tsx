@@ -1,18 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
-import {
-  Button,
-  Chip,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  Spinner,
-  Select,
-  SelectItem,
-  Card,
-  CardHeader,
-  CardBody,
-} from '@heroui/react'
+import { Button, Chip, Dropdown, Spinner, Select, Card } from '@heroui/react'
 import { Pin, MoreVert, PinSlash } from 'iconoir-react'
 import { useNavigate } from 'react-router-dom'
 
@@ -98,7 +85,7 @@ export const PinnedMessages: React.FC = () => {
             className="min-w-48 max-w-3xs"
           >
             {agents.map((agent) => (
-              <SelectItem key={agent.id}>{agent.name}</SelectItem>
+              <Select.Item id={agent.id}>{agent.name}</Select.Item>
             ))}
           </Select>
         </div>
@@ -121,10 +108,10 @@ export const PinnedMessages: React.FC = () => {
               key={pinnedMessage.id}
               className="border-l-4 border-warning-400"
             >
-              <CardHeader className="flex flex-row justify-between items-start gap-4 pb-2">
+              <Card.Header className="flex flex-row justify-between items-start gap-4 pb-2">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <Chip size="sm" variant="flat" color="primary">
+                    <Chip size="sm" variant="soft" color="accent">
                       {getAgentName(pinnedMessage.agentId)}
                     </Chip>
                     <span className="text-tiny text-default-400">
@@ -136,17 +123,14 @@ export const PinnedMessages: React.FC = () => {
                   </p> */}
                 </div>
                 <Dropdown>
-                  <DropdownTrigger>
-                    <Button isIconOnly variant="light" size="sm">
+                  <Dropdown.Trigger>
+                    <Button isIconOnly variant="ghost" size="sm">
                       <MoreVert className="w-4 h-4" />
                     </Button>
-                  </DropdownTrigger>
-                  <DropdownMenu>
-                    <DropdownItem
-                      key="view"
-                      startContent={
-                        <Icon name="OpenInBrowser" className="w-4 h-4" />
-                      }
+                  </Dropdown.Trigger>
+                  <Dropdown.Menu>
+                    <Dropdown.Item
+                      id="view"
                       onPress={() => {
                         navigate(
                           url(
@@ -156,27 +140,26 @@ export const PinnedMessages: React.FC = () => {
                       }}
                     >
                       {t('View conversation')}
-                    </DropdownItem>
-                    <DropdownItem
-                      key="unpin"
-                      startContent={<PinSlash className="w-4 h-4" />}
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      id="unpin"
                       className="text-danger"
                       color="danger"
                       onPress={() => deletePinnedMessage(pinnedMessage.id)}
                     >
                       {t('Unpin message')}
-                    </DropdownItem>
-                  </DropdownMenu>
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
                 </Dropdown>
-              </CardHeader>
-              <CardBody className="pt-0">
+              </Card.Header>
+              <Card.Content className="pt-0">
                 <div className="bg-default-100 rounded-lg p-3 max-h-32 overflow-y-auto">
                   <MarkdownRenderer
                     content={pinnedMessage.content}
                     className="prose dark:prose-invert prose-sm"
                   />
                 </div>
-              </CardBody>
+              </Card.Content>
             </Card>
           ))}
         </div>

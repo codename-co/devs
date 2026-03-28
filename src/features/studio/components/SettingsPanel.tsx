@@ -4,17 +4,7 @@
  * Panel for configuring image generation settings (style, aspect ratio, quality, etc.)
  */
 
-import {
-  Button,
-  Select,
-  SelectItem,
-  Slider,
-  Input,
-  Accordion,
-  AccordionItem,
-  Chip,
-  Divider,
-} from '@heroui/react'
+import { Button, Select, Slider, Input, Accordion, Chip, Separator } from '@heroui/react'
 import { useMemo } from 'react'
 
 import { Icon } from '@/components/Icon'
@@ -153,7 +143,7 @@ export function SettingsPanel({
           {onSaveAsPreset && hasChanges && (
             <Button
               size="sm"
-              variant="flat"
+              variant="secondary"
               startContent={<Icon name="FloppyDisk" size="sm" />}
               onPress={onSaveAsPreset}
             >
@@ -163,7 +153,7 @@ export function SettingsPanel({
           {onReset && hasChanges && (
             <Button
               size="sm"
-              variant="light"
+              variant="ghost"
               startContent={<Icon name="RefreshDouble" size="sm" />}
               onPress={onReset}
             >
@@ -177,14 +167,14 @@ export function SettingsPanel({
       {activeSummary.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {activeSummary.map((setting) => (
-            <Chip key={setting} size="sm" variant="flat" className="capitalize">
+            <Chip key={setting} size="sm" variant="soft" className="capitalize">
               {setting.replace('-', ' ')}
             </Chip>
           ))}
         </div>
       )}
 
-      <Divider />
+      <Separator />
 
       {/* Basic Settings */}
       <div className="space-y-4">
@@ -247,7 +237,7 @@ export function SettingsPanel({
           size="sm"
         >
           {STYLES.map((style) => (
-            <SelectItem key={style.value}>{style.label}</SelectItem>
+            <Select.Item id={style.value}>{style.label}</Select.Item>
           ))}
         </Select>
 
@@ -270,8 +260,8 @@ export function SettingsPanel({
 
       {/* Advanced Settings in Accordion */}
       <Accordion isCompact>
-        <AccordionItem
-          key="advanced"
+        <Accordion.Item
+          id="advanced"
           aria-label="Advanced settings"
           title={
             <span className="text-sm font-medium">
@@ -291,7 +281,7 @@ export function SettingsPanel({
               size="sm"
             >
               {LIGHTING_PRESETS.map((preset) => (
-                <SelectItem key={preset.value}>{preset.label}</SelectItem>
+                <Select.Item id={preset.value}>{preset.label}</Select.Item>
               ))}
             </Select>
 
@@ -306,7 +296,7 @@ export function SettingsPanel({
               size="sm"
             >
               {COLOR_PALETTES.map((palette) => (
-                <SelectItem key={palette.value}>{palette.label}</SelectItem>
+                <Select.Item id={palette.value}>{palette.label}</Select.Item>
               ))}
             </Select>
 
@@ -321,7 +311,7 @@ export function SettingsPanel({
               size="sm"
             >
               {COMPOSITIONS.map((comp) => (
-                <SelectItem key={comp.value}>{comp.label}</SelectItem>
+                <Select.Item id={comp.value}>{comp.label}</Select.Item>
               ))}
             </Select>
 
@@ -372,7 +362,7 @@ export function SettingsPanel({
               description={t('Use same seed to reproduce results')}
             />
           </div>
-        </AccordionItem>
+        </Accordion.Item>
       </Accordion>
     </div>
   )

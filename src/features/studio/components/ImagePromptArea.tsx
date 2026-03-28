@@ -5,14 +5,7 @@
  * but optimized for image generation workflows with preset integration.
  */
 
-import {
-  Button,
-  ButtonGroup,
-  Textarea,
-  type TextAreaProps,
-  Tooltip,
-  Spinner,
-} from '@heroui/react'
+import { Button, ButtonGroup, TextArea, type TextAreaProps, Tooltip, Spinner } from '@heroui/react'
 import {
   forwardRef,
   useEffect,
@@ -397,7 +390,7 @@ export const ImagePromptArea = forwardRef<
           </div>
         )}
 
-        <Textarea
+        <TextArea
           ref={ref}
           data-testid="image-prompt-input"
           className={cn(
@@ -452,7 +445,7 @@ export const ImagePromptArea = forwardRef<
                   <Tooltip content={t('Image presets')} placement="bottom">
                     <Button
                       isIconOnly
-                      variant="light"
+                      variant="ghost"
                       size="sm"
                       radius="full"
                       onPress={onOpenPresets}
@@ -469,7 +462,7 @@ export const ImagePromptArea = forwardRef<
                   <Tooltip content={t('Image settings')} placement="bottom">
                     <Button
                       isIconOnly
-                      variant="light"
+                      variant="ghost"
                       size="sm"
                       radius="full"
                       onPress={onOpenSettings}
@@ -488,7 +481,7 @@ export const ImagePromptArea = forwardRef<
               <Tooltip content={t('Add reference image')} placement="bottom">
                 <Button
                   isIconOnly
-                  variant="light"
+                  variant="ghost"
                   size="sm"
                   radius="full"
                   onPress={handleImageClick}
@@ -534,7 +527,7 @@ export const ImagePromptArea = forwardRef<
                 onVideoModelChange={onVideoModelChange}
               />
 
-              <ButtonGroup variant="flat">
+              <ButtonGroup variant="secondary">
                 <Tooltip
                   content={
                     mediaType === 'video'
@@ -556,7 +549,7 @@ export const ImagePromptArea = forwardRef<
                       canGenerate && 'dark:bg-white dark:text-black',
                     )}
                     radius="md"
-                    variant="solid"
+                    variant="primary"
                     size="sm"
                     isDisabled={!canGenerate}
                     onPress={() => onGenerate?.(prompt)}

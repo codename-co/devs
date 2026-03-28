@@ -1,16 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  Button,
-  RadioGroup,
-  Radio,
-  Spinner,
-  Chip,
-  Tooltip,
-} from '@heroui/react'
+import { Card, Button, RadioGroup, Radio, Spinner, Chip, Tooltip } from '@heroui/react'
 
 import DefaultLayout from '@/layouts/Default'
 import { Container, Section, Icon, Title, PromptArea } from '@/components'
@@ -154,15 +144,15 @@ export function NewExtensionPage() {
 
           {/* Step 1: Select Type */}
           <Card className="mb-6">
-            <CardHeader className="gap-3">
-              <Chip color="warning" variant="flat" size="sm">
+            <Card.Header className="gap-3">
+              <Chip color="warning" variant="soft" size="sm">
                 {t('Step 1')}
               </Chip>
               <span className="font-semibold">
                 {t('Choose extension type')}
               </span>
-            </CardHeader>
-            <CardBody>
+            </Card.Header>
+            <Card.Content>
               <RadioGroup
                 value={selectedType}
                 onValueChange={(value) =>
@@ -211,20 +201,20 @@ export function NewExtensionPage() {
                   </div>
                 </div>
               )}
-            </CardBody>
+            </Card.Content>
           </Card>
 
           {/* Step 2: Describe Your Extension */}
           <Card className="mb-6">
-            <CardHeader className="gap-3">
-              <Chip color="warning" variant="flat" size="sm">
+            <Card.Header className="gap-3">
+              <Chip color="warning" variant="soft" size="sm">
                 {t('Step 2')}
               </Chip>
               <span className="font-semibold">
                 {t('Describe your extension')}
               </span>
-            </CardHeader>
-            <CardBody>
+            </Card.Header>
+            <Card.Content>
               <PromptArea
                 lang={lang}
                 placeholder={t(
@@ -249,7 +239,7 @@ export function NewExtensionPage() {
                   <li>{t('Describe the target users')}</li>
                 </ul>
               </div>
-            </CardBody>
+            </Card.Content>
           </Card>
 
           {/* Error Display */}
@@ -266,7 +256,7 @@ export function NewExtensionPage() {
           <div className="flex flex-col items-end gap-3">
             <div className="flex gap-4">
               <Button
-                variant="flat"
+                variant="secondary"
                 onPress={() => navigate('/marketplace')}
                 isDisabled={isGenerating}
               >
@@ -274,7 +264,7 @@ export function NewExtensionPage() {
               </Button>
               <Button
                 color="warning"
-                variant="shadow"
+                variant="primary"
                 startContent={
                   isGenerating ? (
                     <Spinner size="sm" color="current" />

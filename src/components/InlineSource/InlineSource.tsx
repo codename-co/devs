@@ -627,7 +627,7 @@ export const InlineSource = memo(
             target="_blank"
             rel="noopener noreferrer"
             size="sm"
-            variant="flat"
+            variant="soft"
             className="cursor-pointer hover:opacity-80 transition-opacity text-tiny gap-1 select-none"
             startContent={<Icon name={icon as any} className="w-3 h-3" />}
           >
@@ -654,7 +654,7 @@ export const InlineSource = memo(
           onClick={handleOpenPreview}
           isDisabled={isLoading}
           size="sm"
-          variant="flat"
+          variant="soft"
           className="cursor-pointer hover:opacity-80 transition-opacity text-tiny gap-1 select-none"
           startContent={<Icon name={icon as any} className="w-3 h-3" />}
         >

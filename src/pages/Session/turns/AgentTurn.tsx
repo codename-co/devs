@@ -1,4 +1,4 @@
-import { Card, CardBody, Spinner } from '@heroui/react'
+import { Card, Spinner } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
 import { Icon } from '@/components'
@@ -36,7 +36,7 @@ export function AgentTurn({ turn, session }: AgentTurnProps) {
       {agentArtifacts.length > 0 &&
         agentArtifacts.map((artifact) => (
           <Card key={artifact.id} shadow="sm" className="max-w-sm">
-            <CardBody className="flex flex-row items-center gap-3 p-3">
+            <Card.Content className="flex flex-row items-center gap-3 p-3">
               <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
                 <Icon name="BrainResearch" size="md" className="text-primary" />
               </div>
@@ -48,7 +48,7 @@ export function AgentTurn({ turn, session }: AgentTurnProps) {
                   </p>
                 )}
               </div>
-            </CardBody>
+            </Card.Content>
           </Card>
         ))}
     </div>

@@ -1,12 +1,5 @@
 import * as React from 'react'
-import {
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  Divider,
-  Code,
-} from '@heroui/react'
+import { Button, Card, Separator } from '@heroui/react'
 import { Icon } from '@/components/Icon'
 
 interface ErrorBoundaryProps {
@@ -63,7 +56,7 @@ export class ErrorBoundary extends React.Component<
       return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
           <Card className="max-w-xl w-full">
-            <CardHeader className="flex gap-3 pb-0">
+            <Card.Header className="flex gap-3 pb-0">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-full bg-danger/10">
                   <Icon
@@ -78,8 +71,8 @@ export class ErrorBoundary extends React.Component<
                   </p>
                 </div>
               </div>
-            </CardHeader>
-            <CardBody className="gap-4">
+            </Card.Header>
+            <Card.Content className="gap-4">
               {error && (
                 <div className="space-y-2">
                   <p className="text-sm text-default-600">
@@ -87,32 +80,32 @@ export class ErrorBoundary extends React.Component<
                   </p>
                   {isDev && errorInfo && (
                     <>
-                      <Divider />
+                      <Separator />
                       <details className="text-xs">
                         <summary className="cursor-pointer text-default-500 hover:text-default-700 mb-2">
                           Show technical details
                         </summary>
-                        <Code className="w-full overflow-auto max-h-48 p-2 text-xs whitespace-pre-wrap">
+                        <code className="w-full overflow-auto max-h-48 p-2 text-xs whitespace-pre-wrap">
                           {error.stack}
-                        </Code>
+                        </code>
                         <p className="mt-2 text-default-500">
                           Component stack:
                         </p>
-                        <Code className="w-full overflow-auto max-h-32 p-2 text-xs whitespace-pre-wrap">
+                        <code className="w-full overflow-auto max-h-32 p-2 text-xs whitespace-pre-wrap">
                           {errorInfo.componentStack}
-                        </Code>
+                        </code>
                       </details>
                     </>
                   )}
                 </div>
               )}
 
-              <Divider />
+              <Separator />
 
               <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   color="primary"
-                  variant="solid"
+                  variant="primary"
                   onPress={this.handleReload}
                   startContent={<Icon name="Refresh" className="w-4 h-4" />}
                   className="flex-1"
@@ -121,7 +114,7 @@ export class ErrorBoundary extends React.Component<
                 </Button>
                 <Button
                   color="default"
-                  variant="flat"
+                  variant="secondary"
                   onPress={this.handleReset}
                   startContent={<Icon name="Undo" className="w-4 h-4" />}
                   className="flex-1"
@@ -134,7 +127,7 @@ export class ErrorBoundary extends React.Component<
                 If the problem persists, try clearing your browser data or
                 contact support.
               </p>
-            </CardBody>
+            </Card.Content>
           </Card>
         </div>
       )

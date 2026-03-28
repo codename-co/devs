@@ -212,7 +212,7 @@ export function LangfuseSection() {
             {langfuseConfig && (
               <Button
                 color="danger"
-                variant="flat"
+                variant="secondary"
                 onPress={handleDeleteLangfuseConfig}
                 startContent={<Icon name="Trash" className="h-4 w-4" />}
               >

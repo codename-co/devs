@@ -13,20 +13,7 @@
 
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import {
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  Chip,
-  Divider,
-  Progress,
-  Snippet,
-  Spinner,
-  Tab,
-  Tabs,
-  Tooltip,
-} from '@heroui/react'
+import { Button, Card, Chip, Separator, ProgressBar, Spinner, Tab, Tabs, Tooltip } from '@heroui/react'
 
 import { Container, Icon, MarkdownRenderer, Section } from '@/components'
 import Layout from '@/layouts/Default'
@@ -736,26 +723,26 @@ function TestCaseCard({
 
   return (
     <Card className="w-full" shadow="sm">
-      <CardHeader className="flex items-center justify-between gap-2 pb-1">
+      <Card.Header className="flex items-center justify-between gap-2 pb-1">
         <div className="flex items-center gap-2 min-w-0">
-          <Chip size="sm" variant="flat" color={CATEGORY_COLORS[test.category]}>
+          <Chip size="sm" variant="soft" color={CATEGORY_COLORS[test.category]}>
             {CATEGORY_LABELS[test.category]}
           </Chip>
           {test.useTools && (
-            <Chip size="sm" variant="flat" color="warning">
+            <Chip size="sm" variant="soft" color="warning">
               Tools
             </Chip>
           )}
           <span className="font-semibold text-sm truncate">{test.title}</span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <Chip size="sm" variant="dot" color={statusColor}>
+          <Chip size="sm" variant="soft" color={statusColor}>
             {STATUS_LABELS[run.status]}
           </Chip>
           <Button
             size="sm"
             color="primary"
-            variant="flat"
+            variant="secondary"
             isLoading={isRunning}
             onPress={onRun}
             isDisabled={isRunning}
@@ -763,22 +750,14 @@ function TestCaseCard({
             Run
           </Button>
         </div>
-      </CardHeader>
-      <CardBody className="pt-0 gap-2">
+      </Card.Header>
+      <Card.Content className="pt-0 gap-2">
         <p className="text-xs text-default-500">{test.description}</p>
 
         {/* ── Prompt ── */}
-        <Snippet
-          size="sm"
-          variant="flat"
-          hideSymbol
-          classNames={{
-            base: 'w-full',
-            pre: 'whitespace-pre-wrap text-xs max-h-32 overflow-auto',
-          }}
-        >
+        <pre><code>
           {test.prompt}
-        </Snippet>
+        </code></pre>
 
         {/* ── System prompt ── */}
         {test.systemPrompt && (
@@ -794,7 +773,7 @@ function TestCaseCard({
         {run.statuses && run.statuses.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {run.statuses.map((s, i) => (
-              <Chip key={i} size="sm" variant="flat" color="secondary">
+              <Chip key={i} size="sm" variant="soft" color="default">
                 {s}
               </Chip>
             ))}
@@ -832,7 +811,7 @@ function TestCaseCard({
                       as={Link}
                       to={`${location.pathname}${location.search}#settings/traces/logs/${trace.id}`}
                       size="sm"
-                      variant="light"
+                      variant="ghost"
                       className="min-w-0 h-5 px-1 gap-0.5 opacity-60 hover:opacity-100"
                     >
                       <Icon name="Activity" size="sm" />
@@ -853,7 +832,7 @@ function TestCaseCard({
             {run.error}
           </pre>
         )}
-      </CardBody>
+      </Card.Content>
     </Card>
   )
 }
@@ -1154,7 +1133,7 @@ export function ConversationTestsPage() {
             </Button>
             <Button
               color="success"
-              variant="flat"
+              variant="secondary"
               onPress={() =>
                 runFiltered(
                   (t) => t.category === 'basic' || t.category === 'reasoning',
@@ -1166,7 +1145,7 @@ export function ConversationTestsPage() {
             </Button>
             <Button
               color="warning"
-              variant="flat"
+              variant="secondary"
               onPress={() =>
                 runFiltered((t) => t.category.startsWith('skill-'))
               }
@@ -1176,19 +1155,19 @@ export function ConversationTestsPage() {
             </Button>
             <Button
               color="primary"
-              variant="flat"
+              variant="secondary"
               onPress={() => runFiltered((t) => t.category === 'skill-agent')}
               isDisabled={globalRunning}
             >
               Agent Skills ({agentSkillTests.length})
             </Button>
             {globalRunning && (
-              <Button color="danger" variant="flat" onPress={stopAll}>
+              <Button color="danger" variant="secondary" onPress={stopAll}>
                 Stop
               </Button>
             )}
             <Button
-              variant="light"
+              variant="ghost"
               onPress={resetAll}
               isDisabled={globalRunning}
             >
@@ -1198,30 +1177,30 @@ export function ConversationTestsPage() {
 
           {/* ── Stats bar ──────────────────────────────────── */}
           <div className="flex flex-wrap items-center gap-3 mb-4">
-            <Chip variant="flat" color="success" size="sm">
+            <Chip variant="soft" color="success" size="sm">
               {stats.passed} passed
             </Chip>
-            <Chip variant="flat" color="danger" size="sm">
+            <Chip variant="soft" color="danger" size="sm">
               {stats.failed} failed
             </Chip>
-            <Chip variant="flat" color="default" size="sm">
+            <Chip variant="soft" color="default" size="sm">
               {stats.pending} pending
             </Chip>
             {stats.running > 0 && (
               <Chip
-                variant="flat"
-                color="primary"
+                variant="soft"
+                color="accent"
                 size="sm"
                 startContent={<Spinner size="sm" />}
               >
                 {stats.running} running
               </Chip>
             )}
-            <Chip variant="flat" color="secondary" size="sm">
+            <Chip variant="soft" color="default" size="sm">
               {cpuCores}× concurrency
             </Chip>
             {stats.passed + stats.failed > 0 && (
-              <Progress
+              <ProgressBar
                 size="sm"
                 className="max-w-xs"
                 color={stats.failed > 0 ? 'danger' : 'success'}
@@ -1232,12 +1211,12 @@ export function ConversationTestsPage() {
             )}
           </div>
 
-          <Divider className="my-4" />
+          <Separator className="my-4" />
 
           {/* ── Test cases by category ─────────────────────── */}
           <Tabs
             aria-label="Category"
-            variant="underlined"
+            variant="primary"
             color="primary"
             classNames={{ panel: 'pt-4' }}
           >

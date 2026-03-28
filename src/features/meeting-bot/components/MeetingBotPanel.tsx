@@ -6,16 +6,7 @@
  */
 
 import { useState, useCallback } from 'react'
-import {
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  Input,
-  Chip,
-  Divider,
-  Spinner,
-} from '@heroui/react'
+import { Button, Card, Input, Chip, Separator, Spinner } from '@heroui/react'
 import { Icon } from '@/components'
 import { useMeetingSession } from '../hooks/useMeetingSession'
 import { MeetingControls } from './MeetingControls'
@@ -136,7 +127,7 @@ export function MeetingBotPanel({
 
   return (
     <Card className="w-full">
-      <CardHeader className="flex justify-between items-center">
+      <Card.Header className="flex justify-between items-center">
         <div className="flex items-center gap-3">
           <Icon name="GoogleMeet" size="lg" />
           <div>
@@ -146,14 +137,14 @@ export function MeetingBotPanel({
             </p>
           </div>
         </div>
-        <Chip color={getStatusColor()} variant="flat" size="sm">
+        <Chip color={getStatusColor()} variant="soft" size="sm">
           {getStatusLabel()}
         </Chip>
-      </CardHeader>
+      </Card.Header>
 
-      <Divider />
+      <Separator />
 
-      <CardBody className="gap-4">
+      <Card.Content className="gap-4">
         {/* Error message */}
         {errorMessage && (
           <div className="p-3 bg-danger-50 dark:bg-danger-900/20 text-danger rounded-lg text-sm">
@@ -185,7 +176,7 @@ export function MeetingBotPanel({
               participants={participants}
             />
 
-            <Divider />
+            <Separator />
 
             <MeetingTranscript transcript={transcript} agentName={agentName} />
           </>
@@ -235,7 +226,7 @@ export function MeetingBotPanel({
                   </button>
                   <Button
                     size="sm"
-                    variant="light"
+                    variant="ghost"
                     isIconOnly
                     onPress={refreshMeetings}
                     isDisabled={loadingMeetings}
@@ -277,7 +268,7 @@ export function MeetingBotPanel({
                           <Button
                             size="sm"
                             color="primary"
-                            variant="flat"
+                            variant="secondary"
                             isDisabled={isConnecting}
                             onPress={() => handleJoinScheduledMeeting(meeting)}
                           >
@@ -292,7 +283,7 @@ export function MeetingBotPanel({
             )}
           </>
         )}
-      </CardBody>
+      </Card.Content>
     </Card>
   )
 }

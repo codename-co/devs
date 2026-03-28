@@ -10,7 +10,7 @@
  */
 
 import { useEffect, useState, useCallback } from 'react'
-import { Button, Chip, Progress, Tooltip } from '@heroui/react'
+import { Button, Chip, ProgressBar, Tooltip } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { sandbox, type SandboxLanguage, type SandboxState } from '@/lib/sandbox'
@@ -264,7 +264,7 @@ export function DeviceSection() {
             <Chip
               size="sm"
               color={webGPU ? 'success' : 'danger'}
-              variant="flat"
+              variant="soft"
               startContent={
                 <Icon
                   name={webGPU ? 'CheckCircle' : 'XmarkCircle'}
@@ -299,7 +299,7 @@ export function DeviceSection() {
                   })}
                 </span>
               </div>
-              <Progress
+              <ProgressBar
                 size="sm"
                 value={
                   resources.cpuCores > 0
@@ -325,7 +325,7 @@ export function DeviceSection() {
                   {formatBytes(resources.memoryTotal, lang)}
                 </span>
               </div>
-              <Progress
+              <ProgressBar
                 size="sm"
                 value={(resources.memoryUsed / resources.memoryTotal) * 100}
                 color={
@@ -353,7 +353,7 @@ export function DeviceSection() {
                   {formatBytes(resources.storageTotal, lang)}
                 </span>
               </div>
-              <Progress
+              <ProgressBar
                 size="sm"
                 value={(resources.storageUsed / resources.storageTotal) * 100}
                 color={
@@ -399,7 +399,7 @@ export function DeviceSection() {
                           <Chip
                             size="sm"
                             color={stateColor(state)}
-                            variant="dot"
+                            variant="soft"
                           >
                             {t(stateLabel(state))}
                           </Chip>
@@ -419,7 +419,7 @@ export function DeviceSection() {
                       >
                         <Button
                           size="sm"
-                          variant="flat"
+                          variant="secondary"
                           color="primary"
                           onPress={() => handleWarmup(language)}
                           startContent={
@@ -438,7 +438,7 @@ export function DeviceSection() {
                       >
                         <Button
                           size="sm"
-                          variant="flat"
+                          variant="secondary"
                           color="danger"
                           onPress={() => handleTerminate(language)}
                           isDisabled={isExecuting}
@@ -458,7 +458,7 @@ export function DeviceSection() {
                       >
                         <Button
                           size="sm"
-                          variant="light"
+                          variant="ghost"
                           color="secondary"
                           onPress={() => handleTry(language)}
                           isDisabled={

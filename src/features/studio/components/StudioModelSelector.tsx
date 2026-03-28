@@ -13,16 +13,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  Button,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  DropdownSection,
-  Tooltip,
-  Spinner,
-} from '@heroui/react'
+import { Button, Dropdown, Tooltip, Spinner } from '@heroui/react'
 
 import { Icon } from '@/components/Icon'
 import { useLLMModelStore } from '@/stores/llmModelStore'
@@ -415,7 +406,7 @@ export function StudioModelSelector({
       >
         <Button
           size="sm"
-          variant="flat"
+          variant="secondary"
           color="warning"
           className="min-w-0 px-2 h-8"
           onPress={() =>
@@ -454,7 +445,7 @@ export function StudioModelSelector({
       >
         <Button
           size="sm"
-          variant="light"
+          variant="ghost"
           className="min-w-0 px-2 h-8"
           startContent={
             <Icon name={entry.icon} size="sm" className="text-default-500" />
@@ -479,9 +470,8 @@ export function StudioModelSelector({
       const showArrow = entry.models.length > 1 || entry.isDynamic
 
       return (
-        <DropdownItem
-          key={entry.provider}
-          startContent={<Icon name={entry.icon} size="sm" />}
+        <Dropdown.Item
+          id={entry.provider}
           endContent={
             showArrow ? (
               <Icon
@@ -529,7 +519,7 @@ export function StudioModelSelector({
               </span>
             ) : null}
           </div>
-        </DropdownItem>
+        </Dropdown.Item>
       )
     })
   }
@@ -541,27 +531,27 @@ export function StudioModelSelector({
     // Show loading state when fetching models from server
     if (isFetchingModels) {
       return (
-        <DropdownItem key="loading" textValue="Loading" isReadOnly>
+        <Dropdown.Item id="loading" textValue="Loading" isReadOnly>
           <div className="flex items-center gap-2 py-2 justify-center">
             <Spinner size="sm" />
             <span className="text-xs text-default-500">
               {t('Loading models...')}
             </span>
           </div>
-        </DropdownItem>
+        </Dropdown.Item>
       )
     }
 
     // No models found
     if (viewingProvider.models.length === 0) {
       return (
-        <DropdownItem key="empty" textValue="No models" isReadOnly>
+        <Dropdown.Item id="empty" textValue="No models" isReadOnly>
           <span className="text-xs text-default-500">
             {viewingProvider.isDynamic
               ? t('No image/video generation models detected')
               : t('No models found')}
           </span>
-        </DropdownItem>
+        </Dropdown.Item>
       )
     }
 
@@ -571,15 +561,8 @@ export function StudioModelSelector({
       const tooltipContent = renderModelTooltip(viewingProvider.provider, m.id)
 
       return (
-        <DropdownItem
-          key={m.id}
-          startContent={
-            isSelected ? (
-              <Icon name="Check" size="sm" />
-            ) : (
-              <span className="w-4" />
-            )
-          }
+        <Dropdown.Item
+          id={m.id}
           endContent={
             tooltipContent ? (
               <Tooltip
@@ -609,7 +592,7 @@ export function StudioModelSelector({
           }}
         >
           {m.name}
-        </DropdownItem>
+        </Dropdown.Item>
       )
     })
   }
@@ -620,10 +603,10 @@ export function StudioModelSelector({
       className="bg-white dark:bg-default-50 dark:text-white"
       onOpenChange={handleDropdownOpenChange}
     >
-      <DropdownTrigger>
+      <Dropdown.Trigger>
         <Button
           size="sm"
-          variant="light"
+          variant="ghost"
           className="min-w-0 px-2 h-8"
           startContent={
             currentProvider ? (
@@ -638,8 +621,8 @@ export function StudioModelSelector({
         >
           <span className="text-xs truncate max-w-24">{displayText}</span>
         </Button>
-      </DropdownTrigger>
-      <DropdownMenu
+      </Dropdown.Trigger>
+      <Dropdown.Menu
         aria-label={
           mediaType === 'video'
             ? t('Select video model')
@@ -651,13 +634,12 @@ export function StudioModelSelector({
       >
         {viewMode === 'providers' ? (
           <>
-            <DropdownSection showDivider>
+            <Dropdown.Section showDivider>
               {renderProviderItems()}
-            </DropdownSection>
-            <DropdownSection>
-              <DropdownItem
-                key="add-provider"
-                startContent={<Icon name="Plus" size="sm" />}
+            </Dropdown.Section>
+            <Dropdown.Section>
+              <Dropdown.Item
+                id="add-provider"
                 textValue={t('Select model')}
                 onPress={() =>
                   navigate(
@@ -669,15 +651,14 @@ export function StudioModelSelector({
                 closeOnSelect
               >
                 {t('Add provider')}
-              </DropdownItem>
-            </DropdownSection>
+              </Dropdown.Item>
+            </Dropdown.Section>
           </>
         ) : (
           <>
-            <DropdownSection showDivider>
-              <DropdownItem
-                key="back"
-                startContent={<Icon name="ArrowLeft" size="sm" />}
+            <Dropdown.Section showDivider>
+              <Dropdown.Item
+                id="back"
                 textValue={viewingProvider?.name || ''}
                 closeOnSelect={false}
                 onPress={() => {
@@ -686,12 +667,12 @@ export function StudioModelSelector({
                 }}
               >
                 <span className="font-medium">{viewingProvider?.name}</span>
-              </DropdownItem>
-            </DropdownSection>
-            <DropdownSection>{renderModelItems()}</DropdownSection>
+              </Dropdown.Item>
+            </Dropdown.Section>
+            <Dropdown.Section>{renderModelItems()}</Dropdown.Section>
           </>
         )}
-      </DropdownMenu>
+      </Dropdown.Menu>
     </Dropdown>
   )
 }

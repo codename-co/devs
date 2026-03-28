@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, CardBody, Chip, Pagination } from '@heroui/react'
+import { Card, Chip, Pagination } from '@heroui/react'
 
 import { useI18n } from '@/i18n'
 import {
@@ -229,13 +229,12 @@ export const TasksContent = () => {
                 <Card
                   key={task.id}
                   data-testid="task-item"
-                  isPressable
                   isHoverable
                   shadow="none"
                   className="w-full"
                   onPress={() => handleTaskClick(task.id)}
                 >
-                  <CardBody className="p-0">
+                  <Card.Content className="p-0">
                     <div className="flex">
                       <div className="flex-1 min-w-0 py-4 pl-4 pr-2">
                         <div className="flex items-center gap-2 mb-1">
@@ -245,7 +244,7 @@ export const TasksContent = () => {
                           <Chip
                             size="sm"
                             color={getStatusColor(task.status)}
-                            variant="flat"
+                            variant="soft"
                           >
                             {t(task.status.replace('_', ' ') as any)}
                           </Chip>
@@ -280,7 +279,7 @@ export const TasksContent = () => {
                         </div>
                       )}
                     </div>
-                  </CardBody>
+                  </Card.Content>
                 </Card>
               ))}
           </div>
@@ -313,7 +312,7 @@ export const TasksPage = () => {
     title: (
       <>
         {t('Tasks')}
-        <Chip size="sm" variant="flat" className="ml-2 align-middle">
+        <Chip size="sm" variant="soft" className="ml-2 align-middle">
           Beta
         </Chip>
       </>

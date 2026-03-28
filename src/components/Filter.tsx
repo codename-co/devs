@@ -1,13 +1,4 @@
-import {
-  Button,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  DropdownSection,
-  Badge,
-  Chip,
-} from '@heroui/react'
+import { Button, Dropdown, Badge, Chip } from '@heroui/react'
 import { Icon } from './Icon'
 import { IconName } from '@/lib/types'
 
@@ -112,10 +103,10 @@ export function Filter<T extends string = string>({
   const renderTrigger = () => {
     if (variant === 'icon') {
       return (
-        <Button isIconOnly size={size} variant="flat" color={color}>
+        <Button isIconOnly size={size} variant="secondary" color={color}>
           <Badge
             content=""
-            color="primary"
+            color="accent"
             size="sm"
             isInvisible={!hasActiveFilter}
             placement="top-right"
@@ -130,7 +121,7 @@ export function Filter<T extends string = string>({
     return (
       <Button
         size={size}
-        variant="flat"
+        variant="secondary"
         color={hasActiveFilter ? 'primary' : color}
         startContent={<Icon name="Filter" className="w-4 h-4" />}
       >
@@ -146,15 +137,15 @@ export function Filter<T extends string = string>({
 
   return (
     <Dropdown className={className}>
-      <DropdownTrigger>{renderTrigger()}</DropdownTrigger>
-      <DropdownMenu
+      <Dropdown.Trigger>{renderTrigger()}</Dropdown.Trigger>
+      <Dropdown.Menu
         aria-label={label}
         selectionMode="single"
         selectedKeys={new Set([selectedKey])}
         onSelectionChange={handleSelectionChange as any}
       >
         {options.map((option) => (
-          <DropdownItem key={option.key} textValue={option.label}>
+          <Dropdown.Item id={option.key} textValue={option.label}>
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-2">
                 {hasAnyIcon && (
@@ -175,9 +166,9 @@ export function Filter<T extends string = string>({
                 </span>
               )}
             </div>
-          </DropdownItem>
+          </Dropdown.Item>
         ))}
-      </DropdownMenu>
+      </Dropdown.Menu>
     </Dropdown>
   )
 }
@@ -267,7 +258,7 @@ export function MultiFilter({
   const renderTrigger = () => {
     if (variant === 'icon') {
       return (
-        <Button isIconOnly size={size} variant="flat" color={color}>
+        <Button isIconOnly size={size} variant="secondary" color={color}>
           <Badge
             content={activeFilterCount > 0 ? activeFilterCount : ''}
             color="primary"
@@ -293,12 +284,12 @@ export function MultiFilter({
     return (
       <Button
         size={size}
-        variant="flat"
+        variant="secondary"
         color={hasActiveFilter ? 'primary' : color}
         startContent={<Icon name="Filter" className="w-4 h-4" />}
         endContent={
           hasActiveFilter ? (
-            <Chip color="primary" size="sm" className="ml-1 min-w-5 h-5">
+            <Chip color="accent" size="sm" className="ml-1 min-w-5 h-5">
               {activeFilterCount}
             </Chip>
           ) : undefined
@@ -311,8 +302,8 @@ export function MultiFilter({
 
   return (
     <Dropdown className={className} placement="bottom-end">
-      <DropdownTrigger>{renderTrigger()}</DropdownTrigger>
-      <DropdownMenu
+      <Dropdown.Trigger>{renderTrigger()}</Dropdown.Trigger>
+      <Dropdown.Menu
         aria-label={label}
         closeOnSelect={false}
         className="min-w-[220px]"
@@ -323,7 +314,7 @@ export function MultiFilter({
           const selectedInSection = selectedKeys[section.key]
 
           return (
-            <DropdownSection
+            <Dropdown.Section
               key={section.key}
               title={section.title}
               showDivider={sectionIndex < sections.length - 1}
@@ -332,8 +323,8 @@ export function MultiFilter({
                 const isSelected = selectedInSection === option.key
 
                 return (
-                  <DropdownItem
-                    key={`${section.key}:${option.key}`}
+                  <Dropdown.Item
+                    id={`${section.key}:${option.key}`}
                     textValue={option.label}
                     onPress={() => handleOptionClick(section.key, option.key)}
                   >
@@ -362,13 +353,13 @@ export function MultiFilter({
                         )}
                       </div>
                     </div>
-                  </DropdownItem>
+                  </Dropdown.Item>
                 )
               })}
-            </DropdownSection>
+            </Dropdown.Section>
           )
         })}
-      </DropdownMenu>
+      </Dropdown.Menu>
     </Dropdown>
   )
 }

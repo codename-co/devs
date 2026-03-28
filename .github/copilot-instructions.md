@@ -10,7 +10,7 @@ DEVS is a **browser-native AI agent orchestration platform** built as a PWA. All
 src/
 ├── lib/           # Core business logic (orchestrator, LLM, task analysis)
 ├── stores/        # Zustand stores with IndexedDB persistence
-├── features/      # Feature modules (battle, connectors, live, sync, traces)
+├── features/      # Feature modules (connectors, live, sync, traces)
 ├── components/    # Shared React components using HeroUI
 ├── pages/         # Route-based page components
 ├── types/         # TypeScript interfaces (Agent, Task, Conversation, etc.)

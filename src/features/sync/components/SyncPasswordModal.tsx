@@ -11,15 +11,7 @@
  * The modal cannot be closed or dismissed — the user must either enter
  * the correct password or explicitly cancel (which aborts the join).
  */
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  Input,
-} from '@heroui/react'
+import { Modal, Button, Input } from '@heroui/react'
 import { useState, useCallback } from 'react'
 
 import { useSyncStore } from '../stores/syncStore'
@@ -96,8 +88,8 @@ export function SyncPasswordModal() {
         wrapper: 'z-[9999]',
       }}
     >
-      <ModalContent>
-        <ModalHeader className="flex flex-col gap-1">
+      <Modal.Dialog>
+        <Modal.Header className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <Icon name="Lock" className="h-5 w-5 text-warning" />
             <span>
@@ -106,9 +98,9 @@ export function SyncPasswordModal() {
                 : t('Reconnect to Sync Room')}
             </span>
           </div>
-        </ModalHeader>
+        </Modal.Header>
 
-        <ModalBody>
+        <Modal.Body>
           <p className="text-sm text-default-500">
             {isJoining
               ? t(
@@ -152,10 +144,10 @@ export function SyncPasswordModal() {
               </button>
             }
           />
-        </ModalBody>
+        </Modal.Body>
 
-        <ModalFooter>
-          <Button variant="light" onPress={handleCancel} isDisabled={isLoading}>
+        <Modal.Footer>
+          <Button variant="ghost" onPress={handleCancel} isDisabled={isLoading}>
             {isJoining ? t('Cancel') : t('Disconnect')}
           </Button>
           <Button
@@ -166,8 +158,8 @@ export function SyncPasswordModal() {
           >
             {isJoining ? t('Join Room') : t('Reconnect')}
           </Button>
-        </ModalFooter>
-      </ModalContent>
+        </Modal.Footer>
+      </Modal.Dialog>
     </Modal>
   )
 }

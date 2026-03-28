@@ -71,7 +71,7 @@ export const RecoveryBanner = memo(
             </p>
 
             <div className="flex items-center gap-2 mt-1">
-              <Chip size="sm" variant="flat" color="warning">
+              <Chip size="sm" variant="soft" color="warning">
                 {orphan.classification === 'restart'
                   ? 'Needs restart'
                   : orphan.classification === 're-validate'
@@ -84,7 +84,7 @@ export const RecoveryBanner = memo(
               <Button
                 size="sm"
                 color="primary"
-                variant="flat"
+                variant="secondary"
                 isLoading={isResuming}
                 isDisabled={isDiscarding}
                 onPress={handleResume}
@@ -96,7 +96,7 @@ export const RecoveryBanner = memo(
               <Button
                 size="sm"
                 color="danger"
-                variant="light"
+                variant="ghost"
                 isLoading={isDiscarding}
                 isDisabled={isResuming}
                 onPress={handleDiscard}

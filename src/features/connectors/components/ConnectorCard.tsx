@@ -1,4 +1,4 @@
-import { Card, CardBody } from '@heroui/react'
+import { Card } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { useConnectorStore } from '../stores'
@@ -70,11 +70,10 @@ export function ConnectorCard({ connector, onClick }: ConnectorCardProps) {
 
   return (
     <Card
-      isPressable
       onPress={onClick}
       className="group border border-divider hover:border-primary/30 transition-colors cursor-pointer"
     >
-      <CardBody className="p-4 gap-3">
+      <Card.Content className="p-4 gap-3">
         {/* Header: Icon + Name + Status */}
         <div className="flex items-center gap-3">
           {/* Provider Icon */}
@@ -108,7 +107,7 @@ export function ConnectorCard({ connector, onClick }: ConnectorCardProps) {
             className="w-4 h-4 text-default-400 opacity-0 group-hover:opacity-100 transition-opacity"
           />
         </div>
-      </CardBody>
+      </Card.Content>
     </Card>
   )
 }

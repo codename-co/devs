@@ -7,13 +7,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import {
-  Button,
-  Checkbox,
-  Spinner,
-  ScrollShadow,
-  Textarea,
-} from '@heroui/react'
+import { Button, Checkbox, Spinner, ScrollShadow, TextArea } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { ProviderRegistry } from '../../provider-registry'
@@ -272,7 +266,7 @@ export function FolderPicker({
       {/* URL Input Mode (for Figma, etc.) */}
       {isUrlInputMode && (
         <div className="space-y-3">
-          <Textarea
+          <TextArea
             value={urlInput}
             onValueChange={setUrlInput}
             placeholder={

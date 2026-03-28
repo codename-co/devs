@@ -57,7 +57,7 @@ export function PageMenuPanel({
             <Tooltip content={status.tooltip} isDisabled={!status.tooltip}>
               <Chip
                 size="sm"
-                variant="flat"
+                variant="soft"
                 color={status.color || 'default'}
                 onClose={status.onClose}
               >

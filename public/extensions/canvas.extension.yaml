@@ -1,0 +1,843 @@
+id: canvas
+name: Canvas
+version: 0.1.0
+type: app
+license: MIT
+icon: FrameSimple
+color: indigo
+description: Infinite canvas whiteboard with AI agents as active participants.
+  Draw, collaborate, and let AI help you visualize ideas.
+author:
+  name: Arnaud Leymet
+  url: https://arnley.com
+privacyPolicy: https://devs.new/privacy
+source: https://github.com/codename-co/devs/blob/main/public/extensions/canvas.extension.yaml
+i18n:
+  en:
+    name: Canvas
+    description: Infinite canvas whiteboard with AI agents as active participants.
+    messages:
+      title: Canvas
+      newCanvas: New Canvas
+      askAI: Ask AI
+      aiPlaceholder: Ask AI to help with your drawing…
+      analyzing: Analyzing your canvas…
+      generating: Generating suggestions…
+      observer: Observer
+      suggester: Suggester
+      implementer: Implementer
+      observerDesc: Watching and understanding your drawings
+      suggesterDesc: Offering ideas and improvements
+      implementerDesc: Converting sketches to prototypes
+      clearCanvas: Clear Canvas
+      exportImage: Export as Image
+      exportJSON: Export as JSON
+      undo: Undo
+      redo: Redo
+      aiSuggestions: AI Suggestions
+      noSuggestions: Draw something and ask AI for suggestions!
+      applySuggestion: Apply
+      dismissSuggestion: Dismiss
+      sketchToPrototype: Sketch → Prototype
+      describeDrawing: Describe what you see
+      suggestImprovements: Suggest improvements
+      generateUserFlow: Generate user flow
+      generateWireframe: Generate wireframe
+      organizeElements: Organize elements
+      aiThinking: AI is thinking…
+      welcome: Welcome to Canvas
+      welcomeDesc: Start drawing or ask AI for help
+      drawHint: Use the toolbar to draw shapes, add text, or freehand sketch
+      aiHint: Click 'Ask AI' to get suggestions, organize elements, or convert sketches
+  fr:
+    name: Canvas
+    description: Tableau blanc infini avec des agents IA comme participants actifs.
+    messages:
+      title: Canvas
+      newCanvas: Nouveau Canvas
+      askAI: Demander à l'IA
+      aiPlaceholder: Demandez à l'IA de vous aider avec votre dessin…
+      analyzing: Analyse de votre canvas…
+      generating: Génération de suggestions…
+      observer: Observateur
+      suggester: Suggéreur
+      implementer: Implémenteur
+      observerDesc: Observe et comprend vos dessins
+      suggesterDesc: Propose des idées et améliorations
+      implementerDesc: Convertit les croquis en prototypes
+      clearCanvas: Effacer le Canvas
+      exportImage: Exporter en image
+      exportJSON: Exporter en JSON
+      undo: Annuler
+      redo: Refaire
+      aiSuggestions: Suggestions IA
+      noSuggestions: Dessinez quelque chose et demandez des suggestions à l'IA !
+      applySuggestion: Appliquer
+      dismissSuggestion: Ignorer
+      sketchToPrototype: Croquis → Prototype
+      describeDrawing: Décrire ce que vous voyez
+      suggestImprovements: Suggérer des améliorations
+      generateUserFlow: Générer un flux utilisateur
+      generateWireframe: Générer une maquette
+      organizeElements: Organiser les éléments
+      aiThinking: L'IA réfléchit…
+      welcome: Bienvenue sur Canvas
+      welcomeDesc: Commencez à dessiner ou demandez de l'aide à l'IA
+      drawHint:
+        Utilisez la barre d'outils pour dessiner des formes, ajouter du texte
+        ou dessiner à main levée
+      aiHint:
+        Cliquez sur 'Demander à l'IA' pour obtenir des suggestions, organiser
+        les éléments ou convertir les croquis
+  es:
+    name: Canvas
+    description: Pizarra infinita con agentes de IA como participantes activos.
+    messages:
+      title: Canvas
+      newCanvas: Nuevo Canvas
+      askAI: Preguntar a la IA
+      aiPlaceholder: Pide a la IA que te ayude con tu dibujo…
+      analyzing: Analizando tu canvas…
+      generating: Generando sugerencias…
+      observer: Observador
+      suggester: Sugeridor
+      implementer: Implementador
+      observerDesc: Observa y entiende tus dibujos
+      suggesterDesc: Ofrece ideas y mejoras
+      implementerDesc: Convierte bocetos en prototipos
+      clearCanvas: Limpiar Canvas
+      exportImage: Exportar como imagen
+      exportJSON: Exportar como JSON
+      undo: Deshacer
+      redo: Rehacer
+      aiSuggestions: Sugerencias de IA
+      noSuggestions: ¡Dibuja algo y pide sugerencias a la IA!
+      applySuggestion: Aplicar
+      dismissSuggestion: Descartar
+      sketchToPrototype: Boceto → Prototipo
+      describeDrawing: Describir lo que ves
+      suggestImprovements: Sugerir mejoras
+      generateUserFlow: Generar flujo de usuario
+      generateWireframe: Generar wireframe
+      organizeElements: Organizar elementos
+      aiThinking: La IA está pensando…
+      welcome: Bienvenido a Canvas
+      welcomeDesc: Empieza a dibujar o pide ayuda a la IA
+      drawHint: Usa la barra de herramientas para dibujar formas, añadir texto o
+        dibujar a mano alzada
+      aiHint:
+        Haz clic en 'Preguntar a la IA' para obtener sugerencias, organizar
+        elementos o convertir bocetos
+  de:
+    name: Canvas
+    description: Unendliche Leinwand mit KI-Agenten als aktive Teilnehmer.
+    messages:
+      title: Canvas
+      newCanvas: Neue Leinwand
+      askAI: KI fragen
+      aiPlaceholder: Bitten Sie die KI um Hilfe bei Ihrer Zeichnung…
+      analyzing: Analyse Ihrer Leinwand…
+      generating: Vorschläge werden generiert…
+      observer: Beobachter
+      suggester: Vorschläger
+      implementer: Umsetzer
+      observerDesc: Beobachtet und versteht Ihre Zeichnungen
+      suggesterDesc: Bietet Ideen und Verbesserungen
+      implementerDesc: Wandelt Skizzen in Prototypen um
+      clearCanvas: Leinwand löschen
+      exportImage: Als Bild exportieren
+      exportJSON: Als JSON exportieren
+      undo: Rückgängig
+      redo: Wiederholen
+      aiSuggestions: KI-Vorschläge
+      noSuggestions: Zeichnen Sie etwas und fragen Sie die KI nach Vorschlägen!
+      applySuggestion: Anwenden
+      dismissSuggestion: Verwerfen
+      sketchToPrototype: Skizze → Prototyp
+      describeDrawing: Beschreiben Sie, was Sie sehen
+      suggestImprovements: Verbesserungen vorschlagen
+      generateUserFlow: Benutzerfluss generieren
+      generateWireframe: Wireframe generieren
+      organizeElements: Elemente organisieren
+      aiThinking: KI denkt nach…
+      welcome: Willkommen bei Canvas
+      welcomeDesc: Beginnen Sie zu zeichnen oder fragen Sie die KI um Hilfe
+      drawHint: Verwenden Sie die Symbolleiste, um Formen zu zeichnen, Text
+        hinzuzufügen oder freihändig zu skizzieren
+      aiHint:
+        Klicken Sie auf 'KI fragen', um Vorschläge zu erhalten, Elemente zu
+        organisieren oder Skizzen zu konvertieren
+pages:
+  'canvas': | # jsx
+    import { useState, useRef, useCallback, useEffect } from 'react'
+
+    import { Button, Card, CardBody, Spinner, Chip, Tooltip, Divider,
+    ScrollShadow, Textarea } from '@heroui/react'
+
+
+    // AI Agent types
+
+    const AI_AGENTS = [
+      { id: 'observer', icon: '👁️', color: 'primary' },
+      { id: 'suggester', icon: '💡', color: 'warning' },
+      { id: 'implementer', icon: '🔧', color: 'success' }
+    ]
+
+
+    // Quick action presets
+
+    const QUICK_ACTIONS = [
+      { id: 'describe', icon: '📝', msgKey: 'describeDrawing' },
+      { id: 'improve', icon: '✨', msgKey: 'suggestImprovements' },
+      { id: 'userflow', icon: '🔀', msgKey: 'generateUserFlow' },
+      { id: 'wireframe', icon: '📐', msgKey: 'generateWireframe' },
+      { id: 'organize', icon: '📊', msgKey: 'organizeElements' }
+    ]
+
+
+    // Drawing tools
+
+    const TOOLS = [
+      { id: 'select', icon: '👆', label: 'Select' },
+      { id: 'pen', icon: '✏️', label: 'Pen' },
+      { id: 'rectangle', icon: '⬜', label: 'Rectangle' },
+      { id: 'ellipse', icon: '⚪', label: 'Ellipse' },
+      { id: 'line', icon: '➖', label: 'Line' },
+      { id: 'text', icon: '📝', label: 'Text' },
+      { id: 'eraser', icon: '🧹', label: 'Eraser' }
+    ]
+
+
+    const COLORS = ['#1e1e2e', '#f38ba8', '#fab387', '#f9e2af', '#a6e3a1',
+    '#89dceb', '#cba6f7', '#f5c2e7', '#bac2de']
+
+
+    const App = () => {
+      const canvasRef = useRef(null)
+      const [isDrawing, setIsDrawing] = useState(false)
+      const [tool, setTool] = useState('pen')
+      const [color, setColor] = useState('#1e1e2e')
+      const [strokeWidth, setStrokeWidth] = useState(2)
+      const [elements, setElements] = useState([])
+      const [currentElement, setCurrentElement] = useState(null)
+      const [prompt, setPrompt] = useState('')
+      const [isLoading, setIsLoading] = useState(false)
+      const [activeAgent, setActiveAgent] = useState(null)
+      const [suggestions, setSuggestions] = useState([])
+      const [showAIPanel, setShowAIPanel] = useState(true)
+      const [canvasReady, setCanvasReady] = useState(false)
+      const [isApplying, setIsApplying] = useState(null)
+
+      const t = useCallback((key) => window.DEVS?.t?.(key) || key, [])
+      const isDark = window.DEVS?.theme === 'dark'
+      const [llmAvailable, setLlmAvailable] = useState(false)
+      const [debugInfo, setDebugInfo] = useState('')
+
+      // Check LLM availability
+      useEffect(() => {
+        const checkLLM = () => {
+          const available = !!(window.DEVS?.llm?.chat)
+          setLlmAvailable(available)
+          if (!available) {
+            setDebugInfo('LLM not configured. Please set up an AI provider in Settings.')
+          }
+        }
+        checkLLM()
+        // Re-check after a delay in case DEVS loads async
+        const timer = setTimeout(checkLLM, 1000)
+        return () => clearTimeout(timer)
+      }, [])
+
+      // Initialize canvas
+      useEffect(() => {
+        const canvas = canvasRef.current
+        if (!canvas) return
+        const ctx = canvas.getContext('2d')
+        const resize = () => {
+          const parent = canvas.parentElement
+          canvas.width = parent.clientWidth
+          canvas.height = parent.clientHeight
+          redraw(ctx)
+        }
+        resize()
+        window.addEventListener('resize', resize)
+        setCanvasReady(true)
+        return () => window.removeEventListener('resize', resize)
+      }, [])
+
+      // Redraw all elements
+      const redraw = useCallback((ctx) => {
+        if (!ctx) {
+          const canvas = canvasRef.current
+          if (!canvas) return
+          ctx = canvas.getContext('2d')
+        }
+        const canvas = canvasRef.current
+        ctx.fillStyle = isDark ? '#1e1e2e' : '#ffffff'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+        elements.forEach(el => drawElement(ctx, el))
+        if (currentElement) drawElement(ctx, currentElement)
+      }, [elements, currentElement, isDark])
+
+      useEffect(() => {
+        if (canvasReady) redraw()
+      }, [elements, currentElement, canvasReady, redraw])
+
+      const drawElement = (ctx, el) => {
+        ctx.strokeStyle = el.color
+        ctx.fillStyle = el.color
+        ctx.lineWidth = el.strokeWidth || 2
+        ctx.lineCap = 'round'
+        ctx.lineJoin = 'round'
+
+        switch (el.type) {
+          case 'pen':
+            if (el.points && el.points.length > 1) {
+              ctx.beginPath()
+              ctx.moveTo(el.points[0].x, el.points[0].y)
+              el.points.forEach(p => ctx.lineTo(p.x, p.y))
+              ctx.stroke()
+            }
+            break
+          case 'rectangle':
+            ctx.strokeRect(el.x, el.y, el.width, el.height)
+            break
+          case 'ellipse':
+            ctx.beginPath()
+            ctx.ellipse(el.x + el.width/2, el.y + el.height/2, Math.abs(el.width/2), Math.abs(el.height/2), 0, 0, Math.PI * 2)
+            ctx.stroke()
+            break
+          case 'line':
+            ctx.beginPath()
+            ctx.moveTo(el.x, el.y)
+            ctx.lineTo(el.x + el.width, el.y + el.height)
+            ctx.stroke()
+            break
+          case 'text':
+            ctx.font = `${el.fontSize || 16}px sans-serif`
+            ctx.fillText(el.text || 'Text', el.x, el.y)
+            break
+          case 'arrow':
+            ctx.beginPath()
+            ctx.moveTo(el.x, el.y)
+            ctx.lineTo(el.x + el.width, el.y + el.height)
+            ctx.stroke()
+            // Draw arrowhead
+            const angle = Math.atan2(el.height, el.width)
+            const headLen = 10
+            ctx.beginPath()
+            ctx.moveTo(el.x + el.width, el.y + el.height)
+            ctx.lineTo(el.x + el.width - headLen * Math.cos(angle - Math.PI/6), el.y + el.height - headLen * Math.sin(angle - Math.PI/6))
+            ctx.moveTo(el.x + el.width, el.y + el.height)
+            ctx.lineTo(el.x + el.width - headLen * Math.cos(angle + Math.PI/6), el.y + el.height - headLen * Math.sin(angle + Math.PI/6))
+            ctx.stroke()
+            break
+        }
+      }
+
+      const getMousePos = (e) => {
+        const canvas = canvasRef.current
+        const rect = canvas.getBoundingClientRect()
+        return { x: e.clientX - rect.left, y: e.clientY - rect.top }
+      }
+
+      const handleMouseDown = (e) => {
+        if (tool === 'select') return
+        const pos = getMousePos(e)
+        setIsDrawing(true)
+
+        if (tool === 'eraser') {
+          const idx = elements.findIndex(el => isPointInElement(pos, el))
+          if (idx !== -1) setElements(prev => prev.filter((_, i) => i !== idx))
+          return
+        }
+
+        if (tool === 'text') {
+          const text = window.prompt('Enter text:')
+          if (text) {
+            setElements(prev => [...prev, { type: 'text', x: pos.x, y: pos.y, text, color, fontSize: 16 }])
+          }
+          setIsDrawing(false)
+          return
+        }
+
+        const newElement = {
+          type: tool,
+          color,
+          strokeWidth,
+          x: pos.x,
+          y: pos.y,
+          width: 0,
+          height: 0,
+          points: tool === 'pen' ? [pos] : undefined
+        }
+        setCurrentElement(newElement)
+      }
+
+      const handleMouseMove = (e) => {
+        if (!isDrawing || !currentElement) return
+        const pos = getMousePos(e)
+
+        if (tool === 'pen') {
+          setCurrentElement(prev => ({ ...prev, points: [...(prev.points || []), pos] }))
+        } else {
+          setCurrentElement(prev => ({
+            ...prev,
+            width: pos.x - prev.x,
+            height: pos.y - prev.y
+          }))
+        }
+      }
+
+      const handleMouseUp = () => {
+        if (currentElement) {
+          setElements(prev => [...prev, currentElement])
+          setCurrentElement(null)
+        }
+        setIsDrawing(false)
+      }
+
+      const isPointInElement = (pos, el) => {
+        if (el.type === 'pen' && el.points) {
+          return el.points.some(p => Math.abs(p.x - pos.x) < 10 && Math.abs(p.y - pos.y) < 10)
+        }
+        return pos.x >= el.x && pos.x <= el.x + (el.width || 100) && pos.y >= el.y - 20 && pos.y <= el.y + (el.height || 20)
+      }
+
+      const clearCanvas = () => {
+        setElements([])
+        setSuggestions([])
+      }
+
+      const exportAsImage = () => {
+        const canvas = canvasRef.current
+        if (!canvas) return
+        const link = document.createElement('a')
+        link.download = `canvas-${Date.now()}.png`
+        link.href = canvas.toDataURL()
+        link.click()
+        window.DEVS?.ui?.toast?.({ title: 'Exported!', description: 'Canvas saved as PNG' })
+      }
+
+      const exportAsJSON = () => {
+        const data = JSON.stringify({ elements }, null, 2)
+        const blob = new Blob([data], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `canvas-${Date.now()}.json`
+        a.click()
+        URL.revokeObjectURL(url)
+      }
+
+      const getCanvasDescription = useCallback(() => {
+        const canvas = canvasRef.current
+        const width = canvas?.width || 800
+        const height = canvas?.height || 600
+        if (elements.length === 0) return `The canvas is empty. Canvas size: ${width}x${height} pixels.`
+        const summary = elements.reduce((acc, el) => {
+          acc[el.type] = (acc[el.type] || 0) + 1
+          return acc
+        }, {})
+        const texts = elements.filter(el => el.type === 'text').map(el => `\"${el.text}\" at (${Math.round(el.x)},${Math.round(el.y)})`).join(', ')
+        const positions = elements.slice(0, 5).map(el => `${el.type} at (${Math.round(el.x)},${Math.round(el.y)})`).join('; ')
+        return `Canvas ${width}x${height}px contains: ${Object.entries(summary).map(([type, count]) => `${count} ${type}(s)`).join(', ')}. ${texts ? `Text elements: ${texts}.` : ''} Some positions: ${positions}`
+      }, [elements])
+
+      // Implementer agent - creates elements from AI suggestions
+      const implementSuggestion = useCallback(async (suggestion, index) => {
+        if (!window.DEVS?.llm) return
+        setIsApplying(index)
+        setActiveAgent('implementer')
+
+        try {
+          const canvas = canvasRef.current
+          const width = canvas?.width || 800
+          const height = canvas?.height || 600
+          const canvasDesc = getCanvasDescription()
+
+          const response = await window.DEVS.llm.chat([
+            { role: 'system', content: `You are the Implementer agent. Create drawing elements to implement a suggestion on a canvas.
+    Canvas size: ${width}x${height} pixels.
+
+
+    Return a JSON array of elements to add. Each element should have:
+
+    - type: 'rectangle', 'ellipse', 'line', 'arrow', or 'text'
+
+    - x: number (x position, 0 is left)
+
+    - y: number (y position, 0 is top)
+
+    - width: number (for shapes, can be negative for left direction)
+
+    - height: number (for shapes, can be negative for up direction)
+
+    - color: hex color string (use varied colors like #f38ba8, #a6e3a1, #89dceb,
+    #cba6f7, #fab387)
+
+    - text: string (only for type 'text')
+
+    - fontSize: number (only for type 'text', default 16)
+
+
+    Create a meaningful layout. For wireframes, use rectangles for containers.
+    For user flows, use shapes connected by arrows. Position elements to avoid
+    overlap.
+
+    Only output the JSON array, no explanation.` },
+            { role: 'user', content: `Current canvas: ${canvasDesc}\n\nImplement this suggestion: ${suggestion.title} - ${suggestion.description}` }
+          ])
+
+          let newElements = []
+          try {
+            const contentStr = typeof response.content === 'string' ? response.content : JSON.stringify(response.content)
+            const match = contentStr.match(/\[\s*\{[\s\S]*\}\s*\]/)
+            if (match) {
+              newElements = JSON.parse(match[0])
+            }
+          } catch (e) {
+            console.error('Failed to parse implementer response:', e)
+          }
+
+          if (newElements.length > 0) {
+            setElements(prev => [...prev, ...newElements.map(el => ({
+              ...el,
+              strokeWidth: el.strokeWidth || 2
+            }))])
+            window.DEVS?.ui?.toast?.({ title: '🔧 Implemented!', description: `Added ${newElements.length} element(s) to canvas` })
+            setSuggestions(prev => prev.filter((_, i) => i !== index))
+          } else {
+            window.DEVS?.ui?.toast?.({ title: 'No elements', description: 'AI could not generate drawable elements', color: 'warning' })
+          }
+        } catch (err) {
+          console.error('Implementer failed:', err)
+          const errMsg = typeof err?.message === 'string' ? err.message : String(err)
+          window.DEVS?.ui?.toast?.({ title: 'Error', description: errMsg, color: 'danger' })
+        } finally {
+          setIsApplying(null)
+          setActiveAgent(null)
+        }
+      }, [getCanvasDescription])
+
+      // Generate drawing directly from prompt
+      const generateFromPrompt = useCallback(async (customPrompt) => {
+        const finalPrompt = customPrompt || prompt
+        if (!finalPrompt.trim()) {
+          window.DEVS?.ui?.toast?.({ title: 'Empty prompt', description: 'Please enter a prompt first', color: 'warning' })
+          return
+        }
+
+        if (!window.DEVS?.llm?.chat) {
+          window.DEVS?.ui?.toast?.({ title: 'LLM not available', description: 'Please configure an AI provider in Settings', color: 'danger' })
+          return
+        }
+
+        setIsLoading(true)
+        setActiveAgent('implementer')
+        setShowAIPanel(true)
+        setDebugInfo('Generating drawing...')
+
+        try {
+          const canvas = canvasRef.current
+          const width = canvas?.width || 800
+          const height = canvas?.height || 600
+
+          const response = await window.DEVS.llm.chat([
+            { role: 'system', content: `You are the Implementer agent. Create drawing elements based on user requests.
+    Canvas size: ${width}x${height} pixels.
+
+
+    Return a JSON array of elements. Each element should have:
+
+    - type: 'rectangle', 'ellipse', 'line', 'arrow', or 'text'
+
+    - x: number (x position)
+
+    - y: number (y position)
+
+    - width: number (for shapes)
+
+    - height: number (for shapes)
+
+    - color: hex color (use #f38ba8, #a6e3a1, #89dceb, #cba6f7, #fab387,
+    #f9e2af)
+
+    - text: string (for type 'text')
+
+    - fontSize: number (for text, 14-24 recommended)
+
+
+    Create professional-looking layouts. Use the full canvas space wisely.
+
+    Only output the JSON array.` },
+            { role: 'user', content: `Draw: ${finalPrompt}` }
+          ])
+
+          let newElements = []
+          try {
+            const contentStr = typeof response.content === 'string' ? response.content : JSON.stringify(response.content)
+            const match = contentStr.match(/\[\s*\{[\s\S]*\}\s*\]/)
+            if (match) newElements = JSON.parse(match[0])
+          } catch (e) {
+            console.error('Parse error:', e)
+          }
+
+          if (newElements.length > 0) {
+            setElements(prev => [...prev, ...newElements.map(el => ({ ...el, strokeWidth: el.strokeWidth || 2 }))])
+            window.DEVS?.ui?.toast?.({ title: '🎨 Created!', description: `Added ${newElements.length} element(s)` })
+            setPrompt('')
+            setDebugInfo('')
+          } else {
+            const contentStr = typeof response.content === 'string' ? response.content : JSON.stringify(response.content)
+            setSuggestions([{ title: 'Generation attempt', description: contentStr.slice(0, 200) }])
+            setDebugInfo('Could not parse drawing elements from AI response')
+          }
+        } catch (err) {
+          const errMsg = typeof err?.message === 'string' ? err.message : String(err)
+          setDebugInfo(`Error: ${errMsg}`)
+          window.DEVS?.ui?.toast?.({ title: 'Error', description: errMsg, color: 'danger' })
+        } finally {
+          setIsLoading(false)
+          setActiveAgent(null)
+        }
+      }, [prompt])
+
+      const askAI = useCallback(async (customPrompt) => {
+        const finalPrompt = customPrompt || prompt
+        if (!finalPrompt.trim()) {
+          window.DEVS?.ui?.toast?.({ title: 'Empty prompt', description: 'Please enter a prompt first', color: 'warning' })
+          return
+        }
+
+        if (!window.DEVS?.llm?.chat) {
+          window.DEVS?.ui?.toast?.({ title: 'LLM not available', description: 'Please configure an AI provider in Settings', color: 'danger' })
+          setDebugInfo('LLM API not found. Check Settings > AI Provider.')
+          return
+        }
+
+        // Check if prompt is asking to draw/create/generate something
+        const drawKeywords = ['draw', 'create', 'make', 'add', 'generate', 'wireframe', 'diagram', 'flowchart', 'ui', 'layout']
+        const isDrawRequest = drawKeywords.some(kw => finalPrompt.toLowerCase().includes(kw))
+
+        if (isDrawRequest && elements.length === 0) {
+          return generateFromPrompt(customPrompt)
+        }
+
+        setIsLoading(true)
+        setActiveAgent('observer')
+        setShowAIPanel(true)
+        setDebugInfo('Calling Observer agent...')
+
+        try {
+          const canvasDesc = getCanvasDescription()
+          const observerResponse = await window.DEVS.llm.chat([
+            { role: 'system', content: 'You are the Observer agent. Analyze the canvas and user request. Be concise.' },
+            { role: 'user', content: `Canvas: ${canvasDesc}\n\nRequest: ${finalPrompt}` }
+          ])
+
+          setActiveAgent('suggester')
+          const suggesterResponse = await window.DEVS.llm.chat([
+            { role: 'system', content: `Provide 2-3 actionable suggestions as JSON array. Each suggestion should be something that can be drawn on the canvas.
+    Format: [{\"title\": \"Short title\", \"description\": \"What to draw/add\",
+    \"actionable\": true}]
+
+    Make suggestions specific and implementable (e.g., \"Add navigation bar\"
+    instead of \"Improve layout\").
+
+    Only output JSON.` },
+            { role: 'user', content: `Observation: ${observerResponse.content}\nRequest: ${finalPrompt}` }
+          ])
+
+          let parsed = []
+          try {
+            const contentStr = typeof suggesterResponse.content === 'string' ? suggesterResponse.content : JSON.stringify(suggesterResponse.content)
+            const match = contentStr.match(/\[\s*\{[\s\S]*\}\s*\]/)
+            if (match) {
+              parsed = JSON.parse(match[0]).map(item => ({
+                ...item,
+                title: typeof item.title === 'string' ? item.title : JSON.stringify(item.title || ''),
+                description: typeof item.description === 'string' ? item.description : JSON.stringify(item.description || '')
+              }))
+            }
+          } catch (e) {
+            const contentStr = typeof suggesterResponse.content === 'string' ? suggesterResponse.content : JSON.stringify(suggesterResponse.content)
+            parsed = [{ title: 'AI Response', description: contentStr.slice(0, 500), actionable: false }]
+          }
+
+          setSuggestions(parsed)
+          setActiveAgent(null)
+          setPrompt('')
+          setDebugInfo('')
+        } catch (err) {
+          console.error('AI failed:', err)
+          const errMsg = typeof err?.message === 'string' ? err.message : String(err)
+          setDebugInfo(`Error: ${errMsg}`)
+          window.DEVS?.ui?.toast?.({ title: 'Error', description: errMsg, color: 'danger' })
+          setActiveAgent(null)
+        } finally {
+          setIsLoading(false)
+        }
+      }, [prompt, getCanvasDescription, elements.length, generateFromPrompt])
+
+      const handleQuickAction = useCallback((actionId) => {
+        const prompts = {
+          describe: 'Describe what you see in this drawing.',
+          improve: 'Suggest specific improvements I can add to this drawing.',
+          userflow: 'Create a user flow diagram with boxes and arrows.',
+          wireframe: 'Create a mobile app wireframe layout.',
+          organize: 'Suggest how to reorganize and improve these elements.'
+        }
+        if (actionId === 'userflow' || actionId === 'wireframe') {
+          generateFromPrompt(prompts[actionId])
+        } else {
+          askAI(prompts[actionId] || '')
+        }
+      }, [askAI, generateFromPrompt])
+
+      const dismissSuggestion = (index) => {
+        setSuggestions(prev => prev.filter((_, i) => i !== index))
+      }
+
+      return (
+        <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: isDark ? '#1e1e2e' : '#ffffff' }}>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderBottom: `1px solid ${isDark ? '#313244' : '#e2e8f0'}`, background: isDark ? '#1e1e2e' : '#ffffff', zIndex: 100, flexShrink: 0 }}>
+            <span style={{ fontSize: '20px' }}>🎨</span>
+            <span style={{ fontWeight: 600, marginRight: '8px' }}>{t('title')}</span>
+            <Divider orientation="vertical" style={{ height: '24px' }} />
+
+            {/* Tools */}
+            {TOOLS.map(tl => (
+              <Tooltip key={tl.id} content={tl.label}>
+                <Button size="sm" variant={tool === tl.id ? 'solid' : 'flat'} color={tool === tl.id ? 'primary' : 'default'} isIconOnly onPress={() => setTool(tl.id)}>{tl.icon}</Button>
+              </Tooltip>
+            ))}
+
+            <Divider orientation="vertical" style={{ height: '24px' }} />
+
+            {/* Colors */}
+            {COLORS.map(c => (
+              <button key={c} onClick={() => setColor(c)} style={{ width: 24, height: 24, borderRadius: '50%', background: c, border: color === c ? '2px solid #6366f1' : '2px solid transparent', cursor: 'pointer' }} />
+            ))}
+
+            <Divider orientation="vertical" style={{ height: '24px' }} />
+
+            <Tooltip content={t('clearCanvas')}><Button size="sm" variant="flat" isIconOnly onPress={clearCanvas}>🗑️</Button></Tooltip>
+            <Tooltip content={t('exportImage')}><Button size="sm" variant="flat" isIconOnly onPress={exportAsImage}>📷</Button></Tooltip>
+            <Tooltip content={t('exportJSON')}><Button size="sm" variant="flat" isIconOnly onPress={exportAsJSON}>💾</Button></Tooltip>
+
+            <div style={{ flex: 1 }} />
+
+            {/* AI Agents */}
+            <div style={{ display: 'flex', gap: '4px' }}>
+              {AI_AGENTS.map(agent => (
+                <Tooltip key={agent.id} content={t(agent.id + 'Desc')}>
+                  <Chip size="sm" variant={activeAgent === agent.id ? 'solid' : 'flat'} color={agent.color} className={activeAgent === agent.id ? 'animate-pulse' : ''}>
+                    {agent.icon} {t(agent.id)}
+                  </Chip>
+                </Tooltip>
+              ))}
+            </div>
+
+            <Divider orientation="vertical" style={{ height: '24px' }} />
+            <Button size="sm" color="primary" variant={showAIPanel ? 'solid' : 'flat'} onPress={() => setShowAIPanel(!showAIPanel)} startContent={<span>🤖</span>}>{t('askAI')}</Button>
+          </div>
+
+          {/* Main */}
+          <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+            {/* Canvas */}
+            <div style={{ flex: 1, position: 'relative' }}>
+              <canvas
+                ref={canvasRef}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                style={{ cursor: tool === 'select' ? 'default' : 'crosshair', display: 'block' }}
+              />
+            </div>
+
+            {/* AI Panel */}
+            {showAIPanel && (
+              <div style={{ width: '320px', borderLeft: `1px solid ${isDark ? '#313244' : '#e2e8f0'}`, display: 'flex', flexDirection: 'column', background: isDark ? '#1e1e2e' : '#ffffff', flexShrink: 0 }}>
+                <div style={{ padding: '12px', borderBottom: `1px solid ${isDark ? '#313244' : '#e2e8f0'}` }}>
+                  <div style={{ fontSize: '12px', color: isDark ? '#a6adc8' : '#64748b', marginBottom: '8px' }}>Quick Actions</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                    {QUICK_ACTIONS.map(action => (
+                      <Button key={action.id} size="sm" variant="flat" onPress={() => handleQuickAction(action.id)} isDisabled={isLoading || isApplying !== null}>
+                        {action.icon} {t(action.msgKey)}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ padding: '12px', borderBottom: `1px solid ${isDark ? '#313244' : '#e2e8f0'}` }}>
+                  <Textarea size="sm" placeholder={t('aiPlaceholder')} value={prompt} onValueChange={setPrompt} minRows={2} maxRows={4} />
+                  <Button size="sm" color="primary" style={{ marginTop: '8px', width: '100%' }} onPress={() => askAI()} isLoading={isLoading} isDisabled={!prompt.trim() || isApplying !== null}>
+                    {isLoading ? t('aiThinking') : t('askAI')}
+                  </Button>
+                </div>
+                <ScrollShadow style={{ flex: 1, padding: '12px' }}>
+                  <div style={{ fontSize: '12px', color: isDark ? '#a6adc8' : '#64748b', marginBottom: '8px' }}>{t('aiSuggestions')}</div>
+                  {debugInfo && (
+                    <div style={{ padding: '8px', marginBottom: '8px', borderRadius: '6px', fontSize: '12px', background: isDark ? '#313244' : '#f1f5f9', color: isDark ? '#cdd6f4' : '#475569' }}>
+                      {typeof debugInfo === 'string' ? debugInfo : JSON.stringify(debugInfo)}
+                    </div>
+                  )}
+                  {!llmAvailable && (
+                    <div style={{ padding: '12px', marginBottom: '8px', borderRadius: '6px', background: isDark ? '#45475a' : '#fef3c7', color: isDark ? '#f9e2af' : '#92400e', fontSize: '13px' }}>
+                      ⚠️ AI provider not configured. Go to Settings to set up your LLM.
+                    </div>
+                  )}
+                  {suggestions.length === 0 ? (
+                    <div style={{ textAlign: 'center', color: isDark ? '#6c7086' : '#94a3b8', padding: '24px', fontSize: '14px' }}>{t('noSuggestions')}</div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {suggestions.map((s, i) => (
+                        <Card key={i} shadow="sm">
+                          <CardBody style={{ padding: '12px' }}>
+                            <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '4px' }}>{typeof s.title === 'string' ? s.title : JSON.stringify(s.title)}</div>
+                            <div style={{ fontSize: '13px', color: isDark ? '#a6adc8' : '#64748b', marginBottom: '8px' }}>{typeof s.description === 'string' ? s.description : JSON.stringify(s.description)}</div>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              <Button size="sm" color="success" variant="flat" onPress={() => implementSuggestion(s, i)} isLoading={isApplying === i} isDisabled={isApplying !== null && isApplying !== i}>
+                                🔧 {t('applySuggestion')}
+                              </Button>
+                              <Button size="sm" variant="flat" onPress={() => dismissSuggestion(i)} isDisabled={isApplying !== null}>
+                                {t('dismissSuggestion')}
+                              </Button>
+                            </div>
+                          </CardBody>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </ScrollShadow>
+              </div>
+            )}
+          </div>
+        </div>
+      )
+    }
+configuration:
+  schema:
+    type: object
+    properties:
+      defaultTheme:
+        type: string
+        enum:
+          - light
+          - dark
+          - system
+        default: system
+        description: Default canvas theme
+      autoSave:
+        type: boolean
+        default: true
+        description: Automatically save canvas state
+      aiModel:
+        type: string
+        description: Preferred AI model for canvas assistance
+  defaults:
+    defaultTheme: system
+    autoSave: true
