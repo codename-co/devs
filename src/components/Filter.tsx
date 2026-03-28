@@ -1,4 +1,4 @@
-import { Button, Dropdown, Badge, Chip } from '@heroui/react'
+import { Button, Dropdown, Badge, Chip } from '@/components/heroui-compat'
 import { Icon } from './Icon'
 import { IconName } from '@/lib/types'
 

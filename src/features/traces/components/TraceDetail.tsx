@@ -1,4 +1,4 @@
-import { Card, Chip, Separator } from '@heroui/react'
+import { Card, Chip, Separator } from '@/components/heroui-compat'
 
 import { useI18n } from '@/i18n'
 import { Trace, Span, SpanType } from '../types'

@@ -1,5 +1,5 @@
 import { Container, Section, Title } from '@/components'
-import { Chip } from '@heroui/react'
+import { Chip } from '@/components/heroui-compat'
 import { motionVariants } from '../motion'
 import { PRODUCT } from '@/config/product'
 import { StatusIcon, type ComparisonStatus } from './StatusIcon'

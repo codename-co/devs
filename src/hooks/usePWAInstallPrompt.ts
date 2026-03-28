@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, createElement } from 'react'
 import { usePWAInstall } from './usePWAInstall'
 import { infoToast } from '@/lib/toast'
-import { ToastProps } from '@heroui/react'
+import { ToastProps } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 
 interface UsePWAInstallPromptOptions {

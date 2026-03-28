@@ -7,7 +7,7 @@
 
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Modal, useOverlayState, Drawer, DrawerContent, DrawerBody, Input, toast, Chip } from '@heroui/react'
+import { Button, Modal, useOverlayState, Drawer, DrawerContent, DrawerBody, Input, toast, Chip } from '@/components/heroui-compat'
 
 import { Container, Filter, Icon, Section, Title } from '@/components'
 import DefaultLayout from '@/layouts/Default'

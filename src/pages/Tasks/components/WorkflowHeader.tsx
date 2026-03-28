@@ -6,7 +6,7 @@
  */
 
 import { memo, useState, useEffect, useRef } from 'react'
-import { Chip, ProgressBar, Spinner } from '@heroui/react'
+import { Chip, ProgressBar, Spinner } from '@/components/heroui-compat'
 
 import type { OrchestrationWorkflow } from '@/types'
 import type { WorkflowProgressState } from '@/hooks/useOrchestrationStreaming'

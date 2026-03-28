@@ -1,4 +1,4 @@
-import { ListBox, Input } from '@heroui/react'
+import { ListBox, Input } from '@/components/heroui-compat'
 import { type Agent } from '@/types'
 import { getAgentsByCategory } from '@/stores/agentStore'
 import { Icon } from '../Icon'

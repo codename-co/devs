@@ -17,7 +17,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Button, Spinner, Tooltip } from '@heroui/react'
+import { Button, Spinner, Tooltip } from '@/components/heroui-compat'
 
 import DefaultLayout from '@/layouts/Default'
 import { Container, Icon, Section } from '@/components'

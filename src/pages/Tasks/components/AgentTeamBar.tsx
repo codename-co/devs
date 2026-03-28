@@ -8,7 +8,7 @@
  */
 
 import { memo, useMemo } from 'react'
-import { Chip, Spinner } from '@heroui/react'
+import { Chip, Spinner } from '@/components/heroui-compat'
 
 import { getAgentById } from '@/stores/agentStore'
 import type { WorkflowProgressState } from '@/hooks/useOrchestrationStreaming'

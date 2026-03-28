@@ -17,7 +17,7 @@
  */
 
 import { memo, useMemo, useEffect, useState, useRef } from 'react'
-import { Chip, ProgressBar, Spinner, Tooltip } from '@heroui/react'
+import { Chip, ProgressBar, Spinner, Tooltip } from '@/components/heroui-compat'
 
 import { AgentAvatar } from '@/components/AgentAvatar'
 import { Icon } from '@/components'

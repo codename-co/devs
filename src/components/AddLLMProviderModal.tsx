@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Modal, Button, Input, TextArea, Card } from '@heroui/react'
+import { Modal, Button, Input, TextArea, Card } from '@/components/heroui-compat'
 import { create } from 'zustand'
 
 import { Icon } from './Icon'
@@ -249,7 +249,7 @@ export function AddLLMProviderModal({ lang }: AddLLMProviderModalProps) {
               )}
             </Modal.Body>
             <Modal.Footer>
-              <Button variant="ghost" onPress={onClose}>
+              <Button variant="ghost" onPress={close}>
                 {t('Cancel')}
               </Button>
               <Button

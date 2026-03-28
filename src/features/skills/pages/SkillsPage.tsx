@@ -7,7 +7,7 @@
  */
 
 import { useState, useCallback } from 'react'
-import { Tabs, Tab, Chip, Input, Button } from '@heroui/react'
+import { Tabs, Tab, Chip, Input, Button } from '@/components/heroui-compat'
 import { Icon, Section } from '@/components'
 import { useI18n } from '@/i18n'
 import { SkillSearch } from '../components/SkillSearch'
@@ -23,7 +23,7 @@ import {
 import { fetchSkillFromGitHub } from '@/lib/skills/github-fetcher'
 import type { SkillSearchResult } from '@/lib/skills/skillsmp-client'
 import type { InstalledSkill } from '@/types'
-import { toast } from '@heroui/react'
+import { toast } from '@/components/heroui-compat'
 import localI18n from './i18n'
 import DefaultLayout from '@/layouts/Default'
 import { HeaderProps } from '@/lib/types'

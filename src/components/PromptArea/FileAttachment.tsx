@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Chip } from '@heroui/react'
+import { Chip } from '@/components/heroui-compat'
 
 import { Icon } from '../Icon'
 import { ContentPreviewModal } from '../ContentPreview/ContentPreviewModal'

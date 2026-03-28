@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Button, Card, Checkbox, Chip, Input, Modal, Select, Spinner, Tab, Tabs, TextArea, useOverlayState } from '@heroui/react'
+import { Button, Card, Checkbox, Chip, Input, Modal, Select, Spinner, Tab, Tabs, TextArea, useOverlayState } from '@/components/heroui-compat'
 
 import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
 import { MemoryReviewList } from '@/components/MemoryReview'

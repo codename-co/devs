@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, memo } from 'react'
-import { Button, Input, Popover, Spinner, Tab, Tabs, Tooltip, ScrollShadow } from '@heroui/react'
+import { Button, Input, Popover, Spinner, Tab, Tabs, Tooltip, ScrollShadow } from '@/components/heroui-compat'
 
 import { Icon, Icons } from '@/components/Icon'
 import { IconName } from '@/lib/types'

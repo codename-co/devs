@@ -1,5 +1,5 @@
 import { Container, Icon, Section } from '@/components'
-import { Button, Chip, Link } from '@heroui/react'
+import { Button, Chip, Link } from '@/components/heroui-compat'
 import { motionVariants } from '../motion'
 import { useI18n, useUrl } from '@/i18n'
 import localI18n from '../i18n'

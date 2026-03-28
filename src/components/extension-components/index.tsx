@@ -9,7 +9,7 @@
  */
 
 // Re-export HeroUI components
-export * from '@heroui/react'
+export * from '@/components/heroui-compat'
 
 // Export custom components
 export { Container, type ContainerProps } from '../Container'

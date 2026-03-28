@@ -14,7 +14,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Button, Spinner } from '@heroui/react'
+import { Button, Spinner } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { useHashHighlight } from '@/hooks/useHashHighlight'

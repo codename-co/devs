@@ -1,4 +1,4 @@
-import { ListBox } from '@heroui/react'
+import { ListBox } from '@/components/heroui-compat'
 import { useEffect, useCallback, useMemo } from 'react'
 
 import { useI18n, type Lang } from '@/i18n'

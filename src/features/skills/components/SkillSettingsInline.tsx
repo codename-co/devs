@@ -7,8 +7,8 @@
  */
 
 import { useState, useCallback } from 'react'
-import { Button, Chip, Separator, Switch, Tabs, Tab } from '@heroui/react'
-import { toast } from '@heroui/react'
+import { Button, Chip, Separator, Switch, Tabs, Tab } from '@/components/heroui-compat'
+import { toast } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Modal, Button, Separator, Avatar, Tooltip, useOverlayState, Dropdown, ButtonGroup } from '@heroui/react'
+import { Modal, Button, Separator, Avatar, Tooltip, useOverlayState, Dropdown, ButtonGroup } from '@/components/heroui-compat'
 import { OpenNewWindow } from 'iconoir-react'
 
 import { Icon } from '@/components'

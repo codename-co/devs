@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
-import { Button, Spinner } from '@heroui/react'
+import { Button, Spinner } from '@/components/heroui-compat'
 import { Plus } from 'iconoir-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 

@@ -10,7 +10,7 @@
  *  - Global system instructions textarea
  */
 
-import { TextArea } from '@heroui/react'
+import { TextArea } from '@/components/heroui-compat'
 import { useI18n } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
 import { useHashHighlight } from '@/hooks/useHashHighlight'

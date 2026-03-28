@@ -97,7 +97,7 @@ export function useExtensionBridge({
 
       // Handle toast (fire-and-forget, no response needed)
       if (type === 'DEVS_UI_TOAST') {
-        const { addToast } = await import('@heroui/react')
+        const { addToast } = await import('@/components/heroui-compat')
         const { message, options = {} } = payload || {}
         toast({ title: message, color: options.type || 'default' })
         return

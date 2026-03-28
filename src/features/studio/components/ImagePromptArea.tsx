@@ -5,7 +5,7 @@
  * but optimized for image generation workflows with preset integration.
  */
 
-import { Button, ButtonGroup, TextArea, type TextAreaProps, Tooltip, Spinner } from '@heroui/react'
+import { Button, ButtonGroup, TextArea, type TextAreaProps, Tooltip, Spinner } from '@/components/heroui-compat'
 import {
   forwardRef,
   useEffect,

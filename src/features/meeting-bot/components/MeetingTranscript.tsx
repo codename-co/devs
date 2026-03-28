@@ -5,7 +5,7 @@
  */
 
 import { useRef, useEffect } from 'react'
-import { ScrollShadow } from '@heroui/react'
+import { ScrollShadow } from '@/components/heroui-compat'
 import type { TranscriptEntry } from '../types'
 
 export interface MeetingTranscriptProps {

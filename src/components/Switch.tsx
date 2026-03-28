@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react'
-import { Switch as HeroSwitch, type SwitchProps } from '@heroui/react'
+import { Switch as HeroSwitch, type SwitchProps } from '@/components/heroui-compat'
 import { cn } from '@/lib/utils'
 
 interface ExtendedSwitchProps extends SwitchProps {

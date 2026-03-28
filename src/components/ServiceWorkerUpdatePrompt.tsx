@@ -1,4 +1,4 @@
-import { Button } from '@heroui/react'
+import { Button } from '@/components/heroui-compat'
 import { useEffect, useState } from 'react'
 
 import {

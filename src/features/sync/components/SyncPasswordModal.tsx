@@ -11,7 +11,7 @@
  * The modal cannot be closed or dismissed — the user must either enter
  * the correct password or explicitly cancel (which aborts the join).
  */
-import { Modal, Button, Input } from '@heroui/react'
+import { Modal, Button, Input } from '@/components/heroui-compat'
 import { useState, useCallback } from 'react'
 
 import { useSyncStore } from '../stores/syncStore'

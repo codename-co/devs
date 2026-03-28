@@ -4,7 +4,7 @@
  * Card displaying a single generated image with actions.
  */
 
-import { Button, Card, Dropdown, Tooltip, Modal, useOverlayState } from '@heroui/react'
+import { Button, Card, Dropdown, Tooltip, Modal, useOverlayState } from '@/components/heroui-compat'
 import { useState, useCallback } from 'react'
 
 import { Icon } from '@/components/Icon'

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { Card, Button, Chip, Tabs, Tab, Input, TextArea } from '@heroui/react'
+import { Card, Button, Chip, Tabs, Tab, Input, TextArea } from '@/components/heroui-compat'
 import {
   Upload,
   Check,

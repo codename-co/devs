@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Card, Pagination, Spinner, Input, Dropdown, Modal, useOverlayState } from '@heroui/react'
+import { Button, Card, Pagination, Spinner, Input, Dropdown, Modal, useOverlayState } from '@/components/heroui-compat'
 import { Search, Star, StarSolid, MoreVert } from 'iconoir-react'
 
 import { useConversationStore } from '@/stores/conversationStore'

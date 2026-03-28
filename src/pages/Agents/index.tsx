@@ -1,4 +1,4 @@
-import { Alert, Card, Spinner, Tab, Tabs, Modal, Button, useOverlayState, Dropdown, Chip } from '@heroui/react'
+import { Alert, Card, Spinner, Tab, Tabs, Modal, Button, useOverlayState, Dropdown, Chip } from '@/components/heroui-compat'
 import { useEffect, useState } from 'react'
 
 import { useI18n } from '@/i18n'

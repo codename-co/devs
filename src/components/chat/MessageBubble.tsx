@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { Button, Chip, Spinner, Tooltip } from '@heroui/react'
+import { Button, Chip, Spinner, Tooltip } from '@/components/heroui-compat'
 
 import { useI18n } from '@/i18n'
 import { Icon } from '@/components'

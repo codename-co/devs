@@ -2,7 +2,7 @@
  * SkillCard — Compact card for displaying a skill search result or installed skill.
  */
 
-import { Card, Chip, Button, Spinner } from '@heroui/react'
+import { Card, Chip, Button, Spinner } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import type { SkillSearchResult } from '@/lib/skills/skillsmp-client'
 import type { InstalledSkill } from '@/types'

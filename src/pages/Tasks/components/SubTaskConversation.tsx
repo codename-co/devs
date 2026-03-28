@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react'
-import { Chip } from '@heroui/react'
+import { Chip } from '@/components/heroui-compat'
 
 import { useI18n } from '@/i18n'
 import { MessageBubble } from '@/components/chat'

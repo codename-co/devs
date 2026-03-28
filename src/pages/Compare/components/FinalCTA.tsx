@@ -1,5 +1,5 @@
 import { Container, Icon, Section } from '@/components'
-import { Button, Card, Link } from '@heroui/react'
+import { Button, Card, Link } from '@/components/heroui-compat'
 import { motionVariants } from '../motion'
 import type { IconName } from '@/lib/types'
 import { useI18n, useUrl } from '@/i18n'

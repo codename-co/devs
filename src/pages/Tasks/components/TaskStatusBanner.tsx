@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { Chip, ProgressBar, Spinner } from '@heroui/react'
+import { Chip, ProgressBar, Spinner } from '@/components/heroui-compat'
 
 import { useI18n } from '@/i18n'
 

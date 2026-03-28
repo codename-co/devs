@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Card, Button, Chip, TextArea, Modal, useOverlayState, ButtonGroup } from '@heroui/react'
+import { Card, Button, Chip, TextArea, Modal, useOverlayState, ButtonGroup } from '@/components/heroui-compat'
 
 import { useI18n } from '@/i18n'
 import { Icon } from '@/components/Icon'

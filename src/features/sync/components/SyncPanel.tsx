@@ -5,7 +5,7 @@
  * Displays sync status, room sharing, and connection options.
  * This is the main sync UI - no separate settings page needed.
  */
-import { Alert, Button, Chip, Input } from '@heroui/react'
+import { Alert, Button, Chip, Input } from '@/components/heroui-compat'
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 
 import { useSyncStore } from '../stores/syncStore'

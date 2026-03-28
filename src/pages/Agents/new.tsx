@@ -1,4 +1,4 @@
-import { Accordion, Alert, Button, Card, Input, Slider, Spinner, Tab, Tabs, TextArea } from '@heroui/react'
+import { Accordion, Alert, Button, Card, Input, Slider, Spinner, Tab, Tabs, TextArea } from '@/components/heroui-compat'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
-import { Card, Link, Button, TextArea, Chip, Spinner, Checkbox, CheckboxGroup, Input, Tabs, Tab, Tooltip } from '@heroui/react'
+import { Card, Link, Button, TextArea, Chip, Spinner, Checkbox, CheckboxGroup, Input, Tabs, Tab, Tooltip } from '@/components/heroui-compat'
 import { userSettings } from '@/stores/userStore'
 
 import {

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
-import { Alert, Spinner } from '@heroui/react'
+import { Alert, Spinner } from '@/components/heroui-compat'
 import { type Marpit as MarpitType } from '@marp-team/marpit'
 import MarpitCSS from './Presentation.marp.css?raw'
 import { SlidesRenderer } from './SlidesRenderer'

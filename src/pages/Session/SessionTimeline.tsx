@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import { Chip, Spinner } from '@heroui/react'
+import { Chip, Spinner } from '@/components/heroui-compat'
 
 import { useI18n } from '@/i18n'
 import { Icon } from '@/components'

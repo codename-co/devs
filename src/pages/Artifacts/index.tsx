@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Chip, Modal, Button, Pagination, ScrollShadow } from '@heroui/react'
+import { Chip, Modal, Button, Pagination, ScrollShadow } from '@/components/heroui-compat'
 
 import { useI18n } from '@/i18n'
 import { Section, Container, Icon, ArtifactPreviewCard } from '@/components'

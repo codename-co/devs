@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Modal, Button, Checkbox, Spinner, ScrollShadow, Switch, Separator, Accordion, Chip, Card, RadioGroup, TextArea, Avatar } from '@heroui/react'
+import { Modal, Button, Checkbox, Spinner, ScrollShadow, Switch, Separator, Accordion, Chip, Card, RadioGroup, TextArea, Avatar } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { useConnectorStore } from '../stores'

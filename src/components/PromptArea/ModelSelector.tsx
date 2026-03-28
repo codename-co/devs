@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { Button, Chip, Dropdown, Input, Spinner } from '@heroui/react'
+import { Button, Chip, Dropdown, Input, Spinner } from '@/components/heroui-compat'
 
 import { Icon } from '../Icon'
 import { useModelPicker } from './useModelPicker'

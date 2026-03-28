@@ -9,7 +9,7 @@
  */
 
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { Button, Card, Chip, Separator, ProgressBar, Spinner, Tab, Tabs } from '@heroui/react'
+import { Button, Card, Chip, Separator, ProgressBar, Spinner, Tab, Tabs } from '@/components/heroui-compat'
 
 import { Container, Icon, Section } from '@/components'
 import Layout from '@/layouts/Default'

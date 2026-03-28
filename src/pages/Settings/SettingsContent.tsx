@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Button, Card, Input, Tabs, Tab, Tooltip, Breadcrumbs, BreadcrumbsItem } from '@heroui/react'
+import { Button, Card, Input, Tabs, Tab, Tooltip, Breadcrumbs, BreadcrumbsItem } from '@/components/heroui-compat'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useI18n } from '@/i18n'
 import { SecureStorage } from '@/lib/crypto'

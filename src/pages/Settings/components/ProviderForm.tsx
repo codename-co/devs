@@ -13,7 +13,7 @@
 
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Button, Input, TextArea } from '@heroui/react'
+import { Button, Input, TextArea } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import type { LLMProvider } from '@/types'

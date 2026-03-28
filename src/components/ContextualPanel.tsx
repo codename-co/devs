@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from 'react'
-import { Accordion, Button, ScrollShadow, Tooltip } from '@heroui/react'
+import { Accordion, Button, ScrollShadow, Tooltip } from '@/components/heroui-compat'
 import clsx from 'clsx'
 
 import { Icon } from './Icon'

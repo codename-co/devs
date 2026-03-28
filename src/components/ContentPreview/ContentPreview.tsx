@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Button, Chip, ScrollShadow, Tabs, Tab, Tooltip, Separator, Link } from '@heroui/react'
+import { Button, Chip, ScrollShadow, Tabs, Tab, Tooltip, Separator, Link } from '@/components/heroui-compat'
 import clsx from 'clsx'
 
 import { useI18n } from '@/i18n'

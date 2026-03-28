@@ -4,7 +4,7 @@
  * Gallery view for displaying generated images.
  */
 
-import { Button, Tabs, Tab, Chip, Spinner } from '@heroui/react'
+import { Button, Tabs, Tab, Chip, Spinner } from '@/components/heroui-compat'
 import { useMemo } from 'react'
 
 import { Icon } from '@/components/Icon'

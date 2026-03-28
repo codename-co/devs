@@ -11,7 +11,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { Button, Card, Input, TextArea, Select, Spinner, Chip, Separator, Modal, useOverlayState, ScrollShadow, Popover, Dropdown } from '@heroui/react'
+import { Button, Card, Input, TextArea, Select, Spinner, Chip, Separator, Modal, useOverlayState, ScrollShadow, Popover, Dropdown } from '@/components/heroui-compat'
 
 import DefaultLayout from '@/layouts/Default'
 import {

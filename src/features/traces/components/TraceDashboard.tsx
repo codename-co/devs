@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react'
-import { Card, Spinner, Select } from '@heroui/react'
+import { Card, Spinner, Select } from '@/components/heroui-compat'
 import ReactECharts from 'echarts-for-react'
 import type { EChartsOption } from 'echarts'
 

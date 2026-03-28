@@ -1,4 +1,4 @@
-import { Avatar, Card, Chip } from '@heroui/react'
+import { Avatar, Card, Chip } from '@/components/heroui-compat'
 import { useEffect, useState } from 'react'
 
 import { getAgentById } from '@/stores/agentStore'

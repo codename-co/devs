@@ -1,4 +1,4 @@
-import { Card, Checkbox, CheckboxGroup, Chip, Input, Spinner, Button, Modal, useOverlayState } from '@heroui/react'
+import { Card, Checkbox, CheckboxGroup, Chip, Input, Spinner, Button, Modal, useOverlayState } from '@/components/heroui-compat'
 import { useState, useEffect, useMemo } from 'react'
 
 import { getAllKnowledgeItems } from '@/stores/knowledgeStore'

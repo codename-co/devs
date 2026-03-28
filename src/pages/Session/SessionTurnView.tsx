@@ -1,4 +1,4 @@
-import { Chip, Spinner } from '@heroui/react'
+import { Chip, Spinner } from '@/components/heroui-compat'
 
 import { Icon, MessageBubble } from '@/components'
 import type { Session, SessionTurn } from '@/types'

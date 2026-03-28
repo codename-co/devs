@@ -1,4 +1,4 @@
-import { Card, Checkbox, CheckboxGroup, Chip, Separator } from '@heroui/react'
+import { Card, Checkbox, CheckboxGroup, Chip, Separator } from '@/components/heroui-compat'
 
 import { Icon, Icons } from '@/components/Icon'
 import { useI18n } from '@/i18n'

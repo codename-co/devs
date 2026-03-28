@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { Alert } from '@heroui/react'
+import { Alert } from '@/components/heroui-compat'
 import { marked } from 'marked'
 import PptxGenJS from 'pptxgenjs'
 import { useI18n } from '@/i18n'

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Modal, Button, Input, Chip, ProgressBar } from '@heroui/react'
+import { Modal, Button, Input, Chip, ProgressBar } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import { EasySetupData, EasySetupCrypto } from '@/lib/easy-setup'
 import { useI18n } from '@/i18n'

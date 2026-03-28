@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { Chip, Tabs, Tab } from '@heroui/react'
+import { Chip, Tabs, Tab } from '@/components/heroui-compat'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 import DefaultLayout from '@/layouts/Default'

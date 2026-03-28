@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ProgressBar, Spinner } from '@heroui/react'
+import { ProgressBar, Spinner } from '@/components/heroui-compat'
 
 import { useI18n } from '@/i18n'
 import { Icon } from '@/components'

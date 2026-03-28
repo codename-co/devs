@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Accordion, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Chip, Spinner, Card, Input } from '@heroui/react'
+import { Accordion, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Chip, Spinner, Card, Input } from '@/components/heroui-compat'
 
 import { useI18n } from '@/i18n'
 import { Icon } from '@/components'

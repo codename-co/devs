@@ -4,7 +4,7 @@
  * Full grid view of all available presets for browsing and selection.
  */
 
-import { Button, Card, Input, Chip, Tabs, Tab } from '@heroui/react'
+import { Button, Card, Input, Chip, Tabs, Tab } from '@/components/heroui-compat'
 import { useState, useMemo } from 'react'
 
 import { Icon } from '@/components/Icon'

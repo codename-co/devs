@@ -1,6 +1,6 @@
 import { memo, useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Chip, Tooltip } from '@heroui/react'
+import { Chip, Tooltip } from '@/components/heroui-compat'
 
 import { Icon } from '@/components/Icon'
 import { getKnowledgeItem } from '@/stores/knowledgeStore'

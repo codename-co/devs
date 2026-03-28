@@ -1,4 +1,4 @@
-import { Modal } from '@heroui/react'
+import { Modal } from '@/components/heroui-compat'
 
 // Lazy load the settings content to avoid circular dependencies
 import { lazy, Suspense } from 'react'

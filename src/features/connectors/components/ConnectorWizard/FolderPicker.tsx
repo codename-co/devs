@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { Button, Checkbox, Spinner, ScrollShadow, TextArea } from '@heroui/react'
+import { Button, Checkbox, Spinner, ScrollShadow, TextArea } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { ProviderRegistry } from '../../provider-registry'

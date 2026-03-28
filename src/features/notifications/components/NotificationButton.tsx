@@ -5,7 +5,7 @@
  * Opens a popover with the notification panel when clicked.
  * Marks all notifications as read when the panel is opened.
  */
-import { Badge, Button, Popover, Tooltip } from '@heroui/react'
+import { Badge, Button, Popover, Tooltip } from '@/components/heroui-compat'
 import { useEffect, useState } from 'react'
 
 import { Icon } from '@/components'

@@ -7,7 +7,7 @@
  */
 
 import { memo, useEffect, useRef, useMemo, useState } from 'react'
-import { Chip } from '@heroui/react'
+import { Chip } from '@/components/heroui-compat'
 
 import { Icon } from '@/components'
 import { useMailboxStore } from '@/stores/mailboxStore'

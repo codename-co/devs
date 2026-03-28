@@ -13,7 +13,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Dropdown, Tooltip, Spinner } from '@heroui/react'
+import { Button, Dropdown, Tooltip, Spinner } from '@/components/heroui-compat'
 
 import { Icon } from '@/components/Icon'
 import { useLLMModelStore } from '@/stores/llmModelStore'

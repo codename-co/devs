@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Input, Switch, Alert, Separator, Spinner } from '@heroui/react'
+import { Input, Switch, Alert, Separator, Spinner } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import { generateSetupQRData } from '@/lib/easy-qr'
 import { errorToast } from '@/lib/toast'

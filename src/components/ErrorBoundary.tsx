@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Button, Card, Separator } from '@heroui/react'
+import { Button, Card, Separator } from '@/components/heroui-compat'
 import { Icon } from '@/components/Icon'
 
 interface ErrorBoundaryProps {

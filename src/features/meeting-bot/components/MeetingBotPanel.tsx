@@ -6,7 +6,7 @@
  */
 
 import { useState, useCallback } from 'react'
-import { Button, Card, Input, Chip, Separator, Spinner } from '@heroui/react'
+import { Button, Card, Input, Chip, Separator, Spinner } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import { useMeetingSession } from '../hooks/useMeetingSession'
 import { MeetingControls } from './MeetingControls'

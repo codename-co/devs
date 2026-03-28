@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Alert, Button, Chip, ProgressBar, Tooltip } from '@heroui/react'
+import { Alert, Button, Chip, ProgressBar, Tooltip } from '@/components/heroui-compat'
 
 import '@/features/local-backup/types/file-system.d'
 import {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, Button, RadioGroup, Radio, Spinner, Chip, Tooltip } from '@heroui/react'
+import { Card, Button, RadioGroup, Radio, Spinner, Chip, Tooltip } from '@/components/heroui-compat'
 
 import DefaultLayout from '@/layouts/Default'
 import { Container, Section, Icon, Title, PromptArea } from '@/components'

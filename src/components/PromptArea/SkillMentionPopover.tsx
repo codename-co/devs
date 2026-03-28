@@ -1,4 +1,4 @@
-import { ListBox } from '@heroui/react'
+import { ListBox } from '@/components/heroui-compat'
 import { useEffect, useCallback } from 'react'
 
 import { Icon } from '../Icon'

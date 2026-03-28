@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Chip, Spinner } from '@heroui/react'
+import { Chip, Spinner } from '@/components/heroui-compat'
 
 import { useI18n } from '@/i18n'
 import { PromptArea } from '@/components'

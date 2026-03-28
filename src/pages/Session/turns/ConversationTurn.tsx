@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Spinner } from '@heroui/react'
+import { Spinner } from '@/components/heroui-compat'
 
 import { useI18n } from '@/i18n'
 import { getAgentById } from '@/stores/agentStore'

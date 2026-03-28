@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useState } from 'react'
-import { Button, Chip, ScrollShadow, Tooltip } from '@heroui/react'
+import { Button, Chip, ScrollShadow, Tooltip } from '@/components/heroui-compat'
 
 import { Icon } from './Icon'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'

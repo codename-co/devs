@@ -4,7 +4,7 @@
  * Panel for configuring image generation settings (style, aspect ratio, quality, etc.)
  */
 
-import { Button, Select, Slider, Input, Accordion, Chip, Separator } from '@heroui/react'
+import { Button, Select, Slider, Input, Accordion, Chip, Separator } from '@/components/heroui-compat'
 import { useMemo } from 'react'
 
 import { Icon } from '@/components/Icon'

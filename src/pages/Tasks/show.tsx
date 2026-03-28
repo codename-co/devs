@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
-import { Spinner, Modal, Button, useOverlayState } from '@heroui/react'
+import { Spinner, Modal, Button, useOverlayState } from '@/components/heroui-compat'
 
 import { useI18n } from '@/i18n'
 import { Container, Icon, PromptArea, Section, Title } from '@/components'

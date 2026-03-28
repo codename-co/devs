@@ -4,7 +4,7 @@
  * Fullscreen modal for previewing generated images with navigation.
  */
 
-import { Button, Modal, Tooltip } from '@heroui/react'
+import { Button, Modal, Tooltip } from '@/components/heroui-compat'
 import { useEffect } from 'react'
 
 import { Icon } from '@/components/Icon'

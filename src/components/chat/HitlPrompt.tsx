@@ -1,5 +1,5 @@
 import { memo, useState, useCallback } from 'react'
-import { Button, TextArea, Chip, Alert } from '@heroui/react'
+import { Button, TextArea, Chip, Alert } from '@/components/heroui-compat'
 
 import { useI18n } from '@/i18n'
 import { Icon } from '@/components/Icon'

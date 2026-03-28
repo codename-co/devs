@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Button, Card, ProgressBar, Popover } from '@heroui/react'
+import { Button, Card, ProgressBar, Popover } from '@/components/heroui-compat'
 import { Icon } from '@/components/Icon'
 import { useConnectorStore } from '../stores'
 import { ConnectorIcon } from './ConnectorIcon'

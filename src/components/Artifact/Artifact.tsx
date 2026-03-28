@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Button, Chip, ScrollShadow, Badge, Tooltip, ButtonGroup } from '@heroui/react'
+import { Button, Chip, ScrollShadow, Badge, Tooltip, ButtonGroup } from '@/components/heroui-compat'
 import clsx from 'clsx'
 
 import { useI18n } from '@/i18n'

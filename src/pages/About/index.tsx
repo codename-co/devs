@@ -1,4 +1,4 @@
-import { Accordion, Button, Card, Chip, Separator, Link } from '@heroui/react'
+import { Accordion, Button, Card, Chip, Separator, Link } from '@/components/heroui-compat'
 import { Icon } from '@/components/Icon'
 import { useI18n, useUrl } from '@/i18n'
 import { IconName } from '@/lib/types'

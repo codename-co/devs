@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import { Button, Input, Tooltip } from '@heroui/react'
+import { Button, Input, Tooltip } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { SecureStorage } from '@/lib/crypto'

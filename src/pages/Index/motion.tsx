@@ -5,7 +5,7 @@ import {
   // scaleOut,
   SPRING_CONFIG,
 } from '@/lib/motion'
-export const motionVariants: Record<string, MotionProps> = {
+export const motionVariants: Record<string, Record<string, unknown>> = {
   container: {
     ...fadeInUp(20),
     transition: createTransition(0, { ...SPRING_CONFIG, duration: 0.8 }),

@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, Chip, Pagination } from '@heroui/react'
+import { Card, Chip, Pagination } from '@/components/heroui-compat'
 
 import { useI18n } from '@/i18n'
 import {

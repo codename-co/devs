@@ -6,7 +6,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react'
-import { Modal, Button, ProgressBar } from '@heroui/react'
+import { Modal, Button, ProgressBar } from '@/components/heroui-compat'
 import { useI18n } from '@/i18n'
 import { useConnectorStore } from '../../stores'
 import { useOAuth } from '@/hooks/useOAuth'

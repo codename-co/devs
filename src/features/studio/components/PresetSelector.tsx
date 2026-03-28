@@ -4,7 +4,7 @@
  * Dropdown/popover for quick preset selection.
  */
 
-import { Button, Dropdown } from '@heroui/react'
+import { Button, Dropdown } from '@/components/heroui-compat'
 
 import { Icon } from '@/components/Icon'
 import { type Lang, useI18n } from '@/i18n'

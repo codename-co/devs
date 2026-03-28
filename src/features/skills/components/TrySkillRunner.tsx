@@ -7,7 +7,7 @@
  */
 
 import { useState, useCallback, useRef } from 'react'
-import { Button, Select, TextArea, Chip, ProgressBar, Separator, Tooltip } from '@heroui/react'
+import { Button, Select, TextArea, Chip, ProgressBar, Separator, Tooltip } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import {
   sandbox,

@@ -7,7 +7,7 @@
  * - CloudSync: Enabled/Connecting
  * - CloudSync + spinning: Syncing
  */
-import { Popover } from '@heroui/react'
+import { Popover } from '@/components/heroui-compat'
 import { useState, useEffect } from 'react'
 
 import { useSyncStore } from '../stores/syncStore'

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { renderAbc, synth, type SynthOptions } from 'abcjs'
-import { Alert, Button, ProgressBar } from '@heroui/react'
+import { Alert, Button, ProgressBar } from '@/components/heroui-compat'
 
 import './Score.css'
 import { Icon } from '@/components/Icon'

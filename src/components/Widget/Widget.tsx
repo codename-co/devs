@@ -1,4 +1,4 @@
-import { Button, Card, Dropdown, Tooltip } from '@heroui/react'
+import { Button, Card, Dropdown, Tooltip } from '@/components/heroui-compat'
 import { IconName } from '@/lib/types'
 import { useI18n } from '@/i18n'
 import { useState, useCallback, Suspense, lazy } from 'react'

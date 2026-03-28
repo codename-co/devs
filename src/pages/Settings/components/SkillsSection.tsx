@@ -11,8 +11,8 @@
 
 import { useState, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Button, Card, Chip, Input, Spinner } from '@heroui/react'
-import { toast } from '@heroui/react'
+import { Button, Card, Chip, Input, Spinner } from '@/components/heroui-compat'
+import { toast } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { useHashHighlight } from '@/hooks/useHashHighlight'

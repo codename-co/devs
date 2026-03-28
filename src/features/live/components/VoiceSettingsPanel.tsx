@@ -4,7 +4,7 @@
  * Panel content for voice settings in Live mode.
  * Displays STT/TTS provider selection, auto-speak toggle, and voice selection.
  */
-import { Button, Chip, Dropdown, Switch, Tooltip } from '@heroui/react'
+import { Button, Chip, Dropdown, Switch, Tooltip } from '@/components/heroui-compat'
 import { useMemo } from 'react'
 
 import { Icon } from '@/components/Icon'

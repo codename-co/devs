@@ -1,4 +1,4 @@
-import { Modal } from '@heroui/react'
+import { Modal } from '@/components/heroui-compat'
 
 import { ContentPreview } from './ContentPreview'
 import type {

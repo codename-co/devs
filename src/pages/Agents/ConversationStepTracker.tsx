@@ -8,7 +8,7 @@
  */
 
 import { memo, useMemo } from 'react'
-import { Button, Chip, Spinner } from '@heroui/react'
+import { Accordion, Button, Chip, Spinner } from '@/components/heroui-compat'
 import { Link, useLocation } from 'react-router-dom'
 import { AccordionTracker, Icon } from '@/components'
 import { useI18n } from '@/i18n'

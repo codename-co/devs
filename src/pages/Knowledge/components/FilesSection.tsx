@@ -11,7 +11,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Button, Checkbox, Chip, Dropdown, Input, Modal, Pagination, ProgressBar, Spinner, TextArea, useOverlayState, Tooltip } from '@heroui/react'
+import { Button, Checkbox, Chip, Dropdown, Input, Modal, Pagination, ProgressBar, Spinner, TextArea, useOverlayState, Tooltip } from '@/components/heroui-compat'
 import {
   Upload,
   Folder,

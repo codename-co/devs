@@ -1,4 +1,4 @@
-import { Button, Chip, Input, ListBox, Popover, Spinner } from '@heroui/react'
+import { Button, Chip, Input, ListBox, Popover, Spinner } from '@/components/heroui-compat'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Icon } from '../Icon'

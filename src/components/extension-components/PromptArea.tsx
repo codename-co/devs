@@ -23,7 +23,7 @@ import {
   useEffect,
   useMemo,
 } from 'react'
-import { Button, Chip, TextArea, Tooltip, type TextAreaProps } from '@heroui/react'
+import { Button, Chip, TextArea, Tooltip, type TextAreaProps } from '@/components/heroui-compat'
 
 // ============================================================================
 // Embedded i18n System - No Provider Required

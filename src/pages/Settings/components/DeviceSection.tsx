@@ -10,7 +10,7 @@
  */
 
 import { useEffect, useState, useCallback } from 'react'
-import { Button, Chip, ProgressBar, Tooltip } from '@heroui/react'
+import { Button, Chip, ProgressBar, Tooltip } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { sandbox, type SandboxLanguage, type SandboxState } from '@/lib/sandbox'

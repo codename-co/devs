@@ -3,7 +3,7 @@
  */
 
 import { useState, useCallback } from 'react'
-import { Input, Button, Spinner, ButtonGroup } from '@heroui/react'
+import { Input, Button, Spinner, ButtonGroup } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import { searchSkills, aiSearchSkills } from '@/lib/skills/skillsmp-client'
 import type { SkillSearchResult } from '@/lib/skills/skillsmp-client'

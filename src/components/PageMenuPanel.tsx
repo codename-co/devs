@@ -4,7 +4,7 @@
  * Shared panel layout for PageMenu popover content.
  * Provides consistent structure: title, actions, status chip, description, and content.
  */
-import { Chip, ChipProps, Tooltip } from '@heroui/react'
+import { Chip, ChipProps, Tooltip } from '@/components/heroui-compat'
 import { ReactNode } from 'react'
 
 export interface PageMenuPanelStatus {

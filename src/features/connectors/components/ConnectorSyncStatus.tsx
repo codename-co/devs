@@ -1,4 +1,4 @@
-import { Chip, ProgressBar, Tooltip } from '@heroui/react'
+import { Chip, ProgressBar, Tooltip } from '@/components/heroui-compat'
 import { Icon } from '@/components/Icon'
 import type { Connector, ConnectorSyncState } from '../types'
 import { SyncEngine } from '../sync-engine'

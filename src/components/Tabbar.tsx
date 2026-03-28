@@ -1,4 +1,4 @@
-import { Tab, Tabs, Tooltip } from '@heroui/react'
+import { Tab, Tabs, Tooltip } from '@/components/heroui-compat'
 import { Icon } from './Icon'
 import { useI18n } from '@/i18n'
 import { currentBasePath } from '@/lib/utils'

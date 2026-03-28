@@ -3,7 +3,7 @@
  *
  * SVG-based visual representation of peer-to-peer network topology.
  */
-import { Tooltip } from '@heroui/react'
+import { Tooltip } from '@/components/heroui-compat'
 
 import type { PeerInfo } from '@/lib/yjs'
 

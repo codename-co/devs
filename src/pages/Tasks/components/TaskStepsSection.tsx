@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { Accordion, Chip } from '@heroui/react'
+import { Accordion, Chip } from '@/components/heroui-compat'
 
 import { useI18n } from '@/i18n'
 import { Icon } from '@/components'

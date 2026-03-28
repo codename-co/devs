@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Tabs, Tab, Button, Spinner } from '@heroui/react'
+import { Tabs, Tab, Button, Spinner } from '@/components/heroui-compat'
 import DefaultLayout from '@/layouts/Default'
 import { Container, Icon, Section } from '@/components'
 import { useI18n } from '@/i18n'

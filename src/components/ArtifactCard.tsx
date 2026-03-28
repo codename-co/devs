@@ -1,5 +1,5 @@
 import { memo, useCallback } from 'react'
-import { Button, Card, Chip } from '@heroui/react'
+import { Button, Card, Chip } from '@/components/heroui-compat'
 
 import { Icon, MarkdownRenderer } from '@/components'
 import type { Artifact as ArtifactType } from '@/types'

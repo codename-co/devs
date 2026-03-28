@@ -1,4 +1,4 @@
-import { toast, ToastProps } from '@heroui/react'
+import { toast as heroToast, ToastProps } from '@/components/heroui-compat'
 import { JSX } from 'react'
 
 const toast = (
@@ -13,7 +13,7 @@ const toast = (
     | 'secondary',
   config?: Partial<ToastProps>,
 ) => {
-  toast({
+  heroToast({
     title,
     description: !description
       ? undefined

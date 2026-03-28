@@ -4,7 +4,7 @@
  * Card displaying a single generated video with playback controls and actions.
  */
 
-import { Button, Card, Dropdown, Tooltip, Modal, useOverlayState, ProgressBar } from '@heroui/react'
+import { Button, Card, Dropdown, Tooltip, Modal, useOverlayState, ProgressBar } from '@/components/heroui-compat'
 import { useState, useCallback, useRef, useMemo } from 'react'
 
 import { Icon } from '@/components/Icon'

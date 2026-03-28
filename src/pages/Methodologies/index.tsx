@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Card, Chip, Pagination, Spinner } from '@heroui/react'
+import { Button, Card, Chip, Pagination, Spinner } from '@/components/heroui-compat'
 
 import { loadAllMethodologies } from '@/stores/methodologiesStore'
 import DefaultLayout from '@/layouts/Default'

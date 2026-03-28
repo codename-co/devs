@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Card, ProgressBar } from '@heroui/react'
+import { Card, ProgressBar } from '@/components/heroui-compat'
 import { useLocalLLMStore } from '@/stores/localLLMStore'
 import { LocalLLMProvider } from '@/lib/llm/providers/local'
 import { Icon } from '@/components'

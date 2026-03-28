@@ -8,8 +8,8 @@
  *  - Background image upload
  */
 
-import { Input, Select } from '@heroui/react'
-import { Button } from '@heroui/react'
+import { Input, Select } from '@/components/heroui-compat'
+import { Button } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import { useI18n, useUrl, languages, type Lang } from '@/i18n'
 import { userSettings } from '@/stores/userStore'

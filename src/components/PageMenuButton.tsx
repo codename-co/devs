@@ -4,7 +4,7 @@
  * Shared trigger button style for PageMenu items.
  * Provides consistent appearance for menu trigger buttons.
  */
-import { Button, Tooltip, Kbd } from '@heroui/react'
+import { Button, Popover, Tooltip, Kbd } from '@/components/heroui-compat'
 import { ReactNode, forwardRef } from 'react'
 
 import { Icon } from './Icon'

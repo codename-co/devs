@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useState } from 'react'
-import { Card } from '@heroui/react'
+import { Card } from '@/components/heroui-compat'
 
 import { Icon } from '@/components'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'

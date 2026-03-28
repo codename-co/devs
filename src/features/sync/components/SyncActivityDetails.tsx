@@ -3,7 +3,7 @@
  *
  * Visual representation of sync data activity.
  */
-import { Card, ProgressBar } from '@heroui/react'
+import { Card, ProgressBar } from '@/components/heroui-compat'
 import { useEffect, useMemo, useState } from 'react'
 
 import { Icon } from '@/components/Icon'

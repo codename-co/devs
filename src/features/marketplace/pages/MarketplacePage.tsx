@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
-import { Card, Chip, ListBox, Spinner, Avatar, Input, Button, Tooltip } from '@heroui/react'
+import { Card, Chip, ListBox, Spinner, Avatar, Input, Button, Tooltip } from '@/components/heroui-compat'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import DefaultLayout from '@/layouts/Default'
 import { Container, Section, Icon, Title } from '@/components'

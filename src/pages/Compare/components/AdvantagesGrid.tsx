@@ -1,5 +1,5 @@
 import { Container, Icon, Section, Title } from '@/components'
-import { Card, Chip } from '@heroui/react'
+import { Card, Chip } from '@/components/heroui-compat'
 import { motionVariants } from '../motion'
 import type { IconName } from '@/lib/types'
 

@@ -5,7 +5,7 @@
  * Displays a summary and offers options to start syncing or close.
  */
 
-import { Button } from '@heroui/react'
+import { Button } from '@/components/heroui-compat'
 import { WarningTriangle } from 'iconoir-react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'

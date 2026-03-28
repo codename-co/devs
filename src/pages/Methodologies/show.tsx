@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Accordion, Button, Card, Chip, Link, Spinner, Tab, Tabs } from '@heroui/react'
+import { Accordion, Button, Card, Chip, Link, Spinner, Tab, Tabs } from '@/components/heroui-compat'
 
 import { Container, Icon, Section, Title, Widget } from '@/components'
 import DefaultLayout from '@/layouts/Default'

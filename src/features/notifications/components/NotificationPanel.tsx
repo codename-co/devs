@@ -4,7 +4,7 @@
  * Displays the list of notifications with read/unread state,
  * action buttons, and empty state.
  */
-import { Button, Chip, ScrollShadow, Spinner, Tooltip } from '@heroui/react'
+import { Button, Chip, ScrollShadow, Spinner, Tooltip } from '@/components/heroui-compat'
 import { useNavigate } from 'react-router-dom'
 
 import { Icon } from '@/components'

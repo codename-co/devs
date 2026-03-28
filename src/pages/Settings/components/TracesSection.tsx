@@ -13,8 +13,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Button, Input, Modal, Select, Spinner, Tabs, Tab, Tooltip, Switch, useOverlayState } from '@heroui/react'
-import { addToast } from '@heroui/toast'
+import { Button, Input, Modal, Select, Spinner, Tabs, Tab, Tooltip, Switch, useOverlayState } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { useTraceStore } from '@/stores/traceStore'

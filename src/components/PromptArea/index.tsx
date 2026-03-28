@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Chip, Popover, TextArea, type TextAreaProps, Tooltip } from '@heroui/react'
+import { Button, ButtonGroup, Chip, Popover, TextArea, type TextAreaProps, Tooltip } from '@/components/heroui-compat'
 import {
   forwardRef,
   useEffect,

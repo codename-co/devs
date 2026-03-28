@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
-import { Button, Chip, Dropdown, Spinner, Select, Card } from '@heroui/react'
+import { Button, Chip, Dropdown, Spinner, Select, Card } from '@/components/heroui-compat'
 import { Pin, MoreVert, PinSlash } from 'iconoir-react'
 import { useNavigate } from 'react-router-dom'
 

@@ -1,4 +1,4 @@
-import { Accordion, type AccordionProps } from '@heroui/react'
+import { Accordion, type AccordionProps } from '@/components/heroui-compat'
 
 export const AccordionTracker: React.FC<{
   children: AccordionProps['children']

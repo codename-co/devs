@@ -13,7 +13,7 @@
  * @route /demo/timeline
  */
 
-import { Chip, Separator } from '@heroui/react'
+import { Chip, Separator } from '@/components/heroui-compat'
 
 import { Container, Icon, Section, Title } from '@/components'
 import { MessageBubble, HitlPrompt } from '@/components/chat'

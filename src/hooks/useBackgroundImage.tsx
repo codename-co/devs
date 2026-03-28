@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { useI18n } from '@/i18n'
 import { errorToast, successToast } from '@/lib/toast'
 import { userSettings } from '@/stores/userStore'
-import { toast, Button } from '@heroui/react'
+import { toast, Button } from '@/components/heroui-compat'
 
 interface UseBackgroundImageReturn {
   backgroundImage: string | undefined

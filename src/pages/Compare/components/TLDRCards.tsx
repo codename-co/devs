@@ -1,5 +1,5 @@
 import { Container, Icon, Section } from '@/components'
-import { Card } from '@heroui/react'
+import { Card } from '@/components/heroui-compat'
 import { motionVariants } from '../motion'
 import { PRODUCT } from '@/config/product'
 import type { IconName } from '@/lib/types'

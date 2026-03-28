@@ -1,4 +1,4 @@
-import { Tabs, Tab } from '@heroui/react'
+import { Tabs, Tab } from '@/components/heroui-compat'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 import DefaultLayout from '@/layouts/Default'

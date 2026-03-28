@@ -3,7 +3,7 @@
  *
  * A styled Radio component with enhanced visual design for selection cards.
  */
-import { Radio, RadioProps } from '@heroui/react'
+import { Radio, RadioProps } from '@/components/heroui-compat'
 
 import { cn } from '@/lib/utils'
 

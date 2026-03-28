@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { Spinner } from '@heroui/react'
+import { Spinner } from '@/components/heroui-compat'
 
 import { Icon } from '@/components'
 

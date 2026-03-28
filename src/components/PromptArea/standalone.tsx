@@ -17,7 +17,7 @@
  */
 
 import { forwardRef, useState, useCallback, useRef, useEffect } from 'react'
-import { Button, TextArea, type TextAreaProps } from '@heroui/react'
+import { Button, TextArea, type TextAreaProps } from '@/components/heroui-compat'
 
 export interface PromptAreaProps
   extends Omit<TextAreaProps, 'onKeyDown' | 'onSubmit'> {

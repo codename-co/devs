@@ -5,7 +5,7 @@
  * Each provider shows its icon, name, and description.
  */
 
-import { Card, Tooltip } from '@heroui/react'
+import { Card, Tooltip } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { getProviders } from '../../providers/apps'

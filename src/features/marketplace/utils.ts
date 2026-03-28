@@ -569,7 +569,7 @@ export function generateAppPageHtml(
   <div id="root"></div>
   <script type="text/babel" data-type="module" data-presets="react" data-targets="defaults">
     import React, { render } from 'react-dom'
-    import { HeroUIProvider } from '@heroui/react'
+    import { HeroUIProvider } from '@/components/heroui-compat'
 
     ${pageCode}
 

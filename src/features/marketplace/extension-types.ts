@@ -859,75 +859,75 @@ declare module '@devs/components' {
   // ===========================================================================
 
   // Layout
-  export { Divider } from '@heroui/react';
-  export { Spacer } from '@heroui/react';
+  export { Divider } from '@/components/heroui-compat';
+  export { Spacer } from '@/components/heroui-compat';
 
   // Buttons
-  export { Button, ButtonGroup } from '@heroui/react';
-  export type { ButtonProps, ButtonGroupProps } from '@heroui/react';
+  export { Button, ButtonGroup } from '@/components/heroui-compat';
+  export type { ButtonProps, ButtonGroupProps } from '@/components/heroui-compat';
 
   // Forms
-  export { Input } from '@heroui/react';
-  export { Textarea } from '@heroui/react';
-  export { Checkbox, CheckboxGroup } from '@heroui/react';
-  export { Radio, RadioGroup } from '@heroui/react';
-  export { Select, SelectItem, SelectSection } from '@heroui/react';
-  export { Slider } from '@heroui/react';
-  export { Switch } from '@heroui/react';
-  export { Autocomplete, AutocompleteItem, AutocompleteSection } from '@heroui/react';
-  export { DatePicker, DateRangePicker, DateInput } from '@heroui/react';
-  export { TimeInput } from '@heroui/react';
-  export { Form } from '@heroui/react';
-  export type { InputProps, TextAreaProps, CheckboxProps, RadioProps, SelectProps, SliderProps, SwitchProps } from '@heroui/react';
+  export { Input } from '@/components/heroui-compat';
+  export { Textarea } from '@/components/heroui-compat';
+  export { Checkbox, CheckboxGroup } from '@/components/heroui-compat';
+  export { Radio, RadioGroup } from '@/components/heroui-compat';
+  export { Select, SelectItem, SelectSection } from '@/components/heroui-compat';
+  export { Slider } from '@/components/heroui-compat';
+  export { Switch } from '@/components/heroui-compat';
+  export { Autocomplete, AutocompleteItem, AutocompleteSection } from '@/components/heroui-compat';
+  export { DatePicker, DateRangePicker, DateInput } from '@/components/heroui-compat';
+  export { TimeInput } from '@/components/heroui-compat';
+  export { Form } from '@/components/heroui-compat';
+  export type { InputProps, TextAreaProps, CheckboxProps, RadioProps, SelectProps, SliderProps, SwitchProps } from '@/components/heroui-compat';
 
   // Data Display
-  export { Card, CardHeader, CardBody, CardFooter } from '@heroui/react';
-  export { Avatar, AvatarGroup } from '@heroui/react';
-  export { Badge } from '@heroui/react';
-  export { Chip } from '@heroui/react';
-  export { Code } from '@heroui/react';
-  export { Kbd } from '@heroui/react';
-  export { User } from '@heroui/react';
-  export { Skeleton } from '@heroui/react';
-  export { Snippet } from '@heroui/react';
-  export type { CardProps, AvatarProps, BadgeProps, ChipProps } from '@heroui/react';
+  export { Card, CardHeader, CardBody, CardFooter } from '@/components/heroui-compat';
+  export { Avatar, AvatarGroup } from '@/components/heroui-compat';
+  export { Badge } from '@/components/heroui-compat';
+  export { Chip } from '@/components/heroui-compat';
+  export { Code } from '@/components/heroui-compat';
+  export { Kbd } from '@/components/heroui-compat';
+  export { User } from '@/components/heroui-compat';
+  export { Skeleton } from '@/components/heroui-compat';
+  export { Snippet } from '@/components/heroui-compat';
+  export type { CardProps, AvatarProps, BadgeProps, ChipProps } from '@/components/heroui-compat';
 
   // Feedback
-  export { CircularProgress, Progress } from '@heroui/react';
-  export { Spinner } from '@heroui/react';
-  export type { ProgressProps, SpinnerProps } from '@heroui/react';
+  export { CircularProgress, Progress } from '@/components/heroui-compat';
+  export { Spinner } from '@/components/heroui-compat';
+  export type { ProgressProps, SpinnerProps } from '@/components/heroui-compat';
 
   // Navigation
-  export { Accordion, AccordionItem } from '@heroui/react';
-  export { Breadcrumbs, BreadcrumbItem } from '@heroui/react';
-  export { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection } from '@heroui/react';
-  export { Link } from '@heroui/react';
-  export { Listbox, ListboxItem, ListboxSection } from '@heroui/react';
-  export { Navbar, NavbarBrand, NavbarContent, NavbarItem, NavbarMenuToggle, NavbarMenu, NavbarMenuItem } from '@heroui/react';
-  export { Pagination, PaginationItem, PaginationCursor } from '@heroui/react';
-  export { Tabs, Tab } from '@heroui/react';
-  export type { AccordionProps, LinkProps, TabsProps, PaginationProps } from '@heroui/react';
+  export { Accordion, AccordionItem } from '@/components/heroui-compat';
+  export { Breadcrumbs, BreadcrumbItem } from '@/components/heroui-compat';
+  export { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection } from '@/components/heroui-compat';
+  export { Link } from '@/components/heroui-compat';
+  export { Listbox, ListboxItem, ListboxSection } from '@/components/heroui-compat';
+  export { Navbar, NavbarBrand, NavbarContent, NavbarItem, NavbarMenuToggle, NavbarMenu, NavbarMenuItem } from '@/components/heroui-compat';
+  export { Pagination, PaginationItem, PaginationCursor } from '@/components/heroui-compat';
+  export { Tabs, Tab } from '@/components/heroui-compat';
+  export type { AccordionProps, LinkProps, TabsProps, PaginationProps } from '@/components/heroui-compat';
 
   // Overlay
-  export { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@heroui/react';
-  export { Popover, PopoverTrigger, PopoverContent } from '@heroui/react';
-  export { Tooltip } from '@heroui/react';
-  export { Drawer, DrawerContent, DrawerHeader, DrawerBody, DrawerFooter } from '@heroui/react';
-  export type { ModalProps, PopoverProps, TooltipProps, DrawerProps } from '@heroui/react';
+  export { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/heroui-compat';
+  export { Popover, PopoverTrigger, PopoverContent } from '@/components/heroui-compat';
+  export { Tooltip } from '@/components/heroui-compat';
+  export { Drawer, DrawerContent, DrawerHeader, DrawerBody, DrawerFooter } from '@/components/heroui-compat';
+  export type { ModalProps, PopoverProps, TooltipProps, DrawerProps } from '@/components/heroui-compat';
 
   // Disclosure
-  export { useDisclosure } from '@heroui/react';
-  export type { UseDisclosureReturn } from '@heroui/react';
+  export { useDisclosure } from '@/components/heroui-compat';
+  export type { UseDisclosureReturn } from '@/components/heroui-compat';
 
   // Table
-  export { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell } from '@heroui/react';
-  export type { TableProps, TableColumnProps, TableRowProps, TableCellProps } from '@heroui/react';
+  export { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell } from '@/components/heroui-compat';
+  export type { TableProps, TableColumnProps, TableRowProps, TableCellProps } from '@/components/heroui-compat';
 
   // Other
-  export { Alert } from '@heroui/react';
-  export { Calendar, RangeCalendar } from '@heroui/react';
-  export { ScrollShadow } from '@heroui/react';
-  export type { AlertProps, CalendarProps, ScrollShadowProps } from '@heroui/react';
+  export { Alert } from '@/components/heroui-compat';
+  export { Calendar, RangeCalendar } from '@/components/heroui-compat';
+  export { ScrollShadow } from '@/components/heroui-compat';
+  export type { AlertProps, CalendarProps, ScrollShadowProps } from '@/components/heroui-compat';
 }
 `
 

@@ -1,4 +1,4 @@
-import { Button, Popover, Tooltip } from '@heroui/react'
+import { Button, Popover, Tooltip } from '@/components/heroui-compat'
 import { useState } from 'react'
 
 import { AgentPicker } from './AgentPicker'

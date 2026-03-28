@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, ButtonGroup, Tooltip } from '@heroui/react'
+import { Button, ButtonGroup, Tooltip } from '@/components/heroui-compat'
 
 import { Icon } from '@/components'
 import { LocalBackupButton } from '@/features/local-backup'

@@ -3,7 +3,7 @@
  */
 
 import { useState } from 'react'
-import { Modal, Button, Chip, Tabs, Tab, Separator, Switch, Spinner } from '@heroui/react'
+import { Modal, Button, Chip, Tabs, Tab, Separator, Switch, Spinner } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import type { InstalledSkill } from '@/types'
 import type { SkillSearchResult } from '@/lib/skills/skillsmp-client'

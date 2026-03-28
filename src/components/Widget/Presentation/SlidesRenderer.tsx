@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from 'react'
-import { Button, ButtonGroup, Modal, Pagination, Tooltip } from '@heroui/react'
+import { Button, ButtonGroup, Modal, Pagination, Tooltip } from '@/components/heroui-compat'
 import { useI18n } from '@/i18n'
 import localI18n from './i18n'
 import { Slide } from './PresentationSlide'

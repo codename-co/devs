@@ -1,4 +1,4 @@
-import { Button, Kbd, Link, ListBox, ScrollShadow, Tooltip, Popover } from '@heroui/react'
+import { Button, Kbd, Link, ListBox, ScrollShadow, Tooltip, Popover } from '@/components/heroui-compat'
 
 import { languages, type LanguageCode, useI18n, useUrl } from '@/i18n'
 import { userSettings } from '@/stores/userStore'

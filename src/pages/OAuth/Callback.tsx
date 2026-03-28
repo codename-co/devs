@@ -11,7 +11,7 @@
  */
 
 import { useEffect, useState } from 'react'
-import { Spinner } from '@heroui/react'
+import { Spinner } from '@/components/heroui-compat'
 
 /** Must match the channel name in oauth-gateway.ts */
 const OAUTH_BROADCAST_CHANNEL = 'devs-oauth-callback'

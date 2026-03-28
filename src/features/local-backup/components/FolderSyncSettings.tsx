@@ -3,7 +3,7 @@
  *
  * Compact UI for enabling/disabling local folder backup
  */
-import { Button, Chip, Dropdown, Tooltip } from '@heroui/react'
+import { Button, Chip, Dropdown, Tooltip } from '@/components/heroui-compat'
 import { useState, useEffect, useCallback } from 'react'
 
 import '../types/file-system.d'

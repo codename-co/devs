@@ -6,7 +6,7 @@
  */
 
 import { memo, useState, useCallback } from 'react'
-import { Button, Chip } from '@heroui/react'
+import { Button, Chip } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import type { OrphanedWorkflow } from '@/lib/orchestrator/recovery'
 import { resumeWorkflow, discardWorkflow } from '@/lib/orchestrator/recovery'

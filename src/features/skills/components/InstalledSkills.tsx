@@ -2,7 +2,7 @@
  * InstalledSkills — List of installed skills with management controls.
  */
 
-import { Card, Chip, Switch, Button } from '@heroui/react'
+import { Card, Chip, Switch, Button } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import { useSkills } from '@/stores/skillStore'
 import {

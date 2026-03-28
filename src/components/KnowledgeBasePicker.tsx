@@ -1,4 +1,4 @@
-import { type DropdownMenuProps, Chip } from '@heroui/react'
+import { type DropdownMenuProps, Chip, Dropdown } from '@/components/heroui-compat'
 import { useState, useEffect } from 'react'
 
 import { Icon } from './Icon'

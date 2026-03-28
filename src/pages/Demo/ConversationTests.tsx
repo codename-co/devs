@@ -13,7 +13,7 @@
 
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Button, Card, Chip, Separator, ProgressBar, Spinner, Tab, Tabs, Tooltip } from '@heroui/react'
+import { Button, Card, Chip, Separator, ProgressBar, Spinner, Tab, Tabs, Tooltip } from '@/components/heroui-compat'
 
 import { Container, Icon, MarkdownRenderer, Section } from '@/components'
 import Layout from '@/layouts/Default'

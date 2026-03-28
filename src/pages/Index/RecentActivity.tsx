@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Card, Link } from '@heroui/react'
+import { Card, Link } from '@/components/heroui-compat'
 import { Icon } from '@/components/Icon'
 import { Container } from '@/components'
 import { formatConversationDate } from '@/lib/format'

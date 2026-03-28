@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Modal, Input, ListBox, Spinner } from '@heroui/react'
+import { Modal, Input, ListBox, Spinner } from '@/components/heroui-compat'
 
 import { Icon } from '@/components/Icon'
 import { useI18n, useUrl } from '@/i18n'

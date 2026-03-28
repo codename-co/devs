@@ -1,4 +1,4 @@
-import { Avatar, type AvatarProps } from '@heroui/react'
+import { Avatar, type AvatarProps } from '@/components/heroui-compat'
 
 import { Icon } from './Icon'
 

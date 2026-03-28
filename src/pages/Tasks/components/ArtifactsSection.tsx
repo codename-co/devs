@@ -1,5 +1,5 @@
 import { memo, useMemo, useState } from 'react'
-import { Link } from '@heroui/react'
+import { Link } from '@/components/heroui-compat'
 
 import { useI18n } from '@/i18n'
 import { Icon, Title, ArtifactPreviewCard } from '@/components'

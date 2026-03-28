@@ -5,7 +5,7 @@
  */
 
 import { useState } from 'react'
-import { Button, Input, Popover, Chip } from '@heroui/react'
+import { Button, Input, Popover, Chip } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import type { MeetingParticipant } from '../types'
 

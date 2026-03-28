@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useCallback, memo, useRef } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Accordion, Button, ButtonGroup, Card, Chip, Separator, Input, Modal, Spinner, TextArea, Tooltip, useOverlayState } from '@heroui/react'
+import { Accordion, Button, ButtonGroup, Card, Chip, Separator, Input, Modal, Spinner, TextArea, Tooltip, useOverlayState } from '@/components/heroui-compat'
 import { Pin } from 'iconoir-react'
 
 import { useI18n, useUrl } from '@/i18n'

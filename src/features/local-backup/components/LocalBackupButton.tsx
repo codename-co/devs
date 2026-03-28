@@ -3,7 +3,7 @@
  *
  * Header icon button with popover for local backup settings
  */
-import { Popover } from '@heroui/react'
+import { Popover } from '@/components/heroui-compat'
 import { useEffect, useState } from 'react'
 
 import '../types/file-system.d'
