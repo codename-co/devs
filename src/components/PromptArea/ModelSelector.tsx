@@ -923,6 +923,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
 
       return (
         <Dropdown.Item
+          key={credential.id}
           id={credential.id}
           endContent={
             showArrow ? (
@@ -1025,6 +1026,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
     if (isFetchingModels) {
       return (
         <Dropdown.Item
+          key="loading"
           id="loading"
           isReadOnly
           textValue="Loading"
@@ -1042,6 +1044,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
     if (viewingProvider.models.length === 0) {
       return (
         <Dropdown.Item
+          key="empty"
           id="empty"
           isReadOnly
           textValue="No models"
@@ -1074,6 +1077,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
       <>
         {showSearch && (
           <Dropdown.Item
+            key="search"
             id="search"
             isReadOnly
             textValue="Search"
@@ -1134,6 +1138,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
 
             return (
               <Dropdown.Item
+                key={model}
                 id={model}
                 endContent={
                   <div className="flex gap-1 items-center shrink-0">
@@ -1203,6 +1208,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
               {olderModels.length > 0 && (
                 <>
                   <Dropdown.Item
+                    key="older-divider"
                     id="older-divider"
                     isReadOnly
                     textValue="Older models"
@@ -1221,6 +1227,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
               )}
               {filteredModels.length === 0 && (
                 <Dropdown.Item
+                  key="no-results"
                   id="no-results"
                   isReadOnly
                   textValue="No results"
@@ -1235,6 +1242,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
         })()}
 
         <Dropdown.Item
+          key="manage-knowledge"
           id="manage-knowledge"
           textValue={t('Manage knowledge')}
           closeOnSelect
@@ -1283,11 +1291,12 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
         >
           {viewMode === 'providers' ? (
             <>
-              <Dropdown.Section showDivider>
+              <Dropdown.Section key="providers-list" showDivider>
                 {renderProviderItems()}
               </Dropdown.Section>
-              <Dropdown.Section>
+              <Dropdown.Section key="providers-actions">
                 <Dropdown.Item
+                  key="settings"
                   id="settings"
                   textValue={t('Add AI provider')}
                   onPress={() => {
@@ -1301,8 +1310,9 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
             </>
           ) : (
             <>
-              <Dropdown.Section showDivider>
+              <Dropdown.Section key="models-header" showDivider>
                 <Dropdown.Item
+                  key="back"
                   id="back"
                   textValue={t('Back')}
                   closeOnSelect={false}
@@ -1316,7 +1326,7 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
                   </span>
                 </Dropdown.Item>
               </Dropdown.Section>
-              <Dropdown.Section>{renderModelItems()}</Dropdown.Section>
+              <Dropdown.Section key="models-list">{renderModelItems()}</Dropdown.Section>
             </>
           )}
         </Dropdown.Menu>

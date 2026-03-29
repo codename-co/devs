@@ -7,7 +7,14 @@ import type { HeaderProps } from '@/lib/types'
 import { useContextualPanelStore } from '@/stores/contextualPanelStore'
 import { userSettings } from '@/stores/userStore'
 import { useNavigate } from 'react-router-dom'
-import { Avatar, Button, Dropdown, Link, ToastProvider, Tooltip } from '@/components/heroui-compat'
+import {
+  Avatar,
+  Button,
+  Dropdown,
+  Link,
+  ToastProvider,
+  Tooltip,
+} from '@/components/heroui-compat'
 import clsx from 'clsx'
 import { useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
@@ -119,7 +126,6 @@ export default function DefaultLayout({
                             >
                               {header.icon.image ? (
                                 <Avatar
-
                                   src={`data:image/png;base64,${header.icon.image}`}
                                   alt=""
                                   className="w-12 h-12"
@@ -135,7 +141,6 @@ export default function DefaultLayout({
                           </Tooltip>
                         ) : header.icon.image ? (
                           <Avatar
-
                             src={`data:image/png;base64,${header.icon.image}`}
                             alt=""
                             className={clsx(

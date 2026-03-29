@@ -1,4 +1,12 @@
-import { Button, Kbd, Link, ListBox, ScrollShadow, Tooltip, Popover } from '@/components/heroui-compat'
+import {
+  Button,
+  Kbd,
+  Link,
+  ListBox,
+  ScrollShadow,
+  Tooltip,
+  Popover,
+} from '@/components/heroui-compat'
 
 import { languages, type LanguageCode, useI18n, useUrl } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
@@ -48,6 +56,7 @@ const RecentActivity = ({ lang }: { lang: LanguageCode }) => {
 
           return (
             <ListBox.Item
+              key={item.id}
               id={item.id}
               href={item.href}
               variant="faded"

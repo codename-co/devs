@@ -368,10 +368,7 @@ export const IndexPage = () => {
                 <div className="flex gap-2 flex-wrap justify-center">
                   {useCasesByThemes(agents).map(
                     ({ theme, usecases }, _index) => (
-                      <div
-                        {...motionVariants.usecase}
-                        key={theme}
-                      >
+                      <div {...motionVariants.usecase} key={theme}>
                         <Dropdown key={theme} placement="bottom-start">
                           <Dropdown.Trigger>
                             <Button
