@@ -384,6 +384,7 @@ export function parseMentions(text: string): ParsedMention[] {
 
 export interface PromptAreaProps
   extends Omit<TextAreaProps, 'onKeyDown' | 'onSubmit'> {
+  onValueChange?: (value: string) => void
   /** Language code for i18n (defaults to 'en') */
   lang?: LanguageCode
   /** Callback when the user submits the prompt */

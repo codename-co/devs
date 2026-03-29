@@ -20,7 +20,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
       scrollBehavior="inside"
       placement="bottom-center"
       isOpen={isOpen}
-      onOpenChange={(v) => !v && (onClose)()}
+      onOpenChange={(v: any) => !v && (onClose)()}
       backdrop="blur"
       classNames={{
         base: 'max-h-[90vh] overflow-hidden',

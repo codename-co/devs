@@ -29,7 +29,7 @@ export const ContentPreviewModal = ({
   return (
     <Modal
       isOpen={isOpen}
-      onOpenChange={(v) => !v && (onClose)()}
+      onOpenChange={(v: any) => !v && (onClose)()}
       size={size}
       scrollBehavior="inside"
     >

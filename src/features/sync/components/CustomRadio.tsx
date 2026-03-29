@@ -3,11 +3,12 @@
  *
  * A styled Radio component with enhanced visual design for selection cards.
  */
+import React from 'react'
 import { Radio, RadioProps } from '@/components/heroui-compat'
 
 import { cn } from '@/lib/utils'
 
-export function CustomRadio(props: RadioProps) {
+export function CustomRadio(props: RadioProps & { size?: string; description?: React.ReactNode }) {
   const { children, size, ...otherProps } = props
 
   return (

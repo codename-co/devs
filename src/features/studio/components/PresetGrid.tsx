@@ -112,7 +112,7 @@ export function PresetGrid({
       {/* Category tabs */}
       <Tabs
         selectedKey={selectedCategory}
-        onSelectionChange={(key) => setSelectedCategory(key as string)}
+        onSelectionChange={(key: any) => setSelectedCategory(key as string)}
         className="mb-4"
         size="sm"
         variant="underlined"

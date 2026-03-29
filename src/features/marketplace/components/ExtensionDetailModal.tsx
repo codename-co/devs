@@ -298,7 +298,7 @@ export function ExtensionDetailModal({
     <>
       <Modal
         isOpen={isOpen}
-        onOpenChange={(v) => !v && (isPreviewMode ? () => setIsPreviewMode(false) : onClose)()}
+        onOpenChange={(v: any) => !v && (isPreviewMode ? () => setIsPreviewMode(false) : onClose)()}
         size={isPreviewMode ? 'full' : 'lg'}
         placement="bottom-center"
       >
@@ -443,7 +443,7 @@ export function ExtensionDetailModal({
                       </Dropdown.Trigger>
                       <Dropdown.Menu
                         aria-label="Extension actions"
-                        onAction={(key) => {
+                        onAction={(key: any) => {
                           switch (key) {
                             case 'preview':
                               setIsPreviewMode(true)
@@ -543,7 +543,7 @@ export function ExtensionDetailModal({
       </Modal>
 
       {/* Delete Confirmation Modal */}
-      <Modal isOpen={isDeleteModalOpen} onOpenChange={(v) => !v && (onDeleteModalClose)()} size="sm">
+      <Modal isOpen={isDeleteModalOpen} onOpenChange={(v: any) => !v && (onDeleteModalClose)()} size="sm">
         <Modal.Dialog>
           <Modal.Header className="flex flex-col gap-1">
             {t('Delete')}

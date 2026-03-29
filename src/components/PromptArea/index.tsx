@@ -48,6 +48,7 @@ export type PromptMode = 'chat' | 'live' | 'studio' | 'app' | 'agent'
 
 export interface PromptAreaProps
   extends Omit<TextAreaProps, 'onFocus' | 'onBlur' | 'onKeyDown'> {
+  onValueChange?: (value: string) => void
   lang: LanguageCode
   mode?: PromptMode
   onModeChange?: (mode: PromptMode) => void
@@ -78,9 +79,12 @@ export interface PromptAreaProps
   onFocus?: React.FocusEventHandler<HTMLTextAreaElement>
   onBlur?: React.FocusEventHandler<HTMLTextAreaElement>
   onKeyDown?: React.KeyboardEventHandler<HTMLTextAreaElement>
+  onSubmit?: () => void
   withModelSelector?: boolean
   withAttachmentSelector?: boolean
   withAgentSelector?: boolean
+  minRows?: number
+  maxRows?: number
 }
 
 export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(

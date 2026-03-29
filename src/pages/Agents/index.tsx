@@ -14,7 +14,7 @@ import { AgentCard } from '@/components/AgentCard'
 import DefaultLayout from '@/layouts/Default'
 import { HeaderProps } from '@/lib/types'
 import { useNavigate } from 'react-router-dom'
-import { MoreVert, Trash, Voice } from 'iconoir-react'
+import { MoreVert } from 'iconoir-react'
 
 export const AgentsPage = () => {
   const {
@@ -199,7 +199,7 @@ export const AgentsPage = () => {
         <Container>
           <Tabs
             selectedKey={activeTab}
-            onSelectionChange={(key) => setActiveTab(key as any)}
+            onSelectionChange={(key: any) => setActiveTab(key as any)}
             aria-label="Agents sections"
             variant="underlined"
             classNames={{
@@ -261,7 +261,7 @@ export const AgentsPage = () => {
       {/* Edit Knowledge Modal */}
       <Modal
         isOpen={isKnowledgeModalOpen}
-        onOpenChange={(v) => !v && (onKnowledgeModalClose)()}
+        onOpenChange={(v: any) => !v && (onKnowledgeModalClose)()}
         size="3xl"
         scrollBehavior="inside"
       >
@@ -297,7 +297,7 @@ export const AgentsPage = () => {
       </Modal>
 
       {/* Delete Confirmation Modal */}
-      <Modal isOpen={isDeleteModalOpen} onOpenChange={(v) => !v && (onDeleteModalClose)()} size="md">
+      <Modal isOpen={isDeleteModalOpen} onOpenChange={(v: any) => !v && (onDeleteModalClose)()} size="md">
         <Modal.Dialog>
           <Modal.Header>
             <div className="flex items-center gap-2">{t('Delete Agent')}</div>

@@ -87,7 +87,7 @@ export function PublishPage() {
                 <Card.Content className="p-6">
                   <Tabs
                     selectedKey={activeTab}
-                    onSelectionChange={(key) =>
+                    onSelectionChange={(key: any) =>
                       setActiveTab(key as 'upload' | 'create')
                     }
                     className="mb-6"

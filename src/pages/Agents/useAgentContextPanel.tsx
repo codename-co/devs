@@ -834,7 +834,7 @@ const AgentKnowledgeContent = ({
                       value={item.id}
                       size="sm"
                       isSelected={isSelected}
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={(e: any) => e.stopPropagation()}
                       className="flex-shrink-0"
                     />
                     <span className="flex-shrink-0">{getFileIcon(item)}</span>
@@ -993,7 +993,7 @@ const AgentContextTabs = ({
     <div className="space-y-3">
       <Tabs
         selectedKey={selectedTab}
-        onSelectionChange={(key) => setSelectedTab(key as string)}
+        onSelectionChange={(key: any) => setSelectedTab(key as string)}
         size="sm"
         variant="light"
         className="sticky top-10 bg-default-50 z-10"

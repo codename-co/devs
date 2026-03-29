@@ -355,7 +355,7 @@ export const LibraryContent = () => {
         scrollBehavior="inside"
         placement="bottom-center"
         isOpen={!!previewArtifact}
-        onOpenChange={(v) => !v && (handleClosePreview)()}
+        onOpenChange={(v: any) => !v && (handleClosePreview)()}
         backdrop="blur"
         classNames={{
           base: 'max-h-[85vh]',
@@ -423,7 +423,7 @@ export const LibraryContent = () => {
         scrollBehavior="inside"
         placement="bottom-center"
         isOpen={!!previewWidget}
-        onOpenChange={(v) => !v && (handleClosePreview)()}
+        onOpenChange={(v: any) => !v && (handleClosePreview)()}
         backdrop="blur"
         classNames={{
           base: 'max-h-[85vh]',

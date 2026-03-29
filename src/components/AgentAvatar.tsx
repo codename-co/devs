@@ -1,4 +1,4 @@
-import { Avatar, type AvatarProps } from '@/components/heroui-compat'
+import { Avatar } from '@/components/heroui-compat'
 
 import { Icon } from './Icon'
 
@@ -44,7 +44,7 @@ export interface AgentAvatarProps {
   /** Additional class name for the name text */
   nameClassName?: string
   /** HeroUI Avatar radius */
-  radius?: AvatarProps['radius']
+  radius?: 'sm' | 'md' | 'lg' | 'full' | 'none'
 }
 
 /**

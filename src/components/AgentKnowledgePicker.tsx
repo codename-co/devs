@@ -249,7 +249,7 @@ export function AgentKnowledgePicker({
 
       <Modal
         isOpen={isOpen}
-        onOpenChange={(v) => !v && (onClose)()}
+        onOpenChange={(v: any) => !v && (onClose)()}
         size="3xl"
         scrollBehavior="inside"
       >

@@ -46,7 +46,7 @@ export function ServiceWorkerUpdatePrompt() {
         }),
         // @ts-ignore
         {
-          hideCloseButton: true,
+          // hideCloseButton not in v3: true,
           timeout: 0,
           endContent: (
             <>

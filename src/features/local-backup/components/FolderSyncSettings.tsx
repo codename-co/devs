@@ -244,7 +244,7 @@ export function FolderSyncSettings() {
                 aria-label={t('What to backup:')}
                 selectionMode="multiple"
                 selectedKeys={new Set(syncOptionsValue)}
-                onSelectionChange={(keys) =>
+                onSelectionChange={(keys: any) =>
                   handleSelectionChange(keys as Set<string>)
                 }
                 closeOnSelect={false}
@@ -312,7 +312,7 @@ export function FolderSyncSettings() {
                 aria-label={t('What to backup:')}
                 selectionMode="multiple"
                 selectedKeys={new Set(syncOptionsValue)}
-                onSelectionChange={(keys) =>
+                onSelectionChange={(keys: any) =>
                   handleSelectionChange(keys as Set<string>)
                 }
                 closeOnSelect={false}

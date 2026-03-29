@@ -68,7 +68,7 @@ export function SyncButton() {
         tooltipDisabled={isPopoverOpen}
         onClick={openSettings}
       />
-      <Popover.Content />
+      <Popover.Content>{null as unknown as React.ReactNode}</Popover.Content>
     </Popover>
   )
 }

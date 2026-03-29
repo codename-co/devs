@@ -386,7 +386,7 @@ export function AgentsNewPage() {
             <div className="space-y-6">
               <Tabs
                 selectedKey={creationMode}
-                onSelectionChange={(key) =>
+                onSelectionChange={(key: any) =>
                   setCreationMode(key as CreationMode)
                 }
                 aria-label={t('Creation mode')}
@@ -587,7 +587,7 @@ export function AgentsNewPage() {
                             size="sm"
                             step={0.1}
                             value={temperature}
-                            onChange={(value) =>
+                            onChange={(value: any) =>
                               setTemperature(
                                 Array.isArray(value) ? value[0] : value,
                               )
@@ -709,7 +709,7 @@ export function AgentsNewPage() {
                           agentName: currentAgentConfig.name,
                         })}
                         isDisabled={isLoading || !isPreviewEnabled}
-                        onKeyDown={(e) => {
+                        onKeyDown={(e: any) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault()
                             sendMessage()

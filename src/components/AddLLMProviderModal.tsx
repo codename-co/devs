@@ -172,7 +172,7 @@ export function AddLLMProviderModal({ lang }: AddLLMProviderModalProps) {
                       label={t('Server URL')}
                       placeholder={providerConfig?.apiKeyPlaceholder}
                       value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
+                      onChange={(e: any) => setApiKey(e.target.value)}
                       description={t('URL of your Ollama server')}
                     />
                   )}
@@ -182,7 +182,7 @@ export function AddLLMProviderModal({ lang }: AddLLMProviderModalProps) {
                       label={t('Base URL')}
                       placeholder="https://api.example.com/v1"
                       value={baseUrl}
-                      onChange={(e) => setBaseUrl(e.target.value)}
+                      onChange={(e: any) => setBaseUrl(e.target.value)}
                       isRequired
                     />
                   )}
@@ -224,7 +224,7 @@ export function AddLLMProviderModal({ lang }: AddLLMProviderModalProps) {
                         }
                         type="password"
                         value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
+                        onChange={(e: any) => setApiKey(e.target.value)}
                         isRequired={!providerConfig?.optionalApiKey}
                         description={
                           providerConfig?.apiKeyPage ? (

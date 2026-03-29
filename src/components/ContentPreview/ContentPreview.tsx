@@ -1551,7 +1551,7 @@ export const ContentPreview = (
         <div className="border-b border-default-200">
           <Tabs
             selectedKey={activeTab}
-            onSelectionChange={(key) => setActiveTab(key as string)}
+            onSelectionChange={(key: any) => setActiveTab(key as string)}
             variant="underlined"
             classNames={{
               tabList: 'px-4',

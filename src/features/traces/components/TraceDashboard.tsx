@@ -77,7 +77,7 @@ export function TraceDashboard({
             label={t('Time Range')}
             labelPlacement="outside-left"
             selectedKeys={[period]}
-            onSelectionChange={(keys) => {
+            onSelectionChange={(keys: any) => {
               const selected = Array.from(keys)[0] as TracePeriod
               if (selected) onPeriodChange(selected)
             }}

@@ -403,7 +403,7 @@ function AddSkillView({
           <Input
             value={query}
             onValueChange={setQuery}
-            onKeyDown={(e) => {
+            onKeyDown={(e: any) => {
               if (e.key === 'Enter') handleSearch()
             }}
             placeholder={t('Search skills...')}
@@ -528,7 +528,7 @@ function AddSkillView({
               <Input
                 value={url}
                 onValueChange={setUrl}
-                onKeyDown={(e) => {
+                onKeyDown={(e: any) => {
                   if (e.key === 'Enter') handleInstallFromUrl()
                 }}
                 placeholder="https://github.com/owner/repo/tree/main/skills/skill-name"
@@ -625,7 +625,7 @@ function CreateSkillView({
         placeholder={t('my-custom-skill')}
         description={t('No spaces allowed — use hyphens instead')}
         value={name}
-        onValueChange={(v) => {
+        onValueChange={(v: any) => {
           setName(v)
           if (v.trim()) setNameError('')
         }}
@@ -649,7 +649,7 @@ function CreateSkillView({
         </label>
         <textarea
           value={prompt}
-          onChange={(e) => {
+          onChange={(e: any) => {
             setPrompt(e.target.value)
             if (e.target.value.trim()) setPromptError('')
           }}

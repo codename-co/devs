@@ -71,7 +71,7 @@ export function PresetSelector({
         aria-label="Image preset selection"
         selectionMode="single"
         selectedKeys={activePreset ? [activePreset.id] : []}
-        onAction={(key) => {
+        onAction={(key: any) => {
           if (key === 'none') {
             onSelectPreset(null)
           } else if (key === 'library') {

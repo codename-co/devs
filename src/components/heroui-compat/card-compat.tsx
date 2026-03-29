@@ -1,57 +1,34 @@
-/**
- * Card v2 compat: accepts `shadow`, `isHoverable`, `isPressable`, `onPress`,
- * `classNames`, `radius` props. Preserves v3 compound sub-components.
- */
 import { Card as HeroCard } from '@heroui/react'
-import type { ReactNode } from 'react'
+import { withCompound, type V2Compat } from './v2-compat-types'
 
-interface CardCompatProps {
-  children?: ReactNode
-  shadow?: string
-  isHoverable?: boolean
-  isPressable?: boolean
-  onPress?: () => void
-  classNames?: Record<string, string>
-  radius?: string
-  className?: string
-  variant?: string
-  'data-testid'?: string
-  [key: string]: unknown
+export const CardBody: V2Compat = (props) => {
+  const { children, className, ...rest } = props
+  return <HeroCard.Content className={className} {...rest}>{children}</HeroCard.Content>
 }
 
-function CardCompat({
-  children,
-  shadow: _shadow,
-  isHoverable,
-  isPressable,
-  onPress,
-  classNames: _classNames,
-  radius: _radius,
-  className,
-  variant,
-  ...rest
-}: CardCompatProps) {
-  const hoverableClass = isHoverable ? 'hover:shadow-lg transition-shadow' : ''
-  const pressableClass = isPressable || onPress ? 'cursor-pointer' : ''
-  const combined = [className, hoverableClass, pressableClass].filter(Boolean).join(' ')
-
-  return (
-    <HeroCard
-      className={combined}
-      variant={variant as 'default' | 'surface' | undefined}
-      onClick={onPress}
-      data-testid={rest['data-testid'] as string}
-    >
-      {children}
-    </HeroCard>
-  )
+export const CardHeader: V2Compat = (props) => {
+  const { children, className, ...rest } = props
+  return <HeroCard.Header className={className} {...rest}>{children}</HeroCard.Header>
 }
 
-CardCompat.Root = HeroCard.Root
-CardCompat.Header = HeroCard.Header
-CardCompat.Title = HeroCard.Title
-CardCompat.Description = HeroCard.Description
-CardCompat.Content = HeroCard.Content
-CardCompat.Footer = HeroCard.Footer
+export const CardFooter: V2Compat = (props) => {
+  const { children, className, ...rest } = props
+  return <HeroCard.Footer className={className} {...rest}>{children}</HeroCard.Footer>
+}
 
-export const Card = CardCompat as typeof CardCompat & typeof HeroCard
+export const Card = withCompound(
+  (props) => {
+    const { children, isPressable: _p, isHoverable: _h, shadow: _s,
+      classNames: _cn, className, ...rest } = props
+    const validVariant = rest.variant === 'surface' ? 'default' : rest.variant
+    const { variant: _, ...validRest } = rest
+    return <HeroCard className={className} variant={validVariant} {...validRest}>{children}</HeroCard>
+  },
+  {
+    Root: HeroCard.Root,
+    Header: CardHeader,
+    Content: CardBody,
+    Body: CardBody,
+    Footer: CardFooter,
+  }
+)

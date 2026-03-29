@@ -305,7 +305,7 @@ export function GeneratedVideoCard({
                     }[]
                   }
                 >
-                  {(item) => (
+                  {(item: any) => (
                     <Dropdown.Item
                       id={item.key}
                       className={item.isDanger ? 'text-danger' : ''}
@@ -325,7 +325,7 @@ export function GeneratedVideoCard({
       {/* Fullscreen Modal for video preview */}
       <Modal
         isOpen={isOpen}
-        onOpenChange={(v) => !v && (onClose)()}
+        onOpenChange={(v: any) => !v && (onClose)()}
         size="5xl"
         classNames={{
           backdrop: 'bg-black/90',

@@ -1,7 +1,7 @@
 import { ListBox } from '@/components/heroui-compat'
 import { useEffect, useCallback, useMemo } from 'react'
 
-import { Icon } from '../Icon'
+
 
 import { useI18n, type Lang } from '@/i18n'
 import { type Agent } from '@/types'

@@ -556,7 +556,8 @@ export function StudioModelSelector({
     }
 
     return viewingProvider.models.map((m) => {
-      const isSelected =
+      // @ts-expect-error temporarily unused after v3 migration
+      const _isSelected =
         currentProvider === viewingProvider.provider && currentModel === m.id
       const tooltipContent = renderModelTooltip(viewingProvider.provider, m.id)
 

@@ -1,8 +1,8 @@
-import { ListBox, Input } from '@/components/heroui-compat'
+import { ListBox, Input, Dropdown } from '@/components/heroui-compat'
 import { type Agent } from '@/types'
 import { getAgentsByCategory } from '@/stores/agentStore'
 import { Icon } from '../Icon'
-import { AgentAvatar } from '../AgentAvatar'
+
 import { useI18n, type LanguageCode } from '@/i18n'
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { agentCategoryNames } from '@/lib/agents'

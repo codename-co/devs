@@ -153,7 +153,7 @@ export function LangfuseSection() {
         <Checkbox
           id="langfuse-enabled"
           isSelected={langfuseEnabled}
-          onChange={(e) => setLangfuseEnabled(e.target.checked)}
+          onChange={(e: any) => setLangfuseEnabled(e.target.checked)}
         >
           Enable Langfuse Tracking
         </Checkbox>
@@ -165,7 +165,7 @@ export function LangfuseSection() {
             label="Langfuse Host"
             placeholder="https://your-langfuse-instance.com"
             value={langfuseHost}
-            onChange={(e) => setLangfuseHost(e.target.value)}
+            onChange={(e: any) => setLangfuseHost(e.target.value)}
             isRequired
             description="URL of your Langfuse instance"
           />
@@ -174,7 +174,7 @@ export function LangfuseSection() {
             label="Public Key"
             placeholder="pk_..."
             value={langfusePublicKey}
-            onChange={(e) => setLangfusePublicKey(e.target.value)}
+            onChange={(e: any) => setLangfusePublicKey(e.target.value)}
             isRequired
             description="Langfuse public key from your project settings"
           />
@@ -184,7 +184,7 @@ export function LangfuseSection() {
             placeholder="sk_..."
             type="password"
             value={langfuseSecretKey}
-            onChange={(e) => setLangfuseSecretKey(e.target.value)}
+            onChange={(e: any) => setLangfuseSecretKey(e.target.value)}
             isRequired
             description="Langfuse secret key from your project settings"
           />

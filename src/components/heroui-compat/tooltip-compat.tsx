@@ -1,9 +1,8 @@
 /**
- * Tooltip v2 compat: accepts `content`, `placement`, `delay` props
- * and renders v3 compound pattern.
+ * Tooltip v2 compat: accepts `content`, `placement`, `delay` props.
  */
 import { Tooltip as HeroTooltip } from '@heroui/react'
-import type { ComponentPropsWithRef, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
 export interface TooltipCompatProps {
   content?: ReactNode
@@ -16,21 +15,14 @@ export interface TooltipCompatProps {
   className?: string
   children: ReactNode
   isDisabled?: boolean
+  [key: string]: any
 }
 
-export function Tooltip({
-  content,
-  placement,
-  delay,
-  closeDelay,
-  offset,
-  showArrow,
-  color: _color,
-  className,
-  children,
-  isDisabled,
-  ...rest
-}: TooltipCompatProps & Record<string, unknown>) {
+export function Tooltip(props: TooltipCompatProps) {
+  const { content, placement: _p, delay, closeDelay,
+    offset, showArrow, color: _c, className, children,
+    isDisabled, ...rest } = props
+
   if (isDisabled || !content) {
     return <>{children}</>
   }
@@ -38,11 +30,7 @@ export function Tooltip({
   return (
     <HeroTooltip delay={delay} closeDelay={closeDelay} {...rest}>
       <HeroTooltip.Trigger>{children}</HeroTooltip.Trigger>
-      <HeroTooltip.Content
-        className={className}
-        offset={offset}
-        showArrow={showArrow}
-      >
+      <HeroTooltip.Content className={className} offset={offset} showArrow={showArrow}>
         {content}
       </HeroTooltip.Content>
     </HeroTooltip>

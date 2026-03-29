@@ -13,7 +13,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Button, Input, Modal, Select, Spinner, Tabs, Tab, Tooltip, Switch, useOverlayState } from '@/components/heroui-compat'
+import { Button, Input, Modal, Select, Spinner, Tabs, Tab, Tooltip, Switch, useOverlayState, toast } from '@/components/heroui-compat'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import { useTraceStore } from '@/stores/traceStore'
@@ -257,7 +257,7 @@ export function TracesSection() {
 
       <Tabs
         selectedKey={tracesActiveTab}
-        onSelectionChange={(key) =>
+        onSelectionChange={(key: any) =>
           handleTabChange(key as 'dashboard' | 'logs')
         }
         className="mb-4"
@@ -301,7 +301,7 @@ export function TracesSection() {
       )}
 
       {/* Traces Config Modal */}
-      <Modal isOpen={isTracesConfigOpen} onOpenChange={(v) => !v && (onTracesConfigClose)()}>
+      <Modal isOpen={isTracesConfigOpen} onOpenChange={(v: any) => !v && (onTracesConfigClose)()}>
         <Modal.Dialog>
           <Modal.Header>{tTraces('Tracing Settings')}</Modal.Header>
           <Modal.Body className="gap-4">
@@ -332,7 +332,7 @@ export function TracesSection() {
               label={tTraces('Sampling Rate')}
               description={tTraces('Percentage of requests to trace')}
               selectedKeys={[tracesSamplingRate]}
-              onSelectionChange={(keys) => {
+              onSelectionChange={(keys: any) => {
                 const key = Array.from(keys)[0]
                 if (key) setTracesSamplingRate(key.toString())
               }}
@@ -376,7 +376,7 @@ export function TracesSection() {
       </Modal>
 
       {/* Traces Clear Confirmation Modal */}
-      <Modal isOpen={isTracesClearOpen} onOpenChange={(v) => !v && (onTracesClearClose)()}>
+      <Modal isOpen={isTracesClearOpen} onOpenChange={(v: any) => !v && (onTracesClearClose)()}>
         <Modal.Dialog>
           <Modal.Header>{tTraces('Clear All Traces')}</Modal.Header>
           <Modal.Body>

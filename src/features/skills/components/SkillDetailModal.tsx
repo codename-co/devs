@@ -60,7 +60,7 @@ export function SkillDetailModal({
   const compat = installedSkill ? getSkillCompatibility(installedSkill) : null
 
   return (
-    <Modal isOpen={isOpen} onOpenChange={(v) => !v && (onClose)()} size="3xl" scrollBehavior="inside">
+    <Modal isOpen={isOpen} onOpenChange={(v: any) => !v && (onClose)()} size="3xl" scrollBehavior="inside">
       <Modal.Dialog>
         <Modal.Header className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
@@ -142,7 +142,7 @@ export function SkillDetailModal({
           {isInstalled && installedSkill ? (
             <Tabs
               selectedKey={activeTab}
-              onSelectionChange={(key) => setActiveTab(key as string)}
+              onSelectionChange={(key: any) => setActiveTab(key as string)}
               size="sm"
             >
               <Tab key="instructions" title={t('Instructions')}>

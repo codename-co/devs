@@ -21,6 +21,7 @@ import { Button, TextArea, type TextAreaProps } from '@/components/heroui-compat
 
 export interface PromptAreaProps
   extends Omit<TextAreaProps, 'onKeyDown' | 'onSubmit'> {
+  onValueChange?: (value: string) => void
   /** Callback when the user submits the prompt */
   onSubmit?: (prompt: string) => void
   /** Whether a request is currently in progress */

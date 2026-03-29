@@ -174,7 +174,7 @@ export function VoiceSettingsPanel({
             size="sm"
             isSelected={autoSpeak}
             onValueChange={onAutoSpeakChange}
-            thumbIcon={({ isSelected }) =>
+            thumbIcon={({ isSelected }: { isSelected: boolean }) =>
               isSelected ? (
                 <Icon name="Voice" size="sm" />
               ) : (
@@ -213,7 +213,7 @@ export function VoiceSettingsPanel({
                   sttProviders.filter((p) => p.isDisabled).map((p) => p.type),
                 )
               }
-              onSelectionChange={(keys) => {
+              onSelectionChange={(keys: any) => {
                 const selected = Array.from(keys)[0] as string
                 if (selected) onSTTProviderChange(selected as STTProviderType)
               }}
@@ -280,7 +280,7 @@ export function VoiceSettingsPanel({
               aria-label="TTS Provider"
               selectionMode="single"
               selectedKeys={new Set([ttsProviderType])}
-              onSelectionChange={(keys) => {
+              onSelectionChange={(keys: any) => {
                 const selected = Array.from(keys)[0] as string
                 if (selected) onTTSProviderChange(selected as TTSProviderType)
               }}
@@ -351,7 +351,7 @@ export function VoiceSettingsPanel({
                 aria-label="Voice Selection"
                 selectionMode="single"
                 selectedKeys={new Set([selectedVoiceId])}
-                onSelectionChange={(keys) => {
+                onSelectionChange={(keys: any) => {
                   const selected = Array.from(keys)[0] as string
                   if (selected) onVoiceChange(selected)
                 }}

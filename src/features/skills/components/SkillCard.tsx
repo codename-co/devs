@@ -90,7 +90,7 @@ export function SkillCard({
               color="primary"
               variant="secondary"
               isDisabled={isInstalling}
-              onPress={(e) => {
+              onPress={(e: any) => {
                 e.continuePropagation?.()
                 onInstall()
               }}

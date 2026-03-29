@@ -16,7 +16,7 @@ import {
   Upload,
   Folder,
   Trash,
-  EditPencil,
+  EditPencil as _EditPencil,
   MoreVert,
   SubmitDocument,
   RefreshDouble,
@@ -1241,7 +1241,7 @@ export function FilesSection() {
       </div>
 
       {/* Edit File Modal */}
-      <Modal isOpen={isEditModalOpen} onOpenChange={(v) => !v && (onEditModalClose)()} size="2xl">
+      <Modal isOpen={isEditModalOpen} onOpenChange={(v: any) => !v && (onEditModalClose)()} size="2xl">
         <Modal.Dialog>
           <Modal.Header>{t('Knowledge Item')}</Modal.Header>
           <Modal.Body>
@@ -1249,7 +1249,7 @@ export function FilesSection() {
               <Input
                 label={t('name')}
                 value={editForm.name}
-                onValueChange={(value) =>
+                onValueChange={(value: any) =>
                   setEditForm((prev) => ({ ...prev, name: value }))
                 }
               />
@@ -1257,7 +1257,7 @@ export function FilesSection() {
                 label={t('description')}
                 placeholder="Optional description for this item…"
                 value={editForm.description}
-                onValueChange={(value) =>
+                onValueChange={(value: any) =>
                   setEditForm((prev) => ({ ...prev, description: value }))
                 }
               />
@@ -1265,7 +1265,7 @@ export function FilesSection() {
                 label={t('tags')}
                 placeholder="tag1, tag2, tag3"
                 value={editForm.tags}
-                onValueChange={(value) =>
+                onValueChange={(value: any) =>
                   setEditForm((prev) => ({ ...prev, tags: value }))
                 }
               />
@@ -1285,7 +1285,7 @@ export function FilesSection() {
       {/* Unwatch Folder Confirmation Modal */}
       <Modal
         isOpen={isUnwatchModalOpen}
-        onOpenChange={(v) => !v && (() => {
+        onOpenChange={(v: any) => !v && (() => {
           onUnwatchModalClose()
           setUnwatchingFolderId(null)
         })()}
@@ -1315,7 +1315,7 @@ export function FilesSection() {
       </Modal>
 
       {/* Bulk Delete Confirmation Modal */}
-      <Modal isOpen={isBulkDeleteModalOpen} onOpenChange={(v) => !v && (onBulkDeleteModalClose)()}>
+      <Modal isOpen={isBulkDeleteModalOpen} onOpenChange={(v: any) => !v && (onBulkDeleteModalClose)()}>
         <Modal.Dialog>
           <Modal.Header>{t('Delete Selected Items')}</Modal.Header>
           <Modal.Body>

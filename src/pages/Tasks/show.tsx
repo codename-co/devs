@@ -902,7 +902,7 @@ export const TaskPage = () => {
       </div>
 
       {/* Delete confirmation modal */}
-      <Modal isOpen={isDeleteModalOpen} onOpenChange={(v) => !v && (onDeleteModalClose)()} size="md">
+      <Modal isOpen={isDeleteModalOpen} onOpenChange={(v: any) => !v && (onDeleteModalClose)()} size="md">
         <Modal.Dialog>
           <Modal.Header>
             <div className="flex items-center gap-2">

@@ -120,7 +120,7 @@ export function ConnectorsPage() {
           {/* Category Tabs */}
           <Tabs
             selectedKey={selectedTab}
-            onSelectionChange={(key) =>
+            onSelectionChange={(key: any) =>
               setSelectedTab(key as ConnectorCategory)
             }
             aria-label="Connector categories"

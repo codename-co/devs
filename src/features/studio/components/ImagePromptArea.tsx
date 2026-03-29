@@ -38,6 +38,7 @@ import localI18n from '../i18n'
 
 interface ImagePromptAreaProps
   extends Omit<TextAreaProps, 'onFocus' | 'onBlur' | 'onKeyDown'> {
+  onValueChange?: (value: string) => void
   lang: Lang
   /** Media type mode (image or video) */
   mediaType?: MediaType

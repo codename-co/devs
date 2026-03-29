@@ -264,7 +264,7 @@ const SettingsContentInner = () => {
       <div className="md:hidden shrink-0 border-b border-default-200 overflow-hidden px-2 pt-1">
         <Tabs
           selectedKey={activeKey}
-          onSelectionChange={(key) => {
+          onSelectionChange={(key: any) => {
             const section = sections.find((s) => s.key === key)
             if (section) handleSectionClick(section)
           }}
@@ -367,8 +367,8 @@ const SettingsContentInner = () => {
                   type="password"
                   placeholder={t('Master password')}
                   value={masterPassword}
-                  onChange={(e) => setMasterPassword(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
+                  onChange={(e: any) => setMasterPassword(e.target.value)}
+                  onKeyDown={(e: any) => e.key === 'Enter' && handleUnlock()}
                   className="w-48"
                 />
                 <Button
@@ -396,7 +396,7 @@ const SettingsContentInner = () => {
                     <Icon name="NavArrowLeft" className="h-5 w-5" />
                   </button>
                 )} */}
-              <Breadcrumbs size="lg" className="font-semibold">
+              <Breadcrumbs className="font-semibold">
                 <BreadcrumbsItem
                   onClick={() => {
                     if (!activeElement) return

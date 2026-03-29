@@ -3,10 +3,14 @@ import { Switch as HeroSwitch, type SwitchProps } from '@/components/heroui-comp
 import { cn } from '@/lib/utils'
 
 interface ExtendedSwitchProps extends SwitchProps {
+  classNames?: Record<string, string>
+  onValueChange?: (isSelected: boolean) => void
+  isSelected?: boolean
   /** Content rendered before the children (e.g. an icon). */
   startContent?: ReactNode
   /** Content rendered after the children (e.g. a status badge). */
   endContent?: ReactNode
+  [key: string]: unknown
 }
 
 /**
@@ -32,12 +36,12 @@ export function Switch({
           classNames?.base,
         ),
       }}
-      {...props}
+      {...props as any}
     >
       <div className="flex items-center gap-3 w-full">
         {startContent}
         <div className="flex flex-col gap-1 flex-1 min-w-0">
-          {props.children}
+          {props.children as React.ReactNode}
         </div>
         {endContent}
       </div>

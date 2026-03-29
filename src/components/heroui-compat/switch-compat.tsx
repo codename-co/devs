@@ -1,62 +1,21 @@
-/**
- * Switch v2 compat: accepts v2 props like `color`, `size`, `classNames`,
- * `startContent`, `endContent`, `thumbIcon`.
- */
 import { Switch as HeroSwitch } from '@heroui/react'
-import type { ReactNode, ChangeEvent } from 'react'
+import { withCompound } from './v2-compat-types'
 
-interface SwitchCompatProps {
-  children?: ReactNode
-  isSelected?: boolean
-  defaultSelected?: boolean
-  onValueChange?: (isSelected: boolean) => void
-  onChange?: (e: ChangeEvent<HTMLInputElement>) => void
-  isDisabled?: boolean
-  isReadOnly?: boolean
-  color?: string
-  size?: string
-  startContent?: ReactNode
-  endContent?: ReactNode
-  thumbIcon?: ReactNode
-  classNames?: Record<string, string>
-  className?: string
-  value?: string
-  name?: string
-  'aria-label'?: string
-  [key: string]: unknown
-}
-
-export function Switch({
-  children,
-  isSelected,
-  defaultSelected,
-  onValueChange,
-  onChange,
-  isDisabled,
-  isReadOnly: _isReadOnly,
-  color: _color,
-  size: _size,
-  startContent: _startContent,
-  endContent: _endContent,
-  thumbIcon: _thumbIcon,
-  classNames: _classNames,
-  className,
-  value,
-  name,
-  ...rest
-}: SwitchCompatProps) {
-  return (
-    <HeroSwitch
-      className={className}
-      isSelected={isSelected}
-      defaultSelected={defaultSelected}
-      onChange={onValueChange ? (v: boolean) => onValueChange(v) : undefined}
-      isDisabled={isDisabled}
-      value={value}
-      name={name}
-      aria-label={rest['aria-label'] as string}
-    >
-      {children}
-    </HeroSwitch>
-  )
-}
+export const Switch = withCompound(
+  (props) => {
+    const { children, isSelected, defaultSelected: _ds, onChange, onValueChange: _ov,
+      color: _c, size: _s, thumbIcon: _ti, startContent: _sc, endContent: _ec,
+      classNames: _cn, className, ...rest } = props
+    return (
+      <HeroSwitch className={className} isSelected={isSelected} onChange={onChange} {...rest}>
+        {children}
+      </HeroSwitch>
+    )
+  },
+  {
+    Root: HeroSwitch.Root,
+    Thumb: HeroSwitch.Thumb,
+    Control: HeroSwitch.Control,
+    Icon: HeroSwitch.Icon,
+  }
+)

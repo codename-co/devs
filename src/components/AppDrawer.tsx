@@ -639,7 +639,7 @@ const ExpandedDrawer = ({
                   const extPath = getAppPrimaryPageUrl(ext.id)
                   const localizedName =
                     ext.i18n?.[lang as keyof typeof ext.i18n]?.name || ext.name
-                  const iconColorClass = getExtensionColorClass(ext.color)
+                  void getExtensionColorClass(ext.color)
                   return (
                     <ListBox.Item
                       id={ext.id}
@@ -704,7 +704,7 @@ const ExpandedDrawer = ({
               aria-label={t('Language')}
               selectionMode="single"
               selectedKeys={new Set([lang])}
-              onSelectionChange={(keys) => {
+              onSelectionChange={(keys: any) => {
                 const selectedLang = Array.from(keys)[0] as LanguageCode
                 if (selectedLang) {
                   setLanguage(selectedLang)

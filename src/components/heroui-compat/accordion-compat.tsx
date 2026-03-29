@@ -1,89 +1,12 @@
-/**
- * Accordion v2 compat: accepts v2 props. Preserves v3 compound sub-components.
- * AccordionItem accepts `title`, `subtitle`, `startContent`.
- */
 import { Accordion as HeroAccordion } from '@heroui/react'
-import type { ReactNode, Key } from 'react'
+import { withCompound, type V2Compat } from './v2-compat-types'
 
-interface AccordionCompatProps {
-  children?: ReactNode
-  variant?: string
-  selectionMode?: string
-  isCompact?: boolean
-  defaultExpandedKeys?: Iterable<Key>
-  selectedKeys?: Iterable<Key>
-  onSelectionChange?: (keys: Set<Key>) => void
-  className?: string
-  classNames?: Record<string, string>
-  disallowEmptySelection?: boolean
-  showDivider?: boolean
-  [key: string]: unknown
-}
-
-function AccordionCompat({
-  children,
-  variant: _variant,
-  selectionMode: _selectionMode,
-  isCompact: _isCompact,
-  defaultExpandedKeys: _defaultExpandedKeys,
-  selectedKeys: _selectedKeys,
-  onSelectionChange: _onSelectionChange,
-  className,
-  classNames: _classNames,
-  disallowEmptySelection: _disallowEmptySelection,
-  showDivider: _showDivider,
-  ...rest
-}: AccordionCompatProps) {
+export const AccordionItem: V2Compat = (props) => {
+  const { children, id, title, subtitle: _s, startContent: _sc, indicator: _i,
+    classNames: _cn, className, isDisabled: _d, keepContentMounted: _k, hideIndicator: _h,
+    ...rest } = props
   return (
-    <HeroAccordion
-      className={className}
-      data-testid={rest['data-testid'] as string}
-    >
-      {children}
-    </HeroAccordion>
-  )
-}
-
-AccordionCompat.Root = HeroAccordion.Root
-AccordionCompat.Item = HeroAccordion.Item
-AccordionCompat.Heading = HeroAccordion.Heading
-AccordionCompat.Trigger = HeroAccordion.Trigger
-AccordionCompat.Panel = HeroAccordion.Panel
-AccordionCompat.Indicator = HeroAccordion.Indicator
-AccordionCompat.Body = HeroAccordion.Body
-
-export const Accordion = AccordionCompat as typeof AccordionCompat & typeof HeroAccordion
-
-interface AccordionItemCompatProps {
-  children?: ReactNode
-  id?: string | number
-  title?: ReactNode
-  subtitle?: ReactNode
-  startContent?: ReactNode
-  indicator?: ReactNode
-  classNames?: Record<string, string>
-  className?: string
-  isDisabled?: boolean
-  keepContentMounted?: boolean
-  'aria-label'?: string
-  [key: string]: unknown
-}
-
-export function AccordionItem({
-  children,
-  id,
-  title,
-  subtitle: _subtitle,
-  startContent: _startContent,
-  indicator: _indicator,
-  classNames: _classNames,
-  className,
-  isDisabled: _isDisabled,
-  keepContentMounted: _keepContentMounted,
-  ...rest
-}: AccordionItemCompatProps) {
-  return (
-    <HeroAccordion.Item className={className} id={id as string} {...rest}>
+    <HeroAccordion.Item className={className} id={id} {...rest}>
       <HeroAccordion.Heading>
         <HeroAccordion.Trigger>{title}</HeroAccordion.Trigger>
       </HeroAccordion.Heading>
@@ -93,3 +16,21 @@ export function AccordionItem({
     </HeroAccordion.Item>
   )
 }
+
+export const Accordion = withCompound(
+  (props) => {
+    const { children, variant: _, selectionMode: _s, isCompact: _c, defaultExpandedKeys: _d,
+      selectedKeys: _sk, onSelectionChange: _osc, classNames: _cn, disallowEmptySelection: _dae,
+      showDivider: _sd, className, ...rest } = props
+    return <HeroAccordion className={className} {...rest}>{children}</HeroAccordion>
+  },
+  {
+    Root: HeroAccordion.Root,
+    Item: AccordionItem,
+    Heading: HeroAccordion.Heading,
+    Trigger: HeroAccordion.Trigger,
+    Panel: HeroAccordion.Panel,
+    Indicator: HeroAccordion.Indicator,
+    Body: HeroAccordion.Body,
+  }
+)

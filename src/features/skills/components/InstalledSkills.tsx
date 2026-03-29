@@ -80,7 +80,7 @@ export function InstalledSkills({ t, onSelect }: InstalledSkillsProps) {
                 <Switch
                   size="sm"
                   isSelected={skill.enabled}
-                  onValueChange={(enabled) => setSkillEnabled(skill.id, enabled)}
+                  onValueChange={(enabled: any) => setSkillEnabled(skill.id, enabled)}
                   aria-label={skill.enabled ? t('Disable') : t('Enable')}
                 />
                 <Button

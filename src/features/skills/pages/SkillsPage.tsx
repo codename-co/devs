@@ -208,7 +208,7 @@ export function SkillsPage() {
       <Section>
         <Tabs
           selectedKey={activeTab}
-          onSelectionChange={(key) =>
+          onSelectionChange={(key: any) =>
             setActiveTab(key as 'discover' | 'installed')
           }
           className="mb-4"
@@ -257,7 +257,7 @@ export function SkillsPage() {
                 <Input
                   value={manualUrl}
                   onValueChange={setManualUrl}
-                  onKeyDown={(e) => {
+                  onKeyDown={(e: any) => {
                     if (e.key === 'Enter') handleInstallFromUrl()
                   }}
                   placeholder="https://github.com/owner/repo/tree/main/skills/skill-name"

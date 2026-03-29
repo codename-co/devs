@@ -217,7 +217,8 @@ const SECTION_TITLE_KEYS: Record<SearchResultType, string> = {
 /**
  * Get icon color class for result type
  */
-function getIconColorClass(type: SearchResultType): string {
+// @ts-expect-error temporarily unused after v3 migration
+function _getIconColorClass(type: SearchResultType): string {
   const colors: Record<SearchResultType, string> = {
     agent: 'text-warning',
     artifact: 'text-secondary',
@@ -443,7 +444,7 @@ export function GlobalSearch() {
   return (
     <Modal
       isOpen={isOpen}
-      onOpenChange={(v) => !v && (close)()}
+      onOpenChange={(v: any) => !v && (close)()}
       placement="top-center"
       size="lg"
       backdrop="blur"
@@ -558,7 +559,7 @@ export function GlobalSearch() {
               <ListBox
                 aria-label={t('Search DEVS')}
                 variant="flat"
-                onAction={(key) => {
+                onAction={(key: any) => {
                   const result = results.find((r) => r.id === key)
                   if (result) handleSelect(result)
                 }}

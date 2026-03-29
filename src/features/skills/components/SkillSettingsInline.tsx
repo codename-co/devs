@@ -142,7 +142,7 @@ export function SkillSettingsInline({
       {/* Tabs for content */}
       <Tabs
         selectedKey={activeTab}
-        onSelectionChange={(key) => setActiveTab(key as string)}
+        onSelectionChange={(key: any) => setActiveTab(key as string)}
         size="sm"
         variant="underlined"
       >

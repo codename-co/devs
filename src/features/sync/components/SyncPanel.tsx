@@ -270,7 +270,7 @@ export function SyncPanel(_props: SyncPanelProps) {
                 : 'warning'
               : undefined
           }
-          onKeyDown={(e) => {
+          onKeyDown={(e: any) => {
             if (
               e.key === 'Enter' &&
               password.trim() &&
@@ -417,7 +417,7 @@ export function SyncPanel(_props: SyncPanelProps) {
           size="sm"
           type={isJoinPasswordVisible ? 'text' : 'password'}
           autoComplete="new-password"
-          onKeyDown={(e) => {
+          onKeyDown={(e: any) => {
             if (e.key === 'Enter') handleJoinWithPassword()
           }}
           endContent={

@@ -1,4 +1,4 @@
-import { Button, Chip, Input, ListBox, Popover, Spinner } from '@/components/heroui-compat'
+import { Button, Input, ListBox, Popover, Spinner } from '@/components/heroui-compat'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Icon } from '../Icon'
@@ -11,7 +11,7 @@ import { type KnowledgeItem, type InstalledSkill } from '@/types'
 import { getAllKnowledgeItems } from '@/stores/knowledgeStore'
 import { getEnabledSkills } from '@/stores/skillStore'
 import { getFileIcon } from '@/lib/utils'
-import { formatBytes } from '@/lib/format'
+
 import { useI18n } from '@/i18n'
 import { getProviders } from '@/features/connectors'
 import { useNavigate } from 'react-router-dom'
@@ -48,7 +48,7 @@ export function AttachmentSelector({
   const [knowledgeSearch, setKnowledgeSearch] = useState('')
   const [skillsSearch, setSkillsSearch] = useState('')
   const [knowledgeCount, setKnowledgeCount] = useState(0)
-  const [skillsCount, setSkillsCount] = useState(0)
+  const [, setSkillsCount] = useState(0)
 
   // Screen capture hook
   const {
@@ -135,7 +135,8 @@ export function AttachmentSelector({
     )
   }, [skillItems, skillsSearch])
 
-  const renderKnowledgePreview = useCallback((item: KnowledgeItem) => {
+  // @ts-expect-error temporarily unused after v3 migration
+  const _renderKnowledgePreview = useCallback((item: KnowledgeItem) => {
     if (
       item.fileType === 'image' &&
       typeof item.content === 'string' &&
@@ -211,7 +212,7 @@ export function AttachmentSelector({
         ) : (
           <ListBox
             aria-label={t('Choose from knowledge base')}
-            onAction={(key) => {
+            onAction={(key: any) => {
               const item = knowledgeItems.find((i) => i.id === key)
               if (item) {
                 onKnowledgeFileSelect(item)
@@ -307,7 +308,7 @@ export function AttachmentSelector({
         ) : (
           <ListBox
             aria-label={t('Choose from skills')}
-            onAction={(key) => {
+            onAction={(key: any) => {
               const skill = skillItems.find((s) => s.id === key)
               if (skill) {
                 onSkillSelect?.(skill)
@@ -361,7 +362,8 @@ export function AttachmentSelector({
     ]
 
     // Connectors avatar stack or icon
-    const connectorsStart =
+    // @ts-expect-error temporarily unused after v3 migration
+    const _connectorsStart =
       providers.length > 0 ? (
         <div className="flex items-center">
           {providers.slice(0, 3).map((provider, index) => (
@@ -386,7 +388,7 @@ export function AttachmentSelector({
             aria-label={t('Create')}
             variant="flat"
             classNames={{ base: 'w-full', list: 'w-full' }}
-            onAction={(key) => {
+            onAction={(key: any) => {
               const newMode = key as PromptMode
               onModeChange?.(mode === newMode ? 'chat' : newMode)
             }}
@@ -419,7 +421,7 @@ export function AttachmentSelector({
           aria-label={t('Attach')}
           variant="flat"
           classNames={{ list: 'gap-0' }}
-          onAction={(key) => {
+          onAction={(key: any) => {
             switch (key) {
               case 'upload':
                 onFileUpload()

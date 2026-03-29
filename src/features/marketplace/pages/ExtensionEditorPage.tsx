@@ -1221,7 +1221,7 @@ User request: ${userMessage.content}
                     <Input
                       label={t('Name')}
                       value={extension.name}
-                      onValueChange={(v) => handleMetadataChange('name', v)}
+                      onValueChange={(v: any) => handleMetadataChange('name', v)}
                       aria-label={t('Name')}
                     />
                     <div className="flex gap-4">
@@ -1252,14 +1252,14 @@ User request: ${userMessage.content}
                           aria-label={t('Icon')}
                           selectionMode="single"
                           selectedKeys={extension.icon ? [extension.icon] : []}
-                          onSelectionChange={(keys) => {
+                          onSelectionChange={(keys: any) => {
                             const selected = Array.from(keys)[0] as string
                             if (selected) handleMetadataChange('icon', selected)
                           }}
                           className="max-h-80 overflow-y-auto w-64"
                           items={icons}
                         >
-                          {(item) => (
+                          {(item: any) => (
                             <Dropdown.Item
                               id={item.key}
                             >
@@ -1271,7 +1271,7 @@ User request: ${userMessage.content}
                       <Input
                         label={t('Version')}
                         value={extension.version || '1.0.0'}
-                        onValueChange={(v) =>
+                        onValueChange={(v: any) =>
                           handleMetadataChange('version', v)
                         }
                         placeholder="1.0.0"
@@ -1283,7 +1283,7 @@ User request: ${userMessage.content}
                   <TextArea
                     label={t('Description')}
                     value={extension.description || ''}
-                    onValueChange={(v) =>
+                    onValueChange={(v: any) =>
                       handleMetadataChange('description', v)
                     }
                     aria-label={t('Description')}
@@ -1293,7 +1293,7 @@ User request: ${userMessage.content}
                     selectedKeys={
                       extension.color ? [extension.color] : ['default']
                     }
-                    onSelectionChange={(keys) => {
+                    onSelectionChange={(keys: any) => {
                       const selected = Array.from(keys)[0] as string
                       handleMetadataChange('color', selected)
                     }}
@@ -1322,7 +1322,7 @@ User request: ${userMessage.content}
             </Dropdown.Trigger>
             <Dropdown.Menu
               aria-label={t('Export')}
-              onAction={(key) => handleExport(key as 'json' | 'yaml')}
+              onAction={(key: any) => handleExport(key as 'json' | 'yaml')}
             >
               <Dropdown.Item
                 id="json"
@@ -1610,12 +1610,12 @@ User request: ${userMessage.content}
                 placeholder={t("Describe what you'd like to change...")}
                 withAgentSelector={false}
                 withAttachmentSelector={false}
-                isDisabled={isGenerating}
+                disabled={isGenerating}
                 value={chatInput}
                 onValueChange={setChatInput}
-                onKeyDown={handleKeyDown}
+                onKeyDown={handleKeyDown as any}
                 aria-label={t('Chat input')}
-                onSubmit={handleSubmit}
+                onSubmitToAgent={handleSubmit as any}
                 autoFocus
               />
             </div>
@@ -1623,7 +1623,7 @@ User request: ${userMessage.content}
         </div>
 
         {/* New Page Modal */}
-        <Modal isOpen={isNewPageOpen} onOpenChange={(v) => !v && (onNewPageClose)()}>
+        <Modal isOpen={isNewPageOpen} onOpenChange={(v: any) => !v && (onNewPageClose)()}>
           <Modal.Dialog>
             <Modal.Header>{t('Add Page')}</Modal.Header>
             <Modal.Body>
@@ -1651,7 +1651,7 @@ User request: ${userMessage.content}
         </Modal>
 
         {/* Delete Page Modal */}
-        <Modal isOpen={isDeleteOpen} onOpenChange={(v) => !v && (onDeleteClose)()}>
+        <Modal isOpen={isDeleteOpen} onOpenChange={(v: any) => !v && (onDeleteClose)()}>
           <Modal.Dialog>
             <Modal.Header>{t('Delete page?')}</Modal.Header>
             <Modal.Body>

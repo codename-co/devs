@@ -55,7 +55,7 @@ export const HistoryPage = () => {
         <Container>
           <Tabs
             selectedKey={activeTab}
-            onSelectionChange={(key) => setTab(key as string)}
+            onSelectionChange={(key: any) => setTab(key as string)}
             aria-label={t('History sections')}
             variant="underlined"
             classNames={{

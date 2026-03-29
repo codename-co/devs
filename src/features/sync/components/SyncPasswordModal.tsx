@@ -114,7 +114,7 @@ export function SyncPasswordModal() {
           <Input
             autoFocus
             value={password}
-            onValueChange={(v) => {
+            onValueChange={(v: any) => {
               setPassword(v)
               setError(null)
             }}
@@ -122,7 +122,7 @@ export function SyncPasswordModal() {
             type={isPasswordVisible ? 'text' : 'password'}
             isInvalid={!!error}
             errorMessage={error}
-            onKeyDown={(e) => {
+            onKeyDown={(e: any) => {
               if (e.key === 'Enter' && password.trim()) handleSubmit()
             }}
             startContent={

@@ -541,7 +541,7 @@ export function ConnectorSettingsInline({
                     <>
                       <RadioGroup
                         value={syncAll ? 'all' : 'select'}
-                        onValueChange={(value) =>
+                        onValueChange={(value: any) =>
                           toggleSyncAll(value === 'all')
                         }
                       >

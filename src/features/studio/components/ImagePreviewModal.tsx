@@ -92,7 +92,7 @@ export function ImagePreviewModal({
   return (
     <Modal
       isOpen={isOpen}
-      onOpenChange={(v) => !v && (onClose)()}
+      onOpenChange={(v: any) => !v && (onClose)()}
       size="full"
       classNames={{
         body: 'p-0',

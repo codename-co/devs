@@ -323,7 +323,6 @@ export const IndexPage = () => {
 
         <Section mainClassName="section-blank">
           <div
-            layoutId="active"
             className="flex flex-col text-center items-center mt-0 sm:mt-[10vh]"
             {...motionVariants.container}
           >
@@ -368,7 +367,7 @@ export const IndexPage = () => {
               <Container size={7} className="mt-0 sm:-mt-8">
                 <div className="flex gap-2 flex-wrap justify-center">
                   {useCasesByThemes(agents).map(
-                    ({ theme, usecases }, index) => (
+                    ({ theme, usecases }, _index) => (
                       <div
                         {...motionVariants.usecase}
                         key={theme}

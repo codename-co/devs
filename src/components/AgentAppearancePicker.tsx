@@ -429,7 +429,7 @@ export const AgentAppearancePicker = ({
                 </label>
                 <Popover
                   isOpen={isIconPickerOpen}
-                  onOpenChange={(open) => {
+                  onOpenChange={(open: any) => {
                     setIsIconPickerOpen(open)
                     if (!open) setIconSearch('')
                   }}
@@ -616,7 +616,7 @@ export const AgentAppearancePicker = ({
             </label>
             <Popover
               isOpen={isIconPickerOpen}
-              onOpenChange={(open) => {
+              onOpenChange={(open: any) => {
                 setIsIconPickerOpen(open)
                 if (!open) setIconSearch('')
               }}

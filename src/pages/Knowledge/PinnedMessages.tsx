@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { Button, Chip, Dropdown, Spinner, Select, Card } from '@/components/heroui-compat'
-import { Pin, MoreVert, PinSlash } from 'iconoir-react'
+import { Pin, MoreVert } from 'iconoir-react'
 import { useNavigate } from 'react-router-dom'
 
 import { usePinnedMessageStore } from '@/stores/pinnedMessageStore'
 import { useAgents } from '@/hooks'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import { useI18n, useUrl } from '@/i18n'
-import { Icon } from '@/components'
+
 import { useHashHighlight } from '@/hooks/useHashHighlight'
 
 export const PinnedMessages: React.FC = () => {
@@ -78,7 +78,7 @@ export const PinnedMessages: React.FC = () => {
             selectedKeys={
               pinnedAgentFilter === 'all' ? [] : [pinnedAgentFilter]
             }
-            onSelectionChange={(keys) => {
+            onSelectionChange={(keys: any) => {
               const selected = Array.from(keys)[0] as string
               setPinnedAgentFilter(selected || 'all')
             }}

@@ -60,7 +60,7 @@ export function GeneralSection() {
         label={t('Platform Name')}
         placeholder={PRODUCT.displayName}
         value={platformName || ''}
-        onChange={(e) => setPlatformName(e.target.value)}
+        onChange={(e: any) => setPlatformName(e.target.value)}
         className={getHighlightClasses('platform-name', 'max-w-3xs')}
       />
 
@@ -68,7 +68,7 @@ export function GeneralSection() {
         id="interface-language"
         label={t('Interface Language')}
         selectedKeys={[lang]}
-        onSelectionChange={(keys) => {
+        onSelectionChange={(keys: any) => {
           const selectedLang = Array.from(keys)[0] as Lang
           if (selectedLang && selectedLang !== lang) {
             handleLanguageChange(selectedLang)
@@ -88,7 +88,7 @@ export function GeneralSection() {
           id="theme"
           label={t('Theme')}
           selectedKeys={[theme]}
-          onSelectionChange={(keys) => {
+          onSelectionChange={(keys: any) => {
             const selectedTheme = Array.from(keys)[0] as
               | 'light'
               | 'dark'

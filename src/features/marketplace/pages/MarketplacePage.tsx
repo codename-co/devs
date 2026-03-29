@@ -194,7 +194,8 @@ export function MarketplacePage() {
   }
 
   // Count extensions per category
-  const categoryCounts = useMemo(() => {
+  // @ts-expect-error temporarily unused after v3 migration
+  const _categoryCounts = useMemo(() => {
     return {
       all: allExtensions.length,
       app: extensionsByCategory.app.length,
@@ -370,7 +371,7 @@ export function MarketplacePage() {
               aria-label={t('Categories')}
               selectedKeys={[selectedCategory]}
               selectionMode="single"
-              onSelectionChange={(keys) => {
+              onSelectionChange={(keys: any) => {
                 const selected = Array.from(keys)[0] as string
                 if (selected) setSelectedCategory(selected)
               }}

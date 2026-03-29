@@ -1,4 +1,5 @@
-import { toast as heroToast, ToastProps } from '@/components/heroui-compat'
+import { toast as heroToast } from '@/components/heroui-compat'
+import type { HeroUIToastOptions } from '@/components/heroui-compat'
 import { JSX } from 'react'
 
 const toast = (
@@ -11,17 +12,16 @@ const toast = (
     | 'default'
     | 'primary'
     | 'secondary',
-  config?: Partial<ToastProps>,
+  config?: Partial<HeroUIToastOptions>,
 ) => {
-  heroToast({
-    title,
+  const variant = severity === 'primary' || severity === 'secondary' ? 'default' : severity
+  heroToast(title, {
     description: !description
       ? undefined
       : description instanceof Error
         ? description.message
         : String(description),
-    color: severity,
-    severity,
+    variant: variant as HeroUIToastOptions['variant'],
     ...config,
   })
 }
@@ -29,7 +29,7 @@ const toast = (
 export const errorToast = (
   title: string | JSX.Element,
   description?: string | Error | unknown,
-  config?: Partial<ToastProps>,
+  config?: Partial<HeroUIToastOptions>,
 ) => {
   toast(title, description, 'danger', config)
 }
@@ -37,7 +37,7 @@ export const errorToast = (
 export const warningToast = (
   title: string | JSX.Element,
   description?: string | Error | unknown,
-  config?: Partial<ToastProps>,
+  config?: Partial<HeroUIToastOptions>,
 ) => {
   toast(title, description, 'warning', config)
 }
@@ -45,7 +45,7 @@ export const warningToast = (
 export const successToast = (
   title: string | JSX.Element,
   description?: string | Error | unknown,
-  config?: Partial<ToastProps>,
+  config?: Partial<HeroUIToastOptions>,
 ) => {
   toast(title, description, 'success', config)
 }
@@ -53,7 +53,7 @@ export const successToast = (
 export const infoToast = (
   title: string | JSX.Element,
   description?: string | Error | unknown,
-  config?: Partial<ToastProps>,
+  config?: Partial<HeroUIToastOptions>,
 ) => {
   toast(title, description, 'default', config)
 }

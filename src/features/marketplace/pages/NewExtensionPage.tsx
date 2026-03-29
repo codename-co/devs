@@ -155,7 +155,7 @@ export function NewExtensionPage() {
             <Card.Content>
               <RadioGroup
                 value={selectedType}
-                onValueChange={(value) =>
+                onValueChange={(value: any) =>
                   setSelectedType(value as ExtensionType)
                 }
                 orientation="horizontal"

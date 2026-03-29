@@ -91,7 +91,7 @@ export const EasySetupExport = () => {
         name="share-password"
         autoComplete="new-password"
         value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        onChange={(e: any) => setPassword(e.target.value)}
         startContent={<Icon name="Lock" />}
         description={password && 'This password will be needed at setup time'}
         className="max-w-xs"

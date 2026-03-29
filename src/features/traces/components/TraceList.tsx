@@ -289,10 +289,10 @@ export function TraceList({
         </Card>
       ) : (
         <Accordion
-          selectionMode="multiple"
+          selectionMode={"multiple" as any}
           // variant="bordered"
           selectedKeys={expandedKeys}
-          onSelectionChange={(keys) =>
+          onSelectionChange={(keys: any) =>
             setExpandedKeys(new Set(keys as Set<string>))
           }
         >
@@ -404,16 +404,13 @@ export function TraceList({
               {/* Traces Table */}
               <Table
                 aria-label={`${session.displayName} traces`}
-                selectionMode="none"
-                classNames={{
-                  wrapper: 'shadow-none',
-                }}
+                {...{selectionMode: 'none', classNames: { wrapper: 'shadow-none' }} as any}
               >
                 <TableHeader columns={columns}>
                   {(column) => (
                     <TableColumn
                       key={column.key}
-                      align={column.key === 'actions' ? 'end' : 'start'}
+                      {...{align: column.key === 'actions' ? 'end' : 'start'} as any}
                     >
                       {column.label}
                     </TableColumn>

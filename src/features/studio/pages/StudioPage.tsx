@@ -13,10 +13,10 @@ import { Container, Filter, Icon, Section, Title } from '@/components'
 import DefaultLayout from '@/layouts/Default'
 import { useI18n, useUrl } from '@/i18n'
 import {
-  createTransition,
+  createTransition as _createTransition,
   fadeInUp,
   scaleIn,
-  SPRING_CONFIG,
+  SPRING_CONFIG as _SPRING_CONFIG,
 } from '@/lib/motion'
 import { useLLMModelStore } from '@/stores/llmModelStore'
 import { userSettings } from '@/stores/userStore'
@@ -1095,7 +1095,7 @@ export function StudioPage() {
       {/* Presets Modal */}
       <Modal
         isOpen={isPresetsOpen}
-        onOpenChange={(v) => !v && (onClosePresets)()}
+        onOpenChange={(v: any) => !v && (onClosePresets)()}
         size="4xl"
         scrollBehavior="inside"
       >
@@ -1134,7 +1134,7 @@ export function StudioPage() {
         </DrawerContent>
       </Drawer>
       {/* Save Preset Modal */}
-      <Modal isOpen={isSavePresetOpen} onOpenChange={(v) => !v && (onCloseSavePreset)()} size="md">
+      <Modal isOpen={isSavePresetOpen} onOpenChange={(v: any) => !v && (onCloseSavePreset)()} size="md">
         <Modal.Dialog>
           <Modal.Header>{t('Save Preset')}</Modal.Header>
           <Modal.Body className="pb-6">
@@ -1172,7 +1172,7 @@ export function StudioPage() {
       {/* Delete Confirmation Modal */}
       <Modal
         isOpen={deleteConfirm?.isOpen ?? false}
-        onOpenChange={(v) => !v && (handleCancelDelete)()}
+        onOpenChange={(v: any) => !v && (handleCancelDelete)()}
         size="sm"
       >
         <Modal.Dialog>

@@ -1,42 +1,40 @@
-/**
- * Dropdown v2 compat: preserves v3 compound sub-components and provides
- * v2-compatible DropdownItem, DropdownSection, DropdownMenu, DropdownTrigger.
- */
 import { Dropdown as HeroDropdown } from '@heroui/react'
-import type { ReactNode, Key } from 'react'
+import { withCompound, type V2Compat } from './v2-compat-types'
 
-interface DropdownCompatProps {
-  children?: ReactNode
-  isOpen?: boolean
-  onOpenChange?: (isOpen: boolean) => void
-  placement?: string
-  closeOnSelect?: boolean
-  className?: string
-  classNames?: Record<string, string>
-  [key: string]: unknown
+export const DropdownItem: V2Compat = (props) => {
+  const { children, title: _, description: _d, startContent: _s, endContent: _e,
+    color: _c, closeOnSelect: _cs, isReadOnly: _r, showDivider: _sd,
+    classNames: _cn, ...rest } = props
+  return <HeroDropdown.Item {...rest}>{children}</HeroDropdown.Item>
 }
 
-function DropdownCompat({
-  children,
-  isOpen: _isOpen,
-  onOpenChange: _onOpenChange,
-  placement: _placement,
-  closeOnSelect: _closeOnSelect,
-  className: _className,
-  classNames: _classNames,
-  ...rest
-}: DropdownCompatProps) {
-  return <HeroDropdown {...rest}>{children}</HeroDropdown>
+export const DropdownSection: V2Compat = (props) => {
+  const { children, title: _, showDivider: _s, classNames: _cn, ...rest } = props
+  return <HeroDropdown.Section {...rest}>{children}</HeroDropdown.Section>
 }
 
-DropdownCompat.Root = HeroDropdown.Root
-DropdownCompat.Trigger = HeroDropdown.Trigger
-DropdownCompat.Popover = HeroDropdown.Popover
-DropdownCompat.Menu = HeroDropdown.Menu
-DropdownCompat.Section = HeroDropdown.Section
-DropdownCompat.Item = HeroDropdown.Item
-DropdownCompat.ItemIndicator = HeroDropdown.ItemIndicator
-DropdownCompat.SubmenuIndicator = HeroDropdown.SubmenuIndicator
-DropdownCompat.SubmenuTrigger = HeroDropdown.SubmenuTrigger
+export const DropdownMenu: V2Compat = (props) => {
+  const { children, closeOnSelect: _c, selectionMode: _s, selectedKeys: _sk,
+    onSelectionChange: _osc, disallowEmptySelection: _d, classNames: _cn,
+    color: _co, variant: _v, ...rest } = props
+  return <HeroDropdown.Menu {...rest}>{children}</HeroDropdown.Menu>
+}
 
-export const Dropdown = DropdownCompat as typeof DropdownCompat & typeof HeroDropdown
+export const Dropdown = withCompound(
+  (props) => {
+    const { children, isOpen: _, onOpenChange: _o, placement: _p,
+      closeOnSelect: _c, classNames: _cn, ...rest } = props
+    return <HeroDropdown {...rest}>{children}</HeroDropdown>
+  },
+  {
+    Root: HeroDropdown.Root,
+    Trigger: HeroDropdown.Trigger,
+    Popover: HeroDropdown.Popover,
+    Menu: DropdownMenu,
+    Section: DropdownSection,
+    Item: DropdownItem,
+    ItemIndicator: HeroDropdown.ItemIndicator,
+    SubmenuIndicator: HeroDropdown.SubmenuIndicator,
+    SubmenuTrigger: HeroDropdown.SubmenuTrigger,
+  }
+)

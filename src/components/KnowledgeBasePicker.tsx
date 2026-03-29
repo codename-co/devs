@@ -9,7 +9,7 @@ import { formatBytes } from '@/lib/format'
 import { safeString } from '@/lib/crypto/content-encryption'
 import { useI18n } from '@/i18n'
 
-interface KnowledgeBasePickerProps extends Omit<DropdownMenuProps, 'children'> {
+interface KnowledgeBasePickerProps extends Omit<DropdownMenuProps<object>, 'children'> {
   onFileSelect?: (file: KnowledgeItem) => void
   disabled?: boolean
 }
@@ -80,7 +80,8 @@ export function KnowledgeBasePicker({
   const typeOrder = ['image', 'document', 'text']
   const orderedTypes = typeOrder.filter((type) => itemsByType[type]?.length > 0)
 
-  const renderPreview = (item: KnowledgeItem) => {
+  // @ts-expect-error temporarily unused after v3 migration
+  const _renderPreview = (item: KnowledgeItem) => {
     const contentStr = safeString(item.content)
     if (item.fileType === 'image' && contentStr.startsWith('data:image/')) {
       return (

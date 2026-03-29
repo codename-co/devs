@@ -144,7 +144,7 @@ export const SlidesRenderer = ({
   return (
     <>
       {/* Fullscreen Modal */}
-      <Modal isOpen={isFullscreen} onOpenChange={(v) => !v && (exitFullscreen)()} size="full">
+      <Modal isOpen={isFullscreen} onOpenChange={(v: any) => !v && (exitFullscreen)()} size="full">
         <Modal.Dialog>
           <Modal.Header className="flex flex-col gap-1">
             <div className="flex items-center gap-3">
@@ -193,7 +193,7 @@ export const SlidesRenderer = ({
               variant="light"
               page={currentSlide + 1}
               total={totalSlides}
-              onChange={(i) => goToSlide(i - 1)}
+              onChange={(i: any) => goToSlide(i - 1)}
             />
           </Modal.Footer>
         </Modal.Dialog>
@@ -304,7 +304,7 @@ export const SlidesRenderer = ({
                     variant="light"
                     page={currentSlide + 1}
                     total={totalSlides}
-                    onChange={(i) => goToSlide(i - 1)}
+                    onChange={(i: any) => goToSlide(i - 1)}
                     classNames={{
                       base: 'mt-1 pb-0',
                     }}

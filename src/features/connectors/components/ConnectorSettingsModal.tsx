@@ -393,7 +393,7 @@ export function ConnectorSettingsModal({
   if (!connector) return null
 
   return (
-    <Modal isOpen={isOpen} onOpenChange={(v) => !v && (onClose)()} size="2xl" scrollBehavior="inside">
+    <Modal isOpen={isOpen} onOpenChange={(v: any) => !v && (onClose)()} size="2xl" scrollBehavior="inside">
       <Modal.Dialog>
           <>
             <Modal.Header className="flex flex-col gap-1">
@@ -619,7 +619,7 @@ export function ConnectorSettingsModal({
                           <>
                             <RadioGroup
                               value={syncAll ? 'all' : 'select'}
-                              onValueChange={(value) =>
+                              onValueChange={(value: any) =>
                                 toggleSyncAll(value === 'all')
                               }
                             >

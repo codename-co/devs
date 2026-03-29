@@ -230,7 +230,7 @@ export function SettingsPanel({
         <Select
           label={t('Style')}
           selectedKeys={[settings.style]}
-          onSelectionChange={(keys) => {
+          onSelectionChange={(keys: any) => {
             const value = Array.from(keys)[0] as ImageStyle
             onSettingsChange({ style: value })
           }}
@@ -252,7 +252,7 @@ export function SettingsPanel({
             minValue={1}
             maxValue={4}
             value={settings.count}
-            onChange={(value) => onSettingsChange({ count: value as number })}
+            onChange={(value: any) => onSettingsChange({ count: value as number })}
             className="max-w-full"
           />
         </div>
@@ -274,7 +274,7 @@ export function SettingsPanel({
             <Select
               label={t('Lighting')}
               selectedKeys={[settings.lighting]}
-              onSelectionChange={(keys) => {
+              onSelectionChange={(keys: any) => {
                 const value = Array.from(keys)[0] as LightingPreset
                 onSettingsChange({ lighting: value })
               }}
@@ -289,7 +289,7 @@ export function SettingsPanel({
             <Select
               label={t('Color Palette')}
               selectedKeys={[settings.colorPalette]}
-              onSelectionChange={(keys) => {
+              onSelectionChange={(keys: any) => {
                 const value = Array.from(keys)[0] as ColorPalette
                 onSettingsChange({ colorPalette: value })
               }}
@@ -304,7 +304,7 @@ export function SettingsPanel({
             <Select
               label={t('Composition')}
               selectedKeys={[settings.composition]}
-              onSelectionChange={(keys) => {
+              onSelectionChange={(keys: any) => {
                 const value = Array.from(keys)[0] as CompositionPreset
                 onSettingsChange({ composition: value })
               }}
@@ -320,7 +320,7 @@ export function SettingsPanel({
               label={t('Negative Prompt')}
               placeholder={t('What to avoid in the image...')}
               value={settings.negativePrompt || ''}
-              onValueChange={(value) =>
+              onValueChange={(value: any) =>
                 onSettingsChange({ negativePrompt: value || undefined })
               }
               size="sm"
@@ -337,7 +337,7 @@ export function SettingsPanel({
                 minValue={1}
                 maxValue={20}
                 value={settings.guidanceScale || 7}
-                onChange={(value) =>
+                onChange={(value: any) =>
                   onSettingsChange({ guidanceScale: value as number })
                 }
                 className="max-w-full"
@@ -353,7 +353,7 @@ export function SettingsPanel({
               label={t('Seed (optional)')}
               placeholder={t('Random')}
               value={settings.seed?.toString() || ''}
-              onValueChange={(value) =>
+              onValueChange={(value: any) =>
                 onSettingsChange({
                   seed: value ? parseInt(value) : undefined,
                 })

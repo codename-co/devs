@@ -113,8 +113,8 @@ export const EasySetupModal = ({
             type="password"
             label={t('Password')}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleDecrypt()}
+            onChange={(e: any) => setPassword(e.target.value)}
+            onKeyDown={(e: any) => e.key === 'Enter' && handleDecrypt()}
             isInvalid={!!error}
             errorMessage={error}
             autoFocus
@@ -226,7 +226,7 @@ export const EasySetupModal = ({
   return (
     <Modal
       isOpen={isOpen}
-      onOpenChange={(v) => !v && (handleClose)()}
+      onOpenChange={(v: any) => !v && (handleClose)()}
       size="lg"
       isDismissable={!isInitializing}
       placement="bottom-center"

@@ -49,7 +49,7 @@ export const KnowledgePage: React.FC = () => {
         <Container>
           <Tabs
             selectedKey={mainTab}
-            onSelectionChange={(key) => setMainTab(key as string)}
+            onSelectionChange={(key: any) => setMainTab(key as string)}
             aria-label="Knowledge base sections"
             variant="underlined"
             classNames={{

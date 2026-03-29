@@ -72,7 +72,7 @@ export function MeetingControls({
         <Input
           placeholder="Send a message to the meeting chat..."
           value={chatMessage}
-          onChange={(e) => setChatMessage(e.target.value)}
+          onChange={(e: any) => setChatMessage(e.target.value)}
           onKeyDown={handleKeyDown}
           startContent={
             <Icon name="ChatBubble" size="sm" className="text-default-400" />
@@ -137,7 +137,7 @@ export function MeetingControls({
                 <Input
                   placeholder="Text to speak..."
                   size="sm"
-                  onKeyDown={(e) => {
+                  onKeyDown={(e: any) => {
                     if (e.key === 'Enter') {
                       const target = e.target as HTMLInputElement
                       if (target.value.trim()) {

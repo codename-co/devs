@@ -168,7 +168,7 @@ const ExpandedPanel = ({ className }: { className?: string }) => {
         <Accordion
           selectionMode="multiple"
           selectedKeys={expandedKeys}
-          onSelectionChange={(keys) =>
+          onSelectionChange={(keys: any) =>
             setExpandedKeys(new Set(keys as Set<string>))
           }
           itemClasses={{

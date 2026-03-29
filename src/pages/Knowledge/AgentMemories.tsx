@@ -337,7 +337,7 @@ export const AgentMemories: React.FC = () => {
           <Tabs
             size="sm"
             selectedKey={memoryTab}
-            onSelectionChange={(key) => setMemoryTab(key as string)}
+            onSelectionChange={(key: any) => setMemoryTab(key as string)}
             aria-label="Memory management tabs"
           >
             {/* Review Tab */}
@@ -560,7 +560,7 @@ export const AgentMemories: React.FC = () => {
       )}
 
       {/* Delete Memory Confirmation Modal */}
-      <Modal isOpen={isDeleteOpen} onOpenChange={(v) => !v && (onDeleteClose)()}>
+      <Modal isOpen={isDeleteOpen} onOpenChange={(v: any) => !v && (onDeleteClose)()}>
         <Modal.Dialog>
           <Modal.Header>{t('Delete Memory')}</Modal.Header>
           <Modal.Body>
@@ -582,21 +582,21 @@ export const AgentMemories: React.FC = () => {
       </Modal>
 
       {/* Edit Memory Modal */}
-      <Modal isOpen={isMemoryEditOpen} onOpenChange={(v) => !v && (onMemoryEditClose)()} size="2xl">
+      <Modal isOpen={isMemoryEditOpen} onOpenChange={(v: any) => !v && (onMemoryEditClose)()} size="2xl">
         <Modal.Dialog>
           <Modal.Header>{t('Edit Memory')}</Modal.Header>
           <Modal.Body className="gap-4">
             <Input
               label={t('Title')}
               value={memoryEditForm.title}
-              onValueChange={(value) =>
+              onValueChange={(value: any) =>
                 setMemoryEditForm((prev) => ({ ...prev, title: value }))
               }
             />
             <TextArea
               label={t('Content')}
               value={memoryEditForm.content}
-              onValueChange={(value) =>
+              onValueChange={(value: any) =>
                 setMemoryEditForm((prev) => ({ ...prev, content: value }))
               }
               minRows={3}
@@ -607,7 +607,7 @@ export const AgentMemories: React.FC = () => {
                 selectedKeys={
                   memoryEditForm.category ? [memoryEditForm.category] : []
                 }
-                onSelectionChange={(keys) => {
+                onSelectionChange={(keys: any) => {
                   const selected = Array.from(keys)[0] as MemoryCategory
                   setMemoryEditForm((prev) => ({ ...prev, category: selected }))
                 }}
@@ -622,7 +622,7 @@ export const AgentMemories: React.FC = () => {
                 selectedKeys={
                   memoryEditForm.confidence ? [memoryEditForm.confidence] : []
                 }
-                onSelectionChange={(keys) => {
+                onSelectionChange={(keys: any) => {
                   const selected = Array.from(keys)[0] as MemoryConfidence
                   setMemoryEditForm((prev) => ({
                     ...prev,
@@ -639,7 +639,7 @@ export const AgentMemories: React.FC = () => {
             <Input
               label={t('Keywords')}
               value={memoryEditForm.keywords}
-              onValueChange={(value) =>
+              onValueChange={(value: any) =>
                 setMemoryEditForm((prev) => ({ ...prev, keywords: value }))
               }
               description={t('Comma-separated list of keywords')}
@@ -659,7 +659,7 @@ export const AgentMemories: React.FC = () => {
       {/* Create Memory Modal */}
       <Modal
         isOpen={isMemoryCreateOpen}
-        onOpenChange={(v) => !v && (onMemoryCreateClose)()}
+        onOpenChange={(v: any) => !v && (onMemoryCreateClose)()}
         size="2xl"
       >
         <Modal.Dialog>
@@ -669,7 +669,7 @@ export const AgentMemories: React.FC = () => {
               label={t('Title')}
               placeholder="Brief description of this memory"
               value={memoryCreateForm.title}
-              onValueChange={(value) =>
+              onValueChange={(value: any) =>
                 setMemoryCreateForm((prev) => ({ ...prev, title: value }))
               }
               isRequired
@@ -678,7 +678,7 @@ export const AgentMemories: React.FC = () => {
               label={t('Content')}
               placeholder="Detailed information to remember"
               value={memoryCreateForm.content}
-              onValueChange={(value) =>
+              onValueChange={(value: any) =>
                 setMemoryCreateForm((prev) => ({ ...prev, content: value }))
               }
               minRows={4}
@@ -688,7 +688,7 @@ export const AgentMemories: React.FC = () => {
               <Select
                 label={t('Category')}
                 selectedKeys={[memoryCreateForm.category]}
-                onSelectionChange={(keys) => {
+                onSelectionChange={(keys: any) => {
                   const selected = Array.from(keys)[0] as MemoryCategory
                   setMemoryCreateForm((prev) => ({
                     ...prev,
@@ -704,7 +704,7 @@ export const AgentMemories: React.FC = () => {
               <Select
                 label={t('Confidence')}
                 selectedKeys={[memoryCreateForm.confidence]}
-                onSelectionChange={(keys) => {
+                onSelectionChange={(keys: any) => {
                   const selected = Array.from(keys)[0] as MemoryConfidence
                   setMemoryCreateForm((prev) => ({
                     ...prev,
@@ -722,7 +722,7 @@ export const AgentMemories: React.FC = () => {
               label={t('Keywords')}
               placeholder="keyword1, keyword2, keyword3"
               value={memoryCreateForm.keywords}
-              onValueChange={(value) =>
+              onValueChange={(value: any) =>
                 setMemoryCreateForm((prev) => ({ ...prev, keywords: value }))
               }
               description={t('Comma-separated list of keywords')}
@@ -731,14 +731,14 @@ export const AgentMemories: React.FC = () => {
               label="Tags"
               placeholder="tag1, tag2, tag3"
               value={memoryCreateForm.tags}
-              onValueChange={(value) =>
+              onValueChange={(value: any) =>
                 setMemoryCreateForm((prev) => ({ ...prev, tags: value }))
               }
               description="Comma-separated list of tags (optional)"
             />
             <Checkbox
               isSelected={memoryCreateForm.isGlobal}
-              onValueChange={(value) =>
+              onValueChange={(value: any) =>
                 setMemoryCreateForm((prev) => ({ ...prev, isGlobal: value }))
               }
             >

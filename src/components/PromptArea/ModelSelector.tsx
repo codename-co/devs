@@ -1112,7 +1112,8 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
           }
 
           const renderModelItem = (model: string, dimmed = false) => {
-            const isSelected = currentModelForProvider === model
+            // @ts-expect-error temporarily unused after v3 migration
+            const _isSelected = currentModelForProvider === model
             const modelData = getCachedModelData(
               viewingProvider.credential.provider,
               model,

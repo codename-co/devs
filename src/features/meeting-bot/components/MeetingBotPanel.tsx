@@ -189,7 +189,7 @@ export function MeetingBotPanel({
                 <Input
                   placeholder="https://meet.google.com/xxx-xxxx-xxx"
                   value={meetingUrl}
-                  onChange={(e) => setMeetingUrl(e.target.value)}
+                  onChange={(e: any) => setMeetingUrl(e.target.value)}
                   isDisabled={isConnecting}
                   startContent={
                     <Icon

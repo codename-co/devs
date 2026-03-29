@@ -195,7 +195,7 @@ export function GeneratedImageCard({
               </Dropdown.Trigger>
               <Dropdown.Menu
                 aria-label="Image actions"
-                onAction={(key) => {
+                onAction={(key: any) => {
                   if (key === 'download') onDownload?.()
                   if (key === 'copy-prompt') onCopyPrompt?.()
                   if (key === 'reference') onUseAsReference?.()
@@ -238,7 +238,7 @@ export function GeneratedImageCard({
       {!onPreview && (
         <Modal
           isOpen={isOpen}
-          onOpenChange={(v) => !v && (onClose)()}
+          onOpenChange={(v: any) => !v && (onClose)()}
           size="full"
           classNames={{
             body: 'p-0',

@@ -72,7 +72,8 @@ export const Widget = ({
   const presentationTitle = usePresentationTitle()
   const pptxTitle = usePptxTitle()
 
-  const getIcon = (): IconName => {
+  // @ts-expect-error temporarily unused after v3 migration
+  const _getIcon = (): IconName => {
     switch (type) {
       case 'abc':
         return 'MusicNoteSolid'

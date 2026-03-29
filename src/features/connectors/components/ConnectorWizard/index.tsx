@@ -364,7 +364,7 @@ export function ConnectorWizard({
   return (
     <Modal
       isOpen={isOpen}
-      onOpenChange={(v) => !v && (handleClose)()}
+      onOpenChange={(v: any) => !v && (handleClose)()}
       size="2xl"
       scrollBehavior="inside"
     >

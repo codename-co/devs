@@ -598,7 +598,7 @@ const TimelineToolsDisplay = memo(
         {/* Trace Detail Modal */}
         <Modal
           isOpen={isTraceModalOpen}
-          onOpenChange={(v) => !v && (handleCloseModal)()}
+          onOpenChange={(v: any) => !v && (handleCloseModal)()}
           size="2xl"
           scrollBehavior="inside"
         >
@@ -2516,7 +2516,7 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
       </div>
 
       {/* Pin Message Modal */}
-      <Modal isOpen={isPinModalOpen} onOpenChange={(v) => !v && (onPinModalClose)()} size="lg">
+      <Modal isOpen={isPinModalOpen} onOpenChange={(v: any) => !v && (onPinModalClose)()} size="lg">
         <Modal.Dialog>
           <Modal.Header className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
@@ -2570,7 +2570,7 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
       </Modal>
 
       {/* Delete Conversation Confirmation Modal */}
-      <Modal isOpen={isDeleteModalOpen} onOpenChange={(v) => !v && (onDeleteModalClose)()} size="md">
+      <Modal isOpen={isDeleteModalOpen} onOpenChange={(v: any) => !v && (onDeleteModalClose)()} size="md">
         <Modal.Dialog>
           <Modal.Header>
             <div className="flex items-center gap-2">
@@ -2607,7 +2607,7 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
       {/* Appearance Edit Modal */}
       <Modal
         isOpen={isAppearanceModalOpen}
-        onOpenChange={(v) => !v && (onAppearanceModalClose)()}
+        onOpenChange={(v: any) => !v && (onAppearanceModalClose)()}
         size="md"
       >
         <Modal.Dialog>

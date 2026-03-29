@@ -183,7 +183,7 @@ export function TrySkillRunner({ skill, t }: TrySkillRunnerProps) {
       <Select
         label={t('Select script')}
         selectedKeys={selectedScriptPath ? [selectedScriptPath] : []}
-        onSelectionChange={(keys) => {
+        onSelectionChange={(keys: any) => {
           const key = Array.from(keys)[0] as string
           if (key) {
             setSelectedScriptPath(key)
@@ -212,7 +212,7 @@ export function TrySkillRunner({ skill, t }: TrySkillRunnerProps) {
         description={t('Keys become --flags in sys.argv for argparse scripts')}
         placeholder={'{\n  "prompt": "hello world",\n  "filename": "output.png"\n}'}
         value={argsJson}
-        onValueChange={(v) => {
+        onValueChange={(v: any) => {
           setArgsJson(v)
           if (argsError) validateArgs(v)
         }}

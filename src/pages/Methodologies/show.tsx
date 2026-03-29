@@ -259,13 +259,12 @@ export const MethodologyPage = () => {
               <Accordion
                 variant="shadow"
                 selectedKeys={selectedKeys}
-                onSelectionChange={(keys) =>
+                onSelectionChange={(keys: any) =>
                   setSelectedKeys(keys as Set<string>)
                 }
               >
                 {methodology.phases.map((phase, index) => (
                   <Accordion.Item
-                    id={`phase-${index}-${phase.name.toLowerCase().replace(/\s+/g, '-')}`}
                     id={`phase-${index}-${phase.name.toLowerCase().replace(/\s+/g, '-')}`}
                     aria-label={phase.name}
                     title={phase.name}

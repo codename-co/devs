@@ -68,7 +68,7 @@ export function FeaturesSection() {
         >
           <Switch
             isSelected={suggestionsEnabled}
-            onChange={(e) => setSuggestionsEnabled(e.target.checked)}
+            onChange={(checked: boolean) => setSuggestionsEnabled(checked)}
             size="sm"
           >
             <p>{t('Quick Reply Suggestions')}</p>
@@ -86,7 +86,7 @@ export function FeaturesSection() {
         >
           <Switch
             isSelected={enableWebSearchGrounding}
-            onChange={(e) => setEnableWebSearchGrounding(e.target.checked)}
+            onChange={(checked: boolean) => setEnableWebSearchGrounding(checked)}
             size="sm"
           >
             <p>{t('Web Search Grounding')}</p>
@@ -101,7 +101,7 @@ export function FeaturesSection() {
         <div id="yolo-mode" className={getHighlightClasses('yolo-mode')}>
           <Switch
             isSelected={yoloMode}
-            onChange={(e) => setYoloMode(e.target.checked)}
+            onChange={(checked: boolean) => setYoloMode(checked)}
             size="sm"
           >
             <p>{t('YOLO Mode')}</p>
@@ -124,7 +124,7 @@ export function FeaturesSection() {
         >
           <Switch
             isSelected={hideDefaultAgents}
-            onChange={(e) => setHideDefaultAgents(e.target.checked)}
+            onChange={(checked: boolean) => setHideDefaultAgents(checked)}
             size="sm"
           >
             <p>{t('Hide Default Agents')}</p>
@@ -153,7 +153,7 @@ export function FeaturesSection() {
               'Enter global instructions that apply to all agents...',
             )}
             value={globalSystemInstructions}
-            onChange={(e) =>
+            onChange={(e: any) =>
               setGlobalSystemInstructions(e.target.value || undefined)
             }
             minRows={1}
@@ -172,7 +172,7 @@ export function FeaturesSection() {
         >
           <Switch
             isSelected={autoMemoryLearning}
-            onChange={(e) => setAutoMemoryLearning(e.target.checked)}
+            onChange={(checked: boolean) => setAutoMemoryLearning(checked)}
             size="sm"
           >
             <p>{t('Auto Memory Learning')}</p>
@@ -195,7 +195,7 @@ export function FeaturesSection() {
         >
           <Switch
             isSelected={speechToTextEnabled}
-            onChange={(e) => setSpeechToTextEnabled(e.target.checked)}
+            onChange={(checked: boolean) => setSpeechToTextEnabled(checked)}
           >
             <p>{t('Enable Speech-to-Text')}</p>
             <p className="text-xs text-default-500">

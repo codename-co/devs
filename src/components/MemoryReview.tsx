@@ -199,7 +199,7 @@ export function MemoryReviewCard({
       </Card>
 
       {/* Edit Modal */}
-      <Modal isOpen={isOpen} onOpenChange={(v) => !v && (onClose)()} size="lg">
+      <Modal isOpen={isOpen} onOpenChange={(v: any) => !v && (onClose)()} size="lg">
         <Modal.Dialog>
           <Modal.Header className="flex flex-col gap-1">
             {t('Edit Memory')}

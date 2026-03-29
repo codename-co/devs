@@ -463,7 +463,7 @@ export function ConversationsContent() {
       {/* Summary Modal */}
       <Modal
         isOpen={isSummaryOpen}
-        onOpenChange={(v) => !v && (onSummaryClose)()}
+        onOpenChange={(v: any) => !v && (onSummaryClose)()}
         size="3xl"
         scrollBehavior="inside"
       >
@@ -505,7 +505,7 @@ export function ConversationsContent() {
       </Modal>
 
       {/* Rename Modal */}
-      <Modal isOpen={isRenameOpen} onOpenChange={(v) => !v && (onRenameClose)()} size="md">
+      <Modal isOpen={isRenameOpen} onOpenChange={(v: any) => !v && (onRenameClose)()} size="md">
         <Modal.Dialog>
           <Modal.Header>{t('Rename conversation')}</Modal.Header>
           <Modal.Body>

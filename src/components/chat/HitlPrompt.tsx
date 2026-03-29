@@ -150,7 +150,7 @@ export const HitlPrompt = memo(({ request, agent }: HitlPromptProps) => {
               maxRows={4}
               placeholder={t('Type your response...')}
               value={textResponse}
-              onChange={(e) => setTextResponse(e.target.value)}
+              onChange={(e: any) => setTextResponse(e.target.value)}
               onKeyDown={handleKeyDown}
               className="flex-1"
             />
