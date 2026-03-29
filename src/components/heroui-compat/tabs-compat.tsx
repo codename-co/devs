@@ -15,18 +15,40 @@ const cn = (...args: unknown[]) =>
  */
 export const Tabs = withCompound(
   (props) => {
-    const { children, variant, selectedKey, defaultSelectedKey,
-      onSelectionChange, classNames, className, placement,
-      color: _c, size: _s, radius: _r, disableAnimation: _da,
-      isDisabled: _d, fullWidth: _fw, ...rest } = props
+    const {
+      children,
+      variant,
+      selectedKey,
+      defaultSelectedKey,
+      onSelectionChange,
+      classNames,
+      className,
+      placement,
+      color: _c,
+      size: _s,
+      radius: _r,
+      disableAnimation: _da,
+      isDisabled: _d,
+      fullWidth: _fw,
+      ...rest
+    } = props
 
     // Collect tab data from v2-style <Tab> children
-    const tabsData: Array<{ id: string; title: React.ReactNode; content: React.ReactNode; isDisabled?: boolean; className?: string; href?: string }> = []
+    const tabsData: Array<{
+      id: string
+      title: React.ReactNode
+      content: React.ReactNode
+      isDisabled?: boolean
+      className?: string
+      href?: string
+    }> = []
     React.Children.forEach(children, (child) => {
       if (!React.isValidElement(child)) return
       const cp = child.props as Record<string, any>
       // v2 uses key prop (available on element), v3 uses id prop
-      const id = cp.id ?? (child.key != null ? String(child.key).replace(/^\.\$/, '') : '')
+      const id =
+        cp.id ??
+        (child.key != null ? String(child.key).replace(/^\.\$/, '') : '')
       tabsData.push({
         id,
         title: cp.title ?? id,
@@ -42,16 +64,26 @@ export const Tabs = withCompound(
 
     return (
       <HeroTabs
-        className={classNames?.base ? `${className ?? ''} ${classNames.base}`.trim() : className}
+        className={
+          classNames?.base
+            ? `${className ?? ''} ${classNames.base}`.trim()
+            : className
+        }
         selectedKey={selectedKey}
         defaultSelectedKey={defaultSelectedKey}
         onSelectionChange={onSelectionChange}
-        orientation={placement === 'bottom' || placement === 'top' ? 'horizontal' : placement === 'start' || placement === 'end' ? 'vertical' : undefined}
+        orientation={
+          placement === 'bottom' || placement === 'top'
+            ? 'horizontal'
+            : placement === 'start' || placement === 'end'
+              ? 'vertical'
+              : undefined
+        }
         variant={v3Variant}
         aria-label={rest['aria-label']}
       >
         <HeroTabs.List className={cn(classNames?.tabList)}>
-          {tabsData.map(tab => (
+          {tabsData.map((tab) => (
             <HeroTabs.Tab
               key={tab.id}
               id={tab.id}
@@ -63,11 +95,17 @@ export const Tabs = withCompound(
             </HeroTabs.Tab>
           ))}
         </HeroTabs.List>
-        {tabsData.filter(t => t.content != null).map(tab => (
-          <HeroTabs.Panel key={tab.id} id={tab.id} className={cn(classNames?.panel)}>
-            {tab.content}
-          </HeroTabs.Panel>
-        ))}
+        {tabsData
+          .filter((t) => t.content != null)
+          .map((tab) => (
+            <HeroTabs.Panel
+              key={tab.id}
+              id={tab.id}
+              className={cn(classNames?.panel)}
+            >
+              {tab.content}
+            </HeroTabs.Panel>
+          ))}
       </HeroTabs>
     )
   },
@@ -79,5 +117,5 @@ export const Tabs = withCompound(
     Indicator: HeroTabs.Indicator,
     Separator: HeroTabs.Separator,
     Panel: HeroTabs.Panel,
-  }
+  },
 )

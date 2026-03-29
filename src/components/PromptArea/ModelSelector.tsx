@@ -1,6 +1,12 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { Button, Chip, Dropdown, Input, Spinner } from '@/components/heroui-compat'
+import {
+  Button,
+  Chip,
+  Dropdown,
+  Input,
+  Spinner,
+} from '@/components/heroui-compat'
 
 import { Icon } from '../Icon'
 import { useModelPicker } from './useModelPicker'
@@ -1326,7 +1332,9 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
                   </span>
                 </Dropdown.Item>
               </Dropdown.Section>
-              <Dropdown.Section key="models-list">{renderModelItems()}</Dropdown.Section>
+              <Dropdown.Section key="models-list">
+                {renderModelItems()}
+              </Dropdown.Section>
             </>
           )}
         </Dropdown.Menu>
