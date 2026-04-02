@@ -28,6 +28,12 @@ export const fr: I18n = {
   'Multilingual, keyword biasing. Requires WebGPU. ~600MB download.':
     'Multilingue, biais par mots-clés. Nécessite WebGPU. ~600 Mo à télécharger.',
   'Granite Speech requires WebGPU': 'Granite Speech nécessite WebGPU',
+  Parakeet: 'Parakeet',
+  'NVIDIA SOTA. Auto-punctuation. English & French. ~2.5GB download.':
+    'NVIDIA SOTA. Ponctuation auto. Anglais et français. ~2,5 Go à télécharger.',
+  'Cohere Transcribe': 'Cohere Transcribe',
+  'SOTA multilingual (14 langs). 2B params, 4-bit. ~2.1GB download.':
+    'SOTA multilingue (14 langues). 2B params, 4-bit. ~2,1 Go à télécharger.',
   'Bidirectional audio with Gemini. Requires API key.':
     'Audio bidirectionnel avec Gemini. Nécessite une clé API.',
   // TTS Providers

@@ -27,6 +27,12 @@ export const ko: I18n = {
   'Multilingual, keyword biasing. Requires WebGPU. ~600MB download.':
     '다국어, 키워드 바이어싱. WebGPU 필요. ~600MB 다운로드.',
   'Granite Speech requires WebGPU': 'Granite Speech는 WebGPU가 필요합니다',
+  Parakeet: 'Parakeet',
+  'NVIDIA SOTA. Auto-punctuation. English & French. ~2.5GB download.':
+    'NVIDIA SOTA. 자동 구두점. 영어 및 프랑스어. ~2.5GB 다운로드.',
+  'Cohere Transcribe': 'Cohere Transcribe',
+  'SOTA multilingual (14 langs). 2B params, 4-bit. ~2.1GB download.':
+    'SOTA 다국어 (14개 언어). 2B 파라미터, 4비트. ~2.1GB 다운로드.',
   'Bidirectional audio with Gemini. Requires API key.':
     'Gemini와 양방향 오디오. API 키 필요.',
   // TTS Providers

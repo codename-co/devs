@@ -13,6 +13,8 @@ export type STTProviderType =
   | 'web-speech' // Browser native Web Speech API
   | 'moonshine' // onnx-community/moonshine-base-ONNX (fast, ~166MB)
   | 'whisper' // onnx-community/whisper-large-v3-turbo (SOTA, ~800MB)
+  | 'parakeet' // onnx-community/parakeet-ctc-0.6b-ONNX (NVIDIA, SOTA English & French, ~2.5GB)
+  | 'cohere' // onnx-community/cohere-transcribe-03-2026-ONNX (Cohere, 14 languages, 2B params)
   | 'granite' // onnx-community/granite-4.0-1b-speech-ONNX (multilingual, ~1B params)
   | 'gemini-live' // Gemini Live API (cloud, bidirectional)
   | 'lm-studio' // Local LM Studio server
@@ -322,6 +324,22 @@ export const STT_MODELS = {
     latency: '~800ms',
     quality: 'SOTA',
     description: '⚠️ Requires 12GB+ RAM. May fail in browsers.',
+  },
+  parakeet: {
+    modelId: 'onnx-community/parakeet-ctc-0.6b-ONNX',
+    size: '~2.5GB',
+    latency: '~300ms',
+    quality: 'SOTA',
+    description:
+      'NVIDIA Parakeet. #1 OpenASR. Auto-punctuation. English & French. 0.6B params.',
+  },
+  cohere: {
+    modelId: 'onnx-community/cohere-transcribe-03-2026-ONNX',
+    size: '~2.1GB (q4)',
+    latency: '~300ms',
+    quality: 'SOTA',
+    description:
+      'Cohere Transcribe. 14 languages. 2B params, 4-bit quantized.',
   },
 } as const
 

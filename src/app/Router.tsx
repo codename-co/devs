@@ -20,6 +20,7 @@ import { TaskTimelineDemo } from '@/pages/Demo/TaskTimelineDemo'
 import { AboutPage } from '@/pages/About'
 import { PrivacyPage } from '@/pages/Privacy'
 import { TermsPage } from '@/pages/Terms'
+import { V2Page } from '@/pages/V2'
 import { OAuthCallbackPage } from '@/pages/OAuth'
 import { TaskPage } from '@/pages/Tasks/show'
 import { SessionPage } from '@/pages/Session'
@@ -63,6 +64,7 @@ const ConversationsRedirect = () => (
 )
 
 const routes = {
+  v2: V2Page,
   index: IndexPage,
   agents: AgentsPage,
   'agents/run': AgentRunPage,

@@ -19,6 +19,10 @@ export const en = [
   'Granite Speech',
   'Multilingual, keyword biasing. Requires WebGPU. ~600MB download.',
   'Granite Speech requires WebGPU',
+  'Parakeet',
+  'NVIDIA SOTA. Auto-punctuation. English & French. ~2.5GB download.',
+  'Cohere Transcribe',
+  'SOTA multilingual (14 langs). 2B params, 4-bit. ~2.1GB download.',
   'Bidirectional audio with Gemini. Requires API key.',
   // TTS Providers
   'Instant but robotic.',

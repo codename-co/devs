@@ -8,11 +8,15 @@ import type { STTProvider, STTProviderType } from '../types'
 import { WebSpeechSTTProvider } from './web-speech'
 import { MoonshineSTTProvider } from './moonshine'
 import { WhisperSTTProvider } from './whisper'
+import { ParakeetSTTProvider } from './parakeet'
+import { CohereSTTProvider } from './cohere'
 import { GraniteSTTProvider } from './granite'
 
 export { WebSpeechSTTProvider } from './web-speech'
 export { MoonshineSTTProvider } from './moonshine'
 export { WhisperSTTProvider } from './whisper'
+export { ParakeetSTTProvider } from './parakeet'
+export { CohereSTTProvider } from './cohere'
 export { GraniteSTTProvider } from './granite'
 
 /**
@@ -34,6 +38,16 @@ export function createSTTProvider(
     case 'whisper':
       return new WhisperSTTProvider(
         options?.modelId || 'onnx-community/whisper-small',
+      )
+
+    case 'parakeet':
+      return new ParakeetSTTProvider(
+        options?.modelId || 'onnx-community/parakeet-ctc-0.6b-ONNX',
+      )
+
+    case 'cohere':
+      return new CohereSTTProvider(
+        options?.modelId || 'onnx-community/cohere-transcribe-03-2026-ONNX',
       )
 
     case 'granite':
@@ -115,6 +129,22 @@ export function getAvailableSTTProviders(
       type: 'whisper',
       name: t('Whisper'),
       description: t('High quality, multilingual. ~500MB download.'),
+      isLocal: true,
+    },
+    {
+      type: 'parakeet',
+      name: t('Parakeet'),
+      description: t(
+        'NVIDIA SOTA. Auto-punctuation. English & French. ~2.5GB download.',
+      ),
+      isLocal: true,
+    },
+    {
+      type: 'cohere',
+      name: t('Cohere Transcribe'),
+      description: t(
+        'SOTA multilingual (14 langs). 2B params, 4-bit. ~2.1GB download.',
+      ),
       isLocal: true,
     },
     {
