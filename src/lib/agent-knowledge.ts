@@ -203,10 +203,10 @@ export async function buildAgentInstructions(
   knowledgeItemIds?: string[],
   agentId?: string,
 ): Promise<string> {
-  // Import userSettings lazily to avoid circular dependencies
-  const { userSettings } = await import('@/stores/userStore')
+  // Import getEffectiveSettings lazily to avoid circular dependencies
+  const { getEffectiveSettings } = await import('@/stores/userStore')
   const globalSystemInstructions =
-    userSettings.getState().globalSystemInstructions
+    getEffectiveSettings().globalSystemInstructions
 
   let enhancedInstructions = baseInstructions
 

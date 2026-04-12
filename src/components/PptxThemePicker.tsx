@@ -10,9 +10,16 @@ import { userSettings } from '@/stores/userStore'
 import { Icon } from '@/components'
 import clsx from 'clsx'
 
-export function PptxThemePicker() {
-  const pptxTheme = userSettings((s) => s.pptxTheme) ?? PPTX_THEME_AUTO
-  const setPptxTheme = userSettings((s) => s.setPptxTheme)
+interface PptxThemePickerProps {
+  value?: string
+  onChange?: (id: string | undefined) => void
+}
+
+export function PptxThemePicker({ value, onChange }: PptxThemePickerProps = {}) {
+  const storePptxTheme = userSettings((s) => s.pptxTheme) ?? PPTX_THEME_AUTO
+  const storeSetPptxTheme = userSettings((s) => s.setPptxTheme)
+  const pptxTheme = value ?? storePptxTheme
+  const setPptxTheme = onChange ?? storeSetPptxTheme
 
   const isAutoActive = pptxTheme === PPTX_THEME_AUTO
 

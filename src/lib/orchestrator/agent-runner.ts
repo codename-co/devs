@@ -59,7 +59,7 @@ import {
   SKILL_TOOL_DEFINITIONS,
 } from '@/tools/plugins'
 import { ARTIFACT_TOOL_DEFINITIONS } from '@/lib/artifact-tools'
-import { userSettings } from '@/stores/userStore'
+import { getEffectiveSettings } from '@/stores/userStore'
 import type {
   Agent,
   AgentScope,
@@ -233,8 +233,8 @@ async function resolveConfig(
   if (scope?.maxTokens) config.maxTokens = scope.maxTokens
   if (signal) config.signal = signal
 
-  // Apply web search grounding setting
-  const { enableWebSearchGrounding } = userSettings.getState()
+  // Apply web search grounding setting (space-aware)
+  const { enableWebSearchGrounding } = getEffectiveSettings()
   if (enableWebSearchGrounding) {
     ;(config as any).enableWebSearch = true
   }

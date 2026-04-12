@@ -12,6 +12,7 @@ vi.mock('@/stores/userStore', () => {
         Object.assign(state, partial),
       subscribe: vi.fn(),
     },
+    getEffectiveSettings: () => state,
   }
 })
 

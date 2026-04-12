@@ -12,7 +12,7 @@ import { Input, Select, SelectItem } from '@heroui/react'
 import { Button } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n, useUrl, languages, type Lang } from '@/i18n'
-import { userSettings } from '@/stores/userStore'
+import { userSettings, type ThemeMode } from '@/stores/userStore'
 import { PRODUCT } from '@/config/product'
 import { useBackgroundImage } from '@/hooks/useBackgroundImage'
 import { ColorThemePicker } from '@/components/ColorThemePicker'
@@ -21,20 +21,59 @@ import { useHashHighlight } from '@/hooks/useHashHighlight'
 import { successToast } from '@/lib/toast'
 import { useNavigate, useLocation } from 'react-router-dom'
 import localI18n from '../i18n'
+import { useSpaceScopedSetting } from '../useSpaceScopedSetting'
 
 export function GeneralSection() {
   const { lang, t } = useI18n(localI18n)
   const navigate = useNavigate()
   const location = useLocation()
-  const { handleImageFile, setBackgroundImage } = useBackgroundImage()
+  const { handleImageFile, setBackgroundImage: setBackgroundImageGlobal } =
+    useBackgroundImage()
   const { getHighlightClasses } = useHashHighlight()
 
+  // Local-only settings
   const setLanguage = userSettings((state) => state.setLanguage)
-  const theme = userSettings((state) => state.theme)
-  const setTheme = userSettings((state) => state.setTheme)
-  const platformName = userSettings((state) => state.platformName)
-  const setPlatformName = userSettings((state) => state.setPlatformName)
-  const backgroundImage = userSettings((state) => state.backgroundImage)
+
+  // Theme settings — space-scopable
+  const _theme = userSettings((state) => state.theme)
+  const _setTheme = userSettings((state) => state.setTheme)
+  const [theme, setTheme] = useSpaceScopedSetting(
+    'theme',
+    _theme,
+    _setTheme as (v: ThemeMode | undefined) => void,
+  )
+
+  const _colorTheme = userSettings((state) => state.colorTheme)
+  const _setColorTheme = userSettings((state) => state.setColorTheme)
+  const [colorTheme, setColorTheme] = useSpaceScopedSetting(
+    'colorTheme',
+    _colorTheme,
+    _setColorTheme as (v: string | undefined) => void,
+  )
+
+  // Synced settings — space-scopable
+  const _platformName = userSettings((state) => state.platformName)
+  const _setPlatformName = userSettings((state) => state.setPlatformName)
+  const [platformName, setPlatformName] = useSpaceScopedSetting(
+    'platformName',
+    _platformName,
+    _setPlatformName as (v: string | undefined) => void,
+  )
+
+  const _backgroundImage = userSettings((state) => state.backgroundImage)
+  const [backgroundImage, setBackgroundImage] = useSpaceScopedSetting(
+    'backgroundImage',
+    _backgroundImage,
+    setBackgroundImageGlobal as (v: string | undefined) => void,
+  )
+
+  const _pptxTheme = userSettings((state) => state.pptxTheme)
+  const _setPptxTheme = userSettings((state) => state.setPptxTheme)
+  const [pptxTheme, setPptxTheme] = useSpaceScopedSetting(
+    'pptxTheme',
+    _pptxTheme,
+    _setPptxTheme as (v: string | undefined) => void,
+  )
 
   const handleLanguageChange = (newLanguage: Lang) => {
     setLanguage(newLanguage)
@@ -87,7 +126,7 @@ export function GeneralSection() {
         <Select
           id="theme"
           label={t('Theme')}
-          selectedKeys={[theme]}
+          selectedKeys={[theme ?? 'system']}
           onSelectionChange={(keys) => {
             const selectedTheme = Array.from(keys)[0] as
               | 'light'
@@ -117,7 +156,7 @@ export function GeneralSection() {
           <p className="text-xs text-default-500 mb-3">
             {t('Choose a color scheme for the interface')}
           </p>
-          <ColorThemePicker />
+          <ColorThemePicker value={colorTheme} onChange={setColorTheme} />
         </div>
 
         <div
@@ -127,7 +166,7 @@ export function GeneralSection() {
           <p className="text-xs text-default-500 mb-3">
             {t('Presentation theme used for generated PPTX slides')}
           </p>
-          <PptxThemePicker />
+          <PptxThemePicker value={pptxTheme} onChange={setPptxTheme} />
         </div>
       </div>
 

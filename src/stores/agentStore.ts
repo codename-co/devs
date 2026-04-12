@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 import { PRODUCT } from '@/config/product'
 import { errorToast, successToast } from '@/lib/toast'
 import { slugify, generateUniqueSlug } from '@/lib/slugify'
 import { type Agent, type AgentColor, type Tool } from '@/types'
 import { Lang } from '@/i18n'
-import { userSettings } from '@/stores/userStore'
+import { getEffectiveSettings, useEffectiveSettings } from '@/stores/userStore'
+import { getActiveSpaceId } from '@/stores/spaceStore'
 import { IconName } from '@/lib/types'
 import {
   agents,
@@ -214,8 +215,8 @@ export async function loadAllAgents(options?: {
 }): Promise<Agent[]> {
   await whenReady
 
-  // Check user setting for hiding default agents
-  const hideDefaultAgents = userSettings.getState().hideDefaultAgents
+  // Check user setting for hiding default agents (space-aware)
+  const hideDefaultAgents = getEffectiveSettings().hideDefaultAgents
   const includeDefaults = options?.includeDefaultAgents ?? !hideDefaultAgents
 
   // Load built-in agents from JSON files (if not hidden)
@@ -481,6 +482,7 @@ export async function createAgent(agentData: {
       icon: agentData.icon,
       color: agentData.color,
       portrait: agentData.portrait,
+      spaceId: getActiveSpaceId(),
       createdAt: new Date(),
       updatedAt: new Date(),
     }
@@ -677,7 +679,7 @@ export async function getAgentsSeparated(): Promise<{
 }> {
   await whenReady
 
-  const hideDefaultAgents = userSettings.getState().hideDefaultAgents
+  const hideDefaultAgents = getEffectiveSettings().hideDefaultAgents
   const [customAgents, builtInAgents] = await Promise.all([
     loadCustomAgents(),
     hideDefaultAgents ? Promise.resolve([]) : loadBuiltInAgents(),
@@ -752,7 +754,7 @@ export async function batchCreateAgents(
  */
 export function useAgents(): Agent[] {
   const allAgents = useLiveMap(agents)
-  return allAgents.filter((agent) => !agent.deletedAt)
+  return useMemo(() => allAgents.filter((agent) => !agent.deletedAt), [allAgents])
 }
 
 /**
@@ -781,7 +783,7 @@ export function useAgentsSeparated(): {
   loading: boolean
 } {
   const customAgents = useAgents()
-  const hideDefaultAgents = userSettings((state) => state.hideDefaultAgents)
+  const { hideDefaultAgents } = useEffectiveSettings()
   const [builtInAgents, setBuiltInAgents] = useState<Agent[]>([])
   const [loading, setLoading] = useState(true)
 

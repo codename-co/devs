@@ -212,7 +212,7 @@ const SettingsContentInner = () => {
   ]
 
   // Sections where space-level overrides make sense (synced settings)
-  const spaceScopableSections = new Set<SectionKey>(['', 'features', 'tags'])
+  const spaceScopableSections = new Set<SectionKey>(['', 'features', 'tags', 'connectors', 'providers', 'skills'])
 
   const handleSectionClick = (section: SectionDef) => {
     if (section.navigateTo) {

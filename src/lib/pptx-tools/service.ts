@@ -16,7 +16,7 @@ import type {
 } from './types'
 import type { PptxTheme } from '@/lib/pptx-themes'
 import { getPptxTheme, PPTX_THEME_AUTO } from '@/lib/pptx-themes'
-import { userSettings } from '@/stores/userStore'
+import { userSettings, getEffectiveSettings } from '@/stores/userStore'
 
 export { PPTX_TOOL_DEFINITIONS } from './types'
 
@@ -499,9 +499,9 @@ export async function generatePptx(
   }
 
   try {
-    // Resolve the PPTX theme from user settings
-    const { pptxTheme: pptxThemeId, colorTheme: currentColorTheme } =
-      userSettings.getState()
+    // Resolve the PPTX theme from effective settings (space-aware)
+    const { pptxTheme: pptxThemeId } = getEffectiveSettings()
+    const { colorTheme: currentColorTheme } = userSettings.getState()
     const theme = getPptxTheme(
       pptxThemeId ?? PPTX_THEME_AUTO,
       currentColorTheme,

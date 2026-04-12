@@ -54,7 +54,7 @@ import {
   buildMemoryContextForChat,
   learnFromMessage,
 } from '@/lib/memory-learning-service'
-import { userSettings } from '@/stores/userStore'
+import { getEffectiveSettings } from '@/stores/userStore'
 import { Lang, languages } from '@/i18n'
 import {
   defaultExecutor,
@@ -962,10 +962,10 @@ ${connectorBlocks}`
     )
     const hasTools = allToolDefinitions.length > 0
 
-    // Check if web search grounding is enabled in user settings
+    // Check if web search grounding is enabled in user settings (space-aware)
     const { enableWebSearchGrounding } = (
       await import('@/stores/userStore')
-    ).userSettings.getState()
+    ).getEffectiveSettings()
 
     // Build config with tools if the agent has any enabled
     const llmConfig = {
@@ -1237,7 +1237,7 @@ ${connectorBlocks}`
 
     // Trigger automatic memory learning if enabled in settings
     // This runs asynchronously in the background and doesn't block the chat
-    const autoMemoryLearning = userSettings.getState().autoMemoryLearning
+    const autoMemoryLearning = getEffectiveSettings().autoMemoryLearning
     if (autoMemoryLearning && finalContent) {
       // Learn from the user's prompt and the assistant's response
       learnFromMessage(prompt, finalContent, agent.id, conversation.id, lang)

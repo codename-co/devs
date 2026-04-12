@@ -14,7 +14,7 @@ import {
   contrastForegroundHsl,
   generatePrimaryScale,
 } from '@/lib/themes'
-import { userSettings } from '@/stores/userStore'
+import { userSettings, useEffectiveTheme } from '@/stores/userStore'
 import { useLLMModelStore } from '@/stores/llmModelStore'
 import { useSyncStore } from '@/features/sync'
 import { SyncPasswordModal } from '@/features/sync/components/SyncPasswordModal'
@@ -36,8 +36,7 @@ console.log('[Dev] Sync debug tools available at window.devsSync')
 /** Inner component that uses i18n hooks - must be rendered inside I18nProvider */
 function ProvidersInner({ children }: { children: React.ReactNode }) {
   const [searchParams] = useSearchParams()
-  const theme = userSettings((state) => state.theme)
-  const colorTheme = userSettings((state) => state.colorTheme)
+  const { theme, colorTheme } = useEffectiveTheme()
   const lang = userSettings((state) => state.language)
   const loadCredentials = useLLMModelStore((state) => state.loadCredentials)
   const initializeSync = useSyncStore((state) => state.initialize)

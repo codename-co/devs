@@ -23,6 +23,8 @@ import { ConnectorCard } from '@/features/connectors/components'
 import { ConnectorWizardInline } from '@/features/connectors/components/ConnectorWizardInline'
 import { ConnectorSettingsInline } from '@/features/connectors/components/ConnectorSettingsInline'
 import type { ConnectorCategory } from '@/features/connectors/types'
+import { useSettingsScope } from '../SettingsContext'
+import { useActiveSpaceId, entityBelongsToSpace } from '@/stores/spaceStore'
 import localI18n from '@/features/connectors/pages/i18n'
 
 export function ConnectorsSection() {
@@ -30,6 +32,8 @@ export function ConnectorsSection() {
   const navigate = useNavigate()
   const location = useLocation()
   const { activeElement } = useHashHighlight()
+  const scope = useSettingsScope()
+  const spaceId = useActiveSpaceId()
 
   const [selectedTab] = useState<ConnectorCategory>('app')
 
@@ -52,21 +56,31 @@ export function ConnectorsSection() {
     }
   }, [isInitialized, initialize])
 
-  // Get connectors based on selected tab
+  // Get connectors based on selected tab, filtered by space scope
   const currentConnectors = useMemo(() => {
+    let list: typeof connectors
     switch (selectedTab) {
       case 'app':
-        return getAppConnectors()
+        list = getAppConnectors()
+        break
       case 'api':
-        return getApiConnectors()
+        list = getApiConnectors()
+        break
       case 'mcp':
-        return getMcpConnectors()
+        list = getMcpConnectors()
+        break
       default:
-        return []
+        list = []
     }
+    if (scope === 'space') {
+      return list.filter((c) => entityBelongsToSpace(c.spaceId, spaceId))
+    }
+    return list
   }, [
     selectedTab,
     connectors,
+    scope,
+    spaceId,
     getAppConnectors,
     getApiConnectors,
     getMcpConnectors,

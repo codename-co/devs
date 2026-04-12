@@ -15,7 +15,7 @@
  */
 
 import type { HitlRequest, HitlRequestOptions, HitlResponse } from '@/types'
-import { userSettings } from '@/stores/userStore'
+import { getEffectiveSettings } from '@/stores/userStore'
 import { notifyHitlRequest } from '@/lib/web-notifications'
 
 // ============================================================================
@@ -90,7 +90,7 @@ function getAutoResponse(options: HitlRequestOptions): string {
 export function requestHumanInput(
   options: HitlRequestOptions,
 ): Promise<HitlResponse> {
-  const isYoloMode = userSettings.getState().yoloMode ?? false
+  const isYoloMode = getEffectiveSettings().yoloMode ?? false
 
   const request: HitlRequest = {
     id: crypto.randomUUID(),
@@ -200,7 +200,7 @@ export function getAllPendingRequests(): HitlRequest[] {
  * Check if YOLO mode is currently active.
  */
 export function isYoloMode(): boolean {
-  return userSettings.getState().yoloMode ?? false
+  return getEffectiveSettings().yoloMode ?? false
 }
 
 // ============================================================================

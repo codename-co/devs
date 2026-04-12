@@ -630,10 +630,10 @@ export class WorkflowOrchestrator {
         throw new Error('No AI provider configured')
       }
 
-      // Apply web search grounding setting
+      // Apply web search grounding setting (space-aware)
       const { enableWebSearchGrounding } = (
         await import('@/stores/userStore')
-      ).userSettings.getState()
+      ).getEffectiveSettings()
       if (enableWebSearchGrounding) {
         ;(config as any).enableWebSearch = true
       }

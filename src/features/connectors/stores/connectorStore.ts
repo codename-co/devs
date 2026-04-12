@@ -13,6 +13,7 @@ import type {
 import { infoToast } from '@/lib/toast'
 import { notifyError, notifySuccess } from '@/features/notifications'
 import { ProviderRegistry } from '@/features/connectors/provider-registry'
+import { getActiveSpaceId, entityBelongsToSpace } from '@/stores/spaceStore'
 import { SecureStorage } from '@/lib/crypto'
 import { sanitizeErrorMessage } from '@/features/connectors/sanitizer'
 import {
@@ -71,6 +72,7 @@ interface ConnectorState {
   getAppConnectors: () => Connector[]
   getApiConnectors: () => Connector[]
   getMcpConnectors: () => Connector[]
+  getConnectorsForSpace: (spaceId: string) => Connector[]
 
   // Sync state management
   updateSyncState: (
@@ -161,6 +163,7 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
       const connector: Connector = {
         ...connectorData,
         id,
+        spaceId: connectorData.spaceId ?? getActiveSpaceId(),
         createdAt: now,
         updatedAt: now,
       }
@@ -282,6 +285,11 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
 
   getMcpConnectors: () => {
     return get().getConnectorsByCategory('mcp')
+  },
+
+  getConnectorsForSpace: (spaceId: string) => {
+    const { connectors } = get()
+    return connectors.filter((c) => entityBelongsToSpace(c.spaceId, spaceId))
   },
 
   // =========================================================================

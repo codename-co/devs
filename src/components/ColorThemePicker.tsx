@@ -11,9 +11,16 @@ import { userSettings } from '@/stores/userStore'
 import { Icon } from '@/components'
 import clsx from 'clsx'
 
-export function ColorThemePicker() {
-  const colorTheme = userSettings((state) => state.colorTheme)
-  const setColorTheme = userSettings((state) => state.setColorTheme)
+interface ColorThemePickerProps {
+  value?: string
+  onChange?: (id: string) => void
+}
+
+export function ColorThemePicker({ value, onChange }: ColorThemePickerProps = {}) {
+  const storeColorTheme = userSettings((state) => state.colorTheme)
+  const storeSetColorTheme = userSettings((state) => state.setColorTheme)
+  const colorTheme = value ?? storeColorTheme
+  const setColorTheme = onChange ?? storeSetColorTheme
 
   return (
     <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">

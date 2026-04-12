@@ -282,6 +282,10 @@ export interface Connector {
   // Metadata
   createdAt: Date
   updatedAt: Date
+
+  // Space scoping
+  /** @sensitivity low - space this connector belongs to */
+  spaceId?: string
 }
 
 // =============================================================================
