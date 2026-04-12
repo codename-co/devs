@@ -217,4 +217,8 @@ export const es: I18n = {
     'Elige un esquema de colores para la interfaz',
   'Presentation theme used for generated PPTX slides':
     'Tema de presentación utilizado para las diapositivas PPTX generadas',
+  Tags: 'Etiquetas',
+  'Customize the labels for your tag colors':
+    'Personalice las etiquetas de los colores de sus tags',
+  'Reset to default': 'Restablecer valores predeterminados',
 } as const

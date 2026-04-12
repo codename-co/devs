@@ -172,4 +172,7 @@ export const en = [
   'Color Scheme',
   'Choose a color scheme for the interface',
   'Presentation theme used for generated PPTX slides',
+  'Tags',
+  'Customize the labels for your tag colors',
+  'Reset to default',
 ] as const

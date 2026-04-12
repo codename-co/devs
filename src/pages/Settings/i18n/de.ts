@@ -220,4 +220,8 @@ export const de: I18n = {
     'Wählen Sie ein Farbschema für die Oberfläche',
   'Presentation theme used for generated PPTX slides':
     'Präsentationsthema für generierte PPTX-Folien',
+  Tags: 'Tags',
+  'Customize the labels for your tag colors':
+    'Passen Sie die Bezeichnungen Ihrer Tag-Farben an',
+  'Reset to default': 'Auf Standard zurücksetzen',
 } as const

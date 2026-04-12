@@ -214,4 +214,8 @@ export const ko: I18n = {
     '인터페이스의 색상 테마를 선택하세요',
   'Presentation theme used for generated PPTX slides':
     '생성된 PPTX 슬라이드에 사용할 프레젠테이션 테마',
+  Tags: '태그',
+  'Customize the labels for your tag colors':
+    '태그 색상의 레이블을 사용자 정의하세요',
+  'Reset to default': '기본값으로 재설정',
 } as const

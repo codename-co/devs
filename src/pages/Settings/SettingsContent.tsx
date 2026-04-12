@@ -17,7 +17,9 @@ import { Icon } from '@/components'
 import { errorToast, successToast } from '@/lib/toast'
 import { useHashHighlight } from '@/hooks/useHashHighlight'
 import localI18n from './i18n'
-import { SettingsProvider, useSettingsLabelInfo } from './SettingsContext'
+import { SettingsProvider, useSettingsLabelInfo, useSettingsScope, useSetSettingsScope, type SettingsScope } from './SettingsContext'
+import { useActiveSpace, useActiveSpaceId } from '@/stores/spaceStore'
+import { DEFAULT_SPACE_ID } from '@/types'
 import {
   AgentMemoriesSection,
   ConnectorsSection,
@@ -31,6 +33,7 @@ import {
   SecuritySection,
   SkillsSection,
   SyncSection,
+  TagsSection,
   TracesSection,
 } from './components'
 import { FilesSection } from '@/pages/Knowledge/components'
@@ -45,6 +48,7 @@ type SectionKey =
   | 'knowledge'
   | 'memories'
   | 'messages'
+  | 'tags'
   | 'security'
   | 'computer'
   | 'langfuse'
@@ -91,6 +95,12 @@ const SettingsContentInner = () => {
   const navigate = useNavigate()
   const location = useLocation()
 
+  const scope = useSettingsScope()
+  const setScope = useSetSettingsScope()
+  const activeSpaceId = useActiveSpaceId()
+  const activeSpace = useActiveSpace()
+  const isNonDefaultSpace = activeSpaceId !== DEFAULT_SPACE_ID
+
   const [masterPassword, setMasterPassword] = useState('')
   const [isUnlocking, setIsUnlocking] = useState(false)
 
@@ -104,6 +114,7 @@ const SettingsContentInner = () => {
     'knowledge',
     'memories',
     'messages',
+    'tags',
     'security',
     'computer',
     'langfuse',
@@ -169,6 +180,12 @@ const SettingsContentInner = () => {
       icon: 'Pin',
       group: 'personalize',
     },
+    {
+      key: 'tags',
+      label: t('Tags'),
+      icon: 'Label',
+      group: 'personalize',
+    },
     { key: 'skills', label: t('Skills'), icon: 'Puzzle', group: 'extend' },
     {
       key: 'connectors',
@@ -193,6 +210,9 @@ const SettingsContentInner = () => {
     // { key: 'langfuse', label: 'Langfuse', icon: 'Langfuse', group: 'observe' },
     { key: 'traces', label: t('Traces'), icon: 'Activity', group: 'observe' },
   ]
+
+  // Sections where space-level overrides make sense (synced settings)
+  const spaceScopableSections = new Set<SectionKey>(['', 'features'])
 
   const handleSectionClick = (section: SectionDef) => {
     if (section.navigateTo) {
@@ -244,6 +264,8 @@ const SettingsContentInner = () => {
         return <AgentMemoriesSection />
       case 'messages':
         return <PinnedMessagesSection />
+      case 'tags':
+        return <TagsSection />
       case 'security':
         return <SecuritySection />
       case 'computer':
@@ -442,6 +464,36 @@ const SettingsContentInner = () => {
                 )}
               </Breadcrumbs>
             </h3>
+            {isNonDefaultSpace && spaceScopableSections.has(activeKey) && (
+              <div className="mt-2 mb-1">
+                <Tabs
+                  selectedKey={scope}
+                  onSelectionChange={(key) => setScope(key as SettingsScope)}
+                  variant="underlined"
+                  size="sm"
+                  classNames={{ tabList: 'gap-3 p-0' }}
+                >
+                  <Tab
+                    key="global"
+                    title={
+                      <span className="flex items-center gap-1.5">
+                        <Icon name="Globe" className="h-3.5 w-3.5" />
+                        {t('Global')}
+                      </span>
+                    }
+                  />
+                  <Tab
+                    key="space"
+                    title={
+                      <span className="flex items-center gap-1.5">
+                        <Icon name="Cube" className="h-3.5 w-3.5" />
+                        {activeSpace.name}
+                      </span>
+                    }
+                  />
+                </Tabs>
+              </div>
+            )}
             <div className="mt-4">{renderSectionContent()}</div>
           </div>
         )}

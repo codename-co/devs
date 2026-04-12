@@ -213,4 +213,8 @@ export const ar: I18n = {
   'Choose a color scheme for the interface': 'اختر نظام ألوان للواجهة',
   'Presentation theme used for generated PPTX slides':
     'سمة العرض المستخدمة لشرائح PPTX المُنشأة',
+  Tags: 'العلامات',
+  'Customize the labels for your tag colors':
+    'خصّص تسميات ألوان العلامات الخاصة بك',
+  'Reset to default': 'إعادة تعيين إلى الافتراضي',
 } as const

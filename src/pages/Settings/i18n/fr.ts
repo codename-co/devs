@@ -219,4 +219,8 @@ export const fr: I18n = {
     "Choisissez un jeu de couleurs pour l'interface",
   'Presentation theme used for generated PPTX slides':
     'Thème de présentation utilisé pour les diapositives PPTX générées',
+  Tags: 'Tags',
+  'Customize the labels for your tag colors':
+    'Personnalisez les libellés de vos couleurs de tags',
+  'Reset to default': 'Réinitialiser par défaut',
 } as const
