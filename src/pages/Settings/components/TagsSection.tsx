@@ -1,18 +1,64 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button, Input } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
 import {
-  useThreadTagDefinitions,
+  threadTags,
+  useLiveMap,
+  type ThreadTag,
+} from '@/lib/yjs'
+import {
   updateThreadTag,
-  findOrCreateTagForColor,
   TAG_PALETTE,
 } from '@/pages/V2/hooks/useThreadTags'
+import { entityBelongsToSpace, useActiveSpaceId } from '@/stores/spaceStore'
+import { DEFAULT_SPACE_ID } from '@/types'
+import { nanoid } from 'nanoid'
+import { useSettingsScope } from '../SettingsContext'
 import localI18n from '../i18n'
+
+/**
+ * Resolve the effective spaceId to filter/create tags for,
+ * based on the Settings scope (global vs space).
+ */
+function useTagSpaceId(): string {
+  const scope = useSettingsScope()
+  const activeSpaceId = useActiveSpaceId()
+  return scope === 'space' ? activeSpaceId : DEFAULT_SPACE_ID
+}
+
+/** All tag definitions for a given spaceId. */
+function useTagsForSpace(spaceId: string): ThreadTag[] {
+  const all = useLiveMap(threadTags)
+  return useMemo(
+    () => all.filter((t) => entityBelongsToSpace(t.spaceId, spaceId)),
+    [all, spaceId],
+  )
+}
+
+/** Find or create a tag for a given color in the specified space. */
+function ensureTagForColor(
+  color: ThreadTag['color'],
+  spaceId: string,
+  existing: ThreadTag[],
+): ThreadTag {
+  const found = existing.find((t) => t.color === color)
+  if (found) return found
+  const palette = TAG_PALETTE.find((p) => p.color === color)!
+  const tag: ThreadTag = {
+    id: nanoid(),
+    name: palette.defaultName,
+    color,
+    spaceId: spaceId === DEFAULT_SPACE_ID ? undefined : spaceId,
+  }
+  threadTags.set(tag.id, tag)
+  return tag
+}
 
 export function TagsSection() {
   const { t } = useI18n(localI18n)
-  const allTags = useThreadTagDefinitions()
+  const spaceId = useTagSpaceId()
+  const spaceTags = useTagsForSpace(spaceId)
 
   return (
     <div className="space-y-4">
@@ -21,7 +67,7 @@ export function TagsSection() {
       </p>
       <div className="flex flex-col gap-3">
         {TAG_PALETTE.map(({ color, defaultName, dotClass }) => {
-          const tag = allTags.find((t) => t.color === color)
+          const tag = spaceTags.find((t) => t.color === color)
           return (
             <TagRow
               key={color}
@@ -30,8 +76,7 @@ export function TagsSection() {
               currentName={tag?.name ?? defaultName}
               tagExists={!!tag}
               onRename={(name) => {
-                // Ensure tag exists before renaming
-                const existing = findOrCreateTagForColor(color, allTags)
+                const existing = ensureTagForColor(color, spaceId, spaceTags)
                 updateThreadTag(existing.id, { name })
               }}
               onReset={() => {
