@@ -116,7 +116,7 @@ export const ThreadPreview = memo(function ThreadPreview({
 
   return (
     <div className={containerClass}>
-      <div className="bg-surface flex min-h-0 max-h-full flex-1 flex-col overflow-hidden rounded-2xl shadow-sm">
+      <div className={`bg-surface flex min-h-0 max-h-full flex-1 flex-col overflow-hidden rounded-2xl shadow-sm ${isPinned ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}>
         {/* Toolbar */}
         <div className="flex shrink-0 flex-col gap-4 p-4 pb-0">
           <div className="flex items-center justify-between">
