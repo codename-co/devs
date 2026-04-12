@@ -89,7 +89,7 @@ export function AgentPreview({
 
   const containerClass = isFullscreen
     ? 'fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex flex-col p-4 v2-fullscreen-enter'
-    : `h-full min-h-0 min-w-0 flex-col overflow-clip py-4 pl-0.5 pr-4 ${className ?? 'flex'}`
+    : `h-full min-h-0 min-w-0 flex-col py-4 pr-4 ${isPinned ? 'pl-1.5' : 'pl-0.5'} ${className ?? 'flex'}`
 
   return (
     <div className={containerClass}>
