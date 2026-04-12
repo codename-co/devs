@@ -94,6 +94,44 @@ import type { Connector } from '@/features/connectors/types'
 import { getEnabledSkills } from '@/stores/skillStore'
 
 // ============================================================================
+// Orchestration Helpers
+// ============================================================================
+
+/**
+ * Build a context-enriched prompt for the orchestrator when the user is
+ * continuing an existing DEVS conversation.  Previous conversation messages are
+ * prepended so the task-analyzer / decomposer can understand what was already
+ * discussed.  Returns the raw prompt unchanged when there is no history.
+ */
+export function buildOrchestrationPrompt(
+  prompt: string,
+  conversationMessages: Pick<Message, 'role' | 'content'>[],
+  includeHistory: boolean,
+): string {
+  if (!includeHistory) return prompt
+
+  const historyForContext = conversationMessages.filter(
+    (m) => m.role !== 'system',
+  )
+  if (historyForContext.length === 0) return prompt
+
+  const recent = historyForContext.slice(-20)
+  const historyBlock = recent
+    .map((m) => `[${m.role}]: ${m.content}`)
+    .join('\n\n')
+
+  return [
+    '## Previous Conversation Context',
+    'This is a follow-up request in an ongoing conversation. Here is the recent history:',
+    '',
+    historyBlock,
+    '',
+    '## Current Request',
+    prompt,
+  ].join('\n')
+}
+
+// ============================================================================
 // Tool Helpers
 // ============================================================================
 
@@ -591,8 +629,16 @@ export const submitChat = async (
           },
         ]
 
-        const result = await WorkflowOrchestrator.orchestrateTask(
+        // Build context-enriched prompt for follow-up messages so the
+        // orchestrator understands conversation history.
+        const orchestrationPrompt = buildOrchestrationPrompt(
           prompt,
+          conversationMessages,
+          includeHistory,
+        )
+
+        const result = await WorkflowOrchestrator.orchestrateTask(
+          orchestrationPrompt,
           undefined,
           {
             activatedSkills,
