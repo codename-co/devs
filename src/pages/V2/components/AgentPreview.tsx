@@ -89,11 +89,11 @@ export function AgentPreview({
 
   const containerClass = isFullscreen
     ? 'fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex flex-col p-4 v2-fullscreen-enter'
-    : `h-full min-h-0 min-w-0 flex-col py-4 pr-4 ${isPinned ? 'pl-1.5' : 'pl-0.5'} ${className ?? 'flex'}`
+    : `h-full min-h-0 min-w-0 flex-col py-4 pl-0.5 pr-4 ${className ?? 'flex'}`
 
   return (
     <div className={containerClass}>
-      <div className={`bg-surface flex min-h-0 max-h-full flex-1 flex-col gap-4 overflow-clip rounded-2xl p-4 shadow-sm ${isPinned ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}>
+      <div className={`bg-surface flex min-h-0 max-h-full flex-1 flex-col gap-4 overflow-clip rounded-2xl p-4 shadow-sm ${isPinned ? 'outline-2 outline-primary outline-offset-2' : ''}`}>
         {/* Toolbar + agent identity */}
         <AgentPreviewHeader
           agent={agent}
