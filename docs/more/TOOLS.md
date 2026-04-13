@@ -442,5 +442,5 @@ interface ToolError {
 ## Related Documentation
 
 - [CONNECTORS.md](./CONNECTORS.md) - OAuth integration for connector tools
-- [AGENTS.md](../AGENTS.md) - Agent system overview
+- [AGENTS.md](../../AGENTS.md) - Agent system overview
 - [ARCHITECTURE.md](../ARCHITECTURE.md) - System architecture

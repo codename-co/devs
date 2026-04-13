@@ -116,11 +116,14 @@ const SEARCH_CONFIG = {
 | Agents        | name, role, description, tags  | `Sparks`              | 5          |
 | Conversations | title, summary                 | `ChatBubble`          | 3          |
 | Messages      | content                        | `ChatLines`           | 1          |
-| Tasks         | title, description             | `PcCheck`.            | 4          |
+| Tasks         | title, description             | `PcCheck`             | 4          |
+| Artifacts     | description, type              | `DesignNib`           | 2          |
 | Files         | name, description, path, tags  | `Folder` / `Document` | 2          |
 | Memories      | title, content, keywords, tags | `Brain`               | 2          |
+| Media         | title, description             | `MediaImage`          | 2          |
 | Methodologies | name, description, tags        | `Strategy`            | 3          |
 | Connectors    | name, provider, category       | `Puzzle`              | 2          |
+| Pages         | name, description              | `Page`                | 3          |
 
 ## Scoring Algorithm
 
@@ -309,16 +312,21 @@ Failures in one category don't affect other categories—users still see results
 
 ## Data Sources
 
-| Entity        | Source                           |
-| ------------- | -------------------------------- |
-| Agents        | Built-in JSON + IndexedDB        |
-| Conversations | IndexedDB `conversations` store  |
-| Messages      | Nested in conversations          |
-| Tasks         | IndexedDB `tasks` store          |
-| Files         | IndexedDB `knowledgeItems` store |
-| Memories      | IndexedDB `agentMemories` store  |
-| Methodologies | Built-in YAML files              |
-| Connectors    | IndexedDB `connectors` store     |
+All entity data is read from Yjs maps (the single source of truth), persisted locally via y-indexeddb.
+
+| Entity        | Source                              |
+| ------------- | ----------------------------------- |
+| Agents        | Built-in JSON + Yjs `agents` map   |
+| Conversations | Yjs `conversations` map            |
+| Messages      | Nested in conversations             |
+| Tasks         | Yjs `tasks` map                     |
+| Artifacts     | Yjs `artifacts` map                 |
+| Files         | Yjs `knowledge` map                 |
+| Memories      | Yjs `memories` map                  |
+| Methodologies | Built-in YAML files                 |
+| Connectors    | Yjs `connectors` map                |
+| Media         | Yjs `studioEntries` map             |
+| Pages         | Static page definitions             |
 
 ## Color Coding
 
@@ -329,11 +337,14 @@ Each result type has a distinct color for visual differentiation:
 | Agent        | `text-warning`     | Yellow     |
 | Conversation | `text-default-500` | Gray       |
 | Task         | `text-secondary`   | Purple     |
+| Artifact     | `text-secondary`   | Purple     |
 | File         | `text-primary`     | Blue       |
 | Memory       | `text-success`     | Green      |
 | Message      | `text-default-400` | Light Gray |
+| Media        | `text-primary`     | Blue       |
 | Methodology  | `text-success`     | Green      |
 | Connector    | `text-primary`     | Blue       |
+| Page         | `text-default-500` | Gray       |
 
 ## API Reference
 
@@ -344,11 +355,14 @@ type SearchResultType =
   | 'agent'
   | 'conversation'
   | 'task'
+  | 'artifact'
   | 'file'
   | 'memory'
   | 'message'
+  | 'media'
   | 'methodology'
   | 'connector'
+  | 'page'
 
 interface SearchResult {
   id: string

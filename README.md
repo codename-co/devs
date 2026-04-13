@@ -2,7 +2,7 @@
 
 [<img src="./public/favicon.svg" width="48" alt="DEVS Logo" />](https://devs.new)
 
-# <span title='DEVS, from Latin "Deus"'>𝐃𝐄𝐕𝐒</span>
+# <span title='DEVS, from Latin "Deus"'>DEVS</span>
 
 **Delegate complex tasks to a swarm of AI agents**
 <br />
@@ -10,7 +10,7 @@ through a universally accessible, privacy-first platform.
 
 [ **<https://devs.new>** ]
 
-[Features](#features) • [Quick start](#self-hosting) • [Self-Hosting](#self-hosting)
+[Features](#features) • [Self-Hosting](#self-hosting) • [Contributing](#contributing) • [Documentation](#documentation)
 
 ---
 
@@ -18,27 +18,29 @@ through a universally accessible, privacy-first platform.
 
 ## Features
 
-<span title='DEVS, from Latin "Deus"'>𝐃𝐄𝐕𝐒</span> is an open-source, browser-native platform that enables users to delegate complex tasks to a swarm of AI agents. Here are some of its standout features:
+<span title='DEVS, from Latin "Deus"'>DEVS</span> is an open-source, browser-native platform that enables users to delegate complex tasks to a swarm of AI agents. Here are some of its standout features:
 
 ### Artificial Intelligence
 
-- [x] 🤖 **LLM provider independence**: <abbr title="Bring Your Own Key">BYOK</abbr> support for OpenAI, Anthropic, Google Gemini, Mistral, OpenRouter, Mistral AI, Hugging Face, Ollama, LM Studio and more.
-- [x] 🧠 **Local AI models**: Run HuggingFace open models directly in your browser.
+- [x] 🤖 **LLM provider independence**: <abbr title="Bring Your Own Key">BYOK</abbr> support for OpenAI, Anthropic, Google Gemini, Mistral, OpenRouter, HuggingFace, Ollama, LM Studio, Vertex AI, and more.
+- [x] 🧠 **Local AI models**: Run HuggingFace open models directly in your browser via WebGPU.
 - [x] 💰 **Traces & Cost tracking**: LLM observability with real-time cost tracking and performance metrics.
+- [x] 🖥️ **Sandboxed code execution**: Agents can write and execute JavaScript (QuickJS) and Python (Pyodide) in WASM-isolated sandboxes — no server needed.
 
 ### Swarm Intelligence
 
-- [x] 🤖 **AI Studio**: Pre-built agents, custom agent builder.
+- [x] 🤖 **AI Studio**: Pre-built agents, custom agent builder with AI-generated portraits.
 - [x] 📝 **Methodologies**: <abbr title="8 Disciplines">8D</abbr>, <abbr title="A3 Problem Solving">A3</abbr>, Agile, <abbr title="Analysis, Objectives, Strategies, Tactics, Control">AOSTC</abbr>, <abbr title="Define, Measure, Analyze, Improve, Control">DMAIC</abbr>, <abbr title="Plan-Do-Check-Act">PDCA</abbr>, Scrum, <abbr title="You Only Live Once">YOLO</abbr>, and your own.
 - [x] 🧠 **Agent Memory**: Agents learn and remember information from conversations with human review.
-- [x] 🔧 **Tools**: Equip agents with capabilities like Wikipedia search, arXiv search, calculator or code tools.
-- [ ] 🎯 **Intelligent orchestration**: Automated multi-agent task coordination with validation.
+- [x] 🔧 **Tools**: Equip agents with capabilities like Wikipedia search, arXiv search, calculator, code execution, and more.
+- [x] 🎯 **Multi-agent orchestration**: Automated task coordination with decomposition, dependency resolution, and parallel execution.
+- [x] 🔌 **Skills**: Installable capability bundles that extend what agents can do.
 - [ ] 🎭 **Hyper meta-prompting**: Multi-layered prompt generation for dynamic task handling.
 - [ ] 👥 **Dynamic team formation**: Mimicking human organizational structures.
 
 ### Integrations
 
-- [x] 🔗 **Connectors**: Integrations with Google Drive, Gmail, Calendar, Dropbox, Notion, Slack, Figma and more.
+- [x] 🔗 **Connectors**: Integrations with Google Drive, Gmail, Calendar, Notion, Slack, Figma, Dropbox, OneDrive, Outlook, and more.
 - [x] 🏪 **Marketplace**: Extensible platform with apps, agents, connectors, and tools.
 - [ ] 🎤 **Meeting Bot**: AI agents join Google Meet as real participants.
 
@@ -52,9 +54,10 @@ through a universally accessible, privacy-first platform.
 ### User Experience
 
 - [x] 📱 **Mobile-first design**: Optimized for touch and small screens.
-- [x] 🌐 **Multi-language support**: Accessibility for global users.
-- [x] 🔍 **Global Search**: Unified search across agents, conversations, tasks, and files.
+- [x] 🌐 **Multi-language support**: English, French, German, Spanish, Arabic, Korean.
+- [x] 🔍 **Global Search**: Unified search across agents, conversations, tasks, and files (<kbd>Cmd/Ctrl+K</kbd>).
 - [x] 💄 **Customizable**: Tailor the platform to your specific needs.
+- [x] 📂 **Spaces**: Multi-workspace isolation for different projects or contexts.
 
 ### Collaboration
 
@@ -105,6 +108,17 @@ services:
 See <https://hub.docker.com/r/codename/devs> for more details.
 
 </details>
+
+## Documentation
+
+Detailed documentation is available in the [`docs/`](docs/) directory:
+
+- [Architecture](docs/ARCHITECTURE.md) — System architecture and data layer
+- [Conventions](docs/CONVENTIONS.md) — Code style, naming, and patterns
+- [Decisions](docs/DECISIONS.md) — Architectural decision records
+- [Glossary](docs/GLOSSARY.md) — Term definitions
+- [Vision](docs/VISION.md) — Project vision and design principles
+- [TODO](docs/TODO.md) — Feature status and roadmap
 
 ## Contributing
 

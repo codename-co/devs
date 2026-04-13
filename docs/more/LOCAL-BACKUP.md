@@ -1,12 +1,12 @@
 # Local Backup Feature
 
-The Local Backup feature provides automatic, bidirectional synchronization between DEVS's IndexedDB database and a local file system folder. This ensures your data remains accessible, portable, and under your complete control.
+The Local Backup feature provides automatic, bidirectional synchronization between DEVS's Yjs data layer and a local file system folder. This ensures your data remains accessible, portable, and under your complete control.
 
 ## Overview
 
 ```mermaid
 graph LR
-    A[IndexedDB] <--> B[Folder Sync Service]
+    A[Yjs Data Layer] <--> B[Folder Sync Service]
     B <--> C[Local Folder]
     C --> D[Markdown Files]
     C --> E[JSON Export]
@@ -125,6 +125,7 @@ interface Serializer<T> {
 | `memorySerializer`       | `memories/{agentId}/` | `.md`                                    | Agent learned memories                 |
 | `knowledgeSerializer`    | `knowledge/{path}/`   | `.*.metadata.knowledge.md` + binary file | Knowledge base items (metadata hidden) |
 | `taskSerializer`         | `tasks/`              | `.md`                                    | Workflow tasks                         |
+| `studioSerializer`       | `studio/`             | `.md`                                    | AI Studio generation history           |
 
 ### File Format
 
@@ -385,6 +386,7 @@ function SettingsPage() {
 | `syncKnowledge`     | `true`  | Backup knowledge base files      |
 | `syncTasks`         | `true`  | Backup workflow tasks            |
 | `syncFullExport`    | `true`  | Export complete database as JSON |
+| `syncStudio`        | `true`  | Backup AI Studio entries        |
 
 ## Technical Details
 

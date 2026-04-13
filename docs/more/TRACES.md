@@ -22,7 +22,7 @@ graph LR
     F --> B
     E --> G[Span Completed]
     G --> H[Trace Completed]
-    H --> I[IndexedDB Storage]
+    H --> I[Yjs Storage]
     I --> J[Dashboard & Analytics]
 ```
 
@@ -370,8 +370,9 @@ Click any trace to view details at `/traces/logs/{traceId}`:
 
 ## Privacy & Storage
 
-- **All data stored locally** in IndexedDB
-- **No server uploads** - traces never leave your device
+- **All data stored locally** in Yjs maps (persisted to IndexedDB via y-indexeddb)
+- **Traces sync across devices** when P2P sync is enabled (same as all other Yjs data)
+- **When sync is disabled** — traces stay on your device only
 - **Configurable retention** - automatically delete old traces
 - **Full control** - clear all data at any time
 
@@ -409,5 +410,5 @@ If traces are using too much storage:
 
 ## Related Documentation
 
-- [AGENTS.md](../AGENTS.md) - Overall project documentation
+- [AGENTS.md](../../AGENTS.md) - Overall project documentation
 - [ARCHITECTURE.md](../ARCHITECTURE.md) - System architecture

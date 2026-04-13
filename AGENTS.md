@@ -1,590 +1,204 @@
 # DEVS - AI Agent Orchestration Platform
 
-## Project Vision
+> The Web as the runtime for agentic AI. Open your browser and start delegating.
 
-Democratize AI agent delegation with a universally accessible, privacy-conscious, open-source solution that runs entirely in the browser.
+## What DEVS Is
 
-## Core Concept
+An open-source, browser-native platform that lets anyone delegate complex tasks to a swarm of AI agents — without servers, without subscriptions, without surrendering data.
 
-A browser-based AI orchestration platform that models real organizational dynamics, enabling users to delegate complex tasks to teams of AI agents that work together using proven business methodologies.
+- **Delegate, don't chat.** Users describe a goal; the system analyzes complexity, assembles a purpose-built team, decomposes work, and delivers structured output.
+- **Bring Your Own Model.** 12+ LLM backends — cloud APIs, self-hosted endpoints, local in-browser inference.
+- **Privacy by architecture.** All data stays on-device. Yjs CRDTs handle the data layer; Web Crypto encrypts credentials. No telemetry unless the user opts in.
+- **Swarm intelligence.** Agents have roles, tools, memories, and knowledge bases. The orchestrator routes by complexity tier.
+- **Extensible.** A marketplace of apps, agents, connectors, and tools — YAML-defined, sandboxed in iframes.
+
+**Live:** [devs.new](https://devs.new) | **Repository:** [github.com/codename-co/devs](https://github.com/codename-co/devs) | **License:** MIT
+
+---
+
+## Documentation
+
+Detailed documentation lives in `docs/`:
+
+| Document | What It Covers |
+|----------|---------------|
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture, data layer, orchestration, LLM integration, tools, UI |
+| [docs/CONVENTIONS.md](docs/CONVENTIONS.md) | Code style, file naming, state management patterns, testing, i18n |
+| [docs/DECISIONS.md](docs/DECISIONS.md) | Architectural decision records (ADRs) with context and rationale |
+| [docs/GLOSSARY.md](docs/GLOSSARY.md) | Definitions of all terms used across the codebase |
+| [docs/TODO.md](docs/TODO.md) | Current status of all features (done, in progress, planned, future) |
+| [docs/VISION.md](docs/VISION.md) | Full vision document — problem, thesis, design principles |
+
+Additional deep-dives in `docs/more/`:
+
+| Document | Topic |
+|----------|-------|
+| [docs/more/CONNECTORS.md](docs/more/CONNECTORS.md) | External service integrations (OAuth, sync) |
+| [docs/more/TOOLS.md](docs/more/TOOLS.md) | Tool plugin system and built-in tools |
+| [docs/more/TRACES.md](docs/more/TRACES.md) | LLM observability and cost tracking |
+| [docs/more/SPACES.md](docs/more/SPACES.md) | Multi-workspace isolation |
+| [docs/more/SYNC.md](docs/more/SYNC.md) | Yjs-first data layer and P2P sync |
+| [docs/more/MARKETPLACE.md](docs/more/MARKETPLACE.md) | Extension system (apps, agents, tools) |
+| [docs/more/LOCAL-BACKUP.md](docs/more/LOCAL-BACKUP.md) | Bidirectional file system sync |
+| [docs/more/EXTENSION-BRIDGE.md](docs/more/EXTENSION-BRIDGE.md) | Sandboxed extension API |
+| [docs/more/MEET-BOT.md](docs/more/MEET-BOT.md) | Google Meet integration |
+| [docs/more/SEARCH.md](docs/more/SEARCH.md) | Global search |
+
+---
+
+## Technical Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Bundler | Vite 7 (MPA mode) |
+| Language | TypeScript 5.8 (strict) |
+| UI | React 19 + HeroUI v2 (migrating to v3) |
+| Styling | Tailwind CSS v4 (oklch color tokens) |
+| Data layer | Yjs (single source of truth) + y-indexeddb + y-websocket + y-webrtc |
+| Testing | Vitest 3 + Playwright 1.55 |
+| Linting | ESLint 9 (flat config) + Prettier 3 |
+| Code execution | QuickJS (JS) + Pyodide (Python) — both WASM-sandboxed |
+| Deployment | Static files, Docker (~60 MB) |
 
 ---
 
 ## Key Features
 
-### 1. Browser-Native Architecture
-
-- **No server dependencies** - Everything runs locally in the user's browser
-- **Web technologies only** - HTML, CSS, TypeScript, Service Workers, IndexedDB, WebAssembly
-- **Privacy-first** - All data stays on the user's device
-- **Offline capable** - Works without internet connection after initial load
-- **Low-spec hardware support** - Works on devices with 2GB RAM minimum
-- **Accessibility-focused** - Multi-language support, keyboard navigation, screen reader compatibility
-
-### 2. AI Studio Features
-
-- Pre-built agent roles (CEO, Analyst, Developer, QA, etc.)
-- Custom agent personality and capability configuration
-- Real-time visualization of agent interactions and decisions
-
-### 3. LLM Provider Independence
-
-- Support for multiple LLM providers:
-  - OpenAI, Anthropic, Google Gemini, Mistral, Ollama, Custom/Local endpoints
-- Secure token storage using Web Crypto API
-- Provider abstraction layer for seamless switching
-- Usage tracking and cost estimation
-
-### 4. Hyper Meta-Prompting System
-
-- Multi-layered prompt generation:
-  - Base personality layer
-  - Role specialization layer
-  - Task context layer
-  - Dynamic adaptation layer
-- Prompt inheritance and composition patterns
-- Context-aware prompt compilation engine
-
-### 5. Intelligent Multi-Agent Orchestration
-
-The DEVS orchestration system implements autonomous multi-agent task coordination with intelligent analysis, team building, execution, and validation.
-
-#### Architecture Overview
-
-```mermaid
-graph TB
-    A[User Request] --> B[WorkflowOrchestrator]
-    B --> C[TaskAnalyzer]
-    C --> D{Complexity Assessment}
-    D -->|Simple| E[Single-Pass Execution]
-    D -->|Complex| F[Multi-Pass Execution]
-    E --> G[Agent Execution]
-    F --> H[Team Building]
-    H --> I[Coordinated Execution]
-    G --> J[Validation & Refinement]
-    I --> J
-    J --> K[Artifact Creation]
-    K --> L[Final Results]
-```
+### LLM Provider Independence
 
-#### Core Orchestration Components
+BYOK (Bring Your Own Key) support for 12+ providers behind a unified `LLMProviderInterface`:
 
-**WorkflowOrchestrator** ([src/lib/orchestrator.ts](src/lib/orchestrator.ts))
-
-- Central coordination hub with deduplication prevention
-- Strategy selection: single-pass vs multi-pass execution
-- Comprehensive error handling and recovery
-- Agent recruitment and team building
-
-**TaskAnalyzer** ([src/lib/task-analyzer.ts](src/lib/task-analyzer.ts))
-
-- LLM-powered prompt analysis
-- Requirement extraction (functional/non-functional/constraints)
-- Complexity assessment and skill identification
-- Intelligent task breakdown with domain-specific patterns:
-  - Creative Writing: Research → Character Development → Writing
-  - Development: Analysis & Design → Implementation
-  - Generic: Planning & Analysis → Execution & Delivery
-
-**Agent Management** ([src/stores/agentStore.ts](src/stores/agentStore.ts))
-
-- Agent lifecycle: Discovery → Recruitment → Caching → Execution
-- Built-in agents from JSON + custom agents from Yjs
-- Dynamic agent creation via agent-recruiter
-- Skill matching and role assignment
-- **Yjs-first storage**: Direct writes to Yjs maps, reactive hooks for UI
+| Provider | Type |
+|----------|------|
+| OpenAI | Cloud API |
+| Anthropic | Cloud API |
+| Google Gemini | Cloud API |
+| Mistral | Cloud API |
+| OpenRouter | Proxy (100+ models) |
+| HuggingFace | Cloud API |
+| Ollama | Local server |
+| OpenAI-compatible | Any (LM Studio, vLLM, etc.) |
+| Local (WebGPU) | In-browser via Transformers.js |
+| Vertex AI | Cloud API |
+| Claude Code | Local CLI |
 
-#### Execution Strategies
+Tool calling uses the OpenAI function-calling format as canonical schema. Streaming, multimodal attachments (image/document/text), and extended thinking are supported.
 
-**Single-Pass Strategy:**
-
-- For simple tasks (complexity: 'simple')
-- Find or create suitable agent
-- Execute with enhanced context
-- Validate and refine if needed
-
-**Multi-Pass Strategy:**
-
-- For complex tasks requiring multiple agents
-- Break down into subtasks with dependencies
-- Build specialized agent teams
-- Coordinate parallel/sequential execution
-- Handle validation failures with refinement workflows
+### Agent System
 
-#### Team Coordination Engine
+- **AI Studio** — Create, edit, configure custom agents with roles, instructions, temperature, tags, tools, and knowledge base
+- **Built-in agents** — Ship as JSON; custom agents stored in Yjs
+- **Agent memory** — LLM-powered extraction from conversations, human review workflow (approve/reject/edit), context injection into future conversations
+- **Agent portraits** — AI-generated
+- **Skills** — Installable capability bundles (tools + instructions)
 
-```typescript
-// Dependency resolution with parallel execution
-coordinateTeamExecution(tasks, team) {
-  while (executedTasks.size < tasks.length) {
-    // Find tasks ready for execution (dependencies satisfied)
-    const readyTasks = tasks.filter(task =>
-      !executedTasks.has(task.id) &&
-      task.dependencies.every(depId => executedTasks.has(depId))
-    )
+### Multi-Agent Orchestration
 
-    // Execute in parallel batches (up to team size)
-    const batch = readyTasks.slice(0, team.length)
-    await Promise.all(batch.map((task, index) => {
-      const agent = team[index % team.length]
-      return executeTaskWithAgent(task, agent, task.description)
-    }))
-  }
-}
-```
+The orchestrator lives in `src/lib/orchestrator/` and uses a strategy pattern:
 
-**Coordination Features:**
+| Component | File | Responsibility |
+|-----------|------|----------------|
+| Engine | `orchestrator/engine.ts` | Entry point, strategy routing, dedup |
+| Task Decomposer | `orchestrator/task-decomposer.ts` | Break prompt into subtasks with deps |
+| Team Coordinator | `orchestrator/team-coordinator.ts` | Assign agents, manage parallel batches |
+| Agent Runner | `orchestrator/agent-runner.ts` | Execute agent with tools, stream output |
+| Synthesis Engine | `orchestrator/synthesis-engine.ts` | Merge multi-agent results |
+| Approval Gate | `orchestrator/approval-gate.ts` | Human-in-the-loop checkpoints |
+| Recovery | `orchestrator/recovery.ts` | Retry, orphan detection, graceful failure |
+| Scheduler | `orchestrator/scheduler.ts` | Background queue processing |
 
-- Dependency resolution with topological sorting
-- Parallel batch execution up to team capacity
-- Round-robin load balancing
-- Circular dependency detection
+**Flow:** User prompt -> TaskAnalyzer (LLM-powered complexity assessment) -> Tier 0 (single agent) or Tier 1+ (multi-agent with decomposition, dependency resolution, parallel execution, synthesis).
 
-#### Requirement Validation Engine
-
-**RequirementValidator** ([src/lib/requirement-validator.ts](src/lib/requirement-validator.ts))
+**Methodology templates:** 8D, A3, Agile, AOSTC, DMAIC, PDCA, Scrum, YOLO.
 
-Validates three requirement types:
+### Tool System
 
-1. **Functional Requirements**: Feature implementation validation
-   - Evidence: code snippets, configuration, test results
+Self-registering plugins in `src/tools/`:
 
-2. **Non-Functional Requirements**: Performance, scalability, usability
-   - Evidence: performance reports, analysis documents
+| Category | Tools |
+|----------|-------|
+| Knowledge | search_knowledge, read_document, list_documents, summarize |
+| Math | calculate (sandboxed QuickJS) |
+| Code | execute (sandboxed QuickJS + Pyodide) |
+| Research | wikipedia_search, arxiv_search, wikidata_query |
+| Utility | text_ocr |
+| Connectors | drive_*, gmail_*, calendar_*, slack_*, notion_* |
+| Generation | artifact, presentation, PowerPoint |
 
-3. **Constraints**: Technology, time, resource limitations
-   - Evidence: architectural decisions, implementation choices
+### Connectors
 
-**Validation Features:**
+OAuth 2.0 PKCE integrations in `src/features/connectors/`:
 
-- Custom validator registration
-- Evidence-based validation with artifact analysis
-- Status tracking (satisfied/pending/failed)
-- Automatic refinement task creation on failure
-
-#### Error Handling & Retry Mechanisms
+- Google Drive, Gmail, Google Calendar, Google Tasks, Google Meet, Google Chat
+- Notion, Slack, Figma, Dropbox, OneDrive, Outlook, Qonto
 
-**Multi-Level Strategy:**
-
-1. **Orchestration Level**
-   - Duplicate prevention via prompt hashing
-   - Graceful degradation with fallback agent creation
-   - Transaction safety with rollback
-
-2. **Validation Level**
-   - Automatic refinement tasks for validation failures
-   - Maintains original task context
-   - Iterative improvement cycles
-
-3. **Agent Level**
-   - Fallback agent creation when recruitment fails
-   - Skill-based agent matching
-   - Dynamic team reconstruction
-
-4. **Network Level**
-   - LLM provider fallbacks
-   - Timeout handling
-   - Multi-strategy response parsing
-
-#### Context Sharing & Collaboration
-
-**ContextBroker** ([src/lib/context-broker.ts](src/lib/context-broker.ts))
-
-Enables intelligent information sharing between agents:
-
-```typescript
-interface SharedContext {
-  type: 'decision' | 'finding' | 'resource' | 'constraint'
-  agentId: string
-  content: string
-  keywords: string[]
-  expiresAt?: Date
-}
-```
-
-- Publish/subscribe pattern for inter-agent communication
-- Keyword-based context filtering
-- Automatic expiration and cleanup
-
-#### Default DEVS Agent
-
-Sophisticated orchestrator agent with:
-
-- Autonomous task analysis capabilities
-- Multi-agent coordination instructions
-- Requirement-driven execution approach
-- Self-correcting workflow logic
-
-#### Agent Memory System
-
-**MemoryLearningService** ([src/lib/memory-learning-service.ts](src/lib/memory-learning-service.ts))
-
-Enables agents to learn and remember information from conversations:
-
-```mermaid
-graph LR
-    A[Conversation] --> B[Learning Extraction]
-    B --> C[Memory Creation]
-    C --> D{Human Review}
-    D -->|Approve| E[Approved Memory]
-    D -->|Reject| F[Discarded]
-    D -->|Edit| G[Edited & Approved]
-    E --> H[Context Injection]
-    H --> I[Future Conversations]
-```
-
-**Memory Categories:**
-
-- **Facts**: Concrete information about the user or domain
-- **Preferences**: User preferences and working styles
-- **Behaviors**: Observed patterns and habits
-- **Domain Knowledge**: Technical or specialized knowledge
-- **Relationships**: Connections between concepts or people
-- **Procedures**: Step-by-step processes
-- **Corrections**: Rectifications of previous misunderstandings
-
-**Confidence Levels:**
-
-- **High**: Explicitly stated, reliable information
-- **Medium**: Inferred with reasonable certainty
-- **Low**: Tentative conclusions requiring validation
-
-**Core Components:**
-
-1. **AgentMemoryStore** ([src/stores/agentMemoryStore.ts](src/stores/agentMemoryStore.ts))
-   - Memory CRUD operations with Yjs persistence
-   - Learning event tracking
-   - Memory document synthesis
-   - Bulk operations and cleanup
-
-2. **Memory Extraction**
-   - LLM-powered extraction from conversations
-   - Automatic categorization and confidence scoring
-   - Keyword extraction for relevance matching
-   - Robust JSON parsing with sanitization
-
-3. **Human Review System**
-   - Pending review queue for new memories
-   - Approve/reject/edit workflow
-   - Bulk operations support
-   - Review notes and audit trail
-
-4. **Context Injection**
-   - Relevant memories injected into new conversations
-   - Keyword-based relevance scoring
-   - Confidence and recency boosting
-   - Usage tracking for analytics
-
-**Memory Data Schema:**
-
-```typescript
-interface AgentMemoryEntry {
-  id: string
-  agentId: string
-  category: MemoryCategory
-  title: string
-  content: string
-  confidence: MemoryConfidence
-  source: 'conversation' | 'manual' | 'imported'
-  sourceConversationId?: string
-  keywords: string[]
-  tags: string[]
-  validationStatus: 'pending' | 'approved' | 'rejected' | 'auto_approved'
-  reviewedAt?: Date
-  reviewedBy?: string
-  reviewNotes?: string
-  usageCount: number
-  lastUsedAt?: Date
-  expiresAt?: Date
-  learnedAt: Date
-  version: number
-  createdAt: Date
-  updatedAt: Date
-}
-```
-
-**Memory Synthesis:**
-
-Generates a comprehensive markdown document summarizing all approved memories for an agent, organized by category with statistics.
-
-### 6. Connectors - External Services Integration
-
-Connectors enable DEVS to integrate with external services, importing content into the Knowledge Base. See [docs/CONNECTORS.md](docs/CONNECTORS.md) for full documentation.
-
-**Connector Categories:**
-
-| Category | Auth Method      | Examples                              | Status         |
-| -------- | ---------------- | ------------------------------------- | -------------- |
-| **Apps** | OAuth 2.0 PKCE   | Google Drive, Gmail, Calendar, Notion | ✅ Implemented |
-| **APIs** | API Key / Bearer | Custom REST/GraphQL endpoints         | 🔜 Planned     |
-| **MCPs** | MCP Protocol     | Local/Remote MCP servers              | 🔜 Planned     |
-
-**Implemented App Connectors:**
-
-- **Google Drive** - Import files and documents with delta sync
-- **Gmail** - Import emails with label filtering
-- **Google Calendar** - Import events as markdown documents
-- **Notion** - Import pages and databases with block-to-markdown conversion
-
-**Key Features:**
+### Knowledge Base
 
-- OAuth 2.0 with PKCE for secure browser-based authentication
-- Delta sync with cursor-based change tracking
-- Content normalization to KnowledgeItem format
-- Background sync via Service Worker
-- Encrypted token storage using Web Crypto API
-
-**Architecture:**
+File upload, folder watching (File System Access API), SHA-256 deduplication, background sync. Supports text, image, and document files (PDF, DOCX, XLSX, PPTX, CSV).
 
-```
-src/features/connectors/
-├── oauth-gateway.ts        # OAuth 2.0 PKCE flow
-├── provider-registry.ts    # Lazy-loaded provider management
-├── sync-engine.ts          # Delta sync orchestration
-├── normalizer.ts           # Content → KnowledgeItem
-├── providers/apps/         # Provider implementations
-├── components/             # UI components
-└── hooks/                  # React hooks
-```
+### Collaboration
 
-### 7. Local Backup - Bidirectional File Sync
-
-Local Backup provides automatic, bidirectional synchronization between DEVS's IndexedDB database and a local file system folder. See [docs/LOCAL-BACKUP.md](docs/LOCAL-BACKUP.md) for full documentation.
-
-**Key Features:**
-
-- **Bidirectional Sync** - Changes flow both ways—edit files locally or in DEVS
-- **Live Sync on Changes** - Automatic backup when data changes (2-second debounce)
-- **Human-Readable Format** - Markdown files with YAML frontmatter
-- **Full Database Export** - Complete JSON backup for disaster recovery
-- **Privacy-First** - All data stays on your device—no cloud services
-
-**Supported Entity Types:**
-
-| Entity        | Directory             | Format       |
-| ------------- | --------------------- | ------------ |
-| Agents        | `agents/`             | `.agent.md`  |
-| Conversations | `conversations/`      | `.md`        |
-| Memories      | `memories/{agentId}/` | `.md`        |
-| Knowledge     | `knowledge/{path}/`   | `.md` + file |
-| Tasks         | `tasks/`              | `.md`        |
-
-**Use Cases:**
-
-- Version control integration (Git repositories)
-- External editing with favorite text editors
-- Cross-device sync via cloud storage folders
-- Disaster recovery and data portability
-
-### 8. Dynamic Team Formation (Future)
-
-- Mimics human organizational structures and dynamics
-- Agents with defined roles, responsibilities, and communication patterns
-- Hierarchical and flat organization structures
-- Inter-agent collaboration protocols
-
-### 9. Web Grounding (Future)
-
-- Agents can interact with web content
-- Sandboxed iframe execution for safety
-- Content extraction and parsing
-- API integrations through browser-safe methods
-
-### 10. P2P Collaboration (Future)
-
-- WebRTC-based peer-to-peer connections
-- Distributed agent orchestration across multiple users
-- CRDT (Conflict-free Replicated Data Types) for shared state
-- Privacy-preserving collaboration protocols
-
-### 11. Global Search
-
-The Global Search feature provides a unified, fast search experience across all DEVS entities. See [docs/SEARCH.md](docs/SEARCH.md) for full documentation.
-
-**Key Features:**
-
-- Keyboard shortcut access (`Cmd/Ctrl + K`)
-- Parallel search across agents, conversations, tasks, files, memories, and more
-- Score-based relevance ranking
-- Grouped results by category
-- Recent searches and quick navigation
-
-### 12. Meeting Bot - Google Meet Integration
-
-DEVS enables AI agents to join Google Meet meetings as real participants. See [docs/MEET-BOT.md](docs/MEET-BOT.md) for full documentation.
-
-**Key Features:**
-
-- Join Google Meet meetings as authenticated participants
-- Live transcription and note-taking
-- Interactive AI assistance during calls
-- Emoji reactions and chat responses
-- Meeting summarization
-
-### 13. Traces - LLM Observability & Analytics
-
-DEVS includes a comprehensive tracing system for monitoring, analyzing, and debugging all LLM interactions. See [docs/TRACES.md](docs/TRACES.md) for full documentation.
-
-**Key Features:**
-
-- Request/response data capture for all LLM calls
-- Token usage and real-time cost tracking
-- Performance metrics (latency, P50, P95, P99 percentiles)
-- Error tracking and debugging
-- Analytics dashboard with charts
-
-### 14. P2P Sync - Cross-Device Synchronization
-
-DEVS uses a **Yjs-first architecture** where Yjs is the single source of truth for all application data. See [docs/SYNC.md](docs/SYNC.md) for full documentation.
-
-**Key Features:**
-
-- **Single source of truth**: Yjs document contains all data
-- Offline-first with automatic IndexedDB persistence via y-indexeddb
-- Privacy-preserving (no central server sees user data)
+- P2P sync via WebRTC and WebSocket relay (Yjs)
+- Password-protected rooms
+- QR code sharing
 - CRDT-based automatic conflict resolution
-- WebSocket-based P2P sync with auto-reconnect
-- Reactive hooks (`useLiveMap`, `useLiveValue`) for instant UI updates
-- Automatic migration from legacy IndexedDB
 
-### 15. Marketplace - Platform Extension System
+### Spaces
 
-The DEVS Marketplace transforms DEVS into an extensible platform, allowing the community to build and share custom extensions. All extensions are defined using YAML schemas with standardized hooks. See [docs/MARKETPLACE.md](docs/MARKETPLACE.md) for full documentation.
-
-**Extension Types:**
-
-| Type           | Description                                      | Examples                                |
-| -------------- | ------------------------------------------------ | --------------------------------------- |
-| **Apps**       | Complete workflows combining agents and tools    | Translation, Code Analysis, PR Review   |
-| **Agents**     | Custom AI personas with specialized capabilities | Code Reviewer, Doc Writer, PR Analyst   |
-| **Connectors** | External service integrations                    | GitHub, Jira, Linear                    |
-| **Tools**      | Specific capabilities for agents                 | Web Search, Calculator, File Operations |
-
-**Key Features:**
-
-- **Standardized YAML Schemas**: Unified schema for all extension types
-- **Discoverability**: Searchable, categorized marketplace with ratings/reviews
-- **Security**: Sandboxed execution, permission systems
-- **Interoperability**: Extensions can compose and depend on each other
-- **Low Barrier**: Non-developers can create simple extensions via specialist agents
-
-### 16. Extension Bridge - Sandboxed Extension API
-
-Extensions run in sandboxed iframes and communicate with DEVS through a message-based API. The bridge script exposes the `window.DEVS` object for extensions. See [docs/EXTENSION-BRIDGE.md](docs/EXTENSION-BRIDGE.md) for full documentation.
-
-**Available APIs:**
-
-| API        | Description                          |
-| ---------- | ------------------------------------ |
-| `DEVS.llm` | LLM chat and completion requests     |
-| `DEVS.ui`  | Toast notifications, prompts, modals |
-| `DEVS.t()` | Translation helper for i18n          |
-| Context    | Theme, language, extension info      |
-
-**Key Features:**
-
-- Secure message-based communication
-- Access to configured LLM providers
-- UI components integration (toasts, prompts)
-- Theme and language awareness
-- Full TypeScript type definitions
+Multi-workspace isolation. Every space-scoped entity carries `spaceId?: string`. Per-space settings overrides. See [docs/more/SPACES.md](docs/more/SPACES.md).
 
 ---
 
-## User Experience
+## Project Structure
 
-### Main Interface
+```
+src/
+  app/            App shell, providers, router, initialization
+  components/     Shared UI components
+  config/         Product constants, API endpoints
+  features/       Independent feature modules (connectors, marketplace, studio, traces, sync, etc.)
+  hooks/          Shared custom React hooks
+  i18n/           Translations and language utilities
+  layouts/        Page layout templates
+  lib/            Business logic, services, utilities
+  pages/          Route-level page components
+  stores/         Zustand stores (Yjs-backed)
+  styles/         Global CSS, Tailwind config
+  test/           Test files (mirrors src/ structure)
+  tools/          Tool plugin definitions
+  types/          Shared TypeScript type definitions
+  workers/        Web Worker scripts
+```
 
-- **Google-like simplicity** - Single prompt area as the primary interface
-- **Agent selector dropdown** - "devs" as default orchestrator
-- **Clean, focused design** - Complexity hidden until needed
-
-### Default "devs" Orchestrator
-
-Pre-configured development team with:
-
-- Product Manager Agent - Requirements analysis
-- Architect Agent - System design
-- Developer Agents - Implementation
-- QA Agent - Testing strategy
-- DevOps Agent - Deployment planning
-
-### Workflow Visualization
-
-After prompt submission, users see:
-
-- **Organization chart** - Active agents and their relationships
-- **Workflow timeline** - Gantt chart of current progress
-- **Agent chat panel** - Real-time agent discussions
-- **Human controls** - Pause, intervene, approve actions
+Features in `src/features/` are self-contained: they may import from `src/lib/`, `src/stores/`, and `src/types/` but never from other features.
 
 ---
 
-## Technical Architecture
+## Data Layer
 
-The whole architecture is described in [ARCHITECTURE.md](ARCHITECTURE.md). @ARCHITECTURE.md
+### Yjs-First Architecture
 
-### Core Principles
+Yjs is the single source of truth. All persistent data lives in typed `Y.Map` instances within one `Y.Doc`. Stores are thin wrappers that provide write functions and reactive read hooks.
 
-- **KISS (Keep It Simple, Stupid):** Simple, straightforward solutions over complex ones
-- **Composable:** Independent, interchangeable components
-- **Performant:** Technologies known for speed and efficiency
-- **Low-footprint:** Minimal resource consumption
-- **Test-Driven Development (TDD):** Write failing tests first, then implement features
+```typescript
+// Write: direct Yjs mutation
+export function createAgent(data: AgentData): Agent {
+  const agent = { ...data, id: nanoid(), createdAt: new Date() }
+  agents.set(agent.id, agent)
+  return agent
+}
 
-### Frontend Stack
+// Read: reactive hook observing Y.Map
+export function useAgents(): Agent[] {
+  return useLiveMap(agents).filter(a => !a.deletedAt)
+}
+```
 
-- **Bundler:** [Vite](https://vitejs.dev/) with static mode
-- **TypeScript** - For application logic
-- **React components** - Using the [HeroUI](https://heroui.com) React components library
-- **Service Workers** - For background processing and caching
-- **Web Crypto API** - For secure token management
-- **IndexedDB** - For local data storage
-- **WebAssembly** - For performance-critical tasks
-- **Serving:** Static site served using **Caddy**
+Soft delete everywhere (`deletedAt?: Date`). Read hooks filter out deleted entities.
 
-### Testing Framework
+### Data Maps
 
-- **Test Runner:** [Vitest](https://vitest.dev/) with jsdom environment
-- **Testing Library:** [@testing-library/react](https://testing-library.com/docs/react-testing-library/intro/)
-- **E2E Testing:** [Playwright](https://playwright.dev/) for end-to-end browser testing
-- **Test Structure:** Unit tests for business logic, component tests for UI, integration tests for flows
-- **TDD Approach:** Write failing tests first, implement features to pass tests, refactor while maintaining green tests
-- **Test Organization:** Unit tests in `src/test/`, E2E tests in `tests/e2e/`
-- **Coverage Tool:** `@vitest/coverage-v8` for code coverage reporting
-
-#### Coverage Requirements
-
-| Category                           | Target   | Priority    |
-| ---------------------------------- | -------- | ----------- |
-| `src/lib/**` (utilities)           | **60%+** | 🔴 Critical |
-| `src/stores/**` (state management) | **60%+** | 🔴 Critical |
-| `src/components/**`                | 30%+     | 🟡 Medium   |
-| `src/pages/**`                     | 20%+     | 🟢 Low      |
-
-#### TDD Mandate for New Features
-
-**All new features and important enhancements in `src/lib/` and `src/stores/` MUST follow TDD:**
-
-1. **Write tests first** - Create failing tests that describe the expected behavior
-2. **Implement minimally** - Write just enough code to make tests pass
-3. **Refactor safely** - Improve code quality while keeping tests green
-4. **Verify coverage** - Run `npm run test:coverage` before committing
-
-This ensures:
-
-- LLMs can safely enhance features without causing regressions
-- Critical business logic is always verified
-- Refactoring is safe and confident
-
-### Data Storage
-
-Storage uses a **Yjs-first architecture** where Yjs is the single source of truth:
-
-- **Primary storage**: Yjs document with typed Y.Maps for all entities
-- **Persistence**: y-indexeddb automatically persists Yjs data to IndexedDB
-- **P2P sync**: y-websocket enables optional cross-device synchronization
-- **Legacy support**: Some browser-specific data (CryptoKeys, FileSystemHandles) remains in IndexedDB
+Key Yjs maps: `agents`, `conversations`, `tasks`, `artifacts`, `memories`, `workflows`, `sessions`, `studioEntries`, `traces`, `spans`, `preferences`, `credentials`, `connectors`, `skills`, `spaces`, `threadTags` (20+ maps total).
 
 ### Data Schema
 
@@ -593,7 +207,7 @@ Data types are defined in [src/types/index.ts](src/types/index.ts).
 ```typescript
 interface Agent {
   id: string
-  slug: string // URL-friendly identifier, auto-generated from name, unique across all agents
+  slug: string
   name: string
   icon?: IconName
   role: string
@@ -614,34 +228,14 @@ interface Task {
   complexity: 'simple' | 'complex'
   status: 'pending' | 'in_progress' | 'completed' | 'failed'
   assignedAgentId?: string
-  parentTaskId?: string // Enables task hierarchies
-  dependencies: string[] // Task dependency management
+  parentTaskId?: string
+  dependencies: string[]
   requirements: Requirement[]
   artifacts: string[]
   steps: TaskStep[]
-  estimatedPasses: number
-  actualPasses: number
   createdAt: Date
   updatedAt: Date
   completedAt?: Date
-  dueDate?: Date
-}
-
-interface Requirement {
-  id: string
-  type: 'functional' | 'non-functional' | 'constraint'
-  description: string
-  priority: 'must' | 'should' | 'could' | 'wont'
-  source: 'explicit' | 'implicit' | 'inferred'
-  validationStatus?: 'satisfied' | 'pending' | 'failed'
-  evidence?: string[]
-}
-
-interface Workflow {
-  id: string
-  strategy: string
-  status: 'pending' | 'running' | 'completed'
-  checkpoints: Checkpoint[]
 }
 
 interface Conversation {
@@ -649,13 +243,12 @@ interface Conversation {
   agentId: string
   participatingAgents: string[]
   workflowId: string
-  timestamp: Date // Creation timestamp
-  updatedAt: Date // Last modification timestamp, used for sorting
+  timestamp: Date
+  updatedAt: Date
   messages: Message[]
   title?: string
   isPinned?: boolean
   summary?: string
-  pinnedMessageIds?: string[]
 }
 
 interface KnowledgeItem {
@@ -664,19 +257,11 @@ interface KnowledgeItem {
   type: 'file' | 'folder'
   fileType?: 'document' | 'image' | 'text'
   content?: string
-  contentHash?: string // SHA-256 hash for deduplication
-  mimeType?: string
-  size?: number
+  contentHash?: string
   path: string
-  parentId?: string
   lastModified: Date
   createdAt: Date
   tags?: string[]
-  description?: string
-  syncSource?: 'manual' | 'filesystem_api'
-  fileSystemHandle?: string
-  watchId?: string
-  lastSyncCheck?: Date
 }
 
 interface Artifact {
@@ -685,307 +270,81 @@ interface Artifact {
   agentId: string
   type: string
   description: string
-  content: string // Base64 encoded or file reference
+  content: string
   status: 'pending' | 'completed'
-  validates?: string[] // Requirement IDs this artifact validates
-  dueDate?: Date
+  validates?: string[]
   createdAt: Date
 }
-
-interface Tool {
-  id: string
-  name: string
-  description: string
-  type: 'file' | 'web' | 'api' | 'shell' | 'custom'
-  config: Record<string, any>
-}
-
-interface Checkpoint {
-  id: string
-  name: string
-  status: 'pending' | 'completed'
-  timestamp: Date
-}
 ```
 
-### State Management Architecture
-
-**Yjs-First Stores:**
-
-All stores use Yjs as the single source of truth. Data is written directly to typed Y.Maps, and React hooks observe changes for instant reactivity.
-
-```typescript
-// Store pattern: Direct Yjs writes
-export function createAgent(data: AgentData): Agent {
-  const agent = { ...data, id: nanoid(), createdAt: new Date() }
-  agents.set(agent.id, agent) // Write to Yjs map
-  return agent
-}
-
-// React hooks observe Yjs directly
-export function useAgents(): Agent[] {
-  return useLiveMap(agents).filter((a) => !a.deletedAt)
-}
-```
-
-1. **TaskStore** ([src/stores/taskStore.ts](src/stores/taskStore.ts))
-   - Task lifecycle management via Yjs `tasks` map
-   - Requirement validation integration
-   - Step tracking and completion
-
-2. **AgentStore** ([src/stores/agentStore.ts](src/stores/agentStore.ts))
-   - Agent discovery and caching via Yjs `agents` map
-   - Custom agent CRUD operations
-   - Team building support
-
-3. **ArtifactStore** ([src/stores/artifactStore.ts](src/stores/artifactStore.ts))
-   - Artifact lifecycle management via Yjs `artifacts` map
-   - Requirement linking and dependency tracking
-   - Versioning support
-
-4. **ConversationStore** ([src/stores/conversationStore.ts](src/stores/conversationStore.ts))
-   - Multi-agent conversation tracking via Yjs `conversations` map
-   - Message history management
-   - Title generation
-
-5. **ContextStore** ([src/stores/contextStore.ts](src/stores/contextStore.ts))
-   - Context sharing between agents
-   - Expiration and cleanup
-   - Relevance filtering
-
-6. **UserStore** ([src/stores/userStore.ts](src/stores/userStore.ts))
-   - User preferences and settings
-   - Drawer state persistence
-   - Theme and language management
-
-7. **AgentMemoryStore** ([src/stores/agentMemoryStore.ts](src/stores/agentMemoryStore.ts))
-   - Agent memory CRUD operations via Yjs `memories` map
-   - Learning event management
-   - Human review workflow
-   - Memory retrieval with relevance scoring
-   - Memory synthesis documents
-
-**Store Patterns:**
-
-- Direct Yjs map writes (no IndexedDB round-trip)
-- Reactive hooks via `useLiveMap` and `useLiveValue`
-- Error handling with toast notifications
-- Automatic P2P sync when enabled
-
-### Knowledge Base System
-
-Sophisticated knowledge management system for personal knowledge base maintenance:
-
-#### File Management Features
-
-- **Drag & Drop Upload** - Intuitive file uploading with visual feedback
-- **Folder Watching** - Automatic synchronization with local directories using File System API
-- **File Type Detection** - Automatic classification based on extension and content
-- **Deduplication** - SHA-256 content hashing prevents duplicate storage
-- **Real-time Sync** - Background synchronization every 30 seconds with change detection
-
-#### Supported File Types
-
-- **Text Files**: `.txt`, `.md`, `.js`, `.ts`, `.jsx`, `.tsx`, `.css`, `.html`, `.xml`, `.csv`, `.yaml`, `.yml`, `.log`
-- **Image Files**: `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.webp`, `.svg`, `.ico`, `.tiff`, `.tif`
-- **Document Files**: `.pdf`, `.doc`, `.docx`, `.xls`, `.xlsx`, `.ppt`, `.pptx`, `.rtf`, `.epub`
-
-#### Automatic Synchronization
-
-- **Change Detection** - Monitors file modifications, additions, deletions
-- **Background Processing** - Non-blocking sync with progress feedback
-- **Event System** - Real-time notifications (`sync_start`, `sync_complete`, `file_added`, `file_updated`, `file_deleted`, `sync_error`)
-- **Error Recovery** - Graceful handling of permission errors
-- **UI Feedback** - Toast notifications and visual indicators
-
-#### Data Privacy & Security
-
-- **Browser-only Storage** - All files stored locally in IndexedDB
-- **No Server Upload** - Files never leave the user's device
-- **Permission-based Access** - Uses File System API permissions
-- **Content Hashing** - SHA-256 hashing for integrity and deduplication
-
-### Security Features
-
-- Token encryption using SubtleCrypto API
-- No data ever leaves the browser
-- Sandboxed execution environments
-- Auto-lock after 15 minutes of inactivity
-- Optional biometric authentication
-
-### Performance Optimizations
-
-- Service Workers for background processing
-- WebAssembly for compute-intensive operations
-- Lazy loading of agent components
-- Cursor-based pagination for large datasets
-- Multi-layer caching for agents, contexts, and artifacts
-- Batch database operations
-- Automatic cleanup of expired contexts
-
 ---
 
-## Implementation Roadmap
+## State Management
 
-### Phase 1: Core MVP
+Yjs-backed Zustand stores:
 
-- Basic prompt interface with IndexedDB storage
-- LLM independence functionality for major providers
-- "devs" orchestrator with 3-5 core agents
-- Custom agent builder
-- Simple PDCA orchestration strategy
-- Real-time workflow visualization
+| Store | Yjs Map | Responsibility |
+|-------|---------|----------------|
+| AgentStore | `agents` | Agent CRUD, built-in + custom agents |
+| ConversationStore | `conversations` | Message history, title generation |
+| TaskStore | `tasks` | Task lifecycle, requirement validation |
+| ArtifactStore | `artifacts` | Deliverable management |
+| AgentMemoryStore | `memories` | Memory CRUD, human review, context injection |
+| ContextStore | — | Inter-agent context sharing |
+| UserStore | `preferences` | Settings, theme, language |
 
-### Phase 2: Advanced Features
-
-- Additional orchestration strategies (DMAIC, A3, 8D)
-- Web grounding capabilities
-- Advanced human-in-the-loop controls
-- Performance analytics
-- Dynamic team formation
-
-### Phase 3: Ecosystem
-
-- P2P collaboration features
-- Marketplace for agents and strategies
-- Plugin system for community contributions
-- Multi-language support
-
----
-
-## Design Principles
-
-1. **Accessibility First** - Anyone should be able to use it, regardless of technical expertise
-2. **Privacy by Design** - User data never leaves their control
-3. **Progressive Disclosure** - Simple by default, powerful when needed
-4. **Real-time Transparency** - Users can always see what agents are doing
-5. **Fail Gracefully** - Clear error messages and recovery options
-
----
-
-## Use Cases
-
-- **Students** - Research assistance, study planning, assignment help
-- **Small Businesses** - Operations management without large teams
-- **Developers** - Rapid prototyping and code generation
-- **Researchers** - Literature review, data analysis, hypothesis testing
-- **Creative Professionals** - Brainstorming, content creation, project planning
+All stores follow the same pattern: direct Yjs writes, reactive hooks via `useLiveMap`/`useLiveValue`, error handling with toast notifications.
 
 ---
 
 ## Development
 
-### Running Tests
+### Commands
 
 ```bash
-# Run all unit tests once
-npm run test:run
-
-# Run tests in watch mode (recommended during development)
-npm run test:watch
-
-# Run tests with coverage report
-npm run test:coverage
-
-# Run E2E tests
-npm run test:e2e
-
-# Run E2E tests with UI (interactive debugging)
-npm run test:e2e:ui
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run lint         # Run linting
+npm run typecheck    # Type checking
+npm run test:run     # Run all unit tests once
+npm run test:watch   # Tests in watch mode (recommended during development)
+npm run test:coverage # Tests with coverage report
+npm run test:e2e     # Run E2E tests
 ```
 
-### TDD Workflow (Mandatory for lib/ and stores/)
+### TDD Mandate
 
-When adding or modifying code in `src/lib/` or `src/stores/`:
+All new code in `src/lib/` and `src/stores/` must follow TDD:
 
-1. **Red:** Write a failing test that describes the desired functionality
-   ```bash
-   npm run test:watch  # Start test watcher
-   ```
-2. **Green:** Write the minimum code necessary to make the test pass
-3. **Refactor:** Improve the code while keeping tests green
-4. **Verify:** Check coverage before committing
-   ```bash
-   npm run test:coverage
-   ```
+1. **Red** — Write a failing test
+2. **Green** — Minimal code to pass
+3. **Refactor** — Clean up, keep tests green
+4. **Verify** — `npm run test:coverage`
 
-#### Example: Adding a new utility function
+### Coverage Targets
 
-```typescript
-// 1. First, write the test in src/test/my-feature.test.ts
-import { describe, it, expect } from 'vitest'
-import { myNewFunction } from '@/lib/my-feature'
-
-describe('myNewFunction', () => {
-  it('should return expected result', () => {
-    expect(myNewFunction('input')).toBe('expected output')
-  })
-})
-
-// 2. Then implement in src/lib/my-feature.ts
-export function myNewFunction(input: string): string {
-  return 'expected output'
-}
-```
-
-### Development Commands
-
-```bash
-# Start development server
-npm run dev
-
-# Run linting
-npm run lint
-
-# Type checking
-npm run typecheck
-
-# Build for production
-npm run build
-```
+| Directory | Target | Priority |
+|-----------|--------|----------|
+| `src/lib/**` | 60%+ | Critical |
+| `src/stores/**` | 60%+ | Critical |
+| `src/components/**` | 30%+ | Medium |
+| `src/pages/**` | 20%+ | Low |
 
 ---
 
-## Quality Metrics
+## Design Principles
 
-The system tracks:
-
-- Requirement satisfaction rates
-- Task completion times
-- Agent utilization rates
-- Validation success rates
-- Refinement iteration counts
-- Repository stars and forks
-- Community contributions
-
----
-
-## Open Source Commitment
-
-All code will be open source under the MIT license, with a focus on community-driven development.
-Contributions are welcome through GitHub pull requests.
-
----
-
-## Getting Started
-
-1. Visit the web app (no installation required)
-2. Configure your preferred LLM provider
-3. Type your request in the prompt area
-4. Watch as AI agents collaborate to solve your problem
-5. Optional: Intervene or guide the process as needed
-
----
-
-## Future Vision
-
-A world where AI augmentation isn't a luxury for the few, but a fundamental tool available to all—where anyone can leverage the power of AI teams to amplify their capabilities and achieve their goals.
+1. **Accessibility first** — Works on 2GB RAM devices. Multi-language. Keyboard navigable. Screen reader compatible.
+2. **Privacy by design** — Data never leaves the client unless the user connects P2P sync or an external connector.
+3. **Progressive disclosure** — A single prompt area by default. Complexity revealed as needed.
+4. **Real-time transparency** — Users see the orchestration trace.
+5. **Graceful degradation** — Offline-capable. Missing providers handled. Tool failures don't crash workflows.
 
 ---
 
 ## Internationalization (i18n) Guidelines
 
-When working with translation strings, apostrophes must be used with the "'" character instead of "'". This ensures consistent formatting across all localization files.
+When working with translation strings, apostrophes must use `&apos;` instead of `'`. All user-facing strings go through the i18n system. Supported languages: English, French, German, Spanish, Arabic, Korean.
 
 ---
 
@@ -1001,5 +360,3 @@ Always use Context7 MCP automatically when working on tasks that involve:
 - Implementation patterns for React, Vite, Zustand, Playwright, HeroUI, or other project dependencies
 
 This ensures accurate, up-to-date documentation is referenced without requiring explicit requests.
-
---
