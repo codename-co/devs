@@ -80,6 +80,7 @@ export const en = [
   'All files and folders will be synced automatically',
   'Loading folders...',
   'No folders found',
+  'Search folders...',
   '{n} folders selected',
   'Skip',
   'Continue',

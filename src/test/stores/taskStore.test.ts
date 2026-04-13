@@ -45,6 +45,11 @@ vi.mock('@/lib/yjs', () => ({
 
 vi.mock('@/lib/toast', () => mockToast)
 
+// Mock spaceStore
+vi.mock('@/stores/spaceStore', () => ({
+  getActiveSpaceId: vi.fn(() => 'default'),
+}))
+
 vi.mock('@/lib/requirement-validator', () => ({
   requirementValidator: {
     validateAllRequirements: vi.fn().mockResolvedValue([]),

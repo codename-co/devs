@@ -47,7 +47,7 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     provider: 'local',
     name: 'Local (Browser)',
     models: new LocalLLMProvider().getAvailableModels(),
-    icon: 'OpenInBrowser',
+    icon: 'Local',
     noApiKey: true,
     noServerUrl: true,
     moreDetails: () => (

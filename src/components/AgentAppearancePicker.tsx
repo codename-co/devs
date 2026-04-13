@@ -18,6 +18,7 @@ import { AgentColor } from '@/types'
 import { AgentPortraitService } from '@/lib/agent-portrait-service'
 import { errorToast } from '@/lib/toast'
 import { useI18n } from '@/i18n'
+import { ColorSwatchPicker } from '@heroui/react_3'
 
 // Local i18n translations
 const localI18n = {
@@ -216,19 +217,25 @@ type ColorLabelKey =
   | 'Warning'
   | 'Danger'
 
-// Available agent colors
+// Available agent colors with hex values for ColorSwatchPicker
 const AGENT_COLORS: {
   value: AgentColor
   labelKey: ColorLabelKey
-  className: string
+  hex: string
 }[] = [
-  { value: 'default', labelKey: 'Default', className: 'bg-default-500' },
-  { value: 'primary', labelKey: 'Primary', className: 'bg-primary' },
-  { value: 'secondary', labelKey: 'Secondary', className: 'bg-secondary' },
-  { value: 'success', labelKey: 'Success', className: 'bg-success' },
-  { value: 'warning', labelKey: 'Warning', className: 'bg-warning' },
-  { value: 'danger', labelKey: 'Danger', className: 'bg-danger' },
+  { value: 'default', labelKey: 'Default', hex: '#71717A' },
+  { value: 'primary', labelKey: 'Primary', hex: '#006FEE' },
+  { value: 'secondary', labelKey: 'Secondary', hex: '#9353D3' },
+  { value: 'success', labelKey: 'Success', hex: '#17C964' },
+  { value: 'warning', labelKey: 'Warning', hex: '#F5A524' },
+  { value: 'danger', labelKey: 'Danger', hex: '#F31260' },
 ]
+
+const hexToAgentColor = (hex: string): AgentColor | undefined =>
+  AGENT_COLORS.find((c) => c.hex === hex)?.value
+
+const agentColorToHex = (color: AgentColor): string =>
+  AGENT_COLORS.find((c) => c.value === color)?.hex ?? AGENT_COLORS[0].hex
 
 // Curated list of commonly used icons (for faster initial load)
 const POPULAR_ICONS: IconName[] = [
@@ -529,23 +536,27 @@ export const AgentAppearancePicker = ({
                 <label className="text-sm font-medium text-default-700 mb-2 block">
                   {t('Color')}
                 </label>
-                <div className="flex gap-2 flex-wrap">
+                <ColorSwatchPicker
+                  value={agentColorToHex(color)}
+                  onChange={(c) => {
+                    const hex = c.toString('hex')
+                    const agentColor = hexToAgentColor(hex)
+                    if (agentColor) onColorChange?.(agentColor)
+                  }}
+                  size="sm"
+                >
                   {AGENT_COLORS.map((c) => (
-                    <Tooltip key={c.value} content={t(c.labelKey)} delay={300}>
-                      <button
-                        type="button"
-                        disabled={isDisabled}
-                        onClick={() => onColorChange?.(c.value)}
-                        aria-label={t(c.labelKey)}
-                        className={`w-8 h-8 rounded-full ${c.className} transition-all ${
-                          color === c.value
-                            ? 'ring-2 ring-offset-2 ring-primary scale-110'
-                            : 'hover:scale-105'
-                        } ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                      />
-                    </Tooltip>
+                    <ColorSwatchPicker.Item
+                      key={c.hex}
+                      color={c.hex}
+                      aria-label={t(c.labelKey)}
+                      isDisabled={isDisabled}
+                    >
+                      <ColorSwatchPicker.Swatch />
+                      <ColorSwatchPicker.Indicator />
+                    </ColorSwatchPicker.Item>
                   ))}
-                </div>
+                </ColorSwatchPicker>
               </div>
             </div>
           </Tab>
@@ -706,23 +717,27 @@ export const AgentAppearancePicker = ({
             <label className="text-sm font-medium text-default-700 mb-2 block">
               {t('Color')}
             </label>
-            <div className="flex gap-2 flex-wrap">
+            <ColorSwatchPicker
+              value={agentColorToHex(color)}
+              onChange={(c) => {
+                const hex = c.toString('hex')
+                const agentColor = hexToAgentColor(hex)
+                if (agentColor) onColorChange?.(agentColor)
+              }}
+              size="sm"
+            >
               {AGENT_COLORS.map((c) => (
-                <Tooltip key={c.value} content={t(c.labelKey)} delay={300}>
-                  <button
-                    type="button"
-                    disabled={isDisabled}
-                    onClick={() => onColorChange?.(c.value)}
-                    aria-label={t(c.labelKey)}
-                    className={`w-8 h-8 rounded-full ${c.className} transition-all ${
-                      color === c.value
-                        ? 'ring-2 ring-offset-2 ring-primary scale-110'
-                        : 'hover:scale-105'
-                    } ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                  />
-                </Tooltip>
+                <ColorSwatchPicker.Item
+                  key={c.hex}
+                  color={c.hex}
+                  aria-label={t(c.labelKey)}
+                  isDisabled={isDisabled}
+                >
+                  <ColorSwatchPicker.Swatch />
+                  <ColorSwatchPicker.Indicator />
+                </ColorSwatchPicker.Item>
               ))}
-            </div>
+            </ColorSwatchPicker>
           </div>
         </div>
       )}

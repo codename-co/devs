@@ -126,6 +126,14 @@
 }
 
 @font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/Geist.ttf') format('truetype');
+}
+
+@font-face {
   font-family: 'Oswald';
   font-style: normal;
   font-weight: 400 600;
@@ -147,6 +155,14 @@
   font-weight: 400 600;
   font-display: swap;
   src: url('/fonts/Quicksand.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Unbounded';
+  font-style: normal;
+  font-weight: 300 400;
+  font-display: swap;
+  src: url('/fonts/Unbounded.ttf') format('truetype');
 }
 
 @font-face {
@@ -245,8 +261,7 @@
   } */
 
   [role='heading'],
-  h1,
-  h2 {
+  h1 {
     font-family: var(--devs-heading-font);
     font-optical-sizing: auto;
     font-style: normal;
@@ -544,6 +559,22 @@ body {
     }
   }
 
+  /* V2 fullscreen enter transition */
+  @keyframes v2-fullscreen-in {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .v2-fullscreen-enter {
+    animation: v2-fullscreen-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
   .animate-gradient-border {
     background: linear-gradient(
       45deg,
@@ -580,4 +611,21 @@ body {
 /* TODO: Hack to hide the toaster region. */
 [role='region'][data-react-aria-top-layer='true'] {
   display: inline;
+}
+
+/* V2 Workspace responsive grid */
+.grid-workspace {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .grid-workspace {
+    grid-template-columns: var(--ws-md-cols, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-workspace {
+    grid-template-columns: var(--ws-lg-cols, 1fr);
+  }
 }

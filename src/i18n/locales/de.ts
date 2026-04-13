@@ -94,7 +94,7 @@ export const de: I18n = {
   Admin: 'Admin',
 
   // PromptArea
-  'Need something done?': 'Benötigen Sie etwas?',
+  'What are we working on?': 'Woran arbeiten wir?',
   'Show extended actions': 'Erweiterte Aktionen anzeigen',
   'Hide extended actions': 'Erweiterte Aktionen ausblenden',
   'Attach a file or image': 'Datei oder Bild anhängen',
@@ -397,6 +397,7 @@ export const de: I18n = {
   'No conversation messages yet.': 'Noch keine Konversationsnachrichten.',
   'Copied to clipboard': 'In die Zwischenablage kopiert',
   Conversation: 'Konversation',
+  Source: 'Quelle',
   'No messages yet. The task is being processed…':
     'Noch keine Nachrichten. Die Aufgabe wird bearbeitet…',
   'Validation Criteria': 'Validierungskriterien',
@@ -1053,4 +1054,9 @@ export const de: I18n = {
   'Media generated': 'Medium generiert',
   'Orchestrating task…': 'Aufgabe wird orchestriert…',
   'Task failed': 'Aufgabe fehlgeschlagen',
+
+  // Spaces
+  Space: 'Space',
+  'Space name': 'Name des Space',
+  'New Space': 'Neuer Space',
 } as const

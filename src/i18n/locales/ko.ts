@@ -92,7 +92,7 @@ export const ko: I18n = {
   Admin: '관리자',
 
   // PromptArea
-  'Need something done?': '무언가 필요하신가요?',
+  'What are we working on?': '무언가 필요하신가요?',
   'Show extended actions': '확장 작업 표시',
   'Hide extended actions': '확장 작업 숨기기',
   'Attach a file or image': '파일이나 이미지를 첨부하세요',
@@ -388,6 +388,7 @@ export const ko: I18n = {
   'No conversation messages yet.': '아직 대화 메시지가 없습니다.',
   'Copied to clipboard': '클립보드에 복사됨',
   Conversation: '대화',
+  Source: '소스',
   'No messages yet. The task is being processed…':
     '아직 메시지가 없습니다. 작업을 처리 중입니다…',
   'Validation Criteria': '검증 기준',
@@ -1029,4 +1030,9 @@ export const ko: I18n = {
   'Media generated': '미디어 생성 완료',
   'Orchestrating task…': '작업 오케스트레이션 중…',
   'Task failed': '작업 실패',
+
+  // Spaces
+  Space: '스페이스',
+  'Space name': '스페이스 이름',
+  'New Space': '새 스페이스',
 } as const

@@ -177,6 +177,7 @@ export function resetYDoc(): void {
     'langfuseConfig',
     'agentMessages',
     'queuedTasks',
+    'threadTags',
   ]
 
   for (const name of mapNames) {

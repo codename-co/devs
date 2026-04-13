@@ -172,6 +172,8 @@ export interface InstalledExtension {
   installedAt: Date
   /** Last used date */
   lastUsedAt?: Date
+  /** Space this installation belongs to (undefined = default) */
+  spaceId?: string
 }
 
 // =============================================================================

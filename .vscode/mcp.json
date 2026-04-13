@@ -1,5 +1,10 @@
 {
   "servers": {
+    "heroui-react": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@heroui/react-mcp@latest"]
+    },
     "io.github.upstash/context7": {
       "type": "stdio",
       "command": "npx",

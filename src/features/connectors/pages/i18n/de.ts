@@ -96,6 +96,7 @@ export const de: I18n = {
     'Alle Dateien und Ordner werden automatisch synchronisiert',
   'Loading folders...': 'Ordner werden geladen...',
   'No folders found': 'Keine Ordner gefunden',
+  'Search folders...': 'Ordner suchen...',
   '{n} folders selected': '{n} Ordner ausgewählt',
   Skip: 'Überspringen',
   Continue: 'Weiter',

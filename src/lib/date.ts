@@ -44,3 +44,34 @@ export const formatDateCompact = (
     month: 'short',
   }).format(new Date(dateStr))
 }
+
+/** Show time if today, otherwise show short date */
+export const formatMessageTime = (
+  timestamp: Date | string,
+  lang: string,
+): string => {
+  const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp
+  const now = new Date()
+  const isToday =
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate()
+  if (isToday) {
+    return formatTime(timestamp, lang)
+  }
+  return date.toLocaleDateString(lang, { month: 'short', day: 'numeric' })
+}
+
+/**
+ * Format time for display in conversation messages
+ */
+export function formatTime(
+  date: Date | string | number,
+  locale = 'en',
+): string {
+  const d = new Date(date)
+  return d.toLocaleTimeString(locale, {
+    hour: 'numeric',
+    minute: '2-digit',
+  })
+}

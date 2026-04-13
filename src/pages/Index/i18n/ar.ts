@@ -4,8 +4,7 @@ type I18n = Record<(typeof en)[number], string>
 
 export const ar: I18n = {
   'Hey {productName}': 'Hey {productName}',
-  'Your own AI agents ready to collaborate':
-    'وكلاء الذكاء الاصطناعي الخاصون بك جاهزون للتعاون',
+  'Your AI team is ready': 'فريق الذكاء الاصطناعي الخاص بك جاهز',
   'Failed to get response from LLM. Please try again later.':
     'فشل الحصول على رد من LLM. يرجى المحاولة مرة أخرى لاحقاً.',
 

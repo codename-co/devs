@@ -10,6 +10,7 @@
 import { nanoid } from 'nanoid'
 import { skills, transact, useLiveMap, useLiveValue } from '@/lib/yjs'
 import type { InstalledSkill, SkillScript, SkillFile } from '@/types'
+import { getActiveSpaceId, entityBelongsToSpace, useActiveSpaceId } from '@/stores/spaceStore'
 
 // ============================================================================
 // Types
@@ -70,6 +71,7 @@ export function createCustomSkill(data: CreateCustomSkillData): InstalledSkill {
     enabled: true,
     assignedAgentIds: [],
     autoActivate: false,
+    spaceId: getActiveSpaceId(),
   }
 
   transact(() => {
@@ -103,6 +105,7 @@ export function installSkill(data: InstallSkillData): InstalledSkill {
     enabled: true,
     assignedAgentIds: [],
     autoActivate: false,
+    spaceId: getActiveSpaceId(),
   }
 
   transact(() => {
@@ -188,17 +191,23 @@ export function assignSkillToAgents(id: string, agentIds: string[]): boolean {
 // ============================================================================
 
 /**
- * Get all installed skills.
+ * Get all installed skills for the active space.
  */
 export function getInstalledSkills(): InstalledSkill[] {
-  return Array.from(skills.values())
+  const spaceId = getActiveSpaceId()
+  return Array.from(skills.values()).filter((s) =>
+    entityBelongsToSpace(s.spaceId, spaceId),
+  )
 }
 
 /**
- * Get only enabled installed skills.
+ * Get only enabled installed skills for the active space.
  */
 export function getEnabledSkills(): InstalledSkill[] {
-  return Array.from(skills.values()).filter((s) => s.enabled)
+  const spaceId = getActiveSpaceId()
+  return Array.from(skills.values()).filter(
+    (s) => s.enabled && entityBelongsToSpace(s.spaceId, spaceId),
+  )
 }
 
 /**
@@ -220,37 +229,49 @@ export function getSkillByName(name: string): InstalledSkill | undefined {
 }
 
 /**
- * Get enabled skills available to a specific agent.
+ * Get enabled skills available to a specific agent in the active space.
  * Returns skills that are either globally available (empty assignedAgentIds)
  * or explicitly assigned to the given agent.
  */
 export function getSkillsForAgent(agentId: string): InstalledSkill[] {
+  const spaceId = getActiveSpaceId()
   return Array.from(skills.values()).filter(
     (skill) =>
       skill.enabled &&
+      entityBelongsToSpace(skill.spaceId, spaceId) &&
       (skill.assignedAgentIds.length === 0 ||
         skill.assignedAgentIds.includes(agentId)),
   )
 }
 
 /**
- * Check if a skill with the given GitHub URL is already installed.
+ * Check if a skill with the given GitHub URL is already installed in the active space.
  */
 export function isSkillInstalled(githubUrl: string): boolean {
+  const spaceId = getActiveSpaceId()
   for (const skill of skills.values()) {
-    if (skill.githubUrl === githubUrl) return true
+    if (
+      skill.githubUrl === githubUrl &&
+      entityBelongsToSpace(skill.spaceId, spaceId)
+    )
+      return true
   }
   return false
 }
 
 /**
- * Find an installed skill by its GitHub URL.
+ * Find an installed skill by its GitHub URL in the active space.
  */
 export function getSkillByGitHubUrl(
   githubUrl: string,
 ): InstalledSkill | undefined {
+  const spaceId = getActiveSpaceId()
   for (const skill of skills.values()) {
-    if (skill.githubUrl === githubUrl) return skill
+    if (
+      skill.githubUrl === githubUrl &&
+      entityBelongsToSpace(skill.spaceId, spaceId)
+    )
+      return skill
   }
   return undefined
 }
@@ -260,10 +281,12 @@ export function getSkillByGitHubUrl(
 // ============================================================================
 
 /**
- * Reactive hook: returns all installed skills, updating when skills change.
+ * Reactive hook: returns all installed skills for the active space.
  */
 export function useSkills(): InstalledSkill[] {
-  return useLiveMap(skills)
+  const all = useLiveMap(skills)
+  const spaceId = useActiveSpaceId()
+  return all.filter((s) => entityBelongsToSpace(s.spaceId, spaceId))
 }
 
 /**
@@ -274,13 +297,15 @@ export function useSkill(id: string): InstalledSkill | undefined {
 }
 
 /**
- * Reactive hook: returns enabled skills for a specific agent.
+ * Reactive hook: returns enabled skills for a specific agent in the active space.
  */
 export function useSkillsForAgent(agentId: string): InstalledSkill[] {
   const allSkills = useLiveMap(skills)
+  const spaceId = useActiveSpaceId()
   return allSkills.filter(
     (skill) =>
       skill.enabled &&
+      entityBelongsToSpace(skill.spaceId, spaceId) &&
       (skill.assignedAgentIds.length === 0 ||
         skill.assignedAgentIds.includes(agentId)),
   )

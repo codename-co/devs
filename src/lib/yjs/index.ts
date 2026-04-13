@@ -115,13 +115,27 @@ export {
   agentMessages,
   queuedTasks,
   sessions,
+  threadTags,
+  spaces,
+  spaceSettings,
 } from './maps'
-export type { Preferences, Workflow, LangfuseConfigEntry } from './maps'
+export type {
+  Preferences,
+  Workflow,
+  LangfuseConfigEntry,
+  ThreadTag,
+} from './maps'
 
 // ---------------------------------------------------------------------------
 // React hooks — live-updating subscriptions to Yjs data
 // ---------------------------------------------------------------------------
 export { useLiveMap, useLiveValue, useSyncReady } from './reactive'
+
+// ---------------------------------------------------------------------------
+// Local cache — seed stores from localStorage to avoid Yjs hydration flash
+// ---------------------------------------------------------------------------
+export { createYjsCache } from './local-cache'
+export type { YjsCache } from './local-cache'
 
 // ---------------------------------------------------------------------------
 // Migration — one-time legacy IndexedDB → Yjs data transfer

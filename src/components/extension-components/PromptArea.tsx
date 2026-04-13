@@ -41,7 +41,7 @@ export type LanguageCode = 'en' | 'fr' | 'de' | 'es' | 'ar' | 'ko'
 /** Translation keys used in PromptArea */
 type TranslationKey =
   | 'Drop files here…'
-  | 'Need something done?'
+  | 'What are we working on?'
   | 'Speak to microphone'
   | 'Send prompt'
   | 'Select an agent'
@@ -79,7 +79,7 @@ type TranslationKey =
 const translations: Record<LanguageCode, Record<TranslationKey, string>> = {
   en: {
     'Drop files here…': 'Drop files here…',
-    'Need something done?': 'Need something done?',
+    'What are we working on?': 'What are we working on?',
     'Speak to microphone': 'Speak to microphone',
     'Send prompt': 'Send prompt',
     'Select an agent': 'Select an agent',
@@ -115,7 +115,7 @@ const translations: Record<LanguageCode, Record<TranslationKey, string>> = {
   },
   fr: {
     'Drop files here…': 'Déposez des fichiers ici…',
-    'Need something done?': 'Besoin de quelque chose ?',
+    'What are we working on?': 'On travaille sur quoi ?',
     'Speak to microphone': 'Dicter au microphone',
     'Send prompt': 'Envoyer le prompt',
     'Select an agent': 'Sélectionner un agent',
@@ -153,7 +153,7 @@ const translations: Record<LanguageCode, Record<TranslationKey, string>> = {
   },
   de: {
     'Drop files here…': 'Dateien hier ablegen…',
-    'Need something done?': 'Benötigen Sie etwas?',
+    'What are we working on?': 'Woran arbeiten wir gerade?',
     'Speak to microphone': 'Ins Mikrofon sprechen',
     'Send prompt': 'Prompt senden',
     'Select an agent': 'Agent auswählen',
@@ -190,7 +190,7 @@ const translations: Record<LanguageCode, Record<TranslationKey, string>> = {
   },
   es: {
     'Drop files here…': 'Suelta archivos aquí…',
-    'Need something done?': '¿Necesitas que se haga algo?',
+    'What are we working on?': '¿En qué estamos trabajando?',
     'Speak to microphone': 'Hablar al micrófono',
     'Send prompt': 'Enviar prompt',
     'Select an agent': 'Seleccionar un agente',
@@ -227,7 +227,7 @@ const translations: Record<LanguageCode, Record<TranslationKey, string>> = {
   },
   ar: {
     'Drop files here…': 'أسقط الملفات هنا…',
-    'Need something done?': 'هل تحتاج إلى إنجاز شيء؟',
+    'What are we working on?': 'على ماذا نعمل؟',
     'Speak to microphone': 'التحدث إلى الميكروفون',
     'Send prompt': 'إرسال الطلب',
     'Select an agent': 'اختر وكيلاً',
@@ -264,7 +264,7 @@ const translations: Record<LanguageCode, Record<TranslationKey, string>> = {
   },
   ko: {
     'Drop files here…': '여기에 파일을 드롭하세요…',
-    'Need something done?': '무언가 필요하신가요?',
+    'What are we working on?': '무엇을 작업하고 있나요?',
     'Speak to microphone': '마이크에 대고 말하기',
     'Send prompt': '프롬프트 전송',
     'Select an agent': '에이전트 선택',
@@ -552,7 +552,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       placeholder ||
       (enableDragDrop && isDragOver
         ? t('Drop files here…')
-        : t('Need something done?'))
+        : t('What are we working on?'))
 
     // Default submit label with arrow icon
     const resolvedSubmitLabel = submitLabel || '→'

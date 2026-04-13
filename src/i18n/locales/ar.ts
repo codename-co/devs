@@ -93,7 +93,7 @@ export const ar: I18n = {
   Admin: 'المسؤول',
 
   // PromptArea
-  'Need something done?': 'هل تحتاج إلى إنجاز شيء؟',
+  'What are we working on?': 'ما الذي نعمل عليه؟',
   'Show extended actions': 'إظهار الإجراءات الموسعة',
   'Hide extended actions': 'إخفاء الإجراءات الموسعة',
   'Attach a file or image': 'إرفاق ملف أو صورة',
@@ -389,6 +389,7 @@ export const ar: I18n = {
   'No conversation messages yet.': 'لا توجد رسائل محادثة بعد.',
   'Copied to clipboard': 'تم النسخ إلى الحافظة',
   Conversation: 'المحادثة',
+  Source: 'المصدر',
   'No messages yet. The task is being processed…':
     'لا توجد رسائل بعد. يتم معالجة المهمة…',
   'Validation Criteria': 'معايير التحقق',
@@ -1030,4 +1031,9 @@ export const ar: I18n = {
   'Media generated': 'تم توليد الوسائط',
   'Orchestrating task…': 'جاري تنسيق المهمة…',
   'Task failed': 'فشلت المهمة',
+
+  // Spaces
+  Space: 'مساحة',
+  'Space name': 'اسم المساحة',
+  'New Space': 'مساحة جديدة',
 } as const

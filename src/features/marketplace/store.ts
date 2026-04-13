@@ -15,7 +15,8 @@ import {
   installedExtensions,
   customExtensions as customExtensionsMap,
 } from '@/lib/yjs/maps'
-import { whenReady } from '@/lib/yjs'
+import { whenReady, createYjsCache } from '@/lib/yjs'
+import { getActiveSpaceId } from '@/stores/spaceStore'
 import { errorToast, successToast } from '@/lib/toast'
 import type {
   MarketplaceExtension,
@@ -131,6 +132,20 @@ async function fetchExtensionDetails(
 }
 
 // =============================================================================
+// LOCAL CACHES — seed from localStorage to avoid flash during Yjs hydration
+// =============================================================================
+
+const installedCache = createYjsCache<[string, InstalledExtension][]>(
+  'devs-installed-extensions',
+)
+const customCache = createYjsCache<CustomExtension[]>('devs-custom-extensions')
+
+function loadCachedInstalled(): Map<string, InstalledExtension> {
+  const entries = installedCache.load()
+  return entries ? new Map(entries) : new Map()
+}
+
+// =============================================================================
 // STORE INTERFACE
 // =============================================================================
 
@@ -194,10 +209,10 @@ interface MarketplaceStore {
 // =============================================================================
 
 export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
-  // Initial state
+  // Initial state (seeded from localStorage cache to avoid flash)
   extensions: [],
-  customExtensions: [],
-  installed: new Map(),
+  customExtensions: customCache.load() ?? [],
+  installed: loadCachedInstalled(),
   isLoading: false,
   isLoadingInstalled: true, // Start as true since we haven't loaded yet
   isLoadingCustom: false,
@@ -328,6 +343,7 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
         enabled: true,
         userConfig: extension.configuration?.defaults,
         installedAt: new Date(),
+        spaceId: getActiveSpaceId(),
       }
 
       const newInstalled = new Map(installed)
@@ -882,12 +898,14 @@ function initYjsObservers(): void {
       installedMap.set(ext.id, ext)
     }
     useMarketplaceStore.setState({ installed: installedMap })
+    installedCache.save(Array.from(installedMap.entries()))
   })
 
   // Observe custom extensions changes from other devices
   customExtensionsMap.observe(() => {
     const customExtensions = Array.from(customExtensionsMap.values())
     useMarketplaceStore.setState({ customExtensions })
+    customCache.save(customExtensions)
   })
 }
 

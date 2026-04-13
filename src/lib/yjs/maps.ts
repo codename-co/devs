@@ -50,6 +50,7 @@ import type {
   AgentMessage,
   QueuedTaskEntry,
   Session,
+  Space,
 } from '@/types'
 import type { StudioEntry } from '@/features/studio/types'
 import type { Trace, Span, TracingConfig } from '@/features/traces/types'
@@ -230,6 +231,22 @@ export const customExtensions = ydoc.getMap<CustomExtension>('customExtensions')
 export const skills = ydoc.getMap<InstalledSkill>('skills')
 
 /**
+ * User-defined thread tag definitions — keyed by `ThreadTag.id`.
+ *
+ * Tags are color-coded labels that users can assign to threads (conversations
+ * and tasks) for categorization and filtering.
+ */
+export interface ThreadTag {
+  id: string
+  name: string
+  color: 'default' | 'accent' | 'success' | 'warning' | 'danger'
+  /** Space this tag belongs to (undefined / 'default' = Default Space) */
+  spaceId?: string
+}
+
+export const threadTags = ydoc.getMap<ThreadTag>('threadTags')
+
+/**
  * Langfuse integration configuration.
  *
  * Stores connection details for forwarding LLM traces to a
@@ -264,3 +281,21 @@ export const widgetCaptures = ydoc.getMap<string>('widgetCaptures')
  * compatibility with code that still references `secrets`.
  */
 export const secrets = credentials
+
+// ---------------------------------------------------------------------------
+// Spaces
+// ---------------------------------------------------------------------------
+
+/** User-created spaces for organising content — keyed by `Space.id`. */
+export const spaces = ydoc.getMap<Space>('spaces')
+
+/**
+ * Per-space settings overrides — keyed by space ID.
+ *
+ * Each entry is a partial set of synced settings that override the global
+ * defaults for a specific space.  Any key present overrides the global value;
+ * missing keys fall back to the global `SyncedSettings`.
+ */
+export const spaceSettings = ydoc.getMap<Record<string, unknown>>(
+  'spaceSettings',
+)

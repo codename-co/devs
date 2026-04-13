@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { tasks, artifacts, whenReady, isReady } from '@/lib/yjs'
 import type { Task, Requirement, TaskStep } from '@/types'
 import { errorToast, successToast } from '@/lib/toast'
+import { getActiveSpaceId } from '@/stores/spaceStore'
 import {
   requirementValidator,
   ValidationResult,
@@ -183,6 +184,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         ...taskData,
         id: crypto.randomUUID(),
         steps: taskData.steps || [],
+        spaceId: taskData.spaceId ?? getActiveSpaceId(),
         createdAt: now,
         updatedAt: now,
       } as Task

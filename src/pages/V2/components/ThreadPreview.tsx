@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Button,
   Chip,
@@ -14,6 +14,7 @@ import { MessageBubble } from '@/components/chat'
 import { useI18n } from '@/i18n'
 import { formatNumber } from '@/lib/number'
 import { useAgents } from '@/stores/agentStore'
+import { useMinWidth } from '@/hooks/useMinWidth'
 import type { Message } from '@/types'
 import type { Artifact } from '@/types'
 import type { Thread } from '../types'
@@ -43,6 +44,8 @@ interface ThreadPreviewProps {
   onSelectArtifact?: (artifact: Artifact) => void
   mode?: PreviewMode
   renderCustomContent?: (thread: Thread) => React.ReactNode
+  /** Called when the preview is displayed for a thread (to mark it as read) */
+  onMarkRead?: (id: string) => void
   /** Whether this preview is pinned/sticky */
   isPinned?: boolean
   /** Whether this is the active preview in a multi-preview stack */
@@ -78,11 +81,13 @@ export const ThreadPreview = memo(function ThreadPreview({
   onClose,
   onTogglePin,
   onToggleTranscript,
+  onMarkRead,
 }: ThreadPreviewProps) {
   const { lang, t } = useI18n()
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showSource, setShowSource] = useState(false)
   const [showEnvelope, setShowEnvelope] = useState(false)
+  const isHD = useMinWidth(1280)
 
   const toggleFullscreen = useCallback(() => setIsFullscreen((v) => !v), [])
 
@@ -92,6 +97,11 @@ export const ThreadPreview = memo(function ThreadPreview({
     for (const a of agents) m.set(a.id, a)
     return m
   }, [agents])
+
+  // Mark the thread as read when it is displayed in the preview
+  useEffect(() => {
+    if (thread?.id) onMarkRead?.(thread.id)
+  }, [thread?.id, onMarkRead])
 
   // Empty state
   if (!thread) {
@@ -131,7 +141,7 @@ export const ThreadPreview = memo(function ThreadPreview({
                 onClick={toggleFullscreen}
                 tooltip={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
               />
-              {onTogglePin && (
+              {onTogglePin && isHD && (
                 <ToolbarBtn
                   icon={isPinned ? 'PinSolid' : 'Pin'}
                   onClick={onTogglePin}

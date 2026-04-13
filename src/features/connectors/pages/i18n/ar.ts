@@ -96,6 +96,7 @@ export const ar: I18n = {
     'سيتم مزامنة جميع الملفات والمجلدات تلقائياً',
   'Loading folders...': 'جارٍ تحميل المجلدات...',
   'No folders found': 'لم يتم العثور على مجلدات',
+  'Search folders...': 'البحث في المجلدات...',
   '{n} folders selected': 'تم اختيار {n} مجلدات',
   Skip: 'تخطي',
   Continue: 'متابعة',

@@ -16,7 +16,7 @@ import type {
   CustomExtension,
 } from './types'
 import ExtensionSchema from '../../../public/schemas/extension.schema.json?raw'
-import ExtensionBridge from '../../../docs/EXTENSION-BRIDGE.md?raw'
+import ExtensionBridge from '../../../docs/more/EXTENSION-BRIDGE.md?raw'
 
 // =============================================================================
 // SYSTEM PROMPT

@@ -30,7 +30,7 @@ import {
   useLiveValue,
   useSyncReady,
 } from '@/lib/yjs'
-import { loadBuiltInAgents } from '@/stores/agentStore'
+import { loadBuiltInAgents, getAgentById } from '@/stores/agentStore'
 import {
   decryptFields,
   decryptAttachments,
@@ -67,7 +67,15 @@ export { useLiveMap, useLiveValue, useSyncReady }
  * Returns raw data (may contain encrypted title/summary fields).
  */
 export function useConversations(): Conversation[] {
-  return useLiveMap(conversations)
+  const raw = useLiveMap(conversations)
+  return useMemo(
+    () =>
+      raw.map((t) => ({
+        ...t,
+        agent: t.agentId ? getAgentById(t.agentId) : undefined,
+      })),
+    [raw],
+  )
 }
 
 /**
@@ -286,6 +294,7 @@ export function useTasks(): Task[] {
         ...(t.assignedAt !== undefined && {
           assignedAt: normalizeDate(t.assignedAt),
         }),
+        agent: t.assignedAgentId ? getAgentById(t.assignedAgentId) : undefined,
       })),
     [raw],
   )
@@ -312,6 +321,9 @@ export function useTask(id: string | undefined): Task | undefined {
             ...(raw.assignedAt !== undefined && {
               assignedAt: normalizeDate(raw.assignedAt),
             }),
+            agent: raw.assignedAgentId
+              ? getAgentById(raw.assignedAgentId)
+              : undefined,
           }
         : undefined,
     [raw],

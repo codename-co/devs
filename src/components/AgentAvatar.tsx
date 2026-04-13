@@ -6,15 +6,6 @@ import { type Agent, type AgentColor } from '@/types'
 import { type Lang } from '@/i18n'
 
 /**
- * Map agent color to HeroUI Avatar color
- */
-const getAvatarColor = (
-  color?: AgentColor,
-): 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' => {
-  return color || 'default'
-}
-
-/**
  * Get Tailwind classes for agent color theme (used for custom styling)
  */
 export const getAgentColorClasses = (color?: AgentColor): string => {
@@ -88,7 +79,6 @@ export function AgentAvatar({
       <Avatar
         className={`bg-default-200 ${sizeClasses[size]} ${avatarClassName}`}
         radius={radius}
-        color={getAvatarColor(agent.color)}
         src={
           agent.portrait ? `data:image/png;base64,${agent.portrait}` : undefined
         }

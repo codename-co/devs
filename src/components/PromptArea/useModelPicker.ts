@@ -6,7 +6,7 @@ import { formatLocalModelName, usesLocalInference } from '@/lib/llm/models'
 
 // Provider icon mapping
 const PROVIDER_ICONS: Record<string, IconName> = {
-  local: 'OpenInBrowser',
+  local: 'Local',
   ollama: 'Ollama',
   openai: 'OpenAI',
   anthropic: 'Anthropic',

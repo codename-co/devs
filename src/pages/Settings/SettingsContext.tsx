@@ -2,6 +2,9 @@
  * SettingsContext — Allows nested setting sections to communicate a label
  * (with an optional icon) back up to the SettingsContent header.
  *
+ * Also provides a "settings scope" context so sections know whether the user
+ * is editing global settings or per-space overrides.
+ *
  * Usage in a child component:
  *   useSettingsLabel('OpenAI')                     // header becomes "AI Providers › OpenAI"
  *   useSettingsLabel('OpenAI', 'sparkles')          // … with an icon
@@ -17,6 +20,10 @@ import {
   type ReactNode,
 } from 'react'
 import type { IconName } from '@/lib/types'
+
+// ============================================================================
+// Label context (existing)
+// ============================================================================
 
 export interface SettingsLabelInfo {
   label: string
@@ -35,9 +42,12 @@ const SettingsContext = createContext<SettingsContextValue>({
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [labelInfo, setLabelInfo] = useState<SettingsLabelInfo | null>(null)
+  const [scope, setScope] = useState<SettingsScope>('global')
   return (
     <SettingsContext.Provider value={{ labelInfo, setLabelInfo }}>
-      {children}
+      <SettingsScopeContext.Provider value={{ scope, setScope }}>
+        {children}
+      </SettingsScopeContext.Provider>
     </SettingsContext.Provider>
   )
 }
@@ -60,4 +70,30 @@ export function useSettingsLabel(label: string | null, icon?: IconName) {
  */
 export function useSettingsLabelInfo(): SettingsLabelInfo | null {
   return useContext(SettingsContext).labelInfo
+}
+
+// ============================================================================
+// Settings scope context — global vs per-space
+// ============================================================================
+
+export type SettingsScope = 'global' | 'space'
+
+interface SettingsScopeContextValue {
+  scope: SettingsScope
+  setScope: (scope: SettingsScope) => void
+}
+
+const SettingsScopeContext = createContext<SettingsScopeContextValue>({
+  scope: 'global',
+  setScope: () => {},
+})
+
+/** Read the current settings scope ('global' or 'space'). */
+export function useSettingsScope(): SettingsScope {
+  return useContext(SettingsScopeContext).scope
+}
+
+/** Read the scope setter. */
+export function useSetSettingsScope(): (scope: SettingsScope) => void {
+  return useContext(SettingsScopeContext).setScope
 }

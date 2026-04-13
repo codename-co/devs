@@ -4,15 +4,21 @@
  * Tree view for selecting folders/labels from a connected provider.
  * Supports multi-select with checkboxes and a "Sync All" option.
  * Also supports URL input mode for providers like Figma.
+ *
+ * Features:
+ * - Hierarchical folder tree built from parentExternalId relationships
+ * - Alphabetical sorting at every level
+ * - Search by name (auto-expands matching branches)
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Button,
   Checkbox,
   Spinner,
   ScrollShadow,
   Textarea,
+  Input,
 } from '@heroui/react'
 import { Icon } from '@/components'
 import { useI18n } from '@/i18n'
@@ -38,9 +44,61 @@ interface FolderPickerProps {
 }
 
 interface FolderNode extends ConnectorItem {
-  children?: FolderNode[]
-  isExpanded?: boolean
-  isLoading?: boolean
+  children: FolderNode[]
+}
+
+// =============================================================================
+// Tree Helpers
+// =============================================================================
+
+/** Build a sorted hierarchy from a flat list of folders using parentExternalId */
+function buildFolderTree(flatFolders: ConnectorItem[]): FolderNode[] {
+  const nodeMap = new Map<string, FolderNode>()
+
+  for (const item of flatFolders) {
+    nodeMap.set(item.externalId, { ...item, children: [] })
+  }
+
+  const roots: FolderNode[] = []
+
+  for (const node of nodeMap.values()) {
+    if (node.parentExternalId && nodeMap.has(node.parentExternalId)) {
+      nodeMap.get(node.parentExternalId)!.children.push(node)
+    } else {
+      roots.push(node)
+    }
+  }
+
+  const sortNodes = (nodes: FolderNode[]): FolderNode[] =>
+    nodes
+      .sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
+      )
+      .map((n) => ({ ...n, children: sortNodes(n.children) }))
+
+  return sortNodes(roots)
+}
+
+/**
+ * Filter the tree by a search query.
+ * Returns a new tree containing only matching nodes and their ancestors,
+ * with all visible nodes marked as expanded.
+ */
+function filterTree(tree: FolderNode[], query: string): FolderNode[] {
+  if (!query.trim()) return tree
+  const lower = query.toLowerCase()
+
+  const filterNode = (node: FolderNode): FolderNode | null => {
+    const filteredChildren = node.children
+      .map(filterNode)
+      .filter(Boolean) as FolderNode[]
+    if (node.name.toLowerCase().includes(lower) || filteredChildren.length > 0) {
+      return { ...node, children: filteredChildren }
+    }
+    return null
+  }
+
+  return tree.map(filterNode).filter(Boolean) as FolderNode[]
 }
 
 // =============================================================================
@@ -63,22 +121,32 @@ export function FolderPicker({
 }: FolderPickerProps) {
   const { t } = useI18n(localI18n)
 
-  const [folders, setFolders] = useState<FolderNode[]>([])
+  const [flatFolders, setFlatFolders] = useState<ConnectorItem[]>([])
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
   const [syncAll, setSyncAll] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [urlInput, setUrlInput] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const config = getProvider(provider)
   const isUrlInputMode = config?.folderPickerType === 'url-input'
 
-  // Fetch root folders on mount (only for tree mode)
+  // Build sorted hierarchy from flat list
+  const folderTree = useMemo(() => buildFolderTree(flatFolders), [flatFolders])
+
+  // Apply search filter (auto-expands matching branches)
+  const visibleTree = useMemo(
+    () => filterTree(folderTree, searchQuery),
+    [folderTree, searchQuery],
+  )
+
+  // Fetch ALL folders (all pages) on mount
   useEffect(() => {
-    // Skip fetching for URL input mode
     if (isUrlInputMode) {
       setIsLoading(false)
-      setSyncAll(false) // URL input mode requires explicit input
+      setSyncAll(false)
       return
     }
 
@@ -90,25 +158,26 @@ export function FolderPicker({
         const providerInstance =
           await ProviderRegistry.get<AppConnectorProviderInterface>(provider)
 
-        // Use listWithToken to list folders with the raw OAuth token
-        // (token hasn't been stored/encrypted yet during wizard flow)
-        const result = await providerInstance.listWithToken(
-          oauthResult.accessToken,
-          {
-            filter: { mimeType: 'application/vnd.google-apps.folder' },
-          },
-        )
+        const allItems: ConnectorItem[] = []
+        let cursor: string | undefined = undefined
 
-        // Convert to FolderNode format
-        const folderNodes: FolderNode[] = result.items
-          .filter((item: ConnectorItem) => item.type === 'folder')
-          .map((item: ConnectorItem) => ({
-            ...item,
-            isExpanded: false,
-            isLoading: false,
-          }))
+        // Paginate through all folders
+        do {
+          const result = await providerInstance.listWithToken(
+            oauthResult.accessToken,
+            {
+              filter: { mimeType: 'application/vnd.google-apps.folder' },
+              pageSize: 1000,
+              cursor,
+            },
+          )
+          allItems.push(
+            ...result.items.filter((item) => item.type === 'folder'),
+          )
+          cursor = result.nextCursor
+        } while (cursor)
 
-        setFolders(folderNodes)
+        setFlatFolders(allItems)
       } catch (err) {
         console.error('Failed to fetch folders:', err)
         setError(err instanceof Error ? err.message : 'Failed to load folders')
@@ -118,29 +187,39 @@ export function FolderPicker({
     }
 
     fetchFolders()
-  }, [provider, oauthResult])
+  }, [provider, oauthResult, isUrlInputMode])
 
   // Toggle folder selection
   const toggleFolder = useCallback((folderId: string) => {
     setSelectedIds((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(folderId)) {
-        newSet.delete(folderId)
+      const next = new Set(prev)
+      if (next.has(folderId)) {
+        next.delete(folderId)
       } else {
-        newSet.add(folderId)
+        next.add(folderId)
       }
-      return newSet
+      return next
     })
-    // Deselect "Sync All" when selecting specific folders
     setSyncAll(false)
+  }, [])
+
+  // Toggle expand/collapse (only in non-search mode)
+  const toggleExpanded = useCallback((folderId: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(folderId)) {
+        next.delete(folderId)
+      } else {
+        next.add(folderId)
+      }
+      return next
+    })
   }, [])
 
   // Toggle sync all
   const toggleSyncAll = useCallback((checked: boolean) => {
     setSyncAll(checked)
-    if (checked) {
-      setSelectedIds(new Set())
-    }
+    if (checked) setSelectedIds(new Set())
   }, [])
 
   // Parse URL input into array of IDs/URLs
@@ -154,36 +233,27 @@ export function FolderPicker({
   // Handle continue
   const handleContinue = useCallback(() => {
     if (isUrlInputMode) {
-      // For URL input mode, parse the textarea content
       const urls = parseUrlInput(urlInput)
       onSelect(urls.length > 0 ? urls : null)
     } else if (syncAll) {
-      onSelect(null) // null means sync everything
+      onSelect(null)
     } else {
       onSelect(Array.from(selectedIds))
     }
   }, [isUrlInputMode, urlInput, parseUrlInput, syncAll, selectedIds, onSelect])
 
-  // Check if continue is disabled
   const isContinueDisabled = isUrlInputMode
     ? parseUrlInput(urlInput).length === 0
     : !syncAll && selectedIds.size === 0
 
-  // Expand folder to load children
-  const expandFolder = useCallback(async (folderId: string) => {
-    setFolders((prev) =>
-      prev.map((folder) => {
-        if (folder.externalId === folderId) {
-          return { ...folder, isExpanded: !folder.isExpanded }
-        }
-        return folder
-      }),
-    )
-  }, [])
-
-  // Render a folder item
-  const renderFolder = (folder: FolderNode, depth = 0) => {
+  // Render a folder node recursively
+  const renderFolder = (folder: FolderNode, depth = 0): React.ReactNode => {
     const isSelected = selectedIds.has(folder.externalId)
+    const hasChildren = folder.children.length > 0
+    // When searching, all matching branches are expanded automatically
+    const isExpanded = searchQuery.trim()
+      ? true
+      : expandedIds.has(folder.externalId)
 
     return (
       <div key={folder.externalId} className="select-none">
@@ -193,13 +263,13 @@ export function FolderPicker({
           }`}
           style={{ paddingLeft: `${depth * 16 + 12}px` }}
         >
-          {folder.children && folder.children.length > 0 ? (
+          {hasChildren ? (
             <button
-              onClick={() => expandFolder(folder.externalId)}
+              onClick={() => toggleExpanded(folder.externalId)}
               className="w-5 h-5 flex items-center justify-center text-default-400 hover:text-default-600"
             >
               <Icon
-                name={folder.isExpanded ? 'NavArrowDown' : 'NavArrowRight'}
+                name={isExpanded ? 'NavArrowDown' : 'NavArrowRight'}
                 className="w-4 h-4"
               />
             </button>
@@ -223,8 +293,8 @@ export function FolderPicker({
           </span>
         </div>
 
-        {folder.isExpanded &&
-          folder.children?.map((child) => renderFolder(child, depth + 1))}
+        {isExpanded &&
+          folder.children.map((child) => renderFolder(child, depth + 1))}
       </div>
     )
   }
@@ -255,9 +325,7 @@ export function FolderPicker({
           <Checkbox
             isSelected={syncAll}
             onValueChange={toggleSyncAll}
-            classNames={{
-              label: 'text-sm',
-            }}
+            classNames={{ label: 'text-sm' }}
           >
             <div>
               <span className="font-medium">{t('Sync everything')}</span>
@@ -281,9 +349,7 @@ export function FolderPicker({
             }
             minRows={4}
             maxRows={8}
-            classNames={{
-              input: 'font-mono text-sm',
-            }}
+            classNames={{ input: 'font-mono text-sm' }}
           />
           <p className="text-xs text-default-400">
             {config?.urlInputHelp || t('Enter file URLs or IDs, one per line')}
@@ -298,33 +364,57 @@ export function FolderPicker({
 
       {/* Folder Tree (standard mode) */}
       {!isUrlInputMode && !syncAll && (
-        <ScrollShadow className="max-h-64">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Spinner size="sm" />
-              <span className="ml-2 text-sm text-default-500">
-                {t('Loading folders...')}
-              </span>
-            </div>
-          ) : error ? (
-            <div className="text-center py-8">
-              <Icon
-                name="WarningTriangle"
-                className="w-8 h-8 text-danger mx-auto mb-2"
-              />
-              <p className="text-sm text-danger">{error}</p>
-            </div>
-          ) : folders.length === 0 ? (
-            <div className="text-center py-8 text-default-400">
-              <Icon name="Folder" className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">{t('No folders found')}</p>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {folders.map((folder) => renderFolder(folder))}
-            </div>
+        <>
+          {/* Search input */}
+          {!isLoading && !error && flatFolders.length > 0 && (
+            <Input
+              size="sm"
+              placeholder={t('Search folders...')}
+              value={searchQuery}
+              onValueChange={setSearchQuery}
+              startContent={
+                <Icon
+                  name="Search"
+                  className="w-4 h-4 text-default-400 pointer-events-none"
+                />
+              }
+              isClearable
+              onClear={() => setSearchQuery('')}
+              classNames={{ inputWrapper: 'h-9' }}
+            />
           )}
-        </ScrollShadow>
+
+          <ScrollShadow className="max-h-64">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Spinner size="sm" />
+                <span className="ml-2 text-sm text-default-500">
+                  {t('Loading folders...')}
+                </span>
+              </div>
+            ) : error ? (
+              <div className="text-center py-8">
+                <Icon
+                  name="WarningTriangle"
+                  className="w-8 h-8 text-danger mx-auto mb-2"
+                />
+                <p className="text-sm text-danger">{error}</p>
+              </div>
+            ) : visibleTree.length === 0 ? (
+              <div className="text-center py-8 text-default-400">
+                <Icon
+                  name="Folder"
+                  className="w-8 h-8 mx-auto mb-2 opacity-50"
+                />
+                <p className="text-sm">{t('No folders found')}</p>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {visibleTree.map((folder) => renderFolder(folder))}
+              </div>
+            )}
+          </ScrollShadow>
+        </>
       )}
 
       {/* Selection Summary (tree mode) */}

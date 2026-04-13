@@ -97,7 +97,7 @@ export const fr: I18n = {
   Admin: 'Admin',
 
   // PromptArea
-  'Need something done?': 'Besoin de quelque chose ?',
+  'What are we working on?': 'On travaille sur quoi ?',
   'Show extended actions': 'Afficher les actions étendues',
   'Hide extended actions': 'Masquer les actions étendues',
   'Attach a file or image': 'Joindre un fichier ou une image',
@@ -397,6 +397,7 @@ export const fr: I18n = {
   'No conversation messages yet.': 'Pas encore de messages de conversation.',
   'Copied to clipboard': 'Copié dans le presse-papiers',
   Conversation: 'Conversation',
+  Source: 'Source',
   'No messages yet. The task is being processed…':
     'Pas encore de messages. La tâche est en cours de traitement…',
   'Validation Criteria': 'Critères de validation',
@@ -908,7 +909,7 @@ export const fr: I18n = {
     'Générez votre première image pour la voir ici',
   Current: 'Actuel',
   History: 'Historique',
-  'History sections': 'Sections de l\u2019historique',
+  'History sections': 'Sections de l’historique',
   'Your library, tasks, and conversations in one place':
     'Votre bibliothèque, vos tâches et vos conversations au même endroit',
   Clear: 'Effacer',
@@ -1034,7 +1035,7 @@ export const fr: I18n = {
   Response: 'Réponse',
   'YOLO Mode': 'Mode YOLO',
   'Skip all human intervention prompts and let agents decide autonomously':
-    'Ignorer toutes les demandes d\u2019intervention humaine et laisser les agents décider de manière autonome',
+    'Ignorer toutes les demandes d’intervention humaine et laisser les agents décider de manière autonome',
   Automation: 'Automatisation',
 
   // Session
@@ -1053,4 +1054,9 @@ export const fr: I18n = {
   'Media generated': 'Média généré',
   'Orchestrating task…': 'Orchestration de la tâche…',
   'Task failed': 'La tâche a échoué',
+
+  // Spaces
+  Space: 'Espace',
+  'Space name': 'Nom de l’espace',
+  'New Space': 'Nouvel espace',
 } as const

@@ -594,6 +594,7 @@ export interface StudioEntry {
   isFavorite?: boolean
   tags?: string[]
   createdAt: Date
+  spaceId?: string
 }
 
 // =============================================================================

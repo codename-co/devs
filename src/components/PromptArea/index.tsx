@@ -133,7 +133,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
 
     const modePlaceholders: Record<PromptMode, string> = useMemo(
       () => ({
-        chat: t('Need something done?'),
+        chat: t('What are we working on?'),
         live: t('Listening…'),
         studio: t('Describe the image or video you want to create…'),
         app: t('Describe the web app you want to build…'),

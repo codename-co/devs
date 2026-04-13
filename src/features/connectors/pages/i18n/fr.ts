@@ -97,6 +97,7 @@ export const fr: I18n = {
     'Tous les fichiers et dossiers seront synchronisés automatiquement',
   'Loading folders...': 'Chargement des dossiers...',
   'No folders found': 'Aucun dossier trouvé',
+  'Search folders...': 'Rechercher des dossiers...',
   '{n} folders selected': '{n} dossiers sélectionnés',
   Skip: 'Passer',
   Continue: 'Continuer',

@@ -5,6 +5,8 @@ import { LocalLLMLoadingIndicator } from '@/components'
 import { LanguageRedirect } from '@/components/LanguageRedirect'
 import { defaultLang, I18nProvider, Lang, langs } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
+import { setActiveSpaceId } from '@/stores/spaceStore'
+import { base64urlToUuid } from '@/lib/url'
 import { StudioPage } from '@/features/studio/pages/StudioPage'
 import { IndexPage } from '@/pages/Index'
 import { AgentsNewPage } from '@/pages/Agents/new'
@@ -65,6 +67,10 @@ const ConversationsRedirect = () => (
 
 const routes = {
   v2: V2Page,
+  'v2/:filter': V2Page,
+  'v2/:filter/:threadId': V2Page,
+  'v2/:filter/:threadId/:tab': V2Page,
+  'v2/:filter/:threadId/:inspectType/:inspectId': V2Page,
   index: IndexPage,
   agents: AgentsPage,
   'agents/run': AgentRunPage,
@@ -122,32 +128,40 @@ const routes = {
   '*': DynamicAppRoute,
 }
 
+function renderRoutes(wrapper?: (el: React.ReactNode) => React.ReactNode) {
+  return Object.entries(routes).map(([path, Component]) => (
+    <Route
+      key={path}
+      path={path === 'index' ? undefined : path}
+      element={wrapper ? wrapper(<Component />) : <Component />}
+      index={path === 'index'}
+    />
+  ))
+}
+
 function Router() {
   return (
     <Routes>
       <Route path="/" element={<RootLayout />}>
-        {Object.entries(routes).map(([path, Component]) => (
-          <Route
-            key={path}
-            path={path === 'index' ? undefined : path}
-            element={
-              <>
-                <Component />
-                <LocalLLMLoadingIndicator />
-              </>
-            }
-            index={path === 'index'}
-          />
+        {renderRoutes((el) => (
+          <>
+            {el}
+            <LocalLLMLoadingIndicator />
+          </>
         ))}
-        <Route path=":lang" element={<LanguagePath />}>
-          {Object.entries(routes).map(([path, Component]) => (
-            <Route
-              key={path}
-              path={path === 'index' ? undefined : path}
-              element={<Component />}
-              index={path === 'index'}
-            />
+        <Route path="spaces/:encodedSpaceId" element={<SpacePath />}>
+          {renderRoutes((el) => (
+            <>
+              {el}
+              <LocalLLMLoadingIndicator />
+            </>
           ))}
+        </Route>
+        <Route path=":lang" element={<LanguagePath />}>
+          {renderRoutes()}
+          <Route path="spaces/:encodedSpaceId" element={<SpacePath />}>
+            {renderRoutes()}
+          </Route>
         </Route>
       </Route>
     </Routes>
@@ -199,3 +213,25 @@ const LanguagePath = () => {
   )
 }
 export { LanguagePath }
+
+/**
+ * SpacePath decodes the base64url-encoded space UUID from the URL
+ * and sets it as the active space. All child routes inherit the space scope.
+ */
+const SpacePath = () => {
+  const { encodedSpaceId } = useParams()
+
+  useEffect(() => {
+    if (encodedSpaceId) {
+      try {
+        const spaceId = base64urlToUuid(encodedSpaceId)
+        setActiveSpaceId(spaceId)
+      } catch {
+        // Invalid encoding — fall back to default
+      }
+    }
+  }, [encodedSpaceId])
+
+  return <Outlet />
+}
+export { SpacePath }

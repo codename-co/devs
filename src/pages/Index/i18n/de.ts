@@ -4,8 +4,7 @@ type I18n = Record<(typeof en)[number], string>
 
 export const de: I18n = {
   'Hey {productName}': 'Hey {productName}',
-  'Your own AI agents ready to collaborate':
-    'Ihre eigenen KI-Agenten sind bereit zur Zusammenarbeit',
+  'Your AI team is ready': 'Ihr KI-Team ist bereit',
   'Failed to get response from LLM. Please try again later.':
     'LLM-Antwort fehlgeschlagen. Bitte versuchen Sie es später erneut.',
 

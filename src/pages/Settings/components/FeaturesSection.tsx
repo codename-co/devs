@@ -16,45 +16,86 @@ import { userSettings } from '@/stores/userStore'
 import { useHashHighlight } from '@/hooks/useHashHighlight'
 import localI18n from '../i18n'
 import { Switch } from '@/components'
+import { useSpaceScopedSetting } from '../useSpaceScopedSetting'
 
 export function FeaturesSection() {
   const { t } = useI18n(localI18n)
   const { getHighlightClasses } = useHashHighlight()
 
+  // Local-only setting (not space-scopable)
   const speechToTextEnabled = userSettings((state) => state.speechToTextEnabled)
   const setSpeechToTextEnabled = userSettings(
     (state) => state.setSpeechToTextEnabled,
   )
-  const hideDefaultAgents = userSettings((state) => state.hideDefaultAgents)
-  const setHideDefaultAgents = userSettings(
+
+  // Synced settings — space-scopable
+  const _hideDefaultAgents = userSettings((state) => state.hideDefaultAgents)
+  const _setHideDefaultAgents = userSettings(
     (state) => state.setHideDefaultAgents,
   )
-  const autoMemoryLearning = userSettings(
+  const [hideDefaultAgents, setHideDefaultAgents] = useSpaceScopedSetting(
+    'hideDefaultAgents',
+    _hideDefaultAgents,
+    _setHideDefaultAgents,
+  )
+
+  const _autoMemoryLearning = userSettings(
     (state) => state.autoMemoryLearning ?? false,
   )
-  const setAutoMemoryLearning = userSettings(
+  const _setAutoMemoryLearning = userSettings(
     (state) => state.setAutoMemoryLearning,
   )
-  const suggestionsEnabled = userSettings(
+  const [autoMemoryLearning, setAutoMemoryLearning] = useSpaceScopedSetting(
+    'autoMemoryLearning',
+    _autoMemoryLearning,
+    _setAutoMemoryLearning as (v: boolean | undefined) => void,
+  )
+
+  const _suggestionsEnabled = userSettings(
     (state) => state.suggestionsEnabled ?? true,
   )
-  const setSuggestionsEnabled = userSettings(
+  const _setSuggestionsEnabled = userSettings(
     (state) => state.setSuggestionsEnabled,
   )
-  const enableWebSearchGrounding = userSettings(
+  const [suggestionsEnabled, setSuggestionsEnabled] = useSpaceScopedSetting(
+    'suggestionsEnabled',
+    _suggestionsEnabled,
+    _setSuggestionsEnabled as (v: boolean | undefined) => void,
+  )
+
+  const _enableWebSearchGrounding = userSettings(
     (state) => state.enableWebSearchGrounding ?? true,
   )
-  const setEnableWebSearchGrounding = userSettings(
+  const _setEnableWebSearchGrounding = userSettings(
     (state) => state.setEnableWebSearchGrounding,
   )
-  const globalSystemInstructions = userSettings(
+  const [enableWebSearchGrounding, setEnableWebSearchGrounding] =
+    useSpaceScopedSetting(
+      'enableWebSearchGrounding',
+      _enableWebSearchGrounding,
+      _setEnableWebSearchGrounding as (v: boolean | undefined) => void,
+    )
+
+  const _globalSystemInstructions = userSettings(
     (state) => state.globalSystemInstructions ?? '',
   )
-  const setGlobalSystemInstructions = userSettings(
+  const _setGlobalSystemInstructions = userSettings(
     (state) => state.setGlobalSystemInstructions,
   )
-  const yoloMode = userSettings((state) => state.yoloMode ?? false)
-  const setYoloMode = userSettings((state) => state.setYoloMode)
+  const [globalSystemInstructions, setGlobalSystemInstructions] =
+    useSpaceScopedSetting(
+      'globalSystemInstructions',
+      _globalSystemInstructions,
+      _setGlobalSystemInstructions as (v: string | undefined) => void,
+    )
+
+  const _yoloMode = userSettings((state) => state.yoloMode ?? false)
+  const _setYoloMode = userSettings((state) => state.setYoloMode)
+  const [yoloMode, setYoloMode] = useSpaceScopedSetting(
+    'yoloMode',
+    _yoloMode,
+    _setYoloMode as (v: boolean | undefined) => void,
+  )
 
   return (
     <div data-testid="conversational-settings" className="space-y-8">

@@ -96,6 +96,7 @@ export const es: I18n = {
     'Todos los archivos y carpetas se sincronizarán automáticamente',
   'Loading folders...': 'Cargando carpetas...',
   'No folders found': 'No se encontraron carpetas',
+  'Search folders...': 'Buscar carpetas...',
   '{n} folders selected': '{n} carpetas seleccionadas',
   Skip: 'Omitir',
   Continue: 'Continuar',

@@ -4,8 +4,7 @@ type I18n = Record<(typeof en)[number], string>
 
 export const ko: I18n = {
   'Hey {productName}': 'Hey {productName}',
-  'Your own AI agents ready to collaborate':
-    '협업할 준비가 된 나만의 AI 에이전트',
+  'Your AI team is ready': '당신의 AI 팀이 준비되었습니다',
   'Failed to get response from LLM. Please try again later.':
     'LLM의 응답을 받지 못했습니다. 나중에 다시 시도하세요.',
 

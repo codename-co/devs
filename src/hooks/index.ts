@@ -69,3 +69,6 @@ export type {
 
 // Streaming helpers
 export { useAutoScroll } from './useAutoScroll'
+
+// Viewport helpers
+export { useMinWidth } from './useMinWidth'

@@ -29,3 +29,27 @@ export const fetchViaCorsProxy = async (
 
   return response
 }
+
+export const uuidToBase64url = (uuid: string): string => {
+  const hex = uuid.replace(/-/g, '')
+  const bytes = new Uint8Array(
+    hex.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16)),
+  )
+  return btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '')
+}
+
+export const base64urlToUuid = (base64url: string): string => {
+  const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/')
+  const paddedBase64 = base64.padEnd(
+    base64.length + ((4 - (base64.length % 4)) % 4),
+    '=',
+  )
+  const binary = atob(paddedBase64)
+  const hex = Array.from(binary)
+    .map((char) => char.charCodeAt(0).toString(16).padStart(2, '0'))
+    .join('')
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
+}

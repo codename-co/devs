@@ -45,6 +45,11 @@ vi.mock('@/stores/agentStore', () => ({
     .mockResolvedValue({ id: 'devs', slug: 'devs', name: 'DEVS' }),
 }))
 
+// Mock spaceStore
+vi.mock('@/stores/spaceStore', () => ({
+  getActiveSpaceId: vi.fn(() => 'default'),
+}))
+
 // Mock content encryption to pass through plaintext (SecureStorage not available in tests)
 vi.mock('@/lib/crypto/content-encryption', () => ({
   encryptField: vi.fn(async (plaintext: string) => plaintext),

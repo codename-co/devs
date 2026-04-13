@@ -8,6 +8,7 @@ import type {
   SessionAttachment,
 } from '@/types'
 import { errorToast } from '@/lib/toast'
+import { getActiveSpaceId } from '@/stores/spaceStore'
 
 // ============================================================================
 // Helpers
@@ -141,6 +142,7 @@ export const useSessionStore = create<SessionStore>((set) => ({
       mentionedSkills: input.mentionedSkills,
       mentionedConnectors: input.mentionedConnectors,
       methodology: input.methodology,
+      spaceId: getActiveSpaceId(),
       createdAt: now,
       updatedAt: now,
     }

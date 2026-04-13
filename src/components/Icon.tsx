@@ -68,6 +68,21 @@ const CustomIcons = {
     </svg>
   ),
 
+  Local: (props: any) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      viewBox="0 0 24 24"
+      {...props}
+      stroke="currentColor"
+      fill="transparent"
+      stroke-width="2"
+    >
+      <circle cx="12" cy="12" r="11" />
+      <circle cx="12" cy="12" r="1" />
+    </svg>
+  ),
+
   OpenRouter: (props: any) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -205,7 +220,7 @@ export const Icons = {
   // Camera: IconoirIcons.Camera,
   // ChatBubble: IconoirIcons.ChatBubble,
   // ChatBubbleTranslate: IconoirIcons.ChatBubbleTranslate,
-  // ChatLines: IconoirIcons.ChatLines,
+  ChatLines: IconoirIcons.ChatLines,
   // ChatPlusIn: IconoirIcons.ChatPlusIn,
   // Check: IconoirIcons.Check,
   // CheckCircle: IconoirIcons.CheckCircle,
@@ -215,7 +230,7 @@ export const Icons = {
   // CloudDownload: IconoirIcons.CloudDownload,
   // CloudSync: IconoirIcons.CloudSync,
   // CloudXmark: IconoirIcons.CloudXmark,
-  // Code: IconoirIcons.Code,
+  Code: IconoirIcons.Code,
   // CoffeeCup: IconoirIcons.CoffeeCup,
   // ControlSlider: IconoirIcons.ControlSlider,
   // Copy: IconoirIcons.Copy,
@@ -274,7 +289,7 @@ export const Icons = {
   // MediaImagePlus: IconoirIcons.MediaImagePlus,
   // MediaVideo: IconoirIcons.MediaVideo,
   // MediaVideoPlus: IconoirIcons.MediaVideoPlus,
-  // Menu: IconoirIcons.Menu,
+  Menu: IconoirIcons.Menu,
   // Microphone: IconoirIcons.Microphone,
   // MicrophoneSpeaking: IconoirIcons.MicrophoneSpeaking,
   // MoreHoriz: IconoirIcons.MoreHoriz,
@@ -312,11 +327,11 @@ export const Icons = {
   // Sparks: IconoirIcons.Sparks,
   // SparkSolid: IconoirIcons.SparkSolid,
   // SparksSolid: IconoirIcons.SparksSolid,
-  // Star: IconoirIcons.Star,
-  // StarSolid: IconoirIcons.StarSolid,
+  Star: IconoirIcons.Star,
+  StarSolid: IconoirIcons.StarSolid,
   // Strategy: IconoirIcons.Strategy,
   // SunLight: IconoirIcons.SunLight,
-  // TableRows: IconoirIcons.TableRows,
+  TableRows: IconoirIcons.TableRows,
   // TaskSolid: IconoirIcons.TaskList,
   // Terminal: IconoirIcons.Terminal,
   // Timer: IconoirIcons.Timer,
@@ -324,7 +339,7 @@ export const Icons = {
   // Upload: IconoirIcons.Upload,
   // User: IconoirIcons.User,
   // UserPlus: IconoirIcons.UserPlus,
-  // ViewGrid: IconoirIcons.ViewGrid,
+  ViewGrid: IconoirIcons.ViewGrid,
   // Voice: IconoirIcons.Voice,
   // SoundHigh: IconoirIcons.SoundHigh,
   // SoundHighSolid: IconoirIcons.SoundHighSolid,

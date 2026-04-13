@@ -93,7 +93,7 @@ export const en = [
   'Admin',
 
   // PromptArea
-  'Need something done?',
+  'What are we working on?',
   'Show extended actions',
   'Hide extended actions',
   'Attach a file or image',
@@ -369,6 +369,7 @@ export const en = [
   'No conversation messages yet.',
   'Copied to clipboard',
   'Conversation',
+  'Source',
   'No messages yet. The task is being processed…',
   'Validation Criteria',
   'Delete task',
@@ -964,4 +965,9 @@ export const en = [
   'Media generated',
   'Orchestrating task…',
   'Task failed',
+
+  // Spaces
+  'Space',
+  'Space name',
+  'New Space',
 ] as const

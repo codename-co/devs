@@ -252,7 +252,7 @@ export function VoiceSettingsPanel({
                           variant="flat"
                           className="flex items-center"
                         >
-                          <Icon name="OpenInBrowser" size="sm" />
+                          <Icon name="Local" size="sm" />
                         </Chip>
                       </Tooltip>
                     ) : (
@@ -322,7 +322,7 @@ export function VoiceSettingsPanel({
                           variant="flat"
                           className="flex items-center"
                         >
-                          <Icon name="OpenInBrowser" size="sm" />
+                          <Icon name="Local" size="sm" />
                         </Chip>
                       </Tooltip>
                     ) : (

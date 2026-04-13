@@ -4,6 +4,7 @@ import type { Conversation, Message } from '@/types'
 import { errorToast } from '@/lib/toast'
 import { ConversationTitleGenerator } from '@/lib/conversation-title-generator'
 import { getAgentById } from '@/stores/agentStore'
+import { getActiveSpaceId } from '@/stores/spaceStore'
 import {
   encryptFields,
   decryptFields,
@@ -319,6 +320,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
           timestamp: now,
           updatedAt: now,
           messages: [],
+          spaceId: getActiveSpaceId(),
         }
 
         // Write to Yjs (single source of truth)

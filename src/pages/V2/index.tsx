@@ -1,265 +1,668 @@
-import { Icon } from '@/components'
 import {
-  Avatar,
-  Button,
-  ListBox,
-  ScrollShadow,
-  SearchField,
-} from '@heroui/react_3'
-import { useState } from 'react'
-import { Sidebar } from './components'
-import { useTasks } from '@/hooks'
-import { IconName } from '@/lib/types'
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import { useThreads } from './hooks/useThreads'
+import { useThreadSelection } from './hooks/useThreadSelection'
+import { useReadStatus } from './hooks/useReadStatus'
+import { useThreadTagDefinitions, useThreadTagMap } from './hooks/useThreadTags'
+import { useConversationStore } from '@/stores/conversationStore'
+import { useAgentsSeparated, getAgentById } from '@/stores/agentStore'
+import { useActiveSpaceId, entityBelongsToSpace } from '@/stores/spaceStore'
+import { useSessionStore } from '@/stores/sessionStore'
+import {
+  conversations as conversationsMap,
+  tasks as tasksMap,
+  sessions as sessionsMap,
+  studioEntries as studioEntriesMap,
+} from '@/lib/yjs'
+import { submitChat } from '@/lib/chat'
+import { GlobalSearch } from '@/features/search'
+import { SettingsModal } from '@/components/SettingsModal'
+import { useInspectorPanelStore } from '@/stores/inspectorPanelStore'
+import { useI18n } from '@/i18n'
+import type { PreviewItem } from '@/components/ArtifactPreviewCard'
+import type { NavItem } from './types'
+import type { Artifact } from '@/types'
+import { V2ShellContext } from './context'
 
-export const V2Page = () => {
-  const [activeNav, setActiveNav] = useState('Inbox')
-  const [selectedEmail, setSelectedEmail] = useState('2')
+/** Normalize a string for diacritics-insensitive search */
+const norm = (s: string) =>
+  s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+import { AgentsPage } from './pages/AgentsPage'
+import { ConversationsPage } from './pages/ConversationsPage'
+import { NewTaskPage } from './pages/NewTaskPage'
+import { ThreadsPage } from './pages/ThreadsPage'
 
-  const currentEmail = threads.find((e) => e.id === selectedEmail)
-
-  return (
-    <div
-      className="bg-background grid h-screen grid-cols-[minmax(180px,224px)_minmax(280px,360px)_minmax(400px,1fr)] overflow-hidden"
-      style={{ gridAutoFlow: 'column' }}
-    >
-      <Sidebar activeNav={activeNav} onNavChange={setActiveNav} />
-      <Threads selectedEmail={selectedEmail} onSelectEmail={setSelectedEmail} />
-      <EmailDetail email={currentEmail} />
-    </div>
-  )
-}
-
-const threads = [
+const NAV_ITEMS: Omit<NavItem, 'count'>[] = [
+  { id: 'inbox', label: 'Threads', icon: 'MultiBubble', color: 'primary' },
+  { id: 'tasks', label: 'Tasks', icon: 'PcCheck', color: 'secondary' },
   {
-    id: '1',
-    name: 'Michael Curry',
-    avatar:
-      'https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/avatars/blue-light.jpg',
-    subject: 'Flash Sale for 48 Hours Only',
-    preview: "Hi Calvin, I'm excited to share that we're running a flash sale",
-    time: '10:21 AM',
-    unread: true,
-    starred: false,
+    id: 'conversations',
+    label: 'Conversations',
+    icon: 'ChatBubble',
   },
-  {
-    id: '2',
-    name: 'Sarah Johnson',
-    avatar:
-      'https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/avatars/sky.jpg',
-    subject: 'New Product Launch Announcement',
-    preview:
-      "Hello Team, I'm thrilled to announce the launch of our new product next week!",
-    time: '9:15 AM',
-    unread: false,
-    starred: false,
-  },
+  { id: 'starred', label: 'Starred', icon: 'Star', color: 'warning' },
+  { id: 'agents', label: 'Agents', icon: 'Group' },
 ]
 
-function Threads({ selectedEmail, onSelectEmail }) {
-  const tasks = useTasks()
-
-  return (
-    <div className="flex h-full min-h-0 flex-col gap-4 overflow-clip px-4 pb-6 pt-4">
-      {/* Search */}
-      <SearchField name="mail-search" variant="primary">
-        <SearchField.Group>
-          <SearchField.SearchIcon />
-          <SearchField.Input placeholder="Search..." />
-          <SearchField.ClearButton />
-        </SearchField.Group>
-      </SearchField>
-
-      {/* Task items */}
-      <ScrollShadow hideScrollBar className="flex-1 overflow-y-auto">
-        <ListBox
-          aria-label="Task list"
-          selectionMode="single"
-          selectedKeys={new Set([selectedEmail])}
-          onSelectionChange={(keys) => {
-            const selected = [...keys][0]
-            if (selected) onSelectEmail(selected)
-          }}
-        >
-          {tasks.map((task) => (
-            <ListBox.Item
-              key={task.id}
-              id={task.id}
-              textValue={task.title}
-              className="relative flex items-start gap-3 rounded-2xl p-3 data-[selected=true]:bg-surface data-[selected=true]:shadow-sm"
-            >
-              <Avatar className="size-9 shrink-0">
-                <Avatar.Image
-                  alt={task.assignedAgentId}
-                  src={task.assignedAgentId}
-                />
-                <Avatar.Fallback>
-                  {task.title
-                    .split(' ')
-                    .map((n) => n[0])
-                    .join('')}
-                </Avatar.Fallback>
-              </Avatar>
-              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <div className="flex items-center justify-between">
-                  <span
-                    className={`text-sm leading-tight ${task.unread ? 'text-foreground font-medium' : 'text-foreground'}`}
-                  >
-                    {task.title}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`whitespace-nowrap text-xs leading-tight ${task.unread ? 'text-foreground font-medium' : 'text-muted'}`}
-                    >
-                      {task.time}
-                    </span>
-                    {task.unread && (
-                      <span className="bg-accent size-1.5 shrink-0 rounded-full" />
-                    )}
-                  </div>
-                </div>
-                <span
-                  className={`truncate text-xs leading-tight ${task.unread ? 'text-foreground font-medium' : 'text-muted'}`}
-                >
-                  {task.subject}
-                </span>
-                <span className="text-muted truncate pr-8 text-xs leading-tight">
-                  {task.description}
-                </span>
-                <div className="absolute bottom-3 right-3">
-                  {task.starred ? (
-                    <Icon name="StarSolid" color="orange" />
-                  ) : (
-                    <Icon name="Star" />
-                  )}
-                </div>
-              </div>
-            </ListBox.Item>
-          ))}
-        </ListBox>
-      </ScrollShadow>
-    </div>
-  )
+export const V2Page = () => {
+  const { markRead, markUnread, isRead } = useReadStatus()
+  return <V2Shell markRead={markRead} markUnread={markUnread} isRead={isRead} />
 }
 
-const CTA = ({ icon }: { icon: IconName }) => (
-  <Button
-    isIconOnly
-    size="sm"
-    variant="ghost"
-    className="text-muted hover:text-foreground"
-  >
-    <Icon name={icon} />
-  </Button>
-)
+function V2Shell({
+  markRead,
+  markUnread,
+  isRead,
+}: {
+  markRead: (id: string) => void
+  markUnread: (id: string) => void
+  isRead: (id: string) => boolean
+}) {
+  const { lang, t } = useI18n()
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
-function EmailDetail({ email }) {
-  if (!email) return null
+  const {
+    customAgents,
+    builtInAgents,
+    loading: isAgentsLoading,
+  } = useAgentsSeparated()
+
+  const openSettings = useCallback(() => setIsSettingsOpen(true), [])
+  const closeSettings = useCallback(() => setIsSettingsOpen(false), [])
+
+  const {
+    selectedThreadId,
+    selectedIds,
+    pinnedIds,
+    activeId,
+    filter,
+    search,
+    inspectSegment,
+    selectThread,
+    addToSelection,
+    removeFromSelection,
+    togglePinItem,
+    setFilter,
+    setSearch,
+    setInspect,
+    deselect,
+  } = useThreadSelection()
+
+  const { threads, isLoading } = useThreads(filter)
+
+  const tagDefinitions = useThreadTagDefinitions()
+  const tagMap = useThreadTagMap()
+
+  const deferredSearch = useDeferredValue(search)
+
+  const filteredThreads = useMemo(() => {
+    let result = threads
+    if (!deferredSearch) return result
+
+    // Extract #tag-name tokens and remaining free-text
+    const tagNames: string[] = []
+    const freeText = norm(
+      deferredSearch
+        .replace(/#(\S+)/g, (_, name) => {
+          tagNames.push(norm(name))
+          return ''
+        })
+        .trim(),
+    )
+
+    // Resolve tag names → tag IDs
+    if (tagNames.length > 0) {
+      const matchedIds = new Set<string>()
+      for (const [id, tag] of tagMap) {
+        const tagNameNorm = norm(tag.name)
+        const tagNameHyphenated = tagNameNorm.replace(/\s+/g, '-')
+        if (
+          tagNames.includes(tagNameNorm) ||
+          tagNames.includes(tagNameHyphenated)
+        )
+          matchedIds.add(id)
+      }
+      // OR logic: thread must have at least one matching tag
+      result = result.filter((thread) =>
+        thread.tags.some((tagId) => matchedIds.has(tagId)),
+      )
+    }
+
+    // Free-text filter (AND with tag filter)
+    if (freeText) {
+      result = result.filter(
+        (thread) =>
+          norm(thread.title).includes(freeText) ||
+          (thread.agent?.name && norm(thread.agent.name).includes(freeText)) ||
+          norm(thread.snippet).includes(freeText),
+      )
+    }
+
+    return result
+  }, [threads, deferredSearch, tagMap])
+
+  const selectedThread = useMemo(
+    () => filteredThreads.find((thread) => thread.id === selectedThreadId),
+    [filteredThreads, selectedThreadId],
+  )
+
+  const selectedThreads = useMemo(
+    () =>
+      selectedIds
+        .map((id) => filteredThreads.find((t) => t.id === id))
+        .filter(Boolean) as typeof filteredThreads,
+    [filteredThreads, selectedIds],
+  )
+
+  const activeThread = useMemo(
+    () =>
+      activeId ? filteredThreads.find((t) => t.id === activeId) : undefined,
+    [filteredThreads, activeId],
+  )
+
+  const activeSpaceId = useActiveSpaceId()
+
+  const allAgents = useMemo(
+    () => [
+      ...customAgents.filter((a) =>
+        entityBelongsToSpace(a.spaceId, activeSpaceId),
+      ),
+      ...builtInAgents,
+    ],
+    [customAgents, builtInAgents, activeSpaceId],
+  )
+
+  const customAgentIds = useMemo(
+    () => new Set(customAgents.map((agent) => agent.id)),
+    [customAgents],
+  )
+
+  const filteredAgents = useMemo(() => {
+    if (!deferredSearch) return allAgents
+    const q = norm(deferredSearch)
+    return allAgents.filter(
+      (agent) =>
+        norm(agent.name).includes(q) ||
+        (agent.role && norm(agent.role).includes(q)) ||
+        (agent.desc && norm(agent.desc).includes(q)) ||
+        agent.tags?.some((tag) => norm(tag).includes(q)),
+    )
+  }, [allAgents, deferredSearch])
+
+  const selectedAgent = useMemo(
+    () =>
+      filter === 'agents'
+        ? (filteredAgents.find((agent) => agent.id === selectedThreadId) ??
+          null)
+        : null,
+    [filter, filteredAgents, selectedThreadId],
+  )
+
+  const selectedAgents = useMemo(
+    () =>
+      filter === 'agents'
+        ? (selectedIds
+            .map((id) => filteredAgents.find((a) => a.id === id))
+            .filter(Boolean) as typeof filteredAgents)
+        : [],
+    [filter, filteredAgents, selectedIds],
+  )
+
+  const activeAgent = useMemo(
+    () =>
+      filter === 'agents'
+        ? (filteredAgents.find((a) => a.id === activeId) ?? null)
+        : null,
+    [filter, filteredAgents, activeId],
+  )
+
+  const activeCollectionIds = useMemo(
+    () =>
+      filter === 'agents'
+        ? filteredAgents.map((agent) => agent.id)
+        : filteredThreads.map((thread) => thread.id),
+    [filter, filteredAgents, filteredThreads],
+  )
+
+  const selectedIndex = activeId ? activeCollectionIds.indexOf(activeId) : -1
+
+  const navRef = useRef({ activeCollectionIds, selectedIndex })
+  navRef.current = { activeCollectionIds, selectedIndex }
+
+  const goToPrevious = useCallback(() => {
+    const { activeCollectionIds: ids, selectedIndex: idx } = navRef.current
+    if (idx > 0) selectThread(ids[idx - 1])
+  }, [selectThread])
+
+  const goToNext = useCallback(() => {
+    const { activeCollectionIds: ids, selectedIndex: idx } = navRef.current
+    if (idx < ids.length - 1) selectThread(ids[idx + 1])
+    else if (idx === -1 && ids.length > 0) selectThread(ids[0])
+  }, [selectThread])
+
+  const pagination = useMemo(
+    () => ({
+      current: selectedIndex + 1,
+      total: activeCollectionIds.length,
+    }),
+    [selectedIndex, activeCollectionIds.length],
+  )
+
+  const navItems = useMemo<NavItem[]>(() => {
+    return NAV_ITEMS
+    // const unread = threads.filter((thread) => thread.unread).length
+    // return NAV_ITEMS.map((item) => ({
+    //   ...item,
+    //   // count: item.id === 'inbox' ? unread || undefined : undefined,
+    // })) as NavItem[]
+  }, [threads])
+
+  const handleToggleRead = useCallback(() => {
+    if (!selectedThreadId) return
+    if (isRead(selectedThreadId)) markUnread(selectedThreadId)
+    else markRead(selectedThreadId)
+  }, [selectedThreadId, isRead, markRead, markUnread])
+
+  const { loadConversation } = useConversationStore()
+  const { addTurn } = useSessionStore()
+  const [isReplying, setIsReplying] = useState(false)
+  const [replyPrompt, setReplyPrompt] = useState('')
+
+  const widgetCacheRef = useRef<Map<string, PreviewItem>>(new Map())
+
+  const inspectedItem = useMemo<PreviewItem | null>(() => {
+    if (!inspectSegment) return null
+    if (inspectSegment.type === 'artifact' && activeThread) {
+      const artifact = activeThread.artifacts.find(
+        (a) => a.id === inspectSegment.id,
+      )
+      if (artifact) return { kind: 'artifact', artifact }
+    }
+    const cached = widgetCacheRef.current.get(inspectSegment.id)
+    if (cached) return cached
+    return null
+  }, [inspectSegment, activeThread])
+
+  const closeInspectedPanel = useCallback(() => setInspect(null), [setInspect])
+
+  const handleSelectArtifact = useCallback(
+    (artifact: Artifact) => setInspect({ type: 'artifact', id: artifact.id }),
+    [setInspect],
+  )
+
+  useEffect(() => {
+    const unsubscribe = useInspectorPanelStore.subscribe((state, prev) => {
+      if (state.item && state.item !== prev.item) {
+        if (state.item.type === 'widget') {
+          const id = state.item.widgetId ?? `w-${Date.now()}`
+          const preview: PreviewItem = {
+            kind: 'widget',
+            widget: {
+              id,
+              title: state.item.title ?? 'Widget',
+              code: state.item.code,
+              widgetType: state.item.widgetType,
+              language: state.item.language,
+            },
+          }
+          widgetCacheRef.current.set(id, preview)
+          setInspect({ type: 'widget', id })
+        } else if (state.item.type === 'artifact') {
+          setInspect({ type: 'artifact', id: state.item.artifact.id })
+        }
+        useInspectorPanelStore.getState().close()
+      }
+    })
+    return unsubscribe
+  }, [setInspect])
+
+  const resolveConvId = useCallback((threadId: string): string | undefined => {
+    if (conversationsMap.has(threadId)) return threadId
+    const task = tasksMap.get(threadId)
+    return task?.conversationId ?? undefined
+  }, [])
+
+  /** Default amber color used when toggling star without a specific color */
+  const DEFAULT_STAR_COLOR = '#F59E0B'
+
+  const handleSetStarColor = useCallback(
+    (threadId: string, color: string | null) => {
+      // Task
+      const task = tasksMap.get(threadId)
+      if (task) {
+        tasksMap.set(threadId, {
+          ...task,
+          starColor: color ?? undefined,
+          isPinned: color !== null,
+        })
+        return
+      }
+
+      // Session
+      const session = sessionsMap.get(threadId)
+      if (session) {
+        sessionsMap.set(threadId, {
+          ...session,
+          starColor: color ?? undefined,
+          isPinned: color !== null,
+        })
+        return
+      }
+
+      // Studio entry
+      const entry = studioEntriesMap.get(threadId)
+      if (entry) {
+        studioEntriesMap.set(threadId, {
+          ...entry,
+          isFavorite: color !== null,
+        })
+        return
+      }
+
+      // Conversation
+      const convId = resolveConvId(threadId)
+      if (!convId) return
+      const conv = conversationsMap.get(convId)
+      if (!conv) return
+      conversationsMap.set(convId, {
+        ...conv,
+        starColor: color ?? undefined,
+        isPinned: color !== null,
+      })
+    },
+    [resolveConvId],
+  )
+
+  const handleToggleStarById = useCallback(
+    (threadId: string) => {
+      // Determine current starred state to toggle
+      const task = tasksMap.get(threadId)
+      if (task) {
+        const isStarred = !!(task.starColor || task.isPinned)
+        handleSetStarColor(threadId, isStarred ? null : DEFAULT_STAR_COLOR)
+        return
+      }
+
+      const session = sessionsMap.get(threadId)
+      if (session) {
+        const isStarred = !!(session.starColor || session.isPinned)
+        handleSetStarColor(threadId, isStarred ? null : DEFAULT_STAR_COLOR)
+        return
+      }
+
+      const entry = studioEntriesMap.get(threadId)
+      if (entry) {
+        handleSetStarColor(
+          threadId,
+          entry.isFavorite ? null : DEFAULT_STAR_COLOR,
+        )
+        return
+      }
+
+      const convId = resolveConvId(threadId)
+      if (!convId) return
+      const conv = conversationsMap.get(convId)
+      if (!conv) return
+      const isStarred = !!(conv.starColor || conv.isPinned)
+      handleSetStarColor(threadId, isStarred ? null : DEFAULT_STAR_COLOR)
+    },
+    [resolveConvId, handleSetStarColor],
+  )
+
+  const handleToggleStar = useCallback(() => {
+    if (!selectedThreadId) return
+    handleToggleStarById(selectedThreadId)
+  }, [selectedThreadId, handleToggleStarById])
+
+  const handleToggleReadById = useCallback(
+    (threadId: string) => {
+      if (isRead(threadId)) markUnread(threadId)
+      else markRead(threadId)
+    },
+    [isRead, markRead, markUnread],
+  )
+
+  const handleReply = useCallback(
+    async (content: string) => {
+      if (!selectedThreadId) return
+
+      // Session threads use addTurn so useSessionExecution picks it up
+      if (activeThread?.kind === 'session' && activeThread.source.session) {
+        const session = activeThread.source.session
+        const agentId = session.primaryAgentId
+        setIsReplying(true)
+        setReplyPrompt('')
+        try {
+          await addTurn(session.id, {
+            prompt: content,
+            intent: session.intent,
+            agentId,
+          })
+        } finally {
+          setIsReplying(false)
+        }
+        return
+      }
+
+      const convId = resolveConvId(selectedThreadId)
+      if (!convId) return
+      const conv = conversationsMap.get(convId)
+      if (!conv) return
+
+      // Resolve the agent for this conversation
+      const agent = activeThread?.agent ?? getAgentById(conv.agentId)
+      if (!agent) return
+
+      setIsReplying(true)
+      setReplyPrompt('')
+
+      try {
+        // Load and decrypt the conversation into the store so submitChat can
+        // find it as currentConversation (it reads from useConversationStore)
+        const decryptedConv = await loadConversation(convId)
+
+        // Build conversation history from decrypted messages (exclude system)
+        const historyMessages = (decryptedConv?.messages ?? []).filter(
+          (m) => m.role !== 'system',
+        )
+
+        await submitChat({
+          prompt: content,
+          agent,
+          conversationMessages: historyMessages,
+          includeHistory: true,
+          lang,
+          t,
+          onResponseUpdate: () => {
+            // Thread will auto-update via Yjs observer when assistant message is saved
+          },
+          onPromptClear: () => setReplyPrompt(''),
+        })
+      } finally {
+        setIsReplying(false)
+      }
+    },
+    [
+      selectedThreadId,
+      activeThread,
+      addTurn,
+      resolveConvId,
+      loadConversation,
+      lang,
+      t,
+    ],
+  )
+
+  const searchInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+        return
+      }
+
+      const target = e.target as HTMLElement
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable
+      ) {
+        return
+      }
+
+      switch (e.key) {
+        case 'j':
+          e.preventDefault()
+          goToPrevious()
+          break
+        case 'k':
+          e.preventDefault()
+          goToNext()
+          break
+        case 'Escape':
+          e.preventDefault()
+          deselect()
+          break
+        case 's':
+          e.preventDefault()
+          handleToggleStar()
+          break
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown, true)
+    return () => window.removeEventListener('keydown', handleKeyDown, true)
+  }, [goToNext, goToPrevious, deselect, handleToggleRead, handleToggleStar])
+
+  const handleStartConversation = useCallback(
+    (agent: { slug: string; id?: string }) => {
+      setFilter('agents')
+      if (agent.id) selectThread(agent.id)
+    },
+    [setFilter, selectThread],
+  )
+
+  const ctxValue = useMemo(
+    () => ({
+      filter,
+      selectedIds,
+      activeId,
+      pinnedIds,
+      selectedId: selectedThreadId,
+      search,
+      setSearch,
+      setFilter,
+      selectItem: selectThread,
+      addItem: addToSelection,
+      removeItem: removeFromSelection,
+      togglePin: togglePinItem,
+      deselect,
+      inspectSegment,
+      setInspect,
+      goToNext,
+      goToPrevious,
+      pagination,
+      navItems,
+      openSettings,
+      filteredThreads,
+      selectedThreads,
+      activeThread,
+      selectedThread,
+      isLoading,
+      filteredAgents,
+      selectedAgents,
+      activeAgent,
+      selectedAgent,
+      customAgentIds,
+      isAgentsLoading,
+      handleToggleStar,
+      handleToggleStarById,
+      handleToggleReadById,
+      markRead,
+      handleReply,
+      isReplying,
+      replyPrompt,
+      setReplyPrompt,
+      handleSelectArtifact,
+      inspectedItem,
+      closeInspectedPanel,
+      handleStartConversation,
+      searchInputRef,
+      tagDefinitions,
+    }),
+    [
+      filter,
+      selectedIds,
+      activeId,
+      pinnedIds,
+      selectedThreadId,
+      search,
+      setSearch,
+      setFilter,
+      selectThread,
+      addToSelection,
+      removeFromSelection,
+      togglePinItem,
+      deselect,
+      inspectSegment,
+      setInspect,
+      goToNext,
+      goToPrevious,
+      pagination,
+      navItems,
+      openSettings,
+      filteredThreads,
+      selectedThreads,
+      activeThread,
+      selectedThread,
+      isLoading,
+      filteredAgents,
+      selectedAgents,
+      activeAgent,
+      selectedAgent,
+      customAgentIds,
+      isAgentsLoading,
+      handleToggleStar,
+      handleToggleStarById,
+      handleToggleReadById,
+      markRead,
+      handleReply,
+      isReplying,
+      replyPrompt,
+      setReplyPrompt,
+      handleSelectArtifact,
+      inspectedItem,
+      closeInspectedPanel,
+      handleStartConversation,
+      searchInputRef,
+      tagDefinitions,
+    ],
+  )
 
   return (
-    <div className="flex h-full min-h-0 min-w-0 flex-col overflow-clip py-4 pl-0.5 pr-4">
-      <div className="surface bg-surface flex max-h-full flex-1 flex-col gap-6 overflow-clip rounded-2xl p-4 shadow-sm">
-        {/* Toolbar */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Icon name="SidebarCollapse" size="md" color="grey" />
-
-            <div className="flex items-center">
-              <CTA icon="Trash" />
-              <CTA icon="Archive" />
-              <CTA icon="MoreVert" />
-            </div>
-          </div>
-          <div className="flex items-center gap-4 px-2">
-            <span className="text-muted text-xs">2 of 831</span>
-            <div className="flex items-center">
-              <Button
-                isIconOnly
-                size="sm"
-                variant="ghost"
-                className="text-muted hover:text-foreground"
-              >
-                <Icon name="ArrowLeft" />
-              </Button>
-              <Button
-                isIconOnly
-                size="sm"
-                variant="ghost"
-                className="text-muted hover:text-foreground"
-              >
-                <Icon name="ArrowRight" />
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Email content */}
-        <ScrollShadow hideScrollBar className="flex-1 overflow-y-auto px-6">
-          <div className="flex flex-col gap-8 pb-5">
-            <div className="flex flex-col gap-3">
-              <h1 className="text-foreground truncate text-base font-semibold leading-normal">
-                {email.subject}
-              </h1>
-              <div className="flex items-start justify-between">
-                <div className="flex gap-3">
-                  <Avatar className="size-9 shrink-0">
-                    <Avatar.Image alt={email.name} src={email.avatar} />
-                    <Avatar.Fallback>
-                      {email.name
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')}
-                    </Avatar.Fallback>
-                  </Avatar>
-                  <div className="flex flex-col">
-                    <span className="text-foreground text-sm font-medium leading-tight">
-                      {email.name}
-                    </span>
-                    <span className="text-muted text-xs font-medium leading-tight">
-                      {email.name.toLowerCase().replace(' ', '.')}
-                      @email.com
-                    </span>
-                    <div className="text-muted flex items-center gap-0.5 text-xs font-medium leading-tight">
-                      <p>to me</p>
-                      <Icon name="CaretDown" />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-2 px-2">
-                  <span className="text-muted whitespace-nowrap text-xs">
-                    Today, {email.time}
-                  </span>
-                  <div className="flex items-center">
-                    <Button
-                      isIconOnly
-                      variant="ghost"
-                      className="text-muted hover:text-foreground"
-                    >
-                      <Icon name="Reply" />
-                    </Button>
-                    <Button
-                      isIconOnly
-                      variant="ghost"
-                      className="text-muted hover:text-foreground"
-                    >
-                      <Icon name="ReplyAll" />
-                    </Button>
-                    <Button
-                      isIconOnly
-                      variant="ghost"
-                      className="text-muted hover:text-foreground"
-                    >
-                      <Icon name="More" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="text-foreground whitespace-pre-wrap text-sm leading-relaxed">
-              {`Hello Team, I'm thrilled to announce the launch of our new product next week, and I couldn't be more excited to share this milestone with all of you. Over the past weeks and months, an incredible amount of work has gone into bringing this product to life. From early ideas and strategy sessions to design, development, testing, and refinement, this launch represents the collective effort, dedication, and talent of everyone involved. Each team has played a critical role, and this achievement truly belongs to all of us. This product is more than just a release\u2014it's a major step forward for our vision and a strong statement about the value we aim to deliver to our users. It addresses real needs, reflects our commitment to quality, and sets a new standard for what we want to build moving forward. In preparation for the launch, please make sure you are familiar with the product's core features, value proposition, and key messaging. Over the next few days, we'll be sharing additional details, including: \u2022 The official launch date and timeline \u2022 Internal demos and walkthroughs \u2022 Go-to-market messaging and FAQs \u2022 Support and escalation processes Your alignment and enthusiasm will be essential to ensure a smooth and successful launch, both internally and externally. I want to personally thank each of you for the hard work, late nights, thoughtful discussions, and problem-solving that made this possible. Launches like this don't happen without strong teamwork, and this one is a testament to what we can accomplish together. Let's take a moment to celebrate this achievement\u2014and then get ready to make a strong impact next week. More updates coming very soon. Thank you all,`}
-            </div>
-          </div>
-        </ScrollShadow>
-      </div>
-    </div>
+    <V2ShellContext.Provider value={ctxValue}>
+      {filter === 'home' ? (
+        <NewTaskPage />
+      ) : filter === 'agents' ? (
+        <AgentsPage />
+      ) : filter === 'conversations' ? (
+        <ConversationsPage />
+      ) : (
+        <ThreadsPage />
+      )}
+      <GlobalSearch />
+      <SettingsModal isOpen={isSettingsOpen} onClose={closeSettings} />
+    </V2ShellContext.Provider>
   )
 }

@@ -33,8 +33,8 @@ export const COLOR_THEMES: ColorTheme[] = [
     label: 'Devs',
     primaryColor: '#3366FF',
     backgroundColor: 'rgb(244, 247, 249)',
-    headingFont: "'Playfair Display', Georgia, serif",
-    bodyFont: "'Figtree', system-ui, -apple-system, sans-serif",
+    headingFont: "'Unbounded', Georgia, serif",
+    bodyFont: "'Geist', system-ui, -apple-system, sans-serif",
     preview: ['#3366FF', '#F4F7F9'],
   },
   {

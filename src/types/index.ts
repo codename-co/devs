@@ -32,6 +32,7 @@ export interface Agent {
   version?: string
   examples?: Example[]
   deletedAt?: Date // When the agent was soft deleted (presence indicates deleted)
+  spaceId?: string // Space this agent belongs to (undefined = default)
   i18n?: {
     [K in LanguageCode]?: {
       name?: string
@@ -110,6 +111,7 @@ export interface Message {
 export interface Conversation {
   id: string
   agentId: string // Primary agent ID (for backward compatibility)
+  agent?: Agent // Populated when loading conversations for display
   agentSlug?: string // Primary agent slug (for URL generation)
   participatingAgents: string[] // All agents that have participated in this conversation
   workflowId: string
@@ -118,9 +120,12 @@ export interface Conversation {
   messages: Message[]
   title?: string // Auto-generated title from LLM summarization
   isPinned?: boolean // Whether this conversation is starred/pinned
+  starColor?: string // Hex color for color-coded star (e.g. "#F43F5E")
   summary?: string // AI-generated conversation summary
+  spaceId?: string // Space this conversation belongs to (undefined = default)
   pinnedMessageIds?: string[] // Array of pinned message IDs for quick lookup
   quickReplies?: string[] // Persisted quick reply suggestions for the last assistant message
+  tags?: string[] // User-defined tag IDs for categorization
 }
 
 export interface KnowledgeItem {
@@ -153,6 +158,7 @@ export interface KnowledgeItem {
   processingStatus?: 'pending' | 'processing' | 'completed' | 'failed' // Current processing state
   processingError?: string // Error message if processing failed
   processedAt?: Date // When the document was last processed
+  spaceId?: string // Space this knowledge item belongs to (undefined = default)
 }
 
 export interface PersistedFolderWatcher {
@@ -388,6 +394,7 @@ export interface Task {
   complexity: 'simple' | 'complex'
   status: 'pending' | 'claimed' | 'in_progress' | 'completed' | 'failed'
   assignedAgentId?: string
+  agent?: Agent
   assignedAt?: Date | string // When the agent was assigned
   assignedRoleId?: string // Methodology role ID for this assignment
   parentTaskId?: string
@@ -432,6 +439,14 @@ export interface Task {
   abortKey?: string
   /** ID of the conversation associated with this task */
   conversationId?: string
+  /** User-defined tag IDs for categorization */
+  tags?: string[]
+  /** Whether this task is starred/pinned */
+  isPinned?: boolean
+  /** Hex color for color-coded star (e.g. "#F43F5E") */
+  starColor?: string
+  /** Space this task belongs to (undefined = default) */
+  spaceId?: string
 }
 
 export interface Requirement {
@@ -581,6 +596,7 @@ export interface Artifact {
   createdAt: Date | string
   updatedAt: Date | string
   reviewedBy?: string[]
+  spaceId?: string // Space this artifact belongs to (undefined = default)
 }
 
 export interface LangfuseConfig {
@@ -858,6 +874,8 @@ export interface InstalledSkill {
   assignedAgentIds: string[]
   /** Whether to always inject instructions vs. match-based activation */
   autoActivate: boolean
+  /** Space this skill belongs to (undefined / 'default' = Default Space) */
+  spaceId?: string
 }
 
 // ============================================================================
@@ -1167,6 +1185,12 @@ export interface Session {
   createdAt: Date | string
   updatedAt: Date | string
   completedAt?: Date | string
+  /** Whether this session is starred/pinned */
+  isPinned?: boolean
+  /** Hex color for color-coded star (e.g. "#F43F5E") */
+  starColor?: string
+  /** Space this session belongs to (undefined = default) */
+  spaceId?: string
 }
 
 // ============================================================================
@@ -1178,4 +1202,18 @@ export interface ModelTierConfig {
   providerId: string
   provider: LLMProvider
   model: string
+}
+
+// ============================================================================
+// Spaces — Organize content into separate contexts
+// ============================================================================
+
+/** ID of the space that owns all pre-existing (unassigned) data. */
+export const DEFAULT_SPACE_ID = 'default'
+
+export interface Space {
+  id: string
+  name: string
+  createdAt: Date | string
+  updatedAt?: Date | string
 }

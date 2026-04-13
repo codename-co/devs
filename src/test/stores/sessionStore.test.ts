@@ -16,6 +16,11 @@ vi.mock('@/lib/yjs', () => ({
 
 vi.mock('@/lib/toast', () => mockToast)
 
+// Mock spaceStore
+vi.mock('@/stores/spaceStore', () => ({
+  getActiveSpaceId: vi.fn(() => 'default'),
+}))
+
 // Mock crypto.randomUUID for predictable IDs
 let uuidCounter = 0
 vi.stubGlobal('crypto', {

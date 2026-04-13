@@ -32,9 +32,9 @@
   },
   "dependencies": {
     "@heroui/react": "^2.8.7",
-    "@heroui/react_3": "npm:@heroui/react@^3.0.1",
+    "@heroui/react_3": "npm:@heroui/react@^3.0.2",
     "@heroui/styles": "^3.0.1",
-    "@huggingface/transformers": "^4.0.0",
+    "@huggingface/transformers": "^4.0.1",
     "@marp-team/marpit": "^3.2.0",
     "@mermaid-js/layout-elk": "^0.2.0",
     "@monaco-editor/react": "^4.7.0",
@@ -72,6 +72,9 @@
     "y-websocket": "^3.0.0",
     "yjs": "^13.6.29",
     "zustand": "^5.0.10"
+  },
+  "overrides": {
+    "@react-aria/utils": "3.33.1"
   },
   "devDependencies": {
     "@heroui/theme": "^2.4.20",

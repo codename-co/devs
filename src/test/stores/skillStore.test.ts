@@ -20,6 +20,20 @@ vi.mock('@/lib/yjs', () => ({
     observe: vi.fn(),
     unobserve: vi.fn(),
   },
+  preferences: {
+    get: vi.fn(),
+    set: vi.fn(),
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+  },
+  spaceSettings: {
+    get: vi.fn(),
+    set: vi.fn(),
+    delete: vi.fn(),
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+  },
+  whenReady: Promise.resolve(),
   transact: <T>(fn: () => T): T => fn(),
   useLiveMap: vi.fn(() => Array.from(mockSkillsMap.values())),
   useLiveValue: vi.fn((_map: unknown, id: string) =>

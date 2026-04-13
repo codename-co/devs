@@ -96,6 +96,7 @@ export const ko: I18n = {
     '모든 파일과 폴더가 자동으로 동기화됩니다',
   'Loading folders...': '폴더 로딩 중...',
   'No folders found': '폴더를 찾을 수 없습니다',
+  'Search folders...': '폴더 검색...',
   '{n} folders selected': '{n}개 폴더 선택됨',
   Skip: '건너뛰기',
   Continue: '계속',

@@ -1,6 +1,6 @@
 export const en = [
   'Hey {productName}',
-  'Your own AI agents ready to collaborate',
+  'Your AI team is ready',
   'Failed to get response from LLM. Please try again later.',
 
   // Agent themes
