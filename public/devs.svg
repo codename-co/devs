@@ -1,71 +1,126 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <style><![CDATA[
-    :root {
-      --snap: cubic-bezier(.16, 1, .3, 1);
-      --out:  cubic-bezier(0, 0, .2, 1);
-    }
-    circle { opacity: 0; }
-    .a { animation:
-      show 0s 0s both,
-      pop  .1s var(--snap) 0s both,
-      grow .7s var(--snap) 0s both;
-    }
-    .ha { animation:
-      hfade .2s var(--out)   0s both,
-      hgrow .7s  var(--snap) 0s both;
-    }
-    .b { animation:
-      show 0s .1s both,
-      pop  .1s var(--snap) .1s both,
-      bx   .3s var(--snap) .2s both,
-      by   .3s var(--snap) .2s both,
-      grow .7s var(--snap) .2s both;
-    }
-    .hb { animation:
-      hfade .8s var(--out)  .1s both,
-      hby   .3s var(--snap) .2s both,
-      hgrow .7s var(--snap) .2s both;
-    }
-    .c { animation:
-      show 0s .3s both,
-      pop  .1s var(--snap) .3s both,
-      cx   .3s var(--snap) .4s both,
-      cy   .3s var(--snap) .4s both,
-      grow .7s var(--snap) .4s both;
-    }
-    .hc { animation:
-      hfade .8s var(--out)  .3s both,
-      hcy   .3s var(--snap) .4s both,
-      hgrow .7s var(--snap) .4s both;
-    }
-    .ab, .bc { animation: show .3s var(--out) .1s both; }
-    .bc { animation-delay: .3s; }
-    @keyframes show    { to { opacity: 1; } }
-    @keyframes hfade   { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes pop     { from { r: 0; }   to { r: 1.8; } }
-    @keyframes grow    { from { r: 1.8; } to { r: 3.6; } }
-    @keyframes hgrow   { from { r: .5; }  to { r: 1; } }
-    @keyframes bx  { to { cx: 12; } }
-    @keyframes by  { to { cy: 7.5; } }
-    @keyframes cx  { to { cx: 16.33; } }
-    @keyframes cy  { to { cy: 15; } }
-    @keyframes hby { to { cy: 5; } }
-    @keyframes hcy { to { cy: 13; } }
-  ]]></style>
-  <filter id="a">
-    <feGaussianBlur stdDeviation="1"/>
-    <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 50 -25"/>
-  </filter>
-  <g filter="url(#a)">
-    <circle class="a"  cx="7.67" cy="15"/>
-    <circle class="b"  cx="7.67" cy="15"/>
-    <circle class="c"  cx="12"   cy="7.5"/>
-    <circle class="ab" cx="9.83" cy="11.25" r=".9"/>
-    <circle class="bc" cx="14.17" cy="11.25" r=".9"/>
-    <g fill="#fff8" style="mix-blend-mode: hard-light">
-      <circle class="ha" cx="7" cy="13" r="0"/>
-      <circle class="hb" cx="11" cy="13" r="0"/>
-      <circle class="hc" cx="15"   cy="5"  r="0"/>
-    </g>
+<svg
+  class="sphere linked"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 96 96"
+  fill="currentColor"
+>
+  <style>
+    <![CDATA[
+      @scope {
+        :scope {
+          --snap: cubic-bezier(.16, 1, .3, 1);
+          --out: cubic-bezier(0, 0, .2, 1);
+        }
+
+        :scope:not(.linked) .l { r: 0; }
+
+        circle { opacity: 0; }
+
+        :scope.sphere .n {
+          fill: url(#sphere);
+        }
+
+        /* Shared node animation sequence */
+        .n {
+          transition: fill ease 3000ms;
+          animation:
+            appear 0s both,
+            emerge .1s var(--snap) both,
+            expand .7s var(--snap) both;
+        }
+
+        /* Staggered timing for triangle formation */
+        .n-a {
+          animation-delay: 0s, 0s, 0s;
+        }
+        .n-b {
+          animation-delay: .1s, .1s, .2s;
+          animation-name: appear, emerge, move-to-b, expand;
+          animation-duration: 0s, .1s, .3s, .7s;
+        }
+        .n-c {
+          animation-delay: .3s, .3s, .4s, .3s;
+          animation-name: appear, emerge, move-to-c, expand;
+          animation-duration: 0s, .1s, .3s, .5s;
+        }
+
+        /* Connection animations */
+        .l { animation: appear .3s var(--out) both; transition: r ease 300ms; }
+        .l-ab { animation-delay: .15s; }
+        .l-bc { animation-delay: .28s; }
+
+        /* ─── LOADING ─── Smooth orbit via offset-path, gradient stays fixed */
+        :scope.loading .n, :scope.loading .l {
+          offset-rotate: 0deg;
+          cx: 0; cy: 0;
+          opacity: 1;
+        }
+        :scope.loading .n {
+          r: 16;
+          offset-path: circle(23.1px at 48px 48px);
+          animation: orbit 3.6s linear infinite;
+        }
+        /* Links fade in, then counter-rotate on the inner orbit.
+            Sweeping opposite to the nodes turns each link into a
+            transient gooey bridge every time it passes a node. */
+        :scope.loading .l {
+          offset-path: circle(11.55px at 48px 48px);
+          animation:
+            appear .3s var(--out) both,
+            orbit 3.6s linear infinite reverse;
+        }
+
+        :scope.loading .n-a { animation-delay: -1.5s; }
+        :scope.loading .n-b { animation-delay: -2.7s; }
+        :scope.loading .n-c { animation-delay:  -.3s; }
+
+        :scope.loading .l-ab { animation-delay: 0s,   -2.1s; }
+        :scope.loading .l-bc { animation-delay: .15s, -3.3s; }
+
+        @media (prefers-reduced-motion: reduce) {
+          :scope.loading .n, :scope.loading .l { animation: none; }
+        }
+      }
+
+      /* Keyframes (globally scoped by spec) */
+      @keyframes appear { to { opacity: 1; } }
+      @keyframes emerge { from { r: 0; } to { r: 7.2; } }
+      @keyframes expand { from { r: 7.2; } to { r: 16; } }
+
+      /* Triangle positioning (equilateral triangle, side=40) */
+      @keyframes move-to-b { to { cx: 48; cy: 24.91; } }
+      @keyframes move-to-c { to { cx: 68; cy: 59.55; } }
+
+      @keyframes orbit { to { offset-distance: 100%; } }
+    ]]>
+  </style>
+
+  <defs>
+    <radialGradient id="sphere" cx="30%" cy="25%" r="55%">
+      <stop stop-color="#fff" />
+      <stop offset="40%" stop-color="currentColor" />
+    </radialGradient>
+
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" />
+      <feColorMatrix
+        values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 30 -15"
+      />
+    </filter>
+  </defs>
+
+  <g filter="url(#glow)">
+    <!-- Connection indicators -->
+    <circle class="l l-ab" cx="38" cy="42.23" r="5.8" />
+    <circle class="l l-bc" cx="58" cy="42.23" r="5.8" />
+
+    <!-- Node A (bottom-left) -->
+    <circle class="n n-a" cx="28" cy="59.55" />
+
+    <!-- Node B (top) — starts at A, animates to final position -->
+    <circle class="n n-b" cx="28" cy="59.55" />
+
+    <!-- Node C (bottom-right) — starts at B's target, animates to final position -->
+    <circle class="n n-c" cx="48" cy="24.91" />
   </g>
 </svg>
