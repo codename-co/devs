@@ -31,6 +31,27 @@ function safeISOString(value: unknown): string {
   return new Date(0).toISOString()
 }
 
+/** Safely extract a snippet from a value that is expected to be string but may be array/object (multimodal content) or undefined. */
+function safeSnippet(value: unknown, length = 120): string {
+  if (typeof value === 'string') return value.substring(0, length)
+  if (Array.isArray(value)) {
+    const text = value
+      .map((part) => {
+        if (typeof part === 'string') return part
+        if (part && typeof part === 'object') {
+          const p = part as { text?: unknown; content?: unknown; type?: unknown }
+          if (typeof p.text === 'string') return p.text
+          if (typeof p.content === 'string') return p.content
+        }
+        return ''
+      })
+      .filter(Boolean)
+      .join(' ')
+    return text.substring(0, length)
+  }
+  return ''
+}
+
 /** Default amber color used when an entity has isPinned=true but no starColor */
 const DEFAULT_STAR_COLOR = '#F59E0B'
 
@@ -105,8 +126,8 @@ function buildTaskThread(
     kind: 'task',
     title: task.title,
     snippet:
-      lastMessage?.content?.substring(0, 120) ??
-      task.description?.substring(0, 120) ??
+      safeSnippet(lastMessage?.content) ||
+      safeSnippet(task.description) ||
       '',
     updatedAt: safeISOString(task.updatedAt),
     agent,
@@ -149,7 +170,7 @@ function buildConvThread(
     id: conv.id,
     kind: 'conversation',
     title: conv.title ?? 'Untitled conversation',
-    snippet: lastMessage?.content?.substring(0, 120) ?? '',
+    snippet: safeSnippet(lastMessage?.content),
     updatedAt: safeISOString(conv.updatedAt),
     agent,
     participants:
@@ -265,8 +286,8 @@ function buildSessionThread(
     kind: 'session',
     title,
     snippet:
-      lastMessage?.content?.substring(0, 120) ??
-      s.prompt?.substring(0, 120) ??
+      safeSnippet(lastMessage?.content) ||
+      safeSnippet(s.prompt) ||
       '',
     updatedAt: safeISOString(s.updatedAt),
     agent,
