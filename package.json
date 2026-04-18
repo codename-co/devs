@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@heroui/react": "^2.8.7",
-    "@heroui/react_3": "npm:@heroui/react@^3.0.2",
+    "@heroui/react_3": "npm:@heroui/react@^3.0.3",
     "@heroui/styles": "^3.0.1",
     "@huggingface/transformers": "^4.0.1",
     "@marp-team/marpit": "^3.2.0",

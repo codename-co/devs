@@ -1059,4 +1059,7 @@ export const de: I18n = {
   Space: 'Space',
   'Space name': 'Name des Space',
   'New Space': 'Neuer Space',
+
+  // NewTaskPage
+  'Your AI team is ready': 'Dein KI-Team ist bereit',
 } as const

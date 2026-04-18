@@ -20,7 +20,7 @@ export const DevsIcon = memo(
       name="DevsAnimated"
       animation="appear"
       className={clsx(
-        'text-gray-400 dark:text-white',
+        'fill-gray-400 dark:fill-white',
         loading && 'loading',
         linked && 'linked',
         className,

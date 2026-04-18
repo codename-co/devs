@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useThreads } from './hooks/useThreads'
 import { useThreadSelection } from './hooks/useThreadSelection'
 import { useReadStatus } from './hooks/useReadStatus'
@@ -26,7 +27,6 @@ import { SettingsModal } from '@/components/SettingsModal'
 import { useInspectorPanelStore } from '@/stores/inspectorPanelStore'
 import { useI18n } from '@/i18n'
 import type { PreviewItem } from '@/components/ArtifactPreviewCard'
-import type { NavItem } from './types'
 import type { Artifact } from '@/types'
 import { V2ShellContext } from './context'
 
@@ -37,21 +37,8 @@ const norm = (s: string) =>
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
 import { AgentsPage } from './pages/AgentsPage'
-import { ConversationsPage } from './pages/ConversationsPage'
 import { NewTaskPage } from './pages/NewTaskPage'
 import { ThreadsPage } from './pages/ThreadsPage'
-
-const NAV_ITEMS: Omit<NavItem, 'count'>[] = [
-  { id: 'inbox', label: 'Threads', icon: 'MultiBubble', color: 'primary' },
-  { id: 'tasks', label: 'Tasks', icon: 'PcCheck', color: 'secondary' },
-  {
-    id: 'conversations',
-    label: 'Conversations',
-    icon: 'ChatBubble',
-  },
-  { id: 'starred', label: 'Starred', icon: 'Star', color: 'warning' },
-  { id: 'agents', label: 'Agents', icon: 'Group' },
-]
 
 export const V2Page = () => {
   const { markRead, markUnread, isRead } = useReadStatus()
@@ -68,7 +55,11 @@ function V2Shell({
   isRead: (id: string) => boolean
 }) {
   const { lang, t } = useI18n()
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  // Derive settings modal visibility from URL hash (e.g. #settings, #settings/traces/logs/:id)
+  const isSettingsOpen = location.hash.startsWith('#settings')
 
   const {
     customAgents,
@@ -76,8 +67,14 @@ function V2Shell({
     loading: isAgentsLoading,
   } = useAgentsSeparated()
 
-  const openSettings = useCallback(() => setIsSettingsOpen(true), [])
-  const closeSettings = useCallback(() => setIsSettingsOpen(false), [])
+  const openSettings = useCallback(
+    () => navigate(`${location.pathname}${location.search}#settings`, { replace: true }),
+    [navigate, location.pathname, location.search],
+  )
+  const closeSettings = useCallback(
+    () => navigate(`${location.pathname}${location.search}`, { replace: true }),
+    [navigate, location.pathname, location.search],
+  )
 
   const {
     selectedThreadId,
@@ -97,7 +94,7 @@ function V2Shell({
     deselect,
   } = useThreadSelection()
 
-  const { threads, isLoading } = useThreads(filter)
+  const { threads, isLoading } = useThreads()
 
   const tagDefinitions = useThreadTagDefinitions()
   const tagMap = useThreadTagMap()
@@ -108,16 +105,48 @@ function V2Shell({
     let result = threads
     if (!deferredSearch) return result
 
-    // Extract #tag-name tokens and remaining free-text
+    // Extract is:xxx tokens, #tag-name tokens, and remaining free-text
+    const isFilters: string[] = []
     const tagNames: string[] = []
     const freeText = norm(
       deferredSearch
+        .replace(/is:(\w+)/gi, (_, token) => {
+          isFilters.push(token.toLowerCase())
+          return ''
+        })
         .replace(/#(\S+)/g, (_, name) => {
           tagNames.push(norm(name))
           return ''
         })
         .trim(),
     )
+
+    // Apply is: filters (AND logic — all must match)
+    for (const token of isFilters) {
+      switch (token) {
+        case 'task':
+          result = result.filter(
+            (t) =>
+              t.kind === 'task' ||
+              (t.kind === 'session' && t.source.session?.intent === 'task'),
+          )
+          break
+        case 'conversation':
+          result = result.filter(
+            (t) =>
+              t.kind === 'conversation' ||
+              (t.kind === 'session' &&
+                t.source.session?.intent === 'conversation'),
+          )
+          break
+        case 'starred':
+          result = result.filter((t) => t.starColor !== null)
+          break
+        case 'unread':
+          result = result.filter((t) => t.unread)
+          break
+      }
+    }
 
     // Resolve tag names → tag IDs
     if (tagNames.length > 0) {
@@ -256,15 +285,6 @@ function V2Shell({
     }),
     [selectedIndex, activeCollectionIds.length],
   )
-
-  const navItems = useMemo<NavItem[]>(() => {
-    return NAV_ITEMS
-    // const unread = threads.filter((thread) => thread.unread).length
-    // return NAV_ITEMS.map((item) => ({
-    //   ...item,
-    //   // count: item.id === 'inbox' ? unread || undefined : undefined,
-    // })) as NavItem[]
-  }, [threads])
 
   const handleToggleRead = useCallback(() => {
     if (!selectedThreadId) return
@@ -573,7 +593,6 @@ function V2Shell({
       goToNext,
       goToPrevious,
       pagination,
-      navItems,
       openSettings,
       filteredThreads,
       selectedThreads,
@@ -620,7 +639,6 @@ function V2Shell({
       goToNext,
       goToPrevious,
       pagination,
-      navItems,
       openSettings,
       filteredThreads,
       selectedThreads,
@@ -656,8 +674,6 @@ function V2Shell({
         <NewTaskPage />
       ) : filter === 'agents' ? (
         <AgentsPage />
-      ) : filter === 'conversations' ? (
-        <ConversationsPage />
       ) : (
         <ThreadsPage />
       )}

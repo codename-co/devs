@@ -2,7 +2,7 @@ import { createContext, type RefObject, useContext } from 'react'
 import type { Agent, Artifact } from '@/types'
 import type { ThreadTag } from '@/lib/yjs'
 import type { PreviewItem } from '@/components/ArtifactPreviewCard'
-import type { NavItem, ThreadFilter, Thread } from './types'
+import type { ThreadFilter, Thread } from './types'
 import type { InspectSegment } from './hooks/useThreadSelection'
 
 export interface V2ShellContextValue {
@@ -30,7 +30,6 @@ export interface V2ShellContextValue {
   pagination: { current: number; total: number }
 
   // Sidebar
-  navItems: NavItem[]
   openSettings: () => void
 
   // Thread data — multi-selection

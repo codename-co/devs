@@ -37,7 +37,6 @@ export function AgentsPage() {
     goToPrevious,
     pagination,
     handleStartConversation,
-    navItems,
     openSettings,
     searchInputRef,
   } = useV2Shell()
@@ -100,8 +99,7 @@ export function AgentsPage() {
     <WorkspaceLayout
       sidebar={
         <Sidebar
-          items={navItems}
-          activeItemId={filter}
+          activeFilter={filter}
           onFilterChange={(f) => setFilter(f as ThreadFilter)}
           onOpenSettings={openSettings}
         />

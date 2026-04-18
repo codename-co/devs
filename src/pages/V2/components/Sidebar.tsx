@@ -2,8 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Icon, Title } from '@/components'
 import { useI18n, useUrl } from '@/i18n'
-import { formatNumber } from '@/lib/number'
-import { uuidToBase64url } from '@/lib/url'
 import { DEFAULT_SPACE_ID } from '@/types'
 import { userSettings } from '@/stores/userStore'
 import {
@@ -18,7 +16,6 @@ import { getAppPrimaryPageUrl } from '@/features/marketplace/store'
 import { getExtensionColorClass } from '@/features/marketplace/utils'
 import {
   Button,
-  Chip,
   Kbd,
   Link,
   ListBox,
@@ -27,15 +24,9 @@ import {
   Separator,
   Tooltip,
 } from '@heroui/react_3'
-import type { NavItem } from '../types'
+import type { ThreadFilter } from '../types'
 import { PRODUCT } from '@/config/product'
-
-function getInnerV2PathSegment(pathname: string): string {
-  const segments = pathname.split('/').filter(Boolean)
-  const v2Idx = segments.indexOf('v2')
-  if (v2Idx === -1) return 'home'
-  return segments[v2Idx + 1] || 'home'
-}
+import { uuidToBase64url } from '@/lib/url'
 
 // --- Shared hooks ---
 
@@ -71,11 +62,6 @@ function BrandHeader({ trailing }: { trailing: React.ReactNode }) {
   return (
     <>
       <Link href={url('/v2')} className="flex-1">
-        {/* <Icon
-          name="Devs"
-          size="lg"
-          className="text-default-400 dark:text-white mt-1 ms-2.5 me-1.5"
-        /> */}
         <Title
           level={3}
           as="span"
@@ -83,7 +69,6 @@ function BrandHeader({ trailing }: { trailing: React.ReactNode }) {
           data-testid="platform-name"
           aria-label={customPlatformName || PRODUCT.name}
         >
-          {/* devs */}
           {customPlatformName || PRODUCT.displayName}
         </Title>
       </Link>
@@ -102,12 +87,10 @@ function useSpaceNavigate() {
     setActiveSpaceId(spaceId)
 
     const { pathname, search, hash } = location
-    // Strip any existing /spaces/<encoded> segment
     const stripped = pathname.replace(/\/spaces\/[A-Za-z0-9_-]+/, '')
     if (!spaceId || spaceId === DEFAULT_SPACE_ID) {
       navigate(stripped + search + hash)
     } else {
-      // Insert /spaces/<encoded> right after the optional /:lang prefix
       const langMatch = stripped.match(/^\/([a-z]{2})(\/|$)/)
       const prefix = langMatch
         ? `/${langMatch[1]}/spaces/${uuidToBase64url(spaceId)}`
@@ -205,7 +188,6 @@ function SpaceSwitcher({ isCollapsed }: { isCollapsed?: boolean }) {
         fullWidth
       >
         <Select.Trigger>
-          {/* <Icon name="Folder" className="text-muted shrink-0" size="sm" /> */}
           <Select.Value className="flex items-center gap-2" />
           <Select.Indicator>
             <Icon
@@ -244,86 +226,7 @@ function SpaceSwitcher({ isCollapsed }: { isCollapsed?: boolean }) {
   )
 }
 
-function ExpandedNavListBox({
-  items,
-  activeItemId,
-  onSelectionChange,
-}: {
-  items: NavItem[]
-  activeItemId: string
-  onSelectionChange: (id: string) => void
-}) {
-  const { lang, t } = useI18n()
-  const url = useUrl(lang)
-  const installedApps = useInstalledApps()
-
-  const listItemClass =
-    'group flex min-h-9 items-center gap-3 px-3 py-1.5 data-[selected=true]:bg-default'
-
-  return (
-    <ListBox
-      aria-label="Main navigation"
-      selectionMode="single"
-      selectedKeys={[activeItemId]}
-      onSelectionChange={(keys) => {
-        const selected = [...keys][0] as string | undefined
-        if (selected) onSelectionChange(selected)
-      }}
-    >
-      {items.map((item) => (
-        <ListBox.Item
-          key={item.id}
-          id={item.id}
-          textValue={item.label}
-          className={listItemClass}
-        >
-          <Icon
-            name={item.icon}
-            className={item.color ? `text-${item.color}` : ''}
-          />
-          <span className="flex-1 text-left text-sm font-medium">
-            {item.label}
-          </span>
-          {item.count != null && item.count > 0 && (
-            <Chip color="accent" size="sm" variant="soft">
-              {formatNumber(item.count, lang)}
-            </Chip>
-          )}
-        </ListBox.Item>
-      ))}
-      <Separator />
-      <ListBox.Section>
-        {installedApps.map((installedApp) => {
-          const ext = installedApp.extension
-          const extPath = getAppPrimaryPageUrl(ext.id)
-          const localizedName =
-            ext.i18n?.[lang as keyof typeof ext.i18n]?.name || ext.name
-          const iconColorClass = getExtensionColorClass(ext.color)
-          return (
-            <ListBox.Item
-              key={ext.id}
-              id={ext.id}
-              href={url(extPath)}
-              textValue={localizedName}
-              className={listItemClass}
-            >
-              <Icon name={ext.icon || 'Puzzle'} className={iconColorClass} />
-              <span className="flex-1 text-left text-sm font-medium">
-                {localizedName}
-              </span>
-            </ListBox.Item>
-          )
-        })}
-        <ListBox.Item href={url('/marketplace')} className={listItemClass}>
-          <Icon name="HexagonPlus" className="text-warning" />
-          <span className="flex-1 text-left text-sm font-medium">
-            {t('Marketplace')}
-          </span>
-        </ListBox.Item>
-      </ListBox.Section>
-    </ListBox>
-  )
-}
+// --- Subcomponents ---
 
 function ThemeToggleButton({ showKbd }: { showKbd?: boolean }) {
   const { t } = useI18n()
@@ -390,25 +293,21 @@ function SettingsButton({
 // --- Main Sidebar ---
 
 export function Sidebar({
-  items,
-  activeItemId,
+  activeFilter,
   onFilterChange,
   onOpenSettings,
   className,
 }: {
-  items: NavItem[]
-  activeItemId?: string
-  onFilterChange: (filter: string) => void
+  activeFilter: ThreadFilter
+  onFilterChange: (filter: ThreadFilter) => void
   onOpenSettings: () => void
   className?: string
 }) {
-  const location = useLocation()
   const { lang, t } = useI18n()
   const navigate = useNavigate()
   const url = useUrl(lang)
   const { toggle: toggleTheme } = useThemeToggle()
   const isCollapsed = userSettings((state) => state.isV2SidebarCollapsed)
-  const derivedActive = activeItemId ?? getInnerV2PathSegment(location.pathname)
   const installedApps = useInstalledApps()
 
   const [isMobileOpen, setIsMobileOpen] = useState(false)
@@ -432,18 +331,20 @@ export function Sidebar({
   // Close mobile overlay on navigation
   useEffect(() => {
     setIsMobileOpen(false)
-  }, [derivedActive])
+  }, [activeFilter])
 
   const toggleCollapse = () => userSettings.getState().toggleV2Sidebar()
 
-  const handleFilterChange = (filter: string) => {
+  const handleFilterChange = (filter: ThreadFilter) => {
     onFilterChange(filter)
     setIsMobileOpen(false)
   }
 
+  const isThreadsActive = activeFilter === 'inbox'
+
   const sidebarContent = (
     <aside
-      className={`border-separator h-full min-h-0 flex-col gap-6 overflow-clip border-r py-3 transition-[width,padding] duration-150 ease-in-out ${
+      className={`border-separator h-full min-h-0 flex-col gap-4 overflow-clip border-r py-3 transition-[width,padding] duration-150 ease-in-out ${
         isCollapsed ? 'w-14 items-center px-1.5' : 'w-full px-4'
       } ${className ?? 'flex'}`}
     >
@@ -501,35 +402,37 @@ export function Sidebar({
       <ScrollShadow hideScrollBar className="min-h-0 flex-1 overflow-y-auto">
         {isCollapsed ? (
           <div className="flex flex-col items-center gap-1">
-            {items.map((item) => (
-              <Tooltip key={item.id} delay={0}>
-                <Button
-                  isIconOnly
-                  variant={derivedActive === item.id ? 'secondary' : 'ghost'}
-                  size="sm"
-                  onPress={() => handleFilterChange(item.id)}
-                  aria-label={item.label}
-                  className="relative"
-                >
-                  <Icon
-                    name={item.icon}
-                    className={item.color ? `text-${item.color}` : ''}
-                  />
-                  {item.count != null && item.count > 0 && (
-                    <span className="bg-accent text-accent-foreground absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold">
-                      {item.count > 99 ? '99+' : item.count}
-                    </span>
-                  )}
-                </Button>
-                <Tooltip.Content placement="right">
-                  {item.label}
-                  {item.count != null && item.count > 0
-                    ? ` (${formatNumber(item.count, lang)})`
-                    : ''}
-                </Tooltip.Content>
-              </Tooltip>
-            ))}
+            {/* Threads (all) */}
+            <Tooltip delay={0}>
+              <Button
+                isIconOnly
+                variant={isThreadsActive ? 'secondary' : 'ghost'}
+                size="sm"
+                onPress={() => handleFilterChange('inbox')}
+                aria-label="Threads"
+              >
+                <Icon name="MultiBubble" className="text-primary" />
+              </Button>
+              <Tooltip.Content placement="right">Threads</Tooltip.Content>
+            </Tooltip>
+
+            {/* Agents */}
+            <Tooltip delay={0}>
+              <Button
+                isIconOnly
+                variant={activeFilter === 'agents' ? 'secondary' : 'ghost'}
+                size="sm"
+                onPress={() => handleFilterChange('agents')}
+                aria-label={t('Agents')}
+              >
+                <Icon name="Group" />
+              </Button>
+              <Tooltip.Content placement="right">{t('Agents')}</Tooltip.Content>
+            </Tooltip>
+
             <Separator className="my-1 w-8" />
+
+            {/* Installed apps */}
             {installedApps.map((installedApp) => {
               const ext = installedApp.extension
               const extPath = getAppPrimaryPageUrl(ext.id)
@@ -572,10 +475,9 @@ export function Sidebar({
             </Tooltip>
           </div>
         ) : (
-          <ExpandedNavListBox
-            items={items}
-            activeItemId={derivedActive}
-            onSelectionChange={handleFilterChange}
+          <ExpandedNav
+            activeFilter={activeFilter}
+            onFilterChange={handleFilterChange}
           />
         )}
       </ScrollShadow>
@@ -653,8 +555,7 @@ export function Sidebar({
           />
           <div className="bg-background relative z-10 h-full w-64 shadow-xl">
             <MobileDrawerContent
-              items={items}
-              activeItemId={derivedActive}
+              activeFilter={activeFilter}
               onFilterChange={handleFilterChange}
               onOpenSettings={() => {
                 setIsMobileOpen(false)
@@ -669,25 +570,135 @@ export function Sidebar({
   )
 }
 
+// --- Expanded navigation (non-collapsed) ---
+
+function ExpandedNav({
+  activeFilter,
+  onFilterChange,
+}: {
+  activeFilter: ThreadFilter
+  onFilterChange: (filter: ThreadFilter) => void
+}) {
+  const { lang, t } = useI18n()
+  const url = useUrl(lang)
+  const installedApps = useInstalledApps()
+
+  const listItemClass =
+    'group flex min-h-9 items-center gap-3 px-3 py-1.5 data-[selected=true]:bg-default'
+
+  return (
+    <div className="flex flex-col gap-3">
+      {/* Primary: Threads */}
+      <ListBox
+        aria-label="Main navigation"
+        selectionMode="single"
+        selectedKeys={
+          activeFilter === 'inbox' || activeFilter === 'home'
+            ? ['inbox']
+            : activeFilter === 'agents'
+              ? ['agents']
+              : ['inbox']
+        }
+        onSelectionChange={(keys) => {
+          const selected = [...keys][0] as string | undefined
+          if (selected === 'inbox') onFilterChange('inbox')
+          else if (selected === 'agents') onFilterChange('agents')
+        }}
+      >
+        <ListBox.Item
+          key="inbox"
+          id="inbox"
+          textValue="Threads"
+          className={listItemClass}
+        >
+          <Icon name="MultiBubble" className="text-primary" />
+          <span className="flex-1 text-left text-sm font-medium">Threads</span>
+        </ListBox.Item>
+        <ListBox.Item
+          key="agents"
+          id="agents"
+          textValue={t('Agents')}
+          className={listItemClass}
+        >
+          <Icon name="Group" />
+          <span className="flex-1 text-left text-sm font-medium">
+            {t('Agents')}
+          </span>
+        </ListBox.Item>
+      </ListBox>
+
+      {/* Installed apps */}
+      {installedApps.length > 0 && (
+        <>
+          <Separator />
+          <ListBox aria-label="Installed apps" selectionMode="none">
+            {installedApps.map((installedApp) => {
+              const ext = installedApp.extension
+              const extPath = getAppPrimaryPageUrl(ext.id)
+              const localizedName =
+                ext.i18n?.[lang as keyof typeof ext.i18n]?.name || ext.name
+              const iconColorClass = getExtensionColorClass(ext.color)
+              return (
+                <ListBox.Item
+                  key={ext.id}
+                  id={ext.id}
+                  href={url(extPath)}
+                  textValue={localizedName}
+                  className={listItemClass}
+                >
+                  <Icon
+                    name={ext.icon || 'Puzzle'}
+                    className={iconColorClass}
+                  />
+                  <span className="flex-1 text-left text-sm font-medium">
+                    {localizedName}
+                  </span>
+                </ListBox.Item>
+              )
+            })}
+            <ListBox.Item href={url('/marketplace')} className={listItemClass}>
+              <Icon name="HexagonPlus" className="text-warning" />
+              <span className="flex-1 text-left text-sm font-medium">
+                {t('Marketplace')}
+              </span>
+            </ListBox.Item>
+          </ListBox>
+        </>
+      )}
+      {installedApps.length === 0 && (
+        <>
+          <Separator />
+          <ListBox aria-label="Marketplace" selectionMode="none">
+            <ListBox.Item href={url('/marketplace')} className={listItemClass}>
+              <Icon name="HexagonPlus" className="text-warning" />
+              <span className="flex-1 text-left text-sm font-medium">
+                {t('Marketplace')}
+              </span>
+            </ListBox.Item>
+          </ListBox>
+        </>
+      )}
+    </div>
+  )
+}
+
 // --- Mobile drawer (always expanded) ---
 
 function MobileDrawerContent({
-  items,
-  activeItemId,
+  activeFilter,
   onFilterChange,
   onOpenSettings,
   onClose,
 }: {
-  items: NavItem[]
-  activeItemId: string
-  onFilterChange: (filter: string) => void
+  activeFilter: ThreadFilter
+  onFilterChange: (filter: ThreadFilter) => void
   onOpenSettings: () => void
   onClose: () => void
 }) {
   const { t } = useI18n()
 
   return (
-    <aside className="border-separator flex h-full min-h-0 flex-col gap-6 overflow-clip px-4 pb-6 pt-4">
+    <aside className="border-separator flex h-full min-h-0 flex-col gap-4 overflow-clip px-4 pb-6 pt-4">
       <BrandHeader
         trailing={
           <Button
@@ -706,10 +717,9 @@ function MobileDrawerContent({
       <SpaceSwitcher />
 
       <ScrollShadow hideScrollBar className="min-h-0 flex-1 overflow-y-auto">
-        <ExpandedNavListBox
-          items={items}
-          activeItemId={activeItemId}
-          onSelectionChange={onFilterChange}
+        <ExpandedNav
+          activeFilter={activeFilter}
+          onFilterChange={onFilterChange}
         />
       </ScrollShadow>
 

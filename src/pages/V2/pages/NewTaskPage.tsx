@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Button,
-  Chip,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -29,7 +28,7 @@ import { PRODUCT } from '@/config/product'
  * Features a rich PromptArea with use-case showcase cards.
  */
 export function NewTaskPage() {
-  const { filter, setFilter, navItems, openSettings } = useV2Shell()
+  const { filter, setFilter, openSettings } = useV2Shell()
 
   const { lang, t } = useI18n()
   const url = useUrl(lang)
@@ -282,8 +281,7 @@ export function NewTaskPage() {
     <WorkspaceLayout
       sidebar={
         <Sidebar
-          items={navItems}
-          activeItemId={filter}
+          activeFilter={filter}
           onFilterChange={(f) => setFilter(f as ThreadFilter)}
           onOpenSettings={openSettings}
         />
@@ -295,15 +293,14 @@ export function NewTaskPage() {
             className="flex min-h-0 flex-1 flex-col overflow-y-auto"
           >
             <div className="flex flex-1 flex-col items-center justify-center px-4 py-8 sm:py-16">
-              <DevsIcon />
+              <DevsIcon className="scale-150 opacity-50" />
 
               <Title
                 subtitle={t('Your AI team is ready')}
                 className="!text-2xl text-center sm:!text-3xl md:!text-4xl font-light"
-                subtitleClassName="text-md md:text-xl"
+                subtitleClassName="text-md md:text-xl text-center"
               >
-                {platformName ||
-                  t('Hey {productName}', { productName: PRODUCT.displayName })}
+                {platformName || PRODUCT.displayName}
               </Title>
 
               {/* PromptArea */}
@@ -422,7 +419,7 @@ export function NewTaskPage() {
               )}
 
               {/* Quick action chips */}
-              <div className="mt-6 flex flex-wrap justify-center gap-2">
+              {/*<div className="mt-6 flex flex-wrap justify-center gap-2">
                 <Chip
                   variant="flat"
                   className="cursor-pointer"
@@ -447,7 +444,7 @@ export function NewTaskPage() {
                 >
                   {t('App' as any)}
                 </Chip>
-              </div>
+              </div>*/}
             </div>
           </ScrollShadow>
         </div>

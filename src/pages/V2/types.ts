@@ -7,7 +7,6 @@ import type {
   Task,
 } from '@/types'
 import type { StudioEntry } from '@/features/studio/types'
-import { IconName } from '@/lib/types'
 
 /** Discriminated union: every thread is either a task, a pure conversation, a media generation, or a session */
 export type ThreadKind = 'task' | 'conversation' | 'media' | 'session'
@@ -50,20 +49,6 @@ export interface Thread {
   tags: string[]
 }
 
-export type ThreadFilter =
-  | 'home'
-  | 'inbox'
-  | 'tasks'
-  | 'conversations'
-  | 'starred'
-  | 'agents'
+export type ThreadFilter = 'home' | 'inbox' | 'agents'
 
 export type CollectionLayout = 'list' | 'board'
-
-export interface NavItem {
-  id: string
-  label: string
-  icon: IconName
-  color?: string
-  count?: number
-}

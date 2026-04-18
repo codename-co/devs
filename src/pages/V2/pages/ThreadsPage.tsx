@@ -54,7 +54,6 @@ export function ThreadsPage() {
     handleSelectArtifact,
     inspectedItem,
     closeInspectedPanel,
-    navItems,
     openSettings,
     searchInputRef,
     tagDefinitions,
@@ -167,8 +166,7 @@ export function ThreadsPage() {
       <WorkspaceLayout
         sidebar={
           <Sidebar
-            items={navItems}
-            activeItemId={filter}
+            activeFilter={filter}
             onFilterChange={(f) => setFilter(f as ThreadFilter)}
             onOpenSettings={openSettings}
           />

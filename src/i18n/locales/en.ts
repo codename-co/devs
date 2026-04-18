@@ -970,4 +970,7 @@ export const en = [
   'Space',
   'Space name',
   'New Space',
+
+  // NewTaskPage
+  'Your AI team is ready',
 ] as const

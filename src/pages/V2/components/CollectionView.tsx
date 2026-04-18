@@ -1,6 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import {
+  Button,
+  Dropdown,
   Kbd,
+  Label,
   ListBox,
   ListLayout,
   ScrollShadow,
@@ -8,11 +11,42 @@ import {
   Skeleton,
   Virtualizer,
 } from '@heroui/react_3'
+import { Icon } from '@/components'
 import type { ThreadTag } from '@/lib/yjs'
+import { useDebouncedSearch } from '../hooks/useDebouncedSearch'
 import { useTagMention } from '../hooks/useTagMention'
 import { TagMentionPopover } from './TagMentionPopover'
 
-const DEBOUNCE_MS = 200
+/** Search filter presets — inserted/removed as `is:xxx` tokens in the search string */
+const SEARCH_FILTERS = [
+  { id: 'task', label: 'Tasks', icon: 'PcCheck' as const },
+  { id: 'conversation', label: 'Conversations', icon: 'ChatBubble' as const },
+  { id: 'starred', label: 'Starred', icon: 'Star' as const },
+  { id: 'unread', label: 'Unread', icon: 'Mail' as const },
+]
+
+/** Extract active `is:xxx` tokens from a search string */
+function parseIsTokens(value: string): Set<string> {
+  const tokens = new Set<string>()
+  const re = /is:(\w+)/gi
+  let match
+  while ((match = re.exec(value)) !== null) {
+    tokens.add(match[1].toLowerCase())
+  }
+  return tokens
+}
+
+/** Toggle an `is:xxx` token in a search string */
+function toggleIsToken(value: string, token: string): string {
+  const prefix = `is:${token}`
+  const re = new RegExp(`\\bis:${token}\\b\\s*`, 'gi')
+  if (re.test(value)) {
+    // Remove the token
+    return value.replace(re, '').trim()
+  }
+  // Add the token
+  return value ? `${prefix} ${value}` : prefix
+}
 
 interface CollectionViewProps<T> {
   items: T[]
@@ -65,30 +99,18 @@ export function CollectionView<T extends object>({
   prependSlot,
   tags = [],
 }: CollectionViewProps<T>) {
-  const [inputValue, setInputValue] = useState(search)
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const localInputRef = useRef<HTMLInputElement>(null)
   const effectiveInputRef = searchInputRef ?? localInputRef
 
-  useEffect(() => {
-    setInputValue(search)
-  }, [search])
-
-  useEffect(() => () => clearTimeout(timeoutRef.current), [])
-
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      setInputValue(value)
-      clearTimeout(timeoutRef.current)
-      timeoutRef.current = setTimeout(() => onSearchChange(value), DEBOUNCE_MS)
-    },
-    [onSearchChange],
+  const [inputValue, setInputValue, flushInputValue] = useDebouncedSearch(
+    search,
+    onSearchChange,
   )
 
   const tagMention = useTagMention({
     tags,
     inputValue,
-    onInputValueChange: handleSearchChange,
+    onInputValueChange: setInputValue,
     inputRef: effectiveInputRef,
   })
 
@@ -151,16 +173,28 @@ export function CollectionView<T extends object>({
     </ListBox>
   )
 
+  const activeTokens = useMemo(() => parseIsTokens(inputValue), [inputValue])
+  const hasActiveFilters = activeTokens.size > 0
+
+  const handleFilterToggle = useCallback(
+    (token: string) => {
+      const newValue = toggleIsToken(inputValue, token)
+      flushInputValue(newValue)
+    },
+    [inputValue, flushInputValue],
+  )
+
   return (
     <div
       className={`h-full min-h-0 flex-col gap-4 overflow-clip px-4 pb-6 pt-4 ${className ?? 'flex'}`}
     >
-      <div className="relative">
+      <div className="relative flex items-center gap-1.5">
         <SearchField
           name="collection-search"
           variant="primary"
           value={inputValue}
-          onChange={handleSearchChange}
+          onChange={setInputValue}
+          className="flex-1"
         >
           <SearchField.Group>
             <SearchField.SearchIcon />
@@ -174,7 +208,7 @@ export function CollectionView<T extends object>({
             <SearchField.ClearButton />
             {showSearchShortcutHint && (
               <span className="me-1.5">
-                <Kbd>
+                <Kbd variant="light">
                   <Kbd.Abbr keyValue="command" title="Command">
                     ⌘
                   </Kbd.Abbr>
@@ -184,6 +218,31 @@ export function CollectionView<T extends object>({
             )}
           </SearchField.Group>
         </SearchField>
+        <Dropdown>
+          <Button
+            isIconOnly
+            size="sm"
+            variant={hasActiveFilters ? 'secondary' : 'ghost'}
+            aria-label="Filter threads"
+          >
+            <Icon name="FilterList" size="sm" />
+          </Button>
+          <Dropdown.Popover placement="bottom end">
+            <Dropdown.Menu
+              selectionMode="multiple"
+              selectedKeys={activeTokens}
+              onAction={(key) => handleFilterToggle(key as string)}
+            >
+              {SEARCH_FILTERS.map((f) => (
+                <Dropdown.Item key={f.id} id={f.id} textValue={f.label}>
+                  <Icon name={f.icon} size="sm" />
+                  <Label>{f.label}</Label>
+                  <Dropdown.ItemIndicator type="dot" />
+                </Dropdown.Item>
+              ))}
+            </Dropdown.Menu>
+          </Dropdown.Popover>
+        </Dropdown>
         {tagMention.showPopover && (
           <TagMentionPopover
             tags={tagMention.filteredTags}

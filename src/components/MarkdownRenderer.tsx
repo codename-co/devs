@@ -20,6 +20,7 @@ import {
   updateLiveWidget,
   useInspectorPanelStore,
 } from '@/stores/inspectorPanelStore'
+import { Loader } from './Loader'
 
 interface MarkdownRendererProps {
   content: string
@@ -722,10 +723,7 @@ export const MarkdownRenderer = ({
   return (
     <>
       {renderedContent}
-      {isStreaming && (
-        // animated ellipsis to indicate streaming
-        <span className="text-primary-300 animate-pulse">▍</span>
-      )}
+      {isStreaming && <Loader />}
     </>
   )
 }

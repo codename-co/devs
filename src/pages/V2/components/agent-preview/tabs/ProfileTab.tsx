@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { Chip, Input, ScrollShadow, TextArea } from '@heroui/react_3'
+import { Input, ScrollShadow, TextArea } from '@heroui/react_3'
 import { Icon, MarkdownRenderer } from '@/components'
 import { useI18n } from '@/i18n'
 import { updateAgent } from '@/stores/agentStore'

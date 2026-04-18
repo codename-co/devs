@@ -15,14 +15,7 @@ import {
 
 export type InspectSegment = { type: 'artifact' | 'widget'; id: string } | null
 
-const VALID_FILTERS: ThreadFilter[] = [
-  'home',
-  'inbox',
-  'tasks',
-  'conversations',
-  'starred',
-  'agents',
-]
+const VALID_FILTERS: ThreadFilter[] = ['home', 'inbox', 'agents']
 
 /** Read the search query from `#q=...` */
 function getHashSearch(): string {

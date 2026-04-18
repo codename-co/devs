@@ -108,16 +108,13 @@ export function PlaygroundTab({ agent }: PlaygroundTabProps) {
         abortRef.current = abortController
 
         let accumulated = ''
-        for await (const chunk of LLMService.streamChat(
-          llmMessages,
-          {
-            ...config,
-            ...(agent.temperature != null
-              ? { temperature: agent.temperature }
-              : {}),
-            signal: abortController.signal,
-          },
-        )) {
+        for await (const chunk of LLMService.streamChat(llmMessages, {
+          ...config,
+          ...(agent.temperature != null
+            ? { temperature: agent.temperature }
+            : {}),
+          signal: abortController.signal,
+        })) {
           if (abortController.signal.aborted) break
           accumulated += chunk
           setStreamingContent(accumulated)
@@ -151,9 +148,7 @@ export function PlaygroundTab({ agent }: PlaygroundTabProps) {
             return ''
           })
         } else {
-          setError(
-            err instanceof Error ? err.message : 'An error occurred',
-          )
+          setError(err instanceof Error ? err.message : 'An error occurred')
         }
       } finally {
         setStreamingContent('')
@@ -201,7 +196,7 @@ export function PlaygroundTab({ agent }: PlaygroundTabProps) {
         ) : (
           <div className="flex flex-col gap-3 py-1">
             {messages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} agent={agent} />
+              <MessageBubble key={msg.id} message={msg} />
             ))}
             {isStreaming && streamingContent && (
               <MessageBubble
@@ -211,7 +206,6 @@ export function PlaygroundTab({ agent }: PlaygroundTabProps) {
                   content: streamingContent,
                   timestamp: new Date(),
                 }}
-                agent={agent}
               />
             )}
             {isStreaming && !streamingContent && (
@@ -261,25 +255,16 @@ export function PlaygroundTab({ agent }: PlaygroundTabProps) {
   )
 }
 
-function MessageBubble({
-  message,
-  agent,
-}: {
-  message: PlaygroundMessage
-  agent: Agent
-}) {
+function MessageBubble({ message }: { message: PlaygroundMessage }) {
   const isUser = message.role === 'user'
 
   return (
     <div className={`flex gap-2 ${isUser ? 'flex-row-reverse' : ''}`}>
-      {!isUser && (
-        <AgentAvatar agent={agent} size="sm" className="mt-0.5 shrink-0" />
-      )}
       <div
         className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
           isUser
             ? 'bg-primary text-primary-foreground rounded-br-md'
-            : 'bg-default-100 text-foreground rounded-bl-md'
+            : 'bg-transparent text-foreground'
         }`}
       >
         {isUser ? (

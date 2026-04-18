@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useMemo, useRef, useState } from 'react'
 import {
   Card,
   Chip,
@@ -15,6 +15,7 @@ import {
   stripMarkdown,
   truncate,
 } from '../lib/thread-utils'
+import { useDebouncedSearch } from '../hooks/useDebouncedSearch'
 import { useTagMention } from '../hooks/useTagMention'
 import { TagMentionPopover } from './TagMentionPopover'
 
@@ -35,7 +36,6 @@ const COLUMNS: BoardColumn[] = [
   { key: 'failed', label: 'Failed', color: 'danger' },
 ]
 
-const DEBOUNCE_MS = 200
 const DRAG_MIME = 'application/x-devs-thread-id'
 
 /** Resolve the board column key for a thread */
@@ -77,31 +77,16 @@ export const ThreadBoardView = memo(function ThreadBoardView({
   isLoading = false,
   tags = [],
 }: ThreadBoardViewProps) {
-  const [inputValue, setInputValue] = useState(search)
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const [dropTarget, setDropTarget] = useState<string | null>(null)
   const localInputRef = useRef<HTMLInputElement>(null)
   const effectiveInputRef = searchInputRef ?? localInputRef
 
-  useEffect(() => {
-    setInputValue(search)
-  }, [search])
-
-  useEffect(() => () => clearTimeout(timeoutRef.current), [])
-
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      setInputValue(value)
-      clearTimeout(timeoutRef.current)
-      timeoutRef.current = setTimeout(() => onSearchChange(value), DEBOUNCE_MS)
-    },
-    [onSearchChange],
-  )
+  const [inputValue, setInputValue] = useDebouncedSearch(search, onSearchChange)
 
   const tagMention = useTagMention({
     tags,
     inputValue,
-    onInputValueChange: handleSearchChange,
+    onInputValueChange: setInputValue,
     inputRef: effectiveInputRef,
   })
 
@@ -171,7 +156,7 @@ export const ThreadBoardView = memo(function ThreadBoardView({
             name="board-search"
             variant="primary"
             value={inputValue}
-            onChange={handleSearchChange}
+            onChange={setInputValue}
           >
             <SearchField.Group>
               <SearchField.SearchIcon />

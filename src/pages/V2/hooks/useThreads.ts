@@ -12,7 +12,7 @@ import {
   useActiveSpaceId,
   entityBelongsToSpace,
 } from '@/stores/spaceStore'
-import type { Thread, ThreadFilter } from '../types'
+import type { Thread } from '../types'
 import { useReadStatus } from './useReadStatus'
 import type { Agent, Artifact, Conversation, Session, Task } from '@/types'
 import type { StudioEntry } from '@/features/studio/types'
@@ -292,7 +292,7 @@ function buildSessionThread(
  * identity when the underlying source data hasn't changed. This lets
  * downstream `React.memo()` components skip re-rendering.
  */
-export function useThreads(filter: ThreadFilter): {
+export function useThreads(): {
   threads: Thread[]
   isLoading: boolean
 } {
@@ -472,29 +472,8 @@ export function useThreads(filter: ThreadFilter): {
 
     cacheRef.current = nextCache
 
-    // Collect and filter
-    let merged = Array.from(nextCache.values(), (e) => e.thread)
-
-    switch (filter) {
-      case 'tasks':
-        merged = merged.filter(
-          (t) =>
-            t.kind === 'task' ||
-            (t.kind === 'session' && t.source.session?.intent === 'task'),
-        )
-        break
-      case 'conversations':
-        merged = merged.filter(
-          (t) =>
-            t.kind === 'conversation' ||
-            (t.kind === 'session' &&
-              t.source.session?.intent === 'conversation'),
-        )
-        break
-      case 'starred':
-        merged = merged.filter((t) => t.starColor !== null)
-        break
-    }
+    // Collect all threads
+    const merged = Array.from(nextCache.values(), (e) => e.thread)
 
     merged.sort(
       (a, b) =>
@@ -509,7 +488,6 @@ export function useThreads(filter: ThreadFilter): {
     agents,
     studioEntries,
     wsSessions,
-    filter,
     taskConversationIds,
     sessionOwnedIds,
     agentMap,
