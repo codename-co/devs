@@ -8,6 +8,7 @@ interface UseAgentMentionOptions {
   prompt: string
   onPromptChange: (value: string) => void
   inputRef?: React.RefObject<HTMLTextAreaElement | null>
+  disabled?: boolean
 }
 
 interface AgentMentionResult {
@@ -37,6 +38,7 @@ export function useAgentMention({
   prompt,
   onPromptChange,
   inputRef,
+  disabled = false,
 }: UseAgentMentionOptions): AgentMentionResult {
   // Load agents from store (includes both built-in and custom agents)
   const [availableAgents, setAvailableAgents] = useState<Agent[]>([])
@@ -45,10 +47,11 @@ export function useAgentMention({
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [mentionStartIndex, setMentionStartIndex] = useState(-1)
 
-  // Load all agents on mount
+  // Load all agents on mount (skipped in demo/disabled mode)
   useEffect(() => {
+    if (disabled) return
     loadAllAgents().then(setAvailableAgents)
-  }, [])
+  }, [disabled])
 
   // Filter agents based on mention query
   const filteredAgents = useMemo(() => {

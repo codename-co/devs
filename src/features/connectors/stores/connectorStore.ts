@@ -13,7 +13,7 @@ import type {
 import { infoToast } from '@/lib/toast'
 import { notifyError, notifySuccess } from '@/features/notifications'
 import { ProviderRegistry } from '@/features/connectors/provider-registry'
-import { getActiveSpaceId, entityBelongsToSpace } from '@/stores/spaceStore'
+import { getCreationSpaceId, entityBelongsToSpace } from '@/stores/spaceStore'
 import { SecureStorage } from '@/lib/crypto'
 import { sanitizeErrorMessage } from '@/features/connectors/sanitizer'
 import {
@@ -163,7 +163,7 @@ export const useConnectorStore = create<ConnectorState>((set, get) => ({
       const connector: Connector = {
         ...connectorData,
         id,
-        spaceId: connectorData.spaceId ?? getActiveSpaceId(),
+        spaceId: connectorData.spaceId ?? getCreationSpaceId(),
         createdAt: now,
         updatedAt: now,
       }

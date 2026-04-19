@@ -16,7 +16,7 @@ import {
   customExtensions as customExtensionsMap,
 } from '@/lib/yjs/maps'
 import { whenReady, createYjsCache } from '@/lib/yjs'
-import { getActiveSpaceId } from '@/stores/spaceStore'
+import { getCreationSpaceId } from '@/stores/spaceStore'
 import { errorToast, successToast } from '@/lib/toast'
 import type {
   MarketplaceExtension,
@@ -343,7 +343,7 @@ export const useMarketplaceStore = create<MarketplaceStore>((set, get) => ({
         enabled: true,
         userConfig: extension.configuration?.defaults,
         installedAt: new Date(),
-        spaceId: getActiveSpaceId(),
+        spaceId: getCreationSpaceId(),
       }
 
       const newInstalled = new Map(installed)

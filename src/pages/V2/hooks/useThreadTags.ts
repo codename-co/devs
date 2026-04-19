@@ -11,7 +11,7 @@ import { sessions as sessionsMap } from '@/lib/yjs'
 import {
   useActiveSpaceId,
   entityBelongsToSpace,
-  getActiveSpaceId,
+  getCreationSpaceId,
 } from '@/stores/spaceStore'
 
 // ---------------------------------------------------------------------------
@@ -73,7 +73,7 @@ export function createThreadTag(
   name: string,
   color: ThreadTag['color'],
 ): ThreadTag {
-  const tag: ThreadTag = { id: nanoid(), name, color, spaceId: getActiveSpaceId() }
+  const tag: ThreadTag = { id: nanoid(), name, color, spaceId: getCreationSpaceId() }
   threadTags.set(tag.id, tag)
   return tag
 }

@@ -8,7 +8,8 @@ Spaces let users organize their DEVS content into separate contexts. Each space 
 |---|---|
 | **Space** | A named container that groups conversations, tasks, sessions, agents, artifacts, knowledge items, studio entries, marketplace apps, skills, and tags together. Each space can also override global settings. |
 | **Default Space** | A virtual space (ID `default`) that owns all pre-existing and unassigned data. It always exists and cannot be deleted or renamed. |
-| **Active Space** | The space currently selected by the user. All new entities are automatically tagged with this space, and only its entities appear in the UI. |
+| **All Spaces** | A virtual view (ID `__all__`) that shows entities across every space at once. Read-only: it cannot receive new entities — anything created while it's active is tagged with the default space. |
+| **Active Space** | The space currently selected by the user. All new entities are automatically tagged with this space (or the default space when viewing All Spaces), and only its entities appear in the UI. |
 
 ## Data Model
 
@@ -87,6 +88,7 @@ The active space is stored per-device via Zustand's localStorage persistence (`u
 entityBelongsToSpace(entitySpaceId: string | undefined, activeSpaceId: string): boolean
 ```
 
+- When `activeSpaceId` is `ALL_SPACES_ID`: returns `true` for every entity (global view).
 - When `activeSpaceId` is `'default'` (or empty): matches entities with `undefined`, `''`, or `'default'` spaceId.
 - Otherwise: matches only entities whose `spaceId` equals `activeSpaceId`.
 
@@ -100,7 +102,9 @@ entityBelongsToSpace(entitySpaceId: string | undefined, activeSpaceId: string): 
 
 ## Entity auto-tagging
 
-Each store automatically injects `spaceId: getActiveSpaceId()` when creating new entities:
+Each store automatically injects `spaceId: getCreationSpaceId()` when creating new entities. `getCreationSpaceId()` returns the active space ID, except when the user is viewing "All Spaces" — in that case it falls back to `DEFAULT_SPACE_ID`, so newly created entities always land in a real container and remain visible after switching out of the cross-space view.
+
+Creation call sites:
 
 - `conversationStore.createConversation()`
 - `taskStore.createTask()`
@@ -184,10 +188,18 @@ Spaces are represented in the URL via an optional `/spaces/:encodedSpaceId` pref
 
 ```
 /v2                                    → default space
+/spaces/all/v2                         → all spaces (cross-space view)
 /spaces/<base64url>/v2                 → specific space
 /:lang/v2                              → default space, with language
+/:lang/spaces/all/v2                   → all spaces, with language
 /:lang/spaces/<base64url>/v2           → specific space, with language
 ```
+
+**Distinguishing default vs all vs specific spaces in the URL:**
+
+- **Default** = absence of the `/spaces/...` prefix (keeps "home" URLs clean and shareable).
+- **All Spaces** = literal `/spaces/all/...` segment. The literal `all` is collision-free with `uuidToBase64url()` output, which is always exactly 22 characters. Exported as the constant `ALL_SPACES_URL_SEGMENT`.
+- **Specific space** = `/spaces/<22-char base64url UUID>/...`.
 
 ### `SpacePath` component
 

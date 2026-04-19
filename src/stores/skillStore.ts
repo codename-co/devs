@@ -10,7 +10,7 @@
 import { nanoid } from 'nanoid'
 import { skills, transact, useLiveMap, useLiveValue } from '@/lib/yjs'
 import type { InstalledSkill, SkillScript, SkillFile } from '@/types'
-import { getActiveSpaceId, entityBelongsToSpace, useActiveSpaceId } from '@/stores/spaceStore'
+import { getActiveSpaceId, getCreationSpaceId, entityBelongsToSpace, useActiveSpaceId } from '@/stores/spaceStore'
 
 // ============================================================================
 // Types
@@ -71,7 +71,7 @@ export function createCustomSkill(data: CreateCustomSkillData): InstalledSkill {
     enabled: true,
     assignedAgentIds: [],
     autoActivate: false,
-    spaceId: getActiveSpaceId(),
+    spaceId: getCreationSpaceId(),
   }
 
   transact(() => {
@@ -105,7 +105,7 @@ export function installSkill(data: InstallSkillData): InstalledSkill {
     enabled: true,
     assignedAgentIds: [],
     autoActivate: false,
-    spaceId: getActiveSpaceId(),
+    spaceId: getCreationSpaceId(),
   }
 
   transact(() => {

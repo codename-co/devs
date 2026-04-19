@@ -1211,6 +1211,21 @@ export interface ModelTierConfig {
 /** ID of the space that owns all pre-existing (unassigned) data. */
 export const DEFAULT_SPACE_ID = 'default'
 
+/**
+ * Sentinel ID used when the user wants to view entities across ALL spaces
+ * at once (global thread list, cross-space search). This is a view-only
+ * mode: new entities created while this is active are tagged with
+ * `DEFAULT_SPACE_ID`, not this sentinel.
+ */
+export const ALL_SPACES_ID = '__all__'
+
+/**
+ * Reserved URL segment for the "all spaces" view. Chosen to be
+ * collision-free with `uuidToBase64url()` output, which is always
+ * exactly 22 characters.
+ */
+export const ALL_SPACES_URL_SEGMENT = 'all'
+
 export interface Space {
   id: string
   name: string

@@ -1036,6 +1036,7 @@ export const ar: I18n = {
   Space: 'مساحة',
   'Space name': 'اسم المساحة',
   'New Space': 'مساحة جديدة',
+  'All spaces': 'جميع المساحات',
 
   // NewTaskPage
   'Your AI team is ready': 'فريق الذكاء الاصطناعي جاهز',

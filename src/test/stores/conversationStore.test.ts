@@ -48,6 +48,7 @@ vi.mock('@/stores/agentStore', () => ({
 // Mock spaceStore
 vi.mock('@/stores/spaceStore', () => ({
   getActiveSpaceId: vi.fn(() => 'default'),
+  getCreationSpaceId: vi.fn(() => 'default'),
 }))
 
 // Mock content encryption to pass through plaintext (SecureStorage not available in tests)

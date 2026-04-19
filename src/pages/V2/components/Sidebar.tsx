@@ -1,8 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Icon, Title } from '@/components'
 import { useI18n, useUrl } from '@/i18n'
-import { DEFAULT_SPACE_ID } from '@/types'
+import {
+  ALL_SPACES_ID,
+  ALL_SPACES_URL_SEGMENT,
+  DEFAULT_SPACE_ID,
+} from '@/types'
 import { userSettings } from '@/stores/userStore'
 import {
   useSpaces,
@@ -90,16 +94,22 @@ function useSpaceNavigate() {
     const stripped = pathname.replace(/\/spaces\/[A-Za-z0-9_-]+/, '')
     if (!spaceId || spaceId === DEFAULT_SPACE_ID) {
       navigate(stripped + search + hash)
-    } else {
-      const langMatch = stripped.match(/^\/([a-z]{2})(\/|$)/)
-      const prefix = langMatch
-        ? `/${langMatch[1]}/spaces/${uuidToBase64url(spaceId)}`
-        : `/spaces/${uuidToBase64url(spaceId)}`
-      const rest = langMatch
-        ? stripped.slice(langMatch[0].length - (langMatch[2] ? 1 : 0))
-        : stripped
-      navigate(prefix + rest + search + hash)
+      return
     }
+
+    const segment =
+      spaceId === ALL_SPACES_ID
+        ? ALL_SPACES_URL_SEGMENT
+        : uuidToBase64url(spaceId)
+
+    const langMatch = stripped.match(/^\/([a-z]{2})(\/|$)/)
+    const prefix = langMatch
+      ? `/${langMatch[1]}/spaces/${segment}`
+      : `/spaces/${segment}`
+    const rest = langMatch
+      ? stripped.slice(langMatch[0].length - (langMatch[2] ? 1 : 0))
+      : stripped
+    navigate(prefix + rest + search + hash)
   }
 }
 
@@ -109,7 +119,18 @@ function SpaceSwitcher({ isCollapsed }: { isCollapsed?: boolean }) {
   const activeId = useActiveSpaceId()
   const [isCreating, setIsCreating] = useState(false)
   const [newName, setNewName] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
   const navigateToSpace = useSpaceNavigate()
+
+  useEffect(() => {
+    if (isCreating) {
+      const id = requestAnimationFrame(() => {
+        inputRef.current?.focus()
+        inputRef.current?.select()
+      })
+      return () => cancelAnimationFrame(id)
+    }
+  }, [isCreating])
 
   const activeSpace = allSpaces.find((w) => w.id === activeId) ?? allSpaces[0]
 
@@ -143,28 +164,11 @@ function SpaceSwitcher({ isCollapsed }: { isCollapsed?: boolean }) {
     }
   }
 
-  if (isCollapsed) {
-    return (
-      <Tooltip delay={0}>
-        <Button
-          isIconOnly
-          variant="ghost"
-          size="sm"
-          aria-label={activeSpace?.name ?? 'Space'}
-        >
-          <Icon name="Cube" className="text-muted" size="sm" />
-        </Button>
-        <Tooltip.Content placement="right">
-          {activeSpace?.name ?? 'Space'}
-        </Tooltip.Content>
-      </Tooltip>
-    )
-  }
-
   if (isCreating) {
     return (
       <div className="px-0.5">
         <input
+          ref={inputRef}
           type="text"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
@@ -176,6 +180,61 @@ function SpaceSwitcher({ isCollapsed }: { isCollapsed?: boolean }) {
           maxLength={60}
         />
       </div>
+    )
+  }
+
+  const collapsedIcon = activeId === ALL_SPACES_ID ? 'Cubes' : 'Cube'
+  const spaceOptions = (
+    <Select.Popover>
+      <ListBox>
+        <ListBox.Item isDisabled>
+          Select a space
+          <ListBox.ItemIndicator />
+        </ListBox.Item>
+        {allSpaces.map((ws) => (
+          <ListBox.Item key={ws.id} id={ws.id} textValue={ws.name}>
+            <Icon
+              name={ws.id === ALL_SPACES_ID ? 'Cubes' : 'Cube'}
+              className="text-muted"
+              size="sm"
+            />
+            {ws.id === ALL_SPACES_ID ? t('All spaces') : ws.name}
+            {ws.id === activeId && (
+              <ListBox.ItemIndicator className="ms-auto">
+                <Icon name="Check" className="text-primary" size="sm" />
+              </ListBox.ItemIndicator>
+            )}
+          </ListBox.Item>
+        ))}
+        <Separator />
+        <ListBox.Item id="__new__" textValue={t('New Space')}>
+          <Icon name="Plus" className="text-primary" size="sm" />
+          <span className="text-primary">{t('New Space')}</span>
+        </ListBox.Item>
+      </ListBox>
+    </Select.Popover>
+  )
+
+  if (isCollapsed) {
+    return (
+      <Select
+        aria-label={t('Space')}
+        selectedKey={activeId}
+        onSelectionChange={handleSelectionChange}
+      >
+        <Tooltip delay={0}>
+          <Select.Trigger
+            className="hover:bg-default/40 inline-flex h-8 w-8 items-center justify-center rounded-lg outline-none"
+            aria-label={activeSpace?.name ?? 'Space'}
+          >
+            <Icon name={collapsedIcon} className="text-muted" size="sm" />
+          </Select.Trigger>
+          <Tooltip.Content placement="right">
+            {activeSpace?.name ?? 'Space'}
+          </Tooltip.Content>
+        </Tooltip>
+        {spaceOptions}
+      </Select>
     )
   }
 
@@ -197,30 +256,7 @@ function SpaceSwitcher({ isCollapsed }: { isCollapsed?: boolean }) {
             />
           </Select.Indicator>
         </Select.Trigger>
-        <Select.Popover>
-          <ListBox>
-            <ListBox.Item isDisabled>
-              Select a space
-              <ListBox.ItemIndicator />
-            </ListBox.Item>
-            {allSpaces.map((ws) => (
-              <ListBox.Item key={ws.id} id={ws.id} textValue={ws.name}>
-                <Icon name="Cube" className="text-muted" size="sm" />
-                {ws.name}
-                {ws.id === activeId && (
-                  <ListBox.ItemIndicator className="ms-auto">
-                    <Icon name="Check" className="text-primary" size="sm" />
-                  </ListBox.ItemIndicator>
-                )}
-              </ListBox.Item>
-            ))}
-            <Separator />
-            <ListBox.Item id="__new__" textValue={t('New Space')}>
-              <Icon name="Plus" className="text-primary" size="sm" />
-              <span className="text-primary">{t('New Space')}</span>
-            </ListBox.Item>
-          </ListBox>
-        </Select.Popover>
+        {spaceOptions}
       </Select>
     </div>
   )
@@ -297,17 +333,21 @@ export function Sidebar({
   onFilterChange,
   onOpenSettings,
   className,
+  isCollapsed: isCollapsedProp,
 }: {
   activeFilter: ThreadFilter
   onFilterChange: (filter: ThreadFilter) => void
   onOpenSettings: () => void
   className?: string
+  /** Override the store-based collapsed state. Useful for controlled contexts like tours. */
+  isCollapsed?: boolean
 }) {
   const { lang, t } = useI18n()
   const navigate = useNavigate()
   const url = useUrl(lang)
   const { toggle: toggleTheme } = useThemeToggle()
-  const isCollapsed = userSettings((state) => state.isV2SidebarCollapsed)
+  const isCollapsedFromStore = userSettings((state) => state.isV2SidebarCollapsed)
+  const isCollapsed = isCollapsedProp !== undefined ? isCollapsedProp : isCollapsedFromStore
   const installedApps = useInstalledApps()
 
   const [isMobileOpen, setIsMobileOpen] = useState(false)

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { Space } from '@/types'
-import { DEFAULT_SPACE_ID } from '@/types'
+import { ALL_SPACES_ID, DEFAULT_SPACE_ID } from '@/types'
 
 // Mock Yjs spaces map
 const mockSpacesMap = new Map<string, Space>()
@@ -44,6 +44,7 @@ import {
   deleteSpace,
   getActiveSpaceId,
   setActiveSpaceId,
+  getCreationSpaceId,
   getAllSpaces,
   getSpaceById,
   entityBelongsToSpace,
@@ -141,11 +142,16 @@ describe('spaceStore', () => {
       expect(all[0].name).toBe('Default')
     })
 
+    it('should include the all-spaces synthetic view right after default', () => {
+      const all = getAllSpaces()
+      expect(all[1].id).toBe(ALL_SPACES_ID)
+    })
+
     it('should include created spaces', () => {
       createSpace('Project A')
       createSpace('Project B')
       const all = getAllSpaces()
-      expect(all).toHaveLength(3) // default + 2 custom
+      expect(all).toHaveLength(4) // default + all-spaces + 2 custom
     })
   })
 
@@ -199,6 +205,51 @@ describe('spaceStore', () => {
 
     it('should not match unassigned entities to a custom space', () => {
       expect(entityBelongsToSpace(undefined, 'ws-123')).toBe(false)
+    })
+
+    it('should match every entity when active space is ALL_SPACES_ID', () => {
+      expect(entityBelongsToSpace(undefined, ALL_SPACES_ID)).toBe(true)
+      expect(entityBelongsToSpace('', ALL_SPACES_ID)).toBe(true)
+      expect(entityBelongsToSpace(DEFAULT_SPACE_ID, ALL_SPACES_ID)).toBe(true)
+      expect(entityBelongsToSpace('ws-abc', ALL_SPACES_ID)).toBe(true)
+    })
+  })
+
+  describe('getCreationSpaceId', () => {
+    it('should mirror getActiveSpaceId for the default space', () => {
+      expect(getCreationSpaceId()).toBe(DEFAULT_SPACE_ID)
+    })
+
+    it('should mirror getActiveSpaceId for a real space', () => {
+      const ws = createSpace('Work')
+      setActiveSpaceId(ws.id)
+      expect(getCreationSpaceId()).toBe(ws.id)
+    })
+
+    it('should fall back to default when viewing ALL_SPACES_ID', () => {
+      setActiveSpaceId(ALL_SPACES_ID)
+      expect(getActiveSpaceId()).toBe(ALL_SPACES_ID)
+      expect(getCreationSpaceId()).toBe(DEFAULT_SPACE_ID)
+    })
+  })
+
+  describe('getSpaceById with ALL_SPACES_ID', () => {
+    it('should return a synthetic all-spaces entry', () => {
+      const ws = getSpaceById(ALL_SPACES_ID)
+      expect(ws.id).toBe(ALL_SPACES_ID)
+    })
+  })
+
+  describe('renameSpace / deleteSpace with ALL_SPACES_ID', () => {
+    it('renameSpace is a no-op for ALL_SPACES_ID', () => {
+      renameSpace(ALL_SPACES_ID, 'Nope')
+      expect(getSpaceById(ALL_SPACES_ID).name).toBe('All spaces')
+    })
+
+    it('deleteSpace is a no-op for ALL_SPACES_ID', () => {
+      setActiveSpaceId(ALL_SPACES_ID)
+      deleteSpace(ALL_SPACES_ID)
+      expect(getActiveSpaceId()).toBe(ALL_SPACES_ID)
     })
   })
 })

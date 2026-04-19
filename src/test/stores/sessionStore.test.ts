@@ -19,6 +19,7 @@ vi.mock('@/lib/toast', () => mockToast)
 // Mock spaceStore
 vi.mock('@/stores/spaceStore', () => ({
   getActiveSpaceId: vi.fn(() => 'default'),
+  getCreationSpaceId: vi.fn(() => 'default'),
 }))
 
 // Mock crypto.randomUUID for predictable IDs

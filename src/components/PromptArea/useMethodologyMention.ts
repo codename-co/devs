@@ -8,6 +8,7 @@ interface UseMethodologyMentionOptions {
   prompt: string
   onPromptChange: (value: string) => void
   inputRef?: React.RefObject<HTMLTextAreaElement | null>
+  disabled?: boolean
 }
 
 interface MethodologyMentionResult {
@@ -36,6 +37,7 @@ export function useMethodologyMention({
   prompt,
   onPromptChange,
   inputRef,
+  disabled = false,
 }: UseMethodologyMentionOptions): MethodologyMentionResult {
   const [availableMethodologies, setAvailableMethodologies] = useState<
     Methodology[]
@@ -45,14 +47,15 @@ export function useMethodologyMention({
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [mentionStartIndex, setMentionStartIndex] = useState(-1)
 
-  // Load all available methodologies
+  // Load all available methodologies (skipped in demo/disabled mode)
   useEffect(() => {
+    if (disabled) return
     const loadMethodologies = async () => {
       const methodologies = await loadAllMethodologies()
       setAvailableMethodologies(methodologies)
     }
     loadMethodologies()
-  }, [])
+  }, [disabled])
 
   // Filter methodologies based on mention query
   const filteredMethodologies = useMemo(() => {

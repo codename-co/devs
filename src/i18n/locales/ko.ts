@@ -1035,6 +1035,7 @@ export const ko: I18n = {
   Space: '스페이스',
   'Space name': '스페이스 이름',
   'New Space': '새 스페이스',
+  'All spaces': '모든 스페이스',
 
   // NewTaskPage
   'Your AI team is ready': 'AI 팀이 준비되었습니다',

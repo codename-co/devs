@@ -7,6 +7,7 @@ import { defaultLang, I18nProvider, Lang, langs } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
 import { setActiveSpaceId } from '@/stores/spaceStore'
 import { base64urlToUuid } from '@/lib/url'
+import { ALL_SPACES_ID, ALL_SPACES_URL_SEGMENT } from '@/types'
 import { StudioPage } from '@/features/studio/pages/StudioPage'
 import { IndexPage } from '@/pages/Index'
 import { AgentsNewPage } from '@/pages/Agents/new'
@@ -23,6 +24,7 @@ import { AboutPage } from '@/pages/About'
 import { PrivacyPage } from '@/pages/Privacy'
 import { TermsPage } from '@/pages/Terms'
 import { V2Page } from '@/pages/V2'
+import { TourPage } from '@/pages/Tour'
 import { OAuthCallbackPage } from '@/pages/OAuth'
 import { TaskPage } from '@/pages/Tasks/show'
 import { SessionPage } from '@/pages/Session'
@@ -103,6 +105,7 @@ const routes = {
   'marketplace/new': NewExtensionPage,
   'marketplace/extensions/:extensionId/edit': ExtensionEditorPage,
   live: LivePage,
+  tour: TourPage,
   compare: ComparePage,
   'compare/agenticseek': CompareAgenticSeekPage,
   'compare/base44': CompareBase44Page,
@@ -222,13 +225,16 @@ const SpacePath = () => {
   const { encodedSpaceId } = useParams()
 
   useEffect(() => {
-    if (encodedSpaceId) {
-      try {
-        const spaceId = base64urlToUuid(encodedSpaceId)
-        setActiveSpaceId(spaceId)
-      } catch {
-        // Invalid encoding — fall back to default
-      }
+    if (!encodedSpaceId) return
+    if (encodedSpaceId === ALL_SPACES_URL_SEGMENT) {
+      setActiveSpaceId(ALL_SPACES_ID)
+      return
+    }
+    try {
+      const spaceId = base64urlToUuid(encodedSpaceId)
+      setActiveSpaceId(spaceId)
+    } catch {
+      // Invalid encoding — fall back to default
     }
   }, [encodedSpaceId])
 

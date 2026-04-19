@@ -10,6 +10,7 @@ interface UseSkillMentionOptions {
   prompt: string
   onPromptChange: (value: string) => void
   inputRef?: React.RefObject<HTMLTextAreaElement | null>
+  disabled?: boolean
 }
 
 /**
@@ -98,6 +99,7 @@ export function useSkillMention({
   prompt,
   onPromptChange,
   inputRef,
+  disabled = false,
 }: UseSkillMentionOptions): SkillMentionResult {
   const allSkills = useSkills()
   const availableSkills = useMemo(
@@ -106,15 +108,15 @@ export function useSkillMention({
   )
 
   // Ensure connector store is initialized, then fetch active (connected) connectors
+  // (skipped in demo/disabled mode)
   const initialize = useConnectorStore((state) => state.initialize)
   const isInitialized = useConnectorStore((state) => state.isInitialized)
   const initRef = useRef(false)
   useEffect(() => {
-    if (!isInitialized && !initRef.current) {
-      initRef.current = true
-      initialize()
-    }
-  }, [isInitialized, initialize])
+    if (disabled || isInitialized || initRef.current) return
+    initRef.current = true
+    initialize()
+  }, [disabled, isInitialized, initialize])
 
   const connectors = useConnectorStore((state) => state.connectors)
   const activeConnectors = useMemo(

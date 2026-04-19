@@ -17,9 +17,15 @@ import { Icon } from '@/components'
 import { errorToast, successToast } from '@/lib/toast'
 import { useHashHighlight } from '@/hooks/useHashHighlight'
 import localI18n from './i18n'
-import { SettingsProvider, useSettingsLabelInfo, useSettingsScope, useSetSettingsScope, type SettingsScope } from './SettingsContext'
+import {
+  SettingsProvider,
+  useSettingsLabelInfo,
+  useSettingsScope,
+  useSetSettingsScope,
+  type SettingsScope,
+} from './SettingsContext'
 import { useActiveSpace, useActiveSpaceId } from '@/stores/spaceStore'
-import { DEFAULT_SPACE_ID } from '@/types'
+import { ALL_SPACES_ID, DEFAULT_SPACE_ID } from '@/types'
 import {
   AgentMemoriesSection,
   ConnectorsSection,
@@ -99,10 +105,19 @@ const SettingsContentInner = () => {
   const setScope = useSetSettingsScope()
   const activeSpaceId = useActiveSpaceId()
   const activeSpace = useActiveSpace()
-  const isNonDefaultSpace = activeSpaceId !== DEFAULT_SPACE_ID
+  const isNonDefaultSpace =
+    activeSpaceId !== DEFAULT_SPACE_ID && activeSpaceId !== ALL_SPACES_ID
 
   const [masterPassword, setMasterPassword] = useState('')
   const [isUnlocking, setIsUnlocking] = useState(false)
+
+  // Force settings back to global scope whenever the space-scope toggle
+  // is not applicable (default space or "All spaces" view).
+  useEffect(() => {
+    if (!isNonDefaultSpace && scope !== 'global') {
+      setScope('global')
+    }
+  }, [isNonDefaultSpace, scope, setScope])
 
   // All section keys for hash matching
   const allSectionKeys: SectionKey[] = [
@@ -212,7 +227,14 @@ const SettingsContentInner = () => {
   ]
 
   // Sections where space-level overrides make sense (synced settings)
-  const spaceScopableSections = new Set<SectionKey>(['', 'features', 'tags', 'connectors', 'providers', 'skills'])
+  const spaceScopableSections = new Set<SectionKey>([
+    '',
+    'features',
+    'tags',
+    'connectors',
+    'providers',
+    'skills',
+  ])
 
   const handleSectionClick = (section: SectionDef) => {
     if (section.navigateTo) {

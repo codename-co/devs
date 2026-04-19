@@ -1059,6 +1059,7 @@ export const fr: I18n = {
   Space: 'Espace',
   'Space name': 'Nom de l’espace',
   'New Space': 'Nouvel espace',
+  'All spaces': 'Tous les espaces',
 
   // NewTaskPage
   'Your AI team is ready': 'Votre équipe IA est prête',

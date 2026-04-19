@@ -7,7 +7,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { studioEntries } from '@/lib/yjs'
-import { getActiveSpaceId } from '@/stores/spaceStore'
+import { getCreationSpaceId } from '@/stores/spaceStore'
 import { useFolderSyncStore } from '@/features/local-backup/stores/folderSyncStore'
 import { folderSyncService } from '@/features/local-backup/lib/local-backup-service'
 import {
@@ -159,7 +159,7 @@ export function useStudioHistory(): UseStudioHistoryReturn {
         settings,
         images,
         createdAt: new Date(),
-        spaceId: getActiveSpaceId(),
+        spaceId: getCreationSpaceId(),
       }
 
       saveEntry(entry)
@@ -241,7 +241,7 @@ export function useStudioHistory(): UseStudioHistoryReturn {
         videoSettings: settings,
         videos: videosWithBase64,
         createdAt: new Date(),
-        spaceId: getActiveSpaceId(),
+        spaceId: getCreationSpaceId(),
       }
 
       saveEntry(entry)

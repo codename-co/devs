@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { artifacts, whenReady, isReady } from '@/lib/yjs'
 import type { Artifact } from '@/types'
 import { errorToast, successToast } from '@/lib/toast'
-import { getActiveSpaceId } from '@/stores/spaceStore'
+import { getCreationSpaceId } from '@/stores/spaceStore'
 
 // ============================================================================
 // Helper: Normalize a date value that may have been corrupted by Yjs binary
@@ -114,7 +114,7 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
         ...artifactData,
         id: crypto.randomUUID(),
         version: 1,
-        spaceId: artifactData.spaceId ?? getActiveSpaceId(),
+        spaceId: artifactData.spaceId ?? getCreationSpaceId(),
         createdAt: now,
         updatedAt: now,
       }

@@ -48,6 +48,7 @@ vi.mock('@/lib/toast', () => mockToast)
 // Mock spaceStore
 vi.mock('@/stores/spaceStore', () => ({
   getActiveSpaceId: vi.fn(() => 'default'),
+  getCreationSpaceId: vi.fn(() => 'default'),
 }))
 
 vi.mock('@/lib/requirement-validator', () => ({

@@ -91,6 +91,8 @@ export interface PromptAreaProps
   withModelSelector?: boolean
   withAttachmentSelector?: boolean
   withAgentSelector?: boolean
+  /** When true, skips all data loading (agents, methodologies, skills, providers). For tours/demos. */
+  demo?: boolean
 }
 
 export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
@@ -118,6 +120,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       withModelSelector,
       withAttachmentSelector,
       withAgentSelector,
+      demo = false,
       ...props
     },
     ref,
@@ -277,6 +280,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       prompt,
       onPromptChange: handlePromptChange,
       inputRef: internalInputRef,
+      disabled: demo,
     })
 
     // Methodology mention hook for # autocomplete
@@ -294,6 +298,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       prompt,
       onPromptChange: handlePromptChange,
       inputRef: internalInputRef,
+      disabled: demo,
     })
 
     // Skill & connector mention hook for / autocomplete
@@ -312,6 +317,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       prompt,
       onPromptChange: handlePromptChange,
       inputRef: internalInputRef,
+      disabled: demo,
     })
 
     useEffect(() => {
@@ -328,10 +334,9 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
 
     // Set default agent in useEffect to avoid setState during render
     useEffect(() => {
-      if (!selectedAgent && onAgentChange) {
-        onAgentChange(getDefaultAgent())
-      }
-    }, [selectedAgent, onAgentChange])
+      if (demo || !(!selectedAgent && onAgentChange)) return
+      onAgentChange(getDefaultAgent())
+    }, [demo, selectedAgent, onAgentChange])
 
     // Populate prompt from URL fragment
     useEffect(() => {
@@ -948,7 +953,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
           <div className="absolute z-10 bottom-0 inset-x-px p-1 sm:p-2 rounded-b-lg">
             <div className="flex flex-wrap justify-between items-end gap-1">
               <div className="flex items-center gap-1">
-                {withAttachmentSelector !== false && (
+                {!demo && withAttachmentSelector !== false && (
                   <AttachmentSelector
                     lang={lang}
                     mode={mode}
@@ -964,7 +969,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                   />
                 )}
 
-                {withAgentSelector !== false && !disabledAgentPicker && (
+                {!demo && withAgentSelector !== false && !disabledAgentPicker && (
                   <AgentSelector
                     lang={lang}
                     disabled={disabledAgentPicker}
@@ -975,7 +980,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
               </div>
 
               <div className="flex items-center gap-2">
-                {withModelSelector !== false && !isLiveMode && (
+                {!demo && withModelSelector !== false && !isLiveMode && (
                   <ModelSelector lang={lang} />
                 )}
 

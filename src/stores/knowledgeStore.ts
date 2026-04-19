@@ -24,7 +24,7 @@
 
 import { knowledge, transact, isReady, whenReady } from '@/lib/yjs'
 import type { KnowledgeItem } from '@/types'
-import { getActiveSpaceId } from '@/stores/spaceStore'
+import { getCreationSpaceId } from '@/stores/spaceStore'
 import {
   encryptFields,
   decryptFields,
@@ -120,7 +120,7 @@ export async function getAllKnowledgeItemsDecrypted(): Promise<
  * Encrypts content fields before storing in Yjs.
  */
 export async function addKnowledgeItem(item: KnowledgeItem): Promise<void> {
-  const withSpace = { ...item, spaceId: item.spaceId ?? getActiveSpaceId() }
+  const withSpace = { ...item, spaceId: item.spaceId ?? getCreationSpaceId() }
   const encrypted = await encryptFields(withSpace, [...KNOWLEDGE_ENCRYPTED_FIELDS])
   transact(() => {
     knowledge.set(item.id, encrypted as unknown as KnowledgeItem)

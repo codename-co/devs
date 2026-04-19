@@ -6,7 +6,7 @@ import { slugify, generateUniqueSlug } from '@/lib/slugify'
 import { type Agent, type AgentColor, type Tool } from '@/types'
 import { Lang } from '@/i18n'
 import { getEffectiveSettings, useEffectiveSettings } from '@/stores/userStore'
-import { getActiveSpaceId } from '@/stores/spaceStore'
+import { getCreationSpaceId } from '@/stores/spaceStore'
 import { IconName } from '@/lib/types'
 import {
   agents,
@@ -482,7 +482,7 @@ export async function createAgent(agentData: {
       icon: agentData.icon,
       color: agentData.color,
       portrait: agentData.portrait,
-      spaceId: getActiveSpaceId(),
+      spaceId: getCreationSpaceId(),
       createdAt: new Date(),
       updatedAt: new Date(),
     }
