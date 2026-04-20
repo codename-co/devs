@@ -83,6 +83,15 @@ interface TimelineValue {
   duration: number
   playing: boolean
   muted: boolean
+  /**
+   * Measured width of the stage canvas in CSS pixels. Scenes that need to
+   * position elements at pixel coordinates should multiply fractions of
+   * this value instead of hard-coding numbers — that way the whole tour
+   * scales natively with the user's window.
+   */
+  stageWidth: number
+  /** Measured height of the stage canvas in CSS pixels. */
+  stageHeight: number
   setTime?: (t: number | ((prev: number) => number)) => void
   setPlaying?: (p: boolean | ((prev: boolean) => boolean)) => void
   setMuted?: (m: boolean | ((prev: boolean) => boolean)) => void
@@ -93,10 +102,16 @@ const TimelineContext = createContext<TimelineValue>({
   duration: 10,
   playing: false,
   muted: false,
+  stageWidth: 0,
+  stageHeight: 0,
 })
 
 export const useTime = () => useContext(TimelineContext).time
 export const useTimeline = () => useContext(TimelineContext)
+export const useStageSize = () => {
+  const { stageWidth, stageHeight } = useContext(TimelineContext)
+  return { width: stageWidth, height: stageHeight }
+}
 
 // ── Sprite ────────────────────────────────────────────────────────────────
 interface SpriteRenderArgs {
@@ -148,11 +163,27 @@ export function Sprite({
 }
 
 // ── Stage ─────────────────────────────────────────────────────────────────
+/**
+ * One scheduled background transition. The stage background lerps from the
+ * previous color to `color` between `start` and `end` (timeline seconds).
+ * Applied to the viewport so scenes blend into the surround with no
+ * visible letterbox regardless of the user's window aspect ratio.
+ */
+interface BackgroundTransition {
+  start: number
+  end: number
+  color: string
+}
+
 interface StageProps {
-  width?: number
-  height?: number
   duration?: number
   background?: string
+  /**
+   * Time-synced background color transitions. Applied to the full viewport
+   * so scenes appear center-focused on any screen ratio (portrait, ultrawide,
+   * etc.) without visible letterbox bars.
+   */
+  backgroundTransitions?: BackgroundTransition[]
   loop?: boolean
   autoplay?: boolean
   /** Local-storage key for playhead persistence. */
@@ -166,11 +197,36 @@ interface StageProps {
   children?: ReactNode
 }
 
+/**
+ * Resolve the effective background color at a given time, applying any
+ * scheduled transitions sequentially. A transition at [start, end] lerps
+ * from the previous color to its own `color` over that window.
+ */
+function resolveBackground(
+  base: string,
+  transitions: BackgroundTransition[] | undefined,
+  time: number,
+): string {
+  if (!transitions || transitions.length === 0) return base
+  let current = base
+  for (const tr of transitions) {
+    if (time <= tr.start) break
+    if (time >= tr.end) {
+      current = tr.color
+      continue
+    }
+    const p = clamp((time - tr.start) / (tr.end - tr.start), 0, 1)
+    // CSS color-mix works cross-format (oklch, hex, rgb, hsl) so callers
+    // can use any color notation they prefer for transitions.
+    return `color-mix(in oklab, ${current} ${(1 - p) * 100}%, ${tr.color} ${p * 100}%)`
+  }
+  return current
+}
+
 export function Stage({
-  width = 1280,
-  height = 720,
   duration = 10,
   background = '#f6f4ef',
+  backgroundTransitions,
   loop = true,
   autoplay = true,
   persistKey = 'animstage',
@@ -187,8 +243,14 @@ export function Stage({
     }
   })
   const [playing, setPlaying] = useState(autoplay)
-  const [muted, setMuted] = useState(false)
-  const [scale, setScale] = useState(1)
+  // Start muted so the tour respects browser autoplay policies and doesn't
+  // blast audio at users who just landed on the page. The underlying audio
+  // element isn't even loaded until they unmute — see TourSoundtrack.
+  const [muted, setMuted] = useState(true)
+  const [stageSize, setStageSize] = useState<{ w: number; h: number }>({
+    w: 0,
+    h: 0,
+  })
 
   const stageRef = useRef<HTMLDivElement | null>(null)
   const canvasRef = useRef<HTMLDivElement | null>(null)
@@ -205,27 +267,23 @@ export function Stage({
     }
   }, [time, persistKey])
 
-  // Auto-scale to fit viewport
+  // Track the canvas's real CSS size so scenes can author layouts as
+  // fractions (e.g. `0.5 * stageWidth`) and let the browser handle
+  // responsivity natively. No transform/scale trickery — the canvas
+  // simply fills whatever space its parent gives it.
   useEffect(() => {
-    if (!stageRef.current) return
-    const el = stageRef.current
+    const el = canvasRef.current
+    if (!el) return
     const measure = () => {
-      const barH = 44 // playback bar height
-      const s = Math.min(
-        el.clientWidth / width,
-        (el.clientHeight - barH) / height,
-      )
-      setScale(Math.max(0.05, s))
+      setStageSize({ w: el.clientWidth, h: el.clientHeight })
     }
     measure()
     const ro = new ResizeObserver(measure)
     ro.observe(el)
-    window.addEventListener('resize', measure)
     return () => {
       ro.disconnect()
-      window.removeEventListener('resize', measure)
     }
-  }, [width, height])
+  }, [])
 
   // Animation loop
   useEffect(() => {
@@ -330,8 +388,27 @@ export function Stage({
   }, [duration, toggleFullscreen, handlePlayPause])
 
   const ctxValue = useMemo<TimelineValue>(
-    () => ({ time, duration, playing, muted, setTime, setPlaying, setMuted }),
-    [time, duration, playing, muted],
+    () => ({
+      time,
+      duration,
+      playing,
+      muted,
+      stageWidth: stageSize.w,
+      stageHeight: stageSize.h,
+      setTime,
+      setPlaying,
+      setMuted,
+    }),
+    [time, duration, playing, muted, stageSize.w, stageSize.h],
+  )
+
+  // The viewport background tracks any scheduled color transitions so the
+  // stage surround matches each scene's visuals — keeps the tour feeling
+  // native on any aspect ratio (portrait, ultrawide, vertical) without any
+  // letterbox bars.
+  const effectiveBackground = useMemo(
+    () => resolveBackground(background, backgroundTransitions, time),
+    [background, backgroundTransitions, time],
   )
 
   return (
@@ -343,7 +420,7 @@ export function Stage({
         inset: 0,
         display: 'flex',
         flexDirection: 'column',
-        background: '#0a0a0a',
+        background: effectiveBackground,
         fontFamily: 'Inter, system-ui, sans-serif',
       }}
     >
@@ -356,25 +433,24 @@ export function Stage({
           flex: 1,
           width: '100%',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
           overflow: 'hidden',
           minHeight: 0,
           cursor: 'pointer',
         }}
       >
+        {/* Canvas fills the available space natively — no CSS scale, no
+            fixed design dimensions. Scenes use percentages / flex / `inset`
+            to lay themselves out, or read `stageWidth`/`stageHeight` from
+            the timeline context when they need true pixel math. */}
         <div
           ref={canvasRef}
           className="pointer-events-none"
           style={{
-            width,
-            height,
-            background,
+            flex: 1,
+            minWidth: 0,
+            minHeight: 0,
+            background: effectiveBackground,
             position: 'relative',
-            transform: `scale(${scale})`,
-            transformOrigin: 'center',
-            flexShrink: 0,
-            boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
             overflow: 'hidden',
           }}
         >

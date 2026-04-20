@@ -3,18 +3,23 @@
  *
  * Plays / pauses in lock-step with the Stage's `playing` state, seeks to
  * match the playhead when the user scrubs, and kicks in at `startOffset`
- * seconds into the tour (before that, the track is silent and rewound).
+ * seconds into the tour.
+ *
+ * The soundtrack is lazy: while the tour is muted (which it is by default),
+ * no `<audio>` element is rendered and the mp3 file isn't even fetched.
+ * Only once the user unmutes — a real user gesture, which also sidesteps
+ * the browser's autoplay policy — do we load the file and start playback.
  *
  * Must be rendered inside a `<Stage>` so it can read `useTimeline()`.
  */
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTimeline } from './animations'
 import soundtrackUrl from '../assets/sergequadrado-classical-orchestral-hip-hop-loop.mp3'
 
 export interface TourSoundtrackProps {
   /** Seconds into the timeline at which the track starts. Default: 0. */
   startOffset?: number
-  /** Track volume (0–1). Default: 0.5. */
+  /** Track volume (0–1). Default: 0.25. */
   volume?: number
   /** Explicit source URL. Defaults to the bundled SergeQuadrado loop. */
   src?: string
@@ -34,6 +39,15 @@ export function TourSoundtrack({
   const { time, playing, duration, muted } = useTimeline()
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
+  // Lazy-load the audio asset. We only mount the `<audio>` element — and
+  // therefore only fetch the mp3 — once the user has unmuted for the first
+  // time. After that we keep it mounted so subsequent mute/unmute toggles
+  // are instantaneous.
+  const [loaded, setLoaded] = useState(false)
+  useEffect(() => {
+    if (!muted) setLoaded(true)
+  }, [muted])
+
   // Keep volume and mute in sync with props, muted state, and fade-out.
   useEffect(() => {
     const audio = audioRef.current
@@ -47,7 +61,7 @@ export function TourSoundtrack({
       }
     }
     audio.volume = Math.max(0, Math.min(1, v))
-  }, [volume, time, duration, fadeOutDuration, muted])
+  }, [volume, time, duration, fadeOutDuration, muted, loaded])
 
   // Sync play/pause and playhead with the timeline.
   useEffect(() => {
@@ -72,7 +86,9 @@ export function TourSoundtrack({
     } else if (!shouldPlay && !audio.paused) {
       audio.pause()
     }
-  }, [time, playing, startOffset])
+  }, [time, playing, startOffset, loaded])
+
+  if (!loaded) return null
 
   return (
     <audio

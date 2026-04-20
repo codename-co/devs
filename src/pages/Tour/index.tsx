@@ -12,7 +12,7 @@
  * without touching scene code.
  */
 import { useEffect } from 'react'
-import { Stage, useTime, clamp } from './components/animations'
+import { Stage } from './components/animations'
 import {
   SceneCTA,
   SceneCollapse,
@@ -25,32 +25,11 @@ import { TourSoundtrack } from './components/TourSoundtrack'
 // Scene boundaries (must match the `start`/`end` props below).
 const SCENE_ENDS = [9.5, 14.5, 17.5, 24, 30] as const
 
-// Persistent dark backdrop that fades in mid-scene-3 and stays until the
-// end. Guarantees scenes 3→4→5 never reveal the Stage's light background
-// during crossfades.
-function DarkFade({
-  start = 13.0,
-  end = 14.3,
-}: {
-  start?: number
-  end?: number
-}) {
-  const t = useTime()
-  const p = clamp((t - start) / (end - start), 0, 1)
-  if (p <= 0) return null
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        inset: 0,
-        background: 'oklch(12% 0.0015 253.83)',
-        opacity: p,
-        zIndex: -1,
-        pointerEvents: 'none',
-      }}
-    />
-  )
-}
+// Stage background colors. The viewport lerps between these at the scene
+// transition points so the Stage's surround matches each scene's own
+// backdrop on every screen ratio (including portrait / ultrawide).
+const BG_LIGHT = 'oklch(97.02% 0.0015 253.83)'
+const BG_DARK = 'oklch(12% 0.0015 253.83)'
 
 export function TourPage() {
   // Force light theme for the duration of the tour — the product demo always
@@ -94,10 +73,9 @@ export function TourPage() {
       <style>{`@keyframes devs-caret { 50% { opacity: 0; } }`}</style>
 
       <Stage
-        width={1920}
-        height={1080}
         duration={30}
-        background="oklch(97.02% 0.0015 253.83)"
+        background={BG_LIGHT}
+        backgroundTransitions={[{ start: 14.3, end: 15.3, color: BG_DARK }]}
         loop={false}
         persistKey=""
         onCanvasClick={(time, toggle) => {
@@ -109,7 +87,6 @@ export function TourPage() {
         }}
       >
         <TourSoundtrack startOffset={2} />
-        <DarkFade start={14.3} end={15.3} />
         <SceneOpen start={0} end={9.5} />
         <SceneSwarm start={9.3} end={14.6} />
         <SceneCollapse start={14.4} end={17.5} />

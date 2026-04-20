@@ -4,11 +4,25 @@ import tourI18n from '../i18n'
 import { color_devs } from '../utils'
 
 // ── Browser chrome ────────────────────────────────────────────────────────
+/**
+ * `BrowserChrome` can be positioned two ways:
+ *
+ * 1. **Explicit coords** — pass `x`, `y`, `width`, `height` and it lays out
+ *    as an absolutely-positioned box in its parent's coordinate system.
+ *    Backward-compatible with earlier callers.
+ * 2. **Responsive fill** — omit those and (optionally) pass `inset` (px).
+ *    The chrome then fills its parent via `position:absolute; inset:<N>px`,
+ *    auto-adjusting to whatever space the scene gives it. Use this inside
+ *    containers you size yourself (e.g. percentages of the Stage canvas).
+ */
 interface BrowserChromeProps {
   width?: number
   height?: number
   x?: number
   y?: number
+  /** Uniform inset (px) from the parent when filling. Ignored if explicit
+   *  coords are provided. Default: 0. */
+  inset?: number
   url?: string
   dark?: boolean
   children?: ReactNode
@@ -17,11 +31,43 @@ interface BrowserChromeProps {
   ty?: number
 }
 
+function chromeLayoutStyle(
+  x: number | undefined,
+  y: number | undefined,
+  width: number | undefined,
+  height: number | undefined,
+  inset: number,
+) {
+  const hasExplicit =
+    x !== undefined &&
+    y !== undefined &&
+    width !== undefined &&
+    height !== undefined
+  if (hasExplicit) {
+    return { left: x, top: y, width, height }
+  }
+  // Responsive: fill the parent up to a 1920×1080 cap, then stay centred.
+  // `margin: auto` combined with four-sided insets centres an auto-sized
+  // absolute box inside the inset region, so the chrome looks native on
+  // phones and tablets while never ballooning past reference desktop
+  // dimensions on ultrawide monitors.
+  return {
+    left: inset,
+    top: inset,
+    right: inset,
+    bottom: inset,
+    margin: 'auto',
+    maxWidth: 1280,
+    maxHeight: 720,
+  }
+}
+
 export function BrowserChrome({
-  width = 1400,
-  height = 860,
-  x = 260,
-  y = 110,
+  width,
+  height,
+  x,
+  y,
+  inset = 0,
   url = 'devs.new',
   dark = false,
   children,
@@ -41,10 +87,7 @@ export function BrowserChrome({
     <div
       style={{
         position: 'absolute',
-        left: x,
-        top: y,
-        width,
-        height,
+        ...chromeLayoutStyle(x, y, width, height, inset),
         background: bg,
         border: `1px solid ${border}`,
         borderRadius: 16,
@@ -193,6 +236,9 @@ interface BrowserChromeTypingProps {
   height?: number
   x?: number
   y?: number
+  /** Uniform inset (px) from the parent when filling. Ignored if explicit
+   *  coords are provided. Default: 0. */
+  inset?: number
   urlText?: string
   urlProgress?: number
   dark?: boolean
@@ -204,10 +250,11 @@ interface BrowserChromeTypingProps {
 }
 
 export function BrowserChromeTyping({
-  width = 1400,
-  height = 860,
-  x = 260,
-  y = 110,
+  width,
+  height,
+  x,
+  y,
+  inset = 0,
   urlText = 'devs.new',
   urlProgress = 1,
   dark = false,
@@ -228,10 +275,7 @@ export function BrowserChromeTyping({
     <div
       style={{
         position: 'absolute',
-        left: x,
-        top: y,
-        width,
-        height,
+        ...chromeLayoutStyle(x, y, width, height, inset),
         background: bg,
         border: `1px solid ${border}`,
         borderRadius: 16,

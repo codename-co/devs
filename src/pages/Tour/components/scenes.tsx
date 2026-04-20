@@ -18,7 +18,7 @@ import { NewTaskHero } from '@/pages/V2/pages/NewTaskHero'
 import { Sidebar, ThreadList, ThreadPreview } from '@/pages/V2/components'
 import type { Thread } from '@/pages/V2/types'
 import type { Agent } from '@/types'
-import { clamp, Easing, Sprite, useSprite } from './animations'
+import { clamp, Easing, Sprite, useSprite, useStageSize } from './animations'
 import { BrowserChrome, BrowserChromeTyping } from './BrowserChrome'
 import { FakeCursor } from './FakeCursor'
 import tourI18n from '../i18n'
@@ -63,6 +63,12 @@ interface SceneProps {
 
 export function SceneOpen({ start = 0, end = 9.5 }: SceneProps) {
   const { t } = useI18n(tourI18n)
+  const { width: stageW, height: stageH } = useStageSize()
+
+  const toCursor = (frac: { x: number; y: number }) => ({
+    x: frac.x * stageW,
+    y: frac.y * stageH,
+  })
 
   // Timeline of the merged opening scene (scene-local seconds):
   //   0.00 – 0.60   browser chrome eases in
@@ -104,35 +110,40 @@ export function SceneOpen({ start = 0, end = 9.5 }: SceneProps) {
         const zoomT = Easing.easeInOutCubic(
           clamp((time - ZOOM_HOLD) / ZOOM_OUT, 0, 1),
         )
-        const cameraZoom = 5 + (1 - 5) * zoomT
-        // Focal point in stage coords — mid-URL bar of the chrome at
-        // (260, 110, 1400×860) with a 54-px-tall title bar.
-        const FOCAL_X = 280
-        const FOCAL_Y = 50
+        const cameraZoom = 3 + (1 - 3) * zoomT
+        // Focal point as a fraction of the stage. The 5× zoom parks the
+        // URL bar near the centre of the user's window — works regardless
+        // of the actual viewport size.
+        const FOCAL_X_FRAC = 0.129
+        const FOCAL_Y_FRAC = 0.1
 
         // Caption fades in at ~2.2s then fades out before the cursor appears.
         const captionT =
           clamp((time - 2.2) / 0.4, 0, 1) *
           (1 - clamp((time - CURSOR_ENTER + 0.3) / 0.4, 0, 1))
 
-        // Cursor choreography ── position.
+        // Cursor choreography ── position (computed in real px from the
+        // measured stage size so movement adapts to any window aspect).
+        const cursorOff = toCursor(CURSOR_OFF_FRAC)
+        const cursorPrompt = toCursor(CURSOR_PROMPT_FRAC)
+        const cursorSubmit = toCursor(CURSOR_SUBMIT_FRAC)
         let cursorPos: { x: number; y: number } | null = null
         if (time >= CURSOR_ENTER && time < MOVE1_END) {
           cursorPos = lerpPoint(
-            CURSOR_OFF,
-            CURSOR_PROMPT,
+            cursorOff,
+            cursorPrompt,
             (time - CURSOR_ENTER) / (MOVE1_END - CURSOR_ENTER),
           )
         } else if (time >= MOVE1_END && time < TYPE_END) {
-          cursorPos = CURSOR_PROMPT
+          cursorPos = cursorPrompt
         } else if (time >= TYPE_END && time < MOVE2_END) {
           cursorPos = lerpPoint(
-            CURSOR_PROMPT,
-            CURSOR_SUBMIT,
+            cursorPrompt,
+            cursorSubmit,
             (time - TYPE_END) / (MOVE2_END - TYPE_END),
           )
         } else if (time >= MOVE2_END) {
-          cursorPos = CURSOR_SUBMIT
+          cursorPos = cursorSubmit
         }
 
         // Click ripples on prompt and submit.
@@ -156,15 +167,12 @@ export function SceneOpen({ start = 0, end = 9.5 }: SceneProps) {
               position: 'absolute',
               inset: 0,
               transform: `scale(${camScale * cameraZoom})`,
-              transformOrigin: `${FOCAL_X}px ${FOCAL_Y}px`,
+              transformOrigin: `${FOCAL_X_FRAC * 100}% ${FOCAL_Y_FRAC * 100}%`,
               opacity: exitOpacity,
             }}
           >
             <BrowserChromeTyping
-              x={260}
-              y={110}
-              width={1400}
-              height={860}
+              inset={80}
               urlText="devs.new"
               urlProgress={urlProgress}
               scale={chromeScale}
@@ -230,15 +238,16 @@ export function SceneOpen({ start = 0, end = 9.5 }: SceneProps) {
 // reveals progressively. A FakeCursor overlay simulates the user's hand:
 // move → click prompt → type → move to submit → click.
 //
-// Stage is 1920×1080; BrowserChrome occupies (260, 110, 1400×860).
-// Prompt textarea lands roughly at (960, 500); the submit button at the
-// prompt bar's bottom-right — around (1220, 618).
+// Cursor waypoints are stored as fractions of the stage so the cursor
+// lands in the same relative spot regardless of the user's viewport size.
+// `NewTaskHero` centres its prompt horizontally, so the X fractions stay
+// near the visual centre at any aspect ratio.
 const SCENE_TYPE_PROMPT =
   'Build me a research brief on lithium battery supply chains.'
 
-const CURSOR_OFF = { x: 1500, y: 980 }
-const CURSOR_PROMPT = { x: 960, y: 620 }
-const CURSOR_SUBMIT = { x: 1270, y: 680 }
+const CURSOR_OFF_FRAC = { x: 0.885, y: 0.963 }
+const CURSOR_PROMPT_FRAC = { x: 0.5, y: 0.578 }
+const CURSOR_SUBMIT_FRAC = { x: 0.661, y: 0.637 }
 
 /** Smooth lerp with ease-in-out for cursor movement. */
 function lerpPoint(
@@ -408,7 +417,7 @@ const SwarmContent = memo(function SwarmContent({
   const threads = buildTourThreads(assistant, answerSoFar, createdAt)
   const selectedId = threads[0].id
   return (
-    <BrowserChrome x={260} y={110} width={1400} height={860} url="devs.new">
+    <BrowserChrome inset={40} url="devs.new">
       {/* ThreadsPage composition — real Sidebar + ThreadList + ThreadPreview.
           We avoid WorkspaceLayout because it forces h-dvh. */}
       <div
@@ -490,7 +499,7 @@ function SceneSwarmInner() {
 
   // Stable references so SwarmContent props never churn unnecessarily.
   const assistant = useMemo(() => getTourAssistant(), [])
-  const createdAt = useMemo(() => new Date('2025-01-15T09:00:00Z'), [])
+  const createdAt = useMemo(() => new Date(), [])
 
   // Apply opacity via DOM ref too — the outer wrapper never re-renders from
   // React for animation purposes.
@@ -605,8 +614,10 @@ export function ScenePromise({ start = 18.5, end = 25.5 }: SceneProps) {
           { text: t('No third party.'), at: 3.5 },
         ]
 
-        const cx = 640,
-          cy = 540
+        // Sphere sits at one-third from the left, vertically centred —
+        // expressed as percentages so it follows the user's window size.
+        const SPHERE_LEFT = '33.3%'
+        const SPHERE_TOP = '50%'
         const breathe = 1 + Math.sin(time * 1.8) * 0.03
 
         return (
@@ -623,8 +634,8 @@ export function ScenePromise({ start = 18.5, end = 25.5 }: SceneProps) {
             <div
               style={{
                 position: 'absolute',
-                left: cx,
-                top: cy,
+                left: SPHERE_LEFT,
+                top: SPHERE_TOP,
                 transform: `translate(-50%, -50%) scale(${breathe})`,
               }}
             >
@@ -634,9 +645,9 @@ export function ScenePromise({ start = 18.5, end = 25.5 }: SceneProps) {
             <div
               style={{
                 position: 'absolute',
-                left: 900,
-                top: 300,
-                width: 900,
+                left: '46.9%',
+                top: '27.8%',
+                width: '46.9%',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 64,
@@ -730,10 +741,14 @@ function BackgroundOrbit({
   })
   return (
     <svg
-      width="1920"
-      height="1080"
       viewBox="0 0 1920 1080"
-      style={{ position: 'absolute', inset: 0 }}
+      preserveAspectRatio="xMidYMid slice"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+      }}
     >
       {dots.map((d, i) => (
         <circle
