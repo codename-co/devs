@@ -17,7 +17,15 @@ import { useI18n } from '@/i18n'
 import { NewTaskHero } from '@/pages/V2/pages/NewTaskHero'
 import { Sidebar, ThreadList, ThreadPreview } from '@/pages/V2/components'
 import type { Thread } from '@/pages/V2/types'
-import type { Agent } from '@/types'
+import type {
+  Agent,
+  Artifact,
+  MessageStep,
+  // Requirement,
+  Task,
+  // TaskStep,
+  // Tool,
+} from '@/types'
 import { clamp, Easing, Sprite, useSprite, useStageSize } from './animations'
 import { BrowserChrome, BrowserChromeTyping } from './BrowserChrome'
 import { FakeCursor } from './FakeCursor'
@@ -54,120 +62,79 @@ function TourSphere({ size, color, intensity = 1 }: TourSphereProps) {
   )
 }
 
-// ── Scene 1: Browser opens, URL types, home page appears ──────────────────
-// 0–4.5s
+// ── Scene 1: Browser opens, prompt appears, submit clicked ───────────────
+// 0–4.0s — tight opening. We skip the 5× URL zoom and per-char typing that
+// used to burn ~6s. The point of Scene 1 is to establish "it's a browser
+// tab" — the product payoff lives in Scene 2.
 interface SceneProps {
   start?: number
   end?: number
 }
 
-export function SceneOpen({ start = 0, end = 9.5 }: SceneProps) {
+export function SceneOpen({ start = 0, end = 4.0 }: SceneProps) {
   const { t } = useI18n(tourI18n)
   const { width: stageW, height: stageH } = useStageSize()
+  const prompt = t(
+    'Research lithium supply chains, chart the top 5 risks, and draft an exec summary.',
+  )
 
   const toCursor = (frac: { x: number; y: number }) => ({
     x: frac.x * stageW,
     y: frac.y * stageH,
   })
 
-  // Timeline of the merged opening scene (scene-local seconds):
-  //   0.00 – 0.60   browser chrome eases in
-  //   0.80 – 2.00   URL "devs.new" types
-  //   2.00 – 3.20   home page fades in
-  //   2.20 – 3.70   "Open a tab." caption
-  //   3.70 – 4.50   cursor glides from off-stage to the prompt area
-  //   4.50 – 4.75   cursor clicks the prompt (ripple)
-  //   4.75 – 7.90   user types the task request
-  //   7.90 – 8.50   cursor glides to the submit button
-  //   8.50 – 8.75   cursor clicks submit (ripple)
-  //   9.15 – 9.50   scene fades out into SceneSwarm
-  const CURSOR_ENTER = 3.7
-  const MOVE1_END = 4.5
-  const CLICK1_END = 4.75
-  const TYPE_START = 4.75
-  const TYPE_END = 7.9
-  const MOVE2_END = 8.5
-  const CLICK2_END = 8.75
+  // Timeline (scene-local seconds):
+  //   0.00 – 0.40  chrome eases in
+  //   0.30 – 1.50  supertitle "An AI agent swarm…" fades in then out
+  //   0.40 – 1.20  URL "devs.new" types
+  //   1.00 – 1.80  home page fades in with prompt already filled
+  //   1.80 – 2.80  cursor glides from off-stage to submit
+  //   2.80 – 3.05  cursor clicks submit (ripple)
+  //   3.60 – 4.00  scene fades out into SceneSwarm
+  const CURSOR_ENTER = 1.8
+  const MOVE_END = 2.8
+  const CLICK_END = 3.05
 
   return (
     <Sprite start={start} end={end}>
       {({ localTime, duration }) => {
         const time = localTime
-        const chromeIn = Easing.easeOutBack(clamp(time / 0.6, 0, 1))
-        const chromeScale = 0.94 + 0.06 * chromeIn
-        const chromeOpacity = clamp(time / 0.4, 0, 1)
-        const urlProgress = clamp((time - 0.8) / 1.2, 0, 1)
-        const pageIn = Easing.easeOutCubic(clamp((time - 2.0) / 1.2, 0, 1))
-        const camScale = 1 + 0.01 * (time / duration)
-        const exitT = clamp((time - (duration - 0.35)) / 0.35, 0, 1)
+        const chromeIn = Easing.easeOutBack(clamp(time / 0.4, 0, 1))
+        const chromeScale = 0.96 + 0.04 * chromeIn
+        const chromeOpacity = clamp(time / 0.3, 0, 1)
+        const urlProgress = clamp((time - 0.4) / 0.8, 0, 1)
+        const pageIn = Easing.easeOutCubic(clamp((time - 1.0) / 0.8, 0, 1))
+        const exitT = clamp((time - (duration - 0.4)) / 0.4, 0, 1)
         const exitOpacity = 1 - exitT
 
-        // Opening camera: hold a 5× zoom on the address bar for the first
-        // 1.5 s so the user can read the domain typing, then ease back to
-        // the full browser over 700 ms.
-        const ZOOM_HOLD = 1.5
-        const ZOOM_OUT = 0.7
-        const zoomT = Easing.easeInOutCubic(
-          clamp((time - ZOOM_HOLD) / ZOOM_OUT, 0, 1),
-        )
-        const cameraZoom = 3 + (1 - 3) * zoomT
-        // Focal point as a fraction of the stage. The 5× zoom parks the
-        // URL bar near the centre of the user's window — works regardless
-        // of the actual viewport size.
-        const FOCAL_X_FRAC = 0.129
-        const FOCAL_Y_FRAC = 0.1
+        // Supertitle (category anchor): t 0.3 → 1.5
+        // const superIn = clamp((time - 0.3) / 0.3, 0, 1)
+        // const superOut = clamp((time - 1.2) / 0.3, 0, 1)
+        // const superOpacity = superIn * (1 - superOut)
 
-        // Caption fades in at ~2.2s then fades out before the cursor appears.
-        const captionT =
-          clamp((time - 2.2) / 0.4, 0, 1) *
-          (1 - clamp((time - CURSOR_ENTER + 0.3) / 0.4, 0, 1))
-
-        // Cursor choreography ── position (computed in real px from the
-        // measured stage size so movement adapts to any window aspect).
+        // Cursor — glide off-stage → submit, then click.
         const cursorOff = toCursor(CURSOR_OFF_FRAC)
-        const cursorPrompt = toCursor(CURSOR_PROMPT_FRAC)
         const cursorSubmit = toCursor(CURSOR_SUBMIT_FRAC)
         let cursorPos: { x: number; y: number } | null = null
-        if (time >= CURSOR_ENTER && time < MOVE1_END) {
+        if (time >= CURSOR_ENTER && time < MOVE_END) {
           cursorPos = lerpPoint(
             cursorOff,
-            cursorPrompt,
-            (time - CURSOR_ENTER) / (MOVE1_END - CURSOR_ENTER),
-          )
-        } else if (time >= MOVE1_END && time < TYPE_END) {
-          cursorPos = cursorPrompt
-        } else if (time >= TYPE_END && time < MOVE2_END) {
-          cursorPos = lerpPoint(
-            cursorPrompt,
             cursorSubmit,
-            (time - TYPE_END) / (MOVE2_END - TYPE_END),
+            (time - CURSOR_ENTER) / (MOVE_END - CURSOR_ENTER),
           )
-        } else if (time >= MOVE2_END) {
+        } else if (time >= MOVE_END) {
           cursorPos = cursorSubmit
         }
-
-        // Click ripples on prompt and submit.
-        const click1 =
-          time >= MOVE1_END && time < CLICK1_END
-            ? (time - MOVE1_END) / (CLICK1_END - MOVE1_END)
+        const click =
+          time >= MOVE_END && time < CLICK_END
+            ? (time - MOVE_END) / (CLICK_END - MOVE_END)
             : 0
-        const click2 =
-          time >= MOVE2_END && time < CLICK2_END
-            ? (time - MOVE2_END) / (CLICK2_END - MOVE2_END)
-            : 0
-
-        // Progressive typing.
-        const typeT = clamp((time - TYPE_START) / (TYPE_END - TYPE_START), 0, 1)
-        const typedCount = Math.floor(typeT * SCENE_TYPE_PROMPT.length)
-        const typedText = SCENE_TYPE_PROMPT.slice(0, typedCount)
 
         return (
           <div
             style={{
               position: 'absolute',
               inset: 0,
-              transform: `scale(${camScale * cameraZoom})`,
-              transformOrigin: `${FOCAL_X_FRAC * 100}% ${FOCAL_Y_FRAC * 100}%`,
               opacity: exitOpacity,
             }}
           >
@@ -185,7 +152,7 @@ export function SceneOpen({ start = 0, end = 9.5 }: SceneProps) {
                   position: 'absolute',
                   inset: 0,
                   opacity: pageIn,
-                  transform: `scale(${0.9 + 0.1 * pageIn})`,
+                  transform: `scale(${0.94 + 0.06 * pageIn})`,
                   transformOrigin: 'center top',
                 }}
               >
@@ -193,36 +160,38 @@ export function SceneOpen({ start = 0, end = 9.5 }: SceneProps) {
                   autoFocus={false}
                   showUseCases={pageIn > 0.6}
                   className="flex h-full min-h-0 flex-1 flex-col"
-                  value={time >= CURSOR_ENTER ? typedText : undefined}
+                  value={pageIn > 0.3 ? prompt : undefined}
                   demo
                 />
               </div>
 
-              {captionT > 0 && (
+              {/* Category-anchor supertitle */}
+              {/*{superOpacity > 0 && (
                 <div
                   style={{
                     position: 'absolute',
                     left: 0,
                     right: 0,
-                    bottom: 40,
+                    top: '14%',
                     textAlign: 'center',
                     fontFamily: "'Unbounded', Georgia, serif",
-                    fontSize: 44,
+                    fontSize: 36,
                     fontStyle: 'italic',
                     color: '#1a1d22',
-                    opacity: captionT,
+                    opacity: superOpacity,
+                    pointerEvents: 'none',
                   }}
                 >
-                  {t('Open a tab.')}
+                  {t('An AI agent swarm. In your browser.')}
                 </div>
-              )}
+              )}*/}
             </BrowserChromeTyping>
 
             {cursorPos && (
               <FakeCursor
                 x={cursorPos.x}
                 y={cursorPos.y}
-                clickProgress={click1 || click2}
+                clickProgress={click}
               />
             )}
           </div>
@@ -242,11 +211,8 @@ export function SceneOpen({ start = 0, end = 9.5 }: SceneProps) {
 // lands in the same relative spot regardless of the user's viewport size.
 // `NewTaskHero` centres its prompt horizontally, so the X fractions stay
 // near the visual centre at any aspect ratio.
-const SCENE_TYPE_PROMPT =
-  'Build me a research brief on lithium battery supply chains.'
 
 const CURSOR_OFF_FRAC = { x: 0.885, y: 0.963 }
-const CURSOR_PROMPT_FRAC = { x: 0.5, y: 0.578 }
 const CURSOR_SUBMIT_FRAC = { x: 0.661, y: 0.637 }
 
 /** Smooth lerp with ease-in-out for cursor movement. */
@@ -259,84 +225,149 @@ function lerpPoint(
   return { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k }
 }
 
-// ── Scene 2: Inbox opens, agent streams a research brief ──────────────────
-// 4.5–12.5s
+// ── Scene 2: The task package — swarm + thinking + tools + artifacts ─────
+// 4.0–15.0s (11 s). Uses real product components (ThreadPreview,
+// TaskDetailsSection, MessageBubble, ArtifactPreviewCard). The tour
+// feeds them a richer mock than before:
 //
-// Replaces the legacy "Swarm" visualization with the real product UI:
-// the `ThreadsPage` opening — Sidebar, thread list, preview — composed from
-// the actual V2 components. A pre-selected thread hosts a fake LLM reply
-// that streams in word-by-word, driven entirely by the Sprite playhead
-// (no network calls, no store writes).
-const SCENE_SWARM_PROMPT =
-  'Build me a research brief on lithium battery supply chains.'
+//   - 4 participants visible in the thread header
+//   - kind: 'task' → status chip + TaskDetailsSection disclosures
+//     (Requirements 5, Steps 4, Tools 6 — counts animate as statuses flip)
+//   - assistant message with `steps` = thinking + 3 tool-call steps +
+//     3 work steps; rendered by the real MessageBubble / StepTracker
+//   - 2 artifacts that shimmer in during the last 1.5 s
 
-const SCENE_SWARM_ANSWER = `## Lithium battery supply chains — research brief
-
-The global Li-ion supply chain spans **four critical stages**:
-
-1. **Raw materials** — lithium, cobalt, nickel, graphite
-2. **Refining** — concentrated in China (~75% of capacity)
-3. **Cell manufacturing** — CATL, LG, Panasonic, BYD
-4. **Pack assembly** — increasingly on-shored near OEMs
-
-### Key risks
-
-- Geographic concentration of refining
-- Cobalt sourcing (DRC artisanal mining)
-- Recycling capacity lags demand growth
-
-> **Next step:** model 2027 demand under three policy scenarios.`
-
-// Split once at module load — keeping whitespace tokens so partial renders
-// never produce orphan markdown punctuation.
-const SCENE_SWARM_TOKENS = SCENE_SWARM_ANSWER.split(/(\s+)/)
-
-/** Build a synthetic assistant agent for the mocked thread. */
-function getTourAssistant(): Agent {
+/** Build the team of agents shown as thread participants. */
+function getTourTeam(roles: {
+  research: string
+  analysis: string
+  writing: string
+  review: string
+}): {
+  scout: Agent
+  forge: Agent
+  scribe: Agent
+  echo: Agent
+} {
+  const t0 = new Date(0)
   return {
-    id: 'tour-assistant',
-    slug: 'scout',
-    name: 'Scout',
-    icon: 'Search',
-    role: 'Research',
-    instructions: '',
-    createdAt: new Date(0),
+    scout: {
+      id: 'tour-scout',
+      slug: 'scout',
+      name: 'Scout',
+      icon: 'PcCheck',
+      role: roles.research,
+      instructions: '',
+      createdAt: t0,
+    },
+    forge: {
+      id: 'tour-forge',
+      slug: 'forge',
+      name: 'Forge',
+      icon: 'GraphUp',
+      role: roles.analysis,
+      instructions: '',
+      createdAt: t0,
+    },
+    scribe: {
+      id: 'tour-scribe',
+      slug: 'scribe',
+      name: 'Scribe',
+      icon: 'EditPencil',
+      role: roles.writing,
+      instructions: '',
+      createdAt: t0,
+    },
+    echo: {
+      id: 'tour-echo',
+      slug: 'echo',
+      name: 'Echo',
+      icon: 'DoubleCheck',
+      role: roles.review,
+      instructions: '',
+      createdAt: t0,
+    },
   }
+}
+
+/** Compute requirement status at scene-local time `t`. */
+// function reqStatus(
+//   t: number,
+//   startT: number,
+//   doneT: number,
+// ): { status: Requirement['status']; satisfiedAt?: Date } {
+//   if (t >= doneT) return { status: 'satisfied', satisfiedAt: new Date() }
+//   if (t >= startT) return { status: 'in_progress' }
+//   return { status: 'pending' }
+// }
+
+/** Compute task-step status at scene-local time `t`. */
+// function stepStatus(
+//   t: number,
+//   startT: number,
+//   doneT: number,
+// ): TaskStep['status'] {
+//   if (t >= doneT) return 'completed'
+//   if (t >= startT) return 'in_progress'
+//   return 'pending'
+// }
+
+interface TourThreadStrings {
+  prompt: string
+  filler2Title: string
+  filler2Snippet: string
+  filler3Title: string
+  filler3Snippet: string
+  filler4Title: string
+  filler4Snippet: string
+  stepResearch: string
+  stepChart: string
+  stepDraft: string
+  stepReview: string
+  artifactSummary: string
+  artifactChart: string
 }
 
 /** Build the mocked thread collection shown in the Inbox. */
 function buildTourThreads(
-  assistant: Agent,
+  team: ReturnType<typeof getTourTeam>,
   answerSoFar: string,
+  messageSteps: MessageStep[],
+  task: Task,
+  artifacts: Artifact[],
   createdAt: Date,
+  s: TourThreadStrings,
 ): Thread[] {
+  const { scout, forge, scribe, echo } = team
+
   const selected: Thread = {
     id: 'tour-thread-primary',
-    kind: 'conversation',
-    title: SCENE_SWARM_PROMPT,
-    snippet: answerSoFar || SCENE_SWARM_PROMPT,
+    kind: 'task',
+    title: s.prompt,
+    snippet: answerSoFar || s.prompt,
     updatedAt: createdAt.toISOString(),
-    agent: assistant,
-    participants: [assistant],
+    agent: scout,
+    participants: [scout, forge, scribe, echo],
     starColor: null,
     unread: false,
     messages: [
       {
         id: 'm-user',
         role: 'user',
-        content: SCENE_SWARM_PROMPT,
+        content: s.prompt,
         timestamp: createdAt,
       },
       {
         id: 'm-assistant',
         role: 'assistant',
-        agent: assistant,
+        agent: scout,
         content: answerSoFar,
         timestamp: createdAt,
+        steps: messageSteps,
       },
     ],
-    artifacts: [],
-    source: {},
+    artifacts,
+    source: { task },
     tags: [],
   }
 
@@ -344,10 +375,10 @@ function buildTourThreads(
     {
       id: 'tour-thread-2',
       kind: 'conversation',
-      title: 'Draft Q3 OKRs for the platform team',
-      snippet: 'Synthesized five drafts. Ready for review.',
+      title: s.filler2Title,
+      snippet: s.filler2Snippet,
       updatedAt: new Date(createdAt.getTime() - 1000 * 60 * 45).toISOString(),
-      agent: { ...assistant, id: 'tour-scribe', name: 'Scribe' },
+      agent: scribe,
       participants: [],
       starColor: '#F59E0B',
       unread: false,
@@ -359,12 +390,12 @@ function buildTourThreads(
     {
       id: 'tour-thread-3',
       kind: 'conversation',
-      title: 'Compare three WebGPU inference runtimes',
-      snippet: 'Benchmarks complete. Transformers.js leads on cold start.',
+      title: s.filler3Title,
+      snippet: s.filler3Snippet,
       updatedAt: new Date(
         createdAt.getTime() - 1000 * 60 * 60 * 3,
       ).toISOString(),
-      agent: { ...assistant, id: 'tour-forge', name: 'Forge' },
+      agent: forge,
       participants: [],
       starColor: null,
       unread: true,
@@ -376,12 +407,12 @@ function buildTourThreads(
     {
       id: 'tour-thread-4',
       kind: 'conversation',
-      title: 'Summarize last week’s customer interviews',
-      snippet: 'Three themes emerged: latency, privacy, price.',
+      title: s.filler4Title,
+      snippet: s.filler4Snippet,
       updatedAt: new Date(
         createdAt.getTime() - 1000 * 60 * 60 * 26,
       ).toISOString(),
-      agent: { ...assistant, id: 'tour-echo', name: 'Echo' },
+      agent: echo,
       participants: [],
       starColor: null,
       unread: false,
@@ -399,29 +430,47 @@ const noop = () => {}
 
 // ── Scene 2 helpers ───────────────────────────────────────────────────────
 // The heavy BrowserChrome content is memoized so it only re-renders when
-// `answerSoFar` changes (every few frames), not on every RAF tick. The zoom
-// transform is applied directly to a DOM ref via useLayoutEffect, completely
-// bypassing React reconciliation for the transform update.
+// `answerSoFar` / step count / status tier changes, not on every RAF tick.
 
 interface SwarmContentProps {
   answerSoFar: string
-  assistant: Agent
+  messageSteps: MessageStep[]
+  task: Task
+  team: ReturnType<typeof getTourTeam>
+  artifacts: Artifact[]
   createdAt: Date
+  strings: TourThreadStrings
+  createNewLabel: string
+  createNewSublabel: string
 }
 
 const SwarmContent = memo(function SwarmContent({
   answerSoFar,
-  assistant,
+  messageSteps,
+  task,
+  team,
+  artifacts,
   createdAt,
+  strings,
+  createNewLabel,
+  createNewSublabel,
 }: SwarmContentProps) {
-  const threads = buildTourThreads(assistant, answerSoFar, createdAt)
+  const threads = buildTourThreads(
+    team,
+    answerSoFar,
+    messageSteps,
+    task,
+    artifacts,
+    createdAt,
+    strings,
+  )
   const selectedId = threads[0].id
   return (
     <BrowserChrome inset={40} url="devs.new">
       {/* ThreadsPage composition — real Sidebar + ThreadList + ThreadPreview.
           We avoid WorkspaceLayout because it forces h-dvh. */}
       <div
-        className="bg-background flex h-full w-full overflow-hidden"
+        className="bg-background flex h-full w-full overflow-hidden relative"
         style={{ height: 'calc(100% - 0px)' }}
       >
         <div className="shrink-0">
@@ -441,8 +490,8 @@ const SwarmContent = memo(function SwarmContent({
               onSelectThread={noop}
               onShiftSelectThread={noop}
               onCreateNew={noop}
-              createNewLabel="New task"
-              createNewSublabel="Start a new task"
+              createNewLabel={createNewLabel}
+              createNewSublabel={createNewSublabel}
               isLoading={false}
               search=""
               onSearchChange={noop}
@@ -478,28 +527,432 @@ const SwarmContent = memo(function SwarmContent({
 const STREAM_STEPS = 48
 
 function SceneSwarmInner() {
+  const { t } = useI18n(tourI18n)
   const { localTime, duration } = useSprite()
+
+  // Translated strings used to build the mocked thread + answer.
+  const answerMarkdown = t(
+    `## Research brief — lithium supply chains
+
+**Four critical stages:** raw materials · refining · cell manufacturing · pack assembly.
+
+### Top 5 risks
+
+1. **Refining concentration** — China controls ~75% of capacity
+2. **Cobalt sourcing** — DRC artisanal mining exposure
+3. **Recycling gap** — capacity lags demand growth
+4. **Nickel volatility** — Indonesian supply shocks
+5. **Geopolitical shifts** — IRA, EU CRMA reshape flows
+
+> Exec summary and risks chart attached.`,
+  )
+  const answerTokens = useMemo(
+    () => answerMarkdown.split(/(\s+)/),
+    [answerMarkdown],
+  )
+
+  const strings = useMemo<TourThreadStrings>(
+    () => ({
+      prompt: t(
+        'Research lithium supply chains, chart the top 5 risks, and draft an exec summary.',
+      ),
+      filler2Title: t('Draft Q3 OKRs for the platform team'),
+      filler2Snippet: t('Synthesized five drafts. Ready for review.'),
+      filler3Title: t('Compare three WebGPU inference runtimes'),
+      filler3Snippet: t(
+        'Benchmarks complete. Transformers.js leads on cold start.',
+      ),
+      filler4Title: t('Summarize last week’s customer interviews'),
+      filler4Snippet: t('Three themes emerged: latency, privacy, price.'),
+      stepResearch: t('Research supply chain stages'),
+      stepChart: t('Build risks chart'),
+      stepDraft: t('Draft exec summary'),
+      stepReview: t('Reviewing deliverables'),
+      artifactSummary: t('Lithium supply chain — exec summary'),
+      artifactChart: t('Top 5 risks — chart'),
+    }),
+    [t],
+  )
+  const createNewLabel = t('New task')
+  const createNewSublabel = t('Start a new task')
+  const roles = {
+    research: t('Research'),
+    analysis: t('Analysis'),
+    writing: t('Writing'),
+    review: t('Review'),
+  }
+  const thinkingContent = t(
+    'Breaking this into parallel subtasks. Recruiting Research, Analysis, Writing, and Review…',
+  )
+  const toolLabels = {
+    knowledge: t('Searching knowledge base'),
+    wikipedia: t('Searching Wikipedia'),
+    arxiv: t('Searching arXiv'),
+    chart: t('Charting top 5 risks'),
+    draft: t('Drafting exec summary'),
+    review: t('Reviewing deliverables'),
+  }
 
   // Opacity: fade in over first 0.3s, fade out over last 0.4s.
   const inOpacity = clamp(localTime / 0.3, 0, 1)
   const exitT = clamp((localTime - (duration - 0.4)) / 0.4, 0, 1)
   const opacity = inOpacity * (1 - exitT)
 
-  // Streaming text: discretized into STREAM_STEPS chunks so prop identity
-  // only changes ~8× per second regardless of RAF cadence.
-  const streamT = clamp((localTime - 0.3) / (duration - 1.2), 0, 1)
+  // ── Streaming text ─────────────────────────────────────────────────────
+  // Stream is slower + starts later: we want Thinking + tool calls to
+  // dominate the first half of the scene, not wall-to-wall markdown.
+  const STREAM_BEGIN = 4.0
+  const STREAM_END = duration - 2.0
+  const streamT = clamp(
+    (localTime - STREAM_BEGIN) / (STREAM_END - STREAM_BEGIN),
+    0,
+    1,
+  )
   const step = Math.floor(streamT * STREAM_STEPS)
   const revealedTokenCount = Math.floor(
-    (step / STREAM_STEPS) * SCENE_SWARM_TOKENS.length,
+    (step / STREAM_STEPS) * answerTokens.length,
   )
   const answerSoFar = useMemo(
-    () => SCENE_SWARM_TOKENS.slice(0, revealedTokenCount).join(''),
-    [revealedTokenCount],
+    () => answerTokens.slice(0, revealedTokenCount).join(''),
+    [answerTokens, revealedTokenCount],
   )
 
-  // Stable references so SwarmContent props never churn unnecessarily.
-  const assistant = useMemo(() => getTourAssistant(), [])
+  // ── Team ───────────────────────────────────────────────────────────────
+  const team = useMemo(
+    () => getTourTeam(roles),
+    [roles.research, roles.analysis, roles.writing, roles.review],
+  )
   const createdAt = useMemo(() => new Date(), [])
+
+  // ── Task package (requirements, steps, agent-with-tools) ───────────────
+  const task = useMemo<Task>(() => {
+    // const tools: Tool[] = [
+    //   {
+    //     id: 'tour-tool-knowledge',
+    //     name: 'search_knowledge',
+    //     description: 'Search the knowledge base',
+    //     type: 'file',
+    //     config: {},
+    //   },
+    //   {
+    //     id: 'tour-tool-wikipedia',
+    //     name: 'wikipedia_search',
+    //     description: 'Search Wikipedia',
+    //     type: 'web',
+    //     config: {},
+    //   },
+    //   {
+    //     id: 'tour-tool-arxiv',
+    //     name: 'arxiv_search',
+    //     description: 'Search arXiv papers',
+    //     type: 'web',
+    //     config: {},
+    //   },
+    //   {
+    //     id: 'tour-tool-chart',
+    //     name: 'generate_chart',
+    //     description: 'Build a chart artifact',
+    //     type: 'custom',
+    //     config: {},
+    //   },
+    //   {
+    //     id: 'tour-tool-artifact',
+    //     name: 'artifact',
+    //     description: 'Produce a deliverable',
+    //     type: 'custom',
+    //     config: {},
+    //   },
+    //   {
+    //     id: 'tour-tool-execute',
+    //     name: 'execute',
+    //     description: 'Run sandboxed code',
+    //     type: 'shell',
+    //     config: {},
+    //   },
+    // ]
+    // const agentWithTools: Agent = { ...team.scout, tools }
+
+    // Requirements wave — each transitions pending → in_progress → satisfied.
+    // const requirements: Requirement[] = [
+    //   {
+    //     id: 'req-1',
+    //     type: 'functional',
+    //     description: t('Research supply chain stages'),
+    //     priority: 'must',
+    //     source: 'explicit',
+    //     taskId: 'tour-task-primary',
+    //     validationCriteria: [],
+    //     ...reqStatus(localTime, 1.0, 3.0),
+    //   },
+    //   {
+    //     id: 'req-2',
+    //     type: 'functional',
+    //     description: t('Identify top 5 risks'),
+    //     priority: 'must',
+    //     source: 'explicit',
+    //     taskId: 'tour-task-primary',
+    //     validationCriteria: [],
+    //     ...reqStatus(localTime, 1.5, 3.8),
+    //   },
+    //   {
+    //     id: 'req-3',
+    //     type: 'functional',
+    //     description: t('Build risks chart'),
+    //     priority: 'must',
+    //     source: 'explicit',
+    //     taskId: 'tour-task-primary',
+    //     validationCriteria: [],
+    //     ...reqStatus(localTime, 3.0, 5.8),
+    //   },
+    //   {
+    //     id: 'req-4',
+    //     type: 'functional',
+    //     description: t('Draft exec summary'),
+    //     priority: 'must',
+    //     source: 'explicit',
+    //     taskId: 'tour-task-primary',
+    //     validationCriteria: [],
+    //     ...reqStatus(localTime, 4.2, 7.0),
+    //   },
+    //   {
+    //     id: 'req-5',
+    //     type: 'non_functional',
+    //     description: t('Reviewing deliverables'),
+    //     priority: 'should',
+    //     source: 'inferred',
+    //     taskId: 'tour-task-primary',
+    //     validationCriteria: [],
+    //     ...reqStatus(localTime, 5.5, 8.0),
+    //   },
+    // ]
+
+    // Task steps — show the parallel agents via Chip in the Steps disclosure.
+    // const steps: TaskStep[] = [
+    //   {
+    //     id: 's-1',
+    //     name: strings.stepResearch,
+    //     description: '',
+    //     order: 1,
+    //     agentId: team.scout.id,
+    //     status: stepStatus(localTime, 1.0, 3.8),
+    //   },
+    //   {
+    //     id: 's-2',
+    //     name: strings.stepChart,
+    //     description: '',
+    //     order: 2,
+    //     agentId: team.forge.id,
+    //     status: stepStatus(localTime, 3.0, 5.8),
+    //   },
+    //   {
+    //     id: 's-3',
+    //     name: strings.stepDraft,
+    //     description: '',
+    //     order: 3,
+    //     agentId: team.scribe.id,
+    //     status: stepStatus(localTime, 4.2, 7.0),
+    //   },
+    //   {
+    //     id: 's-4',
+    //     name: strings.stepReview,
+    //     description: '',
+    //     order: 4,
+    //     agentId: team.echo.id,
+    //     status: stepStatus(localTime, 5.5, 8.0),
+    //   },
+    // ]
+
+    const taskStatus: Task['status'] =
+      localTime >= 8.5
+        ? 'completed'
+        : localTime >= 0.3
+          ? 'in_progress'
+          : 'pending'
+
+    return {
+      id: 'tour-task-primary',
+      workflowId: 'tour-workflow',
+      title: strings.prompt,
+      description: strings.prompt,
+      complexity: 'complex',
+      status: taskStatus,
+      assignedAgentId: team.scout.id,
+      // agent: agentWithTools,
+      agent: team.scout,
+      dependencies: [],
+      requirements: [],
+      artifacts: [],
+      steps: [],
+      estimatedPasses: 1,
+      actualPasses: 1,
+      createdAt,
+      updatedAt: createdAt,
+      completedAt: taskStatus === 'completed' ? createdAt : undefined,
+    }
+  }, [localTime, team, createdAt, strings, t])
+
+  // ── Assistant message.steps (Thinking + tool calls + work) ─────────────
+  // Each step flips running → completed at its own time. We guard with
+  // tiered boundaries so SwarmContent only re-renders when the shape
+  // actually changes.
+  const messageSteps = useMemo<MessageStep[]>(() => {
+    const now = createdAt.getTime()
+    const mk = (
+      id: string,
+      icon: string,
+      i18nKey: string,
+      startT: number,
+      doneT: number,
+      extra: Partial<MessageStep> = {},
+    ): MessageStep | null => {
+      if (localTime < startT) return null
+      const completed = localTime >= doneT
+      return {
+        id,
+        icon,
+        i18nKey,
+        status: completed ? 'completed' : 'running',
+        startedAt: now + startT * 1000,
+        completedAt: completed ? now + doneT * 1000 : undefined,
+        ...extra,
+      }
+    }
+
+    const out: MessageStep[] = []
+
+    // Step 0: Thinking — always present once scene begins.
+    const thinking = mk('s0-thinking', 'Sparks', 'thinking', 0.5, 2.2, {
+      thinkingContent,
+      title: thinkingContent,
+    })
+    if (thinking) out.push(thinking)
+
+    // Tool calls (staggered 200ms apart).
+    // const tc1 = mk('s1-knowledge', 'Search', 'tool', 2.0, 2.8, {
+    //   title: toolLabels.knowledge,
+    //   toolCalls: [
+    //     {
+    //       name: 'search_knowledge',
+    //       input: { query: 'lithium supply chain 2024' },
+    //       output:
+    //         localTime >= 2.8 ? '42 documents · 128 chunks matched' : undefined,
+    //     },
+    //   ],
+    // })
+    // if (tc1) out.push(tc1)
+
+    const tc2 = mk('s2-wikipedia', 'Internet', 'tool', 2.4, 3.2, {
+      title: toolLabels.wikipedia,
+      toolCalls: [
+        {
+          name: 'wikipedia_search',
+          input: { topic: 'Cobalt mining DRC' },
+          output: localTime >= 3.2 ? '7 articles · cross-linked' : undefined,
+        },
+      ],
+    })
+    if (tc2) out.push(tc2)
+
+    // const tc3 = mk('s3-arxiv', 'Page', 'tool', 2.8, 3.6, {
+    //   title: toolLabels.arxiv,
+    //   toolCalls: [
+    //     {
+    //       name: 'arxiv_search',
+    //       input: { query: 'Li-ion recycling capacity' },
+    //       output: localTime >= 3.6 ? '23 papers · 2022-2024' : undefined,
+    //     },
+    //   ],
+    // })
+    // if (tc3) out.push(tc3)
+
+    // Work steps — the three agents doing their part.
+    // const w1 = mk('s4-chart', 'GraphUp', 'tool', 4.2, 5.8, {
+    //   title: toolLabels.chart,
+    //   toolCalls: [
+    //     {
+    //       name: 'generate_chart',
+    //       input: { kind: 'bar', series: 'risk_score', n: 5 },
+    //       output: localTime >= 5.8 ? 'chart.svg · 5 bars' : undefined,
+    //     },
+    //   ],
+    // })
+    // if (w1) out.push(w1)
+
+    // const w2 = mk('s5-draft', 'EditPencil', 'tool', 5.0, 6.8, {
+    //   title: toolLabels.draft,
+    //   toolCalls: [
+    //     {
+    //       name: 'artifact',
+    //       input: { type: 'document', format: 'markdown' },
+    //       output: localTime >= 6.8 ? 'summary.md · 820 words' : undefined,
+    //     },
+    //   ],
+    // })
+    // if (w2) out.push(w2)
+
+    const w3 = mk('s6-review', 'DoubleCheck', 'tool', 6.5, 7.8, {
+      title: toolLabels.review,
+      toolCalls: [
+        {
+          name: 'validate',
+          input: { requirements: 5 },
+          output: localTime >= 7.8 ? '5/5 satisfied · approved' : undefined,
+        },
+      ],
+    })
+    if (w3) out.push(w3)
+
+    return out
+  }, [
+    // Re-derive only when a status boundary crosses:
+    Math.floor(localTime * 5),
+    thinkingContent,
+    toolLabels.knowledge,
+    toolLabels.wikipedia,
+    toolLabels.arxiv,
+    toolLabels.chart,
+    toolLabels.draft,
+    toolLabels.review,
+  ])
+
+  // ── Artifacts (appear at t=7.5, shimmer via CSS) ───────────────────────
+  const artifacts = useMemo<Artifact[]>(() => {
+    if (localTime < 7.5) return []
+    return [
+      {
+        id: 'tour-art-summary',
+        taskId: 'tour-task-primary',
+        agentId: team.scribe.id,
+        title: strings.artifactSummary,
+        description: '820 words · markdown',
+        type: 'document',
+        format: 'markdown',
+        content: '',
+        version: 1,
+        status: 'final',
+        dependencies: [],
+        validates: [],
+        createdAt,
+        updatedAt: createdAt,
+      },
+      {
+        id: 'tour-art-chart',
+        taskId: 'tour-task-primary',
+        agentId: team.forge.id,
+        title: strings.artifactChart,
+        description: '5 bars · SVG',
+        type: 'analysis',
+        format: 'html',
+        content: '',
+        version: 1,
+        status: 'final',
+        dependencies: [],
+        validates: [],
+        createdAt,
+        updatedAt: createdAt,
+      },
+    ]
+  }, [localTime >= 7.5, team.scribe.id, team.forge.id, strings, createdAt])
 
   // Apply opacity via DOM ref too — the outer wrapper never re-renders from
   // React for animation purposes.
@@ -523,18 +976,25 @@ function SceneSwarmInner() {
       >
         <SwarmContent
           answerSoFar={answerSoFar}
-          assistant={assistant}
+          messageSteps={messageSteps}
+          task={task}
+          team={team}
+          artifacts={artifacts}
           createdAt={createdAt}
+          strings={strings}
+          createNewLabel={createNewLabel}
+          createNewSublabel={createNewSublabel}
         />
       </div>
     </div>
   )
 }
 
-export function SceneSwarm({ start = 9.3, end = 14.6 }: SceneProps) {
+export function SceneSwarm({ start = 3.9, end = 15.0 }: SceneProps) {
   return (
     <>
-      <style>{`@keyframes tour-swarm-zoom { from { transform: scale(1); } to { transform: scale(1.15); } }`}</style>
+      <style>{`@keyframes tour-swarm-zoom { from { transform: scale(1); } to { transform: scale(1.08); } }
+@keyframes tour-artifact-shimmer { 0% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: translateY(0); } }`}</style>
       <Sprite start={start} end={end}>
         <SceneSwarmInner />
       </Sprite>
@@ -597,8 +1057,8 @@ export function SceneCollapse({ start = 12.5, end = 15.5 }: SceneProps) {
 }
 
 // ── Scene 4: Privacy triad ────────────────────────────────────────────────
-// 18.5–25.5s
-export function ScenePromise({ start = 18.5, end = 25.5 }: SceneProps) {
+// 17.9–23.0s — tightened. Three short lines + elevated closing tagline.
+export function ScenePromise({ start = 17.9, end = 23.0 }: SceneProps) {
   const { t } = useI18n(tourI18n)
   return (
     <Sprite start={start} end={end}>
@@ -609,9 +1069,9 @@ export function ScenePromise({ start = 18.5, end = 25.5 }: SceneProps) {
         const opacity = inT * (1 - exitT)
 
         const phrases = [
-          { text: t('No server.'), at: 0.5 },
-          { text: t('No subscription.'), at: 2.0 },
-          { text: t('No third party.'), at: 3.5 },
+          { text: t('No server.'), at: 0.3 },
+          { text: t('No subscription.'), at: 1.2 },
+          { text: t('Your keys. Your data.'), at: 2.1 },
         ]
 
         // Sphere sits at one-third from the left, vertically centred —
@@ -619,6 +1079,12 @@ export function ScenePromise({ start = 18.5, end = 25.5 }: SceneProps) {
         const SPHERE_LEFT = '33.3%'
         const SPHERE_TOP = '50%'
         const breathe = 1 + Math.sin(time * 1.8) * 0.03
+
+        // Closing tagline: "OPEN SOURCE · BROWSER-NATIVE · YOURS"
+        // Promoted from a bottom footnote to a larger centered climax at
+        // the end of the scene.
+        const taglineIn = clamp((time - 3.4) / 0.5, 0, 1)
+        const taglineOpacity = taglineIn * (1 - exitT)
 
         return (
           <div
@@ -637,6 +1103,7 @@ export function ScenePromise({ start = 18.5, end = 25.5 }: SceneProps) {
                 left: SPHERE_LEFT,
                 top: SPHERE_TOP,
                 transform: `translate(-50%, -50%) scale(${breathe})`,
+                opacity: 1 - taglineIn * 0.6,
               }}
             >
               <TourSphere size={260} color="#6aa1ff" intensity={1.2} />
@@ -650,14 +1117,15 @@ export function ScenePromise({ start = 18.5, end = 25.5 }: SceneProps) {
                 width: '46.9%',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 64,
+                gap: 48,
                 fontFamily: "'Unbounded', Georgia, serif",
                 fontStyle: 'italic',
-                fontSize: 64,
+                fontSize: 56,
                 color: '#f2f4f8',
                 letterSpacing: '-0.02em',
                 lineHeight: 1.15,
                 whiteSpace: 'nowrap',
+                opacity: 1 - taglineIn,
               }}
             >
               {phrases.map((p, i) => {
@@ -692,18 +1160,21 @@ export function ScenePromise({ start = 18.5, end = 25.5 }: SceneProps) {
               })}
             </div>
 
+            {/* Elevated closing tagline — centered, large, climactic. */}
             <div
               style={{
                 position: 'absolute',
-                bottom: 80,
                 left: 0,
                 right: 0,
+                top: '50%',
+                transform: `translateY(-50%) scale(${0.96 + 0.04 * taglineIn})`,
                 textAlign: 'center',
                 fontFamily: "'Geist', ui-monospace, monospace",
-                fontSize: 18,
-                letterSpacing: '0.3em',
-                color: '#8a909a',
-                opacity: clamp((time - 5.0) / 0.6, 0, 1) * (1 - exitT),
+                fontSize: 34,
+                letterSpacing: '0.28em',
+                color: '#f2f4f8',
+                opacity: taglineOpacity,
+                pointerEvents: 'none',
               }}
             >
               {t('OPEN SOURCE · BROWSER-NATIVE · YOURS')}
@@ -764,8 +1235,10 @@ function BackgroundOrbit({
 }
 
 // ── Scene 5: Call to action ───────────────────────────────────────────────
-// 25.5–30s
-export function SceneCTA({ start = 25.5, end = 30 }: SceneProps) {
+// 22.9–30s — imperative CTA, friction-killer badge, pulsing click target.
+// The CTA pulse uses a CSS keyframe so motion survives the Stage clock
+// stopping at t=30 (no more "frozen end frame").
+export function SceneCTA({ start = 22.9, end = 30 }: SceneProps) {
   const { t } = useI18n(tourI18n)
   return (
     <Sprite start={start} end={end}>
@@ -773,8 +1246,10 @@ export function SceneCTA({ start = 25.5, end = 30 }: SceneProps) {
         const time = localTime
         const inT = clamp(time / 0.6, 0, 1)
         const urlT = clamp((time - 0.8) / 0.8, 0, 1)
-        const repoT = clamp((time - 1.8) / 0.7, 0, 1)
-        const tagT = clamp((time - 2.5) / 0.9, 0, 1)
+        const tagT = clamp((time - 1.6) / 0.7, 0, 1)
+        const ctaT = clamp((time - 2.4) / 0.6, 0, 1)
+        const fricT = clamp((time - 3.0) / 0.5, 0, 1)
+        const repoT = clamp((time - 3.6) / 0.6, 0, 1)
         const breathe = 1 + Math.sin(time * 1.8) * 0.025
 
         return (
@@ -792,11 +1267,11 @@ export function SceneCTA({ start = 25.5, end = 30 }: SceneProps) {
               style={{
                 position: 'absolute',
                 left: '50%',
-                top: '35%',
+                top: '28%',
                 transform: `translate(-50%, -50%) scale(${breathe})`,
               }}
             >
-              <TourSphere size={200} color="#6aa1ff" intensity={1.4} />
+              <TourSphere size={180} color="#6aa1ff" intensity={1.4} />
             </div>
 
             <div
@@ -804,10 +1279,10 @@ export function SceneCTA({ start = 25.5, end = 30 }: SceneProps) {
                 position: 'absolute',
                 left: 0,
                 right: 0,
-                top: '52%',
+                top: '44%',
                 textAlign: 'center',
                 fontFamily: "'Unbounded', Georgia, serif",
-                fontSize: 140,
+                fontSize: 120,
                 fontWeight: 500,
                 letterSpacing: '0.14em',
                 color: '#f2f4f8',
@@ -822,51 +1297,84 @@ export function SceneCTA({ start = 25.5, end = 30 }: SceneProps) {
                 position: 'absolute',
                 left: 0,
                 right: 0,
-                top: '68%',
-                textAlign: 'center',
-                fontFamily: "'Geist', ui-monospace, monospace",
-                fontSize: 48,
-                letterSpacing: '0.04em',
-                color: 'oklch(72% 0.16 253)',
-                opacity: urlT,
-                transform: `translateY(${(1 - urlT) * 10}px)`,
-              }}
-            >
-              {t('devs.new')}
-            </div>
-
-            <div
-              style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                top: '78%',
+                top: '58%',
                 textAlign: 'center',
                 fontFamily: "'Unbounded', Georgia, serif",
                 fontStyle: 'italic',
-                fontSize: 36,
+                fontSize: 30,
                 color: '#d7dbe0',
                 opacity: tagT,
                 transform: `translateY(${(1 - tagT) * 10}px)`,
               }}
             >
-              {t('Intelligence amplification for everyone with a browser.')}
+              {t('Intelligence, one tab away')}
             </div>
 
+            {/* Imperative CTA button — CSS-keyframe pulse so it keeps
+                animating even after the Stage clock stops. */}
+            <style>{`@keyframes tour-cta-pulse {
+              0%, 100% { box-shadow: 0 0 24px oklch(72% 0.16 253 / 0.4); }
+              50% { box-shadow: 0 0 56px oklch(72% 0.16 253 / 0.8); }
+            }`}</style>
+            <div
+              style={{
+                position: 'absolute',
+                left: '50%',
+                top: '70%',
+                transform: `translate(-50%, -50%) scale(${ctaT})`,
+                opacity: ctaT,
+                fontFamily: "'Geist', ui-monospace, monospace",
+                fontSize: 28,
+                fontWeight: 600,
+                letterSpacing: '0.05em',
+                color: '#0b0d10',
+                background: '#f2f4f8',
+                padding: '16px 40px',
+                borderRadius: 999,
+                animation: 'tour-cta-pulse 1.8s ease-in-out infinite',
+                pointerEvents: 'none',
+              }}
+            >
+              {t('Open devs.new →')}
+            </div>
+
+            {/* Friction-killer badge — the conversion lever nobody else has. */}
             <div
               style={{
                 position: 'absolute',
                 left: 0,
                 right: 0,
-                bottom: 80,
+                top: '80%',
                 textAlign: 'center',
                 fontFamily: "'Geist', ui-monospace, monospace",
-                fontSize: 18,
+                fontSize: 15,
+                letterSpacing: '0.22em',
+                color: 'oklch(72% 0.16 253)',
+                opacity: fricT,
+              }}
+            >
+              {t('No signup · No install · Free')}
+            </div>
+
+            {/* Repo / URL footer — de-emphasized now that the CTA is elsewhere. */}
+            <div
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                bottom: 60,
+                textAlign: 'center',
+                fontFamily: "'Geist', ui-monospace, monospace",
+                fontSize: 14,
                 letterSpacing: '0.18em',
-                color: '#8a909a',
+                color: '#6a6f78',
                 opacity: repoT,
               }}
             >
+              <span style={{ color: 'oklch(72% 0.16 253)', opacity: urlT }}>
+                {t('devs.new')}
+              </span>
+              <span style={{ margin: '0 14px' }}>·</span>
               {t('github.com/codename-co/devs · MIT')}
             </div>
           </div>

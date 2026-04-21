@@ -23,7 +23,7 @@ import {
 import { TourSoundtrack } from './components/TourSoundtrack'
 
 // Scene boundaries (must match the `start`/`end` props below).
-const SCENE_ENDS = [9.5, 14.5, 17.5, 24, 30] as const
+const SCENE_ENDS = [4.0, 15.0, 18.0, 23.0, 30] as const
 
 // Stage background colors. The viewport lerps between these at the scene
 // transition points so the Stage's surround matches each scene's own
@@ -75,7 +75,7 @@ export function TourPage() {
       <Stage
         duration={30}
         background={BG_LIGHT}
-        backgroundTransitions={[{ start: 14.3, end: 15.3, color: BG_DARK }]}
+        backgroundTransitions={[{ start: 14.8, end: 15.6, color: BG_DARK }]}
         loop={false}
         persistKey=""
         onCanvasClick={(time, toggle) => {
@@ -87,11 +87,11 @@ export function TourPage() {
         }}
       >
         <TourSoundtrack startOffset={2} />
-        <SceneOpen start={0} end={9.5} />
-        <SceneSwarm start={9.3} end={14.6} />
-        <SceneCollapse start={14.4} end={17.5} />
-        <ScenePromise start={17.3} end={24.2} />
-        <SceneCTA start={24} end={30} />
+        <SceneOpen start={0} end={4.0} />
+        <SceneSwarm start={3.9} end={15.0} />
+        <SceneCollapse start={14.9} end={18.0} />
+        <ScenePromise start={17.9} end={23.0} />
+        <SceneCTA start={22.9} end={30} />
       </Stage>
     </div>
   )

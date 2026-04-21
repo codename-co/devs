@@ -14,7 +14,7 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { useTimeline } from './animations'
-import soundtrackUrl from '../assets/sergequadrado-classical-orchestral-hip-hop-loop.mp3'
+import soundtrackUrl from '../assets/starostin-promo-promotional-showreel-music-478259.mp3'
 
 export interface TourSoundtrackProps {
   /** Seconds into the timeline at which the track starts. Default: 0. */
