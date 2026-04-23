@@ -75,7 +75,7 @@ export function SceneOpen({ start = 0, end = 4.0 }: SceneProps) {
   const { t } = useI18n(tourI18n)
   const { width: stageW, height: stageH } = useStageSize()
   const prompt = t(
-    'Research lithium supply chains, chart the top 5 risks, and draft an exec summary.',
+    'Research how 5 major cities are adapting to climate change, compare their strategies, and draft a presentation briefing for city planners.',
   )
 
   const toCursor = (frac: { x: number; y: number }) => ({
@@ -84,49 +84,58 @@ export function SceneOpen({ start = 0, end = 4.0 }: SceneProps) {
   })
 
   // Timeline (scene-local seconds):
-  //   0.00 – 0.40  chrome eases in
-  //   0.30 – 1.50  supertitle "An AI agent swarm…" fades in then out
-  //   0.40 – 1.20  URL "devs.new" types
-  //   1.00 – 1.80  home page fades in with prompt already filled
-  //   1.80 – 2.80  cursor glides from off-stage to submit
-  //   2.80 – 3.05  cursor clicks submit (ripple)
+  //   0.00 – 0.35  hook "What if you could delegate anything?" fades in
+  //   0.35 – 0.70  hook holds
+  //   0.70 – 1.10  hook fades out
+  //   0.80 – 1.30  chrome eases in
+  //   1.40 – 2.20  URL "devs.new" types
+  //   1.80 – 2.60  home page fades in with prompt already filled
+  //   2.40 – 3.20  cursor glides from off-stage to submit
+  //   3.20 – 3.45  cursor clicks submit (ripple)
   //   3.60 – 4.00  scene fades out into SceneSwarm
-  const CURSOR_ENTER = 1.8
-  const MOVE_END = 2.8
-  const CLICK_END = 3.05
+  const CURSOR_ENTER = 2.4
+  const MOVE_END = 3.2
+  const CLICK_END = 3.45
 
   return (
     <Sprite start={start} end={end}>
       {({ localTime, duration }) => {
         const time = localTime
-        const chromeIn = Easing.easeOutBack(clamp(time / 0.4, 0, 1))
-        const chromeScale = 0.96 + 0.04 * chromeIn
-        const chromeOpacity = clamp(time / 0.3, 0, 1)
-        const urlProgress = clamp((time - 0.4) / 0.8, 0, 1)
-        const pageIn = Easing.easeOutCubic(clamp((time - 1.0) / 0.8, 0, 1))
         const exitT = clamp((time - (duration - 0.4)) / 0.4, 0, 1)
         const exitOpacity = 1 - exitT
 
-        // Supertitle (category anchor): t 0.3 → 1.5
-        // const superIn = clamp((time - 0.3) / 0.3, 0, 1)
-        // const superOut = clamp((time - 1.2) / 0.3, 0, 1)
-        // const superOpacity = superIn * (1 - superOut)
+        // Opening hook — fades in before the browser appears, fades out as chrome comes in.
+        const hookIn = clamp(time / 0.35, 0, 1)
+        const hookOut = clamp((time - 0.7) / 0.4, 0, 1)
+        const hookOpacity = hookIn * (1 - hookOut)
+
+        const chromeIn = Easing.easeOutBack(clamp((time - 0.8) / 0.5, 0, 1))
+        const chromeScale = 0.96 + 0.04 * chromeIn
+        const chromeOpacity = clamp((time - 0.8) / 0.4, 0, 1)
+        const urlProgress = clamp((time - 1.4) / 0.8, 0, 1)
+        const pageIn = Easing.easeOutCubic(clamp((time - 1.8) / 0.8, 0, 1))
+
+        // Responsive chrome inset: shrinks to ~8px on phones, caps at 80px on
+        // wide screens — mirrors how the real app fills the viewport on mobile.
+        const chromeInset = Math.round(Math.min(80, Math.max(8, stageW * 0.062)))
+        // Cursor fractions are calibrated for inset=80; suppress on mobile.
+        const showCursor = stageW >= 700
 
         // Cursor — glide off-stage → submit, then click.
         const cursorOff = toCursor(CURSOR_OFF_FRAC)
         const cursorSubmit = toCursor(CURSOR_SUBMIT_FRAC)
         let cursorPos: { x: number; y: number } | null = null
-        if (time >= CURSOR_ENTER && time < MOVE_END) {
+        if (showCursor && time >= CURSOR_ENTER && time < MOVE_END) {
           cursorPos = lerpPoint(
             cursorOff,
             cursorSubmit,
             (time - CURSOR_ENTER) / (MOVE_END - CURSOR_ENTER),
           )
-        } else if (time >= MOVE_END) {
+        } else if (showCursor && time >= MOVE_END) {
           cursorPos = cursorSubmit
         }
         const click =
-          time >= MOVE_END && time < CLICK_END
+          showCursor && time >= MOVE_END && time < CLICK_END
             ? (time - MOVE_END) / (CLICK_END - MOVE_END)
             : 0
 
@@ -139,7 +148,7 @@ export function SceneOpen({ start = 0, end = 4.0 }: SceneProps) {
             }}
           >
             <BrowserChromeTyping
-              inset={80}
+              inset={chromeInset}
               urlText="devs.new"
               urlProgress={urlProgress}
               scale={chromeScale}
@@ -164,28 +173,38 @@ export function SceneOpen({ start = 0, end = 4.0 }: SceneProps) {
                   demo
                 />
               </div>
+            </BrowserChromeTyping>
 
-              {/* Category-anchor supertitle */}
-              {/*{superOpacity > 0 && (
+            {/* Opening hook — appears before the browser, answers its own question
+                with the swarm demo that follows. */}
+            {hookOpacity > 0 && (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: hookOpacity,
+                  pointerEvents: 'none',
+                }}
+              >
                 <div
                   style={{
-                    position: 'absolute',
-                    left: 0,
-                    right: 0,
-                    top: '14%',
-                    textAlign: 'center',
                     fontFamily: "'Unbounded', Georgia, serif",
-                    fontSize: 36,
                     fontStyle: 'italic',
+                    fontSize: clamp(stageW * 0.042, 24, 56),
                     color: '#1a1d22',
-                    opacity: superOpacity,
-                    pointerEvents: 'none',
+                    textAlign: 'center',
+                    letterSpacing: '-0.02em',
+                    lineHeight: 1.2,
+                    padding: '0 10%',
                   }}
                 >
-                  {t('An AI agent swarm. In your browser.')}
+                  {t('What if you could delegate anything?')}
                 </div>
-              )}*/}
-            </BrowserChromeTyping>
+              </div>
+            )}
 
             {cursorPos && (
               <FakeCursor
@@ -455,6 +474,13 @@ const SwarmContent = memo(function SwarmContent({
   createNewLabel,
   createNewSublabel,
 }: SwarmContentProps) {
+  const { width: stageW } = useStageSize()
+  // Mirror the real inbox page: on mobile the thread list is hidden and the
+  // preview fills the full width. Same breakpoint logic as ThreadsPage
+  // (`hidden md:flex` = hidden below 768px).
+  const showThreadList = stageW >= 650
+  const chromeInset = Math.round(Math.min(40, Math.max(8, stageW * 0.031)))
+
   const threads = buildTourThreads(
     team,
     answerSoFar,
@@ -466,7 +492,7 @@ const SwarmContent = memo(function SwarmContent({
   )
   const selectedId = threads[0].id
   return (
-    <BrowserChrome inset={40} url="devs.new">
+    <BrowserChrome inset={chromeInset} url="devs.new">
       {/* ThreadsPage composition — real Sidebar + ThreadList + ThreadPreview.
           We avoid WorkspaceLayout because it forces h-dvh. */}
       <div
@@ -482,24 +508,26 @@ const SwarmContent = memo(function SwarmContent({
           />
         </div>
         <div className="flex min-w-0 flex-1">
-          <div className="shrink-0 border-divider/60" style={{ width: 340 }}>
-            <ThreadList
-              threads={threads}
-              selectedThreadId={selectedId}
-              selectedIds={[selectedId]}
-              onSelectThread={noop}
-              onShiftSelectThread={noop}
-              onCreateNew={noop}
-              createNewLabel={createNewLabel}
-              createNewSublabel={createNewSublabel}
-              isLoading={false}
-              search=""
-              onSearchChange={noop}
-              onToggleStar={noop}
-              onToggleRead={noop}
-              layout="list"
-            />
-          </div>
+          {showThreadList && (
+            <div className="shrink-0 border-divider/60" style={{ width: 340 }}>
+              <ThreadList
+                threads={threads}
+                selectedThreadId={selectedId}
+                selectedIds={[selectedId]}
+                onSelectThread={noop}
+                onShiftSelectThread={noop}
+                onCreateNew={noop}
+                createNewLabel={createNewLabel}
+                createNewSublabel={createNewSublabel}
+                isLoading={false}
+                search=""
+                onSearchChange={noop}
+                onToggleStar={noop}
+                onToggleRead={noop}
+                layout="list"
+              />
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <ThreadPreview
               thread={threads[0]}
@@ -532,19 +560,19 @@ function SceneSwarmInner() {
 
   // Translated strings used to build the mocked thread + answer.
   const answerMarkdown = t(
-    `## Research brief — lithium supply chains
+    `## Climate adaptation briefing — 5 major cities
 
-**Four critical stages:** raw materials · refining · cell manufacturing · pack assembly.
+**Cities surveyed:** Amsterdam · Singapore · Copenhagen · Medellín · Rotterdam
 
-### Top 5 risks
+### Comparative strategies
 
-1. **Refining concentration** — China controls ~75% of capacity
-2. **Cobalt sourcing** — DRC artisanal mining exposure
-3. **Recycling gap** — capacity lags demand growth
-4. **Nickel volatility** — Indonesian supply shocks
-5. **Geopolitical shifts** — IRA, EU CRMA reshape flows
+1. **Amsterdam** — floating infrastructure, canal surge control
+2. **Singapore** — NEWater system, urban heat island mitigation
+3. **Copenhagen** — 100% renewable target, 20-min city model
+4. **Medellín** — green corridors, urban acupuncture model
+5. **Rotterdam** — water squares, rooftop gardens, floating pavilions
 
-> Exec summary and risks chart attached.`,
+> Strategy comparison and presentation deck attached.`,
   )
   const answerTokens = useMemo(
     () => answerMarkdown.split(/(\s+)/),
@@ -554,7 +582,7 @@ function SceneSwarmInner() {
   const strings = useMemo<TourThreadStrings>(
     () => ({
       prompt: t(
-        'Research lithium supply chains, chart the top 5 risks, and draft an exec summary.',
+        'Research how 5 major cities are adapting to climate change, compare their strategies, and draft a presentation briefing for city planners.',
       ),
       filler2Title: t('Draft Q3 OKRs for the platform team'),
       filler2Snippet: t('Synthesized five drafts. Ready for review.'),
@@ -564,12 +592,12 @@ function SceneSwarmInner() {
       ),
       filler4Title: t('Summarize last week’s customer interviews'),
       filler4Snippet: t('Three themes emerged: latency, privacy, price.'),
-      stepResearch: t('Research supply chain stages'),
-      stepChart: t('Build risks chart'),
-      stepDraft: t('Draft exec summary'),
+      stepResearch: t('Research city adaptations'),
+      stepChart: t('Build strategy overview'),
+      stepDraft: t('Draft briefing'),
       stepReview: t('Reviewing deliverables'),
-      artifactSummary: t('Lithium supply chain — exec summary'),
-      artifactChart: t('Top 5 risks — chart'),
+      artifactSummary: t('Climate adaptation — strategy comparison'),
+      artifactChart: t('City planners briefing — presentation'),
     }),
     [t],
   )
@@ -588,9 +616,10 @@ function SceneSwarmInner() {
     knowledge: t('Searching knowledge base'),
     wikipedia: t('Searching Wikipedia'),
     arxiv: t('Searching arXiv'),
-    chart: t('Charting top 5 risks'),
-    draft: t('Drafting exec summary'),
+    chart: t('Comparing city strategies'),
+    draft: t('Drafting presentation briefing'),
     review: t('Reviewing deliverables'),
+    pptx: t('Generating presentation'),
   }
 
   // Opacity: fade in over first 0.3s, fade out over last 0.4s.
@@ -763,7 +792,7 @@ function SceneSwarmInner() {
     // ]
 
     const taskStatus: Task['status'] =
-      localTime >= 8.5
+      localTime >= 9.5
         ? 'completed'
         : localTime >= 0.3
           ? 'in_progress'
@@ -846,8 +875,8 @@ function SceneSwarmInner() {
       toolCalls: [
         {
           name: 'wikipedia_search',
-          input: { topic: 'Cobalt mining DRC' },
-          output: localTime >= 3.2 ? '7 articles · cross-linked' : undefined,
+          input: { topic: 'Climate change urban adaptation' },
+          output: localTime >= 3.2 ? '9 articles · cross-linked' : undefined,
         },
       ],
     })
@@ -902,6 +931,18 @@ function SceneSwarmInner() {
     })
     if (w3) out.push(w3)
 
+    const w4 = mk('s7-pptx', 'Presentation', 'tool', 8.0, 9.5, {
+      title: toolLabels.pptx,
+      toolCalls: [
+        {
+          name: 'generate_pptx',
+          input: { title: 'Climate Adaptation Strategies', slides: 12 },
+          output: localTime >= 9.5 ? '12 slides · .pptx ready' : undefined,
+        },
+      ],
+    })
+    if (w4) out.push(w4)
+
     return out
   }, [
     // Re-derive only when a status boundary crosses:
@@ -913,19 +954,20 @@ function SceneSwarmInner() {
     toolLabels.chart,
     toolLabels.draft,
     toolLabels.review,
+    toolLabels.pptx,
   ])
 
   // ── Artifacts (appear at t=7.5, shimmer via CSS) ───────────────────────
   const artifacts = useMemo<Artifact[]>(() => {
-    if (localTime < 7.5) return []
+    if (localTime < 9.5) return []
     return [
       {
-        id: 'tour-art-summary',
+        id: 'tour-art-comparison',
         taskId: 'tour-task-primary',
-        agentId: team.scribe.id,
+        agentId: team.forge.id,
         title: strings.artifactSummary,
-        description: '820 words · markdown',
-        type: 'document',
+        description: '5 cities · comparative analysis',
+        type: 'analysis',
         format: 'markdown',
         content: '',
         version: 1,
@@ -936,12 +978,12 @@ function SceneSwarmInner() {
         updatedAt: createdAt,
       },
       {
-        id: 'tour-art-chart',
+        id: 'tour-art-pptx',
         taskId: 'tour-task-primary',
-        agentId: team.forge.id,
+        agentId: team.scribe.id,
         title: strings.artifactChart,
-        description: '5 bars · SVG',
-        type: 'analysis',
+        description: '12 slides · .pptx',
+        type: 'document',
         format: 'html',
         content: '',
         version: 1,
@@ -952,7 +994,7 @@ function SceneSwarmInner() {
         updatedAt: createdAt,
       },
     ]
-  }, [localTime >= 7.5, team.scribe.id, team.forge.id, strings, createdAt])
+  }, [localTime >= 9.5, team.forge.id, team.scribe.id, strings, createdAt])
 
   // Apply opacity via DOM ref too — the outer wrapper never re-renders from
   // React for animation purposes.
@@ -1006,6 +1048,7 @@ export function SceneSwarm({ start = 3.9, end = 15.0 }: SceneProps) {
 // 3 seconds max: quick fade-through from the inbox to the dark triad.
 export function SceneCollapse({ start = 12.5, end = 15.5 }: SceneProps) {
   const { t } = useI18n(tourI18n)
+  const { width: stageW } = useStageSize()
   return (
     <Sprite start={start} end={end}>
       {({ localTime, duration }) => {
@@ -1018,6 +1061,9 @@ export function SceneCollapse({ start = 12.5, end = 15.5 }: SceneProps) {
         const captionT = clamp((time - 0.4) / 0.5, 0, 1)
         const captionOut = clamp((time - (duration - 0.5)) / 0.5, 0, 1)
 
+        const sphereSz = Math.round(Math.max(100, stageW * 0.25))
+        const captionFz = Math.round(Math.max(18, stageW * 0.044))
+
         return (
           <div style={{ position: 'absolute', inset: 0, opacity }}>
             <div
@@ -1028,7 +1074,7 @@ export function SceneCollapse({ start = 12.5, end = 15.5 }: SceneProps) {
                 transform: `translate(-50%, -50%) scale(${sphereScale * breathe})`,
               }}
             >
-              <TourSphere size={320} color="#6aa1ff" intensity={1.2} />
+              <TourSphere size={sphereSz} color="#6aa1ff" intensity={1.2} />
             </div>
 
             <div
@@ -1040,14 +1086,14 @@ export function SceneCollapse({ start = 12.5, end = 15.5 }: SceneProps) {
                 textAlign: 'center',
                 fontFamily: "'Unbounded', Georgia, serif",
                 fontStyle: 'italic',
-                fontSize: 56,
+                fontSize: captionFz,
                 color: '#f2f4f8',
                 letterSpacing: '-0.01em',
                 opacity: captionT * (1 - captionOut),
                 transform: `translateY(${(1 - captionT) * 14}px)`,
               }}
             >
-              {t('All inside your browser.')}
+              {t('All of that. In one tab.')}
             </div>
           </div>
         )
@@ -1058,8 +1104,12 @@ export function SceneCollapse({ start = 12.5, end = 15.5 }: SceneProps) {
 
 // ── Scene 4: Privacy triad ────────────────────────────────────────────────
 // 17.9–23.0s — tightened. Three short lines + elevated closing tagline.
+// On wide screens (≥ 900px): original two-column layout — sphere left,
+// phrases right. On narrow screens: centered flex column with responsive
+// font sizes so nothing overflows on portrait phones.
 export function ScenePromise({ start = 17.9, end = 23.0 }: SceneProps) {
   const { t } = useI18n(tourI18n)
+  const { width: stageW } = useStageSize()
   return (
     <Sprite start={start} end={end}>
       {({ localTime, duration }) => {
@@ -1074,17 +1124,30 @@ export function ScenePromise({ start = 17.9, end = 23.0 }: SceneProps) {
           { text: t('Your keys. Your data.'), at: 2.1 },
         ]
 
-        // Sphere sits at one-third from the left, vertically centred —
-        // expressed as percentages so it follows the user's window size.
-        const SPHERE_LEFT = '33.3%'
-        const SPHERE_TOP = '50%'
         const breathe = 1 + Math.sin(time * 1.8) * 0.03
 
-        // Closing tagline: "OPEN SOURCE · BROWSER-NATIVE · YOURS"
-        // Promoted from a bottom footnote to a larger centered climax at
-        // the end of the scene.
         const taglineIn = clamp((time - 3.4) / 0.5, 0, 1)
         const taglineOpacity = taglineIn * (1 - exitT)
+
+        // Switch to single-column layout on narrow canvases (portrait phones,
+        // small browser windows). The two-column layout needs room for the
+        // sphere + the phrase text side-by-side.
+        const isWide = stageW >= 900
+
+        // Pure proportional sizing — no hard upper cap so items scale
+        // continuously across the full range from phone to ultrawide monitor.
+        // The column is 46.9% wide; "No subscription." (longest phrase) at
+        // factor 0.044 always fits: 15 chars × F × 0.55 ≈ 0.363·W < 0.469·W.
+        const phraseFz = Math.round(Math.max(18, stageW * 0.044))
+        const phraseGap = Math.round(Math.max(10, phraseFz * 0.85))
+        const numFz = Math.round(Math.max(10, phraseFz * 0.38))
+        const numW = Math.round(Math.max(20, phraseFz * 0.88))
+        const sphereSz = Math.round(Math.max(72, stageW * 0.2))
+
+        // Tagline sizing — letter-spacing must shrink on narrow screens or
+        // "OPEN SOURCE · BROWSER-NATIVE · YOURS" will overflow the canvas.
+        const taglineFz = Math.round(Math.max(11, stageW * 0.038))
+        const taglineLS = isWide ? '0.28em' : stageW < 500 ? '0.06em' : '0.12em'
 
         return (
           <div
@@ -1097,70 +1160,144 @@ export function ScenePromise({ start = 17.9, end = 23.0 }: SceneProps) {
           >
             <BackgroundOrbit cx={640} cy={540} t={time} />
 
-            <div
-              style={{
-                position: 'absolute',
-                left: SPHERE_LEFT,
-                top: SPHERE_TOP,
-                transform: `translate(-50%, -50%) scale(${breathe})`,
-                opacity: 1 - taglineIn * 0.6,
-              }}
-            >
-              <TourSphere size={260} color="#6aa1ff" intensity={1.2} />
-            </div>
+            {isWide ? (
+              <>
+                {/* Wide: sphere on the left third, phrases cascade on the right */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: '33.3%',
+                    top: '50%',
+                    transform: `translate(-50%, -50%) scale(${breathe})`,
+                    opacity: 1 - taglineIn * 0.6,
+                  }}
+                >
+                  <TourSphere size={sphereSz} color="#6aa1ff" intensity={1.2} />
+                </div>
 
-            <div
-              style={{
-                position: 'absolute',
-                left: '46.9%',
-                top: '27.8%',
-                width: '46.9%',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 48,
-                fontFamily: "'Unbounded', Georgia, serif",
-                fontStyle: 'italic',
-                fontSize: 56,
-                color: '#f2f4f8',
-                letterSpacing: '-0.02em',
-                lineHeight: 1.15,
-                whiteSpace: 'nowrap',
-                opacity: 1 - taglineIn,
-              }}
-            >
-              {phrases.map((p, i) => {
-                const lt = clamp((time - p.at) / 0.5, 0, 1)
-                const yOff = (1 - Easing.easeOutBack(lt)) * 24
-                return (
-                  <div
-                    key={i}
-                    style={{
-                      opacity: lt,
-                      transform: `translateY(${yOff}px)`,
-                      display: 'flex',
-                      alignItems: 'baseline',
-                      gap: 16,
-                    }}
-                  >
-                    <span
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: '46.9%',
+                    top: '27.8%',
+                    width: '46.9%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: phraseGap,
+                    fontFamily: "'Unbounded', Georgia, serif",
+                    fontStyle: 'italic',
+                    fontSize: phraseFz,
+                    color: '#f2f4f8',
+                    letterSpacing: '-0.02em',
+                    lineHeight: 1.15,
+                    whiteSpace: 'nowrap',
+                    opacity: 1 - taglineIn,
+                  }}
+                >
+                  {phrases.map((p, i) => {
+                    const lt = clamp((time - p.at) / 0.5, 0, 1)
+                    const yOff = (1 - Easing.easeOutBack(lt)) * 24
+                    return (
+                      <div
+                        key={i}
+                        style={{
+                          opacity: lt,
+                          transform: `translateY(${yOff}px)`,
+                          display: 'flex',
+                          alignItems: 'baseline',
+                          gap: 16,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: "'Geist', ui-monospace, monospace",
+                            fontStyle: 'normal',
+                            fontSize: numFz,
+                            color: 'oklch(72% 0.16 253)',
+                            letterSpacing: '0.14em',
+                            minWidth: numW,
+                          }}
+                        >
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 1.5 * numFz,
+                          }}
+                        >
+                          {p.text}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </>
+            ) : (
+              /* Narrow: centered flex column with sphere above the phrases */
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: phraseGap,
+                  opacity: 1 - taglineIn,
+                  pointerEvents: 'none',
+                  fontFamily: "'Unbounded', Georgia, serif",
+                  fontStyle: 'italic',
+                  fontSize: phraseFz,
+                  color: '#f2f4f8',
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1.15,
+                }}
+              >
+                <div
+                  style={{
+                    transform: `scale(${breathe})`,
+                    flexShrink: 0,
+                    marginBottom: phraseGap * 0.4,
+                  }}
+                >
+                  <TourSphere size={sphereSz} color="#6aa1ff" intensity={1.2} />
+                </div>
+                {phrases.map((p, i) => {
+                  const lt = clamp((time - p.at) / 0.5, 0, 1)
+                  const yOff = (1 - Easing.easeOutBack(lt)) * 24
+                  return (
+                    <div
+                      key={i}
                       style={{
-                        fontFamily: "'Geist', ui-monospace, monospace",
-                        fontStyle: 'normal',
-                        fontSize: 22,
-                        color: 'oklch(72% 0.16 253)',
-                        letterSpacing: '0.14em',
-                        minWidth: 48,
+                        opacity: lt,
+                        transform: `translateY(${yOff}px)`,
+                        display: 'flex',
+                        alignItems: 'baseline',
+                        gap: Math.round(numW * 0.4),
                       }}
                     >
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <span>{p.text}</span>
-                  </div>
-                )
-              })}
-            </div>
+                      <span
+                        style={{
+                          fontFamily: "'Geist', ui-monospace, monospace",
+                          fontStyle: 'normal',
+                          fontSize: numFz,
+                          color: 'oklch(72% 0.16 253)',
+                          letterSpacing: '0.14em',
+                          minWidth: numW,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <span>{p.text}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
 
-            {/* Elevated closing tagline — centered, large, climactic. */}
+            {/* Closing tagline — always centered, font size + letter-spacing
+                scale down on narrow canvases to stay within bounds. */}
             <div
               style={{
                 position: 'absolute',
@@ -1170,11 +1307,12 @@ export function ScenePromise({ start = 17.9, end = 23.0 }: SceneProps) {
                 transform: `translateY(-50%) scale(${0.96 + 0.04 * taglineIn})`,
                 textAlign: 'center',
                 fontFamily: "'Geist', ui-monospace, monospace",
-                fontSize: 34,
-                letterSpacing: '0.28em',
+                fontSize: taglineFz,
+                letterSpacing: taglineLS,
                 color: '#f2f4f8',
                 opacity: taglineOpacity,
                 pointerEvents: 'none',
+                padding: '0 16px',
               }}
             >
               {t('OPEN SOURCE · BROWSER-NATIVE · YOURS')}
@@ -1238,19 +1376,42 @@ function BackgroundOrbit({
 // 22.9–30s — imperative CTA, friction-killer badge, pulsing click target.
 // The CTA pulse uses a CSS keyframe so motion survives the Stage clock
 // stopping at t=30 (no more "frozen end frame").
+// Layout is a flex column centered in the canvas so it works on any screen
+// size — no hard-coded pixel positions.
 export function SceneCTA({ start = 22.9, end = 30 }: SceneProps) {
   const { t } = useI18n(tourI18n)
+  const { width: stageW, height: stageH } = useStageSize()
+
   return (
     <Sprite start={start} end={end}>
       {({ localTime }) => {
         const time = localTime
         const inT = clamp(time / 0.6, 0, 1)
-        const urlT = clamp((time - 0.8) / 0.8, 0, 1)
         const tagT = clamp((time - 1.6) / 0.7, 0, 1)
         const ctaT = clamp((time - 2.4) / 0.6, 0, 1)
         const fricT = clamp((time - 3.0) / 0.5, 0, 1)
-        const repoT = clamp((time - 3.6) / 0.6, 0, 1)
         const breathe = 1 + Math.sin(time * 1.8) * 0.025
+
+        // All sizes scale with the canvas so the scene looks right on both
+        // a phone in portrait and a widescreen monitor.
+        const sphereSize = Math.round(
+          Math.min(160, Math.max(64, stageW * 0.18)),
+        )
+        const nameFontSize = Math.round(
+          Math.min(96, Math.max(36, stageW * 0.13)),
+        )
+        const taglineFontSize = Math.round(
+          Math.min(26, Math.max(13, stageW * 0.034)),
+        )
+        const ctaFontSize = Math.round(
+          Math.min(22, Math.max(13, stageW * 0.03)),
+        )
+        const badgeFontSize = Math.round(
+          Math.min(13, Math.max(10, stageW * 0.017)),
+        )
+        const ctaPadV = Math.round(Math.min(14, Math.max(9, stageW * 0.015)))
+        const ctaPadH = Math.round(Math.min(36, Math.max(18, stageW * 0.044)))
+        const gap = Math.round(Math.max(10, Math.min(28, stageH * 0.028)))
 
         return (
           <div
@@ -1261,121 +1422,101 @@ export function SceneCTA({ start = 22.9, end = 30 }: SceneProps) {
               opacity: inT,
             }}
           >
-            <BackgroundOrbit cx={960} cy={360} t={time + 10} />
+            <BackgroundOrbit cx={960} cy={540} t={time + 10} />
 
+            {/* All content in a single centered column — no absolute %-tops. */}
             <div
               style={{
                 position: 'absolute',
-                left: '50%',
-                top: '28%',
-                transform: `translate(-50%, -50%) scale(${breathe})`,
-              }}
-            >
-              <TourSphere size={180} color="#6aa1ff" intensity={1.4} />
-            </div>
-
-            <div
-              style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                top: '44%',
-                textAlign: 'center',
-                fontFamily: "'Unbounded', Georgia, serif",
-                fontSize: 120,
-                fontWeight: 500,
-                letterSpacing: '0.14em',
-                color: '#f2f4f8',
-                opacity: inT,
-              }}
-            >
-              {PRODUCT.displayName}
-            </div>
-
-            <div
-              style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                top: '58%',
-                textAlign: 'center',
-                fontFamily: "'Unbounded', Georgia, serif",
-                fontStyle: 'italic',
-                fontSize: 30,
-                color: '#d7dbe0',
-                opacity: tagT,
-                transform: `translateY(${(1 - tagT) * 10}px)`,
-              }}
-            >
-              {t('Intelligence, one tab away')}
-            </div>
-
-            {/* Imperative CTA button — CSS-keyframe pulse so it keeps
-                animating even after the Stage clock stops. */}
-            <style>{`@keyframes tour-cta-pulse {
-              0%, 100% { box-shadow: 0 0 24px oklch(72% 0.16 253 / 0.4); }
-              50% { box-shadow: 0 0 56px oklch(72% 0.16 253 / 0.8); }
-            }`}</style>
-            <div
-              style={{
-                position: 'absolute',
-                left: '50%',
-                top: '70%',
-                transform: `translate(-50%, -50%) scale(${ctaT})`,
-                opacity: ctaT,
-                fontFamily: "'Geist', ui-monospace, monospace",
-                fontSize: 28,
-                fontWeight: 600,
-                letterSpacing: '0.05em',
-                color: '#0b0d10',
-                background: '#f2f4f8',
-                padding: '16px 40px',
-                borderRadius: 999,
-                animation: 'tour-cta-pulse 1.8s ease-in-out infinite',
+                inset: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap,
                 pointerEvents: 'none',
               }}
             >
-              {t('Open devs.new →')}
-            </div>
+              {/* Sphere */}
+              <div style={{ transform: `scale(${breathe})`, flexShrink: 0 }}>
+                <TourSphere size={sphereSize} color="#6aa1ff" intensity={1.4} />
+              </div>
 
-            {/* Friction-killer badge — the conversion lever nobody else has. */}
-            <div
-              style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                top: '80%',
-                textAlign: 'center',
-                fontFamily: "'Geist', ui-monospace, monospace",
-                fontSize: 15,
-                letterSpacing: '0.22em',
-                color: 'oklch(72% 0.16 253)',
-                opacity: fricT,
-              }}
-            >
-              {t('No signup · No install · Free')}
-            </div>
+              {/* Product name */}
+              <div
+                style={{
+                  textAlign: 'center',
+                  fontFamily: "'Unbounded', Georgia, serif",
+                  fontSize: nameFontSize,
+                  fontWeight: 500,
+                  letterSpacing: '0.12em',
+                  color: '#f2f4f8',
+                  opacity: inT,
+                  lineHeight: 1,
+                }}
+              >
+                {PRODUCT.displayName}
+              </div>
 
-            {/* Repo / URL footer — de-emphasized now that the CTA is elsewhere. */}
-            <div
-              style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                bottom: 60,
-                textAlign: 'center',
-                fontFamily: "'Geist', ui-monospace, monospace",
-                fontSize: 14,
-                letterSpacing: '0.18em',
-                color: '#6a6f78',
-                opacity: repoT,
-              }}
-            >
-              <span style={{ color: 'oklch(72% 0.16 253)', opacity: urlT }}>
-                {t('devs.new')}
-              </span>
-              <span style={{ margin: '0 14px' }}>·</span>
-              {t('github.com/codename-co/devs · MIT')}
+              {/* Tagline */}
+              <div
+                style={{
+                  textAlign: 'center',
+                  fontFamily: "'Unbounded', Georgia, serif",
+                  fontStyle: 'italic',
+                  fontSize: taglineFontSize,
+                  color: '#d7dbe0',
+                  opacity: tagT,
+                  transform: `translateY(${(1 - tagT) * 10}px)`,
+                }}
+              >
+                {t('Now you can.')}
+              </div>
+
+              {/* CTA button — CSS-keyframe pulse so it keeps animating even
+                  after the Stage clock stops at t=30. */}
+              <style>{`@keyframes tour-cta-pulse {
+                0%, 100% { box-shadow: 0 0 24px oklch(72% 0.16 253 / 0.4); }
+                50% { box-shadow: 0 0 56px oklch(72% 0.16 253 / 0.8); }
+              }`}</style>
+              <div
+                style={{
+                  transform: `scale(${ctaT})`,
+                  opacity: ctaT,
+                  fontFamily: "'Geist', ui-monospace, monospace",
+                  fontSize: ctaFontSize,
+                  fontWeight: 600,
+                  letterSpacing: '0.05em',
+                  color: '#0b0d10',
+                  background: '#f2f4f8',
+                  padding: `${ctaPadV}px ${ctaPadH}px`,
+                  borderRadius: 999,
+                  animation: 'tour-cta-pulse 1.8s ease-in-out infinite',
+                  pointerEvents: ctaT > 0.9 ? 'auto' : 'none',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  window.location.href = 'https://devs.new'
+                }}
+              >
+                {t('Open devs.new →')}
+              </div>
+
+              {/* Friction-killer badge */}
+              <div
+                style={{
+                  textAlign: 'center',
+                  fontFamily: "'Geist', ui-monospace, monospace",
+                  fontSize: badgeFontSize,
+                  letterSpacing: '0.16em',
+                  color: 'oklch(72% 0.16 253)',
+                  opacity: fricT,
+                }}
+              >
+                {t('No signup · No install · Free')}
+              </div>
             </div>
           </div>
         )

@@ -12,40 +12,42 @@ export const en = [
   'DEVS',
 
   // Demo prompt shown in the real composer during Scene 2.
-  'Build me a research brief on lithium battery supply chains.',
-  'Research lithium supply chains, chart the top 5 risks, and draft an exec summary.',
+  'Build me a climate adaptation briefing for 5 major cities.',
+  'Research how 5 major cities are adapting to climate change, compare their strategies, and draft a presentation briefing for city planners.',
 
   // Scene captions (italic serif)
+  'What if you could delegate anything?',
   'Open a tab.',
   'An AI agent swarm. In your browser.',
   'A swarm, not a chat.',
-  'All inside your browser.',
+  'All of that. In one tab.',
   'No server.',
   'No subscription.',
   'No third party.',
   'Your keys. Your data.',
   'OPEN SOURCE · BROWSER-NATIVE · YOURS',
   'devs.new',
-  'Intelligence, one tab away',
+  'Now you can.',
   'Open devs.new →',
   'No signup · No install · Free',
   'github.com/codename-co/devs · MIT',
 
   // Scene 2 — task / swarm proof
-  '4 agents · 6 tools · 11s',
+  '4 agents · 3 tools · 11s',
   'Breaking this into parallel subtasks. Recruiting Research, Analysis, Writing, and Review…',
   'Searching knowledge base',
   'Searching Wikipedia',
   'Searching arXiv',
-  'Drafting exec summary',
-  'Charting top 5 risks',
+  'Drafting presentation briefing',
+  'Comparing city strategies',
   'Reviewing deliverables',
-  'Research supply chain stages',
-  'Identify top 5 risks',
-  'Build risks chart',
-  'Draft exec summary',
-  'Lithium supply chain — exec summary',
-  'Top 5 risks — chart',
+  'Generating presentation',
+  'Research city adaptations',
+  'Compare strategies',
+  'Build strategy overview',
+  'Draft briefing',
+  'Climate adaptation — strategy comparison',
+  'City planners briefing — presentation',
   'Analysis',
   'Writing',
   'Review',
@@ -66,19 +68,19 @@ export const en = [
   'Archive',
 
   // Scene 2 streamed answer (markdown blob shown in ThreadPreview)
-  `## Research brief — lithium supply chains
+  `## Climate adaptation briefing — 5 major cities
 
-**Four critical stages:** raw materials · refining · cell manufacturing · pack assembly.
+**Cities surveyed:** Amsterdam · Singapore · Copenhagen · Medellín · Rotterdam
 
-### Top 5 risks
+### Comparative strategies
 
-1. **Refining concentration** — China controls ~75% of capacity
-2. **Cobalt sourcing** — DRC artisanal mining exposure
-3. **Recycling gap** — capacity lags demand growth
-4. **Nickel volatility** — Indonesian supply shocks
-5. **Geopolitical shifts** — IRA, EU CRMA reshape flows
+1. **Amsterdam** — floating infrastructure, canal surge control
+2. **Singapore** — NEWater system, urban heat island mitigation
+3. **Copenhagen** — 100% renewable target, 20-min city model
+4. **Medellín** — green corridors, urban acupuncture model
+5. **Rotterdam** — water squares, rooftop gardens, floating pavilions
 
-> Exec summary and risks chart attached.`,
+> Strategy comparison and presentation deck attached.`,
 
   // Scene 2 filler thread titles + snippets
   'Draft Q3 OKRs for the platform team',

@@ -11,36 +11,38 @@ type I18n = Record<(typeof en)[number], string>
 export const es: I18n = {
   [`New Tab`]: `Nueva pestaña`,
   [`DEVS`]: `DEVS`,
-  [`Build me a research brief on lithium battery supply chains.`]: `Hazme un informe sobre las cadenas de suministro de baterías de litio.`,
-  [`Research lithium supply chains, chart the top 5 risks, and draft an exec summary.`]: `Investiga las cadenas de suministro del litio, grafica los 5 riesgos principales y redacta un resumen ejecutivo.`,
+  [`Build me a climate adaptation briefing for 5 major cities.`]: `Hazme un briefing sobre la adaptación climática en 5 grandes ciudades.`,
+  [`Research how 5 major cities are adapting to climate change, compare their strategies, and draft a presentation briefing for city planners.`]: `Investiga cómo 5 grandes ciudades se están adaptando al cambio climático, compara sus estrategias y redacta un briefing de presentación para urbanistas.`,
+  [`What if you could delegate anything?`]: `¿Y si pudieras delegar cualquier cosa?`,
   [`Open a tab.`]: `Abre una pestaña.`,
   [`An AI agent swarm. In your browser.`]: `Un enjambre de agentes de IA. En tu navegador.`,
   [`A swarm, not a chat.`]: `Un enjambre, no un chat.`,
-  [`All inside your browser.`]: `Todo dentro de tu navegador.`,
+  [`All of that. In one tab.`]: `Todo eso. En una sola pestaña.`,
   [`No server.`]: `Sin servidor.`,
   [`No subscription.`]: `Sin suscripción.`,
   [`No third party.`]: `Sin terceros.`,
   [`Your keys. Your data.`]: `Tus claves. Tus datos.`,
   [`OPEN SOURCE · BROWSER-NATIVE · YOURS`]: `OPEN SOURCE · NATIVO DEL NAVEGADOR · TUYO`,
   [`devs.new`]: `devs.new`,
-  [`Intelligence, one tab away`]: `Inteligencia, a una pestaña de distancia`,
+  [`Now you can.`]: `Ahora puedes.`,
   [`Open devs.new →`]: `Abrir devs.new →`,
   [`No signup · No install · Free`]: `Sin registro · Sin instalación · Gratis`,
   [`github.com/codename-co/devs · MIT`]: `github.com/codename-co/devs · MIT`,
-  [`4 agents · 6 tools · 11s`]: `4 agentes · 6 herramientas · 11 s`,
+  [`4 agents · 3 tools · 11s`]: `4 agentes · 3 herramientas · 11 s`,
   [`Breaking this into parallel subtasks. Recruiting Research, Analysis, Writing, and Review…`]: `Dividiendo en subtareas paralelas. Reclutando Investigación, Análisis, Redacción y Revisión…`,
   [`Searching knowledge base`]: `Buscando en la base de conocimiento`,
   [`Searching Wikipedia`]: `Buscando en Wikipedia`,
   [`Searching arXiv`]: `Buscando en arXiv`,
-  [`Drafting exec summary`]: `Redactando el resumen ejecutivo`,
-  [`Charting top 5 risks`]: `Graficando los 5 riesgos principales`,
+  [`Drafting presentation briefing`]: `Redactando el briefing de presentación`,
+  [`Comparing city strategies`]: `Comparando estrategias de ciudades`,
   [`Reviewing deliverables`]: `Revisando entregables`,
-  [`Research supply chain stages`]: `Investigar las etapas de la cadena`,
-  [`Identify top 5 risks`]: `Identificar los 5 riesgos principales`,
-  [`Build risks chart`]: `Construir el gráfico de riesgos`,
-  [`Draft exec summary`]: `Redactar resumen ejecutivo`,
-  [`Lithium supply chain — exec summary`]: `Cadena de suministro de litio — resumen ejecutivo`,
-  [`Top 5 risks — chart`]: `Top 5 riesgos — gráfico`,
+  [`Generating presentation`]: `Generando presentación`,
+  [`Research city adaptations`]: `Investigar adaptaciones de ciudades`,
+  [`Compare strategies`]: `Comparar estrategias`,
+  [`Build strategy overview`]: `Construir resumen de estrategias`,
+  [`Draft briefing`]: `Redactar briefing`,
+  [`Climate adaptation — strategy comparison`]: `Adaptación climática — comparación de estrategias`,
+  [`City planners briefing — presentation`]: `Briefing para urbanistas — presentación`,
   [`Analysis`]: `Análisis`,
   [`Writing`]: `Redacción`,
   [`Review`]: `Revisión`,
@@ -57,31 +59,31 @@ export const es: I18n = {
   [`Tool`]: `Herramienta`,
   [`Echo`]: `Echo`,
   [`Archive`]: `Archivo`,
-  [`## Research brief — lithium supply chains
+  [`## Climate adaptation briefing — 5 major cities
 
-**Four critical stages:** raw materials · refining · cell manufacturing · pack assembly.
+**Cities surveyed:** Amsterdam · Singapore · Copenhagen · Medellín · Rotterdam
 
-### Top 5 risks
+### Comparative strategies
 
-1. **Refining concentration** — China controls ~75% of capacity
-2. **Cobalt sourcing** — DRC artisanal mining exposure
-3. **Recycling gap** — capacity lags demand growth
-4. **Nickel volatility** — Indonesian supply shocks
-5. **Geopolitical shifts** — IRA, EU CRMA reshape flows
+1. **Amsterdam** — floating infrastructure, canal surge control
+2. **Singapore** — NEWater system, urban heat island mitigation
+3. **Copenhagen** — 100% renewable target, 20-min city model
+4. **Medellín** — green corridors, urban acupuncture model
+5. **Rotterdam** — water squares, rooftop gardens, floating pavilions
 
-> Exec summary and risks chart attached.`]: `## Informe — cadenas de suministro del litio
+> Strategy comparison and presentation deck attached.`]: `## Briefing de adaptación climática — 5 grandes ciudades
 
-**Cuatro etapas críticas:** materias primas · refinado · fabricación de celdas · ensamblaje del paquete.
+**Ciudades analizadas:** Ámsterdam · Singapur · Copenhague · Medellín · Róterdam
 
-### Top 5 riesgos
+### Estrategias comparadas
 
-1. **Concentración del refinado** — China controla ~75 % de la capacidad
-2. **Abastecimiento de cobalto** — exposición a la minería artesanal en la RDC
-3. **Brecha de reciclaje** — la capacidad va por detrás del crecimiento de la demanda
-4. **Volatilidad del níquel** — shocks de oferta indonesios
-5. **Desplazamientos geopolíticos** — IRA y CRMA de la UE redibujan los flujos
+1. **Ámsterdam** — infraestructura flotante, control de crecidas por canales
+2. **Singapur** — sistema NEWater, mitigación de islas de calor urbanas
+3. **Copenhague** — objetivo 100 % renovables, modelo de ciudad de 20 minutos
+4. **Medellín** — corredores verdes, modelo de acupuntura urbana
+5. **Róterdam** — plazas de agua, jardines en tejados, pabellones flotantes
 
-> Resumen ejecutivo y gráfico de riesgos adjuntos.`,
+> Comparación de estrategias y diapositivas de presentación adjuntas.`,
   [`Draft Q3 OKRs for the platform team`]: `Redactar los OKR del T3 para el equipo de plataforma`,
   [`Synthesized five drafts. Ready for review.`]: `Cinco borradores sintetizados. Listos para revisar.`,
   [`Compare three WebGPU inference runtimes`]: `Comparar tres runtimes de inferencia WebGPU`,

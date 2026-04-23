@@ -11,36 +11,38 @@ type I18n = Record<(typeof en)[number], string>
 export const ar: I18n = {
   [`New Tab`]: `علامة تبويب جديدة`,
   [`DEVS`]: `DEVS`,
-  [`Build me a research brief on lithium battery supply chains.`]: `أعدّ لي موجزًا بحثيًا عن سلاسل توريد بطاريات الليثيوم.`,
-  [`Research lithium supply chains, chart the top 5 risks, and draft an exec summary.`]: `ابحث في سلاسل توريد الليثيوم، وارسم أبرز 5 مخاطر، واكتب ملخصًا تنفيذيًا.`,
+  [`Build me a climate adaptation briefing for 5 major cities.`]: `أعدّ لي موجزًا حول تكيّف 5 مدن كبرى مع التغير المناخي.`,
+  [`Research how 5 major cities are adapting to climate change, compare their strategies, and draft a presentation briefing for city planners.`]: `ابحث في كيفية تكيّف 5 مدن كبرى مع التغير المناخي، قارن استراتيجياتها، وأعدّ موجز عرض لمخططي المدن.`,
+  [`What if you could delegate anything?`]: `ماذا لو كنت تستطيع تفويض أي شيء؟`,
   [`Open a tab.`]: `افتح علامة تبويب.`,
   [`An AI agent swarm. In your browser.`]: `سرب من وكلاء الذكاء الاصطناعي. داخل متصفحك.`,
   [`A swarm, not a chat.`]: `سرب، لا محادثة.`,
-  [`All inside your browser.`]: `كل شيء داخل متصفحك.`,
+  [`All of that. In one tab.`]: `كل هذا. في علامة تبويب واحدة.`,
   [`No server.`]: `بدون خادم.`,
   [`No subscription.`]: `بدون اشتراك.`,
   [`No third party.`]: `بدون أطراف ثالثة.`,
   [`Your keys. Your data.`]: `مفاتيحك. بياناتك.`,
   [`OPEN SOURCE · BROWSER-NATIVE · YOURS`]: `مفتوح المصدر · أصلي للمتصفح · ملكك`,
   [`devs.new`]: `devs.new`,
-  [`Intelligence, one tab away`]: `الذكاء، على بُعد علامة تبويب`,
+  [`Now you can.`]: `الآن بإمكانك.`,
   [`Open devs.new →`]: `افتح devs.new ←`,
   [`No signup · No install · Free`]: `بلا تسجيل · بلا تثبيت · مجاني`,
   [`github.com/codename-co/devs · MIT`]: `github.com/codename-co/devs · MIT`,
-  [`4 agents · 6 tools · 11s`]: `٤ وكلاء · ٦ أدوات · ١١ ث`,
+  [`4 agents · 3 tools · 11s`]: `٤ وكلاء · ٣ أدوات · ١١ ث`,
   [`Breaking this into parallel subtasks. Recruiting Research, Analysis, Writing, and Review…`]: `أقسّم المهمة إلى مهام فرعية متوازية. أستدعي البحث والتحليل والكتابة والمراجعة…`,
   [`Searching knowledge base`]: `البحث في قاعدة المعرفة`,
   [`Searching Wikipedia`]: `البحث في ويكيبيديا`,
   [`Searching arXiv`]: `البحث في arXiv`,
-  [`Drafting exec summary`]: `صياغة الملخص التنفيذي`,
-  [`Charting top 5 risks`]: `رسم أبرز 5 مخاطر`,
+  [`Drafting presentation briefing`]: `صياغة موجز العرض التقديمي`,
+  [`Comparing city strategies`]: `مقارنة استراتيجيات المدن`,
   [`Reviewing deliverables`]: `مراجعة المخرجات`,
-  [`Research supply chain stages`]: `دراسة مراحل سلسلة التوريد`,
-  [`Identify top 5 risks`]: `تحديد أبرز 5 مخاطر`,
-  [`Build risks chart`]: `بناء مخطط المخاطر`,
-  [`Draft exec summary`]: `صياغة الملخص التنفيذي`,
-  [`Lithium supply chain — exec summary`]: `سلسلة توريد الليثيوم — ملخص تنفيذي`,
-  [`Top 5 risks — chart`]: `أبرز 5 مخاطر — مخطط`,
+  [`Generating presentation`]: `توليد العرض التقديمي`,
+  [`Research city adaptations`]: `بحث تكيّفات المدن`,
+  [`Compare strategies`]: `مقارنة الاستراتيجيات`,
+  [`Build strategy overview`]: `بناء نظرة عامة على الاستراتيجية`,
+  [`Draft briefing`]: `صياغة الموجز`,
+  [`Climate adaptation — strategy comparison`]: `التكيّف المناخي — مقارنة الاستراتيجيات`,
+  [`City planners briefing — presentation`]: `موجز مخططي المدن — عرض تقديمي`,
   [`Analysis`]: `التحليل`,
   [`Writing`]: `الكتابة`,
   [`Review`]: `المراجعة`,
@@ -57,31 +59,31 @@ export const ar: I18n = {
   [`Tool`]: `أداة`,
   [`Echo`]: `Echo`,
   [`Archive`]: `أرشيف`,
-  [`## Research brief — lithium supply chains
+  [`## Climate adaptation briefing — 5 major cities
 
-**Four critical stages:** raw materials · refining · cell manufacturing · pack assembly.
+**Cities surveyed:** Amsterdam · Singapore · Copenhagen · Medellín · Rotterdam
 
-### Top 5 risks
+### Comparative strategies
 
-1. **Refining concentration** — China controls ~75% of capacity
-2. **Cobalt sourcing** — DRC artisanal mining exposure
-3. **Recycling gap** — capacity lags demand growth
-4. **Nickel volatility** — Indonesian supply shocks
-5. **Geopolitical shifts** — IRA, EU CRMA reshape flows
+1. **Amsterdam** — floating infrastructure, canal surge control
+2. **Singapore** — NEWater system, urban heat island mitigation
+3. **Copenhagen** — 100% renewable target, 20-min city model
+4. **Medellín** — green corridors, urban acupuncture model
+5. **Rotterdam** — water squares, rooftop gardens, floating pavilions
 
-> Exec summary and risks chart attached.`]: `## موجز بحثي — سلاسل توريد الليثيوم
+> Strategy comparison and presentation deck attached.`]: `## موجز التكيّف المناخي — 5 مدن كبرى
 
-**أربع مراحل حرجة:** المواد الخام · التكرير · تصنيع الخلايا · تجميع العلب.
+**المدن المدروسة:** أمستردام · سنغافورة · كوبنهاغن · ميديين · روتردام
 
-### أبرز 5 مخاطر
+### الاستراتيجيات المقارنة
 
-1. **تركّز التكرير** — تتحكم الصين بنحو ٧٥٪ من الطاقة الإنتاجية
-2. **مصادر الكوبالت** — التعرّض للتعدين الحرفي في جمهورية الكونغو الديمقراطية
-3. **فجوة إعادة التدوير** — الطاقة متأخرة عن نمو الطلب
-4. **تقلّب النيكل** — صدمات العرض الإندونيسي
-5. **تحوّلات جيوسياسية** — قانون IRA وCRMA الأوروبي يعيدان رسم التدفقات
+1. **أمستردام** — بنية تحتية عائمة، ضبط فيضانات القنوات
+2. **سنغافورة** — نظام NEWater، تخفيف جزر الحرارة الحضري
+3. **كوبنهاغن** — هدف 100 إ طاقة متجددة، نموذج مدينة 20 دقيقة
+4. **ميديين** — ممرات خضراء، نموذج الإبرة الحضرية
+5. **روتردام** — ساحات مائية، حدائق على الأسطح، أجنحة عائمة
 
-> ملخص تنفيذي ومخطط مخاطر مرفقان.`,
+> مقارنة الاستراتيجيات وشرائح العرض مرفقة.`,
   [`Draft Q3 OKRs for the platform team`]: `صياغة أهداف الربع الثالث لفريق المنصة`,
   [`Synthesized five drafts. Ready for review.`]: `تمت صياغة خمس مسودات. جاهزة للمراجعة.`,
   [`Compare three WebGPU inference runtimes`]: `مقارنة ثلاث بيئات استدلال WebGPU`,

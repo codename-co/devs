@@ -11,36 +11,38 @@ type I18n = Record<(typeof en)[number], string>
 export const de: I18n = {
   [`New Tab`]: `Neuer Tab`,
   [`DEVS`]: `DEVS`,
-  [`Build me a research brief on lithium battery supply chains.`]: `Erstelle mir eine Recherche zu Lieferketten für Lithium-Batterien.`,
-  [`Research lithium supply chains, chart the top 5 risks, and draft an exec summary.`]: `Recherchiere Lithium-Lieferketten, visualisiere die fünf größten Risiken und verfasse eine Executive Summary.`,
+  [`Build me a climate adaptation briefing for 5 major cities.`]: `Erstelle mir ein Klimaanpassungs-Briefing für 5 Großstädte.`,
+  [`Research how 5 major cities are adapting to climate change, compare their strategies, and draft a presentation briefing for city planners.`]: `Recherchiere, wie sich 5 Großstädte an den Klimawandel anpassen, vergleiche ihre Strategien und verfasse ein Präsentations-Briefing für Stadtplaner.`,
+  [`What if you could delegate anything?`]: `Was wäre, wenn du alles delegieren könntest?`,
   [`Open a tab.`]: `Öffne einen Tab.`,
   [`An AI agent swarm. In your browser.`]: `Ein KI-Agentenschwarm. In deinem Browser.`,
   [`A swarm, not a chat.`]: `Ein Schwarm, kein Chat.`,
-  [`All inside your browser.`]: `Alles in deinem Browser.`,
+  [`All of that. In one tab.`]: `Das alles. In einem Tab.`,
   [`No server.`]: `Kein Server.`,
   [`No subscription.`]: `Kein Abo.`,
   [`No third party.`]: `Keine Dritten.`,
   [`Your keys. Your data.`]: `Deine Schlüssel. Deine Daten.`,
   [`OPEN SOURCE · BROWSER-NATIVE · YOURS`]: `OPEN SOURCE · BROWSER-NATIV · DEINS`,
   [`devs.new`]: `devs.new`,
-  [`Intelligence, one tab away`]: `Intelligenz, nur einen Tab entfernt`,
+  [`Now you can.`]: `Jetzt kannst du es.`,
   [`Open devs.new →`]: `devs.new öffnen →`,
   [`No signup · No install · Free`]: `Keine Anmeldung · Keine Installation · Kostenlos`,
   [`github.com/codename-co/devs · MIT`]: `github.com/codename-co/devs · MIT`,
-  [`4 agents · 6 tools · 11s`]: `4 Agenten · 6 Tools · 11 s`,
+  [`4 agents · 3 tools · 11s`]: `4 Agenten · 3 Tools · 11 s`,
   [`Breaking this into parallel subtasks. Recruiting Research, Analysis, Writing, and Review…`]: `Zerlege in parallele Teilaufgaben. Rekrutiere Recherche, Analyse, Schreiben und Review…`,
   [`Searching knowledge base`]: `Wissensdatenbank durchsuchen`,
   [`Searching Wikipedia`]: `Wikipedia durchsuchen`,
   [`Searching arXiv`]: `arXiv durchsuchen`,
-  [`Drafting exec summary`]: `Executive Summary verfassen`,
-  [`Charting top 5 risks`]: `Top-5-Risiken visualisieren`,
+  [`Drafting presentation briefing`]: `Präsentations-Briefing verfassen`,
+  [`Comparing city strategies`]: `Stadtstrategien vergleichen`,
   [`Reviewing deliverables`]: `Ergebnisse prüfen`,
-  [`Research supply chain stages`]: `Stufen der Lieferkette recherchieren`,
-  [`Identify top 5 risks`]: `Top 5 Risiken identifizieren`,
-  [`Build risks chart`]: `Risiko-Chart erstellen`,
-  [`Draft exec summary`]: `Executive Summary verfassen`,
-  [`Lithium supply chain — exec summary`]: `Lithium-Lieferkette — Executive Summary`,
-  [`Top 5 risks — chart`]: `Top 5 Risiken — Chart`,
+  [`Generating presentation`]: `Präsentation erstellen`,
+  [`Research city adaptations`]: `Stadtanpassungen recherchieren`,
+  [`Compare strategies`]: `Strategien vergleichen`,
+  [`Build strategy overview`]: `Strateübersicht erstellen`,
+  [`Draft briefing`]: `Briefing verfassen`,
+  [`Climate adaptation — strategy comparison`]: `Klimaanpassung — Strategievergleich`,
+  [`City planners briefing — presentation`]: `Stadtplanungs-Briefing — Präsentation`,
   [`Analysis`]: `Analyse`,
   [`Writing`]: `Schreiben`,
   [`Review`]: `Review`,
@@ -57,31 +59,32 @@ export const de: I18n = {
   [`Tool`]: `Tool`,
   [`Echo`]: `Echo`,
   [`Archive`]: `Archiv`,
-  [`## Research brief — lithium supply chains
+  [`## Climate adaptation briefing — 5 major cities
 
-**Four critical stages:** raw materials · refining · cell manufacturing · pack assembly.
+**Cities surveyed:** Amsterdam · Singapore · Copenhagen · Medellín · Rotterdam
 
-### Top 5 risks
+### Comparative strategies
 
-1. **Refining concentration** — China controls ~75% of capacity
-2. **Cobalt sourcing** — DRC artisanal mining exposure
-3. **Recycling gap** — capacity lags demand growth
-4. **Nickel volatility** — Indonesian supply shocks
-5. **Geopolitical shifts** — IRA, EU CRMA reshape flows
+1. **Amsterdam** — floating infrastructure, canal surge control
+2. **Singapore** — NEWater system, urban heat island mitigation
+3. **Copenhagen** — 100% renewable target, 20-min city model
+4. **Medellín** — green corridors, urban acupuncture model
+5. **Rotterdam** — water squares, rooftop gardens, floating pavilions
 
-> Exec summary and risks chart attached.`]: `## Briefing — Lithium-Lieferketten
+> Strategy comparison and presentation deck attached.`]:
+    `## Klimaanpassungs-Briefing — 5 Großstädte
 
-**Vier kritische Stufen:** Rohstoffe · Raffination · Zellfertigung · Pack-Montage.
+**Untersuchte Städte:** Amsterdam · Singapur · Kopenhagen · Medellín · Rotterdam
 
-### Top 5 Risiken
+### Verglichene Strategien
 
-1. **Raffinations-Konzentration** — China kontrolliert ~75 % der Kapazität
-2. **Kobalt-Beschaffung** — Exposition gegenüber Kleinbergbau in der DRK
-3. **Recycling-Lücke** — Kapazität hinkt dem Nachfragewachstum hinterher
-4. **Nickel-Volatilität** — indonesische Angebotsschocks
-5. **Geopolitische Verschiebungen** — IRA und EU-CRMA formen Ströme neu
+1. **Amsterdam** — schwimmende Infrastruktur, Hochwasserkontrolle durch Kanäle
+2. **Singapur** — NEWater-System, Minderung von Wärmeinseln
+3. **Kopenhagen** — 100 % Erneuerbare bis 2025, 20-Minuten-Stadtmodell
+4. **Medellín** — Grüne Korridore, urbanes Akupunktur-Modell
+5. **Rotterdam** — Wasserplätze, Dachgärten, schwimmende Pavillon
 
-> Executive Summary und Risiko-Chart angehängt.`,
+> Strategievergleich und Präsentationsfolien angehängt.`,
   [`Draft Q3 OKRs for the platform team`]: `Q3-OKRs für das Plattform-Team entwerfen`,
   [`Synthesized five drafts. Ready for review.`]: `Fünf Entwürfe synthetisiert. Bereit zur Prüfung.`,
   [`Compare three WebGPU inference runtimes`]: `Drei WebGPU-Inferenz-Runtimes vergleichen`,
