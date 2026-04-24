@@ -1,12 +1,18 @@
 /**
- * Inbox-workflow tour — three new scene components.
+ * Inbox-workflow tour — three scene components using real V2 components.
  *
- * SceneInboxFull   (2.4–10s)   Browser chrome with thread list + thread preview
- * SceneTranscript  (9.9–16s)   Chronological event timeline for a thread
- * SceneTagsSearch  (15.9–20s)  Search bar + tag filtering + star interaction
+ * SceneInboxFull   (2.4–10s)   Sidebar + ThreadList + ThreadPreview
+ * SceneTranscript  (9.9–16s)   Sidebar + dimmed ThreadList + TranscriptEventList
+ * SceneTagsSearch  (15.9–20s)  Sidebar + ThreadList with animated search + FakeCursor
  */
+import { memo, useLayoutEffect, useMemo, useRef } from 'react'
 import { useI18n } from '@/i18n'
-import { clamp, Easing, Sprite, useStageSize } from '../player'
+import { Sidebar, ThreadList, ThreadPreview } from '@/pages/V2/components'
+import { TranscriptEventList } from '@/pages/V2/components/TranscriptEventList'
+import type { TranscriptEvent } from '@/pages/V2/components/TranscriptView'
+import type { Thread } from '@/pages/V2/types'
+import type { Agent } from '@/types'
+import { clamp, Easing, Sprite, useSprite, useStageSize } from '../player'
 import { BrowserChrome, FakeCursor } from '../primitives'
 import inboxWorkflowI18n from './i18n'
 
@@ -15,705 +21,647 @@ interface SceneProps {
   end?: number
 }
 
-// ── Shared constants ──────────────────────────────────────────────────────
+const noop = () => {}
 
-const THREAD_COLORS = ['#3b82f6', '#22c55e', '#f59e0b', '#8b5cf6', '#ef4444', '#6b7280']
+// Fixed mock base date so relative timestamps stay stable
+const BASE_MS = new Date(Date.UTC(2024, 0, 15, 10, 0, 0)).getTime()
+
+// Tag ID used to mark "research" threads — must be consistent across scenes
+const TAG_RESEARCH = 'tag-research'
+
+function makeAgent(id: string, name: string, icon: Agent['icon']): Agent {
+  return {
+    id,
+    slug: id,
+    name,
+    icon,
+    role: name,
+    instructions: '',
+    createdAt: new Date(BASE_MS),
+  }
+}
 
 // ── Scene 2: Inbox full ───────────────────────────────────────────────────
 
-export function SceneInboxFull({ start = 2.4, end = 10 }: SceneProps) {
+interface InboxStrings {
+  // Agent names
+  auditor: string
+  scribe: string
+  docbot: string
+  scout: string
+  reviewer: string
+  digest: string
+  // Thread titles
+  q1Title: string
+  blogTitle: string
+  apiTitle: string
+  marketTitle: string
+  codeTitle: string
+  weeklyTitle: string
+  // Snippets
+  q1Snippet: string
+  blogSnippet: string
+  apiSnippet: string
+  // Thread messages
+  q1UserMsg: string
+  q1AssistantMsg: string
+  // Transcript event labels/content
+  auditLabel: string
+  thinking: string
+  analyzing: string
+  calcLabel: string
+  searchKbLabel: string
+  foundLabel: string
+  // Tag search
+  hashResearch: string
+  searchTagOrganize: string
+}
+
+function useInboxStrings(): InboxStrings {
   const { t } = useI18n(inboxWorkflowI18n)
+  return useMemo(
+    () => ({
+      auditor: t('Auditor'),
+      scribe: t('Scribe'),
+      docbot: t('DocBot'),
+      scout: t('Scout'),
+      reviewer: t('Reviewer'),
+      digest: t('Digest'),
+      q1Title: t('Q1 Expense Audit'),
+      blogTitle: t('Blog post draft'),
+      apiTitle: t('API documentation'),
+      marketTitle: t('Market research'),
+      codeTitle: t('Code review: auth'),
+      weeklyTitle: t('Weekly summary'),
+      q1Snippet: t('Found 3 anomalies in Q1 data\u2026'),
+      blogSnippet: t('Here\u2019s a draft covering key topics\u2026'),
+      apiSnippet: t('Endpoints documented with examples\u2026'),
+      q1UserMsg: t('Audit Q1 expenses and flag anomalies'),
+      q1AssistantMsg: t(
+        'Found 3 anomalies totaling $12,400. Two duplicate vendor payments and one misclassified expense in Marketing.',
+      ),
+      auditLabel: t('Audit Q1 expenses...'),
+      thinking: t('Thinking'),
+      analyzing: t('Analyzing expense data...'),
+      calcLabel: t('calculate — 247 transactions'),
+      searchKbLabel: t('search_knowledge — Q1 reports'),
+      foundLabel: t('Found 3 anomalies...'),
+      hashResearch: t('#research'),
+      searchTagOrganize: t('Search. Tag. Organize.'),
+    }),
+    [t],
+  )
+}
+
+function buildInboxAgents(s: InboxStrings) {
+  return {
+    auditor: makeAgent('inbox-auditor', s.auditor, 'PcCheck'),
+    scribe: makeAgent('inbox-scribe', s.scribe, 'EditPencil'),
+    docbot: makeAgent('inbox-docbot', s.docbot, 'Document'),
+    scout: makeAgent('inbox-scout', s.scout, 'GraphUp'),
+    reviewer: makeAgent('inbox-reviewer', s.reviewer, 'DoubleCheck'),
+    digest: makeAgent('inbox-digest', s.digest, 'ChatLines'),
+  }
+}
+
+/** Build the six inbox mock threads from an agents map and pre-translated strings. */
+function buildInboxThreads(
+  agents: ReturnType<typeof buildInboxAgents>,
+  s: InboxStrings,
+  starredId: string | null = null,
+): Thread[] {
+  return [
+    {
+      id: 'inbox-q1',
+      kind: 'task',
+      title: s.q1Title,
+      snippet: s.q1Snippet,
+      updatedAt: new Date(BASE_MS - 2 * 60_000).toISOString(),
+      agent: agents.auditor,
+      participants: [agents.auditor],
+      starColor: null,
+      unread: true,
+      messages: [
+        {
+          id: 'q1-user',
+          role: 'user',
+          content: s.q1UserMsg,
+          timestamp: new Date(BASE_MS - 2 * 60_000 - 5_000),
+        },
+        {
+          id: 'q1-assistant',
+          role: 'assistant',
+          agent: agents.auditor,
+          content: s.q1AssistantMsg,
+          timestamp: new Date(BASE_MS - 2 * 60_000),
+        },
+      ],
+      artifacts: [],
+      source: {},
+      tags: [],
+    },
+    {
+      id: 'inbox-blog',
+      kind: 'conversation',
+      title: s.blogTitle,
+      snippet: s.blogSnippet,
+      updatedAt: new Date(BASE_MS - 15 * 60_000).toISOString(),
+      agent: agents.scribe,
+      participants: [agents.scribe],
+      starColor: null,
+      unread: true,
+      messages: [],
+      artifacts: [],
+      source: {},
+      tags: [],
+    },
+    {
+      id: 'inbox-api',
+      kind: 'task',
+      title: s.apiTitle,
+      snippet: s.apiSnippet,
+      updatedAt: new Date(BASE_MS - 60 * 60_000).toISOString(),
+      agent: agents.docbot,
+      participants: [agents.docbot],
+      starColor: null,
+      unread: false,
+      messages: [],
+      artifacts: [],
+      source: {},
+      tags: [TAG_RESEARCH],
+    },
+    {
+      id: 'inbox-market',
+      kind: 'task',
+      title: s.marketTitle,
+      snippet: 'Competitive analysis complete.',
+      updatedAt: new Date(BASE_MS - 3 * 60 * 60_000).toISOString(),
+      agent: agents.scout,
+      participants: [agents.scout],
+      starColor: starredId === 'inbox-market' ? '#F59E0B' : null,
+      unread: false,
+      messages: [],
+      artifacts: [],
+      source: {},
+      tags: [TAG_RESEARCH],
+    },
+    {
+      id: 'inbox-code',
+      kind: 'task',
+      title: s.codeTitle,
+      snippet: 'Found 4 issues, 2 require attention.',
+      updatedAt: new Date(BASE_MS - 5 * 60 * 60_000).toISOString(),
+      agent: agents.reviewer,
+      participants: [agents.reviewer],
+      starColor: null,
+      unread: true,
+      messages: [],
+      artifacts: [],
+      source: {},
+      tags: [],
+    },
+    {
+      id: 'inbox-weekly',
+      kind: 'conversation',
+      title: s.weeklyTitle,
+      snippet: 'Three themes: latency, privacy, price.',
+      updatedAt: new Date(BASE_MS - 26 * 60 * 60_000).toISOString(),
+      agent: agents.digest,
+      participants: [agents.digest],
+      starColor: null,
+      unread: false,
+      messages: [],
+      artifacts: [],
+      source: {},
+      tags: [],
+    },
+  ]
+}
+
+interface InboxContentProps {
+  threads: Thread[]
+  selectedThreadId: string
+}
+
+const InboxContent = memo(function InboxContent({
+  threads,
+  selectedThreadId,
+}: InboxContentProps) {
   const { width: stageW } = useStageSize()
-
-  const threads = [
-    { title: t('Q1 Expense Audit'), agent: t('Auditor'), time: t('2m ago'), unread: true, color: THREAD_COLORS[0] },
-    { title: t('Blog post draft'), agent: t('Scribe'), time: t('15m ago'), unread: true, color: THREAD_COLORS[1] },
-    { title: t('API documentation'), agent: t('DocBot'), time: t('1h ago'), unread: false, color: THREAD_COLORS[2], selected: true },
-    { title: t('Market research'), agent: t('Scout'), time: t('3h ago'), unread: false, color: THREAD_COLORS[3] },
-    { title: t('Code review: auth'), agent: t('Reviewer'), time: t('5h ago'), unread: true, color: THREAD_COLORS[4] },
-    { title: t('Weekly summary'), agent: t('Digest'), time: t('1d ago'), unread: false, color: THREAD_COLORS[5] },
-  ]
-
-  const previewMessages = [
-    { role: 'user' as const, text: t('Audit Q1 expenses and flag anomalies') },
-    { role: 'thinking' as const, text: t('Analyzing expense data across departments…') },
-    { role: 'assistant' as const, text: t('Found 3 anomalies totaling $12,400. Two duplicate vendor payments and one misclassified expense in Marketing.') },
-  ]
+  const showThreadList = stageW >= 650
+  const chromeInset = Math.round(Math.min(40, Math.max(8, stageW * 0.031)))
+  const selectedThread = threads.find((th) => th.id === selectedThreadId)
 
   return (
-    <Sprite start={start} end={end}>
-      {({ localTime, duration }) => {
-        const time = localTime
-        const inT = Easing.easeOutCubic(clamp(time / 0.6, 0, 1))
-        const exitT = clamp((time - (duration - 0.5)) / 0.5, 0, 1)
-        const opacity = inT * (1 - exitT)
-
-        const chromeInset = Math.round(Math.min(40, Math.max(8, stageW * 0.031)))
-        const fontSize = Math.round(Math.min(13, Math.max(9, stageW * 0.014)))
-        const titleFz = Math.round(Math.min(14, Math.max(10, stageW * 0.015)))
-
-        return (
-          <div style={{ position: 'absolute', inset: 0, opacity }}>
-            <BrowserChrome inset={chromeInset} tabTitle="DEVS">
-              <div style={{ display: 'flex', width: '100%', height: '100%', background: '#f8f9fb' }}>
-                {/* Left panel — thread list */}
-                <div
-                  style={{
-                    width: '30%',
-                    borderRight: '1px solid #e2e5ea',
-                    background: '#ffffff',
-                    overflowY: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                  {threads.map((thread, i) => {
-                    const rowIn = clamp((time - 0.4 - i * 0.15) / 0.4, 0, 1)
-                    return (
-                      <div
-                        key={thread.title}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: Math.max(6, fontSize * 0.5),
-                          padding: `${Math.max(8, fontSize * 0.7)}px ${Math.max(10, fontSize * 0.8)}px`,
-                          borderBottom: '1px solid #f0f1f3',
-                          background: thread.selected ? '#eef2ff' : 'transparent',
-                          opacity: rowIn,
-                          transform: `translateX(${(1 - rowIn) * -20}px)`,
-                          cursor: 'default',
-                        }}
-                      >
-                        {/* Color dot */}
-                        <span
-                          style={{
-                            width: 8,
-                            height: 8,
-                            borderRadius: 4,
-                            background: thread.color,
-                            flexShrink: 0,
-                          }}
-                        />
-                        {/* Content */}
-                        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span
-                              style={{
-                                fontFamily: 'Figtree, system-ui, sans-serif',
-                                fontSize: titleFz,
-                                fontWeight: thread.unread ? 600 : 400,
-                                color: '#1a1d22',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              {thread.title}
-                            </span>
-                            <span
-                              style={{
-                                fontFamily: "'Geist', ui-monospace, monospace",
-                                fontSize: Math.max(8, fontSize - 3),
-                                color: '#9ca3af',
-                                flexShrink: 0,
-                                marginLeft: 4,
-                              }}
-                            >
-                              {thread.time}
-                            </span>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span
-                              style={{
-                                fontFamily: "'Geist', ui-monospace, monospace",
-                                fontSize: Math.max(8, fontSize - 2),
-                                color: '#6b7280',
-                              }}
-                            >
-                              {thread.agent}
-                            </span>
-                            {thread.unread && (
-                              <span
-                                style={{
-                                  width: 7,
-                                  height: 7,
-                                  borderRadius: 4,
-                                  background: '#3b82f6',
-                                  flexShrink: 0,
-                                }}
-                              />
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Right panel — thread preview */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: Math.max(12, fontSize) }}>
-                  {/* Thread title */}
-                  <div
-                    style={{
-                      fontFamily: "'Unbounded', Georgia, serif",
-                      fontSize: Math.round(titleFz * 1.2),
-                      fontWeight: 600,
-                      color: '#1a1d22',
-                      marginBottom: Math.max(12, fontSize),
-                      opacity: clamp((time - 0.8) / 0.4, 0, 1),
-                    }}
-                  >
-                    {t('API documentation')}
-                  </div>
-
-                  {/* Message bubbles */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: Math.max(8, fontSize * 0.6) }}>
-                    {previewMessages.map((msg, i) => {
-                      const msgIn = clamp((time - 1.2 - i * 0.6) / 0.5, 0, 1)
-                      const isUser = msg.role === 'user'
-                      const isThinking = msg.role === 'thinking'
-                      return (
-                        <div
-                          key={i}
-                          style={{
-                            alignSelf: isUser ? 'flex-end' : 'flex-start',
-                            maxWidth: '80%',
-                            background: isUser ? 'oklch(62.04% 0.195 253.83)' : '#ffffff',
-                            color: isUser ? '#ffffff' : '#1a1d22',
-                            borderRadius: 12,
-                            padding: `${Math.max(8, fontSize * 0.6)}px ${Math.max(12, fontSize * 0.9)}px`,
-                            fontFamily: 'Figtree, system-ui, sans-serif',
-                            fontSize,
-                            lineHeight: 1.5,
-                            opacity: msgIn * (isThinking ? 0.5 : 1),
-                            transform: `translateY(${(1 - msgIn) * 12}px)`,
-                            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-                            fontStyle: isThinking ? 'italic' : 'normal',
-                          }}
-                        >
-                          {msg.text}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              </div>
-            </BrowserChrome>
+    <BrowserChrome inset={chromeInset} url="devs.new">
+      <div className="bg-background relative flex h-full w-full overflow-hidden">
+        <div className="shrink-0">
+          <Sidebar
+            isCollapsed
+            activeFilter="inbox"
+            onFilterChange={noop}
+            onOpenSettings={noop}
+          />
+        </div>
+        <div className="flex min-w-0 flex-1">
+          {showThreadList && (
+            <div className="border-divider/60 shrink-0" style={{ width: 340 }}>
+              <ThreadList
+                threads={threads}
+                selectedThreadId={selectedThreadId}
+                selectedIds={[selectedThreadId]}
+                onSelectThread={noop}
+                isLoading={false}
+                search=""
+                onSearchChange={noop}
+                onToggleStar={noop}
+                onToggleRead={noop}
+                layout="list"
+              />
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <ThreadPreview
+              thread={selectedThread}
+              onDeselect={noop}
+              isStarred={false}
+              starColor={null}
+              onToggleStar={noop}
+              onReply={noop}
+              replyPrompt=""
+              onReplyPromptChange={noop}
+              mode="feed"
+              isActive
+              onMarkRead={noop}
+            />
           </div>
-        )
-      }}
+        </div>
+      </div>
+    </BrowserChrome>
+  )
+})
+
+function SceneInboxFullInner() {
+  const { localTime, duration } = useSprite()
+
+  const inT = Easing.easeOutCubic(clamp(localTime / 0.6, 0, 1))
+  const exitT = clamp((localTime - (duration - 0.5)) / 0.5, 0, 1)
+  const opacity = inT * (1 - exitT)
+
+  const s = useInboxStrings()
+  const agents = useMemo(() => buildInboxAgents(s), [s])
+  const threads = useMemo(() => buildInboxThreads(agents, s), [agents, s])
+
+  const opacityRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    if (opacityRef.current) opacityRef.current.style.opacity = String(opacity)
+  })
+
+  return (
+    <div ref={opacityRef} style={{ position: 'absolute', inset: 0, opacity }}>
+      <InboxContent threads={threads} selectedThreadId="inbox-q1" />
+    </div>
+  )
+}
+
+export function SceneInboxFull({ start = 2.4, end = 10 }: SceneProps) {
+  return (
+    <Sprite start={start} end={end}>
+      <SceneInboxFullInner />
     </Sprite>
   )
 }
 
 // ── Scene 3: Transcript ───────────────────────────────────────────────────
 
-const TIMELINE_ICONS: Record<string, string> = {
-  chat: '💬',
-  brain: '🧠',
-  wrench: '🔧',
-  check: '✓',
+// Event delays (scene-local seconds) for progressive reveal
+const TRANSCRIPT_EVENT_DELAYS = [0.5, 1.5, 2.5, 3.5, 4.5]
+
+interface TranscriptContentProps {
+  threads: Thread[]
+  eventsToShow: TranscriptEvent[]
 }
 
-interface TimelineEvent {
-  label: string
-  icon: string
-  detail: string
-  duration: string
-  tokens: string
-  delay: number
-  dimmed?: boolean
+const TranscriptContent = memo(function TranscriptContent({
+  threads,
+  eventsToShow,
+}: TranscriptContentProps) {
+  const { width: stageW } = useStageSize()
+  const showThreadList = stageW >= 650
+  const chromeInset = Math.round(Math.min(40, Math.max(8, stageW * 0.031)))
+
+  return (
+    <BrowserChrome inset={chromeInset} url="devs.new">
+      <div className="bg-background relative flex h-full w-full overflow-hidden">
+        <div className="shrink-0">
+          <Sidebar
+            isCollapsed
+            activeFilter="inbox"
+            onFilterChange={noop}
+            onOpenSettings={noop}
+          />
+        </div>
+        <div className="flex min-w-0 flex-1">
+          {showThreadList && (
+            <div className="border-divider/60 shrink-0 opacity-40" style={{ width: 240 }}>
+              <ThreadList
+                threads={threads}
+                selectedThreadId="inbox-q1"
+                selectedIds={['inbox-q1']}
+                onSelectThread={noop}
+                isLoading={false}
+                search=""
+                onSearchChange={noop}
+                layout="list"
+              />
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <TranscriptEventList
+              events={eventsToShow}
+              selectedEventId={null}
+              onSelectEvent={noop}
+            />
+          </div>
+        </div>
+      </div>
+    </BrowserChrome>
+  )
+})
+
+function SceneTranscriptInner() {
+  const { localTime, duration } = useSprite()
+
+  const inT = Easing.easeOutCubic(clamp(localTime / 0.6, 0, 1))
+  const exitT = clamp((localTime - (duration - 0.5)) / 0.5, 0, 1)
+  const opacity = inT * (1 - exitT)
+
+  const s = useInboxStrings()
+  const agents = useMemo(() => buildInboxAgents(s), [s])
+  const threads = useMemo(() => buildInboxThreads(agents, s), [agents, s])
+
+  // Five transcript events derived from i18n strings; timestamps encode
+  // relative durations so the progress bar renders meaningful proportions.
+  const allEvents = useMemo<TranscriptEvent[]>(
+    () => [
+      {
+        id: 'te-user',
+        role: 'user',
+        label: s.auditLabel,
+        timestamp: BASE_MS,
+        content: s.q1UserMsg,
+        tokenInfo: { prompt: 340, completion: 0 },
+      },
+      {
+        id: 'te-think',
+        role: 'agent',
+        label: s.thinking,
+        timestamp: BASE_MS + 1200,
+        duration: 800,
+        content: s.analyzing,
+      },
+      {
+        id: 'te-calc',
+        role: 'tool',
+        label: s.calcLabel,
+        timestamp: BASE_MS + 2000,
+        duration: 2100,
+        toolUse: { name: 'calculate', input: { transactions: 247 } },
+        toolResult: '3 anomalies detected',
+        status: 'completed',
+        tokenInfo: { prompt: 580, completion: 0 },
+      },
+      {
+        id: 'te-search',
+        role: 'tool',
+        label: s.searchKbLabel,
+        timestamp: BASE_MS + 4100,
+        duration: 1500,
+        toolUse: { name: 'search_knowledge', input: { query: 'Q1 reports' } },
+        toolResult: '12 documents loaded',
+        status: 'completed',
+        tokenInfo: { prompt: 120, completion: 0 },
+      },
+      {
+        id: 'te-resp',
+        role: 'agent',
+        label: s.foundLabel,
+        timestamp: BASE_MS + 5600,
+        content: s.q1AssistantMsg,
+        tokenInfo: { prompt: 410, completion: 0 },
+      },
+    ],
+    [s],
+  )
+
+  // Reveal events one-by-one at their scheduled delays
+  const eventsCount = TRANSCRIPT_EVENT_DELAYS.filter((d) => localTime >= d).length
+  const eventsToShow = useMemo(
+    () => allEvents.slice(0, eventsCount),
+    [allEvents, eventsCount],
+  )
+
+  const opacityRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    if (opacityRef.current) opacityRef.current.style.opacity = String(opacity)
+  })
+
+  return (
+    <div ref={opacityRef} style={{ position: 'absolute', inset: 0, opacity }}>
+      <TranscriptContent threads={threads} eventsToShow={eventsToShow} />
+    </div>
+  )
 }
 
 export function SceneTranscript({ start = 9.9, end = 16 }: SceneProps) {
-  const { t } = useI18n(inboxWorkflowI18n)
-  const { width: stageW } = useStageSize()
-
-  const events: TimelineEvent[] = [
-    { label: t('User input'), icon: 'chat', detail: t('Audit Q1 expenses...'), duration: t('1.2s'), tokens: t('340 tok'), delay: 0.5 },
-    { label: t('Thinking'), icon: 'brain', detail: t('Analyzing expense data...'), duration: t('0.8s'), tokens: t('—'), delay: 1.5, dimmed: true },
-    { label: t('Tool call'), icon: 'wrench', detail: t('calculate — 247 transactions'), duration: t('2.1s'), tokens: t('580 tok'), delay: 2.5 },
-    { label: t('Tool call'), icon: 'wrench', detail: t('search_knowledge — Q1 reports'), duration: t('1.5s'), tokens: t('120 tok'), delay: 3.5 },
-    { label: t('Response'), icon: 'check', detail: t('Found 3 anomalies...'), duration: t('0.9s'), tokens: t('410 tok'), delay: 4.5 },
-  ]
-
   return (
     <Sprite start={start} end={end}>
-      {({ localTime, duration }) => {
-        const time = localTime
-        const inT = Easing.easeOutCubic(clamp(time / 0.6, 0, 1))
-        const exitT = clamp((time - (duration - 0.5)) / 0.5, 0, 1)
-        const opacity = inT * (1 - exitT)
-
-        const chromeInset = Math.round(Math.min(40, Math.max(8, stageW * 0.031)))
-        const fontSize = Math.round(Math.min(13, Math.max(9, stageW * 0.014)))
-        const titleFz = Math.round(Math.min(14, Math.max(10, stageW * 0.015)))
-        const rowH = Math.round(Math.min(48, Math.max(32, stageW * 0.045)))
-
-        return (
-          <div style={{ position: 'absolute', inset: 0, opacity }}>
-            <BrowserChrome inset={chromeInset} tabTitle="DEVS">
-              <div style={{ display: 'flex', width: '100%', height: '100%', background: '#f8f9fb' }}>
-                {/* Left panel — simplified thread list (dimmed) */}
-                <div
-                  style={{
-                    width: '30%',
-                    borderRight: '1px solid #e2e5ea',
-                    background: '#ffffff',
-                    opacity: 0.4,
-                    padding: Math.max(8, fontSize * 0.6),
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 6,
-                  }}
-                >
-                  {[0, 1, 2, 3, 4, 5].map((i) => (
-                    <div
-                      key={i}
-                      style={{
-                        height: rowH * 0.7,
-                        background: i === 0 ? '#eef2ff' : '#f5f6f8',
-                        borderRadius: 6,
-                      }}
-                    />
-                  ))}
-                </div>
-
-                {/* Right panel — transcript timeline */}
-                <div style={{ flex: 1, padding: Math.max(16, fontSize * 1.2), display: 'flex', flexDirection: 'column' }}>
-                  {/* Title */}
-                  <div
-                    style={{
-                      fontFamily: "'Unbounded', Georgia, serif",
-                      fontSize: Math.round(titleFz * 1.2),
-                      fontWeight: 600,
-                      color: '#1a1d22',
-                      marginBottom: Math.max(16, fontSize * 1.2),
-                      opacity: clamp(time / 0.4, 0, 1),
-                    }}
-                  >
-                    {t('Q1 Expense Audit')}
-                  </div>
-
-                  {/* Timeline */}
-                  <div style={{ position: 'relative', flex: 1 }}>
-                    {/* Vertical line */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        left: 14,
-                        top: 4,
-                        bottom: 4,
-                        width: 2,
-                        background: '#e2e5ea',
-                        borderRadius: 1,
-                      }}
-                    />
-
-                    {/* Events */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: Math.max(8, fontSize * 0.6) }}>
-                      {events.map((evt, i) => {
-                        const evtIn = Easing.easeOutCubic(clamp((time - evt.delay) / 0.5, 0, 1))
-                        return (
-                          <div
-                            key={i}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: Math.max(10, fontSize * 0.8),
-                              opacity: evtIn * (evt.dimmed ? 0.5 : 1),
-                              transform: `translateY(${(1 - evtIn) * 16}px)`,
-                              minHeight: rowH,
-                            }}
-                          >
-                            {/* Icon dot */}
-                            <div
-                              style={{
-                                width: 30,
-                                height: 30,
-                                borderRadius: 15,
-                                background: '#ffffff',
-                                border: '2px solid #e2e5ea',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: evt.icon === 'check' ? 14 : 14,
-                                flexShrink: 0,
-                                zIndex: 1,
-                                color: evt.icon === 'check' ? '#22c55e' : undefined,
-                                fontWeight: evt.icon === 'check' ? 700 : 400,
-                              }}
-                            >
-                              {TIMELINE_ICONS[evt.icon]}
-                            </div>
-
-                            {/* Content */}
-                            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                              <span
-                                style={{
-                                  fontFamily: "'Geist', ui-monospace, monospace",
-                                  fontSize: Math.max(9, fontSize - 1),
-                                  fontWeight: 600,
-                                  color: '#6b7280',
-                                  textTransform: 'uppercase',
-                                  letterSpacing: '0.06em',
-                                }}
-                              >
-                                {evt.label}
-                              </span>
-                              <span
-                                style={{
-                                  fontFamily: 'Figtree, system-ui, sans-serif',
-                                  fontSize,
-                                  color: '#1a1d22',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
-                                }}
-                              >
-                                {evt.detail}
-                              </span>
-                            </div>
-
-                            {/* Badges */}
-                            <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                              <span
-                                style={{
-                                  fontFamily: "'Geist', ui-monospace, monospace",
-                                  fontSize: Math.max(8, fontSize - 3),
-                                  color: '#9ca3af',
-                                  background: '#f0f1f3',
-                                  borderRadius: 4,
-                                  padding: '2px 6px',
-                                }}
-                              >
-                                {evt.duration}
-                              </span>
-                              <span
-                                style={{
-                                  fontFamily: "'Geist', ui-monospace, monospace",
-                                  fontSize: Math.max(8, fontSize - 3),
-                                  color: '#9ca3af',
-                                  background: '#f0f1f3',
-                                  borderRadius: 4,
-                                  padding: '2px 6px',
-                                }}
-                              >
-                                {evt.tokens}
-                              </span>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </BrowserChrome>
-          </div>
-        )
-      }}
+      <SceneTranscriptInner />
     </Sprite>
   )
 }
 
 // ── Scene 4: Tags & search ────────────────────────────────────────────────
 
-export function SceneTagsSearch({ start = 15.9, end = 20 }: SceneProps) {
-  const { t } = useI18n(inboxWorkflowI18n)
+// Cursor waypoints as stage fractions — calibrated for the V2 layout
+const SEARCH_BAR_FRAC = { x: 0.22, y: 0.19 }
+const STAR_FRAC = { x: 0.28, y: 0.42 }
+
+interface TagSearchContentProps {
+  threads: Thread[]
+  search: string
+}
+
+const TagSearchContent = memo(function TagSearchContent({
+  threads,
+  search,
+}: TagSearchContentProps) {
+  const { width: stageW } = useStageSize()
+  const showThreadList = stageW >= 650
+  const chromeInset = Math.round(Math.min(40, Math.max(8, stageW * 0.031)))
+
+  return (
+    <BrowserChrome inset={chromeInset} url="devs.new">
+      <div className="bg-background relative flex h-full w-full overflow-hidden">
+        <div className="shrink-0">
+          <Sidebar
+            isCollapsed
+            activeFilter="inbox"
+            onFilterChange={noop}
+            onOpenSettings={noop}
+          />
+        </div>
+        <div className="flex min-w-0 flex-1">
+          {showThreadList && (
+            <div className="border-divider/60 shrink-0" style={{ width: 340 }}>
+              <ThreadList
+                threads={threads}
+                selectedThreadId={undefined}
+                onSelectThread={noop}
+                isLoading={false}
+                search={search}
+                onSearchChange={noop}
+                onToggleStar={noop}
+                layout="list"
+              />
+            </div>
+          )}
+          {/* Right panel — dimmed placeholder keeps visual weight */}
+          <div className="min-w-0 flex-1 opacity-10" />
+        </div>
+      </div>
+    </BrowserChrome>
+  )
+})
+
+function SceneTagsSearchInner() {
+  const { localTime, duration } = useSprite()
   const { width: stageW, height: stageH } = useStageSize()
 
-  const allThreads = [
-    { title: t('Q1 Expense Audit'), agent: t('Auditor'), color: THREAD_COLORS[0], match: false, starred: false },
-    { title: t('Blog post draft'), agent: t('Scribe'), color: THREAD_COLORS[1], match: false, starred: false },
-    { title: t('API documentation'), agent: t('DocBot'), color: THREAD_COLORS[2], match: true, starred: false },
-    { title: t('Market research'), agent: t('Scout'), color: THREAD_COLORS[3], match: true, starred: false },
-    { title: t('Code review: auth'), agent: t('Reviewer'), color: THREAD_COLORS[4], match: false, starred: false },
-    { title: t('Weekly summary'), agent: t('Digest'), color: THREAD_COLORS[5], match: false, starred: false },
-  ]
+  const inT = Easing.easeOutCubic(clamp(localTime / 0.5, 0, 1))
+  const exitT = clamp((localTime - (duration - 0.5)) / 0.5, 0, 1)
+  const opacity = inT * (1 - exitT)
 
-  const searchText = t('#research')
-  const captionText = t('Search. Tag. Organize.')
+  const s = useInboxStrings()
+  const searchText = s.hashResearch
+  const captionText = s.searchTagOrganize
 
-  const SEARCH_BAR_FRAC = { x: 0.15, y: 0.23 }
-  const STAR_FRAC = { x: 0.045, y: 0.44 }
+  // Timeline:
+  // 0.0–0.5: fade in
+  // 0.5–0.8: cursor moves to search bar
+  // 0.8–1.0: click search bar
+  // 1.0–2.0: type "#research"
+  // 2.0–2.5: list filters to research threads
+  // 2.5–3.0: cursor moves to first matching thread
+  // 3.0–3.3: click → thread gets starred
+  // 3.3–4.1: caption appears
 
-  const toCursor = (frac: { x: number; y: number }) => ({
-    x: frac.x * stageW,
-    y: frac.y * stageH,
+  // Typing animation — discretise to avoid re-rendering every RAF tick
+  const typeProgress = clamp((localTime - 1.0) / 1.0, 0, 1)
+  const charsShown = Math.floor(searchText.length * typeProgress)
+  const search = localTime >= 1.0 ? searchText.slice(0, charsShown) : ''
+
+  // Filter / star state — boolean boundaries limit re-renders to two moments
+  const isFiltered = localTime >= 2.0
+  const isStarred = localTime >= 3.2
+  const captionT = clamp((localTime - 3.3) / 0.5, 0, 1)
+
+  // Cursor
+  const showCursor = stageW >= 700
+  const cursorSearchBar = { x: SEARCH_BAR_FRAC.x * stageW, y: SEARCH_BAR_FRAC.y * stageH }
+  const cursorStar = { x: STAR_FRAC.x * stageW, y: STAR_FRAC.y * stageH }
+  let cursorPos: { x: number; y: number } | null = null
+  let clickProgress = 0
+  if (showCursor) {
+    if (localTime >= 0.5 && localTime < 0.8) {
+      const k = Easing.easeInOutCubic(clamp((localTime - 0.5) / 0.3, 0, 1))
+      cursorPos = {
+        x: stageW * 0.5 + (cursorSearchBar.x - stageW * 0.5) * k,
+        y: stageH * 0.9 + (cursorSearchBar.y - stageH * 0.9) * k,
+      }
+    } else if (localTime >= 0.8 && localTime < 2.5) {
+      cursorPos = cursorSearchBar
+      if (localTime < 1.0) clickProgress = (localTime - 0.8) / 0.2
+    } else if (localTime >= 2.5 && localTime < 3.0) {
+      const k = Easing.easeInOutCubic(clamp((localTime - 2.5) / 0.5, 0, 1))
+      cursorPos = {
+        x: cursorSearchBar.x + (cursorStar.x - cursorSearchBar.x) * k,
+        y: cursorSearchBar.y + (cursorStar.y - cursorSearchBar.y) * k,
+      }
+    } else if (localTime >= 3.0) {
+      cursorPos = cursorStar
+      if (localTime < 3.3) clickProgress = (localTime - 3.0) / 0.3
+    }
+  }
+
+  const agents = useMemo(() => buildInboxAgents(s), [s])
+
+  // Re-compute threads only when star state changes
+  const allThreads = useMemo(
+    () => buildInboxThreads(agents, s, isStarred ? 'inbox-market' : null),
+    [agents, s, isStarred],
+  )
+
+  // Filter to only research-tagged threads once the search term is complete
+  const filteredThreads = useMemo(
+    () => (isFiltered ? allThreads.filter((th) => th.tags.includes(TAG_RESEARCH)) : allThreads),
+    [allThreads, isFiltered],
+  )
+
+  const chromeInset = Math.round(Math.min(40, Math.max(8, stageW * 0.031)))
+
+  const opacityRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    if (opacityRef.current) opacityRef.current.style.opacity = String(opacity)
   })
 
   return (
-    <Sprite start={start} end={end}>
-      {({ localTime, duration }) => {
-        const time = localTime
-        const inT = Easing.easeOutCubic(clamp(time / 0.5, 0, 1))
-        const exitT = clamp((time - (duration - 0.5)) / 0.5, 0, 1)
-        const opacity = inT * (1 - exitT)
+    <div ref={opacityRef} style={{ position: 'absolute', inset: 0, opacity }}>
+      <TagSearchContent threads={filteredThreads} search={search} />
 
-        const chromeInset = Math.round(Math.min(40, Math.max(8, stageW * 0.031)))
-        const fontSize = Math.round(Math.min(13, Math.max(9, stageW * 0.014)))
-        const titleFz = Math.round(Math.min(14, Math.max(10, stageW * 0.015)))
-
-        // Timeline:
-        // 0.0–0.5: scene fades in
-        // 0.5–0.8: cursor moves to search bar
-        // 0.8–1.0: click search bar
-        // 1.0–2.0: type "#research"
-        // 2.0–2.5: list filters
-        // 2.5–3.0: cursor moves to star
-        // 3.0–3.3: click star
-        // 3.3–4.1: caption appears
-
-        const cursorSearchBar = toCursor(SEARCH_BAR_FRAC)
-        const cursorStar = toCursor(STAR_FRAC)
-
-        // Cursor position
-        let cursorPos: { x: number; y: number } | null = null
-        let clickProgress = 0
-        const showCursor = stageW >= 700
-
-        if (showCursor) {
-          if (time >= 0.5 && time < 0.8) {
-            // Moving to search bar
-            const t2 = (time - 0.5) / 0.3
-            cursorPos = {
-              x: stageW * 0.5 + (cursorSearchBar.x - stageW * 0.5) * Easing.easeInOutCubic(clamp(t2, 0, 1)),
-              y: stageH * 0.9 + (cursorSearchBar.y - stageH * 0.9) * Easing.easeInOutCubic(clamp(t2, 0, 1)),
-            }
-          } else if (time >= 0.8 && time < 2.5) {
-            cursorPos = cursorSearchBar
-            if (time >= 0.8 && time < 1.0) {
-              clickProgress = (time - 0.8) / 0.2
-            }
-          } else if (time >= 2.5 && time < 3.0) {
-            const t2 = (time - 2.5) / 0.5
-            const k = Easing.easeInOutCubic(clamp(t2, 0, 1))
-            cursorPos = {
-              x: cursorSearchBar.x + (cursorStar.x - cursorSearchBar.x) * k,
-              y: cursorSearchBar.y + (cursorStar.y - cursorSearchBar.y) * k,
-            }
-          } else if (time >= 3.0) {
-            cursorPos = cursorStar
-            if (time >= 3.0 && time < 3.3) {
-              clickProgress = (time - 3.0) / 0.3
-            }
-          }
-        }
-
-        // Search text progress
-        const typeProgress = clamp((time - 1.0) / 1.0, 0, 1)
-        const charsShown = Math.floor(searchText.length * typeProgress)
-        const searchActive = time >= 1.0
-
-        // Filter progress
-        const filterT = clamp((time - 2.0) / 0.4, 0, 1)
-
-        // Star clicked
-        const starClicked = time >= 3.2
-
-        // Caption
-        const captionT = clamp((time - 3.3) / 0.5, 0, 1)
-
-        return (
-          <div style={{ position: 'absolute', inset: 0, opacity }}>
-            <BrowserChrome inset={chromeInset} tabTitle="DEVS">
-              <div style={{ display: 'flex', width: '100%', height: '100%', background: '#f8f9fb' }}>
-                {/* Left panel — thread list with search */}
-                <div
-                  style={{
-                    width: '30%',
-                    borderRight: '1px solid #e2e5ea',
-                    background: '#ffffff',
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                  {/* Search bar */}
-                  <div
-                    style={{
-                      padding: `${Math.max(8, fontSize * 0.6)}px`,
-                      borderBottom: '1px solid #f0f1f3',
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: Math.max(28, fontSize * 2.2),
-                        background: searchActive ? '#ffffff' : '#f5f6f8',
-                        border: searchActive ? '1.5px solid oklch(62.04% 0.195 253.83)' : '1px solid #e2e5ea',
-                        borderRadius: 8,
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: '0 10px',
-                        fontFamily: 'Figtree, system-ui, sans-serif',
-                        fontSize,
-                        color: '#1a1d22',
-                        transition: 'border 0.2s',
-                      }}
-                    >
-                      <span style={{ color: '#9ca3af', marginRight: 6, fontSize: fontSize - 1 }}>🔍</span>
-                      {searchActive && (
-                        <>
-                          <span>{searchText.slice(0, charsShown)}</span>
-                          {charsShown < searchText.length && (
-                            <span
-                              style={{
-                                display: 'inline-block',
-                                width: 1.5,
-                                height: '1.1em',
-                                marginLeft: 1,
-                                background: 'oklch(62.04% 0.195 253.83)',
-                                verticalAlign: 'text-bottom',
-                                animation: 'devs-caret 0.9s steps(1) infinite',
-                              }}
-                            />
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Filtered thread list */}
-                  {allThreads.map((thread, i) => {
-                    const isVisible = !filterT || thread.match || filterT < 1
-                    const rowOpacity = filterT > 0 && !thread.match ? 1 - filterT : 1
-                    const isFirstMatch = thread.match && allThreads.filter((th, idx) => th.match && idx < i).length === 0
-
-                    if (rowOpacity <= 0) return null
-
-                    return (
-                      <div
-                        key={thread.title}
-                        style={{
-                          display: isVisible ? 'flex' : 'none',
-                          alignItems: 'center',
-                          gap: Math.max(6, fontSize * 0.5),
-                          padding: `${Math.max(8, fontSize * 0.7)}px ${Math.max(10, fontSize * 0.8)}px`,
-                          borderBottom: '1px solid #f0f1f3',
-                          opacity: rowOpacity,
-                          cursor: 'default',
-                        }}
-                      >
-                        {/* Star dot */}
-                        <span
-                          style={{
-                            width: 8,
-                            height: 8,
-                            borderRadius: 4,
-                            background:
-                              starClicked && isFirstMatch
-                                ? '#f59e0b'
-                                : thread.color,
-                            flexShrink: 0,
-                            transition: 'background 0.3s',
-                          }}
-                        />
-                        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                          <span
-                            style={{
-                              fontFamily: 'Figtree, system-ui, sans-serif',
-                              fontSize: titleFz,
-                              fontWeight: 500,
-                              color: '#1a1d22',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {thread.title}
-                          </span>
-                          <span
-                            style={{
-                              fontFamily: "'Geist', ui-monospace, monospace",
-                              fontSize: Math.max(8, fontSize - 2),
-                              color: '#6b7280',
-                            }}
-                          >
-                            {thread.agent}
-                          </span>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Right panel — dimmed placeholder */}
-                <div
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    opacity: 0.15,
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '60%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 12,
-                    }}
-                  >
-                    {[0, 1, 2].map((i) => (
-                      <div
-                        key={i}
-                        style={{
-                          height: Math.max(20, fontSize * 1.5),
-                          background: '#d7dbe0',
-                          borderRadius: 6,
-                          width: `${80 - i * 15}%`,
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </BrowserChrome>
-
-            {/* Caption overlay */}
-            {captionT > 0 && (
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: chromeInset + 20,
-                  left: 0,
-                  right: 0,
-                  display: 'flex',
-                  justifyContent: 'center',
-                  opacity: captionT,
-                  transform: `translateY(${(1 - captionT) * 10}px)`,
-                  pointerEvents: 'none',
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: "'Unbounded', Georgia, serif",
-                    fontStyle: 'italic',
-                    fontSize: clamp(stageW * 0.028, 14, 32),
-                    color: '#1a1d22',
-                    background: 'rgba(255,255,255,0.85)',
-                    backdropFilter: 'blur(8px)',
-                    padding: '8px 24px',
-                    borderRadius: 12,
-                    letterSpacing: '-0.01em',
-                  }}
-                >
-                  {captionText}
-                </div>
-              </div>
-            )}
-
-            {cursorPos && (
-              <FakeCursor
-                x={cursorPos.x}
-                y={cursorPos.y}
-                clickProgress={clickProgress}
-              />
-            )}
+      {captionT > 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: chromeInset + 20,
+            left: 0,
+            right: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            opacity: captionT,
+            transform: `translateY(${(1 - captionT) * 10}px)`,
+            pointerEvents: 'none',
+          }}
+        >
+          <div
+            style={{
+              fontFamily: "'Unbounded', Georgia, serif",
+              fontStyle: 'italic',
+              fontSize: clamp(stageW * 0.028, 14, 32),
+              color: '#1a1d22',
+              background: 'rgba(255,255,255,0.85)',
+              backdropFilter: 'blur(8px)',
+              padding: '8px 24px',
+              borderRadius: 12,
+              letterSpacing: '-0.01em',
+            }}
+          >
+            {captionText}
           </div>
-        )
-      }}
+        </div>
+      )}
+
+      {cursorPos && (
+        <FakeCursor x={cursorPos.x} y={cursorPos.y} clickProgress={clickProgress} />
+      )}
+    </div>
+  )
+}
+
+export function SceneTagsSearch({ start = 15.9, end = 20 }: SceneProps) {
+  return (
+    <Sprite start={start} end={end}>
+      <SceneTagsSearchInner />
     </Sprite>
   )
 }
