@@ -96,4 +96,31 @@ export const en = [
 
   // Scene 2 agent role
   'Research',
+
+  // Playback bar — settings menu
+  'Speed',
+  'Normal',
+  'Language',
+  'Keyboard shortcuts',
+
+  // Playback bar — control titles
+  'Pause',
+  'Play',
+  'Unmute',
+  'Mute',
+  'Exit full screen',
+  'Full screen',
+  'Settings',
+
+  // Keyboard shortcut overlay — descriptions
+  'Play / Pause',
+  'Seek back 0.1 s',
+  'Seek forward 0.1 s',
+  'Seek back 1 s',
+  'Seek forward 1 s',
+  'Go to start',
+  'Toggle mute',
+  'Toggle full screen',
+  'Show shortcuts',
+  'Close this overlay',
 ] as const

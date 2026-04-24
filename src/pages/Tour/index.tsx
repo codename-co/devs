@@ -7,9 +7,9 @@
  * tour-specific primitives (browser chrome, agent SVG nodes, playhead
  * controls). See `src/tour/` for details.
  *
- * The tour is English-only at the moment but uses the project's real
- * `useI18n(tourI18n)` pipeline so additional locales can be dropped in
- * without touching scene code.
+ * The tour is fully multilingual — use the in-player language switcher
+ * (Settings → Language) to change the language without affecting global
+ * preferences. All six project locales are supported.
  */
 import { useEffect } from 'react'
 import { Stage } from './components/animations'

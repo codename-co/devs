@@ -10,6 +10,8 @@
  * to a real ES module so the tour integrates with the app's build pipeline.
  */
 import { Icon } from '@/components'
+import { I18nProvider, useI18n } from '@/i18n'
+import { type LanguageCode, languages } from '@/i18n/locales'
 import { ProgressBar } from '@heroui/react_3'
 import {
   createContext,
@@ -21,6 +23,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import tourI18n from '../i18n'
 
 // ── Easing functions (Popmotion-style) ─────────────────────────────────────
 type EaseFn = (t: number) => number
@@ -83,6 +86,10 @@ interface TimelineValue {
   duration: number
   playing: boolean
   muted: boolean
+  /** Current playback speed multiplier (0.5, 1, 1.5, 2). */
+  speed: number
+  /** Tour-local language override. */
+  lang: LanguageCode
   /**
    * Measured width of the stage canvas in CSS pixels. Scenes that need to
    * position elements at pixel coordinates should multiply fractions of
@@ -95,6 +102,8 @@ interface TimelineValue {
   setTime?: (t: number | ((prev: number) => number)) => void
   setPlaying?: (p: boolean | ((prev: boolean) => boolean)) => void
   setMuted?: (m: boolean | ((prev: boolean) => boolean)) => void
+  setSpeed?: (s: number) => void
+  setLang?: (l: LanguageCode) => void
 }
 
 const TimelineContext = createContext<TimelineValue>({
@@ -102,6 +111,8 @@ const TimelineContext = createContext<TimelineValue>({
   duration: 10,
   playing: false,
   muted: false,
+  speed: 1,
+  lang: 'en',
   stageWidth: 0,
   stageHeight: 0,
 })
@@ -247,6 +258,9 @@ export function Stage({
   // blast audio at users who just landed on the page. The underlying audio
   // element isn't even loaded until they unmute — see TourSoundtrack.
   const [muted, setMuted] = useState(true)
+  const [speed, setSpeed] = useState(1)
+  const [lang, setLang] = useState<LanguageCode>('en')
+  const [showShortcuts, setShowShortcuts] = useState(false)
   const [stageSize, setStageSize] = useState<{ w: number; h: number }>({
     w: 0,
     h: 0,
@@ -285,7 +299,11 @@ export function Stage({
     }
   }, [])
 
-  // Animation loop
+  // Animation loop — reads speed via ref to avoid re-subscribing RAF on
+  // speed changes.
+  const speedRef = useRef(speed)
+  speedRef.current = speed
+
   useEffect(() => {
     if (!playing) {
       lastTsRef.current = null
@@ -293,7 +311,7 @@ export function Stage({
     }
     const step = (ts: number) => {
       if (lastTsRef.current == null) lastTsRef.current = ts
-      const dt = (ts - lastTsRef.current) / 1000
+      const dt = ((ts - lastTsRef.current) / 1000) * speedRef.current
       lastTsRef.current = ts
       setTime((t) => {
         let next = t + dt
@@ -381,6 +399,11 @@ export function Stage({
       } else if (e.key === 'f' || e.key === 'F') {
         e.preventDefault()
         toggleFullscreen()
+      } else if (e.key === '?') {
+        e.preventDefault()
+        setShowShortcuts((s) => !s)
+      } else if (e.code === 'Escape') {
+        setShowShortcuts(false)
       }
     }
     window.addEventListener('keydown', onKey)
@@ -393,13 +416,17 @@ export function Stage({
       duration,
       playing,
       muted,
+      speed,
+      lang,
       stageWidth: stageSize.w,
       stageHeight: stageSize.h,
       setTime,
       setPlaying,
       setMuted,
+      setSpeed,
+      setLang,
     }),
-    [time, duration, playing, muted, stageSize.w, stageSize.h],
+    [time, duration, playing, muted, speed, lang, stageSize.w, stageSize.h],
   )
 
   // The viewport background tracks any scheduled color transitions so the
@@ -415,6 +442,8 @@ export function Stage({
     <div
       ref={stageRef}
       onMouseMove={resetIdleTimer}
+      role="region"
+      aria-label="Product tour video"
       style={{
         position: 'absolute',
         inset: 0,
@@ -445,6 +474,9 @@ export function Stage({
         <div
           ref={canvasRef}
           className="pointer-events-none"
+          // `inert` prevents Tab / focus from reaching interactive
+          // elements inside the scenes (real product components).
+          inert
           style={{
             flex: 1,
             minWidth: 0,
@@ -454,11 +486,27 @@ export function Stage({
             overflow: 'hidden',
           }}
         >
-          <TimelineContext.Provider value={ctxValue}>
-            {children}
-          </TimelineContext.Provider>
+          {/* When paused, freeze ALL CSS animations inside the canvas —
+              including HeroUI spinners, keyframe loops, shimmer effects.
+              One global rule, zero prop-passing. */}
+          {!playing && (
+            <style>{`#tour-root [inert] *, #tour-root [inert] *::before, #tour-root [inert] *::after { animation-play-state: paused !important; }`}</style>
+          )}
+          {/* I18nProvider scoped to the canvas only — switching the
+              in-player language affects the video content (scenes,
+              captions) but not the player controls themselves. */}
+          <I18nProvider lang={lang}>
+            <TimelineContext.Provider value={ctxValue}>
+              {children}
+            </TimelineContext.Provider>
+          </I18nProvider>
         </div>
       </div>
+
+      {/* Keyboard shortcut overlay */}
+      {showShortcuts && (
+        <ShortcutOverlay onClose={() => setShowShortcuts(false)} />
+      )}
 
       <div
         style={{
@@ -472,9 +520,13 @@ export function Stage({
           duration={duration}
           playing={playing}
           muted={muted}
+          speed={speed}
+          lang={lang}
           onPlayPause={handlePlayPause}
           onMuteToggle={() => setMuted((m) => !m)}
           onSeek={(t) => setTime(t)}
+          onSpeedChange={setSpeed}
+          onLangChange={setLang}
           onFullscreen={toggleFullscreen}
           isFullscreen={isFullscreen}
         />
@@ -489,9 +541,13 @@ interface PlaybackBarProps {
   duration: number
   playing: boolean
   muted: boolean
+  speed: number
+  lang: LanguageCode
   onPlayPause: () => void
   onMuteToggle: () => void
   onSeek: (t: number) => void
+  onSpeedChange: (s: number) => void
+  onLangChange: (l: LanguageCode) => void
   onFullscreen: () => void
   isFullscreen: boolean
 }
@@ -501,23 +557,33 @@ function PlaybackBar({
   duration,
   playing,
   muted,
+  speed,
+  lang,
   onPlayPause,
   onMuteToggle,
   onSeek,
+  onSpeedChange,
+  onLangChange,
   onFullscreen,
   isFullscreen,
 }: PlaybackBarProps) {
+  const { t } = useI18n(tourI18n)
   const trackRef = useRef<HTMLDivElement | null>(null)
   const [dragging, setDragging] = useState(false)
 
-  const timeFromEvent = useCallback(
-    (e: MouseEvent | React.MouseEvent) => {
+  const timeFromPointer = useCallback(
+    (clientX: number) => {
       if (!trackRef.current) return 0
       const rect = trackRef.current.getBoundingClientRect()
-      const x = clamp((e.clientX - rect.left) / rect.width, 0, 1)
+      const x = clamp((clientX - rect.left) / rect.width, 0, 1)
       return x * duration
     },
     [duration],
+  )
+
+  const timeFromEvent = useCallback(
+    (e: MouseEvent | React.MouseEvent) => timeFromPointer(e.clientX),
+    [timeFromPointer],
   )
 
   const onTrackMove = (e: React.MouseEvent) => {
@@ -528,9 +594,24 @@ function PlaybackBar({
 
   const onTrackDown = (e: React.MouseEvent) => {
     setDragging(true)
-    const t = timeFromEvent(e)
-    onSeek(t)
+    onSeek(timeFromEvent(e))
   }
+
+  // Touch handlers for mobile scrubbing
+  const onTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault()
+    setDragging(true)
+    const touch = e.touches[0]
+    onSeek(timeFromPointer(touch.clientX))
+  }
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (!dragging) return
+    const touch = e.touches[0]
+    onSeek(timeFromPointer(touch.clientX))
+  }
+
+  const onTouchEnd = () => setDragging(false)
 
   useEffect(() => {
     if (!dragging) return
@@ -552,7 +633,6 @@ function PlaybackBar({
     const total = Math.max(0, t)
     const m = Math.floor(total / 60)
     const s = Math.floor(total % 60)
-    // const cs = Math.floor((total * 100) % 100)
     return `${String(m).padStart(1, '0')}:${String(s).padStart(2, '0')}`
   }
 
@@ -577,6 +657,15 @@ function PlaybackBar({
         onMouseMove={onTrackMove}
         onMouseLeave={onTrackLeave}
         onMouseDown={onTrackDown}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        role="slider"
+        aria-label="Seek"
+        aria-valuemin={0}
+        aria-valuemax={duration}
+        aria-valuenow={Math.round(time * 10) / 10}
+        tabIndex={0}
         style={{
           position: 'relative',
           height: 14,
@@ -584,6 +673,7 @@ function PlaybackBar({
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
+          touchAction: 'none',
         }}
       >
         <div
@@ -639,7 +729,7 @@ function PlaybackBar({
       >
         <ControlButton
           onClick={onPlayPause}
-          title={playing ? 'Pause (k)' : 'Play (space)'}
+          title={playing ? `${t('Pause')} (k)` : `${t('Play')} (space)`}
         >
           <Icon
             name={playing ? 'Pause' : 'PlaySolid'}
@@ -650,7 +740,7 @@ function PlaybackBar({
 
         <ControlButton
           onClick={onMuteToggle}
-          title={muted ? 'Unmute (m)' : 'Mute (m)'}
+          title={muted ? `${t('Unmute')} (m)` : `${t('Mute')} (m)`}
         >
           <Icon
             name={muted ? 'SoundOffSolid' : 'SoundHighSolid'}
@@ -677,9 +767,16 @@ function PlaybackBar({
 
         <div style={{ flex: 1 }} />
 
+        <SettingsMenu
+          speed={speed}
+          lang={lang}
+          onSpeedChange={onSpeedChange}
+          onLangChange={onLangChange}
+        />
+
         <ControlButton
           onClick={onFullscreen}
-          title={isFullscreen ? 'Exit full screen (f)' : 'Full screen (f)'}
+          title={isFullscreen ? `${t('Exit full screen')} (f)` : `${t('Full screen')} (f)`}
         >
           <Icon
             name={isFullscreen ? 'Reduce' : 'Enlarge'}
@@ -730,5 +827,274 @@ function ControlButton({ children, onClick, title }: ControlButtonProps) {
     >
       {children}
     </button>
+  )
+}
+
+// ── Settings menu (speed + language) ──────────────────────────────────────
+const SPEED_OPTIONS = [0.5, 1, 1.5, 2] as const
+
+interface SettingsMenuProps {
+  speed: number
+  lang: LanguageCode
+  onSpeedChange: (s: number) => void
+  onLangChange: (l: LanguageCode) => void
+}
+
+type SettingsPanel = 'main' | 'speed' | 'lang'
+
+function SettingsMenu({
+  speed,
+  lang,
+  onSpeedChange,
+  onLangChange,
+}: SettingsMenuProps) {
+  const { t } = useI18n(tourI18n)
+  const [open, setOpen] = useState(false)
+  const [panel, setPanel] = useState<SettingsPanel>('main')
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return
+    const onClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpen(false)
+        setPanel('main')
+      }
+    }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [open])
+
+  const menuStyle: React.CSSProperties = {
+    position: 'absolute',
+    bottom: '100%',
+    right: 0,
+    marginBottom: 8,
+    background: 'rgba(28,28,28,0.95)',
+    backdropFilter: 'blur(12px)',
+    borderRadius: 10,
+    padding: '6px 0',
+    minWidth: 200,
+    boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+    fontSize: 13,
+    color: '#e8e8e8',
+    zIndex: 10,
+  }
+
+  const itemStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    padding: '8px 16px',
+    cursor: 'pointer',
+    background: 'transparent',
+    border: 'none',
+    color: 'inherit',
+    width: '100%',
+    fontSize: 'inherit',
+    fontFamily: 'inherit',
+    textAlign: 'left',
+  }
+
+  const hoverHandlers = {
+    onMouseEnter: (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
+    },
+    onMouseLeave: (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.currentTarget.style.background = 'transparent'
+    },
+  }
+
+  const renderMain = () => (
+    <>
+      <button
+        style={itemStyle}
+        {...hoverHandlers}
+        onClick={() => setPanel('speed')}
+      >
+        <Icon name="Timer" size="md" style={{ color: '#fff' }} />
+        <span style={{ flex: 1 }}>{t('Speed')}</span>
+        <span style={{ opacity: 0.6 }}>{speed === 1 ? t('Normal') : `${speed}×`}</span>
+        <span style={{ opacity: 0.4, fontSize: 11 }}>›</span>
+      </button>
+      <button
+        style={itemStyle}
+        {...hoverHandlers}
+        onClick={() => setPanel('lang')}
+      >
+        <Icon name="Language" size="md" style={{ color: '#fff' }} />
+        <span style={{ flex: 1 }}>{t('Language')}</span>
+        <span style={{ opacity: 0.6 }}>{languages[lang]}</span>
+        <span style={{ opacity: 0.4, fontSize: 11 }}>›</span>
+      </button>
+    </>
+  )
+
+  const renderSpeed = () => (
+    <>
+      <button
+        style={{ ...itemStyle, borderBottom: '1px solid rgba(255,255,255,0.1)' }}
+        {...hoverHandlers}
+        onClick={() => setPanel('main')}
+      >
+        <span style={{ opacity: 0.4, fontSize: 11 }}>‹</span>
+        <span style={{ fontWeight: 500 }}>{t('Speed')}</span>
+      </button>
+      {SPEED_OPTIONS.map((s) => (
+        <button
+          key={s}
+          style={itemStyle}
+          {...hoverHandlers}
+          onClick={() => {
+            onSpeedChange(s)
+            setOpen(false)
+            setPanel('main')
+          }}
+        >
+          <span style={{ width: 18, textAlign: 'center', opacity: speed === s ? 1 : 0 }}>
+            {speed === s && <Icon name="Check" size="sm" style={{ color: '#fff' }} />}
+          </span>
+          <span>{s === 1 ? t('Normal') : `${s}×`}</span>
+        </button>
+      ))}
+    </>
+  )
+
+  const renderLang = () => (
+    <>
+      <button
+        style={{ ...itemStyle, borderBottom: '1px solid rgba(255,255,255,0.1)' }}
+        {...hoverHandlers}
+        onClick={() => setPanel('main')}
+      >
+        <span style={{ opacity: 0.4, fontSize: 11 }}>‹</span>
+        <span style={{ fontWeight: 500 }}>{t('Language')}</span>
+      </button>
+      {(Object.entries(languages) as [LanguageCode, string][]).map(([code, name]) => (
+        <button
+          key={code}
+          style={itemStyle}
+          {...hoverHandlers}
+          onClick={() => {
+            onLangChange(code)
+            setOpen(false)
+            setPanel('main')
+          }}
+        >
+          <span style={{ width: 18, textAlign: 'center', opacity: lang === code ? 1 : 0 }}>
+            {lang === code && <Icon name="Check" size="sm" style={{ color: '#fff' }} />}
+          </span>
+          <span>{name}</span>
+        </button>
+      ))}
+    </>
+  )
+
+  return (
+    <div ref={menuRef} style={{ position: 'relative' }}>
+      <ControlButton
+        onClick={() => {
+          setOpen((o) => !o)
+          setPanel('main')
+        }}
+        title={t('Settings')}
+      >
+        <Icon name="Settings" size="lg" style={{ color: '#fff' }} />
+      </ControlButton>
+
+      {open && (
+        <div style={menuStyle}>
+          {panel === 'main' && renderMain()}
+          {panel === 'speed' && renderSpeed()}
+          {panel === 'lang' && renderLang()}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Keyboard shortcut overlay ─────────────────────────────────────────────
+function ShortcutOverlay({ onClose }: { onClose: () => void }) {
+  const { t } = useI18n(tourI18n)
+  const shortcuts = [
+    ['Space', t('Play / Pause')],
+    ['←', t('Seek back 0.1 s')],
+    ['→', t('Seek forward 0.1 s')],
+    ['Shift + ←', t('Seek back 1 s')],
+    ['Shift + →', t('Seek forward 1 s')],
+    ['Home / 0', t('Go to start')],
+    ['M', t('Toggle mute')],
+    ['F', t('Toggle full screen')],
+    ['?', t('Show shortcuts')],
+    ['Esc', t('Close this overlay')],
+  ]
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 20,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(0,0,0,0.7)',
+        backdropFilter: 'blur(6px)',
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: 'rgba(28,28,28,0.95)',
+          borderRadius: 16,
+          padding: '28px 36px',
+          minWidth: 320,
+          boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
+          color: '#e8e8e8',
+          fontFamily: 'Inter, system-ui, sans-serif',
+        }}
+      >
+        <div
+          style={{
+            fontSize: 16,
+            fontWeight: 600,
+            marginBottom: 20,
+            letterSpacing: '0.01em',
+          }}
+        >
+          {t('Keyboard shortcuts')}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {shortcuts.map(([key, desc]) => (
+            <div
+              key={key}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 24,
+              }}
+            >
+              <span style={{ fontSize: 13, opacity: 0.7 }}>{desc}</span>
+              <kbd
+                style={{
+                  fontFamily: "'Geist', ui-monospace, monospace",
+                  fontSize: 12,
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: 5,
+                  padding: '3px 8px',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {key}
+              </kbd>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   )
 }
