@@ -3,6 +3,22 @@ export const en = [
   'AI Augmentation for Everyone',
   '{product} is a browser-native AI agent orchestration platform. Delegate complex tasks to teams of specialised agents that plan, collaborate, and deliver — all running',
   'entirely on your device',
+  'Watch the 30-second tour',
+
+  // See it in action section
+  'See it in action',
+  'A guided tour, in 30-second clips',
+  'Product Tour',
+  'The full DEVS story in 30 seconds',
+  'Task Delegation',
+  'Delegate, don\u2019t chat',
+  'Agent Studio',
+  'Build your own AI team',
+  'Privacy First',
+  'Your keys. Your data. Your browser.',
+  'Inbox Workflow',
+  'Your AI inbox',
+  'Open full-screen',
   '\u201CAI augmentation shouldn\u2019t be a luxury for the few, but a fundamental tool available to all — where anyone can leverage the power of AI teams to amplify their capabilities and achieve their goals.\u201D',
 
   // Principles section

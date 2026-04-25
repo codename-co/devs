@@ -511,6 +511,7 @@ export const ThreadPreview = memo(function ThreadPreview({
         <div className="shrink-0 p-4 pt-2">
           <PromptArea
             lang={lang}
+            minRows={2}
             className="!max-w-full"
             placeholder={t('Continue the conversation…')}
             isSending={isReplying}

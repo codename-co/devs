@@ -8,6 +8,24 @@ export const de: I18n = {
   '{product} is a browser-native AI agent orchestration platform. Delegate complex tasks to teams of specialised agents that plan, collaborate, and deliver — all running':
     '{product} ist eine browsernative KI-Agenten-Orchestrierungsplattform. Delegieren Sie komplexe Aufgaben an Teams spezialisierter Agenten, die planen, zusammenarbeiten und liefern — alles läuft',
   'entirely on your device': 'vollständig auf Ihrem Gerät',
+  'Watch the 30-second tour': 'Die 30-Sekunden-Tour ansehen',
+
+  // See it in action section
+  'See it in action': 'In Aktion erleben',
+  'A guided tour, in 30-second clips': 'Eine Führung, in 30-Sekunden-Clips',
+  'Product Tour': 'Produkt-Tour',
+  'The full DEVS story in 30 seconds':
+    'Die ganze DEVS-Geschichte in 30 Sekunden',
+  'Task Delegation': 'Aufgabendelegation',
+  'Delegate, don’t chat': 'Delegieren, nicht chatten',
+  'Agent Studio': 'Agent-Studio',
+  'Build your own AI team': 'Bauen Sie Ihr eigenes KI-Team',
+  'Privacy First': 'Datenschutz zuerst',
+  'Your keys. Your data. Your browser.':
+    'Ihre Schlüssel. Ihre Daten. Ihr Browser.',
+  'Inbox Workflow': 'Posteingang-Workflow',
+  'Your AI inbox': 'Ihr KI-Posteingang',
+  'Open full-screen': 'Im Vollbild öffnen',
   '\u201CAI augmentation shouldn\u2019t be a luxury for the few, but a fundamental tool available to all — where anyone can leverage the power of AI teams to amplify their capabilities and achieve their goals.\u201D':
     '\u201CKI-Augmentierung sollte kein Luxus für wenige sein, sondern ein grundlegendes Werkzeug für alle — wo jeder die Kraft von KI-Teams nutzen kann, um seine Fähigkeiten zu verstärken und seine Ziele zu erreichen.\u201D',
 

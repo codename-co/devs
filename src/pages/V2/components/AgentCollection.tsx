@@ -44,6 +44,7 @@ export const AgentCollection = memo(function AgentCollection({
   const newAgentCta = onCreateAgent ? (
     <button
       type="button"
+      data-tour-anchor="new-agent"
       onClick={onCreateAgent}
       className={`flex w-full items-center gap-3 rounded-2xl p-2 transition-colors ${
         selectedAgentId === 'new'

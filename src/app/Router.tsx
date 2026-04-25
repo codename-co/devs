@@ -24,7 +24,7 @@ import { AboutPage } from '@/pages/About'
 import { PrivacyPage } from '@/pages/Privacy'
 import { TermsPage } from '@/pages/Terms'
 import { V2Page } from '@/pages/V2'
-import { TourPage } from '@/pages/Tour'
+import { TourPage, TourVideoPage } from '@/pages/Tour'
 import { OAuthCallbackPage } from '@/pages/OAuth'
 import { TaskPage } from '@/pages/Tasks/show'
 import { SessionPage } from '@/pages/Session'
@@ -106,6 +106,7 @@ const routes = {
   'marketplace/extensions/:extensionId/edit': ExtensionEditorPage,
   live: LivePage,
   tour: TourPage,
+  'tour/:videoId': TourVideoPage,
   compare: ComparePage,
   'compare/agenticseek': CompareAgenticSeekPage,
   'compare/base44': CompareBase44Page,

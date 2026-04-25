@@ -7,7 +7,10 @@ import {
   Chip,
   Divider,
   Link,
+  Tab,
+  Tabs,
 } from '@heroui/react'
+import { useState } from 'react'
 import { Icon } from '@/components/Icon'
 import { useI18n, useUrl } from '@/i18n'
 import { IconName } from '@/lib/types'
@@ -16,7 +19,56 @@ import { LLMService } from '@/lib/llm'
 import Layout from '@/layouts/Default'
 import { PRODUCT } from '@/config/product'
 import pkg from '@/../package.json'
+import { ProductTourVideo } from '@/pages/Tour/videos/product-tour'
+import { AgentStudioVideo } from '@/pages/Tour/videos/agent-studio'
+import { TaskDelegationVideo } from '@/pages/Tour/videos/task-delegation'
+import { PrivacyFirstVideo } from '@/pages/Tour/videos/privacy-first'
+import { InboxWorkflowVideo } from '@/pages/Tour/videos/inbox-workflow'
 import localI18n from './i18n'
+
+// ---------------------------------------------------------------------------
+// Tour videos — embedded contextually below "How it works"
+// ---------------------------------------------------------------------------
+
+const TOUR_VIDEOS = [
+  {
+    id: 'product',
+    icon: 'PlaySolid' as IconName,
+    title: 'Product Tour',
+    tagline: 'The full DEVS story in 30 seconds',
+    Component: ProductTourVideo,
+  },
+  {
+    id: 'task-delegation',
+    icon: 'Strategy' as IconName,
+    title: 'Task Delegation',
+    tagline: 'Delegate, don\u2019t chat',
+    Component: TaskDelegationVideo,
+  },
+  {
+    id: 'agent-studio',
+    icon: 'Sparks' as IconName,
+    title: 'Agent Studio',
+    tagline: 'Build your own AI team',
+    Component: AgentStudioVideo,
+  },
+  {
+    id: 'privacy-first',
+    icon: 'Lock' as IconName,
+    title: 'Privacy First',
+    tagline: 'Your keys. Your data. Your browser.',
+    Component: PrivacyFirstVideo,
+  },
+  {
+    id: 'inbox-workflow',
+    icon: 'ChatLines' as IconName,
+    title: 'Inbox Workflow',
+    tagline: 'Your AI inbox',
+    Component: InboxWorkflowVideo,
+  },
+] as const
+
+type TourVideoId = (typeof TOUR_VIDEOS)[number]['id']
 
 // ---------------------------------------------------------------------------
 // Data
@@ -172,6 +224,10 @@ const FAQ_KEYS = [
 export const AboutPage = () => {
   const { t } = useI18n(localI18n)
   const url = useUrl()
+  const [activeVideo, setActiveVideo] = useState<TourVideoId>('product')
+  const currentVideo =
+    TOUR_VIDEOS.find((v) => v.id === activeVideo) ?? TOUR_VIDEOS[0]
+  const ActiveVideoComponent = currentVideo.Component
 
   const providers = LLMService.listProviders()
     .filter((p) => p !== 'custom')
@@ -246,6 +302,23 @@ export const AboutPage = () => {
               </strong>
               .
             </p>
+
+            <div className="flex flex-wrap justify-center gap-3 pt-2">
+              <Button
+                color="primary"
+                variant="flat"
+                startContent={<Icon name="PlaySolid" />}
+                onPress={() => {
+                  const el = document.getElementById('see-it-in-action')
+                  if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    history.replaceState(null, '', '#see-it-in-action')
+                  }
+                }}
+              >
+                {t('Watch the 30-second tour')}
+              </Button>
+            </div>
 
             <Divider className="max-w-xs mx-auto !my-8 opacity-40" />
 
@@ -398,6 +471,62 @@ export const AboutPage = () => {
               </div>
             ))}
           </div>
+        </Container>
+      </Section>
+
+      {/* ================================================================= */}
+      {/* SEE IT IN ACTION — Embedded Tour videos                            */}
+      {/* ================================================================= */}
+      <Section size={7} mainClassName="scroll-mt-16">
+        <Container size={7}>
+          <div id="see-it-in-action" className="scroll-mt-20" />
+          <div className="text-center mb-6">
+            <Chip size="sm" variant="flat" color="primary" className="mb-3">
+              {t('See it in action')}
+            </Chip>
+            <Title level={2} className="!mb-1">
+              {t('A guided tour, in 30-second clips')}
+            </Title>
+          </div>
+
+          <div className="flex justify-center mb-5">
+            <Tabs
+              aria-label={t('See it in action')}
+              selectedKey={activeVideo}
+              onSelectionChange={(key) => setActiveVideo(key as TourVideoId)}
+              variant="solid"
+              color="primary"
+              classNames={{ base: 'max-w-full', tabList: 'max-w-full' }}
+            >
+              {TOUR_VIDEOS.map((v) => (
+                <Tab
+                  key={v.id}
+                  title={
+                    <div className="flex items-center gap-2">
+                      <Icon name={v.icon} className="w-4 h-4" />
+                      <span>{t(v.title)}</span>
+                    </div>
+                  }
+                />
+              ))}
+            </Tabs>
+          </div>
+
+          <Card>
+            <CardBody className="p-0">
+              {/* Light-themed canvas — videos are designed for a bright stage.
+                  16:9 on desktop / landscape, flips to 9:16 on mobile portrait
+                  so the player fills the viewport instead of leaving a tiny
+                  letterboxed strip. */}
+              <div className="light bg-white relative w-full aspect-video portrait:max-sm:aspect-[9/14]">
+                <ActiveVideoComponent
+                  key={currentVideo.id}
+                  rootId={`about-tour-${currentVideo.id}`}
+                  autoplay
+                />
+              </div>
+            </CardBody>
+          </Card>
         </Container>
       </Section>
 

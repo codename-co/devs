@@ -8,6 +8,22 @@ export const ar: I18n = {
   '{product} is a browser-native AI agent orchestration platform. Delegate complex tasks to teams of specialised agents that plan, collaborate, and deliver — all running':
     '{product} هي منصة تنسيق وكلاء ذكاء اصطناعي أصلية في المتصفح. فوّض المهام المعقدة لفرق من الوكلاء المتخصصين الذين يخططون ويتعاونون ويُنجزون — كل ذلك يعمل',
   'entirely on your device': 'بالكامل على جهازك',
+  'Watch the 30-second tour': 'شاهد الجولة في 30 ثانية',
+
+  // See it in action section
+  'See it in action': 'شاهدها أثناء العمل',
+  'A guided tour, in 30-second clips': 'جولة موجّهة، في مقاطع مدتها 30 ثانية',
+  'Product Tour': 'جولة المنتج',
+  'The full DEVS story in 30 seconds': 'قصّة DEVS كاملة في 30 ثانية',
+  'Task Delegation': 'تفويض المهام',
+  'Delegate, don’t chat': 'فوّض، لا تتحدّث',
+  'Agent Studio': 'استوديو الوكلاء',
+  'Build your own AI team': 'ابنِ فريق الذكاء الاصطناعي الخاص بك',
+  'Privacy First': 'الخصوصيّة أولاً',
+  'Your keys. Your data. Your browser.': 'مفاتيحك. بياناتك. متصفّحك.',
+  'Inbox Workflow': 'سير عمل البريد الوارد',
+  'Your AI inbox': 'بريد الذكاء الاصطناعي الوارد',
+  'Open full-screen': 'فتح بملء الشاشة',
   '\u201CAI augmentation shouldn\u2019t be a luxury for the few, but a fundamental tool available to all — where anyone can leverage the power of AI teams to amplify their capabilities and achieve their goals.\u201D':
     '\u201Cتعزيز الذكاء الاصطناعي لا ينبغي أن يكون رفاهية للقلة، بل أداة أساسية متاحة للجميع — حيث يمكن لأي شخص الاستفادة من قوة فرق الذكاء الاصطناعي لتضخيم قدراته وتحقيق أهدافه.\u201D',
 

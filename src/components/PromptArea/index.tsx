@@ -88,6 +88,7 @@ export interface PromptAreaProps
   onFocus?: React.FocusEventHandler<HTMLTextAreaElement>
   onBlur?: React.FocusEventHandler<HTMLTextAreaElement>
   onKeyDown?: React.KeyboardEventHandler<HTMLTextAreaElement>
+  minRows?: number
   withModelSelector?: boolean
   withAttachmentSelector?: boolean
   withAgentSelector?: boolean
@@ -115,6 +116,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       onFocus,
       onBlur,
       onKeyDown,
+      minRows,
       mode = 'chat',
       onModeChange,
       withModelSelector,
@@ -922,7 +924,8 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
             }}
             maxRows={7}
             minRows={
-              isMobileDevice() && isLandscape() && isSmallHeight() ? 1 : 3
+              minRows ||
+              (isMobileDevice() && isLandscape() && isSmallHeight() ? 1 : 3)
             }
             placeholder={
               isDragOver ? t('Drop files here…') : modePlaceholders[mode]
@@ -969,14 +972,16 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                   />
                 )}
 
-                {!demo && withAgentSelector !== false && !disabledAgentPicker && (
-                  <AgentSelector
-                    lang={lang}
-                    disabled={disabledAgentPicker}
-                    selectedAgent={currentAgent}
-                    onAgentChange={onAgentChange}
-                  />
-                )}
+                {!demo &&
+                  withAgentSelector !== false &&
+                  !disabledAgentPicker && (
+                    <AgentSelector
+                      lang={lang}
+                      disabled={disabledAgentPicker}
+                      selectedAgent={currentAgent}
+                      onAgentChange={onAgentChange}
+                    />
+                  )}
               </div>
 
               <div className="flex items-center gap-2">

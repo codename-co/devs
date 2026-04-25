@@ -8,6 +8,23 @@ export const ko: I18n = {
   '{product} is a browser-native AI agent orchestration platform. Delegate complex tasks to teams of specialised agents that plan, collaborate, and deliver — all running':
     '{product}은 브라우저 네이티브 AI 에이전트 오케스트레이션 플랫폼입니다. 계획하고 협업하고 결과를 내는 전문 에이전트 팀에 복잡한 작업을 위임하세요 — 모두',
   'entirely on your device': '당신의 기기에서 완전히',
+  'Watch the 30-second tour': '30초 투어 보기',
+
+  // See it in action section
+  'See it in action': '실제로 보기',
+  'A guided tour, in 30-second clips': '30초 클립으로 떠나는 가이드 투어',
+  'Product Tour': '제품 투어',
+  'The full DEVS story in 30 seconds': '30초 안에 보는 DEVS의 모든 것',
+  'Task Delegation': '작업 위임',
+  'Delegate, don’t chat': '대화하지 말고 위임하세요',
+  'Agent Studio': '에이전트 스튜디오',
+  'Build your own AI team': '나만의 AI 팀을 만드세요',
+  'Privacy First': '프라이버시 우선',
+  'Your keys. Your data. Your browser.':
+    '당신의 키. 당신의 데이터. 당신의 브라우저.',
+  'Inbox Workflow': '받은편지함 워크플로',
+  'Your AI inbox': '당신의 AI 받은편지함',
+  'Open full-screen': '전체 화면으로 열기',
   '\u201CAI augmentation shouldn\u2019t be a luxury for the few, but a fundamental tool available to all — where anyone can leverage the power of AI teams to amplify their capabilities and achieve their goals.\u201D':
     '\u201CAI 증강은 소수의 사치가 아니라 모두에게 열린 기본 도구여야 합니다 — 누구나 AI 팀의 힘을 활용하여 자신의 역량을 증폭하고 목표를 달성할 수 있는 곳.\u201D',
 

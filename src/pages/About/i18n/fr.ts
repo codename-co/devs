@@ -8,6 +8,25 @@ export const fr: I18n = {
   '{product} is a browser-native AI agent orchestration platform. Delegate complex tasks to teams of specialised agents that plan, collaborate, and deliver — all running':
     '{product} est une plateforme d\u2019orchestration d\u2019agents IA native du navigateur. Déléguez des tâches complexes à des équipes d\u2019agents spécialisés qui planifient, collaborent et livrent — le tout fonctionnant',
   'entirely on your device': 'entièrement sur votre appareil',
+  'Watch the 30-second tour': 'Voir la visite de 30 secondes',
+
+  // See it in action section
+  'See it in action': 'En action',
+  'A guided tour, in 30-second clips':
+    'Une visite guidée, en clips de 30 secondes',
+  'Product Tour': 'Visite du produit',
+  'The full DEVS story in 30 seconds':
+    'Toute l’histoire de DEVS en 30 secondes',
+  'Task Delegation': 'Délégation de tâches',
+  'Delegate, don’t chat': 'Déléguez, ne discutez pas',
+  'Agent Studio': 'Studio d’agents',
+  'Build your own AI team': 'Construisez votre équipe d’IA',
+  'Privacy First': 'La confidentialité avant tout',
+  'Your keys. Your data. Your browser.':
+    'Vos clés. Vos données. Votre navigateur.',
+  'Inbox Workflow': 'Flux de boîte de réception',
+  'Your AI inbox': 'Votre boîte de réception IA',
+  'Open full-screen': 'Ouvrir en plein écran',
   '\u201CAI augmentation shouldn\u2019t be a luxury for the few, but a fundamental tool available to all — where anyone can leverage the power of AI teams to amplify their capabilities and achieve their goals.\u201D':
     '\u201CL\u2019augmentation par l\u2019IA ne devrait pas être un luxe réservé à quelques-uns, mais un outil fondamental accessible à tous — où chacun peut exploiter la puissance des équipes d\u2019IA pour amplifier ses capacités et atteindre ses objectifs.\u201D',
 

@@ -5,7 +5,7 @@ import { es } from './es'
 import { fr } from './fr'
 import { ko } from './ko'
 
-const tourI18n = {
+const tourGalleryI18n = {
   ar,
   de,
   en,
@@ -14,4 +14,4 @@ const tourI18n = {
   ko,
 } as const
 
-export default tourI18n
+export default tourGalleryI18n
