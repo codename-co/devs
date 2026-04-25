@@ -24,9 +24,10 @@ interface InboxWorkflowVideoProps {
   disableKeyboard?: boolean
   initialTime?: number
   hideControls?: boolean
+  onEnded?: () => void
 }
 
-export function InboxWorkflowVideo({ autoplay, rootId, disableKeyboard, initialTime, hideControls }: InboxWorkflowVideoProps) {
+export function InboxWorkflowVideo({ autoplay, rootId, disableKeyboard, initialTime, hideControls, onEnded }: InboxWorkflowVideoProps) {
   // Captions/taglines are raw English keys; shared scenes translate them
   // via `useStageT()` so the in-player language toggle takes effect.
   return (
@@ -41,6 +42,7 @@ export function InboxWorkflowVideo({ autoplay, rootId, disableKeyboard, initialT
       disableKeyboard={disableKeyboard}
       initialTime={initialTime}
       hideControls={hideControls}
+      onEnded={onEnded}
       onCanvasClick={(_, toggle) => toggle()}
       i18nDict={inboxWorkflowI18n}
     >

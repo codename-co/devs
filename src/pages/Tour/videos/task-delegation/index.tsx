@@ -25,9 +25,10 @@ interface TaskDelegationVideoProps {
   disableKeyboard?: boolean
   initialTime?: number
   hideControls?: boolean
+  onEnded?: () => void
 }
 
-export function TaskDelegationVideo({ autoplay, rootId, disableKeyboard, initialTime, hideControls }: TaskDelegationVideoProps) {
+export function TaskDelegationVideo({ autoplay, rootId, disableKeyboard, initialTime, hideControls, onEnded }: TaskDelegationVideoProps) {
   // Captions/taglines are passed as raw English keys; shared scenes
   // translate them via `useStageT()` so the in-player language toggle
   // takes effect.
@@ -47,6 +48,7 @@ export function TaskDelegationVideo({ autoplay, rootId, disableKeyboard, initial
       disableKeyboard={disableKeyboard}
       initialTime={initialTime}
       hideControls={hideControls}
+      onEnded={onEnded}
       onCanvasClick={(_, toggle) => toggle()}
       i18nDict={taskDelegationI18n}
     >

@@ -24,9 +24,10 @@ interface PrivacyFirstVideoProps {
   disableKeyboard?: boolean
   initialTime?: number
   hideControls?: boolean
+  onEnded?: () => void
 }
 
-export function PrivacyFirstVideo({ autoplay, rootId, disableKeyboard, initialTime, hideControls }: PrivacyFirstVideoProps) {
+export function PrivacyFirstVideo({ autoplay, rootId, disableKeyboard, initialTime, hideControls, onEnded }: PrivacyFirstVideoProps) {
   // Captions/phrases are raw English keys; shared scenes translate them
   // via `useStageT()` so the in-player language toggle takes effect.
   return (
@@ -41,6 +42,7 @@ export function PrivacyFirstVideo({ autoplay, rootId, disableKeyboard, initialTi
       disableKeyboard={disableKeyboard}
       initialTime={initialTime}
       hideControls={hideControls}
+      onEnded={onEnded}
       onCanvasClick={(_, toggle) => toggle()}
       i18nDict={privacyFirstI18n}
     >

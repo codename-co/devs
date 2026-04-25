@@ -11,6 +11,7 @@
 import { Icon } from '@/components'
 import { I18nProvider, useI18n } from '@/i18n'
 import { type LanguageCode, languages } from '@/i18n/locales'
+import { userSettings } from '@/stores/userStore'
 import { ProgressBar } from '@heroui/react_3'
 import {
   useCallback,
@@ -110,6 +111,12 @@ export interface StageProps {
    * Intended for embed/thumbnail contexts where controls are unwanted.
    */
   hideControls?: boolean
+  /**
+   * Fired exactly once per playthrough when the playhead reaches `duration`
+   * and `loop` is `false`. Used by gallery hosts (e.g. the About page) to
+   * advance to the next video in a sequence.
+   */
+  onEnded?: () => void
   children?: ReactNode
 }
 
@@ -150,8 +157,13 @@ export function Stage({
   disableKeyboard = false,
   initialTime = 0,
   hideControls = false,
+  onEnded,
   children,
 }: StageProps) {
+  // Stable ref so the RAF loop can call the latest `onEnded` without
+  // re-subscribing every render.
+  const onEndedRef = useRef(onEnded)
+  onEndedRef.current = onEnded
   const [time, setTime] = useState(() => {
     if (persistKey) {
       try {
@@ -167,8 +179,15 @@ export function Stage({
   const [muted, setMuted] = useState(true)
   const [speed, setSpeed] = useState(1)
   const [lang, setLang] = useState<LanguageCode>(() => {
+    // Priority: explicit per-player override (set by the user via the
+    // in-player language menu) → the user's app-wide language preference
+    // → English. This means a brand-new visitor sees the tour in their
+    // own language without having to fiddle with the player menu.
     const stored = localStorage.getItem('videoLang')
-    return stored && stored in languages ? (stored as LanguageCode) : 'en'
+    if (stored && stored in languages) return stored as LanguageCode
+    const userLang = userSettings.getState().language
+    if (userLang && userLang in languages) return userLang as LanguageCode
+    return 'en'
   })
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [stageSize, setStageSize] = useState<{ w: number; h: number }>({
@@ -228,6 +247,9 @@ export function Stage({
           else {
             next = duration
             setPlaying(false)
+            // Fire after the state update settles so listeners observe a
+            // consistent paused-at-end state.
+            queueMicrotask(() => onEndedRef.current?.())
           }
         }
         return next

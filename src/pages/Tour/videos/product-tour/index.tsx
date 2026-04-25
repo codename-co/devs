@@ -25,9 +25,10 @@ interface ProductTourVideoProps {
   disableKeyboard?: boolean
   initialTime?: number
   hideControls?: boolean
+  onEnded?: () => void
 }
 
-export function ProductTourVideo({ autoplay, rootId, disableKeyboard, initialTime, hideControls }: ProductTourVideoProps) {
+export function ProductTourVideo({ autoplay, rootId, disableKeyboard, initialTime, hideControls, onEnded }: ProductTourVideoProps) {
   return (
     <Stage
       duration={30}
@@ -40,6 +41,7 @@ export function ProductTourVideo({ autoplay, rootId, disableKeyboard, initialTim
       disableKeyboard={disableKeyboard}
       initialTime={initialTime}
       hideControls={hideControls}
+      onEnded={onEnded}
       onCanvasClick={(_, toggle) => toggle()}
       i18nDict={tourI18n}
     >

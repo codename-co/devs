@@ -19,9 +19,10 @@ interface AgentStudioVideoProps {
   disableKeyboard?: boolean
   initialTime?: number
   hideControls?: boolean
+  onEnded?: () => void
 }
 
-export function AgentStudioVideo({ autoplay, rootId, disableKeyboard, initialTime, hideControls }: AgentStudioVideoProps) {
+export function AgentStudioVideo({ autoplay, rootId, disableKeyboard, initialTime, hideControls, onEnded }: AgentStudioVideoProps) {
   // Captions/taglines are raw English keys; shared scenes translate them
   // via `useStageT()` so the in-player language toggle takes effect.
   return (
@@ -36,6 +37,7 @@ export function AgentStudioVideo({ autoplay, rootId, disableKeyboard, initialTim
       disableKeyboard={disableKeyboard}
       initialTime={initialTime}
       hideControls={hideControls}
+      onEnded={onEnded}
       onCanvasClick={(_, toggle) => toggle()}
       i18nDict={agentStudioI18n}
     >

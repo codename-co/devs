@@ -10,7 +10,7 @@ import {
   Tab,
   Tabs,
 } from '@heroui/react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Icon } from '@/components/Icon'
 import { useI18n, useUrl } from '@/i18n'
 import { IconName } from '@/lib/types'
@@ -225,6 +225,32 @@ export const AboutPage = () => {
   const { t } = useI18n(localI18n)
   const url = useUrl()
   const [activeVideo, setActiveVideo] = useState<TourVideoId>('product')
+  const [hasEnteredView, setHasEnteredView] = useState(false)
+  const playerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = playerRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHasEnteredView(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.25 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  const handleVideoEnded = () => {
+    if (document.fullscreenElement) return
+    const currentIndex = TOUR_VIDEOS.findIndex((v) => v.id === activeVideo)
+    const nextIndex = (currentIndex + 1) % TOUR_VIDEOS.length
+    setActiveVideo(TOUR_VIDEOS[nextIndex].id)
+  }
+
   const currentVideo =
     TOUR_VIDEOS.find((v) => v.id === activeVideo) ?? TOUR_VIDEOS[0]
   const ActiveVideoComponent = currentVideo.Component
@@ -518,12 +544,18 @@ export const AboutPage = () => {
                   16:9 on desktop / landscape, flips to 9:16 on mobile portrait
                   so the player fills the viewport instead of leaving a tiny
                   letterboxed strip. */}
-              <div className="light bg-white relative w-full aspect-video portrait:max-sm:aspect-[9/14]">
-                <ActiveVideoComponent
-                  key={currentVideo.id}
-                  rootId={`about-tour-${currentVideo.id}`}
-                  autoplay
-                />
+              <div
+                ref={playerRef}
+                className="light bg-white relative w-full aspect-video portrait:max-sm:aspect-[9/14]"
+              >
+                {hasEnteredView && (
+                  <ActiveVideoComponent
+                    key={currentVideo.id}
+                    rootId={`about-tour-${currentVideo.id}`}
+                    autoplay
+                    onEnded={handleVideoEnded}
+                  />
+                )}
               </div>
             </CardBody>
           </Card>
