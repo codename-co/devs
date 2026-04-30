@@ -19,10 +19,9 @@ import {
   Folder,
 } from 'iconoir-react'
 
-import DefaultLayout from '@/layouts/Default'
+import { WorkspaceShell } from '@/pages/Workspace/WorkspaceShell'
 import { Container, Section } from '@/components'
 import { useI18n } from '@/i18n'
-import type { HeaderProps } from '@/lib/types'
 import localI18n from './i18n'
 
 /**
@@ -41,15 +40,6 @@ export function PublishPage() {
   const [activeTab, setActiveTab] = useState<'upload' | 'create'>('upload')
   const [isDragOver, setIsDragOver] = useState(false)
 
-  const header: HeaderProps = {
-    icon: {
-      name: 'Upload',
-      color: 'text-secondary-400 dark:text-secondary-500',
-    },
-    title: t('Publish Extension'),
-    subtitle: t('Share your extension with the community'),
-  }
-
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setIsDragOver(true)
@@ -67,7 +57,7 @@ export function PublishPage() {
   }, [])
 
   return (
-    <DefaultLayout header={header}>
+    <WorkspaceShell title={t('Publish Extension')}>
       <Section>
         <Container>
           {/* Coming Soon Banner */}
@@ -326,7 +316,7 @@ export function PublishPage() {
           </div>
         </Container>
       </Section>
-    </DefaultLayout>
+    </WorkspaceShell>
   )
 }
 

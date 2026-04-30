@@ -23,6 +23,9 @@ export const en = [
   'NVIDIA SOTA. Auto-punctuation. English & French. ~2.5GB download.',
   'Cohere Transcribe',
   'SOTA multilingual (14 langs). 2B params, 4-bit. ~2.1GB download.',
+  'VibeVoice',
+  'Microsoft open-source real-time speech. Requires WebGPU. ~500MB download.',
+  'VibeVoice requires WebGPU',
   'Bidirectional audio with Gemini. Requires API key.',
   // TTS Providers
   'Instant but robotic.',

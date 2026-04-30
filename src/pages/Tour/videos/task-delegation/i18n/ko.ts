@@ -1,60 +1,66 @@
 /**
  * Tour-local i18n — Korean translations.
- *
- * Keys are the literal English strings from `./en.ts`. Every new string added
- * to the English source must be translated here.
  */
 import type { en } from './en'
-
 type I18n = Record<(typeof en)[number], string>
 
 export const ko: I18n = {
-  // Scene 1 — hook
-  [`Stop chatting. Start delegating.`]: `채팅을 멈추세요. 위임을 시작하세요.`,
-
-  // Scene 2 — prompt submit
-  [`Audit Q1 expenses, flag anomalies, draft a CFO memo`]: `Q1 비용 감사, 이상 항목 표시, CFO 메모 작성`,
-
-  // Scene 3 — board view (task titles)
-  [`Parse invoices`]: `송장 분석`,
-  [`Flag anomalies`]: `이상 항목 표시`,
-  [`Cross-check budgets`]: `예산 교차 검증`,
-  [`Summarize findings`]: `결과 요약`,
-  [`Draft CFO memo`]: `CFO 메모 초안`,
-  // Scene 3 — board view (task snippets)
-  [`Extract line items from 247 invoices`]: `247개 송장에서 항목 추출`,
-  [`Identify outliers above 2σ threshold`]: `2σ 임계값 초과 이상값 식별`,
-  [`Compare against Q4 budget allocations`]: `Q4 예산 배정과 비교`,
-  [`Aggregate findings into executive bullets`]: `결과를 핵심 요점으로 종합`,
-  [`Compose formal memo for CFO review`]: `CFO 검토용 공식 메모 작성`,
-  // Scene 3 — agent roles
+  [`Connect everything. Delegate anything.`]: `모든 것을 연결하세요. 무엇이든 위임하세요.`,
+  [`Connectors`]: `커넥터`,
+  [`Choose a service to connect:`]: `연결할 서비스를 선택하세요:`,
+  [`Google Drive`]: `Google Drive`,
+  [`Sync files and folders`]: `파일 및 폴더 동기화`,
+  [`Gmail`]: `Gmail`,
+  [`Sync emails`]: `이메일 동기화`,
+  [`Connecting to Google Drive...`]: `Google Drive에 연결 중...`,
+  [`Connecting to Gmail...`]: `Gmail에 연결 중...`,
+  [`Successfully connected!`]: `연결 성공!`,
+  [`Connected and authorized`]: `연결 및 인증 완료`,
+  [`Auto-sync enabled`]: `자동 동기화 활성화됨`,
+  [`Analyze last month\u2019s sales invoices from Drive, calculate quarterly projections, and generate a PPTX deck with an email draft to the client`]: `Drive에서 지난 달 매출 송장을 분석하고, 분기 예측을 계산하고, 고객에게 보낼 이메일 초안과 함께 PPTX 덱을 생성하세요`,
+  [`Breaking into subtasks. Recruiting Data, Analysis, and Writing agents\u2026`]: `하위 작업으로 분할 중. 데이터, 분석, 작성 에이전트를 모집 중…`,
+  [`Pulling invoices from Google Drive`]: `Google Drive에서 송장 가져오기`,
+  [`Scanning Gmail for purchase order confirmations`]: `Gmail에서 구매 주문 확인 검색`,
+  [`Calculating quarterly projections`]: `분기 예측 계산`,
+  [`Generating presentation`]: `프레젠테이션 생성`,
+  [`Drafting email to client`]: `고객에게 이메일 초안 작성`,
+  [`34 invoices \u00B7 Sales folder`]: `34개 송장 · 영업 폴더`,
+  [`12 matching PO confirmations`]: `12개 일치하는 PO 확인`,
+  [`Q1: $2.4M \u00B7 Q2: $3.1M \u00B7 Q3: $2.8M \u00B7 Q4 (proj): $3.6M`]: `Q1: $2.4M · Q2: $3.1M · Q3: $2.8M · Q4 (예상): $3.6M`,
+  [`8 slides \u00B7 .pptx ready`]: `8슬라이드 · .pptx 준비 완료`,
+  [`Draft ready \u00B7 1 attachment`]: `초안 준비 완료 · 첨부 1개`,
+  [`quarterly_report`]: `분기_보고서`,
+  [`Sales invoice analysis + quarterly projections`]: `매출 송장 분석 + 분기 예측`,
+  [`Draft Q3 OKRs for the platform team`]: `플랫폼 팀 Q3 OKR 작성`,
+  [`Synthesized five drafts. Ready for review.`]: `5개 초안 종합 완료. 검토 준비됨.`,
+  [`Compare three WebGPU inference runtimes`]: `3개 WebGPU 추론 런타임 비교`,
+  [`Benchmarks complete. Transformers.js leads on cold start.`]: `벤치마크 완료. Transformers.js가 콜드 스타트에서 선두.`,
+  [`Research`]: `연구`,
   [`Analysis`]: `분석`,
-  [`Auditing`]: `감사`,
   [`Writing`]: `작성`,
-
-  // Scene 4 — artifacts
-  [`Task completed`]: `작업 완료`,
-  [`3 agents collaborated`]: `3명의 에이전트가 협업`,
-  [`Q1 Expense Audit`]: `Q1 비용 감사`,
-  [`report`]: `보고서`,
-  [`CFO Memo`]: `CFO 메모`,
-  [`document`]: `문서`,
-
-  // Scene 5 — collapse
-  [`Delegated. Delivered. Done.`]: `위임. 완료. 끝.`,
-
-  // Scene 6 — CTA
+  [`Review`]: `검토`,
+  [`New task`]: `새 작업`,
+  [`Start a new task`]: `새 작업 시작`,
+  [`To:`]: `받는 사람:`,
+  [`Subject:`]: `제목:`,
+  [`Q4 Sales Projections \u2014 Deck Attached`]: `Q4 매출 예측 — 덱 첨부`,
+  [`Dear Sarah,`]: `Sarah님께,`,
+  [`Please find attached our quarterly sales projections deck. Key highlights:`]: `분기 매출 예측 덱을 첨부합니다. 주요 내용:`,
+  [`\u2022 Q4 projected revenue: **$3.6M** (+29% vs Q3)`]: `• Q4 예상 매출: **$3.6M** (+29% vs Q3)`,
+  [`\u2022 Top growth driver: Enterprise segment (+42%)`]: `• 최대 성장 동력: Enterprise 부문 (+42%)`,
+  [`\u2022 3 risk factors flagged in appendix`]: `• 부록에 3개 위험 요인 표시`,
+  [`Happy to walk through the details at your convenience.`]: `편하실 때 세부 사항을 설명해 드리겠습니다.`,
+  [`Best regards`]: `감사합니다`,
+  [`quarterly-projections.pptx`]: `분기-예측.pptx`,
+  [`2.4 MB`]: `2.4 MB`,
+  [`Connected. Computed. Delivered.`]: `연결. 계산. 완료.`,
   [`Now you can.`]: `이제 할 수 있습니다.`,
-  [`Open devs.new →`]: `devs.new 열기 →`,
-  [`No signup · No install · Free`]: `가입 없음 · 설치 없음 · 무료`,
-
-  // Playback bar — settings menu
+  [`Open devs.new \u2192`]: `devs.new 열기 →`,
+  [`No signup \u00B7 No install \u00B7 Free`]: `가입 없음 · 설치 없음 · 무료`,
   [`Speed`]: `속도`,
   [`Normal`]: `보통`,
   [`Language`]: `언어`,
   [`Keyboard shortcuts`]: `키보드 단축키`,
-
-  // Playback bar — control titles
   [`Pause`]: `일시정지`,
   [`Play`]: `재생`,
   [`Unmute`]: `음소거 해제`,
@@ -62,8 +68,6 @@ export const ko: I18n = {
   [`Exit full screen`]: `전체 화면 종료`,
   [`Full screen`]: `전체 화면`,
   [`Settings`]: `설정`,
-
-  // Keyboard shortcut overlay — descriptions
   [`Play / Pause`]: `재생 / 일시정지`,
   [`Seek back 0.1 s`]: `0.1초 뒤로`,
   [`Seek forward 0.1 s`]: `0.1초 앞으로`,

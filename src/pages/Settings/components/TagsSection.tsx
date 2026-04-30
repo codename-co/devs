@@ -10,7 +10,7 @@ import {
 import {
   updateThreadTag,
   TAG_PALETTE,
-} from '@/pages/V2/hooks/useThreadTags'
+} from '@/pages/Workspace/hooks/useThreadTags'
 import { entityBelongsToSpace, useActiveSpaceId } from '@/stores/spaceStore'
 import { DEFAULT_SPACE_ID } from '@/types'
 import { nanoid } from 'nanoid'

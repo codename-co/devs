@@ -12,10 +12,10 @@ import {
   Tooltip,
 } from '@heroui/react'
 
-import DefaultLayout from '@/layouts/Default'
+import { WorkspaceShell } from '@/pages/Workspace/WorkspaceShell'
 import { Container, Section, Icon, Title, PromptArea } from '@/components'
 import { useI18n, useUrl } from '@/i18n'
-import type { HeaderProps, IconName } from '@/lib/types'
+import type { IconName } from '@/lib/types'
 import type { ExtensionType } from '../types'
 import { generateExtension } from '../extension-generator'
 import localI18n from './i18n'
@@ -92,15 +92,6 @@ export function NewExtensionPage() {
     }
   }, [])
 
-  const header: HeaderProps = {
-    icon: {
-      name: 'Code',
-      color: 'text-warning-400 dark:text-warning-500',
-    },
-    title: t('Create Extension'),
-    subtitle: t('Generate a custom extension using AI'),
-  }
-
   const selectedTypeInfo = EXTENSION_TYPES.find((t) => t.type === selectedType)
 
   const handleGenerate = async () => {
@@ -134,7 +125,7 @@ export function NewExtensionPage() {
   }
 
   return (
-    <DefaultLayout header={header}>
+    <WorkspaceShell title={t('Create Extension')}>
       <Section>
         <Container className="max-w-3xl">
           {/* Hero Section */}
@@ -315,7 +306,7 @@ export function NewExtensionPage() {
           )}
         </Container>
       </Section>
-    </DefaultLayout>
+    </WorkspaceShell>
   )
 }
 

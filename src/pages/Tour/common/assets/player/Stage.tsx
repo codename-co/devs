@@ -10,7 +10,7 @@
  */
 import { Icon } from '@/components'
 import { I18nProvider, useI18n } from '@/i18n'
-import { type LanguageCode, languages } from '@/i18n/locales'
+import { type LanguageCode, languageDirection, languages } from '@/i18n/locales'
 import { userSettings } from '@/stores/userStore'
 import { ProgressBar } from '@heroui/react_3'
 import {
@@ -457,9 +457,11 @@ export function Stage({
               in-player language affects the video content (scenes,
               captions) but not the player controls themselves. */}
           <I18nProvider lang={lang}>
-            <TimelineContext.Provider value={ctxValue}>
-              {children}
-            </TimelineContext.Provider>
+            <div dir={languageDirection[lang] || 'ltr'} style={{ width: '100%', height: '100%' }}>
+              <TimelineContext.Provider value={ctxValue}>
+                {children}
+              </TimelineContext.Provider>
+            </div>
           </I18nProvider>
         </div>
       </div>
@@ -613,7 +615,7 @@ function PlaybackBar({
 
   return (
     <div
-      className="group/pb absolute bottom-0 left-0 right-0"
+      className="group/pb absolute bottom-0 left-0 right-0 z-50"
       style={{
         color: '#fff',
         fontFamily: 'Inter, system-ui, sans-serif',
@@ -749,7 +751,11 @@ function PlaybackBar({
 
         <ControlButton
           onClick={onFullscreen}
-          title={isFullscreen ? `${t('Exit full screen')} (f)` : `${t('Full screen')} (f)`}
+          title={
+            isFullscreen
+              ? `${t('Exit full screen')} (f)`
+              : `${t('Full screen')} (f)`
+          }
         >
           <Icon
             name={isFullscreen ? 'Reduce' : 'Enlarge'}
@@ -890,7 +896,9 @@ function SettingsMenu({
       >
         <Icon name="Timer" size="md" style={{ color: '#fff' }} />
         <span style={{ flex: 1 }}>{t('Speed')}</span>
-        <span style={{ opacity: 0.6 }}>{speed === 1 ? t('Normal') : `${speed}×`}</span>
+        <span style={{ opacity: 0.6 }}>
+          {speed === 1 ? t('Normal') : `${speed}×`}
+        </span>
         <span style={{ opacity: 0.4, fontSize: 11 }}>›</span>
       </button>
       <button
@@ -909,7 +917,10 @@ function SettingsMenu({
   const renderSpeed = () => (
     <>
       <button
-        style={{ ...itemStyle, borderBottom: '1px solid rgba(255,255,255,0.1)' }}
+        style={{
+          ...itemStyle,
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+        }}
         {...hoverHandlers}
         onClick={() => setPanel('main')}
       >
@@ -927,8 +938,16 @@ function SettingsMenu({
             setPanel('main')
           }}
         >
-          <span style={{ width: 18, textAlign: 'center', opacity: speed === s ? 1 : 0 }}>
-            {speed === s && <Icon name="Check" size="sm" style={{ color: '#fff' }} />}
+          <span
+            style={{
+              width: 18,
+              textAlign: 'center',
+              opacity: speed === s ? 1 : 0,
+            }}
+          >
+            {speed === s && (
+              <Icon name="Check" size="sm" style={{ color: '#fff' }} />
+            )}
           </span>
           <span>{s === 1 ? t('Normal') : `${s}×`}</span>
         </button>
@@ -939,30 +958,43 @@ function SettingsMenu({
   const renderLang = () => (
     <>
       <button
-        style={{ ...itemStyle, borderBottom: '1px solid rgba(255,255,255,0.1)' }}
+        style={{
+          ...itemStyle,
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+        }}
         {...hoverHandlers}
         onClick={() => setPanel('main')}
       >
         <span style={{ opacity: 0.4, fontSize: 11 }}>‹</span>
         <span style={{ fontWeight: 500 }}>{t('Language')}</span>
       </button>
-      {(Object.entries(languages) as [LanguageCode, string][]).map(([code, name]) => (
-        <button
-          key={code}
-          style={itemStyle}
-          {...hoverHandlers}
-          onClick={() => {
-            onLangChange(code)
-            setOpen(false)
-            setPanel('main')
-          }}
-        >
-          <span style={{ width: 18, textAlign: 'center', opacity: lang === code ? 1 : 0 }}>
-            {lang === code && <Icon name="Check" size="sm" style={{ color: '#fff' }} />}
-          </span>
-          <span>{name}</span>
-        </button>
-      ))}
+      {(Object.entries(languages) as [LanguageCode, string][]).map(
+        ([code, name]) => (
+          <button
+            key={code}
+            style={itemStyle}
+            {...hoverHandlers}
+            onClick={() => {
+              onLangChange(code)
+              setOpen(false)
+              setPanel('main')
+            }}
+          >
+            <span
+              style={{
+                width: 18,
+                textAlign: 'center',
+                opacity: lang === code ? 1 : 0,
+              }}
+            >
+              {lang === code && (
+                <Icon name="Check" size="sm" style={{ color: '#fff' }} />
+              )}
+            </span>
+            <span>{name}</span>
+          </button>
+        ),
+      )}
     </>
   )
 

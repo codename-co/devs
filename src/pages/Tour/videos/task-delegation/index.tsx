@@ -1,18 +1,24 @@
 /**
- * TaskDelegationVideo — tour composition showcasing the delegation flow
- * from prompt to delivered artifacts.
+ * TaskDelegationVideo — tour composition showcasing the full delegation flow
+ * from connecting services to delivering artifacts.
  *
- * 28 s, 6 scenes:
- *   1. SceneHook        (0–2.5s)    "Stop chatting. Start delegating."
- *   2. ScenePromptSubmit (2.4–6s)    Browser chrome + typed prompt + submit
- *   3. SceneBoardView   (5.9–13s)   Kanban board with animated task cards
- *   4. SceneArtifacts   (12.9–19s)  Completed task + artifact panel
- *   5. SceneCollapse    (18.9–21s)  "Delegated. Delivered. Done."
- *   6. SceneCTA         (20.9–28s)  Call to action
+ * 40 s, 8 scenes:
+ *   1. SceneHook          (0–2.5s)    "Connect everything. Delegate anything."
+ *   2. SceneConnectors    (2.4–11s)   Homepage → Sidebar Settings → Modal → Connectors wizard
+ *   3. ScenePromptSubmit  (10.9–15s)  Typed prompt leveraging connectors + tools
+ *   4. SceneSwarmStream   (14.9–24s)  Real ThreadPreview: steps + streaming + PPTX widget
+ *   5. SceneEmailDraft    (23.9–30s)  Gmail compose view with PPTX attachment
+ *   6. SceneCollapse      (29.9–32s)  "Connected. Computed. Delivered."
+ *   7. SceneCTA           (31.9–40s)  Call to action
  */
 import { Stage, Soundtrack } from '../../common/assets/player'
 import { SceneHook, SceneCollapse, SceneCTA } from '../../common/scenes'
-import { ScenePromptSubmit, SceneBoardView, SceneArtifacts } from './scenes'
+import {
+  SceneConnectors,
+  ScenePromptSubmit,
+  SceneSwarmStream,
+  SceneEmailDraft,
+} from './scenes'
 import taskDelegationI18n from './i18n'
 import soundtrackUrl from '../../common/assets/starostin-promo-promotional-showreel-music-478259.mp3'
 
@@ -28,18 +34,22 @@ interface TaskDelegationVideoProps {
   onEnded?: () => void
 }
 
-export function TaskDelegationVideo({ autoplay, rootId, disableKeyboard, initialTime, hideControls, onEnded }: TaskDelegationVideoProps) {
-  // Captions/taglines are passed as raw English keys; shared scenes
-  // translate them via `useStageT()` so the in-player language toggle
-  // takes effect.
+export function TaskDelegationVideo({
+  autoplay,
+  rootId,
+  disableKeyboard,
+  initialTime,
+  hideControls,
+  onEnded,
+}: TaskDelegationVideoProps) {
   return (
     <Stage
-      duration={28}
+      duration={40}
       background={BG_LIGHT}
       backgroundTransitions={[
-        { start: 5.5, end: 6.2, color: BG_DARK },
-        { start: 12.5, end: 13.2, color: BG_LIGHT },
-        { start: 18.5, end: 19.2, color: BG_DARK },
+        { start: 14.5, end: 15.2, color: BG_DARK },
+        { start: 23.5, end: 24.2, color: BG_LIGHT },
+        { start: 29.5, end: 30.2, color: BG_DARK },
       ]}
       loop={false}
       autoplay={autoplay}
@@ -54,22 +64,36 @@ export function TaskDelegationVideo({ autoplay, rootId, disableKeyboard, initial
     >
       <Soundtrack src={soundtrackUrl} startOffset={1} />
 
+      {/* 1. Hook */}
       <SceneHook
         start={0}
         end={2.5}
-        caption="Stop chatting. Start delegating."
+        caption="Connect everything. Delegate anything."
       />
-      <ScenePromptSubmit start={2.4} end={6} />
-      <SceneBoardView start={5.9} end={13} />
-      <SceneArtifacts start={12.9} end={19} />
+
+      {/* 2. Homepage → Sidebar Settings click → Modal → Connectors wizard */}
+      <SceneConnectors start={2.4} end={11} />
+
+      {/* 3. Prompt with connector badges + submit */}
+      <ScenePromptSubmit start={10.9} end={15} />
+
+      {/* 4. Real ThreadPreview with tool steps + PPTX widget */}
+      <SceneSwarmStream start={14.9} end={24} />
+
+      {/* 5. Gmail compose with PPTX attachment */}
+      <SceneEmailDraft start={23.9} end={30} />
+
+      {/* 6. Cinematic beat */}
       <SceneCollapse
-        start={18.9}
-        end={21}
-        caption="Delegated. Delivered. Done."
+        start={29.9}
+        end={32}
+        caption="Connected. Computed. Delivered."
       />
+
+      {/* 7. CTA */}
       <SceneCTA
-        start={20.9}
-        end={28}
+        start={31.9}
+        end={40}
         tagline="Now you can."
         ctaLabel="Open devs.new →"
         frictionBadge="No signup · No install · Free"

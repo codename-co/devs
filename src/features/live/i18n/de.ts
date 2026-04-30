@@ -33,6 +33,10 @@ export const de: I18n = {
   'Cohere Transcribe': 'Cohere Transcribe',
   'SOTA multilingual (14 langs). 2B params, 4-bit. ~2.1GB download.':
     'SOTA mehrsprachig (14 Sprachen). 2B Params, 4-Bit. ~2,1 GB Download.',
+  VibeVoice: 'VibeVoice',
+  'Microsoft open-source real-time speech. Requires WebGPU. ~500MB download.':
+    'Microsoft Open-Source Echtzeit-Sprache. Erfordert WebGPU. ~500 MB Download.',
+  'VibeVoice requires WebGPU': 'VibeVoice erfordert WebGPU',
   'Bidirectional audio with Gemini. Requires API key.':
     'Bidirektionales Audio mit Gemini. API-Schlüssel erforderlich.',
   // TTS Providers

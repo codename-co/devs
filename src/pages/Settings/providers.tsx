@@ -28,6 +28,8 @@ export interface ProviderConfig {
   fetchModelsFromServer?: boolean
   /** Use multiline textarea for API key input (e.g., for JSON keys) */
   multilineApiKey?: boolean
+  /** Use GitHub OAuth device flow instead of API key */
+  useDeviceFlow?: boolean
   moreDetails?: () => React.ReactNode
 }
 
@@ -293,6 +295,17 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
         },
       ] as ProviderConfig[])
     : []),
+  {
+    provider: 'github-copilot',
+    name: 'GitHub Copilot',
+    models: [],
+    icon: 'GitHub',
+    noServerUrl: true,
+    fetchModelsFromServer: true,
+    useDeviceFlow: true,
+    apiKeyPlaceholder: 'ghu_... (from VS Code) or github_pat_...',
+    apiKeyPage: 'https://github.com/settings/copilot',
+  },
   {
     provider: 'custom',
     name: 'Custom',

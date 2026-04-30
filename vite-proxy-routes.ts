@@ -118,5 +118,34 @@ export function getProxyRoutes(env: Record<string, string>): ProxyRoute[] {
       targetPathPrefix: '/api',
       credentials: { type: 'none' },
     },
+    // GitHub Models catalog API (CORS proxy) — must be before /api/github
+    {
+      pathPrefix: '/api/github-models',
+      target: 'https://models.github.ai',
+      credentials: { type: 'none' },
+    },
+    // GitHub API (token exchange for Copilot) — must be before /api/github
+    {
+      pathPrefix: '/api/github-api',
+      target: 'https://api.github.com',
+      credentials: { type: 'none' },
+    },
+    // GitHub Copilot API (chat completions, models) — must be before /api/github
+    {
+      pathPrefix: '/api/github-copilot-api',
+      target: 'https://api.githubcopilot.com',
+      credentials: { type: 'none' },
+      extraHeaders: {
+        'Editor-Version': 'vscode/1.99.0',
+        'Editor-Plugin-Version': 'copilot/1.999.0',
+        'User-Agent': 'GithubCopilot/1.999.0',
+      },
+    },
+    // GitHub OAuth device flow (CORS proxy, no secret needed for public clients)
+    {
+      pathPrefix: '/api/github',
+      target: 'https://github.com',
+      credentials: { type: 'none' },
+    },
   ]
 }

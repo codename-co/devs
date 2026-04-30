@@ -12,10 +12,10 @@ import {
   Tooltip,
 } from '@heroui/react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import DefaultLayout from '@/layouts/Default'
+import { WorkspaceShell } from '@/pages/Workspace/WorkspaceShell'
 import { Container, Section, Icon, Title } from '@/components'
 import { useI18n, useUrl, type LanguageCode } from '@/i18n'
-import type { HeaderProps, IconName } from '@/lib/types'
+import type { IconName } from '@/lib/types'
 import { useMarketplaceStore } from '../store'
 import type {
   ExtensionColor,
@@ -222,15 +222,6 @@ export function MarketplacePage() {
     customAsMarketplace.length,
   ])
 
-  const header: HeaderProps = {
-    icon: {
-      name: 'HexagonPlus',
-      color: 'text-warning-400 dark:text-warning-500',
-    },
-    title: t('Marketplace'),
-    subtitle: t('Expand your platform capabilities with community extensions'),
-  }
-
   // Find extension by ID from hash
   const selectedExtension = useMemo(() => {
     if (!extensionIdFromHash) return null
@@ -332,7 +323,7 @@ export function MarketplacePage() {
   }
 
   return (
-    <DefaultLayout header={header}>
+    <WorkspaceShell title={t('Marketplace')}>
       <Section>
         <Container>
           {/* Hero Banner */}
@@ -536,7 +527,7 @@ export function MarketplacePage() {
         isPreviewMode={isPreviewModeFromHash}
         onPreviewModeChange={handlePreviewModeChange}
       />
-    </DefaultLayout>
+    </WorkspaceShell>
   )
 }
 

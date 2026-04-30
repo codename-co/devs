@@ -1,5 +1,4 @@
 import { Container, ContextualPanel, Icon, Section, Title } from '@/components'
-import { AppDrawer } from '@/components/AppDrawer'
 import { PageMenu, type PageMenuProps } from '@/components/PageMenu'
 import { Tabbar } from '@/components/Tabbar'
 import { languageDirection, useI18n } from '@/i18n'
@@ -85,7 +84,6 @@ export default function DefaultLayout({
     >
       <title children={metaTitle} />
       <div className="flex relative min-h-screen">
-        <AppDrawer />
         <div className="bg-background dark:bg-transparent md:m-4 md:rounded-xl flex flex-col-reverse w-full relative">
           <Tabbar className="md:hidden" />
 

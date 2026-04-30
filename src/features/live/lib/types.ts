@@ -16,6 +16,7 @@ export type STTProviderType =
   | 'parakeet' // onnx-community/parakeet-ctc-0.6b-ONNX (NVIDIA, SOTA English & French, ~2.5GB)
   | 'cohere' // onnx-community/cohere-transcribe-03-2026-ONNX (Cohere, 14 languages, 2B params)
   | 'granite' // onnx-community/granite-4.0-1b-speech-ONNX (multilingual, ~1B params)
+  | 'vibevoice' // microsoft/VibeVoice-Realtime-0.5B (open-source, real-time speech, ~500MB)
   | 'gemini-live' // Gemini Live API (cloud, bidirectional)
   | 'lm-studio' // Local LM Studio server
 
@@ -340,6 +341,14 @@ export const STT_MODELS = {
     quality: 'SOTA',
     description:
       'Cohere Transcribe. 14 languages. 2B params, 4-bit quantized.',
+  },
+  vibevoice: {
+    modelId: 'onnx-community/VibeVoice-Realtime-0.5B-ONNX',
+    size: '~500MB (q4)',
+    latency: '~200ms',
+    quality: 'High',
+    description:
+      'Microsoft VibeVoice. Open-source real-time speech model. 0.5B params.',
   },
 } as const
 

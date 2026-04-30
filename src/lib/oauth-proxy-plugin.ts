@@ -46,6 +46,8 @@ export interface ProxyRoute {
   targetPathPrefix?: string
   /** How to inject credentials */
   credentials: CredentialInjection
+  /** Extra headers to inject into proxied requests */
+  extraHeaders?: Record<string, string>
 }
 
 // Helper to buffer request body
@@ -108,6 +110,13 @@ export function oauthProxyPlugin(routes: ProxyRoute[]): Plugin {
 
           // Prepare headers
           const headers = getForwardHeaders(req)
+
+          // Inject extra headers if configured
+          if (route.extraHeaders) {
+            for (const [key, value] of Object.entries(route.extraHeaders)) {
+              headers[key.toLowerCase()] = value
+            }
+          }
 
           // Handle based on credential type
           let body: string | undefined

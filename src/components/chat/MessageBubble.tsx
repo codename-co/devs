@@ -157,8 +157,8 @@ export const MessageBubble = memo(
               isStreaming={isStreaming}
             />
           ) : isStreaming && steps.length === 0 ? (
-            <div className="flex items-center gap-1 py-2">
-              <Spinner size="sm" classNames={{ wrapper: 'w-4 h-4' }} />
+            <div className="flex items-center gap-1 py-1">
+              <Spinner size="sm" classNames={{ wrapper: 'w-3 h-3' }} />
             </div>
           ) : null}
 

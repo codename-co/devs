@@ -10,6 +10,7 @@
 // ============================================================================
 
 export { NotificationButton } from './components/NotificationButton'
+export { NotificationButtonV3 } from './components/NotificationButtonV3'
 export { NotificationPanel } from './components/NotificationPanel'
 
 // ============================================================================

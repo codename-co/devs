@@ -132,6 +132,7 @@ interface TaskStore {
     taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'requirements'>,
     userRequirement: string,
   ) => Promise<Task>
+  setStarColor: (id: string, color: string | null) => void
 }
 
 export const useTaskStore = create<TaskStore>((set, get) => ({
@@ -824,6 +825,16 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       errorToast('Failed to create task with requirements', error)
       throw error
     }
+  },
+
+  setStarColor: (id: string, color: string | null) => {
+    const task = tasks.get(id)
+    if (!task) return
+    tasks.set(id, {
+      ...task,
+      starColor: color ?? undefined,
+      isPinned: color !== null,
+    })
   },
 }))
 

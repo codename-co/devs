@@ -19,6 +19,7 @@ const PROVIDER_ICONS: Record<string, IconName> = {
   'openai-compatible': 'Internet',
   'claude-code': 'Anthropic', // Claude Code API uses Claude models
   chatjimmy: 'ChatBubble',
+  'github-copilot': 'GitHub',
   // Image generation providers
   stability: 'SparksSolid',
   together: 'Puzzle',

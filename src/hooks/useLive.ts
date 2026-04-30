@@ -15,7 +15,7 @@
  * - Works with React's concurrent rendering
  * - Simplified architecture - no IndexedDB fallbacks needed
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   agents,
@@ -85,18 +85,38 @@ export function useConversations(): Conversation[] {
 export function useDecryptedConversations(): Conversation[] {
   const rawConversations = useLiveMap(conversations)
   const [decrypted, setDecrypted] = useState<Conversation[]>([])
+  const cacheRef = useRef(
+    new Map<string, { fingerprint: string; result: Conversation }>(),
+  )
 
   useEffect(() => {
     let cancelled = false
+    const prevCache = cacheRef.current
+    const nextCache = new Map<
+      string,
+      { fingerprint: string; result: Conversation }
+    >()
+
     Promise.all(
-      rawConversations.map(
-        (conv) =>
-          decryptFields(conv, [
-            ...CONVERSATION_ENCRYPTED_FIELDS,
-          ]) as Promise<Conversation>,
-      ),
+      rawConversations.map(async (conv) => {
+        // Only title/summary matter for metadata decryption
+        const fp = `${conv.id}|${conv.updatedAt}|${conv.title}|${conv.summary}`
+        const cached = prevCache.get(conv.id)
+        if (cached && cached.fingerprint === fp) {
+          nextCache.set(conv.id, cached)
+          return cached.result
+        }
+        const result = (await decryptFields(conv, [
+          ...CONVERSATION_ENCRYPTED_FIELDS,
+        ])) as Conversation
+        nextCache.set(conv.id, { fingerprint: fp, result })
+        return result
+      }),
     ).then((result) => {
-      if (!cancelled) setDecrypted(result)
+      if (!cancelled) {
+        cacheRef.current = nextCache
+        setDecrypted(result)
+      }
     })
     return () => {
       cancelled = true
@@ -110,39 +130,71 @@ export function useDecryptedConversations(): Conversation[] {
  * Subscribe to all conversations with full decryption (metadata AND message content).
  * More expensive than useDecryptedConversations — use only when message content is needed.
  */
+/** Build a fingerprint for a conversation to detect actual changes. */
+function convDecryptFingerprint(conv: Conversation): string {
+  const lastMsg = conv.messages[conv.messages.length - 1]
+  return `${conv.id}|${conv.updatedAt}|${conv.messages.length}|${lastMsg?.id ?? ''}|${lastMsg?.timestamp ?? ''}|${conv.title}|${conv.summary}`
+}
+
+/**
+ * Decrypt a single conversation (all messages + metadata).
+ * Extracted so it can be called per-item from the caching layer.
+ */
+async function decryptConversationFully(
+  conv: Conversation,
+): Promise<Conversation> {
+  const decryptedMessages = await Promise.all(
+    conv.messages.map(async (msg) => {
+      const decryptedMsg = (await decryptFields(msg, [
+        ...MESSAGE_ENCRYPTED_FIELDS,
+      ])) as import('@/types').Message
+      if (msg.attachments && msg.attachments.length > 0) {
+        decryptedMsg.attachments = await decryptAttachments(msg.attachments)
+      }
+      return decryptedMsg
+    }),
+  )
+  const result = {
+    ...conv,
+    messages: decryptedMessages as import('@/types').Message[],
+  }
+  return decryptFields(result, [
+    ...CONVERSATION_ENCRYPTED_FIELDS,
+  ]) as Promise<Conversation>
+}
+
 export function useFullyDecryptedConversations(): Conversation[] {
   const rawConversations = useLiveMap(conversations)
   const [decrypted, setDecrypted] = useState<Conversation[]>([])
+  const cacheRef = useRef(
+    new Map<string, { fingerprint: string; result: Conversation }>(),
+  )
 
   useEffect(() => {
     let cancelled = false
+    const prevCache = cacheRef.current
+    const nextCache = new Map<
+      string,
+      { fingerprint: string; result: Conversation }
+    >()
+
     Promise.all(
       rawConversations.map(async (conv) => {
-        // Decrypt message-level fields (content, pinnedDescription, attachments)
-        const decryptedMessages = await Promise.all(
-          conv.messages.map(async (msg) => {
-            const decryptedMsg = (await decryptFields(msg, [
-              ...MESSAGE_ENCRYPTED_FIELDS,
-            ])) as import('@/types').Message
-            if (msg.attachments && msg.attachments.length > 0) {
-              decryptedMsg.attachments = await decryptAttachments(
-                msg.attachments,
-              )
-            }
-            return decryptedMsg
-          }),
-        )
-        const result = {
-          ...conv,
-          messages: decryptedMessages as import('@/types').Message[],
+        const fp = convDecryptFingerprint(conv)
+        const cached = prevCache.get(conv.id)
+        if (cached && cached.fingerprint === fp) {
+          nextCache.set(conv.id, cached)
+          return cached.result
         }
-        // Decrypt conversation-level fields (summary, title)
-        return decryptFields(result, [
-          ...CONVERSATION_ENCRYPTED_FIELDS,
-        ]) as Promise<Conversation>
+        const result = await decryptConversationFully(conv)
+        nextCache.set(conv.id, { fingerprint: fp, result })
+        return result
       }),
     ).then((result) => {
-      if (!cancelled) setDecrypted(result)
+      if (!cancelled) {
+        cacheRef.current = nextCache
+        setDecrypted(result)
+      }
     })
     return () => {
       cancelled = true

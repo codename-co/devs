@@ -223,4 +223,23 @@ export const fr: I18n = {
   'Customize the labels for your tag colors':
     'Personnalisez les libellés de vos couleurs de tags',
   'Reset to default': 'Réinitialiser par défaut',
+  'Sign in with GitHub': 'Se connecter avec GitHub',
+  'Sign in with your GitHub account to use Copilot models from OpenAI, Anthropic, and Google.':
+    'Connectez-vous avec votre compte GitHub pour utiliser les modèles Copilot d&apos;OpenAI, Anthropic et Google.',
+  'Connecting to GitHub...': 'Connexion à GitHub...',
+  'Enter this code on GitHub:': 'Entrez ce code sur GitHub :',
+  'Waiting for authorization...': 'En attente d&apos;autorisation...',
+  'A browser tab has been opened. If not,': 'Un onglet a été ouvert. Sinon,',
+  'click here': 'cliquez ici',
+  'Successfully authenticated!': 'Authentification réussie !',
+  'Authentication failed': 'Échec de l&apos;authentification',
+  'Try again': 'Réessayer',
+  'Requires an active GitHub Copilot subscription.':
+    'Nécessite un abonnement GitHub Copilot actif.',
+  'GitHub OAuth is not configured. Set VITE_GITHUB_CLIENT_ID environment variable.':
+    'GitHub OAuth n&apos;est pas configuré. Définissez la variable d&apos;environnement VITE_GITHUB_CLIENT_ID.',
+  'Paste a token from': 'Collez un jeton depuis',
+  'or a': 'ou un',
+  'fine-grained PAT': 'PAT à granularité fine',
+  'with Copilot Requests permission.': 'avec la permission Copilot Requests.',
 } as const

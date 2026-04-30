@@ -4,148 +4,148 @@ type I18n = Record<(typeof en)[number], string>
 
 export const de: I18n = {
   // Hero
-  'AI Augmentation for Everyone': 'KI-Augmentierung für alle',
-  '{product} is a browser-native AI agent orchestration platform. Delegate complex tasks to teams of specialised agents that plan, collaborate, and deliver — all running':
-    '{product} ist eine browsernative KI-Agenten-Orchestrierungsplattform. Delegieren Sie komplexe Aufgaben an Teams spezialisierter Agenten, die planen, zusammenarbeiten und liefern — alles läuft',
-  'entirely on your device': 'vollständig auf Ihrem Gerät',
+  'Your AI Team, Ready When You Are':
+    'Ihr KI-Team, bereit wenn Sie es sind',
+  '{product} gives you a team of AI helpers that work together \u2014 right in your browser. Just describe what you need, and they\u2019ll plan it, do it, and deliver it \u2014':
+    '{product} gibt Ihnen ein Team von KI-Helfern, die zusammenarbeiten \u2014 direkt in Ihrem Browser. Beschreiben Sie einfach, was Sie brauchen, und sie planen, erledigen und liefern es \u2014',
+  'without your data ever leaving your device':
+    'ohne dass Ihre Daten jemals Ihr Ger\u00e4t verlassen',
   'Watch the 30-second tour': 'Die 30-Sekunden-Tour ansehen',
 
   // See it in action section
   'See it in action': 'In Aktion erleben',
-  'A guided tour, in 30-second clips': 'Eine Führung, in 30-Sekunden-Clips',
+  'A guided tour, in 30-second clips': 'Eine F\u00fchrung, in 30-Sekunden-Clips',
   'Product Tour': 'Produkt-Tour',
   'The full DEVS story in 30 seconds':
     'Die ganze DEVS-Geschichte in 30 Sekunden',
   'Task Delegation': 'Aufgabendelegation',
-  'Delegate, don’t chat': 'Delegieren, nicht chatten',
+  'Delegate, don\u2019t chat': 'Delegieren, nicht chatten',
   'Agent Studio': 'Agent-Studio',
   'Build your own AI team': 'Bauen Sie Ihr eigenes KI-Team',
   'Privacy First': 'Datenschutz zuerst',
   'Your keys. Your data. Your browser.':
-    'Ihre Schlüssel. Ihre Daten. Ihr Browser.',
+    'Ihre Schl\u00fcssel. Ihre Daten. Ihr Browser.',
   'Inbox Workflow': 'Posteingang-Workflow',
   'Your AI inbox': 'Ihr KI-Posteingang',
-  'Open full-screen': 'Im Vollbild öffnen',
-  '\u201CAI augmentation shouldn\u2019t be a luxury for the few, but a fundamental tool available to all — where anyone can leverage the power of AI teams to amplify their capabilities and achieve their goals.\u201D':
-    '\u201CKI-Augmentierung sollte kein Luxus für wenige sein, sondern ein grundlegendes Werkzeug für alle — wo jeder die Kraft von KI-Teams nutzen kann, um seine Fähigkeiten zu verstärken und seine Ziele zu erreichen.\u201D',
+  'Open full-screen': 'Im Vollbild \u00f6ffnen',
+  '\u201CAI shouldn\u2019t be a privilege for tech experts. It should be a superpower anyone can use \u2014 like having a brilliant team on call, ready to tackle anything you throw at them.\u201D':
+    '\u201CKI sollte kein Privileg f\u00fcr Tech-Experten sein. Es sollte eine Superkraft sein, die jeder nutzen kann \u2014 wie ein brillantes Team auf Abruf, bereit jede Herausforderung anzunehmen.\u201D',
 
   // Principles section
   Philosophy: 'Philosophie',
-  'Built on Conviction': 'Auf Überzeugung gebaut',
-  'Three non-negotiable principles guide every decision we make.':
-    'Drei unverhandelbare Prinzipien leiten jede unserer Entscheidungen.',
-  'Privacy by Design': 'Datenschutz durch Design',
-  'Every byte of your data stays on your device. No servers. No telemetry. No compromise.':
-    'Jedes Byte Ihrer Daten bleibt auf Ihrem Gerät. Keine Server. Keine Telemetrie. Kein Kompromiss.',
-  'Universally Accessible': 'Universell zugänglich',
-  'A browser is all you need. No installation, no GPU, no special hardware — just open and create.':
-    'Ein Browser ist alles, was Sie brauchen. Keine Installation, keine GPU, keine spezielle Hardware — einfach öffnen und erstellen.',
-  'Open Source Forever': 'Für immer Open Source',
-  'Built in the open, shaped by the community. Every line of code is yours to read, improve, and share.':
-    'Offen gebaut, von der Community geformt. Jede Zeile Code gehört Ihnen zum Lesen, Verbessern und Teilen.',
+  'What We Stand For': 'Wof\u00fcr wir stehen',
+  'Three promises we\u2019ll never break.':
+    'Drei Versprechen, die wir niemals brechen werden.',
+  'Your Data Stays Yours': 'Ihre Daten geh\u00f6ren Ihnen',
+  'Everything stays on your device. Nothing is sent to our servers. No tracking, no snooping, no exceptions.':
+    'Alles bleibt auf Ihrem Ger\u00e4t. Nichts wird an unsere Server gesendet. Kein Tracking, kein Schn\u00fcffeln, keine Ausnahmen.',
+  'Works in Any Browser': 'Funktioniert in jedem Browser',
+  'No downloads, no special equipment. If you can open a web page, you can use DEVS.':
+    'Keine Downloads, keine Spezialausr\u00fcstung. Wenn Sie eine Webseite \u00f6ffnen k\u00f6nnen, k\u00f6nnen Sie DEVS nutzen.',
+  'Free & Open Source': 'Kostenlos & Open Source',
+  'The code is public, the community shapes it, and it will always be free. No hidden costs, ever.':
+    'Der Code ist \u00f6ffentlich, die Community formt ihn, und er wird immer kostenlos sein. Keine versteckten Kosten, niemals.',
 
   // Capabilities section
   Capabilities: 'Funktionen',
-  'Powerful by Design': 'Leistungsstark durch Design',
-  'A depth of engineering so you can focus on what matters — your ideas.':
-    'Eine Tiefe an Ingenieurskunst, damit Sie sich auf das Wesentliche konzentrieren können — Ihre Ideen.',
-  'Multi-Agent Orchestration': 'Multi-Agenten-Orchestrierung',
-  'Collective Intelligence': 'Kollektive Intelligenz',
-  'Compose teams of specialised AI agents that plan, execute, and validate together — mirroring how the best human teams operate.':
-    'Stellen Sie Teams spezialisierter KI-Agenten zusammen, die gemeinsam planen, ausführen und validieren — so wie die besten menschlichen Teams arbeiten.',
-  'Provider Independence': 'Anbieterunabhängigkeit',
-  'Your Models, Your Choice': 'Ihre Modelle, Ihre Wahl',
-  'Seamlessly switch between OpenAI, Anthropic, Google Gemini, Mistral, Ollama, or any OpenAI-compatible endpoint. Never locked in.':
-    'Wechseln Sie nahtlos zwischen OpenAI, Anthropic, Google Gemini, Mistral, Ollama oder jedem OpenAI-kompatiblen Endpunkt. Niemals eingesperrt.',
-  'Zero-Trust Architecture': 'Zero-Trust-Architektur',
-  'Security as a Foundation': 'Sicherheit als Fundament',
-  'Web Crypto API encrypts your tokens. Service Workers sandbox execution. IndexedDB keeps everything local. Defense in depth, by default.':
-    'Web Crypto API verschlüsselt Ihre Tokens. Service Workers isolieren die Ausführung. IndexedDB hält alles lokal. Tiefenverteidigung, standardmäßig.',
-  'Intelligent Task Analysis': 'Intelligente Aufgabenanalyse',
-  'Complexity, Simplified': 'Komplexität, vereinfacht',
-  'An LLM-powered analyser breaks your request into requirements, recruits the right agents, resolves dependencies, and orchestrates delivery.':
-    'Ein LLM-gestützter Analysator zerlegt Ihre Anfrage in Anforderungen, rekrutiert die richtigen Agenten, löst Abhängigkeiten auf und orchestriert die Lieferung.',
-  'Offline-First & P2P': 'Offline-First & P2P',
-  'Works Anywhere': 'Funktioniert überall',
-  'Fully functional without internet after first load. Optional Yjs-powered P2P sync lets you collaborate across devices without a central server.':
-    'Voll funktionsfähig ohne Internet nach dem ersten Laden. Optionale Yjs-gestützte P2P-Synchronisation ermöglicht geräteübergreifende Zusammenarbeit ohne zentralen Server.',
-  'Extensible by Nature': 'Von Natur aus erweiterbar',
-  'Build on Top': 'Darauf aufbauen',
-  'A marketplace of agents, tools, connectors, and apps — plus a sandboxed Extension Bridge so the community can create and share new capabilities.':
-    'Ein Marktplatz für Agenten, Tools, Konnektoren und Apps — plus eine sandboxed Extension Bridge, damit die Community neue Fähigkeiten erstellen und teilen kann.',
+  'What Makes It Special': 'Was es besonders macht',
+  'Serious technology made simple \u2014 so you can focus on your ideas.':
+    'Ernsthafte Technologie einfach gemacht \u2014 damit Sie sich auf Ihre Ideen konzentrieren k\u00f6nnen.',
+  'A Team, Not Just a Chatbot': 'Ein Team, nicht nur ein Chatbot',
+  'Better Together': 'Gemeinsam besser',
+  'Instead of one AI trying to do everything, multiple specialised helpers team up \u2014 each one great at something different, just like a real team.':
+    'Statt einer KI, die alles versucht, arbeiten mehrere spezialisierte Helfer zusammen \u2014 jeder hervorragend in einem anderen Bereich, genau wie ein echtes Team.',
+  'Use Any AI You Like': 'Nutzen Sie jede KI, die Sie m\u00f6gen',
+  'Freedom of Choice': 'Wahlfreiheit',
+  'Works with OpenAI, Google, Anthropic, Mistral, and many more. Switch anytime \u2014 your conversations and data stay put.':
+    'Funktioniert mit OpenAI, Google, Anthropic, Mistral und vielen mehr. Wechseln Sie jederzeit \u2014 Ihre Gespr\u00e4che und Daten bleiben erhalten.',
+  'Bank-Level Security': 'Sicherheit auf Bankniveau',
+  'Locked Down by Default': 'Standardm\u00e4\u00dfig abgesichert',
+  'Your passwords and keys are encrypted right in your browser. Nothing sensitive ever travels over the internet.':
+    'Ihre Passw\u00f6rter und Schl\u00fcssel werden direkt in Ihrem Browser verschl\u00fcsselt. Nichts Sensibles reist jemals \u00fcbers Internet.',
+  'It Breaks Down the Hard Stuff': 'Es zerlegt die schwierigen Aufgaben',
+  'Smart Under the Hood': 'Intelligent unter der Haube',
+  'Describe a big goal and the system figures out what needs to happen, assigns the right helpers, and coordinates everything automatically.':
+    'Beschreiben Sie ein gro\u00dfes Ziel und das System ermittelt, was passieren muss, weist die richtigen Helfer zu und koordiniert alles automatisch.',
+  'Works Without Internet': 'Funktioniert ohne Internet',
+  'Always On, Always Yours': 'Immer an, immer Ihres',
+  'Once loaded, it works offline. Optionally sync across your devices without relying on anyone else\u2019s servers.':
+    'Einmal geladen, funktioniert es offline. Synchronisieren Sie optional \u00fcber Ihre Ger\u00e4te hinweg, ohne auf fremde Server angewiesen zu sein.',
+  'Endlessly Customisable': 'Endlos anpassbar',
+  'Make It Your Own': 'Machen Sie es zu Ihrem eigenen',
+  'Browse a library of ready-made tools, connectors, and AI helpers \u2014 or let the community build new ones.':
+    'St\u00f6bern Sie in einer Bibliothek fertiger Tools, Konnektoren und KI-Helfer \u2014 oder lassen Sie die Community neue erstellen.',
 
   // How it works section
   'Getting Started': 'Erste Schritte',
-  'Four Steps to Delegation': 'Vier Schritte zur Delegation',
-  'From prompt to polished output in minutes, not hours.':
-    'Vom Prompt zum fertigen Ergebnis in Minuten, nicht Stunden.',
-  'Configure your AI provider': 'Konfigurieren Sie Ihren KI-Anbieter',
-  'Connect your preferred LLM — OpenAI, Anthropic, Gemini, Ollama, or any compatible endpoint.':
-    'Verbinden Sie Ihr bevorzugtes LLM — OpenAI, Anthropic, Gemini, Ollama oder jeden kompatiblen Endpunkt.',
-  'Describe your task': 'Beschreiben Sie Ihre Aufgabe',
-  'Tell DEVS what you need in natural language. Be ambitious — the orchestrator thrives on complexity.':
-    'Sagen Sie DEVS in natürlicher Sprache, was Sie brauchen. Seien Sie ambitioniert — der Orchestrator lebt von Komplexität.',
-  'Watch agents collaborate': 'Beobachten Sie die Zusammenarbeit der Agenten',
-  'See specialised agents plan, execute, and validate in real-time. Intervene, guide, or just observe.':
-    'Sehen Sie, wie spezialisierte Agenten in Echtzeit planen, ausführen und validieren. Greifen Sie ein, leiten Sie an oder beobachten Sie einfach.',
-  'Receive & refine': 'Empfangen und verfeinern',
-  'Get structured artefacts — code, docs, analyses — and iterate with feedback until it\u2019s right.':
-    'Erhalten Sie strukturierte Artefakte — Code, Docs, Analysen — und iterieren Sie mit Feedback, bis es stimmt.',
+  'How It Works': 'So funktioniert es',
+  'From idea to finished result in minutes.':
+    'Von der Idee zum fertigen Ergebnis in Minuten.',
+  'Connect your AI': 'Verbinden Sie Ihre KI',
+  'Pick your favourite AI provider \u2014 like OpenAI or Google \u2014 and add your key. Takes about 30 seconds.':
+    'W\u00e4hlen Sie Ihren bevorzugten KI-Anbieter \u2014 wie OpenAI oder Google \u2014 und f\u00fcgen Sie Ihren Schl\u00fcssel hinzu. Dauert etwa 30 Sekunden.',
+  'Describe what you need': 'Beschreiben Sie, was Sie brauchen',
+  'Just type what you want done, in plain language. The bigger the challenge, the more it shines.':
+    'Tippen Sie einfach, was Sie erledigt haben m\u00f6chten, in einfacher Sprache. Je gr\u00f6\u00dfer die Herausforderung, desto mehr gl\u00e4nzt es.',
+  'Watch the magic happen': 'Sehen Sie die Magie geschehen',
+  'Your AI team plans, works, and double-checks in real time. Jump in anytime or sit back and relax.':
+    'Ihr KI-Team plant, arbeitet und \u00fcberpr\u00fcft in Echtzeit. Greifen Sie jederzeit ein oder lehnen Sie sich zur\u00fcck.',
+  'Get your results': 'Erhalten Sie Ihre Ergebnisse',
+  'Receive polished deliverables \u2014 documents, code, analyses \u2014 and fine-tune them with simple feedback.':
+    'Erhalten Sie polierte Ergebnisse \u2014 Dokumente, Code, Analysen \u2014 und verfeinern Sie sie mit einfachem Feedback.',
 
   // Use cases section
-  'For Everyone': 'Für alle',
-  'Built for Builders': 'Gebaut für Macher',
-  'Whether you\u2019re writing code or writing prose — DEVS adapts to you.':
-    'Ob Sie Code oder Prosa schreiben — DEVS passt sich Ihnen an.',
+  'For Everyone': 'F\u00fcr alle',
+  'Made for Everyone': 'F\u00fcr alle gemacht',
+  'Whether you\u2019re coding, creating, or strategising \u2014 DEVS adapts to you.':
+    'Ob Sie programmieren, kreativ sind oder planen \u2014 DEVS passt sich Ihnen an.',
   Students: 'Studierende',
-  'Research, study planning & assignment help':
-    'Recherche, Studienplanung und Aufgabenhilfe',
+  'Research, study plans & homework help':
+    'Recherche, Studienpl\u00e4ne und Hausaufgabenhilfe',
   Developers: 'Entwickler',
-  'Rapid prototyping, code generation & reviews':
-    'Schnelles Prototyping, Code-Generierung und Reviews',
+  'Quick prototypes, code & reviews':
+    'Schnelle Prototypen, Code und Reviews',
   Creators: 'Kreative',
-  'Brainstorming, writing & content production':
-    'Brainstorming, Schreiben und Content-Produktion',
+  'Ideas, writing & content creation':
+    'Ideen, Schreiben und Content-Erstellung',
   Researchers: 'Forscher',
-  'Literature review, data analysis & hypothesis testing':
-    'Literaturrecherche, Datenanalyse und Hypothesentests',
+  'Literature reviews, data & experiments':
+    'Literaturrecherchen, Daten und Experimente',
   Managers: 'Manager',
-  'Project planning, task breakdown & operations':
-    'Projektplanung, Aufgabenaufteilung und Betrieb',
+  'Project plans, task lists & operations':
+    'Projektpl\u00e4ne, Aufgabenlisten und Betrieb',
   Entrepreneurs: 'Unternehmer',
-  'Idea validation, strategy & business planning':
-    'Ideenvalidierung, Strategie und Geschäftsplanung',
+  'Idea testing, strategy & business plans':
+    'Ideentests, Strategie und Gesch\u00e4ftspl\u00e4ne',
 
   // FAQ section
   FAQ: 'FAQ',
-  'Common Questions': 'Häufige Fragen',
+  'Common Questions': 'H\u00e4ufige Fragen',
   'Is my data private?': 'Sind meine Daten privat?',
-  'Absolutely. All processing happens locally in your browser. We never collect, transmit, or store any of your data. Your API keys are encrypted with the Web Crypto API and never leave your device.':
-    'Absolut. Die gesamte Verarbeitung erfolgt lokal in Ihrem Browser. Wir sammeln, übertragen oder speichern niemals Ihre Daten. Ihre API-Schlüssel werden mit der Web Crypto API verschlüsselt und verlassen niemals Ihr Gerät.',
-  'Which AI providers are supported?': 'Welche KI-Anbieter werden unterstützt?',
-  'We support {providers}, and any provider compatible with the OpenAI API specification. You can switch providers at any time without losing your conversations or data.':
-    'Wir unterstützen {providers} und jeden Anbieter, der mit der OpenAI-API-Spezifikation kompatibel ist. Sie können jederzeit den Anbieter wechseln, ohne Gespräche oder Daten zu verlieren.',
+  'Yes, 100%. Everything happens in your browser \u2014 we never see, collect, or store any of your data. Your AI keys are encrypted on your device and never sent anywhere.':
+    'Ja, zu 100%. Alles passiert in Ihrem Browser \u2014 wir sehen, sammeln oder speichern niemals Ihre Daten. Ihre KI-Schl\u00fcssel werden auf Ihrem Ger\u00e4t verschl\u00fcsselt und nie irgendwohin gesendet.',
+  'Which AI providers can I use?': 'Welche KI-Anbieter kann ich nutzen?',
+  'We work with {providers}, plus any service compatible with the OpenAI format. You can switch at any time without losing anything.':
+    'Wir arbeiten mit {providers}, plus jedem Dienst, der mit dem OpenAI-Format kompatibel ist. Sie k\u00f6nnen jederzeit wechseln, ohne etwas zu verlieren.',
   'Do I need to install anything?': 'Muss ich etwas installieren?',
-  'Nothing at all. DEVS is a Progressive Web App that runs entirely in your browser. You can optionally \u201Cinstall\u201D it to your home screen for a native-like experience, but it\u2019s never required.':
-    'Überhaupt nichts. DEVS ist eine Progressive Web App, die vollständig in Ihrem Browser läuft. Sie können sie optional auf Ihrem Startbildschirm \u201Cinstallieren\u201D für ein natives Erlebnis, aber es ist nie erforderlich.',
-  'Is this really free and open source?':
-    'Ist das wirklich kostenlos und Open Source?',
-  'Yes — {license} licensed and always will be. The entire codebase is on GitHub. You can self-host, fork, or contribute. No premium tiers, no paywalls.':
-    'Ja — {license}-lizenziert und wird es immer bleiben. Der gesamte Code ist auf GitHub. Sie können selbst hosten, forken oder beitragen. Keine Premium-Stufen, keine Paywalls.',
+  'Nope. Just open the website and you\u2019re ready to go. You can add it to your home screen for a native app feel, but it\u2019s totally optional.':
+    'Nein. \u00d6ffnen Sie einfach die Website und schon kann es losgehen. Sie k\u00f6nnen es auf Ihrem Startbildschirm hinzuf\u00fcgen f\u00fcr ein natives App-Gef\u00fchl, aber das ist v\u00f6llig optional.',
+  'Is this really free?': 'Ist das wirklich kostenlos?',
+  'Yes \u2014 {license} licensed, now and forever. All the code is on GitHub. No subscriptions, no premium plans, no paywalls.':
+    'Ja \u2014 {license}-lizenziert, jetzt und f\u00fcr immer. Der gesamte Code ist auf GitHub. Keine Abonnements, keine Premium-Pl\u00e4ne, keine Paywalls.',
   'Can I use it offline?': 'Kann ich es offline nutzen?',
-  'After the first load, the Service Worker caches everything you need. You can create agents, manage knowledge, and review past conversations without any internet connection. LLM calls obviously require connectivity to the provider.':
-    'Nach dem ersten Laden speichert der Service Worker alles, was Sie brauchen. Sie können Agenten erstellen, Wissen verwalten und vergangene Gespräche durchsehen — ohne Internetverbindung. LLM-Aufrufe erfordern natürlich eine Verbindung zum Anbieter.',
-  'How does multi-agent orchestration work?':
-    'Wie funktioniert die Multi-Agenten-Orchestrierung?',
-  'When you describe a complex task, the built-in orchestrator analyses it, breaks it into subtasks, recruits specialised agents, resolves dependencies, and coordinates parallel execution — just like a well-run project team.':
-    'Wenn Sie eine komplexe Aufgabe beschreiben, analysiert der integrierte Orchestrator sie, zerlegt sie in Unteraufgaben, rekrutiert spezialisierte Agenten, löst Abhängigkeiten auf und koordiniert die parallele Ausführung — genau wie ein gut geführtes Projektteam.',
+  'After your first visit, everything is saved locally so you can keep working without internet. The only thing that needs a connection is talking to your AI provider.':
+    'Nach Ihrem ersten Besuch wird alles lokal gespeichert, damit Sie ohne Internet weiterarbeiten k\u00f6nnen. Das Einzige, was eine Verbindung braucht, ist die Kommunikation mit Ihrem KI-Anbieter.',
+  'How does the AI team work?': 'Wie funktioniert das KI-Team?',
+  'When you give it a big task, the system breaks it into smaller pieces, picks the best helper for each part, and coordinates them all at once \u2014 like a well-organised project team.':
+    'Wenn Sie ihm eine gro\u00dfe Aufgabe geben, zerlegt das System sie in kleinere Teile, w\u00e4hlt den besten Helfer f\u00fcr jeden Teil und koordiniert sie alle gleichzeitig \u2014 wie ein gut organisiertes Projektteam.',
 
   // CTA section
-  'Shape the Future With Us': 'Gestalten Sie die Zukunft mit uns',
-  '{product} is built by people who believe technology should empower, not enclose. Every contribution — code, ideas, feedback — makes AI augmentation more accessible to the world.':
-    '{product} wird von Menschen gebaut, die glauben, dass Technologie ermächtigen, nicht einschränken sollte. Jeder Beitrag — Code, Ideen, Feedback — macht KI-Augmentierung für die Welt zugänglicher.',
+  'Join the Movement': 'Werden Sie Teil der Bewegung',
+  '{product} is made by people who believe AI should empower everyone, not just the privileged few. Whether you contribute code, ideas, or feedback \u2014 you\u2019re helping make AI accessible to the world.':
+    '{product} wird von Menschen gemacht, die glauben, dass KI jeden st\u00e4rken sollte, nicht nur wenige Privilegierte. Ob Sie Code, Ideen oder Feedback beitragen \u2014 Sie helfen, KI f\u00fcr die Welt zug\u00e4nglich zu machen.',
   'View on GitHub': 'Auf GitHub ansehen',
-  'Open an Issue': 'Issue eröffnen',
+  'Open an Issue': 'Issue er\u00f6ffnen',
   'Made with care for humans everywhere.':
-    'Mit Sorgfalt für Menschen überall gemacht.',
+    'Mit Sorgfalt f\u00fcr Menschen \u00fcberall gemacht.',
 }

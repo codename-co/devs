@@ -1,49 +1,82 @@
 /**
  * Task-delegation tour — English source dictionary.
- *
- * The English dictionary is an array where each entry IS the literal string
- * passed to `t(...)`. Other locales are keyed Records mapping each English
- * string to its translation.
  */
 export const en = [
   // Scene 1 — hook
-  'Stop chatting. Start delegating.',
+  'Connect everything. Delegate anything.',
 
-  // Scene 2 — prompt submit
-  'Audit Q1 expenses, flag anomalies, draft a CFO memo',
+  // Scene 2 — settings / connectors
+  'Connectors',
+  'Choose a service to connect:',
+  'Google Drive',
+  'Sync files and folders',
+  'Gmail',
+  'Sync emails',
+  'Connecting to Google Drive...',
+  'Connecting to Gmail...',
+  'Successfully connected!',
+  'Connected and authorized',
+  'Auto-sync enabled',
 
-  // Scene 3 — board view (task titles)
-  'Parse invoices',
-  'Flag anomalies',
-  'Cross-check budgets',
-  'Summarize findings',
-  'Draft CFO memo',
-  // Scene 3 — board view (task snippets)
-  'Extract line items from 247 invoices',
-  'Identify outliers above 2σ threshold',
-  'Compare against Q4 budget allocations',
-  'Aggregate findings into executive bullets',
-  'Compose formal memo for CFO review',
-  // Scene 3 — agent roles
+  // Scene 3 — prompt submit
+  'Analyze last month\u2019s sales invoices from Drive, calculate quarterly projections, and generate a PPTX deck with an email draft to the client',
+
+  // Scene 4 — swarm stream (step titles)
+  'Breaking into subtasks. Recruiting Data, Analysis, and Writing agents\u2026',
+  'Pulling invoices from Google Drive',
+  'Scanning Gmail for purchase order confirmations',
+  'Calculating quarterly projections',
+  'Generating presentation',
+  'Drafting email to client',
+
+  // Scene 4 — swarm stream (tool call I/O)
+  '34 invoices \u00B7 Sales folder',
+  '12 matching PO confirmations',
+  'Q1: $2.4M \u00B7 Q2: $3.1M \u00B7 Q3: $2.8M \u00B7 Q4 (proj): $3.6M',
+  '8 slides \u00B7 .pptx ready',
+  'Draft ready \u00B7 1 attachment',
+
+  // Scene 4 — streaming markdown answer
+  'quarterly_report',
+
+  // Scene 4 — thread list items
+  'Sales invoice analysis + quarterly projections',
+  'Draft Q3 OKRs for the platform team',
+  'Synthesized five drafts. Ready for review.',
+  'Compare three WebGPU inference runtimes',
+  'Benchmarks complete. Transformers.js leads on cold start.',
+
+  // Scene 4 — agent roles
+  'Research',
   'Analysis',
-  'Auditing',
   'Writing',
+  'Review',
 
-  // Scene 4 — artifacts
-  'Task completed',
-  '3 agents collaborated',
-  'Q1 Expense Audit',
-  'report',
-  'CFO Memo',
-  'document',
+  // Scene 4 — task metadata
+  'New task',
+  'Start a new task',
 
-  // Scene 5 — collapse
-  'Delegated. Delivered. Done.',
+  // Scene 5 — email draft
+  'To:',
+  'Subject:',
+  'Q4 Sales Projections \u2014 Deck Attached',
+  'Dear Sarah,',
+  'Please find attached our quarterly sales projections deck. Key highlights:',
+  '\u2022 Q4 projected revenue: **$3.6M** (+29% vs Q3)',
+  '\u2022 Top growth driver: Enterprise segment (+42%)',
+  '\u2022 3 risk factors flagged in appendix',
+  'Happy to walk through the details at your convenience.',
+  'Best regards',
+  'quarterly-projections.pptx',
+  '2.4 MB',
 
-  // Scene 6 — CTA
+  // Scene 6 — collapse
+  'Connected. Computed. Delivered.',
+
+  // Scene 7 — CTA
   'Now you can.',
-  'Open devs.new →',
-  'No signup · No install · Free',
+  'Open devs.new \u2192',
+  'No signup \u00B7 No install \u00B7 Free',
 
   // Playback bar — settings menu
   'Speed',

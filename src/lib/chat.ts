@@ -540,6 +540,8 @@ export interface ChatSubmitOptions {
   onResponseClear?: () => void
   /** AbortSignal for cancelling in-flight LLM requests */
   signal?: AbortSignal
+  /** Called as soon as the conversation is created (before LLM streaming starts) */
+  onConversationCreated?: (conversationId: string) => void
 }
 
 export interface ChatSubmitResult {
@@ -565,6 +567,7 @@ export const submitChat = async (
     onPromptClear,
     onResponseClear,
     signal,
+    onConversationCreated,
   } = options
 
   if (!prompt.trim()) {
@@ -606,6 +609,7 @@ export const submitChat = async (
           (selectedAgent && conversation.agentId !== selectedAgent.id)
         ) {
           conversation = await createConversation(agent.id, 'orchestration')
+          onConversationCreated?.(conversation.id)
         }
 
         // Save user message to conversation
@@ -745,6 +749,7 @@ export const submitChat = async (
     ) {
       conversation = await createConversation(agent.id, 'default')
       isNewConversation = true
+      onConversationCreated?.(conversation.id)
     }
 
     // Get knowledge attachments for the agent

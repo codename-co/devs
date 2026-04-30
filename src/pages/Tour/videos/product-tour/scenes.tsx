@@ -12,9 +12,9 @@
  */
 import { memo, useLayoutEffect, useMemo, useRef } from 'react'
 import { useI18n } from '@/i18n'
-import { NewTaskHero } from '@/pages/V2/pages/NewTaskHero'
-import { Sidebar, ThreadList, ThreadPreview } from '@/pages/V2/components'
-import type { Thread } from '@/pages/V2/types'
+import { NewTaskHero } from '@/pages/Workspace/pages/NewTaskHero'
+import { Sidebar, ThreadList, ThreadPreview } from '@/pages/Workspace/components'
+import type { Thread } from '@/pages/Workspace/types'
 import type { Agent, Artifact, MessageStep, Task } from '@/types'
 import {
   clamp,

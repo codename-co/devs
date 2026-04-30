@@ -7,10 +7,8 @@
  */
 import { memo, useLayoutEffect, useMemo, useRef } from 'react'
 import { useI18n } from '@/i18n'
-import { Sidebar, ThreadList, ThreadPreview } from '@/pages/V2/components'
-import { TranscriptEventList } from '@/pages/V2/components/TranscriptEventList'
-import type { TranscriptEvent } from '@/pages/V2/components/TranscriptView'
-import type { Thread } from '@/pages/V2/types'
+import { Sidebar, ThreadList, ThreadPreview } from '@/pages/Workspace/components'
+import type { Thread } from '@/pages/Workspace/types'
 import type { Agent } from '@/types'
 import {
   clamp,
@@ -73,12 +71,7 @@ interface InboxStrings {
   q1UserMsg: string
   q1AssistantMsg: string
   // Transcript event labels/content
-  auditLabel: string
-  thinking: string
   analyzing: string
-  calcLabel: string
-  searchKbLabel: string
-  foundLabel: string
   // Tag search
   hashResearch: string
   searchTagOrganize: string
@@ -107,12 +100,7 @@ function useInboxStrings(): InboxStrings {
       q1AssistantMsg: t(
         'Found 3 anomalies totaling $12,400. Two duplicate vendor payments and one misclassified expense in Marketing.',
       ),
-      auditLabel: t('Audit Q1 expenses...'),
-      thinking: t('Thinking'),
       analyzing: t('Analyzing expense data...'),
-      calcLabel: t('calculate — 247 transactions'),
-      searchKbLabel: t('search_knowledge — Q1 reports'),
-      foundLabel: t('Found 3 anomalies...'),
       hashResearch: t('#research'),
       searchTagOrganize: t('Search. Tag. Organize.'),
     }),
@@ -346,12 +334,12 @@ const TRANSCRIPT_EVENT_DELAYS = [0.5, 1.5, 2.5, 3.5, 4.5]
 
 interface TranscriptContentProps {
   threads: Thread[]
-  eventsToShow: TranscriptEvent[]
+  transcriptThread: Thread
 }
 
 const TranscriptContent = memo(function TranscriptContent({
   threads,
-  eventsToShow,
+  transcriptThread,
 }: TranscriptContentProps) {
   const { width: stageW } = useStageSize()
   const showThreadList = stageW >= 650
@@ -387,10 +375,18 @@ const TranscriptContent = memo(function TranscriptContent({
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <TranscriptEventList
-              events={eventsToShow}
-              selectedEventId={null}
-              onSelectEvent={noop}
+            <ThreadPreview
+              thread={transcriptThread}
+              onDeselect={noop}
+              isStarred={false}
+              starColor={null}
+              onToggleStar={noop}
+              onReply={noop}
+              replyPrompt=""
+              onReplyPromptChange={noop}
+              mode="transcript"
+              isActive
+              onMarkRead={noop}
             />
           </div>
         </div>
@@ -410,67 +406,121 @@ function SceneTranscriptInner() {
   const agents = useMemo(() => buildInboxAgents(s), [s])
   const threads = useMemo(() => buildInboxThreads(agents, s), [agents, s])
 
-  // Five transcript events derived from i18n strings; timestamps encode
-  // relative durations so the progress bar renders meaningful proportions.
-  const allEvents = useMemo<TranscriptEvent[]>(
-    () => [
-      {
-        id: 'te-user',
-        role: 'user',
-        label: s.auditLabel,
-        timestamp: BASE_MS,
-        content: s.q1UserMsg,
-        tokenInfo: { prompt: 340, completion: 0 },
-      },
-      {
-        id: 'te-think',
-        role: 'agent',
-        label: s.thinking,
-        timestamp: BASE_MS + 1200,
-        duration: 800,
-        content: s.analyzing,
-      },
-      {
-        id: 'te-calc',
-        role: 'tool',
-        label: s.calcLabel,
-        timestamp: BASE_MS + 2000,
-        duration: 2100,
-        toolUse: { name: 'calculate', input: { transactions: 247 } },
-        toolResult: '3 anomalies detected',
-        status: 'completed',
-        tokenInfo: { prompt: 580, completion: 0 },
-      },
-      {
-        id: 'te-search',
-        role: 'tool',
-        label: s.searchKbLabel,
-        timestamp: BASE_MS + 4100,
-        duration: 1500,
-        toolUse: { name: 'search_knowledge', input: { query: 'Q1 reports' } },
-        toolResult: '12 documents loaded',
-        status: 'completed',
-        tokenInfo: { prompt: 120, completion: 0 },
-      },
-      {
-        id: 'te-resp',
-        role: 'agent',
-        label: s.foundLabel,
-        timestamp: BASE_MS + 5600,
-        content: s.q1AssistantMsg,
-        tokenInfo: { prompt: 410, completion: 0 },
-      },
-    ],
-    [s],
-  )
-
-  // Reveal events one-by-one at their scheduled delays
+  // Build messages that map to transcript events, revealed progressively.
+  // TranscriptView inside ThreadPreview will convert these to TranscriptEvent[].
   const eventsCount = TRANSCRIPT_EVENT_DELAYS.filter(
     (d) => localTime >= d,
   ).length
-  const eventsToShow = useMemo(
-    () => allEvents.slice(0, eventsCount),
-    [allEvents, eventsCount],
+
+  // All five messages corresponding to the five transcript events
+  const allMessages = useMemo(
+    () => [
+      {
+        id: 'te-user',
+        role: 'user' as const,
+        content: s.q1UserMsg,
+        timestamp: new Date(BASE_MS),
+      },
+      {
+        id: 'te-think',
+        role: 'assistant' as const,
+        agent: agents.auditor,
+        content: s.analyzing,
+        timestamp: new Date(BASE_MS + 1200),
+        steps: [
+          {
+            id: 'step-think',
+            icon: 'Brain',
+            i18nKey: 'Thinking',
+            startedAt: BASE_MS + 1200,
+            completedAt: BASE_MS + 2000,
+            status: 'completed' as const,
+            toolCalls: [],
+          },
+        ],
+      },
+      {
+        id: 'te-calc',
+        role: 'assistant' as const,
+        agent: agents.auditor,
+        content: '',
+        timestamp: new Date(BASE_MS + 2000),
+        steps: [
+          {
+            id: 'step-calc',
+            icon: 'Calculator',
+            i18nKey: 'Calculating',
+            startedAt: BASE_MS + 2000,
+            completedAt: BASE_MS + 4100,
+            status: 'completed' as const,
+            toolCalls: [
+              {
+                name: 'calculate',
+                input: { transactions: 247 },
+                output: '3 anomalies detected',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'te-search',
+        role: 'assistant' as const,
+        agent: agents.auditor,
+        content: '',
+        timestamp: new Date(BASE_MS + 4100),
+        steps: [
+          {
+            id: 'step-search',
+            icon: 'Search',
+            i18nKey: 'Searching',
+            startedAt: BASE_MS + 4100,
+            completedAt: BASE_MS + 5600,
+            status: 'completed' as const,
+            toolCalls: [
+              {
+                name: 'search_knowledge',
+                input: { query: 'Q1 reports' },
+                output: '12 documents loaded',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'te-resp',
+        role: 'assistant' as const,
+        agent: agents.auditor,
+        content: s.q1AssistantMsg,
+        timestamp: new Date(BASE_MS + 5600),
+      },
+    ],
+    [s, agents],
+  )
+
+  const visibleMessages = useMemo(
+    () => allMessages.slice(0, eventsCount),
+    [allMessages, eventsCount],
+  )
+
+  // Build a thread with the progressively revealed messages
+  const transcriptThread = useMemo<Thread>(
+    () => ({
+      id: 'inbox-q1',
+      kind: 'task',
+      title: s.q1Title,
+      snippet: s.q1Snippet,
+      updatedAt: new Date(BASE_MS - 2 * 60_000).toISOString(),
+      agent: agents.auditor,
+      participants: [agents.auditor],
+      starColor: null,
+      unread: true,
+      messages: visibleMessages,
+      artifacts: [],
+      source: {},
+      tags: [],
+    }),
+    [s, agents, visibleMessages],
   )
 
   const opacityRef = useRef<HTMLDivElement>(null)
@@ -480,7 +530,7 @@ function SceneTranscriptInner() {
 
   return (
     <div ref={opacityRef} style={{ position: 'absolute', inset: 0, opacity }}>
-      <TranscriptContent threads={threads} eventsToShow={eventsToShow} />
+      <TranscriptContent threads={threads} transcriptThread={transcriptThread} />
     </div>
   )
 }

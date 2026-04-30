@@ -218,4 +218,23 @@ export const ko: I18n = {
   'Customize the labels for your tag colors':
     '태그 색상의 레이블을 사용자 정의하세요',
   'Reset to default': '기본값으로 재설정',
+  'Sign in with GitHub': 'GitHub으로 로그인',
+  'Sign in with your GitHub account to use Copilot models from OpenAI, Anthropic, and Google.':
+    'GitHub 계정으로 로그인하여 OpenAI, Anthropic, Google의 Copilot 모델을 사용하세요.',
+  'Connecting to GitHub...': 'GitHub에 연결 중...',
+  'Enter this code on GitHub:': 'GitHub에서 이 코드를 입력하세요:',
+  'Waiting for authorization...': '인증 대기 중...',
+  'A browser tab has been opened. If not,': '브라우저 탭이 열렸습니다. 열리지 않았다면,',
+  'click here': '여기를 클릭하세요',
+  'Successfully authenticated!': '인증 성공!',
+  'Authentication failed': '인증 실패',
+  'Try again': '다시 시도',
+  'Requires an active GitHub Copilot subscription.':
+    '활성 GitHub Copilot 구독이 필요합니다.',
+  'GitHub OAuth is not configured. Set VITE_GITHUB_CLIENT_ID environment variable.':
+    'GitHub OAuth가 구성되지 않았습니다. VITE_GITHUB_CLIENT_ID 환경 변수를 설정하세요.',
+  'Paste a token from': '다음에서 토큰을 붙여넣으세요',
+  'or a': '또는',
+  'fine-grained PAT': '세밀한 PAT',
+  'with Copilot Requests permission.': 'Copilot Requests 권한 포함.',
 } as const

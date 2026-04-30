@@ -12,7 +12,6 @@ export const fr: I18n = {
   Writers: 'Écrivains',
   'Other Agents': 'Autres agents',
 
-  // AppDrawer
   'Expand sidebar': 'Agrandir la barre latérale',
   'Collapse sidebar': 'Réduire la barre latérale',
   'New Task': 'Nouvelle tâche',
@@ -1063,4 +1062,114 @@ export const fr: I18n = {
 
   // NewTaskPage
   'Your AI team is ready': 'Votre équipe IA est prête',
+  'Failed to create session': 'Échec de création de la session',
+
+  // Workspace
+  'Sub-tasks': 'Sous-tâches',
+  pending: 'en attente',
+  Threads: 'Fils',
+  'Select a space': 'Sélectionner un espace',
+  'Open menu': 'Ouvrir le menu',
+  'Close menu': 'Fermer le menu',
+  'Change layout': 'Changer la disposition',
+  List: 'Liste',
+  Board: 'Tableau',
+  'New conversation': 'Nouvelle conversation',
+  'Start a new conversation': 'Démarrer une nouvelle conversation',
+  'Search tasks and conversations…': 'Rechercher des tâches et conversations…',
+  'No threads yet': 'Aucun fil pour le moment',
+  'No matching threads': 'Aucun fil correspondant',
+  'New task': 'Nouvelle tâche',
+  'Start a new task': 'Démarrer une nouvelle tâche',
+  'New agent': 'Nouvel agent',
+  'Create a custom agent': 'Créer un agent personnalisé',
+
+  // AgentCreationWizard
+  'How would you like to create your agent?':
+    'Comment souhaitez-vous créer votre agent\u00a0?',
+  'Choose your preferred approach. You can always switch later.':
+    'Choisissez votre approche préférée. Vous pourrez toujours changer plus tard.',
+  'AI-Assisted': 'Assisté par l\u2019IA',
+  'Describe what kind of agent you need in plain language. AI will generate the name, role, and instructions for you.':
+    'Décrivez le type d\u2019agent dont vous avez besoin en langage courant. L\u2019IA générera le nom, le rôle et les instructions pour vous.',
+  'Manual Configuration': 'Configuration manuelle',
+  'Set up everything yourself. Define the name, role, and instructions from scratch.':
+    'Configurez tout vous-même. Définissez le nom, le rôle et les instructions de zéro.',
+  'Describe your agent': 'Décrivez votre agent',
+  'Tell us what kind of agent you want and we\u2019ll generate its name, role, and instructions automatically.':
+    'Dites-nous quel type d\u2019agent vous souhaitez et nous générerons son nom, son rôle et ses instructions automatiquement.',
+  'Generating agent...': 'Génération de l\u2019agent...',
+  'Thinking...': 'Réflexion...',
+  Stop: 'Arrêter',
+  'Generate Agent': 'Générer l\u2019agent',
+  'to generate': 'pour générer',
+  'Skip to manual': 'Passer au manuel',
+  'Agent configuration': 'Configuration de l\u2019agent',
+  'Define your agent\u2019s identity and behavior. All fields are editable.':
+    'Définissez l\u2019identité et le comportement de votre agent. Tous les champs sont modifiables.',
+  Name: 'Nom',
+  Role: 'Rôle',
+  Instructions: 'Instructions',
+  'Agent name...': 'Nom de l\u2019agent...',
+  'Agent role...': 'Rôle de l\u2019agent...',
+  'Creating...': 'Création...',
+  'Create Agent': 'Créer l\u2019agent',
+  'Test first': 'Tester d\u2019abord',
+  'Back to configure': 'Retour à la configuration',
+  AI: 'IA',
+  Test: 'Test',
+  'e.g., A friendly cooking assistant who specializes in Italian cuisine and can suggest wine pairings...':
+    'ex., Un assistant culinaire sympathique spécialisé dans la cuisine italienne qui peut suggérer des accords mets-vins...',
+  'Detailed instructions for the agent\u2019s behavior, personality, skills, constraints, and goals...':
+    'Instructions détaillées pour le comportement, la personnalité, les compétences, les contraintes et les objectifs de l\u2019agent...',
+
+  // Agent preview
+  'Close (Esc)': 'Fermer (Echap)',
+  'Delete agent': 'Supprimer l\u2019agent',
+  'More actions': 'Plus d\u2019actions',
+  'No actions available': 'Aucune action disponible',
+  Collapse: 'Réduire',
+  Fullscreen: 'Plein écran',
+  'Exit fullscreen': 'Quitter le plein écran',
+  Pin: 'Épingler',
+  Unpin: 'Désépingler',
+  'Example prompts': 'Exemples de prompts',
+  'Describe the agent\u2019s role...': 'Décrivez le rôle de l\u2019agent...',
+  'Write the agent\u2019s system instructions...':
+    'Écrivez les instructions système de l\u2019agent...',
+  Temperature: 'Température',
+  Precise: 'Précis',
+  Balanced: 'Équilibré',
+  Creative: 'Créatif',
+  Experimental: 'Expérimental',
+  Restart: 'Redémarrer',
+  'Send a message...': 'Envoyer un message...',
+  'An error occurred': 'Une erreur est survenue',
+  'No connectors linked': 'Aucun connecteur lié',
+  'No knowledge items assigned': 'Aucun élément de connaissance assigné',
+  'No memories yet \u2014 this agent will learn from conversations':
+    'Pas encore de mémoires \u2014 cet agent apprendra des conversations',
+  'No skills assigned': 'Aucune compétence assignée',
+  Active: 'Actif',
+  Inactive: 'Inactif',
+  'No tools configured': 'Aucun outil configuré',
+  'Delete this agent? This cannot be undone.':
+    'Supprimer cet agent\u00a0? Cette action est irréversible.',
+  Previous: 'Précédent',
+  Next: 'Suivant',
+  '{current} of {total}': '{current} sur {total}',
+  Profile: 'Profil',
+  Playground: 'Terrain de jeu',
+  'Esc to cancel \u00b7 click outside to save':
+    'Echap pour annuler \u00b7 cliquez à l\u2019extérieur pour enregistrer',
+  'Test {name}': 'Tester {name}',
+  'Send a message to try this agent. Nothing is saved.':
+    'Envoyez un message pour essayer cet agent. Rien n\u2019est sauvegardé.',
+  'Lower values produce focused and deterministic output. Higher values increase creativity and variation.':
+    'Les valeurs basses produisent des résultats ciblés et déterministes. Les valeurs élevées augmentent la créativité et la variation.',
+  'Agent info': 'Infos sur l\u2019agent',
+  Star: 'Favoriser',
+  Unstar: 'Défavoriser',
+  'Chat view': 'Vue discussion',
+  'Frames view': 'Vue cadres',
 } as const

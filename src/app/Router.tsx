@@ -9,7 +9,6 @@ import { setActiveSpaceId } from '@/stores/spaceStore'
 import { base64urlToUuid } from '@/lib/url'
 import { ALL_SPACES_ID, ALL_SPACES_URL_SEGMENT } from '@/types'
 import { StudioPage } from '@/features/studio/pages/StudioPage'
-import { IndexPage } from '@/pages/Index'
 import { AgentsNewPage } from '@/pages/Agents/new'
 import { AgentRunPage } from '@/pages/Agents/run'
 import { AgentsPage } from '@/pages/Agents'
@@ -23,7 +22,7 @@ import { TaskTimelineDemo } from '@/pages/Demo/TaskTimelineDemo'
 import { AboutPage } from '@/pages/About'
 import { PrivacyPage } from '@/pages/Privacy'
 import { TermsPage } from '@/pages/Terms'
-import { V2Page } from '@/pages/V2'
+import { V2Page } from '@/pages/Workspace'
 import { TourPage, TourVideoPage } from '@/pages/Tour'
 import { OAuthCallbackPage } from '@/pages/OAuth'
 import { TaskPage } from '@/pages/Tasks/show'
@@ -62,23 +61,30 @@ import { ComparePage } from '@/pages/Compare/index.tsx'
 
 // Redirect components for old paths → history tabs
 const LibraryRedirect = () => <Navigate to="../history" replace />
-const TasksRedirect = () => <Navigate to="../history/tasks" replace />
 const ConversationsRedirect = () => (
   <Navigate to="../history/conversations" replace />
 )
 
 const routes = {
-  v2: V2Page,
-  'v2/:filter': V2Page,
-  'v2/:filter/:threadId': V2Page,
-  'v2/:filter/:threadId/:tab': V2Page,
-  'v2/:filter/:threadId/:inspectType/:inspectId': V2Page,
-  index: IndexPage,
-  agents: AgentsPage,
-  'agents/run': AgentRunPage,
-  'agents/run/:agentSlug': AgentRunPage,
-  'agents/run/:agentSlug/:conversationId': AgentRunPage,
-  'agents/new': AgentsNewPage,
+  // V2 pages are the default
+  index: V2Page,
+  // Explicit static routes for V2 filters (prevent :lang from capturing them)
+  agents: V2Page,
+  'agents/:threadId': V2Page,
+  'agents/:threadId/:tab': V2Page,
+  'agents/:threadId/:inspectType/:inspectId': V2Page,
+  inbox: V2Page,
+  'inbox/:threadId': V2Page,
+  'inbox/:threadId/:tab': V2Page,
+  'inbox/:threadId/:inspectType/:inspectId': V2Page,
+  // Deprecated pages (old Agents & Tasks)
+  'deprecated/agents': AgentsPage,
+  'deprecated/agents/run': AgentRunPage,
+  'deprecated/agents/run/:agentSlug': AgentRunPage,
+  'deprecated/agents/run/:agentSlug/:conversationId': AgentRunPage,
+  'deprecated/agents/new': AgentsNewPage,
+  'deprecated/task': TaskPage,
+  'deprecated/tasks/:taskId': TaskPage,
   history: HistoryPage,
   'history/library': HistoryPage,
   'history/memories': HistoryPage,
@@ -95,9 +101,6 @@ const routes = {
   'oauth/callback': OAuthCallbackPage,
   about: AboutPage,
   privacy: PrivacyPage,
-  task: TaskPage,
-  tasks: TasksRedirect,
-  'tasks/:taskId': TaskPage,
   'session/:sessionId': SessionPage,
   library: LibraryRedirect,
   terms: TermsPage,

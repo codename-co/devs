@@ -1,21 +1,10 @@
-/**
- * Tour-local i18n — Korean translations.
- *
- * Keys are the literal English strings from `./en.ts`. Every new string added
- * to the English source must be translated here.
- */
 import type { en } from './en'
 
 type I18n = Record<(typeof en)[number], string>
 
 export const ko: I18n = {
-  // Browser chrome
   [`DEVS`]: `DEVS`,
-
-  // Scene 1 — hook caption
-  [`What if AI worked your way?`]: `AI가 당신의 방식대로 일한다면?`,
-
-  // Scene 2 — browser agents
+  [`What if AI worked your way?`]: `AI가 당신의 방식대로 작동한다면?`,
   [`New agent`]: `새 에이전트`,
   [`Create a custom agent`]: `맞춤 에이전트 만들기`,
   [`Scout`]: `Scout`,
@@ -23,7 +12,7 @@ export const ko: I18n = {
   [`Forge`]: `Forge`,
   [`Analysis`]: `분석`,
   [`Scribe`]: `Scribe`,
-  [`Writing`]: `작성`,
+  [`Writing`]: `작문`,
   [`Echo`]: `Echo`,
   [`Review`]: `검토`,
   [`Probe`]: `Probe`,
@@ -32,48 +21,29 @@ export const ko: I18n = {
   [`Vision`]: `비전`,
   [`Market Scout`]: `Market Scout`,
   [`Competitive Analyst`]: `경쟁 분석가`,
-
-  // Scene 3 — agent config
-  [`Profile`]: `프로필`,
-  [`Name`]: `이름`,
-  [`Role`]: `역할`,
-  [`Instructions`]: `지침`,
+  [`Search agents…`]: `에이전트 검색…`,
+  [`No agents found`]: `에이전트를 찾을 수 없습니다`,
+  [`An agent that monitors competitor pricing and product launches, then writes weekly briefs`]: `경쟁사 가격과 제품 출시를 모니터링하고 주간 브리핑을 작성하는 에이전트`,
+  [`Analyzing your description...`]: `설명을 분석하는 중…`,
+  [`Generating agent configuration...`]: `에이전트 구성을 생성하는 중…`,
+  [`{"name": "Market Scout", "role": "Competitive Analyst"}`]: `{"name": "Market Scout", "role": "경쟁 분석가"}`,
   [`Analyze competitor products, pricing strategies, and market positioning. Summarize findings into actionable briefs.`]: `경쟁사 제품, 가격 전략, 시장 포지셔닝을 분석합니다. 결과를 실행 가능한 브리핑으로 요약합니다.`,
-  [`Context`]: `컨텍스트`,
-  [`Knowledge`]: `지식`,
-  [`market-report-q3.pdf`]: `market-report-q3.pdf`,
-  [`competitor-matrix.csv`]: `competitor-matrix.csv`,
-  [`Skills`]: `스킬`,
-  [`Web research`]: `웹 리서치`,
-  [`Settings`]: `설정`,
-  [`Model`]: `모델`,
-  [`GPT-4o`]: `GPT-4o`,
-  [`Temperature`]: `온도`,
-  [`0.7`]: `0.7`,
-
-  // Scene 4 — team glance
-  [`A team. Yours. Built in seconds.`]: `팀. 당신의 팀. 몇 초 만에 완성.`,
-
-  // Scene 5 — CTA
-  [`Now you can.`]: `이제 할 수 있습니다.`,
+  [`What are our main competitors doing in Q1?`]: `우리 주요 경쟁사들이 1분기에 무엇을 하고 있나요?`,
+  [`Based on my analysis, here are the key competitor moves this quarter:\n\n1. **Acme Corp** launched a freemium tier targeting SMBs\n2. **Globex** cut enterprise pricing by 15%\n3. **Initech** acquired a data analytics startup\n\nI recommend focusing on our mid-market positioning.`]: `분석 결과, 이번 분기 주요 경쟁사 동향은 다음과 같습니다:\n\n1. **Acme Corp**이 SMB 대상 프리미엄 티어를 출시했습니다\n2. **Globex**가 엔터프라이즈 가격을 15% 인하했습니다\n3. **Initech**가 데이터 분석 스타트업을 인수했습니다\n\n미드마켓 포지셔닝에 집중할 것을 권장합니다.`,
+  [`A team. Yours. Built in seconds.`]: `팀. 당신의 팀. 몇 초 만에 구축.`,
+  [`Now you can.`]: `이제 가능합니다.`,
   [`Open devs.new →`]: `devs.new 열기 →`,
-  [`No signup · No install · Free`]: `가입 없음 · 설치 없음 · 무료`,
-
-  // Playback bar — settings menu
+  [`No signup · No install · Free`]: `가입 불필요 · 설치 불필요 · 무료`,
   [`Speed`]: `속도`,
   [`Normal`]: `보통`,
   [`Language`]: `언어`,
   [`Keyboard shortcuts`]: `키보드 단축키`,
-
-  // Playback bar — control titles
   [`Pause`]: `일시정지`,
   [`Play`]: `재생`,
   [`Unmute`]: `음소거 해제`,
   [`Mute`]: `음소거`,
   [`Exit full screen`]: `전체 화면 종료`,
   [`Full screen`]: `전체 화면`,
-
-  // Keyboard shortcut overlay — descriptions
   [`Play / Pause`]: `재생 / 일시정지`,
   [`Seek back 0.1 s`]: `0.1초 뒤로`,
   [`Seek forward 0.1 s`]: `0.1초 앞으로`,
@@ -82,6 +52,6 @@ export const ko: I18n = {
   [`Go to start`]: `처음으로`,
   [`Toggle mute`]: `음소거 전환`,
   [`Toggle full screen`]: `전체 화면 전환`,
-  [`Show shortcuts`]: `단축키 보기`,
+  [`Show shortcuts`]: `단축키 표시`,
   [`Close this overlay`]: `닫기`,
 }

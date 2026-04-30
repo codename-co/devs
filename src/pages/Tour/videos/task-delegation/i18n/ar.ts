@@ -1,69 +1,73 @@
 /**
  * Tour-local i18n — Arabic translations.
- *
- * Keys are the literal English strings from `./en.ts`. Every new string added
- * to the English source must be translated here.
  */
 import type { en } from './en'
-
 type I18n = Record<(typeof en)[number], string>
 
 export const ar: I18n = {
-  // Scene 1 — hook
-  [`Stop chatting. Start delegating.`]: `توقّف عن الدردشة. ابدأ بالتفويض.`,
-
-  // Scene 2 — prompt submit
-  [`Audit Q1 expenses, flag anomalies, draft a CFO memo`]: `تدقيق نفقات Q1، تحديد الشذوذ، صياغة مذكرة CFO`,
-
-  // Scene 3 — board view (task titles)
-  [`Parse invoices`]: `تحليل الفواتير`,
-  [`Flag anomalies`]: `تحديد الشذوذ`,
-  [`Cross-check budgets`]: `مراجعة الميزانيات`,
-  [`Summarize findings`]: `تلخيص النتائج`,
-  [`Draft CFO memo`]: `صياغة مذكرة CFO`,
-  // Scene 3 — board view (task snippets)
-  [`Extract line items from 247 invoices`]: `استخراج البنود من 247 فاتورة`,
-  [`Identify outliers above 2σ threshold`]: `تحديد القيم الشاذة فوق عتبة 2σ`,
-  [`Compare against Q4 budget allocations`]: `المقارنة بمخصصات ميزانية Q4`,
-  [`Aggregate findings into executive bullets`]: `تجميع النتائج في نقاط تنفيذية`,
-  [`Compose formal memo for CFO review`]: `صياغة مذكرة رسمية لمراجعة CFO`,
-  // Scene 3 — agent roles
+  [`Connect everything. Delegate anything.`]: `اربط كل شيء. فوّض أي شيء.`,
+  [`Connectors`]: `الموصلات`,
+  [`Choose a service to connect:`]: `اختر خدمة للربط:`,
+  [`Google Drive`]: `Google Drive`,
+  [`Sync files and folders`]: `مزامنة الملفات والمجلدات`,
+  [`Gmail`]: `Gmail`,
+  [`Sync emails`]: `مزامنة البريد الإلكتروني`,
+  [`Connecting to Google Drive...`]: `...جارٍ الاتصال بـ Google Drive`,
+  [`Connecting to Gmail...`]: `...جارٍ الاتصال بـ Gmail`,
+  [`Successfully connected!`]: `تم الاتصال بنجاح!`,
+  [`Connected and authorized`]: `متصل ومُصرّح`,
+  [`Auto-sync enabled`]: `المزامنة التلقائية مفعّلة`,
+  [`Analyze last month\u2019s sales invoices from Drive, calculate quarterly projections, and generate a PPTX deck with an email draft to the client`]: `تحليل فواتير المبيعات من Drive للشهر الماضي، حساب التوقعات الفصلية، وإنشاء عرض PPTX مع مسودة بريد للعميل`,
+  [`Breaking into subtasks. Recruiting Data, Analysis, and Writing agents\u2026`]: `تقسيم إلى مهام فرعية. استقطاب وكلاء البيانات والتحليل والكتابة…`,
+  [`Pulling invoices from Google Drive`]: `جلب الفواتير من Google Drive`,
+  [`Scanning Gmail for purchase order confirmations`]: `البحث في Gmail عن تأكيدات أوامر الشراء`,
+  [`Calculating quarterly projections`]: `حساب التوقعات الفصلية`,
+  [`Generating presentation`]: `إنشاء العرض التقديمي`,
+  [`Drafting email to client`]: `صياغة بريد إلكتروني للعميل`,
+  [`34 invoices \u00B7 Sales folder`]: `34 فاتورة · مجلد المبيعات`,
+  [`12 matching PO confirmations`]: `12 تأكيد أوامر شراء مطابقة`,
+  [`Q1: $2.4M \u00B7 Q2: $3.1M \u00B7 Q3: $2.8M \u00B7 Q4 (proj): $3.6M`]: `الربع 1: 2.4M$ · الربع 2: 3.1M$ · الربع 3: 2.8M$ · الربع 4 (متوقع): 3.6M$`,
+  [`8 slides \u00B7 .pptx ready`]: `8 شرائح · .pptx جاهز`,
+  [`Draft ready \u00B7 1 attachment`]: `المسودة جاهزة · مرفق واحد`,
+  [`quarterly_report`]: `التقرير_الفصلي`,
+  [`Sales invoice analysis + quarterly projections`]: `تحليل فواتير المبيعات + التوقعات الفصلية`,
+  [`Draft Q3 OKRs for the platform team`]: `صياغة OKR للربع الثالث لفريق المنصة`,
+  [`Synthesized five drafts. Ready for review.`]: `تم تجميع خمس مسودات. جاهز للمراجعة.`,
+  [`Compare three WebGPU inference runtimes`]: `مقارنة ثلاث بيئات تشغيل WebGPU`,
+  [`Benchmarks complete. Transformers.js leads on cold start.`]: `اكتملت المقاييس. Transformers.js يتصدر في البداية الباردة.`,
+  [`Research`]: `البحث`,
   [`Analysis`]: `التحليل`,
-  [`Auditing`]: `التدقيق`,
   [`Writing`]: `الكتابة`,
-
-  // Scene 4 — artifacts
-  [`Task completed`]: `اكتملت المهمة`,
-  [`3 agents collaborated`]: `تعاون 3 وكلاء`,
-  [`Q1 Expense Audit`]: `تدقيق نفقات Q1`,
-  [`report`]: `تقرير`,
-  [`CFO Memo`]: `مذكرة CFO`,
-  [`document`]: `مستند`,
-
-  // Scene 5 — collapse
-  [`Delegated. Delivered. Done.`]: `فُوِّض. سُلِّم. أُنجِز.`,
-
-  // Scene 6 — CTA
+  [`Review`]: `المراجعة`,
+  [`New task`]: `مهمة جديدة`,
+  [`Start a new task`]: `بدء مهمة جديدة`,
+  [`To:`]: `إلى:`,
+  [`Subject:`]: `الموضوع:`,
+  [`Q4 Sales Projections \u2014 Deck Attached`]: `توقعات مبيعات الربع 4 — العرض مرفق`,
+  [`Dear Sarah,`]: `عزيزتي سارة،`,
+  [`Please find attached our quarterly sales projections deck. Key highlights:`]: `يرجى الاطلاع على عرض توقعات المبيعات الفصلية المرفق. أبرز النقاط:`,
+  [`\u2022 Q4 projected revenue: **$3.6M** (+29% vs Q3)`]: `• إيرادات الربع 4 المتوقعة: **3.6M$** (+29% مقارنة بالربع 3)`,
+  [`\u2022 Top growth driver: Enterprise segment (+42%)`]: `• المحرك الرئيسي للنمو: قطاع المؤسسات (+42%)`,
+  [`\u2022 3 risk factors flagged in appendix`]: `• 3 عوامل خطر مُشار إليها في الملحق`,
+  [`Happy to walk through the details at your convenience.`]: `يسعدني مراجعة التفاصيل في الوقت المناسب لكِ.`,
+  [`Best regards`]: `مع أطيب التحيات`,
+  [`quarterly-projections.pptx`]: `توقعات-فصلية.pptx`,
+  [`2.4 MB`]: `2.4 ميجابايت`,
+  [`Connected. Computed. Delivered.`]: `متصل. محسوب. مُسلَّم.`,
   [`Now you can.`]: `الآن بإمكانك.`,
-  [`Open devs.new →`]: `افتح devs.new ←`,
-  [`No signup · No install · Free`]: `بلا تسجيل · بلا تثبيت · مجاني`,
-
-  // Playback bar — settings menu
+  [`Open devs.new \u2192`]: `افتح devs.new ←`,
+  [`No signup \u00B7 No install \u00B7 Free`]: `بلا تسجيل · بلا تثبيت · مجاني`,
   [`Speed`]: `السرعة`,
   [`Normal`]: `عادي`,
   [`Language`]: `اللغة`,
   [`Keyboard shortcuts`]: `اختصارات لوحة المفاتيح`,
-
-  // Playback bar — control titles
   [`Pause`]: `إيقاف مؤقت`,
   [`Play`]: `تشغيل`,
   [`Unmute`]: `تشغيل الصوت`,
   [`Mute`]: `كتم الصوت`,
-  [`Exit full screen`]: `الخروج من وضع ملء الشاشة`,
+  [`Exit full screen`]: `الخروج من ملء الشاشة`,
   [`Full screen`]: `ملء الشاشة`,
   [`Settings`]: `الإعدادات`,
-
-  // Keyboard shortcut overlay — descriptions
   [`Play / Pause`]: `تشغيل / إيقاف مؤقت`,
   [`Seek back 0.1 s`]: `الرجوع 0.1 ث`,
   [`Seek forward 0.1 s`]: `التقديم 0.1 ث`,

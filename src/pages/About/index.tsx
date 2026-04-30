@@ -16,7 +16,7 @@ import { useI18n, useUrl } from '@/i18n'
 import { IconName } from '@/lib/types'
 import { Container, Section, Title } from '@/components'
 import { LLMService } from '@/lib/llm'
-import Layout from '@/layouts/Default'
+import { WorkspaceShell } from '@/pages/Workspace/WorkspaceShell'
 import { PRODUCT } from '@/config/product'
 import pkg from '@/../package.json'
 import { ProductTourVideo } from '@/pages/Tour/videos/product-tour'
@@ -77,23 +77,23 @@ type TourVideoId = (typeof TOUR_VIDEOS)[number]['id']
 const PRINCIPLES = [
   {
     icon: 'Lock' as IconName,
-    title: 'Privacy by Design',
+    title: 'Your Data Stays Yours',
     description:
-      'Every byte of your data stays on your device. No servers. No telemetry. No compromise.',
+      'Everything stays on your device. Nothing is sent to our servers. No tracking, no snooping, no exceptions.',
     color: 'text-success-600 bg-success-50 dark:bg-success-100/10',
   },
   {
     icon: 'Globe' as IconName,
-    title: 'Universally Accessible',
+    title: 'Works in Any Browser',
     description:
-      'A browser is all you need. No installation, no GPU, no special hardware \u2014 just open and create.',
+      'No downloads, no special equipment. If you can open a web page, you can use DEVS.',
     color: 'text-primary-600 bg-primary-50 dark:bg-primary-100/10',
   },
   {
     icon: 'Community' as IconName,
-    title: 'Open Source Forever',
+    title: 'Free & Open Source',
     description:
-      'Built in the open, shaped by the community. Every line of code is yours to read, improve, and share.',
+      'The code is public, the community shapes it, and it will always be free. No hidden costs, ever.',
     color: 'text-secondary-600 bg-secondary-50 dark:bg-secondary-100/10',
   },
 ] as const
@@ -101,55 +101,55 @@ const PRINCIPLES = [
 const PILLARS = [
   {
     icon: 'Sparks' as IconName,
-    title: 'Multi-Agent Orchestration',
-    subtitle: 'Collective Intelligence',
+    title: 'A Team, Not Just a Chatbot',
+    subtitle: 'Better Together',
     description:
-      'Compose teams of specialised AI agents that plan, execute, and validate together \u2014 mirroring how the best human teams operate.',
+      'Instead of one AI trying to do everything, multiple specialised helpers team up \u2014 each one great at something different, just like a real team.',
     gradient:
       'from-violet-500/10 via-transparent to-transparent dark:from-violet-500/5',
   },
   {
     icon: 'Brain' as IconName,
-    title: 'Provider Independence',
-    subtitle: 'Your Models, Your Choice',
+    title: 'Use Any AI You Like',
+    subtitle: 'Freedom of Choice',
     description:
-      'Seamlessly switch between OpenAI, Anthropic, Google Gemini, Mistral, Ollama, or any OpenAI-compatible endpoint. Never locked in.',
+      'Works with OpenAI, Google, Anthropic, Mistral, and many more. Switch anytime \u2014 your conversations and data stay put.',
     gradient:
       'from-blue-500/10 via-transparent to-transparent dark:from-blue-500/5',
   },
   {
     icon: 'Shield' as IconName,
-    title: 'Zero-Trust Architecture',
-    subtitle: 'Security as a Foundation',
+    title: 'Bank-Level Security',
+    subtitle: 'Locked Down by Default',
     description:
-      'Web Crypto API encrypts your tokens. Service Workers sandbox execution. IndexedDB keeps everything local. Defense in depth, by default.',
+      'Your passwords and keys are encrypted right in your browser. Nothing sensitive ever travels over the internet.',
     gradient:
       'from-emerald-500/10 via-transparent to-transparent dark:from-emerald-500/5',
   },
   {
     icon: 'Strategy' as IconName,
-    title: 'Intelligent Task Analysis',
-    subtitle: 'Complexity, Simplified',
+    title: 'It Breaks Down the Hard Stuff',
+    subtitle: 'Smart Under the Hood',
     description:
-      'An LLM-powered analyser breaks your request into requirements, recruits the right agents, resolves dependencies, and orchestrates delivery.',
+      'Describe a big goal and the system figures out what needs to happen, assigns the right helpers, and coordinates everything automatically.',
     gradient:
       'from-amber-500/10 via-transparent to-transparent dark:from-amber-500/5',
   },
   {
     icon: 'Database' as IconName,
-    title: 'Offline-First & P2P',
-    subtitle: 'Works Anywhere',
+    title: 'Works Without Internet',
+    subtitle: 'Always On, Always Yours',
     description:
-      'Fully functional without internet after first load. Optional Yjs-powered P2P sync lets you collaborate across devices without a central server.',
+      'Once loaded, it works offline. Optionally sync across your devices without relying on anyone else\u2019s servers.',
     gradient:
       'from-rose-500/10 via-transparent to-transparent dark:from-rose-500/5',
   },
   {
     icon: 'Puzzle' as IconName,
-    title: 'Extensible by Nature',
-    subtitle: 'Build on Top',
+    title: 'Endlessly Customisable',
+    subtitle: 'Make It Your Own',
     description:
-      'A marketplace of agents, tools, connectors, and apps \u2014 plus a sandboxed Extension Bridge so the community can create and share new capabilities.',
+      'Browse a library of ready-made tools, connectors, and AI helpers \u2014 or let the community build new ones.',
     gradient:
       'from-cyan-500/10 via-transparent to-transparent dark:from-cyan-500/5',
   },
@@ -159,59 +159,59 @@ const USE_CASES = [
   {
     icon: 'GraduationCap' as IconName,
     persona: 'Students',
-    action: 'Research, study planning & assignment help',
+    action: 'Research, study plans & homework help',
   },
   {
     icon: 'Code' as IconName,
     persona: 'Developers',
-    action: 'Rapid prototyping, code generation & reviews',
+    action: 'Quick prototypes, code & reviews',
   },
   {
     icon: 'DesignPencil' as IconName,
     persona: 'Creators',
-    action: 'Brainstorming, writing & content production',
+    action: 'Ideas, writing & content creation',
   },
   {
     icon: 'Activity' as IconName,
     persona: 'Researchers',
-    action: 'Literature review, data analysis & hypothesis testing',
+    action: 'Literature reviews, data & experiments',
   },
   {
     icon: 'Strategy' as IconName,
     persona: 'Managers',
-    action: 'Project planning, task breakdown & operations',
+    action: 'Project plans, task lists & operations',
   },
   {
     icon: 'LightBulbOn' as IconName,
     persona: 'Entrepreneurs',
-    action: 'Idea validation, strategy & business planning',
+    action: 'Idea testing, strategy & business plans',
   },
 ] as const
 
 const FAQ_KEYS = [
   {
     q: 'Is my data private?',
-    a: 'Absolutely. All processing happens locally in your browser. We never collect, transmit, or store any of your data. Your API keys are encrypted with the Web Crypto API and never leave your device.',
+    a: 'Yes, 100%. Everything happens in your browser \u2014 we never see, collect, or store any of your data. Your AI keys are encrypted on your device and never sent anywhere.',
   },
   {
-    q: 'Which AI providers are supported?',
-    a: 'We support {providers}, and any provider compatible with the OpenAI API specification. You can switch providers at any time without losing your conversations or data.',
+    q: 'Which AI providers can I use?',
+    a: 'We work with {providers}, plus any service compatible with the OpenAI format. You can switch at any time without losing anything.',
   },
   {
     q: 'Do I need to install anything?',
-    a: 'Nothing at all. DEVS is a Progressive Web App that runs entirely in your browser. You can optionally \u201Cinstall\u201D it to your home screen for a native-like experience, but it\u2019s never required.',
+    a: 'Nope. Just open the website and you\u2019re ready to go. You can add it to your home screen for a native app feel, but it\u2019s totally optional.',
   },
   {
-    q: 'Is this really free and open source?',
-    a: 'Yes \u2014 {license} licensed and always will be. The entire codebase is on GitHub. You can self-host, fork, or contribute. No premium tiers, no paywalls.',
+    q: 'Is this really free?',
+    a: 'Yes \u2014 {license} licensed, now and forever. All the code is on GitHub. No subscriptions, no premium plans, no paywalls.',
   },
   {
     q: 'Can I use it offline?',
-    a: 'After the first load, the Service Worker caches everything you need. You can create agents, manage knowledge, and review past conversations without any internet connection. LLM calls obviously require connectivity to the provider.',
+    a: 'After your first visit, everything is saved locally so you can keep working without internet. The only thing that needs a connection is talking to your AI provider.',
   },
   {
-    q: 'How does multi-agent orchestration work?',
-    a: 'When you describe a complex task, the built-in orchestrator analyses it, breaks it into subtasks, recruits specialised agents, resolves dependencies, and coordinates parallel execution \u2014 just like a well-run project team.',
+    q: 'How does the AI team work?',
+    a: 'When you give it a big task, the system breaks it into smaller pieces, picks the best helper for each part, and coordinates them all at once \u2014 like a well-organised project team.',
   },
 ] as const
 
@@ -262,52 +262,41 @@ export const AboutPage = () => {
   const steps = [
     {
       num: '01',
-      title: t('Configure your AI provider'),
+      title: t('Connect your AI'),
       desc: t(
-        'Connect your preferred LLM \u2014 OpenAI, Anthropic, Gemini, Ollama, or any compatible endpoint.',
+        'Pick your favourite AI provider \u2014 like OpenAI or Google \u2014 and add your key. Takes about 30 seconds.',
       ),
       url: url(`${location.pathname}${location.search}#settings/providers`),
       icon: 'Settings' as IconName,
     },
     {
       num: '02',
-      title: t('Describe your task'),
+      title: t('Describe what you need'),
       desc: t(
-        'Tell DEVS what you need in natural language. Be ambitious \u2014 the orchestrator thrives on complexity.',
+        'Just type what you want done, in plain language. The bigger the challenge, the more it shines.',
       ),
       icon: 'ChatLines' as IconName,
     },
     {
       num: '03',
-      title: t('Watch agents collaborate'),
+      title: t('Watch the magic happen'),
       desc: t(
-        'See specialised agents plan, execute, and validate in real-time. Intervene, guide, or just observe.',
+        'Your AI team plans, works, and double-checks in real time. Jump in anytime or sit back and relax.',
       ),
       icon: 'Sparks' as IconName,
     },
     {
       num: '04',
-      title: t('Receive & refine'),
+      title: t('Get your results'),
       desc: t(
-        'Get structured artefacts \u2014 code, docs, analyses \u2014 and iterate with feedback until it\u2019s right.',
+        'Receive polished deliverables \u2014 documents, code, analyses \u2014 and fine-tune them with simple feedback.',
       ),
       icon: 'CheckCircle' as IconName,
     },
   ]
 
   return (
-    <Layout
-      showBackButton={false}
-      // header={{
-      //   icon: {
-      //     name: 'InfoCircle',
-      //     color: 'text-default-300 dark:text-default-400',
-      //   },
-      //   color: 'bg-default-50',
-      //   title: 'About',
-      //   subtitle: PRODUCT.displayName,
-      // }}
-    >
+    <WorkspaceShell title={t('About')}>
       {/* ================================================================= */}
       {/* HERO — Vision Statement                                           */}
       {/* ================================================================= */}
@@ -315,16 +304,16 @@ export const AboutPage = () => {
         <Container>
           <div className="text-center space-y-6 py-4 md:py-8">
             <Title level={1} size="5xl" className="!leading-tight">
-              {t('AI Augmentation for Everyone')}
+              {t('Your AI Team, Ready When You Are')}
             </Title>
 
             <p className="max-w-2xl mx-auto text-lg text-default-600 leading-relaxed">
               {t(
-                '{product} is a browser-native AI agent orchestration platform. Delegate complex tasks to teams of specialised agents that plan, collaborate, and deliver \u2014 all running',
+                '{product} gives you a team of AI helpers that work together \u2014 right in your browser. Just describe what you need, and they\u2019ll plan it, do it, and deliver it \u2014',
                 { product: PRODUCT.displayName },
               )}{' '}
               <strong className="text-foreground">
-                {t('entirely on your device')}
+                {t('without your data ever leaving your device')}
               </strong>
               .
             </p>
@@ -350,7 +339,7 @@ export const AboutPage = () => {
 
             <blockquote className="max-w-xl mx-auto italic text-default-500 text-sm leading-relaxed border-l-3 border-primary-300 dark:border-primary-700 pl-4 text-left">
               {t(
-                '\u201CAI augmentation shouldn\u2019t be a luxury for the few, but a fundamental tool available to all \u2014 where anyone can leverage the power of AI teams to amplify their capabilities and achieve their goals.\u201D',
+                '\u201CAI shouldn\u2019t be a privilege for tech experts. It should be a superpower anyone can use \u2014 like having a brilliant team on call, ready to tackle anything you throw at them.\u201D',
               )}
             </blockquote>
           </div>
@@ -367,11 +356,11 @@ export const AboutPage = () => {
               {t('Philosophy')}
             </Chip>
             <Title level={2} className="!mb-1">
-              {t('Built on Conviction')}
+              {t('What We Stand For')}
             </Title>
             <p className="text-default-500 text-sm max-w-lg mx-auto">
               {t(
-                'Three non-negotiable principles guide every decision we make.',
+                'Three promises we\u2019ll never break.',
               )}
             </p>
           </div>
@@ -410,11 +399,11 @@ export const AboutPage = () => {
               {t('Capabilities')}
             </Chip>
             <Title level={2} className="!mb-1">
-              {t('Powerful by Design')}
+              {t('What Makes It Special')}
             </Title>
             <p className="text-default-500 text-sm max-w-lg mx-auto">
               {t(
-                'A depth of engineering so you can focus on what matters \u2014 your ideas.',
+                'Serious technology made simple \u2014 so you can focus on your ideas.',
               )}
             </p>
           </div>
@@ -461,10 +450,10 @@ export const AboutPage = () => {
               {t('Getting Started')}
             </Chip>
             <Title level={2} className="!mb-1">
-              {t('Four Steps to Delegation')}
+              {t('How It Works')}
             </Title>
             <p className="text-default-500 text-sm max-w-lg mx-auto">
-              {t('From prompt to polished output in minutes, not hours.')}
+              {t('From idea to finished result in minutes.')}
             </p>
           </div>
 
@@ -572,11 +561,11 @@ export const AboutPage = () => {
               {t('For Everyone')}
             </Chip>
             <Title level={2} className="!mb-1">
-              {t('Built for Builders')}
+              {t('Made for Everyone')}
             </Title>
             <p className="text-default-500 text-sm max-w-lg mx-auto">
               {t(
-                'Whether you\u2019re writing code or writing prose \u2014 DEVS adapts to you.',
+                'Whether you\u2019re coding, creating, or strategising \u2014 DEVS adapts to you.',
               )}
             </p>
           </div>
@@ -618,9 +607,9 @@ export const AboutPage = () => {
           <Accordion variant="splitted" selectionMode="multiple">
             {FAQ_KEYS.map((faq, i) => {
               const vars =
-                faq.q === 'Which AI providers are supported?'
+                faq.q === 'Which AI providers can I use?'
                   ? { providers }
-                  : faq.q === 'Is this really free and open source?'
+                  : faq.q === 'Is this really free?'
                     ? { license: pkg.license }
                     : undefined
               return (
@@ -653,21 +642,21 @@ export const AboutPage = () => {
             <CardBody className="p-8 md:p-12 text-center space-y-5">
               <Icon name="Heart" className="w-8 h-8 text-danger-400 mx-auto" />
               <Title level={2} size="2xl" className="!mb-0">
-                {t('Shape the Future With Us')}
+                {t('Join the Movement')}
               </Title>
               <p className="max-w-lg mx-auto text-sm text-default-600 leading-relaxed">
                 {t(
-                  '{product} is built by people who believe technology should empower, not enclose. Every contribution \u2014 code, ideas, feedback \u2014 makes AI augmentation more accessible to the world.',
+                  '{product} is made by people who believe AI should empower everyone, not just the privileged few. Whether you contribute code, ideas, or feedback \u2014 you\u2019re helping make AI accessible to the world.',
                   { product: PRODUCT.displayName },
                 )}
               </p>
 
               <div className="flex flex-wrap justify-center gap-3 pt-2">
                 <Button
-                  as={Link}
+                  as="a"
                   href="https://github.com/codename-co/devs"
                   target="_blank"
-                  isExternal
+                  rel="noopener noreferrer"
                   color="default"
                   variant="flat"
                   startContent={<Icon name="GitHub" />}
@@ -675,10 +664,10 @@ export const AboutPage = () => {
                   {t('View on GitHub')}
                 </Button>
                 <Button
-                  as={Link}
+                  as="a"
                   href="https://github.com/codename-co/devs/issues"
                   target="_blank"
-                  isExternal
+                  rel="noopener noreferrer"
                   color="primary"
                   variant="flat"
                   startContent={<Icon name="ChatPlusIn" />}
@@ -695,6 +684,6 @@ export const AboutPage = () => {
           </Card>
         </Container>
       </Section>
-    </Layout>
+    </WorkspaceShell>
   )
 }

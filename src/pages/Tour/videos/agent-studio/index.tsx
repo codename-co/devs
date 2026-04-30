@@ -1,12 +1,25 @@
 /**
  * AgentStudioVideo — the Agent Studio tour composition.
  *
- * Showcases agent creation and customization in the /v2 route.
- * Five scenes, 28 seconds, reuses shared SceneHook and SceneCTA.
+ * Showcases the full agent creation flow: browse → AI-assisted describe →
+ * form review → test playground.
+ *
+ * 36 s, 6 scenes:
+ *   1. SceneHook           (0–2.5s)      "What if AI worked your way?"
+ *   2. SceneBrowseAgents   (2.4–10s)     Agent list → click "New agent" → wizard chooser
+ *   3. SceneAIDescribe     (9.9–17s)     Type description → AI streams config
+ *   4. SceneFormReview     (16.9–23s)    Review generated form → click "Test first"
+ *   5. SceneTestPlayground (22.9–30s)    Playground with mock conversation
+ *   6. SceneCTA            (29.9–36s)    Call to action
  */
 import { Stage, Soundtrack } from '../../common/assets/player'
 import { SceneHook, SceneCTA } from '../../common/scenes'
-import { SceneBrowserAgents, SceneAgentConfig, SceneTeamGlance } from './scenes'
+import {
+  SceneBrowseAgents,
+  SceneAIDescribe,
+  SceneFormReview,
+  SceneTestPlayground,
+} from './scenes'
 import agentStudioI18n from './i18n'
 import soundtrackUrl from '../../common/assets/starostin-promo-promotional-showreel-music-478259.mp3'
 
@@ -23,13 +36,11 @@ interface AgentStudioVideoProps {
 }
 
 export function AgentStudioVideo({ autoplay, rootId, disableKeyboard, initialTime, hideControls, onEnded }: AgentStudioVideoProps) {
-  // Captions/taglines are raw English keys; shared scenes translate them
-  // via `useStageT()` so the in-player language toggle takes effect.
   return (
     <Stage
-      duration={28}
+      duration={36}
       background={BG_LIGHT}
-      backgroundTransitions={[{ start: 16.5, end: 17.2, color: BG_DARK }]}
+      backgroundTransitions={[{ start: 29.5, end: 30.2, color: BG_DARK }]}
       loop={false}
       autoplay={autoplay}
       persistKey=""
@@ -43,12 +54,13 @@ export function AgentStudioVideo({ autoplay, rootId, disableKeyboard, initialTim
     >
       <Soundtrack src={soundtrackUrl} startOffset={2} />
       <SceneHook start={0} end={2.5} caption="What if AI worked your way?" />
-      <SceneBrowserAgents start={2.4} end={10} />
-      <SceneAgentConfig start={9.9} end={17} />
-      <SceneTeamGlance start={16.9} end={22} />
+      <SceneBrowseAgents start={2.4} end={10} />
+      <SceneAIDescribe start={9.9} end={17} />
+      <SceneFormReview start={16.9} end={23} />
+      <SceneTestPlayground start={22.9} end={30} />
       <SceneCTA
-        start={21.9}
-        end={28}
+        start={29.9}
+        end={36}
         tagline="Now you can."
         ctaLabel="Open devs.new →"
         frictionBadge="No signup · No install · Free"

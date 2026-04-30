@@ -217,4 +217,23 @@ export const ar: I18n = {
   'Customize the labels for your tag colors':
     'خصّص تسميات ألوان العلامات الخاصة بك',
   'Reset to default': 'إعادة تعيين إلى الافتراضي',
+  'Sign in with GitHub': 'تسجيل الدخول باستخدام GitHub',
+  'Sign in with your GitHub account to use Copilot models from OpenAI, Anthropic, and Google.':
+    'سجّل الدخول بحسابك على GitHub لاستخدام نماذج Copilot من OpenAI وAnthropic وGoogle.',
+  'Connecting to GitHub...': 'جارٍ الاتصال بـ GitHub...',
+  'Enter this code on GitHub:': 'أدخل هذا الرمز على GitHub:',
+  'Waiting for authorization...': 'بانتظار التفويض...',
+  'A browser tab has been opened. If not,': 'تم فتح علامة تبويب في المتصفح. إذا لم يحدث ذلك،',
+  'click here': 'انقر هنا',
+  'Successfully authenticated!': 'تمت المصادقة بنجاح!',
+  'Authentication failed': 'فشلت المصادقة',
+  'Try again': 'حاول مرة أخرى',
+  'Requires an active GitHub Copilot subscription.':
+    'يتطلب اشتراكًا نشطًا في GitHub Copilot.',
+  'GitHub OAuth is not configured. Set VITE_GITHUB_CLIENT_ID environment variable.':
+    'لم يتم تكوين GitHub OAuth. عيّن متغير البيئة VITE_GITHUB_CLIENT_ID.',
+  'Paste a token from': 'الصق رمزًا من',
+  'or a': 'أو',
+  'fine-grained PAT': 'رمز وصول شخصي دقيق',
+  'with Copilot Requests permission.': 'مع إذن طلبات Copilot.',
 } as const

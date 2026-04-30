@@ -4,143 +4,145 @@ type I18n = Record<(typeof en)[number], string>
 
 export const ar: I18n = {
   // Hero
-  'AI Augmentation for Everyone': 'تعزيز الذكاء الاصطناعي للجميع',
-  '{product} is a browser-native AI agent orchestration platform. Delegate complex tasks to teams of specialised agents that plan, collaborate, and deliver — all running':
-    '{product} هي منصة تنسيق وكلاء ذكاء اصطناعي أصلية في المتصفح. فوّض المهام المعقدة لفرق من الوكلاء المتخصصين الذين يخططون ويتعاونون ويُنجزون — كل ذلك يعمل',
-  'entirely on your device': 'بالكامل على جهازك',
-  'Watch the 30-second tour': 'شاهد الجولة في 30 ثانية',
+  'Your AI Team, Ready When You Are':
+    '\u0641\u0631\u064a\u0642 \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a \u0627\u0644\u062e\u0627\u0635 \u0628\u0643\u060c \u062c\u0627\u0647\u0632 \u0639\u0646\u062f\u0645\u0627 \u062a\u0643\u0648\u0646 \u062c\u0627\u0647\u0632\u064b\u0627',
+  '{product} gives you a team of AI helpers that work together \u2014 right in your browser. Just describe what you need, and they\u2019ll plan it, do it, and deliver it \u2014':
+    '{product} \u064a\u0645\u0646\u062d\u0643 \u0641\u0631\u064a\u0642\u064b\u0627 \u0645\u0646 \u0645\u0633\u0627\u0639\u062f\u064a \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a \u0627\u0644\u0630\u064a\u0646 \u064a\u0639\u0645\u0644\u0648\u0646 \u0645\u0639\u064b\u0627 \u2014 \u0645\u0628\u0627\u0634\u0631\u0629 \u0641\u064a \u0645\u062a\u0635\u0641\u062d\u0643. \u0645\u0627 \u0639\u0644\u064a\u0643 \u0633\u0648\u0649 \u0648\u0635\u0641 \u0645\u0627 \u062a\u062d\u062a\u0627\u062c\u0647\u060c \u0648\u0633\u064a\u062e\u0637\u0637\u0648\u0646\u0647 \u0648\u064a\u0646\u0641\u0630\u0648\u0646\u0647 \u0648\u064a\u0633\u0644\u0645\u0648\u0646\u0647 \u2014',
+  'without your data ever leaving your device':
+    '\u062f\u0648\u0646 \u0623\u0646 \u062a\u063a\u0627\u062f\u0631 \u0628\u064a\u0627\u0646\u0627\u062a\u0643 \u062c\u0647\u0627\u0632\u0643 \u0623\u0628\u062f\u064b\u0627',
+  'Watch the 30-second tour': '\u0634\u0627\u0647\u062f \u0627\u0644\u062c\u0648\u0644\u0629 \u0641\u064a 30 \u062b\u0627\u0646\u064a\u0629',
 
   // See it in action section
-  'See it in action': 'شاهدها أثناء العمل',
-  'A guided tour, in 30-second clips': 'جولة موجّهة، في مقاطع مدتها 30 ثانية',
-  'Product Tour': 'جولة المنتج',
-  'The full DEVS story in 30 seconds': 'قصّة DEVS كاملة في 30 ثانية',
-  'Task Delegation': 'تفويض المهام',
-  'Delegate, don’t chat': 'فوّض، لا تتحدّث',
-  'Agent Studio': 'استوديو الوكلاء',
-  'Build your own AI team': 'ابنِ فريق الذكاء الاصطناعي الخاص بك',
-  'Privacy First': 'الخصوصيّة أولاً',
-  'Your keys. Your data. Your browser.': 'مفاتيحك. بياناتك. متصفّحك.',
-  'Inbox Workflow': 'سير عمل البريد الوارد',
-  'Your AI inbox': 'بريد الذكاء الاصطناعي الوارد',
-  'Open full-screen': 'فتح بملء الشاشة',
-  '\u201CAI augmentation shouldn\u2019t be a luxury for the few, but a fundamental tool available to all — where anyone can leverage the power of AI teams to amplify their capabilities and achieve their goals.\u201D':
-    '\u201Cتعزيز الذكاء الاصطناعي لا ينبغي أن يكون رفاهية للقلة، بل أداة أساسية متاحة للجميع — حيث يمكن لأي شخص الاستفادة من قوة فرق الذكاء الاصطناعي لتضخيم قدراته وتحقيق أهدافه.\u201D',
+  'See it in action': '\u0634\u0627\u0647\u062f\u0647\u0627 \u0623\u062b\u0646\u0627\u0621 \u0627\u0644\u0639\u0645\u0644',
+  'A guided tour, in 30-second clips': '\u062c\u0648\u0644\u0629 \u0645\u0648\u062c\u0651\u0647\u0629\u060c \u0641\u064a \u0645\u0642\u0627\u0637\u0639 \u0645\u062f\u062a\u0647\u0627 30 \u062b\u0627\u0646\u064a\u0629',
+  'Product Tour': '\u062c\u0648\u0644\u0629 \u0627\u0644\u0645\u0646\u062a\u062c',
+  'The full DEVS story in 30 seconds': '\u0642\u0635\u0651\u0629 DEVS \u0643\u0627\u0645\u0644\u0629 \u0641\u064a 30 \u062b\u0627\u0646\u064a\u0629',
+  'Task Delegation': '\u062a\u0641\u0648\u064a\u0636 \u0627\u0644\u0645\u0647\u0627\u0645',
+  'Delegate, don\u2019t chat': '\u0641\u0648\u0651\u0636\u060c \u0644\u0627 \u062a\u062a\u062d\u062f\u0651\u062b',
+  'Agent Studio': '\u0627\u0633\u062a\u0648\u062f\u064a\u0648 \u0627\u0644\u0648\u0643\u0644\u0627\u0621',
+  'Build your own AI team': '\u0627\u0628\u0646\u0650 \u0641\u0631\u064a\u0642 \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a \u0627\u0644\u062e\u0627\u0635 \u0628\u0643',
+  'Privacy First': '\u0627\u0644\u062e\u0635\u0648\u0635\u064a\u0651\u0629 \u0623\u0648\u0644\u0627\u064b',
+  'Your keys. Your data. Your browser.': '\u0645\u0641\u0627\u062a\u064a\u062d\u0643. \u0628\u064a\u0627\u0646\u0627\u062a\u0643. \u0645\u062a\u0635\u0641\u0651\u062d\u0643.',
+  'Inbox Workflow': '\u0633\u064a\u0631 \u0639\u0645\u0644 \u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0648\u0627\u0631\u062f',
+  'Your AI inbox': '\u0628\u0631\u064a\u062f \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a \u0627\u0644\u0648\u0627\u0631\u062f',
+  'Open full-screen': '\u0641\u062a\u062d \u0628\u0645\u0644\u0621 \u0627\u0644\u0634\u0627\u0634\u0629',
+  '\u201CAI shouldn\u2019t be a privilege for tech experts. It should be a superpower anyone can use \u2014 like having a brilliant team on call, ready to tackle anything you throw at them.\u201D':
+    '\u201C\u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a \u0644\u0627 \u064a\u0646\u0628\u063a\u064a \u0623\u0646 \u064a\u0643\u0648\u0646 \u0627\u0645\u062a\u064a\u0627\u0632\u064b\u0627 \u0644\u062e\u0628\u0631\u0627\u0621 \u0627\u0644\u062a\u0642\u0646\u064a\u0629. \u064a\u062c\u0628 \u0623\u0646 \u064a\u0643\u0648\u0646 \u0642\u0648\u0629 \u062e\u0627\u0631\u0642\u0629 \u064a\u0645\u0643\u0646 \u0644\u0623\u064a \u0634\u062e\u0635 \u0627\u0633\u062a\u062e\u062f\u0627\u0645\u0647\u0627 \u2014 \u0643\u0623\u0646 \u0644\u062f\u064a\u0643 \u0641\u0631\u064a\u0642 \u0639\u0628\u0642\u0631\u064a \u062a\u062d\u062a \u0627\u0644\u0637\u0644\u0628\u060c \u062c\u0627\u0647\u0632 \u0644\u0645\u0648\u0627\u062c\u0647\u0629 \u0623\u064a \u062a\u062d\u062f\u064d.\u201D',
 
   // Principles section
-  Philosophy: 'فلسفة',
-  'Built on Conviction': 'مبني على قناعات',
-  'Three non-negotiable principles guide every decision we make.':
-    'ثلاثة مبادئ غير قابلة للتفاوض توجه كل قرار نتخذه.',
-  'Privacy by Design': 'الخصوصية حسب التصميم',
-  'Every byte of your data stays on your device. No servers. No telemetry. No compromise.':
-    'كل بايت من بياناتك يبقى على جهازك. لا خوادم. لا قياس عن بُعد. لا تنازلات.',
-  'Universally Accessible': 'متاح عالمياً',
-  'A browser is all you need. No installation, no GPU, no special hardware — just open and create.':
-    'المتصفح هو كل ما تحتاجه. لا تثبيت، لا GPU، لا أجهزة خاصة — فقط افتح وأنشئ.',
-  'Open Source Forever': 'مفتوح المصدر للأبد',
-  'Built in the open, shaped by the community. Every line of code is yours to read, improve, and share.':
-    'مبني بشفافية، مُشكّل من المجتمع. كل سطر من الكود لك لتقرأه وتحسّنه وتشاركه.',
+  Philosophy: '\u0641\u0644\u0633\u0641\u0629',
+  'What We Stand For': '\u0645\u0627 \u0646\u062f\u0627\u0641\u0639 \u0639\u0646\u0647',
+  'Three promises we\u2019ll never break.':
+    '\u062b\u0644\u0627\u062b\u0629 \u0648\u0639\u0648\u062f \u0644\u0646 \u0646\u062e\u0644\u0641\u0647\u0627 \u0623\u0628\u062f\u064b\u0627.',
+  'Your Data Stays Yours': '\u0628\u064a\u0627\u0646\u0627\u062a\u0643 \u062a\u0628\u0642\u0649 \u0645\u0644\u0643\u0643',
+  'Everything stays on your device. Nothing is sent to our servers. No tracking, no snooping, no exceptions.':
+    '\u0643\u0644 \u0634\u064a\u0621 \u064a\u0628\u0642\u0649 \u0639\u0644\u0649 \u062c\u0647\u0627\u0632\u0643. \u0644\u0627 \u0634\u064a\u0621 \u064a\u064f\u0631\u0633\u0644 \u0625\u0644\u0649 \u062e\u0648\u0627\u062f\u0645\u0646\u0627. \u0644\u0627 \u062a\u062a\u0628\u0639\u060c \u0644\u0627 \u062a\u062c\u0633\u0633\u060c \u0644\u0627 \u0627\u0633\u062a\u062b\u0646\u0627\u0621\u0627\u062a.',
+  'Works in Any Browser': '\u064a\u0639\u0645\u0644 \u0641\u064a \u0623\u064a \u0645\u062a\u0635\u0641\u062d',
+  'No downloads, no special equipment. If you can open a web page, you can use DEVS.':
+    '\u0628\u062f\u0648\u0646 \u062a\u0646\u0632\u064a\u0644\u0627\u062a\u060c \u0628\u062f\u0648\u0646 \u0645\u0639\u062f\u0627\u062a \u062e\u0627\u0635\u0629. \u0625\u0630\u0627 \u0643\u0646\u062a \u062a\u0633\u062a\u0637\u064a\u0639 \u0641\u062a\u062d \u0635\u0641\u062d\u0629 \u0648\u064a\u0628\u060c \u064a\u0645\u0643\u0646\u0643 \u0627\u0633\u062a\u062e\u062f\u0627\u0645 DEVS.',
+  'Free & Open Source': '\u0645\u062c\u0627\u0646\u064a \u0648\u0645\u0641\u062a\u0648\u062d \u0627\u0644\u0645\u0635\u062f\u0631',
+  'The code is public, the community shapes it, and it will always be free. No hidden costs, ever.':
+    '\u0627\u0644\u0643\u0648\u062f \u0639\u0627\u0645\u060c \u0627\u0644\u0645\u062c\u062a\u0645\u0639 \u064a\u0634\u0643\u0651\u0644\u0647\u060c \u0648\u0633\u064a\u0628\u0642\u0649 \u0645\u062c\u0627\u0646\u064a\u064b\u0627 \u062f\u0627\u0626\u0645\u064b\u0627. \u0644\u0627 \u062a\u0643\u0627\u0644\u064a\u0641 \u0645\u062e\u0641\u064a\u0629\u060c \u0623\u0628\u062f\u064b\u0627.',
 
   // Capabilities section
-  Capabilities: 'القدرات',
-  'Powerful by Design': 'قوي بالتصميم',
-  'A depth of engineering so you can focus on what matters — your ideas.':
-    'عمق هندسي حتى تتمكن من التركيز على ما يهم — أفكارك.',
-  'Multi-Agent Orchestration': 'تنسيق متعدد الوكلاء',
-  'Collective Intelligence': 'الذكاء الجماعي',
-  'Compose teams of specialised AI agents that plan, execute, and validate together — mirroring how the best human teams operate.':
-    'شكّل فرقاً من وكلاء ذكاء اصطناعي متخصصين يخططون وينفذون ويتحققون معاً — على غرار أفضل الفرق البشرية.',
-  'Provider Independence': 'استقلالية المزوّد',
-  'Your Models, Your Choice': 'نماذجك، اختيارك',
-  'Seamlessly switch between OpenAI, Anthropic, Google Gemini, Mistral, Ollama, or any OpenAI-compatible endpoint. Never locked in.':
-    'انتقل بسلاسة بين OpenAI وAnthropic وGoogle Gemini وMistral وOllama أو أي نقطة نهاية متوافقة مع OpenAI. لن تكون محبوساً أبداً.',
-  'Zero-Trust Architecture': 'هندسة انعدام الثقة',
-  'Security as a Foundation': 'الأمان كأساس',
-  'Web Crypto API encrypts your tokens. Service Workers sandbox execution. IndexedDB keeps everything local. Defense in depth, by default.':
-    'Web Crypto API يشفر رموزك. Service Workers يعزل التنفيذ. IndexedDB يحتفظ بكل شيء محلياً. دفاع متعدد الطبقات، افتراضياً.',
-  'Intelligent Task Analysis': 'تحليل ذكي للمهام',
-  'Complexity, Simplified': 'التعقيد، مُبسّط',
-  'An LLM-powered analyser breaks your request into requirements, recruits the right agents, resolves dependencies, and orchestrates delivery.':
-    'محلل مدعوم بـ LLM يفكك طلبك إلى متطلبات، ويجنّد الوكلاء المناسبين، ويحل التبعيات، وينسق التسليم.',
-  'Offline-First & P2P': 'Offline-First و P2P',
-  'Works Anywhere': 'يعمل في أي مكان',
-  'Fully functional without internet after first load. Optional Yjs-powered P2P sync lets you collaborate across devices without a central server.':
-    'يعمل بالكامل بدون إنترنت بعد التحميل الأول. المزامنة الاختيارية عبر P2P بقوة Yjs تتيح لك التعاون بين الأجهزة بدون خادم مركزي.',
-  'Extensible by Nature': 'قابل للتوسيع بطبيعته',
-  'Build on Top': 'ابنِ فوقه',
-  'A marketplace of agents, tools, connectors, and apps — plus a sandboxed Extension Bridge so the community can create and share new capabilities.':
-    'سوق للوكلاء والأدوات والموصلات والتطبيقات — بالإضافة إلى Extension Bridge معزول ليتمكن المجتمع من إنشاء ومشاركة قدرات جديدة.',
+  Capabilities: '\u0627\u0644\u0642\u062f\u0631\u0627\u062a',
+  'What Makes It Special': '\u0645\u0627 \u064a\u0645\u064a\u0651\u0632\u0647',
+  'Serious technology made simple \u2014 so you can focus on your ideas.':
+    '\u062a\u0643\u0646\u0648\u0644\u0648\u062c\u064a\u0627 \u062c\u0627\u062f\u0629 \u0645\u064f\u0628\u0633\u0651\u0637\u0629 \u2014 \u0644\u062a\u0631\u0643\u0651\u0632 \u0639\u0644\u0649 \u0623\u0641\u0643\u0627\u0631\u0643.',
+  'A Team, Not Just a Chatbot': '\u0641\u0631\u064a\u0642\u060c \u0644\u064a\u0633 \u0645\u062c\u0631\u062f \u0634\u0627\u062a \u0628\u0648\u062a',
+  'Better Together': '\u0623\u0641\u0636\u0644 \u0645\u0639\u064b\u0627',
+  'Instead of one AI trying to do everything, multiple specialised helpers team up \u2014 each one great at something different, just like a real team.':
+    '\u0628\u062f\u0644\u0627\u064b \u0645\u0646 \u0630\u0643\u0627\u0621 \u0627\u0635\u0637\u0646\u0627\u0639\u064a \u0648\u0627\u062d\u062f \u064a\u062d\u0627\u0648\u0644 \u0641\u0639\u0644 \u0643\u0644 \u0634\u064a\u0621\u060c \u0639\u062f\u0629 \u0645\u0633\u0627\u0639\u062f\u064a\u0646 \u0645\u062a\u062e\u0635\u0635\u064a\u0646 \u064a\u0639\u0645\u0644\u0648\u0646 \u0645\u0639\u064b\u0627 \u2014 \u0643\u0644 \u0648\u0627\u062d\u062f \u0645\u062a\u0645\u064a\u0651\u0632 \u0641\u064a \u0634\u064a\u0621 \u0645\u062e\u062a\u0644\u0641\u060c \u062a\u0645\u0627\u0645\u064b\u0627 \u0643\u0641\u0631\u064a\u0642 \u062d\u0642\u064a\u0642\u064a.',
+  'Use Any AI You Like': '\u0627\u0633\u062a\u062e\u062f\u0645 \u0623\u064a \u0630\u0643\u0627\u0621 \u0627\u0635\u0637\u0646\u0627\u0639\u064a \u062a\u0641\u0636\u0651\u0644\u0647',
+  'Freedom of Choice': '\u062d\u0631\u064a\u0629 \u0627\u0644\u0627\u062e\u062a\u064a\u0627\u0631',
+  'Works with OpenAI, Google, Anthropic, Mistral, and many more. Switch anytime \u2014 your conversations and data stay put.':
+    '\u064a\u0639\u0645\u0644 \u0645\u0639 OpenAI \u0648Google \u0648Anthropic \u0648Mistral \u0648\u063a\u064a\u0631\u0647\u0627 \u0627\u0644\u0643\u062b\u064a\u0631. \u0627\u0646\u062a\u0642\u0644 \u0641\u064a \u0623\u064a \u0648\u0642\u062a \u2014 \u0645\u062d\u0627\u062f\u062b\u0627\u062a\u0643 \u0648\u0628\u064a\u0627\u0646\u0627\u062a\u0643 \u062a\u0628\u0642\u0649 \u0641\u064a \u0645\u0643\u0627\u0646\u0647\u0627.',
+  'Bank-Level Security': '\u0623\u0645\u0627\u0646 \u0628\u0645\u0633\u062a\u0648\u0649 \u0627\u0644\u0628\u0646\u0648\u0643',
+  'Locked Down by Default': '\u0645\u0624\u0645\u0651\u0646 \u0627\u0641\u062a\u0631\u0627\u0636\u064a\u064b\u0627',
+  'Your passwords and keys are encrypted right in your browser. Nothing sensitive ever travels over the internet.':
+    '\u0643\u0644\u0645\u0627\u062a \u0645\u0631\u0648\u0631\u0643 \u0648\u0645\u0641\u0627\u062a\u064a\u062d\u0643 \u0645\u0634\u0641\u0651\u0631\u0629 \u0645\u0628\u0627\u0634\u0631\u0629 \u0641\u064a \u0645\u062a\u0635\u0641\u062d\u0643. \u0644\u0627 \u0634\u064a\u0621 \u062d\u0633\u0627\u0633 \u064a\u0646\u062a\u0642\u0644 \u0639\u0628\u0631 \u0627\u0644\u0625\u0646\u062a\u0631\u0646\u062a \u0623\u0628\u062f\u064b\u0627.',
+  'It Breaks Down the Hard Stuff': '\u064a\u0641\u0643\u0651\u0643 \u0627\u0644\u0623\u0634\u064a\u0627\u0621 \u0627\u0644\u0635\u0639\u0628\u0629',
+  'Smart Under the Hood': '\u0630\u0643\u064a \u062a\u062d\u062a \u0627\u0644\u063a\u0637\u0627\u0621',
+  'Describe a big goal and the system figures out what needs to happen, assigns the right helpers, and coordinates everything automatically.':
+    '\u0635\u0650\u0641 \u0647\u062f\u0641\u064b\u0627 \u0643\u0628\u064a\u0631\u064b\u0627 \u0648\u0627\u0644\u0646\u0638\u0627\u0645 \u064a\u0643\u062a\u0634\u0641 \u0645\u0627 \u064a\u062c\u0628 \u0641\u0639\u0644\u0647\u060c \u0648\u064a\u0639\u064a\u0651\u0646 \u0627\u0644\u0645\u0633\u0627\u0639\u062f\u064a\u0646 \u0627\u0644\u0645\u0646\u0627\u0633\u0628\u064a\u0646\u060c \u0648\u064a\u0646\u0633\u0651\u0642 \u0643\u0644 \u0634\u064a\u0621 \u062a\u0644\u0642\u0627\u0626\u064a\u064b\u0627.',
+  'Works Without Internet': '\u064a\u0639\u0645\u0644 \u0628\u062f\u0648\u0646 \u0625\u0646\u062a\u0631\u0646\u062a',
+  'Always On, Always Yours': '\u062f\u0627\u0626\u0645\u064b\u0627 \u0645\u062a\u0627\u062d\u060c \u062f\u0627\u0626\u0645\u064b\u0627 \u0644\u0643',
+  'Once loaded, it works offline. Optionally sync across your devices without relying on anyone else\u2019s servers.':
+    '\u0628\u0645\u062c\u0631\u062f \u062a\u062d\u0645\u064a\u0644\u0647\u060c \u064a\u0639\u0645\u0644 \u0628\u062f\u0648\u0646 \u0625\u0646\u062a\u0631\u0646\u062a. \u0632\u0627\u0645\u0646 \u0627\u062e\u062a\u064a\u0627\u0631\u064a\u064b\u0627 \u0628\u064a\u0646 \u0623\u062c\u0647\u0632\u062a\u0643 \u062f\u0648\u0646 \u0627\u0644\u0627\u0639\u062a\u0645\u0627\u062f \u0639\u0644\u0649 \u062e\u0648\u0627\u062f\u0645 \u0623\u064a \u0634\u062e\u0635 \u0622\u062e\u0631.',
+  'Endlessly Customisable': '\u0642\u0627\u0628\u0644 \u0644\u0644\u062a\u062e\u0635\u064a\u0635 \u0628\u0644\u0627 \u062d\u062f\u0648\u062f',
+  'Make It Your Own': '\u0627\u062c\u0639\u0644\u0647 \u062e\u0627\u0635\u064b\u0627 \u0628\u0643',
+  'Browse a library of ready-made tools, connectors, and AI helpers \u2014 or let the community build new ones.':
+    '\u062a\u0635\u0641\u0651\u062d \u0645\u0643\u062a\u0628\u0629 \u0645\u0646 \u0627\u0644\u0623\u062f\u0648\u0627\u062a \u0648\u0627\u0644\u0645\u0648\u0635\u0644\u0627\u062a \u0648\u0645\u0633\u0627\u0639\u062f\u064a \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a \u0627\u0644\u062c\u0627\u0647\u0632\u0629 \u2014 \u0623\u0648 \u062f\u0639 \u0627\u0644\u0645\u062c\u062a\u0645\u0639 \u064a\u0628\u0646\u064a \u0623\u062e\u0631\u0649 \u062c\u062f\u064a\u062f\u0629.',
 
   // How it works section
-  'Getting Started': 'البدء',
-  'Four Steps to Delegation': 'أربع خطوات نحو التفويض',
-  'From prompt to polished output in minutes, not hours.':
-    'من الطلب إلى المخرج المصقول في دقائق، وليس ساعات.',
-  'Configure your AI provider': 'اضبط مزوّد الذكاء الاصطناعي',
-  'Connect your preferred LLM — OpenAI, Anthropic, Gemini, Ollama, or any compatible endpoint.':
-    'اربط LLM المفضل لديك — OpenAI أو Anthropic أو Gemini أو Ollama أو أي نقطة نهاية متوافقة.',
-  'Describe your task': 'صِف مهمتك',
-  'Tell DEVS what you need in natural language. Be ambitious — the orchestrator thrives on complexity.':
-    'أخبر DEVS بما تحتاجه بلغة طبيعية. كن طموحاً — المنسق يزدهر مع التعقيد.',
-  'Watch agents collaborate': 'شاهد الوكلاء يتعاونون',
-  'See specialised agents plan, execute, and validate in real-time. Intervene, guide, or just observe.':
-    'شاهد الوكلاء المتخصصين يخططون وينفذون ويتحققون في الوقت الحقيقي. تدخّل أو وجّه أو راقب فقط.',
-  'Receive & refine': 'استلم وحسّن',
-  'Get structured artefacts — code, docs, analyses — and iterate with feedback until it\u2019s right.':
-    'احصل على مخرجات منظمة — أكواد ووثائق وتحليلات — وكرر مع الملاحظات حتى يصبح صحيحاً.',
+  'Getting Started': '\u0627\u0644\u0628\u062f\u0621',
+  'How It Works': '\u0643\u064a\u0641 \u064a\u0639\u0645\u0644',
+  'From idea to finished result in minutes.':
+    '\u0645\u0646 \u0627\u0644\u0641\u0643\u0631\u0629 \u0625\u0644\u0649 \u0627\u0644\u0646\u062a\u064a\u062c\u0629 \u0627\u0644\u0646\u0647\u0627\u0626\u064a\u0629 \u0641\u064a \u062f\u0642\u0627\u0626\u0642.',
+  'Connect your AI': '\u0627\u0631\u0628\u0637 \u0630\u0643\u0627\u0621\u0643 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a',
+  'Pick your favourite AI provider \u2014 like OpenAI or Google \u2014 and add your key. Takes about 30 seconds.':
+    '\u0627\u062e\u062a\u0631 \u0645\u0632\u0648\u0651\u062f \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a \u0627\u0644\u0645\u0641\u0636\u0651\u0644 \u0644\u062f\u064a\u0643 \u2014 \u0645\u062b\u0644 OpenAI \u0623\u0648 Google \u2014 \u0648\u0623\u0636\u0641 \u0645\u0641\u062a\u0627\u062d\u0643. \u064a\u0633\u062a\u063a\u0631\u0642 \u062d\u0648\u0627\u0644\u064a 30 \u062b\u0627\u0646\u064a\u0629.',
+  'Describe what you need': '\u0635\u0650\u0641 \u0645\u0627 \u062a\u062d\u062a\u0627\u062c\u0647',
+  'Just type what you want done, in plain language. The bigger the challenge, the more it shines.':
+    '\u0627\u0643\u062a\u0628 \u0641\u0642\u0637 \u0645\u0627 \u062a\u0631\u064a\u062f \u0625\u0646\u062c\u0627\u0632\u0647\u060c \u0628\u0644\u063a\u0629 \u0628\u0633\u064a\u0637\u0629. \u0643\u0644\u0645\u0627 \u0643\u0627\u0646 \u0627\u0644\u062a\u062d\u062f\u064a \u0623\u0643\u0628\u0631\u060c \u0643\u0644\u0645\u0627 \u062a\u0623\u0644\u0651\u0642 \u0623\u0643\u062b\u0631.',
+  'Watch the magic happen': '\u0634\u0627\u0647\u062f \u0627\u0644\u0633\u062d\u0631 \u064a\u062d\u062f\u062b',
+  'Your AI team plans, works, and double-checks in real time. Jump in anytime or sit back and relax.':
+    '\u0641\u0631\u064a\u0642 \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a \u064a\u062e\u0637\u0637 \u0648\u064a\u0639\u0645\u0644 \u0648\u064a\u062a\u062d\u0642\u0642 \u0641\u064a \u0627\u0644\u0648\u0642\u062a \u0627\u0644\u062d\u0642\u064a\u0642\u064a. \u062a\u062f\u062e\u0651\u0644 \u0641\u064a \u0623\u064a \u0648\u0642\u062a \u0623\u0648 \u0627\u0633\u062a\u0631\u062e\u0650.',
+  'Get your results': '\u0627\u062d\u0635\u0644 \u0639\u0644\u0649 \u0646\u062a\u0627\u0626\u062c\u0643',
+  'Receive polished deliverables \u2014 documents, code, analyses \u2014 and fine-tune them with simple feedback.':
+    '\u0627\u0633\u062a\u0644\u0645 \u0645\u062e\u0631\u062c\u0627\u062a \u0645\u0635\u0642\u0648\u0644\u0629 \u2014 \u0648\u062b\u0627\u0626\u0642 \u0648\u0623\u0643\u0648\u0627\u062f \u0648\u062a\u062d\u0644\u064a\u0644\u0627\u062a \u2014 \u0648\u0623\u062a\u0642\u0646\u0647\u0627 \u0628\u0645\u0644\u0627\u062d\u0638\u0627\u062a \u0628\u0633\u064a\u0637\u0629.',
 
   // Use cases section
-  'For Everyone': 'للجميع',
-  'Built for Builders': 'مصمم للبُناة',
-  'Whether you\u2019re writing code or writing prose — DEVS adapts to you.':
-    'سواء كنت تكتب كوداً أو نصوصاً — DEVS يتكيف معك.',
-  Students: 'طلاب',
-  'Research, study planning & assignment help':
-    'بحث وتخطيط دراسي ومساعدة في الواجبات',
-  Developers: 'مطورون',
-  'Rapid prototyping, code generation & reviews':
-    'نمذجة سريعة وتوليد أكواد ومراجعات',
-  Creators: 'مبدعون',
-  'Brainstorming, writing & content production': 'عصف ذهني وكتابة وإنتاج محتوى',
-  Researchers: 'باحثون',
-  'Literature review, data analysis & hypothesis testing':
-    'مراجعة الأدبيات وتحليل البيانات واختبار الفرضيات',
-  Managers: 'مديرون',
-  'Project planning, task breakdown & operations':
-    'تخطيط المشاريع وتقسيم المهام والعمليات',
-  Entrepreneurs: 'رواد أعمال',
-  'Idea validation, strategy & business planning':
-    'التحقق من الأفكار والاستراتيجية وتخطيط الأعمال',
+  'For Everyone': '\u0644\u0644\u062c\u0645\u064a\u0639',
+  'Made for Everyone': '\u0645\u0635\u0645\u0645 \u0644\u0644\u062c\u0645\u064a\u0639',
+  'Whether you\u2019re coding, creating, or strategising \u2014 DEVS adapts to you.':
+    '\u0633\u0648\u0627\u0621 \u0643\u0646\u062a \u062a\u0628\u0631\u0645\u062c \u0623\u0648 \u062a\u0628\u062f\u0639 \u0623\u0648 \u062a\u062e\u0637\u0637 \u2014 DEVS \u064a\u062a\u0643\u064a\u0641 \u0645\u0639\u0643.',
+  Students: '\u0637\u0644\u0627\u0628',
+  'Research, study plans & homework help':
+    '\u0628\u062d\u062b \u0648\u062e\u0637\u0637 \u062f\u0631\u0627\u0633\u064a\u0629 \u0648\u0645\u0633\u0627\u0639\u062f\u0629 \u0641\u064a \u0627\u0644\u0648\u0627\u062c\u0628\u0627\u062a',
+  Developers: '\u0645\u0637\u0648\u0631\u0648\u0646',
+  'Quick prototypes, code & reviews':
+    '\u0646\u0645\u0627\u0630\u062c \u0633\u0631\u064a\u0639\u0629 \u0648\u0623\u0643\u0648\u0627\u062f \u0648\u0645\u0631\u0627\u062c\u0639\u0627\u062a',
+  Creators: '\u0645\u0628\u062f\u0639\u0648\u0646',
+  'Ideas, writing & content creation': '\u0623\u0641\u0643\u0627\u0631 \u0648\u0643\u062a\u0627\u0628\u0629 \u0648\u0625\u0646\u0634\u0627\u0621 \u0645\u062d\u062a\u0648\u0649',
+  Researchers: '\u0628\u0627\u062d\u062b\u0648\u0646',
+  'Literature reviews, data & experiments':
+    '\u0645\u0631\u0627\u062c\u0639\u0627\u062a \u0623\u062f\u0628\u064a\u0629 \u0648\u0628\u064a\u0627\u0646\u0627\u062a \u0648\u062a\u062c\u0627\u0631\u0628',
+  Managers: '\u0645\u062f\u064a\u0631\u0648\u0646',
+  'Project plans, task lists & operations':
+    '\u062e\u0637\u0637 \u0645\u0634\u0627\u0631\u064a\u0639 \u0648\u0642\u0648\u0627\u0626\u0645 \u0645\u0647\u0627\u0645 \u0648\u0639\u0645\u0644\u064a\u0627\u062a',
+  Entrepreneurs: '\u0631\u0648\u0627\u062f \u0623\u0639\u0645\u0627\u0644',
+  'Idea testing, strategy & business plans':
+    '\u0627\u062e\u062a\u0628\u0627\u0631 \u0627\u0644\u0623\u0641\u0643\u0627\u0631 \u0648\u0627\u0633\u062a\u0631\u0627\u062a\u064a\u062c\u064a\u0629 \u0648\u062e\u0637\u0637 \u0623\u0639\u0645\u0627\u0644',
 
   // FAQ section
-  FAQ: 'الأسئلة الشائعة',
-  'Common Questions': 'أسئلة شائعة',
-  'Is my data private?': 'هل بياناتي خاصة؟',
-  'Absolutely. All processing happens locally in your browser. We never collect, transmit, or store any of your data. Your API keys are encrypted with the Web Crypto API and never leave your device.':
-    'بالتأكيد. تتم جميع المعالجة محلياً في متصفحك. لا نقوم أبداً بجمع أو نقل أو تخزين أي من بياناتك. مفاتيح API الخاصة بك مشفرة بواسطة Web Crypto API ولا تغادر جهازك أبداً.',
-  'Which AI providers are supported?':
-    'ما هي مزوّدات الذكاء الاصطناعي المدعومة؟',
-  'We support {providers}, and any provider compatible with the OpenAI API specification. You can switch providers at any time without losing your conversations or data.':
-    'ندعم {providers}، وأي مزوّد متوافق مع مواصفات واجهة OpenAI. يمكنك تغيير المزوّد في أي وقت دون فقدان محادثاتك أو بياناتك.',
-  'Do I need to install anything?': 'هل أحتاج لتثبيت أي شيء؟',
-  'Nothing at all. DEVS is a Progressive Web App that runs entirely in your browser. You can optionally \u201Cinstall\u201D it to your home screen for a native-like experience, but it\u2019s never required.':
-    'لا شيء على الإطلاق. DEVS هو تطبيق ويب تقدمي يعمل بالكامل في متصفحك. يمكنك اختيارياً \u201Cتثبيته\u201D على شاشتك الرئيسية لتجربة شبيهة بالتطبيقات الأصلية، لكنه ليس مطلوباً أبداً.',
-  'Is this really free and open source?': 'هل هذا حقاً مجاني ومفتوح المصدر؟',
-  'Yes — {license} licensed and always will be. The entire codebase is on GitHub. You can self-host, fork, or contribute. No premium tiers, no paywalls.':
-    'نعم — مرخص بموجب {license} وسيبقى كذلك دائماً. كل الكود المصدري على GitHub. يمكنك الاستضافة الذاتية أو التفرع أو المساهمة. لا مستويات مميزة، لا جدران دفع.',
-  'Can I use it offline?': 'هل يمكنني استخدامه بدون إنترنت؟',
-  'After the first load, the Service Worker caches everything you need. You can create agents, manage knowledge, and review past conversations without any internet connection. LLM calls obviously require connectivity to the provider.':
-    'بعد التحميل الأول، يخزن Service Worker كل ما تحتاجه مؤقتاً. يمكنك إنشاء وكلاء وإدارة المعرفة ومراجعة المحادثات السابقة بدون أي اتصال بالإنترنت. مكالمات LLM تتطلب بطبيعة الحال اتصالاً بالمزوّد.',
-  'How does multi-agent orchestration work?': 'كيف يعمل التنسيق متعدد الوكلاء؟',
-  'When you describe a complex task, the built-in orchestrator analyses it, breaks it into subtasks, recruits specialised agents, resolves dependencies, and coordinates parallel execution — just like a well-run project team.':
-    'عندما تصف مهمة معقدة، يحللها المنسق المدمج ويفككها إلى مهام فرعية ويجنّد وكلاء متخصصين ويحل التبعيات وينسق التنفيذ المتوازي — تماماً مثل فريق مشروع يُدار بكفاءة.',
+  FAQ: '\u0627\u0644\u0623\u0633\u0626\u0644\u0629 \u0627\u0644\u0634\u0627\u0626\u0639\u0629',
+  'Common Questions': '\u0623\u0633\u0626\u0644\u0629 \u0634\u0627\u0626\u0639\u0629',
+  'Is my data private?': '\u0647\u0644 \u0628\u064a\u0627\u0646\u0627\u062a\u064a \u062e\u0627\u0635\u0629\u061f',
+  'Yes, 100%. Everything happens in your browser \u2014 we never see, collect, or store any of your data. Your AI keys are encrypted on your device and never sent anywhere.':
+    '\u0646\u0639\u0645\u060c 100%. \u0643\u0644 \u0634\u064a\u0621 \u064a\u062d\u062f\u062b \u0641\u064a \u0645\u062a\u0635\u0641\u062d\u0643 \u2014 \u0644\u0627 \u0646\u0631\u0649 \u0623\u0648 \u0646\u062c\u0645\u0639 \u0623\u0648 \u0646\u062e\u0632\u0651\u0646 \u0623\u064a\u064b\u0627 \u0645\u0646 \u0628\u064a\u0627\u0646\u0627\u062a\u0643. \u0645\u0641\u0627\u062a\u064a\u062d \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a \u0645\u0634\u0641\u0651\u0631\u0629 \u0639\u0644\u0649 \u062c\u0647\u0627\u0632\u0643 \u0648\u0644\u0627 \u062a\u064f\u0631\u0633\u0644 \u0625\u0644\u0649 \u0623\u064a \u0645\u0643\u0627\u0646.',
+  'Which AI providers can I use?':
+    '\u0645\u0627 \u0647\u064a \u0645\u0632\u0648\u0651\u062f\u0627\u062a \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a \u0627\u0644\u062a\u064a \u064a\u0645\u0643\u0646\u0646\u064a \u0627\u0633\u062a\u062e\u062f\u0627\u0645\u0647\u0627\u061f',
+  'We work with {providers}, plus any service compatible with the OpenAI format. You can switch at any time without losing anything.':
+    '\u0646\u0639\u0645\u0644 \u0645\u0639 {providers}\u060c \u0628\u0627\u0644\u0625\u0636\u0627\u0641\u0629 \u0625\u0644\u0649 \u0623\u064a \u062e\u062f\u0645\u0629 \u0645\u062a\u0648\u0627\u0641\u0642\u0629 \u0645\u0639 \u062a\u0646\u0633\u064a\u0642 OpenAI. \u064a\u0645\u0643\u0646\u0643 \u0627\u0644\u062a\u0628\u062f\u064a\u0644 \u0641\u064a \u0623\u064a \u0648\u0642\u062a \u062f\u0648\u0646 \u0641\u0642\u062f\u0627\u0646 \u0623\u064a \u0634\u064a\u0621.',
+  'Do I need to install anything?': '\u0647\u0644 \u0623\u062d\u062a\u0627\u062c \u0644\u062a\u062b\u0628\u064a\u062a \u0623\u064a \u0634\u064a\u0621\u061f',
+  'Nope. Just open the website and you\u2019re ready to go. You can add it to your home screen for a native app feel, but it\u2019s totally optional.':
+    '\u0644\u0627. \u0641\u0642\u0637 \u0627\u0641\u062a\u062d \u0627\u0644\u0645\u0648\u0642\u0639 \u0648\u0633\u062a\u0643\u0648\u0646 \u062c\u0627\u0647\u0632\u064b\u0627. \u064a\u0645\u0643\u0646\u0643 \u0625\u0636\u0627\u0641\u062a\u0647 \u0625\u0644\u0649 \u0634\u0627\u0634\u062a\u0643 \u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629 \u0644\u0625\u062d\u0633\u0627\u0633 \u0627\u0644\u062a\u0637\u0628\u064a\u0642 \u0627\u0644\u0623\u0635\u0644\u064a\u060c \u0644\u0643\u0646\u0647 \u0627\u062e\u062a\u064a\u0627\u0631\u064a \u062a\u0645\u0627\u0645\u064b\u0627.',
+  'Is this really free?': '\u0647\u0644 \u0647\u0630\u0627 \u0645\u062c\u0627\u0646\u064a \u062d\u0642\u064b\u0627\u061f',
+  'Yes \u2014 {license} licensed, now and forever. All the code is on GitHub. No subscriptions, no premium plans, no paywalls.':
+    '\u0646\u0639\u0645 \u2014 \u0645\u0631\u062e\u0635 \u0628\u0645\u0648\u062c\u0628 {license}\u060c \u0627\u0644\u0622\u0646 \u0648\u0625\u0644\u0649 \u0627\u0644\u0623\u0628\u062f. \u0643\u0644 \u0627\u0644\u0643\u0648\u062f \u0639\u0644\u0649 GitHub. \u0644\u0627 \u0627\u0634\u062a\u0631\u0627\u0643\u0627\u062a\u060c \u0644\u0627 \u062e\u0637\u0637 \u0645\u0645\u064a\u0632\u0629\u060c \u0644\u0627 \u062c\u062f\u0631\u0627\u0646 \u062f\u0641\u0639.',
+  'Can I use it offline?': '\u0647\u0644 \u064a\u0645\u0643\u0646\u0646\u064a \u0627\u0633\u062a\u062e\u062f\u0627\u0645\u0647 \u0628\u062f\u0648\u0646 \u0625\u0646\u062a\u0631\u0646\u062a\u061f',
+  'After your first visit, everything is saved locally so you can keep working without internet. The only thing that needs a connection is talking to your AI provider.':
+    '\u0628\u0639\u062f \u0632\u064a\u0627\u0631\u062a\u0643 \u0627\u0644\u0623\u0648\u0644\u0649\u060c \u064a\u064f\u062d\u0641\u0638 \u0643\u0644 \u0634\u064a\u0621 \u0645\u062d\u0644\u064a\u064b\u0627 \u0644\u062a\u062a\u0645\u0643\u0646 \u0645\u0646 \u0645\u0648\u0627\u0635\u0644\u0629 \u0627\u0644\u0639\u0645\u0644 \u0628\u062f\u0648\u0646 \u0625\u0646\u062a\u0631\u0646\u062a. \u0627\u0644\u0634\u064a\u0621 \u0627\u0644\u0648\u062d\u064a\u062f \u0627\u0644\u0630\u064a \u064a\u062d\u062a\u0627\u062c \u0627\u062a\u0635\u0627\u0644\u0627\u064b \u0647\u0648 \u0627\u0644\u062a\u0648\u0627\u0635\u0644 \u0645\u0639 \u0645\u0632\u0648\u0651\u062f \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a.',
+  'How does the AI team work?': '\u0643\u064a\u0641 \u064a\u0639\u0645\u0644 \u0641\u0631\u064a\u0642 \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a\u061f',
+  'When you give it a big task, the system breaks it into smaller pieces, picks the best helper for each part, and coordinates them all at once \u2014 like a well-organised project team.':
+    '\u0639\u0646\u062f\u0645\u0627 \u062a\u0639\u0637\u064a\u0647 \u0645\u0647\u0645\u0629 \u0643\u0628\u064a\u0631\u0629\u060c \u064a\u0642\u0633\u0651\u0645\u0647\u0627 \u0627\u0644\u0646\u0638\u0627\u0645 \u0625\u0644\u0649 \u0623\u062c\u0632\u0627\u0621 \u0623\u0635\u063a\u0631\u060c \u0648\u064a\u062e\u062a\u0627\u0631 \u0623\u0641\u0636\u0644 \u0645\u0633\u0627\u0639\u062f \u0644\u0643\u0644 \u062c\u0632\u0621\u060c \u0648\u064a\u0646\u0633\u0651\u0642\u0647\u0645 \u062c\u0645\u064a\u0639\u064b\u0627 \u0641\u064a \u0622\u0646 \u0648\u0627\u062d\u062f \u2014 \u0643\u0641\u0631\u064a\u0642 \u0645\u0634\u0631\u0648\u0639 \u0645\u0646\u0638\u0651\u0645 \u062c\u064a\u062f\u064b\u0627.',
 
   // CTA section
-  'Shape the Future With Us': 'شكّل المستقبل معنا',
-  '{product} is built by people who believe technology should empower, not enclose. Every contribution — code, ideas, feedback — makes AI augmentation more accessible to the world.':
-    '{product} مبني من قبل أشخاص يؤمنون بأن التكنولوجيا يجب أن تُمكّن، لا أن تُحاصر. كل مساهمة — كود أو أفكار أو ملاحظات — تجعل تعزيز الذكاء الاصطناعي أكثر سهولة للعالم.',
-  'View on GitHub': 'عرض على GitHub',
-  'Open an Issue': 'فتح مشكلة',
-  'Made with care for humans everywhere.': 'صُنع بعناية للبشر في كل مكان.',
+  'Join the Movement': '\u0627\u0646\u0636\u0645 \u0625\u0644\u0649 \u0627\u0644\u062d\u0631\u0643\u0629',
+  '{product} is made by people who believe AI should empower everyone, not just the privileged few. Whether you contribute code, ideas, or feedback \u2014 you\u2019re helping make AI accessible to the world.':
+    '{product} \u0645\u0635\u0646\u0648\u0639 \u0645\u0646 \u0642\u0628\u0644 \u0623\u0634\u062e\u0627\u0635 \u064a\u0624\u0645\u0646\u0648\u0646 \u0628\u0623\u0646 \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a \u064a\u062c\u0628 \u0623\u0646 \u064a\u064f\u0645\u0643\u0651\u0646 \u0627\u0644\u062c\u0645\u064a\u0639\u060c \u0644\u064a\u0633 \u0641\u0642\u0637 \u0627\u0644\u0642\u0644\u0629 \u0627\u0644\u0645\u0645\u064a\u0632\u0629. \u0633\u0648\u0627\u0621 \u0633\u0627\u0647\u0645\u062a \u0628\u0643\u0648\u062f \u0623\u0648 \u0623\u0641\u0643\u0627\u0631 \u0623\u0648 \u0645\u0644\u0627\u062d\u0638\u0627\u062a \u2014 \u0641\u0623\u0646\u062a \u062a\u0633\u0627\u0639\u062f \u0641\u064a \u062c\u0639\u0644 \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a \u0645\u062a\u0627\u062d\u064b\u0627 \u0644\u0644\u0639\u0627\u0644\u0645.',
+  'View on GitHub': '\u0639\u0631\u0636 \u0639\u0644\u0649 GitHub',
+  'Open an Issue': '\u0641\u062a\u062d \u0645\u0634\u0643\u0644\u0629',
+  'Made with care for humans everywhere.': '\u0635\u064f\u0646\u0639 \u0628\u0639\u0646\u0627\u064a\u0629 \u0644\u0644\u0628\u0634\u0631 \u0641\u064a \u0643\u0644 \u0645\u0643\u0627\u0646.',
 }

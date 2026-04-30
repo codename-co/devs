@@ -1,6 +1,5 @@
 import { ContextualPanel, Icon } from '@/components'
 import { InspectorPanel } from '@/components/InspectorPanel'
-import { AppDrawer } from '@/components/AppDrawer'
 import { Tabbar } from '@/components/Tabbar'
 import { languageDirection, useI18n } from '@/i18n'
 import type { HeaderProps, IconName } from '@/lib/types'
@@ -122,7 +121,6 @@ export default function RunLayout({
     >
       <title children={metaTitle} />
       <div className="flex relative h-screen overflow-hidden">
-        <AppDrawer />
         <div
           className={clsx(
             'bg-background dark:bg-transparent md:m-4 md:rounded-xl flex flex-col-reverse relative transition-all duration-200 overflow-hidden',

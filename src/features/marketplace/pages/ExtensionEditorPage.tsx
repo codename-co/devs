@@ -38,7 +38,7 @@ import {
   DropdownMenu,
 } from '@heroui/react'
 
-import DefaultLayout from '@/layouts/Default'
+import { WorkspaceShell } from '@/pages/Workspace/WorkspaceShell'
 import {
   Section,
   Icon,
@@ -55,7 +55,7 @@ import type { ToolDefinition, LLMConfigWithTools } from '@/lib/llm/types'
 import { CredentialService } from '@/lib/credential-service'
 import { successToast, errorToast } from '@/lib/toast'
 import { customExtensions as customExtensionsMap } from '@/lib/yjs/maps'
-import type { HeaderProps, IconName } from '@/lib/types'
+import type { IconName } from '@/lib/types'
 import type {
   CustomExtension,
   ExtensionColor,
@@ -1183,19 +1183,19 @@ User request: ${userMessage.content}
 
   if (isLoading) {
     return (
-      <DefaultLayout>
+      <WorkspaceShell>
         <Section>
           <div className="flex items-center justify-center py-16">
             <Spinner size="lg" label={t('Loading...')} />
           </div>
         </Section>
-      </DefaultLayout>
+      </WorkspaceShell>
     )
   }
 
   if (!extension) {
     return (
-      <DefaultLayout>
+      <WorkspaceShell>
         <Section>
           <div className="text-center py-16">
             <Icon
@@ -1214,7 +1214,7 @@ User request: ${userMessage.content}
             </Button>
           </div>
         </Section>
-      </DefaultLayout>
+      </WorkspaceShell>
     )
   }
 
@@ -1222,24 +1222,14 @@ User request: ${userMessage.content}
   // HEADER
   // ==========================================================================
 
-  const header: HeaderProps = {
-    icon: {
-      name: (extension.icon as IconName) || 'Code',
-      color: 'text-warning-400 dark:text-warning-500',
-    },
-    title: extension.name,
-    subtitle: extension.description || t('Edit and refine your extension'),
-  }
-
   // ==========================================================================
   // RENDER
   // ==========================================================================
 
   return (
-    <DefaultLayout
-      header={header}
-      pageMenuActions={
-        <>
+    <WorkspaceShell title={extension.name}>
+      {/* Page-level toolbar actions (previously in DefaultLayout header) */}
+      <div className="flex items-center justify-end gap-2 px-4 py-2 border-b border-divider">
           {/* Metadata */}
           <Popover placement="bottom-end">
             <PageMenuButton
@@ -1372,9 +1362,7 @@ User request: ${userMessage.content}
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
-        </>
-      }
-    >
+      </div>
       <Section size={7} mainClassName="h-full" className="h-full">
         {/* Toolbar */}
         <div className="flex items-center justify-between gap-4 mb-4">
@@ -1705,7 +1693,7 @@ User request: ${userMessage.content}
           </ModalContent>
         </Modal>
       </Section>
-    </DefaultLayout>
+    </WorkspaceShell>
   )
 }
 

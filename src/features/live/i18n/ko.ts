@@ -33,6 +33,10 @@ export const ko: I18n = {
   'Cohere Transcribe': 'Cohere Transcribe',
   'SOTA multilingual (14 langs). 2B params, 4-bit. ~2.1GB download.':
     'SOTA 다국어 (14개 언어). 2B 파라미터, 4비트. ~2.1GB 다운로드.',
+  VibeVoice: 'VibeVoice',
+  'Microsoft open-source real-time speech. Requires WebGPU. ~500MB download.':
+    'Microsoft 오픈소스 실시간 음성. WebGPU 필요. ~500MB 다운로드.',
+  'VibeVoice requires WebGPU': 'VibeVoice는 WebGPU가 필요합니다',
   'Bidirectional audio with Gemini. Requires API key.':
     'Gemini와 양방향 오디오. API 키 필요.',
   // TTS Providers

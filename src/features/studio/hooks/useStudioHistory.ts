@@ -47,6 +47,19 @@ function deleteEntry(id: string): void {
 }
 
 /**
+ * Set the favorite (star) state of a studio entry.
+ * Called from the workspace layer to toggle star color.
+ */
+export function setStudioEntryFavorite(
+  id: string,
+  isFavorite: boolean,
+): void {
+  const entry = studioEntries.get(id)
+  if (!entry) return
+  studioEntries.set(id, { ...entry, isFavorite })
+}
+
+/**
  * Clear all history
  */
 function clearAllHistory(): void {

@@ -42,6 +42,8 @@ export function ProviderForm({ provider }: ProviderFormProps) {
 
   const needsApiKey = !providerConfig?.noApiKey
   const hasGuidance = !!providerConfig?.apiKeyPage
+  const isDeviceFlow = !!providerConfig?.useDeviceFlow
+
 
   const handleSubmit = async () => {
     if (!providerConfig) return
@@ -124,7 +126,55 @@ export function ProviderForm({ provider }: ProviderFormProps) {
   )
 
   /* ── Form panel (right / bottom on mobile) ── */
-  const formPanel = (
+  const formPanel = isDeviceFlow ? (
+    <div className="flex flex-col justify-between h-full">
+      <div className="space-y-5">
+        <h3 className="font-semibold text-base">
+          {t('Sign in with your GitHub account to use Copilot models from OpenAI, Anthropic, and Google.')}
+        </h3>
+
+        {/* Token input: paste ghu_ from VS Code or a fine-grained PAT */}
+        <Input
+          label={t('API Key')}
+          placeholder={providerConfig?.apiKeyPlaceholder || 'ghu_...'}
+          type="password"
+          value={apiKey}
+          onChange={(e) => setApiKey(e.target.value)}
+          description={
+            <>
+              {t('Paste a token from')}{' '}
+              <code className="text-xs">~/.config/github-copilot/apps.json</code>
+              {' '}{t('or a')}{' '}
+              <a
+                href="https://github.com/settings/personal-access-tokens/new"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                {t('fine-grained PAT')}
+              </a>
+              {' '}{t('with Copilot Requests permission.')}
+            </>
+          }
+        />
+
+        {/* Submit */}
+        <Button
+          color="primary"
+          className="w-full"
+          onPress={handleSubmit}
+          isLoading={isValidating}
+          isDisabled={!apiKey}
+        >
+          {t('Validate & Add')}
+        </Button>
+
+        <p className="text-xs text-default-400">
+          {t('Requires an active GitHub Copilot subscription.')}
+        </p>
+      </div>
+    </div>
+  ) : (
     <div className="flex flex-col justify-between h-full">
       <div className="space-y-5">
         {/* Header */}

@@ -11,6 +11,7 @@ import { WhisperSTTProvider } from './whisper'
 import { ParakeetSTTProvider } from './parakeet'
 import { CohereSTTProvider } from './cohere'
 import { GraniteSTTProvider } from './granite'
+import { VibeVoiceSTTProvider } from './vibevoice'
 
 export { WebSpeechSTTProvider } from './web-speech'
 export { MoonshineSTTProvider } from './moonshine'
@@ -18,6 +19,7 @@ export { WhisperSTTProvider } from './whisper'
 export { ParakeetSTTProvider } from './parakeet'
 export { CohereSTTProvider } from './cohere'
 export { GraniteSTTProvider } from './granite'
+export { VibeVoiceSTTProvider } from './vibevoice'
 
 /**
  * Create an STT provider instance
@@ -53,6 +55,11 @@ export function createSTTProvider(
     case 'granite':
       return new GraniteSTTProvider(
         options?.modelId || 'onnx-community/granite-4.0-1b-speech-ONNX',
+      )
+
+    case 'vibevoice':
+      return new VibeVoiceSTTProvider(
+        options?.modelId || 'onnx-community/VibeVoice-Realtime-0.5B-ONNX',
       )
 
     case 'gemini-live':
@@ -157,6 +164,18 @@ export function getAvailableSTTProviders(
       isDisabled: !hasWebGPU,
       disabledReason: !hasWebGPU
         ? t('Granite Speech requires WebGPU')
+        : undefined,
+    },
+    {
+      type: 'vibevoice',
+      name: t('VibeVoice'),
+      description: t(
+        'Microsoft open-source real-time speech. Requires WebGPU. ~500MB download.',
+      ),
+      isLocal: true,
+      isDisabled: !hasWebGPU,
+      disabledReason: !hasWebGPU
+        ? t('VibeVoice requires WebGPU')
         : undefined,
     },
     {

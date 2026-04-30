@@ -17,16 +17,14 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Button, Spinner, Tooltip } from '@heroui/react'
+import { Spinner } from '@heroui/react'
 
-import DefaultLayout from '@/layouts/Default'
-import { Container, Icon, Section } from '@/components'
+import { WorkspaceShell } from '@/pages/Workspace/WorkspaceShell'
+import { Container, Section } from '@/components'
 import { useI18n, languages } from '@/i18n'
 import localI18n from './i18n'
 import { useMarketplaceStore } from '../store'
-import { getExtensionColorClass } from '../utils'
 import { ExtensionPreview } from '../components'
-import type { HeaderProps } from '@/lib/types'
 import type { LanguageCode } from '@/i18n'
 
 // Supported language codes for URL detection
@@ -75,7 +73,7 @@ function parseAppPath(pathname: string): {
 export function DynamicAppRoute() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { lang, t } = useI18n(localI18n)
+  const { lang } = useI18n(localI18n)
   const [hasInitialized, setHasInitialized] = useState(false)
   const loadCalledRef = useRef(false)
 
@@ -95,9 +93,6 @@ export function DynamicAppRoute() {
   const loadInstalledExtensions = useMarketplaceStore(
     (state) => state.loadInstalledExtensions,
   )
-  const hasUpdate = useMarketplaceStore((state) => state.hasUpdate)
-  const updateExtension = useMarketplaceStore((state) => state.updateExtension)
-  const isLoading = useMarketplaceStore((state) => state.isLoading)
 
   // Parse the URL path to extract the page key
   const { pageKey } = useMemo(
@@ -152,8 +147,6 @@ export function DynamicAppRoute() {
 
   // Get localized metadata
   const localizedName = ext?.i18n?.[lang as LanguageCode]?.name || ext?.name
-  const localizedDescription =
-    ext?.i18n?.[lang as LanguageCode]?.description || ext?.description
 
   // Get the page code from the installed extension (persisted snapshot)
   const pageCode = ext?.pages?.[pageKey || ''] || ''
@@ -161,7 +154,7 @@ export function DynamicAppRoute() {
   // Show loading state while installed apps are being loaded
   if (!hasInitialized || isLoadingInstalled) {
     return (
-      <DefaultLayout>
+      <WorkspaceShell>
         <Section>
           <Container>
             <div className="flex items-center justify-center py-2">
@@ -169,7 +162,7 @@ export function DynamicAppRoute() {
             </div>
           </Container>
         </Section>
-      </DefaultLayout>
+      </WorkspaceShell>
     )
   }
 
@@ -178,71 +171,19 @@ export function DynamicAppRoute() {
     return null
   }
 
-  // Check if update is available for this extension
-  const updateAvailable = ext ? hasUpdate(ext.id) : false
-
-  // Handle upgrade action
-  const handleUpgrade = async () => {
-    if (!ext) return
-    await updateExtension(ext.id)
-    window.location.reload()
-  }
-
-  const header: HeaderProps = {
-    icon: {
-      name: ext.icon || 'Puzzle',
-      color: getExtensionColorClass(ext.color),
-    },
-    title: localizedName || ext.name,
-    subtitle: localizedDescription || ext.description,
-  }
-
   return (
-    <DefaultLayout
-      header={header}
-      pageMenuActions={
-        <>
-          {updateAvailable && (
-            <Tooltip content={t('Update')} placement="bottom">
-              <Button
-                variant="flat"
-                isIconOnly
-                color="success"
-                aria-label={t('Update')}
-                className="opacity-70 hover:opacity-100"
-                onPress={handleUpgrade}
-                isLoading={isLoading}
-              >
-                <Icon name="Refresh" size="sm" />
-              </Button>
-            </Tooltip>
-          )}
-          {ext.isCustom && (
-            <Tooltip content={t('Edit')} placement="bottom">
-              <Button
-                variant="light"
-                isIconOnly
-                aria-label={t('Edit')}
-                className="opacity-70 hover:opacity-100"
-                onPress={() =>
-                  navigate(`/marketplace/extensions/${ext.id}/edit`)
-                }
-              >
-                <Icon name="EditPencil" size="sm" />
-              </Button>
-            </Tooltip>
-          )}
-        </>
-      }
+    <WorkspaceShell
+      title={localizedName || ext.name}
+      className="flex flex-col"
     >
       <ExtensionPreview
         extensionId={ext.id}
         extensionName={localizedName || ext.name}
         pageCode={pageCode}
         i18n={ext.i18n}
-        className="min-h-[300px]"
+        className="min-h-0 flex-1"
       />
-    </DefaultLayout>
+    </WorkspaceShell>
   )
 }
 

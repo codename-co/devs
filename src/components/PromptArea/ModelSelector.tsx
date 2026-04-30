@@ -19,6 +19,7 @@ import { LLMService } from '@/lib/llm'
 import { getModel as getModelFromModelsDev } from '@/lib/models-dev'
 import type { NormalizedModel } from '@/lib/models-dev/types'
 import { CredentialService } from '@/lib/credential-service'
+import { GitHubCopilotProvider } from '@/lib/llm/providers/github-copilot'
 import {
   inferLocalModelCapabilities,
   usesLocalInference,
@@ -264,11 +265,14 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
   useEffect(() => {
     if (!viewingProvider || viewingProvider.models.length === 0) return
 
+    const isGitHubCopilot =
+      viewingProvider.credential.provider === 'github-copilot'
+
     // Check if this provider uses models.dev at all
     const baseProviderId = getModelsDevProviderId(
       viewingProvider.credential.provider,
     )
-    if (!baseProviderId) return // Skip for local/ollama providers
+    if (!baseProviderId && !isGitHubCopilot) return // Skip for local/ollama providers
 
     const loadModelData = async () => {
       const newCache: Record<string, NormalizedModel | null> = {}
@@ -279,6 +283,18 @@ export function ModelSelector({ lang }: ModelSelectorProps) {
         if (modelDataCache[key] === undefined) {
           hasNew = true
           try {
+            // GitHub Copilot: use its own API data (needs token for auth)
+            if (isGitHubCopilot) {
+              const decrypted = await CredentialService.getDecryptedConfig(
+                viewingProvider.credential.id,
+              )
+              newCache[key] =
+                await GitHubCopilotProvider.getModelInfo(
+                  modelId,
+                  decrypted?.apiKey,
+                )
+              continue
+            }
             // Get the correct models.dev provider ID for this specific model
             // (handles Vertex AI Claude vs Gemini distinction)
             const modelsDevProviderId = getModelsDevProviderIdForModel(

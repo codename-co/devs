@@ -405,6 +405,7 @@ import {
   OpenAICompatibleProvider,
   ClaudeCodeProvider,
   ChatJimmyProvider,
+  GitHubCopilotProvider,
   CustomProvider,
 } from './providers'
 
@@ -421,4 +422,5 @@ LLMService.registerProvider('huggingface', new HuggingFaceProvider())
 LLMService.registerProvider('openai-compatible', new OpenAICompatibleProvider())
 LLMService.registerProvider('claude-code', new ClaudeCodeProvider())
 LLMService.registerProvider('chatjimmy', new ChatJimmyProvider())
+LLMService.registerProvider('github-copilot', new GitHubCopilotProvider())
 LLMService.registerProvider('custom', new CustomProvider())

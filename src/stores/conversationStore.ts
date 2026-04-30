@@ -171,6 +171,7 @@ interface ConversationStore {
   // Pinning conversations
   pinConversation: (id: string) => Promise<void>
   unpinConversation: (id: string) => Promise<void>
+  setStarColor: (id: string, color: string | null) => Promise<void>
 
   // Pinning messages
   pinMessage: (conversationId: string, messageId: string) => Promise<void>
@@ -720,6 +721,38 @@ export const useConversationStore = create<ConversationStore>((set, get) => {
         }
       } catch (error) {
         errorToast('Failed to unpin conversation', error)
+      }
+    },
+
+    // =========================================================================
+    // Star color
+    // =========================================================================
+
+    setStarColor: async (id: string, color: string | null) => {
+      try {
+        await whenReady
+
+        const conversation = conversations.get(id)
+        if (!conversation) return
+
+        conversations.set(id, {
+          ...conversation,
+          starColor: color ?? undefined,
+          isPinned: color !== null,
+        })
+
+        const { currentConversation } = get()
+        if (currentConversation?.id === id) {
+          set({
+            currentConversation: {
+              ...currentConversation,
+              starColor: color ?? undefined,
+              isPinned: color !== null,
+            },
+          })
+        }
+      } catch (error) {
+        errorToast('Failed to update star color', error)
       }
     },
 

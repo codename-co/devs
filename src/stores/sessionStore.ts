@@ -103,6 +103,7 @@ interface SessionStore {
     input: AddArtifactInput,
   ) => Promise<SessionArtifact | undefined>
   setCurrentSession: (session: Session | null) => void
+  setStarColor: (id: string, color: string | null) => void
 }
 
 // ============================================================================
@@ -279,4 +280,14 @@ export const useSessionStore = create<SessionStore>((set) => ({
   },
 
   setCurrentSession: (session) => set({ currentSession: session }),
+
+  setStarColor: (id: string, color: string | null) => {
+    const session = sessions.get(id)
+    if (!session) return
+    sessions.set(id, {
+      ...session,
+      starColor: color ?? undefined,
+      isPinned: color !== null,
+    })
+  },
 }))

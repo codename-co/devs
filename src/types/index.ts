@@ -262,6 +262,7 @@ export type LLMProvider =
   | 'openai-compatible'
   | 'claude-code'
   | 'chatjimmy'
+  | 'github-copilot'
   | 'custom'
   // Image generation providers
   | 'stability'

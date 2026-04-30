@@ -1,60 +1,66 @@
 /**
  * Tour-local i18n — German translations.
- *
- * Keys are the literal English strings from `./en.ts`. Every new string added
- * to the English source must be translated here.
  */
 import type { en } from './en'
-
 type I18n = Record<(typeof en)[number], string>
 
 export const de: I18n = {
-  // Scene 1 — hook
-  [`Stop chatting. Start delegating.`]: `Schluss mit Chatten. Jetzt delegieren.`,
-
-  // Scene 2 — prompt submit
-  [`Audit Q1 expenses, flag anomalies, draft a CFO memo`]: `Q1-Ausgaben prüfen, Anomalien markieren, CFO-Memo entwerfen`,
-
-  // Scene 3 — board view (task titles)
-  [`Parse invoices`]: `Rechnungen auswerten`,
-  [`Flag anomalies`]: `Anomalien markieren`,
-  [`Cross-check budgets`]: `Budgets abgleichen`,
-  [`Summarize findings`]: `Ergebnisse zusammenfassen`,
-  [`Draft CFO memo`]: `CFO-Memo entwerfen`,
-  // Scene 3 — board view (task snippets)
-  [`Extract line items from 247 invoices`]: `Einzelposten aus 247 Rechnungen extrahieren`,
-  [`Identify outliers above 2σ threshold`]: `Ausreißer über dem 2σ-Schwellenwert identifizieren`,
-  [`Compare against Q4 budget allocations`]: `Mit Q4-Budgetzuweisungen vergleichen`,
-  [`Aggregate findings into executive bullets`]: `Ergebnisse in Stichpunkte zusammenfassen`,
-  [`Compose formal memo for CFO review`]: `Formelles Memo zur CFO-Prüfung verfassen`,
-  // Scene 3 — agent roles
+  [`Connect everything. Delegate anything.`]: `Alles verbinden. Alles delegieren.`,
+  [`Connectors`]: `Konnektoren`,
+  [`Choose a service to connect:`]: `Wählen Sie einen Dienst zum Verbinden:`,
+  [`Google Drive`]: `Google Drive`,
+  [`Sync files and folders`]: `Dateien und Ordner synchronisieren`,
+  [`Gmail`]: `Gmail`,
+  [`Sync emails`]: `E-Mails synchronisieren`,
+  [`Connecting to Google Drive...`]: `Verbindung mit Google Drive...`,
+  [`Connecting to Gmail...`]: `Verbindung mit Gmail...`,
+  [`Successfully connected!`]: `Erfolgreich verbunden!`,
+  [`Connected and authorized`]: `Verbunden und autorisiert`,
+  [`Auto-sync enabled`]: `Auto-Sync aktiviert`,
+  [`Analyze last month\u2019s sales invoices from Drive, calculate quarterly projections, and generate a PPTX deck with an email draft to the client`]: `Verkaufsrechnungen des letzten Monats aus Drive analysieren, Quartalsprognosen berechnen und ein PPTX-Deck mit E-Mail-Entwurf an den Kunden erstellen`,
+  [`Breaking into subtasks. Recruiting Data, Analysis, and Writing agents\u2026`]: `Aufteilung in Teilaufgaben. Rekrutierung von Daten-, Analyse- und Schreib-Agenten\u2026`,
+  [`Pulling invoices from Google Drive`]: `Rechnungen aus Google Drive abrufen`,
+  [`Scanning Gmail for purchase order confirmations`]: `Gmail nach Bestellbestätigungen durchsuchen`,
+  [`Calculating quarterly projections`]: `Quartalsprognosen berechnen`,
+  [`Generating presentation`]: `Präsentation erstellen`,
+  [`Drafting email to client`]: `E-Mail an Kunden entwerfen`,
+  [`34 invoices \u00B7 Sales folder`]: `34 Rechnungen \u00B7 Verkaufsordner`,
+  [`12 matching PO confirmations`]: `12 passende Bestellbestätigungen`,
+  [`Q1: $2.4M \u00B7 Q2: $3.1M \u00B7 Q3: $2.8M \u00B7 Q4 (proj): $3.6M`]: `Q1: 2,4M$ \u00B7 Q2: 3,1M$ \u00B7 Q3: 2,8M$ \u00B7 Q4 (Prog.): 3,6M$`,
+  [`8 slides \u00B7 .pptx ready`]: `8 Folien \u00B7 .pptx fertig`,
+  [`Draft ready \u00B7 1 attachment`]: `Entwurf fertig \u00B7 1 Anhang`,
+  [`quarterly_report`]: `quartalsbericht`,
+  [`Sales invoice analysis + quarterly projections`]: `Verkaufsrechnungsanalyse + Quartalsprognosen`,
+  [`Draft Q3 OKRs for the platform team`]: `Q3-OKRs für das Plattform-Team entwerfen`,
+  [`Synthesized five drafts. Ready for review.`]: `Fünf Entwürfe zusammengefasst. Bereit zur Überprüfung.`,
+  [`Compare three WebGPU inference runtimes`]: `Drei WebGPU-Inferenz-Laufzeiten vergleichen`,
+  [`Benchmarks complete. Transformers.js leads on cold start.`]: `Benchmarks abgeschlossen. Transformers.js führt beim Kaltstart.`,
+  [`Research`]: `Forschung`,
   [`Analysis`]: `Analyse`,
-  [`Auditing`]: `Prüfung`,
   [`Writing`]: `Schreiben`,
-
-  // Scene 4 — artifacts
-  [`Task completed`]: `Aufgabe abgeschlossen`,
-  [`3 agents collaborated`]: `3 Agenten haben zusammengearbeitet`,
-  [`Q1 Expense Audit`]: `Q1-Ausgabenprüfung`,
-  [`report`]: `Bericht`,
-  [`CFO Memo`]: `CFO-Memo`,
-  [`document`]: `Dokument`,
-
-  // Scene 5 — collapse
-  [`Delegated. Delivered. Done.`]: `Delegiert. Geliefert. Erledigt.`,
-
-  // Scene 6 — CTA
+  [`Review`]: `Überprüfung`,
+  [`New task`]: `Neue Aufgabe`,
+  [`Start a new task`]: `Eine neue Aufgabe starten`,
+  [`To:`]: `An:`,
+  [`Subject:`]: `Betreff:`,
+  [`Q4 Sales Projections \u2014 Deck Attached`]: `Q4-Verkaufsprognosen \u2014 Deck beigefügt`,
+  [`Dear Sarah,`]: `Liebe Sarah,`,
+  [`Please find attached our quarterly sales projections deck. Key highlights:`]: `Anbei finden Sie unser Quartalsprognosen-Deck. Wichtigste Punkte:`,
+  [`\u2022 Q4 projected revenue: **$3.6M** (+29% vs Q3)`]: `\u2022 Q4-Umsatzprognose: **3,6M$** (+29% gg. Q3)`,
+  [`\u2022 Top growth driver: Enterprise segment (+42%)`]: `\u2022 Hauptwachstumstreiber: Enterprise-Segment (+42%)`,
+  [`\u2022 3 risk factors flagged in appendix`]: `\u2022 3 Risikofaktoren im Anhang markiert`,
+  [`Happy to walk through the details at your convenience.`]: `Gerne gehe ich die Details bei Gelegenheit mit Ihnen durch.`,
+  [`Best regards`]: `Mit freundlichen Grüßen`,
+  [`quarterly-projections.pptx`]: `quartalsprognosen.pptx`,
+  [`2.4 MB`]: `2,4 MB`,
+  [`Connected. Computed. Delivered.`]: `Verbunden. Berechnet. Geliefert.`,
   [`Now you can.`]: `Jetzt kannst du es.`,
-  [`Open devs.new →`]: `devs.new öffnen →`,
-  [`No signup · No install · Free`]: `Keine Anmeldung · Keine Installation · Kostenlos`,
-
-  // Playback bar — settings menu
+  [`Open devs.new \u2192`]: `devs.new öffnen \u2192`,
+  [`No signup \u00B7 No install \u00B7 Free`]: `Keine Anmeldung \u00B7 Keine Installation \u00B7 Kostenlos`,
   [`Speed`]: `Geschwindigkeit`,
   [`Normal`]: `Normal`,
   [`Language`]: `Sprache`,
   [`Keyboard shortcuts`]: `Tastenkürzel`,
-
-  // Playback bar — control titles
   [`Pause`]: `Pause`,
   [`Play`]: `Wiedergabe`,
   [`Unmute`]: `Ton einschalten`,
@@ -62,8 +68,6 @@ export const de: I18n = {
   [`Exit full screen`]: `Vollbild beenden`,
   [`Full screen`]: `Vollbild`,
   [`Settings`]: `Einstellungen`,
-
-  // Keyboard shortcut overlay — descriptions
   [`Play / Pause`]: `Wiedergabe / Pause`,
   [`Seek back 0.1 s`]: `0,1 s zurückspulen`,
   [`Seek forward 0.1 s`]: `0,1 s vorspulen`,

@@ -64,6 +64,10 @@ export function useSessionExecution(
         return
       }
 
+      // Always start with a clean slate so a new conversation is created
+      // instead of reusing the previous session's conversation.
+      useConversationStore.getState().clearCurrentConversation()
+
       // Transition to 'running'
       await updateSession(s.id, { status: 'running' })
 
@@ -87,19 +91,6 @@ export function useSessionExecution(
           }))
         : undefined
 
-      // Track whether we've already linked the conversation to this session
-      let conversationLinked = false
-
-      /** Link the conversation to the session on the first callback */
-      const linkConversation = () => {
-        if (conversationLinked) return
-        const { currentConversation } = useConversationStore.getState()
-        if (currentConversation) {
-          conversationLinked = true
-          updateSession(s.id, { conversationId: currentConversation.id })
-        }
-      }
-
       try {
         const result = await submitChat({
           prompt: s.prompt,
@@ -112,10 +103,12 @@ export function useSessionExecution(
           lang,
           t,
           signal: controller.signal,
+          onConversationCreated: (conversationId: string) => {
+            // Link the conversation to the session immediately so
+            // useThreads never shows a duplicate standalone conversation.
+            updateSession(s.id, { conversationId })
+          },
           onResponseUpdate: (update: ResponseUpdate) => {
-            // Link the conversation as soon as the first update arrives
-            linkConversation()
-
             if (update.type === 'content') {
               setResponse(update.content)
               // Mark previous running step as completed when content arrives
@@ -137,9 +130,6 @@ export function useSessionExecution(
             // No-op — prompt already consumed
           },
         })
-
-        // Ensure conversation is linked even if no onResponseUpdate fired
-        linkConversation()
 
         // For the devs orchestrator, link the main task to the session.
         const finalUpdates: Partial<Session> = {
