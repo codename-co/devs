@@ -7,12 +7,14 @@ import {
   WorkspaceLayout,
 } from '../components'
 import type { BoardColumnKey } from '../components'
+import type { Thread } from '../types'
 import type { PreviewMode } from '../components/ThreadPreview'
+import type { Artifact } from '@/types'
 import type { CollectionLayout } from '../types'
 import { useV2Shell } from '../context'
 import { useI18n } from '@/i18n'
 import { useNavigate } from 'react-router-dom'
-import { useCallback, useState } from 'react'
+import { memo, useCallback, useState } from 'react'
 import { Drawer } from '@heroui/react_3'
 import type { ThreadFilter } from '../types'
 import { useTaskStore } from '@/stores/taskStore'
@@ -48,6 +50,9 @@ export function ThreadsPage() {
     handleToggleReadById,
     markRead,
     handleReply,
+    replyingThreadIds,
+    replyPrompts,
+    setReplyPromptForThread,
     isReplying,
     replyPrompt,
     setReplyPrompt,
@@ -121,24 +126,22 @@ export function ThreadsPage() {
           const isActive = thread.id === activeId
           const isPinned = pinnedIds.includes(thread.id)
           return (
-            <ThreadPreview
+            <PinnableThreadPreview
               key={thread.id}
               thread={thread}
               isPinned={isPinned}
               isActive={isActive}
-              onClose={() => removeItem(thread.id)}
-              onTogglePin={() => togglePin(thread.id)}
+              isReplying={replyingThreadIds.has(thread.id)}
+              replyPrompt={replyPrompts[thread.id] ?? ''}
               pagination={isActive ? pagination : undefined}
               goToPrevious={isActive ? goToPrevious : undefined}
               goToNext={isActive ? goToNext : undefined}
               onDeselect={deselect}
-              isStarred={thread.starColor !== null}
-              starColor={thread.starColor}
+              onRemove={removeItem}
+              onTogglePin={togglePin}
               onToggleStar={handleToggleStar}
               onReply={handleReply}
-              isReplying={isActive ? isReplying : false}
-              replyPrompt={isActive ? replyPrompt : ''}
-              onReplyPromptChange={isActive ? setReplyPrompt : undefined}
+              onReplyPromptChange={setReplyPromptForThread}
               onSelectArtifact={handleSelectArtifact}
               mode={previewMode}
               onMarkRead={markRead}
@@ -260,3 +263,85 @@ export function ThreadsPage() {
     </>
   )
 }
+
+/**
+ * Wrapper that memoizes per-thread callbacks so ThreadPreview (memo) doesn't
+ * re-render just because inline arrows are recreated.
+ */
+const PinnableThreadPreview = memo(function PinnableThreadPreview({
+  thread,
+  isPinned,
+  isActive,
+  isReplying,
+  replyPrompt,
+  pagination,
+  goToPrevious,
+  goToNext,
+  onDeselect,
+  onRemove,
+  onTogglePin,
+  onToggleStar,
+  onReply,
+  onReplyPromptChange,
+  onSelectArtifact,
+  mode,
+  onMarkRead,
+  onToggleTranscript,
+}: {
+  thread: Thread
+  isPinned: boolean
+  isActive: boolean
+  isReplying: boolean
+  replyPrompt: string
+  pagination?: { current: number; total: number }
+  goToPrevious?: () => void
+  goToNext?: () => void
+  onDeselect: () => void
+  onRemove: (id: string) => void
+  onTogglePin: (id: string) => void
+  onToggleStar: () => void
+  onReply: (content: string, threadId?: string) => Promise<void>
+  onReplyPromptChange: (threadId: string, value: string) => void
+  onSelectArtifact: (artifact: Artifact) => void
+  mode: PreviewMode
+  onMarkRead: (id: string) => void
+  onToggleTranscript: () => void
+}) {
+  const threadId = thread.id
+
+  const handleClose = useCallback(() => onRemove(threadId), [onRemove, threadId])
+  const handleTogglePin = useCallback(() => onTogglePin(threadId), [onTogglePin, threadId])
+  const handleReply = useCallback(
+    (content: string) => onReply(content, threadId),
+    [onReply, threadId],
+  )
+  const handlePromptChange = useCallback(
+    (value: string) => onReplyPromptChange(threadId, value),
+    [onReplyPromptChange, threadId],
+  )
+
+  return (
+    <ThreadPreview
+      thread={thread}
+      isPinned={isPinned}
+      isActive={isActive}
+      onClose={handleClose}
+      onTogglePin={handleTogglePin}
+      pagination={pagination}
+      goToPrevious={goToPrevious}
+      goToNext={goToNext}
+      onDeselect={onDeselect}
+      isStarred={thread.starColor !== null}
+      starColor={thread.starColor}
+      onToggleStar={onToggleStar}
+      onReply={handleReply}
+      isReplying={isReplying}
+      replyPrompt={replyPrompt}
+      onReplyPromptChange={handlePromptChange}
+      onSelectArtifact={onSelectArtifact}
+      mode={mode}
+      onMarkRead={onMarkRead}
+      onToggleTranscript={onToggleTranscript}
+    />
+  )
+})

@@ -54,9 +54,15 @@ export interface V2ShellContextValue {
   handleToggleStarById: (id: string) => void
   handleToggleReadById: (id: string) => void
   markRead: (id: string) => void
-  handleReply: (content: string) => Promise<void>
+  handleReply: (content: string, threadId?: string) => Promise<void>
+  replyingThreadIds: Set<string>
+  replyPrompts: Record<string, string>
+  setReplyPromptForThread: (threadId: string, value: string) => void
+  /** @deprecated Use replyingThreadIds / replyPrompts */
   isReplying: boolean
+  /** @deprecated Use replyPrompts */
   replyPrompt: string
+  /** @deprecated Use setReplyPromptForThread */
   setReplyPrompt: (value: string) => void
 
   // Handlers — inspect panel

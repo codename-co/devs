@@ -297,8 +297,33 @@ function V2Shell({
     useConversationStore()
   const { addTurn, setStarColor: setSessionStarColor } = useSessionStore()
   const { setStarColor: setTaskStarColor } = useTaskStore()
-  const [isReplying, setIsReplying] = useState(false)
-  const [replyPrompt, setReplyPrompt] = useState('')
+  const [replyingThreadIds, setReplyingThreadIds] = useState<Set<string>>(new Set())
+  const [replyPrompts, setReplyPrompts] = useState<Record<string, string>>({})
+
+  // Convenience helpers
+  const setReplyingForThread = useCallback((threadId: string, replying: boolean) => {
+    setReplyingThreadIds(prev => {
+      const has = prev.has(threadId)
+      if (replying === has) return prev
+      const next = new Set(prev)
+      if (replying) next.add(threadId)
+      else next.delete(threadId)
+      return next
+    })
+  }, [])
+  const setReplyPromptForThread = useCallback((threadId: string, value: string) => {
+    setReplyPrompts(prev => {
+      if (prev[threadId] === value) return prev
+      return { ...prev, [threadId]: value }
+    })
+  }, [])
+
+  // Backward-compat aliases (use activeId)
+  const isReplying = !!(activeId && replyingThreadIds.has(activeId))
+  const replyPrompt = (activeId && replyPrompts[activeId]) || ''
+  const setReplyPrompt = useCallback((value: string) => {
+    if (activeId) setReplyPromptForThread(activeId, value)
+  }, [activeId, setReplyPromptForThread])
 
   const widgetCacheRef = useRef<Map<string, PreviewItem>>(new Map())
 
@@ -435,15 +460,19 @@ function V2Shell({
   )
 
   const handleReply = useCallback(
-    async (content: string) => {
-      if (!selectedThreadId) return
+    async (content: string, replyThreadId?: string) => {
+      const targetThreadId = replyThreadId || selectedThreadId
+      if (!targetThreadId) return
+
+      // Resolve the thread for this reply
+      const targetThread = selectedThreads.find((t) => t.id === targetThreadId) ?? activeThread
 
       // Session threads use addTurn so useSessionExecution picks it up
-      if (activeThread?.kind === 'session' && activeThread.source.session) {
-        const session = activeThread.source.session
+      if (targetThread?.kind === 'session' && targetThread.source.session) {
+        const session = targetThread.source.session
         const agentId = session.primaryAgentId
-        setIsReplying(true)
-        setReplyPrompt('')
+        setReplyingForThread(targetThreadId, true)
+        setReplyPromptForThread(targetThreadId, '')
         try {
           await addTurn(session.id, {
             prompt: content,
@@ -451,22 +480,22 @@ function V2Shell({
             agentId,
           })
         } finally {
-          setIsReplying(false)
+          setReplyingForThread(targetThreadId, false)
         }
         return
       }
 
-      const convId = resolveConvId(selectedThreadId)
+      const convId = resolveConvId(targetThreadId)
       if (!convId) return
       const conv = conversationsMap.get(convId)
       if (!conv) return
 
       // Resolve the agent for this conversation
-      const agent = activeThread?.agent ?? getAgentById(conv.agentId)
+      const agent = targetThread?.agent ?? getAgentById(conv.agentId)
       if (!agent) return
 
-      setIsReplying(true)
-      setReplyPrompt('')
+      setReplyingForThread(targetThreadId, true)
+      setReplyPromptForThread(targetThreadId, '')
 
       try {
         // Load and decrypt the conversation into the store so submitChat can
@@ -488,17 +517,20 @@ function V2Shell({
           onResponseUpdate: () => {
             // Thread will auto-update via Yjs observer when assistant message is saved
           },
-          onPromptClear: () => setReplyPrompt(''),
+          onPromptClear: () => setReplyPromptForThread(targetThreadId, ''),
         })
       } finally {
-        setIsReplying(false)
+        setReplyingForThread(targetThreadId, false)
       }
     },
     [
       selectedThreadId,
+      selectedThreads,
       activeThread,
       addTurn,
       resolveConvId,
+      setReplyingForThread,
+      setReplyPromptForThread,
       loadConversation,
       lang,
       t,
@@ -603,6 +635,9 @@ function V2Shell({
       handleToggleReadById,
       markRead,
       handleReply,
+      replyingThreadIds,
+      replyPrompts,
+      setReplyPromptForThread,
       isReplying,
       replyPrompt,
       setReplyPrompt,
@@ -649,6 +684,9 @@ function V2Shell({
       handleToggleReadById,
       markRead,
       handleReply,
+      replyingThreadIds,
+      replyPrompts,
+      setReplyPromptForThread,
       isReplying,
       replyPrompt,
       setReplyPrompt,
