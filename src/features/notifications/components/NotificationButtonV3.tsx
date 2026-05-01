@@ -51,12 +51,12 @@ export function NotificationButtonV3({
             aria-label={t('Notifications')}
           >
             {unreadCount > 0 ? (
-              <Badge color="danger" size="sm">
-                <Badge.Anchor>
-                  <Icon name="Bell" className="text-muted" size="sm" />
-                </Badge.Anchor>
-                <Badge.Label>{badgeContent}</Badge.Label>
-              </Badge>
+              <Badge.Anchor>
+                <Icon name="Bell" className="text-muted" size="sm" />
+                <Badge color="danger" size="sm">
+                  {badgeContent}
+                </Badge>
+              </Badge.Anchor>
             ) : (
               <Icon name="Bell" className="text-muted" size="sm" />
             )}
@@ -69,7 +69,7 @@ export function NotificationButtonV3({
         )}
       </Tooltip>
       <Popover.Content placement="bottom end">
-        <Popover.Dialog>
+        <Popover.Dialog className="p-0">
           <NotificationPanel onClose={() => setIsOpen(false)} />
         </Popover.Dialog>
       </Popover.Content>
