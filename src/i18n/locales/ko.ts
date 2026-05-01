@@ -1056,6 +1056,8 @@ export const ko: I18n = {
   'Search tasks and conversations…': '작업 및 대화 검색…',
   'No threads yet': '아직 스레드가 없습니다',
   'No matching threads': '일치하는 스레드가 없습니다',
+  'No tasks yet': '아직 작업이 없습니다',
+  'No matching tasks': '일치하는 작업이 없습니다',
   'New task': '새 작업',
   'Start a new task': '새 작업 시작',
   'New agent': '새 에이전트',

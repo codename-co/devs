@@ -1079,6 +1079,8 @@ export const fr: I18n = {
   'Search tasks and conversations…': 'Rechercher des tâches et conversations…',
   'No threads yet': 'Aucun fil pour le moment',
   'No matching threads': 'Aucun fil correspondant',
+  'No tasks yet': 'Aucune tâche pour le moment',
+  'No matching tasks': 'Aucune tâche correspondante',
   'New task': 'Nouvelle tâche',
   'Start a new task': 'Démarrer une nouvelle tâche',
   'New agent': 'Nouvel agent',

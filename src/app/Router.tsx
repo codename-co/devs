@@ -77,6 +77,10 @@ const routes = {
   'inbox/:threadId': V2Page,
   'inbox/:threadId/:tab': V2Page,
   'inbox/:threadId/:inspectType/:inspectId': V2Page,
+  tasks: V2Page,
+  'tasks/:threadId': V2Page,
+  'tasks/:threadId/:tab': V2Page,
+  'tasks/:threadId/:inspectType/:inspectId': V2Page,
   // Deprecated pages (old Agents & Tasks)
   'deprecated/agents': AgentsPage,
   'deprecated/agents/run': AgentRunPage,

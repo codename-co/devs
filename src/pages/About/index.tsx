@@ -63,7 +63,7 @@ const TOUR_VIDEOS = [
     id: 'inbox-workflow',
     icon: 'ChatLines' as IconName,
     title: 'Inbox Workflow',
-    tagline: 'Your AI inbox',
+    tagline: 'Your AI tasks',
     Component: InboxWorkflowVideo,
   },
 ] as const

@@ -19,7 +19,7 @@ import { useTaskStore } from '@/stores/taskStore'
 import { submitBackground } from '@/lib/orchestrator/engine'
 
 /**
- * Inbox / Tasks / Starred view — email-style thread list + preview + optional
+ * Tasks view — task list + preview + optional
  * artifact panel. Derives all state from V2ShellContext.
  */
 export function ThreadsPage() {

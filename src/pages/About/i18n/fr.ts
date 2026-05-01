@@ -27,7 +27,7 @@ export const fr: I18n = {
   'Your keys. Your data. Your browser.':
     'Vos cl\u00e9s. Vos donn\u00e9es. Votre navigateur.',
   'Inbox Workflow': 'Flux de bo\u00eete de r\u00e9ception',
-  'Your AI inbox': 'Votre bo\u00eete de r\u00e9ception IA',
+  'Your AI tasks': 'Votre espace de tâches IA',
   'Open full-screen': 'Ouvrir en plein \u00e9cran',
   '\u201CAI shouldn\u2019t be a privilege for tech experts. It should be a superpower anyone can use \u2014 like having a brilliant team on call, ready to tackle anything you throw at them.\u201D':
     '\u201CL\u2019IA ne devrait pas \u00eatre un privil\u00e8ge r\u00e9serv\u00e9 aux experts. Ce devrait \u00eatre un superpouvoir accessible \u00e0 tous \u2014 comme avoir une \u00e9quipe brillante \u00e0 disposition, pr\u00eate \u00e0 relever tous les d\u00e9fis.\u201D',

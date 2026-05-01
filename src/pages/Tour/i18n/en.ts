@@ -22,7 +22,7 @@ export const en = [
   'Build your own AI team',
   'Delegate, don\u2019t chat',
   'Your keys. Your data. Your browser.',
-  'Your AI inbox',
+  'Your AI tasks',
 
   // Navigation
   '\u2190 All tours',

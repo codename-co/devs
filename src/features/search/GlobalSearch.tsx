@@ -34,6 +34,7 @@ const localI18n = {
     'agent',
     'artifact',
     'conversation',
+    'chat',
     'task',
     'file',
     'memory',
@@ -154,6 +155,7 @@ const localI18n = {
     agent: 'agent',
     artifact: 'artefact',
     conversation: 'conversation',
+    chat: 'chat',
     task: 'tâche',
     file: 'fichier',
     memory: 'mémoire',
@@ -212,6 +214,7 @@ const localI18n = {
 const SECTION_TITLE_KEYS: Record<SearchResultType, string> = {
   agent: 'Agents',
   artifact: 'Artifacts',
+  chat: 'Chats',
   conversation: 'Conversations',
   task: 'Tasks',
   file: 'Files',
@@ -230,6 +233,7 @@ function getIconColorClass(type: SearchResultType): string {
   const colors: Record<SearchResultType, string> = {
     agent: 'text-warning',
     artifact: 'text-secondary',
+    chat: 'text-primary',
     conversation: 'text-default-500',
     task: 'text-secondary',
     file: 'text-primary',
@@ -389,7 +393,7 @@ export function GlobalSearch() {
   const groupedHistory = useMemo(() => {
     type HistoryItem = {
       id: string
-      type: 'task' | 'conversation'
+      type: 'task' | 'chat'
       title: string
       subtitle?: string
       href: string
@@ -408,7 +412,7 @@ export function GlobalSearch() {
       })),
       ...conversations.map((conv: Conversation) => ({
         id: conv.id,
-        type: 'conversation' as const,
+        type: 'chat' as const,
         title:
           safeString(conv.title) ||
           (typeof conv.messages?.[0]?.content === 'string'

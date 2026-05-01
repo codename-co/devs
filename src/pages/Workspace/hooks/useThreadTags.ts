@@ -120,7 +120,7 @@ function resolveThreadEntity(threadId: string) {
   // Direct conversation?
   if (conversationsMap.has(threadId)) {
     return {
-      kind: 'conversation' as const,
+      kind: 'chat' as const,
       get: () => conversationsMap.get(threadId),
       set: (tags: string[]) => {
         const conv = conversationsMap.get(threadId)
@@ -144,7 +144,7 @@ function resolveThreadEntity(threadId: string) {
   if (session?.conversationId && conversationsMap.has(session.conversationId)) {
     const convId = session.conversationId
     return {
-      kind: 'conversation' as const,
+      kind: 'chat' as const,
       get: () => conversationsMap.get(convId),
       set: (tags: string[]) => {
         const conv = conversationsMap.get(convId)

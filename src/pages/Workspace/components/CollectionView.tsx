@@ -20,7 +20,7 @@ import { TagMentionPopover } from './TagMentionPopover'
 /** Search filter presets — inserted/removed as `is:xxx` tokens in the search string */
 const SEARCH_FILTERS = [
   { id: 'task', label: 'Tasks', icon: 'PcCheck' as const },
-  { id: 'conversation', label: 'Conversations', icon: 'ChatBubble' as const },
+  { id: 'chat', label: 'Chats', icon: 'ChatBubble' as const },
   { id: 'starred', label: 'Starred', icon: 'Star' as const },
   { id: 'unread', label: 'Unread', icon: 'Mail' as const },
 ]
@@ -223,7 +223,7 @@ export function CollectionView<T extends object>({
             isIconOnly
             size="sm"
             variant={hasActiveFilters ? 'secondary' : 'ghost'}
-            aria-label="Filter threads"
+            aria-label="Filter tasks"
           >
             <Icon name="FilterList" size="sm" />
           </Button>

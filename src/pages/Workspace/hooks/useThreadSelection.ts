@@ -15,7 +15,7 @@ import {
 
 export type InspectSegment = { type: 'artifact' | 'widget'; id: string } | null
 
-const VALID_FILTERS: ThreadFilter[] = ['home', 'inbox', 'agents']
+const VALID_FILTERS: ThreadFilter[] = ['home', 'tasks', 'agents']
 const KNOWN_LANGS = ['en', 'fr', 'de', 'es', 'ar', 'ko']
 
 /**

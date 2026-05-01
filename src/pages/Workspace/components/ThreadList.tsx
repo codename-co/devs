@@ -144,11 +144,11 @@ export const ThreadList = memo(function ThreadList({
           onToggleRead={onToggleRead}
         />
       )}
-      emptyLabel={t('No threads yet')}
-      noMatchLabel={t('No matching threads')}
+      emptyLabel={t('No tasks yet')}
+      noMatchLabel={t('No matching tasks')}
       className={className}
       searchInputRef={searchInputRef}
-      ariaLabel={t('Threads')}
+      ariaLabel={t('Tasks')}
       tags={tags}
       prependSlot={
         <div className="flex items-center gap-2">

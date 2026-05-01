@@ -43,7 +43,7 @@ export interface NewTaskHeroProps {
 
 /** Map session intent to V2 filter for navigation */
 const intentToFilter = (_intent: SessionIntent): string => {
-  return 'inbox'
+  return 'tasks'
 }
 
 const fileToBase64 = (file: File): Promise<string> =>
@@ -173,7 +173,7 @@ export function NewTaskHero({
         else if (mode === 'app') intent = 'app'
         else if (mode === 'agent') intent = 'agent'
         else if (agent.id === 'devs') intent = 'task'
-        else intent = 'conversation'
+        else intent = 'chat'
 
         const attachments =
           selectedFiles.length > 0

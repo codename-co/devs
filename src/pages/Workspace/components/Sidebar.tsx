@@ -39,7 +39,7 @@ const KNOWN_LANGS = ['en', 'fr', 'de', 'es', 'ar', 'ko']
 
 /**
  * Derive which sidebar item is "active" from the current URL pathname.
- * Returns one of: 'home' | 'inbox' | 'agents' | 'marketplace' | extensionId | null
+ * Returns one of: 'home' | 'tasks' | 'agents' | 'marketplace' | extensionId | null
  */
 function useActiveNavItem(installedApps: ReturnType<typeof useInstalledApps>) {
   const { pathname } = useLocation()
@@ -55,7 +55,7 @@ function useActiveNavItem(installedApps: ReturnType<typeof useInstalledApps>) {
     const first = segments[0] ?? 'home'
 
     // Core filters
-    if (first === 'inbox') return 'inbox'
+    if (first === 'tasks' || first === 'inbox') return 'tasks'
     if (first === 'agents') return 'agents'
     if (first === 'marketplace') return 'marketplace'
     if (!first || first === 'home') return 'home'
@@ -450,7 +450,7 @@ export const Sidebar = memo(function Sidebar({
     setIsMobileOpen(false)
   }
 
-  const isThreadsActive = activeNavItem === 'inbox'
+  const isThreadsActive = activeNavItem === 'tasks'
 
   const sidebarContent = (
     <aside
@@ -536,12 +536,12 @@ export const Sidebar = memo(function Sidebar({
                 isIconOnly
                 variant={isThreadsActive ? 'secondary' : 'ghost'}
                 size="sm"
-                onPress={() => handleFilterChange('inbox')}
-                aria-label={t('Threads')}
+                onPress={() => handleFilterChange('tasks')}
+                aria-label={t('Tasks')}
               >
-                <Icon name="MultiBubble" className="text-primary" />
+                <Icon name="PcCheck" className="text-secondary" />
               </Button>
-              <Tooltip.Content placement="right">{t('Threads')}</Tooltip.Content>
+              <Tooltip.Content placement="right">{t('Tasks')}</Tooltip.Content>
             </Tooltip>
 
             {/* Agents */}
@@ -691,7 +691,7 @@ function ExpandedNav({
 
   // Determine which primary nav key is selected
   const primarySelectedKeys = useMemo(() => {
-    if (activeNavItem === 'inbox') return ['inbox']
+    if (activeNavItem === 'tasks') return ['tasks']
     if (activeNavItem === 'agents') return ['agents']
     return [] // No primary nav item selected (app or marketplace is active)
   }, [activeNavItem])
@@ -717,18 +717,18 @@ function ExpandedNav({
         selectedKeys={primarySelectedKeys}
         onSelectionChange={(keys) => {
           const selected = [...keys][0] as string | undefined
-          if (selected === 'inbox') onFilterChange('inbox')
+          if (selected === 'tasks') onFilterChange('tasks')
           else if (selected === 'agents') onFilterChange('agents')
         }}
       >
         <ListBox.Item
-          key="inbox"
-          id="inbox"
-          textValue={t('Threads')}
+          key="tasks"
+          id="tasks"
+          textValue={t('Tasks')}
           className={listItemClass}
         >
-          <Icon name="MultiBubble" className="text-primary" />
-          <span className="flex-1 text-left text-sm font-medium">{t('Threads')}</span>
+          <Icon name="PcCheck" className="text-secondary" />
+          <span className="flex-1 text-left text-sm font-medium">{t('Tasks')}</span>
           <button
             className="text-primary hover:bg-default-200 ml-auto rounded-md p-0.5 transition-colors"
             aria-label={t('New Task')}

@@ -25,7 +25,7 @@ export const ko: I18n = {
   'Your keys. Your data. Your browser.':
     '\uB2F9\uC2E0\uC758 \uD0A4. \uB2F9\uC2E0\uC758 \uB370\uC774\uD130. \uB2F9\uC2E0\uC758 \uBE0C\uB77C\uC6B0\uC800.',
   'Inbox Workflow': '\uBC1B\uC740\uD3B8\uC9C0\uD568 \uC6CC\uD06C\uD50C\uB85C',
-  'Your AI inbox': '\uB2F9\uC2E0\uC758 AI \uBC1B\uC740\uD3B8\uC9C0\uD568',
+  'Your AI tasks': '\uB2F9\uC2E0\uC758 AI \uC791\uC5C5',
   'Open full-screen': '\uC804\uCCB4 \uD654\uBA74\uC73C\uB85C \uC5F4\uAE30',
   '\u201CAI shouldn\u2019t be a privilege for tech experts. It should be a superpower anyone can use \u2014 like having a brilliant team on call, ready to tackle anything you throw at them.\u201D':
     '\u201CAI\uB294 \uAE30\uC220 \uC804\uBB38\uAC00\uC758 \uD2B9\uAD8C\uC774 \uC544\uB2C8\uB77C \uB204\uAD6C\uB098 \uC4F8 \uC218 \uC788\uB294 \uCD08\uB2A5\uB825\uC774\uC5B4\uC57C \uD569\uB2C8\uB2E4 \u2014 \uC5B8\uC81C\uB4E0 \uBD80\uB97C \uC218 \uC788\uB294 \uBB34\uC801\uC758 \uD300\uCC98\uB7FC.\u201D',

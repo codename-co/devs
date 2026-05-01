@@ -1118,7 +1118,7 @@ function buildTourThreads(
   const filler: Thread[] = [
     {
       id: 'tour-thread-2',
-      kind: 'conversation',
+      kind: 'chat',
       title: s.filler2Title,
       snippet: s.filler2Snippet,
       updatedAt: new Date(createdAt.getTime() - 1000 * 60 * 45).toISOString(),
@@ -1133,7 +1133,7 @@ function buildTourThreads(
     },
     {
       id: 'tour-thread-3',
-      kind: 'conversation',
+      kind: 'chat',
       title: s.filler3Title,
       snippet: s.filler3Snippet,
       updatedAt: new Date(createdAt.getTime() - 1000 * 60 * 60 * 3).toISOString(),
@@ -1198,7 +1198,7 @@ const SwarmContent = memo(function SwarmContent({
         <div className="shrink-0">
           <Sidebar
             isCollapsed
-            activeFilter="inbox"
+            activeFilter="tasks"
             onFilterChange={noop}
             onOpenSettings={noop}
           />

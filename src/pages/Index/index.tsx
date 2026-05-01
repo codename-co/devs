@@ -174,7 +174,7 @@ export const IndexPage = () => {
       else if (mode === 'app') intent = 'app'
       else if (mode === 'agent') intent = 'agent'
       else if (agent.id === 'devs') intent = 'task'
-      else intent = 'conversation'
+      else intent = 'chat'
 
       // Convert files to session attachments
       const attachments =

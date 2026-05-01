@@ -47,7 +47,7 @@ const videos = [
   {
     id: 'inbox-workflow',
     title: 'Inbox Workflow',
-    description: 'Your AI inbox',
+    description: 'Your AI tasks',
     Component: InboxWorkflowVideo,
   },
 ] as const

@@ -157,7 +157,7 @@ function buildInboxThreads(
     },
     {
       id: 'inbox-blog',
-      kind: 'conversation',
+      kind: 'chat',
       title: s.blogTitle,
       snippet: s.blogSnippet,
       updatedAt: new Date(BASE_MS - 15 * 60_000).toISOString(),
@@ -217,7 +217,7 @@ function buildInboxThreads(
     },
     {
       id: 'inbox-weekly',
-      kind: 'conversation',
+      kind: 'chat',
       title: s.weeklyTitle,
       snippet: 'Three themes: latency, privacy, price.',
       updatedAt: new Date(BASE_MS - 26 * 60 * 60_000).toISOString(),
@@ -253,7 +253,7 @@ const InboxContent = memo(function InboxContent({
         <div className="shrink-0">
           <Sidebar
             isCollapsed
-            activeFilter="inbox"
+            activeFilter="tasks"
             onFilterChange={noop}
             onOpenSettings={noop}
           />
@@ -351,7 +351,7 @@ const TranscriptContent = memo(function TranscriptContent({
         <div className="shrink-0">
           <Sidebar
             isCollapsed
-            activeFilter="inbox"
+            activeFilter="tasks"
             onFilterChange={noop}
             onOpenSettings={noop}
           />
@@ -568,7 +568,7 @@ const TagSearchContent = memo(function TagSearchContent({
         <div className="shrink-0">
           <Sidebar
             isCollapsed
-            activeFilter="inbox"
+            activeFilter="tasks"
             onFilterChange={noop}
             onOpenSettings={noop}
           />

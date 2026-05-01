@@ -19,7 +19,7 @@ export const ko: I18n = {
   [`Build your own AI team`]: `나만의 AI 팀을 구성하세요`,
   [`Delegate, don\u2019t chat`]: `채팅 말고 위임하세요`,
   [`Your keys. Your data. Your browser.`]: `당신의 키. 당신의 데이터. 당신의 브라우저.`,
-  [`Your AI inbox`]: `AI 받은 편지함`,
+  [`Your AI tasks`]: `AI 작업`,
 
   // Navigation
   [`\u2190 All tours`]: `\u2190 모든 투어`,

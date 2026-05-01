@@ -26,7 +26,7 @@ export const de: I18n = {
   'Your keys. Your data. Your browser.':
     'Ihre Schl\u00fcssel. Ihre Daten. Ihr Browser.',
   'Inbox Workflow': 'Posteingang-Workflow',
-  'Your AI inbox': 'Ihr KI-Posteingang',
+  'Your AI tasks': 'Ihre KI-Aufgaben',
   'Open full-screen': 'Im Vollbild \u00f6ffnen',
   '\u201CAI shouldn\u2019t be a privilege for tech experts. It should be a superpower anyone can use \u2014 like having a brilliant team on call, ready to tackle anything you throw at them.\u201D':
     '\u201CKI sollte kein Privileg f\u00fcr Tech-Experten sein. Es sollte eine Superkraft sein, die jeder nutzen kann \u2014 wie ein brillantes Team auf Abruf, bereit jede Herausforderung anzunehmen.\u201D',

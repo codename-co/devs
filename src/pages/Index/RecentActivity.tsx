@@ -18,7 +18,7 @@ export function RecentActivity() {
   const items = useMemo(
     () =>
       allItems
-        .filter((i) => i.type === 'conversation' || i.type === 'task')
+        .filter((i) => i.type === 'chat' || i.type === 'conversation' || i.type === 'task')
         .slice(0, 6),
     [allItems],
   )

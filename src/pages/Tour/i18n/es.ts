@@ -19,7 +19,7 @@ export const es: I18n = {
   [`Build your own AI team`]: `Construye tu propio equipo de IA`,
   [`Delegate, don\u2019t chat`]: `Delega, no chatees`,
   [`Your keys. Your data. Your browser.`]: `Tus claves. Tus datos. Tu navegador.`,
-  [`Your AI inbox`]: `Tu bandeja de entrada de IA`,
+  [`Your AI tasks`]: `Tus tareas de IA`,
 
   // Navigation
   [`\u2190 All tours`]: `\u2190 Todos los tours`,

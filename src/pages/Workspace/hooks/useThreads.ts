@@ -168,7 +168,7 @@ function buildConvThread(
 
   return {
     id: conv.id,
-    kind: 'conversation',
+    kind: 'chat',
     title: conv.title ?? 'Untitled conversation',
     snippet: safeSnippet(lastMessage?.content),
     updatedAt: safeISOString(conv.updatedAt),
@@ -283,7 +283,13 @@ function buildSessionThread(
 
   return {
     id: s.id,
-    kind: 'session',
+    kind: s.intent === 'chat' || s.intent === 'conversation' || s.intent === 'agent'
+      ? 'chat'
+      : s.intent === 'media'
+        ? 'media'
+        : s.intent === 'task'
+          ? 'task'
+          : 'session',
     title,
     snippet:
       safeSnippet(lastMessage?.content) ||

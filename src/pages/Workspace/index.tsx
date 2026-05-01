@@ -131,12 +131,13 @@ function V2Shell({
               (t.kind === 'session' && t.source.session?.intent === 'task'),
           )
           break
-        case 'conversation':
+        case 'chat':
           result = result.filter(
             (t) =>
-              t.kind === 'conversation' ||
+              t.kind === 'chat' ||
               (t.kind === 'session' &&
-                t.source.session?.intent === 'conversation'),
+                (t.source.session?.intent === 'chat' ||
+                  t.source.session?.intent === 'conversation')),
           )
           break
         case 'starred':

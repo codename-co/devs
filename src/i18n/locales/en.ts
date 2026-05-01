@@ -991,6 +991,8 @@ export const en = [
   'Search tasks and conversations…',
   'No threads yet',
   'No matching threads',
+  'No tasks yet',
+  'No matching tasks',
   'New task',
   'Start a new task',
   'New agent',

@@ -17,7 +17,7 @@ export const en = [
   'Privacy First',
   'Your keys. Your data. Your browser.',
   'Inbox Workflow',
-  'Your AI inbox',
+  'Your AI tasks',
   'Open full-screen',
   '\u201CAI shouldn\u2019t be a privilege for tech experts. It should be a superpower anyone can use \u2014 like having a brilliant team on call, ready to tackle anything you throw at them.\u201D',
 

@@ -18,6 +18,7 @@ import { toEpoch } from '@/lib/date'
 export interface ActivityItem {
   id: string
   type:
+    | 'chat'
     | 'conversation'
     | 'task'
     | 'agent'
@@ -33,6 +34,7 @@ export interface ActivityItem {
 }
 
 export const ACTIVITY_ICONS: Record<ActivityItem['type'], IconName> = {
+  chat: 'ChatBubble',
   conversation: 'ChatBubble',
   task: 'PcCheck',
   agent: 'Sparks',
@@ -73,7 +75,7 @@ export const useRecentActivity = (lang: LanguageCode): ActivityItem[] => {
       const slug = c.agentSlug || agent?.slug || 'devs'
       items.push({
         id: `conv-${c.id}`,
-        type: 'conversation',
+        type: 'chat',
         name: getTitle(c) || 'Untitled',
         subtitle: agent?.name,
         icon: ACTIVITY_ICONS.conversation,

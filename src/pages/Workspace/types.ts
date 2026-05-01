@@ -8,8 +8,18 @@ import type {
 } from '@/types'
 import type { StudioEntry } from '@/features/studio/types'
 
-/** Discriminated union: every thread is either a task, a pure conversation, a media generation, or a session */
-export type ThreadKind = 'task' | 'conversation' | 'media' | 'session'
+/** Discriminated union: every thread is either a task, a pure chat, a media generation, or a session */
+export type ThreadKind = 'task' | 'chat' | 'media' | 'session'
+
+import type { IconName } from '@/lib/types'
+
+/** Visual metadata for each thread kind — icon name and Tailwind color class. */
+export const THREAD_KIND_META: Record<ThreadKind, { icon: IconName; colorClass: string }> = {
+  task: { icon: 'PcCheck', colorClass: 'text-secondary-500' },
+  chat: { icon: 'ChatBubble', colorClass: 'text-primary-500' },
+  media: { icon: 'MediaImage', colorClass: 'text-danger-500' },
+  session: { icon: 'Voice', colorClass: 'text-foreground' },
+}
 
 export interface ThreadMessage {
   id: string
@@ -49,6 +59,6 @@ export interface Thread {
   tags: string[]
 }
 
-export type ThreadFilter = 'home' | 'inbox' | 'agents'
+export type ThreadFilter = 'home' | 'tasks' | 'agents'
 
 export type CollectionLayout = 'list' | 'board'

@@ -1057,6 +1057,8 @@ export const ar: I18n = {
   'Search tasks and conversations…': 'البحث عن المهام والمحادثات…',
   'No threads yet': 'لا توجد محادثات بعد',
   'No matching threads': 'لا توجد محادثات مطابقة',
+  'No tasks yet': 'لا توجد مهام بعد',
+  'No matching tasks': 'لا توجد مهام مطابقة',
   'New task': 'مهمة جديدة',
   'Start a new task': 'بدء مهمة جديدة',
   'New agent': 'وكيل جديد',

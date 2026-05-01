@@ -1080,6 +1080,8 @@ export const de: I18n = {
   'Search tasks and conversations…': 'Aufgaben und Unterhaltungen suchen…',
   'No threads yet': 'Noch keine Threads',
   'No matching threads': 'Keine passenden Threads',
+  'No tasks yet': 'Noch keine Aufgaben',
+  'No matching tasks': 'Keine passenden Aufgaben',
   'New task': 'Neue Aufgabe',
   'Start a new task': 'Neue Aufgabe starten',
   'New agent': 'Neuer Agent',

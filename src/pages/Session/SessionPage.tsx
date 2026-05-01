@@ -25,10 +25,10 @@ function modeToIntent(mode: PromptMode, agent?: Agent | null): SessionIntent {
     case 'agent':
       return 'agent'
     case 'live':
-      return 'conversation'
+      return 'chat'
     case 'chat':
     default:
-      return agent?.id === 'devs' ? 'task' : 'conversation'
+      return agent?.id === 'devs' ? 'task' : 'chat'
   }
 }
 

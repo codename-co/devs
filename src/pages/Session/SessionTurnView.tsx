@@ -64,7 +64,7 @@ export function SessionTurnView({ turn, session }: SessionTurnViewProps) {
 
       {/* Intent-specific render */}
       <div className="ml-11">
-        {turn.intent === 'conversation' && (
+        {(turn.intent === 'chat' || turn.intent === 'conversation') && (
           <ConversationTurn turn={turn} session={session} />
         )}
         {turn.intent === 'task' && <TaskTurn turn={turn} session={session} />}

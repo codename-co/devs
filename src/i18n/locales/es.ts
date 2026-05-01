@@ -1077,6 +1077,8 @@ export const es: I18n = {
   'Search tasks and conversations…': 'Buscar tareas y conversaciones…',
   'No threads yet': 'Aún no hay hilos',
   'No matching threads': 'No hay hilos que coincidan',
+  'No tasks yet': 'Aún no hay tareas',
+  'No matching tasks': 'No hay tareas que coincidan',
   'New task': 'Nueva tarea',
   'Start a new task': 'Iniciar una nueva tarea',
   'New agent': 'Nuevo agente',

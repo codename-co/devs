@@ -26,7 +26,7 @@ export const es: I18n = {
   'Privacy First': 'Privacidad ante todo',
   'Your keys. Your data. Your browser.': 'Tus claves. Tus datos. Tu navegador.',
   'Inbox Workflow': 'Flujo de bandeja de entrada',
-  'Your AI inbox': 'Tu bandeja de entrada con IA',
+  'Your AI tasks': 'Tus tareas de IA',
   'Open full-screen': 'Abrir en pantalla completa',
   '\u201CAI shouldn\u2019t be a privilege for tech experts. It should be a superpower anyone can use \u2014 like having a brilliant team on call, ready to tackle anything you throw at them.\u201D':
     '\u201CLa IA no deber\u00eda ser un privilegio para expertos en tecnolog\u00eda. Deber\u00eda ser un superpoder al alcance de todos \u2014 como tener un equipo brillante a tu disposici\u00f3n, listo para afrontar cualquier reto.\u201D',

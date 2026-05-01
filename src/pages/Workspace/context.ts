@@ -49,7 +49,7 @@ export interface V2ShellContextValue {
   customAgentIds: Set<string>
   isAgentsLoading: boolean
 
-  // Handlers — threads
+  // Handlers — tasks
   handleToggleStar: () => void
   handleToggleStarById: (id: string) => void
   handleToggleReadById: (id: string) => void

@@ -19,7 +19,7 @@ export const fr: I18n = {
   [`Build your own AI team`]: `Construisez votre propre \u00e9quipe IA`,
   [`Delegate, don\u2019t chat`]: `D\u00e9l\u00e9guez, ne bavardez pas`,
   [`Your keys. Your data. Your browser.`]: `Vos cl\u00e9s. Vos donn\u00e9es. Votre navigateur.`,
-  [`Your AI inbox`]: `Votre bo\u00eete de r\u00e9ception IA`,
+  [`Your AI tasks`]: `Votre espace de t\u00e2ches IA`,
 
   // Navigation
   [`\u2190 All tours`]: `\u2190 Tous les tours`,

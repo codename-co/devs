@@ -26,6 +26,7 @@ import { IconName } from '@/lib/types'
 export type SearchResultType =
   | 'agent'
   | 'artifact'
+  | 'chat'
   | 'conversation'
   | 'task'
   | 'file'
@@ -72,6 +73,7 @@ const SEARCH_CONFIG = {
 const TYPE_COLORS: Record<SearchResultType, string> = {
   agent: 'warning',
   artifact: 'secondary',
+  chat: 'primary',
   conversation: 'default',
   task: 'secondary',
   file: 'primary',
@@ -89,6 +91,7 @@ const TYPE_COLORS: Record<SearchResultType, string> = {
 const TYPE_ICONS: Record<SearchResultType, string> = {
   agent: 'Sparks',
   artifact: 'Page',
+  chat: 'ChatBubble',
   conversation: 'ChatBubble',
   task: 'PcCheck',
   file: 'Folder',
@@ -266,7 +269,7 @@ async function searchConversations(query: string): Promise<SearchResult[]> {
 
         results.push({
           id: conv.id,
-          type: 'conversation',
+          type: 'chat',
           title: title || 'Untitled conversation',
           subtitle: summary?.slice(0, 100),
           icon: TYPE_ICONS.conversation,

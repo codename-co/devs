@@ -7,6 +7,7 @@ import {
 } from '../lib/thread-utils'
 import { useThreadTagMap } from '../hooks/useThreadTags'
 import type { Thread } from '../types'
+import { THREAD_KIND_META } from '../types'
 
 interface ThreadListItemProps {
   thread: Thread
@@ -94,20 +95,16 @@ export const ThreadListItem = memo(function ThreadListItem({
           {thread.artifacts.length > 0 && (
             <Icon size="sm" name="Attachment" className="shrink-0 text-muted" />
           )}
-          {thread.kind === 'task' && (
-            <Icon
-              size="sm"
-              name="PcCheck"
-              className="shrink-0 text-secondary-500"
-            />
-          )}
-          {thread.kind === 'media' && (
-            <Icon
-              size="sm"
-              name="MediaImage"
-              className="shrink-0 text-danger-500"
-            />
-          )}
+          {thread.kind !== 'chat' && (() => {
+            const meta = THREAD_KIND_META[thread.kind]
+            return (
+              <Icon
+                size="sm"
+                name={meta.icon}
+                className={`shrink-0 ${meta.colorClass}`}
+              />
+            )
+          })()}
           {thread.starColor && (
             <Icon
               name="StarSolid"

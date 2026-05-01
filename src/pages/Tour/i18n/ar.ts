@@ -19,7 +19,7 @@ export const ar: I18n = {
   [`Build your own AI team`]: `ابنِ فريقك الذكاء الاصطناعي الخاص`,
   [`Delegate, don\u2019t chat`]: `فوّض، لا تتحدث`,
   [`Your keys. Your data. Your browser.`]: `مفاتيحك. بياناتك. متصفحك.`,
-  [`Your AI inbox`]: `صندوق الوارد الذكاء الاصطناعي`,
+  [`Your AI tasks`]: `مهام الذكاء الاصطناعي`,
 
   // Navigation
   [`\u2190 All tours`]: `كل الجولات \u2192`,
