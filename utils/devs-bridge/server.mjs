@@ -8,11 +8,23 @@
  * Run with: ./server.mjs
  */
 import http from 'node:http'
-import winston from 'winston'
 
 const HOST = process.env.HOST || '0.0.0.0'
 const PORT = process.env.PORT || 4445
 const LOG_LEVEL = process.env.LOG_LEVEL || 'info'
+
+// Minimal logger (replaces winston)
+const LEVELS = { error: 0, warn: 1, info: 2, debug: 3 }
+const logger = Object.fromEntries(
+  Object.entries(LEVELS).map(([level, priority]) => [
+    level,
+    (...args) => {
+      if (priority <= (LEVELS[LOG_LEVEL] ?? 2)) {
+        console[level === 'debug' ? 'log' : level](`[${level.toUpperCase()}]`, ...args)
+      }
+    },
+  ]),
+)
 
 // OAuth secrets (only needed server-side)
 const NOTION_CLIENT_ID = process.env.NOTION_CLIENT_ID || ''
@@ -34,18 +46,8 @@ const DROPBOX_CLIENT_SECRET = process.env.DROPBOX_CLIENT_SECRET || ''
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, Notion-Version',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, Notion-Version, Editor-Version, Editor-Plugin-Version, User-Agent',
 }
-
-// Configure winston logger
-const logger = winston.createLogger({
-  level: LOG_LEVEL,
-  format: winston.format.combine(
-    winston.format.colorize(),
-    winston.format.simple(),
-  ),
-  transports: [new winston.transports.Console()],
-})
 
 /**
  * Proxy an HTTP request to a target URL
@@ -367,6 +369,110 @@ async function handleHttpRequest(req, res) {
     return proxyRequest(req, res, targetUrl)
   }
 
+  // === GITHUB MODELS CATALOG PROXY (CORS only) ===
+  if (path.startsWith('/api/github-models/')) {
+    const modelsPath = path.replace('/api/github-models/', '')
+    const targetUrl = `https://models.github.ai/${modelsPath}${url.search}`
+    logger.debug(`GitHub Models catalog proxy: ${targetUrl}`)
+    return proxyRequest(req, res, targetUrl)
+  }
+
+  // === GITHUB COPILOT API PROXY ===
+  if (path.startsWith('/api/github-copilot-api/')) {
+    const copilotPath = path.replace('/api/github-copilot-api/', '')
+    const targetUrl = `https://api.githubcopilot.com/${copilotPath}${url.search}`
+    logger.debug(`GitHub Copilot API proxy: ${targetUrl}`)
+
+    // Copilot API requires specific editor headers
+    const copilotHeaders = {
+      'Editor-Version': 'vscode/1.99.0',
+      'Editor-Plugin-Version': 'copilot/1.999.0',
+      'User-Agent': 'GithubCopilot/1.999.0',
+    }
+
+    // Read body for non-GET requests
+    let body = null
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      const chunks = []
+      for await (const chunk of req) {
+        chunks.push(chunk)
+      }
+      body = Buffer.concat(chunks)
+    }
+
+    // Build headers
+    const headers = { ...copilotHeaders }
+    if (req.headers['content-type']) {
+      headers['Content-Type'] = req.headers['content-type']
+    }
+    if (req.headers['authorization']) {
+      headers['Authorization'] = req.headers['authorization']
+    }
+    if (req.headers['accept']) {
+      headers['Accept'] = req.headers['accept']
+    }
+
+    try {
+      const response = await fetch(targetUrl, {
+        method: req.method,
+        headers,
+        body,
+      })
+
+      const contentType = response.headers.get('content-type') || 'application/json'
+      const isStreaming = contentType.includes('text/event-stream') || contentType.includes('text/plain')
+
+      if (isStreaming && response.body) {
+        // Stream SSE responses
+        res.writeHead(response.status, {
+          ...CORS_HEADERS,
+          'Content-Type': contentType,
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        })
+
+        const reader = response.body.getReader()
+        try {
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+            res.write(value)
+          }
+        } finally {
+          res.end()
+        }
+      } else {
+        const responseBody = await response.text()
+        res.writeHead(response.status, {
+          ...CORS_HEADERS,
+          'Content-Type': contentType,
+        })
+        res.end(responseBody)
+      }
+    } catch (err) {
+      logger.error(`GitHub Copilot API proxy error: ${err.message}`)
+      res.writeHead(502, CORS_HEADERS)
+      res.end(JSON.stringify({ error: 'Proxy error', message: err.message }))
+    }
+    return
+  }
+
+  // === GITHUB API PROXY (Copilot token exchange) ===
+  if (path.startsWith('/api/github-api/')) {
+    const githubPath = path.replace('/api/github-api/', '')
+    const targetUrl = `https://api.github.com/${githubPath}${url.search}`
+    logger.debug(`GitHub API proxy: ${targetUrl}`)
+    return proxyRequest(req, res, targetUrl)
+  }
+
+  // === GITHUB OAUTH DEVICE FLOW PROXY ===
+  if (path.startsWith('/api/github/')) {
+    const githubPath = path.replace('/api/github/', '')
+    const targetUrl = `https://github.com/${githubPath}${url.search}`
+    logger.debug(`GitHub OAuth proxy: ${targetUrl}`)
+    return proxyRequest(req, res, targetUrl)
+  }
+
   // === FIGMA PROXY ===
   if (path.startsWith('/api/figma/')) {
     const figmaPath = path.replace('/api/figma/', '')
@@ -484,6 +590,10 @@ const start = () => {
     logger.info(`  - Microsoft proxy: /api/microsoft/*`)
     logger.info(`  - Figma proxy: /api/figma/*`)
     logger.info(`  - Dropbox proxy: /api/dropbox/*`)
+    logger.info(`  - GitHub Models proxy: /api/github-models/*`)
+    logger.info(`  - GitHub Copilot API proxy: /api/github-copilot-api/*`)
+    logger.info(`  - GitHub API proxy: /api/github-api/*`)
+    logger.info(`  - GitHub OAuth proxy: /api/github/*`)
   })
 }
 

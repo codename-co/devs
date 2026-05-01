@@ -1,7 +1,8 @@
 .DS_Store
-.env*
+.env
 .env.local
 dist
+Makefile
 node_modules
 /coverage*
 /playwright-report

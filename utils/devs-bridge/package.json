@@ -6,8 +6,5 @@
   "type": "module",
   "scripts": {
     "start": "./server.mjs"
-  },
-  "dependencies": {
-    "winston": "^3.19.0"
   }
 }
