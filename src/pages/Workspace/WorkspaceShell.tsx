@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ToastProvider } from '@heroui/react'
 import { Sidebar } from './components/Sidebar'
@@ -48,6 +48,22 @@ export function WorkspaceShell({
       navigate(`${location.pathname}${location.search}`, { replace: true }),
     [navigate, location.pathname, location.search],
   )
+
+  // Register Meta+, shortcut for settings
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === ',') {
+        e.preventDefault()
+        if (isSettingsOpen) {
+          closeSettings()
+        } else {
+          openSettings()
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isSettingsOpen, openSettings, closeSettings])
 
   const platformName = userSettings((state) => state.platformName)
   const metaTitle = [title, platformName || PRODUCT.displayName]

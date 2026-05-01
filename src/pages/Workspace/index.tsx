@@ -514,6 +514,16 @@ function V2Shell({
         return
       }
 
+      if ((e.metaKey || e.ctrlKey) && e.key === ',') {
+        e.preventDefault()
+        if (isSettingsOpen) {
+          closeSettings()
+        } else {
+          openSettings()
+        }
+        return
+      }
+
       const target = e.target as HTMLElement
       if (
         target.tagName === 'INPUT' ||
@@ -545,7 +555,7 @@ function V2Shell({
 
     window.addEventListener('keydown', handleKeyDown, true)
     return () => window.removeEventListener('keydown', handleKeyDown, true)
-  }, [goToNext, goToPrevious, deselect, handleToggleRead, handleToggleStar])
+  }, [goToNext, goToPrevious, deselect, handleToggleRead, handleToggleStar, isSettingsOpen, openSettings, closeSettings])
 
   const handleStartConversation = useCallback(
     (agent: { slug: string; id?: string }) => {
