@@ -236,4 +236,20 @@ export const ar: I18n = {
   'or a': 'أو',
   'fine-grained PAT': 'رمز وصول شخصي دقيق',
   'with Copilot Requests permission.': 'مع إذن طلبات Copilot.',
+  'Space Identity': 'هوية المساحة',
+  'Space Name': 'اسم المساحة',
+  'Space Icon': 'أيقونة المساحة',
+  'Enter a name for this space': 'أدخل اسمًا لهذه المساحة',
+  'Search icons…': 'بحث عن الأيقونات…',
+  'No icons found': 'لم يتم العثور على أيقونات',
+  'Reset to Default': 'إعادة تعيين',
+  'Instructions': 'تعليمات',
+  "These instructions will be prepended to every agent's instructions in this space":
+    'سيتم إضافة هذه التعليمات إلى بداية تعليمات كل وكيل في هذه المساحة',
+  'Danger Zone': 'منطقة خطرة',
+  'Delete Space': 'حذف المساحة',
+  'Permanently delete this space. Conversations and data will be moved to the default space.':
+    'حذف هذه المساحة نهائيًا. سيتم نقل المحادثات والبيانات إلى المساحة الافتراضية.',
+  'Cancel': 'إلغاء',
+  'Confirm Delete': 'تأكيد الحذف',
 } as const

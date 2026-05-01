@@ -66,6 +66,28 @@ export function renameSpace(id: string, name: string): void {
 }
 
 /**
+ * Update a space with partial data (name, icon, etc.).
+ * The default and all-spaces virtual spaces cannot be updated.
+ */
+export function updateSpace(
+  id: string,
+  data: Partial<Pick<Space, 'name' | 'icon'>>,
+): void {
+  if (id === DEFAULT_SPACE_ID || id === ALL_SPACES_ID) return
+  const existing = spaces.get(id)
+  if (!existing) return
+
+  const updated = { ...existing, ...data, updatedAt: new Date().toISOString() }
+  // Trim name if provided
+  if (data.name !== undefined) {
+    const trimmed = data.name.trim()
+    if (!trimmed) return
+    updated.name = trimmed
+  }
+  spaces.set(id, updated)
+}
+
+/**
  * Delete a space. The default space cannot be deleted.
  * Entities that belonged to this space will be reassigned to the default space.
  */

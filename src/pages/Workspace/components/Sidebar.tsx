@@ -223,7 +223,7 @@ function SpaceSwitcher({ isCollapsed }: { isCollapsed?: boolean }) {
     )
   }
 
-  const collapsedIcon = activeId === ALL_SPACES_ID ? 'Cubes' : 'Cube'
+  const collapsedIcon = activeId === ALL_SPACES_ID ? 'Cubes' : (activeSpace?.icon ?? 'Cube')
   const spaceOptions = (
     <Select.Popover>
       <ListBox>
@@ -234,7 +234,7 @@ function SpaceSwitcher({ isCollapsed }: { isCollapsed?: boolean }) {
         {allSpaces.map((ws) => (
           <ListBox.Item key={ws.id} id={ws.id} textValue={ws.name}>
             <Icon
-              name={ws.id === ALL_SPACES_ID ? 'Cubes' : 'Cube'}
+              name={ws.id === ALL_SPACES_ID ? 'Cubes' : (ws.icon ?? 'Cube')}
               className="text-muted"
               size="sm"
             />

@@ -240,4 +240,20 @@ export const es: I18n = {
   'or a': 'o un',
   'fine-grained PAT': 'PAT detallado',
   'with Copilot Requests permission.': 'con permiso de Copilot Requests.',
+  'Space Identity': 'Identidad del espacio',
+  'Space Name': 'Nombre del espacio',
+  'Space Icon': 'Icono del espacio',
+  'Enter a name for this space': 'Ingrese un nombre para este espacio',
+  'Search icons…': 'Buscar iconos…',
+  'No icons found': 'No se encontraron iconos',
+  'Reset to Default': 'Restablecer',
+  'Instructions': 'Instrucciones',
+  "These instructions will be prepended to every agent's instructions in this space":
+    'Estas instrucciones se agregarán al inicio de las instrucciones de cada agente en este espacio',
+  'Danger Zone': 'Zona de peligro',
+  'Delete Space': 'Eliminar espacio',
+  'Permanently delete this space. Conversations and data will be moved to the default space.':
+    'Eliminar permanentemente este espacio. Las conversaciones y datos se moverán al espacio predeterminado.',
+  'Cancel': 'Cancelar',
+  'Confirm Delete': 'Confirmar eliminación',
 } as const

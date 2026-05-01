@@ -38,6 +38,7 @@ import {
   ProvidersSection,
   SecuritySection,
   SkillsSection,
+  SpaceSection,
   SyncSection,
   TagsSection,
   TracesSection,
@@ -47,6 +48,7 @@ import { IconName } from '@/lib/types'
 
 type SectionKey =
   | ''
+  | 'space'
   | 'providers'
   | 'connectors'
   | 'features'
@@ -122,6 +124,7 @@ const SettingsContentInner = () => {
   // All section keys for hash matching
   const allSectionKeys: SectionKey[] = [
     '',
+    'space',
     'providers',
     'connectors',
     'features',
@@ -170,6 +173,17 @@ const SettingsContentInner = () => {
       icon: 'Settings',
       group: 'configure',
     },
+    // Space section — only shown for non-default spaces
+    ...(isNonDefaultSpace
+      ? [
+          {
+            key: 'space' as SectionKey,
+            label: activeSpace.name,
+            icon: (activeSpace.icon ?? 'Cube') as IconName,
+            group: 'configure' as SectionGroup,
+          },
+        ]
+      : []),
     {
       key: 'providers',
       label: t('AI Providers'),
@@ -272,6 +286,8 @@ const SettingsContentInner = () => {
     switch (activeKey) {
       case '':
         return <GeneralSection />
+      case 'space':
+        return <SpaceSection />
       case 'providers':
         return <ProvidersSection />
       case 'connectors':

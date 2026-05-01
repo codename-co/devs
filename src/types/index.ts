@@ -1230,6 +1230,7 @@ export const ALL_SPACES_URL_SEGMENT = 'all'
 export interface Space {
   id: string
   name: string
+  icon?: IconName
   createdAt: Date | string
   updatedAt?: Date | string
 }

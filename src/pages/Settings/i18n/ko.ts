@@ -237,4 +237,20 @@ export const ko: I18n = {
   'or a': '또는',
   'fine-grained PAT': '세밀한 PAT',
   'with Copilot Requests permission.': 'Copilot Requests 권한 포함.',
+  'Space Identity': '스페이스 정보',
+  'Space Name': '스페이스 이름',
+  'Space Icon': '스페이스 아이콘',
+  'Enter a name for this space': '이 스페이스의 이름을 입력하세요',
+  'Search icons…': '아이콘 검색…',
+  'No icons found': '아이콘을 찾을 수 없습니다',
+  'Reset to Default': '기본값으로 재설정',
+  'Instructions': '지침',
+  "These instructions will be prepended to every agent's instructions in this space":
+    '이 지침은 이 스페이스의 모든 에이전트 지침 앞에 추가됩니다',
+  'Danger Zone': '위험 영역',
+  'Delete Space': '스페이스 삭제',
+  'Permanently delete this space. Conversations and data will be moved to the default space.':
+    '이 스페이스를 영구적으로 삭제합니다. 대화 및 데이터는 기본 스페이스로 이동됩니다.',
+  'Cancel': '취소',
+  'Confirm Delete': '삭제 확인',
 } as const
