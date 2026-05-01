@@ -454,13 +454,13 @@ export const Sidebar = memo(function Sidebar({
 
   const sidebarContent = (
     <aside
-      className={`border-separator h-full min-h-0 flex-col gap-4 overflow-clip border-r py-3 transition-[width,padding] duration-150 ease-in-out ${
-        isCollapsed ? 'w-14 items-center px-1.5' : 'w-full px-4'
+      className={`border-separator h-full min-h-0 flex-col gap-3 overflow-clip border-r py-3 transition-[width,padding] duration-150 ease-in-out ${
+        isCollapsed ? 'w-14 items-center px-1.5' : 'w-full px-3'
       } ${className ?? 'flex'}`}
     >
       {/* Brand + collapse toggle */}
       <div
-        className={`flex items-center ${isCollapsed ? 'justify-center px-0 py-2' : 'gap-3 px-1 py-2'}`}
+        className={`flex items-center ${isCollapsed ? 'justify-center py-1' : 'gap-3 px-1 py-1'}`}
       >
         {isCollapsed ? (
           <Tooltip delay={0}>
@@ -504,6 +504,24 @@ export const Sidebar = memo(function Sidebar({
           />
         )}
       </div>
+
+      {/* New Task CTA — collapsed mode only; expanded mode has it inline on the Threads row */}
+      {isCollapsed && (
+        <Tooltip delay={0}>
+          <Button
+            isIconOnly
+            variant="primary"
+            size="sm"
+            onClick={() => onFilterChange('home')}
+            aria-label={t('New Task')}
+          >
+            <Icon name="Plus" />
+          </Button>
+          <Tooltip.Content placement="right">
+            {t('New Task')}
+          </Tooltip.Content>
+        </Tooltip>
+      )}
 
       {/* Space switcher */}
       <SpaceSwitcher isCollapsed={isCollapsed} />
@@ -592,55 +610,27 @@ export const Sidebar = memo(function Sidebar({
         )}
       </ScrollShadow>
 
-      {/* Bottom actions */}
-      <div className="flex flex-col gap-2">
-        {isCollapsed ? (
-          <div className="flex flex-col items-center gap-1">
-            <Tooltip delay={0}>
-              <Button
-                isIconOnly
-                variant="primary"
-                size="sm"
-                onClick={() => onFilterChange('home')}
-                aria-label={t('New Task')}
-              >
-                <Icon name="EditPencil" />
-              </Button>
-              <Tooltip.Content placement="right">
-                {t('New Task')}
-              </Tooltip.Content>
-            </Tooltip>
-            <NotificationButtonV3 />
-            <ThemeToggleButton />
-            <AboutButton />
-            <SettingsButton onPress={onOpenSettings} />
-          </div>
-        ) : (
-          <>
-            <Tooltip delay={0}>
-              <Button
-                fullWidth
-                variant="primary"
-                onClick={() => onFilterChange('home')}
-              >
-                <Icon name="EditPencil" />
-                {t('New Task')}
-              </Button>
-              <Tooltip.Content>
-                <p>{t('New Task')}</p>
-              </Tooltip.Content>
-            </Tooltip>
-            <div className="flex items-center justify-end gap-1">
-              <NotificationButtonV3 showKbd />
-              <ThemeToggleButton showKbd />
-              <AboutButton showKbd />
-              <SettingsButton onPress={onOpenSettings} showKbd />
-            </div>
-          </>
-        )}
+      {/* Bottom utility row */}
+      <div
+        className={`flex ${isCollapsed ? 'flex-col items-center gap-1' : 'items-center gap-1 px-1'}`}
+      >
+        <NotificationButtonV3 showKbd={!isCollapsed} />
+        <ThemeToggleButton showKbd={!isCollapsed} />
+        <AboutButton showKbd={!isCollapsed} />
+        <SettingsButton onPress={onOpenSettings} showKbd={!isCollapsed} />
       </div>
     </aside>
   )
+
+  // Close mobile drawer on Escape key
+  useEffect(() => {
+    if (!isMobileOpen) return
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsMobileOpen(false)
+    }
+    window.addEventListener('keydown', handleEsc)
+    return () => window.removeEventListener('keydown', handleEsc)
+  }, [isMobileOpen])
 
   return (
     <>
@@ -662,12 +652,13 @@ export const Sidebar = memo(function Sidebar({
 
       {/* Mobile overlay */}
       {isMobileOpen && (
-        <div className="fixed inset-0 z-50 flex lg:hidden">
+        <div className="fixed inset-0 z-50 flex lg:hidden" role="dialog" aria-modal="true">
           <div
-            className="absolute inset-0 bg-black/40 dark:bg-black/70"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setIsMobileOpen(false)}
+            aria-hidden="true"
           />
-          <div className="bg-background relative z-10 h-full w-64 shadow-xl">
+          <div className="bg-background relative z-10 h-full w-72 shadow-2xl">
             <MobileDrawerContent
               onFilterChange={handleFilterChange}
               onOpenSettings={() => {
@@ -738,6 +729,19 @@ function ExpandedNav({
         >
           <Icon name="MultiBubble" className="text-primary" />
           <span className="flex-1 text-left text-sm font-medium">{t('Threads')}</span>
+          <button
+            className="text-primary hover:bg-default-200 ml-auto rounded-md p-0.5 transition-colors"
+            aria-label={t('New Task')}
+            tabIndex={-1}
+            onClick={(e) => {
+              e.stopPropagation()
+              onFilterChange('home')
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            onPointerUp={(e) => e.stopPropagation()}
+          >
+            <Icon name="Plus" size="sm" className="stroke-2" />
+          </button>
         </ListBox.Item>
         <ListBox.Item
           key="agents"
@@ -838,20 +842,22 @@ function MobileDrawerContent({
   const { t } = useI18n()
 
   return (
-    <aside className="border-separator flex h-full min-h-0 flex-col gap-4 overflow-clip px-4 pb-6 pt-4">
-      <BrandHeader
-        trailing={
-          <Button
-            isIconOnly
-            variant="ghost"
-            size="sm"
-            onPress={onClose}
-            aria-label={t('Close menu')}
-          >
-            <Icon name="Xmark" />
-          </Button>
-        }
-      />
+    <aside className="border-separator flex h-full min-h-0 flex-col gap-3 overflow-clip px-3 pb-6 pt-4">
+      <div className="flex items-center gap-3 px-1 py-1">
+        <BrandHeader
+          trailing={
+            <Button
+              isIconOnly
+              variant="ghost"
+              size="sm"
+              onPress={onClose}
+              aria-label={t('Close menu')}
+            >
+              <Icon name="Xmark" />
+            </Button>
+          }
+        />
+      </div>
 
       {/* Space switcher */}
       <SpaceSwitcher />
@@ -860,21 +866,12 @@ function MobileDrawerContent({
         <ExpandedNav onFilterChange={onFilterChange} />
       </ScrollShadow>
 
-      <div className="flex flex-col gap-2">
-        <Button
-          fullWidth
-          variant="primary"
-          onClick={() => onFilterChange('home')}
-        >
-          <Icon name="EditPencil" />
-          {t('New Task')}
-        </Button>
-        <div className="flex items-center justify-end gap-1">
-          <NotificationButtonV3 />
-          <ThemeToggleButton />
-          <AboutButton />
-          <SettingsButton onPress={onOpenSettings} />
-        </div>
+      {/* Bottom utility row */}
+      <div className="flex items-center gap-1 px-1">
+        <NotificationButtonV3 />
+        <ThemeToggleButton />
+        <AboutButton />
+        <SettingsButton onPress={onOpenSettings} />
       </div>
     </aside>
   )
