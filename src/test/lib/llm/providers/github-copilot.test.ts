@@ -152,13 +152,65 @@ describe('GitHubCopilotProvider', () => {
       expect(result).toBe(false)
     })
 
-    it('should skip exchange for fine-grained PATs', async () => {
-      // No exchange call, just /models
+    it('should skip exchange for fine-grained PATs and validate via GitHub API', async () => {
+      // First call: catalog/models (public)
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{ id: 'openai/gpt-4o', name: 'GPT-4o' }],
+      })
+      // Second call: /user to verify PAT
       mockFetch.mockResolvedValueOnce({ ok: true })
       const result = await provider.validateApiKey('github_pat_xxx')
       expect(result).toBe(true)
-      // Only one call (models), no exchange
+      expect(mockFetch).toHaveBeenCalledTimes(2)
+      // First call should hit catalog
+      expect(mockFetch.mock.calls[0][0]).toContain('/api/github-models/catalog/models')
+      // Second call should hit /user
+      expect(mockFetch.mock.calls[1][0]).toContain('/api/github-api/user')
+    })
+  })
+
+  describe('getBaseUrlForToken', () => {
+    it('should return GitHub Models API URL for fine-grained PATs', () => {
+      const url = GitHubCopilotProvider.getBaseUrlForToken('github_pat_xxx')
+      expect(url).toContain('/api/github-models/inference/v1')
+    })
+
+    it('should return Copilot API URL for OAuth tokens', () => {
+      const url = GitHubCopilotProvider.getBaseUrlForToken('gho_xxx')
+      expect(url).toContain('/api/github-copilot-api')
+    })
+  })
+
+  describe('chat with PAT', () => {
+    it('should use GitHub Models API for fine-grained PATs', async () => {
+      // No token exchange for PATs
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers(),
+        json: async () => ({
+          choices: [
+            {
+              message: { role: 'assistant', content: 'Hello!' },
+              finish_reason: 'stop',
+            },
+          ],
+          usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+        }),
+      })
+
+      await provider.chat([{ role: 'user', content: 'Hello' }], {
+        model: 'gpt-4o',
+        apiKey: 'github_pat_test_token',
+      })
+
+      // Only one call (chat), no token exchange
       expect(mockFetch).toHaveBeenCalledTimes(1)
+      // Should hit the GitHub Models API
+      expect(mockFetch.mock.calls[0][0]).toContain('/api/github-models/inference/v1/chat/completions')
+      expect(mockFetch.mock.calls[0][1].headers.Authorization).toBe(
+        'Bearer github_pat_test_token',
+      )
     })
   })
 
